@@ -13,6 +13,208 @@
 #include "numerics/fma.hpp"
 #include "quantities/elementary_functions.hpp"
 
+
+#define OSACA_ANALYSED_FUNCTION Cbrt
+#define UNDER_OSACA_HYPOTHESES(expression)                                 \
+  [&] {                                                                     \
+    constexpr double y = 3;                                                \
+    constexpr double abs_y = y == 0 ? 0 : y > 0 ? y : -y;                  \
+    constexpr double r₀ = std::numeric_limits<double>::quiet_NaN();        \
+    constexpr double r₁ = std::numeric_limits<double>::quiet_NaN();        \
+    constexpr double r̃ = std::numeric_limits<double>::quiet_NaN();         \
+    constexpr auto CorrectionPossiblyNeeded = [](double const r₀,          \
+                                                 double const r₁,          \
+                                                 double const r̃,           \
+                                                 double const τ) -> bool { \
+      return false;                                                        \
+    };                                                                     \
+    return expression;                                                     \
+  }()
+
+#if defined(OSACA_ANALYSED_FUNCTION)
+#define PRINCIPIA_USE_OSACA !PRINCIPIA_MACRO_IS_EMPTY(OSACA_ANALYSED_FUNCTION)
+#endif
+
+#if PRINCIPIA_USE_OSACA
+
+#include "intel/iacaMarks.h"
+
+// The macros OSACA_FUNCTION_BEGIN and OSACA_RETURN are used to analyse the
+// latency of a double -> double function, as measured, e.g., by the
+// nanobenchmarks; this notionally corresponds to the duration of an iteration
+// of a loop `x = f(x)`.
+// The latency-critical path of the function is reported as the loop-carried
+// dependency by OSACA, and as the critical path by IACA in throughput analysis
+// mode.
+// OSACA and IACA are only suitable for benchmarking a single path.  Any if
+// statements, including in inline functions called by the function being
+// analysed, should be replaced with OSACA_IF.  The path should be determined by
+// providing any necessary constexpr expressions in UNDER_OSACA_HYPOTHESES.
+// If OSACA_EVALUATE_CONDITIONS is set to 1, code will be generated to evaluate
+// the conditions for the branches taken (outside the loop-carried path, as they
+// would be with correct branch prediction).
+// OSACA_EVALUATE_CONDITIONS can be set to 0 to get a more streamlined
+// dependency graph when the conditions are irrelevant.  Note that this can
+// result in artificially low port pressures.
+#if 0
+// Usage:
+  double f(double const x) {
+    double const abs_x = std::abs(x);
+    if (abs_x < 0.1) {
+      return x;
+    } else if (x < 0) {
+      return -f_positive(abs_x);
+    } else {
+      return f_positive(abs_x);
+    }
+  }
+  double f_positive(double const abs_x) {
+    if (abs_x > 3) {
+      return 1;
+    } else {
+      // …
+    }
+  }
+// becomes:
+  double f(double x) {  // The argument cannot be const.
+    OSACA_FUNCTION_BEGIN(x);
+    double const abs_x = std::abs(x);
+    OSACA_IF(abs_x < 0.1) {
+      OSACA_RETURN(x);
+    } OSACA_ELSE_IF(x < 0) {  // `else OSACA_IF` works, but upsets the linter.
+      OSACA_RETURN(-f_positive(abs_x));
+    } else {
+      OSACA_RETURN(f_positive(abs_x));
+    }
+  }
+  // Other functions can have const arguments and return normally, but need to
+  // use OSACA_IF:
+  double f_positive(double const abs_x) {
+    OSACA_IF(abs_x > 3) {
+      return 1;
+    } else {
+      // …
+    }
+  }
+// To analyse it near x = 5:
+#define OSACA_ANALYSED_FUNCTION f
+#define UNDER_OSACA_HYPOTHESES(expression)                                 \
+  [&] {                                                                    \
+    constexpr double x = 5;                                                \
+    /* To avoid inconsistent definitions, constexpr code can be used as */ \
+    /* needed.                                                          */ \
+    constexpr double abs_x = x > 0 ? x : -x;                               \
+    return (expression);                                                   \
+  }()
+#endif
+// In principle, the loop-carried dependency for function latency analysis is
+// achieved by wrapping the body of the function in an infinite loop, assigning
+// the result to the argument at each iteration, and adding IACA markers outside
+// the loop.  There are some subtleties:
+// — We need to trick the compiler into believing the loop is finite, so that it
+//   doesn’t optimize away the end marker or even the function.  This is
+//   achieved by exiting based on the value of `OSACA_loop_terminator`.
+// — Return statements may be in if statements, and there may be several of
+//   them, so they cannot be the end of a loop started unconditionally.  Instead
+//   we loop with goto.
+// — We need to prevent the compiler from moving the start and end markers into
+//   the middle of register saving and restoring code, which would mess up the
+//   dependency analysis.  This is done with additional conditional gotos.
+// — Some volatile reads and writes are used to clarify identity of the
+//   registers in the generated code (where the names of `OSACA_result` and, if
+//   `OSACA_CARRY_LOOP_THROUGH_REGISTER` is set to 0, `OSACA_loop_carry` appear
+//   in movsd instructions).
+//
+// Carrying the loop dependency through a memory load and store can make the
+// dependency graph easier to understand, as it forces any usage of the input to
+// depend on the initial movsd, with the loop carried by a single backward edge
+// to that initial movsd.
+// If the loop is carried through a register, multiple usages of the input may
+// result in multiple back edges from the final instruction that computed the
+// result.  Carrying the loop through the memory could also potentially prevent
+// the compiler from reusing intermediate values in the next iteration, e.g., if
+// the the computation of f(x) depends on -x and produces -f(x) before f(x), as
+// in an even function defined in terms of its positive half, the compiler might
+// reuse -f(x₀)=-x₁ instead of computing -x₁ from x₁=f(x₀).  However:
+// — it adds a spurious move to the latency;
+// — some tools (IACA) cannot see the dependency through memory.
+// Set OSACA_CARRY_LOOP_THROUGH_REGISTER to 0 to carry the loop through memory.
+
+#define OSACA_EVALUATE_CONDITIONS 1
+#define OSACA_CARRY_LOOP_THROUGH_REGISTER 0
+
+static bool volatile OSACA_loop_terminator = false;
+
+#define OSACA_FUNCTION_BEGIN(arg)                               \
+  double OSACA_LOOP_CARRY_QUALIFIER OSACA_loop_carry = arg;     \
+  OSACA_outer_loop:                                             \
+  if constexpr (std::string_view(__func__) ==                   \
+                STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) { \
+    IACA_VC64_START;                                            \
+  }                                                             \
+  _Pragma("warning(push)");                                     \
+  _Pragma("warning(disable : 4102)");                           \
+  OSACA_loop:                                                   \
+  _Pragma("warning(pop)");                                      \
+  arg = OSACA_loop_carry
+
+#define OSACA_RETURN(result)                                                \
+  do {                                                                      \
+    if constexpr (std::string_view(__func__) ==                             \
+                  STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION)) {           \
+      OSACA_loop_carry = (result);                                          \
+      if (!OSACA_loop_terminator) {                                         \
+        goto OSACA_loop;                                                    \
+      }                                                                     \
+      double volatile OSACA_result = OSACA_loop_carry;                      \
+      IACA_VC64_END;                                                        \
+      /* The outer loop prevents the the start and end marker from being */ \
+      /* interleaved with register saving and restoring moves.           */ \
+      if (!OSACA_loop_terminator) {                                         \
+        goto OSACA_outer_loop;                                              \
+      }                                                                     \
+      return OSACA_result;                                                  \
+    } else {                                                                \
+      return (result);                                                      \
+    }                                                                       \
+  } while (false)
+
+#if OSACA_CARRY_LOOP_THROUGH_REGISTER
+#define OSACA_LOOP_CARRY_QUALIFIER
+#else
+#define OSACA_LOOP_CARRY_QUALIFIER volatile
+#endif
+
+// The branch not taken, determined by evaluating the condition
+// `UNDER_OSACA_HYPOTHESES`, is eliminated by `if constexpr`; the condition is
+// also compiled normally and assigned to a boolean; whether this results in any
+// generated code depends on `OSACA_EVALUATE_CONDITIONS`.  Note that, with
+// `OSACA_EVALUATE_CONDITIONS`, in  `OSACA_IF(p) { } OSACA_ELSE_IF(q) { }`, if
+// `p` holds `UNDER_OSACA_HYPOTHESES`, code is generated to evaluate `p`, but
+// not `q`.
+
+#define OSACA_IF(condition)                                               \
+  if constexpr (bool OSACA_CONDITION_QUALIFIER OSACA_computed_condition = \
+                    (condition);                                          \
+                UNDER_OSACA_HYPOTHESES(condition))
+
+#if OSACA_EVALUATE_CONDITIONS
+#define OSACA_CONDITION_QUALIFIER volatile
+#else
+#define OSACA_CONDITION_QUALIFIER
+#endif
+
+#else  // if !PRINCIPIA_USE_OSACA
+
+#define OSACA_FUNCTION_BEGIN(arg)
+#define OSACA_RETURN(result) return (result)
+#define OSACA_IF(condition) if (condition)
+
+#endif  // PRINCIPIA_USE_OSACA
+
+#define OSACA_ELSE_IF else OSACA_IF  // NOLINT
+
+
 namespace principia {
 namespace numerics {
 namespace _cbrt {
@@ -227,31 +429,32 @@ static_assert(σ₁⁻³ * std::numeric_limits<double>::denorm_min() > y₁);
 static_assert(σ₂⁻³ * std::numeric_limits<double>::max() < y₂);
 
 template<Rounding rounding>
-double Cbrt(double const y) {
+double Cbrt(double y) {
+  OSACA_FUNCTION_BEGIN(y);
   __m128d Y_0 = _mm_set_sd(y);
   __m128d const sign = _mm_and_pd(masks::sign_bit, Y_0);
   Y_0 = _mm_andnot_pd(masks::sign_bit, Y_0);
   double const abs_y = _mm_cvtsd_f64(Y_0);
 
-  if (y != y) {
+  OSACA_IF (y != y) {
     // The usual logic will produce a qNaN when given a NaN, but will not
     // preserve the payload and will signal overflows (q will be a nonsensical
     // large value, and q³ will overflow).  Further, the rescaling comparisons
     // will signal the invalid operation exception for quiet NaNs (although that
     // would be easy to work around using the unordered compare intrinsics).
-    return y + y;
+    OSACA_RETURN( y + y);
   }
 
-  if (abs_y < y₁) {
-    if (abs_y == 0) {
-      return y;
+  OSACA_IF(abs_y < y₁) {
+    OSACA_IF(abs_y == 0) {
+      OSACA_RETURN( y);
     }
-    return Cbrt<rounding>(y * σ₁⁻³) * σ₁;
-  } else if (abs_y > y₂) {
-    if (abs_y == std::numeric_limits<double>::infinity()) {
-      return y;
+    OSACA_RETURN( Cbrt<rounding>(y * σ₁⁻³) * σ₁);
+  } OSACA_ELSE_IF(abs_y > y₂) {
+    OSACA_IF (abs_y == std::numeric_limits<double>::infinity()) {
+      OSACA_RETURN(y);
     }
-    return Cbrt<rounding>(y * σ₂⁻³) * σ₂;
+    OSACA_RETURN( Cbrt<rounding>(y * σ₂⁻³) * σ₂);
   }
 
   // Step 1.  The constant Γᴋ minimizes the error of q, as in [KB01], rather
@@ -299,12 +502,12 @@ double Cbrt(double const y) {
   double const r₁ = FusedNegatedMultiplyAdd(Δ₁, Δ₂, x_sign_y - r₀);
 
   double const r̃ = r₀ + 2 * r₁;
-  if (rounding == Rounding::Correct &&
+  OSACA_IF(rounding == Rounding::Correct &&
       CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.E45E16EF5480Fp-76)) {
-    return _mm_cvtsd_f64(_mm_or_pd(
-        _mm_set_sd(CorrectLastBit(abs_y, std::abs(r₀), std::abs(r̃))), sign));
+    OSACA_RETURN(_mm_cvtsd_f64(_mm_or_pd(
+        _mm_set_sd(CorrectLastBit(abs_y, std::abs(r₀), std::abs(r̃))), sign)));
   }
-  return r₀;
+  OSACA_RETURN(r₀);
 }
 template double Cbrt<Rounding::Faithful>(double y);
 template double Cbrt<Rounding::Correct>(double y);
