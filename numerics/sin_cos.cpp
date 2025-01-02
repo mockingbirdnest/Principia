@@ -20,6 +20,7 @@
     constexpr bool UseHardwareFMA = true;                                    \
     constexpr double θ = 3;                                                  \
     /* From argument reduction. */                                           \
+    constexpr double abs_θ = θ > 0 ? θ : -θ;                                 \
     constexpr std::int64_t n = static_cast<std::int64_t>(θ * (2 / π) + 0.5); \
     constexpr double reduction_value = θ - n * π_over_2_high;                \
     constexpr double reduction_error = n * π_over_2_low;                     \
@@ -280,8 +281,8 @@ inline std::int64_t AccurateTableIndex(double const abs_x) {
 
 template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
-  OSACA_IF((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-            (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  static_assert(fma_policy != FMAPolicy::Auto);
+  if constexpr (fma_policy == FMAPolicy::Force) {
     using quantities::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, b, c);
   } else {
@@ -291,8 +292,8 @@ double FusedMultiplyAdd(double const a, double const b, double const c) {
 
 template<FMAPolicy fma_policy>
 double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
-  OSACA_IF((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-            (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  static_assert(fma_policy != FMAPolicy::Auto);
+  if constexpr (fma_policy == FMAPolicy::Force) {
     using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
     return FusedNegatedMultiplyAdd(a, b, c);
   } else {
@@ -303,6 +304,7 @@ double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
 // Evaluates the sum `x + Δx`.  If that sum has a dangerous rounding
 // configuration (that is, the bits after the last mantissa bit of the sum are
 // either 1000... or 0111..., then returns `NaN`.  Otherwise returns the sum.
+// `x` is always positive.  `Δx` may be positive or negative.
 inline double DetectDangerousRounding(double const x, double const Δx) {
   DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
   double const& value = sum.value;
@@ -330,12 +332,13 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
 inline void Reduce(Argument const θ,
                    DoublePrecision<Argument>& θ_reduced,
                    std::int64_t& quadrant) {
-  OSACA_IF(θ < π / 4 && θ > -π / 4) {
+  double const abs_θ = std::abs(θ);
+  OSACA_IF(abs_θ < π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
     quadrant = 0;
     return;
-  } OSACA_ELSE_IF(θ <= π_over_2_threshold && θ >= -π_over_2_threshold) {
+  } OSACA_ELSE_IF(abs_θ <= π_over_2_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
@@ -390,35 +393,37 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     double const x² = x * x;
     double const x³ = x² * x;
     double const x³_term = FusedMultiplyAdd<fma_policy>(
-                   x³, SinPolynomialNearZero<fma_policy>(x²), e);
+        x³, SinPolynomialNearZero<fma_policy>(x²), e);
     return DetectDangerousRounding(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
+    double const e_abs = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(e), sign));
     auto const i = AccurateTableIndex(abs_x);
     auto const& accurate_values = SinCosAccurateTable[i];
-    double const x₀ =
-        _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.x), sign));
-    double const sin_x₀ =
-        _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
+    double const& x₀ = accurate_values.x;
+    double const& sin_x₀ = accurate_values.sin_x;
     double const& cos_x₀ = accurate_values.cos_x;
     // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
     // don't overlap and in the first interval `x` and `h` may be of the same
     // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
     // later in the computation.  Note that the terms in `e * h²` and higher are
     // *not* computed correctly below because they don't matter.
-    double const h = x - x₀;
+    double const h = abs_x - x₀;
 
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
-    double const h² = h * (h + 2 * e);
+    double const h² = h * (h + 2 * e_abs);
     double const h³ = h² * h;
     double const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
             cos_x₀,
-            FusedMultiplyAdd<fma_policy>(h³, SinPolynomial<fma_policy>(h²), e),
+            h³ * SinPolynomial<fma_policy>(h²),
             sin_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
-        sin_x₀_plus_h_cos_x₀.error;
-    return DetectDangerousRounding(sin_x₀_plus_h_cos_x₀.value, polynomial_term);
+        FusedMultiplyAdd<fma_policy>(cos_x₀, e_abs, sin_x₀_plus_h_cos_x₀.error);
+    return _mm_cvtsd_f64(
+        _mm_xor_pd(_mm_set_sd(DetectDangerousRounding(
+                       sin_x₀_plus_h_cos_x₀.value, polynomial_term)),
+                   sign));
   }
 }
 
@@ -429,30 +434,30 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const& e = θ_reduced.error;
   double const abs_x = std::abs(x);
   __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
+  double const e_abs = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(e), sign));
   auto const i = AccurateTableIndex(abs_x);
   auto const& accurate_values = SinCosAccurateTable[i];
-  double const x₀ =
-      _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.x), sign));
-  double const sin_x₀ =
-      _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(accurate_values.sin_x), sign));
+  double const& x₀ = accurate_values.x;
+  double const& sin_x₀ = accurate_values.sin_x;
   double const& cos_x₀ = accurate_values.cos_x;
   // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
   // don't overlap and in the first interval `x` and `h` may be of the same
   // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
   // later in the computation.  Note that the terms in `e * h²` and higher are
   // *not* computed correctly below because they don't matter.
-  double const h = x - x₀;
+  double const h = abs_x - x₀;
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
-  double const h² = h * (h + 2 * e);
+  double const h² = h * (h + 2 * e_abs);
   double const h³ = h² * h;
   double const polynomial_term =
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀,
-          FusedMultiplyAdd<fma_policy>(h³, SinPolynomial<fma_policy>(h²), e),
+          h³ * SinPolynomial<fma_policy>(h²),
           cos_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
-      cos_x₀_minus_h_sin_x₀.error;
+      FusedNegatedMultiplyAdd<fma_policy>(
+          sin_x₀, e_abs, cos_x₀_minus_h_sin_x₀.error);
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 
