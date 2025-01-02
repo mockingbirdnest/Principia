@@ -11,7 +11,7 @@
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
-#include "numerics/osaca.hpp"
+#include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
