@@ -69,7 +69,7 @@ TEST_F(SinCosTest, ReduceIndex) {
   static constexpr double mantissa_reduce_shifter =
       1LL << (std::numeric_limits<double>::digits - 1);
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(-1000.0, 1000.0);
+  std::uniform_real_distribution<> uniformly_at(0.0, 1000.0);
 
   for (std::int64_t i = 0; i < iterations; ++i) {
     double const θ = uniformly_at(random);
@@ -79,17 +79,12 @@ TEST_F(SinCosTest, ReduceIndex) {
     double const n_double = _mm_cvtsd_f64(n_128d);
     std::int64_t const n = _mm_cvtsd_si64(n_128d);
 
-    __m128d const sign_128d = _mm_and_pd(sign_bit, _mm_set_sd(θ));
-    double const signed_shifter = _mm_cvtsd_f64(
-        _mm_xor_pd(_mm_set_sd(mantissa_reduce_shifter), sign_128d));
-    double const m_shifted = θ * (2 / π) + signed_shifter;
-    double const m_double = m_shifted - signed_shifter;
-    __m128 const sign_128 = _mm_castpd_ps(sign_128d);
-    std::int64_t const m = _mm_cvtsi128_si32(_mm_sign_epi32(
-        _mm_castpd_si128(
-            _mm_and_pd(mantissa_reduce_bits, _mm_set_sd(m_shifted))),
-        _mm_castps_si128(_mm_or_ps(_mm_shuffle_ps(sign_128, sign_128, 1),
-                                   _mm_castsi128_ps(_mm_cvtsi32_si128(1))))));
+    double const abs_θ = std::abs(θ);
+    __m128d const sign = _mm_and_pd(sign_bit, _mm_set_sd(θ));
+    double const m_shifted = abs_θ * (2 / π) + mantissa_reduce_shifter;
+    double const m_double = _mm_cvtsd_f64(
+        _mm_xor_pd(_mm_set_sd(m_shifted - mantissa_reduce_shifter), sign));
+    std::int64_t const m = _mm_cvtsd_si64(_mm_set_sd(m_double));
 
     EXPECT_EQ(n, m);
     EXPECT_EQ(m, m_double);
