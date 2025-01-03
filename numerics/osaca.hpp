@@ -1,8 +1,6 @@
 #pragma once
 
-#include "base/macros.hpp"
-
-#define PRINCIPIA_USE_OSACA 0
+#define PRINCIPIA_USE_OSACA 1
 
 // The macros OSACA_FUNCTION_BEGIN and OSACA_RETURN are used to analyse the
 // latency of a double -> double function, as measured, e.g., by the
