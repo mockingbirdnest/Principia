@@ -64,12 +64,10 @@ TEST_F(SinCosTest, ReduceIndex) {
   static constexpr std::int64_t π_over_2_zeroes = 18;
   static const __m128d sign_bit =
       _mm_castsi128_pd(_mm_cvtsi64_si128(0x8000'0000'0000'0000));
-  static const __m128d mantissa_reduce_bits =
-      _mm_castsi128_pd(_mm_cvtsi64_si128((1LL << π_over_2_zeroes) - 1));
   static constexpr double mantissa_reduce_shifter =
       1LL << (std::numeric_limits<double>::digits - 1);
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(0.0, 1000.0);
+  std::uniform_real_distribution<> uniformly_at(-1000.0, 1000.0);
 
   for (std::int64_t i = 0; i < iterations; ++i) {
     double const θ = uniformly_at(random);

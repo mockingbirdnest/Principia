@@ -83,8 +83,6 @@ static const __m128d mantissa_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'ffff'ffff'ffff));
 static const __m128d mantissa_index_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x0000'0000'0000'01ff));
-static const __m128d mantissa_reduce_bits =
-    _mm_castsi128_pd(_mm_cvtsi64_si128((1LL << π_over_2_zeroes) - 1));
 }  // namespace masks
 
 inline std::int64_t AccurateTableIndex(double const abs_x) {
