@@ -1,6 +1,6 @@
 #pragma once
 
-#define PRINCIPIA_USE_OSACA 0
+#define PRINCIPIA_USE_OSACA 1
 
 // The macros OSACA_FUNCTION_BEGIN and OSACA_RETURN are used to analyse the
 // latency of a double -> double function, as measured, e.g., by the
@@ -175,21 +175,26 @@ static bool volatile OSACA_loop_terminator = false;
 
 // The branch not taken, determined by evaluating the condition
 // `UNDER_OSACA_HYPOTHESES`, is eliminated by `if constexpr`; the condition is
-// also compiled normally and assigned to a boolean; whether this results in any
-// generated code depends on `OSACA_EVALUATE_CONDITIONS`.  Note that, with
-// `OSACA_EVALUATE_CONDITIONS`, in  `OSACA_IF(p) { } OSACA_ELSE_IF(q) { }`, if
-// `p` holds `UNDER_OSACA_HYPOTHESES`, code is generated to evaluate `p`, but
-// not `q`.
+// also compiled normally.  Whether this results in any generated code depends
+// on `OSACA_EVALUATE_CONDITIONS`.  Note that, with `OSACA_EVALUATE_CONDITIONS`,
+// in `OSACA_IF(p) { } OSACA_ELSE_IF(q) { }`, if  `p` holds
+// `UNDER_OSACA_HYPOTHESES`, code is generated to evaluate `p`, but  not `q`.
 
-#define OSACA_IF(condition)                                               \
-  if constexpr (bool OSACA_CONDITION_QUALIFIER OSACA_computed_condition = \
-                    (condition);                                          \
+#define OSACA_IF(condition)                                             \
+  if constexpr (int const OSACA_evaluate =                              \
+                    UNDER_OSACA_HYPOTHESES(condition)                   \
+                        ? ((condition) ? 0 : OSACA_branch_not_taken())  \
+                        : ((condition) ? OSACA_branch_not_taken() : 0); \
                 UNDER_OSACA_HYPOTHESES(condition))
 
 #if OSACA_EVALUATE_CONDITIONS
-#define OSACA_CONDITION_QUALIFIER volatile
+[[noreturn]] inline int OSACA_branch_not_taken() {
+  std::abort();
+}
 #else
-#define OSACA_CONDITION_QUALIFIER
+inline int OSACA_branch_not_taken() {
+  return 0;
+}
 #endif
 
 #else  // if !PRINCIPIA_USE_OSACA
