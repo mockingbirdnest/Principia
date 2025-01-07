@@ -68,6 +68,8 @@ constexpr std::int64_t π_over_2_zeroes = 18;
 constexpr Argument π_over_2_threshold = π / 2 * (1 << π_over_2_zeroes);
 constexpr Argument π_over_2_high = 0x1.921fb'5444p0;
 constexpr Argument π_over_2_low = 0x2.d1846'9898c'c5170'1b839p-40;
+constexpr Argument mantissa_reduce_shifter =
+    1LL << (std::numeric_limits<double>::digits - 1);
 
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
@@ -149,6 +151,7 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
   }
 }
 
+template<FMAPolicy fma_policy>
 inline void Reduce(Argument const θ,
                    DoublePrecision<Argument>& θ_reduced,
                    std::int64_t& quadrant) {
@@ -163,11 +166,15 @@ inline void Reduce(Argument const θ,
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
     // of the quadrant.
-    __m128d const n_128d = _mm_round_sd(
-        _mm_setzero_pd(), _mm_set_sd(θ * (2 / π)), _MM_FROUND_RINT);
-    double const n_double = _mm_cvtsd_f64(n_128d);
-    std::int64_t const n = _mm_cvtsd_si64(n_128d);
-    Argument const value = θ - n_double * π_over_2_high;
+    __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(θ));
+    double const n_shifted =
+        FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter);
+    double const n_double = _mm_cvtsd_f64(
+        _mm_xor_pd(_mm_set_sd(n_shifted - mantissa_reduce_shifter), sign));
+    std::int64_t const n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+
+    Argument const value =
+        FusedNegatedMultiplyAdd<fma_policy>(n_double, π_over_2_high, θ);
     Argument const error = n_double * π_over_2_low;
     θ_reduced = QuickTwoDifference(value, error);
     // TODO(phl): Error analysis needed to find the right bounds.
@@ -285,15 +292,16 @@ Value __cdecl Sin(Argument θ) {
   OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  Reduce(θ, θ_reduced, quadrant);
   double value;
   OSACA_IF(UseHardwareFMA) {
+    Reduce<FMAPolicy::Force>(θ, θ_reduced, quadrant);
     OSACA_IF(quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     }
   } else {
+    Reduce<FMAPolicy::Disallow>(θ, θ_reduced, quadrant);
     OSACA_IF(quadrant & 0b1) {
       value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
@@ -313,15 +321,16 @@ Value __cdecl Cos(Argument θ) {
   OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  Reduce(θ, θ_reduced, quadrant);
   double value;
   OSACA_IF(UseHardwareFMA) {
+    Reduce<FMAPolicy::Force>(θ, θ_reduced, quadrant);
     OSACA_IF(quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Force>(θ_reduced);
     } else {
       value = CosImplementation<FMAPolicy::Force>(θ_reduced);
     }
   } else {
+    Reduce<FMAPolicy::Disallow>(θ, θ_reduced, quadrant);
     OSACA_IF(quadrant & 0b1) {
       value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
     } else {
