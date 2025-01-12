@@ -169,9 +169,10 @@ inline void Reduce(Argument const θ,
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(θ));
     double const n_shifted =
         FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter);
-    double const n_double = _mm_cvtsd_f64(
-        _mm_xor_pd(_mm_set_sd(n_shifted - mantissa_reduce_shifter), sign));
-    std::int64_t const n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+    __m128d const n_128d =
+        _mm_xor_pd(_mm_set_sd(n_shifted - mantissa_reduce_shifter), sign);
+    double const n_double = _mm_cvtsd_f64(n_128d);
+    std::int64_t const n = _mm_cvtsd_si64(n_128d);
 
     Argument const value =
         FusedNegatedMultiplyAdd<fma_policy>(n_double, π_over_2_high, θ);
