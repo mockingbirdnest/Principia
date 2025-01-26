@@ -171,14 +171,16 @@ inline void Reduce(Argument const θ,
         FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter) -
         mantissa_reduce_shifter;
     Argument value;
+    std::int64_t n;
     if constexpr (preserve_sign) {
       n_double = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(n_double), sign));
+      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
       value = FusedNegatedMultiplyAdd<fma_policy>(n_double, π_over_2_high, θ);
     } else {
+      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
       value =
           FusedNegatedMultiplyAdd<fma_policy>(n_double, π_over_2_high, abs_θ);
     }
-    std::int64_t const n = _mm_cvtsd_si64(_mm_set_sd(n_double));
 
     Argument const error = n_double * π_over_2_low;
     θ_reduced = QuickTwoDifference(value, error);
