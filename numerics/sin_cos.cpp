@@ -170,6 +170,9 @@ inline void Reduce(Argument const θ,
     double n_double =
         FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter) -
         mantissa_reduce_shifter;
+
+    // Don't move the computation of `n` before the loop, it generates some
+    // extra moves.
     Argument value;
     std::int64_t n;
     if constexpr (preserve_sign) {
