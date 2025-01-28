@@ -7,6 +7,8 @@ namespace numerics {
 namespace _sin_cos {
 namespace internal {
 
+void StaticInitialization();
+
 double __cdecl Sin(double x);
 double __cdecl Cos(double x);
 
@@ -14,6 +16,7 @@ double __cdecl Cos(double x);
 
 using internal::Cos;
 using internal::Sin;
+using internal::StaticInitialization;
 
 }  // namespace _sin_cos
 }  // namespace numerics

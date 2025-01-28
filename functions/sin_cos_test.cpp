@@ -29,6 +29,10 @@ using namespace principia::testing_utilities::_almost_equals;
 
 class SinCosTest : public ::testing::Test {
  protected:
+  static void SetUpTestCase() {
+    StaticInitialization();
+  }
+
   double a_ = 1.0;
 };
 

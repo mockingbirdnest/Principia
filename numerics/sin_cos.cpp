@@ -298,25 +298,41 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 
+static Value (*cos_implementation)(DoublePrecision<Argument> θ_reduced) =
+    nullptr;
+static void (*cos_reduce)(Argument θ,
+                          DoublePrecision<Argument>& θ_reduced,
+                          std::int64_t& quadrant) = nullptr;
+static Value (*sin_implementation)(DoublePrecision<Argument> θ_reduced) =
+    nullptr;
+static void (*sin_reduce)(Argument θ,
+                          DoublePrecision<Argument>& θ_reduced,
+                          std::int64_t& quadrant) = nullptr;
+
+void StaticInitialization() {
+  if (UseHardwareFMA) {
+    cos_implementation = &CosImplementation<FMAPolicy::Force>;
+    cos_reduce = &Reduce<FMAPolicy::Force, /*preserve_sign=*/false>;
+    sin_implementation = &SinImplementation<FMAPolicy::Force>;
+    sin_reduce = &Reduce<FMAPolicy::Force, /*preserve_sign=*/true>;
+  } else {
+    cos_implementation = &CosImplementation<FMAPolicy::Disallow>;
+    cos_reduce = &Reduce<FMAPolicy::Disallow, /*preserve_sign=*/false>;
+    sin_implementation = &SinImplementation<FMAPolicy::Disallow>;
+    sin_reduce = &Reduce<FMAPolicy::Disallow, /*preserve_sign=*/true>;
+  }
+}
+
 Value __cdecl Sin(Argument θ) {
   OSACA_FUNCTION_BEGIN(θ);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   double value;
-  OSACA_IF(UseHardwareFMA) {
-    Reduce<FMAPolicy::Force, /*preserve_sign=*/true>(θ, θ_reduced, quadrant);
-    OSACA_IF(quadrant & 0b1) {
-      value = CosImplementation<FMAPolicy::Force>(θ_reduced);
-    } else {
-      value = SinImplementation<FMAPolicy::Force>(θ_reduced);
-    }
+  sin_reduce(θ, θ_reduced, quadrant);
+  OSACA_IF(quadrant & 0b1) {
+    value = cos_implementation(θ_reduced);
   } else {
-    Reduce<FMAPolicy::Disallow, /*preserve_sign=*/true>(θ, θ_reduced, quadrant);
-    OSACA_IF(quadrant & 0b1) {
-      value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
-    } else {
-      value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
-    }
+    value = sin_implementation(θ_reduced);
   }
   OSACA_IF(value != value) {
     OSACA_RETURN(cr_sin(θ));
@@ -332,21 +348,11 @@ Value __cdecl Cos(Argument θ) {
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   double value;
-  OSACA_IF(UseHardwareFMA) {
-    Reduce<FMAPolicy::Force, /*preserve_sign=*/false>(θ, θ_reduced, quadrant);
-    OSACA_IF(quadrant & 0b1) {
-      value = SinImplementation<FMAPolicy::Force>(θ_reduced);
-    } else {
-      value = CosImplementation<FMAPolicy::Force>(θ_reduced);
-    }
+  cos_reduce(θ, θ_reduced, quadrant);
+  OSACA_IF(quadrant & 0b1) {
+    value = sin_implementation(θ_reduced);
   } else {
-    Reduce<FMAPolicy::Disallow,
-           /*preserve_sign=*/false>(θ, θ_reduced, quadrant);
-    OSACA_IF(quadrant & 0b1) {
-      value = SinImplementation<FMAPolicy::Disallow>(θ_reduced);
-    } else {
-      value = CosImplementation<FMAPolicy::Disallow>(θ_reduced);
-    }
+    value = cos_implementation(θ_reduced);
   }
   OSACA_IF(value != value) {
     OSACA_RETURN(cr_cos(θ));
