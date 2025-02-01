@@ -29,7 +29,7 @@ using namespace principia::quantities::_elementary_functions;
 
 #define OSACA_ANALYSED_FUNCTION Cos
 #define OSACA_ANALYSED_FUNCTION_NAMESPACE
-#define OSACA_ANALYSED_FUNCTION_TEMPLATE_PARAMETERS
+#define OSACA_ANALYSED_FUNCTION_TEMPLATE_PARAMETERS <FMAPolicy::Force>
 #define UNDER_OSACA_HYPOTHESES(expression)                                   \
   [&] {                                                                      \
     constexpr bool UseHardwareFMA = true;                                    \
