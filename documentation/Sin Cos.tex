@@ -1,0 +1,36 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage{tikz}
+\usetikzlibrary{cd}
+
+\usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
+
+%%%% Shorthands.
+\DeclareMathOperator{\bias}{\mathit{bias}}
+% Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
+% so we make them grow for readability.
+\newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
+\newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
+\newcommand{\roundTowardPositive}[1]{\doubleSquareBrackets{#1}_+}
+\newcommand{\roundTowardNegative}[1]{\doubleSquareBrackets{#1}_-}
+\newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
+\newcommand{\bin}[1]{{_{2}}\mathrm{#1}}
+
+%%%% Title and authors.
+
+\title{An Implementation of Sin and Cos Using Gal's Accurate Tables}
+\date{\printdate{2025-02-02}}
+\author{Pascal~Leroy (phl)}
+\begin{document}
+\maketitle
+\begin{sloppypar}
+\noindent
+This document describes...
+\end{sloppypar}
+
+\section*{Preamble}
+\section*{Accurate Tables}
+
+\end{document}
