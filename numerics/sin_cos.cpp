@@ -80,9 +80,9 @@ Value (__cdecl *sin)(Argument θ) = nullptr;
 
 // Forward declarations needed by the OSACA macros.
 template<FMAPolicy fma_policy>
-Value __cdecl Sin(Argument const θ);
+Value __cdecl Sin(Argument θ);
 template<FMAPolicy fma_policy>
-Value __cdecl Cos(Argument const θ);
+Value __cdecl Cos(Argument θ);
 
 namespace masks {
 __m128d const sign_bit =
