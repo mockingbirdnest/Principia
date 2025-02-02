@@ -74,14 +74,24 @@ constexpr Argument mantissa_reduce_shifter =
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 
+// Pointers used for indirect calls, set by `StaticInitialization`.
+Value (__cdecl *cos)(Argument θ) = nullptr;
+Value (__cdecl *sin)(Argument θ) = nullptr;
+
+// Forward declarations needed by the OSACA macros.
+template<FMAPolicy fma_policy>
+Value __cdecl Sin(Argument const θ);
+template<FMAPolicy fma_policy>
+Value __cdecl Cos(Argument const θ);
+
 namespace masks {
-static const __m128d sign_bit =
+__m128d const sign_bit =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x8000'0000'0000'0000));
-static const __m128d exponent_bits =
+__m128d const exponent_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x7ff0'0000'0000'0000));
-static const __m128d mantissa_bits =
+__m128d const mantissa_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x000f'ffff'ffff'ffff));
-static const __m128d mantissa_index_bits =
+__m128d const mantissa_index_bits =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x0000'0000'0000'01ff));
 }  // namespace masks
 
@@ -298,12 +308,9 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 
-static Value (__cdecl *cos)(Argument θ) = nullptr;
-static Value (__cdecl *sin)(Argument θ) = nullptr;
-
 template<FMAPolicy fma_policy>
-Value __cdecl Sin(Argument const θ) {
-  OSACA_FUNCTION_BEGIN(θ);
+Value __cdecl Sin(Argument θ) {
+  OSACA_FUNCTION_BEGIN(θ, <fma_policy>);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   double value;
@@ -322,13 +329,9 @@ Value __cdecl Sin(Argument const θ) {
   }
 }
 
-Value __cdecl Sin(Argument const θ) {
-  return sin(θ);
-}
-
 template<FMAPolicy fma_policy>
 Value __cdecl Cos(Argument θ) {
-  OSACA_FUNCTION_BEGIN(θ);
+  OSACA_FUNCTION_BEGIN(θ, <fma_policy>);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   double value;
@@ -347,10 +350,6 @@ Value __cdecl Cos(Argument θ) {
   }
 }
 
-Value __cdecl Cos(Argument const θ) {
-  return cos(θ);
-}
-
 void StaticInitialization() {
   if (UseHardwareFMA) {
     cos = &Cos<FMAPolicy::Force>;
@@ -359,6 +358,14 @@ void StaticInitialization() {
     cos = &Cos<FMAPolicy::Disallow>;
     sin = &Sin<FMAPolicy::Disallow>;
   }
+}
+
+Value __cdecl Sin(Argument const θ) {
+  return sin(θ);
+}
+
+Value __cdecl Cos(Argument const θ) {
+  return cos(θ);
 }
 
 }  // namespace internal
