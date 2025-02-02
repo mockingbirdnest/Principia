@@ -26,11 +26,12 @@ using namespace principia::functions::_multiprecision;
 using namespace principia::numerics::_next;
 using namespace principia::numerics::_sin_cos;
 using namespace principia::testing_utilities::_almost_equals;
+namespace sin_cos = principia::numerics::_sin_cos;
 
 class SinCosTest : public ::testing::Test {
  protected:
   static void SetUpTestCase() {
-    StaticInitialization();
+    sin_cos::StaticInitialization();
   }
 
   double a_ = 1.0;
