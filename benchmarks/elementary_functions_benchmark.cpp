@@ -17,13 +17,16 @@ namespace functions {
 
 using namespace principia::benchmarks::_metric;
 using namespace principia::numerics::_sin_cos;
+namespace sin_cos = principia::numerics::_sin_cos;
 
-static constexpr std::int64_t number_of_iterations = 1000;
+constexpr std::int64_t number_of_iterations = 1000;
 
 template<Metric metric, double (__cdecl *fn)(double)>
 void BM_EvaluateElementaryFunction(benchmark::State& state) {
   using Value = double;
   using Argument = double;
+
+  sin_cos::StaticInitialization();
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> uniformly_at(-2 * π, 2 * π);
