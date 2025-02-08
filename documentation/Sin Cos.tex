@@ -9,6 +9,8 @@
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
+\DeclareMathOperator{\ULP}{ulp}
+
 % Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
 % so we make them grow for readability.
 \newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
@@ -27,10 +29,48 @@
 \maketitle
 \begin{sloppypar}
 \noindent
-This document describes...
+This document describes the implementation of functions \texttt{Sin} and \texttt{Cos} in Principia.  The goals of that implementation are to be portable (including to machines that do not have a fused multiply-add instruction), achieve good performance, and ensure correct rounding.
 \end{sloppypar}
 
-\section*{Preamble}
-\section*{Accurate Tables}
+\section*{Overview}
+The implementation follows the ideas described by \cite{GalBachelis1991} and uses accurate tables produced by the method presented in \cite{StehléZimmermann2005}.  It guarantees correct rounding with a high probability.  In circumstances where it cannot guarantee correct rounding, it falls back to the (slower but correct) implementation provided by the CORE-MATH project \cite{SibidanovZimmermannGlondu2022} \cite{ZimmermannSibidanovGlondu2024}.  More precisely, the algorithm proceeds through the following steps:
+\begin{itemize}[nosep]
+\item perform argument reduction using Cody and Waite's algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010});
+\item if argument reduction loses too many bits (i.e., the argument is close to a multiple of $\frac{\gp}{2}$), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item otherwise, uses accurate tables and a polynomial approximation to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
+\item if the result has a ``dangerous rounding configuration'' (as defined by \cite{GalBachelis1991}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item otherwise return the rounded result of the preceding computation.
+\end{itemize}
+In this document we assume a base-2 floating-point number system similar to IEEE \texttt{binary64}.  In a system with $M$ mantissa bits\footnote{In \texttt{binary64}, $M = 53$.}, the floating-point number $x$ is represented by a pair of integers $(m_x, e_x)$ such that:
+\[
+x = ±m_x \times 2^{e_x} \qquad\text{with}\qquad 2^{M-1} \leq m_x \leq 2^M - 1
+\]
+In this system, the distance between $1$ and the next larger floating-point number is:
+\[
+\ge_M \DefineAs 2^{1-M}
+\]
+and the distance between $1$ and the next smaller floating-point number is $\frac{\ge_M}{2}$.
+The \textit{unit of the last place} of $x$ is defined as:
+\[
+\ULP\of{x} \DefineAs 2^{e_x}
+\]
+In particular, $\ULP\of{1} = \ge_M$.
+
+Note that we ignore the exponent bias, overflow and underflow as they play no role in this document.
+\section*{Argument Reduction}
+The argument $x$ to \texttt{Sin} and \texttt{Cos} is reduced to a pair $(\hat x, \hat{\gd x})$ such that:
+\[
+\begin{dcases}
+\hat x + \hat{\gd x}≅ n \frac{\gp}{2} + x \\
+\hat x \in \intclos{-\frac{\gp}{4}}{\frac{\gp}{4}} \\
+\abs{\hat{\gd x}} < \ULP\of{\hat x} 
+\end{dcases}
+\]
+The reduction proceeds as follows:
+\begin{itemize}[nosep]
+\item if $\abs x < \frac{\gp}{4}$ then $\hat x = x$ and $\hat{\gd x} = 0$;
+\end{itemize}
+\section*{Accurate Tables and Their Generation}
+\section*{Computation of the Functions}
 
 \end{document}
