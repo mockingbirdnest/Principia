@@ -2303,9 +2303,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                   main_window_.history_length,
                                   prediction_collision_?.t,
                                   flight_plan_collision_?.t);
-        if (main_window_.show_equipotentials) {
-          plotter_.PlotEquipotentials(planetarium);
-        }
+        plotter_.PlotEquipotentials(planetarium);
       }
     }
   }

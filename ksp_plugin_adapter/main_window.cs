@@ -49,7 +49,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   public bool show_unpinned_markers { get; private set; } = true;
   public bool show_unpinned_celestials { get; private set; } = true;
-  public bool show_equipotentials { get; private set; } = true;
 
   public bool selecting_active_vessel_target { get; private set; } = false;
 
@@ -224,7 +223,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                   GUILayoutWidth(5))) {
             show_unpinned_markers = false;
             show_unpinned_celestials = false;
-            show_equipotentials = false;
           }
           UnityEngine.GUILayout.Label(
               L10N.CacheFormat("#Principia_MainWindow_Declutter_Show"));
@@ -236,10 +234,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
               show_unpinned_celestials,
               L10N.CacheFormat(
                   "#Principia_MainWindow_Declutter_UnpinnedCelestials"));
-          show_equipotentials = UnityEngine.GUILayout.Toggle(
-              show_equipotentials,
-              L10N.CacheFormat(
-                  "#Principia_MainWindow_Declutter_Equipotentials"));
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           flight_planner_.RenderButton();
