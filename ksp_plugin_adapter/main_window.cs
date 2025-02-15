@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using KSP.Localization;
 
@@ -47,8 +48,14 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     }
   }
 
-  public bool show_unpinned_markers { get; private set; } = true;
-  public bool show_unpinned_celestials { get; private set; } = true;
+  public HashSet<PlottingFrameParameters> frames_that_hide_unpinned_markers {
+    get;
+    private set;
+  } = new HashSet<PlottingFrameParameters>();
+  public HashSet<PlottingFrameParameters> frames_that_hide_unpinned_celestials {
+    get;
+    private set;
+  } = new HashSet<PlottingFrameParameters>();
 
   public bool selecting_active_vessel_target { get; private set; } = false;
 
@@ -218,22 +225,40 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       if (adapter_.PluginRunning()) {
         plotting_frame_selector_.RenderButton();
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          if (UnityEngine.GUILayout.Button(
-                  L10N.CacheFormat("#Principia_MainWindow_Declutter"),
-                  GUILayoutWidth(5))) {
-            show_unpinned_markers = false;
-            show_unpinned_celestials = false;
-          }
           UnityEngine.GUILayout.Label(
               L10N.CacheFormat("#Principia_MainWindow_Declutter_Show"));
-          show_unpinned_markers = UnityEngine.GUILayout.Toggle(
+          var plotting_frame_parameters =
+              plotting_frame_selector_.FrameParameters();
+          bool show_unpinned_markers =
+              !frames_that_hide_unpinned_markers.Contains(
+                  plotting_frame_parameters);
+          if (show_unpinned_markers != UnityEngine.GUILayout.Toggle(
               show_unpinned_markers,
               L10N.CacheFormat(
-                  "#Principia_MainWindow_Declutter_UnpinnedMarkers"));
-          show_unpinned_celestials = UnityEngine.GUILayout.Toggle(
+                  "#Principia_MainWindow_Declutter_UnpinnedMarkers"))) {
+            if (show_unpinned_markers) {
+              frames_that_hide_unpinned_markers.Remove(
+                  plotting_frame_parameters);
+            } else {
+              frames_that_hide_unpinned_markers.Add(
+                  plotting_frame_parameters);
+            }
+          }
+          bool show_unpinned_celestials =
+              !frames_that_hide_unpinned_celestials.Contains(
+                  plotting_frame_parameters);
+          if (show_unpinned_celestials != UnityEngine.GUILayout.Toggle(
               show_unpinned_celestials,
               L10N.CacheFormat(
-                  "#Principia_MainWindow_Declutter_UnpinnedCelestials"));
+                  "#Principia_MainWindow_Declutter_UnpinnedCelestials"))) {
+            if (show_unpinned_celestials) {
+              frames_that_hide_unpinned_celestials.Remove(
+                  plotting_frame_parameters);
+            } else {
+              frames_that_hide_unpinned_celestials.Add(
+                  plotting_frame_parameters);
+            }
+          }
         }
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           flight_planner_.RenderButton();
