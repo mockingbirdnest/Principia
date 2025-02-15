@@ -260,10 +260,10 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
               L10N.CacheFormat(
                   "#Principia_MainWindow_Declutter_UnpinnedMarkers"))) {
             if (show_unpinned_markers) {
-              frames_that_hide_unpinned_markers.Remove(
+              frames_that_hide_unpinned_markers.Add(
                   plotting_frame_parameters);
             } else {
-              frames_that_hide_unpinned_markers.Add(
+              frames_that_hide_unpinned_markers.Remove(
                   plotting_frame_parameters);
             }
           }
@@ -275,10 +275,10 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
               L10N.CacheFormat(
                   "#Principia_MainWindow_Declutter_UnpinnedCelestials"))) {
             if (show_unpinned_celestials) {
-              frames_that_hide_unpinned_celestials.Remove(
+              frames_that_hide_unpinned_celestials.Add(
                   plotting_frame_parameters);
             } else {
-              frames_that_hide_unpinned_celestials.Add(
+              frames_that_hide_unpinned_celestials.Remove(
                   plotting_frame_parameters);
             }
           }
