@@ -9,7 +9,7 @@
 
 %%%% Shorthands.
 \DeclareMathOperator{\bias}{\mathit{bias}}
-\DeclareMathOperator{\ULP}{ulp}
+\DeclareMathOperator{\ULP}{\mathfrak u}
 \DeclareMathOperator{\mant}{\mathfrak m}
 \DeclareMathOperator{\expn}{\mathfrak e}
 
@@ -43,7 +43,7 @@ The implementation follows the ideas described by \cite{GalBachelis1991} and use
 \item if the result has a ``dangerous rounding configuration'' (as defined by \cite{GalBachelis1991}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise return the rounded result of the preceding computation.
 \end{itemize}
-In this document we assume a base-2 floating-point number system with $M$ mantissa bits\footnote{In \texttt{binary64}, $M = 53$.} similar to the IEEE formats.  We define a real  function $\mant$ and an integer function $\expn$ denoting the mantissa and exponent of a real number, respectively:
+In this document we assume a base-2 floating-point number system with $M$ significand bits\footnote{In \texttt{binary64}, $M = 53$.} similar to the IEEE formats.  We define a real  function $\mant$ and an integer function $\expn$ denoting the \emph{significand} and \emph{exponent} of a real number, respectively:
 \[
 x = ±\mant\of{x} \times 2^{\expn\of{x}} \qquad\text{with}\qquad 2^{M-1} \leq \mant\of{x} \leq 2^M - 1
 \]
@@ -54,7 +54,7 @@ The distance between $1$ and the next larger floating-point number is:
 \ge_M \DefineAs 2^{1-M}
 \]
 and the distance between $1$ and the next smaller floating-point number is $\frac{\ge_M}{2}$.
-The \textit{unit of the last place} of $x$ is defined as:
+The \emph{unit of the last place} of $x$ is defined as:
 \[
 \ULP\of{x} \DefineAs 2^{\expn\of{x}}
 \]
@@ -75,15 +75,15 @@ We approximate $\frac{\Pi}{2}$ as the sum of two floating-point numbers:
 \[
 \frac{\Pi}{2} ≅ C + \gd C
 \]
-where $C$ is obtained by truncating $\frac{\Pi}{2}$ keeping only $\gk_1$ mantissa bits:
+where $C$ is obtained by truncating $\frac{\Pi}{2}$ to $\gk_1$ significand bits:
 \[
-C \DefineAs \floor{2^{-\gk_1} \mant\of{\frac{\Pi}{2}}} 2^{\expn\of{\frac{\Pi}{2}} + \gk_1} = \floor{2^{-\gk_1} \mant \of{\frac{\Pi}{2}}} 2^{\gk_1} \ULP\of{\frac{\Pi}{2}}
+C \DefineAs \floor{2^{-\gk_1} \mant \of{\frac{\Pi}{2}}} 2^{\gk_1} \ULP\of{\frac{\Pi}{2}}
 \]
 and $\gd C$ is defined as $\round{\frac{\Pi}{2} - C}$.  Obviously we have:
 \[
 0 < \frac{\Pi}{2} - C < 2^{\gk_1} \ULP\of{\frac{\Pi}{2}}
 \]
-but if $\gk_1$ is chosen to cut the mantissa of $\frac{\Pi}{2}$ at a place where it has zeroes, we can actually have a stricter bound:
+but if $\gk_1$ is chosen to cut the significand of $\frac{\Pi}{2}$ at a place where it has zeroes, we can actually have a stricter bound:
 \[
 \frac{\Pi}{2} - C < 2^{\gk_2} \ULP\of{\frac{\Pi}{2}} \qquad\text{with}\qquad \gk_2 \leq \gk_1
 \]
@@ -91,7 +91,7 @@ and therefore:
 \[
 \ULP\of{\frac{\Pi}{2} - C} < \frac{2^{\gk_2} \ULP\of{\frac{\Pi}{2}}}{\mant\of{\frac{\Pi}{2} - C}} \leq 2^{\gk_2 - M + 1} \ULP\of{\frac{\Pi}{2}} 
 \]
-Since the $\ULP$ function is always a power of $2$ this implies:
+Since the function $\ULP$ is always a power of $2$ this implies:
 \[
 \ULP\of{\frac{\Pi}{2} - C} = 2^{\gk_2 -M} \ULP\of{\frac{\Pi}{2}}
 \]
@@ -99,16 +99,12 @@ and:
 \[
 \abs{\frac{\Pi}{2} - C - \gd C} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C} = 2^{\gk_2 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
-In other words, we have a representation with a mantissa that has effectively $2 M - \gk_2$ bits and is such that multiplying $C$ by an integer less than or equal to $2^{\gk_2}$ is exact.  The representation of $\frac{\Pi}{2}$ has three zeroes after the 18th bit of its mantissa, so by taking $\gk_1 = 18$ we have $\gk_2 = 14$.
+In other words, we have a representation with a significand that has effectively $2 M - \gk_2$ bits and is such that multiplying $C$ by an integer less than or equal to $2^{\gk_1}$ is exact.  The representation of $\frac{\Pi}{2}$ has three zeroes after the 18th bit of its significand, so by taking $\gk_1 = 18$ we have $\gk_2 = 14$.
 
 \subsection*{Argument Reduction for Small Angles}
-The reduction proceeds as follows:
-\begin{itemize}
-\item if $\abs x < \frac{\Pi}{4}$ then $\hat x = x$ and $\gd \hat x = 0$;
-\item if $\abs x < \frac{\Pi}{2}_H$ then \\
-$n \DefineAs \round{x \frac{2}{\Pi}}$ \\
-$\pa{\hat x, \gd \hat x} = \round{x - n \frac{\Pi}{2}_H} - \round{n \frac{\Pi}{2}_L}$; 
-\end{itemize}
+If $\abs x < \round{\frac{\Pi}{4}}$ then $\hat x = x$ and $\gd \hat x = 0$.
+\subsection*{Argument Reduction for Medium Angles}
+\subsection*{Argument Reduction for Large Angles}
 \section*{Accurate Tables and Their Generation}
 \section*{Computation of the Functions}
 
