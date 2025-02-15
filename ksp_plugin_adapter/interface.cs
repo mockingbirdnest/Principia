@@ -95,7 +95,8 @@ internal interface IReferenceFrameParameters {
   int[] SecondaryIndices { get; set; }
 }
 
-internal partial class PlottingFrameParameters : IReferenceFrameParameters, IConfigNode {
+internal partial class PlottingFrameParameters : IReferenceFrameParameters,
+                                                 IConfigNode {
   public PlottingFrameParameters() {
     primary_index = new int[]{};
     secondary_index = new int[]{};
@@ -120,8 +121,7 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters, ICon
   }
 
   public override int GetHashCode() =>
-      (extension, centre_index,
-       primary_index.DefaultIfEmpty(-1).First(),
+      (extension, centre_index, primary_index.DefaultIfEmpty(-1).First(),
        secondary_index.DefaultIfEmpty(-1).First()).GetHashCode();
 
   public void Load(ConfigNode node) {

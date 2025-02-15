@@ -13,12 +13,12 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   private readonly DateTimeOffset next_release_date_ =
       new DateTimeOffset(2025, 02, 28, 00, 44, 50, TimeSpan.Zero);
 
-  public MainWindow(
-      PrincipiaPluginAdapter adapter,
-      FlightPlanner flight_planner,
-      OrbitAnalyser orbit_analyser,
-      ReferenceFrameSelector<PlottingFrameParameters> plotting_frame_selector,
-      PredictedVessel predicted_vessel) : base(
+  public MainWindow(PrincipiaPluginAdapter adapter,
+                    FlightPlanner flight_planner,
+                    OrbitAnalyser orbit_analyser,
+                    ReferenceFrameSelector<PlottingFrameParameters>
+                        plotting_frame_selector,
+                    PredictedVessel predicted_vessel) : base(
       adapter,
       predicted_vessel) {
     adapter_ = adapter;
@@ -52,6 +52,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     get;
     private set;
   } = new HashSet<PlottingFrameParameters>();
+
   public HashSet<PlottingFrameParameters> frames_that_hide_unpinned_celestials {
     get;
     private set;
@@ -83,21 +84,20 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     }
 
     frames_that_hide_unpinned_celestials.Clear();
-    foreach (ConfigNode frame_node in
-             node.GetNodes("frames_that_hide_unpinned_celestials")) {
+    foreach (ConfigNode frame_node in node.GetNodes(
+                 "frames_that_hide_unpinned_celestials")) {
       var frame = new PlottingFrameParameters();
       frame.Load(frame_node);
       frames_that_hide_unpinned_celestials.Add(frame);
     }
 
     frames_that_hide_unpinned_markers.Clear();
-    foreach (ConfigNode frame_node in
-             node.GetNodes("frames_that_hide_unpinned_markers")) {
+    foreach (ConfigNode frame_node in node.GetNodes(
+                 "frames_that_hide_unpinned_markers")) {
       var frame = new PlottingFrameParameters();
       frame.Load(frame_node);
       frames_that_hide_unpinned_markers.Add(frame);
     }
-
 
     string buffered_logging_value = node.GetAtMostOneValue("buffered_logging");
     if (buffered_logging_value != null) {
@@ -255,13 +255,13 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           bool show_unpinned_markers =
               !frames_that_hide_unpinned_markers.Contains(
                   plotting_frame_parameters);
-          if (show_unpinned_markers != UnityEngine.GUILayout.Toggle(
-              show_unpinned_markers,
-              L10N.CacheFormat(
-                  "#Principia_MainWindow_Declutter_UnpinnedMarkers"))) {
+          if (show_unpinned_markers !=
+              UnityEngine.GUILayout.Toggle(
+                  show_unpinned_markers,
+                  L10N.CacheFormat(
+                      "#Principia_MainWindow_Declutter_UnpinnedMarkers"))) {
             if (show_unpinned_markers) {
-              frames_that_hide_unpinned_markers.Add(
-                  plotting_frame_parameters);
+              frames_that_hide_unpinned_markers.Add(plotting_frame_parameters);
             } else {
               frames_that_hide_unpinned_markers.Remove(
                   plotting_frame_parameters);
@@ -270,10 +270,11 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
           bool show_unpinned_celestials =
               !frames_that_hide_unpinned_celestials.Contains(
                   plotting_frame_parameters);
-          if (show_unpinned_celestials != UnityEngine.GUILayout.Toggle(
-              show_unpinned_celestials,
-              L10N.CacheFormat(
-                  "#Principia_MainWindow_Declutter_UnpinnedCelestials"))) {
+          if (show_unpinned_celestials !=
+              UnityEngine.GUILayout.Toggle(
+                  show_unpinned_celestials,
+                  L10N.CacheFormat(
+                      "#Principia_MainWindow_Declutter_UnpinnedCelestials"))) {
             if (show_unpinned_celestials) {
               frames_that_hide_unpinned_celestials.Add(
                   plotting_frame_parameters);
@@ -323,8 +324,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                                target_celestial.Name()),
               UnityEngine.GUILayout.ExpandWidth(true));
           if (UnityEngine.GUILayout.Button(
-              L10N.CacheFormat("#Principia_MainWindow_TargetCelestial_Clear"),
-              GUILayoutWidth(2))) {
+                  L10N.CacheFormat(
+                      "#Principia_MainWindow_TargetCelestial_Clear"),
+                  GUILayoutWidth(2))) {
             selecting_target_celestial_ = false;
             FlightGlobals.fetch.SetVesselTarget(null);
           }
@@ -439,9 +441,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                       "#Principia_MainWindow_LoggingSettings_JournalingStatus_ON")
                   : L10N.CacheFormat(
                       "#Principia_MainWindow_LoggingSettings_JournalingStatus_OFF")),
-          style : Style.Info(
-              Style.RightAligned(
-                  UnityEngine.GUI.skin.label)));
+          style : Style.Info(Style.RightAligned(UnityEngine.GUI.skin.label)));
     }
     if (journaling_ && !must_record_journal_) {
       // We can deactivate a recorder at any time, but in order for replaying to
@@ -574,7 +574,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   private readonly DifferentialSlider history_length_ = new DifferentialSlider(
       label            :
-          L10N.CacheFormat("#Principia_MainWindow_HistoryLength"),
+      L10N.CacheFormat("#Principia_MainWindow_HistoryLength"),
       unit             : null,
       log10_lower_rate : log10_history_lower_rate,
       log10_upper_rate : log10_history_upper_rate,
@@ -588,9 +588,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   };
 
   private static readonly double[] prediction_length_tolerances_ =
-      {1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4};
+      { 1e-3, 1e-2, 1e-1, 1e0, 1e1, 1e2, 1e3, 1e4 };
   private static readonly string[] prediction_length_tolerance_names_ =
-      {"1 mm", "1 cm", "10 cm", "1 m", "10 m", "100 m", "1 km", "10 km"};
+      { "1 mm", "1 cm", "10 cm", "1 m", "10 m", "100 m", "1 km", "10 km" };
   // Keep this consistent with `max_steps_in_prediction` in `plugin.cpp`.
   private static readonly long[] prediction_steps_ = {
       1 << 2, 1 << 4, 1 << 6, 1 << 8, 1 << 10, 1 << 12, 1 << 14, 1 << 16,
