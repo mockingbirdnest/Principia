@@ -386,7 +386,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     (_MSC_FULL_VER == 193'933'523 || \
      _MSC_FULL_VER == 194'033'813 || \
      _MSC_FULL_VER == 194'134'120 || \
-     _MSC_FULL_VER == 194'134'123)
+     _MSC_FULL_VER == 194'134'123 || \
+     _MSC_FULL_VER == 194'234'435)
       std::abort();
 #endif
   }
