@@ -82,6 +82,23 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       history_length_.value = Convert.ToDouble(history_length_value);
     }
 
+    frames_that_hide_unpinned_celestials.Clear();
+    foreach (ConfigNode frame_node in
+             node.GetNodes("frames_that_hide_unpinned_celestials")) {
+      var frame = new PlottingFrameParameters();
+      frame.Load(frame_node);
+      frames_that_hide_unpinned_celestials.Add(frame);
+    }
+
+    frames_that_hide_unpinned_markers.Clear();
+    foreach (ConfigNode frame_node in
+             node.GetNodes("frames_that_hide_unpinned_markers")) {
+      var frame = new PlottingFrameParameters();
+      frame.Load(frame_node);
+      frames_that_hide_unpinned_markers.Add(frame);
+    }
+
+
     string buffered_logging_value = node.GetAtMostOneValue("buffered_logging");
     if (buffered_logging_value != null) {
       buffered_logging_ = Convert.ToInt32(buffered_logging_value);
@@ -105,7 +122,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     if (must_record_journal_value != null) {
       must_record_journal_ = Convert.ToBoolean(must_record_journal_value);
     }
-
     Log.SetBufferedLogging(buffered_logging_);
     Log.SetSuppressedLogging(suppressed_logging_);
     Log.SetStderrLogging(stderr_logging_);
@@ -128,6 +144,13 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                   createIfNotFound : true);
 
     node.SetValue("history_length", history_length, createIfNotFound : true);
+    foreach (var frame in frames_that_hide_unpinned_celestials) {
+      frame.Save(node.AddNode("frames_that_hide_unpinned_celestials"));
+    }
+    foreach (var frame in frames_that_hide_unpinned_markers) {
+      frame.Save(node.AddNode("frames_that_hide_unpinned_markers"));
+    }
+
     node.SetValue("buffered_logging",
                   buffered_logging_,
                   createIfNotFound : true);
