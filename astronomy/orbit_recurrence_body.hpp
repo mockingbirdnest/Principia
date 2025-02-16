@@ -2,10 +2,12 @@
 
 #include "astronomy/orbit_recurrence.hpp"
 
+#include <cmath>
 #include <limits>
 #include <numeric>
 
 #include "base/mod.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "geometry/sign.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -19,6 +21,20 @@ using namespace principia::base::_mod;
 using namespace principia::geometry::_sign;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
+
+inline absl::StatusOr<int> SafeNearbyInt(double const x) {
+  if (std::isfinite(x)) {
+    if (x < std::numeric_limits<int>::lowest() ||
+        x > std::numeric_limits<int>::max()) {
+      return absl::InvalidArgumentError(
+          "Floating-point value too large or too small");
+    } else {
+      return std::nearbyint(x);
+    }
+  } else {
+    return absl::InvalidArgumentError("Nonfinite floating-point value");
+  }
+}
 
 inline OrbitRecurrence::OrbitRecurrence(int const νₒ,
                                         int const Dᴛₒ,
@@ -48,7 +64,7 @@ inline OrbitRecurrence::OrbitRecurrence(int const νₒ,
 }
 
 template<typename Frame>
-OrbitRecurrence OrbitRecurrence::ClosestRecurrence(
+absl::StatusOr<OrbitRecurrence> OrbitRecurrence::ClosestRecurrence(
     Time const& nodal_period,
     AngularFrequency const& nodal_precession,
     RotatingBody<Frame> const& primary,
@@ -67,15 +83,21 @@ OrbitRecurrence OrbitRecurrence::ClosestRecurrence(
   double min_frac_abs_κ_J = std::numeric_limits<double>::infinity();
   for (int J = 1; J <= max_abs_Cᴛₒ; ++J) {
     double const abs_κ_J = Abs(κ * J);
-    double const frac_abs_κ_J = Abs(abs_κ_J - std::nearbyint(abs_κ_J));
+    auto const status_or_int_abs_κ_J = SafeNearbyInt(abs_κ_J);
+    RETURN_IF_ERROR(status_or_int_abs_κ_J);
+    double const frac_abs_κ_J = Abs(abs_κ_J - status_or_int_abs_κ_J.value());
     if (frac_abs_κ_J < min_frac_abs_κ_J) {
       min_frac_abs_κ_J = frac_abs_κ_J;
       Cᴛₒ = Sign(κ) * J;
     }
   }
 
-  int const νₒ = std::nearbyint(κ);
-  int const Dᴛₒ = std::nearbyint((κ - νₒ) * Cᴛₒ);
+  auto const status_or_νₒ = SafeNearbyInt(κ);
+  RETURN_IF_ERROR(status_or_νₒ);
+  int const νₒ = status_or_νₒ.value();
+  auto const status_or_Dᴛₒ = SafeNearbyInt((κ - νₒ) * Cᴛₒ);
+  RETURN_IF_ERROR(status_or_Dᴛₒ);
+  int const Dᴛₒ = status_or_Dᴛₒ.value();
   return OrbitRecurrence(νₒ, Dᴛₒ, Cᴛₒ);
 }
 
