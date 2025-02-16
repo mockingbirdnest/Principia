@@ -167,8 +167,30 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   protected override string Title => "Principia";
 
+  public static double cheeze = 1;
+
   protected override void RenderWindowContents(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        UnityEngine.GUILayout.Label("Cheeze factor: ");
+        if (double.TryParse(
+                UnityEngine.GUILayout.TextField(cheeze.ToString("R")),
+                out double potential_cheeze)) {
+          cheeze = potential_cheeze;
+        }
+      }
+
+      UnityEngine.Camera camera = PlanetariumCamera.Camera;
+      float vertical_fov = camera.fieldOfView;
+      float horizontal_fov =
+          UnityEngine.Camera.VerticalToHorizontalFieldOfView(
+              vertical_fov,
+              camera.aspect);
+      UnityEngine.GUILayout.Label("vfov=" + vertical_fov);
+      UnityEngine.GUILayout.Label("hfov=" + horizontal_fov);
+      UnityEngine.GUILayout.Label("pixh=" + camera.pixelHeight);
+      UnityEngine.GUILayout.Label("pixw=" + camera.pixelWidth);
+
       if (!adapter_.PluginRunning()) {
         UnityEngine.GUILayout.Label(
             text : L10N.CacheFormat("#Principia_MainWindow_PluginNotStarted"),

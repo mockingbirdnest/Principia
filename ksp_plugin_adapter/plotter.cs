@@ -20,8 +20,10 @@ class Plotter {
             camera.aspect);
     // The angle subtended by the pixel closest to the centre of the viewport.
     return Math.Min(
-        Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
-        Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
+               Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
+               Math.Tan(horizontal_fov * degree / 2) /
+               (camera.pixelWidth / 2)) *
+           MainWindow.cheeze;
   }
 
   public void PlotEquipotentials(DisposablePlanetarium planetarium) {
