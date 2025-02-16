@@ -285,8 +285,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private readonly MainWindow main_window_;
 
   public bool show_celestial_trajectory(CelestialBody celestial) {
-    return main_window_.show_unpinned_celestials ||
-           plotting_frame_selector_.pinned[celestial];
+    return plotting_frame_selector_.pinned[celestial] ||
+           !main_window_.frames_that_hide_unpinned_celestials.Contains(
+               plotting_frame_selector_.FrameParameters());
   }
 
   public event Action LockClearing;
@@ -352,7 +353,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     map_node_pool_ = new MapNodePool(
         this,
         visibility_modifiers: () => new MapNodePool.VisibilityModifiers(
-            show_unpinned: main_window_.show_unpinned_markers,
+            show_unpinned: !main_window_.frames_that_hide_unpinned_markers.
+                               Contains(
+                                   plotting_frame_selector_.FrameParameters()),
             can_hover: !ManœuvreMarker.has_interacting_marker)
         );
     flight_planner_ = new FlightPlanner(this, PredictedVessel);
@@ -2303,9 +2306,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                   main_window_.history_length,
                                   prediction_collision_?.t,
                                   flight_plan_collision_?.t);
-        if (main_window_.show_equipotentials) {
-          plotter_.PlotEquipotentials(planetarium);
-        }
+        plotter_.PlotEquipotentials(planetarium);
       }
     }
   }
