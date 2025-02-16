@@ -88,9 +88,13 @@ Planetarium* __cdecl principia__PlanetariumCreate(
                                    FromXYZ<Position<World>>(sun_world_position),
                                    plugin->PlanetariumRotation());
 
+  // Angular resolution: My display has a height of 401 mm and 1600 pixels
+  // vertically.  My eye is at least 550 mm from the centre.  Hence the
+  // wolframalpha.com query: "ArcTan[(401/1600)/550] in arcmin" which yields
+  // 1.567'.
   Planetarium::Parameters parameters(
       /*sphere_radius_multiplier=*/1.0,
-      /*angular_resolution=*/0.4 * ArcMinute,
+      /*angular_resolution=*/1.567 * ArcMinute,
       field_of_view * Radian);
   Perspective<Navigation, Camera> perspective(
       world_to_plotting_affine_map *
