@@ -10,6 +10,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -27,6 +28,7 @@ using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_matchers;
 
 class OrbitRecurrenceTest : public ::testing::Test {
  protected:
@@ -48,6 +50,54 @@ class OrbitRecurrenceTest : public ::testing::Test {
   not_null<std::unique_ptr<RotatingBody<ICRS>>> triton_;
 };
 
+// This test exercises the Floating–integral conversions in cases where the
+// behaviour is undefined.
+TEST_F(OrbitRecurrenceTest, NearbyInt) {
+  {
+    int const i = std::nearbyint(0.1);
+    EXPECT_EQ(0, i);
+  }
+#if PRINCIPIA_COMPILER_MSVC
+  {
+    int const i = std::nearbyint(1.1e20);
+    EXPECT_EQ(-2147483648, i);
+  }
+  {
+    int const i = std::nearbyint(std::numeric_limits<double>::quiet_NaN());
+    EXPECT_EQ(-2147483648, i);
+  }
+  {
+    int const i = std::nearbyint(std::numeric_limits<double>::infinity());
+    EXPECT_EQ(-2147483648, i);
+  }
+#endif
+  {
+    using namespace principia::astronomy::_orbit_recurrence::internal;
+    auto const status_or_i = SafeNearbyInt(0.1);
+    EXPECT_THAT(status_or_i, IsOkAndHolds(0));
+  }
+  {
+    using namespace principia::astronomy::_orbit_recurrence::internal;
+    auto const status_or_i = SafeNearbyInt(1.1e20);
+    EXPECT_THAT(status_or_i.status(),
+                StatusIs(absl::StatusCode::kInvalidArgument));
+  }
+  {
+    using namespace principia::astronomy::_orbit_recurrence::internal;
+    auto const status_or_i =
+        SafeNearbyInt(std::numeric_limits<double>::quiet_NaN());
+    EXPECT_THAT(status_or_i.status(),
+                StatusIs(absl::StatusCode::kInvalidArgument));
+  }
+  {
+    using namespace principia::astronomy::_orbit_recurrence::internal;
+    auto const status_or_i =
+        SafeNearbyInt(std::numeric_limits<double>::infinity());
+    EXPECT_THAT(status_or_i.status(),
+                StatusIs(absl::StatusCode::kInvalidArgument));
+  }
+}
+
 TEST_F(OrbitRecurrenceTest, ClosestRecurrence) {
   // Orbits from example 11.13.
   // The values for the nodal precession and for the period of Z-Earth are from
@@ -57,35 +107,37 @@ TEST_F(OrbitRecurrenceTest, ClosestRecurrence) {
   // SPOT-4, figure 11.15(a).
   EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
                   101.46 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50),
-              AllOf(Property(&OrbitRecurrence::νₒ, 14),
-                    Property(&OrbitRecurrence::Dᴛₒ, 5),
-                    Property(&OrbitRecurrence::Cᴛₒ, 26)));
+              IsOkAndHolds(AllOf(Property(&OrbitRecurrence::νₒ, 14),
+                                 Property(&OrbitRecurrence::Dᴛₒ, 5),
+                                 Property(&OrbitRecurrence::Cᴛₒ, 26))));
   // Terra, figure 11.15(b).
   EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
                   98.88 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50),
-              AllOf(Property(&OrbitRecurrence::νₒ, 15),
-                    Property(&OrbitRecurrence::Dᴛₒ, -7),
-                    Property(&OrbitRecurrence::Cᴛₒ, 16)));
+              IsOkAndHolds(AllOf(Property(&OrbitRecurrence::νₒ, 15),
+                                 Property(&OrbitRecurrence::Dᴛₒ, -7),
+                                 Property(&OrbitRecurrence::Cᴛₒ, 16))));
 
   // TOPEX/Poséidon, figure 11.16(b).
   AngularFrequency const Ωʹ_topex_poséidon = -2.076659 * Degree / Day;
-  EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
+  EXPECT_THAT(
+      OrbitRecurrence::ClosestRecurrence(
           112.43 * Minute, Ωʹ_topex_poséidon, *earth_, /*max_abs_Cᴛₒ=*/50),
-      AllOf(Property(&OrbitRecurrence::νₒ, 13),
-            Property(&OrbitRecurrence::Dᴛₒ, -3),
-            Property(&OrbitRecurrence::Cᴛₒ, 10)));
+      IsOkAndHolds(AllOf(Property(&OrbitRecurrence::νₒ, 13),
+                         Property(&OrbitRecurrence::Dᴛₒ, -3),
+                         Property(&OrbitRecurrence::Cᴛₒ, 10))));
 
   // Z-Earth, figure 11.16(c).
   EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
                   95.097610 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/300),
-              AllOf(Property(&OrbitRecurrence::νₒ, 15),
-                    Property(&OrbitRecurrence::Dᴛₒ, 39),
-                    Property(&OrbitRecurrence::Cᴛₒ, 274)));
+              IsOkAndHolds(AllOf(Property(&OrbitRecurrence::νₒ, 15),
+                                 Property(&OrbitRecurrence::Dᴛₒ, 39),
+                                 Property(&OrbitRecurrence::Cᴛₒ, 274))));
   // Limiting Cᴛₒ to 50 days, we find the 7-day subcycle instead.
-  EXPECT_THAT(OrbitRecurrence::ClosestRecurrence(
-                  95.097610 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50),
-              AllOf(Property(&OrbitRecurrence::number_of_revolutions, 106),
-                    Property(&OrbitRecurrence::Cᴛₒ, 7)));
+  EXPECT_THAT(
+      OrbitRecurrence::ClosestRecurrence(
+          95.097610 * Minute, Ωʹꜱ, *earth_, /*max_abs_Cᴛₒ=*/50),
+      IsOkAndHolds(AllOf(Property(&OrbitRecurrence::number_of_revolutions, 106),
+                         Property(&OrbitRecurrence::Cᴛₒ, 7))));
 }
 
 TEST_F(OrbitRecurrenceTest, EquatorialShift) {
@@ -123,11 +175,13 @@ TEST_F(OrbitRecurrenceTest, RetrogradeRotation) {
   // expected values for the recurrence triple are nothing more than a change
   // detector.
   // Example 16.1.
-  auto const magellan =
+  auto const status_or_magellan =
       OrbitRecurrence::ClosestRecurrence(91.914680 * Minute,
                                          -0.000464 * Degree / Day,
                                          *venus_,
                                          /*max_abs_Cᴛₒ=*/50);
+  ASSERT_OK(status_or_magellan);
+  auto const& magellan = status_or_magellan.value();
   EXPECT_THAT(AbsoluteError(0.094526 * Degree, magellan.equatorial_shift()),
               Lt(0.000001 * Degree));
   // There are approximately 3807 orbits per sidereal day; this value of νₒ is
@@ -138,11 +192,13 @@ TEST_F(OrbitRecurrenceTest, RetrogradeRotation) {
                     Property(&OrbitRecurrence::Cᴛₒ, -2)));
   EXPECT_THAT(magellan.subcycle(), Eq(-1));
   // Example 16.9.
-  auto const triton_orbiter =
+  auto const status_or_triton_orbiter =
       OrbitRecurrence::ClosestRecurrence(169.584671 * Minute,
                                          -0.074331 * Degree / Day,
                                          *triton_,
                                          /*max_abs_Cᴛₒ=*/50);
+  ASSERT_OK(status_or_triton_orbiter);
+  auto const& triton_orbiter = status_or_triton_orbiter.value();
   EXPECT_THAT(AbsoluteError(7.2 * Degree, triton_orbiter.equatorial_shift()),
               Lt(0.1 * Degree));
   EXPECT_THAT(triton_orbiter,
@@ -155,11 +211,13 @@ TEST_F(OrbitRecurrenceTest, RetrogradeRotation) {
 TEST_F(OrbitRecurrenceTest, OneDayRecurrenceCycle) {
   AngularFrequency const Ωʹꜱ = 0.985647 * Degree / Day;
   // Example 11.10: FORMOSAT-2, formerly ROCSAT-2.
-  auto const 福爾摩沙衛星二號 =
+  auto const status_or_福爾摩沙衛星二號 =
       OrbitRecurrence::ClosestRecurrence(102.86 * Minute,
                                          Ωʹꜱ,
                                          *earth_,
                                          /*max_abs_Cᴛₒ=*/50);
+  ASSERT_OK(status_or_福爾摩沙衛星二號);
+  auto const& 福爾摩沙衛星二號 = status_or_福爾摩沙衛星二號.value();
   EXPECT_THAT(福爾摩沙衛星二號,
               AllOf(Property(&OrbitRecurrence::νₒ, 14),
                     Property(&OrbitRecurrence::Dᴛₒ, 0),

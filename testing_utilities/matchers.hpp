@@ -19,6 +19,8 @@ namespace internal {
 
 // This is not defined in base/status_utilities.hpp to avoid pulling gmock in
 // non-test code.
+#define ASSERT_OK(value) \
+  ASSERT_THAT((value), ::principia::testing_utilities::_matchers::IsOk());
 #define EXPECT_OK(value) \
   EXPECT_THAT((value), ::principia::testing_utilities::_matchers::IsOk());
 
