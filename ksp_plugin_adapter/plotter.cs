@@ -149,18 +149,8 @@ class Plotter {
   private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
                                          string main_vessel_guid,
                                          double history_length) {
-    const double degree = Math.PI / 180;
-    UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    float vertical_fov = camera.fieldOfView;
-    float horizontal_fov =
-        UnityEngine.Camera.VerticalToHorizontalFieldOfView(
-            vertical_fov, camera.aspect);
-    // The angle subtended by the pixel closest to the centre of the viewport.
-    double tan_angular_resolution = Math.Min(
-            Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
-            Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
     PlotSubtreeTrajectories(planetarium, main_vessel_guid, history_length,
-                            Planetarium.fetch.Sun, tan_angular_resolution);
+                            Planetarium.fetch.Sun, TanAngularResolution());
   }
 
   // Plots the trajectories of `root` and its natural satellites.
@@ -291,6 +281,20 @@ class Plotter {
     var result = new UnityEngine.Mesh();
     result.MarkDynamic();
     return result;
+  }
+
+  private static double TanAngularResolution() {
+    const double degree = Math.PI / 180;
+    UnityEngine.Camera camera = PlanetariumCamera.Camera;
+    float vertical_fov = camera.fieldOfView;
+    float horizontal_fov =
+        UnityEngine.Camera.VerticalToHorizontalFieldOfView(
+            vertical_fov,
+            camera.aspect);
+    // The angle subtended by the pixel closest to the centre of the viewport.
+    return Math.Min(
+        Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
+        Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
   }
 
   private readonly PrincipiaPluginAdapter adapter_;

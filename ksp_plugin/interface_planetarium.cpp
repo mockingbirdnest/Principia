@@ -134,11 +134,19 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
     char const* const vessel_guid,
     int const index,
     double const* const t_max,
+    double const tan_argular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotFlightPlanSegment> m(
-      {planetarium, plugin, vessel_guid, index, t_max, vertices, vertices_size},
+      {planetarium,
+       plugin,
+       vessel_guid,
+       index,
+       t_max,
+       tan_argular_resolution,
+       vertices,
+       vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
@@ -176,11 +184,18 @@ void __cdecl principia__PlanetariumPlotPrediction(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const* const t_max,
+    double const tan_argular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotPrediction> m(
-      {planetarium, plugin, vessel_guid, t_max, vertices, vertices_size},
+      {planetarium,
+       plugin,
+       vessel_guid,
+       t_max,
+       tan_argular_resolution,
+       vertices,
+       vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
@@ -211,6 +226,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     char const* const vessel_guid,
     double const max_history_length,
     double const* const t_max,
+    double const tan_argular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
@@ -220,6 +236,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
        vessel_guid,
        max_history_length,
        t_max,
+       tan_argular_resolution,
        vertices,
        vertices_size},
       {vertex_count});
@@ -268,6 +285,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     Plugin const* const plugin,
     int const celestial_index,
     double const max_history_length,
+    double const tan_argular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     double* const minimal_distance_from_camera,
@@ -277,6 +295,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
        plugin,
        celestial_index,
        max_history_length,
+       tan_argular_resolution,
        vertices,
        vertices_size},
       {minimal_distance_from_camera, vertex_count});
@@ -327,6 +346,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     Plugin const* const plugin,
     int const celestial_index,
     char const* const vessel_guid,
+    double const tan_argular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     double* const minimal_distance_from_camera,
@@ -336,6 +356,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
        plugin,
        celestial_index,
        vessel_guid,
+       tan_argular_resolution,
        vertices,
        vertices_size},
       {minimal_distance_from_camera, vertex_count});
@@ -383,11 +404,17 @@ void __cdecl principia__PlanetariumPlotEquipotential(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const index,
+    double const tan_argular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotEquipotential> m(
-      {planetarium, plugin, index, vertices, vertices_size},
+      {planetarium,
+       plugin,
+       index,
+       tan_argular_resolution,
+       vertices,
+       vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
