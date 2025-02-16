@@ -1,5 +1,6 @@
 #include "astronomy/orbit_recurrence.hpp"
 
+#include <limits>
 #include <memory>
 
 #include "astronomy/frames.hpp"
