@@ -75,6 +75,7 @@ internal static class GLLines {
         focal:1,
         field_of_view,
         ScaledSpace.InverseScaleFactor,
+        Plotter.TanAngularResolution(),
         scaled_space_origin: (XYZ)ScaledSpace.ScaledToLocalSpace(
             Vector3d.zero));
   }

@@ -78,6 +78,7 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
                                                                 10,
                                                                 90,
                                                                 1.0 / 6000,
+                                                                0.00080,
                                                                 {4, 5, 6});
   principia__PlanetariumDelete(&planetarium);
   EXPECT_THAT(planetarium, IsNull());

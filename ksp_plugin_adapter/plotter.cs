@@ -10,6 +10,20 @@ class Plotter {
     adapter_ = adapter;
   }
 
+  public static double TanAngularResolution() {
+    const double degree = Math.PI / 180;
+    UnityEngine.Camera camera = PlanetariumCamera.Camera;
+    float vertical_fov = camera.fieldOfView;
+    float horizontal_fov =
+        UnityEngine.Camera.VerticalToHorizontalFieldOfView(
+            vertical_fov,
+            camera.aspect);
+    // The angle subtended by the pixel closest to the centre of the viewport.
+    return Math.Min(
+        Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
+        Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
+  }
+
   public void PlotEquipotentials(DisposablePlanetarium planetarium) {
     int number_of_equipotentials = Plugin.EquipotentialCount();
     if (number_of_equipotentials == 0) {
@@ -26,6 +40,7 @@ class Plotter {
       planetarium.PlanetariumPlotEquipotential(
           Plugin,
           i,
+          TanAngularResolution(),
           VertexBuffer.data,
           VertexBuffer.size,
           out int vertex_count);
@@ -56,6 +71,7 @@ class Plotter {
             main_vessel_guid,
             history_length,
             prediction_t_max,
+            TanAngularResolution(),
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -68,6 +84,7 @@ class Plotter {
         planetarium.PlanetariumPlotPrediction(Plugin,
                                               main_vessel_guid,
                                               prediction_t_max,
+                                              TanAngularResolution(),
                                               VertexBuffer.data,
                                               VertexBuffer.size,
                                               out int vertex_count);
@@ -93,6 +110,7 @@ class Plotter {
               main_vessel_guid,
               i,
               flight_plan_t_max,
+              TanAngularResolution(),
               VertexBuffer.data,
               VertexBuffer.size,
               out int vertex_count);
@@ -122,6 +140,7 @@ class Plotter {
             target_id,
             history_length,
             t_max: null,
+            TanAngularResolution(),
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -135,6 +154,7 @@ class Plotter {
             Plugin,
             target_id,
             t_max: null,
+            TanAngularResolution(),
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -178,6 +198,7 @@ class Plotter {
             Plugin,
             root.flightGlobalsIndex,
             history_length,
+            TanAngularResolution(),
             VertexBuffer.data,
             VertexBuffer.size,
             out double min_past_distance,
@@ -195,6 +216,7 @@ class Plotter {
             Plugin,
             root.flightGlobalsIndex,
             main_vessel_guid,
+            TanAngularResolution(),
             VertexBuffer.data,
             VertexBuffer.size,
             out double min_future_distance,
@@ -281,20 +303,6 @@ class Plotter {
     var result = new UnityEngine.Mesh();
     result.MarkDynamic();
     return result;
-  }
-
-  private static double TanAngularResolution() {
-    const double degree = Math.PI / 180;
-    UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    float vertical_fov = camera.fieldOfView;
-    float horizontal_fov =
-        UnityEngine.Camera.VerticalToHorizontalFieldOfView(
-            vertical_fov,
-            camera.aspect);
-    // The angle subtended by the pixel closest to the centre of the viewport.
-    return Math.Min(
-        Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
-        Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
   }
 
   private readonly PrincipiaPluginAdapter adapter_;

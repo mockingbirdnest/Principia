@@ -54,12 +54,12 @@ void Planetarium::PlotMethod3(
     Instant const& first_time,
     Instant const& last_time,
     Instant const& now,
+    double const tan_angular_resolution,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,
     Length* const minimal_distance) const {
-  double const tan²_angular_resolution =
-      Pow<2>(parameters_.tan_angular_resolution_);
+  double const tan²_angular_resolution = Pow<2>(tan_angular_resolution);
   auto const final_time = reverse ? first_time : last_time;
   auto previous_time = reverse ? last_time : first_time;
 
