@@ -156,6 +156,10 @@ Ephemeris<Frame>::Ephemeris(
     }
   }
 
+  for (int i = 0; i < bodies_.size(); ++i) {
+    bodies_indices_.emplace(bodies_[i].get(), i);
+  }
+
   absl::ReaderMutexLock l(&lock_);  // For locking checks.
   instance_ = fixed_step_parameters_.integrator().NewInstance(
       problem,
@@ -600,11 +604,17 @@ Vector<Acceleration, Frame>
 Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
     not_null<MassiveBody const*> const body,
     Instant const& t) const {
-  bool const body_is_oblate = body->is_oblate();
+  return ComputeGravitationalAccelerationOnMassiveBodies({body}, t).front();
+}
+
+template<typename Frame>
+std::vector<Vector<Acceleration, Frame>>
+Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBodies(
+    std::vector<not_null<MassiveBody const*>> const& bodies,
+    Instant const& t) const {
+  std::vector<Vector<Acceleration, Frame>> result;
 
   std::vector<Position<Frame>> positions;
-  std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
-  int b1 = -1;
 
   // Evaluate the `positions`.  Locking is necessary to be able to call the
   // "locked" method of each trajectory.
@@ -614,71 +624,71 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
     for (int b = 0; b < bodies_.size(); ++b) {
       auto const& current_body = bodies_[b];
       auto const& current_body_trajectory = trajectories_[b];
-      if (current_body.get() == body) {
-        CHECK_EQ(-1, b1);
-        b1 = b;
-      }
       positions.push_back(current_body_trajectory->EvaluatePositionLocked(t));
     }
-    CHECK_LE(0, b1);
   }
 
-  if (body_is_oblate) {
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/true>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/0, /*b2_end=*/b1,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/true>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/false>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/number_of_oblate_bodies_,
-        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions, accelerations, geopotentials_);
-  } else {
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/true>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/false>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/number_of_oblate_bodies_,
-        /*b2_end=*/b1,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/false>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/b1 + 1,
-        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions, accelerations, geopotentials_);
-  }
+  for (auto const& body : bodies) {
+    std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
+    int const b1 = FindOrDie(bodies_indices_, body);
+    if (body->is_oblate()) {
+      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+          /*body1_is_oblate=*/true,
+          /*body2_is_oblate=*/true>(
+          t,
+          /*body1=*/*body, b1,
+          /*bodies2=*/bodies_,
+          /*b2_begin=*/0, /*b2_end=*/b1,
+          positions, accelerations, geopotentials_);
+      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+          /*body1_is_oblate=*/true,
+          /*body2_is_oblate=*/true>(
+          t,
+          /*body1=*/*body, b1,
+          /*bodies2=*/bodies_,
+          /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
+          positions, accelerations, geopotentials_);
+      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+          /*body1_is_oblate=*/true,
+          /*body2_is_oblate=*/false>(
+          t,
+          /*body1=*/*body, b1,
+          /*bodies2=*/bodies_,
+          /*b2_begin=*/number_of_oblate_bodies_,
+          /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+          positions, accelerations, geopotentials_);
+    } else {
+      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+          /*body1_is_oblate=*/false,
+          /*body2_is_oblate=*/true>(
+          t,
+          /*body1=*/*body, b1,
+          /*bodies2=*/bodies_,
+          /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
+          positions, accelerations, geopotentials_);
+      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+          /*body1_is_oblate=*/false,
+          /*body2_is_oblate=*/false>(
+          t,
+          /*body1=*/*body, b1,
+          /*bodies2=*/bodies_,
+          /*b2_begin=*/number_of_oblate_bodies_,
+          /*b2_end=*/b1,
+          positions, accelerations, geopotentials_);
+      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+          /*body1_is_oblate=*/false,
+          /*body2_is_oblate=*/false>(
+          t,
+          /*body1=*/*body, b1,
+          /*bodies2=*/bodies_,
+          /*b2_begin=*/b1 + 1,
+          /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+          positions, accelerations, geopotentials_);
+    }
 
-  return accelerations[b1];
+    result.push_back(accelerations[b1]);
+  }
+  return result;
 }
 
 template<typename Frame>

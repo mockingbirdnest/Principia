@@ -244,6 +244,12 @@ class Ephemeris {
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
 
+  //TODO(phl):comment
+  virtual std::vector<Vector<Acceleration, Frame>>
+  ComputeGravitationalAccelerationOnMassiveBodies(
+      std::vector<not_null<MassiveBody const*>> const& bodies,
+      Instant const& t) const EXCLUDES(lock_);
+
   // Returns the potential at the given `position` at time `t`.
   SpecificEnergy ComputeGravitationalPotential(
       Position<Frame> const& position,
@@ -456,6 +462,9 @@ class Ephemeris {
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
+
+  // The indices of bodies in `bodies_`.
+  std::map<not_null<MassiveBody const*>, int> bodies_indices_;
 
   // Only has entries for the oblate bodies, at the same indices as `bodies_`.
   std::vector<Geopotential<Frame>> geopotentials_;
