@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_filter=RotatingReferenceFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_filter=Rotating.*ReferenceFrame --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
 #include <utility>
 #include <vector>
@@ -20,12 +20,15 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/reference_frame.hpp"
 #include "physics/rigid_reference_frame.hpp"
+#include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
 namespace physics {
@@ -45,12 +48,15 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
+using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 using Rendering = Frame<struct RenderingTag>;
 
@@ -72,6 +78,47 @@ void FillLinearTrajectory(Position<F> const& initial,
 // This code is derived from Plugin::RenderTrajectory.
 std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyReferenceFrame(
+    not_null<Body const*> const body,
+    not_null<ReferenceFrame<Barycentric,
+                            Rendering>*> const reference_frame,
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end) {
+  std::vector<std::pair<Position<Barycentric>,
+                        Position<Barycentric>>> result;
+
+  // Compute the trajectory in the rendering frame.
+  DiscreteTrajectory<Rendering> intermediate_trajectory;
+  for (auto it = begin; it != end; ++it) {
+    auto const& [time, degrees_of_freedom] = *it;
+    CHECK_OK(intermediate_trajectory.Append(
+        time,
+        reference_frame->ToThisFrameAtTimeSimilarly(time)(degrees_of_freedom)));
+  }
+
+  // Render the trajectory at current time in `Rendering`.
+  Instant const& current_time = intermediate_trajectory.back().time;
+  DiscreteTrajectory<Rendering>::iterator initial_it =
+      intermediate_trajectory.begin();
+  DiscreteTrajectory<Rendering>::iterator const intermediate_end =
+      intermediate_trajectory.end();
+  auto to_rendering_frame_at_current_time =
+      reference_frame->FromThisFrameAtTimeSimilarly(current_time).similarity();
+  if (initial_it != intermediate_end) {
+    for (auto final_it = initial_it;
+         ++final_it, final_it != intermediate_end;
+         initial_it = final_it) {
+      result.emplace_back(to_rendering_frame_at_current_time(
+                              initial_it->degrees_of_freedom.position()),
+                          to_rendering_frame_at_current_time(
+                              final_it->degrees_of_freedom.position()));
+    }
+  }
+  return result;
+}
+
+// This code is derived from Plugin::RenderTrajectory.
+std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
+ApplyRigidReferenceFrame(
     not_null<Body const*> const body,
     not_null<RigidReferenceFrame<Barycentric,
                                  Rendering>*> const reference_frame,
@@ -153,10 +200,10 @@ void BM_BodyCentredNonRotatingReferenceFrame(benchmark::State& state) {
   BodyCentredNonRotatingReferenceFrame<Barycentric, Rendering>
       reference_frame(ephemeris.get(), earth);
   for (auto _ : state) {
-    auto v = ApplyReferenceFrame(&probe,
-                                 &reference_frame,
-                                 probe_trajectory.begin(),
-                                 probe_trajectory.end());
+    auto v = ApplyRigidReferenceFrame(&probe,
+                                      &reference_frame,
+                                      probe_trajectory.begin(),
+                                      probe_trajectory.end());
   }
 }
 
@@ -204,6 +251,73 @@ void BM_BarycentricRotatingReferenceFrame(benchmark::State& state) {
   BarycentricRotatingReferenceFrame<Barycentric, Rendering>
       reference_frame(ephemeris.get(), earth, venus);
   for (auto _ : state) {
+    auto v = ApplyRigidReferenceFrame(&probe,
+                                      &reference_frame,
+                                      probe_trajectory.begin(),
+                                      probe_trajectory.end());
+  }
+}
+
+void BM_RotatingPulsatingReferenceFrame(benchmark::State& state) {
+  Time const Δt = 5 * Minute;
+  int const steps = state.range(0);
+
+  SolarSystem<Barycentric> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2433282_500000000.proto.txt",
+      /*ignore_frame=*/true);
+  auto const ephemeris = solar_system.MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      Ephemeris<Barycentric>::FixedStepParameters(
+          SymplecticRungeKuttaNyströmIntegrator<
+              McLachlanAtela1992Order5Optimal,
+              Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+          /*step=*/45 * Minute));
+  CHECK_OK(ephemeris->Prolong(solar_system.epoch() + steps * Δt));
+
+  MasslessBody probe;
+  Position<Barycentric> probe_initial_position =
+      Barycentric::origin + Displacement<Barycentric>({0.5 * AstronomicalUnit,
+                                                       -1 * AstronomicalUnit,
+                                                       0 * AstronomicalUnit});
+  Velocity<Barycentric> probe_velocity =
+      Velocity<Barycentric>({0 * si::Unit<Speed>,
+                             100 * Kilo(Metre) / Second,
+                             0 * si::Unit<Speed>});
+  DiscreteTrajectory<Barycentric> probe_trajectory;
+  FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
+                                                        probe_velocity,
+                                                        solar_system.epoch(),
+                                                        Δt,
+                                                        steps,
+                                                        probe_trajectory);
+
+  // The Sun-Neptune frame.
+  std::vector<not_null<MassiveBody const*>> primaries;
+  std::vector<not_null<MassiveBody const*>> secondaries;
+  for (int i = SolarSystemFactory::Sun; i <= SolarSystemFactory::LastBody;
+       ++i) {
+    switch (i) {
+      case SolarSystemFactory::Pluto:
+      case SolarSystemFactory::Charon:
+      case SolarSystemFactory::Eris:
+        continue;
+      case SolarSystemFactory::Neptune:
+      case SolarSystemFactory::Triton:
+        secondaries.push_back(
+            solar_system.massive_body(*ephemeris, SolarSystemFactory::name(i)));
+        break;
+      default:
+        primaries.push_back(
+            solar_system.massive_body(*ephemeris, SolarSystemFactory::name(i)));
+    }
+  }
+
+  RotatingPulsatingReferenceFrame<Barycentric, Rendering>
+      reference_frame(ephemeris.get(), primaries, secondaries);
+  for (auto _ : state) {
     auto v = ApplyReferenceFrame(&probe,
                                  &reference_frame,
                                  probe_trajectory.begin(),
@@ -217,6 +331,9 @@ BENCHMARK(BM_BodyCentredNonRotatingReferenceFrame)
     ->Arg(iterations)
     ->Unit(benchmark::kMillisecond);
 BENCHMARK(BM_BarycentricRotatingReferenceFrame)
+    ->Arg(iterations)
+    ->Unit(benchmark::kMillisecond);
+BENCHMARK(BM_RotatingPulsatingReferenceFrame)
     ->Arg(iterations)
     ->Unit(benchmark::kMillisecond);
 
