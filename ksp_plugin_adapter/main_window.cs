@@ -25,6 +25,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     flight_planner_ = flight_planner;
     orbit_analyser_ = orbit_analyser;
     plotting_frame_selector_ = plotting_frame_selector;
+    cheeze_c.value = 0.6;
+    cheeze_x.value = -0.7;
     Show();
   }
 
@@ -168,9 +170,9 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   protected override string Title => "Principia";
 
   public static DifferentialSlider cheeze_c = new DifferentialSlider("c", "", -5, -1,
-  (x) => x.ToString("R"), zero_value: 0.6, min_value: 0.25, max_value: 4);
+  (x) => x.ToString("0.000"), zero_value: 0.6, min_value: 0.25, max_value: 4);
   public static DifferentialSlider cheeze_x = new DifferentialSlider("x", "", -5, -1,
-  (x) => x.ToString("R"), zero_value: -0.7, min_value: -2, max_value: 0);
+  (x) => x.ToString("0.000"), zero_value: -0.7, min_value: -2, max_value: 0);
 
       protected override void RenderWindowContents(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
