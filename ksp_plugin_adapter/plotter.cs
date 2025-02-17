@@ -10,6 +10,16 @@ class Plotter {
     adapter_ = adapter;
   }
 
+  public static double lightness(UnityEngine.Color colour) {
+    var linear_colour = colour.linear;
+    var rgb_linear = new UnityEngine.Vector3(linear_colour.r, linear_colour.g, linear_colour.b);
+    double y = UnityEngine.Vector3.Dot(new UnityEngine.Vector3(0.2126f,0.7152f,0.0722f), rgb_linear);
+    double δ = 6.0 / 29;
+    double f = y > δ * δ * δ ? Math.Pow(y, 1.0 / 3)
+                             : y * (1 / (3 * δ * δ)) + (4.0 / 29);
+    return (116 * f - 16) / 100;
+  }
+
   public static double TanAngularResolution() {
     const double degree = Math.PI / 180;
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
@@ -22,8 +32,13 @@ class Plotter {
     return Math.Min(
                Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
                Math.Tan(horizontal_fov * degree / 2) /
-               (camera.pixelWidth / 2)) *
-           MainWindow.cheeze;
+               (camera.pixelWidth / 2));
+  }
+
+  public static double angular_resolution_for_colour(UnityEngine.Color colour) {
+    return MainWindow.cheeze_c.value *
+        Math.Pow(lightness(colour), MainWindow.cheeze_x.value) *
+        TanAngularResolution();
   }
 
   public void PlotEquipotentials(DisposablePlanetarium planetarium) {
@@ -42,7 +57,7 @@ class Plotter {
       planetarium.PlanetariumPlotEquipotential(
           Plugin,
           i,
-          TanAngularResolution(),
+          angular_resolution_for_colour(colour),
           VertexBuffer.data,
           VertexBuffer.size,
           out int vertex_count);
@@ -73,7 +88,7 @@ class Plotter {
             main_vessel_guid,
             history_length,
             prediction_t_max,
-            TanAngularResolution(),
+            angular_resolution_for_colour(adapter_.history_colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -86,7 +101,7 @@ class Plotter {
         planetarium.PlanetariumPlotPrediction(Plugin,
                                               main_vessel_guid,
                                               prediction_t_max,
-                                              TanAngularResolution(),
+                                              angular_resolution_for_colour(adapter_.prediction_colour),
                                               VertexBuffer.data,
                                               VertexBuffer.size,
                                               out int vertex_count);
@@ -107,21 +122,22 @@ class Plotter {
         }
         for (int i = 0; i < number_of_segments; ++i) {
           bool is_burn = i % 2 == 1;
+          var colour = is_burn
+                           ? adapter_.burn_colour
+                           : adapter_.flight_plan_colour;
           planetarium.PlanetariumPlotFlightPlanSegment(
               Plugin,
               main_vessel_guid,
               i,
               flight_plan_t_max,
-              TanAngularResolution(),
+              angular_resolution_for_colour(colour),
               VertexBuffer.data,
               VertexBuffer.size,
               out int vertex_count);
           // No need for dynamic initialization, that was done above.
           DrawLineMesh(flight_plan_segment_meshes_[i],
                        vertex_count,
-                       is_burn
-                           ? adapter_.burn_colour
-                           : adapter_.flight_plan_colour,
+                       colour,
                        is_burn
                            ? adapter_.burn_style
                            : adapter_.flight_plan_style);
@@ -142,7 +158,7 @@ class Plotter {
             target_id,
             history_length,
             t_max: null,
-            TanAngularResolution(),
+            angular_resolution_for_colour(adapter_.target_history_colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -156,7 +172,7 @@ class Plotter {
             Plugin,
             target_id,
             t_max: null,
-            TanAngularResolution(),
+            angular_resolution_for_colour(adapter_.target_prediction_colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -200,7 +216,7 @@ class Plotter {
             Plugin,
             root.flightGlobalsIndex,
             history_length,
-            TanAngularResolution(),
+            angular_resolution_for_colour(colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out double min_past_distance,
@@ -218,7 +234,7 @@ class Plotter {
             Plugin,
             root.flightGlobalsIndex,
             main_vessel_guid,
-            TanAngularResolution(),
+            angular_resolution_for_colour(colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out double min_future_distance,

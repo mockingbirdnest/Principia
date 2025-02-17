@@ -167,18 +167,16 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   protected override string Title => "Principia";
 
-  public static double cheeze = 1;
+  public static DifferentialSlider cheeze_c = new DifferentialSlider("c", "", -5, -1,
+  (x) => x.ToString("R"), zero_value: 0.6, min_value: 0.25, max_value: 4);
+  public static DifferentialSlider cheeze_x = new DifferentialSlider("x", "", -5, -1,
+  (x) => x.ToString("R"), zero_value: -0.7, min_value: -2, max_value: 0);
 
-  protected override void RenderWindowContents(int window_id) {
+      protected override void RenderWindowContents(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      using (new UnityEngine.GUILayout.HorizontalScope()) {
-        UnityEngine.GUILayout.Label("Cheeze factor: ");
-        if (double.TryParse(
-                UnityEngine.GUILayout.TextField(cheeze.ToString("R")),
-                out double potential_cheeze)) {
-          cheeze = potential_cheeze;
-        }
-      }
+      UnityEngine.GUILayout.Label("Cheeze constants: ");
+      cheeze_c.Render(true);
+      cheeze_x.Render(true);
 
       UnityEngine.Camera camera = PlanetariumCamera.Camera;
       float vertical_fov = camera.fieldOfView;
