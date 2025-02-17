@@ -170,7 +170,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
   protected override string Title => "Principia";
 
   public static DifferentialSlider cheeze_c = new DifferentialSlider("c", "", -5, -1,
-  (x) => x.ToString("0.000"), zero_value: 0.65, min_value: 0.25, max_value: 4);
+  (x) => x.ToString("0.000"), zero_value: 0.65, min_value: 0.1, max_value: 4);
   public static DifferentialSlider cheeze_x = new DifferentialSlider("x", "", -5, -1,
   (x) => x.ToString("0.000"), zero_value: -0.31, min_value: -2, max_value: 0);
 
