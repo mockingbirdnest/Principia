@@ -78,6 +78,13 @@ class Ephemeris {
   static std::int64_t constexpr unlimited_max_ephemeris_steps =
       std::numeric_limits<std::int64_t>::max();
 
+  using BodiesToPositions =
+      std::map<not_null<MassiveBody const*>, Position<Frame>>;
+  using BodiesToVelocities =
+      std::map<not_null<MassiveBody const*>, Velocity<Frame>>;
+  using BodiesToDegreesOfFreedom =
+      std::map<not_null<MassiveBody const*>, DegreesOfFreedom<Frame>>;
+
   // The equations describing the motion of the `bodies_`.
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
@@ -137,6 +144,15 @@ class Ephemeris {
   planetary_integrator() const;
 
   virtual absl::Status last_severe_integration_status() const;
+
+  // Convenience methods to evaluate the positions/velocities for all bodies in
+  // this ephemeris.
+  BodiesToPositions EvaluateAllPositions(Instant const& t) const
+      EXCLUDES(lock_);
+  BodiesToVelocities EvaluateAllVelocities(Instant const& t) const
+      EXCLUDES(lock_);
+  BodiesToDegreesOfFreedom EvaluateAllDegreesOfFreedom(Instant const& t) const
+      EXCLUDES(lock_);
 
   // Prolongs the ephemeris up to at least `t`.  Returns an error iff the thread
   // is stopped.  After a successful call with the second parameter defaulted,

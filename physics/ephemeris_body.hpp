@@ -221,6 +221,42 @@ absl::Status Ephemeris<Frame>::last_severe_integration_status() const {
 }
 
 template<typename Frame>
+Ephemeris<Frame>::BodiesToPositions Ephemeris<Frame>::EvaluateAllPositions(
+    Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  BodiesToPositions all_positions;
+  for (int i = 0; i < bodies_.size(); ++i) {
+    all_positions.emplace(bodies_[i].get(),
+                          trajectories_[i]->EvaluatePositionLocked(t));
+  }
+  return all_positions;
+}
+
+template<typename Frame>
+Ephemeris<Frame>::BodiesToVelocities Ephemeris<Frame>::EvaluateAllVelocities(
+    Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  BodiesToVelocities all_velocities;
+  for (int i = 0; i < bodies_.size(); ++i) {
+    all_velocities.emplace(bodies_[i].get(),
+                          trajectories_[i]->EvaluateVelocityLocked(t));
+  }
+  return all_velocities;
+}
+
+template<typename Frame>
+Ephemeris<Frame>::BodiesToDegreesOfFreedom
+Ephemeris<Frame>::EvaluateAllDegreesOfFreedom(Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  BodiesToDegreesOfFreedom all_degrees_of_freedom;
+  for (int i = 0; i < bodies_.size(); ++i) {
+    all_degrees_of_freedom.emplace(
+        bodies_[i].get(), trajectories_[i]->EvaluateDegreesOfFreedomLocked(t));
+  }
+  return all_degrees_of_freedom;
+}
+
+template<typename Frame>
 void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
   reanimator_.Start();
 
