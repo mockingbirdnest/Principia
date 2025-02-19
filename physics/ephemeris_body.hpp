@@ -657,9 +657,9 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
 }
 
 template<typename Frame>
-Vector<Acceleration, Frame>
-Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
-    not_null<MassiveBody const*> const body,
+std::vector<Vector<Acceleration, Frame>>
+Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBodies(
+    std::vector<not_null<MassiveBody const*>> const& bodies,
     BodiesToPositions const& bodies_to_positions,
     Instant const& t) const {
   // Put the positions in the order needed by the computation.
@@ -669,7 +669,13 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
     positions.push_back(bodies_to_positions.at(body.get()));
   }
 
-  return ComputeGravitationalAccelerationOnMassiveBody(body, positions, t);
+  std::vector<Vector<Acceleration, Frame>> accelerations;
+  accelerations.reserve(bodies.size());
+  for (auto const& body : bodies) {
+    accelerations.push_back(
+        ComputeGravitationalAccelerationOnMassiveBody(body, positions, t));
+  }
+  return accelerations;
 }
 
 template<typename Frame>

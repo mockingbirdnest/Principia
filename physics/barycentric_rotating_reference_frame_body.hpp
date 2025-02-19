@@ -226,15 +226,24 @@ BarycentreDerivative(BodiesToPositions const* bodies_to_positions,
   Instant& cache_key = cache.times[degree];
   auto& cached = std::get<degree>(cache.derivatives);
   if (cache_key != t) {
+    BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
+                         GravitationalParameter>
+        result;
+
     BodiesToPositions local_bodies_to_positions;
     if (bodies_to_positions == nullptr) {
       local_bodies_to_positions = ephemeris_->EvaluateAllPositions(t);
       bodies_to_positions = &local_bodies_to_positions;
     }
 
-    BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
-                         GravitationalParameter>
-        result;
+    std::vector<Derivative<Position<InertialFrame>, Instant, degree>>
+        all_derivatives;
+    if constexpr (degree == 2) {
+      all_derivatives =
+          ephemeris_->ComputeGravitationalAccelerationOnMassiveBodies(
+              this->*bodies, *bodies_to_positions, t);
+    }
+
     int i = 0;
     for (not_null const body : this->*bodies) {
       if constexpr (degree == 0) {
@@ -244,9 +253,7 @@ BarycentreDerivative(BodiesToPositions const* bodies_to_positions,
         result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
                    body->gravitational_parameter());
       } else if constexpr (degree == 2) {
-        result.Add(ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
-                       body, *bodies_to_positions, t),
-                   body->gravitational_parameter());
+        result.Add(all_derivatives[i++], body->gravitational_parameter());
       } else {
         static_assert(degree == 3);
         result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(body, t),

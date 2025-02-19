@@ -260,12 +260,12 @@ class Ephemeris {
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
 
-  // Same as above, but the positions have been precomputed by
-  // `EvaluateAllPositions`.  The client must ensure that the evaluation was for
-  // time `t`.
-  virtual Vector<Acceleration, Frame>
-  ComputeGravitationalAccelerationOnMassiveBody(
-      not_null<MassiveBody const*> body,
+  // Same as above, but for multiple bodies.  The positions must have been
+  // precomputed by `EvaluateAllPositions`.  The client must ensure that the
+  // evaluation was for time `t`.
+  virtual std::vector<Vector<Acceleration, Frame>>
+  ComputeGravitationalAccelerationOnMassiveBodies(
+      std::vector<not_null<MassiveBody const*>> const& bodies,
       BodiesToPositions const& bodies_to_positions,
       Instant const& t) const;
 
