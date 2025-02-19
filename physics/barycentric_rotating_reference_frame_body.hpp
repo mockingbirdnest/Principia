@@ -247,7 +247,7 @@ BarycentreDerivative(BodiesToPositions const* bodies_to_positions,
     int i = 0;
     for (not_null const body : this->*bodies) {
       if constexpr (degree == 0) {
-        result.Add(ephemeris_->trajectory(body)->EvaluatePosition(t),
+        result.Add(bodies_to_positions->at(body), 
                    body->gravitational_parameter());
       } else if constexpr (degree == 1) {
         result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
