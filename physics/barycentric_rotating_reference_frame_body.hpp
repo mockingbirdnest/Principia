@@ -220,25 +220,21 @@ template<
         BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-BarycentreDerivative(BodiesToPositions const* const bodies_to_positions,
+BarycentreDerivative(BodiesToPositions const* bodies_to_positions,
                      Instant const& t,
                      CachedDerivatives& cache) const {
   Instant& cache_key = cache.times[degree];
   auto& cached = std::get<degree>(cache.derivatives);
   if (cache_key != t) {
-    std::vector<Derivative<Position<InertialFrame>, Instant, degree>> all;
+    BodiesToPositions local_bodies_to_positions;
+    if (bodies_to_positions == nullptr) {
+      local_bodies_to_positions = ephemeris_->EvaluateAllPositions(t);
+      bodies_to_positions = &local_bodies_to_positions;
+    }
+
     BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
                          GravitationalParameter>
         result;
-    if constexpr (degree == 2) {
-      if (bodies_to_positions == nullptr) {
-        all = ephemeris_->ComputeGravitationalAccelerationOnMassiveBodies(
-            this->*bodies, ephemeris_->EvaluateAllPositions(t), t);
-      } else {
-        all = ephemeris_->ComputeGravitationalAccelerationOnMassiveBodies(
-            this->*bodies, *bodies_to_positions, t);
-      }
-    }
     int i = 0;
     for (not_null const body : this->*bodies) {
       if constexpr (degree == 0) {
@@ -248,7 +244,9 @@ BarycentreDerivative(BodiesToPositions const* const bodies_to_positions,
         result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
                    body->gravitational_parameter());
       } else if constexpr (degree == 2) {
-        result.Add(all[i++], body->gravitational_parameter());
+        result.Add(ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
+                       body, *bodies_to_positions, t),
+                   body->gravitational_parameter());
       } else {
         static_assert(degree == 3);
         result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(body, t),

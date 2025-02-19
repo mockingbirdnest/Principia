@@ -640,164 +640,36 @@ Vector<Acceleration, Frame>
 Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
     not_null<MassiveBody const*> const body,
     Instant const& t) const {
-  bool const body_is_oblate = body->is_oblate();
-
-  std::vector<Position<Frame>> positions;
-  std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
-  int b1 = -1;
-
   // Evaluate the `positions`.  Locking is necessary to be able to call the
   // "locked" method of each trajectory.
+  std::vector<Position<Frame>> positions;
   {
     absl::ReaderMutexLock l(&lock_);
     positions.reserve(bodies_.size());
     for (int b = 0; b < bodies_.size(); ++b) {
       auto const& current_body = bodies_[b];
       auto const& current_body_trajectory = trajectories_[b];
-      if (current_body.get() == body) {
-        CHECK_EQ(-1, b1);
-        b1 = b;
-      }
       positions.push_back(current_body_trajectory->EvaluatePositionLocked(t));
     }
-    CHECK_LE(0, b1);
   }
 
-  if (body_is_oblate) {
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/true>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/0, /*b2_end=*/b1,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/true>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/false>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/number_of_oblate_bodies_,
-        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions, accelerations, geopotentials_);
-  } else {
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/true>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/false>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/number_of_oblate_bodies_,
-        /*b2_end=*/b1,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/false>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/b1 + 1,
-        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions, accelerations, geopotentials_);
-  }
-
-  return accelerations[b1];
+  return ComputeGravitationalAccelerationOnMassiveBody(body, positions, t);
 }
 
 template<typename Frame>
-std::vector<Vector<Acceleration, Frame>>
-Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBodies(
-    std::vector<not_null<MassiveBody const*>> const& bodies,
+Vector<Acceleration, Frame>
+Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
+    not_null<MassiveBody const*> const body,
     BodiesToPositions const& bodies_to_positions,
     Instant const& t) const {
-
-  // Put the positions in the order needed by the rest of the computation.
+  // Put the positions in the order needed by the computation.
   std::vector<Position<Frame>> positions;
   positions.reserve(bodies_.size());
   for (auto const& body : bodies_) {
     positions.push_back(bodies_to_positions.at(body.get()));
   }
 
-  std::vector<Vector<Acceleration, Frame>> result;
-  result.reserve(bodies.size());
-  for (auto const& body : bodies) {
-    std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
-    int const b1 = FindOrDie(bodies_indices_, body);
-    if (body->is_oblate()) {
-      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-          /*body1_is_oblate=*/true,
-          /*body2_is_oblate=*/true>(
-          t,
-          /*body1=*/*body, b1,
-          /*bodies2=*/bodies_,
-          /*b2_begin=*/0, /*b2_end=*/b1,
-          positions, accelerations, geopotentials_);
-      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-          /*body1_is_oblate=*/true,
-          /*body2_is_oblate=*/true>(
-          t,
-          /*body1=*/*body, b1,
-          /*bodies2=*/bodies_,
-          /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
-          positions, accelerations, geopotentials_);
-      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-          /*body1_is_oblate=*/true,
-          /*body2_is_oblate=*/false>(
-          t,
-          /*body1=*/*body, b1,
-          /*bodies2=*/bodies_,
-          /*b2_begin=*/number_of_oblate_bodies_,
-          /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-          positions, accelerations, geopotentials_);
-    } else {
-      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-          /*body1_is_oblate=*/false,
-          /*body2_is_oblate=*/true>(
-          t,
-          /*body1=*/*body, b1,
-          /*bodies2=*/bodies_,
-          /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
-          positions, accelerations, geopotentials_);
-      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-          /*body1_is_oblate=*/false,
-          /*body2_is_oblate=*/false>(
-          t,
-          /*body1=*/*body, b1,
-          /*bodies2=*/bodies_,
-          /*b2_begin=*/number_of_oblate_bodies_,
-          /*b2_end=*/b1,
-          positions, accelerations, geopotentials_);
-      ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-          /*body1_is_oblate=*/false,
-          /*body2_is_oblate=*/false>(
-          t,
-          /*body1=*/*body, b1,
-          /*bodies2=*/bodies_,
-          /*b2_begin=*/b1 + 1,
-          /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-          positions, accelerations, geopotentials_);
-    }
-
-    result.push_back(accelerations[b1]);
-  }
-  return result;
+  return ComputeGravitationalAccelerationOnMassiveBody(body, positions, t);
 }
 
 template<typename Frame>
@@ -1351,6 +1223,74 @@ void Ephemeris<Frame>::ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
     jerk_on_b2 -= μ1 * vector;
     jerk_on_b1 += μ2 * vector;
   }
+}
+
+template<typename Frame>
+Vector<Acceleration, Frame>
+Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
+    not_null<MassiveBody const*> const body,
+    std::vector<Position<Frame>> const& positions,
+    Instant const& t) const {
+  int const b1 = bodies_indices_.at(body);
+  bool const body_is_oblate = body->is_oblate();
+  std::vector<Vector<Acceleration, Frame>> accelerations(positions.size());
+
+  if (body_is_oblate) {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/0, /*b2_end=*/b1,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/false>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/number_of_oblate_bodies_,
+        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+        positions, accelerations, geopotentials_);
+  } else {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/false>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/number_of_oblate_bodies_,
+        /*b2_end=*/b1,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/false>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1,
+        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+        positions, accelerations, geopotentials_);
+  }
+
+  return accelerations[b1];
 }
 
 template<typename Frame>

@@ -260,10 +260,12 @@ class Ephemeris {
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
 
-  //TODO(phl):comment
-  virtual std::vector<Vector<Acceleration, Frame>>
-  ComputeGravitationalAccelerationOnMassiveBodies(
-      std::vector<not_null<MassiveBody const*>> const& bodies,
+  // Same as above, but the positions have been precomputed by
+  // `EvaluateAllPositions`.  The client must ensure that the evaluation was for
+  // time `t`.
+  virtual Vector<Acceleration, Frame>
+  ComputeGravitationalAccelerationOnMassiveBody(
+      not_null<MassiveBody const*> body,
       BodiesToPositions const& bodies_to_positions,
       Instant const& t) const;
 
@@ -378,6 +380,15 @@ class Ephemeris {
       std::size_t b2_end,
       std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
       std::vector<Vector<Jerk, Frame>>& jerks);
+
+  // Returns the gravitational acceleration on the massive `body` at time `t`.
+  // The `positions` must be for all the bodies in this object, in the order of
+  // `bodies_` and must have been evaluated at time `t`.
+  Vector<Acceleration, Frame>
+  ComputeGravitationalAccelerationOnMassiveBody(
+      not_null<MassiveBody const*> const body,
+      std::vector<Position<Frame>> const& positions,
+      Instant const& t) const;
 
   // Computes the accelerations between one body, `body1` (with index `b1` in
   // the `positions` and `accelerations` arrays) and the bodies `bodies2` (with
