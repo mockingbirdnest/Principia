@@ -727,7 +727,6 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBodies(
     std::vector<not_null<MassiveBody const*>> const& bodies,
     BodiesToPositions const& bodies_to_positions,
     Instant const& t) const {
-  std::vector<Vector<Acceleration, Frame>> result;
 
   // Put the positions in the order needed by the rest of the computation.
   std::vector<Position<Frame>> positions;
@@ -736,6 +735,8 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBodies(
     positions.push_back(bodies_to_positions.at(body.get()));
   }
 
+  std::vector<Vector<Acceleration, Frame>> result;
+  result.reserve(bodies.size());
   for (auto const& body : bodies) {
     std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
     int const b1 = FindOrDie(bodies_indices_, body);

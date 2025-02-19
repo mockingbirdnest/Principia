@@ -108,7 +108,7 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::PrimaryDerivative(
   absl::MutexLock l(&lock_);
   return BarycentreDerivative<degree,
                               &BarycentricRotatingReferenceFrame::primaries_>(
-      ephemeris_->EvaluateAllPositions(t),
+      /*bodies_to_positions=*/nullptr,
       t,
       last_evaluated_primary_derivatives_);
 }
@@ -121,7 +121,7 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
   absl::MutexLock l(&lock_);
   return BarycentreDerivative<degree,
                               &BarycentricRotatingReferenceFrame::secondaries_>(
-      ephemeris_->EvaluateAllPositions(t),
+      /*bodies_to_positions=*/nullptr,
       t,
       last_evaluated_secondary_derivatives_);
 }
@@ -145,12 +145,12 @@ RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   auto const bodies_to_positions = ephemeris_->EvaluateAllPositions(t);
-  auto const r₁ = PrimaryDerivative<0>(bodies_to_positions, t);
-  auto const ṙ₁ = PrimaryDerivative<1>(bodies_to_positions, t);
-  auto const r̈₁ = PrimaryDerivative<2>(bodies_to_positions, t);
-  auto const r₂ = SecondaryDerivative<0>(bodies_to_positions, t);
-  auto const ṙ₂ = SecondaryDerivative<1>(bodies_to_positions, t);
-  auto const r̈₂ = SecondaryDerivative<2>(bodies_to_positions, t);
+  auto const r₁ = PrimaryDerivative<0>(&bodies_to_positions, t);
+  auto const ṙ₁ = PrimaryDerivative<1>(&bodies_to_positions, t);
+  auto const r̈₁ = PrimaryDerivative<2>(&bodies_to_positions, t);
+  auto const r₂ = SecondaryDerivative<0>(&bodies_to_positions, t);
+  auto const ṙ₂ = SecondaryDerivative<1>(&bodies_to_positions, t);
+  auto const r̈₂ = SecondaryDerivative<2>(&bodies_to_positions, t);
   return ToThisFrame({r₁, ṙ₁, r̈₁}, {r₂, ṙ₂, r̈₂});
 }
 
@@ -193,7 +193,7 @@ template<typename InertialFrame, typename ThisFrame>
 template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-PrimaryDerivative(BodiesToPositions const& bodies_to_positions,
+PrimaryDerivative(BodiesToPositions const* const bodies_to_positions,
                   Instant const& t) const {
   absl::MutexLock l(&lock_);
   return BarycentreDerivative<degree,
@@ -205,7 +205,7 @@ template<typename InertialFrame, typename ThisFrame>
 template<int degree>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-SecondaryDerivative(BodiesToPositions const& bodies_to_positions,
+SecondaryDerivative(BodiesToPositions const* const bodies_to_positions,
                     Instant const& t) const {
   absl::MutexLock l(&lock_);
   return BarycentreDerivative<degree,
@@ -220,7 +220,7 @@ template<
         BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-BarycentreDerivative(BodiesToPositions const& bodies_to_positions,
+BarycentreDerivative(BodiesToPositions const* const bodies_to_positions,
                      Instant const& t,
                      CachedDerivatives& cache) const {
   Instant& cache_key = cache.times[degree];
@@ -231,8 +231,13 @@ BarycentreDerivative(BodiesToPositions const& bodies_to_positions,
                          GravitationalParameter>
         result;
     if constexpr (degree == 2) {
-      all = ephemeris_->ComputeGravitationalAccelerationOnMassiveBodies(
-          this->*bodies, bodies_to_positions, t);
+      if (bodies_to_positions == nullptr) {
+        all = ephemeris_->ComputeGravitationalAccelerationOnMassiveBodies(
+            this->*bodies, ephemeris_->EvaluateAllPositions(t), t);
+      } else {
+        all = ephemeris_->ComputeGravitationalAccelerationOnMassiveBodies(
+            this->*bodies, *bodies_to_positions, t);
+      }
     }
     int i = 0;
     for (not_null const body : this->*bodies) {
@@ -276,14 +281,14 @@ AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
   auto const bodies_to_positions = ephemeris_->EvaluateAllPositions(t);
-  auto const r₁ = PrimaryDerivative<0>(bodies_to_positions, t);
-  auto const ṙ₁ = PrimaryDerivative<1>(bodies_to_positions, t);
-  auto const r̈₁ = PrimaryDerivative<2>(bodies_to_positions, t);
-  auto const r₁⁽³⁾ = PrimaryDerivative<3>(bodies_to_positions, t);
-  auto const r₂ = SecondaryDerivative<0>(bodies_to_positions, t);
-  auto const ṙ₂ = SecondaryDerivative<1>(bodies_to_positions, t);
-  auto const r̈₂ = SecondaryDerivative<2>(bodies_to_positions, t);
-  auto const r₂⁽³⁾ = SecondaryDerivative<3>(bodies_to_positions, t);
+  auto const r₁ = PrimaryDerivative<0>(&bodies_to_positions, t);
+  auto const ṙ₁ = PrimaryDerivative<1>(&bodies_to_positions, t);
+  auto const r̈₁ = PrimaryDerivative<2>(&bodies_to_positions, t);
+  auto const r₁⁽³⁾ = PrimaryDerivative<3>(&bodies_to_positions, t);
+  auto const r₂ = SecondaryDerivative<0>(&bodies_to_positions, t);
+  auto const ṙ₂ = SecondaryDerivative<1>(&bodies_to_positions, t);
+  auto const r̈₂ = SecondaryDerivative<2>(&bodies_to_positions, t);
+  auto const r₂⁽³⁾ = SecondaryDerivative<3>(&bodies_to_positions, t);
 
   auto const to_this_frame = ToThisFrame({r₁, ṙ₁, r̈₁}, {r₂, ṙ₂, r̈₂});
 

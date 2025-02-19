@@ -112,18 +112,18 @@ class BarycentricRotatingReferenceFrame
 
   template<int degree>
   Derivative<Position<InertialFrame>, Instant, degree> PrimaryDerivative(
-      BodiesToPositions const& bodies_to_positions,
+      BodiesToPositions const* bodies_to_positions,
       Instant const& t) const;
   template<int degree>
   Derivative<Position<InertialFrame>, Instant, degree> SecondaryDerivative(
-      BodiesToPositions const& bodies_to_positions,
+      BodiesToPositions const* bodies_to_positions,
       Instant const& t) const;
   template<
       int degree,
       std::vector<not_null<MassiveBody const*>> const
           BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
   Derivative<Position<InertialFrame>, Instant, degree> BarycentreDerivative(
-      BodiesToPositions const& bodies_to_positions,
+      BodiesToPositions const* bodies_to_positions,
       Instant const& t,
       CachedDerivatives& cache) const;
 
