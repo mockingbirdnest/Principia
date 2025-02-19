@@ -264,7 +264,8 @@ class Ephemeris {
   virtual std::vector<Vector<Acceleration, Frame>>
   ComputeGravitationalAccelerationOnMassiveBodies(
       std::vector<not_null<MassiveBody const*>> const& bodies,
-      Instant const& t) const EXCLUDES(lock_);
+      BodiesToPositions const& bodies_to_positions,
+      Instant const& t) const;
 
   // Returns the potential at the given `position` at time `t`.
   SpecificEnergy ComputeGravitationalPotential(
