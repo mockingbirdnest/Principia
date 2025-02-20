@@ -78,6 +78,13 @@ class Ephemeris {
   static std::int64_t constexpr unlimited_max_ephemeris_steps =
       std::numeric_limits<std::int64_t>::max();
 
+  using BodiesToPositions =
+      std::map<not_null<MassiveBody const*>, Position<Frame>>;
+  using BodiesToVelocities =
+      std::map<not_null<MassiveBody const*>, Velocity<Frame>>;
+  using BodiesToDegreesOfFreedom =
+      std::map<not_null<MassiveBody const*>, DegreesOfFreedom<Frame>>;
+
   // The equations describing the motion of the `bodies_`.
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
@@ -137,6 +144,15 @@ class Ephemeris {
   planetary_integrator() const;
 
   virtual absl::Status last_severe_integration_status() const;
+
+  // Convenience methods to evaluate the positions/velocities for all bodies in
+  // this ephemeris.
+  BodiesToPositions EvaluateAllPositions(Instant const& t) const
+      EXCLUDES(lock_);
+  BodiesToVelocities EvaluateAllVelocities(Instant const& t) const
+      EXCLUDES(lock_);
+  BodiesToDegreesOfFreedom EvaluateAllDegreesOfFreedom(Instant const& t) const
+      EXCLUDES(lock_);
 
   // Prolongs the ephemeris up to at least `t`.  Returns an error iff the thread
   // is stopped.  After a successful call with the second parameter defaulted,
@@ -243,6 +259,15 @@ class Ephemeris {
   ComputeGravitationalAccelerationOnMassiveBody(
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
+
+  // Same as above, but for multiple bodies.  The positions must have been
+  // precomputed by `EvaluateAllPositions`.  The client must ensure that the
+  // evaluation was for time `t`.
+  virtual std::vector<Vector<Acceleration, Frame>>
+  ComputeGravitationalAccelerationOnMassiveBodies(
+      std::vector<not_null<MassiveBody const*>> const& bodies,
+      BodiesToPositions const& bodies_to_positions,
+      Instant const& t) const;
 
   // Returns the potential at the given `position` at time `t`.
   SpecificEnergy ComputeGravitationalPotential(
@@ -356,6 +381,15 @@ class Ephemeris {
       std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
       std::vector<Vector<Jerk, Frame>>& jerks);
 
+  // Returns the gravitational acceleration on the massive `body` at time `t`.
+  // The `positions` must be for all the bodies in this object, in the order of
+  // `bodies_` and must have been evaluated at time `t`.
+  Vector<Acceleration, Frame>
+  ComputeGravitationalAccelerationOnMassiveBody(
+      not_null<MassiveBody const*> const body,
+      std::vector<Position<Frame>> const& positions,
+      Instant const& t) const;
+
   // Computes the accelerations between one body, `body1` (with index `b1` in
   // the `positions` and `accelerations` arrays) and the bodies `bodies2` (with
   // indices [b2_begin, b2_end[ in the `bodies2`, `positions` and
@@ -456,6 +490,9 @@ class Ephemeris {
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
+
+  // The indices of bodies in `bodies_`.
+  std::map<not_null<MassiveBody const*>, int> bodies_indices_;
 
   // Only has entries for the oblate bodies, at the same indices as `bodies_`.
   std::vector<Geopotential<Frame>> geopotentials_;
