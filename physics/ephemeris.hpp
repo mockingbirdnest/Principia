@@ -238,6 +238,14 @@ class Ephemeris {
       not_null<MassiveBody const*> body,
       Instant const& t) const EXCLUDES(lock_);
 
+  // Same as above, but for multiple bodies.  The degrees of freedom must have
+  // been precomputed by `EvaluateAllDegreesOfFreedom`.  The client must ensure
+  // that the evaluation was for time `t`.
+  Vector<Jerk, Frame> ComputeGravitationalJerkOnMassiveBodies(
+      not_null<MassiveBody const*> body,
+      BodiesToDegreesOfFreedom const& bodies_to_degrees_of_freedom,
+      Instant const& t) const;
+
   // Returns the gravitational acceleration on a massless body located at the
   // given `position` at time `t`.
   virtual Vector<Acceleration, Frame>
@@ -388,6 +396,15 @@ class Ephemeris {
   ComputeGravitationalAccelerationOnMassiveBody(
       not_null<MassiveBody const*> const body,
       std::vector<Position<Frame>> const& positions,
+      Instant const& t) const;
+
+  // Returns the gravitational jerk on the massive `body` at time `t`.  The
+  // `degrees_of_freedom` must be for all the bodies in this object, in the
+  // order of `bodies_` and must have been evaluated at time `t`.
+  Vector<Jerk, Frame>
+  ComputeGravitationalJerkOnMassiveBody(
+      not_null<MassiveBody const*> body,
+      std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
       Instant const& t) const;
 
   // Computes the accelerations between one body, `body1` (with index `b1` in
