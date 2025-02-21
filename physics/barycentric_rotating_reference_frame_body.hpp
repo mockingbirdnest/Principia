@@ -230,36 +230,44 @@ BarycentreDerivative(BodiesToPositions const* bodies_to_positions,
                          GravitationalParameter>
         result;
 
-    BodiesToPositions local_bodies_to_positions;
-    if (bodies_to_positions == nullptr) {
-      local_bodies_to_positions = ephemeris_->EvaluateAllPositions(t);
-      bodies_to_positions = &local_bodies_to_positions;
-    }
-
-    std::vector<Derivative<Position<InertialFrame>, Instant, degree>>
-        all_derivatives;
-    if constexpr (degree == 2) {
-      all_derivatives =
-          ephemeris_->ComputeGravitationalAccelerationOnMassiveBodies(
-              this->*bodies, *bodies_to_positions, t);
-    }
-
-    int i = 0;
-    for (not_null const body : this->*bodies) {
-      if constexpr (degree == 0) {
-        result.Add(bodies_to_positions->at(body),
-                   body->gravitational_parameter());
-      } else if constexpr (degree == 1) {
+    if constexpr (degree == 0) {
+      for (not_null const body : this->*bodies) {
+        if (bodies_to_positions == nullptr) {
+          result.Add(ephemeris_->trajectory(body)->EvaluatePosition(t),
+                     body->gravitational_parameter());
+        } else {
+          result.Add(bodies_to_positions->at(body),
+                     body->gravitational_parameter());
+        }
+      }
+    } else if constexpr (degree == 1) {
+      for (not_null const body : this->*bodies) {
         result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
                    body->gravitational_parameter());
-      } else if constexpr (degree == 2) {
-        result.Add(all_derivatives[i++], body->gravitational_parameter());
-      } else {
-        static_assert(degree == 3);
+      }
+    } else if constexpr (degree == 2) {
+      BodiesToPositions local_bodies_to_positions;
+      if (bodies_to_positions == nullptr) {
+        local_bodies_to_positions = ephemeris_->EvaluateAllPositions(t);
+        bodies_to_positions = &local_bodies_to_positions;
+      }
+
+      auto const all_accelerations =
+          ephemeris_->ComputeGravitationalAccelerationOnMassiveBodies(
+              this->*bodies, *bodies_to_positions, t);
+
+      int i = 0;
+      for (not_null const body : this->*bodies) {
+        result.Add(all_accelerations[i++], body->gravitational_parameter());
+      }
+    } else {
+      static_assert(degree == 3);
+      for (not_null const body : this->*bodies) {
         result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(body, t),
                    body->gravitational_parameter());
       }
     }
+
     cache_key = t;
     cached = result.Get();
   }
