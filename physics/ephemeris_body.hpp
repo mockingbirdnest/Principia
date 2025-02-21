@@ -592,9 +592,9 @@ Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBody(
 }
 
 template<typename Frame>
-Vector<Jerk, Frame>
+std::vector<Vector<Jerk, Frame>>
 Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBodies(
-    not_null<MassiveBody const*> const body,
+    std::vector<not_null<MassiveBody const*>> const& bodies,
     BodiesToDegreesOfFreedom const& bodies_to_degrees_of_freedom,
     Instant const& t) const {
   // NOTE(phl): This doesn't take high-order geopotential into account.

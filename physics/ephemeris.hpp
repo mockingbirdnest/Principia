@@ -241,8 +241,8 @@ class Ephemeris {
   // Same as above, but for multiple bodies.  The degrees of freedom must have
   // been precomputed by `EvaluateAllDegreesOfFreedom`.  The client must ensure
   // that the evaluation was for time `t`.
-  Vector<Jerk, Frame> ComputeGravitationalJerkOnMassiveBodies(
-      not_null<MassiveBody const*> body,
+  std::vector<Vector<Jerk, Frame>> ComputeGravitationalJerkOnMassiveBodies(
+      std::vector<not_null<MassiveBody const*>> const& bodies,
       BodiesToDegreesOfFreedom const& bodies_to_degrees_of_freedom,
       Instant const& t) const;
 
