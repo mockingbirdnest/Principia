@@ -1329,7 +1329,6 @@ Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBody(
   return jerks[b1];
 }
 
-
 template<typename Frame>
 template<bool body1_is_oblate,
          bool body2_is_oblate,
