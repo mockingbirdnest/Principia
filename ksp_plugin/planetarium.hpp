@@ -60,9 +60,10 @@ class Planetarium {
   class Parameters final {
    public:
     // `sphere_radius_multiplier` defines the "dark area" around a celestial
-    // where we don't draw trajectories.  `angular_resolution` defines the limit
-    // beyond which spheres don't participate in hiding.  `field_of_view`
-    // is the half-angle of a cone outside of which not plotting takes place.
+    // where we don't draw trajectories.  For methods 0 to 2,
+    // `angular_resolution` defines the limit beyond which spheres don't
+    // participate in hiding.  `field_of_view` is the half-angle of a cone
+    // outside of which not plotting takes place.
     explicit Parameters(double sphere_radius_multiplier,
                         Angle const& angular_resolution,
                         Angle const& field_of_view);
@@ -124,13 +125,16 @@ class Planetarium {
       Length* minimal_distance = nullptr) const;
 
   // A method similar to PlotMethod2, but which produces a three-dimensional
-  // trajectory in scaled space instead of projecting and hiding.
+  // trajectory in scaled space instead of projecting and hiding.  Note that the
+  // angular resolution passed at construction is ignored and the parameter
+  // `tan_angular_resolution` is used instead.
   void PlotMethod3(
       Trajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator begin,
       DiscreteTrajectory<Barycentric>::iterator end,
       Instant const& now,
       Instant const& t_max,
+      double tan_angular_resolution,
       bool reverse,
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points) const;
@@ -143,6 +147,7 @@ class Planetarium {
       Instant const& first_time,
       Instant const& last_time,
       Instant const& now,
+      double tan_angular_resolution,
       bool reverse,
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points,

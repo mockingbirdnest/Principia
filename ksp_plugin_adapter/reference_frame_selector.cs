@@ -611,7 +611,7 @@ internal class
           expanded_[celestial] = !expanded_[celestial];
         }
       }
-      UnityEngine.GUILayout.Label(celestial.StandaloneName());
+      UnityEngine.GUILayout.Label(celestial.StandaloneName() + " L=" + Plotter.lightness(celestial.orbitDriver?.Renderer?.orbitColor ?? XKCDColors.SunshineYellow));
       UnityEngine.GUILayout.FlexibleSpace();
       if (celestial.is_root()) {
         UnityEngine.GUILayout.Label(
