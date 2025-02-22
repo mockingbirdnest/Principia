@@ -155,7 +155,6 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
         *segment,
         segment->begin(),
         segment->end(),
-        plugin->CurrentTime(),
         t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
@@ -188,7 +187,6 @@ void __cdecl principia__PlanetariumPlotPrediction(
       *prediction,
       prediction->begin(),
       prediction->end(),
-      plugin->CurrentTime(),
       t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
@@ -245,7 +243,6 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
         trajectory,
         trajectory.lower_bound(desired_first_time),
         psychohistory->end(),
-        /*now=*/plugin->CurrentTime(),
         t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
@@ -303,7 +300,6 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
         celestial_trajectory,
         first_time,
         /*last_time=*/plugin->CurrentTime(),
-        /*now=*/plugin->CurrentTime(),
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -362,7 +358,6 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
         celestial_trajectory,
         /*first_time=*/plugin->CurrentTime(),
         /*last_time=*/final_time,
-        /*now=*/plugin->CurrentTime(),
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -401,7 +396,6 @@ void __cdecl principia__PlanetariumPlotEquipotential(
       equipotential,
       equipotential.front().time,
       equipotential.back().time,
-      plugin->CurrentTime(),
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
         vertices[(*vertex_count)++] = vertex;
