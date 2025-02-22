@@ -58,7 +58,6 @@ void Planetarium::PlotMethod3(
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,
     Length* const minimal_distance) const {
-  double const tan²_angular_resolution = Pow<2>(tan_angular_resolution);
   auto const final_time = reverse ? first_time : last_time;
   auto previous_time = reverse ? last_time : first_time;
 
@@ -83,7 +82,7 @@ void Planetarium::PlotMethod3(
   int points_added = 1;
 
   Instant t;
-  double estimated_tan²_error;
+  double estimated_tan_error;
   std::optional<DegreesOfFreedom<Navigation>> degrees_of_freedom;
   Position<Navigation> position;
   Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
@@ -96,8 +95,9 @@ void Planetarium::PlotMethod3(
       // One square root because we have squared errors, another one because the
       // errors are quadratic in time (in other words, two square roots because
       // the squared errors are quartic in time).
+// Comment
       // A safety factor prevents catastrophic retries.
-      Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
+      Δt *= 0.9 * Sqrt(tan_angular_resolution / estimated_tan_error);
     estimate_tan²_error:
       t = previous_time + Δt;
       if (direction * (t - final_time) > Time{}) {
@@ -110,14 +110,12 @@ void Planetarium::PlotMethod3(
           *plotting_frame_, trajectory, t);
       position = degrees_of_freedom->position();
 
-      // The quadratic term of the error between the linear interpolation and
-      // the actual function is maximized halfway through the segment, so it is
-      // 1/2 (Δt/2)² f″(t-Δt) = (1/2 Δt² f″(t-Δt)) / 4; the squared error is
-      // thus (1/2 Δt² f″(t-Δt))² / 16.
-      estimated_tan²_error =
-          perspective_.Tan²AngularDistance(extrapolated_position, position) /
-          16;
-    } while (estimated_tan²_error > tan²_angular_resolution);
+      //TanAngleBetween?
+      Angle const α = AngleBetween(extrapolated_position - previous_position,
+                                   position - previous_position);
+      estimated_tan_error = Abs(Tan(α));
+
+    } while (estimated_tan_error > tan_angular_resolution);
 
     previous_time = t;
     previous_position = position;

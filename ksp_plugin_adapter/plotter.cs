@@ -36,9 +36,9 @@ class Plotter {
   }
 
   public static double angular_resolution_for_colour(UnityEngine.Color colour) {
+    //Interpreted as a Tan in C++.
     return MainWindow.cheeze_c.value *
-        Math.Pow(lightness(colour), MainWindow.cheeze_x.value) *
-        TanAngularResolution();
+           Math.Pow(lightness(colour), MainWindow.cheeze_x.value);
   }
 
   public void PlotEquipotentials(DisposablePlanetarium planetarium) {
