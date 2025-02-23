@@ -84,9 +84,10 @@ and $\gd C$ is defined as $\round{\frac{\Pi}{2} - C}$.  Obviously we have:
 0 < \frac{\Pi}{2} - C < 2^{\gk_1} \ULP\of{\frac{\Pi}{2}}
 \]
 but if $\gk_1$ is chosen to cut the significand of $\frac{\Pi}{2}$ at a place where it has zeroes, we can actually have a stricter bound:
-\[
+\begin{align}
 \frac{\Pi}{2} - C < 2^{\gk_2} \ULP\of{\frac{\Pi}{2}} \qquad\text{with}\qquad \gk_2 \leq \gk_1
-\]
+\label{eqndC}
+\end{align}
 and therefore:
 \[
 \ULP\of{\frac{\Pi}{2} - C} < \frac{2^{\gk_2} \ULP\of{\frac{\Pi}{2}}}{\mant\of{\frac{\Pi}{2} - C}} \leq 2^{\gk_2 - M + 1} \ULP\of{\frac{\Pi}{2}} 
@@ -96,9 +97,10 @@ Since the function $\ULP$ is always a power of $2$ this implies:
 \ULP\of{\frac{\Pi}{2} - C} = 2^{\gk_2 -M} \ULP\of{\frac{\Pi}{2}}
 \]
 and:
-\[
+\begin{align}
 \abs{\frac{\Pi}{2} - C - \gd C} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C} = 2^{\gk_2 - M - 1} \ULP\of{\frac{\Pi}{2}}
-\]
+\label{eqnpi}
+\end{align}
 In other words, we have a representation with a significand that has effectively $2 M - \gk_2$ bits and is such that multiplying $C$ by an integer less than or equal to $2^{\gk_1}$ is exact.  The representation of $\frac{\Pi}{2}$ has three zeroes after the 18th bit of its significand, so by taking $\gk_1 = 18$ we have $\gk_2 = 14$.
 
 \subsection*{Argument Reduction for Small Angles}
@@ -124,10 +126,26 @@ where the notation follows \cite{Higham2002}, lemma 3.1.  Because $2^{\gk_1} \gg
 
 The product $n \; C$ is exact thanks to the $\gk_1$ trailing zeroes of $C$.  The subtraction $x - n \; C$ is exact by Sterbenz's Lemma.  Finally, the last two steps form a compensated summation so that $\hat x + \gd \hat x = y + \gd y$.
 
-The overall error on $\hat x + \gd \hat x$ may be computed as follows:
+To compute the overall error on argument reduction, first remember that, from equation \ref{eqnpi} we have:
 \[
-\gd y = n \gd C \pa{1 + \gd_4} 
+C + \gd C = \frac{\Pi}{2} + \gd_5 \quad \text{with} \quad \abs{\gd_5} \leq 2^{\gk_2 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
+The error computation proceeds as follows:
+\begin{align*}
+y + \gd y &= x - n \; C - n \; \gd C \pa{1 + \gd_4}  \quad \text{with} \quad \abs{\gd_4} < 2^{-M}\\
+&= x - n \pa{C + \gd C} - n \; \gd C \; \gd_4 \\
+&= x - n \frac{\Pi}{2} -n \pa{\gd_5 + \gd C \; \gd_4}
+\end{align*}
+from which we can deduce an upper bound of the error:
+\[
+\abs{y + \gd y - \pa{x - n \frac{\Pi}{2}}} < 2^{\gk_1} 2^{\gk_2} \ULP\of{\frac{\Pi}{2}} \pa{2^{- M - 1} + 2^{-M}} = \frac{3}{2} 2^{\gk_1 + \gk_2 - M} \ULP\of{\frac{\Pi}{2}}
+\]
+where we have used the upper bound on $\gd C$ given by equation \ref{eqndC}.
+
+This means that the reduction is only correctly rounded to $M$ bits if $\abs{\hat x} \geq \frac{3}{2} 2^{\gk_1 + \gk_2} \ULP\of{\frac{\Pi}{2}}$.  If more bits are cancelled, a more advanced technique is needed.
+
+\emph{TODO(phl):} It is not clear how many bits can actually be cancelled in this range.  Use Muller's program to figure out.  If the number is small enough, we may not even need to fall back to CORE-MATH in that case.
+
 \subsection*{Argument Reduction for Large Angles}
 \section*{Accurate Tables and Their Generation}
 \section*{Computation of the Functions}
