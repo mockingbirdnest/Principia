@@ -104,9 +104,29 @@ In other words, we have a representation with a significand that has effectively
 \subsection*{Argument Reduction for Small Angles}
 If $\abs x < \round{\frac{\Pi}{4}}$ then $\hat x = x$ and $\gd \hat x = 0$.
 \subsection*{Argument Reduction for Medium Angles}
-If $\abs x < \round{2^{\gk_1} \frac{\Pi}{2}}$ then we compute:
+If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ then we compute:
 \[
-n = \round{x \round{\frac{2}{\Pi}}
+\begin{dcases}
+n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
+y &= x - n \; C \\
+\gd y &= \round{n \; \gd C} \\
+\hat x &= \round{y - \gd y} \\
+\gd \hat x &= \pa{y - \hat x} - \gd y
+\end{dcases}
+\]
+First, note that $\abs n \leq 2^{\gk_1}$.  Using the accuracy model of \cite{Higham2002}, equation (2.4), we have\footnote{We note that in Higham's notation $u = \ge_M / 2$, see pages 37 and 38.}:
+\begin{align*}
+\abs x &\leq 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \\
+\abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
+&\leq \iround{2^{\gk_1} \pa{1 + \gg_3}}
+\end{align*}
+where the notation follows \cite{Higham2002}, lemma 3.1.  Because $2^{\gk_1} \gg_3$ is very small (less that $2^{-33}$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.
+
+The product $n \; C$ is exact thanks to the $\gk_1$ trailing zeroes of $C$.  The subtraction $x - n \; C$ is exact by Sterbenz's Lemma.  Finally, the last two steps form a compensated summation so that $\hat x + \gd \hat x = y + \gd y$.
+
+The overall error on $\hat x + \gd \hat x$ may be computed as follows:
+\[
+\gd y = n \gd C \pa{1 + \gd_4} 
 \]
 \subsection*{Argument Reduction for Large Angles}
 \section*{Accurate Tables and Their Generation}
