@@ -197,9 +197,12 @@ inline void Reduce(Argument const θ,
 
     Argument const error = n_double * π_over_2_low;
     θ_reduced = QuickTwoDifference(value, error);
+LOG(ERROR)<<value<<" "<<error;
+LOG(ERROR)<<θ_reduced.value<<" "<<θ_reduced.error;
     // TODO(phl): Error analysis needed to find the right bounds.
     OSACA_IF(θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
       quadrant = n & 0b11;
+LOG(ERROR)<<quadrant;
       return;
     }
   }
