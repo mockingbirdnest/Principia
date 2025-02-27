@@ -1,8 +1,8 @@
 # Principia
 
-**&lrm;[Kuratowski](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#kuratowski), the January version of Principia, is available.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/kuratowski).**
+**&lrm;[خوارزمی‎](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%D8%AE%D9%88%D8%A7%D8%B1%D8%B2%D9%85%DB%8C), the February version of Principia, is available with usability improvements.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/kvarzmy).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Kuratowski for 1.8.1—1.12.5](https://share.weiyun.com/6f8NLt3l).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia خوارزمی‎ for 1.8.1—1.12.5](https://share.weiyun.com/51O5dL6E).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/kuratowski).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Kuratowski](https://github.com/mockingbirdnest/Principia/releases/tag/2025012913-Kuratowski) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/kvarzmy).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [خوارزمی‎](https://github.com/mockingbirdnest/Principia/releases/tag/2025022801-%D8%AE%D9%88%D8%A7%D8%B1%D8%B2%D9%85%DB%8C%E2%80%8E) release.
