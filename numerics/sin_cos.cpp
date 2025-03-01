@@ -71,6 +71,11 @@ constexpr Argument π_over_2_low = 0x2.d1846'9898c'c5170'1b839p-40;
 constexpr Argument mantissa_reduce_shifter =
     1LL << (std::numeric_limits<double>::digits - 1);
 
+// TODO(phl): Error analysis needed to find the right bounds.  We might need a
+// safety factor here.
+const Argument θ_reduced_threshold =
+    Sqrt(6.0 / (5LL << std::numeric_limits<double>::digits));
+
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 
@@ -198,9 +203,10 @@ inline void Reduce(Argument const θ,
     Argument const error = n_double * π_over_2_low;
     θ_reduced = QuickTwoDifference(value, error);
 LOG(ERROR)<<value<<" "<<error;
-LOG(ERROR)<<θ_reduced.value<<" "<<θ_reduced.error;
-    // TODO(phl): Error analysis needed to find the right bounds.
-    OSACA_IF(θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
+LOG(ERROR)<<θ_reduced_threshold;
+using namespace principia::quantities::_quantities;
+LOG(ERROR)<<DebugString(θ_reduced.value)<<" "<<θ_reduced.error;
+    OSACA_IF(std::abs(θ_reduced.value) > θ_reduced_threshold) {
       quadrant = n & 0b11;
 LOG(ERROR)<<quadrant;
       return;

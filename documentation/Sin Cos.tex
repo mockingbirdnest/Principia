@@ -116,7 +116,7 @@ y &= x - n \; C \\
 \gd \hat x &= \pa{y - \hat x} - \gd y
 \end{dcases}
 \]
-First, note that $\abs n \leq 2^{\gk_1}$.  Using the accuracy model of \cite{Higham2002}, equation (2.4), we have\footnote{We note that in Higham's notation $u = \ge_M / 2$, see pages 37 and 38.}:
+First, note that $\abs n \leq 2^{\gk_1}$.  Using the accuracy model of \cite{Higham2002}, equation (2.4), we have\footnote{We note that in Higham's notation $\gd_i < u = \ge_M / 2 = 2^{-M}$, see pages 37 and 38.}:
 \begin{align*}
 \abs x &\leq 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \\
 \abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
@@ -136,18 +136,22 @@ y + \gd y &= x - n \; C - n \; \gd C \pa{1 + \gd_4}  \quad \text{with} \quad \ab
 &= x - n \pa{C + \gd C} - n \; \gd C \; \gd_4 \\
 &= x - n \frac{\Pi}{2} -n \pa{\gd_5 + \gd C \; \gd_4}
 \end{align*}
-from which we can deduce an upper bound of the error:
+from which we can deduce an upper bound on the absolute error:
 \[
 \abs{y + \gd y - \pa{x - n \frac{\Pi}{2}}} < 2^{\gk_1} 2^{\gk_2} \ULP\of{\frac{\Pi}{2}} \pa{2^{- M - 1} + 2^{-M}} = \frac{3}{2} 2^{\gk_1 + \gk_2 - M} \ULP\of{\frac{\Pi}{2}}
 \]
-where we have used the upper bound on $\gd C$ given by equation \ref{eqndC}.
-
-This means that the reduction is only correctly rounded to $M$ bits if $\abs{\hat x} \geq \frac{3}{2} 2^{\gk_1 + \gk_2} \ULP\of{\frac{\Pi}{2}}$.  If more bits are cancelled, a more advanced technique is needed.
-
-\emph{TODO(phl):} It is not clear how many bits can actually be cancelled in this range.  Use Muller's program to figure out.  If the number is small enough, we may not even need to fall back to CORE-MATH in that case.
+where we have used the upper bound for $\gd C$ given by equation \ref{eqndC}.
 
 \subsection*{Argument Reduction for Large Angles}
 \section*{Accurate Tables and Their Generation}
 \section*{Computation of the Functions}
-
+\subsection*{Sin}
+\subsubsection*{Near Zero}
+For $\hat x$ near zero we evaluate:
+\begin{align*}
+\widehat{x^2} &= \round{{\hat x}^2} = x^2 \pa{1 + \gd_1}\\
+\widehat{x^3} &= \round{\hat x \; \widehat{x^2}} = x^3 \pa{1 + \gd_1} \pa{1 + \gd_2}\\
+\hat p &= \round{a \widehat{x^2} + b} = \pa{a x^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3}\\
+s\of{x} &\DefineAs \hat x + \round{\round{\widehat{x^3} \hat p} + \gd \hat x} = \hat x + \pa{x^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \pa{a x^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3} \pa{1 + \gd_4} + \gd \hat x}\pa{1 + \gd_5}
+\end{align*}
 \end{document}
