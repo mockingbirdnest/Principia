@@ -209,6 +209,9 @@ TEST_F(SinCosTest, HardRounding) {
 }
 
 TEST_F(SinCosTest, HardReduction) {
+  EXPECT_THAT(Sin(0x5ad7bcep-8), AlmostEquals(0.99999999999999999818, 0));
+  EXPECT_THAT(Cos(0x5ad7bcep-8),
+              AlmostEquals(1.9060601347136373148e-9, 0));
   EXPECT_THAT(Sin(0x16ac5b262ca1ffp797), AlmostEquals(1.0, 0));
   EXPECT_THAT(Cos(0x16ac5b262ca1ffp797),
               AlmostEquals(-4.687165924254627611122582801963884e-19, 0));
