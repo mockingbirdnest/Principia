@@ -12,6 +12,7 @@
 \DeclareMathOperator{\ULP}{\mathfrak u}
 \DeclareMathOperator{\mant}{\mathfrak m}
 \DeclareMathOperator{\expn}{\mathfrak e}
+\DeclareMathOperator{\truncate}{\StandardSymbol{Tr}}
 
 % Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
 % so we make them grow for readability.
@@ -74,6 +75,45 @@ Given an argument $x$, the purpose of argument reduction is to compute a pair of
 \end{dcases}
 \]
 \subsection*{Approximation of $\Pi$}
+We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the mantissa of $z$:
+\[
+\truncate\of{\gk, z} \DefineAs \floor{2^{-\gk} \mant \of{z}} 2^{\gk} \ULP\of{z}
+\]
+From the definition of the floor function we deduce:
+\[
+0 \leq z - \truncate\of{\gk, z} < 2^{\gk} \ULP\of{z}
+\]
+Furthermore if the bits that are being truncated start with $k$ zeros we have the stricter inequality:
+\[
+0 \leq z - \truncate\of{\gk, z} < 2^{\gk'} \ULP\of{z} \quad \text{with} \quad \gk' = \gk - k
+\]
+and:
+\[
+\ULP\of{z - \truncate\of{\gk, z}} < \frac{2^{\gk'} \ULP\of{z}}{\mant\of{z - \truncate\of{\gk, z}}} \leq 2^{\gk' - M + 1} \ULP\of{z}
+\]
+
+To find a suitable approximation of $\frac{\Pi}{2}$ we start by defining:
+\[
+C_1 := \truncate\of{\gk_1, \frac{\Pi}{2}}
+\]
+where:
+\[
+\frac{\Pi}{2} - C_1 < 2^{\gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
+\]
+and:
+\[
+C_2 := \truncate\of{\gk_1, \frac{\Pi}{2} - C_1}
+\]
+where:
+\begin{align*}
+\frac{\Pi}{2} - C_1 - C_2 &< 2^{\gk''_1 - M + 1} \ULP\of{\frac{\Pi}{2} - C_1} \\
+&< 2^{\gk'_1 + \gk''_1 - 2 M + 2} \ULP\of{\frac{\Pi}{2}}
+\end{align*}
+Finally we define:
+\[
+C_3 \DefineAs \round{\frac{\Pi}{2} - C_1 - C_2} < 2^{\gk'_1 + \gk''_1 - 2 M + 1} \ULP\of{\frac{\Pi}{2}}
+\]
+
 We approximate $\frac{\Pi}{2}$ as the sum of two floating-point numbers:
 \[
 \frac{\Pi}{2} ≅ C + \gd C
