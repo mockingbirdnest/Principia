@@ -61,6 +61,9 @@ The \emph{unit of the last place} of $x$ is defined as:
 In particular, $\ULP\of{1} = \ge_M$.
 
 We ignore the exponent bias, overflow and underflow as they play no role in this discussion.
+
+Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): unless otherwise indicated, $\gd_i$ is a roundoff factor such that $\gd_i < u = \ge_M / 2 = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
+
 \section*{Argument Reduction}
 Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\hat x, \gd \hat x}$ such that:
 \[
@@ -75,7 +78,7 @@ We approximate $\frac{\Pi}{2}$ as the sum of two floating-point numbers:
 \[
 \frac{\Pi}{2} ≅ C + \gd C
 \]
-where $C$ is obtained by truncating $\frac{\Pi}{2}$ to $\gk_1$ significand bits:
+where $C$ is obtained by dropping the last $\gk_1$ mantissa bits of $\frac{\Pi}{2}$:
 \[
 C \DefineAs \floor{2^{-\gk_1} \mant \of{\frac{\Pi}{2}}} 2^{\gk_1} \ULP\of{\frac{\Pi}{2}}
 \]
@@ -116,13 +119,13 @@ y &= x - n \; C \\
 \gd \hat x &= \pa{y - \hat x} - \gd y
 \end{dcases}
 \]
-First, note that $\abs n \leq 2^{\gk_1}$.  Using the accuracy model of \cite{Higham2002}, equation (2.4), we have\footnote{We note that in Higham's notation $\gd_i < u = \ge_M / 2 = 2^{-M}$, see pages 37 and 38.}:
+Let's first show that $\abs n \leq 2^{\gk_1}$. :
 \begin{align*}
 \abs x &\leq 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \\
 \abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
 &\leq \iround{2^{\gk_1} \pa{1 + \gg_3}}
 \end{align*}
-where the notation follows \cite{Higham2002}, lemma 3.1.  Because $2^{\gk_1} \gg_3$ is very small (less that $2^{-33}$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.
+Because $2^{\gk_1} \gg_3$ is very small (less that $2^{-33}$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.
 
 The product $n \; C$ is exact thanks to the $\gk_1$ trailing zeroes of $C$.  The subtraction $x - n \; C$ is exact by Sterbenz's Lemma.  Finally, the last two steps form a compensated summation so that $\hat x + \gd \hat x = y + \gd y$.
 
@@ -132,7 +135,7 @@ C + \gd C = \frac{\Pi}{2} + \gd_5 \quad \text{with} \quad \abs{\gd_5} \leq 2^{\g
 \]
 The error computation proceeds as follows:
 \begin{align*}
-y + \gd y &= x - n \; C - n \; \gd C \pa{1 + \gd_4}  \quad \text{with} \quad \abs{\gd_4} < 2^{-M}\\
+y + \gd y &= x - n \; C - n \; \gd C \pa{1 + \gd_4} \\
 &= x - n \pa{C + \gd C} - n \; \gd C \; \gd_4 \\
 &= x - n \frac{\Pi}{2} -n \pa{\gd_5 + \gd C \; \gd_4}
 \end{align*}
@@ -149,9 +152,11 @@ where we have used the upper bound for $\gd C$ given by equation \ref{eqndC}.
 \subsubsection*{Near Zero}
 For $\hat x$ near zero we evaluate:
 \begin{align*}
-\widehat{x^2} &= \round{{\hat x}^2} = x^2 \pa{1 + \gd_1}\\
-\widehat{x^3} &= \round{\hat x \; \widehat{x^2}} = x^3 \pa{1 + \gd_1} \pa{1 + \gd_2}\\
-\hat p &= \round{a \widehat{x^2} + b} = \pa{a x^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3}\\
-s\of{x} &\DefineAs \hat x + \round{\round{\widehat{x^3} \hat p} + \gd \hat x} = \hat x + \pa{x^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \pa{a x^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3} \pa{1 + \gd_4} + \gd \hat x}\pa{1 + \gd_5}
+\widehat{x^2} &= \round{{\hat x}^2} = {\hat x}^2 \pa{1 + \gd_1}\\
+\widehat{x^3} &= \round{\hat x \; \widehat{x^2}} = {\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2}\\
+\hat p &= \round{a \widehat{x^2} + b} = \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3}\\
+s\of{x} &\DefineAs \hat x + \round{\round{\widehat{x^3} \hat p} + \gd \hat x} \\
+&= \hat x + \pa{{\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3} \pa{1 + \gd_4} + \gd \hat x}\pa{1 + \gd_5} \\
+&= \hat x + a {\hat x}^3 \pa{1 + \gq_5} + b {\hat x}^5 \pa{1 + \gq_4} + \gd \hat x \pa{1 + \gd_5}
 \end{align*}
 \end{document}
