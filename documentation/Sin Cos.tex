@@ -59,7 +59,10 @@ The \emph{unit of the last place} of $x$ is defined as:
 \[
 \ULP\of{x} \DefineAs 2^{\expn\of{x}}
 \]
-In particular, $\ULP\of{1} = \ge_M$.
+In particular, $\ULP\of{1} = \ge_M$ and:
+\[
+\frac{2 x}{\ge_M} < \frac{x}{2^M - 1} \leq \ULP\of{x} \leq \frac{x}{2^{M - 1}} = \frac{x}{\ge_M}
+\]
 
 We ignore the exponent bias, overflow and underflow as they play no role in this discussion.
 
@@ -68,7 +71,7 @@ Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equa
 \section*{Approximation of $\frac{\Pi}{2}$}
 To perform argument reduction, we need to build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
 
-We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the mantissa of $z$:
+We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
 \[
 \truncate\of{\gk, z} \DefineAs \floor{2^{-\gk} \mant \of{z}} 2^{\gk} \ULP\of{z}
 \]
@@ -136,7 +139,9 @@ where $\gk'_2 \leq \gk_2$ accounts for any leading zeroes in the bits of $\frac{
 \ULP\of{\frac{\Pi}{2} - C_2 - C'_2} &= 2^{\gk''_2 - M} \ULP\of{\frac{\Pi}{2} - C_2} \\
 &= 2^{\gk'_2 + \gk''_2 - 2 M} \ULP\of{\frac{\Pi}{2}}
 \end{align*}
-where $\gk''_2 \leq \gk_2$ accounts for any leading zeroes in the bits of $\frac{\Pi}{2} - C_2$ that are being truncated.  Note that normalization of the mantissa of $\frac{\Pi}{2} - C_2$ effectively drops the zeroes at positions $\gk_2$ to $\gk'_2$ and therefore the computation of $C'_2$ applies to a mantissa aligned on position $\gk'_2$.
+where $\gk''_2 \leq \gk_2$ accounts for any leading zeroes in the bits of $\frac{\Pi}{2} - C_2$ that are being truncated.  Note that normalization of the significand of $\frac{\Pi}{2} - C_2$ effectively drops the zeroes at positions $\gk_2$ to $\gk'_2$ and therefore the computation of $C'_2$ applies to a significand aligned on position $\gk'_2$.
+
+In other words, we have a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
 \section*{Argument Reduction}
 Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\hat x, \gd \hat x}$ such that:
@@ -150,13 +155,13 @@ Given an argument $x$, the purpose of argument reduction is to compute a pair of
 
 \subsection*{Argument Reduction for Small Angles}
 If $\abs x < \round{\frac{\Pi}{4}}$ then $\hat x = x$ and $\gd \hat x = 0$.
-\subsection*{Argument Reduction for Medium Angles}
-If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ then we compute:
+\subsection*{Argument Reduction Using the Two-Term Approximation}
+If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
 \begin{dcases}
 n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
-y &= x - n \; C \\
-\gd y &= \round{n \; \gd C} \\
+y &= x - n \; C_1 \\
+\gd y &= \round{n \; \gd C_1} \\
 \hat x &= \round{y - \gd y} \\
 \gd \hat x &= \pa{y - \hat x} - \gd y
 \end{dcases}
@@ -167,25 +172,34 @@ Let's first show that $\abs n \leq 2^{\gk_1}$. :
 \abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
 &\leq \iround{2^{\gk_1} \pa{1 + \gg_3}}
 \end{align*}
-Because $2^{\gk_1} \gg_3$ is very small (less that $2^{-33}$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.
+As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.
 
-The product $n \; C$ is exact thanks to the $\gk_1$ trailing zeroes of $C$.  The subtraction $x - n \; C$ is exact by Sterbenz's Lemma.  Finally, the last two steps form a compensated summation so that $\hat x + \gd \hat x = y + \gd y$.
+The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last two steps form a compensated summation so that $\hat x + \gd \hat x = y + \gd y$.
 
-To compute the overall error on argument reduction, first remember that, from equation \ref{eqnpi} we have:
+To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpi}) we have:
 \[
-C + \gd C = \frac{\Pi}{2} + \gd_5 \quad \text{with} \quad \abs{\gd_5} \leq 2^{\gk_2 - M - 1} \ULP\of{\frac{\Pi}{2}}
+C_1 + \gd C_1 = \frac{\Pi}{2} + \gd_5 \quad \text{with} \quad \abs{\gd_5} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
 The error computation proceeds as follows:
 \begin{align*}
-y + \gd y &= x - n \; C - n \; \gd C \pa{1 + \gd_4} \\
-&= x - n \pa{C + \gd C} - n \; \gd C \; \gd_4 \\
-&= x - n \frac{\Pi}{2} -n \pa{\gd_5 + \gd C \; \gd_4}
+y + \gd y &= x - n \; C_1 - n \; \gd C_1 \pa{1 + \gd_4} \\
+&= x - n \pa{C_1 + \gd C_1} - n \; \gd C_1 \; \gd_4 \\
+&= x - n \frac{\Pi}{2} -n \pa{\gd_5 + \gd C_1 \; \gd_4}
 \end{align*}
 from which we can deduce an upper bound on the absolute error:
 \[
-\abs{y + \gd y - \pa{x - n \frac{\Pi}{2}}} < 2^{\gk_1} 2^{\gk_2} \ULP\of{\frac{\Pi}{2}} \pa{2^{- M - 1} + 2^{-M}} = \frac{3}{2} 2^{\gk_1 + \gk_2 - M} \ULP\of{\frac{\Pi}{2}}
+\abs{y + \gd y - \pa{x - n \frac{\Pi}{2}}} < 2^{\gk_1} 2^{\gk_2} \ULP\of{\frac{\Pi}{2}} \pa{2^{- M - 1} + 2^{-M}} = \frac{3}{2} 2^{\gk_1 + \gk'_1 - M} \ULP\of{\frac{\Pi}{2}}
 \]
-where we have used the upper bound for $\gd C$ given by equation \ref{eqndC}.
+where we have used the upper bound for $\gd C_1$ given by equation \ref{eqndC}.
+
+If we want $\hat x + \gd \hat x$ to have $\gk_3$ extra bits of accuracy, we must have:
+\[
+\frac{3}{2} 2^{\gk_1 + \gk'_1 - M} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3} \abs{\ULP\of{\hat x}} \leq 2^{-\gk_3 - M + 1} \abs{\hat x}
+\]
+which leads to the following condition on the reduced angle:
+\[
+\abs{\hat x} \geq \frac{3}{2} 2^{\gk_1 + \gk'_1 + \gk_3} \ULP\of{\frac{\Pi}{2}} = \frac{3}{2} 2^{1 + \gk_1 + \gk'_1 + \gk_3 - M}
+\]
 
 \subsection*{Argument Reduction for Large Angles}
 \section*{Accurate Tables and Their Generation}
