@@ -80,9 +80,10 @@ The definition of the floor function implies:
 0 \leq z - \truncate\of{\gk, z} < 2^{\gk} \ULP\of{z}
 \]
 Furthermore if the bits that are being truncated start with $k$ zeros we have the stricter inequality:
-\[
+\begin{equation}
 0 \leq z - \truncate\of{\gk, z} < 2^{\gk'} \ULP\of{z} \quad \text{with} \quad \gk' = \gk - k
-\]
+\label{eqntruncerror}
+\end{equation}
 This leads to the following upper bound for the unit of the last place of the truncation error:
 \[
 \ULP\of{z - \truncate\of{\gk, z}} < \frac{2^{\gk'} \ULP\of{z}}{\mant\of{z - \truncate\of{\gk, z}}} \leq 2^{\gk' - M + 1} \ULP\of{z}
@@ -112,10 +113,10 @@ Equation (\ref{eqnulptr}) becomes:
 where $\gk'_1 \leq \gk_1$ accounts for any leading zeroes in the bits of $\frac{\Pi}{2}$ that are being truncated.
 The absolute error on the two-term approximation is therefore:
 \begin{align}
-\abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
-\label{eqnpi}
+\abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk'_1 - 2 M}
+\label{eqnpitwoterms}
 \end{align}
-In other words, we have a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.  
+In other words, we have a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
 
 \subsubsection*{Three-Term Approximation}
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of three floating-point numbers:
@@ -190,7 +191,7 @@ from which we can deduce an upper bound on the absolute error:
 \[
 \abs{y + \gd y - \pa{x - n \frac{\Pi}{2}}} < 2^{\gk_1} 2^{\gk_2} \ULP\of{\frac{\Pi}{2}} \pa{2^{- M - 1} + 2^{-M}} = \frac{3}{2} 2^{\gk_1 + \gk'_1 - M} \ULP\of{\frac{\Pi}{2}}
 \]
-where we have used the upper bound for $\gd C_1$ given by equation \ref{eqndC}.
+where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqntruncerror}).
 
 If we want $\hat x + \gd \hat x$ to have $\gk_3$ extra bits of accuracy, we must have:
 \[
@@ -201,7 +202,9 @@ which leads to the following condition on the reduced angle:
 \abs{\hat x} \geq \frac{3}{2} 2^{\gk_1 + \gk'_1 + \gk_3} \ULP\of{\frac{\Pi}{2}} = \frac{3}{2} 2^{1 + \gk_1 + \gk'_1 + \gk_3 - M}
 \]
 
-\subsection*{Argument Reduction for Large Angles}
+If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\hat x} \geq 3 \times 2^{-21} ≃ 7.2 \times 10^{-7}$.
+
+\subsection*{Argument Reduction Using the Three-Term Approximation}
 \section*{Accurate Tables and Their Generation}
 \section*{Computation of the Functions}
 \subsection*{Sin}
