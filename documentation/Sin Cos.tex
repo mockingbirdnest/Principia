@@ -159,7 +159,7 @@ Given an argument $x$, the purpose of argument reduction is to compute a pair of
 \begin{dcases}
 \hat x + \gd \hat x ≅ x \pmod{\frac{\Pi}{2}} \\
 \hat x \;\text{is approximately in}\; \intclos{-\frac{\Pi}{4}}{\frac{\Pi}{4}} \\
-\abs{\gd \hat x} < \ULP\of{\hat x} 
+\abs{\gd \hat x} \leq \frac{1}{2} \ULP\of{\hat x} 
 \end{dcases}
 \]
 
@@ -172,8 +172,7 @@ If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
 y &= x - n \; C_1 \\
 \gd y &= \round{n \; \gd C_1} \\
-\hat x &= \round{y - \gd y} \\
-\gd \hat x &= \pa{y - \hat x} - \gd y
+\pa{\hat x, \gd \hat x} &= TwoDifference\of{y, \gd y}
 \end{dcases}
 \]
 Let's first show that $\abs n \leq 2^{\gk_1}$. :
@@ -184,7 +183,7 @@ Let's first show that $\abs n \leq 2^{\gk_1}$. :
 \end{align*}
 As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last two steps form a compensated summation so that $\hat x + \gd \hat x = y + \gd y$.
+The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition using algorithm 4 of in \cite{HidaLiBailey2007}.  Note that the more efficient $QuickTwoDifference$ is not usable here because $\abs y$ may be smaller than $\abs{\gd y}$ when $x$ is close to a multiple of $\frac{\Pi}{2}$.
 
 To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpitwoterms}) we have:
 \[
@@ -192,13 +191,13 @@ C_1 + \gd C_1 = \frac{\Pi}{2} + \gd_5 \quad \text{with} \quad \abs{\gd_4} \leq 2
 \]
 The error computation proceeds as follows:
 \begin{align*}
-y + \gd y &= x - n \; C_1 - n \; \gd C_1 \pa{1 + \gd_5} \\
+y - \gd y &= x - n \; C_1 - n \; \gd C_1 \pa{1 + \gd_5} \\
 &= x - n \pa{C_1 + \gd C_1} - n \; \gd C_1 \; \gd_5 \\
 &= x - n \frac{\Pi}{2} -n \pa{\gd_5 + \gd C_1 \; \gd_5}
 \end{align*}
 from which we can deduce an upper bound on the absolute error of the reduction:
 \begin{align*}
-\abs{y + \gd y - \pa{x - n \frac{\Pi}{2}}} &\leq 2^{\gk_1} 2^{\gk'_1} \pa{2^{- M - 1} + 2^{-M} + 2^{-2 M - 1}} \ULP\of{\frac{\Pi}{2}} \\
+\abs{y - \gd y - \pa{x - n \frac{\Pi}{2}}} &\leq 2^{\gk_1} 2^{\gk'_1} \pa{2^{- M - 1} + 2^{-M} + 2^{-2 M - 1}} \ULP\of{\frac{\Pi}{2}} \\
 &= 2^{\gk_1 + \gk'_1 - M}\pa{\frac{3}{2} + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}} \\
 &< 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
 \end{align*}
@@ -221,7 +220,7 @@ If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
 \begin{dcases}
 n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
 y &= x - n \; C_2 \\
-y' &= \round{y - n \; C'_2} \\
+\pa{z, \gd z} &= TwoDifference\of{y, n \; C'_2} \\
 \gd y &= \round{n \; \gd C_2}
 \end{dcases}
 \]
