@@ -106,17 +106,26 @@ C_1 &\DefineAs \truncate\of{\gk_1, \frac{\Pi}{2}} \\
 \gd C_1 &\DefineAs \round{\frac{\Pi}{2} - C_1}
 \end{dcases}
 \end{equation*}
-Equation (\ref{eqnulptr}) becomes:
+Equation (\ref{eqntruncerror}) becomes:
+\[
+\frac{\Pi}{2} - C_1 < 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}
+\]
+where $\gk'_1 \leq \gk_1$ accounts for any leading zeroes in the bits of $\frac{\Pi}{2}$ that are being truncated.  Equation (\ref{eqnulptr}) becomes:
 \[
 \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M} \ULP\of{\frac{\Pi}{2}}
 \]
-where $\gk'_1 \leq \gk_1$ accounts for any leading zeroes in the bits of $\frac{\Pi}{2}$ that are being truncated.
-The absolute error on the two-term approximation is therefore:
+Noting that the absolute error on the rounding that appears in the definition of $\gd C_1$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1}$, we obtain the the absolute error on the two-term approximation:
 \begin{align}
-\abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk'_1 - 2 M}
+\abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \label{eqnpitwoterms}
 \end{align}
-In other words, we have a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
+and the following upper bound for $\gd C_1$:
+\begin{equation}
+\abs{\gd C_1} < 2^{\gk'_1} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
+\label{eqnabsdc1}
+\end{equation}
+ 
+This scheme gives a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
 
 \subsubsection*{Three-Term Approximation}
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of three floating-point numbers:
@@ -173,38 +182,55 @@ Let's first show that $\abs n \leq 2^{\gk_1}$. :
 \abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
 &\leq \iround{2^{\gk_1} \pa{1 + \gg_3}}
 \end{align*}
-As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.
+As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
 The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last two steps form a compensated summation so that $\hat x + \gd \hat x = y + \gd y$.
 
-To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpi}) we have:
+To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpitwoterms}) we have:
 \[
-C_1 + \gd C_1 = \frac{\Pi}{2} + \gd_5 \quad \text{with} \quad \abs{\gd_5} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
+C_1 + \gd C_1 = \frac{\Pi}{2} + \gd_5 \quad \text{with} \quad \abs{\gd_4} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
 The error computation proceeds as follows:
 \begin{align*}
-y + \gd y &= x - n \; C_1 - n \; \gd C_1 \pa{1 + \gd_4} \\
-&= x - n \pa{C_1 + \gd C_1} - n \; \gd C_1 \; \gd_4 \\
-&= x - n \frac{\Pi}{2} -n \pa{\gd_5 + \gd C_1 \; \gd_4}
+y + \gd y &= x - n \; C_1 - n \; \gd C_1 \pa{1 + \gd_5} \\
+&= x - n \pa{C_1 + \gd C_1} - n \; \gd C_1 \; \gd_5 \\
+&= x - n \frac{\Pi}{2} -n \pa{\gd_5 + \gd C_1 \; \gd_5}
 \end{align*}
-from which we can deduce an upper bound on the absolute error:
-\[
-\abs{y + \gd y - \pa{x - n \frac{\Pi}{2}}} < 2^{\gk_1} 2^{\gk_2} \ULP\of{\frac{\Pi}{2}} \pa{2^{- M - 1} + 2^{-M}} = \frac{3}{2} 2^{\gk_1 + \gk'_1 - M} \ULP\of{\frac{\Pi}{2}}
-\]
-where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqntruncerror}).
+from which we can deduce an upper bound on the absolute error of the reduction:
+\begin{align*}
+\abs{y + \gd y - \pa{x - n \frac{\Pi}{2}}} &\leq 2^{\gk_1} 2^{\gk'_1} \pa{2^{- M - 1} + 2^{-M} + 2^{-2 M - 1}} \ULP\of{\frac{\Pi}{2}} \\
+&= 2^{\gk_1 + \gk'_1 - M}\pa{\frac{3}{2} + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}} \\
+&< 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
+\end{align*}
+where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).
 
 If we want $\hat x + \gd \hat x$ to have $\gk_3$ extra bits of accuracy, we must have:
 \[
-\frac{3}{2} 2^{\gk_1 + \gk'_1 - M} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3} \abs{\ULP\of{\hat x}} \leq 2^{-\gk_3 - M + 1} \abs{\hat x}
+2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3} \abs{\ULP\of{\hat x}} \leq 2^{-\gk_3 - M + 1} \abs{\hat x}
 \]
 which leads to the following condition on the reduced angle:
 \[
-\abs{\hat x} \geq \frac{3}{2} 2^{\gk_1 + \gk'_1 + \gk_3} \ULP\of{\frac{\Pi}{2}} = \frac{3}{2} 2^{1 + \gk_1 + \gk'_1 + \gk_3 - M}
+\abs{\hat x} \geq 2^{\gk_1 + \gk'_1 + \gk_3} \ULP\of{\frac{\Pi}{2}}
 \]
 
-If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\hat x} \geq 3 \times 2^{-21} ≃ 7.2 \times 10^{-7}$.
+The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding most of the time and detect cases of dangerous rounding.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\hat x} \geq 2^{-21} ≃ 4.8 \times 10^{-7}$.
 
 \subsection*{Argument Reduction Using the Three-Term Approximation}
+If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
+\[
+\begin{dcases}
+n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
+y &= x - n \; C_2 \\
+y' &= \round{y - n \; C'_2} \\
+\gd y &= \round{n \; \gd C_2}
+\end{dcases}
+\]
+It is straightforward to show, like we did in the preceding section, that:
+\[
+\abs n \leq \iround{2^{\gk_2} \pa{1 + \gg_3}}
+\]
+and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.
+
 \section*{Accurate Tables and Their Generation}
 \section*{Computation of the Functions}
 \subsection*{Sin}
