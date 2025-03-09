@@ -44,6 +44,8 @@ The implementation follows the ideas described by \cite{GalBachelis1991} and use
 \item if the result has a ``dangerous rounding configuration'' (as defined by \cite{GalBachelis1991}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise return the rounded result of the preceding computation.
 \end{itemize}
+
+\section*{Notation and Accuracy Model} 
 In this document we assume a base-2 floating-point number system with $M$ significand bits\footnote{In \texttt{binary64}, $M = 53$.} similar to the IEEE formats.  We define a real  function $\mant$ and an integer function $\expn$ denoting the \emph{significand} and \emph{exponent} of a real number, respectively:
 \[
 x = ±\mant\of{x} \times 2^{\expn\of{x}} \qquad\text{with}\qquad 2^{M-1} \leq \mant\of{x} \leq 2^M - 1
@@ -60,9 +62,10 @@ The \emph{unit of the last place} of $x$ is defined as:
 \ULP\of{x} \DefineAs 2^{\expn\of{x}}
 \]
 In particular, $\ULP\of{1} = \ge_M$ and:
-\[
-\frac{2 x}{\ge_M} < \frac{x}{2^M - 1} \leq \ULP\of{x} \leq \frac{x}{2^{M - 1}} = \frac{x}{\ge_M}
-\]
+\begin{equation}
+\frac{x \; \ge_M}{2} < \frac{x}{2^M - 1} \leq \ULP\of{x} \leq \frac{x}{2^{M - 1}} = x \; \ge_M
+\label{eqnulp}
+\end{equation}
 
 We ignore the exponent bias, overflow and underflow as they play no role in this discussion.
 
@@ -79,9 +82,9 @@ The definition of the floor function implies:
 \[
 0 \leq z - \truncate\of{\gk, z} < 2^{\gk} \ULP\of{z}
 \]
-Furthermore if the bits that are being truncated start with $k$ zeros we have the stricter inequality:
+Furthermore if the bits that are being truncated start with exactly $k$ zeros we have the stricter inequality:
 \begin{equation}
-0 \leq z - \truncate\of{\gk, z} < 2^{\gk'} \ULP\of{z} \quad \text{with} \quad \gk' = \gk - k
+2^{\gk' - 1} \ULP\of{z} \leq z - \truncate\of{\gk, z} < 2^{\gk'} \ULP\of{z} \quad \text{with} \quad \gk' = \gk - k
 \label{eqntruncerror}
 \end{equation}
 This leads to the following upper bound for the unit of the last place of the truncation error:
@@ -108,7 +111,7 @@ C_1 &\DefineAs \truncate\of{\gk_1, \frac{\Pi}{2}} \\
 \end{equation*}
 Equation (\ref{eqntruncerror}) becomes:
 \[
-\frac{\Pi}{2} - C_1 < 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}
+2^{\gk'_1 - 1} \ULP\of{\frac{\Pi}{2}} \leq \frac{\Pi}{2} - C_1 < 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}
 \]
 where $\gk'_1 \leq \gk_1$ accounts for any leading zeroes in the bits of $\frac{\Pi}{2}$ that are being truncated.  Equation (\ref{eqnulptr}) becomes:
 \[
@@ -183,7 +186,20 @@ Let's first show that $\abs n \leq 2^{\gk_1}$. :
 \end{align*}
 As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition using algorithm 4 of in \cite{HidaLiBailey2007}.  Note that the more efficient $QuickTwoDifference$ is not usable here because $\abs y$ may be smaller than $\abs{\gd y}$ when $x$ is close to a multiple of $\frac{\Pi}{2}$.
+The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $QuickTwoDifference$ is not usable here.  First, note that $\abs y$ is an integral multiple of $\ULP\of{x}$ and therefore, when not zero, may be as small as $\ULP\of{x}$. Ignoring rounding errors we have:
+\[ 
+\abs{\gd y} \geq n \; 2^{\gk'_1 - 1} \ULP\of{\frac{\Pi}{2}} \geq 2^{\gk'_1 + M - 2} \ULP\of{\frac{\Pi}{2}} \ULP\of{n}
+\]
+where we used the bound given by equation (\ref{eqnulp}).  Now the computation of $n$ can result in a value that is either in the same binade or in the binade below that of $x$.  Therefore $\ULP\of{n} \geq \frac{1}{2} \ULP\of{x}$ and the above inequality becomes:
+\[
+\abs{\gd y} \geq 2^{\gk'_1 + M - 3} \ULP\of{\frac{\Pi}{2}} \ULP\of{x}
+\]
+plugging $\ULP\of{\frac{\Pi}{2}} = 2^{1 - M}$ we find:
+\[
+\abs{\gd y} \geq 2^{\gk'_1 - 2} \ULP\of{x}
+\]
+Therefore, as long as $\gk'_1 > 2$, there exist arguments $x$ for which $\abs{\gd y} > \abs y$.
+} using algorithm 4 of \cite{HidaLiBailey2007}.
 
 To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpitwoterms}) we have:
 \[
