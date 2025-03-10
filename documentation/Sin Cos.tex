@@ -266,9 +266,13 @@ If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
 n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
 y &= x - n \; C_2 \\
 y' &= n \; C'_2 \\
-\gd y &= \round{n \; \gd C_2}
+\gd y &= \round{n \; \gd C_2} \\
+\pa{z, \gd z} &= QuickTwoSum\of{y', \gd y} \\
+\pa{\hat x, \gd \hat x} &= LongSub\of{y, \pa{z, \gd z}}
 \end{dcases}
 \]
+where $LongSub$ is the obvious adaptation of the algorithm $LongAdd$ presented in section 5 of \cite{Linnainmaa1981}.  Note that $QuickTwoSum$ is usable for the computation of $\pa{z, \gd z}$ because clearly $\abs{\gd z} < \abs z$.
+
 It is straightforward to show, like we did in the preceding section, that:
 \[
 \abs n \leq \iround{2^{\gk_2} \pa{1 + \gg_3}}
