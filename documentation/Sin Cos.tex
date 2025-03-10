@@ -238,7 +238,7 @@ The error computation proceeds as follows:
 \begin{align*}
 y - \gd y &= x - n \; C_1 - n \; \gd C_1 \pa{1 + \gd_4} \\
 &= x - n \pa{C_1 + \gd C_1} - n \; \gd C_1 \; \gd_4 \\
-&= x - n \frac{\Pi}{2} -n \pa{\gz + \gd C_1 \; \gd_4}
+&= x - n \frac{\Pi}{2} - n \pa{\gz + \gd C_1 \; \gd_4}
 \end{align*}
 from which we deduce an upper bound on the absolute error of the reduction:
 \begin{align*}
@@ -271,7 +271,8 @@ y' &= n \; C'_2 \\
 \pa{\hat x, \gd \hat x} &= LongSub\of{y, \pa{z, \gd z}}
 \end{dcases}
 \]
-where $LongSub$ is the obvious adaptation of the algorithm $LongAdd$ presented in section 5 of \cite{Linnainmaa1981}.  Note that $QuickTwoSum$ is usable for the computation of $\pa{z, \gd z}$ because clearly $\abs{\gd z} < \abs z$.
+The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $QuickTwoSum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; is usable in this case because clearly $\abs{\gd z} < \abs z$.
+$LongSub$ is the obvious adaptation of the algorithm $LongAdd$ presented in section 5 of \cite{Linnainmaa1981}, which implements very precise (but not exact) double-precision arithmetic.
 
 It is straightforward to show, like we did in the preceding section, that:
 \[
@@ -279,7 +280,20 @@ It is straightforward to show, like we did in the preceding section, that:
 \]
 and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.
 
-The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  
+To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpithreeterms}) we have:
+\[
+C_2 + C'_2 + \gd C_2 = \frac{\Pi}{2} + \gz_1 \quad \text{with} \quad \abs{\gz_1} \leq 2^{\gk'_2 + \gk''_2 - 2 M - 1} \ULP\of{\frac{\Pi}{2}}
+\]
+Let $\gz_2$ be the relative error introduced by $LongAdd$.  Table 1 of \cite{Linnainmaa1981} indicates that $\abs{\gz_2} < 2^{2 - 2 M}$.  The error computation proceeds as follows:
+\begin{align*}
+y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \pa{1 + \gz_2} \\
+&= \pa{x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4}} \pa{1 + \gz_2} \\
+&= x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4} \pa{1 + \gz_2} + \pa{x - n \frac{\Pi}{2}} \; \gz_2
+\end{align*}
+from which we deduce an upper bound on the absolute error of the reduction:
+\begin{align*}
+\abs{y - y' - \gd y - \pa{x - n \frac{\Pi}{2}}} &\leq  \\
+\end{align*}
 
 \section*{Accurate Tables and Their Generation}
 \section*{Computation of the Functions}
