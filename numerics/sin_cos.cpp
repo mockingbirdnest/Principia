@@ -66,16 +66,27 @@ constexpr Argument sin_near_zero_cutoff = table_spacing / 2.0;
 
 constexpr std::int64_t κ₁ = 8;
 constexpr std::int64_t κʹ₁ = 5;
-constexpr Argument two_term_θ_threshold = π / 2 * (1 << κ₁);
+constexpr std::int64_t κ₂ = 18;
+constexpr std::int64_t κʹ₂ = 13;
+constexpr std::int64_t κʺ₂ = 14;
+constexpr std::int64_t κ₃ = 18;
+constexpr Argument two_term_θ_threshold = π / 2 * (1LL << κ₁);
+constexpr Argument three_term_θ_threshold = π / 2 * (1LL << κ₂);
 constexpr Argument C₁ = 0x1.921fb'54442'd00p0;
 constexpr Argument δC₁ = 0x1.84698'98cc5'17p-48;
+constexpr Argument C₂ = 0x1.921fb'54440'000p0;
+constexpr Argument Cʹ₂ = 0x2.d1846'98980'000p-40;
+constexpr Argument δC₂ = 0xc.c5170'1b839'a28p-80;
+constexpr Argument two_term_θ_reduced_threshold =
+    1.0 / (1LL << (-(κ₁ + κʹ₁ + κ₃ - std::numeric_limits<double>::digits + 1)));
+constexpr Argument three_term_θ_reduced_threshold =
+    (1.0 / (1LL << (-(κ₃ - std::numeric_limits<double>::digits)))) *
+    ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 1))) +
+     1);
+
 constexpr Argument mantissa_reduce_shifter =
     1LL << (std::numeric_limits<double>::digits - 1);
 
-// TODO(phl): Error analysis needed to find the right bounds.  We might need a
-// safety factor here.
-const Argument θ_reduced_threshold =
-    Sqrt(6.0 / (5LL << std::numeric_limits<double>::digits));
 
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
@@ -189,26 +200,53 @@ inline void Reduce(Argument const θ,
 
     // Don't move the computation of `n` after the if, it generates some extra
     // moves.
-    Argument value;
+    Argument y;
     std::int64_t n;
     if constexpr (preserve_sign) {
       n_double = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(n_double), sign));
       n = _mm_cvtsd_si64(_mm_set_sd(n_double));
-      value = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, θ);
     } else {
       n = _mm_cvtsd_si64(_mm_set_sd(n_double));
-      value = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, abs_θ);
     }
 
-    Argument const error = n_double * δC₁;
-    θ_reduced = TwoDifference(value, error);
-//LOG(ERROR)<<value<<" "<<error;
-//LOG(ERROR)<<θ_reduced_threshold;
-//using namespace principia::quantities::_quantities;
-//LOG(ERROR)<<DebugString(θ_reduced.value)<<" "<<θ_reduced.error;
-    OSACA_IF(std::abs(θ_reduced.value) > θ_reduced_threshold) {
+    Argument const δy = n_double * δC₁;
+    θ_reduced = TwoDifference(y, δy);
+    OSACA_IF(std::abs(θ_reduced.value) >= two_term_θ_reduced_threshold) {
       quadrant = n & 0b11;
-//LOG(ERROR)<<quadrant;
+      return;
+    }
+    // Fallback.
+    OSACA_IF(abs_θ <= three_term_θ_threshold) {
+      goto three_term_reduction;
+    }
+  }
+  OSACA_ELSE_IF(abs_θ <= three_term_θ_threshold) {
+  three_term_reduction:
+    // Same code as above.
+    __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(θ));
+    double n_double =
+        FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter) -
+        mantissa_reduce_shifter;
+
+    Argument y;
+    std::int64_t n;
+    if constexpr (preserve_sign) {
+      n_double = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(n_double), sign));
+      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₂, θ);
+    } else {
+      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₂, abs_θ);
+    }
+
+    Argument const yʹ = n_double * Cʹ₂;
+    Argument const δy = n_double * δC₂;
+    auto const z = QuickTwoSum(yʹ, δy);
+    θ_reduced = y - z;
+    OSACA_IF(std::abs(θ_reduced.value) >= three_term_θ_reduced_threshold) {
+      quadrant = n & 0b11;
       return;
     }
   }
