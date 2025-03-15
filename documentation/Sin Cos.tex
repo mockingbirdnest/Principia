@@ -230,7 +230,7 @@ plugging $\ULP\of{\frac{\Pi}{2}} = 2^{1 - M}$ we find:
 Therefore, as long as $\gk'_1 > 2$, there exist arguments $x$ for which $\abs{\gd y} > \abs y$.
 } using algorithm 4 of \cite{HidaLiBailey2007}.
 
-To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpitwoterms}) we have:
+To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpitwoterms}), we have:
 \[
 C_1 + \gd C_1 = \frac{\Pi}{2} + \gz \quad \text{with} \quad \abs{\gz} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
@@ -271,8 +271,8 @@ y' &= n \; C'_2 \\
 \pa{\hat x, \gd \hat x} &= LongSub\of{y, \pa{z, \gd z}}
 \end{dcases}
 \]
-The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $QuickTwoSum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; is usable in this case because clearly $\abs{\gd z} < \abs z$.
-$LongSub$ is the obvious adaptation of the algorithm $LongAdd$ presented in section 5 of \cite{Linnainmaa1981}, which implements very precise (but not exact) double-precision arithmetic.
+The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $QuickTwoSum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable in this case because clearly $\abs{\gd z} < \abs z$.
+$LongSub$ is the obvious adaptation of the algorithm $LongAdd$ presented in section 5 of \cite{Linnainmaa1981}, which implements precise (but not exact) double-precision arithmetic.
 
 It is straightforward to show, like we did in the preceding section, that:
 \[
@@ -280,7 +280,7 @@ It is straightforward to show, like we did in the preceding section, that:
 \]
 and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.
 
-To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpithreeterms}) we have:
+To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpithreeterms}), we have:
 \[
 C_2 + C'_2 + \gd C_2 = \frac{\Pi}{2} + \gz_1 \quad \text{with} \quad \abs{\gz_1} \leq 2^{\gk'_2 + \gk''_2 - 2 M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
@@ -292,7 +292,10 @@ y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \p
 \end{align*}
 from which we deduce an upper bound on the absolute error of the reduction:
 \begin{align*}
-\abs{y - y' - \gd y - \pa{x - n \frac{\Pi}{2}}} &\leq  \\
+&\abs{y - y' - \gd y - \pa{x - n \frac{\Pi}{2}}} \\ 
+& \qquad \leq 2^{\gk_2 + \gk'_2 + \gk''_2} \pa{2^{-2 M - 1} + 2^{-2 M} + 2^{-3 M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{2 - 2 M} \frac{\Pi}{4} \\
+& \qquad = 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi \\
+& \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M + 1} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi
 \end{align*}
 
 \section*{Accurate Tables and Their Generation}
