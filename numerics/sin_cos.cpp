@@ -179,9 +179,10 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
 }
 
 template<FMAPolicy fma_policy, bool preserve_sign>
-inline void Reduce(Argument const θ,
-                   DoublePrecision<Argument>& θ_reduced,
-                   std::int64_t& quadrant) {
+FORCE_INLINE(inline)
+void Reduce(Argument const θ,
+            DoublePrecision<Argument>& θ_reduced,
+            std::int64_t& quadrant) {
   double const abs_θ = std::abs(θ);
   OSACA_IF(abs_θ < π / 4) {
     θ_reduced.value = θ;
@@ -213,17 +214,12 @@ inline void Reduce(Argument const θ,
 
     Argument const δy = n_double * δC₁;
     θ_reduced = TwoDifference(y, δy);
-    OSACA_IF(std::abs(θ_reduced.value) >= two_term_θ_reduced_threshold) {
+    OSACA_IF(θ_reduced.value <= -two_term_θ_reduced_threshold ||
+             θ_reduced.value >= two_term_θ_reduced_threshold) {
       quadrant = n & 0b11;
       return;
     }
-    // Fallback.
-    OSACA_IF(abs_θ <= three_term_θ_threshold) {
-      goto three_term_reduction;
-    }
-  }
-  OSACA_ELSE_IF(abs_θ <= three_term_θ_threshold) {
-  three_term_reduction:
+  } OSACA_ELSE_IF(abs_θ <= three_term_θ_threshold) {
     // Same code as above.
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(θ));
     double n_double =
@@ -245,7 +241,8 @@ inline void Reduce(Argument const θ,
     Argument const δy = n_double * δC₂;
     auto const z = QuickTwoSum(yʹ, δy);
     θ_reduced = y - z;
-    OSACA_IF(std::abs(θ_reduced.value) >= three_term_θ_reduced_threshold) {
+    OSACA_IF(θ_reduced.value <= -three_term_θ_reduced_threshold ||
+             θ_reduced.value >= three_term_θ_reduced_threshold) {
       quadrant = n & 0b11;
       return;
     }

@@ -406,7 +406,13 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
 template<typename T, typename U, typename>
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b) {
-  return TwoSum(a, -b);
+  DoublePrecision<Sum<T, U>> result{uninitialized};
+  auto& s = result.value;
+  auto& e = result.error;
+  s = a - b;
+  auto const v = s - a;
+  e = (a - (s - v)) - (b + v);
+  return result;
 }
 
 template<typename T>
