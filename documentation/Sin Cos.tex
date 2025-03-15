@@ -254,10 +254,12 @@ If we want $\hat x + \gd \hat x$ to have $\gk_3$ extra bits of accuracy, we must
 \]
 which leads to the following condition on the reduced angle:
 \[
-\abs{\hat x} \geq 2^{\gk_1 + \gk'_1 + \gk_3} \ULP\of{\frac{\Pi}{2}}
+\abs{\hat x} \geq 2^{\gk_1 + \gk'_1 + \gk_3} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 1}
 \]
 
 The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding most of the time and detect cases of dangerous rounding.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\hat x} \geq 2^{-21} ≃ 4.8 \times 10^{-7}$.
+
+If this condition is not met, we fall back on reducing the argument using the three-term approximation.
 
 \subsection*{Argument Reduction Using the Three-Term Approximation}
 If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
@@ -297,6 +299,17 @@ from which we deduce an upper bound on the absolute error of the reduction:
 & \qquad = 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi \\
 & \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M + 1} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi
 \end{align*}
+A sufficient condition for the reduction to guarantee $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3} \abs{\ULP\of{\hat x}}$ which itself is less than $2^{-\gk_3 - M + 1} \abs{\hat{x}}$.  Therefore we want:
+\begin{align*}
+\abs{\hat x} &\geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2} \ULP\of{\frac{\Pi}{2}} + \frac{\Pi}{2}} \\
+&= 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 1}  + \frac{\Pi}{2}} \\
+&> 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 1}  + 1}
+\end{align*}
+
+If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 13$ and $\gk''_2 = 14$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 129 \times 2^{-42} ≃ 2.9 \times 10^{-11}$.
+
+\subsection*{Fallback}
+If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
 
 \section*{Accurate Tables and Their Generation}
 \section*{Computation of the Functions}
@@ -311,4 +324,5 @@ s\of{x} &\DefineAs \hat x + \round{\round{\widehat{x^3} \hat p} + \gd \hat x} \\
 &= \hat x + \pa{{\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3} \pa{1 + \gd_4} + \gd \hat x}\pa{1 + \gd_5} \\
 &= \hat x + a {\hat x}^3 \pa{1 + \gq_5} + b {\hat x}^5 \pa{1 + \gq_4} + \gd \hat x \pa{1 + \gd_5}
 \end{align*}
+
 \end{document}
