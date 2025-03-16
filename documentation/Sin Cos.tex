@@ -52,24 +52,19 @@ x = ±\mant\of{x} \times 2^{\expn\of{x}} \qquad\text{with}\qquad 2^{M-1} \leq \m
 \]
 Note that this representation is unique.  Furthermore, if $x$ is a floating-point number, $\mant\of{x}$ is an integer.
 
-The distance between $1$ and the next larger floating-point number is:
-\[
-\ge_M \DefineAs 2^{1-M}
-\]
-and the distance between $1$ and the next smaller floating-point number is $\frac{\ge_M}{2}$.
 The \emph{unit of the last place} of $x$ is defined as:
 \[
 \ULP\of{x} \DefineAs 2^{\expn\of{x}}
 \]
-In particular, $\ULP\of{1} = \ge_M$ and:
+In particular, $\ULP\of{1} = 2^{1 - M}$ and:
 \begin{equation}
-\frac{x \; \ge_M}{2} < \frac{x}{2^M - 1} \leq \ULP\of{x} \leq \frac{x}{2^{M - 1}} = x \; \ge_M
+\frac{\abs x}{2^M} < \frac{\abs x}{2^M - 1} \leq \ULP\of{x} \leq \frac{\abs x}{2^{M - 1}}
 \label{eqnulp}
 \end{equation}
 
 We ignore the exponent bias, overflow and underflow as they play no role in this discussion.
 
-Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\gd_i < u = \ge_M / 2 = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
+Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\gd_i < u = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
 
 \section*{Approximation of $\frac{\Pi}{2}$}
 To perform argument reduction, we need to build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
@@ -89,7 +84,7 @@ Furthermore if the bits that are being truncated start with exactly $k$ zeros we
 \end{equation}
 This leads to the following upper bound for the unit of the last place of the truncation error:
 \[
-\ULP\of{z - \truncate\of{\gk, z}} < \frac{2^{\gk'} \ULP\of{z}}{\mant\of{z - \truncate\of{\gk, z}}} \leq 2^{\gk' - M + 1} \ULP\of{z}
+\ULP\of{z - \truncate\of{\gk, z}} < 2^{\gk' - M + 1} \ULP\of{z}
 \]
 which can be made more precise by noting that the function $\ULP$ is always a power of $2$:
 \begin{equation}
@@ -248,18 +243,16 @@ from which we deduce an upper bound on the absolute error of the reduction:
 \end{align*}
 where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).
 
-If we want $\hat x + \gd \hat x$ to have $\gk_3$ extra bits of accuracy, we must have:
+If we want $\hat x + \gd \hat x$ to be correctly rounded with $\gk_3$ extra bits of accuracy, the error must be less than $2^{\gk_3}$ half-units of the last place of the result:
 \[
-2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3} \abs{\ULP\of{\hat x}} \leq 2^{-\gk_3 - M + 1} \abs{\hat x}
+2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}} \leq 2^{-\gk_3 - M} \abs{\hat x}
 \]
 which leads to the following condition on the reduced angle:
 \[
-\abs{\hat x} \geq 2^{\gk_1 + \gk'_1 + \gk_3} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 1}
+\abs{\hat x} \geq 2^{\gk_1 + \gk'_1 + \gk_3 + 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 2}
 \]
 
-The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding most of the time and detect cases of dangerous rounding.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\hat x} \geq 2^{-21} ≃ 4.8 \times 10^{-7}$.
-
-If this condition is not met, we fall back on reducing the argument using the three-term approximation.
+The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding most of the time and detect cases of dangerous rounding.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\hat x} \geq 2^{-20} ≃ 9.5 \times 10^{-7}$.
 
 \subsection*{Argument Reduction Using the Three-Term Approximation}
 If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
@@ -270,11 +263,13 @@ y &= x - n \; C_2 \\
 y' &= n \; C'_2 \\
 \gd y &= \round{n \; \gd C_2} \\
 \pa{z, \gd z} &= QuickTwoSum\of{y', \gd y} \\
-\pa{\hat x, \gd \hat x} &= LongSub\of{y, \pa{z, \gd z}}
+\pa{u, \gd u} &= TwoDifference\of{y, z} \\
+\pa{\hat x, \gd \hat x} &= \pa{u, \gd u - \gd z}
 \end{dcases}
 \]
-The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $QuickTwoSum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable in this case because clearly $\abs{\gd z} < \abs z$.
-$LongSub$ is the obvious adaptation of the algorithm $LongAdd$ presented in section 5 of \cite{Linnainmaa1981}, which implements precise (but not exact) double-precision arithmetic.
+The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $QuickTwoSum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable because clearly $\abs{\gd y} < \abs{y'}$.
+$TwoDifference$ performs an exact subtraction using algorithm 4 of \cite{HidaLiBailey2007}.  Note that the last three operations in the sequence are effectively an implementation of the middle version of $ThreeSum$ in figure 7 of \cite{HidaLiBailey2007}
+
 
 It is straightforward to show, like we did in the preceding section, that:
 \[
@@ -286,7 +281,7 @@ To compute the overall error on argument reduction, first remember that, from eq
 \[
 C_2 + C'_2 + \gd C_2 = \frac{\Pi}{2} + \gz_1 \quad \text{with} \quad \abs{\gz_1} \leq 2^{\gk'_2 + \gk''_2 - 2 M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
-Let $\gz_2$ be the relative error introduced by $LongAdd$.  Table 1 of \cite{Linnainmaa1981} indicates that $\abs{\gz_2} < 2^{2 - 2 M}$.  The error computation proceeds as follows:
+Let $\gz_2$ be the relative error introduced by $ThreeSum$.  Lemma 11 of \cite{HidaLiBailey2007} indicates that $\abs{\gz_2} < 2^{-2 M}$.  The error computation proceeds as follows:
 \begin{align*}
 y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \pa{1 + \gz_2} \\
 &= \pa{x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4}} \pa{1 + \gz_2} \\
@@ -295,18 +290,20 @@ y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \p
 from which we deduce an upper bound on the absolute error of the reduction:
 \begin{align*}
 &\abs{y - y' - \gd y - \pa{x - n \frac{\Pi}{2}}} \\ 
-& \qquad \leq 2^{\gk_2 + \gk'_2 + \gk''_2} \pa{2^{-2 M - 1} + 2^{-2 M} + 2^{-3 M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{2 - 2 M} \frac{\Pi}{4} \\
-& \qquad = 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi \\
-& \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M + 1} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi
+& \qquad \leq 2^{\gk_2 + \gk'_2 + \gk''_2} \pa{2^{-2 M - 1} + 2^{-2 M} + 2^{-3 M - 1}} \pa{1 + 2^{-2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \frac{\Pi}{4} \\
+& \qquad = 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{-2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \frac{\Pi}{4} \\
+& \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M + 1} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \frac{\Pi}{4}
 \end{align*}
-A sufficient condition for the reduction to guarantee $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3} \abs{\ULP\of{\hat x}}$ which itself is less than $2^{-\gk_3 - M + 1} \abs{\hat{x}}$.  Therefore we want:
+A sufficient condition for the reduction to be correctly rounded with $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}}$ which itself is less than $2^{-\gk_3 - M} \abs{\hat{x}}$.  Therefore we want\footnote{Note that this bound is not particularly strict, because when $\abs{\hat x}$ is small, the upper bound $\frac{\Pi}{4}$ on the second term is very pessimistic, and it dominates the right hand side.}:
 \begin{align*}
-\abs{\hat x} &\geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2} \ULP\of{\frac{\Pi}{2}} + \frac{\Pi}{2}} \\
-&= 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 1}  + \frac{\Pi}{2}} \\
-&> 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 1}  + 1}
+\abs{\hat x} &\geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 + 1} \ULP\of{\frac{\Pi}{2}} + \frac{\Pi}{4}} \\
+&= 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + \frac{\Pi}{4}}
 \end{align*}
-
-If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 13$ and $\gk''_2 = 14$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 129 \times 2^{-42} ≃ 2.9 \times 10^{-11}$.
+and it is therefore sufficient to have:
+\[
+\abs{\hat x} \geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + 1}
+\]
+If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 13$ and $\gk''_2 = 14$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 65 \times 2^{-41} ≃ 3.0 \times 10^{-11}$.
 
 \subsection*{Fallback}
 If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
