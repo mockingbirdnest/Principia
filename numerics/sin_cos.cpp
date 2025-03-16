@@ -87,7 +87,6 @@ constexpr Argument three_term_θ_reduced_threshold =
 constexpr Argument mantissa_reduce_shifter =
     1LL << (std::numeric_limits<double>::digits - 1);
 
-
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 
