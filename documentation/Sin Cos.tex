@@ -263,13 +263,11 @@ y &= x - n \; C_2 \\
 y' &= n \; C'_2 \\
 \gd y &= \round{n \; \gd C_2} \\
 \pa{z, \gd z} &= QuickTwoSum\of{y', \gd y} \\
-\pa{u, \gd u} &= TwoDifference\of{y, z} \\
-\pa{\hat x, \gd \hat x} &= \pa{u, \gd u - \gd z}
+\pa{\hat x, \gd \hat x} &= LongSub\of{y, \pa{z, \gd z}}
 \end{dcases}
 \]
-The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $QuickTwoSum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable because clearly $\abs{\gd y} < \abs{y'}$.
-$TwoDifference$ performs an exact subtraction using algorithm 4 of \cite{HidaLiBailey2007}.  Note that the last three operations in the sequence are effectively an implementation of the middle version of $ThreeSum$ in figure 7 of \cite{HidaLiBailey2007}
-
+The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $QuickTwoSum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable in this case because clearly $\abs{\gd z} < \abs z$.
+$LongSub$ is the obvious adaptation of the algorithm $LongAdd$ presented in section 5 of \cite{Linnainmaa1981}, which implements precise (but not exact) double-precision arithmetic.
 
 It is straightforward to show, like we did in the preceding section, that:
 \[
@@ -281,7 +279,7 @@ To compute the overall error on argument reduction, first remember that, from eq
 \[
 C_2 + C'_2 + \gd C_2 = \frac{\Pi}{2} + \gz_1 \quad \text{with} \quad \abs{\gz_1} \leq 2^{\gk'_2 + \gk''_2 - 2 M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
-Let $\gz_2$ be the relative error introduced by $ThreeSum$.  Lemma 11 of \cite{HidaLiBailey2007} indicates that $\abs{\gz_2} < 2^{-2 M}$.  The error computation proceeds as follows:
+Let $\gz_2$ be the relative error introduced by $LongAdd$.  Table 1 of \cite{Linnainmaa1981} indicates that $\abs{\gz_2} < 2^{2 - 2 M}$.  The error computation proceeds as follows:
 \begin{align*}
 y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \pa{1 + \gz_2} \\
 &= \pa{x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4}} \pa{1 + \gz_2} \\
@@ -290,20 +288,21 @@ y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \p
 from which we deduce an upper bound on the absolute error of the reduction:
 \begin{align*}
 &\abs{y - y' - \gd y - \pa{x - n \frac{\Pi}{2}}} \\ 
-& \qquad \leq 2^{\gk_2 + \gk'_2 + \gk''_2} \pa{2^{-2 M - 1} + 2^{-2 M} + 2^{-3 M - 1}} \pa{1 + 2^{-2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \frac{\Pi}{4} \\
-& \qquad = 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{-2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \frac{\Pi}{4} \\
-& \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M + 1} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \frac{\Pi}{4}
+& \qquad \leq 2^{\gk_2 + \gk'_2 + \gk''_2} \pa{2^{-2 M - 1} + 2^{-2 M} + 2^{-3 M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{2 - 2 M} \frac{\Pi}{4} \\
+& \qquad = 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi \\
+& \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M + 1} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi
 \end{align*}
-A sufficient condition for the reduction to be correctly rounded with $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}}$ which itself is less than $2^{-\gk_3 - M} \abs{\hat{x}}$.  Therefore we want\footnote{Note that this bound is not particularly strict, because when $\abs{\hat x}$ is small, the upper bound $\frac{\Pi}{4}$ on the second term is very pessimistic, and it dominates the right hand side.}:
+A sufficient condition for the reduction to guarantee $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}}$ which itself is less than $2^{-\gk_3 - M} \abs{\hat{x}}$.  Therefore we want:
 \begin{align*}
-\abs{\hat x} &\geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 + 1} \ULP\of{\frac{\Pi}{2}} + \frac{\Pi}{4}} \\
-&= 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + \frac{\Pi}{4}}
+\abs{\hat x} &\geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 + 1} \ULP\of{\frac{\Pi}{2}} + \Pi} \\
+&= 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + \Pi}
 \end{align*}
 and it is therefore sufficient to have:
 \[
-\abs{\hat x} \geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + 1}
+\abs{\hat x} \geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + 4}
 \]
-If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 13$ and $\gk''_2 = 14$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 65 \times 2^{-41} ≃ 3.0 \times 10^{-11}$.
+
+If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 13$ and $\gk''_2 = 14$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 257 \times 2^{-42} ≃ 1.2 \times 10^{-10}$.
 
 \subsection*{Fallback}
 If any of the conditions above is not met, we fall back on the CORE-MATH implementation.

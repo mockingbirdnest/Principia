@@ -82,7 +82,7 @@ constexpr Argument two_term_θ_reduced_threshold =
 constexpr Argument three_term_θ_reduced_threshold =
     (1.0 / (1LL << (-(κ₃ - std::numeric_limits<double>::digits)))) *
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
-     1);
+     4);
 
 constexpr Argument mantissa_reduce_shifter =
     1LL << (std::numeric_limits<double>::digits - 1);
@@ -239,8 +239,7 @@ void Reduce(Argument const θ,
     Argument const yʹ = n_double * Cʹ₂;
     Argument const δy = n_double * δC₂;
     auto const z = QuickTwoSum(yʹ, δy);
-    θ_reduced = TwoDifference(y, z.value);
-    θ_reduced.error -= z.error;
+    θ_reduced = y - z;
     OSACA_IF(θ_reduced.value <= -three_term_θ_reduced_threshold ||
              θ_reduced.value >= three_term_θ_reduced_threshold) {
       quadrant = n & 0b11;
