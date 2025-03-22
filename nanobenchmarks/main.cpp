@@ -1,5 +1,6 @@
 
 #include <algorithm>
+#include <cstdio>
 #include <iostream>
 #include <iomanip>
 #include <limits>
@@ -236,6 +237,7 @@ void Main() {
   std::map<BenchmarkedFunction, LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(
+      stdout,
       "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
                       std::make_format_args(
                           "RAW TSC:", "", LatencyDistributionTable::Heading()));
@@ -243,6 +245,7 @@ void Main() {
     auto const result = Benchmark(function, logger.get());
     reference_measurements.emplace(function, result);
     std::vprint_unicode(
+        stdout,
         "{:>" + std::to_string(name_width + 2) + "}{:8}{}\n",
         std::make_format_args(
                             FunctionRegistry::names_by_function().at(function),
@@ -265,6 +268,7 @@ void Main() {
       "Correlation coefficient: {:0.6f}",
       PearsonProductMomentCorrelationCoefficient(tsc, expected_cycles));
   std::vprint_unicode(
+      stdout,
       "{:<" + std::to_string(name_width + 2) + "}{:>8}{}\n",
       std::make_format_args(
           "Cycles:", "expected", LatencyDistributionTable::Heading()));
@@ -275,6 +279,7 @@ void Main() {
       continue;
     }
     std::vprint_unicode(
+        stdout,
         "{} {:>" + std::to_string(name_width) + "}{:>8}{}\n",
         std::make_format_args(
             ReferenceCycleCounts().contains(f) ? "R" : " ",
