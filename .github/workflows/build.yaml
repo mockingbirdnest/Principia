@@ -162,6 +162,7 @@ jobs:
   stop:
     if: github.repository == 'mockingbirdnest/Principia'
     runs-on: windows-latest
+    needs: build
     steps:
     - name: Stop runners
       uses: mockingbirdnest/actions/windows/stop_runners@main
