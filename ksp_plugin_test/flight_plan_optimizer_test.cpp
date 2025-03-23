@@ -418,7 +418,8 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
               AnyOf(ResultOf(&TTSecond, "1972-03-27T01:02:40"_DateTime),
                     ResultOf(&TTSecond, "1972-03-27T01:02:51"_DateTime)));
   EXPECT_THAT(flyby_inclination,
-              AnyOf(IsNear(76.32_(1) * Degree), IsNear(76.64_(1) * Degree)));
+              AnyOf(IsNear(76.32_(1) * Degree),
+                    IsNear(76.64_(1) * Degree)));
 
   std::int64_t number_of_evaluations = 0;
   FlightPlanOptimizer optimizer(
@@ -467,7 +468,8 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
               AnyOf(ResultOf(&TTSecond, "1972-03-27T01:09:47"_DateTime),
                     ResultOf(&TTSecond, "1972-03-27T01:10:00"_DateTime)));
   EXPECT_THAT(flyby_inclination,
-              AnyOf(IsNear(89.98_(1) * Degree), IsNear(90.00_(1) * Degree)));
+              AnyOf(IsNear(89.98_(1) * Degree),
+                    IsNear(90.00_(1) * Degree)));
   EXPECT_EQ(34, number_of_evaluations);
   number_of_evaluations = 0;
 
