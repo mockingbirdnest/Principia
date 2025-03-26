@@ -1,7 +1,5 @@
 # Principia
 
-MEOW
-
 **&lrm;[خوارزمی‎](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#%D8%AE%D9%88%D8%A7%D8%B1%D8%B2%D9%85%DB%8C), the February version of Principia, is available with usability improvements.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/kvarzmy).**
 
 **For the convenience of Chinese users, download from 腾讯微云: [Principia خوارزمی‎ for 1.8.1—1.12.5](https://share.weiyun.com/51O5dL6E).**
