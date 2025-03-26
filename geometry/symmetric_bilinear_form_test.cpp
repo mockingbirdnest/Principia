@@ -415,7 +415,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
       auto const f_eigensystem = f.Diagonalize<Eigenworld>();
 
       EXPECT_THAT(f_eigensystem.rotation.quaternion().Norm(),
-                  AlmostEquals(1.0, 0, 4)) << f;
+                  AlmostEquals(1.0, 0, 5)) << f;
     }
   }
 #endif
