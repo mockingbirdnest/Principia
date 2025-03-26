@@ -50,6 +50,7 @@ Planetarium* __cdecl principia__PlanetariumCreate(
     double const focal,
     double const field_of_view,
     double const inverse_scale_factor,
+    double const tan_angular_resolution,
     XYZ const scaled_space_origin) {
   journal::Method<journal::PlanetariumCreate> m({plugin,
                                                  sun_world_position,
@@ -60,6 +61,7 @@ Planetarium* __cdecl principia__PlanetariumCreate(
                                                  focal,
                                                  field_of_view,
                                                  inverse_scale_factor,
+                                                 tan_angular_resolution,
                                                  scaled_space_origin});
   Renderer const& renderer = CHECK_NOTNULL(plugin)->renderer();
 
@@ -88,9 +90,13 @@ Planetarium* __cdecl principia__PlanetariumCreate(
                                    FromXYZ<Position<World>>(sun_world_position),
                                    plugin->PlanetariumRotation());
 
+  // Angular resolution: My display has a height of 401 mm and 1600 pixels
+  // vertically.  My eye is at least 550 mm from the centre.  Hence the
+  // wolframalpha.com query: "ArcTan[(401/1600)/550] in arcmin" which yields
+  // 1.567'.
   Planetarium::Parameters parameters(
       /*sphere_radius_multiplier=*/1.0,
-      /*angular_resolution=*/0.4 * ArcMinute,
+      /*angular_resolution=*/1.567 * ArcMinute,
       field_of_view * Radian);
   Perspective<Navigation, Camera> perspective(
       world_to_plotting_affine_map *
@@ -130,11 +136,19 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
     char const* const vessel_guid,
     int const index,
     double const* const t_max,
+    double const tan_angular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotFlightPlanSegment> m(
-      {planetarium, plugin, vessel_guid, index, t_max, vertices, vertices_size},
+      {planetarium,
+       plugin,
+       vessel_guid,
+       index,
+       t_max,
+       tan_angular_resolution,
+       vertices,
+       vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
@@ -156,6 +170,7 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
         segment->end(),
         plugin->CurrentTime(),
         t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+        tan_angular_resolution,
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -172,11 +187,18 @@ void __cdecl principia__PlanetariumPlotPrediction(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const* const t_max,
+    double const tan_angular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotPrediction> m(
-      {planetarium, plugin, vessel_guid, t_max, vertices, vertices_size},
+      {planetarium,
+       plugin,
+       vessel_guid,
+       t_max,
+       tan_angular_resolution,
+       vertices,
+       vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
@@ -189,6 +211,7 @@ void __cdecl principia__PlanetariumPlotPrediction(
       prediction->end(),
       plugin->CurrentTime(),
       t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+      tan_angular_resolution,
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
         vertices[(*vertex_count)++] = vertex;
@@ -207,6 +230,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     char const* const vessel_guid,
     double const max_history_length,
     double const* const t_max,
+    double const tan_angular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
@@ -216,6 +240,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
        vessel_guid,
        max_history_length,
        t_max,
+       tan_angular_resolution,
        vertices,
        vertices_size},
       {vertex_count});
@@ -246,6 +271,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
         psychohistory->end(),
         /*now=*/plugin->CurrentTime(),
         t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+        tan_angular_resolution,
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -264,6 +290,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     Plugin const* const plugin,
     int const celestial_index,
     double const max_history_length,
+    double const tan_angular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     double* const minimal_distance_from_camera,
@@ -273,6 +300,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
        plugin,
        celestial_index,
        max_history_length,
+       tan_angular_resolution,
        vertices,
        vertices_size},
       {minimal_distance_from_camera, vertex_count});
@@ -303,6 +331,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
         first_time,
         /*last_time=*/plugin->CurrentTime(),
         /*now=*/plugin->CurrentTime(),
+        tan_angular_resolution,
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -323,6 +352,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     Plugin const* const plugin,
     int const celestial_index,
     char const* const vessel_guid,
+    double const tan_angular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     double* const minimal_distance_from_camera,
@@ -332,6 +362,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
        plugin,
        celestial_index,
        vessel_guid,
+       tan_angular_resolution,
        vertices,
        vertices_size},
       {minimal_distance_from_camera, vertex_count});
@@ -362,6 +393,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
         /*first_time=*/plugin->CurrentTime(),
         /*last_time=*/final_time,
         /*now=*/plugin->CurrentTime(),
+        tan_angular_resolution,
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -379,11 +411,17 @@ void __cdecl principia__PlanetariumPlotEquipotential(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const index,
+    double const tan_angular_resolution,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotEquipotential> m(
-      {planetarium, plugin, index, vertices, vertices_size},
+      {planetarium,
+       plugin,
+       index,
+       tan_angular_resolution,
+       vertices,
+       vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
@@ -401,6 +439,7 @@ void __cdecl principia__PlanetariumPlotEquipotential(
       equipotential.front().time,
       equipotential.back().time,
       plugin->CurrentTime(),
+      tan_angular_resolution,
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
         vertices[(*vertex_count)++] = vertex;
