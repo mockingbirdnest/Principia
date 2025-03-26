@@ -159,3 +159,15 @@ jobs:
       with:
         configuration: ${{ matrix.configuration }}
 
+  stop:
+    if: github.repository == 'mockingbirdnest/Principia'
+    runs-on: windows-latest
+    needs: build
+    steps:
+    - name: Stop runners
+      uses: mockingbirdnest/actions/windows/stop_runners@main
+      with:
+        client_id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
+        tenant_id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
+        subscription_id: ${{ secrets.PRINCIPIA_BUILD_SUBSCRIPTION_ID }}
+

@@ -96,6 +96,10 @@ class BarycentricRotatingReferenceFrame
 
  private:
   using Base = RigidReferenceFrame<InertialFrame, ThisFrame>;
+  using BodiesToDegreesOfFreedom =
+      typename Ephemeris<InertialFrame>::BodiesToDegreesOfFreedom;
+  using BodiesToPositions =
+      typename Ephemeris<InertialFrame>::BodiesToPositions;
 
   template<typename SF, typename SB, int o = 0>
   using Trihedron = typename Base::template Trihedron<SF, SB, o>;
@@ -108,11 +112,29 @@ class BarycentricRotatingReferenceFrame
                                     Instant() + NaN<Time>};
   };
 
+  template<int degree>
+  Derivative<Position<InertialFrame>, Instant, degree> PrimaryDerivative(
+      BodiesToDegreesOfFreedom const* bodies_to_degrees_of_freedom,
+      Instant const& t) const;
+  template<int degree>
+  Derivative<Position<InertialFrame>, Instant, degree> PrimaryDerivative(
+      BodiesToPositions const* bodies_to_positions,
+      Instant const& t) const;
+  template<int degree>
+  Derivative<Position<InertialFrame>, Instant, degree> SecondaryDerivative(
+      BodiesToDegreesOfFreedom const* bodies_to_degrees_of_freedom,
+      Instant const& t) const;
+  template<int degree>
+  Derivative<Position<InertialFrame>, Instant, degree> SecondaryDerivative(
+      BodiesToPositions const* bodies_to_positions,
+      Instant const& t) const;
   template<
       int degree,
       std::vector<not_null<MassiveBody const*>> const
           BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
   Derivative<Position<InertialFrame>, Instant, degree> BarycentreDerivative(
+      BodiesToDegreesOfFreedom const* bodies_to_degrees_of_freedom,
+      BodiesToPositions const* bodies_to_positions,
       Instant const& t,
       CachedDerivatives& cache) const;
 

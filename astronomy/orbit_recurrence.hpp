@@ -1,5 +1,6 @@
 #pragma once
 
+#include "absl/status/statusor.h"
 #include "physics/rotating_body.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -49,7 +50,7 @@ class OrbitRecurrence final {
   // The Nᴛₒ / Cᴛₒ of the result is the last convergent of the κ obtained from
   // the given arguments whose denominator is less than `max_abs_Cᴛₒ`.
   template<typename Frame>
-  static OrbitRecurrence ClosestRecurrence(
+  static absl::StatusOr<OrbitRecurrence> ClosestRecurrence(
       Time const& nodal_period,
       AngularFrequency const& nodal_precession,
       RotatingBody<Frame> const& primary,

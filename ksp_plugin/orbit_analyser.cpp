@@ -148,11 +148,14 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
       analysis.elements_ = std::move(elements).value();
       // TODO(egg): max_abs_Cᴛₒ should probably depend on the number of
       // revolutions.
-      analysis.closest_recurrence_ = OrbitRecurrence::ClosestRecurrence(
+      auto status_or_closest_recurrence = OrbitRecurrence::ClosestRecurrence(
           analysis.elements_->nodal_period(),
           analysis.elements_->nodal_precession(),
           *primary,
           /*max_abs_Cᴛₒ=*/100);
+      RETURN_IF_ERROR(status_or_closest_recurrence);
+      analysis.closest_recurrence_ =
+          std::move(status_or_closest_recurrence).value();
       if (analysis.closest_recurrence_->number_of_revolutions() == 0) {
         analysis.closest_recurrence_.reset();
       }

@@ -108,7 +108,10 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::PrimaryDerivative(
   absl::MutexLock l(&lock_);
   return BarycentreDerivative<degree,
                               &BarycentricRotatingReferenceFrame::primaries_>(
-      t, last_evaluated_primary_derivatives_);
+      /*bodies_to_degrees_of_freedom=*/nullptr,
+      /*bodies_to_positions=*/nullptr,
+      t,
+      last_evaluated_primary_derivatives_);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -119,7 +122,10 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
   absl::MutexLock l(&lock_);
   return BarycentreDerivative<degree,
                               &BarycentricRotatingReferenceFrame::secondaries_>(
-      t, last_evaluated_secondary_derivatives_);
+      /*bodies_to_degrees_of_freedom=*/nullptr,
+      /*bodies_to_positions=*/nullptr,
+      t,
+      last_evaluated_secondary_derivatives_);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -140,12 +146,13 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
-  auto const r₁ = PrimaryDerivative<0>(t);
-  auto const ṙ₁ = PrimaryDerivative<1>(t);
-  auto const r̈₁ = PrimaryDerivative<2>(t);
-  auto const r₂ = SecondaryDerivative<0>(t);
-  auto const ṙ₂ = SecondaryDerivative<1>(t);
-  auto const r̈₂ = SecondaryDerivative<2>(t);
+  auto const bodies_to_positions = ephemeris_->EvaluateAllPositions(t);
+  auto const r₁ = PrimaryDerivative<0>(&bodies_to_positions, t);
+  auto const ṙ₁ = PrimaryDerivative<1>(&bodies_to_positions, t);
+  auto const r̈₁ = PrimaryDerivative<2>(&bodies_to_positions, t);
+  auto const r₂ = SecondaryDerivative<0>(&bodies_to_positions, t);
+  auto const ṙ₂ = SecondaryDerivative<1>(&bodies_to_positions, t);
+  auto const r̈₂ = SecondaryDerivative<2>(&bodies_to_positions, t);
   return ToThisFrame({r₁, ṙ₁, r̈₁}, {r₂, ṙ₂, r̈₂});
 }
 
@@ -185,36 +192,150 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+template<int degree>
+Derivative<Position<InertialFrame>, Instant, degree>
+BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
+PrimaryDerivative(
+    BodiesToDegreesOfFreedom const* const bodies_to_degrees_of_freedom,
+    Instant const& t) const {
+  absl::MutexLock l(&lock_);
+  return BarycentreDerivative<degree,
+                              &BarycentricRotatingReferenceFrame::primaries_>(
+      bodies_to_degrees_of_freedom,
+      /*bodies_to_positions=*/nullptr,
+      t,
+      last_evaluated_primary_derivatives_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+template<int degree>
+Derivative<Position<InertialFrame>, Instant, degree>
+BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
+PrimaryDerivative(BodiesToPositions const* const bodies_to_positions,
+                  Instant const& t) const {
+  absl::MutexLock l(&lock_);
+  return BarycentreDerivative<degree,
+                              &BarycentricRotatingReferenceFrame::primaries_>(
+      /*bodies_to_degrees_of_freedom=*/nullptr,
+      bodies_to_positions,
+      t,
+      last_evaluated_primary_derivatives_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+template<int degree>
+Derivative<Position<InertialFrame>, Instant, degree>
+BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
+SecondaryDerivative(
+    BodiesToDegreesOfFreedom const* const bodies_to_degrees_of_freedom,
+    Instant const& t) const {
+  absl::MutexLock l(&lock_);
+  return BarycentreDerivative<degree,
+                              &BarycentricRotatingReferenceFrame::secondaries_>(
+      bodies_to_degrees_of_freedom,
+      /*bodies_to_positions=*/nullptr,
+      t,
+      last_evaluated_secondary_derivatives_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+template<int degree>
+Derivative<Position<InertialFrame>, Instant, degree>
+BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
+SecondaryDerivative(BodiesToPositions const* const bodies_to_positions,
+                    Instant const& t) const {
+  absl::MutexLock l(&lock_);
+  return BarycentreDerivative<degree,
+                              &BarycentricRotatingReferenceFrame::secondaries_>(
+      /*bodies_to_degrees_of_freedom=*/nullptr,
+      bodies_to_positions,
+      t,
+      last_evaluated_secondary_derivatives_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
 template<
     int degree,
     std::vector<not_null<MassiveBody const*>> const
         BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::*bodies>
 Derivative<Position<InertialFrame>, Instant, degree>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
-    BarycentreDerivative(Instant const& t, CachedDerivatives& cache) const {
+BarycentreDerivative(
+    BodiesToDegreesOfFreedom const* /*nonconst*/ bodies_to_degrees_of_freedom,
+    BodiesToPositions const* /*nonconst*/ bodies_to_positions,
+    Instant const& t,
+    CachedDerivatives& cache) const {
   Instant& cache_key = cache.times[degree];
   auto& cached = std::get<degree>(cache.derivatives);
   if (cache_key != t) {
     BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
                          GravitationalParameter>
         result;
-    for (not_null const body : this->*bodies) {
-      if constexpr (degree == 0) {
-        result.Add(ephemeris_->trajectory(body)->EvaluatePosition(t),
-                   body->gravitational_parameter());
-      } else if constexpr (degree == 1) {
-        result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
-                   body->gravitational_parameter());
-      } else if constexpr (degree == 2) {
-        result.Add(
-            ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(body, t),
-            body->gravitational_parameter());
-      } else {
-        static_assert(degree == 3);
-        result.Add(ephemeris_->ComputeGravitationalJerkOnMassiveBody(body, t),
-                   body->gravitational_parameter());
+
+    if constexpr (degree == 0) {
+      for (not_null const body : this->*bodies) {
+        if (bodies_to_positions != nullptr) {
+          result.Add(bodies_to_positions->at(body),
+                     body->gravitational_parameter());
+        } else if (bodies_to_degrees_of_freedom != nullptr) {
+          result.Add(bodies_to_degrees_of_freedom->at(body).position(),
+                     body->gravitational_parameter());
+        } else {
+          result.Add(ephemeris_->trajectory(body)->EvaluatePosition(t),
+                     body->gravitational_parameter());
+        }
+      }
+    } else if constexpr (degree == 1) {
+      for (not_null const body : this->*bodies) {
+        if (bodies_to_degrees_of_freedom != nullptr) {
+          result.Add(bodies_to_degrees_of_freedom->at(body).velocity(),
+                     body->gravitational_parameter());
+        } else {
+          result.Add(ephemeris_->trajectory(body)->EvaluateVelocity(t),
+                     body->gravitational_parameter());
+        }
+      }
+    } else if constexpr (degree == 2) {
+      BodiesToPositions local_bodies_to_positions;
+      if (bodies_to_degrees_of_freedom != nullptr) {
+        for (auto const& [body, degrees_of_freedom] :
+             *bodies_to_degrees_of_freedom) {
+          local_bodies_to_positions.emplace(body,
+                                            degrees_of_freedom.position());
+        }
+        bodies_to_positions = &local_bodies_to_positions;
+      } else if (bodies_to_positions == nullptr) {
+        local_bodies_to_positions = ephemeris_->EvaluateAllPositions(t);
+        bodies_to_positions = &local_bodies_to_positions;
+      }
+
+      auto const all_accelerations =
+          ephemeris_->ComputeGravitationalAccelerationOnMassiveBodies(
+              this->*bodies, *bodies_to_positions, t);
+
+      int i = 0;
+      for (not_null const body : this->*bodies) {
+        result.Add(all_accelerations[i++], body->gravitational_parameter());
+      }
+    } else {
+      static_assert(degree == 3);
+      BodiesToDegreesOfFreedom local_bodies_to_degrees_of_freedom;
+      if (bodies_to_degrees_of_freedom == nullptr) {
+        local_bodies_to_degrees_of_freedom =
+            ephemeris_->EvaluateAllDegreesOfFreedom(t);
+        bodies_to_degrees_of_freedom = &local_bodies_to_degrees_of_freedom;
+      }
+
+      auto const all_jerks =
+          ephemeris_->ComputeGravitationalJerkOnMassiveBodies(
+              this->*bodies, *bodies_to_degrees_of_freedom, t);
+
+      int i = 0;
+      for (not_null const body : this->*bodies) {
+        result.Add(all_jerks[i++], body->gravitational_parameter());
       }
     }
+
     cache_key = t;
     cached = result.Get();
   }
@@ -240,14 +361,16 @@ template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
-  auto const r₁ = PrimaryDerivative<0>(t);
-  auto const ṙ₁ = PrimaryDerivative<1>(t);
-  auto const r̈₁ = PrimaryDerivative<2>(t);
-  auto const r₁⁽³⁾ = PrimaryDerivative<3>(t);
-  auto const r₂ = SecondaryDerivative<0>(t);
-  auto const ṙ₂ = SecondaryDerivative<1>(t);
-  auto const r̈₂ = SecondaryDerivative<2>(t);
-  auto const r₂⁽³⁾ = SecondaryDerivative<3>(t);
+  auto const bodies_to_degrees_of_freedom =
+      ephemeris_->EvaluateAllDegreesOfFreedom(t);
+  auto const r₁ = PrimaryDerivative<0>(&bodies_to_degrees_of_freedom, t);
+  auto const ṙ₁ = PrimaryDerivative<1>(&bodies_to_degrees_of_freedom, t);
+  auto const r̈₁ = PrimaryDerivative<2>(&bodies_to_degrees_of_freedom, t);
+  auto const r₁⁽³⁾ = PrimaryDerivative<3>(&bodies_to_degrees_of_freedom, t);
+  auto const r₂ = SecondaryDerivative<0>(&bodies_to_degrees_of_freedom, t);
+  auto const ṙ₂ = SecondaryDerivative<1>(&bodies_to_degrees_of_freedom, t);
+  auto const r̈₂ = SecondaryDerivative<2>(&bodies_to_degrees_of_freedom, t);
+  auto const r₂⁽³⁾ = SecondaryDerivative<3>(&bodies_to_degrees_of_freedom, t);
 
   auto const to_this_frame = ToThisFrame({r₁, ṙ₁, r̈₁}, {r₂, ṙ₂, r̈₂});
 
