@@ -1,6 +1,6 @@
 ﻿param([switch]$strict = $false)
 
-$version = "17.10.5"
+$version = "17.13.4"
 $preview = ""
 
 if ($preview.length -gt 0) {
