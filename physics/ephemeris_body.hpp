@@ -156,6 +156,10 @@ Ephemeris<Frame>::Ephemeris(
     }
   }
 
+  for (int i = 0; i < bodies_.size(); ++i) {
+    bodies_indices_.emplace(bodies_[i].get(), i);
+  }
+
   absl::ReaderMutexLock l(&lock_);  // For locking checks.
   instance_ = fixed_step_parameters_.integrator().NewInstance(
       problem,
@@ -214,6 +218,42 @@ template<typename Frame>
 absl::Status Ephemeris<Frame>::last_severe_integration_status() const {
   absl::ReaderMutexLock l(&lock_);
   return last_severe_integration_status_;
+}
+
+template<typename Frame>
+Ephemeris<Frame>::BodiesToPositions Ephemeris<Frame>::EvaluateAllPositions(
+    Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  BodiesToPositions all_positions;
+  for (int i = 0; i < bodies_.size(); ++i) {
+    all_positions.emplace(bodies_[i].get(),
+                          trajectories_[i]->EvaluatePositionLocked(t));
+  }
+  return all_positions;
+}
+
+template<typename Frame>
+Ephemeris<Frame>::BodiesToVelocities Ephemeris<Frame>::EvaluateAllVelocities(
+    Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  BodiesToVelocities all_velocities;
+  for (int i = 0; i < bodies_.size(); ++i) {
+    all_velocities.emplace(bodies_[i].get(),
+                          trajectories_[i]->EvaluateVelocityLocked(t));
+  }
+  return all_velocities;
+}
+
+template<typename Frame>
+Ephemeris<Frame>::BodiesToDegreesOfFreedom
+Ephemeris<Frame>::EvaluateAllDegreesOfFreedom(Instant const& t) const {
+  absl::ReaderMutexLock l(&lock_);
+  BodiesToDegreesOfFreedom all_degrees_of_freedom;
+  for (int i = 0; i < bodies_.size(); ++i) {
+    all_degrees_of_freedom.emplace(
+        bodies_[i].get(), trajectories_[i]->EvaluateDegreesOfFreedomLocked(t));
+  }
+  return all_degrees_of_freedom;
 }
 
 template<typename Frame>
@@ -528,13 +568,12 @@ Vector<Jerk, Frame> Ephemeris<Frame>::ComputeGravitationalJerkOnMasslessBody(
 }
 
 template<typename Frame>
-Vector<Jerk, Frame> Ephemeris<Frame>::
-ComputeGravitationalJerkOnMassiveBody(not_null<MassiveBody const*> body,
-                                      Instant const& t) const {
+Vector<Jerk, Frame>
+Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBody(
+    not_null<MassiveBody const*> const body,
+    Instant const& t) const {
   // NOTE(phl): This doesn't take high-order geopotential into account.
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
-  std::vector<Vector<Jerk, Frame>> jerks(bodies_.size());
-  int b1 = -1;
 
   // Evaluate the `degrees_of_freedom`.  Locking is necessary to be able to call
   // the "locked" method of each trajectory.
@@ -544,30 +583,35 @@ ComputeGravitationalJerkOnMassiveBody(not_null<MassiveBody const*> body,
     for (int b = 0; b < bodies_.size(); ++b) {
       auto const& current_body = bodies_[b];
       auto const& current_body_trajectory = trajectories_[b];
-      if (current_body.get() == body) {
-        CHECK_EQ(-1, b1);
-        b1 = b;
-      }
       degrees_of_freedom.push_back(
           current_body_trajectory->EvaluateDegreesOfFreedomLocked(t));
     }
-    CHECK_LE(0, b1);
   }
 
-  ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
-      /*body1=*/*body, b1,
-      /*bodies2=*/bodies_,
-      /*b2_begin=*/0,
-      /*b2_end=*/b1,
-      degrees_of_freedom, jerks);
-  ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
-      /*body1=*/*body, b1,
-      /*bodies2=*/bodies_,
-      /*b2_begin=*/b1 + 1,
-      /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-      degrees_of_freedom, jerks);
+  return ComputeGravitationalJerkOnMassiveBody(body, degrees_of_freedom, t);
+}
 
-  return jerks[b1];
+template<typename Frame>
+std::vector<Vector<Jerk, Frame>>
+Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBodies(
+    std::vector<not_null<MassiveBody const*>> const& bodies,
+    BodiesToDegreesOfFreedom const& bodies_to_degrees_of_freedom,
+    Instant const& t) const {
+  // NOTE(phl): This doesn't take high-order geopotential into account.
+  // Put the positions in the order needed by the computation.
+  std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
+  degrees_of_freedom.reserve(bodies_.size());
+  for (auto const& body : bodies_) {
+    degrees_of_freedom.push_back(bodies_to_degrees_of_freedom.at(body.get()));
+  }
+
+  std::vector<Vector<Jerk, Frame>> jerks;
+  jerks.reserve(bodies.size());
+  for (auto const& body : bodies) {
+    jerks.push_back(
+        ComputeGravitationalJerkOnMassiveBody(body, degrees_of_freedom, t));
+  }
+  return jerks;
 }
 
 template<typename Frame>
@@ -600,85 +644,42 @@ Vector<Acceleration, Frame>
 Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
     not_null<MassiveBody const*> const body,
     Instant const& t) const {
-  bool const body_is_oblate = body->is_oblate();
-
-  std::vector<Position<Frame>> positions;
-  std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
-  int b1 = -1;
-
   // Evaluate the `positions`.  Locking is necessary to be able to call the
   // "locked" method of each trajectory.
+  std::vector<Position<Frame>> positions;
   {
     absl::ReaderMutexLock l(&lock_);
     positions.reserve(bodies_.size());
     for (int b = 0; b < bodies_.size(); ++b) {
       auto const& current_body = bodies_[b];
       auto const& current_body_trajectory = trajectories_[b];
-      if (current_body.get() == body) {
-        CHECK_EQ(-1, b1);
-        b1 = b;
-      }
       positions.push_back(current_body_trajectory->EvaluatePositionLocked(t));
     }
-    CHECK_LE(0, b1);
   }
 
-  if (body_is_oblate) {
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/true>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/0, /*b2_end=*/b1,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/true>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/true,
-        /*body2_is_oblate=*/false>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/number_of_oblate_bodies_,
-        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions, accelerations, geopotentials_);
-  } else {
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/true>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/false>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/number_of_oblate_bodies_,
-        /*b2_end=*/b1,
-        positions, accelerations, geopotentials_);
-    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
-        /*body1_is_oblate=*/false,
-        /*body2_is_oblate=*/false>(
-        t,
-        /*body1=*/*body, b1,
-        /*bodies2=*/bodies_,
-        /*b2_begin=*/b1 + 1,
-        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions, accelerations, geopotentials_);
+  return ComputeGravitationalAccelerationOnMassiveBody(body, positions, t);
+}
+
+template<typename Frame>
+std::vector<Vector<Acceleration, Frame>>
+Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBodies(
+    std::vector<not_null<MassiveBody const*>> const& bodies,
+    BodiesToPositions const& bodies_to_positions,
+    Instant const& t) const {
+  // Put the positions in the order needed by the computation.
+  std::vector<Position<Frame>> positions;
+  positions.reserve(bodies_.size());
+  for (auto const& body : bodies_) {
+    positions.push_back(bodies_to_positions.at(body.get()));
   }
 
-  return accelerations[b1];
+  std::vector<Vector<Acceleration, Frame>> accelerations;
+  accelerations.reserve(bodies.size());
+  for (auto const& body : bodies) {
+    accelerations.push_back(
+        ComputeGravitationalAccelerationOnMassiveBody(body, positions, t));
+  }
+  return accelerations;
 }
 
 template<typename Frame>
@@ -1232,6 +1233,100 @@ void Ephemeris<Frame>::ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
     jerk_on_b2 -= μ1 * vector;
     jerk_on_b1 += μ2 * vector;
   }
+}
+
+template<typename Frame>
+Vector<Acceleration, Frame>
+Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
+    not_null<MassiveBody const*> const body,
+    std::vector<Position<Frame>> const& positions,
+    Instant const& t) const {
+  int const b1 = bodies_indices_.at(body);
+  bool const body_is_oblate = body->is_oblate();
+  std::vector<Vector<Acceleration, Frame>> accelerations(positions.size());
+
+  if (body_is_oblate) {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/0, /*b2_end=*/b1,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/false>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/number_of_oblate_bodies_,
+        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+        positions, accelerations, geopotentials_);
+  } else {
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/false>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/number_of_oblate_bodies_,
+        /*b2_end=*/b1,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/false>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1,
+        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+        positions, accelerations, geopotentials_);
+  }
+
+  return accelerations[b1];
+}
+
+template<typename Frame>
+Vector<Jerk, Frame>
+Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBody(
+    not_null<MassiveBody const*> const body,
+    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
+    Instant const& t) const {
+  // NOTE(phl): This doesn't take high-order geopotential into account.
+  int const b1 = bodies_indices_.at(body);
+  std::vector<Vector<Jerk, Frame>> jerks(degrees_of_freedom.size());
+
+  ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
+      /*body1=*/*body, b1,
+      /*bodies2=*/bodies_,
+      /*b2_begin=*/0,
+      /*b2_end=*/b1,
+      degrees_of_freedom, jerks);
+  ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
+      /*body1=*/*body, b1,
+      /*bodies2=*/bodies_,
+      /*b2_begin=*/b1 + 1,
+      /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+      degrees_of_freedom, jerks);
+
+  return jerks[b1];
 }
 
 template<typename Frame>

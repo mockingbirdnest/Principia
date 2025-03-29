@@ -69,7 +69,8 @@ TEST_F(StdAccuracyTest, SinCos) {
                       IsNear(0.654_(1)),    // macOS.
                       IsNear(0.513_(1))));  // Ubuntu.
     EXPECT_THAT(max_cos_ulp_distance,
-                AnyOf(IsNear(0.834_(1)),    // Windows, macOS.
+                AnyOf(IsNear(0.839_(1)),    // Windows.
+                      IsNear(0.834_(1)),    // macOS.
                       IsNear(0.502_(1))));  // Ubuntu.
   }
 

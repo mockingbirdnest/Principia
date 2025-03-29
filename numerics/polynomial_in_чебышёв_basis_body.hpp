@@ -116,7 +116,8 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessag
      _MSC_FULL_VER == 194'033'813 || \
      _MSC_FULL_VER == 194'134'120 || \
      _MSC_FULL_VER == 194'134'123 || \
-     _MSC_FULL_VER == 194'234'435)
+     _MSC_FULL_VER == 194'234'435 || \
+     _MSC_FULL_VER == 194'334'809)
       std::abort();
 #endif
   }
