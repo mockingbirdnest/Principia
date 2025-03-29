@@ -165,6 +165,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		documentation\Rotational Motion.tex = documentation\Rotational Motion.tex
 		documentation\semtex.sty = documentation\semtex.sty
 		documentation\Setup.md = documentation\Setup.md
+		documentation\Sin Cos.tex = documentation\Sin Cos.tex
 		SUPPORT.md = SUPPORT.md
 	EndProjectSection
 EndProject

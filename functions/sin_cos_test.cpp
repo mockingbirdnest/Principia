@@ -35,6 +35,83 @@ class SinCosTest : public ::testing::Test {
   }
 
   double a_ = 1.0;
+
+  static void RandomArgumentTest(double const lower_bound,
+                                 double const upper_bound) {
+    std::mt19937_64 random(42);
+    std::uniform_real_distribution<> uniformly_at(lower_bound, upper_bound);
+    std::uniform_int_distribution<> uniform_sign(0, 1);
+
+    cpp_bin_float_50 max_sin_ulps_error = 0;
+    cpp_bin_float_50 max_cos_ulps_error = 0;
+    double worst_sin_argument = 0;
+    double worst_cos_argument = 0;
+    std::int64_t incorrectly_rounded_sin = 0;
+    std::int64_t incorrectly_rounded_cos = 0;
+
+#if _DEBUG
+    static constexpr std::int64_t iterations = 100;
+#else
+    static constexpr std::int64_t iterations = 250'000;
+#endif
+
+    for (std::int64_t i = 0; i < iterations; ++i) {
+      double const principia_argument =
+          uniformly_at(random) * ((uniform_sign(random) << 1) - 1);
+      auto const boost_argument = cpp_rational(principia_argument);
+      {
+        auto const boost_sin = Sin(boost_argument);
+        double const principia_sin = Sin(principia_argument);
+        auto const sin_error =
+            abs(boost_sin - static_cast<cpp_bin_float_50>(principia_sin));
+        auto const ulp = NextUp(principia_sin) - principia_sin;
+        auto const sin_ulps_error = sin_error / ulp;
+        if (sin_ulps_error > max_sin_ulps_error) {
+          max_sin_ulps_error = sin_ulps_error;
+          worst_sin_argument = principia_argument;
+        }
+        if (sin_ulps_error > 0.5) {
+          ++incorrectly_rounded_sin;
+          LOG(ERROR) << "Sin: " << sin_ulps_error << " ulps at "
+                     << std::setprecision(25) << principia_argument;
+        }
+      }
+      {
+        auto const boost_cos = Cos(boost_argument);
+        double const principia_cos = Cos(principia_argument);
+        auto const cos_error =
+            abs(boost_cos - static_cast<cpp_bin_float_50>(principia_cos));
+        auto const ulp = NextUp(principia_cos) - principia_cos;
+        auto const cos_ulps_error = cos_error / ulp;
+        if (cos_ulps_error > max_cos_ulps_error) {
+          max_cos_ulps_error = cos_ulps_error;
+          worst_cos_argument = principia_argument;
+        }
+        if (cos_ulps_error > 0.5) {
+          ++incorrectly_rounded_cos;
+          LOG(ERROR) << "Cos: " << cos_ulps_error << " ulps at "
+                     << std::setprecision(25) << principia_argument;
+        }
+      }
+    }
+
+    // This implementation is not quite correctly rounded, but not far from it.
+    EXPECT_LE(max_sin_ulps_error, 0.5);
+    EXPECT_LE(max_cos_ulps_error, 0.5);
+    EXPECT_EQ(incorrectly_rounded_sin, 0);
+    EXPECT_EQ(incorrectly_rounded_cos, 0);
+
+    LOG(ERROR) << "Sin error: " << max_sin_ulps_error << std::setprecision(25)
+               << " ulps for argument: " << worst_sin_argument
+               << " value: " << Sin(worst_sin_argument)
+               << "; incorrectly rounded: " << std::setprecision(3)
+               << incorrectly_rounded_sin / static_cast<double>(iterations);
+    LOG(ERROR) << "Cos error: " << max_cos_ulps_error << std::setprecision(25)
+               << " ulps for argument: " << worst_cos_argument
+               << " value: " << Cos(worst_cos_argument)
+               << "; incorrectly rounded: " << std::setprecision(3)
+               << incorrectly_rounded_cos / static_cast<double>(iterations);
+  }
 };
 
 TEST_F(SinCosTest, AccurateTableIndex) {
@@ -94,78 +171,20 @@ TEST_F(SinCosTest, ReduceIndex) {
   }
 }
 
-TEST_F(SinCosTest, Random) {
-  std::mt19937_64 random(42);
-  std::uniform_real_distribution<> uniformly_at(-2 * π, 2 * π);
+TEST_F(SinCosTest, RandomSmall) {
+  RandomArgumentTest(0, π / 4);
+}
 
-  cpp_bin_float_50 max_sin_ulps_error = 0;
-  cpp_bin_float_50 max_cos_ulps_error = 0;
-  double worst_sin_argument = 0;
-  double worst_cos_argument = 0;
-  std::int64_t incorrectly_rounded_sin = 0;
-  std::int64_t incorrectly_rounded_cos = 0;
+TEST_F(SinCosTest, RandomTwoTerms) {
+  RandomArgumentTest(π / 4, 1 << 8);
+}
 
-#if _DEBUG
-  static constexpr std::int64_t iterations = 100;
-#else
-  static constexpr std::int64_t iterations = 1'000'000;
-#endif
+TEST_F(SinCosTest, RandomThreeTerms) {
+  RandomArgumentTest(1 << 8, 1 << 18);
+}
 
-  for (std::int64_t i = 0; i < iterations; ++i) {
-    double const principia_argument = uniformly_at(random);
-    auto const boost_argument = cpp_rational(principia_argument);
-    {
-      auto const boost_sin = Sin(boost_argument);
-      double const principia_sin = Sin(principia_argument);
-      auto const sin_error =
-          abs(boost_sin - static_cast<cpp_bin_float_50>(principia_sin));
-      auto const ulp = NextUp(principia_sin) - principia_sin;
-      auto const sin_ulps_error = sin_error / ulp;
-      if (sin_ulps_error > max_sin_ulps_error) {
-        max_sin_ulps_error = sin_ulps_error;
-        worst_sin_argument = principia_argument;
-      }
-      if (sin_ulps_error > 0.5) {
-        ++incorrectly_rounded_sin;
-        LOG(ERROR) << "Sin: " << sin_ulps_error << " ulps at "
-                   << std::setprecision(25) << principia_argument;
-      }
-    }
-    {
-      auto const boost_cos = Cos(boost_argument);
-      double const principia_cos = Cos(principia_argument);
-      auto const cos_error =
-          abs(boost_cos - static_cast<cpp_bin_float_50>(principia_cos));
-      auto const ulp = NextUp(principia_cos) - principia_cos;
-      auto const cos_ulps_error = cos_error / ulp;
-      if (cos_ulps_error > max_cos_ulps_error) {
-        max_cos_ulps_error = cos_ulps_error;
-        worst_cos_argument = principia_argument;
-      }
-      if (cos_ulps_error > 0.5) {
-        ++incorrectly_rounded_cos;
-        LOG(ERROR) << "Cos: " << cos_ulps_error << " ulps at "
-                   << std::setprecision(25) << principia_argument;
-      }
-    }
-  }
-
-  // This implementation is not quite correctly rounded, but not far from it.
-  EXPECT_LE(max_sin_ulps_error, 0.5);
-  EXPECT_LE(max_cos_ulps_error, 0.5);
-  EXPECT_EQ(incorrectly_rounded_sin, 0);
-  EXPECT_EQ(incorrectly_rounded_cos, 0);
-
-  LOG(ERROR) << "Sin error: " << max_sin_ulps_error << std::setprecision(25)
-             << " ulps for argument: " << worst_sin_argument
-             << " value: " << Sin(worst_sin_argument)
-             << "; incorrectly rounded: " << std::setprecision(3)
-             << incorrectly_rounded_sin / static_cast<double>(iterations);
-  LOG(ERROR) << "Cos error: " << max_cos_ulps_error << std::setprecision(25)
-             << " ulps for argument: " << worst_cos_argument
-             << " value: " << Cos(worst_cos_argument)
-             << "; incorrectly rounded: " << std::setprecision(3)
-             << incorrectly_rounded_cos / static_cast<double>(iterations);
+TEST_F(SinCosTest, RandomLarge) {
+  RandomArgumentTest(1 << 18, std::numeric_limits<double>::max() / 1.0e30);
 }
 
 // Values for which the base algorithm gives an error of 1 ULP.
@@ -209,6 +228,12 @@ TEST_F(SinCosTest, HardRounding) {
 }
 
 TEST_F(SinCosTest, HardReduction) {
+  // A previous implementation was incorrectly reducing this angle.
+  EXPECT_THAT(Sin(0x5ad7bcep-8), AlmostEquals(0.99999999999999999818, 0));
+  EXPECT_THAT(Cos(0x5ad7bcep-8),
+              AlmostEquals(1.9060601347136373148e-9, 0));
+
+  // Muller's bad angle.
   EXPECT_THAT(Sin(0x16ac5b262ca1ffp797), AlmostEquals(1.0, 0));
   EXPECT_THAT(Cos(0x16ac5b262ca1ffp797),
               AlmostEquals(-4.687165924254627611122582801963884e-19, 0));

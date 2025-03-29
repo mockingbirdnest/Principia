@@ -128,6 +128,7 @@
 static bool volatile OSACA_loop_terminator = false;
 
 #define OSACA_FUNCTION_BEGIN(arg, ...)                              \
+  LOG(ERROR) << "Cannot execute an OSACA binary";                   \
   double OSACA_LOOP_CARRY_QUALIFIER OSACA_loop_carry = arg;         \
   OSACA_outer_loop:                                                 \
   constexpr auto* OSACA_analysed_function_with_current_parameters = \
