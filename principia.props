@@ -142,6 +142,7 @@
   <ItemDefinitionGroup Condition="!$(PrincipiaOptimize)">
     <ClCompile>
       <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalOptions>/ignore:4099</AdditionalOptions>
@@ -154,6 +155,7 @@
   <ItemDefinitionGroup Condition="$(PrincipiaOptimize)">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
