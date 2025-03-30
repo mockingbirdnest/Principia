@@ -49,8 +49,8 @@
 
   <!--Target.-->
   <PropertyGroup>
-    <ConfigurationType Condition="$(ProjectName) == ksp_plugin or
-                                  $(ProjectName) == serialization">DynamicLibrary</ConfigurationType>
+    <ConfigurationType Condition="$(ProjectName) == ksp_plugin">DynamicLibrary</ConfigurationType>
+    <ConfigurationType Condition="$(ProjectName) == serialization">StaticLibrary</ConfigurationType>
     <ConfigurationType Condition="$(PrincipiaTestProject) or
                                   $(ProjectName) == tools or
                                   $(ProjectName) == benchmarks">Application</ConfigurationType>
@@ -214,13 +214,13 @@
 
   <ItemDefinitionGroup Condition="$(ProjectName)==serialization">
     <ClCompile>
-      <PreprocessorDefinitions>SERIALIZATION_DLL=__declspec(dllexport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SERIALIZATION_DLL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <!--Everybody depends on the serialization project.-->
   <ItemDefinitionGroup Condition="$(ProjectName)!=serialization">
     <ClCompile>
-      <PreprocessorDefinitions>SERIALIZATION_DLL=__declspec(dllimport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SERIALIZATION_DLL=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup Condition="$(ProjectName)!=serialization">
