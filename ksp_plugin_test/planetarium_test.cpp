@@ -20,6 +20,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -34,6 +35,7 @@
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/astronomy.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -71,6 +73,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -82,6 +85,7 @@ using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -95,7 +99,6 @@ class PlanetariumTest : public ::testing::Test {
  protected:
   using LeftNavigation =
     Frame<struct LeftNavigationTag, Arbitrary, Handedness::Left>;
-  using World = Frame<struct WorldTag, Arbitrary>;
 
   PlanetariumTest()
       :  // The camera is located as {0, 20, 0} and is looking along -y.
@@ -164,39 +167,6 @@ class PlanetariumTest : public ::testing::Test {
         .WillRepeatedly(Return(&continuous_trajectory_));
     EXPECT_CALL(continuous_trajectory_, EvaluatePosition(_))
         .WillRepeatedly(Return(Barycentric::origin));
-  }
-
-  Position<World> ComputePositionInWorld(
-      Instant const& t,
-      ReferenceFrame<Barycentric, World> const& reference_frame,
-      SolarSystemFactory::Index const body) {
-    auto const to_this_frame = reference_frame.ToThisFrameAtTimeSimilarly(t);
-    return to_this_frame.similarity()(
-        solar_system_->trajectory(*ephemeris_, SolarSystemFactory::name(body))
-            .EvaluatePosition(t));
-  }
-
-  std::array<Position<World>, 2> ComputeLagrangePoints(
-      SolarSystemFactory::Index const body1,
-      SolarSystemFactory::Index const body2,
-      Instant const& t,
-      ReferenceFrame<Barycentric, World> const& reference_frame,
-      Plane<World> const& plane) {
-    auto const body1_position =
-        ComputePositionInWorld(t, reference_frame, body1);
-    auto const body2_position =
-        ComputePositionInWorld(t, reference_frame, body2);
-    auto const body2_body1 = body1_position - body2_position;
-
-    auto const& binormal = plane.UnitBinormals().front();
-    Rotation<World, World> const rot_l4(-60 * Degree, binormal);
-    auto const body2_l4 = rot_l4(body2_body1);
-    auto const l4 = body2_l4 + body2_position;
-    Rotation<World, World> const rot_l5(60 * Degree, binormal);
-    auto const body2_l5 = rot_l5(body2_body1);
-    auto const l5 = body2_l5 + body2_position;
-
-    return {l4, l5};
   }
 
   Instant const t0_;
@@ -395,8 +365,38 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 // This test is similar to `EquipotentialTest.
 // BodyCentredBodyDirection_EquidistantPoints`
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
+  auto const& earth = *solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+  auto const& moon = *solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+
   LagrangeEquipotentials<Barycentric, Navigation>
       lagrange_equipotentials(ephemeris_.get());
+
+  auto const plotting_frame(
+      BodyCentredBodyDirectionReferenceFrame<Barycentric, Navigation>(
+          ephemeris_.get(),
+          &earth,
+          &moon));
+
+  // The camera is located as {0, 0, 1 AU} and is looking along -z.
+  Perspective<Navigation, Camera> const perspective(
+      RigidTransformation<Navigation, Camera>(
+          Navigation::origin +
+              Displacement<Navigation>(
+                  {0 * Metre, 0 * Metre, 1 * AstronomicalUnit}),
+          Camera::origin,
+          Rotation<World, Camera>(Vector<double, World>({1, 0, 0}),
+                                  Bivector<double, World>({0, -1, 0}),
+                                  Vector<double, World>({0, 0, -1}))
+                  .Forget<OrthogonalMap>() *
+              Signature<Navigation, World>(
+                  Sign::Positive(),
+                  Signature<Navigation, World>::DeduceSign(),
+                  Sign::Positive())
+                  .Forget<OrthogonalMap>())
+          .Forget<Similarity>(),
+      /*focal=*/5 * Metre);
 
   // No dark area, human visual acuity, wide field of view.
   Planetarium::Parameters planetarium_parameters(
@@ -404,15 +404,10 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
   Planetarium planetarium(planetarium_parameters,
-                          perspective_,
+                          perspective,
                           ephemeris_.get(),
-                          &plotting_frame_,
+                          &plotting_frame,
                           plotting_to_scaled_space_);
-
-  auto const& earth = *solar_system_->massive_body(
-      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
-  auto const& moon = *solar_system_->massive_body(
-      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
 
   // Compute over 30 days.
   std::vector<std::int64_t> number_of_points;
