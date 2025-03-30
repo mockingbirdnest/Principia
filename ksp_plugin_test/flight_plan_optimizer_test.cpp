@@ -439,8 +439,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
 
   EXPECT_THAT(
       manœuvre5.initial_time() - flight_plan_->GetManœuvre(5).initial_time(),
-      AnyOf(IsNear(0.715_(1) * Micro(Second)),
-            Eq(0 * Second)));
+      AnyOf(IsNear(0.715_(1) * Micro(Second)), Eq(0 * Second)));
   EXPECT_THAT((manœuvre5.Δv() - flight_plan_->GetManœuvre(5).Δv()).Norm(),
               AnyOf(IsNear(1.615_(1) * Centi(Metre) / Second),
                     IsNear(1.577_(1) * Centi(Metre) / Second)));
@@ -459,8 +458,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
 
   EXPECT_THAT(
       manœuvre6.initial_time() - flight_plan_->GetManœuvre(6).initial_time(),
-      AnyOf(Eq(0 * Second),
-            IsNear(-0.119_(1) * Micro(Second))));
+      AnyOf(Eq(0 * Second), IsNear(-0.119_(1) * Micro(Second))));
   EXPECT_THAT((manœuvre6.Δv() - flight_plan_->GetManœuvre(6).Δv()).Norm(),
               AnyOf(IsNear(0.257_(1) * Metre / Second),
                     IsNear(0.251_(1) * Metre / Second)));
