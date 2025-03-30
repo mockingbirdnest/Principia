@@ -25,8 +25,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     flight_planner_ = flight_planner;
     orbit_analyser_ = orbit_analyser;
     plotting_frame_selector_ = plotting_frame_selector;
-    cheeze_c.value = 0.65;
-    cheeze_x.value = -0.31;
+    cheeze_x.value = 0.1;
     Show();
   }
 
@@ -169,15 +168,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   protected override string Title => "Principia";
 
-  public static DifferentialSlider cheeze_c =
-      new DifferentialSlider("c",
-                             "",
-                             -5,
-                             -1,
-                             (x) => x.ToString("0.000"),
-                             zero_value: 0.01,
-                             min_value: 0.001,
-                             max_value: 1);
   public static DifferentialSlider cheeze_x =
       new DifferentialSlider("x",
                              "",
@@ -185,25 +175,13 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                              -1,
                              (x) => x.ToString("0.000"),
                              zero_value: 0,
-                             min_value: -2,
+                             min_value: 0,
                              max_value: 2);
 
       protected override void RenderWindowContents(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
       UnityEngine.GUILayout.Label("Cheeze constants: ");
-      cheeze_c.Render(true);
       cheeze_x.Render(true);
-
-      UnityEngine.Camera camera = PlanetariumCamera.Camera;
-      float vertical_fov = camera.fieldOfView;
-      float horizontal_fov =
-          UnityEngine.Camera.VerticalToHorizontalFieldOfView(
-              vertical_fov,
-              camera.aspect);
-      UnityEngine.GUILayout.Label("vfov=" + vertical_fov);
-      UnityEngine.GUILayout.Label("hfov=" + horizontal_fov);
-      UnityEngine.GUILayout.Label("pixh=" + camera.pixelHeight);
-      UnityEngine.GUILayout.Label("pixw=" + camera.pixelWidth);
 
       if (!adapter_.PluginRunning()) {
         UnityEngine.GUILayout.Label(

@@ -10,16 +10,6 @@ class Plotter {
     adapter_ = adapter;
   }
 
-  public static double lightness(UnityEngine.Color colour) {
-    var linear_colour = colour.linear;
-    var rgb_linear = new UnityEngine.Vector3(linear_colour.r, linear_colour.g, linear_colour.b);
-    double y = UnityEngine.Vector3.Dot(new UnityEngine.Vector3(0.2126f,0.7152f,0.0722f), rgb_linear);
-    double δ = 6.0 / 29;
-    double f = y > δ * δ * δ ? Math.Pow(y, 1.0 / 3)
-                             : y * (1 / (3 * δ * δ)) + (4.0 / 29);
-    return (116 * f - 16) / 100;
-  }
-
   public static double TanAngularResolution() {
     const double degree = Math.PI / 180;
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
@@ -37,8 +27,7 @@ class Plotter {
 
   public static double angular_resolution_for_colour(UnityEngine.Color colour) {
     //Interpreted as a Tan in C++.
-    return MainWindow.cheeze_c.value *
-           Math.Pow(lightness(colour), MainWindow.cheeze_x.value);
+    return MainWindow.cheeze_x.value;
   }
 
   public void PlotEquipotentials(DisposablePlanetarium planetarium) {
