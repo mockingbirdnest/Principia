@@ -242,7 +242,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   EXPECT_THAT((manœuvre5.Δv() - flight_plan_->GetManœuvre(5).Δv()).Norm(),
               AnyOf(IsNear(1.054_(1) * Metre / Second),
                     IsNear(1.059_(1) * Metre / Second)));
-  EXPECT_THAT(number_of_evaluations, AnyOf(113, 112));
+  EXPECT_EQ(113, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre5.burn(), /*index=*/5));
@@ -256,12 +256,12 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   EXPECT_THAT(
       manœuvre6.initial_time() - flight_plan_->GetManœuvre(6).initial_time(),
       AnyOf(IsNear(12.1_(1) * Micro(Second)),
-            IsNear(-4.7_(1) * Micro(Second))));
+            IsNear(-47.7_(1) * Micro(Second))));
   EXPECT_THAT(
       (manœuvre6.Δv() - flight_plan_->GetManœuvre(6).Δv()).Norm(),
       AnyOf(IsNear(1.292_(1) * Metre / Second),
             IsNear(1.272_(1) * Metre / Second)));
-  EXPECT_THAT(number_of_evaluations, AnyOf(124, 87));
+  EXPECT_EQ(124, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
@@ -352,7 +352,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
   EXPECT_THAT(flyby_distance,
               AnyOf(IsNear(2001.4_(1) * Kilo(Metre)),
                     IsNear(2025.7_(1) * Kilo(Metre))));
-  EXPECT_THAT(number_of_evaluations, AnyOf(72, 66));
+  EXPECT_EQ(72, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
@@ -376,7 +376,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
   EXPECT_THAT(flyby_distance,
               AnyOf(IsNear(2000.2_(1) * Kilo(Metre)),
                     IsNear(2000.5_(1) * Kilo(Metre))));
-  EXPECT_THAT(number_of_evaluations, AnyOf(86, 88));
+  EXPECT_EQ(86, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre7.burn(), /*index=*/7));
@@ -446,9 +446,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
                     IsNear(1.577_(1) * Centi(Metre) / Second)));
 
   ComputeFlyby(*flight_plan_, moon, *moon_frame, flyby_time, flyby_inclination);
-  EXPECT_THAT(flyby_time,
-              AnyOf(ResultOf(&TTSecond, "1972-03-27T01:09:20"_DateTime),
-                    ResultOf(&TTSecond, "1972-03-27T01:09:21"_DateTime)));
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:09:20"_DateTime));
   EXPECT_THAT(flyby_inclination, IsNear(90.23_(1) * Degree));
   EXPECT_EQ(25, number_of_evaluations);
   number_of_evaluations = 0;
@@ -474,7 +472,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
   EXPECT_THAT(flyby_inclination,
               AnyOf(IsNear(89.98_(1) * Degree),
                     IsNear(90.00_(1) * Degree)));
-  EXPECT_THAT(number_of_evaluations, AnyOf(34, 44));
+  EXPECT_EQ(34, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
@@ -497,7 +495,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
               AnyOf(ResultOf(&TTSecond, "1972-03-27T01:08:39"_DateTime),
                     ResultOf(&TTSecond, "1972-03-27T01:08:34"_DateTime)));
   EXPECT_THAT(flyby_inclination, IsNear(90.00_(1) * Degree));
-  EXPECT_THAT(number_of_evaluations, AnyOf(54, 56));
+  EXPECT_EQ(54, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre7.burn(), /*index=*/7));
@@ -547,7 +545,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
   EXPECT_THAT(flyby_distance,
               AnyOf(IsNear(3339.88_(1) * Kilo(Metre)),
                     IsNear(3179.08_(1) * Kilo(Metre))));
-  EXPECT_THAT(number_of_evaluations, AnyOf(146, 151));
+  EXPECT_EQ(146, number_of_evaluations);
 }
 
 #if !_DEBUG
