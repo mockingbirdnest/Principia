@@ -183,7 +183,7 @@ class WorkErrorGraphGenerator {
                                  int* evaluations)> compute_accelerations,
       ODE::State initial_state,
       std::function<Errors(ODE::State const&)> compute_errors,
-      Instant const& tmax,
+      std::vector<Instant> const& tmax,
       std::string problem_name)
       : methods_(Methods()),
         compute_accelerations_(std::move(compute_accelerations)),
@@ -200,6 +200,12 @@ class WorkErrorGraphGenerator {
       v_errors_[i].resize(integrations_per_integrator_);
       e_errors_[i].resize(integrations_per_integrator_);
       evaluations_[i].resize(integrations_per_integrator_);
+      for (int j = 0; j < integrations_per_integrator_; ++j) {
+        q_errors_[i][j].resize(tmax_.size());
+        v_errors_[i][j].resize(tmax_.size());
+        e_errors_[i][j].resize(tmax_.size());
+        evaluations_[i][j].resize(tmax_.size());
+      }
     }
   }
 
@@ -225,11 +231,11 @@ class WorkErrorGraphGenerator {
     std::vector<std::string> names;
     for (int i = 0; i < methods_.size(); ++i) {
       q_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], q_errors_[i], PreserveUnits));
+          PlottableDataset(evaluations_[i], q_errors_[i], ExpressInSIUnits));
       v_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], v_errors_[i], PreserveUnits));
+          PlottableDataset(evaluations_[i], v_errors_[i], ExpressInSIUnits));
       e_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], e_errors_[i], PreserveUnits));
+          PlottableDataset(evaluations_[i], e_errors_[i], ExpressInSIUnits));
       names.emplace_back(ToMathematica(methods_[i].name));
     }
     std::string result;
@@ -264,24 +270,26 @@ class WorkErrorGraphGenerator {
     auto const instance =
         method.integrator.NewInstance(problem, append_state, Δt);
 
-    CHECK_OK(instance->Solve(tmax_));
-    // Log both the actual number of evaluations and a theoretical number
-    // that ignores any startup costs; that theoretical number is the one
-    // used for plotting.
-    int const amortized_evaluations =
-        method.evaluations * static_cast<int>(std::floor((tmax_ - t0) / Δt));
-    LOG_EVERY_N(INFO, 50) << "[" << method_index << "," << time_step_index
-                          << "] " << problem_name_ << ": "
-                          << number_of_evaluations << " actual evaluations ("
-                          << amortized_evaluations << " amortized) with "
-                          << method.name;
-    // We plot the maximum error, i.e., the L∞ norm of the error.
-    // [BM02] or [BCR01a] tend to use the average error (the normalized L¹ norm)
-    // instead.
-    q_errors_[method_index][time_step_index] = max_q_error;
-    v_errors_[method_index][time_step_index] = max_v_error;
-    e_errors_[method_index][time_step_index] = max_e_error;
-    evaluations_[method_index][time_step_index] = amortized_evaluations;
+    for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
+      CHECK_OK(instance->Solve(tmax));
+      // Log both the actual number of evaluations and a theoretical number
+      // that ignores any startup costs; that theoretical number is the one
+      // used for plotting.
+      int const amortized_evaluations =
+          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
+      LOG_EVERY_N(INFO, 50)
+          << "[" << method_index << "," << time_step_index << "] "
+          << problem_name_ << ": " << number_of_evaluations
+          << " actual evaluations (" << amortized_evaluations
+          << " amortized) with " << method.name;
+      // We plot the maximum error, i.e., the L∞ norm of the error.
+      // [BM02] or [BCR01a] tend to use the average error (the normalized L¹
+      // norm) instead.
+      q_errors_[method_index][time_step_index][i] = max_q_error;
+      v_errors_[method_index][time_step_index][i] = max_v_error;
+      e_errors_[method_index][time_step_index][i] = max_e_error;
+      evaluations_[method_index][time_step_index][i] = amortized_evaluations;
+    }
 
     return absl::OkStatus();
   }
@@ -294,11 +302,11 @@ class WorkErrorGraphGenerator {
       compute_accelerations_;
   ODE::State initial_state_;
   std::function<Errors(ODE::State const&)> compute_errors_;
-  std::vector<std::vector<Length>> q_errors_;
-  std::vector<std::vector<Speed>> v_errors_;
-  std::vector<std::vector<Energy>> e_errors_;
-  std::vector<std::vector<double>> evaluations_;
-  Instant const tmax_;
+  std::vector<std::vector<std::vector<Length>>> q_errors_;
+  std::vector<std::vector<std::vector<Speed>>> v_errors_;
+  std::vector<std::vector<std::vector<Energy>>> e_errors_;
+  std::vector<std::vector<std::vector<double>>> evaluations_;
+  std::vector<Instant> const tmax_;
   std::string const problem_name_;
   double const step_reduction_ = 1.015;
   Time const starting_step_size_per_evaluation_ = 1 * Second;
@@ -319,7 +327,8 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   initial_state.velocities.emplace_back(0 * Metre / Second);
   initial_state.time = DoublePrecision<Instant>(t0);
 
-  Instant const tmax = t0 + 50 * Second;
+  std::vector<Instant> const tmax = {
+      t0 + 50 * Second, t0 + 100 * Second, t0 + 200 * Second};
   auto const compute_error = [q_amplitude, v_amplitude, ω, m, k, t0](
       ODE::State const& state) {
     return WorkErrorGraphGenerator<Energy>::Errors{
@@ -369,9 +378,10 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   initial_state.velocities.emplace_back(initial_dof.velocity().coordinates().y);
   initial_state.time = DoublePrecision<Instant>(t0);
 
-  // Integrate over 8 orbits.
-  Instant const tmax =
-      t0 + 8 * (2 * π * Radian) / *orbit.elements_at_epoch().mean_motion;
+  std::vector<Instant> const tmax = {
+      t0 + 8 * *orbit.elements_at_epoch().period,
+      t0 + 16 * *orbit.elements_at_epoch().period,
+      t0 + 32 * *orbit.elements_at_epoch().period};
 
   SpecificEnergy const initial_specific_energy =
       initial_dof.velocity().Norm²() / 2 -
