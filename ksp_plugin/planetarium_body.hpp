@@ -58,6 +58,7 @@ void Planetarium::PlotMethod3(
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,
     Length* const minimal_distance) const {
+  //LOG(INFO)<<"rev="<<reverse<<" first="<<first_time<<" last="<<last_time;
   auto const final_time = reverse ? first_time : last_time;
   auto previous_time = reverse ? last_time : first_time;
 
@@ -69,14 +70,13 @@ void Planetarium::PlotMethod3(
   if (direction * (final_time - previous_time) <= Time{}) {
     return;
   }
+///Position only
   DegreesOfFreedom<Navigation> const initial_degrees_of_freedom =
       EvaluateDegreesOfFreedomInNavigation<Frame>(
           *plotting_frame_, trajectory, previous_time);
   Position<Navigation> previous_position =
       initial_degrees_of_freedom.position();
-  Velocity<Navigation> previous_velocity =
-      initial_degrees_of_freedom.velocity();
-  Time Δt = final_time - previous_time;
+  Time Δt = (final_time - previous_time) / 3;
 
   add_point(plotting_to_scaled_space_(previous_position));
   int points_added = 1;
@@ -95,31 +95,44 @@ void Planetarium::PlotMethod3(
       // One square root because we have squared errors, another one because the
       // errors are quadratic in time (in other words, two square roots because
       // the squared errors are quartic in time).
-// Comment
+///Comment
       // A safety factor prevents catastrophic retries.
       Δt *= 0.9 * Sqrt(tan_angular_resolution / estimated_tan_error);
     estimate_tan²_error:
       t = previous_time + Δt;
       if (direction * (t - final_time) > Time{}) {
         t = final_time;
-        Δt = t - previous_time;
+        Δt = (t - previous_time) / 2;
       }
-      Position<Navigation> const extrapolated_position =
-          previous_position + previous_velocity * Δt;
       degrees_of_freedom = EvaluateDegreesOfFreedomInNavigation<Frame>(
           *plotting_frame_, trajectory, t);
       position = degrees_of_freedom->position();
 
-      //TanAngleBetween?
-      Angle const α = AngleBetween(extrapolated_position - previous_position,
+      Instant next_t = t + Δt;
+      if (direction * (next_t - final_time) > Time{}) {
+        next_t = final_time;
+      }
+      DegreesOfFreedom<Navigation> const next_degrees_of_freedom =
+          EvaluateDegreesOfFreedomInNavigation<Frame>(
+              *plotting_frame_, trajectory, next_t);
+      Position<Navigation> const next_position =
+          next_degrees_of_freedom.position();
+
+      ///TanAngleBetween?
+      Angle const α = AngleBetween(next_position - position,
                                    position - previous_position);
       estimated_tan_error = Abs(Tan(α));
+
+//      LOG_IF(INFO, !reverse)<<"previous="<<previous_position;
+//      LOG_IF(INFO, !reverse)<<"current="<<position;
+//      LOG_IF(INFO, !reverse)<<"next="<<next_position;
+//      LOG_IF(INFO, !reverse)<<"t= "<<t<<" Δt= "<<Δt<<
+//" error="<<estimated_tan_error<<" α="<<α;
 
     } while (estimated_tan_error > tan_angular_resolution);
 
     previous_time = t;
     previous_position = position;
-    previous_velocity = degrees_of_freedom->velocity();
 
     add_point(plotting_to_scaled_space_(position));
     ++points_added;
