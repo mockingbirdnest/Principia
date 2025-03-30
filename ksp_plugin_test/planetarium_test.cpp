@@ -4,7 +4,6 @@
 
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -21,11 +20,11 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/equipotential.hpp"
+#include "physics/lagrange_equipotentials.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
 #include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
@@ -56,7 +55,6 @@ using ::testing::ReturnRef;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
-using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -73,11 +71,11 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
-using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
+using namespace principia::physics::_lagrange_equipotentials;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
@@ -397,63 +395,56 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 // This test is similar to `EquipotentialTest.
 // BodyCentredBodyDirection_EquidistantPoints`
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
-  auto const reference_frame(
-      BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
-          ephemeris_.get(),
-          solar_system_->massive_body(
-              *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth)),
-          solar_system_->massive_body(
-              *ephemeris_,
-              SolarSystemFactory::name(SolarSystemFactory::Moon))));
+  LagrangeEquipotentials<Barycentric, Navigation>
+      lagrange_equipotentials(ephemeris_.get());
 
-  Equipotential<Barycentric, World> const equipotential(
-      equipotential_parameters_,
-      &reference_frame,
-      /*characteristic_length=*/1 * Metre);
-  auto const plane =
-      Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
-
-  // Ten equipotentials at equal distances between L4 and L5.
-  auto const get_line_parameters = [](Position<World> const& l4,
-                                      Position<World> const& l5) {
-    std::vector<Position<World>> positions;
-    for (int i = 0; i <= 10; ++i) {
-      positions.push_back(Barycentre({l4, l5}, {i / 10.0, (10.0 - i) / 10.0}));
-    }
-    return positions;
-  };
-
-  std::vector<std::vector<std::vector<Position<World>>>> all_positions;
-  // Compute over 30 days.
-  for (int j = 0; j < 30; ++j) {
-    Instant const t = t0_ + j * Day;
-    CHECK_OK(ephemeris_->Prolong(t));
-    all_positions.emplace_back();
-
-    auto const& [l4, l5] = ComputeLagrangePoints(SolarSystemFactory::Earth,
-                                                 SolarSystemFactory::Moon,
-                                                 t,
-                                                 reference_frame,
-                                                 plane);
-
-    for (auto const& line_parameter : get_line_parameters(l4, l5)) {
-      auto const line = equipotential.ComputeLine(plane, t, line_parameter);
-      all_positions.back().emplace_back();
-      for (auto const& [s, dof] : line) {
-        all_positions.back().back().push_back(dof.position());
-      }
-    }
-  }
   // No dark area, human visual acuity, wide field of view.
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters planetarium_parameters(
       /*sphere_radius_multiplier=*/1.0,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
+  Planetarium planetarium(planetarium_parameters,
                           perspective_,
-                          &mock_ephemeris_,
+                          ephemeris_.get(),
                           &plotting_frame_,
                           plotting_to_scaled_space_);
+
+  auto const& earth = *solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+  auto const& moon = *solar_system_->massive_body(
+      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+
+  // Compute over 30 days.
+  std::vector<std::int64_t> number_of_points;
+  for (int i = 0; i < 30; ++i) {
+    Instant const t = t0_ + i * Day;
+    LagrangeEquipotentials<Barycentric, Navigation>::Parameters const
+        equipotential_parameters{
+            .primaries = {&earth}, .secondaries = {&moon}, .time = t};
+    ASSERT_OK(ephemeris_->Prolong(t));
+
+    auto const status_or_equipotentials =
+        lagrange_equipotentials.ComputeLines(equipotential_parameters);
+    ASSERT_OK(status_or_equipotentials);
+    auto const& equipotentials = status_or_equipotentials.value();
+    for (auto const& [_, lines] : equipotentials.lines) {
+      std::int64_t& number_of_points_this_line =
+          number_of_points.emplace_back();
+      for (auto const& line : lines) {
+        planetarium.PlotMethod3(
+            line,
+            line.front().time,
+            line.back().time,
+            t,
+            /*reverse=*/false,
+            [&number_of_points_this_line](ScaledSpacePoint const&) {
+              ++number_of_points_this_line;
+            },
+            /*max_points=*/std::numeric_limits<std::int64_t>::max());
+      }
+LOG(ERROR)<<number_of_points_this_line;
+    }
+  }
 }
 #endif
 
