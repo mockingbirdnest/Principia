@@ -1,38 +1,47 @@
 #include "ksp_plugin/planetarium.hpp"
 
-#include <random>
 #include <vector>
 
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
+#include "geometry/plane.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
 #include "gtest/gtest.h"
+#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
+#include "integrators/methods.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/equipotential.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
 #include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/serialization.hpp"
+#include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -47,37 +56,49 @@ using ::testing::ReturnRef;
 using ::testing::SizeIs;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_plane;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_equipotential;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_serialization;
+using namespace principia::testing_utilities::_solar_system_factory;
 using namespace principia::testing_utilities::_vanishes_before;
 
 class PlanetariumTest : public ::testing::Test {
+ protected:
   using LeftNavigation =
     Frame<struct LeftNavigationTag, Arbitrary, Handedness::Left>;
- protected:
+  using World = Frame<struct WorldTag, Arbitrary>;
+
   PlanetariumTest()
       :  // The camera is located as {0, 20, 0} and is looking along -y.
         perspective_(
@@ -113,7 +134,26 @@ class PlanetariumTest : public ::testing::Test {
                   /*angular_frequency=*/10 * Radian / Second,
                   /*right_ascension_of_pole=*/0 * Radian,
                   /*declination_of_pole=*/π / 2 * Radian)),
-        bodies_({&body_}) {
+        bodies_({&body_}),
+        ephemeris_parameters_(
+            SymmetricLinearMultistepIntegrator<
+                QuinlanTremaine1990Order12,
+                Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+            /*step=*/10 * Minute),
+        solar_system_(make_not_null_unique<SolarSystem<Barycentric>>(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt",
+            /*ignore_frame=*/true)),
+        ephemeris_(solar_system_->MakeEphemeris(
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
+            ephemeris_parameters_)),
+        equipotential_parameters_(EmbeddedExplicitRungeKuttaIntegrator<
+                                      DormandPrince1986RK547FC,
+                                      Equipotential<Barycentric, World>::ODE>(),
+                                  /*max_steps=*/1000,
+                                  /*length_integration_tolerance=*/1 * Metre) {
     ON_CALL(plotting_frame_, t_min()).WillByDefault(Return(InfinitePast));
     ON_CALL(plotting_frame_, t_max()).WillByDefault(Return(InfiniteFuture));
     EXPECT_CALL(plotting_frame_, ToThisFrameAtTime(_))
@@ -121,11 +161,44 @@ class PlanetariumTest : public ::testing::Test {
             RigidTransformation<Barycentric, Navigation>::Identity(),
             Barycentric::nonrotating,
             Barycentric::unmoving)));
-    EXPECT_CALL(ephemeris_, bodies()).WillRepeatedly(ReturnRef(bodies_));
-    EXPECT_CALL(ephemeris_, trajectory(_))
+    EXPECT_CALL(mock_ephemeris_, bodies()).WillRepeatedly(ReturnRef(bodies_));
+    EXPECT_CALL(mock_ephemeris_, trajectory(_))
         .WillRepeatedly(Return(&continuous_trajectory_));
     EXPECT_CALL(continuous_trajectory_, EvaluatePosition(_))
         .WillRepeatedly(Return(Barycentric::origin));
+  }
+
+  Position<World> ComputePositionInWorld(
+      Instant const& t,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
+      SolarSystemFactory::Index const body) {
+    auto const to_this_frame = reference_frame.ToThisFrameAtTimeSimilarly(t);
+    return to_this_frame.similarity()(
+        solar_system_->trajectory(*ephemeris_, SolarSystemFactory::name(body))
+            .EvaluatePosition(t));
+  }
+
+  std::array<Position<World>, 2> ComputeLagrangePoints(
+      SolarSystemFactory::Index const body1,
+      SolarSystemFactory::Index const body2,
+      Instant const& t,
+      ReferenceFrame<Barycentric, World> const& reference_frame,
+      Plane<World> const& plane) {
+    auto const body1_position =
+        ComputePositionInWorld(t, reference_frame, body1);
+    auto const body2_position =
+        ComputePositionInWorld(t, reference_frame, body2);
+    auto const body2_body1 = body1_position - body2_position;
+
+    auto const& binormal = plane.UnitBinormals().front();
+    Rotation<World, World> const rot_l4(-60 * Degree, binormal);
+    auto const body2_l4 = rot_l4(body2_body1);
+    auto const l4 = body2_l4 + body2_position;
+    Rotation<World, World> const rot_l5(60 * Degree, binormal);
+    auto const body2_l5 = rot_l5(body2_body1);
+    auto const l5 = body2_l5 + body2_position;
+
+    return {l4, l5};
   }
 
   Instant const t0_;
@@ -135,8 +208,13 @@ class PlanetariumTest : public ::testing::Test {
       plotting_to_scaled_space_;
   RotatingBody<Barycentric> const body_;
   std::vector<not_null<MassiveBody const*>> const bodies_;
+  Ephemeris<Barycentric>::FixedStepParameters const ephemeris_parameters_;
+  not_null<std::unique_ptr<SolarSystem<Barycentric>>> const solar_system_;
+  not_null<std::unique_ptr<Ephemeris<Barycentric>>> const ephemeris_;
+  Equipotential<Barycentric, World>::AdaptiveParameters const
+      equipotential_parameters_;
   MockContinuousTrajectory<Barycentric> continuous_trajectory_;
-  MockEphemeris<Barycentric> ephemeris_;
+  MockEphemeris<Barycentric> mock_ephemeris_;
 };
 
 TEST_F(PlanetariumTest, PlotMethod0) {
@@ -156,7 +234,7 @@ TEST_F(PlanetariumTest, PlotMethod0) {
       /*field_of_view=*/90 * Degree);
   Planetarium planetarium(parameters,
                           perspective_,
-                          &ephemeris_,
+                          &mock_ephemeris_,
                           &plotting_frame_,
                           plotting_to_scaled_space_);
   auto const rp2_lines =
@@ -205,7 +283,7 @@ TEST_F(PlanetariumTest, PlotMethod1) {
       /*field_of_view=*/90 * Degree);
   Planetarium planetarium(parameters,
                           perspective_,
-                          &ephemeris_,
+                          &mock_ephemeris_,
                           &plotting_frame_,
                           plotting_to_scaled_space_);
   auto const rp2_lines =
@@ -244,7 +322,7 @@ TEST_F(PlanetariumTest, PlotMethod2) {
       /*field_of_view=*/90 * Degree);
   Planetarium planetarium(parameters,
                           perspective_,
-                          &ephemeris_,
+                          &mock_ephemeris_,
                           &plotting_frame_,
                           plotting_to_scaled_space_);
   auto const rp2_lines =
@@ -265,7 +343,7 @@ TEST_F(PlanetariumTest, PlotMethod2) {
 }
 
 #if !defined(_DEBUG)
-TEST_F(PlanetariumTest, RealSolarSystem) {
+TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
   auto const discrete_trajectory =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(
           ParseFromBytes<serialization::DiscreteTrajectory>(
@@ -314,6 +392,68 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
   EXPECT_EQ(2, rp2_lines.size());
   EXPECT_EQ(2, rp2_lines[0].size());
   EXPECT_EQ(9, rp2_lines[1].size());
+}
+
+// This test is similar to `EquipotentialTest.
+// BodyCentredBodyDirection_EquidistantPoints`
+TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
+  auto const reference_frame(
+      BodyCentredBodyDirectionReferenceFrame<Barycentric, World>(
+          ephemeris_.get(),
+          solar_system_->massive_body(
+              *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth)),
+          solar_system_->massive_body(
+              *ephemeris_,
+              SolarSystemFactory::name(SolarSystemFactory::Moon))));
+
+  Equipotential<Barycentric, World> const equipotential(
+      equipotential_parameters_,
+      &reference_frame,
+      /*characteristic_length=*/1 * Metre);
+  auto const plane =
+      Plane<World>::OrthogonalTo(Vector<double, World>({0, 0, 1}));
+
+  // Ten equipotentials at equal distances between L4 and L5.
+  auto const get_line_parameters = [](Position<World> const& l4,
+                                      Position<World> const& l5) {
+    std::vector<Position<World>> positions;
+    for (int i = 0; i <= 10; ++i) {
+      positions.push_back(Barycentre({l4, l5}, {i / 10.0, (10.0 - i) / 10.0}));
+    }
+    return positions;
+  };
+
+  std::vector<std::vector<std::vector<Position<World>>>> all_positions;
+  // Compute over 30 days.
+  for (int j = 0; j < 30; ++j) {
+    Instant const t = t0_ + j * Day;
+    CHECK_OK(ephemeris_->Prolong(t));
+    all_positions.emplace_back();
+
+    auto const& [l4, l5] = ComputeLagrangePoints(SolarSystemFactory::Earth,
+                                                 SolarSystemFactory::Moon,
+                                                 t,
+                                                 reference_frame,
+                                                 plane);
+
+    for (auto const& line_parameter : get_line_parameters(l4, l5)) {
+      auto const line = equipotential.ComputeLine(plane, t, line_parameter);
+      all_positions.back().emplace_back();
+      for (auto const& [s, dof] : line) {
+        all_positions.back().back().push_back(dof.position());
+      }
+    }
+  }
+  // No dark area, human visual acuity, wide field of view.
+  Planetarium::Parameters parameters(
+      /*sphere_radius_multiplier=*/1.0,
+      /*angular_resolution=*/0.4 * ArcMinute,
+      /*field_of_view=*/90 * Degree);
+  Planetarium planetarium(parameters,
+                          perspective_,
+                          &mock_ephemeris_,
+                          &plotting_frame_,
+                          plotting_to_scaled_space_);
 }
 #endif
 
