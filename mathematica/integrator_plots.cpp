@@ -225,23 +225,36 @@ class WorkErrorGraphGenerator {
     }
     CHECK_OK(bundle.Join());
 
-    std::vector<std::string> q_error_data;
-    std::vector<std::string> v_error_data;
-    std::vector<std::string> e_error_data;
+    std::vector<std::vector<std::vector<std::tuple<double, Length>>>>
+        q_error_data;
+    std::vector<std::vector<std::vector<std::tuple<double, Speed>>>>
+        v_error_data;
+    std::vector<std::vector<std::vector<std::tuple<double, Energy>>>>
+        e_error_data;
     std::vector<std::string> names;
     for (int i = 0; i < methods_.size(); ++i) {
-      q_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], q_errors_[i], ExpressInSIUnits));
-      v_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], v_errors_[i], ExpressInSIUnits));
-      e_error_data.emplace_back(
-          PlottableDataset(evaluations_[i], e_errors_[i], ExpressInSIUnits));
+      q_error_data.emplace_back();
+      v_error_data.emplace_back();
+      e_error_data.emplace_back();
+      for (int j = 0; j < integrations_per_integrator_; ++j) {
+        q_error_data.back().emplace_back();
+        v_error_data.back().emplace_back();
+        e_error_data.back().emplace_back();
+        for (int k = 0; k < tmax_.size(); ++k) {
+          q_error_data.back().back().emplace_back(evaluations_[i][j][k],
+                                                  q_errors_[i][j][k]);
+          v_error_data.back().back().emplace_back(evaluations_[i][j][k],
+                                                  v_errors_[i][j][k]);
+          e_error_data.back().back().emplace_back(evaluations_[i][j][k],
+                                                  e_errors_[i][j][k]);
+        }
+      }
       names.emplace_back(ToMathematica(methods_[i].name));
     }
     std::string result;
-    result += Set("qErrorData", q_error_data);
-    result += Set("vErrorData", v_error_data);
-    result += Set("eErrorData", e_error_data);
+    result += Set("qErrorData", q_error_data, ExpressInSIUnits);
+    result += Set("vErrorData", v_error_data, ExpressInSIUnits);
+    result += Set("eErrorData", e_error_data, ExpressInSIUnits);
     result += Set("names", names);
     return result;
   }

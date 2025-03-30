@@ -357,13 +357,6 @@ TEST_F(MathematicaTest, Set) {
   EXPECT_EQ("Set[var," + ToMathematica(3.0) + "];\n", Set("var", 3.0));
 }
 
-TEST_F(MathematicaTest, PlottableDataset) {
-  std::vector<double> const abscissæ{2, 3};
-  std::vector<std::string> const ordinates{"2", "3"};
-  EXPECT_EQ("Transpose[" + ToMathematica(std::tuple{abscissæ, ordinates}) + "]",
-            PlottableDataset(abscissæ, ordinates));
-}
-
 TEST_F(MathematicaTest, Escape) {
   EXPECT_EQ(R"("foo")", ToMathematica("foo"));
   {
