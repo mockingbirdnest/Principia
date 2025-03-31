@@ -20,6 +20,8 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "mathematica/logger.hpp"
+#include "mathematica/mathematica.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -73,6 +75,8 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
@@ -361,6 +365,7 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
   EXPECT_EQ(2, rp2_lines[0].size());
   EXPECT_EQ(9, rp2_lines[1].size());
 }
+#endif
 
 // This test is similar to `EquipotentialTest.
 // BodyCentredBodyDirection_EquidistantPoints`
@@ -409,9 +414,11 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
                           &plotting_frame,
                           plotting_to_scaled_space_);
 
+  Logger logger(TEMP_DIR / "plot_method3.wl");
+
   // Compute over 30 days.
   std::vector<std::int64_t> number_of_points;
-  for (int i = 0; i < 30; ++i) {
+  for (int i = 0; i < 3/*30*/; ++i) {
     Instant const t = t0_ + i * Day;
     LagrangeEquipotentials<Barycentric, Navigation>::Parameters const
         equipotential_parameters{
@@ -426,6 +433,7 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
       std::int64_t& number_of_points_this_line =
           number_of_points.emplace_back();
       for (auto const& line : lines) {
+        logger.Append("lines", line, ExpressInSIUnits);
         planetarium.PlotMethod3(
             line,
             line.front().time,
@@ -435,13 +443,12 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
             [&number_of_points_this_line](ScaledSpacePoint const&) {
               ++number_of_points_this_line;
             },
-            /*max_points=*/std::numeric_limits<std::int64_t>::max());
+            /*max_points=*/std::numeric_limits<int>::max());
       }
 LOG(ERROR)<<number_of_points_this_line;
     }
   }
 }
-#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
