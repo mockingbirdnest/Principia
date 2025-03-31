@@ -2,7 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <!--Define project configurations.  Nothing interesting can happen here.-->
   <ItemGroup Label="ProjectConfigurations">
@@ -49,8 +49,8 @@
 
   <!--Target.-->
   <PropertyGroup>
-    <ConfigurationType Condition="$(ProjectName) == ksp_plugin or
-                                  $(ProjectName) == serialization">DynamicLibrary</ConfigurationType>
+    <ConfigurationType Condition="$(ProjectName) == ksp_plugin">DynamicLibrary</ConfigurationType>
+    <ConfigurationType Condition="$(ProjectName) == serialization">StaticLibrary</ConfigurationType>
     <ConfigurationType Condition="$(PrincipiaTestProject) or
                                   $(ProjectName) == tools or
                                   $(ProjectName) == benchmarks">Application</ConfigurationType>
@@ -142,6 +142,7 @@
   <ItemDefinitionGroup Condition="!$(PrincipiaOptimize)">
     <ClCompile>
       <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalOptions>/ignore:4099</AdditionalOptions>
@@ -154,6 +155,7 @@
   <ItemDefinitionGroup Condition="$(PrincipiaOptimize)">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -200,7 +202,7 @@
   <PropertyGroup>
     <!--Protocompiler.-->
     <Protoc>$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc.exe</Protoc>
-    <ProtocCommand>"$(Protoc)" -I"$(SolutionDir)." --cpp_out=dllexport_decl=SERIALIZATION_DLL:.. "{0}"</ProtocCommand>
+    <ProtocCommand>"$(Protoc)" -I"$(SolutionDir)." --cpp_out=.. "{0}"</ProtocCommand>
     <ProtocMessage>Generating C++ files for {0}</ProtocMessage>
     <ProtocOutputs>{0}.pb.h;{0}.pb.cc;</ProtocOutputs>
     <!--Principia tools.-->
@@ -210,16 +212,8 @@
     <PrincipiaGenerateProfilesOutputs>..\ksp_plugin\interface.generated.h;..\journal\player.generated.cc;..\journal\profiles.generated.h;..\journal\profiles.generated.cc;..\ksp_plugin_adapter\interface.generated.cs</PrincipiaGenerateProfilesOutputs>
   </PropertyGroup>
 
-  <ItemDefinitionGroup Condition="$(ProjectName)==serialization">
-    <ClCompile>
-      <PreprocessorDefinitions>SERIALIZATION_DLL=__declspec(dllexport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <!--Everybody depends on the serialization project.-->
   <ItemDefinitionGroup Condition="$(ProjectName)!=serialization">
-    <ClCompile>
-      <PreprocessorDefinitions>SERIALIZATION_DLL=__declspec(dllimport);%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup Condition="$(ProjectName)!=serialization">
     <ProjectReference Include="$(SolutionDir)serialization\serialization.vcxproj">
