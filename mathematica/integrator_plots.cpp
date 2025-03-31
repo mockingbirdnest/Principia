@@ -50,14 +50,28 @@
         ODE>()),                                \
         u8###name, (methods::name::evaluations) \
   }
-#define SPRK_INTEGRATOR(name, composition)                   \
-  {                                                          \
-    (SymplecticRungeKuttaNyströmIntegrator<                  \
-        methods::name,                                       \
-        serialization::FixedStepSizeIntegrator::composition, \
-        ODE>()),                                             \
-        u8###name " " u8###composition,                      \
-        (methods::name::evaluations)                         \
+#define SPRK_INTEGRATOR(name, composition)              \
+  SPRK_INTEGRATOR##composition(name)
+#define SPRK_INTEGRATORBA(name)              \
+  {(SymplecticRungeKuttaNyströmIntegrator<              \
+       methods::name,                                   \
+       serialization::FixedStepSizeIntegrator::BA,     \
+       ODE>()),                                         \
+   u8## #name " BA",                                   \
+   (methods::name::evaluations)}
+#define SPRK_INTEGRATORBAB(name)              \
+  {(SymplecticRungeKuttaNyströmIntegrator<              \
+       methods::name,                                   \
+       serialization::FixedStepSizeIntegrator::ABA,     \
+       ODE>()),                                         \
+   u8## #name " ABA",                                   \
+   (methods::name::evaluations)},                       \
+  {                                                     \
+    (SymplecticRungeKuttaNyströmIntegrator<             \
+        methods::name,                                  \
+        serialization::FixedStepSizeIntegrator::BAB,    \
+        ODE>()),                                        \
+        u8## #name " BAB", (methods::name::evaluations) \
   }
 
 namespace principia {
@@ -249,7 +263,7 @@ class WorkErrorGraphGenerator {
                                                   e_errors_[i][j][k]);
         }
       }
-      names.emplace_back(ToMathematica(methods_[i].name));
+      names.emplace_back(methods_[i].name);
     }
     std::string result;
     result += Set("qErrorData", q_error_data, ExpressInSIUnits);
@@ -341,7 +355,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   initial_state.time = DoublePrecision<Instant>(t0);
 
   std::vector<Instant> const tmax = {
-      t0 + 50 * Second, t0 + 100 * Second, t0 + 200 * Second};
+      t0 + 50 * Second, t0 + 57.5 * Second, t0 + 75 * Second};
   auto const compute_error = [q_amplitude, v_amplitude, ω, m, k, t0](
       ODE::State const& state) {
     return WorkErrorGraphGenerator<Energy>::Errors{
@@ -393,8 +407,8 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
 
   std::vector<Instant> const tmax = {
       t0 + 8 * *orbit.elements_at_epoch().period,
-      t0 + 16 * *orbit.elements_at_epoch().period,
-      t0 + 32 * *orbit.elements_at_epoch().period};
+      t0 + 10 * *orbit.elements_at_epoch().period,
+      t0 + 12 * *orbit.elements_at_epoch().period};
 
   SpecificEnergy const initial_specific_energy =
       initial_dof.velocity().Norm²() / 2 -
