@@ -9,7 +9,6 @@
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
-#include "geometry/plane.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/signature.hpp"
@@ -20,8 +19,6 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "mathematica/logger.hpp"
-#include "mathematica/mathematica.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -32,12 +29,10 @@
 #include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
 #include "physics/rotating_pulsating_reference_frame.hpp"
-#include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/astronomy.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -64,7 +59,6 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
-using namespace principia::geometry::_plane;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
@@ -75,8 +69,6 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
-using namespace principia::mathematica::_logger;
-using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
@@ -84,12 +76,10 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_lagrange_equipotentials;
 using namespace principia::physics::_massive_body;
-using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -367,8 +357,6 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 }
 #endif
 
-// This test is similar to `EquipotentialTest.
-// BodyCentredBodyDirection_EquidistantPoints`
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
   auto const& earth = *solar_system_->massive_body(
       *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
@@ -384,7 +372,7 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
           &earth,
           &moon));
 
-  // The camera is located as {0, 0, 500'000 km} and is looking along -z.
+  // The camera is located as {0, 0, 1} and is looking along -z.
   Perspective<Navigation, Camera> const perspective(
       RigidTransformation<Navigation, Camera>(
           Navigation::origin +
@@ -413,8 +401,6 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
                           &plotting_frame,
                           plotting_to_scaled_space_);
 
-  Logger logger(TEMP_DIR / "plot_method3.wl");
-
   // Compute over 30 days.
   std::int64_t number_of_points = 0;
   for (int i = 0; i < 30; ++i) {
@@ -431,17 +417,13 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
 
     for (auto const& [_, lines] : equipotentials.lines) {
       for (auto const& line : lines) {
-        logger.Append("equipotentialLines", line, ExpressInSIUnits);
         planetarium.PlotMethod3(
             line,
             line.front().time,
             line.back().time,
             t,
             /*reverse=*/false,
-            [&](ScaledSpacePoint const& p) {
-              logger.Append("plotPoints",
-                            principia::geometry::_r3_element::R3Element<double>{
-                                p.x, p.y, p.z});
+            [&number_of_points](ScaledSpacePoint const& p) {
               ++number_of_points;
             },
             /*max_points=*/std::numeric_limits<int>::max());
