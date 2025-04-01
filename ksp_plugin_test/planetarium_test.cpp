@@ -373,7 +373,8 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
           &earth,
           &moon));
 
-  // The camera is located as {0, 0, 1} and is looking along -z.
+  // The camera is located as {0, 0, 1} (one lunar distance above the Earth-Moon
+  // barycentre) and is looking along -z.
   Perspective<Navigation, Camera> const perspective(
       RigidTransformation<Navigation, Camera>(
           Navigation::origin +
