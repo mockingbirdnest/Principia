@@ -357,7 +357,6 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
   EXPECT_EQ(2, rp2_lines[0].size());
   EXPECT_EQ(9, rp2_lines[1].size());
 }
-#endif
 
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
   auto const& earth = *solar_system_->massive_body(
@@ -434,6 +433,8 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
   }
   EXPECT_EQ(100692, number_of_points);
 }
+
+#endif
 
 }  // namespace ksp_plugin
 }  // namespace principia
