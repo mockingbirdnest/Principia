@@ -22,7 +22,6 @@
 #include "ksp_plugin/frames.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
-#include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -32,6 +31,7 @@
 #include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
 #include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
@@ -77,7 +77,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
-using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -379,17 +379,16 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
       lagrange_equipotentials(ephemeris_.get());
 
   auto const plotting_frame(
-      BodyCentredBodyDirectionReferenceFrame<Barycentric, Navigation>(
+      RotatingPulsatingReferenceFrame<Barycentric, Navigation>(
           ephemeris_.get(),
           &earth,
           &moon));
 
-  // The camera is located as {0, 0, 1 AU} and is looking along -z.
+  // The camera is located as {0, 0, 500'000 km} and is looking along -z.
   Perspective<Navigation, Camera> const perspective(
       RigidTransformation<Navigation, Camera>(
           Navigation::origin +
-              Displacement<Navigation>(
-                  {0 * Metre, 0 * Metre, 1 * AstronomicalUnit}),
+              Displacement<Navigation>({0 * Metre, 0 * Metre, 1 * Metre}),
           Camera::origin,
           Rotation<World, Camera>(Vector<double, World>({1, 0, 0}),
                                   Bivector<double, World>({0, -1, 0}),
@@ -417,37 +416,39 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
   Logger logger(TEMP_DIR / "plot_method3.wl");
 
   // Compute over 30 days.
-  std::vector<std::int64_t> number_of_points;
-  for (int i = 0; i < 3/*30*/; ++i) {
+  std::int64_t number_of_points = 0;
+  for (int i = 0; i < 30; ++i) {
     Instant const t = t0_ + i * Day;
+    ASSERT_OK(ephemeris_->Prolong(t));
+
     LagrangeEquipotentials<Barycentric, Navigation>::Parameters const
         equipotential_parameters{
             .primaries = {&earth}, .secondaries = {&moon}, .time = t};
-    ASSERT_OK(ephemeris_->Prolong(t));
-
     auto const status_or_equipotentials =
         lagrange_equipotentials.ComputeLines(equipotential_parameters);
     ASSERT_OK(status_or_equipotentials);
     auto const& equipotentials = status_or_equipotentials.value();
+
     for (auto const& [_, lines] : equipotentials.lines) {
-      std::int64_t& number_of_points_this_line =
-          number_of_points.emplace_back();
       for (auto const& line : lines) {
-        logger.Append("lines", line, ExpressInSIUnits);
+        logger.Append("equipotentialLines", line, ExpressInSIUnits);
         planetarium.PlotMethod3(
             line,
             line.front().time,
             line.back().time,
             t,
             /*reverse=*/false,
-            [&number_of_points_this_line](ScaledSpacePoint const&) {
-              ++number_of_points_this_line;
+            [&](ScaledSpacePoint const& p) {
+              logger.Append("plotPoints",
+                            principia::geometry::_r3_element::R3Element<double>{
+                                p.x, p.y, p.z});
+              ++number_of_points;
             },
             /*max_points=*/std::numeric_limits<int>::max());
       }
-LOG(ERROR)<<number_of_points_this_line;
     }
   }
+  EXPECT_EQ(100692, number_of_points);
 }
 
 }  // namespace ksp_plugin
