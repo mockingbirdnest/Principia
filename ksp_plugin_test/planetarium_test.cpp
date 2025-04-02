@@ -449,7 +449,7 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
   EXPECT_EQ(9, rp2_lines[1].size());
 }
 
-TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
+TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_04ArcMin) {
   auto const plotted_trajectories = ComputePlottedLines(
       // No dark area, human visual acuity, wide field of view.
       Planetarium::Parameters(
@@ -463,6 +463,22 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
   }
 
   EXPECT_EQ(100692, number_of_points);
+}
+
+TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_4ArcMin) {
+  auto const plotted_trajectories = ComputePlottedLines(
+      // No dark area, human visual acuity, wide field of view.
+      Planetarium::Parameters(
+          /*sphere_radius_multiplier=*/1.0,
+          /*angular_resolution=*/4 * ArcMinute,
+          /*field_of_view=*/90 * Degree));
+
+  std::int64_t number_of_points = 0;
+  for (auto const& plotted_trajectory : plotted_trajectories) {
+    number_of_points += plotted_trajectory.size();
+  }
+
+  EXPECT_EQ(33426, number_of_points);
 }
 
 #endif
