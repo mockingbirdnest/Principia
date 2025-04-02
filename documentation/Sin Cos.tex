@@ -69,11 +69,15 @@ Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equa
 \section*{Approximation of $\frac{\Pi}{2}$}
 To perform argument reduction, we need to build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
 
-We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
+Let $z ge 0$.  We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
 \[
-\truncate\of{\gk, z} \DefineAs \floor{2^{-\gk} \mant \of{z}} 2^{\gk} \ULP\of{z}
+\truncate\of{\gk, z} \DefineAs \floor{2^{-\gk} \mant \of{z}} \; 2^{\gk} \ULP\of{z}
 \]
-The definition of the floor function implies:
+We have:
+\[
+z - \truncate\of{\gk, z} = \pa{2^{-\gk} \mant \of{z} - \floor{2^{-\gk} \mant \of{z}}} \; 2^{\gk} \ULP\of{z}
+\]
+The definition of the floor function implies that the quantity in parentheses is in $\intclop 0 1$ and therefore:
 \[
 0 \leq z - \truncate\of{\gk, z} < 2^{\gk} \ULP\of{z}
 \]
@@ -119,10 +123,11 @@ Noting that the absolute error on the rounding that appears in the definition of
 \label{eqnpitwoterms}
 \end{align}
 and the following upper bound for $\gd C_1$:
-\begin{equation}
-\abs{\gd C_1} < 2^{\gk'_1} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
+\begin{align}
+\abs{\gd C_1} &< \frac{\Pi}{2} - C_1 + \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} \nonumber \\
+&< 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}+2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk'_1} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
 \label{eqnabsdc1}
-\end{equation}
+\end{align}
  
 This scheme gives a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
 
