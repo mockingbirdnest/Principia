@@ -144,6 +144,8 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
           // Order 3
           SPRK_INTEGRATOR(Ruth1983, BA),
           SPRK_INTEGRATOR(McLachlanAtela1992Order3Optimal, BA),
+          EERKN_INTEGRATOR(Fine1987RKNG34),
+          EERKN_INTEGRATOR(DormandالمكاوىPrince1986RKN434FM),
           // Order 4
           SPRK_INTEGRATOR(CandyRozmus1991ForestRuth1990, BAB),
           SPRK_INTEGRATOR(鈴木1990, BAB),
@@ -155,6 +157,7 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
           SRKN_INTEGRATOR(McLachlan1995SB3A4),
           SRKN_INTEGRATOR(McLachlan1995SB3A5),
           SRKN_INTEGRATOR(BlanesMoan2002SRKN6B),
+          EERKN_INTEGRATOR(Fine1987RKNG45),
           // Order 5
           SRKN_INTEGRATOR(McLachlanAtela1992Order5Optimal),
           // Order 6
@@ -166,7 +169,6 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
           SRKN_INTEGRATOR(OkunborSkeel1994Order6Method13),
           SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),
           SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),
-          EERKN_INTEGRATOR(Fine1987RKNG45),
           // Order 8
           SPRK_INTEGRATOR(吉田1990Order8A, BAB),
           SPRK_INTEGRATOR(吉田1990Order8B, BAB),
