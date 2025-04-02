@@ -47,13 +47,12 @@
        &SymplecticRungeKuttaNyströmIntegrator<methods::name, ODE>()), \
    u8## #name,                                                        \
    (methods::name::evaluations)}
-#define EERKN_INTEGRATOR(name)                                             \
-  {static_cast<AdaptiveStepSizeIntegrator<ODE> const*>(                          \
+#define EERKN_INTEGRATOR(name)                                              \
+  {static_cast<AdaptiveStepSizeIntegrator<ODE> const*>(                     \
        &EmbeddedExplicitRungeKuttaNyströmIntegrator<methods::name, ODE>()), \
-   u8## #name,                                                             \
+   u8## #name,                                                              \
    0}
-#define SPRK_INTEGRATOR(name, composition) SPRK_INTEGRATOR##composition(name)
-#define SPRK_INTEGRATORBA(name)                        \
+#define SPRK_INTEGRATOR(name)                          \
   {static_cast<FixedStepSizeIntegrator<ODE> const*>(   \
        &SymplecticRungeKuttaNyströmIntegrator<         \
            methods::name,                              \
@@ -61,7 +60,7 @@
            ODE>()),                                    \
    u8## #name " BA",                                   \
    (methods::name::evaluations)}
-#define SPRK_INTEGRATORBAB(name)                         \
+#define SPRK_INTEGRATOR_FSAL(name)                       \
   {static_cast<FixedStepSizeIntegrator<ODE> const*>(     \
        &SymplecticRungeKuttaNyströmIntegrator<           \
            methods::name,                                \
@@ -138,21 +137,21 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
   SimpleHarmonicMotionPlottedIntegrator meow =
       SRKN_INTEGRATOR(BlanesMoan2002SRKN6B);
   return {// Order 2
-          SPRK_INTEGRATOR(NewtonDelambreStørmerVerletLeapfrog, BAB),
-          SPRK_INTEGRATOR(McLachlanAtela1992Order2Optimal, BA),
-          SPRK_INTEGRATOR(McLachlan1995S2, BAB),
+          SPRK_INTEGRATOR_FSAL(NewtonDelambreStørmerVerletLeapfrog),
+          SPRK_INTEGRATOR(McLachlanAtela1992Order2Optimal),
+          SPRK_INTEGRATOR_FSAL(McLachlan1995S2),
           // Order 3
-          SPRK_INTEGRATOR(Ruth1983, BA),
-          SPRK_INTEGRATOR(McLachlanAtela1992Order3Optimal, BA),
+          SPRK_INTEGRATOR(Ruth1983),
+          SPRK_INTEGRATOR(McLachlanAtela1992Order3Optimal),
           EERKN_INTEGRATOR(Fine1987RKNG34),
           EERKN_INTEGRATOR(DormandالمكاوىPrince1986RKN434FM),
           // Order 4
-          SPRK_INTEGRATOR(CandyRozmus1991ForestRuth1990, BAB),
-          SPRK_INTEGRATOR(鈴木1990, BAB),
-          SPRK_INTEGRATOR(McLachlan1995SS5, BAB),
-          SPRK_INTEGRATOR(McLachlan1995S4, BAB),
-          SPRK_INTEGRATOR(McLachlan1995S5, BAB),
-          SPRK_INTEGRATOR(BlanesMoan2002S6, BAB),
+          SPRK_INTEGRATOR_FSAL(CandyRozmus1991ForestRuth1990),
+          SPRK_INTEGRATOR_FSAL(鈴木1990),
+          SPRK_INTEGRATOR_FSAL(McLachlan1995SS5),
+          SPRK_INTEGRATOR_FSAL(McLachlan1995S4),
+          SPRK_INTEGRATOR_FSAL(McLachlan1995S5),
+          SPRK_INTEGRATOR_FSAL(BlanesMoan2002S6),
           SRKN_INTEGRATOR(McLachlanAtela1992Order4Optimal),
           SRKN_INTEGRATOR(McLachlan1995SB3A4),
           SRKN_INTEGRATOR(McLachlan1995SB3A5),
@@ -161,22 +160,22 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
           // Order 5
           SRKN_INTEGRATOR(McLachlanAtela1992Order5Optimal),
           // Order 6
-          SPRK_INTEGRATOR(吉田1990Order6A, BAB),
-          SPRK_INTEGRATOR(吉田1990Order6B, BAB),
-          SPRK_INTEGRATOR(吉田1990Order6C, BAB),
-          SPRK_INTEGRATOR(McLachlan1995SS9, BAB),
-          SPRK_INTEGRATOR(BlanesMoan2002S10, BAB),
+          SPRK_INTEGRATOR_FSAL(吉田1990Order6A),
+          SPRK_INTEGRATOR_FSAL(吉田1990Order6B),
+          SPRK_INTEGRATOR_FSAL(吉田1990Order6C),
+          SPRK_INTEGRATOR_FSAL(McLachlan1995SS9),
+          SPRK_INTEGRATOR_FSAL(BlanesMoan2002S10),
           SRKN_INTEGRATOR(OkunborSkeel1994Order6Method13),
           SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),
           SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),
           // Order 8
-          SPRK_INTEGRATOR(吉田1990Order8A, BAB),
-          SPRK_INTEGRATOR(吉田1990Order8B, BAB),
-          SPRK_INTEGRATOR(吉田1990Order8C, BAB),
-          SPRK_INTEGRATOR(吉田1990Order8D, BAB),
-          SPRK_INTEGRATOR(吉田1990Order8E, BAB),
-          SPRK_INTEGRATOR(McLachlan1995SS15, BAB),
-          SPRK_INTEGRATOR(McLachlan1995SS17, BAB),
+          SPRK_INTEGRATOR_FSAL(吉田1990Order8A),
+          SPRK_INTEGRATOR_FSAL(吉田1990Order8B),
+          SPRK_INTEGRATOR_FSAL(吉田1990Order8C),
+          SPRK_INTEGRATOR_FSAL(吉田1990Order8D),
+          SPRK_INTEGRATOR_FSAL(吉田1990Order8E),
+          SPRK_INTEGRATOR_FSAL(McLachlan1995SS15),
+          SPRK_INTEGRATOR_FSAL(McLachlan1995SS17),
           SLMS_INTEGRATOR(QuinlanTremaine1990Order8),
           SLMS_INTEGRATOR(Quinlan1999Order8A),
           SLMS_INTEGRATOR(Quinlan1999Order8B),
