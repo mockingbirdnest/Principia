@@ -54,7 +54,7 @@ inline void Logger::FlushAndClear() {
 }
 
 template<typename... Args>
-void Logger::Append(std::string const& name, Args... args) {
+void Logger::Append(std::string const& name, Args const&... args) {
   absl::MutexLock l(&lock_);
   if (enabled_) {
     name_and_multiple_values_[name].push_back(ToMathematica(args...));
