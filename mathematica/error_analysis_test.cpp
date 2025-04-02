@@ -39,7 +39,7 @@ class ErrorAnalysisTest : public ::testing::Test {
 #if !defined(_DEBUG)
 TEST_F(ErrorAnalysisTest, DISABLED_IntegratorPlots) {
   google::LogToStderr();
-  GenerateSimpleHarmonicMotionWorkErrorGraphs();
+  //GenerateSimpleHarmonicMotionWorkErrorGraphs();
   // Circular.
   GenerateKeplerProblemWorkErrorGraphs(0.0);
   // Pluto.

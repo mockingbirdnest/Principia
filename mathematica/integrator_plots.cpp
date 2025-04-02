@@ -17,6 +17,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "glog/logging.h"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -36,42 +37,45 @@
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/numerics.hpp"
 
-#define SLMS_INTEGRATOR(name)            \
-  {                                      \
-    (SymmetricLinearMultistepIntegrator< \
-        methods::name,                   \
-        ODE>()),                         \
-        u8###name, 1                     \
-  }
-#define SRKN_INTEGRATOR(name)                   \
-  {                                             \
-    (SymplecticRungeKuttaNyströmIntegrator<     \
-        methods::name,                          \
-        ODE>()),                                \
-        u8###name, (methods::name::evaluations) \
-  }
-#define SPRK_INTEGRATOR(name, composition)              \
-  SPRK_INTEGRATOR##composition(name)
-#define SPRK_INTEGRATORBA(name)              \
-  {(SymplecticRungeKuttaNyströmIntegrator<              \
-       methods::name,                                   \
-       serialization::FixedStepSizeIntegrator::BA,     \
-       ODE>()),                                         \
+#define SLMS_INTEGRATOR(name)                                      \
+  {static_cast<FixedStepSizeIntegrator<ODE> const*>(               \
+       &SymmetricLinearMultistepIntegrator<methods::name, ODE>()), \
+   u8## #name,                                                     \
+   1}
+#define SRKN_INTEGRATOR(name)                                         \
+  {static_cast<FixedStepSizeIntegrator<ODE> const*>(                  \
+       &SymplecticRungeKuttaNyströmIntegrator<methods::name, ODE>()), \
+   u8## #name,                                                        \
+   (methods::name::evaluations)}
+#define EERKN_INTEGRATOR(name)                                             \
+  {static_cast<AdaptiveStepSizeIntegrator<ODE> const*>(                          \
+       &EmbeddedExplicitRungeKuttaNyströmIntegrator<methods::name, ODE>()), \
+   u8## #name,                                                             \
+   0}
+#define SPRK_INTEGRATOR(name, composition) SPRK_INTEGRATOR##composition(name)
+#define SPRK_INTEGRATORBA(name)                        \
+  {static_cast<FixedStepSizeIntegrator<ODE> const*>(   \
+       &SymplecticRungeKuttaNyströmIntegrator<         \
+           methods::name,                              \
+           serialization::FixedStepSizeIntegrator::BA, \
+           ODE>()),                                    \
    u8## #name " BA",                                   \
    (methods::name::evaluations)}
-#define SPRK_INTEGRATORBAB(name)              \
-  {(SymplecticRungeKuttaNyströmIntegrator<              \
-       methods::name,                                   \
-       serialization::FixedStepSizeIntegrator::ABA,     \
-       ODE>()),                                         \
-   u8## #name " ABA",                                   \
-   (methods::name::evaluations)},                       \
-  {                                                     \
-    (SymplecticRungeKuttaNyströmIntegrator<             \
-        methods::name,                                  \
-        serialization::FixedStepSizeIntegrator::BAB,    \
-        ODE>()),                                        \
-        u8## #name " BAB", (methods::name::evaluations) \
+#define SPRK_INTEGRATORBAB(name)                         \
+  {static_cast<FixedStepSizeIntegrator<ODE> const*>(     \
+       &SymplecticRungeKuttaNyströmIntegrator<           \
+           methods::name,                                \
+           serialization::FixedStepSizeIntegrator::ABA,  \
+           ODE>()),                                      \
+   u8## #name " ABA",                                    \
+   (methods::name::evaluations)},                        \
+  {                                                      \
+    static_cast<FixedStepSizeIntegrator<ODE> const*>(    \
+        &SymplecticRungeKuttaNyströmIntegrator<          \
+            methods::name,                               \
+            serialization::FixedStepSizeIntegrator::BAB, \
+            ODE>()),                                     \
+        u8## #name " BAB", (methods::name::evaluations)  \
   }
 
 namespace principia {
@@ -90,6 +94,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
@@ -116,7 +121,8 @@ using Problem = InitialValueProblem<ODE>;
 namespace {
 
 struct SimpleHarmonicMotionPlottedIntegrator final {
-  FixedStepSizeIntegrator<ODE> const& integrator;
+  std::variant<FixedStepSizeIntegrator<ODE> const*,
+               AdaptiveStepSizeIntegrator<ODE> const*> const integrator;
   std::string name;
   int evaluations;
 };
@@ -129,6 +135,8 @@ struct SimpleHarmonicMotionPlottedIntegrator final {
 // 5. author names;
 // 6. method name.
 std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
+  SimpleHarmonicMotionPlottedIntegrator meow =
+      SRKN_INTEGRATOR(BlanesMoan2002SRKN6B);
   return {// Order 2
           SPRK_INTEGRATOR(NewtonDelambreStørmerVerletLeapfrog, BAB),
           SPRK_INTEGRATOR(McLachlanAtela1992Order2Optimal, BA),
@@ -158,6 +166,7 @@ std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
           SRKN_INTEGRATOR(OkunborSkeel1994Order6Method13),
           SRKN_INTEGRATOR(BlanesMoan2002SRKN11B),
           SRKN_INTEGRATOR(BlanesMoan2002SRKN14A),
+          EERKN_INTEGRATOR(Fine1987RKNG45),
           // Order 8
           SPRK_INTEGRATOR(吉田1990Order8A, BAB),
           SPRK_INTEGRATOR(吉田1990Order8B, BAB),
@@ -294,28 +303,76 @@ class WorkErrorGraphGenerator {
     };
     Time const Δt = method.evaluations * starting_step_size_per_evaluation_ /
                     std::pow(step_reduction_, time_step_index);
-    auto const instance =
-        method.integrator.NewInstance(problem, append_state, Δt);
+    switch (method.integrator.index()) {
+      case 0: {
+        FixedStepSizeIntegrator<ODE> const& integrator =
+            *std::get<0>(method.integrator);
+        auto const instance = integrator.NewInstance(problem, append_state, Δt);
 
-    for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
-      CHECK_OK(instance->Solve(tmax));
-      // Log both the actual number of evaluations and a theoretical number
-      // that ignores any startup costs; that theoretical number is the one
-      // used for plotting.
-      int const amortized_evaluations =
-          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
-      LOG_EVERY_N(INFO, 50)
-          << "[" << method_index << "," << time_step_index << "] "
-          << problem_name_ << ": " << number_of_evaluations
-          << " actual evaluations (" << amortized_evaluations
-          << " amortized) with " << method.name;
-      // We plot the maximum error, i.e., the L∞ norm of the error.
-      // [BM02] or [BCR01a] tend to use the average error (the normalized L¹
-      // norm) instead.
-      q_errors_[method_index][time_step_index][i] = max_q_error;
-      v_errors_[method_index][time_step_index][i] = max_v_error;
-      e_errors_[method_index][time_step_index][i] = max_e_error;
-      evaluations_[method_index][time_step_index][i] = amortized_evaluations;
+        for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
+          CHECK_OK(instance->Solve(tmax));
+          // Log both the actual number of evaluations and a theoretical number
+          // that ignores any startup costs; that theoretical number is the one
+          // used for plotting.
+          int const amortized_evaluations =
+              method.evaluations *
+              static_cast<int>(std::floor((tmax - t0) / Δt));
+          LOG_EVERY_N(INFO, 50)
+              << "[" << method_index << "," << time_step_index << "] "
+              << problem_name_ << ": " << number_of_evaluations
+              << " actual evaluations (" << amortized_evaluations
+              << " amortized) with " << method.name;
+          // We plot the maximum error, i.e., the L∞ norm of the error.
+          // [BM02] or [BCR01a] tend to use the average error (the normalized L¹
+          // norm) instead.
+          q_errors_[method_index][time_step_index][i] = max_q_error;
+          v_errors_[method_index][time_step_index][i] = max_v_error;
+          e_errors_[method_index][time_step_index][i] = max_e_error;
+          evaluations_[method_index][time_step_index][i] =
+              amortized_evaluations;
+        }
+        break;
+      }
+      case 1: {
+        AdaptiveStepSizeIntegrator<ODE> const& integrator =
+            *std::get<1>(method.integrator);
+        auto const instance = integrator.NewInstance(
+            problem,
+            append_state,
+            /*tolerance_to_error_ratio=*/
+            [time_step_index, this](Time const& current_step_size,
+                                    ODE::State const& state,
+                                    ODE::State::Error const& error) {
+              return (std::exp2(-50.0 * time_step_index /
+                                integrations_per_integrator_) *
+                      Metre) /
+                     Abs(error.position_error[0]);
+            },
+            AdaptiveStepSizeIntegrator<ODE>::Parameters{
+                /*first_step=*/tmax_[0] - t0,
+                /*safety_factor=*/0.9,
+                /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+                /*last_step_is_exact=*/false});
+
+        for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
+          CHECK_OK(instance->Solve(tmax));
+          LOG_EVERY_N(INFO, 50)
+              << "[" << method_index << "," << time_step_index << "] "
+              << problem_name_ << ": " << number_of_evaluations
+              << " actual evaluations with " << method.name;
+          // We plot the maximum error, i.e., the L∞ norm of the error.
+          // [BM02] or [BCR01a] tend to use the average error (the normalized
+          // L¹ norm) instead.
+          q_errors_[method_index][time_step_index][i] = max_q_error;
+          v_errors_[method_index][time_step_index][i] = max_v_error;
+          e_errors_[method_index][time_step_index][i] = max_e_error;
+          evaluations_[method_index][time_step_index][i] =
+              number_of_evaluations;
+        }
+        break;
+      }
+      default:
+        LOG(FATAL) << "Unexpected variant " << method.integrator.index();
     }
 
     return absl::OkStatus();
