@@ -17,7 +17,9 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "glog/logging.h"
+#include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/explicit_runge_kutta_integrator.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -103,7 +105,9 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::integrators::_explicit_runge_kutta_integrator;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
@@ -177,6 +181,8 @@ std::vector<PlottedIntegrator> Methods() {
           SRKN_INTEGRATOR(McLachlan1995SB3A4),
           SRKN_INTEGRATOR(McLachlan1995SB3A5),
           SRKN_INTEGRATOR(BlanesMoan2002SRKN6B),
+          ERK_INTEGRATOR(Kutta1901Vσ1),
+          EERK_INTEGRATOR(DormandPrince1986RK547FC),
           EERKN_INTEGRATOR(Fine1987RKNG45),
           // Order 5
           SRKN_INTEGRATOR(McLachlanAtela1992Order5Optimal),
@@ -310,17 +316,42 @@ class WorkErrorGraphGenerator {
   absl::Status Integrate(int const method_index, int const time_step_index) {
     auto const& method = methods_[method_index];
     Problem problem;
+    InitialValueProblem<FirstOrderODE> first_order_problem;
     int number_of_evaluations = 0;
     problem.equation.compute_acceleration = std::bind(
         compute_accelerations_, _1, _2, _3, &number_of_evaluations);
     problem.initial_state = initial_state_;
+    first_order_problem.equation.compute_derivative =
+        [&number_of_evaluations, this](Instant const& s,
+                                       std::tuple<Length, Speed> const& y,
+                                       std::tuple<Speed, Acceleration>& yʹ) {
+          std::vector<Acceleration> acceleration;
+          acceleration.resize(1);
+          auto const status = compute_accelerations_(
+              s, {std::get<0>(y)}, acceleration, &number_of_evaluations);
+          std::get<0>(yʹ) = std::get<1>(y);
+          std::get<1>(yʹ) = acceleration[0];
+          return status;
+        };
     auto const t0 = problem.initial_state.time.value;
     Length max_q_error;
     Speed max_v_error;
     Energy max_e_error;
     auto append_state = [this, &max_q_error, &max_v_error, &max_e_error](
-      SecondOrderODE::State const& state) {
+        SecondOrderODE::State const& state) {
       auto const errors = compute_errors_(state);
+      max_q_error = std::max(max_q_error, errors.q_error);
+      max_v_error = std::max(max_v_error, errors.v_error);
+      max_e_error = std::max(max_e_error, errors.e_error);
+    };
+    auto append_first_order_state =
+    [this, &max_q_error, &max_v_error, &max_e_error](
+        FirstOrderODE::State const& state) {
+      SecondOrderODE::State second_order_state;
+      second_order_state.time = state.s;
+      second_order_state.positions.push_back(std::get<0>(state.y));
+      second_order_state.velocities.push_back(std::get<1>(state.y));
+      auto const errors = compute_errors_(second_order_state);
       max_q_error = std::max(max_q_error, errors.q_error);
       max_v_error = std::max(max_v_error, errors.v_error);
       max_e_error = std::max(max_e_error, errors.e_error);
@@ -333,29 +364,16 @@ class WorkErrorGraphGenerator {
                         starting_step_size_per_evaluation_ /
                         std::pow(step_reduction_, time_step_index);
         auto const instance = integrator.NewInstance(problem, append_state, Δt);
-
-        for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
-          CHECK_OK(instance->Solve(tmax));
-          // Log both the actual number of evaluations and a theoretical number
-          // that ignores any startup costs; that theoretical number is the one
-          // used for plotting.
-          int const amortized_evaluations =
-              method.evaluations *
-              static_cast<int>(std::floor((tmax - t0) / Δt));
-          LOG_EVERY_N(INFO, 50)
-              << "[" << method_index << "," << time_step_index << "] "
-              << problem_name_ << ": " << number_of_evaluations
-              << " actual evaluations (" << amortized_evaluations
-              << " amortized) with " << method.name;
-          // We plot the maximum error, i.e., the L∞ norm of the error.
-          // [BM02] or [BCR01a] tend to use the average error (the normalized L¹
-          // norm) instead.
-          q_errors_[method_index][time_step_index][i] = max_q_error;
-          v_errors_[method_index][time_step_index][i] = max_v_error;
-          e_errors_[method_index][time_step_index][i] = max_e_error;
-          evaluations_[method_index][time_step_index][i] =
-              amortized_evaluations;
-        }
+        SolveWithFixedStep(method_index,
+                           time_step_index,
+                           *instance,
+                           method,
+                           number_of_evaluations,
+                           max_q_error,
+                           max_v_error,
+                           max_e_error,
+                           t0,
+                           Δt);
         break;
       }
       case 1: {
@@ -378,22 +396,65 @@ class WorkErrorGraphGenerator {
                 /*safety_factor=*/0.9,
                 /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
                 /*last_step_is_exact=*/false});
-
-        for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
-          CHECK_OK(instance->Solve(tmax));
-          LOG_EVERY_N(INFO, 50)
-              << "[" << method_index << "," << time_step_index << "] "
-              << problem_name_ << ": " << number_of_evaluations
-              << " actual evaluations with " << method.name;
-          // We plot the maximum error, i.e., the L∞ norm of the error.
-          // [BM02] or [BCR01a] tend to use the average error (the normalized
-          // L¹ norm) instead.
-          q_errors_[method_index][time_step_index][i] = max_q_error;
-          v_errors_[method_index][time_step_index][i] = max_v_error;
-          e_errors_[method_index][time_step_index][i] = max_e_error;
-          evaluations_[method_index][time_step_index][i] =
-              number_of_evaluations;
-        }
+        SolveWithAdaptiveStep(method_index,
+                              time_step_index,
+                              *instance,
+                              method,
+                              number_of_evaluations,
+                              max_q_error,
+                              max_v_error,
+                              max_e_error);
+        break;
+      }
+      case 2: {
+        FixedStepSizeIntegrator<FirstOrderODE> const& integrator =
+            *std::get<2>(method.integrator);
+        Time const Δt = method.evaluations *
+                        starting_step_size_per_evaluation_ /
+                        std::pow(step_reduction_, time_step_index);
+        auto const instance = integrator.NewInstance(
+            first_order_problem, append_first_order_state, Δt);
+        SolveWithFixedStep(method_index,
+                           time_step_index,
+                           *instance,
+                           method,
+                           number_of_evaluations,
+                           max_q_error,
+                           max_v_error,
+                           max_e_error,
+                           t0,
+                           Δt);
+        break;
+      }
+      case 3: {
+        AdaptiveStepSizeIntegrator<FirstOrderODE> const& integrator =
+            *std::get<3>(method.integrator);
+        Length const tolerance =
+            std::exp2(-50.0 * time_step_index / integrations_per_integrator_) *
+            first_tolerance_;
+        auto const instance = integrator.NewInstance(
+            first_order_problem,
+            append_first_order_state,
+            /*tolerance_to_error_ratio=*/
+            [time_step_index, tolerance, this](
+                Time const& current_step_size,
+                FirstOrderODE::State const& state,
+                FirstOrderODE::State::Error const& error) {
+              return tolerance / Abs(std::get<0>(error));
+            },
+            AdaptiveStepSizeIntegrator<FirstOrderODE>::Parameters{
+                /*first_step=*/tmax_[0] - t0,
+                /*safety_factor=*/0.9,
+                /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+                /*last_step_is_exact=*/false});
+        SolveWithAdaptiveStep(method_index,
+                              time_step_index,
+                              *instance,
+                              method,
+                              number_of_evaluations,
+                              max_q_error,
+                              max_v_error,
+                              max_e_error);
         break;
       }
       default:
@@ -401,6 +462,64 @@ class WorkErrorGraphGenerator {
     }
 
     return absl::OkStatus();
+  }
+
+  template<typename Instance>
+  void SolveWithFixedStep(int const method_index,
+                          int const time_step_index,
+                          Instance& instance,
+                          PlottedIntegrator const& method,
+                          int const& number_of_evaluations,
+                          Length const& max_q_error,
+                          Speed const& max_v_error,
+                          Energy const& max_e_error,
+                          Instant const& t0,
+                          Time const& Δt) {
+    for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
+      CHECK_OK(instance.Solve(tmax));
+      // Log both the actual number of evaluations and a theoretical number
+      // that ignores any startup costs; that theoretical number is the one
+      // used for plotting.
+      int const amortized_evaluations =
+          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
+      LOG_EVERY_N(INFO, 50)
+          << "[" << method_index << "," << time_step_index << "] "
+          << problem_name_ << ": " << number_of_evaluations
+          << " actual evaluations (" << amortized_evaluations
+          << " amortized) with " << method.name;
+      // We plot the maximum error, i.e., the L∞ norm of the error.
+      // [BM02] or [BCR01a] tend to use the average error (the normalized L¹
+      // norm) instead.
+      q_errors_[method_index][time_step_index][i] = max_q_error;
+      v_errors_[method_index][time_step_index][i] = max_v_error;
+      e_errors_[method_index][time_step_index][i] = max_e_error;
+      evaluations_[method_index][time_step_index][i] = amortized_evaluations;
+    }
+  }
+
+  template<typename Instance>
+  void SolveWithAdaptiveStep(int const method_index,
+                             int const time_step_index,
+                             Instance& instance,
+                             PlottedIntegrator const& method,
+                             int const& number_of_evaluations,
+                             Length const& max_q_error,
+                             Speed const& max_v_error,
+                             Energy const& max_e_error) {
+    for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
+      CHECK_OK(instance.Solve(tmax));
+      LOG_EVERY_N(INFO, 50)
+          << "[" << method_index << "," << time_step_index << "] "
+          << problem_name_ << ": " << number_of_evaluations
+          << " actual evaluations with " << method.name;
+      // We plot the maximum error, i.e., the L∞ norm of the error.
+      // [BM02] or [BCR01a] tend to use the average error (the normalized
+      // L¹ norm) instead.
+      q_errors_[method_index][time_step_index][i] = max_q_error;
+      v_errors_[method_index][time_step_index][i] = max_v_error;
+      e_errors_[method_index][time_step_index][i] = max_e_error;
+      evaluations_[method_index][time_step_index][i] = number_of_evaluations;
+    }
   }
 
   std::vector<PlottedIntegrator> const methods_;
