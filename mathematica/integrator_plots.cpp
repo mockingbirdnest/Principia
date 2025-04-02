@@ -49,11 +49,12 @@
        &SymplecticRungeKuttaNyströmIntegrator<methods::name, SecondOrderODE>()), \
    u8## #name,                                                        \
    (methods::name::evaluations)}
-#define ERK_INTEGRATOR(name)                                          \
-  {static_cast<FixedStepSizeIntegrator<FirstOrderODE> const*>(      \
+#define ERK_INTEGRATOR(name)                                           \
+  {static_cast<FixedStepSizeIntegrator<FirstOrderODE> const*>(         \
        &ExplicitRungeKuttaIntegrator<methods::name, FirstOrderODE>()), \
    u8## #name,                                                         \
-   0}
+   methods::name::first_same_as_last ? methods::name::stages - 1       \
+                                     : methods::name::stages}
 #define EERK_INTEGRATOR(name)                                           \
   {static_cast<AdaptiveStepSizeIntegrator<FirstOrderODE> const*>(      \
        &EmbeddedExplicitRungeKuttaIntegrator<methods::name, FirstOrderODE>()), \
@@ -129,8 +130,11 @@ using namespace principia::testing_utilities::_numerics;
 // TODO(egg): it would probably be saner to use Position<Whatever> and make the
 // simple harmonic oscillator work in 3d.
 using SecondOrderODE = SpecialSecondOrderDifferentialEquation<Length>;
-using FirstOrderODE =
-    ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;
+using FirstOrderODE = ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
+                                                                     Length,
+                                                                     Length,
+                                                                     Speed,
+                                                                     Speed>;
 using Problem = InitialValueProblem<SecondOrderODE>;
 
 namespace {
@@ -322,17 +326,33 @@ class WorkErrorGraphGenerator {
         compute_accelerations_, _1, _2, _3, &number_of_evaluations);
     problem.initial_state = initial_state_;
     first_order_problem.equation.compute_derivative =
-        [&number_of_evaluations, this](Instant const& s,
-                                       std::tuple<Length, Speed> const& y,
-                                       std::tuple<Speed, Acceleration>& yʹ) {
-          std::vector<Acceleration> acceleration;
-          acceleration.resize(1);
-          auto const status = compute_accelerations_(
-              s, {std::get<0>(y)}, acceleration, &number_of_evaluations);
-          std::get<0>(yʹ) = std::get<1>(y);
-          std::get<1>(yʹ) = acceleration[0];
+        [&number_of_evaluations, this](
+            Instant const& s,
+            std::tuple<Length, Length, Speed, Speed> const& y,
+            std::tuple<Speed, Speed, Acceleration, Acceleration>& yʹ) {
+          std::vector<Acceleration> acceleration{{}, {}};
+          auto const status =
+              compute_accelerations_(s,
+                                     {std::get<0>(y), std::get<1>(y)},
+                                     acceleration,
+                                     &number_of_evaluations);
+          std::get<0>(yʹ) = std::get<2>(y);
+          std::get<1>(yʹ) = std::get<3>(y);
+          std::get<2>(yʹ) = acceleration[0];
+          std::get<3>(yʹ) = acceleration[1];
           return status;
         };
+    first_order_problem.initial_state.s = initial_state_.time;
+    std::get<0>(first_order_problem.initial_state.y) =
+        initial_state_.positions[0];
+    std::get<2>(first_order_problem.initial_state.y) =
+        initial_state_.velocities[0];
+    if (initial_state_.positions.size() > 0) {
+      std::get<1>(first_order_problem.initial_state.y) =
+          initial_state_.positions[1];
+      std::get<3>(first_order_problem.initial_state.y) =
+          initial_state_.velocities[1];
+    }
     auto const t0 = problem.initial_state.time.value;
     Length max_q_error;
     Speed max_v_error;
@@ -349,8 +369,10 @@ class WorkErrorGraphGenerator {
         FirstOrderODE::State const& state) {
       SecondOrderODE::State second_order_state;
       second_order_state.time = state.s;
-      second_order_state.positions.push_back(std::get<0>(state.y));
-      second_order_state.velocities.push_back(std::get<1>(state.y));
+      second_order_state.positions = {std::get<0>(state.y),
+                                      std::get<1>(state.y)};
+      second_order_state.velocities = {std::get<2>(state.y),
+                                       std::get<3>(state.y)};
       auto const errors = compute_errors_(second_order_state);
       max_q_error = std::max(max_q_error, errors.q_error);
       max_v_error = std::max(max_v_error, errors.v_error);
@@ -389,7 +411,8 @@ class WorkErrorGraphGenerator {
             [time_step_index, tolerance, this](Time const& current_step_size,
                                                SecondOrderODE::State const& state,
                                                SecondOrderODE::State::Error const& error) {
-              return tolerance / Abs(error.position_error[0]);
+              return tolerance / Sqrt(Pow<2>(error.position_error[0]) +
+                                      Pow<2>(error.position_error[1]));
             },
             AdaptiveStepSizeIntegrator<SecondOrderODE>::Parameters{
                 /*first_step=*/tmax_[0] - t0,
@@ -440,7 +463,8 @@ class WorkErrorGraphGenerator {
                 Time const& current_step_size,
                 FirstOrderODE::State const& state,
                 FirstOrderODE::State::Error const& error) {
-              return tolerance / Abs(std::get<0>(error));
+              return tolerance / Sqrt(Pow<2>(std::get<0>(error)) +
+                                      Pow<2>(std::get<1>(error)));
             },
             AdaptiveStepSizeIntegrator<FirstOrderODE>::Parameters{
                 /*first_step=*/tmax_[0] - t0,
