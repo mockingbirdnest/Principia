@@ -127,14 +127,15 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_integration;
 using namespace principia::testing_utilities::_numerics;
 
-// TODO(egg): it would probably be saner to use Position<Whatever> and make the
-// simple harmonic oscillator work in 3d.
-using SecondOrderODE = SpecialSecondOrderDifferentialEquation<Length>;
-using FirstOrderODE = ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
-                                                                     Length,
-                                                                     Length,
-                                                                     Speed,
-                                                                     Speed>;
+using World = Frame<serialization::Frame::TestTag,
+                    Inertial,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
+using SecondOrderODE = SpecialSecondOrderDifferentialEquation<Position<World>>;
+using FirstOrderODE =
+    ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
+                                                   Position<World>,
+                                                   Velocity<World>>;
 using Problem = InitialValueProblem<SecondOrderODE>;
 
 namespace {
@@ -232,10 +233,11 @@ class WorkErrorGraphGenerator {
   };
 
   WorkErrorGraphGenerator(
-      std::function<absl::Status(Instant const& t,
-                                 std::vector<Length> const& q,
-                                 std::vector<Acceleration>& result,
-                                 int* evaluations)> compute_accelerations,
+      std::function<
+          absl::Status(Instant const& t,
+                       std::vector<Position<World>> const& q,
+                       std::vector<Vector<Acceleration, World>>& result,
+                       int* evaluations)> compute_accelerations,
       SecondOrderODE::State initial_state,
       std::function<Errors(SecondOrderODE::State const&)> compute_errors,
       std::vector<Instant> const& tmax,
@@ -328,31 +330,18 @@ class WorkErrorGraphGenerator {
     first_order_problem.equation.compute_derivative =
         [&number_of_evaluations, this](
             Instant const& s,
-            std::tuple<Length, Length, Speed, Speed> const& y,
-            std::tuple<Speed, Speed, Acceleration, Acceleration>& yʹ) {
-          std::vector<Acceleration> acceleration{{}, {}};
-          auto const status =
-              compute_accelerations_(s,
-                                     {std::get<0>(y), std::get<1>(y)},
-                                     acceleration,
-                                     &number_of_evaluations);
-          std::get<0>(yʹ) = std::get<2>(y);
-          std::get<1>(yʹ) = std::get<3>(y);
-          std::get<2>(yʹ) = acceleration[0];
-          std::get<3>(yʹ) = acceleration[1];
+            std::tuple<Position<World>, Velocity<World>> const& y,
+            std::tuple<Velocity<World>, Vector<Acceleration, World>>& yʹ) {
+          std::vector<Vector<Acceleration, World>> acceleration(1, {});
+          auto const& [q, v] = y;
+          auto const status = compute_accelerations_(
+              s, {q}, acceleration, &number_of_evaluations);
+          yʹ = {v, acceleration[0]};
           return status;
         };
     first_order_problem.initial_state.s = initial_state_.time;
-    std::get<0>(first_order_problem.initial_state.y) =
-        initial_state_.positions[0];
-    std::get<2>(first_order_problem.initial_state.y) =
-        initial_state_.velocities[0];
-    if (initial_state_.positions.size() > 0) {
-      std::get<1>(first_order_problem.initial_state.y) =
-          initial_state_.positions[1];
-      std::get<3>(first_order_problem.initial_state.y) =
-          initial_state_.velocities[1];
-    }
+    first_order_problem.initial_state.y = {initial_state_.positions[0],
+                                           initial_state_.velocities[0]};
     auto const t0 = problem.initial_state.time.value;
     Length max_q_error;
     Speed max_v_error;
@@ -369,10 +358,9 @@ class WorkErrorGraphGenerator {
         FirstOrderODE::State const& state) {
       SecondOrderODE::State second_order_state;
       second_order_state.time = state.s;
-      second_order_state.positions = {std::get<0>(state.y),
-                                      std::get<1>(state.y)};
-      second_order_state.velocities = {std::get<2>(state.y),
-                                       std::get<3>(state.y)};
+      auto const& [q, v] = state.y;
+      second_order_state.positions = {q};
+      second_order_state.velocities = {v};
       auto const errors = compute_errors_(second_order_state);
       max_q_error = std::max(max_q_error, errors.q_error);
       max_v_error = std::max(max_v_error, errors.v_error);
@@ -408,11 +396,11 @@ class WorkErrorGraphGenerator {
             problem,
             append_state,
             /*tolerance_to_error_ratio=*/
-            [time_step_index, tolerance, this](Time const& current_step_size,
-                                               SecondOrderODE::State const& state,
-                                               SecondOrderODE::State::Error const& error) {
-              return tolerance / Sqrt(Pow<2>(error.position_error[0]) +
-                                      Pow<2>(error.position_error[1]));
+            [time_step_index, tolerance, this](
+                Time const& current_step_size,
+                SecondOrderODE::State const& state,
+                SecondOrderODE::State::Error const& error) {
+              return tolerance / error.position_error[0].Norm();
             },
             AdaptiveStepSizeIntegrator<SecondOrderODE>::Parameters{
                 /*first_step=*/tmax_[0] - t0,
@@ -463,8 +451,7 @@ class WorkErrorGraphGenerator {
                 Time const& current_step_size,
                 FirstOrderODE::State const& state,
                 FirstOrderODE::State::Error const& error) {
-              return tolerance / Sqrt(Pow<2>(std::get<0>(error)) +
-                                      Pow<2>(std::get<1>(error)));
+              return tolerance / std::get<0>(error).Norm();
             },
             AdaptiveStepSizeIntegrator<FirstOrderODE>::Parameters{
                 /*first_step=*/tmax_[0] - t0,
@@ -548,8 +535,8 @@ class WorkErrorGraphGenerator {
 
   std::vector<PlottedIntegrator> const methods_;
   std::function<absl::Status(Instant const& t,
-                             std::vector<Length> const& q,
-                             std::vector<Acceleration>& result,
+                             std::vector<Position<World>> const& q,
+                             std::vector<Vector<Acceleration, World>>& result,
                              int* evaluations)>
       compute_accelerations_;
   SecondOrderODE::State initial_state_;
@@ -576,8 +563,9 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   Stiffness const k = si::Unit<Stiffness>;
   Mass const m = 1 * Kilogram;
 
-  initial_state.positions.emplace_back(q_amplitude);
-  initial_state.velocities.emplace_back(0 * Metre / Second);
+  initial_state.positions.emplace_back(
+      World::origin + Displacement<World>({q_amplitude, 0 * Metre, 0 * Metre}));
+  initial_state.velocities.emplace_back(World::unmoving);
   initial_state.time = DoublePrecision<Instant>(t0);
 
   std::vector<Instant> const tmax = {
@@ -585,16 +573,22 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   auto const compute_error = [q_amplitude, v_amplitude, ω, m, k, t0](
       SecondOrderODE::State const& state) {
     return WorkErrorGraphGenerator<Energy>::Errors{
-        AbsoluteError(q_amplitude * Cos(ω * (state.time.value - t0)),
-                      state.positions[0].value),
-        AbsoluteError(-v_amplitude * Sin(ω * (state.time.value - t0)),
-                      state.velocities[0].value),
+        AbsoluteError(
+            q_amplitude * Vector<double, World>(
+                              {Cos(ω * (state.time.value - t0)), 0, 0}) +
+                World::origin,
+            state.positions[0].value),
+        AbsoluteError(
+            -v_amplitude *
+                Vector<double, World>({Sin(ω * (state.time.value - t0)), 0, 0}),
+            state.velocities[0].value),
         AbsoluteError(0.5 * Joule,
-                      (m * Pow<2>(state.velocities[0].value) +
-                       k * Pow<2>(state.positions[0].value)) / 2)};
+                      (m * state.velocities[0].value.Norm²() +
+                       k * (state.positions[0].value - World::origin).Norm²()) /
+                          2)};
   };
   WorkErrorGraphGenerator<Energy> generator(
-      ComputeHarmonicOscillatorAcceleration1D,
+      ComputeHarmonicOscillatorAcceleration3D<World>,
       initial_state,
       compute_error,
       tmax,
@@ -612,7 +606,6 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   MassiveBody b1(μ);
   MasslessBody b2;
 
-  using World = Frame<struct WorldTag, Inertial>;
   KeplerianElements<World> elements;
   elements.semimajor_axis = 1 * Metre;
   elements.eccentricity = eccentricity;
@@ -624,12 +617,9 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   CHECK_EQ(initial_dof.displacement().coordinates().z, 0 * Metre);
   CHECK_EQ(initial_dof.velocity().coordinates().z, 0 * Metre / Second);
 
-  initial_state.positions.emplace_back(
-      initial_dof.displacement().coordinates().x);
-  initial_state.positions.emplace_back(
-      initial_dof.displacement().coordinates().y);
-  initial_state.velocities.emplace_back(initial_dof.velocity().coordinates().x);
-  initial_state.velocities.emplace_back(initial_dof.velocity().coordinates().y);
+  initial_state.positions.emplace_back(World::origin +
+                                       initial_dof.displacement());
+  initial_state.velocities.emplace_back(initial_dof.velocity());
   initial_state.time = DoublePrecision<Instant>(t0);
 
   std::vector<Instant> const tmax = {
@@ -643,20 +633,17 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
 
   auto const compute_error = [&orbit, μ, initial_specific_energy](
       SecondOrderODE::State const& state) {
-    Displacement<World> q(
-        {state.positions[0].value, state.positions[1].value, 0 * Metre});
-    Velocity<World> v({state.velocities[0].value,
-                       state.velocities[1].value,
-                       0 * Metre / Second});
+    Displacement<World> r = state.positions[0].value - World::origin;
+    Velocity<World> v = state.velocities[0].value;
     auto const expected_dof = orbit.StateVectors(state.time.value);
     return WorkErrorGraphGenerator<SpecificEnergy>::Errors{
-        AbsoluteError(expected_dof.displacement(), q),
+        AbsoluteError(expected_dof.displacement(), r),
         AbsoluteError(expected_dof.velocity(), v),
-        AbsoluteError(initial_specific_energy, v.Norm²() / 2 - μ / q.Norm())};
+        AbsoluteError(initial_specific_energy, v.Norm²() / 2 - μ / r.Norm())};
   };
 
   WorkErrorGraphGenerator<SpecificEnergy> generator(
-      ComputeKeplerAcceleration,
+      ComputeKeplerAcceleration<World>,
       initial_state,
       compute_error,
       tmax,
