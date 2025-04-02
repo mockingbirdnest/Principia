@@ -80,7 +80,7 @@ void Planetarium::PlotMethod3(
       initial_degrees_of_freedom.velocity();
   Time Δt = final_time - previous_time;
 
-  add_point(plotting_to_scaled_space_(previous_position));
+  add_point(plotting_to_scaled_space_(previous_time, previous_position));
   int points_added = 1;
 
   Instant t;
@@ -124,7 +124,7 @@ void Planetarium::PlotMethod3(
     previous_position = position;
     previous_velocity = degrees_of_freedom->velocity();
 
-    add_point(plotting_to_scaled_space_(position));
+    add_point(plotting_to_scaled_space_(t, position));
     ++points_added;
 
     if (minimal_distance != nullptr) {

@@ -6,6 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -22,6 +23,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/continuous_trajectory.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/equipotential.hpp"
@@ -73,6 +75,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
@@ -116,7 +119,7 @@ class PlanetariumTest : public ::testing::Test {
                 .Forget<Similarity>(),
             /*focal=*/5 * Metre),
         plotting_to_scaled_space_(
-            [](Position<Navigation> const& plotted_point) {
+            [](Instant const&, Position<Navigation> const& plotted_point) {
               constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
               return ScaledSpacePoint::FromCoordinates(
                   ((plotted_point - Navigation::origin) *
@@ -165,11 +168,99 @@ class PlanetariumTest : public ::testing::Test {
         .WillRepeatedly(Return(Barycentric::origin));
   }
 
+  // It is convenient to represent the lines resulting from plotting as
+  // discrete trajectories, even though they are not really physical, as it
+  // makes it possible to evaluate them at any time.  The velocities are all
+  // null.
+  std::vector<DiscreteTrajectory<Navigation>> ComputePlottedLines(
+      Planetarium::Parameters const& planetarium_parameters) {
+    auto const& earth = *solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+    auto const& moon = *solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+
+    LagrangeEquipotentials<Barycentric, Navigation> lagrange_equipotentials(
+        ephemeris_.get());
+
+    auto const plotting_frame(
+        RotatingPulsatingReferenceFrame<Barycentric, Navigation>(
+            ephemeris_.get(), &earth, &moon));
+
+    // The camera is located as {0, 0, 1} (one lunar distance above the
+    // Earth-Moon barycentre) and is looking along -z.
+    Perspective<Navigation, Camera> const perspective(
+        RigidTransformation<Navigation, Camera>(
+            Navigation::origin +
+                Displacement<Navigation>({0 * Metre, 0 * Metre, 1 * Metre}),
+            Camera::origin,
+            Rotation<World, Camera>(Vector<double, World>({1, 0, 0}),
+                                    Bivector<double, World>({0, -1, 0}),
+                                    Vector<double, World>({0, 0, -1}))
+                    .Forget<OrthogonalMap>() *
+                Signature<Navigation, World>(
+                    Sign::Positive(),
+                    Signature<Navigation, World>::DeduceSign(),
+                    Sign::Positive())
+                    .Forget<OrthogonalMap>())
+            .Forget<Similarity>(),
+        /*focal=*/5 * Metre);
+
+    std::vector<DiscreteTrajectory<Navigation>> plotted_trajectories;
+
+    auto const plotting_to_scaled_space =
+        [&plotted_trajectories](Instant const& plot_time,
+                                Position<Navigation> const& plotted_point) {
+          constexpr auto inverse_scale_factor = 1 / Metre;
+          CHECK_OK(plotted_trajectories.back().Append(
+              plot_time,
+              DegreesOfFreedom<Navigation>(plotted_point,
+                                           Velocity<Navigation>())));
+          return ScaledSpacePoint::FromCoordinates(
+              ((plotted_point - Navigation::origin) * inverse_scale_factor)
+                  .coordinates());
+        };
+
+    Planetarium planetarium(planetarium_parameters,
+                            perspective,
+                            ephemeris_.get(),
+                            &plotting_frame,
+                            plotting_to_scaled_space);
+
+    // Compute over 30 days.
+    for (int i = 0; i < 30; ++i) {
+      Instant const t = t0_ + i * Day;
+      CHECK_OK(ephemeris_->Prolong(t));
+
+      LagrangeEquipotentials<Barycentric, Navigation>::Parameters const
+          equipotential_parameters{
+              .primaries = {&earth}, .secondaries = {&moon}, .time = t};
+      auto const status_or_equipotentials =
+          lagrange_equipotentials.ComputeLines(equipotential_parameters);
+      CHECK_OK(status_or_equipotentials);
+      auto const& equipotentials = status_or_equipotentials.value();
+
+      for (auto const& [_, lines] : equipotentials.lines) {
+        for (auto const& line : lines) {
+          plotted_trajectories.emplace_back();
+          planetarium.PlotMethod3(
+              line,
+              line.front().time,
+              line.back().time,
+              t,
+              /*reverse=*/false,
+              [](ScaledSpacePoint const&) {},
+              /*max_points=*/std::numeric_limits<int>::max());
+        }
+      }
+    }
+
+    return plotted_trajectories;
+  }
+
   Instant const t0_;
   Perspective<Navigation, Camera> const perspective_;
   MockRigidReferenceFrame<Barycentric, Navigation> plotting_frame_;
-  std::function<ScaledSpacePoint(Position<Navigation> const&)>
-      plotting_to_scaled_space_;
+  Planetarium::PlottingToScaledSpaceConversion plotting_to_scaled_space_;
   RotatingBody<Barycentric> const body_;
   std::vector<not_null<MassiveBody const*>> const bodies_;
   Ephemeris<Barycentric>::FixedStepParameters const ephemeris_parameters_;
@@ -359,88 +450,18 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 }
 
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
-  auto const& earth = *solar_system_->massive_body(
-      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
-  auto const& moon = *solar_system_->massive_body(
-      *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+  auto const plotted_trajectories = ComputePlottedLines(
+      // No dark area, human visual acuity, wide field of view.
+      Planetarium::Parameters(
+          /*sphere_radius_multiplier=*/1.0,
+          /*angular_resolution=*/0.4 * ArcMinute,
+          /*field_of_view=*/90 * Degree));
 
-  LagrangeEquipotentials<Barycentric, Navigation>
-      lagrange_equipotentials(ephemeris_.get());
-
-  auto const plotting_frame(
-      RotatingPulsatingReferenceFrame<Barycentric, Navigation>(
-          ephemeris_.get(),
-          &earth,
-          &moon));
-
-  // The camera is located as {0, 0, 1} (one lunar distance above the Earth-Moon
-  // barycentre) and is looking along -z.
-  Perspective<Navigation, Camera> const perspective(
-      RigidTransformation<Navigation, Camera>(
-          Navigation::origin +
-              Displacement<Navigation>({0 * Metre, 0 * Metre, 1 * Metre}),
-          Camera::origin,
-          Rotation<World, Camera>(Vector<double, World>({1, 0, 0}),
-                                  Bivector<double, World>({0, -1, 0}),
-                                  Vector<double, World>({0, 0, -1}))
-                  .Forget<OrthogonalMap>() *
-              Signature<Navigation, World>(
-                  Sign::Positive(),
-                  Signature<Navigation, World>::DeduceSign(),
-                  Sign::Positive())
-                  .Forget<OrthogonalMap>())
-          .Forget<Similarity>(),
-      /*focal=*/5 * Metre);
-
-    auto const plotting_to_scaled_space =
-    [](Instant const& time,
-       Position<Navigation> const& plotted_point) {
-      constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
-      return ScaledSpacePoint::FromCoordinates(
-          ((plotted_point - Navigation::origin) * inverse_scale_factor)
-              .coordinates());
-    };
-
-  // No dark area, human visual acuity, wide field of view.
-  Planetarium::Parameters planetarium_parameters(
-      /*sphere_radius_multiplier=*/1.0,
-      /*angular_resolution=*/0.4 * ArcMinute,
-      /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(planetarium_parameters,
-                          perspective,
-                          ephemeris_.get(),
-                          &plotting_frame,
-                          plotting_to_scaled_space_);
-
-  // Compute over 30 days.
   std::int64_t number_of_points = 0;
-  for (int i = 0; i < 30; ++i) {
-    Instant const t = t0_ + i * Day;
-    ASSERT_OK(ephemeris_->Prolong(t));
-
-    LagrangeEquipotentials<Barycentric, Navigation>::Parameters const
-        equipotential_parameters{
-            .primaries = {&earth}, .secondaries = {&moon}, .time = t};
-    auto const status_or_equipotentials =
-        lagrange_equipotentials.ComputeLines(equipotential_parameters);
-    ASSERT_OK(status_or_equipotentials);
-    auto const& equipotentials = status_or_equipotentials.value();
-
-    for (auto const& [_, lines] : equipotentials.lines) {
-      for (auto const& line : lines) {
-        planetarium.PlotMethod3(
-            line,
-            line.front().time,
-            line.back().time,
-            t,
-            /*reverse=*/false,
-            [&number_of_points](ScaledSpacePoint const& p) {
-              ++number_of_points;
-            },
-            /*max_points=*/std::numeric_limits<int>::max());
-      }
-    }
+  for (auto const& plotted_trajectory : plotted_trajectories) {
+    number_of_points += plotted_trajectory.size();
   }
+
   EXPECT_EQ(100692, number_of_points);
 }
 
