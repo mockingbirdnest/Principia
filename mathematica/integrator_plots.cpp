@@ -38,42 +38,52 @@
 #include "testing_utilities/numerics.hpp"
 
 #define SLMS_INTEGRATOR(name)                                      \
-  {static_cast<FixedStepSizeIntegrator<ODE> const*>(               \
-       &SymmetricLinearMultistepIntegrator<methods::name, ODE>()), \
+  {static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(               \
+       &SymmetricLinearMultistepIntegrator<methods::name, SecondOrderODE>()), \
    u8## #name,                                                     \
    1}
 #define SRKN_INTEGRATOR(name)                                         \
-  {static_cast<FixedStepSizeIntegrator<ODE> const*>(                  \
-       &SymplecticRungeKuttaNyströmIntegrator<methods::name, ODE>()), \
+  {static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(                  \
+       &SymplecticRungeKuttaNyströmIntegrator<methods::name, SecondOrderODE>()), \
    u8## #name,                                                        \
    (methods::name::evaluations)}
+#define ERK_INTEGRATOR(name)                                          \
+  {static_cast<FixedStepSizeIntegrator<FirstOrderODE> const*>(      \
+       &ExplicitRungeKuttaIntegrator<methods::name, FirstOrderODE>()), \
+   u8## #name,                                                         \
+   0}
+#define EERK_INTEGRATOR(name)                                           \
+  {static_cast<AdaptiveStepSizeIntegrator<FirstOrderODE> const*>(      \
+       &EmbeddedExplicitRungeKuttaIntegrator<methods::name, FirstOrderODE>()), \
+   u8## #name,                                                         \
+   0}
 #define EERKN_INTEGRATOR(name)                                              \
-  {static_cast<AdaptiveStepSizeIntegrator<ODE> const*>(                     \
-       &EmbeddedExplicitRungeKuttaNyströmIntegrator<methods::name, ODE>()), \
+  {static_cast<AdaptiveStepSizeIntegrator<SecondOrderODE> const*>(                     \
+       &EmbeddedExplicitRungeKuttaNyströmIntegrator<methods::name, SecondOrderODE>()), \
    u8## #name,                                                              \
    0}
 #define SPRK_INTEGRATOR(name)                          \
-  {static_cast<FixedStepSizeIntegrator<ODE> const*>(   \
+  {static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(   \
        &SymplecticRungeKuttaNyströmIntegrator<         \
            methods::name,                              \
            serialization::FixedStepSizeIntegrator::BA, \
-           ODE>()),                                    \
+           SecondOrderODE>()),                                    \
    u8## #name " BA",                                   \
    (methods::name::evaluations)}
 #define SPRK_INTEGRATOR_FSAL(name)                       \
-  {static_cast<FixedStepSizeIntegrator<ODE> const*>(     \
+  {static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(     \
        &SymplecticRungeKuttaNyströmIntegrator<           \
            methods::name,                                \
            serialization::FixedStepSizeIntegrator::ABA,  \
-           ODE>()),                                      \
+           SecondOrderODE>()),                                      \
    u8## #name " ABA",                                    \
    (methods::name::evaluations)},                        \
   {                                                      \
-    static_cast<FixedStepSizeIntegrator<ODE> const*>(    \
+    static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(    \
         &SymplecticRungeKuttaNyströmIntegrator<          \
             methods::name,                               \
             serialization::FixedStepSizeIntegrator::BAB, \
-            ODE>()),                                     \
+            SecondOrderODE>()),                                     \
         u8## #name " BAB", (methods::name::evaluations)  \
   }
 
@@ -114,27 +124,38 @@ using namespace principia::testing_utilities::_numerics;
 
 // TODO(egg): it would probably be saner to use Position<Whatever> and make the
 // simple harmonic oscillator work in 3d.
-using ODE = SpecialSecondOrderDifferentialEquation<Length>;
-using Problem = InitialValueProblem<ODE>;
+using SecondOrderODE = SpecialSecondOrderDifferentialEquation<Length>;
+using FirstOrderODE =
+    ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;
+using Problem = InitialValueProblem<SecondOrderODE>;
 
 namespace {
 
-struct SimpleHarmonicMotionPlottedIntegrator final {
-  std::variant<FixedStepSizeIntegrator<ODE> const*,
-               AdaptiveStepSizeIntegrator<ODE> const*> const integrator;
+struct PlottedIntegrator final {
+  std::variant<FixedStepSizeIntegrator<SecondOrderODE> const*,
+               AdaptiveStepSizeIntegrator<SecondOrderODE> const*,
+               FixedStepSizeIntegrator<FirstOrderODE> const*,
+               AdaptiveStepSizeIntegrator<FirstOrderODE> const*> const integrator;
   std::string name;
   int evaluations;
 };
 
 // This list should be sorted by:
-// 1. increasing order;
-// 2. SPRKs before SRKNs before symmetric linear multistep integrators.
+// 1. increasing convergence order;
+// 2. method types in the following order:
+//    a. SPRKs,
+//    b. SRKNs,
+//    c. symmetric linear multistep integrators,
+//    d. Explicit Runge-Kutta methods,
+//    e. EERKs,
+//    f. EEGRKNs,
+//    g. EERKNs;
 // 3. increasing number of evaluations;
 // 4. date;
 // 5. author names;
 // 6. method name.
-std::vector<SimpleHarmonicMotionPlottedIntegrator> Methods() {
-  SimpleHarmonicMotionPlottedIntegrator meow =
+std::vector<PlottedIntegrator> Methods() {
+  PlottedIntegrator meow =
       SRKN_INTEGRATOR(BlanesMoan2002SRKN6B);
   return {// Order 2
           SPRK_INTEGRATOR_FSAL(NewtonDelambreStørmerVerletLeapfrog),
@@ -205,15 +226,17 @@ class WorkErrorGraphGenerator {
                                  std::vector<Length> const& q,
                                  std::vector<Acceleration>& result,
                                  int* evaluations)> compute_accelerations,
-      ODE::State initial_state,
-      std::function<Errors(ODE::State const&)> compute_errors,
+      SecondOrderODE::State initial_state,
+      std::function<Errors(SecondOrderODE::State const&)> compute_errors,
       std::vector<Instant> const& tmax,
+      Length const& first_tolerance,
       std::string problem_name)
       : methods_(Methods()),
         compute_accelerations_(std::move(compute_accelerations)),
         initial_state_(std::move(initial_state)),
         compute_errors_(std::move(compute_errors)),
         tmax_(tmax),
+        first_tolerance_(first_tolerance),
         problem_name_(std::move(problem_name)) {
     q_errors_.resize(methods_.size());
     v_errors_.resize(methods_.size());
@@ -296,18 +319,19 @@ class WorkErrorGraphGenerator {
     Speed max_v_error;
     Energy max_e_error;
     auto append_state = [this, &max_q_error, &max_v_error, &max_e_error](
-      ODE::State const& state) {
+      SecondOrderODE::State const& state) {
       auto const errors = compute_errors_(state);
       max_q_error = std::max(max_q_error, errors.q_error);
       max_v_error = std::max(max_v_error, errors.v_error);
       max_e_error = std::max(max_e_error, errors.e_error);
     };
-    Time const Δt = method.evaluations * starting_step_size_per_evaluation_ /
-                    std::pow(step_reduction_, time_step_index);
     switch (method.integrator.index()) {
       case 0: {
-        FixedStepSizeIntegrator<ODE> const& integrator =
+        FixedStepSizeIntegrator<SecondOrderODE> const& integrator =
             *std::get<0>(method.integrator);
+        Time const Δt = method.evaluations *
+                        starting_step_size_per_evaluation_ /
+                        std::pow(step_reduction_, time_step_index);
         auto const instance = integrator.NewInstance(problem, append_state, Δt);
 
         for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
@@ -335,21 +359,21 @@ class WorkErrorGraphGenerator {
         break;
       }
       case 1: {
-        AdaptiveStepSizeIntegrator<ODE> const& integrator =
+        AdaptiveStepSizeIntegrator<SecondOrderODE> const& integrator =
             *std::get<1>(method.integrator);
+        Length const tolerance =
+            std::exp2(-50.0 * time_step_index / integrations_per_integrator_) *
+            first_tolerance_;
         auto const instance = integrator.NewInstance(
             problem,
             append_state,
             /*tolerance_to_error_ratio=*/
-            [time_step_index, this](Time const& current_step_size,
-                                    ODE::State const& state,
-                                    ODE::State::Error const& error) {
-              return (std::exp2(-50.0 * time_step_index /
-                                integrations_per_integrator_) *
-                      Metre) /
-                     Abs(error.position_error[0]);
+            [time_step_index, tolerance, this](Time const& current_step_size,
+                                               SecondOrderODE::State const& state,
+                                               SecondOrderODE::State::Error const& error) {
+              return tolerance / Abs(error.position_error[0]);
             },
-            AdaptiveStepSizeIntegrator<ODE>::Parameters{
+            AdaptiveStepSizeIntegrator<SecondOrderODE>::Parameters{
                 /*first_step=*/tmax_[0] - t0,
                 /*safety_factor=*/0.9,
                 /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
@@ -379,19 +403,20 @@ class WorkErrorGraphGenerator {
     return absl::OkStatus();
   }
 
-  std::vector<SimpleHarmonicMotionPlottedIntegrator> const methods_;
+  std::vector<PlottedIntegrator> const methods_;
   std::function<absl::Status(Instant const& t,
                              std::vector<Length> const& q,
                              std::vector<Acceleration>& result,
                              int* evaluations)>
       compute_accelerations_;
-  ODE::State initial_state_;
-  std::function<Errors(ODE::State const&)> compute_errors_;
+  SecondOrderODE::State initial_state_;
+  std::function<Errors(SecondOrderODE::State const&)> compute_errors_;
   std::vector<std::vector<std::vector<Length>>> q_errors_;
   std::vector<std::vector<std::vector<Speed>>> v_errors_;
   std::vector<std::vector<std::vector<Energy>>> e_errors_;
   std::vector<std::vector<std::vector<double>>> evaluations_;
   std::vector<Instant> const tmax_;
+  Length const first_tolerance_;
   std::string const problem_name_;
   double const step_reduction_ = 1.015;
   Time const starting_step_size_per_evaluation_ = 1 * Second;
@@ -400,7 +425,7 @@ class WorkErrorGraphGenerator {
 
 
 void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
-  ODE::State initial_state;
+  SecondOrderODE::State initial_state;
   Instant const t0;
   Length const q_amplitude = 1 * Metre;
   Speed const v_amplitude = 1 * Metre / Second;
@@ -415,7 +440,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   std::vector<Instant> const tmax = {
       t0 + 50 * Second, t0 + 57.5 * Second, t0 + 75 * Second};
   auto const compute_error = [q_amplitude, v_amplitude, ω, m, k, t0](
-      ODE::State const& state) {
+      SecondOrderODE::State const& state) {
     return WorkErrorGraphGenerator<Energy>::Errors{
         AbsoluteError(q_amplitude * Cos(ω * (state.time.value - t0)),
                       state.positions[0].value),
@@ -430,6 +455,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
       initial_state,
       compute_error,
       tmax,
+      1 * Metre,
       "Harmonic oscillator");
 
   OFStream file(TEMP_DIR / "simple_harmonic_motion_graphs.generated.wl");
@@ -437,7 +463,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 }
 
 void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
-  ODE::State initial_state;
+  SecondOrderODE::State initial_state;
   Instant const t0;
   GravitationalParameter const μ = si::Unit<GravitationalParameter>;
   MassiveBody b1(μ);
@@ -473,7 +499,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       μ / initial_dof.displacement().Norm();
 
   auto const compute_error = [&orbit, μ, initial_specific_energy](
-      ODE::State const& state) {
+      SecondOrderODE::State const& state) {
     Displacement<World> q(
         {state.positions[0].value, state.positions[1].value, 0 * Metre});
     Velocity<World> v({state.velocities[0].value,
@@ -491,6 +517,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       initial_state,
       compute_error,
       tmax,
+      1 * Metre,
       " Kepler problem with e = " + std::to_string(eccentricity));
 
   OFStream file(TEMP_DIR / ("kepler_problem_graphs_" +
