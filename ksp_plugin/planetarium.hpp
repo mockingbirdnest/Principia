@@ -76,7 +76,8 @@ class Planetarium {
   };
 
   using PlottingToScaledSpaceConversion =
-      std::function<ScaledSpacePoint(Position<Navigation> const&)>;
+      std::function<ScaledSpacePoint(Instant const&,
+                                     Position<Navigation> const&)>;
 
   // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
   // In particular Navigation vs. NavigationFrame is a mess.

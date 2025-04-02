@@ -392,6 +392,15 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials) {
           .Forget<Similarity>(),
       /*focal=*/5 * Metre);
 
+    auto const plotting_to_scaled_space =
+    [](Instant const& time,
+       Position<Navigation> const& plotted_point) {
+      constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
+      return ScaledSpacePoint::FromCoordinates(
+          ((plotted_point - Navigation::origin) * inverse_scale_factor)
+              .coordinates());
+    };
+
   // No dark area, human visual acuity, wide field of view.
   Planetarium::Parameters planetarium_parameters(
       /*sphere_radius_multiplier=*/1.0,
