@@ -22,6 +22,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "numerics/quadrature.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -41,7 +42,9 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
@@ -73,6 +76,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::numerics::_quadrature;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
@@ -89,7 +93,9 @@ using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
+using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_serialization;
 using namespace principia::testing_utilities::_solar_system_factory;
 using namespace principia::testing_utilities::_vanishes_before;
@@ -255,6 +261,24 @@ class PlanetariumTest : public ::testing::Test {
     }
 
     return plotted_trajectories;
+  }
+
+  Length ComputePlottedLinesDistance(
+      DiscreteTrajectory<Navigation> const& trajectory1,
+      DiscreteTrajectory<Navigation> const& trajectory2) {
+    CHECK_EQ(trajectory1.t_min(), trajectory2.t_min());
+    CHECK_EQ(trajectory1.t_max(), trajectory2.t_max());
+    return Sqrt(AutomaticClenshawCurtis(
+                    [&trajectory1, &trajectory2](Instant const& t) {
+                      return (trajectory1.EvaluatePosition(t) -
+                              trajectory2.EvaluatePosition(t))
+                          .Norm²();
+                    },
+                    trajectory1.t_min(),
+                    trajectory2.t_max(),
+                    /*max_relative_error=*/1.0e-6,
+                    /*max_point=*/1000) /
+                (trajectory1.t_max() - trajectory1.t_min()));
   }
 
   Instant const t0_;
@@ -449,36 +473,66 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
   EXPECT_EQ(9, rp2_lines[1].size());
 }
 
-TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_04ArcMin) {
-  auto const plotted_trajectories = ComputePlottedLines(
-      // No dark area, human visual acuity, wide field of view.
+TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
+  // Human visual acuity.
+  Angle angular_resolution = 0.4 * ArcMinute;
+
+  auto const plotted_trajectories_reference = ComputePlottedLines(
       Planetarium::Parameters(
           /*sphere_radius_multiplier=*/1.0,
-          /*angular_resolution=*/0.4 * ArcMinute,
+          angular_resolution,
           /*field_of_view=*/90 * Degree));
 
-  std::int64_t number_of_points = 0;
-  for (auto const& plotted_trajectory : plotted_trajectories) {
-    number_of_points += plotted_trajectory.size();
+  std::int64_t number_of_points_reference = 0;
+  for (auto const& plotted_trajectory : plotted_trajectories_reference) {
+    number_of_points_reference += plotted_trajectory.size();
+  }
+  EXPECT_EQ(100692, number_of_points_reference);
+
+  // Compute plotted lines at progressively worse resolution and their distance
+  // to the reference line.
+  for (std::int64_t i = 0; i < 4; ++i) {
+    angular_resolution *= 4;
+
+    auto const plotted_trajectories =
+        ComputePlottedLines(Planetarium::Parameters(
+            /*sphere_radius_multiplier=*/1.0,
+            angular_resolution,
+            /*field_of_view=*/90 * Degree));
+
+    std::int64_t number_of_points = 0;
+    for (auto const& plotted_trajectory : plotted_trajectories) {
+      number_of_points += plotted_trajectory.size();
+    }
+
+    Length max_distance;
+    for (std::int64_t i = 0; i < plotted_trajectories_reference.size(); ++i) {
+      max_distance = std::max(
+          max_distance,
+          ComputePlottedLinesDistance(plotted_trajectories_reference[i],
+                                      plotted_trajectories[i]));
+    }
+
+    switch (i) {
+      case 0:
+        EXPECT_EQ(51752, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.83_(1) * Centi(Metre)));
+        break;
+      case 1:
+        EXPECT_EQ(26677, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(1.48_(1) * Centi(Metre)));
+        break;
+      case 2:
+        EXPECT_EQ(13786, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(3.35_(1) * Centi(Metre)));
+        break;
+      case 3:
+        EXPECT_EQ(7161, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(7.10_(1) * Centi(Metre)));
+        break;
+    }
   }
 
-  EXPECT_EQ(100692, number_of_points);
-}
-
-TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_4ArcMin) {
-  auto const plotted_trajectories = ComputePlottedLines(
-      // No dark area, human visual acuity, wide field of view.
-      Planetarium::Parameters(
-          /*sphere_radius_multiplier=*/1.0,
-          /*angular_resolution=*/4 * ArcMinute,
-          /*field_of_view=*/90 * Degree));
-
-  std::int64_t number_of_points = 0;
-  for (auto const& plotted_trajectory : plotted_trajectories) {
-    number_of_points += plotted_trajectory.size();
-  }
-
-  EXPECT_EQ(33426, number_of_points);
 }
 
 #endif
