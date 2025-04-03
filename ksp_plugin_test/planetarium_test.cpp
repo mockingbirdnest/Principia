@@ -532,7 +532,6 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
         break;
     }
   }
-
 }
 
 #endif
