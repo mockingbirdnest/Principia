@@ -139,11 +139,6 @@ std::string Set(std::string const& name,
                 T const& right,
                 OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename U, typename OptionalExpressIn = std::nullopt_t>
-std::string PlottableDataset(std::vector<T> const& x,
-                             std::vector<U> const& y,
-                             OptionalExpressIn express_in = std::nullopt);
-
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(std::vector<T> const& list,
                           OptionalExpressIn express_in = std::nullopt);
@@ -346,7 +341,6 @@ using internal::Apply;
 using internal::Evaluate;
 using internal::ExpressIn;
 using internal::ExpressInSIUnits;
-using internal::PlottableDataset;
 using internal::PreserveUnits;
 using internal::Rule;
 using internal::Set;
