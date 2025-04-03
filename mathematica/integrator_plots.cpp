@@ -39,75 +39,89 @@
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/numerics.hpp"
 
-#define SLMS_INTEGRATOR(name)                                                 \
-  {static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(               \
-       &SymmetricLinearMultistepIntegrator<methods::name, SecondOrderODE>()), \
-   u8## #name,                                                                \
-   {methods::name::order},                                                    \
-   "SLMS",                                                                    \
-   1}
-#define SRKN_INTEGRATOR(name)                                     \
-  {static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(   \
-       &SymplecticRungeKuttaNyströmIntegrator<methods::name,      \
-                                              SecondOrderODE>()), \
-   u8## #name,                                                    \
-   {methods::name::order},                                        \
-   "SRKN",                                                        \
-   (methods::name::evaluations)}
-#define ERK_INTEGRATOR(name)                                           \
-  {static_cast<FixedStepSizeIntegrator<FirstOrderODE> const*>(         \
-       &ExplicitRungeKuttaIntegrator<methods::name, FirstOrderODE>()), \
-   u8## #name,                                                         \
-   {methods::name::order},                                             \
-   "ERK",                                                              \
-   methods::name::first_same_as_last ? methods::name::stages - 1       \
-                                     : methods::name::stages}
-#define EERK_INTEGRATOR(name)                                                  \
-  {static_cast<AdaptiveStepSizeIntegrator<FirstOrderODE> const*>(              \
-       &EmbeddedExplicitRungeKuttaIntegrator<methods::name, FirstOrderODE>()), \
-   u8## #name,                                                                 \
-   {methods::name::lower_order, methods::name::higher_order},                  \
-   "EERK",                                                                     \
-   0}
-#define EERKN_INTEGRATOR(name)                                          \
-  {static_cast<AdaptiveStepSizeIntegrator<SecondOrderODE> const*>(      \
-       &EmbeddedExplicitRungeKuttaNyströmIntegrator<methods::name,      \
-                                                    SecondOrderODE>()), \
-   u8## #name,                                                          \
-   {methods::name::lower_order, methods::name::higher_order},           \
-   std::is_base_of_v<EmbeddedExplicitGeneralizedRungeKuttaNyström,      \
-                     methods::name>                                     \
-       ? "EEGRKN"                                                       \
-       : "EERKN",                                                       \
-   0}
-#define SPRK_INTEGRATOR(name)                                   \
-  {static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>( \
-       &SymplecticRungeKuttaNyströmIntegrator<                  \
-           methods::name,                                       \
-           serialization::FixedStepSizeIntegrator::BA,          \
-           SecondOrderODE>()),                                  \
-   u8## #name " BA",                                            \
-   {methods::name::order},                                      \
-   "SPRK",                                                      \
-   (methods::name::evaluations)}
-#define SPRK_INTEGRATOR_FSAL(name)                               \
-  {static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(  \
-       &SymplecticRungeKuttaNyströmIntegrator<                   \
-           methods::name,                                        \
-           serialization::FixedStepSizeIntegrator::ABA,          \
-           SecondOrderODE>()),                                   \
-   u8## #name " ABA",                                            \
-   {methods::name::order},                                       \
-   "SPRK",                                                       \
-   (methods::name::evaluations)},                                \
-  {                                                              \
-    static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>( \
-        &SymplecticRungeKuttaNyströmIntegrator<                  \
-            methods::name,                                       \
-            serialization::FixedStepSizeIntegrator::BAB,         \
-            SecondOrderODE>()),                                  \
-        u8## #name " BAB", {methods::name::order}, "SPRK",       \
-        (methods::name::evaluations)                             \
+#define SLMS_INTEGRATOR(name)                                      \
+  {                                                                \
+      static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>( \
+          &SymmetricLinearMultistepIntegrator<methods::name,       \
+                                              SecondOrderODE>()),  \
+      u8## #name,                                                  \
+      {methods::name::order},                                      \
+      "SLMS",                                                      \
+      1,                                                           \
+  }
+#define SRKN_INTEGRATOR(name)                                        \
+  {                                                                  \
+      static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(   \
+          &SymplecticRungeKuttaNyströmIntegrator<methods::name,      \
+                                                 SecondOrderODE>()), \
+      u8## #name,                                                    \
+      {methods::name::order},                                        \
+      "SRKN",                                                        \
+      (methods::name::evaluations),                                  \
+  }
+#define ERK_INTEGRATOR(name)                                              \
+  {                                                                       \
+      static_cast<FixedStepSizeIntegrator<FirstOrderODE> const*>(         \
+          &ExplicitRungeKuttaIntegrator<methods::name, FirstOrderODE>()), \
+      u8## #name,                                                         \
+      {methods::name::order},                                             \
+      "ERK",                                                              \
+      methods::name::first_same_as_last ? methods::name::stages - 1       \
+                                        : methods::name::stages,          \
+  }
+#define EERK_INTEGRATOR(name)                                        \
+  {                                                                  \
+      static_cast<AdaptiveStepSizeIntegrator<FirstOrderODE> const*>( \
+          &EmbeddedExplicitRungeKuttaIntegrator<methods::name,       \
+                                                FirstOrderODE>()),   \
+      u8## #name,                                                    \
+      {methods::name::lower_order, methods::name::higher_order},     \
+      "EERK",                                                        \
+  }
+#define EERKN_INTEGRATOR(name)                                             \
+  {                                                                        \
+      static_cast<AdaptiveStepSizeIntegrator<SecondOrderODE> const*>(      \
+          &EmbeddedExplicitRungeKuttaNyströmIntegrator<methods::name,      \
+                                                       SecondOrderODE>()), \
+      u8## #name,                                                          \
+      {methods::name::lower_order, methods::name::higher_order},           \
+      std::is_base_of_v<EmbeddedExplicitGeneralizedRungeKuttaNyström,      \
+                        methods::name>                                     \
+          ? "EEGRKN"                                                       \
+          : "EERKN",                                                       \
+  }
+#define SPRK_INTEGRATOR(name)                                      \
+  {                                                                \
+      static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>( \
+          &SymplecticRungeKuttaNyströmIntegrator<                  \
+              methods::name,                                       \
+              serialization::FixedStepSizeIntegrator::BA,          \
+              SecondOrderODE>()),                                  \
+      u8## #name " BA",                                            \
+      {methods::name::order},                                      \
+      "SPRK",                                                      \
+      (methods::name::evaluations),                                \
+  }
+#define SPRK_INTEGRATOR_FSAL(name)                                 \
+  {                                                                \
+      static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>( \
+          &SymplecticRungeKuttaNyströmIntegrator<                  \
+              methods::name,                                       \
+              serialization::FixedStepSizeIntegrator::ABA,         \
+              SecondOrderODE>()),                                  \
+      u8## #name " ABA",                                           \
+      {methods::name::order},                                      \
+      "SPRK",                                                      \
+      (methods::name::evaluations),                                \
+  },                                                               \
+  {                                                                \
+    static_cast<FixedStepSizeIntegrator<SecondOrderODE> const*>(   \
+        &SymplecticRungeKuttaNyströmIntegrator<                    \
+            methods::name,                                         \
+            serialization::FixedStepSizeIntegrator::BAB,           \
+            SecondOrderODE>()),                                    \
+        u8## #name " BAB", {methods::name::order}, "SPRK",         \
+        (methods::name::evaluations),                              \
   }
 
 namespace principia {
@@ -168,7 +182,8 @@ struct PlottedIntegrator final {
   std::string name;
   std::vector<int> orders;
   std::string method_type;
-  int evaluations;
+  // Theoretical number of evaluations per step, ignoring startup costs.
+  std::optional<int> evaluations;
 };
 
 // This list should be sorted by:
@@ -402,7 +417,7 @@ class WorkErrorGraphGenerator {
       case 0: {
         FixedStepSizeIntegrator<SecondOrderODE> const& integrator =
             *std::get<0>(method.integrator);
-        Time const Δt = method.evaluations *
+        Time const Δt = *method.evaluations *
                         starting_step_size_per_evaluation_ /
                         std::pow(step_reduction_, time_step_index);
         auto const instance = integrator.NewInstance(problem, append_state, Δt);
@@ -452,7 +467,7 @@ class WorkErrorGraphGenerator {
       case 2: {
         FixedStepSizeIntegrator<FirstOrderODE> const& integrator =
             *std::get<2>(method.integrator);
-        Time const Δt = method.evaluations *
+        Time const Δt = *method.evaluations *
                         starting_step_size_per_evaluation_ /
                         std::pow(step_reduction_, time_step_index);
         auto const instance = integrator.NewInstance(
@@ -524,7 +539,7 @@ class WorkErrorGraphGenerator {
       // that ignores any startup costs; that theoretical number is the one
       // used for plotting.
       int const amortized_evaluations =
-          method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
+          *method.evaluations * static_cast<int>(std::floor((tmax - t0) / Δt));
       LOG_EVERY_N(INFO, 50)
           << "[" << method_index << "," << time_step_index << "] "
           << problem_name_ << ": " << number_of_evaluations
