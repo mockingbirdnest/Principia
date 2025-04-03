@@ -3,7 +3,9 @@
 #include <algorithm>
 #include <fstream>  // NOLINT(readability/streams)
 #include <iostream>  // NOLINT(readability/streams)
+#include <limits>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -178,7 +180,8 @@ struct PlottedIntegrator final {
   std::variant<FixedStepSizeIntegrator<SecondOrderODE> const*,
                AdaptiveStepSizeIntegrator<SecondOrderODE> const*,
                FixedStepSizeIntegrator<FirstOrderODE> const*,
-               AdaptiveStepSizeIntegrator<FirstOrderODE> const*> const integrator;
+               AdaptiveStepSizeIntegrator<FirstOrderODE> const*> const
+      integrator;
   std::string name;
   std::vector<int> orders;
   std::string method_type;
