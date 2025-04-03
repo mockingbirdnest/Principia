@@ -264,6 +264,7 @@ class WorkErrorGraphGenerator {
       std::function<Errors(SecondOrderODE::State const&)> compute_errors,
       std::vector<Instant> const& tmax,
       Length const& first_tolerance,
+      Time const& min_step_per_evaluation,
       std::string problem_name)
       : methods_(Methods()),
         compute_accelerations_(std::move(compute_accelerations)),
@@ -271,7 +272,10 @@ class WorkErrorGraphGenerator {
         compute_errors_(std::move(compute_errors)),
         tmax_(tmax),
         first_tolerance_(first_tolerance),
-        problem_name_(std::move(problem_name)) {
+        problem_name_(std::move(problem_name)),
+        step_reduction_(std::exp(std::log(starting_step_size_per_evaluation_ /
+                                          min_step_per_evaluation) /
+                                 integrations_per_integrator_)) {
     q_errors_.resize(methods_.size());
     v_errors_.resize(methods_.size());
     e_errors_.resize(methods_.size());
@@ -576,9 +580,9 @@ class WorkErrorGraphGenerator {
   std::vector<Instant> const tmax_;
   Length const first_tolerance_;
   std::string const problem_name_;
-  double const step_reduction_ = 1.015;
   Time const starting_step_size_per_evaluation_ = 1 * Second;
   int const integrations_per_integrator_ = 500;
+  double const step_reduction_;
 };
 
 
@@ -621,6 +625,9 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
       compute_error,
       tmax,
       1 * Metre,
+      // 585 μs yields a step reduction factor of 1.015, which is what the old
+      // graphs used.
+      585 * Micro(Second),
       "Harmonic oscillator");
 
   OFStream file(TEMP_DIR / "simple_harmonic_motion_graphs.generated.wl");
@@ -676,6 +683,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       compute_error,
       tmax,
       1 * Metre,
+      585 * Micro(Second) * Sqrt((1 - eccentricity) / (1 + eccentricity)),
       " Kepler problem with e = " + std::to_string(eccentricity));
 
   OFStream file(TEMP_DIR / ("kepler_problem_graphs_" +
