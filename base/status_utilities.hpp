@@ -19,8 +19,12 @@ absl::Status const& GetStatus(absl::StatusOr<T> const& s) {
 
 }  // namespace internal
 
-#define CHECK_OK(value) CHECK_EQ((value), ::absl::OkStatus())
-#define DCHECK_OK(value) DCHECK_EQ((value), ::absl::OkStatus())
+#define CHECK_OK(value)                                                      \
+  CHECK_EQ(::principia::base::_status_utilities::internal::GetStatus(value), \
+           ::absl::OkStatus())
+#define DCHECK_OK(value)                                                      \
+  DCHECK_EQ(::principia::base::_status_utilities::internal::GetStatus(value), \
+            ::absl::OkStatus())
 
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \
