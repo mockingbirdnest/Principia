@@ -277,7 +277,7 @@ y' &= n \; C'_2 \\
 \pa{\hat x, \gd \hat x} &= \longsub\of{y, \pa{z, \gd z}}
 \end{dcases}
 \]
-The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $\quicktwosum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable in this case because clearly $\abs{\gd z} < \abs z$.
+The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $\quicktwosum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable in this case because clearly $\abs{\gd y} < \abs{y'}$.
 $\longsub$ is the obvious adaptation of the algorithm $\longadd$ presented in section 5 of \cite{Linnainmaa1981}, which implements precise (but not exact) double-precision arithmetic.
 
 It is straightforward to show, like we did in the preceding section, that:
@@ -296,7 +296,7 @@ y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \p
 &= \pa{x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4}} \pa{1 + \gz_2} \\
 &= x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4} \pa{1 + \gz_2} + \pa{x - n \frac{\Pi}{2}} \; \gz_2
 \end{align*}
-from which we deduce an upper bound on the absolute error of the reduction:
+from which we deduce an upper bound on the absolute error of the reduction, noting that $\abs{x - n \frac{\Pi}{2}} \leq \frac{\Pi}{4}$:
 \begin{align*}
 &\abs{y - y' - \gd y - \pa{x - n \frac{\Pi}{2}}} \\ 
 & \qquad \leq 2^{\gk_2 + \gk'_2 + \gk''_2} \pa{2^{-2 M - 1} + 2^{-2 M} + 2^{-3 M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{2 - 2 M} \frac{\Pi}{4} \\
