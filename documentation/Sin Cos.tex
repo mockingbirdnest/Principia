@@ -75,7 +75,7 @@ Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equa
 \section*{Approximation of $\frac{\Pi}{2}$}
 To perform argument reduction, we need to build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
 
-Let $z ge 0$.  We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
+Let $z \geq 0$.  We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
 \[
 \truncate\of{\gk, z} \DefineAs \floor{2^{-\gk} \mant \of{z}} \; 2^{\gk} \ULP\of{z}
 \]
@@ -254,7 +254,7 @@ from which we deduce an upper bound on the absolute error of the reduction:
 \end{align*}
 where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).
 
-If we want $\hat x + \gd \hat x$ to be correctly rounded with $\gk_3$ extra bits of accuracy, the error must be less than $2^{\gk_3}$ half-units of the last place of the result:
+In the computation of the trigonometric functions, we need $\hat x + \gd \hat x$ to provide enough accuracy that the final result is correctly rounded most of the time, and that any case of incorrect rounding may be detected.  The above error bound shows that, if $\hat x$ is very small (i.e., if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\hat x + \gd \hat x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
 \[
 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}} \leq 2^{-\gk_3 - M} \abs{\hat x}
 \]
