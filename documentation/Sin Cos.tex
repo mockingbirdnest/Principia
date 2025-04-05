@@ -221,7 +221,7 @@ Let's first show that $\abs n \leq 2^{\gk_1}$. :
 \end{align*}
 As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is an integral multiple of $\ULP\of{x}$ and therefore, when not zero, may be as small as $\ULP\of{x}$. Ignoring rounding errors we have:
+The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is an integral multiple of $\ULP\of{x}$ and therefore, when not zero, may be as small as $\ULP\of{x}$; that bound is reached if $x$ is the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
 \[ 
 \abs{\gd y} \geq n \; 2^{\gk'_1 - 1} \ULP\of{\frac{\Pi}{2}} \geq 2^{\gk'_1 + M - 2} \ULP\of{\frac{\Pi}{2}} \ULP\of{n}
 \]
