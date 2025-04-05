@@ -226,7 +226,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   // basically goes through the centre of the Moon.
 
   LOG(INFO) << "Optimizing manœuvre 5";
-  auto const& manœuvre5 = flight_plan_->GetManœuvre(5);
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
   EXPECT_THAT(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
 
@@ -243,7 +243,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   CHECK_OK(flight_plan_->Replace(manœuvre5.burn(), /*index=*/5));
 
   LOG(INFO) << "Optimizing manœuvre 6";
-  auto const& manœuvre6 = flight_plan_->GetManœuvre(6);
+  auto const manœuvre6 = flight_plan_->GetManœuvre(6);
   EXPECT_THAT(optimizer.Optimize(/*index=*/6, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
 
@@ -259,7 +259,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_ReachTheMoon) {
   CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
 
   LOG(INFO) << "Optimizing manœuvre 7";
-  auto const& manœuvre7 = flight_plan_->GetManœuvre(7);
+  auto const manœuvre7 = flight_plan_->GetManœuvre(7);
   EXPECT_THAT(optimizer.Optimize(/*index=*/7, 1 * Milli(Metre) / Second),
               StatusIs(termination_condition::VanishingStepSize));
 
@@ -296,7 +296,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
       [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
 
   LOG(INFO) << "Optimizing manœuvre 5";
-  auto const& manœuvre5 = flight_plan_->GetManœuvre(5);
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
   EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
@@ -315,7 +315,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
   CHECK_OK(flight_plan_->Replace(manœuvre5.burn(), /*index=*/5));
 
   LOG(INFO) << "Optimizing manœuvre 6";
-  auto const& manœuvre6 = flight_plan_->GetManœuvre(6);
+  auto const manœuvre6 = flight_plan_->GetManœuvre(6);
   EXPECT_OK(optimizer.Optimize(/*index=*/6, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
@@ -333,7 +333,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrazeTheMoon) {
   CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
 
   LOG(INFO) << "Optimizing manœuvre 7";
-  auto const& manœuvre7 = flight_plan_->GetManœuvre(7);
+  auto const manœuvre7 = flight_plan_->GetManœuvre(7);
   EXPECT_OK(optimizer.Optimize(/*index=*/7, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
@@ -362,7 +362,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_GrindsToAHalt) {
       [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
 
   LOG(INFO) << "Optimizing manœuvre 5";
-  auto const& manœuvre5 = flight_plan_->GetManœuvre(5);
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
   EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Micro(Metre) / Second));
 
   // The initial time doesn't change.
@@ -400,7 +400,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
       [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
 
   LOG(INFO) << "Optimizing manœuvre 5";
-  auto const& manœuvre5 = flight_plan_->GetManœuvre(5);
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
   EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
@@ -419,7 +419,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
   CHECK_OK(flight_plan_->Replace(manœuvre5.burn(), /*index=*/5));
 
   LOG(INFO) << "Optimizing manœuvre 6";
-  auto const& manœuvre6 = flight_plan_->GetManœuvre(6);
+  auto const manœuvre6 = flight_plan_->GetManœuvre(6);
   EXPECT_OK(optimizer.Optimize(/*index=*/6, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
@@ -437,7 +437,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
   CHECK_OK(flight_plan_->Replace(manœuvre6.burn(), /*index=*/6));
 
   LOG(INFO) << "Optimizing manœuvre 7";
-  auto const& manœuvre7 = flight_plan_->GetManœuvre(7);
+  auto const manœuvre7 = flight_plan_->GetManœuvre(7);
   EXPECT_OK(optimizer.Optimize(/*index=*/7, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
@@ -478,7 +478,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_Combined) {
       [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
 
   LOG(INFO) << "Optimizing manœuvre 5";
-  auto const& manœuvre5 = flight_plan_->GetManœuvre(5);
+  auto const manœuvre5 = flight_plan_->GetManœuvre(5);
   EXPECT_OK(optimizer.Optimize(/*index=*/5, 1 * Milli(Metre) / Second));
 
   EXPECT_THAT(
