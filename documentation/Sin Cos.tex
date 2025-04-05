@@ -13,6 +13,12 @@
 \DeclareMathOperator{\mant}{\mathfrak m}
 \DeclareMathOperator{\expn}{\mathfrak e}
 \DeclareMathOperator{\truncate}{\StandardSymbol{Tr}}
+\DeclareMathOperator{\twosum}{\StandardSymbol{TwoSum}}
+\DeclareMathOperator{\quicktwosum}{\StandardSymbol{QuickTwoSum}}
+\DeclareMathOperator{\longadd}{\StandardSymbol{LongAdd}}
+\DeclareMathOperator{\twodifference}{\StandardSymbol{TwoDifference}}
+\DeclareMathOperator{\quicktwodifference}{\StandardSymbol{QuickTwoDifference}}
+\DeclareMathOperator{\longsub}{\StandardSymbol{LongSub}}
 
 % Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
 % so we make them grow for readability.
@@ -204,7 +210,7 @@ If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
 y &= x - n \; C_1 \\
 \gd y &= \round{n \; \gd C_1} \\
-\pa{\hat x, \gd \hat x} &= TwoDifference\of{y, \gd y}
+\pa{\hat x, \gd \hat x} &= \twodifference\of{y, \gd y}
 \end{dcases}
 \]
 Let's first show that $\abs n \leq 2^{\gk_1}$. :
@@ -215,7 +221,7 @@ Let's first show that $\abs n \leq 2^{\gk_1}$. :
 \end{align*}
 As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $QuickTwoDifference$ is not usable here.  First, note that $\abs y$ is an integral multiple of $\ULP\of{x}$ and therefore, when not zero, may be as small as $\ULP\of{x}$. Ignoring rounding errors we have:
+The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is an integral multiple of $\ULP\of{x}$ and therefore, when not zero, may be as small as $\ULP\of{x}$. Ignoring rounding errors we have:
 \[ 
 \abs{\gd y} \geq n \; 2^{\gk'_1 - 1} \ULP\of{\frac{\Pi}{2}} \geq 2^{\gk'_1 + M - 2} \ULP\of{\frac{\Pi}{2}} \ULP\of{n}
 \]
@@ -267,12 +273,12 @@ n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
 y &= x - n \; C_2 \\
 y' &= n \; C'_2 \\
 \gd y &= \round{n \; \gd C_2} \\
-\pa{z, \gd z} &= QuickTwoSum\of{y', \gd y} \\
-\pa{\hat x, \gd \hat x} &= LongSub\of{y, \pa{z, \gd z}}
+\pa{z, \gd z} &= \quicktwosum\of{y', \gd y} \\
+\pa{\hat x, \gd \hat x} &= \longsub\of{y, \pa{z, \gd z}}
 \end{dcases}
 \]
-The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $QuickTwoSum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable in this case because clearly $\abs{\gd z} < \abs z$.
-$LongSub$ is the obvious adaptation of the algorithm $LongAdd$ presented in section 5 of \cite{Linnainmaa1981}, which implements precise (but not exact) double-precision arithmetic.
+The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $\quicktwosum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable in this case because clearly $\abs{\gd z} < \abs z$.
+$\longsub$ is the obvious adaptation of the algorithm $\longadd$ presented in section 5 of \cite{Linnainmaa1981}, which implements precise (but not exact) double-precision arithmetic.
 
 It is straightforward to show, like we did in the preceding section, that:
 \[
@@ -284,7 +290,7 @@ To compute the overall error on argument reduction, first remember that, from eq
 \[
 C_2 + C'_2 + \gd C_2 = \frac{\Pi}{2} + \gz_1 \quad \text{with} \quad \abs{\gz_1} \leq 2^{\gk'_2 + \gk''_2 - 2 M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
-Let $\gz_2$ be the relative error introduced by $LongAdd$.  Table 1 of \cite{Linnainmaa1981} indicates that $\abs{\gz_2} < 2^{2 - 2 M}$.  The error computation proceeds as follows:
+Let $\gz_2$ be the relative error introduced by $\longadd$.  Table 1 of \cite{Linnainmaa1981} indicates that $\abs{\gz_2} < 2^{2 - 2 M}$.  The error computation proceeds as follows:
 \begin{align*}
 y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \pa{1 + \gz_2} \\
 &= \pa{x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4}} \pa{1 + \gz_2} \\
