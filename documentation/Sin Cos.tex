@@ -1,0 +1,335 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage{tikz}
+\usetikzlibrary{cd}
+
+\usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
+
+%%%% Shorthands.
+\DeclareMathOperator{\bias}{\mathit{bias}}
+\DeclareMathOperator{\ULP}{\mathfrak u}
+\DeclareMathOperator{\mant}{\mathfrak m}
+\DeclareMathOperator{\expn}{\mathfrak e}
+\DeclareMathOperator{\truncate}{\StandardSymbol{Tr}}
+\DeclareMathOperator{\twosum}{\StandardSymbol{TwoSum}}
+\DeclareMathOperator{\quicktwosum}{\StandardSymbol{QuickTwoSum}}
+\DeclareMathOperator{\longadd}{\StandardSymbol{LongAdd}}
+\DeclareMathOperator{\twodifference}{\StandardSymbol{TwoDifference}}
+\DeclareMathOperator{\quicktwodifference}{\StandardSymbol{QuickTwoDifference}}
+\DeclareMathOperator{\longsub}{\StandardSymbol{LongSub}}
+
+% Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
+% so we make them grow for readability.
+\newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
+\newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
+\newcommand{\roundTowardPositive}[1]{\doubleSquareBrackets{#1}_+}
+\newcommand{\roundTowardNegative}[1]{\doubleSquareBrackets{#1}_-}
+\newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
+\newcommand{\bin}[1]{{_{2}}\mathrm{#1}}
+
+%%%% Title and authors.
+
+\title{An Implementation of Sin and Cos Using Gal's Accurate Tables}
+\date{\printdate{2025-02-02}}
+\author{Pascal~Leroy (phl)}
+\begin{document}
+\maketitle
+\begin{sloppypar}
+\noindent
+This document describes the implementation of functions \texttt{Sin} and \texttt{Cos} in Principia.  The goals of that implementation are to be portable (including to machines that do not have a fused multiply-add instruction), achieve good performance, and ensure correct rounding.
+\end{sloppypar}
+
+\section*{Overview}
+The implementation follows the ideas described by \cite{GalBachelis1991} and uses accurate tables produced by the method presented in \cite{StehléZimmermann2005}.  It guarantees correct rounding with a high probability.  In circumstances where it cannot guarantee correct rounding, it falls back to the (slower but correct) implementation provided by the CORE-MATH project \cite{SibidanovZimmermannGlondu2022} \cite{ZimmermannSibidanovGlondu2024}.  More precisely, the algorithm proceeds through the following steps:
+\begin{itemize}[nosep]
+\item perform argument reduction using Cody and Waite's algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010});
+\item if argument reduction loses too many bits (i.e., the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item otherwise, uses accurate tables and a polynomial approximation to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
+\item if the result has a ``dangerous rounding configuration'' (as defined by \cite{GalBachelis1991}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item otherwise return the rounded result of the preceding computation.
+\end{itemize}
+
+\section*{Notation and Accuracy Model} 
+In this document we assume a base-2 floating-point number system with $M$ significand bits\footnote{In \texttt{binary64}, $M = 53$.} similar to the IEEE formats.  We define a real  function $\mant$ and an integer function $\expn$ denoting the \emph{significand} and \emph{exponent} of a real number, respectively:
+\[
+x = ±\mant\of{x} \times 2^{\expn\of{x}} \qquad\text{with}\qquad 2^{M-1} \leq \mant\of{x} \leq 2^M - 1
+\]
+Note that this representation is unique.  Furthermore, if $x$ is a floating-point number, $\mant\of{x}$ is an integer.
+
+The \emph{unit of the last place} of $x$ is defined as:
+\[
+\ULP\of{x} \DefineAs 2^{\expn\of{x}}
+\]
+In particular, $\ULP\of{1} = 2^{1 - M}$ and:
+\begin{equation}
+\frac{\abs x}{2^M} < \frac{\abs x}{2^M - 1} \leq \ULP\of{x} \leq \frac{\abs x}{2^{M - 1}}
+\label{eqnulp}
+\end{equation}
+
+We ignore the exponent bias, overflow and underflow as they play no role in this discussion.
+
+Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\gd_i < u = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
+
+\section*{Approximation of $\frac{\Pi}{2}$}
+To perform argument reduction, we need to build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
+
+Let $z \geq 0$.  We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
+\[
+\truncate\of{\gk, z} \DefineAs \floor{2^{-\gk} \mant \of{z}} \; 2^{\gk} \ULP\of{z}
+\]
+We have:
+\[
+z - \truncate\of{\gk, z} = \pa{2^{-\gk} \mant \of{z} - \floor{2^{-\gk} \mant \of{z}}} \; 2^{\gk} \ULP\of{z}
+\]
+The definition of the floor function implies that the quantity in parentheses is in $\intclop 0 1$ and therefore:
+\[
+0 \leq z - \truncate\of{\gk, z} < 2^{\gk} \ULP\of{z}
+\]
+Furthermore if the bits that are being truncated start with exactly $k$ zeros we have the stricter inequality:
+\begin{equation}
+2^{\gk' - 1} \ULP\of{z} \leq z - \truncate\of{\gk, z} < 2^{\gk'} \ULP\of{z} \quad \text{with} \quad \gk' = \gk - k
+\label{eqntruncerror}
+\end{equation}
+This leads to the following upper bound for the unit of the last place of the truncation error:
+\[
+\ULP\of{z - \truncate\of{\gk, z}} < 2^{\gk' - M + 1} \ULP\of{z}
+\]
+which can be made more precise by noting that the function $\ULP$ is always a power of $2$:
+\begin{equation}
+\ULP\of{z - \truncate\of{\gk, z}} = 2^{\gk' - M} \ULP\of{z}
+\label{eqnulptr}
+\end{equation}
+
+\subsubsection*{Two-Term Approximation}
+In this scheme we approximate $\frac{\Pi}{2}$ as the sum of two floating-point numbers:
+\[
+\frac{\Pi}{2} ≃ C_1 + \gd C_1
+\]
+which are defined as:
+\begin{equation*}
+\begin{dcases}
+C_1 &\DefineAs \truncate\of{\gk_1, \frac{\Pi}{2}} \\
+\gd C_1 &\DefineAs \round{\frac{\Pi}{2} - C_1}
+\end{dcases}
+\end{equation*}
+Equation (\ref{eqntruncerror}) applied to the definition of $C_1$ yields:
+\[
+2^{\gk'_1 - 1} \ULP\of{\frac{\Pi}{2}} \leq \frac{\Pi}{2} - C_1 < 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}
+\]
+where $\gk'_1 \leq \gk_1$ accounts for any leading zeroes in the bits of $\frac{\Pi}{2}$ that are being truncated.  Accordingly equation (\ref{eqnulptr}) yields, for the unit of the last place:
+\[
+\ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M} \ULP\of{\frac{\Pi}{2}}
+\]
+
+Noting that the absolute error on the rounding that appears in the definition of $\gd C_1$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1}$, we obtain the absolute error on the two-term approximation:
+\begin{align}
+\abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
+\label{eqnpitwoterms}
+\end{align}
+and the following upper bound for $\gd C_1$:
+\begin{align}
+\abs{\gd C_1} &< \frac{\Pi}{2} - C_1 + \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} \nonumber \\
+&< 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}+2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk'_1} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
+\label{eqnabsdc1}
+\end{align}
+ 
+This scheme gives a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
+
+\subsubsection*{Three-Term Approximation}
+In this scheme we approximate $\frac{\Pi}{2}$ as the sum of three floating-point numbers:
+\[
+\frac{\Pi}{2} ≃ C_2 + C'_2 + \gd C_2
+\]
+which are defined as:
+\begin{equation*}
+\begin{dcases}
+C_2 &\DefineAs \truncate\of{\gk_2, \frac{\Pi}{2}} \\
+C'_2 &\DefineAs \truncate\of{\gk_2, \frac{\Pi}{2} - C_2} \\
+\gd C_2 &\DefineAs \round{\frac{\Pi}{2} - C_2 - C'_2}
+\end{dcases}
+\end{equation*}
+Equation (\ref{eqntruncerror}) applied to the definition of $C_2$ yields:
+\begin{equation}
+2^{\gk'_2 - 1} \ULP\of{\frac{\Pi}{2}} \leq \frac{\Pi}{2} - C_2 < 2^{\gk'_2} \ULP\of{\frac{\Pi}{2}}
+\label{eqnc2}
+\end{equation}
+where $\gk'_2 \leq \gk_2$ accounts for any leading zeroes in the bits of $\frac{\Pi}{2}$ that are being truncated.  Accordingly equation (\ref{eqnulptr}) yields, for the unit of the last place:
+\[
+\ULP\of{\frac{\Pi}{2} - C_2} = 2^{\gk'_2 - M} \ULP\of{\frac{\Pi}{2}}
+\]
+
+Similarly, equation (\ref{eqntruncerror}) applied to the definition of $C'_2$ yields:
+\begin{alignat*}{2}
+2^{\gk''_2 - 1} \ULP\of{\frac{\Pi}{2} - C_2} &\leq \frac{\Pi}{2} - C_2 - C'_2 &< 2^{\gk''_2} \ULP\of{\frac{\Pi}{2} - C_2} \\
+2^{\gk'_2 + \gk''_2 - M - 1} \ULP\of{\frac{\Pi}{2}} &\leq &< 2^{\gk'_2 + \gk''_2 - M} \ULP\of{\frac{\Pi}{2}}
+\end{alignat*}
+where $\gk''_2 \leq \gk_2$ accounts for any leading zeroes in the bits of $\frac{\Pi}{2} - C_2$ that are being truncated.  Note that normalization of the significand of $\frac{\Pi}{2} - C_2$ effectively drops the zeroes at positions $\gk_2$ to $\gk'_2$ and therefore the computation of $C'_2$ applies to a significand aligned on position $\gk'_2$.
+
+It is straightforward to transform these inequalities using (\ref{eqnc2}) to obtain bounds on $C'_2$:
+\[
+2^{\gk'_2} \pa{\frac{1}{2} - 2^{\gk''_2 - M}} \ULP\of{\frac{\Pi}{2}} < C'_2 < 2^{\gk'_2} \pa{1 - 2^{\gk''_2 - M - 1}} \ULP\of{\frac{\Pi}{2}}
+\]
+
+Equation (\ref{eqnulptr}) applied to the definition of $C'_2$ yields, for the unit of the last place:
+\begin{align*}
+\ULP\of{\frac{\Pi}{2} - C_2 - C'_2} &= 2^{\gk''_2 - M} \ULP\of{\frac{\Pi}{2} - C_2} \\
+&= 2^{\gk'_2 + \gk''_2 - 2 M} \ULP\of{\frac{\Pi}{2}}
+\end{align*}
+
+Noting that the absolute error on the rounding that appears in the definition of $\gd C_2$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_2 - C'_2}$, we obtain the absolute error on the three-term approximation:
+\begin{align}
+\abs{\frac{\Pi}{2} - C_2 - C'_2 - \gd C_2} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_2 - C'_2} = 2^{\gk'_2 + \gk''_2 - 2 M - 1} \ULP\of{\frac{\Pi}{2}}
+\label{eqnpithreeterms}
+\end{align}
+and the following upper bound for $\gd C_2$:
+\begin{equation}
+\abs{\gd C_2} < 2^{\gk'_2 + \gk''_2 - M} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
+\label{eqnabsdc2}
+\end{equation}
+ 
+This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
+
+\section*{Argument Reduction}
+Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\hat x, \gd \hat x}$ such that:
+\[
+\begin{dcases}
+\hat x + \gd \hat x ≅ x \pmod{\frac{\Pi}{2}} \\
+\hat x \;\text{is approximately in}\; \intclos{-\frac{\Pi}{4}}{\frac{\Pi}{4}} \\
+\abs{\gd \hat x} \leq \frac{1}{2} \ULP\of{\hat x} 
+\end{dcases}
+\]
+
+\subsection*{Argument Reduction for Small Angles}
+If $\abs x < \round{\frac{\Pi}{4}}$ then $\hat x = x$ and $\gd \hat x = 0$.
+\subsection*{Argument Reduction Using the Two-Term Approximation}
+If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
+\[
+\begin{dcases}
+n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
+y &= x - n \; C_1 \\
+\gd y &= \round{n \; \gd C_1} \\
+\pa{\hat x, \gd \hat x} &= \twodifference\of{y, \gd y}
+\end{dcases}
+\]
+Let's first show that $\abs n \leq 2^{\gk_1}$. :
+\begin{align*}
+\abs x &\leq 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \\
+\abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
+&\leq \iround{2^{\gk_1} \pa{1 + \gg_3}}
+\end{align*}
+As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
+
+The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
+\[ 
+\abs{\gd y} \geq n \; 2^{\gk'_1 - 1} \ULP\of{\frac{\Pi}{2}} \geq 2^{\gk'_1 + M - 2} \ULP\of{\frac{\Pi}{2}} \ULP\of{n}
+\]
+where we used the bound given by equation (\ref{eqnulp}).  Now the computation of $n$ can result in a value that is either in the same binade or in the binade below that of $x$.  Therefore $\ULP\of{n} \geq \frac{1}{2} \ULP\of{x}$ and the above inequality becomes:
+\[
+\abs{\gd y} \geq 2^{\gk'_1 + M - 3} \ULP\of{\frac{\Pi}{2}} \ULP\of{x}
+\]
+plugging $\ULP\of{\frac{\Pi}{2}} = 2^{1 - M}$ we find:
+\[
+\abs{\gd y} \geq 2^{\gk'_1 - 2} \ULP\of{x}
+\]
+Therefore, as long as $\gk'_1 > 2$, there exist arguments $x$ for which $\abs{\gd y} > \abs y$.
+} using algorithm 4 of \cite{HidaLiBailey2007}.
+
+To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpitwoterms}), we have:
+\[
+C_1 + \gd C_1 = \frac{\Pi}{2} + \gz \quad \text{with} \quad \abs{\gz} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
+\]
+The error computation proceeds as follows:
+\begin{align*}
+y - \gd y &= x - n \; C_1 - n \; \gd C_1 \pa{1 + \gd_4} \\
+&= x - n \pa{C_1 + \gd C_1} - n \; \gd C_1 \; \gd_4 \\
+&= x - n \frac{\Pi}{2} - n \pa{\gz + \gd C_1 \; \gd_4}
+\end{align*}
+from which we deduce an upper bound on the absolute error of the reduction:
+\begin{align*}
+\abs{y - \gd y - \pa{x - n \frac{\Pi}{2}}} &\leq 2^{\gk_1} 2^{\gk'_1} \pa{2^{- M - 1} + 2^{-M} + 2^{-2 M - 1}} \ULP\of{\frac{\Pi}{2}} \\
+&= 2^{\gk_1 + \gk'_1 - M}\pa{\frac{3}{2} + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}} \\
+&< 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
+\end{align*}
+where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).
+
+In the computation of the trigonometric functions, we need $\hat x + \gd \hat x$ to provide enough accuracy that the final result is correctly rounded most of the time, and that any case of incorrect rounding may be detected.  The above error bound shows that, if $\hat x$ is very small (i.e., if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\hat x + \gd \hat x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
+\[
+2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}} \leq 2^{-\gk_3 - M} \abs{\hat x}
+\]
+which leads to the following condition on the reduced angle:
+\[
+\abs{\hat x} \geq 2^{\gk_1 + \gk'_1 + \gk_3 + 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 2}
+\]
+
+The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding most of the time and detect cases of dangerous rounding.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\hat x} \geq 2^{-20} ≃ 9.5 \times 10^{-7}$.
+
+\subsection*{Argument Reduction Using the Three-Term Approximation}
+If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
+\[
+\begin{dcases}
+n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
+y &= x - n \; C_2 \\
+y' &= n \; C'_2 \\
+\gd y &= \round{n \; \gd C_2} \\
+\pa{z, \gd z} &= \quicktwosum\of{y', \gd y} \\
+\pa{\hat x, \gd \hat x} &= \longsub\of{y, \pa{z, \gd z}}
+\end{dcases}
+\]
+The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $\quicktwosum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable in this case because clearly $\abs{\gd y} < \abs{y'}$.
+$\longsub$ is the obvious adaptation of the algorithm $\longadd$ presented in section 5 of \cite{Linnainmaa1981}, which implements precise (but not exact) double-precision arithmetic.
+
+It is straightforward to show, like we did in the preceding section, that:
+\[
+\abs n \leq \iround{2^{\gk_2} \pa{1 + \gg_3}}
+\]
+and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.
+
+To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpithreeterms}), we have:
+\[
+C_2 + C'_2 + \gd C_2 = \frac{\Pi}{2} + \gz_1 \quad \text{with} \quad \abs{\gz_1} \leq 2^{\gk'_2 + \gk''_2 - 2 M - 1} \ULP\of{\frac{\Pi}{2}}
+\]
+Let $\gz_2$ be the relative error introduced by $\longadd$.  Table 1 of \cite{Linnainmaa1981} indicates that $\abs{\gz_2} < 2^{2 - 2 M}$.  The error computation proceeds as follows:
+\begin{align*}
+y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \pa{1 + \gz_2} \\
+&= \pa{x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4}} \pa{1 + \gz_2} \\
+&= x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4} \pa{1 + \gz_2} + \pa{x - n \frac{\Pi}{2}} \; \gz_2
+\end{align*}
+from which we deduce an upper bound on the absolute error of the reduction, noting that $\abs{x - n \frac{\Pi}{2}} \leq \frac{\Pi}{4}$:
+\begin{align*}
+&\abs{y - y' - \gd y - \pa{x - n \frac{\Pi}{2}}} \\ 
+& \qquad \leq 2^{\gk_2 + \gk'_2 + \gk''_2} \pa{2^{-2 M - 1} + 2^{-2 M} + 2^{-3 M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{2 - 2 M} \frac{\Pi}{4} \\
+& \qquad = 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi \\
+& \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M + 1} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi
+\end{align*}
+A sufficient condition for the reduction to guarantee $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}}$ which itself is less than $2^{-\gk_3 - M} \abs{\hat{x}}$.  Therefore we want:
+\begin{align*}
+\abs{\hat x} &\geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 + 1} \ULP\of{\frac{\Pi}{2}} + \Pi} \\
+&= 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + \Pi}
+\end{align*}
+and it is therefore sufficient to have:
+\[
+\abs{\hat x} \geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + 4}
+\]
+
+If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 13$ and $\gk''_2 = 14$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 257 \times 2^{-42} ≃ 1.2 \times 10^{-10}$.
+
+\subsection*{Fallback}
+If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
+
+\section*{Accurate Tables and Their Generation}
+\section*{Computation of the Functions}
+\subsection*{Sin}
+\subsubsection*{Near Zero}
+For $\hat x$ near zero we evaluate:
+\begin{align*}
+\widehat{x^2} &= \round{{\hat x}^2} = {\hat x}^2 \pa{1 + \gd_1}\\
+\widehat{x^3} &= \round{\hat x \; \widehat{x^2}} = {\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2}\\
+\hat p &= \round{a \widehat{x^2} + b} = \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3}\\
+s\of{x} &\DefineAs \hat x + \round{\round{\widehat{x^3} \hat p} + \gd \hat x} \\
+&= \hat x + \pa{{\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3} \pa{1 + \gd_4} + \gd \hat x}\pa{1 + \gd_5} \\
+&= \hat x + a {\hat x}^3 \pa{1 + \gq_5} + b {\hat x}^5 \pa{1 + \gq_4} + \gd \hat x \pa{1 + \gd_5}
+\end{align*}
+
+\end{document}
