@@ -316,15 +316,6 @@ std::string Set(std::string const& name,
   return RawApply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
 }
 
-template<typename T, typename U, typename OptionalExpressIn>
-std::string PlottableDataset(std::vector<T> const& x,
-                             std::vector<U> const& y,
-                             OptionalExpressIn express_in) {
-  std::vector<std::string> const xy = {ToMathematica(x, express_in),
-                                       ToMathematica(y, express_in)};
-  return RawApply("Transpose", {RawApply("List", xy)});
-}
-
 template<typename T, typename OptionalExpressIn>
 std::string ToMathematica(std::vector<T> const& list,
                           OptionalExpressIn express_in) {
