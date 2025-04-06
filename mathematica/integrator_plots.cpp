@@ -49,7 +49,7 @@
       u8## #name,                                                  \
       {methods::name::order},                                      \
       "SLMS",                                                      \
-      1,                                                           \
+      /*evaluations=*/1,                                           \
   }
 #define SRKN_INTEGRATOR(name)                                        \
   {                                                                  \
@@ -194,7 +194,7 @@ struct PlottedIntegrator final {
 // 2. method types in the following order:
 //    a. SPRKs,
 //    b. SRKNs,
-//    c. symmetric linear multistep integrators,
+//    c. Symmetric Linear MultiStep integrators,
 //    d. Explicit Runge-Kutta methods,
 //    e. EERKs,
 //    f. EEGRKNs,
@@ -291,19 +291,19 @@ class WorkErrorGraphGenerator {
         tmax_(tmax),
         first_tolerance_(first_tolerance),
         problem_name_(std::move(problem_name)),
-        step_reduction_(std::exp(std::log(starting_step_size_per_evaluation_ /
-                                          min_step_per_evaluation) /
-                                 integrations_per_integrator_)) {
+        step_reduction_(std::pow(
+            starting_step_size_per_evaluation_ / min_step_per_evaluation,
+            1 / integrations_per_integrator_)) {
     q_errors_.resize(methods_.size());
     v_errors_.resize(methods_.size());
     e_errors_.resize(methods_.size());
     evaluations_.resize(methods_.size());
-    for (int i = 0; i < methods_.size(); ++i) {
+    for (std::int64_t i = 0; i < methods_.size(); ++i) {
       q_errors_[i].resize(integrations_per_integrator_);
       v_errors_[i].resize(integrations_per_integrator_);
       e_errors_[i].resize(integrations_per_integrator_);
       evaluations_[i].resize(integrations_per_integrator_);
-      for (int j = 0; j < integrations_per_integrator_; ++j) {
+      for (std::int64_t j = 0; j < integrations_per_integrator_; ++j) {
         q_errors_[i][j].resize(tmax_.size());
         v_errors_[i][j].resize(tmax_.size());
         e_errors_[i][j].resize(tmax_.size());
@@ -316,8 +316,8 @@ class WorkErrorGraphGenerator {
     LOG(INFO) << "Using " << std::thread::hardware_concurrency()
               << " worker threads";
     Bundle bundle;
-    for (int method_index = 0; method_index < methods_.size(); ++method_index) {
-      for (int time_step_index = 0;
+    for (std::int64_t method_index = 0; method_index < methods_.size(); ++method_index) {
+      for (std::int64_t time_step_index = 0;
            time_step_index < integrations_per_integrator_;
            ++time_step_index) {
         bundle.Add(std::bind(&WorkErrorGraphGenerator::Integrate,
@@ -337,21 +337,24 @@ class WorkErrorGraphGenerator {
     std::vector<std::string> names;
     std::vector<std::vector<int>> orders;
     std::vector<std::string> types;
-    for (int i = 0; i < methods_.size(); ++i) {
-      q_error_data.emplace_back();
-      v_error_data.emplace_back();
-      e_error_data.emplace_back();
-      for (int j = 0; j < integrations_per_integrator_; ++j) {
-        q_error_data.back().emplace_back();
-        v_error_data.back().emplace_back();
-        e_error_data.back().emplace_back();
-        for (int k = 0; k < tmax_.size(); ++k) {
-          q_error_data.back().back().emplace_back(evaluations_[i][j][k],
-                                                  q_errors_[i][j][k]);
-          v_error_data.back().back().emplace_back(evaluations_[i][j][k],
-                                                  v_errors_[i][j][k]);
-          e_error_data.back().back().emplace_back(evaluations_[i][j][k],
-                                                  e_errors_[i][j][k]);
+    for (std::int64_t i = 0; i < methods_.size(); ++i) {
+      auto& q_error_data_for_method = q_error_data.emplace_back();
+      auto& v_error_data_for_method = v_error_data.emplace_back();
+      auto& e_error_data_for_method = e_error_data.emplace_back();
+      for (std::int64_t j = 0; j < integrations_per_integrator_; ++j) {
+        auto& q_error_data_for_integration =
+            q_error_data_for_method.emplace_back();
+        auto& v_error_data_for_integration =
+            v_error_data_for_method.emplace_back();
+        auto& e_error_data_for_integration =
+            e_error_data_for_method.emplace_back();
+        for (std::int64_t k = 0; k < tmax_.size(); ++k) {
+          q_error_data_for_integration.emplace_back(evaluations_[i][j][k],
+                                                    q_errors_[i][j][k]);
+          v_error_data_for_integration.emplace_back(evaluations_[i][j][k],
+                                                    v_errors_[i][j][k]);
+          e_error_data_for_integration.emplace_back(evaluations_[i][j][k],
+                                                    e_errors_[i][j][k]);
         }
       }
       names.emplace_back(methods_[i].name);
