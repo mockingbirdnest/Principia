@@ -316,7 +316,8 @@ class WorkErrorGraphGenerator {
     LOG(INFO) << "Using " << std::thread::hardware_concurrency()
               << " worker threads";
     Bundle bundle;
-    for (std::int64_t method_index = 0; method_index < methods_.size(); ++method_index) {
+    for (std::int64_t method_index = 0; method_index < methods_.size();
+         ++method_index) {
       for (std::int64_t time_step_index = 0;
            time_step_index < integrations_per_integrator_;
            ++time_step_index) {
