@@ -611,6 +611,7 @@ internal class
           expanded_[celestial] = !expanded_[celestial];
         }
       }
+      UnityEngine.GUILayout.Label(celestial.StandaloneName());
       UnityEngine.GUILayout.FlexibleSpace();
       if (celestial.is_root()) {
         UnityEngine.GUILayout.Label(

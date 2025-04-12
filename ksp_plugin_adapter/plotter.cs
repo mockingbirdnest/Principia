@@ -25,11 +25,6 @@ class Plotter {
                (camera.pixelWidth / 2));
   }
 
-  public static double angular_resolution_for_colour(UnityEngine.Color colour) {
-    //Interpreted as a Tan in C++.
-    return MainWindow.cheeze_x.value;
-  }
-
   public void PlotEquipotentials(DisposablePlanetarium planetarium) {
     int number_of_equipotentials = Plugin.EquipotentialCount();
     if (number_of_equipotentials == 0) {
@@ -46,7 +41,6 @@ class Plotter {
       planetarium.PlanetariumPlotEquipotential(
           Plugin,
           i,
-          angular_resolution_for_colour(colour),
           VertexBuffer.data,
           VertexBuffer.size,
           out int vertex_count);
@@ -77,7 +71,6 @@ class Plotter {
             main_vessel_guid,
             history_length,
             prediction_t_max,
-            angular_resolution_for_colour(adapter_.history_colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -90,7 +83,6 @@ class Plotter {
         planetarium.PlanetariumPlotPrediction(Plugin,
                                               main_vessel_guid,
                                               prediction_t_max,
-                                              angular_resolution_for_colour(adapter_.prediction_colour),
                                               VertexBuffer.data,
                                               VertexBuffer.size,
                                               out int vertex_count);
@@ -119,7 +111,6 @@ class Plotter {
               main_vessel_guid,
               i,
               flight_plan_t_max,
-              angular_resolution_for_colour(colour),
               VertexBuffer.data,
               VertexBuffer.size,
               out int vertex_count);
@@ -147,7 +138,6 @@ class Plotter {
             target_id,
             history_length,
             t_max: null,
-            angular_resolution_for_colour(adapter_.target_history_colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -161,7 +151,6 @@ class Plotter {
             Plugin,
             target_id,
             t_max: null,
-            angular_resolution_for_colour(adapter_.target_prediction_colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out int vertex_count);
@@ -205,7 +194,6 @@ class Plotter {
             Plugin,
             root.flightGlobalsIndex,
             history_length,
-            angular_resolution_for_colour(colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out double min_past_distance,
@@ -223,7 +211,6 @@ class Plotter {
             Plugin,
             root.flightGlobalsIndex,
             main_vessel_guid,
-            angular_resolution_for_colour(colour),
             VertexBuffer.data,
             VertexBuffer.size,
             out double min_future_distance,

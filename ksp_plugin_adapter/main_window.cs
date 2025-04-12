@@ -25,7 +25,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     flight_planner_ = flight_planner;
     orbit_analyser_ = orbit_analyser;
     plotting_frame_selector_ = plotting_frame_selector;
-    cheeze_x.value = 0.1;
+    angular_resolution_in_arc_min.value = 0.4;
     Show();
   }
 
@@ -168,20 +168,20 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   protected override string Title => "Principia";
 
-  public static DifferentialSlider cheeze_x =
-      new DifferentialSlider("x",
+  public static DifferentialSlider angular_resolution_in_arc_min =
+      new DifferentialSlider("ang res",
                              "",
                              -5,
                              -1,
                              (x) => x.ToString("0.000"),
-                             zero_value: 0,
+                             zero_value: 0.4,
                              min_value: 0,
-                             max_value: 2);
+                             max_value: 100);
 
       protected override void RenderWindowContents(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      UnityEngine.GUILayout.Label("Cheeze constants: ");
-      cheeze_x.Render(true);
+      UnityEngine.GUILayout.Label("Angular resolution (arc min): ");
+      angular_resolution_in_arc_min.Render(true);
 
       if (!adapter_.PluginRunning()) {
         UnityEngine.GUILayout.Label(

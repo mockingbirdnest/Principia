@@ -331,7 +331,6 @@ void BM_PlanetariumPlotMethod3(
         satellites.goes_8_trajectory().begin(),
         satellites.goes_8_trajectory().end(),
         /*t_max=*/InfiniteFuture,
-        /*tan_angular_resolution=*/0.00080,
         /*reverse=*/false,
         /*add_point=*/
         [&line](ScaledSpacePoint const& point) { line.push_back(point); },

@@ -2115,7 +2115,7 @@ message PlanetariumCreate {
     required double focal = 7;
     required double field_of_view = 8;
     required double inverse_scale_factor = 9;
-    required double tan_angular_resolution = 11;  // Added in خوارزمی.
+    required double angular_resolution = 11;  // Added in ...
     required XYZ scaled_space_origin = 10;
   }
   message Return {
@@ -2153,7 +2153,6 @@ message PlanetariumPlotCelestialFutureTrajectory {
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 celestial_index = 3;
     required string vessel_guid = 4;
-    required double tan_angular_resolution = 7;  // Added in خوارزمی.
     required fixed64 vertices = 5 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
     required int32 vertices_size = 6 [(size_of) = "vertices"];
@@ -2177,7 +2176,6 @@ message PlanetariumPlotCelestialPastTrajectory {
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 celestial_index = 3;
     required double max_history_length = 4;
-    required double tan_angular_resolution = 7;  // Added in خوارزمی.
     required fixed64 vertices = 5 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
     required int32 vertices_size = 6 [(size_of) = "vertices"];
@@ -2200,7 +2198,6 @@ message PlanetariumPlotEquipotential {
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 index = 3;
-    required double tan_angular_resolution = 6;  // Added in خوارزمی.
     required fixed64 vertices = 4 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
     required int32 vertices_size = 5 [(size_of) = "vertices"];
@@ -2224,7 +2221,6 @@ message PlanetariumPlotFlightPlanSegment {
     required string vessel_guid = 4;
     required int32 index = 5;
     optional double t_max = 8;  // Added in von Koch.
-    required double tan_angular_resolution = 9;  // Added in خوارزمی.
     required fixed64 vertices = 6 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
     required int32 vertices_size = 7 [(size_of) = "vertices"];
@@ -2247,7 +2243,6 @@ message PlanetariumPlotPrediction {
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required string vessel_guid = 4;
     optional double t_max = 7;  // Added in von Koch.
-    required double tan_angular_resolution = 8;  // Added in خوارزمی.
     required fixed64 vertices = 5 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
     required int32 vertices_size = 6 [(size_of) = "vertices"];
@@ -2271,7 +2266,6 @@ message PlanetariumPlotPsychohistory {
     required string vessel_guid = 4;
     required double max_history_length = 5;
     optional double t_max = 8;  // Added in von Koch.
-    required double tan_angular_resolution = 9;  // Added in خوارزمی.
     required fixed64 vertices = 6 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
     required int32 vertices_size = 7 [(size_of) = "vertices"];

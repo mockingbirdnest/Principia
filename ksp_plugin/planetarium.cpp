@@ -270,7 +270,6 @@ void Planetarium::PlotMethod3(
     DiscreteTrajectory<Barycentric>::iterator begin,
     DiscreteTrajectory<Barycentric>::iterator end,
     Instant const& t_max,
-    double const tan_angular_resolution,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int max_points) const {
@@ -284,7 +283,6 @@ void Planetarium::PlotMethod3(
   PlotMethod3(trajectory,
               begin_time,
               last_time,
-              tan_angular_resolution,
               reverse,
               add_point,
               max_points);

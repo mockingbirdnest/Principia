@@ -252,7 +252,6 @@ class PlanetariumTest : public ::testing::Test {
               line,
               line.front().time,
               line.back().time,
-              t,
               /*reverse=*/false,
               [](ScaledSpacePoint const&) {},
               /*max_points=*/std::numeric_limits<int>::max());
@@ -419,48 +418,6 @@ TEST_F(PlanetariumTest, PlotMethod2) {
                       Le((5.0 / Sqrt(3.0)) * Metre)));
     EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 0, 14));
   }
-}
-
-TEST_F(PlanetariumTest, PlotMethod3) {
-  // A quarter of a circular trajectory around the origin, with many small
-  // segments.
-  DiscreteTrajectory<Barycentric> discrete_trajectory;
-  AppendTrajectoryTimeline(/*from=*/NewCircularTrajectoryTimeline<Barycentric>(
-                                        /*period=*/100'000 * Second,
-                                        /*r=*/10 * Metre,
-                                        /*Δt=*/1 * Second,
-                                        /*t1=*/t0_,
-                                        /*t2=*/t0_ + 25'000 * Second),
-                           /*to=*/discrete_trajectory);
-
-  // No dark area, human visual acuity, wide field of view.
-  Planetarium::Parameters parameters(
-      /*sphere_radius_multiplier=*/1,
-      /*angular_resolution=*/0.4 * ArcMinute,
-      /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
-                          perspective_,
-                          &ephemeris_,
-                          &plotting_frame_,
-                          plotting_to_scaled_space_);
-  std::vector<ScaledSpacePoint> line;
-  planetarium.PlotMethod3(
-      discrete_trajectory,
-      discrete_trajectory.begin(),
-      discrete_trajectory.end(),
-      /*t_max=*/InfiniteFuture,
-      /*tan_angular_resolution=*/0.00080,
-      /*reverse=*/false,
-      /*add_point=*/
-      [&](ScaledSpacePoint const& point) { line.push_back(point); },
-      /*max_point=*/std::numeric_limits<int>::max());
-
-  EXPECT_THAT(line, SizeIs(1));
-  // for (auto const& point : points) {
-  //   EXPECT_THAT(point.x, AllOf(Ge(0), Le(0)));
-  //   EXPECT_THAT(point.y, AllOf(Ge(0), Le(0)));
-  //   EXPECT_THAT(point.z, AllOf(Ge(0), Le(0)));
-  // }
 }
 
 #if !defined(_DEBUG)
