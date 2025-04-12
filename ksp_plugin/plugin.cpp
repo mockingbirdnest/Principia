@@ -1189,8 +1189,7 @@ void Plugin::ClearOrbitAnalysersOfVesselsOtherThan(Vessel const& vessel) {
 not_null<std::unique_ptr<Planetarium>> Plugin::NewPlanetarium(
     Planetarium::Parameters const& parameters,
     Perspective<Navigation, Camera> const& perspective,
-    std::function<ScaledSpacePoint(Position<Navigation> const&)>
-        plotting_to_scaled_space)
+    Planetarium::PlottingToScaledSpaceConversion plotting_to_scaled_space)
     const {
   return make_not_null_unique<Planetarium>(parameters,
                                            perspective,

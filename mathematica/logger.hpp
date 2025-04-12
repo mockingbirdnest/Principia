@@ -46,7 +46,7 @@ class Logger final {
   // this object is destroyed, an assignment is generated for each of the
   // variables named in a call to Append.
   template<typename... Args>
-  void Append(std::string const& name, Args... args);
+  void Append(std::string const& name, Args const&... args);
 
   // Sets an element as the single value for the variable `name`.  The
   // `args...` are passed verbatim to ToMathematica for stringification.  When

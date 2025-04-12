@@ -105,7 +105,7 @@ class MockPlugin : public Plugin {
               NewPlanetarium,
               (Planetarium::Parameters const& parameters,
                (Perspective<Navigation, Camera> const& perspective),
-               std::function<ScaledSpacePoint(Position<Navigation> const&)>
+               Planetarium::PlottingToScaledSpaceConversion
                    plotting_to_scaled_space),
               (const, override));
   MOCK_METHOD(not_null<std::unique_ptr<NavigationFrame>>,

@@ -32,7 +32,7 @@ class MockPlanetarium : public Planetarium {
                 1 * Metre),
             make_not_null<Ephemeris<Barycentric> const*>(),
             make_not_null<NavigationFrame const*>(),
-            [](Position<Navigation> const& plotted_point) {
+            [](Instant const&, Position<Navigation> const& plotted_point) {
               constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
               return ScaledSpacePoint::FromCoordinates(
                   ((plotted_point - Navigation::origin) *

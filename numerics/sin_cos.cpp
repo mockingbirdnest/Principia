@@ -15,7 +15,8 @@
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 
-
+// The algorithms in this file are documented in `Sin Cos.pdf`.  To the extent
+// possible, the code follows the notation of that document.
 namespace principia {
 namespace numerics {
 namespace _sin_cos {
@@ -37,11 +38,11 @@ using namespace principia::quantities::_elementary_functions;
     /* From argument reduction. */                                           \
     constexpr double abs_θ = θ > 0 ? θ : -θ;                                 \
     constexpr std::int64_t n = static_cast<std::int64_t>(θ * (2 / π) + 0.5); \
-    constexpr double reduction_value = θ - n * π_over_2_high;                \
-    constexpr double reduction_error = n * π_over_2_low;                     \
+    constexpr double reduction_value = θ - n * C₁;                           \
+    constexpr double reduction_error = n * δC₁;                              \
     /* Used to determine whether a better argument reduction is needed. */   \
     constexpr DoublePrecision<double> θ_reduced =                            \
-        QuickTwoDifference(reduction_value, reduction_error);                \
+        TwoDifference(reduction_value, reduction_error);                     \
     /* Used in Sin to detect the near-0 case. */                             \
     constexpr double abs_x =                                                 \
         θ_reduced.value > 0 ? θ_reduced.value : -θ_reduced.value;            \
@@ -63,11 +64,26 @@ constexpr Argument table_spacing_reciprocal = 1 << table_spacing_bits;
 constexpr Argument table_spacing = 1.0 / table_spacing_reciprocal;
 constexpr Argument sin_near_zero_cutoff = table_spacing / 2.0;
 
-// π / 2 split so that the high half has 18 zeros at the end of its mantissa.
-constexpr std::int64_t π_over_2_zeroes = 18;
-constexpr Argument π_over_2_threshold = π / 2 * (1 << π_over_2_zeroes);
-constexpr Argument π_over_2_high = 0x1.921fb'5444p0;
-constexpr Argument π_over_2_low = 0x2.d1846'9898c'c5170'1b839p-40;
+constexpr std::int64_t κ₁ = 8;
+constexpr std::int64_t κʹ₁ = 5;
+constexpr std::int64_t κ₂ = 18;
+constexpr std::int64_t κʹ₂ = 13;
+constexpr std::int64_t κʺ₂ = 14;
+constexpr std::int64_t κ₃ = 18;
+constexpr Argument two_term_θ_threshold = π / 2 * (1LL << κ₁);
+constexpr Argument three_term_θ_threshold = π / 2 * (1LL << κ₂);
+constexpr Argument C₁ = 0x1.921fb'54442'd00p0;
+constexpr Argument δC₁ = 0x1.84698'98cc5'17p-48;
+constexpr Argument C₂ = 0x1.921fb'54440'000p0;
+constexpr Argument Cʹ₂ = 0x2.d1846'98980'000p-40;
+constexpr Argument δC₂ = 0xc.c5170'1b839'a28p-80;
+constexpr Argument two_term_θ_reduced_threshold =
+    1.0 / (1LL << (-(κ₁ + κʹ₁ + κ₃ - std::numeric_limits<double>::digits + 2)));
+constexpr Argument three_term_θ_reduced_threshold =
+    (1.0 / (1LL << (-(κ₃ - std::numeric_limits<double>::digits)))) *
+    ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
+     4);
+
 constexpr Argument mantissa_reduce_shifter =
     1LL << (std::numeric_limits<double>::digits - 1);
 
@@ -162,16 +178,17 @@ inline double DetectDangerousRounding(double const x, double const Δx) {
 }
 
 template<FMAPolicy fma_policy, bool preserve_sign>
-inline void Reduce(Argument const θ,
-                   DoublePrecision<Argument>& θ_reduced,
-                   std::int64_t& quadrant) {
+FORCE_INLINE(inline)
+void Reduce(Argument const θ,
+            DoublePrecision<Argument>& θ_reduced,
+            std::int64_t& quadrant) {
   double const abs_θ = std::abs(θ);
   OSACA_IF(abs_θ < π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
     quadrant = 0;
     return;
-  } OSACA_ELSE_IF(abs_θ <= π_over_2_threshold) {
+  } OSACA_ELSE_IF(abs_θ <= two_term_θ_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
@@ -183,22 +200,48 @@ inline void Reduce(Argument const θ,
 
     // Don't move the computation of `n` after the if, it generates some extra
     // moves.
-    Argument value;
+    Argument y;
     std::int64_t n;
     if constexpr (preserve_sign) {
       n_double = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(n_double), sign));
       n = _mm_cvtsd_si64(_mm_set_sd(n_double));
-      value = FusedNegatedMultiplyAdd<fma_policy>(n_double, π_over_2_high, θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, θ);
     } else {
       n = _mm_cvtsd_si64(_mm_set_sd(n_double));
-      value =
-          FusedNegatedMultiplyAdd<fma_policy>(n_double, π_over_2_high, abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, abs_θ);
     }
 
-    Argument const error = n_double * π_over_2_low;
-    θ_reduced = QuickTwoDifference(value, error);
-    // TODO(phl): Error analysis needed to find the right bounds.
-    OSACA_IF(θ_reduced.value < -0x1.0p-30 || θ_reduced.value > 0x1.0p-30) {
+    Argument const δy = n_double * δC₁;
+    θ_reduced = TwoDifference(y, δy);
+    OSACA_IF(θ_reduced.value <= -two_term_θ_reduced_threshold ||
+             θ_reduced.value >= two_term_θ_reduced_threshold) {
+      quadrant = n & 0b11;
+      return;
+    }
+  } OSACA_ELSE_IF(abs_θ <= three_term_θ_threshold) {
+    // Same code as above.
+    __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(θ));
+    double n_double =
+        FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter) -
+        mantissa_reduce_shifter;
+
+    Argument y;
+    std::int64_t n;
+    if constexpr (preserve_sign) {
+      n_double = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(n_double), sign));
+      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₂, θ);
+    } else {
+      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₂, abs_θ);
+    }
+
+    Argument const yʹ = n_double * Cʹ₂;
+    Argument const δy = n_double * δC₂;
+    auto const z = QuickTwoSum(yʹ, δy);
+    θ_reduced = y - z;
+    OSACA_IF(θ_reduced.value <= -three_term_θ_reduced_threshold ||
+             θ_reduced.value >= three_term_θ_reduced_threshold) {
       quadrant = n & 0b11;
       return;
     }

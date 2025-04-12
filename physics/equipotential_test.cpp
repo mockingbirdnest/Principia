@@ -107,7 +107,7 @@ class EquipotentialTest : public ::testing::Test {
         ComputePositionInWorld(t, reference_frame, body2);
     auto const body2_body1 = body1_position - body2_position;
 
-    auto const binormal = plane.UnitBinormals().front();
+    auto const& binormal = plane.UnitBinormals().front();
     Rotation<World, World> const rot_l4(-60 * Degree, binormal);
     auto const body2_l4 = rot_l4(body2_body1);
     auto const l4 = body2_l4 + body2_position;
@@ -172,10 +172,10 @@ class EquipotentialTest : public ::testing::Test {
       all_positions.emplace_back();
 
       auto const& [l4, l5] = ComputeLagrangePoints(SolarSystemFactory::Earth,
-                                                    SolarSystemFactory::Moon,
-                                                    t,
-                                                    reference_frame,
-                                                    plane);
+                                                   SolarSystemFactory::Moon,
+                                                   t,
+                                                   reference_frame,
+                                                   plane);
 
       for (auto const& line_parameter : get_line_parameters(l4, l5)) {
         auto const line =

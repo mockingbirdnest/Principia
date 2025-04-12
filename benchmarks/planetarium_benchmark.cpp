@@ -236,7 +236,8 @@ class Satellites {
         perspective,
         ephemeris_.get(),
         plotting_frame,
-        [plotting_to_gcrs](Position<Navigation> const& plotted_point) {
+        [plotting_to_gcrs](Instant const&,
+                           Position<Navigation> const& plotted_point) {
           constexpr auto inverse_scale_factor = 1 / (6000 * Metre);
           return ScaledSpacePoint::FromCoordinates(
               ((plotting_to_gcrs(plotted_point) - GCRS::origin) *

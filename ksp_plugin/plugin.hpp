@@ -414,8 +414,8 @@ class Plugin {
   virtual not_null<std::unique_ptr<Planetarium>> NewPlanetarium(
       Planetarium::Parameters const& parameters,
       Perspective<Navigation, Camera> const& perspective,
-      std::function<ScaledSpacePoint(Position<Navigation> const&)>
-          plotting_to_scaled_space) const;
+      Planetarium::PlottingToScaledSpaceConversion plotting_to_scaled_space)
+      const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBarycentricRotatingNavigationFrame(Index primary_index,

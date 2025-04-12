@@ -128,7 +128,11 @@ using WorldSun = Frame<serialization::Frame::PluginTag,
                        serialization::Frame::WORLD_SUN>;
 
 // Used to identify coordinates in the projective plane.  This is *not* the
-// OpenGL camera (which is right-handed) but the Unity camera.
+// OpenGL camera (which is right-handed) but the Unity camera.  The origin of
+// the (x, y) axes is the lower left corner of the screen and the upper right
+// corner of the screen has positive coordinates (thus, (x, y) follows the usual
+// mathematical convention in two dimensions).  The z axis is away from the
+// camera in the viewing direction.
 using Camera = Frame<serialization::Frame::PluginTag,
                      Arbitrary,
                      Handedness::Left,

@@ -5,18 +5,12 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>PROTOBUF_USE_DLLS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Google\protobuf\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Google\protobuf\vsprojects\$(PrincipiaDependencyConfiguration)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libprotobuf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libprotobuf_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
-  <Target Name="CopyProtobufDll" AfterTargets="Build">
-    <Copy SourceFiles="$(SolutionDir)..\Google\protobuf\vsprojects\$(PrincipiaDependencyConfiguration)\$(Platform)\libprotobuf.dll"
-          DestinationFolder="$(OutDir)"
-          SkipUnchangedFiles="true"/>
-  </Target>
 </Project>
