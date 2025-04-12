@@ -386,7 +386,8 @@ class WorkErrorGraphGenerator {
             Instant const& s,
             std::tuple<Position<World>, Velocity<World>> const& y,
             std::tuple<Velocity<World>, Vector<Acceleration, World>>& yʹ) {
-          std::vector<Vector<Acceleration, World>> acceleration(1, {});
+          std::vector<Vector<Acceleration, World>> acceleration{
+              Vector<Acceleration, World>{}};
           auto const& [q, v] = y;
           auto const status = compute_accelerations_(
               s, {q}, acceleration, &number_of_evaluations);
@@ -540,7 +541,8 @@ class WorkErrorGraphGenerator {
                           Energy const& max_e_error,
                           Instant const& t0,
                           Time const& Δt) {
-    for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
+    for (std::int64_t i = 0; i < tmax_.size(); ++i) {
+      auto const& tmax = tmax_[i];
       CHECK_OK(instance.Solve(tmax));
       // Log both the actual number of evaluations and a theoretical number
       // that ignores any startup costs; that theoretical number is the one
@@ -571,7 +573,8 @@ class WorkErrorGraphGenerator {
                              Length const& max_q_error,
                              Speed const& max_v_error,
                              Energy const& max_e_error) {
-    for (auto const& [i, tmax] : std::ranges::enumerate_view(tmax_)) {
+    for (std::int64_t i = 0; i < tmax_.size(); ++i) {
+      auto const& tmax = tmax_[i];
       CHECK_OK(instance.Solve(tmax));
       LOG_EVERY_N(INFO, 50)
           << "[" << method_index << "," << time_step_index << "] "
