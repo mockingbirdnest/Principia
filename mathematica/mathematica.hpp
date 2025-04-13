@@ -123,6 +123,12 @@ constexpr auto ExpressInSIUnits = ExpressIn(si::Unit<Length>,
 constexpr struct {} PreserveUnits;
 
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
+std::string At(std::string const& name,
+               T const& right,
+               OptionalExpressIn express_in = std::nullopt);
+
+// Not usable at the first argument of `Set`.  Use `At` instead.
+template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Apply(std::string const& name,
                   T const& right,
                   OptionalExpressIn express_in = std::nullopt);
@@ -337,6 +343,7 @@ std::string RawApply(std::string const& function,
 
 }  // namespace internal
 
+using internal::At;
 using internal::Apply;
 using internal::Evaluate;
 using internal::ExpressIn;

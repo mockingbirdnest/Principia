@@ -10,6 +10,7 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "astronomy/epoch.hpp"
 #include "base/mod.hpp"
@@ -289,6 +290,13 @@ Quotient<Q2, Exponentiation<Q1, exponent>> ExpressIn<Qs...>::Divide(
   } else {
     return q2 / Pow<exponent>(std::get<Q1>(units_));
   }
+}
+
+template<typename T, typename OptionalExpressIn>
+std::string At(std::string const& name,
+               T const& right,
+               OptionalExpressIn express_in) {
+  return absl::StrCat(name, "@", ToMathematica(right, express_in));
 }
 
 template<typename T, typename OptionalExpressIn>
