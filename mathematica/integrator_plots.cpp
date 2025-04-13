@@ -293,15 +293,17 @@ class WorkErrorGraphGenerator {
         problem_name_(std::move(problem_name)),
         step_reduction_(std::pow(
             starting_step_size_per_evaluation_ / min_step_per_evaluation,
-            1 / integrations_per_integrator_)) {
+            1.0 / integrations_per_integrator_)) {
     q_errors_.resize(methods_.size());
     v_errors_.resize(methods_.size());
     e_errors_.resize(methods_.size());
+    e_error_history_.resize(methods_.size());
     evaluations_.resize(methods_.size());
     for (std::int64_t i = 0; i < methods_.size(); ++i) {
       q_errors_[i].resize(integrations_per_integrator_);
       v_errors_[i].resize(integrations_per_integrator_);
       e_errors_[i].resize(integrations_per_integrator_);
+      e_error_history_[i].resize(integrations_per_integrator_ / 50);
       evaluations_[i].resize(integrations_per_integrator_);
       for (std::int64_t j = 0; j < integrations_per_integrator_; ++j) {
         q_errors_[i][j].resize(tmax_.size());
@@ -366,6 +368,7 @@ class WorkErrorGraphGenerator {
     result += Set("qErrorData", q_error_data, ExpressInSIUnits);
     result += Set("vErrorData", v_error_data, ExpressInSIUnits);
     result += Set("eErrorData", e_error_data, ExpressInSIUnits);
+    result += Set("eErrorHistory", e_error_history_, ExpressInSIUnits);
     result += Set("names", names);
     result += Set("orders", orders);
     result += Set("types", types);
@@ -401,15 +404,23 @@ class WorkErrorGraphGenerator {
     Length max_q_error;
     Speed max_v_error;
     Energy max_e_error;
-    auto append_state = [this, &max_q_error, &max_v_error, &max_e_error](
+    std::vector<std::tuple<Instant, Energy>>* e_error_history =
+        time_step_index % 50 == 0
+            ? &e_error_history_[method_index][time_step_index / 50]
+            : nullptr;
+    auto append_state =
+        [this, &max_q_error, &max_v_error, &max_e_error, e_error_history](
         SecondOrderODE::State const& state) {
       auto const errors = compute_errors_(state);
       max_q_error = std::max(max_q_error, errors.q_error);
       max_v_error = std::max(max_v_error, errors.v_error);
       max_e_error = std::max(max_e_error, errors.e_error);
+      if (e_error_history != nullptr) {
+        e_error_history->emplace_back(state.time.value, errors.e_error);
+      }
     };
     auto append_first_order_state =
-    [this, &max_q_error, &max_v_error, &max_e_error](
+    [this, &max_q_error, &max_v_error, &max_e_error, e_error_history](
         FirstOrderODE::State const& state) {
       SecondOrderODE::State second_order_state;
       second_order_state.time = state.s;
@@ -420,6 +431,9 @@ class WorkErrorGraphGenerator {
       max_q_error = std::max(max_q_error, errors.q_error);
       max_v_error = std::max(max_v_error, errors.v_error);
       max_e_error = std::max(max_e_error, errors.e_error);
+      if (e_error_history != nullptr) {
+        e_error_history->emplace_back(state.s.value, errors.e_error);
+      }
     };
     switch (method.integrator.index()) {
       case 0: {
@@ -601,6 +615,8 @@ class WorkErrorGraphGenerator {
   std::vector<std::vector<std::vector<Length>>> q_errors_;
   std::vector<std::vector<std::vector<Speed>>> v_errors_;
   std::vector<std::vector<std::vector<Energy>>> e_errors_;
+  std::vector<std::vector<std::vector<std::tuple<Instant, Energy>>>>
+      e_error_history_;
   std::vector<std::vector<std::vector<double>>> evaluations_;
   std::vector<Instant> const tmax_;
   Length const first_tolerance_;

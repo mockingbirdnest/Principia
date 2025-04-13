@@ -34,6 +34,9 @@ using namespace principia::quantities::_quantities;
 
 class ErrorAnalysisTest : public ::testing::Test {
  protected:
+  ErrorAnalysisTest() {
+    google::LogToStderr();
+  }
 };
 
 #if !defined(_DEBUG)
