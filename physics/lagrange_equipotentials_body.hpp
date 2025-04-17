@@ -43,6 +43,8 @@ constexpr Length box_side = 3 * Metre;
 // This is a length in the rotating-pulsating frame, so really one billionth of
 // the distance between the bodies.
 constexpr Length characteristic_length = 1 * Nano(Metre);
+constexpr Length length_integration_tolerance = 1 * Nano(Metre);///TODO comment
+//constexpr Length length_integration_tolerance = 0.01 * Nano(Metre);EarthMoon
 constexpr std::int64_t max_steps = 1000;
 constexpr std::int64_t points_per_round = 1000;
 constexpr Length local_search_tolerance = 1e-3 * Metre;
@@ -94,7 +96,7 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
            DormandPrince1986RK547FC,
            typename Equipotential<Inertial, RotatingPulsating>::ODE>(),
        max_steps,
-       /*length_integration_tolerance=*/characteristic_length},
+       length_integration_tolerance},
       &reference_frame,
       characteristic_length);
 
