@@ -43,9 +43,21 @@ constexpr Length box_side = 3 * Metre;
 // This is a length in the rotating-pulsating frame, so really one billionth of
 // the distance between the bodies.
 constexpr Length characteristic_length = 1 * Nano(Metre);
-constexpr Length length_integration_tolerance = 1 * Nano(Metre);///TODO comment
-//constexpr Length length_integration_tolerance = 0.01 * Nano(Metre);EarthMoon
-constexpr std::int64_t max_steps = 1000;
+
+// These parameters were tuned on the Sun-Earth and Earth-Moon system using the
+// test
+// `LagrangeEquipotentialsTest.DISABLED_RotatingPulsating_GlobalOptimization`.
+// A small tolerance is necessary because we compute equipotentials very close
+// to L1 and L2, and we must make sure that the integrator doesn't "jump" over
+// these points: if it did, the curve wouldn't close, and that would cause
+// wasted work or artifacts later during plotting.
+// Note that for Pluto-Charon these numbers are not sufficient and we would need
+// to go to (at least) 1 fm and 100'000 points.
+constexpr Length length_integration_tolerance = 10 * Femto(Metre);
+// Maximum observed for Sun-Earth: 3380; for Earth-Moon: 3759.  Typical
+// equipotentials have a few hundred points.
+constexpr std::int64_t max_steps = 10'000;
+
 constexpr std::int64_t points_per_round = 1000;
 constexpr Length local_search_tolerance = 1e-3 * Metre;
 
