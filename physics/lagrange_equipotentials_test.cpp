@@ -222,6 +222,7 @@ TEST_F(LagrangeEquipotentialsTest,
                       AllOf(Gt(0.736 * Metre), Lt(1.322 * Metre)));
           equipotential.push_back(dof.position());
         }
+        EXPECT_THAT(equipotential.size(), AllOf(Ge(591), Le(3759)));
       }
     }
     logger.Append("energies", energies, ExpressIn(Metre, Second));
