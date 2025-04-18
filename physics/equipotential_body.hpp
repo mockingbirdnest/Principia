@@ -87,7 +87,15 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
   auto const instance = adaptive_parameters_.integrator().NewInstance(
       problem, append_state, tolerance_to_error_ratio, integrator_parameters);
+
+  using namespace principia::integrators::_ordinary_differential_equations::
+      termination_condition;
   auto status = instance->Solve(s_final_);
+  if (status.code() == ReachedMaximalStepCount) {
+    LOG(WARNING) << "Equipotential computation at time " << t
+                 << " starting from " << position << " reached "
+                 << adaptive_parameters_.max_steps() << " steps: " << status;
+  }
 
   return equipotential;
 }

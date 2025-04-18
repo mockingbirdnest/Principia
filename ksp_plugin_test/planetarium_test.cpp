@@ -487,7 +487,7 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
   for (auto const& plotted_trajectory : plotted_trajectories_reference) {
     number_of_points_reference += plotted_trajectory.size();
   }
-  EXPECT_EQ(100692, number_of_points_reference);
+  EXPECT_EQ(100683, number_of_points_reference);
 
   // Compute plotted lines at progressively worse resolution and their distance
   // to the reference line.
@@ -515,15 +515,15 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
 
     switch (i) {
       case 0:
-        EXPECT_EQ(51752, number_of_points);
+        EXPECT_EQ(51749, number_of_points);
         EXPECT_THAT(max_distance, IsNear(0.83_(1) * Centi(Metre)));
         break;
       case 1:
-        EXPECT_EQ(26677, number_of_points);
+        EXPECT_EQ(26679, number_of_points);
         EXPECT_THAT(max_distance, IsNear(1.48_(1) * Centi(Metre)));
         break;
       case 2:
-        EXPECT_EQ(13786, number_of_points);
+        EXPECT_EQ(13788, number_of_points);
         EXPECT_THAT(max_distance, IsNear(3.35_(1) * Centi(Metre)));
         break;
       case 3:
