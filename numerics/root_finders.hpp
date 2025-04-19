@@ -39,12 +39,16 @@ Argument Brent(Function f,
 
 // Alternatively applies Brent’s procedure `zero`  and Brent’s procedure
 // `localmin` (both from [Bre73]) to find all the zeroes over the interval by
-// separating them using the extrema.
+// separating them using the extrema.  `eps` must be significantly larger than
+// the default `eps` passed to `localmin`.  A value of `eps` that's too small
+// will cause the algorithm to loop forever.
 template<typename Argument, typename Function>
-absl::btree_set<Argument> DoubleBrent(Function f,
-                                      Argument const& lower_bound,
-                                      Argument const& upper_bound,
-                                      double eps);
+absl::btree_set<Argument> DoubleBrent(
+    Function f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    double eps = 1000 *
+                 Sqrt(ScaleB(0.5, 1 - std::numeric_limits<double>::digits)));
 
 // Performs a golden-section search to find a local extremum of `f` between
 // `lower_bound` and `upper_bound`.
