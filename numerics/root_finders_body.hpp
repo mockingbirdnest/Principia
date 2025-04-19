@@ -167,8 +167,10 @@ absl::btree_set<Argument> DoubleBrent(Function f,
   Argument const a = lower_bound;
   Argument const b = upper_bound;
 
-  Argument const a_effective = a * (1 + eps);
-  Argument const b_effective = b * (1 - eps);
+  // These computations ensure a reasonable margin even if one of the bounds is
+  // zero.
+  Argument const a_effective = a + eps * std::max(Abs(a), Abs(b));
+  Argument const b_effective = b - eps * std::max(Abs(a), Abs(b));
 
   Value f_a = f(a);
   Value f_b = f(b);
