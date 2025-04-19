@@ -141,12 +141,11 @@ LOG(ERROR)<<"Peak is low";
       continue;
     }
 
-    //TODO(phl)comment
-    absl::btree_set<Length> xs;
-    absl::btree_set<double> ys;
-
     while (!delineation.indistinct_wells.empty() ||
            !delineation.delineated_from_infinity) {
+      //TODO(phl)comment
+      Lines candidate_lines;
+
 LOG(ERROR)<<"Wells: " << delineation.indistinct_wells.size()<<" Inf: "<<
 delineation.delineated_from_infinity;
       std::optional<WellIterator> expected_delineated_well;
@@ -178,8 +177,7 @@ LOG(ERROR)<<"Expected deli: "<<(*expected_delineated_well)->position<<" r: "<<
         // Look for a point on the equipotential along the line between the peak
         // and the edge of the well.
         //TODO(phl)comment
-        if (xs.empty()) {
-          xs = DoubleBrent(
+        auto const xs = DoubleBrent(
               [&](Length const& x) {
                 return reference_frame_->GeometricPotential(
                            t, Barycentre({peak, well.position}, {x, r - x})) -
@@ -187,13 +185,13 @@ LOG(ERROR)<<"Expected deli: "<<(*expected_delineated_well)->position<<" r: "<<
               },
               well.radius,
               r);
-        }
         CHECK(!xs.empty());
-        Length const x = xs.extract(xs.begin()).value();
-        Position<Frame> const equipotential_position =
-            Barycentre({peak, well.position}, {x, r - x});
-        lines.push_back(ComputeLine(plane, t, equipotential_position));
-LOG(ERROR)<<"Line for indistinct well E: "<<energy<<" Pos: "<<equipotential_position<<" x: "<<x;
+        for (Length const& x : xs) {
+          Position<Frame> const equipotential_position =
+              Barycentre({peak, well.position}, {x, r - x});
+          candidate_lines.push_back(ComputeLine(plane, t, equipotential_position));
+          LOG(ERROR)<<"Line for indistinct well E: "<<energy<<" Pos: "<<equipotential_position<<" x: "<<x;
+        }
       } else {
         // Try to delineate `peak` from the well at infinity; this works as for
         // an actual well, but instead of picking the point on the edge of the
@@ -208,58 +206,80 @@ LOG(ERROR)<<"Line for indistinct well E: "<<energy<<" Pos: "<<equipotential_posi
           peak_delineations[i].delineated_from_infinity = true;
           continue;
         }
-        if (ys.empty()) {
-          ys = DoubleBrent(
+        auto const xs = DoubleBrent(
               [&](double const& x) {
                 return reference_frame_->GeometricPotential(
-                           t, Barycentre({peak, far_away}, {y, 1 - y})) -
+                           t, Barycentre({peak, far_away}, {x, 1 - x})) -
                        energy;
               },
               0.0,
               1.0);
+        CHECK(!xs.empty());
+        for (double const x : xs) {
+          Position<Frame> const equipotential_position =
+              Barycentre({peak, far_away}, {x, 1 - x});
+          candidate_lines.push_back(
+              ComputeLine(plane, t, equipotential_position));
+  LOG(ERROR)<<"Line for infinity E: "<<energy<<" Pos: "<<equipotential_position<<" x: "<<x;
         }
-        CHECK(!ys.empty());
-        double const y = ys.extract(ys.begin()).value();
-        Position<Frame> const equipotential_position =
-            Barycentre({peak, far_away}, {y, 1 - y});
-        lines.push_back(ComputeLine(plane, t, equipotential_position));
-LOG(ERROR)<<"Line for infinity E: "<<energy<<" Pos: "<<equipotential_position<<" x: "<<x;
-      }
-      std::vector<Position<Frame>> positions;
-      for (auto const& [s, dof] : lines.back()) {
-        positions.push_back(dof.position());
       }
 
-      // Figure out whether the equipotential introduces new delineations.
-      std::set<WellIterator> enclosed_wells;
-      for (auto it = wells.begin(); it != wells.end(); ++it) {
-        std::int64_t const winding_number =
-            WindingNumber(plane, it->position, positions);
-        if (winding_number > 0) {
-LOG(ERROR)<<"Enclosed: "<<it->position<<" r: "<<it->radius;
-          enclosed_wells.insert(it);
+      for (auto& candidate_line : candidate_lines) {
+        bool has_created_delineation = false;
+        std::vector<Position<Frame>> positions;
+        for (auto const& [s, dof] : candidate_line) {
+          positions.push_back(dof.position());
         }
-      }
-      for (int j = 0; j < peaks.size(); ++j) {
-        bool const peak_j_enclosed =
-            WindingNumber(plane, peaks[j], positions) > 0;
-LOG(ERROR)<<"Enclosed peak #"<<j<<": "<<peak_j_enclosed;
-        peak_delineations[j].delineated_from_infinity |= peak_j_enclosed;
-        for (auto it = peak_delineations[j].indistinct_wells.begin();
-             it != peak_delineations[j].indistinct_wells.end();) {
-          if (enclosed_wells.contains(*it) != peak_j_enclosed) {
-LOG(ERROR)<<"Delinated from peak #"<<j<<
-" well: "<<(*it)->position<<" r: "<<
-(*it)->radius;
-            it = peak_delineations[j].indistinct_wells.erase(it);
-          } else {
-            ++it;
+
+        // Figure out whether the equipotential introduces new delineations.
+
+        // Determine if the candidate line encloses wells.
+        std::set<WellIterator> enclosed_wells;
+        for (auto it = wells.begin(); it != wells.end(); ++it) {
+          std::int64_t const winding_number =
+              WindingNumber(plane, it->position, positions);
+          if (winding_number > 0) {
+  LOG(ERROR)<<"Enclosed: "<<it->position<<" r: "<<it->radius;
+            enclosed_wells.insert(it);
           }
         }
-      }
-      if (expect_delineation_from_infinity &&
-          !peak_delineations[j].delineated_from_infinity) {
-        peak_delineations[j].delineated_from_infinity = true;
+
+        // Determine if the candidate line encloses a peak.  If it encloses a
+        // well but not a peak or vice-versa, the two are now delineated.
+        for (int j = 0; j < peaks.size(); ++j) {
+          bool const peak_j_enclosed =
+              WindingNumber(plane, peaks[j], positions) > 0;
+  LOG(ERROR)<<"Enclosed peak #"<<j<<": "<<peak_j_enclosed;
+          peak_delineations[j].delineated_from_infinity |= peak_j_enclosed;
+          for (auto it = peak_delineations[j].indistinct_wells.begin();
+               it != peak_delineations[j].indistinct_wells.end();) {
+            if (enclosed_wells.contains(*it) != peak_j_enclosed) {
+  LOG(ERROR)<<"Delinated from peak #"<<j<<
+  " well: "<<(*it)->position<<" r: "<<
+  (*it)->radius;
+              it = peak_delineations[j].indistinct_wells.erase(it);
+              has_created_delineation = true;
+            } else {
+              ++it;
+            }
+          }
+        }
+
+        // Determine if our peak is now delineated from infinity.
+        if (expect_delineation_from_infinity &&
+            !peak_delineations[i].delineated_from_infinity) {
+          peak_delineations[i].delineated_from_infinity = true;
+          has_created_delineation = true;
+        }
+
+        // If the candidate line has not created a delineation, we drop it.  It
+        // is topologically equivalent to a previous line that has created some
+        // delineation(s), and is at the same energy, so we expect it to be
+        // indistinguishable form that previous line.
+        if (has_created_delineation) {
+  LOG(ERROR)<<"Keepit";
+          lines.push_back(std::move(candidate_line));
+        }
       }
     }
   }
