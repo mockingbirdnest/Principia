@@ -172,39 +172,79 @@ LOG(ERROR)<<"["<<a<<", "<<b<<"]";
   Value f_a = f(a);
   Value f_b = f(b);
 
-  bool has_zero_at_extremity = false;
-  if (f_a == zero || f_b == zero) {
-    has_zero_at_extremity = true;
-  } else if (auto const sign_f_a = Sign(f_a), sign_f_b = Sign(f_b);
-             sign_f_a == sign_f_b) {
-    // The function alternates, there must be a zero.  Use `Brent` to find it.
-    auto const c = Brent(f, a, b);
-    LOG(ERROR) << "Zero " << c;
-    zeroes.insert(c);
-    if (a == c || b == c) {
-      has_zero_at_extremity = true;
-    } else {
-      LOG(ERROR) << "Recurse " << d++;
-      zeroes_above = DoubleBrent(f, c, b, eps);
-      zeroes_below = DoubleBrent(f, a, c, eps);
-      LOG(ERROR) << "Done " << --d;
-    }
-  } else {
-    // The function has the same sign at the extremities of the interval.  We
-    // can still have a zero if there is an extremum (a minimum if f is positive
-    // at the extremities, a maximum if it is negative).  Use `Brent` to find
-    // an extremum and recurse if needed.
-    if (sign_f_a.is_positive()) {
-      auto const minimum = Brent(f, a, b, std::less<>());
-      LOG(ERROR) << "Min " << minimum;
-      if (minimum >= a + eps && minimum <= b - eps) {
-        LOG(ERROR) << "Recurse " << d++;
-        zeroes_above = DoubleBrent(f, minimum, b, eps);
-        zeroes_below = DoubleBrent(f, a, minimum, eps);
-        LOG(ERROR) << "Done " << --d;
+  // The case of a zero at a bound will be handled below.  It can arise because
+  // the search for a zero returns a bound, even though the function is not
+  // exactly zero there.
+  bool has_zero_at_bound = false;
+
+  if (f_a == zero) {
+    zeroes.insert(a);
+    has_zero_at_bound = true;
+  }
+  if (f_b == zero) {
+    zeroes.insert(b);
+    has_zero_at_bound = true;
+  }
+
+  if (!has_zero_at_bound) {
+    if (auto const sign_f_a = Sign(f_a), sign_f_b = Sign(f_b);
+        sign_f_a == sign_f_b) {
+      // The function has the same sign at both bounds of the interval.  We can
+      // still have a zero if there is an extremum (a minimum if f is positive
+      // at the bounds, a maximum if it is negative).  Use `Brent` to find an
+      // extremum and recurse if needed.
+      if (sign_f_a.is_positive()) {
+        auto const minimum = Brent(f, a, b, std::less<>());
+        LOG(ERROR) << "Min " << minimum;
+        if (minimum >= a + eps && minimum <= b - eps) {
+          LOG(ERROR) << "Recurse " << d++;
+          zeroes_above = DoubleBrent(f, minimum, b, eps);
+          zeroes_below = DoubleBrent(f, a, minimum, eps);
+          LOG(ERROR) << "Done " << --d;
+        } else {
+          return {};
+        }
       } else {
-        return {};
+        auto const maximum = Brent(f, a, b, std::greater<>());
+        LOG(ERROR) << "Max " << maximum;
+        if (maximum >= a + eps && maximum <= b - eps) {
+          LOG(ERROR) << "Recurse " << d++;
+          zeroes_above = DoubleBrent(f, maximum, b, eps);
+          zeroes_below = DoubleBrent(f, a, maximum, eps);
+          LOG(ERROR) << "Done " << --d;
+        } else {
+          return {};
+        }
       }
+    } else {
+      // The function alternates, there must be a zero.  Use `Brent` to find it.
+      auto const c = Brent(f, a, b);
+      LOG(ERROR) << "Zero " << c;
+      zeroes.insert(c);
+      if (a == c || b == c) {
+        // The zero is not quite zero, but it's at a bound.
+        has_zero_at_bound = true;
+      } else {
+        LOG(ERROR) << "Recurse " << d++;
+        zeroes_above = DoubleBrent(f, c, b, eps);
+        zeroes_below = DoubleBrent(f, a, c, eps);
+        LOG(ERROR) << "Done " << --d;
+      }
+    }
+  }
+
+  if (has_zero_at_bound) {
+    // If there is a zero at one bound, there may still be more zeroes if
+    // there is an extremum.  Note that here we must look for both a minumum and
+    // a maximum.  We use `Brent` to find an extremum and recurse as soon as one
+    // is found.
+    auto const minimum = Brent(f, a, b, std::less<>());
+    LOG(ERROR) << "Min " << minimum;
+    if (minimum >= a + eps && minimum <= b - eps) {
+      LOG(ERROR) << "Recurse " << d++;
+      zeroes_above = DoubleBrent(f, minimum, b, eps);
+      zeroes_below = DoubleBrent(f, a, minimum, eps);
+      LOG(ERROR) << "Done " << --d;
     } else {
       auto const maximum = Brent(f, a, b, std::greater<>());
       LOG(ERROR) << "Max " << maximum;
@@ -213,126 +253,13 @@ LOG(ERROR)<<"["<<a<<", "<<b<<"]";
         zeroes_above = DoubleBrent(f, maximum, b, eps);
         zeroes_below = DoubleBrent(f, a, maximum, eps);
         LOG(ERROR) << "Done " << --d;
-      } else {
-        return {};
       }
     }
   }
 
-  if (has_zero_at_extremity) {
-    // If there is a zero at one extremity, there may still be more zeroes if
-    // there is an extremum.  Note that here we must look for both a minumum and
-    // a maximum.  We use `Brent` to find an extremum and recurse as soon as one
-    // is found.
-    auto const minimum = Brent(f, a, b, std::less<>());
-LOG(ERROR)<<"Min "<<minimum;
-    if (minimum >= a + eps && minimum <= b - eps) {
-LOG(ERROR)<<"Recurse "<<d++;
-      zeroes_above = DoubleBrent(f, minimum, b, eps);
-      zeroes_below = DoubleBrent(f, a, minimum, eps);
-LOG(ERROR)<<"Done "<<--d;
-    } else {
-      auto const maximum = Brent(f, a, b, std::greater<>());
-LOG(ERROR)<<"Max "<<maximum;
-      if (maximum >= a + eps && maximum <= b - eps) {
-LOG(ERROR)<<"Recurse "<<d++;
-        zeroes_above = DoubleBrent(f, maximum, b, eps);
-        zeroes_below = DoubleBrent(f, a, maximum, eps);
-LOG(ERROR)<<"Done "<<--d;
-      }
-    }
-    if (f_a == zero) {
-      zeroes.insert(a);
-    }
-    if (f_b == zero) {
-      zeroes.insert(b);
-    }
-    return zeroes;
-  }
   std::merge(zeroes_above.begin(), zeroes_above.end(),
               zeroes_below.begin(), zeroes_below.end(),
               std::inserter(zeroes, zeroes.end()));
-  return zeroes;
-
-
-  if (f_a == zero || f_b == zero) {
-    // If there is a zero at one extremity, there may still be more zeroes if
-    // there is an extremum.  Note that here we must look for both a minumum and
-    // a maximum.  We use `Brent` to find an extremum and recurse as soon as one
-    // is found.
-    auto const minimum = Brent(f, a, b, std::less<>());
-LOG(ERROR)<<"Min "<<minimum;
-    if (minimum >= a + eps && minimum <= b - eps) {
-LOG(ERROR)<<"Recurse "<<d++;
-      zeroes_above = DoubleBrent(f, minimum, b, eps);
-      zeroes_below = DoubleBrent(f, a, minimum, eps);
-LOG(ERROR)<<"Done "<<--d;
-    } else {
-      auto const maximum = Brent(f, a, b, std::greater<>());
-LOG(ERROR)<<"Max "<<maximum;
-      if (maximum >= a + eps && maximum <= b - eps) {
-LOG(ERROR)<<"Recurse "<<d++;
-        zeroes_above = DoubleBrent(f, maximum, b, eps);
-        zeroes_below = DoubleBrent(f, a, maximum, eps);
-LOG(ERROR)<<"Done "<<--d;
-      }
-    }
-    std::merge(zeroes_above.begin(), zeroes_above.end(),
-               zeroes_below.begin(), zeroes_below.end(),
-               std::inserter(zeroes, zeroes.end()));
-    if (f_a == zero) {
-      zeroes.insert(a);
-    }
-    if (f_b == zero) {
-      zeroes.insert(b);
-    }
-    return zeroes;
-  }
-
-  if (auto const sign_f_a = Sign(f_a), sign_f_b = Sign(f_b);
-      sign_f_a == sign_f_b) {
-    // The function has the same sign at the extremities of the interval.  We
-    // can still have a zero if there is an extremum (a minimum if f is positive
-    // at the extremities, a maximum if it is negative).  Use `Brent` to find
-    // an extremum and recurse if needed.
-    if (sign_f_a.is_positive()) {
-      auto const minimum = Brent(f, a, b, std::less<>());
-LOG(ERROR)<<"Min "<<minimum;
-      if (minimum >= a + eps && minimum <= b - eps) {
-LOG(ERROR)<<"Recurse "<<d++;
-        zeroes_above = DoubleBrent(f, minimum, b, eps);
-        zeroes_below = DoubleBrent(f, a, minimum, eps);
-LOG(ERROR)<<"Done "<<--d;
-      } else {
-        return {};
-      }
-    } else {
-      auto const maximum = Brent(f, a, b, std::greater<>());
-LOG(ERROR)<<"Max "<<maximum;
-      if (maximum >= a + eps && maximum <= b - eps) {
-LOG(ERROR)<<"Recurse "<<d++;
-        zeroes_above = DoubleBrent(f, maximum, b, eps);
-        zeroes_below = DoubleBrent(f, a, maximum, eps);
-LOG(ERROR)<<"Done "<<--d;
-      } else {
-        return {};
-      }
-    }
-  } else {
-    // The function alternates, there must be a zero.  Use `Brent` to find it.
-    auto const c = Brent(f, a, b);
-LOG(ERROR)<<"Zero "<< c;
-    zeroes.insert(c);
-    if (a != c && b != c) {
-LOG(ERROR)<<"Recurse "<<d++;
-      zeroes_above = DoubleBrent(f, c, b, eps);
-      zeroes_below = DoubleBrent(f, a, c, eps);
-LOG(ERROR)<<"Done "<<--d;
-    }
-  }
-  std::merge(zeroes_above.begin(), zeroes_above.end(),
-             zeroes_below.begin(), zeroes_below.end(),
-             std::inserter(zeroes, zeroes.end()));
   return zeroes;
 }
 
