@@ -17,6 +17,8 @@
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/renderer.hpp"
+#include "mathematica/logger.hpp"
+#include "mathematica/mathematica.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -36,6 +38,8 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_renderer;
+using namespace principia::mathematica::_logger;
+using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -390,12 +394,16 @@ void __cdecl principia__PlanetariumPlotEquipotential(
   CHECK_NOTNULL(planetarium);
   *vertex_count = 0;
 
+  Logger logger(TEMP_DIR / "planetarium_plot_equipotential.wl");
+
   auto const& equipotentials =
       *CHECK_NOTNULL(plugin->geometric_potential_plotter().equipotentials());
   CHECK_GE(index, 0);
   CHECK_LT(index, equipotentials.lines.size());
   DiscreteTrajectory<Navigation> const& equipotential =
       equipotentials.lines[index];
+  //logger.Set(
+  //    absl::StrCat("equip[", index, "]"), equipotential, ExpressInSIUnits);
 
   planetarium->PlotMethod3(
       equipotential,

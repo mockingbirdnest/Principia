@@ -127,23 +127,31 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     }
   }
 
+LOG(ERROR)<<"Energy: "<<energy;
+
   Lines lines;
   for (int i = 0; i < peaks.size(); ++i) {
     auto const& delineation = peak_delineations[i];
     Position<Frame> const& peak = peaks[i];
+LOG(ERROR)<<"Peak #"<<i<< ": "<<peak;
 
     // Ignore `peak` if it is below `energy`.
     if (reference_frame_->GeometricPotential(t, peak) < energy) {
+LOG(ERROR)<<"Peak is low";
       continue;
     }
 
     while (!delineation.indistinct_wells.empty() ||
            !delineation.delineated_from_infinity) {
+LOG(ERROR)<<"Wells: " << delineation.indistinct_wells.size()<<" Inf: "<<
+delineation.delineated_from_infinity;
       std::optional<WellIterator> expected_delineated_well;
       bool expect_delineation_from_infinity = false;
       if (!delineation.indistinct_wells.empty()) {
         // Try to delineate `peak` from the first of its `indistinct_wells`.
         expected_delineated_well = *delineation.indistinct_wells.begin();
+LOG(ERROR)<<"Expected deli: "<<(*expected_delineated_well)->position<<" r: "<<
+(*expected_delineated_well)->radius;
         Well const well = **expected_delineated_well;
         Length const r = (peak - well.position).Norm();
         if (reference_frame_->GeometricPotential(
@@ -175,6 +183,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         Position<Frame> const equipotential_position =
             Barycentre({peak, well.position}, {x, r - x});
         lines.push_back(ComputeLine(plane, t, equipotential_position));
+LOG(ERROR)<<"Line for indistinct well E: "<<energy<<" Pos: "<<equipotential_position<<" x: "<<x;
       } else {
         // Try to delineate `peak` from the well at infinity; this works as for
         // an actual well, but instead of picking the point on the edge of the
@@ -200,6 +209,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         Position<Frame> const equipotential_position =
             Barycentre({peak, far_away}, {x, 1 - x});
         lines.push_back(ComputeLine(plane, t, equipotential_position));
+LOG(ERROR)<<"Line for infinity E: "<<energy<<" Pos: "<<equipotential_position<<" x: "<<x;
       }
       std::vector<Position<Frame>> positions;
       for (auto const& [s, dof] : lines.back()) {
@@ -212,16 +222,21 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         std::int64_t const winding_number =
             WindingNumber(plane, it->position, positions);
         if (winding_number > 0) {
+LOG(ERROR)<<"Enclosed: "<<it->position<<" r: "<<it->radius;
           enclosed_wells.insert(it);
         }
       }
       for (int j = 0; j < peaks.size(); ++j) {
         bool const peak_j_enclosed =
             WindingNumber(plane, peaks[j], positions) > 0;
+LOG(ERROR)<<"Enclosed peak #"<<j<<": "<<peak_j_enclosed;
         peak_delineations[j].delineated_from_infinity |= peak_j_enclosed;
         for (auto it = peak_delineations[j].indistinct_wells.begin();
              it != peak_delineations[j].indistinct_wells.end();) {
           if (enclosed_wells.contains(*it) != peak_j_enclosed) {
+LOG(ERROR)<<"Delinated from peak #"<<j<<
+" well: "<<(*it)->position<<" r: "<<
+(*it)->radius;
             it = peak_delineations[j].indistinct_wells.erase(it);
           } else {
             ++it;
