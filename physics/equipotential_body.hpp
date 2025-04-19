@@ -139,11 +139,11 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
 
     while (!delineation.indistinct_wells.empty() ||
            !delineation.delineated_from_infinity) {
-      // We find points at `energy` that on the straight line between a peak and
-      // a well.  There may be many such points, and some of them may lie on the
-      // same equipotential.  The candidate lines are the equipotentials going
-      // through these points.  Lines that are topologically equivalent will
-      // be pruned.
+      // We find points at `energy` that are on the straight line between a peak
+      // and a well.  There may be many such points, and some of them may lie on
+      // the same equipotential.  The candidate lines are the equipotentials
+      // going through these points.  Lines that are topologically equivalent
+      // will be pruned.
       Lines candidate_lines;
 
       std::optional<WellIterator> expected_delineated_well;

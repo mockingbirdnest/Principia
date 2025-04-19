@@ -167,25 +167,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   protected override string Title => "Principia";
 
-  public static int curve_index;
-
   protected override void RenderWindowContents(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-
-      UnityEngine.GUILayout.Label(
-          L10N.CacheFormat("Curve index:"));
-      string text = UnityEngine.GUILayout.TextField(
-          curve_index.FormatN(0),
-          GUILayoutWidth(3));
-      if (int.TryParse(text,
-                          System.Globalization.NumberStyles.Any,
-                          Culture.culture,
-                          out int candidate)) {
-        if (candidate >= 0 && candidate < 100) {
-          curve_index = candidate;
-        }
-      }
-
       if (!adapter_.PluginRunning()) {
         UnityEngine.GUILayout.Label(
             text : L10N.CacheFormat("#Principia_MainWindow_PluginNotStarted"),
