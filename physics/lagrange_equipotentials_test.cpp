@@ -181,9 +181,6 @@ TEST_F(LagrangeEquipotentialsTest,
   std::vector<std::vector<Position<World>>> trajectory_positions(
       trajectories.size());
   for (int j = 0; j < number_of_days; ++j) {
-if (j != 9) {
-  continue;
-}
     LOG(ERROR) << "Day #" << j;
     t = t0_ + j * Day;
     CHECK_OK(ephemeris_->Prolong(t));
@@ -214,8 +211,6 @@ if (j != 9) {
     std::vector<SpecificEnergy> energies;
     std::vector<std::vector<std::vector<Position<World>>>> equipotentials_at_t;
     for (auto const& [energy, lines] : equipotentials->lines) {
-      LOG(ERROR) << "Count: " << lines.size() << " E: " << energy;
-      CHECK_LE(lines.size(), 3) << j << " " << energy;
       // We don't expect more than 3 equipotentials for a given energy in this
       // system: one circling the Moon, one circling the Earth outside the Moon
       // orbit and one circling the Earth inside the Moon orbit.  This is

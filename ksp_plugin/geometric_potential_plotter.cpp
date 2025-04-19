@@ -69,7 +69,6 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   if (result.ok()) {
     next_equipotentials_ = {{}, parameters};
     for (auto& [energy, lines] : result->lines) {
-LOG(ERROR)<<"Index: "<<next_equipotentials_->lines.size()<<" E: "<<energy;
       next_equipotentials_->lines.insert(next_equipotentials_->lines.end(),
                                          std::make_move_iterator(lines.begin()),
                                          std::make_move_iterator(lines.end()));
