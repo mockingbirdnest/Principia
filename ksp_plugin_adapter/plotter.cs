@@ -23,6 +23,9 @@ class Plotter {
     var colour = adapter_.plotting_frame_selector_.Primary()
         .orbitDriver?.Renderer?.orbitColor ?? XKCDColors.SunshineYellow;
     for (int i = 0; i < number_of_equipotentials; ++i) {
+      if (i != MainWindow.curve_index && MainWindow.curve_index != 99) {
+        continue;
+      }
       planetarium.PlanetariumPlotEquipotential(
           Plugin,
           i,
