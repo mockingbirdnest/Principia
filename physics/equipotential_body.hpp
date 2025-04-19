@@ -242,18 +242,10 @@ LOG(ERROR)<<"Delinated from peak #"<<j<<
             ++it;
           }
         }
-        if (j == i) {
-          if (expected_delineated_well.has_value() &&
-              peak_delineations[i].indistinct_wells.contains(
-                  *expected_delineated_well)) {
-            peak_delineations[i].indistinct_wells.erase(
-                *expected_delineated_well);
-          }
-          if (expect_delineation_from_infinity &&
-              !peak_delineations[i].delineated_from_infinity) {
-            peak_delineations[i].delineated_from_infinity = true;
-          }
-        }
+      }
+      if (expect_delineation_from_infinity &&
+          !peak_delineations[j].delineated_from_infinity) {
+        peak_delineations[j].delineated_from_infinity = true;
       }
     }
   }
