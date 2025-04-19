@@ -157,7 +157,6 @@ absl::btree_set<Argument> DoubleBrent(Function f,
                                       Argument const& lower_bound,
                                       Argument const& upper_bound,
                                       double const eps) {
-  static int d = 0;
   using Value = decltype(f(lower_bound));
   Value const zero{};
 
@@ -167,7 +166,6 @@ absl::btree_set<Argument> DoubleBrent(Function f,
 
   Argument a = lower_bound;
   Argument b = upper_bound;
-LOG(ERROR)<<"["<<a<<", "<<b<<"]";
 
   Value f_a = f(a);
   Value f_b = f(b);
@@ -195,23 +193,17 @@ LOG(ERROR)<<"["<<a<<", "<<b<<"]";
       // extremum and recurse if needed.
       if (sign_f_a.is_positive()) {
         auto const minimum = Brent(f, a, b, std::less<>());
-        LOG(ERROR) << "Min " << minimum;
         if (minimum >= a + eps && minimum <= b - eps) {
-          LOG(ERROR) << "Recurse " << d++;
           zeroes_above = DoubleBrent(f, minimum, b, eps);
           zeroes_below = DoubleBrent(f, a, minimum, eps);
-          LOG(ERROR) << "Done " << --d;
         } else {
           return {};
         }
       } else {
         auto const maximum = Brent(f, a, b, std::greater<>());
-        LOG(ERROR) << "Max " << maximum;
         if (maximum >= a + eps && maximum <= b - eps) {
-          LOG(ERROR) << "Recurse " << d++;
           zeroes_above = DoubleBrent(f, maximum, b, eps);
           zeroes_below = DoubleBrent(f, a, maximum, eps);
-          LOG(ERROR) << "Done " << --d;
         } else {
           return {};
         }
@@ -219,16 +211,13 @@ LOG(ERROR)<<"["<<a<<", "<<b<<"]";
     } else {
       // The function alternates, there must be a zero.  Use `Brent` to find it.
       auto const c = Brent(f, a, b);
-      LOG(ERROR) << "Zero " << c;
       zeroes.insert(c);
       if (a == c || b == c) {
         // The zero is not quite zero, but it's at a bound.
         has_zero_at_bound = true;
       } else {
-        LOG(ERROR) << "Recurse " << d++;
         zeroes_above = DoubleBrent(f, c, b, eps);
         zeroes_below = DoubleBrent(f, a, c, eps);
-        LOG(ERROR) << "Done " << --d;
       }
     }
   }
@@ -239,20 +228,14 @@ LOG(ERROR)<<"["<<a<<", "<<b<<"]";
     // a maximum.  We use `Brent` to find an extremum and recurse as soon as one
     // is found.
     auto const minimum = Brent(f, a, b, std::less<>());
-    LOG(ERROR) << "Min " << minimum;
     if (minimum >= a + eps && minimum <= b - eps) {
-      LOG(ERROR) << "Recurse " << d++;
       zeroes_above = DoubleBrent(f, minimum, b, eps);
       zeroes_below = DoubleBrent(f, a, minimum, eps);
-      LOG(ERROR) << "Done " << --d;
     } else {
       auto const maximum = Brent(f, a, b, std::greater<>());
-      LOG(ERROR) << "Max " << maximum;
       if (maximum >= a + eps && maximum <= b - eps) {
-        LOG(ERROR) << "Recurse " << d++;
         zeroes_above = DoubleBrent(f, maximum, b, eps);
         zeroes_below = DoubleBrent(f, a, maximum, eps);
-        LOG(ERROR) << "Done " << --d;
       }
     }
   }
