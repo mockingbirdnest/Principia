@@ -250,7 +250,11 @@ LOG(ERROR)<<"Expected deli: "<<(*expected_delineated_well)->position<<" r: "<<
           bool const peak_j_enclosed =
               WindingNumber(plane, peaks[j], positions) > 0;
   LOG(ERROR)<<"Enclosed peak #"<<j<<": "<<peak_j_enclosed;
-          peak_delineations[j].delineated_from_infinity |= peak_j_enclosed;
+          if (!peak_delineations[j].delineated_from_infinity &&
+              peak_j_enclosed) {
+            peak_delineations[j].delineated_from_infinity = true;
+            has_created_delineation = true;
+          }
           for (auto it = peak_delineations[j].indistinct_wells.begin();
                it != peak_delineations[j].indistinct_wells.end();) {
             if (enclosed_wells.contains(*it) != peak_j_enclosed) {
@@ -266,6 +270,8 @@ LOG(ERROR)<<"Expected deli: "<<(*expected_delineated_well)->position<<" r: "<<
         }
 
         // Determine if our peak is now delineated from infinity.
+        LOG(ERROR)<<"Exp inf: "<<expect_delineation_from_infinity
+<< " deli. inf.: #"<<i<<" "<<peak_delineations[i].delineated_from_infinity;
         if (expect_delineation_from_infinity &&
             !peak_delineations[i].delineated_from_infinity) {
           peak_delineations[i].delineated_from_infinity = true;
