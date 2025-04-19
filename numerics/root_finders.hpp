@@ -40,10 +40,11 @@ Argument Brent(Function f,
 // Alternatively applies Brent’s procedure `zero`  and Brent’s procedure
 // `localmin` (both from [Bre73]) to find all the zeroes over the interval by
 // separating them using the extrema.
-template<typename Argument, typename Function, typename Compare>
+template<typename Argument, typename Function>
 absl::btree_set<Argument> DoubleBrent(Function f,
                                       Argument const& lower_bound,
-                                      Argument const& upper_bound);
+                                      Argument const& upper_bound,
+                                      double eps);
 
 // Performs a golden-section search to find a local extremum of `f` between
 // `lower_bound` and `upper_bound`.
@@ -87,6 +88,7 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
 
 using internal::Bisect;
 using internal::Brent;
+using internal::DoubleBrent;
 using internal::GoldenSectionSearch;
 using internal::SolveQuadraticEquation;
 

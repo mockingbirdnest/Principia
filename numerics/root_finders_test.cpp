@@ -216,6 +216,26 @@ TEST_F(RootFindersTest, RootNear0) {
   EXPECT_THAT(evaluations, Eq(10));
 }
 
+TEST_F(RootFindersTest, ManyRoots) {
+  int evaluations;
+  auto const f = [&evaluations](double const x) {
+    ++evaluations;
+    return Sin(x * Radian);
+  };
+  evaluations = 0;
+  EXPECT_THAT(DoubleBrent(f, 1.0, 30.0, 0.01),
+              ElementsAre(AlmostEquals(π, 0),
+                          AlmostEquals(2 * π, 0),
+                          AlmostEquals(3 * π, 0),
+                          AlmostEquals(4 * π, 0),
+                          AlmostEquals(5 * π, 0),
+                          AlmostEquals(6 * π, 0),
+                          AlmostEquals(7 * π, 0),
+                          AlmostEquals(8 * π, 0),
+                          AlmostEquals(9 * π, 0)));
+  EXPECT_THAT(evaluations, Eq(1078));
+}
+
 TEST_F(RootFindersTest, RootAt0) {
   int evaluations;
   auto id = [&evaluations](double const x) {
