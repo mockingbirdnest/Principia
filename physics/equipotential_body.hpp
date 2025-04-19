@@ -141,6 +141,10 @@ LOG(ERROR)<<"Peak is low";
       continue;
     }
 
+    //TODO(phl)comment
+    absl::btree_set<Length> xs;
+    absl::btree_set<double> ys;
+
     while (!delineation.indistinct_wells.empty() ||
            !delineation.delineated_from_infinity) {
 LOG(ERROR)<<"Wells: " << delineation.indistinct_wells.size()<<" Inf: "<<
@@ -170,16 +174,22 @@ LOG(ERROR)<<"Expected deli: "<<(*expected_delineated_well)->position<<" r: "<<
               *expected_delineated_well);
           continue;
         }
+
         // Look for a point on the equipotential along the line between the peak
         // and the edge of the well.
-        Length const x = Brent(
-            [&](Length const& x) {
-              return reference_frame_->GeometricPotential(
-                         t, Barycentre({peak, well.position}, {x, r - x})) -
-                     energy;
-            },
-            well.radius,
-            r);
+        //TODO(phl)comment
+        if (xs.empty()) {
+          xs = DoubleBrent(
+              [&](Length const& x) {
+                return reference_frame_->GeometricPotential(
+                           t, Barycentre({peak, well.position}, {x, r - x})) -
+                       energy;
+              },
+              well.radius,
+              r);
+        }
+        CHECK(!xs.empty());
+        Length const x = xs.extract(xs.begin()).value();
         Position<Frame> const equipotential_position =
             Barycentre({peak, well.position}, {x, r - x});
         lines.push_back(ComputeLine(plane, t, equipotential_position));
@@ -198,16 +208,20 @@ LOG(ERROR)<<"Line for indistinct well E: "<<energy<<" Pos: "<<equipotential_posi
           peak_delineations[i].delineated_from_infinity = true;
           continue;
         }
-        double const x = Brent(
-            [&](double const& x) {
-              return reference_frame_->GeometricPotential(
-                         t, Barycentre({peak, far_away}, {x, 1 - x})) -
-                     energy;
-            },
-            0.0,
-            1.0);
+        if (ys.empty()) {
+          ys = DoubleBrent(
+              [&](double const& x) {
+                return reference_frame_->GeometricPotential(
+                           t, Barycentre({peak, far_away}, {y, 1 - y})) -
+                       energy;
+              },
+              0.0,
+              1.0);
+        }
+        CHECK(!ys.empty());
+        double const y = ys.extract(ys.begin()).value();
         Position<Frame> const equipotential_position =
-            Barycentre({peak, far_away}, {x, 1 - x});
+            Barycentre({peak, far_away}, {y, 1 - y});
         lines.push_back(ComputeLine(plane, t, equipotential_position));
 LOG(ERROR)<<"Line for infinity E: "<<energy<<" Pos: "<<equipotential_position<<" x: "<<x;
       }
