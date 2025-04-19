@@ -4,6 +4,7 @@
 #include <limits>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "base/array.hpp"
 #include "numerics/scale_b.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -35,6 +36,14 @@ template<typename Argument, typename Function>
 Argument Brent(Function f,
                Argument const& lower_bound,
                Argument const& upper_bound);
+
+// Alternatively applies Brent’s procedure `zero`  and Brent’s procedure
+// `localmin` (both from [Bre73]) to find all the zeroes over the interval by
+// separating them using the extrema.
+template<typename Argument, typename Function, typename Compare>
+absl::btree_set<Argument> DoubleBrent(Function f,
+                                      Argument const& lower_bound,
+                                      Argument const& upper_bound);
 
 // Performs a golden-section search to find a local extremum of `f` between
 // `lower_bound` and `upper_bound`.
