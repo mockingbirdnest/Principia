@@ -164,8 +164,11 @@ absl::btree_set<Argument> DoubleBrent(Function f,
   absl::btree_set<Argument> zeroes_above;
   absl::btree_set<Argument> zeroes_below;
 
-  Argument a = lower_bound;
-  Argument b = upper_bound;
+  Argument const a = lower_bound;
+  Argument const b = upper_bound;
+
+  Argument const a_effective = a * (1 + eps);
+  Argument const b_effective = b * (1 - eps);
 
   Value f_a = f(a);
   Value f_b = f(b);
@@ -193,7 +196,7 @@ absl::btree_set<Argument> DoubleBrent(Function f,
       // extremum and recurse if needed.
       if (sign_f_a.is_positive()) {
         auto const minimum = Brent(f, a, b, std::less<>());
-        if (minimum >= a + eps && minimum <= b - eps) {
+        if (minimum >= a_effective && minimum <= b_effective) {
           zeroes_above = DoubleBrent(f, minimum, b, eps);
           zeroes_below = DoubleBrent(f, a, minimum, eps);
         } else {
@@ -201,7 +204,7 @@ absl::btree_set<Argument> DoubleBrent(Function f,
         }
       } else {
         auto const maximum = Brent(f, a, b, std::greater<>());
-        if (maximum >= a + eps && maximum <= b - eps) {
+        if (maximum >= a_effective && maximum <= b_effective) {
           zeroes_above = DoubleBrent(f, maximum, b, eps);
           zeroes_below = DoubleBrent(f, a, maximum, eps);
         } else {
@@ -228,12 +231,12 @@ absl::btree_set<Argument> DoubleBrent(Function f,
     // a maximum.  We use `Brent` to find an extremum and recurse as soon as one
     // is found.
     auto const minimum = Brent(f, a, b, std::less<>());
-    if (minimum >= a + eps && minimum <= b - eps) {
+    if (minimum >= a_effective && minimum <= b_effective) {
       zeroes_above = DoubleBrent(f, minimum, b, eps);
       zeroes_below = DoubleBrent(f, a, minimum, eps);
     } else {
       auto const maximum = Brent(f, a, b, std::greater<>());
-      if (maximum >= a + eps && maximum <= b - eps) {
+      if (maximum >= a_effective && maximum <= b_effective) {
         zeroes_above = DoubleBrent(f, maximum, b, eps);
         zeroes_below = DoubleBrent(f, a, maximum, eps);
       }
