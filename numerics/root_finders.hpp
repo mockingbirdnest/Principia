@@ -37,11 +37,15 @@ Argument Brent(Function f,
                Argument const& lower_bound,
                Argument const& upper_bound);
 
-// Alternatively applies Brent’s procedure `zero`  and Brent’s procedure
+// Alternatively applies Brent’s procedure `zero` and Brent’s procedure
 // `localmin` (both from [Bre73]) to find all the zeroes over the interval by
 // separating them using the extrema.  `eps` must be significantly larger than
 // the default `eps` passed to `localmin`.  A value of `eps` that's too small
-// will cause the algorithm to loop forever.
+// will cause the algorithm to loop forever because calls to `localmin` with
+// different bounds (around the same location) may return slightly different
+// values for the extremum, and confuse the separation.  The default value was
+// chosen experimentally: large enough to avoid that problem, and small enough
+// to properly separate the zeroes.
 template<typename Argument, typename Function>
 absl::btree_set<Argument> DoubleBrent(
     Function f,

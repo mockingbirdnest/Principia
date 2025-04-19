@@ -224,7 +224,7 @@ absl::btree_set<Argument> DoubleBrent(Function f,
 
   if (has_zero_at_bound) {
     // If there is a zero at one bound, there may still be more zeroes if
-    // there is an extremum.  Note that here we must look for both a minumum and
+    // there is an extremum.  Note that here we must look for both a minimum and
     // a maximum.  We use `Brent` to find an extremum and recurse as soon as one
     // is found.
     auto const minimum = Brent(f, a, b, std::less<>());
@@ -241,8 +241,8 @@ absl::btree_set<Argument> DoubleBrent(Function f,
   }
 
   std::merge(zeroes_above.begin(), zeroes_above.end(),
-              zeroes_below.begin(), zeroes_below.end(),
-              std::inserter(zeroes, zeroes.end()));
+             zeroes_below.begin(), zeroes_below.end(),
+             std::inserter(zeroes, zeroes.end()));
   return zeroes;
 }
 
