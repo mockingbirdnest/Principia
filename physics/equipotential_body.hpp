@@ -217,8 +217,9 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         }
       }
 
+      bool has_performed_expected_delineation = false;
       for (auto& candidate_line : candidate_lines) {
-        bool has_created_delineation = false;
+        bool candidate_has_created_delineation = false;
         std::vector<Position<Frame>> positions;
         for (auto const& [s, dof] : candidate_line) {
           positions.push_back(dof.position());
@@ -235,39 +236,59 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         }
 
         // Determine if the candidate line encloses some peaks.  If it encloses
-        // a well but not a peak or vice-versa, the two are now delineated.
+        // a well (including the well at infinity) but not a peak or vice-versa,
+        // the two are now delineated.  Also determine if we have effectively
+        // achieved the delineation that we wanted to do in this pass.
         for (int j = 0; j < peaks.size(); ++j) {
           bool const peak_j_enclosed =
               WindingNumber(plane, peaks[j], positions) > 0;
           if (!peak_delineations[j].delineated_from_infinity &&
               peak_j_enclosed) {
             peak_delineations[j].delineated_from_infinity = true;
-            has_created_delineation = true;
+            candidate_has_created_delineation = true;
+            if (expect_delineation_from_infinity && i == j) {
+              has_performed_expected_delineation = true;
+            }
           }
           for (auto it = peak_delineations[j].indistinct_wells.begin();
                it != peak_delineations[j].indistinct_wells.end();) {
             if (enclosed_wells.contains(*it) != peak_j_enclosed) {
               it = peak_delineations[j].indistinct_wells.erase(it);
-              has_created_delineation = true;
+              candidate_has_created_delineation = true;
+              if (expected_delineated_well.has_value() &&
+                  *it == *expected_delineated_well) {
+                has_performed_expected_delineation = true;
+              }
             } else {
               ++it;
             }
           }
         }
 
-        // Determine if our peak is now delineated from infinity.
-        if (expect_delineation_from_infinity &&
-            !peak_delineations[i].delineated_from_infinity) {
-          peak_delineations[i].delineated_from_infinity = true;
-          has_created_delineation = true;
-        }
-
         // If the candidate line has not created a delineation, we drop it.  It
         // is topologically equivalent to a previous line that has created some
         // delineation(s), and is at the same energy, so we expect it to be
         // indistinguishable from that previous line.
-        if (has_created_delineation) {
+        if (candidate_has_created_delineation) {
           lines.push_back(std::move(candidate_line));
+          has_performed_expected_delineation = true;
+        }
+      }
+
+      // It's possible that we didn't perform the delineation that we were
+      // trying to do in the current iteration of the loop.  For instance, if
+      // the peak is L₄ or L₅, and the energy given by the caller is the one
+      // used for L₄/L₅ separation, the integrator may exit early and produce a
+      // tiny line that doesn't enclose the peak (we have seen a line with a
+      // single point).  In that case, give up on delineation for this well and
+      // proceed with the next one, it's better than looping forever.
+      if (!has_performed_expected_delineation) {
+        if (expected_delineated_well.has_value()) {
+          peak_delineations[i].indistinct_wells.erase(
+              *expected_delineated_well);
+        }
+        if (expect_delineation_from_infinity) {
+          peak_delineations[i].delineated_from_infinity = true;
         }
       }
     }
