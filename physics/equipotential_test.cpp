@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "absl/strings/str_cat.h"
-#include "astronomy/stabilize_ksp.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
@@ -20,7 +19,6 @@
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
@@ -28,9 +26,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
-#include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -38,7 +34,6 @@
 namespace principia {
 namespace physics {
 
-using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
@@ -50,7 +45,6 @@ using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
@@ -59,9 +53,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_reference_frame;
-using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
@@ -274,107 +266,6 @@ TEST_F(EquipotentialTest, BodyCentredBodyDirection_EquidistantPoints) {
       });
 }
 #endif
-
-TEST_F(EquipotentialTest, KSPL₄L₅) {
-  using KSP = Frame<struct KSPTag, Inertial>;
-  using RotatingPulsating = Frame<struct RotatingPulsatingTag, Arbitrary>;
-
-  constexpr Length box_side = 3 * Metre;
-  constexpr Length characteristic_length = 1 * Nano(Metre);
-  constexpr Length length_integration_tolerance = 10 * Femto(Metre);
-  constexpr std::int64_t max_steps = 10'000;
-
-  SolarSystem<KSP> solar_system(
-      SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
-      SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
-  StabilizeKSP(solar_system);
-
-  auto const ephemeris = solar_system.MakeEphemeris(
-      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
-                               /*geopotential_tolerance*/ 0x1.0p-24},
-      Ephemeris<KSP>::FixedStepParameters(
-          SymplecticRungeKuttaNyströmIntegrator<
-              BlanesMoan2002SRKN14A,
-              Ephemeris<KSP>::NewtonianMotionEquation>(),
-          /*step=*/35 * Minute));
-
-  auto const eve = solar_system.massive_body(*ephemeris, "Eve");
-  auto const gilly = solar_system.massive_body(*ephemeris, "Gilly");
-  auto const kerbin = solar_system.massive_body(*ephemeris, "Kerbin");
-  auto const minmus = solar_system.massive_body(*ephemeris, "Minmus");
-  auto const moho = solar_system.massive_body(*ephemeris, "Moho");
-  auto const mun = solar_system.massive_body(*ephemeris, "Mun");
-  auto const sun = solar_system.massive_body(*ephemeris, "Sun");
-  auto const reference_frame(
-      RotatingPulsatingReferenceFrame<KSP, RotatingPulsating>(
-          ephemeris.get(), {sun, moho, eve, gilly}, {kerbin, mun, minmus}));
-
-  Equipotential<KSP, RotatingPulsating> const equipotential(
-      {EmbeddedExplicitRungeKuttaIntegrator<
-           DormandPrince1986RK547FC,
-           typename Equipotential<KSP, RotatingPulsating>::ODE>(),
-       max_steps,
-       length_integration_tolerance},
-      &reference_frame,
-      characteristic_length);
-
-  auto const plane = Plane<RotatingPulsating>::OrthogonalTo(
-      Vector<double, RotatingPulsating>({0, 0, 1}));
-  Instant const t = Instant{} + 313.76000000000460 * Second;
-  std::vector<Position<RotatingPulsating>> const peaks = {
-      RotatingPulsating::origin +
-          Displacement<RotatingPulsating>({-0.64802406026529646 * Metre,
-                                           -0.76141434216037418 * Metre,
-                                           0 * Metre}),
-      RotatingPulsating::origin +
-          Displacement<RotatingPulsating>({0.69811857380647024 * Metre,
-                                           -0.71592199338059159 * Metre,
-                                           0 * Metre}),
-      RotatingPulsating::origin +
-          Displacement<RotatingPulsating>({0.50997091222800128 * Metre,
-                                           0.85996006756134868 * Metre,
-                                           0 * Metre}),
-      RotatingPulsating::origin +
-          Displacement<RotatingPulsating>({-0.072379219947440787 * Metre,
-                                           -0.99744151614018683 * Metre,
-                                           0 * Metre}),
-      RotatingPulsating::origin +
-          Displacement<RotatingPulsating>({0.99692132254698529 * Metre,
-                                           0.077369574947032782 * Metre,
-                                           0 * Metre}),
-      RotatingPulsating::origin +
-          Displacement<RotatingPulsating>({-0.68469290995389276 * Metre,
-                                           0.72835422306333097 * Metre,
-                                           0 * Metre}),
-      RotatingPulsating::origin +
-          Displacement<RotatingPulsating>({-0.99958277597033018 * Metre,
-                                           -0.036821342463918334 * Metre,
-                                           0 * Metre}),
-  };
-  std::vector<Equipotential<KSP, RotatingPulsating>::Well> const wells = {
-      {.position =
-           RotatingPulsating::origin +
-           Displacement<RotatingPulsating>({0.99999693050679217 * Metre,
-                                            2.7392069189813769e-19 * Metre,
-                                            -5.2603338992119579e-22 * Metre}),
-       .radius = 0.0034803037593885916 * Metre},
-      {.position =
-           RotatingPulsating::origin +
-           Displacement<RotatingPulsating>({-3.0694932080578120e-06 * Metre,
-                                            -9.5558346840227855e-21 * Metre,
-                                            -5.2603338992261777e-22 * Metre}),
-       .radius = 0.73230345545398934 * Metre}};
-  auto const towards_infinity = [](Position<RotatingPulsating> q) {
-    return RotatingPulsating::origin +
-           Normalize(q - RotatingPulsating::origin) * box_side;
-  };
-  SpecificEnergy const energy =
-      -6.9913162881136685e-13 * si::Unit<SpecificEnergy>;
-
-  CHECK_OK(ephemeris->Prolong(t));
-  auto const lines = equipotential.ComputeLines(
-      plane, t, peaks, wells, towards_infinity, energy);
-}
 
 }  // namespace physics
 }  // namespace principia
