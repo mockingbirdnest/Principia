@@ -164,8 +164,18 @@ absl::btree_set<Argument> DoubleBrent(Function f,
   absl::btree_set<Argument> zeroes_above;
   absl::btree_set<Argument> zeroes_below;
 
-  Argument a = lower_bound;
-  Argument b = upper_bound;
+  Argument const a = lower_bound;
+  Argument const b = upper_bound;
+
+  // The tolerance is essentially a relative error bound on the bounds of the
+  // interval, computed in a way that yields a sensible result if one of the
+  // bounds is zero.  If `Argument` is an affine space, the tolerance is not
+  // position-independent because the underlying algorithms `Brent` and `Brent`
+  // are not.
+  Difference<Argument> const tolerance =
+      eps * std::max(Abs(a - Argument{}), Abs(b - Argument{}));
+  Argument const a_effective = a + tolerance;
+  Argument const b_effective = b - tolerance;
 
   Value f_a = f(a);
   Value f_b = f(b);
@@ -193,7 +203,7 @@ absl::btree_set<Argument> DoubleBrent(Function f,
       // extremum and recurse if needed.
       if (sign_f_a.is_positive()) {
         auto const minimum = Brent(f, a, b, std::less<>());
-        if (minimum >= a + eps && minimum <= b - eps) {
+        if (minimum >= a_effective && minimum <= b_effective) {
           zeroes_above = DoubleBrent(f, minimum, b, eps);
           zeroes_below = DoubleBrent(f, a, minimum, eps);
         } else {
@@ -201,7 +211,7 @@ absl::btree_set<Argument> DoubleBrent(Function f,
         }
       } else {
         auto const maximum = Brent(f, a, b, std::greater<>());
-        if (maximum >= a + eps && maximum <= b - eps) {
+        if (maximum >= a_effective && maximum <= b_effective) {
           zeroes_above = DoubleBrent(f, maximum, b, eps);
           zeroes_below = DoubleBrent(f, a, maximum, eps);
         } else {
@@ -211,11 +221,19 @@ absl::btree_set<Argument> DoubleBrent(Function f,
     } else {
       // The function alternates, there must be a zero.  Use `Brent` to find it.
       auto const c = Brent(f, a, b);
-      zeroes.insert(c);
       if (a == c || b == c) {
         // The zero is not quite zero, but it's at a bound.
+        zeroes.insert(c);
         has_zero_at_bound = true;
       } else {
+        // Note that `c` is *not* inserted into `zeroes` on this path:
+        // 1. If `f(c) = 0` the insertion will be done by the recursive calls
+        //    when checking for a zero at a bound.
+        // 2. If `f(c) ≠ 0`, then, given that `f(a)` and `f(b)` are both
+        //    nonzero, one of the subintervals will have alternate signs for its
+        //    bounds, and a zero search will happen.  It will either return a
+        //    bound (presumably `c`); or it will find a zero in the interior of
+        //    the interval, which will be "more precise" than `c`.
         zeroes_above = DoubleBrent(f, c, b, eps);
         zeroes_below = DoubleBrent(f, a, c, eps);
       }
@@ -228,12 +246,12 @@ absl::btree_set<Argument> DoubleBrent(Function f,
     // a maximum.  We use `Brent` to find an extremum and recurse as soon as one
     // is found.
     auto const minimum = Brent(f, a, b, std::less<>());
-    if (minimum >= a + eps && minimum <= b - eps) {
+    if (minimum >= a_effective && minimum <= b_effective) {
       zeroes_above = DoubleBrent(f, minimum, b, eps);
       zeroes_below = DoubleBrent(f, a, minimum, eps);
     } else {
       auto const maximum = Brent(f, a, b, std::greater<>());
-      if (maximum >= a + eps && maximum <= b - eps) {
+      if (maximum >= a_effective && maximum <= b_effective) {
         zeroes_above = DoubleBrent(f, maximum, b, eps);
         zeroes_below = DoubleBrent(f, a, maximum, eps);
       }
