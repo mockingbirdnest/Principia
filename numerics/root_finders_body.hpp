@@ -216,11 +216,19 @@ absl::btree_set<Argument> DoubleBrent(Function f,
     } else {
       // The function alternates, there must be a zero.  Use `Brent` to find it.
       auto const c = Brent(f, a, b);
-      zeroes.insert(c);
       if (a == c || b == c) {
         // The zero is not quite zero, but it's at a bound.
+        zeroes.insert(c);
         has_zero_at_bound = true;
       } else {
+        // Note that `c` is *not* inserted into `zeroes` on this path:
+        // 1. If `f(c) = 0` the insertion will be done by the recursive calls
+        //    when checking for a zero at a bound.
+        // 2. If `f(c) ≠ 0`, then, given that `f(a)` and `f(b)` are both
+        //    nonzero, one of the subintervals will have alternate signs for its
+        //    bounds, and a zero search will happen.  It will either return a
+        //    bound (presumably `c`); or it will find a zero in the interior of
+        //    the interval, which will be "more precise" than `c`.
         zeroes_above = DoubleBrent(f, c, b, eps);
         zeroes_below = DoubleBrent(f, a, c, eps);
       }
