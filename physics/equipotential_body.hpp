@@ -217,8 +217,9 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         }
       }
 
+      bool has_created_delineation = false;
       for (auto& candidate_line : candidate_lines) {
-        bool has_created_delineation = false;
+        bool candidate_has_created_delineation = false;
         std::vector<Position<Frame>> positions;
         for (auto const& [s, dof] : candidate_line) {
           positions.push_back(dof.position());
@@ -242,13 +243,13 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
           if (!peak_delineations[j].delineated_from_infinity &&
               peak_j_enclosed) {
             peak_delineations[j].delineated_from_infinity = true;
-            has_created_delineation = true;
+            candidate_has_created_delineation = true;
           }
           for (auto it = peak_delineations[j].indistinct_wells.begin();
                it != peak_delineations[j].indistinct_wells.end();) {
             if (enclosed_wells.contains(*it) != peak_j_enclosed) {
               it = peak_delineations[j].indistinct_wells.erase(it);
-              has_created_delineation = true;
+              candidate_has_created_delineation = true;
             } else {
               ++it;
             }
@@ -259,16 +260,28 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
         if (expect_delineation_from_infinity &&
             !peak_delineations[i].delineated_from_infinity) {
           peak_delineations[i].delineated_from_infinity = true;
-          has_created_delineation = true;
+          candidate_has_created_delineation = true;
         }
 
         // If the candidate line has not created a delineation, we drop it.  It
         // is topologically equivalent to a previous line that has created some
         // delineation(s), and is at the same energy, so we expect it to be
         // indistinguishable from that previous line.
-        if (has_created_delineation) {
+        if (candidate_has_created_delineation) {
           lines.push_back(std::move(candidate_line));
+          has_created_delineation = true;
         }
+      }
+
+      // It's possible that we didn't create a single delineation.  For
+      // instance, if the peak is L₄ or L₅, and the energy given by the caller
+      // is the one used for L₄/L₅ separation, the integrator may exit early and
+      // produce a tiny line that doesn't enclose the peak (we have seen a line
+      // with a single point).  In that case, give up on delineation and proceed
+      // with the next peak, it's better than looping forever.
+      if (!has_created_delineation) {
+        peak_delineations[i].indistinct_wells.clear();
+        peak_delineations[i].delineated_from_infinity = true;
       }
     }
   }
