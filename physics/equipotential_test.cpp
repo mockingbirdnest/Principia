@@ -298,11 +298,16 @@ TEST_F(EquipotentialTest, KSPL₄L₅) {
               Ephemeris<KSP>::NewtonianMotionEquation>(),
           /*step=*/35 * Minute));
 
+  auto const eve = solar_system.massive_body(*ephemeris, "Eve");
+  auto const gilly = solar_system.massive_body(*ephemeris, "Gilly");
   auto const kerbin = solar_system.massive_body(*ephemeris, "Kerbin");
+  auto const minmus = solar_system.massive_body(*ephemeris, "Minmus");
+  auto const moho = solar_system.massive_body(*ephemeris, "Moho");
+  auto const mun = solar_system.massive_body(*ephemeris, "Mun");
   auto const sun = solar_system.massive_body(*ephemeris, "Sun");
   auto const reference_frame(
       RotatingPulsatingReferenceFrame<KSP, RotatingPulsating>(
-          ephemeris.get(), sun, kerbin));
+          ephemeris.get(), {sun, moho, eve, gilly}, {kerbin, mun, minmus}));
 
   Equipotential<KSP, RotatingPulsating> const equipotential(
       {EmbeddedExplicitRungeKuttaIntegrator<
