@@ -7,6 +7,10 @@ on:
   pull_request_target:
     branches: [ '*' ]
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 env:
   PRINCIPIA_MSVC: .
   PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
@@ -30,9 +34,6 @@ jobs:
   build:
     if: github.repository == 'mockingbirdnest/Principia'
     runs-on: ${{ matrix.configuration }}
-    concurrency:
-      group: ${{ matrix.configuration }}
-      cancel-in-progress: true
     strategy:
       matrix:
         configuration: [Debug, Release]
