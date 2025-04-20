@@ -167,10 +167,15 @@ absl::btree_set<Argument> DoubleBrent(Function f,
   Argument const a = lower_bound;
   Argument const b = upper_bound;
 
-  // These computations ensure a reasonable margin even if one of the bounds is
-  // zero.
-  Argument const a_effective = a + eps * std::max(Abs(a), Abs(b));
-  Argument const b_effective = b - eps * std::max(Abs(a), Abs(b));
+  // The tolerance is essentially a relative error bound on the bounds of the
+  // interval, computed in a way that yields a sensible result if one of the
+  // bounds is zero.  If `Argument` is an affine space, the tolerance is not
+  // position-independent because the underlying algorithms `Brent` and `Brent`
+  // are not.
+  Difference<Argument> const tolerance =
+      eps * std::max(Abs(a - Argument{}), Abs(b - Argument{}));
+  Argument const a_effective = a + tolerance;
+  Argument const b_effective = b - tolerance;
 
   Value f_a = f(a);
   Value f_b = f(b);
