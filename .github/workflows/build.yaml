@@ -30,6 +30,9 @@ jobs:
   build:
     if: github.repository == 'mockingbirdnest/Principia'
     runs-on: ${{ matrix.configuration }}
+    concurrency:
+      group: ${{ matrix.configuration }}
+      cancel-in-progress: true
     strategy:
       matrix:
         configuration: [Debug, Release]
