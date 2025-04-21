@@ -43,11 +43,15 @@ class LagrangeEquipotentials {
     bool show_l245_level = true;
   };
 
+  using LinesBySpecificEnergy =
+      std::map<SpecificEnergy,
+               typename Equipotential<Inertial, RotatingPulsating>::Lines>;
+  using PositionsBySpecificEnergy =
+      std::map<SpecificEnergy, Position<RotatingPulsating>>;
+
   struct Equipotentials {
-    std::map<SpecificEnergy,
-             typename Equipotential<Inertial, RotatingPulsating>::Lines>
-        lines;
-    std::map<SpecificEnergy, Position<RotatingPulsating>> maxima;
+    LinesBySpecificEnergy lines;
+    PositionsBySpecificEnergy maxima;
   };
 
   absl::StatusOr<Equipotentials> ComputeLines(Parameters const& parameters);
