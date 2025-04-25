@@ -30,6 +30,7 @@ using Similarity =
 
 }  // namespace internal
 
+using internal::DoubleConformalMap;
 using internal::RigidTransformation;
 using internal::Similarity;
 
