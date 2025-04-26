@@ -78,7 +78,7 @@ internal static class GLLines {
         MainWindow.angular_resolution_in_arc_min.value *
         2 *
         Math.PI /
-        (60 * 60 * 60),
+        (360 * 60),
         scaled_space_origin: (XYZ)ScaledSpace.ScaledToLocalSpace(
             Vector3d.zero));
   }
