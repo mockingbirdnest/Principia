@@ -58,16 +58,15 @@ inline absl::Status ComputeHarmonicOscillatorDerivatives1D(
   return absl::OkStatus();
 }
 
-inline absl::Status ComputeKeplerAcceleration(
+template<typename Frame>
+absl::Status ComputeKeplerAcceleration(
     Instant const& t,
-    std::vector<Length> const& q,
-    std::vector<Acceleration>& result,
+    std::vector<Position<Frame>> const& q,
+    std::vector<Vector<Acceleration, Frame>>& result,
     int* evaluations) {
-  auto const r² = q[0] * q[0] + q[1] * q[1];
-  auto const minus_μ_over_r³ =
-      -si::Unit<GravitationalParameter> * Sqrt(r²) / (r² * r²);
-  result[0] = q[0] * minus_μ_over_r³;
-  result[1] = q[1] * minus_μ_over_r³;
+  auto const r = q[0] - Frame::origin;
+  auto const r³ = Pow<3>(r.Norm());
+  result[0] = -r * si::Unit<GravitationalParameter> / r³;
   if (evaluations != nullptr) {
     ++*evaluations;
   }

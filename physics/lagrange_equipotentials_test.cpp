@@ -211,6 +211,12 @@ TEST_F(LagrangeEquipotentialsTest,
     std::vector<SpecificEnergy> energies;
     std::vector<std::vector<std::vector<Position<World>>>> equipotentials_at_t;
     for (auto const& [energy, lines] : equipotentials->lines) {
+      // We don't expect more than 3 equipotentials for a given energy in this
+      // system: one circling the Moon, one circling the Earth outside the Moon
+      // orbit and one circling the Earth inside the Moon orbit.  This is
+      // effectively testing the delineation in `ComputeLines`.
+      EXPECT_THAT(lines.size(), Le(3))
+          << "Day #" << j << ", energy: " << energy;
       energies.push_back(energy);
       std::vector<std::vector<Position<World>>>& equipotentials_at_energy =
           equipotentials_at_t.emplace_back();
@@ -222,6 +228,7 @@ TEST_F(LagrangeEquipotentialsTest,
                       AllOf(Gt(0.736 * Metre), Lt(1.322 * Metre)));
           equipotential.push_back(dof.position());
         }
+        EXPECT_THAT(equipotential.size(), AllOf(Ge(591), Le(3759)));
       }
     }
     logger.Append("energies", energies, ExpressIn(Metre, Second));

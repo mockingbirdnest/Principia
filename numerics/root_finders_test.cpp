@@ -216,6 +216,44 @@ TEST_F(RootFindersTest, RootNear0) {
   EXPECT_THAT(evaluations, Eq(10));
 }
 
+TEST_F(RootFindersTest, ManyRoots) {
+  Instant const t0;
+  int evaluations;
+  auto const f = [&evaluations, t0](Instant const t) {
+    ++evaluations;
+    return Sin((t - t0) * Radian / Second);
+  };
+  evaluations = 0;
+  EXPECT_THAT(DoubleBrent(f, t0 + 1.0 * Second, t0 + 30.0 * Second),
+              ElementsAre(AlmostEquals(t0 + π * Second, 0),
+                          AlmostEquals(t0 + 2 * π * Second, 0),
+                          AlmostEquals(t0 + 3 * π * Second, 0),
+                          AlmostEquals(t0 + 4 * π * Second, 0),
+                          AlmostEquals(t0 + 5 * π * Second, 1),
+                          AlmostEquals(t0 + 6 * π * Second, 0),
+                          AlmostEquals(t0 + 7 * π * Second, 0),
+                          AlmostEquals(t0 + 8 * π * Second, 0),
+                          AlmostEquals(t0 + 9 * π * Second, 0)));
+  EXPECT_THAT(evaluations, Eq(1180));
+  evaluations = 0;
+  EXPECT_THAT(DoubleBrent(f, t0 + π * Second, t0 + 10.0 * Second),
+              ElementsAre(AlmostEquals(t0 + π * Second, 0),
+                          AlmostEquals(t0 + 2 * π * Second, 0),
+                          AlmostEquals(t0 + 3 * π * Second, 0)));
+  EXPECT_THAT(evaluations, Eq(332));
+  evaluations = 0;
+  EXPECT_THAT(DoubleBrent(f,
+                          t0 + π * Second,
+                          t0 + std::nextafter(2 * π, 10) * Second),
+              ElementsAre(AlmostEquals(t0 + π * Second, 0),
+                          AlmostEquals(t0 + 2 * π * Second, 1)));
+  EXPECT_THAT(evaluations, Eq(158));
+  evaluations = 0;
+  EXPECT_THAT(DoubleBrent(f, t0 + π * Second, t0 + 3 * π / 2 * Second),
+              ElementsAre(AlmostEquals(t0 + π * Second, 0)));
+  EXPECT_THAT(evaluations, Eq(76));
+}
+
 TEST_F(RootFindersTest, RootAt0) {
   int evaluations;
   auto id = [&evaluations](double const x) {

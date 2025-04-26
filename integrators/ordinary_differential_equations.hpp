@@ -35,7 +35,8 @@ namespace termination_condition {
 constexpr absl::StatusCode Done = absl::StatusCode::kOk;
 // The integration may be retried with the same arguments and progress will
 // happen.
-constexpr absl::StatusCode ReachedMaximalStepCount = absl::StatusCode::kAborted;
+constexpr absl::StatusCode ReachedMaximalStepCount =
+    absl::StatusCode::kResourceExhausted;
 // A singularity.
 constexpr absl::StatusCode VanishingStepSize =
     absl::StatusCode::kFailedPrecondition;

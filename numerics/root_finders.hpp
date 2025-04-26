@@ -4,6 +4,7 @@
 #include <limits>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "base/array.hpp"
 #include "numerics/scale_b.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -35,6 +36,23 @@ template<typename Argument, typename Function>
 Argument Brent(Function f,
                Argument const& lower_bound,
                Argument const& upper_bound);
+
+// Alternatively applies Brent’s procedure `zero` and Brent’s procedure
+// `localmin` (both from [Bre73]) to find all the zeroes over the interval by
+// separating them using the extrema.  `eps` must be significantly larger than
+// the default `eps` passed to `localmin`.  A value of `eps` that's too small
+// will cause the algorithm to loop forever because calls to `localmin` with
+// different bounds (around the same location) may return slightly different
+// values for the extremum, and confuse the separation.  The default value was
+// chosen experimentally: large enough to avoid that problem, and small enough
+// to properly separate the zeroes.
+template<typename Argument, typename Function>
+absl::btree_set<Argument> DoubleBrent(
+    Function f,
+    Argument const& lower_bound,
+    Argument const& upper_bound,
+    double eps = 1000 *
+                 Sqrt(ScaleB(0.5, 1 - std::numeric_limits<double>::digits)));
 
 // Performs a golden-section search to find a local extremum of `f` between
 // `lower_bound` and `upper_bound`.
@@ -78,6 +96,7 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
 
 using internal::Bisect;
 using internal::Brent;
+using internal::DoubleBrent;
 using internal::GoldenSectionSearch;
 using internal::SolveQuadraticEquation;
 

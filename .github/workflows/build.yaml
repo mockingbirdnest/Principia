@@ -7,6 +7,10 @@ on:
   pull_request_target:
     branches: [ '*' ]
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 env:
   PRINCIPIA_MSVC: .
   PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
@@ -160,13 +164,12 @@ jobs:
         configuration: ${{ matrix.configuration }}
 
   stop:
-    if: github.repository == 'mockingbirdnest/Principia'
+    if: ${{ always() && github.repository == 'mockingbirdnest/Principia' }}
     runs-on: windows-latest
     needs: build
+    timeout-minutes: 60
     steps:
     - name: Stop runners
-      if: always()
-      timeout-minutes: 60
       uses: mockingbirdnest/actions/windows/stop_runners@main
       with:
         client_id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
