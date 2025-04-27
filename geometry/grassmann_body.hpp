@@ -337,21 +337,16 @@ Vector<Product<LScalar, RScalar>, Frame> operator*(
       Cross(left.coordinates(), right.coordinates()));
 }
 
-// Implementation from [Kah06], §12 "Mangled Angles", p. 47.
 template<typename LScalar, typename RScalar, typename Frame>
 Angle AngleBetween(Vector<LScalar, Frame> const& v,
                    Vector<RScalar, Frame> const& w) {
-  auto const v_norm_w = v * w.Norm();
-  auto const w_norm_v = w * v.Norm();
-  return 2 * ArcTan((v_norm_w - w_norm_v).Norm(), (v_norm_w + w_norm_v).Norm());
+  return AngleBetween(v.coordinates(), w.coordinates());
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
 Angle AngleBetween(Bivector<LScalar, Frame> const& v,
                    Bivector<RScalar, Frame> const& w) {
-  auto const v_norm_w = v * w.Norm();
-  auto const w_norm_v = w * v.Norm();
-  return 2 * ArcTan((v_norm_w - w_norm_v).Norm(), (v_norm_w + w_norm_v).Norm());
+  return AngleBetween(v.coordinates(), w.coordinates());
 }
 
 template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
