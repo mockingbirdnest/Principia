@@ -818,7 +818,7 @@ class FlightPlanner : VesselSupervisedWindowRenderer {
                               actual_final_time -
                               plugin.FlightPlanGetInitialTime(vessel_guid)))
                     : "";
-      if (status_.is_aborted()) {
+      if (status_.is_aborted() || status_.is_resource_exhausted()) {
         status_message = L10N.CacheFormat(
             "#Principia_FlightPlan_StatusMessage_MaxSteps",
             time_out_message);

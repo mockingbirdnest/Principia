@@ -29,6 +29,10 @@ internal partial class Status {
     return error == 11;
   }
 
+  public bool is_resource_exhausted() {
+    return error == 8;
+  }
+
   public bool is_unavailable() {
     return error == 14;
   }
