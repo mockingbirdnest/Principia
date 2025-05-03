@@ -107,7 +107,7 @@ class EquipotentialTest : public ::testing::Test {
         ComputePositionInWorld(t, reference_frame, body2);
     auto const body2_body1 = body1_position - body2_position;
 
-    auto const& binormal = plane.UnitBinormals().front();
+    auto const binormal = plane.UnitBinormals().front();
     Rotation<World, World> const rot_l4(-60 * Degree, binormal);
     auto const body2_l4 = rot_l4(body2_body1);
     auto const l4 = body2_l4 + body2_position;

@@ -660,8 +660,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
   // This mutex is not contended as it is only held exclusively when we have
   // found a solution.
   absl::Mutex lock;
-  std::optional<absl::StatusOr<cpp_rational>> status_or_solution
-      GUARDED_BY(lock);
+  std::optional<absl::StatusOr<cpp_rational>> status_or_solution;
 
   auto search_one_slice = [argument_scale,
                            &lock,

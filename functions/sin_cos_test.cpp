@@ -119,7 +119,6 @@ TEST_F(SinCosTest, AccurateTableIndex) {
 
   constexpr std::int64_t table_spacing_bits = 9;
   constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
-  constexpr double table_spacing = 1.0 / table_spacing_reciprocal;
   static const __m128d mantissa_index_bits =
       _mm_castsi128_pd(_mm_cvtsi64_si128(0x0000'0000'0000'01ff));
   std::mt19937_64 random(42);
@@ -143,7 +142,6 @@ TEST_F(SinCosTest, AccurateTableIndex) {
 TEST_F(SinCosTest, ReduceIndex) {
   static constexpr std::int64_t iterations = 100;
 
-  static constexpr std::int64_t π_over_2_zeroes = 18;
   static const __m128d sign_bit =
       _mm_castsi128_pd(_mm_cvtsi64_si128(0x8000'0000'0000'0000));
   static constexpr double mantissa_reduce_shifter =
@@ -156,7 +154,6 @@ TEST_F(SinCosTest, ReduceIndex) {
 
     __m128d const n_128d = _mm_round_sd(
         _mm_setzero_pd(), _mm_set_sd(θ * (2 / π)), _MM_FROUND_RINT);
-    double const n_double = _mm_cvtsd_f64(n_128d);
     std::int64_t const n = _mm_cvtsd_si64(n_128d);
 
     double const abs_θ = std::abs(θ);

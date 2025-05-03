@@ -52,7 +52,7 @@ TEST(PushPullCallback, 4136) {
       int x;
       bool const more = executor->callback().Pull(x);
       if (!more) {
-        auto const result = executor->get();
+        [[maybe_unused]] auto const result = executor->get();
         delete executor;
         break;
       }
