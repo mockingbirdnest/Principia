@@ -581,7 +581,6 @@ Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBody(
     absl::ReaderMutexLock l(&lock_);
     degrees_of_freedom.reserve(bodies_.size());
     for (int b = 0; b < bodies_.size(); ++b) {
-      auto const& current_body = bodies_[b];
       auto const& current_body_trajectory = trajectories_[b];
       degrees_of_freedom.push_back(
           current_body_trajectory->EvaluateDegreesOfFreedomLocked(t));

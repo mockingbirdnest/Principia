@@ -17,7 +17,7 @@ using namespace principia::quantities::_si;
 // A somewhat arbitrary value above which we fail argument reduction.
 // TODO(phl): We *really* need a proper angle reduction.
 double const reduction_threshold =
-    std::numeric_limits<std::int64_t>::max() / 2.0;
+    static_cast<double>(std::numeric_limits<std::int64_t>::max() / 2);
 
 template<>
 inline constexpr Angle one_π<Angle> = π * Radian;

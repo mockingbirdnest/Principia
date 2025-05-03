@@ -445,13 +445,13 @@ TEST_F(PairDeathTest, SerializationError) {
   serialization::Pair message;
   pv_.WriteToMessage(&message);
   EXPECT_DEATH({
-    PP const pp = PP::ReadFromMessage(message);
+    [[maybe_unused]] PP const pp = PP::ReadFromMessage(message);
   }, "has_point");
   EXPECT_DEATH({
-    VP const vp = VP::ReadFromMessage(message);
+    [[maybe_unused]] VP const vp = VP::ReadFromMessage(message);
   }, "has_multivector");
   EXPECT_DEATH({
-    VV const vv = VV::ReadFromMessage(message);
+    [[maybe_unused]] VV const vv = VV::ReadFromMessage(message);
   }, "has_multivector");
 }
 

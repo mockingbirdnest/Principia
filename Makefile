@@ -115,10 +115,11 @@ SHARED_ARGS   := \
 	-fbracket-depth=257                                           \
 	-fexceptions                                                  \
 	-ferror-limit=1000                                            \
-	-ffp-contract=off                                              \
+	-ffp-contract=off                                             \
 	-fno-omit-frame-pointer                                       \
 	-fno-char8_t                                                  \
 	-Wall -Wpedantic                                              \
+	-Wno-c++23-extensions                                         \
 	-Wno-char-subscripts                                          \
 	-Wno-elaborated-enum-class                                    \
 	-Wno-gnu-anonymous-struct                                     \
