@@ -85,8 +85,8 @@ message ConformalMap {
   extend LinearMap {
     optional ConformalMap extension = 1006;
   }
-  oneof scale {  ////Compatibility?
-    double double = 3;
+  oneof scale {
+    double double = 3;  // Added in Lagrange.
     Quantity quantity = 1;
   }
   required Quaternion quaternion = 2;
