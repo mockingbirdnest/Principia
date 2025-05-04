@@ -292,11 +292,30 @@ Quotient<Q2, Exponentiation<Q1, exponent>> ExpressIn<Qs...>::Divide(
   }
 }
 
-template<typename T, typename OptionalExpressIn>
-std::string At(std::string const& name,
-               T const& right,
-               OptionalExpressIn express_in) {
-  return absl::StrCat(name, "@", ToMathematica(right, express_in));
+inline Symbol::Symbol(std::string_view const name) : name_(name) {}
+
+template<typename... Ts>
+  requires(!is_instance_of_v<ExpressIn, tail_t<Ts...>>)
+std::string Symbol::operator[](Ts... ts) {
+  std::vector<std::string> const strings{ToMathematica(ts)...};
+  return absl::StrCat(name_, "[", absl::StrJoin(strings, ", "), "]");
+}
+
+template<typename... Ts>
+  requires is_instance_of_v<ExpressIn, tail_t<Ts...>>
+std::string Symbol::operator[](Ts... ts) {
+  using tail_type = tail_t<Ts...>;
+  auto const& express_in = tail<Ts...>::value(ts...);
+  std::vector<std::string> strings;
+
+  auto const to_mathematica_or_skip = [&express_in, &strings](auto t) {
+    if constexpr (!std::is_same_v<tail_type, decltype(t)>) {
+      strings.push_back(ToMathematica(t, express_in));
+    }
+  };
+
+  (to_mathematica_or_skip(ts), ...);
+  return absl::StrCat(name_, "[", absl::StrJoin(strings, ", "), "]");
 }
 
 template<typename T, typename OptionalExpressIn>

@@ -122,10 +122,27 @@ constexpr auto ExpressInSIUnits = ExpressIn(si::Unit<Length>,
                                             si::Unit<Angle>);
 constexpr struct {} PreserveUnits;
 
-template<typename T, typename OptionalExpressIn = std::nullopt_t>
-std::string At(std::string const& name,
-               T const& right,
-               OptionalExpressIn express_in = std::nullopt);
+class Symbol {
+ public:
+  inline explicit Symbol(std::string_view name);
+
+  template<typename... Ts>
+    requires (!is_instance_of_v<ExpressIn, tail_t<Ts...>>)
+  std::string operator[](Ts... ts);
+
+  template<typename... Ts>
+    requires is_instance_of_v<ExpressIn, tail_t<Ts...>>
+  std::string operator[](Ts... ts);
+
+ private:
+  std::string name_;
+};
+
+static_assert(std::is_same_v<int, tail_t<int>>);
+static_assert(std::is_same_v<int, tail_t<char*, int>>);
+
+static_assert(is_instance_of_v<ExpressIn,
+                              ExpressIn<Length,Mass,Time,Current,Temperature>>);
 
 // Not usable at the first argument of `Set`.  Use `At` instead.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
@@ -343,7 +360,6 @@ std::string RawApply(std::string const& function,
 
 }  // namespace internal
 
-using internal::At;
 using internal::Apply;
 using internal::Evaluate;
 using internal::ExpressIn;
@@ -351,6 +367,7 @@ using internal::ExpressInSIUnits;
 using internal::PreserveUnits;
 using internal::Rule;
 using internal::Set;
+using internal::Symbol;
 using internal::ToMathematica;
 using internal::ToMathematicaBody;
 
