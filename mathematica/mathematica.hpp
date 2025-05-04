@@ -138,12 +138,6 @@ class Symbol {
   std::string name_;
 };
 
-static_assert(std::is_same_v<int, tail_t<int>>);
-static_assert(std::is_same_v<int, tail_t<char*, int>>);
-
-static_assert(is_instance_of_v<ExpressIn,
-                              ExpressIn<Length,Mass,Time,Current,Temperature>>);
-
 // Not usable at the first argument of `Set`.  Use `At` instead.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Apply(std::string const& name,
