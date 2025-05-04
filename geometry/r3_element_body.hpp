@@ -486,6 +486,16 @@ Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
   return left.x * right.x + left.y * right.y + left.z * right.z;
 }
 
+// Implementation from [Kah06], §12 "Mangled Angles", p. 47.
+template<typename LScalar, typename RScalar>
+Angle AngleBetween(R3Element<LScalar> const& left,
+                   R3Element<RScalar> const& right) {
+  auto const left_norm_right = left * right.Norm();
+  auto const right_norm_left = right * left.Norm();
+  return 2 * ArcTan((left_norm_right - right_norm_left).Norm(),
+                    (left_norm_right + right_norm_left).Norm());
+}
+
 inline R3Element<double> BasisVector(int const i) {
   DCHECK_GE(i, 0) << i;
   DCHECK_LT(i, 3) << i;

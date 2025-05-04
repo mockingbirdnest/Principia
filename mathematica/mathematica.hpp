@@ -122,6 +122,23 @@ constexpr auto ExpressInSIUnits = ExpressIn(si::Unit<Length>,
                                             si::Unit<Angle>);
 constexpr struct {} PreserveUnits;
 
+class Symbol {
+ public:
+  inline explicit Symbol(std::string_view name);
+
+  template<typename... Ts>
+    requires(!is_instance_of_v<ExpressIn, tail_t<Ts...>>)
+  std::string operator[](Ts... ts);
+
+  template<typename... Ts>
+    requires is_instance_of_v<ExpressIn, tail_t<Ts...>>
+  std::string operator[](Ts... ts);
+
+ private:
+  std::string name_;
+};
+
+// Not usable at the first argument of `Set`.  Use `Symbol`.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Apply(std::string const& name,
                   T const& right,
@@ -344,6 +361,7 @@ using internal::ExpressInSIUnits;
 using internal::PreserveUnits;
 using internal::Rule;
 using internal::Set;
+using internal::Symbol;
 using internal::ToMathematica;
 using internal::ToMathematicaBody;
 

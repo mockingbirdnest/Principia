@@ -10,6 +10,7 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "astronomy/epoch.hpp"
 #include "base/mod.hpp"
@@ -289,6 +290,32 @@ Quotient<Q2, Exponentiation<Q1, exponent>> ExpressIn<Qs...>::Divide(
   } else {
     return q2 / Pow<exponent>(std::get<Q1>(units_));
   }
+}
+
+inline Symbol::Symbol(std::string_view const name) : name_(name) {}
+
+template<typename... Ts>
+  requires(!is_instance_of_v<ExpressIn, tail_t<Ts...>>)
+std::string Symbol::operator[](Ts... ts) {
+  std::vector<std::string> const strings{ToMathematica(ts)...};
+  return absl::StrCat(name_, "[", absl::StrJoin(strings, ", "), "]");
+}
+
+template<typename... Ts>
+  requires is_instance_of_v<ExpressIn, tail_t<Ts...>>
+std::string Symbol::operator[](Ts... ts) {
+  using tail_type = tail_t<Ts...>;
+  auto const& express_in = tail<Ts...>::value(ts...);
+  std::vector<std::string> strings;
+
+  auto const to_mathematica_or_skip = [&express_in, &strings](auto t) {
+    if constexpr (!std::is_same_v<tail_type, decltype(t)>) {
+      strings.push_back(ToMathematica(t, express_in));
+    }
+  };
+
+  (to_mathematica_or_skip(ts), ...);
+  return absl::StrCat(name_, "[", absl::StrJoin(strings, ", "), "]");
 }
 
 template<typename T, typename OptionalExpressIn>

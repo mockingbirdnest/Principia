@@ -349,6 +349,14 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
 }
 
+TEST_F(MathematicaTest, Symbol) {
+  Symbol s("s");
+  EXPECT_EQ(R"(s[1, "foo", List[]])", (s[1, "foo", std::tuple{}]));
+  EXPECT_EQ(
+      R"(s[1729, List[Times[16^^18000000000000,Power[2,Subtract[1,52]]]]])",
+      (s[1729, std::tuple{3 * Metre}, ExpressInSIUnits]));
+}
+
 TEST_F(MathematicaTest, Rule) {
   EXPECT_EQ("Rule[option," + ToMathematica(3.0) + "]", Rule("option", 3.0));
 }

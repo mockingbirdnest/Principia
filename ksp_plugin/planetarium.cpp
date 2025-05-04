@@ -280,12 +280,8 @@ void Planetarium::PlotMethod3(
   auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
   auto const last_time =
       std::min({last->time, plotting_frame_->t_max(), t_max});
-  PlotMethod3(trajectory,
-              begin_time,
-              last_time,
-              reverse,
-              add_point,
-              max_points);
+  PlotMethod3(
+      trajectory, begin_time, last_time, reverse, add_point, max_points);
 }
 
 std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(

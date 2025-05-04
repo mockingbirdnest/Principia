@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -174,19 +175,56 @@ class PlanetariumTest : public ::testing::Test {
         .WillRepeatedly(Return(Barycentric::origin));
   }
 
-  // It is convenient to represent the lines resulting from plotting as
-  // discrete trajectories, even though they are not really physical, as it
-  // makes it possible to evaluate them at any time.  The velocities are all
-  // null.
-  std::vector<DiscreteTrajectory<Navigation>> ComputePlottedLines(
-      Planetarium::Parameters const& planetarium_parameters) {
+  std::vector<std::unique_ptr<
+      LagrangeEquipotentials<Barycentric, Navigation>::LinesBySpecificEnergy>>
+  ComputeLagrangeEquipotentials() {
     auto const& earth = *solar_system_->massive_body(
         *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
     auto const& moon = *solar_system_->massive_body(
         *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
 
+    std::vector<std::unique_ptr<
+        LagrangeEquipotentials<Barycentric, Navigation>::LinesBySpecificEnergy>>
+        result;
+
     LagrangeEquipotentials<Barycentric, Navigation> lagrange_equipotentials(
         ephemeris_.get());
+
+    // Compute over 30 days.
+    for (int i = 0; i < 30; ++i) {
+      Instant const t = t0_ + i * Day;
+      CHECK_OK(ephemeris_->Prolong(t));
+
+      LagrangeEquipotentials<Barycentric, Navigation>::Parameters const
+          equipotential_parameters{
+              .primaries = {&earth}, .secondaries = {&moon}, .time = t};
+      auto status_or_equipotentials =
+          lagrange_equipotentials.ComputeLines(equipotential_parameters);
+      CHECK_OK(status_or_equipotentials);
+      result.emplace_back(
+          std::make_unique<LagrangeEquipotentials<Barycentric, Navigation>::
+                               LinesBySpecificEnergy>(
+              std::move(status_or_equipotentials.value().lines)));
+    }
+
+    return result;
+  }
+
+  // It is convenient to represent the lines resulting from plotting as
+  // discrete trajectories, even though they are not really physical, as it
+  // makes it possible to evaluate them at any time.  The velocities are all
+  // null.
+  std::vector<DiscreteTrajectory<Navigation>> ComputePlottedLines(
+      std::vector<std::unique_ptr<LagrangeEquipotentials<
+          Barycentric,
+          Navigation>::LinesBySpecificEnergy>> const& lagrange_equipotentials,
+      Planetarium::Parameters const& planetarium_parameters,
+      std::function<void(Planetarium const&,
+                    DiscreteTrajectory<Navigation> const &)> const& plot) {
+    auto const& earth = *solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+    auto const& moon = *solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
 
     auto const plotting_frame(
         RotatingPulsatingReferenceFrame<Barycentric, Navigation>(
@@ -237,24 +275,10 @@ class PlanetariumTest : public ::testing::Test {
       Instant const t = t0_ + i * Day;
       CHECK_OK(ephemeris_->Prolong(t));
 
-      LagrangeEquipotentials<Barycentric, Navigation>::Parameters const
-          equipotential_parameters{
-              .primaries = {&earth}, .secondaries = {&moon}, .time = t};
-      auto const status_or_equipotentials =
-          lagrange_equipotentials.ComputeLines(equipotential_parameters);
-      CHECK_OK(status_or_equipotentials);
-      auto const& equipotentials = status_or_equipotentials.value();
-
-      for (auto const& [_, lines] : equipotentials.lines) {
+      for (auto const& [_, lines] : *lagrange_equipotentials[i]) {
         for (auto const& line : lines) {
           plotted_trajectories.emplace_back();
-          planetarium.PlotMethod3(
-              line,
-              line.front().time,
-              line.back().time,
-              /*reverse=*/false,
-              [](ScaledSpacePoint const&) {},
-              /*max_points=*/std::numeric_limits<int>::max());
+          plot(planetarium, line);
         }
       }
     }
@@ -474,13 +498,29 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
   // Human visual acuity.
-  Angle angular_resolution = 0.4 * ArcMinute;
+  Angle reference_angular_resolution = 0.4 * ArcMinute;
+
+  auto const lagrange_equipotentials = ComputeLagrangeEquipotentials();
+
+  auto const plot_method3 =
+      [](Planetarium const& planetarium,
+         DiscreteTrajectory<Navigation> const& line) {
+        planetarium.PlotMethod3(
+            line,
+            line.front().time,
+            line.back().time,
+            /*reverse=*/false,
+            [](ScaledSpacePoint const&) {},
+            /*max_points=*/std::numeric_limits<int>::max());
+      };
 
   auto const plotted_trajectories_reference = ComputePlottedLines(
+      lagrange_equipotentials,
       Planetarium::Parameters(
           /*sphere_radius_multiplier=*/1.0,
-          angular_resolution,
-          /*field_of_view=*/90 * Degree));
+          reference_angular_resolution,
+          /*field_of_view=*/90 * Degree),
+      plot_method3);
 
   std::int64_t number_of_points_reference = 0;
   for (auto const& plotted_trajectory : plotted_trajectories_reference) {
@@ -490,14 +530,17 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
 
   // Compute plotted lines at progressively worse resolution and their distance
   // to the reference line.
-  for (std::int64_t i = 0; i < 4; ++i) {
-    angular_resolution *= 4;
+  Angle trial_angular_resolution = reference_angular_resolution;
+  for (std::int64_t i = 0; i < 8; ++i) {
+    trial_angular_resolution *= 2;
 
     auto const plotted_trajectories =
-        ComputePlottedLines(Planetarium::Parameters(
-            /*sphere_radius_multiplier=*/1.0,
-            angular_resolution,
-            /*field_of_view=*/90 * Degree));
+        ComputePlottedLines(lagrange_equipotentials,
+                            Planetarium::Parameters(
+                                /*sphere_radius_multiplier=*/1.0,
+                                trial_angular_resolution,
+                                /*field_of_view=*/90 * Degree),
+                            plot_method3);
 
     std::int64_t number_of_points = 0;
     for (auto const& plotted_trajectory : plotted_trajectories) {
@@ -514,25 +557,48 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
 
     switch (i) {
       case 0:
+        // 0.8 arc min.
+        EXPECT_EQ(71897, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.67_(1) * Centi(Metre)));
+        break;
+      case 1:
+        // 1.6 arc min.
         EXPECT_EQ(51570, number_of_points);
         EXPECT_THAT(max_distance, IsNear(0.83_(1) * Centi(Metre)));
         break;
-      case 1:
+      case 2:
+        // 3.2 arc min.
+        EXPECT_EQ(36989, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(1.10_(1) * Centi(Metre)));
+        break;
+      case 3:
+        // 6.4 arc min.
         EXPECT_EQ(26565, number_of_points);
         EXPECT_THAT(max_distance, IsNear(1.48_(1) * Centi(Metre)));
         break;
-      case 2:
+      case 4:
+        // 12.8 arc min.
+        EXPECT_EQ(19172, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(2.07_(1) * Centi(Metre)));
+        break;
+      case 5:
+        // 25.6 arc min.
         EXPECT_EQ(13733, number_of_points);
         EXPECT_THAT(max_distance, IsNear(3.35_(1) * Centi(Metre)));
         break;
-      case 3:
+      case 6:
+        // 51.2 arc min.
+        EXPECT_EQ(9831, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(4.50_(1) * Centi(Metre)));
+        break;
+      case 7:
+        // 102.4 arc min.
         EXPECT_EQ(7117, number_of_points);
         EXPECT_THAT(max_distance, IsNear(7.10_(1) * Centi(Metre)));
         break;
     }
   }
 }
-
 #endif
 
 }  // namespace ksp_plugin

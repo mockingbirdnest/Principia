@@ -465,10 +465,9 @@ class WorkErrorGraphGenerator {
             problem,
             append_state,
             /*tolerance_to_error_ratio=*/
-            [time_step_index, tolerance, this](
-                Time const& current_step_size,
-                SecondOrderODE::State const& state,
-                SecondOrderODE::State::Error const& error) {
+            [tolerance](Time const& current_step_size,
+                        SecondOrderODE::State const& state,
+                        SecondOrderODE::State::Error const& error) {
               return tolerance / error.position_error[0].Norm();
             },
             AdaptiveStepSizeIntegrator<SecondOrderODE>::Parameters{
@@ -516,10 +515,9 @@ class WorkErrorGraphGenerator {
             first_order_problem,
             append_first_order_state,
             /*tolerance_to_error_ratio=*/
-            [time_step_index, tolerance, this](
-                Time const& current_step_size,
-                FirstOrderODE::State const& state,
-                FirstOrderODE::State::Error const& error) {
+            [tolerance](Time const& current_step_size,
+                        FirstOrderODE::State const& state,
+                        FirstOrderODE::State::Error const& error) {
               return tolerance / std::get<0>(error).Norm();
             },
             AdaptiveStepSizeIntegrator<FirstOrderODE>::Parameters{
