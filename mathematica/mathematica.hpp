@@ -127,7 +127,7 @@ class Symbol {
   inline explicit Symbol(std::string_view name);
 
   template<typename... Ts>
-    requires (!is_instance_of_v<ExpressIn, tail_t<Ts...>>)
+    requires(!is_instance_of_v<ExpressIn, tail_t<Ts...>>)
   std::string operator[](Ts... ts);
 
   template<typename... Ts>
@@ -138,7 +138,7 @@ class Symbol {
   std::string name_;
 };
 
-// Not usable at the first argument of `Set`.  Use `At` instead.
+// Not usable at the first argument of `Set`.  Use `Symbol`.
 template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string Apply(std::string const& name,
                   T const& right,
