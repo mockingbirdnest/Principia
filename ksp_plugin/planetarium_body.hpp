@@ -97,7 +97,7 @@ void Planetarium::PlotMethod3(
       // errors are quadratic in time (in other words, two square roots because
       // the squared errors are quartic in time).
       // A safety factor prevents catastrophic retries.
-      Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
+      Δt *= 0.9 * Cbrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
     estimate_tan²_error:
       t = previous_time + Δt;
       if (direction * (t - final_time) > Time{}) {
