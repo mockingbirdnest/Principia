@@ -104,19 +104,23 @@ void Planetarium::PlotMethod3(
         t = final_time;
         Δt = t - previous_time;
       }
-      Position<Navigation> const extrapolated_position =
-          previous_position + previous_velocity * Δt;
       degrees_of_freedom = EvaluateDegreesOfFreedomInNavigation<Frame>(
           *plotting_frame_, trajectory, t);
       position = degrees_of_freedom->position();
+      auto const& velocity = degrees_of_freedom->velocity();
+
+      Position<Navigation> const extrapolated_position1 =
+          previous_position + previous_velocity * Δt / 2;
+      Position<Navigation> const extrapolated_position2 =
+          position - velocity * Δt / 2;
 
       // The quadratic term of the error between the linear interpolation and
       // the actual function is maximized halfway through the segment, so it is
       // 1/2 (Δt/2)² f″(t-Δt) = (1/2 Δt² f″(t-Δt)) / 4; the squared error is
       // thus (1/2 Δt² f″(t-Δt))² / 16.
-      estimated_tan²_error =
-          perspective_.Tan²AngularDistance(extrapolated_position, position) /
-          16;
+      //TODO(phl)Comment
+      estimated_tan²_error = perspective_.Tan²AngularDistance(
+          extrapolated_position1, extrapolated_position2);
     } while (estimated_tan²_error > tan²_angular_resolution);
 
     previous_time = t;
