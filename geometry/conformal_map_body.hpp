@@ -4,6 +4,7 @@
 
 #include "geometry/homothecy.hpp"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/serialization.hpp"
 
 namespace principia {
 namespace geometry {
@@ -12,6 +13,7 @@ namespace internal {
 
 using namespace principia::geometry::_homothecy;
 using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_serialization;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Scalar ConformalMap<Scalar, FromFrame, ToFrame>::scale() const {
@@ -87,7 +89,8 @@ ConformalMap<Scalar, FromFrame, ToFrame>::ReadFromMessage(
 template<typename Scalar, typename FromFrame, typename ToFrame>
 void ConformalMap<Scalar, FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::ConformalMap*> const message) const {
-  scale_.WriteToMessage(message->mutable_scale());
+  DoubleOrQuantitySerializer<Scalar, serialization::ConformalMap>::
+      WriteToMessage(scale_, message);
   quaternion_.WriteToMessage(message->mutable_quaternion());
 }
 
@@ -96,8 +99,10 @@ ConformalMap<Scalar, FromFrame, ToFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::ConformalMap const& message)
   requires serializable<FromFrame> && serializable<ToFrame> {
-  return ConformalMap(Scalar::ReadFromMessage(message.scale()),
-                      Quaternion::ReadFromMessage(message.quaternion()));
+  return ConformalMap(
+      DoubleOrQuantitySerializer<Scalar, serialization::ConformalMap>::
+          ReadFromMessage(message),
+      Quaternion::ReadFromMessage(message.quaternion()));
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>

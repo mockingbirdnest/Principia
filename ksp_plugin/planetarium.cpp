@@ -269,7 +269,6 @@ void Planetarium::PlotMethod3(
     Trajectory<Barycentric> const& trajectory,
     DiscreteTrajectory<Barycentric>::iterator begin,
     DiscreteTrajectory<Barycentric>::iterator end,
-    Instant const& now,
     Instant const& t_max,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
@@ -282,7 +281,7 @@ void Planetarium::PlotMethod3(
   auto const last_time =
       std::min({last->time, plotting_frame_->t_max(), t_max});
   PlotMethod3(
-      trajectory, begin_time, last_time, now, reverse, add_point, max_points);
+      trajectory, begin_time, last_time, reverse, add_point, max_points);
 }
 
 std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(

@@ -53,7 +53,6 @@ void Planetarium::PlotMethod3(
     Trajectory<Frame> const& trajectory,
     Instant const& first_time,
     Instant const& last_time,
-    Instant const& now,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,

@@ -61,10 +61,9 @@ class AnalyticalSeriesTest : public ::testing::Test {
 
   std::string ApplyParameters(std::string const& name) {
     return mathematica::Evaluate(
-        mathematica::Apply(name,
-                           std::tuple{aperiodic_approximation_degree,
-                                      periodic_approximation_degree,
-                                      celestial_}));
+        mathematica::Symbol(name)[aperiodic_approximation_degree,
+                                  periodic_approximation_degree,
+                                  celestial_]);
   }
 
   template<int degree>
