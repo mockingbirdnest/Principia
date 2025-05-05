@@ -498,7 +498,7 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
   // Human visual acuity.
-  Angle reference_angular_resolution = 0.1 * ArcMinute;
+  Angle reference_angular_resolution = 0.08 * ArcMinute;
 
   auto const lagrange_equipotentials = ComputeLagrangeEquipotentials();
 

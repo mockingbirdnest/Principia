@@ -175,7 +175,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                              -1,
                              (x) => x.ToString("0.000"),
                              zero_value: 0.4,
-                             min_value: 0,
+                             min_value: 0.001,
                              max_value: 100);
 
       protected override void RenderWindowContents(int window_id) {

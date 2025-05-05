@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/sign.hpp"
 #include "physics/similar_motion.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -14,6 +15,7 @@ namespace ksp_plugin {
 namespace _planetarium {
 namespace internal {
 
+using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_sign;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_elementary_functions;
@@ -84,8 +86,8 @@ void Planetarium::PlotMethod3(
 
   Instant t;
   double estimated_tan²_error;
-  std::optional<DegreesOfFreedom<Navigation>> degrees_of_freedom;
   Position<Navigation> position;
+  Velocity<Navigation> velocity;
   Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
 
   goto estimate_tan²_error;
@@ -97,22 +99,26 @@ void Planetarium::PlotMethod3(
       // errors are quadratic in time (in other words, two square roots because
       // the squared errors are quartic in time).
       // A safety factor prevents catastrophic retries.
-      Δt *= 0.9 * Cbrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
+      //TODO(phl)Comment
+      Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
     estimate_tan²_error:
       t = previous_time + Δt;
       if (direction * (t - final_time) > Time{}) {
         t = final_time;
         Δt = t - previous_time;
       }
-      degrees_of_freedom = EvaluateDegreesOfFreedomInNavigation<Frame>(
-          *plotting_frame_, trajectory, t);
-      position = degrees_of_freedom->position();
-      auto const& velocity = degrees_of_freedom->velocity();
+      auto const degrees_of_freedom =
+          EvaluateDegreesOfFreedomInNavigation<Frame>(
+              *plotting_frame_, trajectory, t);
+      position = degrees_of_freedom.position();
+      velocity = degrees_of_freedom.velocity();
 
-      Position<Navigation> const extrapolated_position1 =
-          previous_position + previous_velocity * Δt / 2;
-      Position<Navigation> const extrapolated_position2 =
-          position - velocity * Δt / 2;
+      Displacement<Navigation> const sagitta =
+          (previous_velocity - velocity) * Δt / 4;
+      Position<Navigation> const linear_midpoint =
+          Barycentre({previous_position, position});
+      Position<Navigation> const trajectory_midpoint =
+          linear_midpoint + sagitta;
 
       // The quadratic term of the error between the linear interpolation and
       // the actual function is maximized halfway through the segment, so it is
@@ -120,12 +126,12 @@ void Planetarium::PlotMethod3(
       // thus (1/2 Δt² f″(t-Δt))² / 16.
       //TODO(phl)Comment
       estimated_tan²_error = perspective_.Tan²AngularDistance(
-          extrapolated_position1, extrapolated_position2);
+          linear_midpoint, trajectory_midpoint);
     } while (estimated_tan²_error > tan²_angular_resolution);
 
     previous_time = t;
     previous_position = position;
-    previous_velocity = degrees_of_freedom->velocity();
+    previous_velocity = velocity;
 
     add_point(plotting_to_scaled_space_(t, position));
     ++points_added;
