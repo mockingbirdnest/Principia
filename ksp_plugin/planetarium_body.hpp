@@ -87,7 +87,7 @@ void Planetarium::PlotMethod3(
   Instant t;
   double estimated_tan²_error;
   Position<Navigation> position;
-  Velocity<Navigation> velocity;
+  Position<Navigation> midpoint_position;
   Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
 
   goto estimate_tan²_error;
@@ -107,32 +107,50 @@ void Planetarium::PlotMethod3(
         t = final_time;
         Δt = t - previous_time;
       }
+#if 0
+      Position<Navigation> const extrapolated_position =
+          previous_position + previous_velocity * Δt;
       auto const degrees_of_freedom =
           EvaluateDegreesOfFreedomInNavigation<Frame>(
               *plotting_frame_, trajectory, t);
       position = degrees_of_freedom.position();
       velocity = degrees_of_freedom.velocity();
+#else
+      auto const midpoint_degrees_of_freedom =
+          EvaluateDegreesOfFreedomInNavigation<Frame>(
+              *plotting_frame_, trajectory, t - Δt / 2);
+      midpoint_position = midpoint_degrees_of_freedom.position();
 
-      Displacement<Navigation> const sagitta =
-          (previous_velocity - velocity) * Δt / 4;
+      auto const degrees_of_freedom =
+          EvaluateDegreesOfFreedomInNavigation<Frame>(
+              *plotting_frame_, trajectory, t);
+      position = degrees_of_freedom.position();
+
       Position<Navigation> const linear_midpoint =
           Barycentre({previous_position, position});
-      Position<Navigation> const trajectory_midpoint =
-          linear_midpoint + sagitta;
+#endif
 
       // The quadratic term of the error between the linear interpolation and
       // the actual function is maximized halfway through the segment, so it is
       // 1/2 (Δt/2)² f″(t-Δt) = (1/2 Δt² f″(t-Δt)) / 4; the squared error is
       // thus (1/2 Δt² f″(t-Δt))² / 16.
       //TODO(phl)Comment
+#if 0
+      estimated_tan²_error =
+          perspective_.Tan²AngularDistance(extrapolated_position, position) /
+          16;
+#else
+      auto const& trajectory_midpoint = midpoint_position;
       estimated_tan²_error = perspective_.Tan²AngularDistance(
           linear_midpoint, trajectory_midpoint);
+#endif
     } while (estimated_tan²_error > tan²_angular_resolution);
 
     previous_time = t;
     previous_position = position;
-    previous_velocity = velocity;
 
+    add_point(plotting_to_scaled_space_(t - Δt / 2, midpoint_position));
+    ++points_added;
     add_point(plotting_to_scaled_space_(t, position));
     ++points_added;
 
