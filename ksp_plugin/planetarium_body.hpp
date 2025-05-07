@@ -12,6 +12,7 @@
 #include "physics/similar_motion.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -26,6 +27,7 @@ using namespace principia::numerics::_quadrature;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_si;
 
 // A helper function that converts a trajectory expressed in `Frame` into one
 // expressed in `Navigation`, using the given `plotting_frame` if needed for the
@@ -65,8 +67,6 @@ void Planetarium::PlotMethod3(
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,
     Length* const minimal_distance) const {
-  double const tan²_angular_resolution =
-      Pow<2>(parameters_.tan_angular_resolution_);
   auto const final_time = reverse ? first_time : last_time;
   auto previous_time = reverse ? last_time : first_time;
 
@@ -83,8 +83,9 @@ void Planetarium::PlotMethod3(
           *plotting_frame_, trajectory, previous_time);
   Position<Navigation> previous_position =
       initial_degrees_of_freedom.position();
-  Vector<Inverse<Time>, Navigation> previous_projected_velocity =
-      ProperMotion(initial_degrees_of_freedom);
+  Vector<AngularFrequency, Navigation> previous_projected_velocity =
+      ProperMotion(initial_degrees_of_freedom) *
+          Normalize(previous_position - perspective_.camera());
 
   Time Δt = final_time - previous_time;
 
@@ -92,10 +93,9 @@ void Planetarium::PlotMethod3(
   int points_added = 1;
 
   Instant t;
-  double metric;
+  Angle rms_apparent_distance;
   Position<Navigation> position;
-  Vector<Inverse<Time>, Navigation> projected_velocity;
-  Velocity<Navigation> velocity;
+  Vector<AngularFrequency, Navigation> projected_velocity;
   Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
 
   goto estimate_tan²_error;
@@ -108,7 +108,7 @@ void Planetarium::PlotMethod3(
       // the squared errors are quartic in time).
       // A safety factor prevents catastrophic retries.
       //TODO(phl)Comment
-      Δt *= 0.9 * Sqrt(tan²_angular_resolution / metric);
+      Δt *= 0.9 * Sqrt(parameters_.angular_resolution_ / rms_apparent_distance);
     estimate_tan²_error:
       t = previous_time + Δt;
       if (direction * (t - final_time) > Time{}) {
@@ -120,33 +120,37 @@ void Planetarium::PlotMethod3(
           EvaluateDegreesOfFreedomInNavigation<Frame>(
               *plotting_frame_, trajectory, t);
       position = degrees_of_freedom.position();
-      velocity = degrees_of_freedom.velocity();
 
       Position<Navigation> const linear_midpoint =
           Barycentre({previous_position, position});
       Velocity<Navigation> const linear_velocity =
           (position - previous_position) / Δt;
 
-      projected_velocity = ProperMotion(degrees_of_freedom);
+      projected_velocity =
+          ProperMotion(degrees_of_freedom) *
+          Normalize(position - perspective_.camera());
       auto const previous_projected_linear_velocity =
-          ProperMotion({previous_position, linear_velocity});
+          ProperMotion({previous_position, linear_velocity}) *
+          Normalize(previous_position - perspective_.camera());
       auto const projected_linear_velocity =
-          ProperMotion({position, linear_velocity});
+          ProperMotion({position, linear_velocity}) *
+          Normalize(position - perspective_.camera());
 
-      Hermite3<Vector<double, Navigation>, Instant> const error_approximation(
+      Hermite3<Vector<Angle, Navigation>, Instant> const error_approximation(
           {previous_time, t},
-          {Vector<double, Navigation>{}, Vector<double, Navigation>{}},
+          {Vector<Angle, Navigation>{}, Vector<Angle, Navigation>{}},
           {previous_projected_velocity - previous_projected_linear_velocity,
            projected_velocity - projected_linear_velocity});
 
-      metric = Sqrt(GaussLegendre<4>(
-                        [&error_approximation](Instant const& time) {
-                          return error_approximation.Evaluate(time).Norm²();
-                        },
-                        previous_time,
-                        t) /
-                    Δt);
-    } while (metric > tan²_angular_resolution);
+      rms_apparent_distance =
+          Sqrt(GaussLegendre<4>(
+                   [&error_approximation](Instant const& time) {
+                     return error_approximation.Evaluate(time).Norm²();
+                   },
+                   previous_time,
+                   t) /
+               Δt);
+    } while (rms_apparent_distance > parameters_.angular_resolution_);
 
     previous_time = t;
     previous_position = position;
@@ -166,10 +170,10 @@ void Planetarium::PlotMethod3(
   }
 }
 
-inline Vector<Inverse<Time>, Navigation> Planetarium::ProperMotion(
+inline AngularVelocity<Navigation> Planetarium::ProperMotion(
     DegreesOfFreedom<Navigation> const& degrees_of_freedom) const {
   auto const r = degrees_of_freedom.position() - perspective_.camera();
-  return degrees_of_freedom.velocity().OrthogonalizationAgainst(r) / r.Norm();
+  return Wedge(r, degrees_of_freedom.velocity()) / r.Norm²() * Radian;
 }
 
 }  // namespace internal

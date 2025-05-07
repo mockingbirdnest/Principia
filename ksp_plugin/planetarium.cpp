@@ -30,6 +30,7 @@ Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
                                     Angle const& angular_resolution,
                                     Angle const& field_of_view)
     : sphere_radius_multiplier_(sphere_radius_multiplier),
+      angular_resolution_(angular_resolution),
       sin²_angular_resolution_(Pow<2>(Sin(angular_resolution))),
       tan_angular_resolution_(Tan(angular_resolution)),
       tan_field_of_view_(Tan(field_of_view)) {}

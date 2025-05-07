@@ -25,7 +25,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     flight_planner_ = flight_planner;
     orbit_analyser_ = orbit_analyser;
     plotting_frame_selector_ = plotting_frame_selector;
-    angular_resolution_in_arc_min.value = 30.0;
+    angular_resolution_in_arc_min.value = 1.0;
     Show();
   }
 
@@ -174,7 +174,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                              -5,
                              -1,
                              (x) => x.ToString("0.000"),
-                             zero_value: 30.0,
+                             zero_value: 1.0,
                              min_value: 0.001,
                              max_value: 1000);
 

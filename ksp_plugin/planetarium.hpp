@@ -73,6 +73,7 @@ class Planetarium {
 
    private:
     double const sphere_radius_multiplier_;
+    Angle const angular_resolution_;
     double const sin²_angular_resolution_;
     double const tan_angular_resolution_;
     double const tan_field_of_view_;
@@ -165,7 +166,7 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
   //TODO(phl)comment
-  Vector<Inverse<Time>, Navigation> ProperMotion(
+  AngularVelocity<Navigation> ProperMotion(
       DegreesOfFreedom<Navigation> const& degrees_of_freedom) const;
 
   Parameters const parameters_;
