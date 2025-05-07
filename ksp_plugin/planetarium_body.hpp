@@ -5,7 +5,10 @@
 #include <algorithm>
 
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/pair.hpp"
 #include "geometry/sign.hpp"
+#include "numerics/hermite3.hpp"
+#include "numerics/quadrature.hpp"
 #include "physics/similar_motion.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -16,7 +19,10 @@ namespace _planetarium {
 namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_pair;
 using namespace principia::geometry::_sign;
+using namespace principia::numerics::_hermite3;
+using namespace principia::numerics::_quadrature;
 using namespace principia::physics::_similar_motion;
 using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -77,17 +83,21 @@ void Planetarium::PlotMethod3(
           *plotting_frame_, trajectory, previous_time);
   Position<Navigation> previous_position =
       initial_degrees_of_freedom.position();
-  Velocity<Navigation> previous_velocity =
-      initial_degrees_of_freedom.velocity();
+
+  Vector<Inverse<Time>, Navigation> previous_projected_velocity;
+  std::tie(std::ignore, previous_projected_velocity) =
+      SphericalProjection(initial_degrees_of_freedom);
+
   Time Δt = final_time - previous_time;
 
   add_point(plotting_to_scaled_space_(previous_time, previous_position));
   int points_added = 1;
 
   Instant t;
-  double estimated_tan²_error;
+  double metric;
   Position<Navigation> position;
-  Position<Navigation> midpoint_position;
+  Vector<Inverse<Time>, Navigation> projected_velocity;
+  Velocity<Navigation> velocity;
   Square<Length> minimal_squared_distance = Infinity<Square<Length>>;
 
   goto estimate_tan²_error;
@@ -100,57 +110,50 @@ void Planetarium::PlotMethod3(
       // the squared errors are quartic in time).
       // A safety factor prevents catastrophic retries.
       //TODO(phl)Comment
-      Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
+      Δt *= 0.9 * Sqrt(tan²_angular_resolution / metric);
     estimate_tan²_error:
       t = previous_time + Δt;
       if (direction * (t - final_time) > Time{}) {
         t = final_time;
         Δt = t - previous_time;
       }
-#if 0
-      Position<Navigation> const extrapolated_position =
-          previous_position + previous_velocity * Δt;
+
       auto const degrees_of_freedom =
           EvaluateDegreesOfFreedomInNavigation<Frame>(
               *plotting_frame_, trajectory, t);
       position = degrees_of_freedom.position();
       velocity = degrees_of_freedom.velocity();
-#else
-      auto const midpoint_degrees_of_freedom =
-          EvaluateDegreesOfFreedomInNavigation<Frame>(
-              *plotting_frame_, trajectory, t - Δt / 2);
-      midpoint_position = midpoint_degrees_of_freedom.position();
-
-      auto const degrees_of_freedom =
-          EvaluateDegreesOfFreedomInNavigation<Frame>(
-              *plotting_frame_, trajectory, t);
-      position = degrees_of_freedom.position();
 
       Position<Navigation> const linear_midpoint =
           Barycentre({previous_position, position});
-#endif
+      Velocity<Navigation> const linear_velocity =
+          (position - previous_position) / Δt;
 
-      // The quadratic term of the error between the linear interpolation and
-      // the actual function is maximized halfway through the segment, so it is
-      // 1/2 (Δt/2)² f″(t-Δt) = (1/2 Δt² f″(t-Δt)) / 4; the squared error is
-      // thus (1/2 Δt² f″(t-Δt))² / 16.
-      //TODO(phl)Comment
-#if 0
-      estimated_tan²_error =
-          perspective_.Tan²AngularDistance(extrapolated_position, position) /
-          16;
-#else
-      auto const& trajectory_midpoint = midpoint_position;
-      estimated_tan²_error = perspective_.Tan²AngularDistance(
-          linear_midpoint, trajectory_midpoint);
-#endif
-    } while (estimated_tan²_error > tan²_angular_resolution);
+      std::tie(std::ignore, projected_velocity) =
+          SphericalProjection(degrees_of_freedom);
+      auto const& [_1, previous_projected_linear_velocity] =
+          SphericalProjection({previous_position, linear_velocity});
+      auto const& [_2, projected_linear_velocity] =
+          SphericalProjection({position, linear_velocity});
+
+      Hermite3<Vector<double, Navigation>, Instant> const error_approximation(
+          {previous_time, t},
+          {Vector<double, Navigation>{}, Vector<double, Navigation>{}},
+          {previous_projected_velocity - previous_projected_linear_velocity,
+           projected_velocity - projected_linear_velocity});
+
+      metric = GaussLegendre<3>(
+          [&error_approximation](Instant const& time) {
+            return error_approximation.Evaluate(time).Norm();
+          },
+          previous_time,
+          t) / Δt;
+    } while (metric > tan²_angular_resolution);
 
     previous_time = t;
     previous_position = position;
+    previous_projected_velocity = projected_velocity;
 
-    add_point(plotting_to_scaled_space_(t - Δt / 2, midpoint_position));
-    ++points_added;
     add_point(plotting_to_scaled_space_(t, position));
     ++points_added;
 
@@ -163,6 +166,15 @@ void Planetarium::PlotMethod3(
   if (minimal_distance != nullptr) {
     *minimal_distance = Sqrt(minimal_squared_distance);
   }
+}
+
+inline std::pair<Point<Vector<double, Navigation>>,
+                 Vector<Inverse<Time>, Navigation>>
+Planetarium::SphericalProjection(
+    DegreesOfFreedom<Navigation> const& degrees_of_freedom) const {
+  auto const r = degrees_of_freedom.position() - perspective_.camera();
+  return {Point<Vector<double, Navigation>>{} + Normalize(r),
+          degrees_of_freedom.velocity().OrthogonalizationAgainst(r) / r.Norm()};
 }
 
 }  // namespace internal

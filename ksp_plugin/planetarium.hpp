@@ -3,9 +3,11 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
+#include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
 #include "geometry/space.hpp"
@@ -16,6 +18,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/trajectory.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -24,9 +27,11 @@ namespace _planetarium {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
+using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
@@ -37,6 +42,7 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_trajectory;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // Corresponds to a UnityEngine.Vector3 representing a position in KSP’s
@@ -159,6 +165,12 @@ class Planetarium {
       const std::vector<Sphere<Navigation>>& plottable_spheres,
       DiscreteTrajectory<Barycentric>::iterator begin,
       DiscreteTrajectory<Barycentric>::iterator end) const;
+
+  //TODO(phl)comment
+  std::pair<Point<Vector<double, Navigation>>,
+            Vector<Inverse<Time>, Navigation>>
+  SphericalProjection(
+      DegreesOfFreedom<Navigation> const& degrees_of_freedom) const;
 
   Parameters const parameters_;
   Perspective<Navigation, Camera> const perspective_;
