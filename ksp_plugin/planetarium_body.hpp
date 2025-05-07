@@ -142,12 +142,13 @@ void Planetarium::PlotMethod3(
           {previous_projected_velocity - previous_projected_linear_velocity,
            projected_velocity - projected_linear_velocity});
 
-      metric = GaussLegendre<3>(
-          [&error_approximation](Instant const& time) {
-            return error_approximation.Evaluate(time).Norm();
-          },
-          previous_time,
-          t) / Δt;
+      metric = Sqrt(GaussLegendre<4>(
+                        [&error_approximation](Instant const& time) {
+                          return error_approximation.Evaluate(time).Norm²();
+                        },
+                        previous_time,
+                        t) /
+                    Δt);
     } while (metric > tan²_angular_resolution);
 
     previous_time = t;
