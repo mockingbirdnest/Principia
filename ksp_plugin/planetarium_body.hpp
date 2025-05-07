@@ -83,10 +83,8 @@ void Planetarium::PlotMethod3(
           *plotting_frame_, trajectory, previous_time);
   Position<Navigation> previous_position =
       initial_degrees_of_freedom.position();
-
-  Vector<Inverse<Time>, Navigation> previous_projected_velocity;
-  std::tie(std::ignore, previous_projected_velocity) =
-      SphericalProjection(initial_degrees_of_freedom);
+  Vector<Inverse<Time>, Navigation> previous_projected_velocity =
+      ProperMotion(initial_degrees_of_freedom);
 
   Time Δt = final_time - previous_time;
 
@@ -129,12 +127,11 @@ void Planetarium::PlotMethod3(
       Velocity<Navigation> const linear_velocity =
           (position - previous_position) / Δt;
 
-      std::tie(std::ignore, projected_velocity) =
-          SphericalProjection(degrees_of_freedom);
-      auto const& [_1, previous_projected_linear_velocity] =
-          SphericalProjection({previous_position, linear_velocity});
-      auto const& [_2, projected_linear_velocity] =
-          SphericalProjection({position, linear_velocity});
+      projected_velocity = ProperMotion(degrees_of_freedom);
+      auto const previous_projected_linear_velocity =
+          ProperMotion({previous_position, linear_velocity});
+      auto const projected_linear_velocity =
+          ProperMotion({position, linear_velocity});
 
       Hermite3<Vector<double, Navigation>, Instant> const error_approximation(
           {previous_time, t},
@@ -169,13 +166,10 @@ void Planetarium::PlotMethod3(
   }
 }
 
-inline std::pair<Point<Vector<double, Navigation>>,
-                 Vector<Inverse<Time>, Navigation>>
-Planetarium::SphericalProjection(
+inline Vector<Inverse<Time>, Navigation> Planetarium::ProperMotion(
     DegreesOfFreedom<Navigation> const& degrees_of_freedom) const {
   auto const r = degrees_of_freedom.position() - perspective_.camera();
-  return {Point<Vector<double, Navigation>>{} + Normalize(r),
-          degrees_of_freedom.velocity().OrthogonalizationAgainst(r) / r.Norm()};
+  return degrees_of_freedom.velocity().OrthogonalizationAgainst(r) / r.Norm();
 }
 
 }  // namespace internal

@@ -7,7 +7,6 @@
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
-#include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
 #include "geometry/space.hpp"
@@ -31,7 +30,6 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
-using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
@@ -167,9 +165,7 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
   //TODO(phl)comment
-  std::pair<Point<Vector<double, Navigation>>,
-            Vector<Inverse<Time>, Navigation>>
-  SphericalProjection(
+  Vector<Inverse<Time>, Navigation> ProperMotion(
       DegreesOfFreedom<Navigation> const& degrees_of_freedom) const;
 
   Parameters const parameters_;
