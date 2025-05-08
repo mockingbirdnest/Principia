@@ -3,9 +3,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
-#include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
@@ -15,9 +13,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/rigid_motion.hpp"
 #include "physics/trajectory.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -26,9 +22,7 @@ namespace _planetarium {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
@@ -38,9 +32,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
-using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_trajectory;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // Corresponds to a UnityEngine.Vector3 representing a position in KSP’s
@@ -165,7 +157,9 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::iterator begin,
       DiscreteTrajectory<Barycentric>::iterator end) const;
 
-  //TODO(phl)comment
+  // Computes the proper motion (in the astronomical sense) of the given point
+  // and velocity seen from a frame centered at the origin of `Camera`.  This
+  // is a uniform rotation on a great circle.
   AngularVelocity<Navigation> ProperMotion(
       DegreesOfFreedom<Navigation> const& degrees_of_freedom) const;
 

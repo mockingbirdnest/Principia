@@ -43,9 +43,6 @@ class Perspective final {
   Perspective(Similarity<FromFrame, ToFrame> const& to_camera,
               Length const& focal);
 
-  //TODO(phl)revisit
-  Similarity<ToFrame, FromFrame> const& from_camera() const;
-  Similarity<FromFrame, ToFrame> const& to_camera() const;
   Position<FromFrame> const& camera() const;
   Length const& focal() const;
 

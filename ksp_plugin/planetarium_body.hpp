@@ -4,8 +4,6 @@
 
 #include <algorithm>
 
-#include "geometry/barycentre_calculator.hpp"
-#include "geometry/pair.hpp"
 #include "geometry/sign.hpp"
 #include "numerics/hermite3.hpp"
 #include "numerics/quadrature.hpp"
@@ -19,8 +17,6 @@ namespace ksp_plugin {
 namespace _planetarium {
 namespace internal {
 
-using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_pair;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_quadrature;
@@ -121,11 +117,19 @@ void Planetarium::PlotMethod3(
               *plotting_frame_, trajectory, t);
       position = degrees_of_freedom.position();
 
-      Position<Navigation> const linear_midpoint =
-          Barycentre({previous_position, position});
+      // The velocity on the linear segment from the previous position to the
+      // current one.
       Velocity<Navigation> const linear_velocity =
           (position - previous_position) / Δt;
 
+      // We now compute a 3rd-degree Hermite approximation of the displacement
+      // between the trajectory and the linear segment linking the previous and
+      // current positions. The displacement is zero at the extremities.  The
+      // projected velocities are obtained by applying the rotation vector to
+      // the actual velocities and are represented as a (somewhat unusual)
+      // `Vector<AngularFrequency, Navigation>`.  Note that neither the linear
+      // segment nor the trajectory are on the sphere, but for sufficiently
+      // small time intervals they are close
       projected_velocity =
           ProperMotion(degrees_of_freedom) *
           Normalize(position - perspective_.camera());
@@ -142,6 +146,9 @@ void Planetarium::PlotMethod3(
           {previous_projected_velocity - previous_projected_linear_velocity,
            projected_velocity - projected_linear_velocity});
 
+      // Our metric is the root mean square of the norm of the displacement
+      // between the trajectory and the linear segment, normalized by the
+      // duration of the time interval.  It is an angle.
       rms_apparent_distance =
           Sqrt(GaussLegendre<4>(
                    [&error_approximation](Instant const& time) {

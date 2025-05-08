@@ -43,18 +43,6 @@ Perspective<FromFrame, ToFrame>::Perspective(
       focal_(focal) {}
 
 template<typename FromFrame, typename ToFrame>
-Similarity<ToFrame, FromFrame> const&
-Perspective<FromFrame, ToFrame>::from_camera() const {
-  return from_camera_;
-}
-
-template<typename FromFrame, typename ToFrame>
-Similarity<FromFrame, ToFrame> const&
-Perspective<FromFrame, ToFrame>::to_camera() const {
-  return to_camera_;
-}
-
-template<typename FromFrame, typename ToFrame>
 Position<FromFrame> const&
 Perspective<FromFrame, ToFrame>::camera() const {
   return camera_;
