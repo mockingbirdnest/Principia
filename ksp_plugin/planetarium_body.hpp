@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "geometry/grassmann.hpp"
 #include "geometry/sign.hpp"
 #include "numerics/hermite3.hpp"
 #include "numerics/quadrature.hpp"
@@ -17,6 +18,7 @@ namespace ksp_plugin {
 namespace _planetarium {
 namespace internal {
 
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_quadrature;
@@ -99,11 +101,12 @@ void Planetarium::PlotMethod3(
   while (points_added < max_points &&
          direction * (previous_time - final_time) < Time{}) {
     do {
-      // One square root because we have squared errors, another one because the
-      // errors are quadratic in time (in other words, two square roots because
-      // the squared errors are quartic in time).
+      // Consider the case where the trajectory is an arc of circle of angle 2 α
+      // and the segment is the corresponding chord.  The higher-order term of
+      // the integral below is 4 α⁵ / 15, which yields an RMS of O(α²) after
+      // division by the time interval and application of the square root.
+      // Therefore, our errors are of degree 2 in time.
       // A safety factor prevents catastrophic retries.
-      //TODO(phl)Comment
       Δt *= 0.9 * Sqrt(parameters_.angular_resolution_ / rms_apparent_distance);
     estimate_tan²_error:
       t = previous_time + Δt;
@@ -148,7 +151,9 @@ void Planetarium::PlotMethod3(
 
       // Our metric is the root mean square of the norm of the displacement
       // between the trajectory and the linear segment, normalized by the
-      // duration of the time interval.  It is an angle.
+      // duration of the time interval.  It is an angle.  Note that the square
+      // norm is a polynomial of degree 6, and the 4-point Gauss-Legendre method
+      // is exact for polynomials of degree 7.
       rms_apparent_distance =
           Sqrt(GaussLegendre<4>(
                    [&error_approximation](Instant const& time) {

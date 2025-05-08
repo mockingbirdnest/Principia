@@ -1,5 +1,6 @@
 #pragma once
 
+#include "geometry/orthogonal_map.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
@@ -12,6 +13,7 @@ namespace ksp_plugin {
 namespace _planetarium {
 namespace internal {
 
+using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;

@@ -497,7 +497,6 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 }
 
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
-  // Human visual acuity.
   Angle reference_angular_resolution = 0.25 * ArcMinute;
 
   auto const lagrange_equipotentials = ComputeLagrangeEquipotentials();
@@ -526,13 +525,13 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
   for (auto const& plotted_trajectory : plotted_trajectories_reference) {
     number_of_points_reference += plotted_trajectory.size();
   }
-  EXPECT_EQ(100363, number_of_points_reference);
+  EXPECT_EQ(108622, number_of_points_reference);
 
   // Compute plotted lines at progressively worse resolution and their distance
   // to the reference line.
   Angle trial_angular_resolution = reference_angular_resolution;
   for (std::int64_t i = 0; i < 8; ++i) {
-    trial_angular_resolution *= 2;
+    trial_angular_resolution *= Sqrt(2);
 
     auto const plotted_trajectories =
         ComputePlottedLines(lagrange_equipotentials,
@@ -557,44 +556,44 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
 
     switch (i) {
       case 0:
-        // 0.8 arc min.
-        EXPECT_EQ(71897, number_of_points);
-        EXPECT_THAT(max_distance, IsNear(0.67_(1) * Centi(Metre)));
+        // 0.35 arc min.
+        EXPECT_EQ(91902, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.53_(1) * Centi(Metre)));
         break;
       case 1:
-        // 1.6 arc min.
-        EXPECT_EQ(51570, number_of_points);
-        EXPECT_THAT(max_distance, IsNear(0.83_(1) * Centi(Metre)));
+        // 0.5 arc min.
+        EXPECT_EQ(77851, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.59_(1) * Centi(Metre)));
         break;
       case 2:
-        // 3.2 arc min.
-        EXPECT_EQ(36989, number_of_points);
-        EXPECT_THAT(max_distance, IsNear(1.10_(1) * Centi(Metre)));
+        // 0.71 arc min.
+        EXPECT_EQ(66065, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.65_(1) * Centi(Metre)));
         break;
       case 3:
-        // 6.4 arc min.
-        EXPECT_EQ(26565, number_of_points);
-        EXPECT_THAT(max_distance, IsNear(1.48_(1) * Centi(Metre)));
+        // 1.0 arc min.
+        EXPECT_EQ(55983, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.76_(1) * Centi(Metre)));
         break;
       case 4:
-        // 12.8 arc min.
-        EXPECT_EQ(19172, number_of_points);
-        EXPECT_THAT(max_distance, IsNear(2.07_(1) * Centi(Metre)));
+        // 1.41 arc min.
+        EXPECT_EQ(47526, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.85_(1) * Centi(Metre)));
         break;
       case 5:
-        // 25.6 arc min.
-        EXPECT_EQ(13733, number_of_points);
-        EXPECT_THAT(max_distance, IsNear(3.35_(1) * Centi(Metre)));
+        // 2.0 arc min.
+        EXPECT_EQ(40295, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.99_(1) * Centi(Metre)));
         break;
       case 6:
-        // 51.2 arc min.
-        EXPECT_EQ(9831, number_of_points);
-        EXPECT_THAT(max_distance, IsNear(4.50_(1) * Centi(Metre)));
+        // 2.82 arc min.
+        EXPECT_EQ(34189, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(1.16_(1) * Centi(Metre)));
         break;
       case 7:
-        // 102.4 arc min.
-        EXPECT_EQ(7117, number_of_points);
-        EXPECT_THAT(max_distance, IsNear(7.10_(1) * Centi(Metre)));
+        // 4.0 arc min.
+        EXPECT_EQ(28959, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(1.37_(1) * Centi(Metre)));
         break;
     }
   }
