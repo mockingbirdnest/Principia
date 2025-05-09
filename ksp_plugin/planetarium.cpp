@@ -30,6 +30,7 @@ Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
                                     Angle const& angular_resolution,
                                     Angle const& field_of_view)
     : sphere_radius_multiplier_(sphere_radius_multiplier),
+      angular_resolution_(angular_resolution),
       sin²_angular_resolution_(Pow<2>(Sin(angular_resolution))),
       tan_angular_resolution_(Tan(angular_resolution)),
       tan_field_of_view_(Tan(field_of_view)) {}
@@ -281,6 +282,25 @@ void Planetarium::PlotMethod3(
   auto const last_time =
       std::min({last->time, plotting_frame_->t_max(), t_max});
   PlotMethod3(
+      trajectory, begin_time, last_time, reverse, add_point, max_points);
+}
+
+void Planetarium::PlotMethod4(
+    Trajectory<Barycentric> const& trajectory,
+    DiscreteTrajectory<Barycentric>::iterator begin,
+    DiscreteTrajectory<Barycentric>::iterator end,
+    Instant const& t_max,
+    bool const reverse,
+    std::function<void(ScaledSpacePoint const&)> const& add_point,
+    int max_points) const {
+  if (begin == end) {
+    return;
+  }
+  auto last = std::prev(end);
+  auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
+  auto const last_time =
+      std::min({last->time, plotting_frame_->t_max(), t_max});
+  PlotMethod4(
       trajectory, begin_time, last_time, reverse, add_point, max_points);
 }
 

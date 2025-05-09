@@ -50,6 +50,7 @@ Planetarium* __cdecl principia__PlanetariumCreate(
     double const focal,
     double const field_of_view,
     double const inverse_scale_factor,
+    double const angular_resolution,
     XYZ const scaled_space_origin) {
   journal::Method<journal::PlanetariumCreate> m({plugin,
                                                  sun_world_position,
@@ -60,6 +61,7 @@ Planetarium* __cdecl principia__PlanetariumCreate(
                                                  focal,
                                                  field_of_view,
                                                  inverse_scale_factor,
+                                                 angular_resolution,
                                                  scaled_space_origin});
   Renderer const& renderer = CHECK_NOTNULL(plugin)->renderer();
 
@@ -90,7 +92,7 @@ Planetarium* __cdecl principia__PlanetariumCreate(
 
   Planetarium::Parameters parameters(
       /*sphere_radius_multiplier=*/1.0,
-      /*angular_resolution=*/0.4 * ArcMinute,
+      angular_resolution * Radian,
       field_of_view * Radian);
   Perspective<Navigation, Camera> perspective(
       world_to_plotting_affine_map *
@@ -151,7 +153,7 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   if (index % 2 == 0 ||
       segment->empty() ||
       segment->front().time >= plugin->renderer().GetPlottingFrame()->t_min()) {
-    planetarium->PlotMethod3(
+    planetarium->PlotMethod4(
         *segment,
         segment->begin(),
         segment->end(),
@@ -183,7 +185,7 @@ void __cdecl principia__PlanetariumPlotPrediction(
   *vertex_count = 0;
 
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
-  planetarium->PlotMethod3(
+  planetarium->PlotMethod4(
       *prediction,
       prediction->begin(),
       prediction->end(),
@@ -239,7 +241,7 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     // time the history will be shorter than desired.
     vessel->RequestReanimation(desired_first_time);
 
-    planetarium->PlotMethod3(
+    planetarium->PlotMethod4(
         trajectory,
         trajectory.lower_bound(desired_first_time),
         psychohistory->end(),
@@ -296,7 +298,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     Instant const first_time =
         std::max(desired_first_time, celestial_trajectory.t_min());
     Length minimal_distance;
-    planetarium->PlotMethod3(
+    planetarium->PlotMethod4(
         celestial_trajectory,
         first_time,
         /*last_time=*/plugin->CurrentTime(),
@@ -354,7 +356,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     // No need to request reanimation here because the current time of the
     // plugin is necessarily covered.
     Length minimal_distance;
-    planetarium->PlotMethod3(
+    planetarium->PlotMethod4(
         celestial_trajectory,
         /*first_time=*/plugin->CurrentTime(),
         /*last_time=*/final_time,
@@ -392,7 +394,7 @@ void __cdecl principia__PlanetariumPlotEquipotential(
   DiscreteTrajectory<Navigation> const& equipotential =
       equipotentials.lines[index];
 
-  planetarium->PlotMethod3(
+  planetarium->PlotMethod4(
       equipotential,
       equipotential.front().time,
       equipotential.back().time,

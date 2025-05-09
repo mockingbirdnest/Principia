@@ -69,16 +69,18 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
   EXPECT_CALL(*plugin_, NewPlanetarium(_, _, _))
       .WillOnce(Return(ByMove(std::make_unique<MockPlanetarium>())));
 
-  Planetarium const* planetarium = principia__PlanetariumCreate(plugin_.get(),
-                                                                {100, 200, 300},
-                                                                {1, 0, 0},
-                                                                {0, 1, 0},
-                                                                {0, 0, 1},
-                                                                {1, 2, 3},
-                                                                10,
-                                                                90,
-                                                                1.0 / 6000,
-                                                                {4, 5, 6});
+  Planetarium const* planetarium =
+      principia__PlanetariumCreate(plugin_.get(),
+                                   {100, 200, 300},
+                                   {1, 0, 0},
+                                   {0, 1, 0},
+                                   {0, 0, 1},
+                                   {1, 2, 3},
+                                   10,
+                                   90,
+                                   1.0 / 6000,
+                                   2 * π / (360 * 60) /*1 arc minute*/,
+                                   {4, 5, 6});
   principia__PlanetariumDelete(&planetarium);
   EXPECT_THAT(planetarium, IsNull());
 }

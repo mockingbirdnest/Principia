@@ -2115,6 +2115,7 @@ message PlanetariumCreate {
     required double focal = 7;
     required double field_of_view = 8;
     required double inverse_scale_factor = 9;
+    required double angular_resolution = 11;  // Added in Lagrange.
     required XYZ scaled_space_origin = 10;
   }
   message Return {

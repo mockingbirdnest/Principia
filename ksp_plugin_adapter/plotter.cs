@@ -10,6 +10,21 @@ class Plotter {
     adapter_ = adapter;
   }
 
+  public static double TanAngularResolution() {
+    const double degree = Math.PI / 180;
+    UnityEngine.Camera camera = PlanetariumCamera.Camera;
+    float vertical_fov = camera.fieldOfView;
+    float horizontal_fov =
+        UnityEngine.Camera.VerticalToHorizontalFieldOfView(
+            vertical_fov,
+            camera.aspect);
+    // The angle subtended by the pixel closest to the centre of the viewport.
+    return Math.Min(
+               Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
+               Math.Tan(horizontal_fov * degree / 2) /
+               (camera.pixelWidth / 2));
+  }
+
   public void PlotEquipotentials(DisposablePlanetarium planetarium) {
     int number_of_equipotentials = Plugin.EquipotentialCount();
     if (number_of_equipotentials == 0) {
@@ -88,6 +103,9 @@ class Plotter {
         }
         for (int i = 0; i < number_of_segments; ++i) {
           bool is_burn = i % 2 == 1;
+          var colour = is_burn
+                           ? adapter_.burn_colour
+                           : adapter_.flight_plan_colour;
           planetarium.PlanetariumPlotFlightPlanSegment(
               Plugin,
               main_vessel_guid,
@@ -99,9 +117,7 @@ class Plotter {
           // No need for dynamic initialization, that was done above.
           DrawLineMesh(flight_plan_segment_meshes_[i],
                        vertex_count,
-                       is_burn
-                           ? adapter_.burn_colour
-                           : adapter_.flight_plan_colour,
+                       colour,
                        is_burn
                            ? adapter_.burn_style
                            : adapter_.flight_plan_style);
@@ -149,18 +165,8 @@ class Plotter {
   private void PlotCelestialTrajectories(DisposablePlanetarium planetarium,
                                          string main_vessel_guid,
                                          double history_length) {
-    const double degree = Math.PI / 180;
-    UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    float vertical_fov = camera.fieldOfView;
-    float horizontal_fov =
-        UnityEngine.Camera.VerticalToHorizontalFieldOfView(
-            vertical_fov, camera.aspect);
-    // The angle subtended by the pixel closest to the centre of the viewport.
-    double tan_angular_resolution = Math.Min(
-            Math.Tan(vertical_fov * degree / 2) / (camera.pixelHeight / 2),
-            Math.Tan(horizontal_fov * degree / 2) / (camera.pixelWidth / 2));
     PlotSubtreeTrajectories(planetarium, main_vessel_guid, history_length,
-                            Planetarium.fetch.Sun, tan_angular_resolution);
+                            Planetarium.fetch.Sun, TanAngularResolution());
   }
 
   // Plots the trajectories of `root` and its natural satellites.

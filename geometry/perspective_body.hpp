@@ -43,6 +43,12 @@ Perspective<FromFrame, ToFrame>::Perspective(
       focal_(focal) {}
 
 template<typename FromFrame, typename ToFrame>
+Position<FromFrame> const&
+Perspective<FromFrame, ToFrame>::camera() const {
+  return camera_;
+}
+
+template<typename FromFrame, typename ToFrame>
 Length const& Perspective<FromFrame, ToFrame>::focal() const {
   return focal_;
 }

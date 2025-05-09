@@ -4,7 +4,6 @@
 
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
-#include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
@@ -14,7 +13,6 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/rigid_motion.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 
@@ -25,7 +23,6 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
@@ -35,7 +32,6 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
-using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_quantities;
 
@@ -69,6 +65,7 @@ class Planetarium {
 
    private:
     double const sphere_radius_multiplier_;
+    Angle const angular_resolution_;
     double const sin²_angular_resolution_;
     double const tan_angular_resolution_;
     double const tan_field_of_view_;
@@ -125,7 +122,8 @@ class Planetarium {
       Length* minimal_distance = nullptr) const;
 
   // A method similar to PlotMethod2, but which produces a three-dimensional
-  // trajectory in scaled space instead of projecting and hiding.
+  // trajectory in scaled space instead of projecting and hiding.  It uses the
+  // apparent angle of the sagitta as the metric to analyse curvature.
   void PlotMethod3(
       Trajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator begin,
@@ -147,6 +145,29 @@ class Planetarium {
       int max_points,
       Length* minimal_distance = nullptr) const;
 
+  // A method similar to PlotMethod4, but which uses the RMS of the apparent
+  // distance between the trajectory and line segments.
+  void PlotMethod4(
+      Trajectory<Barycentric> const& trajectory,
+      DiscreteTrajectory<Barycentric>::iterator begin,
+      DiscreteTrajectory<Barycentric>::iterator end,
+      Instant const& t_max,
+      bool reverse,
+      std::function<void(ScaledSpacePoint const&)> const& add_point,
+      int max_points) const;
+
+  // The same method, operating on the `Trajectory` interface for any frame that
+  // can be converted to `Navigation`.
+  template<typename Frame>
+  void PlotMethod4(
+      Trajectory<Frame> const& trajectory,
+      Instant const& first_time,
+      Instant const& last_time,
+      bool reverse,
+      std::function<void(ScaledSpacePoint const&)> const& add_point,
+      int max_points,
+      Length* minimal_distance = nullptr) const;
+
  private:
   // Computes the coordinates of the spheres that represent the `ephemeris_`
   // bodies.  These coordinates are in the `plotting_frame_` at time `now`.
@@ -159,6 +180,12 @@ class Planetarium {
       const std::vector<Sphere<Navigation>>& plottable_spheres,
       DiscreteTrajectory<Barycentric>::iterator begin,
       DiscreteTrajectory<Barycentric>::iterator end) const;
+
+  // Computes the proper motion (in the astronomical sense) of the given point
+  // and velocity seen from a frame centered at the origin of `Camera`.  This
+  // is a uniform rotation on a great circle.
+  AngularVelocity<Navigation> ProperMotion(
+      DegreesOfFreedom<Navigation> const& degrees_of_freedom) const;
 
   Parameters const parameters_;
   Perspective<Navigation, Camera> const perspective_;
