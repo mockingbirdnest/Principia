@@ -406,16 +406,16 @@ void BM_PlanetariumPlotMethod4(
                     near,                                          \
                     (plotting_frame))                              \
       ->Unit(benchmark::kMillisecond);                             \
-  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod3,                     \
-                    Far##name,                                     \
-                    (perspective),                                 \
-                    far,                                           \
-                    (plotting_frame))                              \
-      ->Unit(benchmark::kMillisecond);                             \
   BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4,                     \
                     Near##name,                                    \
                     (perspective),                                 \
                     near,                                          \
+                    (plotting_frame))                              \
+      ->Unit(benchmark::kMillisecond);                             \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod3,                     \
+                    Far##name,                                     \
+                    (perspective),                                 \
+                    far,                                           \
                     (plotting_frame))                              \
       ->Unit(benchmark::kMillisecond);                             \
   BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4,                     \
