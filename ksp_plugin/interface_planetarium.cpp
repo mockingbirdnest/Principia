@@ -137,13 +137,7 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotFlightPlanSegment> m(
-      {planetarium,
-       plugin,
-       vessel_guid,
-       index,
-       t_max,
-       vertices,
-       vertices_size},
+      {planetarium, plugin, vessel_guid, index, t_max, vertices, vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
@@ -184,12 +178,7 @@ void __cdecl principia__PlanetariumPlotPrediction(
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotPrediction> m(
-      {planetarium,
-       plugin,
-       vessel_guid,
-       t_max,
-       vertices,
-       vertices_size},
+      {planetarium, plugin, vessel_guid, t_max, vertices, vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
@@ -392,11 +381,7 @@ void __cdecl principia__PlanetariumPlotEquipotential(
     int const vertices_size,
     int* const vertex_count) {
   journal::Method<journal::PlanetariumPlotEquipotential> m(
-      {planetarium,
-       plugin,
-       index,
-       vertices,
-       vertices_size},
+      {planetarium, plugin, index, vertices, vertices_size},
       {vertex_count});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);

@@ -123,7 +123,7 @@ class Planetarium {
 
   // A method similar to PlotMethod2, but which produces a three-dimensional
   // trajectory in scaled space instead of projecting and hiding.  It uses the
-  // apparent angle of the sagitta as a metric to analyse curvature.
+  // apparent angle of the sagitta as the metric to analyse curvature.
   void PlotMethod3(
       Trajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator begin,
@@ -145,8 +145,8 @@ class Planetarium {
       int max_points,
       Length* minimal_distance = nullptr) const;
 
-  // A method similar to PlotMethod4, but which uses the RMS of the distance
-  // between the trajectory and line segments.
+  // A method similar to PlotMethod4, but which uses the RMS of the apparent
+  // distance between the trajectory and line segments.
   void PlotMethod4(
       Trajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator begin,
