@@ -496,6 +496,110 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
   EXPECT_EQ(9, rp2_lines[1].size());
 }
 
+TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
+  // Human visual acuity.
+  Angle reference_angular_resolution = 0.4 * ArcMinute;
+
+  auto const lagrange_equipotentials = ComputeLagrangeEquipotentials();
+
+  auto const plot_method3 =
+      [](Planetarium const& planetarium,
+         DiscreteTrajectory<Navigation> const& line) {
+        planetarium.PlotMethod3(
+            line,
+            line.front().time,
+            line.back().time,
+            /*reverse=*/false,
+            [](ScaledSpacePoint const&) {},
+            /*max_points=*/std::numeric_limits<int>::max());
+      };
+
+  auto const plotted_trajectories_reference = ComputePlottedLines(
+      lagrange_equipotentials,
+      Planetarium::Parameters(
+          /*sphere_radius_multiplier=*/1.0,
+          reference_angular_resolution,
+          /*field_of_view=*/90 * Degree),
+      plot_method3);
+
+  std::int64_t number_of_points_reference = 0;
+  for (auto const& plotted_trajectory : plotted_trajectories_reference) {
+    number_of_points_reference += plotted_trajectory.size();
+  }
+  EXPECT_EQ(100363, number_of_points_reference);
+
+  // Compute plotted lines at progressively worse resolution and their distance
+  // to the reference line.
+  Angle trial_angular_resolution = reference_angular_resolution;
+  for (std::int64_t i = 0; i < 8; ++i) {
+    trial_angular_resolution *= Sqrt(2);
+
+    auto const plotted_trajectories =
+        ComputePlottedLines(lagrange_equipotentials,
+                            Planetarium::Parameters(
+                                /*sphere_radius_multiplier=*/1.0,
+                                trial_angular_resolution,
+                                /*field_of_view=*/90 * Degree),
+                            plot_method3);
+
+    std::int64_t number_of_points = 0;
+    for (auto const& plotted_trajectory : plotted_trajectories) {
+      number_of_points += plotted_trajectory.size();
+    }
+
+    Length max_distance;
+    for (std::int64_t i = 0; i < plotted_trajectories_reference.size(); ++i) {
+      max_distance = std::max(
+          max_distance,
+          ComputePlottedLinesDistance(plotted_trajectories_reference[i],
+                                      plotted_trajectories[i]));
+    }
+
+    switch (i) {
+      case 0:
+        // 0.57 arc min.
+        EXPECT_EQ(84911, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.62_(1) * Centi(Metre)));
+        break;
+      case 1:
+        // 0.8 arc min.
+        EXPECT_EQ(71897, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.67_(1) * Centi(Metre)));
+        break;
+      case 2:
+        // 1.13 arc min.
+        EXPECT_EQ(60912, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.72_(1) * Centi(Metre)));
+        break;
+      case 3:
+        // 1.6 arc min.
+        EXPECT_EQ(51570, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.83_(1) * Centi(Metre)));
+        break;
+      case 4:
+        // 2.26 arc min.
+        EXPECT_EQ(43740, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(0.94_(1) * Centi(Metre)));
+        break;
+      case 5:
+        // 3.2 arc min.
+        EXPECT_EQ(36989, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(1.10_(1) * Centi(Metre)));
+        break;
+      case 6:
+        // 4.52 arc min.
+        EXPECT_EQ(31403, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(1.30_(1) * Centi(Metre)));
+        break;
+      case 7:
+        // 6.4 arc min.
+        EXPECT_EQ(26565, number_of_points);
+        EXPECT_THAT(max_distance, IsNear(1.48_(1) * Centi(Metre)));
+        break;
+    }
+  }
+}
+
 TEST_F(PlanetariumTest, PlotMethod4_Equipotentials_AngularResolution) {
   Angle reference_angular_resolution = 0.25 * ArcMinute;
 

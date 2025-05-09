@@ -122,8 +122,31 @@ class Planetarium {
       Length* minimal_distance = nullptr) const;
 
   // A method similar to PlotMethod2, but which produces a three-dimensional
-  // trajectory in scaled space instead of projecting and hiding.
-//TODO(phl)comment
+  // trajectory in scaled space instead of projecting and hiding.  It uses the
+  // apparent angle of the sagitta as a metric to analyse curvature.
+  void PlotMethod3(
+      Trajectory<Barycentric> const& trajectory,
+      DiscreteTrajectory<Barycentric>::iterator begin,
+      DiscreteTrajectory<Barycentric>::iterator end,
+      Instant const& t_max,
+      bool reverse,
+      std::function<void(ScaledSpacePoint const&)> const& add_point,
+      int max_points) const;
+
+  // The same method, operating on the `Trajectory` interface for any frame that
+  // can be converted to `Navigation`.
+  template<typename Frame>
+  void PlotMethod3(
+      Trajectory<Frame> const& trajectory,
+      Instant const& first_time,
+      Instant const& last_time,
+      bool reverse,
+      std::function<void(ScaledSpacePoint const&)> const& add_point,
+      int max_points,
+      Length* minimal_distance = nullptr) const;
+
+  // A method similar to PlotMethod4, but which uses the RMS of the distance
+  // between the trajectory and line segments.
   void PlotMethod4(
       Trajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator begin,
