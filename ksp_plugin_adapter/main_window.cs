@@ -25,7 +25,6 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     flight_planner_ = flight_planner;
     orbit_analyser_ = orbit_analyser;
     plotting_frame_selector_ = plotting_frame_selector;
-    angular_resolution_in_arc_min.value = 1.0;
     Show();
   }
 
@@ -168,21 +167,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
   protected override string Title => "Principia";
 
-  public static DifferentialSlider angular_resolution_in_arc_min =
-      new DifferentialSlider("ang res",
-                             "",
-                             -5,
-                             -1,
-                             (x) => x.ToString("0.000"),
-                             zero_value: 1.0,
-                             min_value: 0.001,
-                             max_value: 1000);
-
-      protected override void RenderWindowContents(int window_id) {
+  protected override void RenderWindowContents(int window_id) {
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      UnityEngine.GUILayout.Label("Angular resolution (arc min): ");
-      angular_resolution_in_arc_min.Render(true);
-
       if (!adapter_.PluginRunning()) {
         UnityEngine.GUILayout.Label(
             text : L10N.CacheFormat("#Principia_MainWindow_PluginNotStarted"),

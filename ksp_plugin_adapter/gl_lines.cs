@@ -66,21 +66,17 @@ internal static class GLLines {
     double m11 = camera.projectionMatrix[1, 1];
     double field_of_view = Math.Atan2(Math.Sqrt(m00 * m00 + m11 * m11),
                                       m00 * m11);
-    return plugin.PlanetariumCreate(
-        sun_world_position,
-        (XYZ)(Vector3d)opengl_camera_x_in_world,
-        (XYZ)(Vector3d)opengl_camera_y_in_world,
-        (XYZ)(Vector3d)opengl_camera_z_in_world,
-        (XYZ)(Vector3d)camera_position_in_world,
-        focal:1,
-        field_of_view,
-        ScaledSpace.InverseScaleFactor,
-        MainWindow.angular_resolution_in_arc_min.value *
-        2 *
-        Math.PI /
-        (360 * 60),
-        scaled_space_origin: (XYZ)ScaledSpace.ScaledToLocalSpace(
-            Vector3d.zero));
+    return plugin.PlanetariumCreate(sun_world_position,
+                                    (XYZ)(Vector3d)opengl_camera_x_in_world,
+                                    (XYZ)(Vector3d)opengl_camera_y_in_world,
+                                    (XYZ)(Vector3d)opengl_camera_z_in_world,
+                                    (XYZ)(Vector3d)camera_position_in_world,
+                                    focal: 1,
+                                    field_of_view,
+                                    ScaledSpace.InverseScaleFactor,
+                                    2 * Math.PI / (360 * 60) /*1 arc minute*/,
+                                    scaled_space_origin: (XYZ)ScaledSpace.
+                                        ScaledToLocalSpace(Vector3d.zero));
   }
 
   private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
