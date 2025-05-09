@@ -496,15 +496,15 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
   EXPECT_EQ(9, rp2_lines[1].size());
 }
 
-TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
+TEST_F(PlanetariumTest, PlotMethod4_Equipotentials_AngularResolution) {
   Angle reference_angular_resolution = 0.25 * ArcMinute;
 
   auto const lagrange_equipotentials = ComputeLagrangeEquipotentials();
 
-  auto const plot_method3 =
+  auto const plot_method4 =
       [](Planetarium const& planetarium,
          DiscreteTrajectory<Navigation> const& line) {
-        planetarium.PlotMethod3(
+        planetarium.PlotMethod4(
             line,
             line.front().time,
             line.back().time,
@@ -519,7 +519,7 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
           /*sphere_radius_multiplier=*/1.0,
           reference_angular_resolution,
           /*field_of_view=*/90 * Degree),
-      plot_method3);
+      plot_method4);
 
   std::int64_t number_of_points_reference = 0;
   for (auto const& plotted_trajectory : plotted_trajectories_reference) {
@@ -539,7 +539,7 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
                                 /*sphere_radius_multiplier=*/1.0,
                                 trial_angular_resolution,
                                 /*field_of_view=*/90 * Degree),
-                            plot_method3);
+                            plot_method4);
 
     std::int64_t number_of_points = 0;
     for (auto const& plotted_trajectory : plotted_trajectories) {

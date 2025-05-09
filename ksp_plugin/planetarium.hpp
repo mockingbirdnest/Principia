@@ -123,7 +123,8 @@ class Planetarium {
 
   // A method similar to PlotMethod2, but which produces a three-dimensional
   // trajectory in scaled space instead of projecting and hiding.
-  void PlotMethod3(
+//TODO(phl)comment
+  void PlotMethod4(
       Trajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator begin,
       DiscreteTrajectory<Barycentric>::iterator end,
@@ -135,7 +136,7 @@ class Planetarium {
   // The same method, operating on the `Trajectory` interface for any frame that
   // can be converted to `Navigation`.
   template<typename Frame>
-  void PlotMethod3(
+  void PlotMethod4(
       Trajectory<Frame> const& trajectory,
       Instant const& first_time,
       Instant const& last_time,

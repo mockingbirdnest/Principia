@@ -57,7 +57,7 @@ EvaluateDegreesOfFreedomInNavigation<Navigation>(
 }
 
 template<typename Frame>
-void Planetarium::PlotMethod3(
+void Planetarium::PlotMethod4(
     Trajectory<Frame> const& trajectory,
     Instant const& first_time,
     Instant const& last_time,

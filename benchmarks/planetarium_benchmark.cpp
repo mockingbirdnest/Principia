@@ -305,7 +305,7 @@ class Satellites {
 
 }  // namespace
 
-void BM_PlanetariumPlotMethod3(
+void BM_PlanetariumPlotMethod4(
     benchmark::State& state,
     Perspective<Navigation, Camera> (*const perspective)(
         Similarity<Navigation, GCRS> const& navigation_to_gcrs_at_epoch,
@@ -326,7 +326,7 @@ void BM_PlanetariumPlotMethod3(
   constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   for (auto _ : state) {
     line.clear();
-    planetarium.PlotMethod3(
+    planetarium.PlotMethod4(
         satellites.goes_8_trajectory(),
         satellites.goes_8_trajectory().begin(),
         satellites.goes_8_trajectory().end(),
@@ -352,13 +352,13 @@ void BM_PlanetariumPlotMethod3(
 
 #define PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR( \
     name, perspective, plotting_frame)                             \
-  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod3,                     \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4,                     \
                     Near##name,                                    \
                     (perspective),                                 \
                     near,                                          \
                     (plotting_frame))                              \
       ->Unit(benchmark::kMillisecond);                             \
-  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod3,                     \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4,                     \
                     Far##name,                                     \
                     (perspective),                                 \
                     far,                                           \

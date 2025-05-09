@@ -266,7 +266,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   return lines;
 }
 
-void Planetarium::PlotMethod3(
+void Planetarium::PlotMethod4(
     Trajectory<Barycentric> const& trajectory,
     DiscreteTrajectory<Barycentric>::iterator begin,
     DiscreteTrajectory<Barycentric>::iterator end,
@@ -281,7 +281,7 @@ void Planetarium::PlotMethod3(
   auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
   auto const last_time =
       std::min({last->time, plotting_frame_->t_max(), t_max});
-  PlotMethod3(
+  PlotMethod4(
       trajectory, begin_time, last_time, reverse, add_point, max_points);
 }
 
