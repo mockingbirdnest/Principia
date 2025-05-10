@@ -6,6 +6,7 @@
 
 #include "absl/strings/str_replace.h"
 #include "astronomy/orbital_elements.hpp"
+#include "base/macros.hpp"  //  🧙 For CLANG_VERSION_LE.
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -22,7 +23,6 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/poisson_series.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 #include "numerics/unbounded_arrays.hpp"
@@ -54,7 +54,6 @@ using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
-using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::numerics::_unbounded_arrays;
@@ -349,6 +348,7 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
 }
 
+#if !(PRINCIPIA_COMPILER_CLANG && CLANG_VERSION_LE(17, 0, 6))
 TEST_F(MathematicaTest, Symbol) {
   Symbol s("s");
   EXPECT_EQ(R"(s[1, "foo", List[]])", (s[1, "foo", std::tuple{}]));
@@ -356,6 +356,7 @@ TEST_F(MathematicaTest, Symbol) {
       R"(s[1729, List[Times[16^^18000000000000,Power[2,Subtract[1,52]]]]])",
       (s[1729, std::tuple{3 * Metre}, ExpressInSIUnits]));
 }
+#endif
 
 TEST_F(MathematicaTest, Rule) {
   EXPECT_EQ("Rule[option," + ToMathematica(3.0) + "]", Rule("option", 3.0));
