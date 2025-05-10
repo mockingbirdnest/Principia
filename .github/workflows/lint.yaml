@@ -62,7 +62,8 @@ jobs:
             "-runtime/arrays",
             "-build/include_order",
             "-readability/braces",
-            "-build/namespaces")
+            "-build/namespaces",
+            "-whitespace/braces")
         $errors = @()
         $ErrorActionPreference = "Continue"
         if ($env:GITHUB_EVENT_NAME -eq "pull_request") {
