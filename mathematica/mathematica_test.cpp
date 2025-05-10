@@ -6,6 +6,7 @@
 
 #include "absl/strings/str_replace.h"
 #include "astronomy/orbital_elements.hpp"
+#include "base/macros.hpp"  //  🧙 For CLANG_VERSION_GE.
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -349,6 +350,7 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
 }
 
+#if !PRINCIPIA_COMPILER_CLANG || CLANG_VERSION_GE(17, 0, 7)
 TEST_F(MathematicaTest, Symbol) {
   Symbol s("s");
   EXPECT_EQ(R"(s[1, "foo", List[]])", (s[1, "foo", std::tuple{}]));
@@ -356,6 +358,7 @@ TEST_F(MathematicaTest, Symbol) {
       R"(s[1729, List[Times[16^^18000000000000,Power[2,Subtract[1,52]]]]])",
       (s[1729, std::tuple{3 * Metre}, ExpressInSIUnits]));
 }
+#endif
 
 TEST_F(MathematicaTest, Rule) {
   EXPECT_EQ("Rule[option," + ToMathematica(3.0) + "]", Rule("option", 3.0));
