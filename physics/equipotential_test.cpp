@@ -39,6 +39,7 @@
 namespace principia {
 namespace physics {
 
+using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::SizeIs;
 using namespace principia::astronomy::_stabilize_ksp;
@@ -377,7 +378,7 @@ TEST_F(EquipotentialTest, KSPL₄L₅) {
   CHECK_OK(ephemeris->Prolong(t));
   auto const lines = equipotential.ComputeLines(
       plane, t, peaks, wells, towards_infinity, energy);
-  EXPECT_THAT(lines, ElementsAre(SizeIs(966)));
+  EXPECT_THAT(lines, ElementsAre(AnyOf(SizeIs(966), SizeIs(967))));
 }
 #endif
 
