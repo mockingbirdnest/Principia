@@ -367,7 +367,7 @@ TEST_F(EquipotentialTest, KSPL₄L₅) {
                                             -9.5558346840227855e-21 * Metre,
                                             -5.2603338992261777e-22 * Metre}),
        .radius = 0.73230345545398934 * Metre}};
-  auto const towards_infinity = [](Position<RotatingPulsating> q) {
+  auto const towards_infinity = [box_side](Position<RotatingPulsating> q) {
     return RotatingPulsating::origin +
            Normalize(q - RotatingPulsating::origin) * box_side;
   };
