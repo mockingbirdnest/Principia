@@ -90,7 +90,7 @@
     <None Include="newhall.wl">
       <Filter>Scripts</Filter>
     </None>
-    <None Include="floating_point.wl">
+    <None Include="ieee754_floating_point.wl">
       <Filter>Scripts</Filter>
     </None>
   </ItemGroup>
