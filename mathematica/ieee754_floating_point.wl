@@ -63,9 +63,9 @@ Representation::usage =
 "specified by \!\(\*StyleBox[\"SetFloatingPointFormat\", \"TI\"]\).  The " <>
 "integer part of the result corresponds to the IEEE " <>
 "(\!\(\*StyleBox[\"sign\", \"TI\"]\), " <>
-"\!\(\*StyleBox[\"exponent\", \"TI\"]\), " <>
-"\!\(\*StyleBox[\"mantissa\", \"TI\"]\)) as an unsigned integer, its " <>
-"fractional part to the bits after the mantissa."
+"\!\(\*StyleBox[\"biased exponent\", \"TI\"]\), " <>
+"\!\(\*StyleBox[\"trailing significand field\", \"TI\"]\)) as an unsigned " <>
+"integer, its fractional part to the bits after the significand."
 Representation::argnum =
 "Representation called with `1` arguments; 1 argument is expected.";
 
@@ -76,9 +76,10 @@ FromRepresentation::usage =
 "the number whose representation is \!\(\*StyleBox[\"repr\", \"TI\"]\).  " <>
 "\!\(\*StyleBox[\"repr\", \"TI\"]\)  must be an unsigned integer " <>
 "corresponding to the IEEE (\!\(\*StyleBox[\"sign\", \"TI\"]\), " <>
-"\!\(\*StyleBox[\"exponent\", \"TI\"]\), " <>
-"\!\(\*StyleBox[\"mantissa\", \"TI\"]\)), possibly with a fractional part, " <>
-"similar to the result of \!\(\*StyleBox[\"FromRepresentation\", \"TI\"]\).";
+"\!\(\*StyleBox[\"biased exponent\", \"TI\"]\), " <>
+"\!\(\*StyleBox[\"trailing significand field\", \"TI\"]\)), possibly with a " <>
+"fractional part, similar to the result of " <>
+"\!\(\*StyleBox[\"FromRepresentation\", \"TI\"]\).";
 FromRepresentation::argnum =
 "FromRepresentation called with `1` arguments; 1 argument is expected.";
 
@@ -112,11 +113,10 @@ Bits::usage =
 "\!\(\*StyleBox[\"extraBits\", \"TI\"]\)] returns a string representation " <>
 "of the bits of \!\(\*StyleBox[\"x\", \"TI\"]\), separating out the " <>
 "\!\(\*StyleBox[\"sign\", \"TI\"]\), " <>
-"\!\(\*StyleBox[\"exponent\", \"TI\"]\), " <>
-"and \!\(\*StyleBox[\"mantissa\", \"TI\"]\).  If " <>
+"\!\(\*StyleBox[\"biased exponent\", \"TI\"]\), " <>
+"and \!\(\*StyleBox[\"trailing significand field\", \"TI\"]\).  If " <>
 "\!\(\*StyleBox[\"extraBits\", \"TI\"]\) is provided, it specifies the " <>
-"number of bits to display after the " <>
-"\!\(\*StyleBox[\"mantissa\", \"TI\"]\); it defaults to 10."
+"number of bits to display after the significand; it defaults to 10."
 Bits::argnum =
 "Bits called with `1` arguments; 1 or 2 arguments are expected.";
 
@@ -125,7 +125,8 @@ HexLiteral;
 HexLiteral::usage =
 "HexLiteral[\!\(\*StyleBox[\"x\", \"TI\"]\)] returns a string " <>
 "representation of \!\(\*StyleBox[\"x\", \"TI\"]\) suitable for use in the " <>
-"C++ language.  The digits after the mantissa are separated by a single tick."
+"C++ language.  The digits after the significand are separated by a single " <>
+"tick."
 HexLiteral::argnum =
 "HexLiteral called with `1` arguments; 1 argument is expected.";
 Attributes[HexLiteral]={Listable}
