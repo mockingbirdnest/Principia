@@ -1,7 +1,19 @@
 (* ::Package:: *)
 
 (* ::Input::Initialization:: *)
-Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]]
+Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]];
+
+
+(* ::Input::Initialization:: *)
+?IEEE754FloatingPointEvaluation`*
+
+
+(* ::Input::Initialization:: *)
+?UseFMA
+
+
+(* ::Input::Initialization:: *)
+?IEEEEvaluate
 
 
 (* ::Input::Initialization:: *)
