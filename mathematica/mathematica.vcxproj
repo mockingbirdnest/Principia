@@ -36,6 +36,7 @@
     <None Include="generate_graphs.wl" />
     <None Include="ieee754_floating_point_evaluation.wl" />
     <None Include="ieee754_floating_point_evaluation_test.wl" />
+    <None Include="ieee754_floating_point_test.wl" />
     <None Include="navball.wl" />
     <None Include="integration.wl" />
     <None Include="newhall.wl" />
