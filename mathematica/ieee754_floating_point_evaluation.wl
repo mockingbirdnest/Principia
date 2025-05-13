@@ -11,11 +11,13 @@ IEEEEvaluate::usage =
 "IEEEEvaluate[\!\(\*StyleBox[\"x\",\nFontSlant->\"Italic\"]\)] " <>
 "evaluates \!\(\*StyleBox[\"x\",\nFontSlant->\"Italic\"]\) " <>
 "according to the rules of IEEE arithmetic.  It uses the format set by " <>
-"SetFloatingPointFormat and the rounding mode set by SetRoundingMode.";
+"SetFloatingPointFormat and the rounding mode set by SetRoundingMode.  " <>
+"It does not support associativity, i.e., parentheses are required.";
 IEEEEvaluate::argnum =
 "IEEEEvaluate called with `1` arguments; 1 argument is expected.";
 IEEEEvaluate::badarg =
-"IEEEEvaluate must be called with Plus, Times, Power, or a number."
+"IEEEEvaluate must be called with Plus, Times, Power, or a number " <>
+"and does not support associativity, i.e., parentheses are required."
 
 
 UseFMA;
@@ -35,17 +37,17 @@ Options[IEEEEvaluate]={UseFMA->True};
 IEEEEvaluate[x:(_Plus|_Times|_Power|_?NumberQ),OptionsPattern[]]:=
 Block[
 {Plus,Times,ev},
-ClearAttributes[Plus,Flat];
-ClearAttributes[Times,Flat];
 SetAttributes[ev,HoldAll];
 ev[a_*b_+c_]:=
 If[
 OptionValue[UseFMA],
 CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]+IEEEEvaluate[c]],
 CorrectlyRound[CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]]+IEEEEvaluate[c]]];
-ev[a_ +b_]:=CorrectlyRound[IEEEEvaluate[a]+IEEEEvaluate[b]];
+ev[a_+b_]:=CorrectlyRound[IEEEEvaluate[a]+IEEEEvaluate[b]];
+ev[a_+b__]:=(Message[IEEEEvaluate::badarg]; $Failed);
 ev[a_-b_]:=CorrectlyRound[IEEEEvaluate[a]-IEEEEvaluate[b]];
 ev[a_*b_]:=CorrectlyRound[IEEEEvaluate[a]*IEEEEvaluate[b]];
+ev[a_*b__]:=(Message[IEEEEvaluate::badarg]; $Failed);
 ev[a_/b_]:=CorrectlyRound[IEEEEvaluate[a]/IEEEEvaluate[b]];
 ev[a_^2]:=CorrectlyRound[IEEEEvaluate[a ]IEEEEvaluate[a]];
 ev[a_^3]:=CorrectlyRound[IEEEEvaluate[a^2 ]IEEEEvaluate[a]];

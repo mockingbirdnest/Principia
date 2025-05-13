@@ -82,7 +82,7 @@ Assert[IEEEEvaluate[N[1/3,100]]==CorrectlyRound[1/3]]
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluate[\[Pi]]=!=CorrectlyRound[\[Pi]]]
+Assert[IEEEEvaluate[\[Pi]]==$Failed]
 
 
 (* ::Input::Initialization:: *)
@@ -94,4 +94,52 @@ Assert[IEEEEvaluate[1/3*1/5+1/7,UseFMA->False]==CorrectlyRound[CorrectlyRound[Co
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluate[1/3*1/5+1/7,UseFMA->False]=!=IEEEEvaluate[1/3*1/5+1/7,UseFMA->True]]
+Assert[IEEEEvaluate[1/3*1/5+1/7,UseFMA->False]!=IEEEEvaluate[1/3*1/5+1/7,UseFMA->True]]
+
+
+(* ::Input::Initialization:: *)
+Assert[
+IEEEEvaluate[((((((((1/10+1/10)+1/10)+1/10)+1/10)+1/10)+1/10)+1/10)+1/10)+1/10]==
+Nest[CorrectlyRound[#+CorrectlyRound[1/10]]&,0,10]]
+
+
+(* ::Input::Initialization:: *)
+Assert[
+IEEEEvaluate[((((((((1/10+1/10)+1/10)+1/10)+1/10)+1/10)+1/10)+1/10)+1/10)+1/10]!=1]
+
+
+(* ::Input::Initialization:: *)
+Assert[
+IEEEEvaluate[1/10+1/10+1/10+1/10+1/10+1/10+1/10+1/10+1/10+1/10]==$Failed]
+
+
+(* ::Input::Initialization:: *)
+Assert[
+IEEEEvaluate[((((((((1/10*1/10)*1/10)*1/10)*1/10)*1/10)*1/10)*1/10)*1/10)*1/10]==
+Nest[CorrectlyRound[#*CorrectlyRound[1/10]]&,1,10]]
+
+
+(* ::Input::Initialization:: *)
+Assert[
+IEEEEvaluate[((((((((1/10*1/10)*1/10)*1/10)*1/10)*1/10)*1/10)*1/10)*1/10)*1/10]!=10^-10]
+
+
+(* ::Input::Initialization:: *)
+Assert[
+IEEEEvaluate[1/10*1/10*1/10*1/10*1/10*1/10*1/10*1/10*1/10*1/10]==$Failed]
+
+
+(* ::Input::Initialization:: *)
+Assert[
+IEEEEvaluate[((((((((-1/10-1/10)-1/10)-1/10)-1/10)-1/10)-1/10)-1/10)-1/10)-1/10]==
+Nest[CorrectlyRound[#-CorrectlyRound[1/10]]&,0,10]]
+
+
+(* ::Input::Initialization:: *)
+Assert[
+IEEEEvaluate[((((((((-1/10-1/10)-1/10)-1/10)-1/10)-1/10)-1/10)-1/10)-1/10)-1/10]!=-1]
+
+
+(* ::Input::Initialization:: *)
+Assert[
+IEEEEvaluate[-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10]==$Failed]
