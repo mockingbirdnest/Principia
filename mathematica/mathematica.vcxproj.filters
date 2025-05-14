@@ -93,5 +93,14 @@
     <None Include="ieee754_floating_point.wl">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="ieee754_floating_point_evaluation.wl">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="ieee754_floating_point_evaluation_test.wl">
+      <Filter>Scripts</Filter>
+    </None>
+    <None Include="ieee754_floating_point_test.wl">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>
