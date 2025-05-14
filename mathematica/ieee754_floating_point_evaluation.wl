@@ -16,8 +16,10 @@ IEEEEvaluate::usage =
 IEEEEvaluate::argnum =
 "IEEEEvaluate called with `1` arguments; 1 argument is expected.";
 IEEEEvaluate::badarg =
-"IEEEEvaluate must be called with Plus, Times, Power, or a number " <>
-"and does not support associativity, i.e., parentheses are required."
+"IEEEEvaluate must be called with Plus, Times, Power, or a number."
+IEEEEvaluate::badass =
+"IEEEEvaluate does not support associativity, expressions must be " <>
+"parenthesized."
 
 
 UseFMA;
@@ -44,10 +46,10 @@ OptionValue[UseFMA],
 CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]+IEEEEvaluate[c]],
 CorrectlyRound[CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]]+IEEEEvaluate[c]]];
 ev[a_+b_]:=CorrectlyRound[IEEEEvaluate[a]+IEEEEvaluate[b]];
-ev[a_+b__]:=(Message[IEEEEvaluate::badarg]; $Failed);
+ev[a_+b__]:=(Message[IEEEEvaluate::badass]; $Failed);
 ev[a_-b_]:=CorrectlyRound[IEEEEvaluate[a]-IEEEEvaluate[b]];
 ev[a_*b_]:=CorrectlyRound[IEEEEvaluate[a]*IEEEEvaluate[b]];
-ev[a_*b__]:=(Message[IEEEEvaluate::badarg]; $Failed);
+ev[a_*b__]:=(Message[IEEEEvaluate::badass]; $Failed);
 ev[a_/b_]:=CorrectlyRound[IEEEEvaluate[a]/IEEEEvaluate[b]];
 ev[a_^2]:=CorrectlyRound[IEEEEvaluate[a ]IEEEEvaluate[a]];
 ev[a_^3]:=CorrectlyRound[IEEEEvaluate[a^2 ]IEEEEvaluate[a]];
