@@ -75,26 +75,24 @@ SetAttributes[IEEEEvaluateInterval,HoldAll];
 Options[IEEEEvaluateInterval]={UseFMA->True};
 IEEEEvaluateInterval[x_,OptionsPattern[]]:=
 Block[
-{Interval,Plus,Times,evi},
+{Plus,Times,evi,usefma=OptionValue[UseFMA]},
 SetAttributes[evi,HoldAll];
-evi[a_*b_+c_]:=
-If[
-OptionValue[UseFMA],
-(IEEEEvaluateInterval[a]IEEEEvaluateInterval[b]+IEEEEvaluateInterval[c])(1+\[Delta]Interval),
-((IEEEEvaluateInterval[a]IEEEEvaluateInterval[b])(1+\[Delta]Interval)+IEEEEvaluateInterval[c])(1+\[Delta]Interval)];
-evi[a_+b_]:=(IEEEEvaluateInterval[a]+IEEEEvaluateInterval[b])(1+\[Delta]Interval);
+evi[a_*b_+c_]:=If[usefma,(evi[a]evi[b]+evi[c])(1+\[Delta]Interval),((evi[a]evi[b])(1+\[Delta]Interval)+evi[c])(1+\[Delta]Interval)];
+evi[a_+b_]:=(evi[a]+evi[b])(1+\[Delta]Interval);
 evi[a_+b__]:=(Message[IEEEEvaluateInterval::badass]; $Failed);
-evi[a_*b_]:=(IEEEEvaluateInterval[a]IEEEEvaluateInterval[b])(1+\[Delta]Interval);
+evi[a_*b_]:=(evi[a]evi[b])(1+\[Delta]Interval);
 evi[a_*b__]:=(Message[IEEEEvaluateInterval::badass]; $Failed);
-evi[a_/b_]:=(IEEEEvaluateInterval[a]/IEEEEvaluateInterval[b])(1+\[Delta]Interval);
+evi[a_/b_]:=(evi[a]/evi[b])(1+\[Delta]Interval);
 (*Squaring an interval is not the same as multiplying two identical intervals.*) 
-evi[a_^2]:=IEEEEvaluateInterval[a]^2(1+\[Delta]Interval);
-evi[a_^3]:=IEEEEvaluateInterval[a]^3(1+\[Delta]Interval)(1+\[Delta]Interval);
-evi[a_^4]:=IEEEEvaluateInterval[a]^4(1+\[Delta]Interval)(1+\[Delta]Interval);
+evi[a_^2]:=evi[a]^2(1+\[Delta]Interval);
+evi[a_^3]:=evi[a]^3(1+\[Delta]Interval)(1+\[Delta]Interval);
+evi[a_^4]:=evi[a]^4(1+\[Delta]Interval)(1+\[Delta]Interval);
 evi[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},Interval[{cra,cra}]];
-evi[Interval[{a_,b_}]]:=Interval[{Min[IEEEEvaluateInterval[a]],Max[IEEEEvaluateInterval[b]]}];
 evi[a_]:=ReleaseHold[a];
 evi[x]];
+
+
+halfULPInterval=Block[{hu=FromRepresentation[Representation[1]-1/2]-1},Interval[{-hu,hu}]];
 
 
 End[]
