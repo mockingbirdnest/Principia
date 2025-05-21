@@ -28,6 +28,12 @@ IEEEEvaluateInterval::badass =
 "parenthesized."
 
 
+IEEEEvaluateAbsoluteInterval;
+IEEEEvaluateAbsoluteInterval::badass =
+"IEEEEvaluateAbsoluteInterval does not support associativity, expressions must be " <>
+"parenthesized."
+
+
 UseFMA;
 UseFMA::usage =
 "UseFMA is an option for IEEEEvaluate that specifies whether to use FMA " <>
@@ -92,7 +98,38 @@ evi[a_]:=ReleaseHold[a];
 evi[x]];
 
 
-halfULPInterval=Block[{hu=FromRepresentation[Representation[1]-1/2]-1},Interval[{-hu,hu}]];
+intervalMax[x_Interval]:=Max[x];
+
+
+halfULP[x_]:=Block[{
+(*Would want to write Max[Log[...]] below but that doesn't work somehow because evai is HoldAll.*)
+exponent=Log2[intervalMax[Abs[x]]],
+halfULP1=1-FromRepresentation[Representation[1]-1/2]},
+halfULP1 2^Ceiling[exponent]];
+
+
+addHalfULPInterval[x_]:=Block[{h=halfULP[x]},x+Interval[{-h,h}]];
+
+
+SetAttributes[IEEEEvaluateAbsoluteInterval,HoldAll];
+Options[IEEEEvaluateAbsoluteInterval]={UseFMA->True};
+IEEEEvaluateAbsoluteInterval[x_,OptionsPattern[]]:=
+Block[
+{Plus,Times,evai,usefma=OptionValue[UseFMA]},
+SetAttributes[evai,HoldAll];
+evai[a_*b_+c_]:=If[usefma,(evai[a]evai[b]+evai[c])(1+\[Delta]Interval),((evai[a]evai[b])(1+\[Delta]Interval)+evai[c])(1+\[Delta]Interval)];
+evai[a_+b_]:=addHalfULPInterval[evai[a]+evai[b]];
+evai[a_+b__]:=(Message[IEEEEvaluateInterval::badass]; $Failed);
+evai[a_*b_]:=addHalfULPInterval[evai[a]evai[b]];
+evai[a_*b__]:=(Message[IEEEEvaluateInterval::badass]; $Failed);
+evai[a_/b_]:=addHalfULPInterval[evai[a]/evai[b]];
+(*Squaring an interval is not the same as multiplying two identical intervals.*) 
+evai[a_^2]:=addHalfULPInterval[evai[a]^2];
+evai[a_^3]:=Nest[addHalfULPInterval,evai[a]^3,2];
+evai[a_^4]:=Nest[addHalfULPInterval,evai[a]^4,2];
+evai[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},Interval[{cra,cra}]];
+evai[a_]:=ReleaseHold[a];
+evai[x]];
 
 
 End[]
