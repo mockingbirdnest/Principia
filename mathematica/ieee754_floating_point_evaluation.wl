@@ -117,11 +117,14 @@ IEEEEvaluateAbsoluteInterval[x_,OptionsPattern[]]:=
 Block[
 {Plus,Times,evai,usefma=OptionValue[UseFMA]},
 SetAttributes[evai,HoldAll];
-evai[a_*b_+c_]:=If[usefma,(evai[a]evai[b]+evai[c])(1+\[Delta]Interval),((evai[a]evai[b])(1+\[Delta]Interval)+evai[c])(1+\[Delta]Interval)];
+evai[a_*b_+c_]:=If[
+usefma,
+addHalfULPInterval[evai[a]evai[b]+evai[c]],
+addHalfULPInterval[addHalfULPInterval[evai[a]evai[b]]+evai[c]]];
 evai[a_+b_]:=addHalfULPInterval[evai[a]+evai[b]];
-evai[a_+b__]:=(Message[IEEEEvaluateInterval::badass]; $Failed);
+evai[a_+b__]:=(Message[IEEEEvaluateAbsoluteInterval::badass]; $Failed);
 evai[a_*b_]:=addHalfULPInterval[evai[a]evai[b]];
-evai[a_*b__]:=(Message[IEEEEvaluateInterval::badass]; $Failed);
+evai[a_*b__]:=(Message[IEEEEvaluateAbsoluteInterval::badass]; $Failed);
 evai[a_/b_]:=addHalfULPInterval[evai[a]/evai[b]];
 (*Squaring an interval is not the same as multiplying two identical intervals.*) 
 evai[a_^2]:=addHalfULPInterval[evai[a]^2];
