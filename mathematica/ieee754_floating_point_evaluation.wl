@@ -125,8 +125,8 @@ evai[a_*b__]:=(Message[IEEEEvaluateInterval::badass]; $Failed);
 evai[a_/b_]:=addHalfULPInterval[evai[a]/evai[b]];
 (*Squaring an interval is not the same as multiplying two identical intervals.*) 
 evai[a_^2]:=addHalfULPInterval[evai[a]^2];
-evai[a_^3]:=Nest[addHalfULPInterval,evai[a]^3,2];
-evai[a_^4]:=Nest[addHalfULPInterval,evai[a]^4,2];
+evai[a_^3]:=Block[{t},addHalfULPInterval[addHalfULPInterval[evai[t]^2]evai[t]]/.t->a];
+evai[a_^4]:=Block[{t},addHalfULPInterval[addHalfULPInterval[evai[t]^2]^2]/.t->a];
 evai[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},Interval[{cra,cra}]];
 evai[a_]:=ReleaseHold[a];
 evai[x]];
