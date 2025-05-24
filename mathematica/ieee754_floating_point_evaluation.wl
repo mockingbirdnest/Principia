@@ -87,7 +87,7 @@ intervalMin[x_Interval]:=Min[x];
 
 
 (* ::Text:: *)
-(*Returns a half ULP above for the largest element (in absolute value) of its argument.  The returned value is positive, regardless of the sign of the exponent.  The argument is an interval or an unbound variable.*)
+(*Returns a half ULP above for the largest element (in absolute value) of its argument.  The returned value is positive, regardless of the sign of the argument.  The argument is an interval or an unbound variable.*)
 
 
 (* Would want to write Max[Log[...]] below but that doesn't work somehow because evae is HoldAll. *)

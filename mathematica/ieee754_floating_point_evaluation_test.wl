@@ -107,7 +107,7 @@ IEEEEvaluate[-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10]==$Failed];
 
 
 (* ::Section::Initialization:: *)
-(*IEEEEvaluateInterval*)
+(*(*IEEEEvaluateInterval*)*)
 
 
 (* ::Input::Initialization:: *)
@@ -185,6 +185,10 @@ Assert[IEEEEvaluateWithAbsoluteError[Interval[{1,Undefined}]]===Interval[{1,Unde
 Assert[IEEEEvaluateWithAbsoluteError[2,3]==$Failed];
 
 
+(* ::Text:: *)
+(*The error analysis from [SZ05], section 2.1 (section 3.1 in the preprint, which is more explicit when it comes to the analysis.)*)
+
+
 (* ::Input::Initialization:: *)
 Begin["`SZ05`"]
 
@@ -246,7 +250,7 @@ bits[\[Delta]k']
 
 
 (* ::Text::Initialization:: *)
-(*TODO(phl): Propagate positiveness of the lower bound.*)
+(*(*TODO(phl): Propagate positiveness of the lower bound.*)*)
 
 
 (* ::Input::Initialization:: *)
@@ -318,7 +322,7 @@ C\[FivePointedStar]2=IEEEEvaluateWithAbsoluteError[C\[FivePointedStar]1-a2]
 
 
 (* ::Text::Initialization:: *)
-(*TODO(phl): Because our interval "bleed" a bit below 0 for values that should remain positive, we don't have the expected bound here and we lose at least a bit.  Error evaluation differ after this point.*)
+(*(*TODO(phl): Because our intervals "bleed" a bit below 0 for values that should remain positive, we don't have the expected bound here and we lose at least a bit.  Error evaluation differ after this point.*)*)
 
 
 (* ::Input::Initialization:: *)
