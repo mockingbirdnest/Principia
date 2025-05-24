@@ -22,13 +22,14 @@ IEEEEvaluate::badass =
 "parenthesized."
 
 
-IEEEEvaluateInterval;
-IEEEEvaluateInterval::badass =
-"IEEEEvaluateInterval does not support associativity, expressions must be " <>
-"parenthesized."
-
-
 IEEEEvaluateWithAbsoluteError;
+IEEEEvaluateWithAbsoluteError::usage =
+"IEEEEvaluateWithAbsoluteError[\!\(\*StyleBox[\"x\",\nFontSlant->\"Italic\"]\)] " <>
+"evaluates \!\(\*StyleBox[\"x\",\nFontSlant->\"Italic\"]\), " <>
+"which may include intervals or unbound variables, with proper " <>
+"propagation of absolute error (1/2 ULP of the result on each operation)."
+IEEEEvaluateWithAbsoluteError::argnum =
+"IEEEEvaluate called with `1` arguments; 1 argument is expected.";
 IEEEEvaluateWithAbsoluteError::badass =
 "IEEEEvaluateWithAbsoluteError does not support associativity, expressions must be " <>
 "parenthesized."
@@ -128,11 +129,13 @@ evae[-a_]:=-evae[a];
 (* Squaring an interval is not the same as multiplying two identical intervals.
 Also, if the lower bound of the square is 0, it is exact. *) 
 evae[a_^2]:=addHalfULPInterval[evae[a]^2,Positive->True];
-evae[a_^3]:=Block[{t},Simplify[addHalfULPInterval[addHalfULPInterval[evae[t]^2,Positive->True]evae[t]]]/.t->a];
+evae[a_^3]:=Block[{t},Expand[addHalfULPInterval[addHalfULPInterval[evae[t]^2,Positive->True]evae[t]]]/.t->a];
 evae[a_^4]:=addHalfULPInterval[addHalfULPInterval[evae[a]^2,Positive->True]^2,Positive->True];
 evae[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},Interval[{cra,cra}]];
 evae[a_]:=ReleaseHold[a];
 evae[x]];
+IEEEEvaluateWithAbsoluteError[_, args__]:=
+(Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);
 
 
 End[]
