@@ -70,7 +70,7 @@ In particular, $\ULP\of{1} = 2^{1 - M}$ and:
 
 We ignore the exponent bias, overflow and underflow as they play no role in this discussion.
 
-Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\gd_i < u = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
+Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\abs{\gd_i} < u = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
 
 \section*{Approximation of $\frac{\Pi}{2}$}
 To perform argument reduction, we need to build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
