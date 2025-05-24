@@ -28,9 +28,9 @@ IEEEEvaluateInterval::badass =
 "parenthesized."
 
 
-IEEEEvaluateAbsoluteInterval;
-IEEEEvaluateAbsoluteInterval::badass =
-"IEEEEvaluateAbsoluteInterval does not support associativity, expressions must be " <>
+IEEEEvaluateWithAbsoluteError;
+IEEEEvaluateWithAbsoluteError::badass =
+"IEEEEvaluateWithAbsoluteError does not support associativity, expressions must be " <>
 "parenthesized."
 
 
@@ -74,49 +74,65 @@ IEEEEvaluate[_, args__]:=
 (Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);
 
 
-halfULPBelow1:=1-FromRepresentation[Representation[1]-1/2];
+halfULPAbove1:=FromRepresentation[Representation[1]+1/2]-1;
+
+
+(* ::Text:: *)
+(*Min and Max when applied to an undefined value return that value.  These functions don't do that, they just stay unevaluated.*)
 
 
 intervalMax[x_Interval]:=Max[x];
 intervalMin[x_Interval]:=Min[x];
 
 
-(*Would want to write Max[Log[...]] below but that doesn't work somehow because evai is HoldAll.*)
-halfULP[x_]:=Block[{exponent=Log2[intervalMax[Abs[x]]]},halfULPBelow1 2^Ceiling[exponent]];
+(* ::Text:: *)
+(*Returns a half ULP above for the largest element (in absolute value) of its argument.  The returned value is positive, regardless of the sign of the exponent.  The argument is an interval or an unbound variable.*)
+
+
+(* Would want to write Max[Log[...]] below but that doesn't work somehow because evae is HoldAll. *)
+halfULP[x_]:=Block[{exponent=Log2[intervalMax[Abs[x]]]},halfULPAbove1 2^Floor[exponent]];
+
+
+(* ::Text:: *)
+(*Extends the interval of its argument by a half ULP on both sides.  If Positive is True, the lower bound is not extended below 0.  This is pessimistic as we use the largest ULP over the interval.*)
 
 
 Options[addHalfULPInterval]={Positive->False};
 addHalfULPInterval[x_,OptionsPattern[]]:=
-Block[{h=halfULP[x]},If[OptionValue[Positive],x+Interval[{0,h}],x+Interval[{-h,h}]]];
+Block[{h=halfULP[x]},
+(* The returned interval must explicitly contain x.  This ensures that, if x is unbound it can
+later be removed to get the absolute error. *)
+If[
+OptionValue[Positive],
+x+Interval[{-Min[h,IEEE754FloatingPointEvaluation`Private`intervalMin[x]],h}],
+x+Interval[{-h,h}]]];
 
 
-SetAttributes[IEEEEvaluateAbsoluteInterval,HoldAll];
-Options[IEEEEvaluateAbsoluteInterval]={UseFMA->True};
-IEEEEvaluateAbsoluteInterval[x_,OptionsPattern[]]:=
+SetAttributes[IEEEEvaluateWithAbsoluteError,HoldAll];
+Options[IEEEEvaluateWithAbsoluteError]={UseFMA->True};
+IEEEEvaluateWithAbsoluteError[x_,OptionsPattern[]]:=
 Block[
-{Plus,Times,evai,usefma=OptionValue[UseFMA]},
-SetAttributes[evai,HoldAll];
-evai[a_*b_+c_]:=If[
+{Plus,Times,evae,usefma=OptionValue[UseFMA]},
+SetAttributes[evae,HoldAll];
+evae[a_*b_+c_]:=If[
 usefma,
-addHalfULPInterval[evai[a]evai[b]+evai[c]],
-addHalfULPInterval[addHalfULPInterval[evai[a]evai[b]]+evai[c]]];
-evai[a_+b_]:=addHalfULPInterval[evai[a]+evai[b]];
-evai[a_+b__]:=(Message[IEEEEvaluateAbsoluteInterval::badass]; $Failed);
-evai[a_*b_]:=addHalfULPInterval[evai[a]evai[b]];
-evai[a_*b__]:=(Message[IEEEEvaluateAbsoluteInterval::badass]; $Failed);
-evai[a_/b_]:=addHalfULPInterval[evai[a]/evai[b]];
-(*Negation is exact.*)
-evai[-a_]:=-evai[a];
-(*Squaring an interval is not the same as multiplying two identical intervals.
-Also, if the lower bound of the square is 0, it is exact.*) 
-evai[a_^2]:=addHalfULPInterval[evai[a]^2,Positive->True];
-evai[a_^3]:=Block[{t},addHalfULPInterval[addHalfULPInterval[evai[t]^2]evai[t]]/.t->a];
-evai[a_^4]:=Block[
-{t},
-addHalfULPInterval[addHalfULPInterval[evai[t]^2,Positive->True]^2,Positive->True]/.t->a];
-evai[a_?NumberQ]:=CorrectlyRound[a];
-evai[a_]:=ReleaseHold[a];
-evai[x]];
+addHalfULPInterval[evae[a]evae[b]+evae[c]],
+addHalfULPInterval[addHalfULPInterval[evae[a]evae[b]]+evae[c]]];
+evae[a_+b_]:=addHalfULPInterval[evae[a]+evae[b]];
+evae[a_+b__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
+evae[a_*b_]:=addHalfULPInterval[evae[a]evae[b]];
+evae[a_*b__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
+evae[a_/b_]:=addHalfULPInterval[evae[a]/evae[b]];
+(* Negation is exact. *)
+evae[-a_]:=-evae[a];
+(* Squaring an interval is not the same as multiplying two identical intervals.
+Also, if the lower bound of the square is 0, it is exact. *) 
+evae[a_^2]:=addHalfULPInterval[evae[a]^2,Positive->True];
+evae[a_^3]:=Block[{t},Simplify[addHalfULPInterval[addHalfULPInterval[evae[t]^2,Positive->True]evae[t]]]/.t->a];
+evae[a_^4]:=addHalfULPInterval[addHalfULPInterval[evae[a]^2,Positive->True]^2,Positive->True];
+evae[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},Interval[{cra,cra}]];
+evae[a_]:=ReleaseHold[a];
+evae[x]];
 
 
 End[]
