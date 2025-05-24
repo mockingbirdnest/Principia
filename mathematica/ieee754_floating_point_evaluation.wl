@@ -74,41 +74,20 @@ IEEEEvaluate[_, args__]:=
 (Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);
 
 
-\[Delta]Interval:=Block[{abs\[Delta]=FromRepresentation[Representation[1]-1]-1},Interval[{-abs\[Delta],abs\[Delta]}]];
-
-
-SetAttributes[IEEEEvaluateInterval,HoldAll];
-Options[IEEEEvaluateInterval]={UseFMA->True};
-IEEEEvaluateInterval[x_,OptionsPattern[]]:=
-Block[
-{Plus,Times,evi,usefma=OptionValue[UseFMA]},
-SetAttributes[evi,HoldAll];
-evi[a_*b_+c_]:=If[usefma,(evi[a]evi[b]+evi[c])(1+\[Delta]Interval),((evi[a]evi[b])(1+\[Delta]Interval)+evi[c])(1+\[Delta]Interval)];
-evi[a_+b_]:=(evi[a]+evi[b])(1+\[Delta]Interval);
-evi[a_+b__]:=(Message[IEEEEvaluateInterval::badass]; $Failed);
-evi[a_*b_]:=(evi[a]evi[b])(1+\[Delta]Interval);
-evi[a_*b__]:=(Message[IEEEEvaluateInterval::badass]; $Failed);
-evi[a_/b_]:=(evi[a]/evi[b])(1+\[Delta]Interval);
-(*Squaring an interval is not the same as multiplying two identical intervals.*) 
-evi[a_^2]:=evi[a]^2(1+\[Delta]Interval);
-evi[a_^3]:=evi[a]^3(1+\[Delta]Interval)(1+\[Delta]Interval);
-evi[a_^4]:=evi[a]^4(1+\[Delta]Interval)(1+\[Delta]Interval);
-evi[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},Interval[{cra,cra}]];
-evi[a_]:=ReleaseHold[a];
-evi[x]];
+halfULPBelow1:=1-FromRepresentation[Representation[1]-1/2];
 
 
 intervalMax[x_Interval]:=Max[x];
+intervalMin[x_Interval]:=Min[x];
 
 
-halfULP[x_]:=Block[{
 (*Would want to write Max[Log[...]] below but that doesn't work somehow because evai is HoldAll.*)
-exponent=Log2[intervalMax[Abs[x]]],
-halfULP1=1-FromRepresentation[Representation[1]-1/2]},
-halfULP1 2^Ceiling[exponent]];
+halfULP[x_]:=Block[{exponent=Log2[intervalMax[Abs[x]]]},halfULPBelow1 2^Ceiling[exponent]];
 
 
-addHalfULPInterval[x_]:=Block[{h=halfULP[x]},x+Interval[{-h,h}]];
+Options[addHalfULPInterval]={Positive->False};
+addHalfULPInterval[x_,OptionsPattern[]]:=
+Block[{h=halfULP[x]},If[OptionValue[Positive],x+Interval[{0,h}],x+Interval[{-h,h}]]];
 
 
 SetAttributes[IEEEEvaluateAbsoluteInterval,HoldAll];
@@ -126,11 +105,16 @@ evai[a_+b__]:=(Message[IEEEEvaluateAbsoluteInterval::badass]; $Failed);
 evai[a_*b_]:=addHalfULPInterval[evai[a]evai[b]];
 evai[a_*b__]:=(Message[IEEEEvaluateAbsoluteInterval::badass]; $Failed);
 evai[a_/b_]:=addHalfULPInterval[evai[a]/evai[b]];
-(*Squaring an interval is not the same as multiplying two identical intervals.*) 
-evai[a_^2]:=addHalfULPInterval[evai[a]^2];
+(*Negation is exact.*)
+evai[-a_]:=-evai[a];
+(*Squaring an interval is not the same as multiplying two identical intervals.
+Also, if the lower bound of the square is 0, it is exact.*) 
+evai[a_^2]:=addHalfULPInterval[evai[a]^2,Positive->True];
 evai[a_^3]:=Block[{t},addHalfULPInterval[addHalfULPInterval[evai[t]^2]evai[t]]/.t->a];
-evai[a_^4]:=Block[{t},addHalfULPInterval[addHalfULPInterval[evai[t]^2]^2]/.t->a];
-evai[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},Interval[{cra,cra}]];
+evai[a_^4]:=Block[
+{t},
+addHalfULPInterval[addHalfULPInterval[evai[t]^2,Positive->True]^2,Positive->True]/.t->a];
+evai[a_?NumberQ]:=CorrectlyRound[a];
 evai[a_]:=ReleaseHold[a];
 evai[x]];
 
