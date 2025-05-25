@@ -106,8 +106,8 @@ Assert[
 IEEEEvaluate[-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10]==$Failed];
 
 
-(* ::Section::Initialization:: *)
-(*(*IEEEEvaluateInterval*)*)
+(* ::Section:: *)
+(*IEEEEvaluateInterval*)
 
 
 (* ::Input::Initialization:: *)
@@ -249,8 +249,8 @@ bits[k']
 bits[\[Delta]k']
 
 
-(* ::Text::Initialization:: *)
-(*(*TODO(phl): Propagate positiveness of the lower bound.*)*)
+(* ::Text:: *)
+(*TODO(phl): Propagate positiveness of the lower bound.*)
 
 
 (* ::Input::Initialization:: *)
@@ -321,8 +321,8 @@ bits[\[Delta]C\[FivePointedStar]1]
 C\[FivePointedStar]2=IEEEEvaluateWithAbsoluteError[C\[FivePointedStar]1-a2]
 
 
-(* ::Text::Initialization:: *)
-(*(*TODO(phl): Because our intervals "bleed" a bit below 0 for values that should remain positive, we don't have the expected bound here and we lose at least a bit.  Error evaluation differ after this point.*)*)
+(* ::Text:: *)
+(*TODO(phl): Because our intervals "bleed" a bit below 0 for values that should remain positive, we don't have the expected bound here and we lose at least a bit.  Error evaluation differ after this point.*)
 
 
 (* ::Input::Initialization:: *)
