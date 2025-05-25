@@ -109,6 +109,41 @@ x+Interval[{-Min[h,IEEE754FloatingPointEvaluation`Private`intervalMin[x]],h}],
 x+Interval[{-h,h}]]];
 
 
+(* Special case because for an interval x*x^2 is not x^3. *)
+applyOp[cube,{va_,\[Delta]a_}]:=Block[
+	{va2,\[Delta]a2,h,r,\[Delta]r},
+	{va2,\[Delta]a2}=applyOp[#^2&,{va,\[Delta]a}];
+	r=va^3;(* Wrong! *)
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=halfULP[r];
+	\[Delta]r=ReplaceAll[Expand[(v2+\[Delta]2)(v+\[Delta])-(v2 v)],{v->va,\[Delta]->\[Delta]a,v2->va2,\[Delta]2->\[Delta]a2}]+Interval[{-h,h}];
+	{r,\[Delta]r}];
+applyOp[op_,{va_,\[Delta]a_}]:=Block[
+	{h,r,\[Delta]r},
+	r=op[va];
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=halfULP[r];
+	\[Delta]r=ReplaceAll[Expand[op[v+\[Delta]]-op[v]],{v->va,\[Delta]->\[Delta]a}]+Interval[{-h,h}];
+	{r,\[Delta]r}];
+applyOp[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
+	{h,r,\[Delta]r},
+	r=op[va,vb];
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=halfULP[r];
+	\[Delta]r=ReplaceAll[Expand[op[v1+\[Delta]1,v2+\[Delta]2]-op[v1,v2]],{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b}]+Interval[{-h,h}];
+	{r,\[Delta]r}];
+applyOp[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_}]:=Block[
+	{h,r,\[Delta]r},
+	r=op[va,vb,vc];
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=halfULP[r];
+	\[Delta]r=ReplaceAll[
+		Expand[op[v1+\[Delta]1,v2+\[Delta]2,v3+\[Delta]3]-op[v1,v2,v3]],
+		{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b,v3->vc,\[Delta]3->\[Delta]c}]+
+		Interval[{-h,h}];
+	{r,\[Delta]r}];
+
+
 SetAttributes[IEEEEvaluateWithAbsoluteError,HoldAll];
 Options[IEEEEvaluateWithAbsoluteError]={UseFMA->True};
 IEEEEvaluateWithAbsoluteError[x_,OptionsPattern[]]:=
@@ -117,22 +152,21 @@ Block[
 SetAttributes[evae,HoldAll];
 evae[a_*b_+c_]:=If[
 usefma,
-addHalfULPInterval[evae[a]evae[b]+evae[c]],
-addHalfULPInterval[addHalfULPInterval[evae[a]evae[b]]+evae[c]]];
-evae[a_+b_]:=addHalfULPInterval[evae[a]+evae[b]];
+applyOp[#1 #2+#3&,evae[a],evae[b],evae[c]],
+applyOp[Plus,applyOp[Times,evae[a],evae[b]],evae[c]]];
+evae[a_+b_]:=applyOp[Plus,evae[a],evae[b]];
 evae[a_+b__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
-evae[a_*b_]:=addHalfULPInterval[evae[a]evae[b]];
+evae[a_*b_]:=applyOp[Times,evae[a],evae[b]];
 evae[a_*b__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
-evae[a_/b_]:=addHalfULPInterval[evae[a]/evae[b]];
+evae[a_/b_]:=applyOp[Divide,evae[a],evae[b]];
 (* Negation is exact. *)
 evae[-a_]:=-evae[a];
-(* Squaring an interval is not the same as multiplying two identical intervals.
-Also, if the lower bound of the square is 0, it is exact. *) 
-evae[a_^2]:=addHalfULPInterval[evae[a]^2,Positive->True];
-evae[a_^3]:=Block[{t},Expand[addHalfULPInterval[addHalfULPInterval[evae[t]^2,Positive->True]evae[t]]]/.t->a];
-evae[a_^4]:=addHalfULPInterval[addHalfULPInterval[evae[a]^2,Positive->True]^2,Positive->True];
-evae[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},Interval[{cra,cra}]];
-evae[a_]:=ReleaseHold[a];
+(* Squaring an interval is not the same as multiplying two identical intervals. *) 
+evae[a_^2]:=applyOp[#^2&,evae[a]];
+evae[a_^3]:=applyOp[cube,evae[a]];
+evae[a_^4]:=applyOp[#^2&,applyOp[#^2&,evae[a]]];
+evae[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},{Interval[{cra,cra}],Interval[{0,0}]}];
+evae[a_Interval]:={a,Interval[{0,0}]};
 evae[x]];
 IEEEEvaluateWithAbsoluteError[_, args__]:=
 (Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);

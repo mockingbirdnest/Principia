@@ -21,7 +21,7 @@ On[Assert]
 ?"IEEE754FloatingPointEvaluation`*"
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*IEEEEvaluate*)
 
 
@@ -140,9 +140,12 @@ Assert[halfULP[Interval[{-1/2,1/2}]]==2^-54];
 Assert[addHalfULPInterval[Interval[{3/2,5/3}]]==Interval[{3/2-2^-53,5/3+2^-53}]];
 Assert[addHalfULPInterval[Interval[{3/2,5}]]==Interval[{3/2-2^-51,5+2^-51}]];
 Assert[addHalfULPInterval[Interval[{-5,3/2}]]==Interval[{-5-2^-51,3/2+2^-51}]];
-Assert[addHalfULPInterval[Interval[{3/2,5/3}],Positive->True]==Interval[{3/2-2^-53,5/3+2^-53}]];
-Assert[addHalfULPInterval[Interval[{0,5}],Positive->True]==Interval[{0,5+2^-51}]];
-Assert[addHalfULPInterval[Interval[{2^-53,5}],Positive->True]==Interval[{0,5+2^-51}]]
+
+
+(* ::Input:: *)
+(*Assert[addHalfULPInterval[nonnegative[Interval[{3/2,5/3}]]]==nonnegative[Interval[{3/2-2^-53,5/3+2^-53}]]];*)
+(*Assert[addHalfULPInterval[nonnegative[Interval[{0,5}]]]==nonnegative[Interval[{0,5+2^-51}]]];*)
+(*Assert[addHalfULPInterval[nonnegative[Interval[{2^-53,5}]]]==nonnegative[Interval[{0,5+2^-51}]]];*)
 
 
 (* ::Input::Initialization:: *)
@@ -150,25 +153,57 @@ $ContextPath=Drop[$ContextPath,1]
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[2*3+4,UseFMA->True]==Interval[{10-2^-50,10+2^-50}]];
-Assert[IEEEEvaluateWithAbsoluteError[2*3+4,UseFMA->False]==Interval[{10-2^-51-2^-50,10+2^-51+2^-50}]];
+Assert[IEEEEvaluateWithAbsoluteError[2*3+4,UseFMA->True]=={Interval[{10,10}],Interval[{-2^-50,2^-50}]}];
+Assert[IEEEEvaluateWithAbsoluteError[2*3+4,UseFMA->False]=={Interval[{10,10}],Interval[{-2^-51-2^-50,2^-51+2^-50}]}];
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[1+2]==Interval[{3-2^-52,3+2^-52}]];
-Assert[IEEEEvaluateWithAbsoluteError[2*3]==Interval[{6-2^-51,6+2^-51}]];
-Assert[IEEEEvaluateWithAbsoluteError[2/3]==Interval[{2/3-2^-54,2/3+2^-54}]]
+Assert[IEEEEvaluateWithAbsoluteError[1+2]=={Interval[{3,3}],Interval[{-2^-52,2^-52}]}];
+Assert[IEEEEvaluateWithAbsoluteError[2*3]=={Interval[{6,6}],Interval[{-2^-51,2^-51}]}];
+Assert[IEEEEvaluateWithAbsoluteError[2/3]=={Interval[{CorrectlyRound[2/3],CorrectlyRound[2/3]}],Interval[{-2^-54,2^-54}]}]
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[-Interval[{-2,1}]]==Interval[{-1,2}]];
+Assert[IEEEEvaluateWithAbsoluteError[-Interval[{-2,1}]]=={Interval[{-1,2}],Interval[{0,0}]}];
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,2}]^2]==Interval[{0,4+2^-51}]];
+Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,2}]^2]=={Interval[{0,4}],Interval[{-2^-51,2^-51}]}];
 (* The error after the squaring is [0, 2^-50]. *)
-Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^3]==Interval[{-1-2^-50-2^-49,27+3 2^-50+2^-49}]];
-Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^4]==Interval[{0,81+2^-100+18 2^-50+2^-47}]];
+Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^3]=={Interval[{-1,27}],Interval[{-3 2^-50-2^-49,3 2^-50+2^-49}]}];
+Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^4]=={Interval[{0,81}],Interval[{-18 2^-50-2^-47,2^-100+18 2^-50+2^-47}]}];
+
+
+(* ::Input:: *)
+(*IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^4]*)
+
+
+(* ::Input:: *)
+(*{v,\[Delta]}=IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^2]*)
+
+
+(* ::Input:: *)
+(*2 v \[Delta]+\[Delta]^2+Interval[{-2^-47,2^-47}]*)
+
+
+(* ::Input:: *)
+(*-18 2^-50-2^-47*)
+
+
+(* ::Input:: *)
+(*2^-50*)
+
+
+(* ::Input:: *)
+(*3 2^-50+2^-49*)
+
+
+(* ::Input:: *)
+(*NumberQ[Interval[{-1,2}]]*)
+
+
+(* ::Input:: *)
+(*Trace[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^3],applyOp|Expand|ReplaceAll|Interval]*)
 
 
 (* ::Input::Initialization:: *)
@@ -183,6 +218,75 @@ Assert[IEEEEvaluateWithAbsoluteError[Interval[{1,Undefined}]]===Interval[{1,Unde
 
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[2,3]==$Failed];
+
+
+(* ::Input:: *)
+(*(Interval[{CorrectlyRound[intervalMin[hh^2]],CorrectlyRound[intervalMax[hh^2]]}]-hh)/.hh->aa*)
+
+
+(* ::Input:: *)
+(*IEEEEvaluateWithAbsoluteError[3 Interval[{-1,2}]^2]*)
+
+
+(* ::Input:: *)
+(*aa=Interval[{-1,2}]*)
+
+
+(* ::Input:: *)
+(*IEEEEvaluateWithAbsoluteError[3 aa^2]*)
+
+
+(* ::Input:: *)
+(*PowerExpand[IEEEEvaluateWithAbsoluteError[3 hh^2]/.hh->aa]*)
+
+
+(* ::Input:: *)
+(*Trace[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^3],IEEE754FloatingPointEvaluation`Private`addHalfULPInterval|IEEE754FloatingPointEvaluation`Private`evae|IEEE754FloatingPointEvaluation`Private`halfULP]*)
+
+
+(* ::Input:: *)
+(*addHalfULPInterval[nonnegative[aa]]*)
+
+
+(* ::Input:: *)
+(*\!\(\**)
+(*TagBox[*)
+(*RowBox[{"addHalfULPInterval", "[", *)
+(*SuperscriptBox[*)
+(*RowBox[{"nonnegative", "[", *)
+(*RowBox[{*)
+(*RowBox[{"Interval", "[", *)
+(*RowBox[{"{", *)
+(*RowBox[{"0", ",", "9"}], "}"}], "]"}], "+", *)
+(*RowBox[{"Interval", "[", *)
+(*RowBox[{"{", *)
+(*RowBox[{*)
+(*RowBox[{"-", *)
+(*RowBox[{"Min", "[", *)
+(*RowBox[{"0", ",", *)
+(*FractionBox[*)
+(*SuperscriptBox["2", *)
+(*RowBox[{"Floor", "[", *)
+(*FractionBox[*)
+(*RowBox[{"Log", "[", "9", "]"}], *)
+(*RowBox[{"Log", "[", "2", "]"}]], "]"}]], "9007199254740992"]}], "]"}]}], ",", *)
+(*FractionBox[*)
+(*SuperscriptBox["2", *)
+(*RowBox[{"Floor", "[", *)
+(*FractionBox[*)
+(*RowBox[{"Log", "[", "9", "]"}], *)
+(*RowBox[{"Log", "[", "2", "]"}]], "]"}]], "9007199254740992"]}], "}"}], "]"}]}], "]"}], "2"], "]"}],*)
+(*HoldForm]\)//Trace*)
+
+
+(* ::Input:: *)
+(*Interval[{0,9}]+Interval[{-Min[0,2^Floor[Log[9]/Log[2]]/9007199254740992],2^Floor[Log[9]/Log[2]]/9007199254740992}]*)
+
+
+(* ::Input:: *)
+(*??\!\(\**)
+(*TagBox["addHalfULPInterval",*)
+(*HoldForm]\)*)
 
 
 (* ::Text:: *)
