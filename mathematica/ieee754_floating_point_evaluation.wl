@@ -166,7 +166,7 @@ evae[a_^2]:=applyOp[#^2&,evae[a]];
 evae[a_^3]:=applyOp[cube,evae[a]];
 evae[a_^4]:=applyOp[#^2&,applyOp[#^2&,evae[a]]];
 evae[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},{Interval[{cra,cra}],Interval[{0,0}]}];
-evae[a_Interval]:={a,Interval[{0,0}]};
+evae[a_]:={ReleaseHold[a],Interval[{0,0}]};
 evae[x]];
 IEEEEvaluateWithAbsoluteError[_, args__]:=
 (Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);
