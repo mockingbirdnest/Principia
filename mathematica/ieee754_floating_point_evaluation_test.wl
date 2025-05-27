@@ -119,7 +119,7 @@ $ContextPath=Prepend[$ContextPath,"IEEE754FloatingPointEvaluation`Private`"]
 
 
 (* ::Input::Initialization:: *)
-Assert[halfULPAbove1==2^-53];
+Assert[halfULPBelow1==2^-54];
 
 
 (* ::Input::Initialization:: *)
@@ -168,125 +168,19 @@ Assert[IEEEEvaluateWithAbsoluteError[-Interval[{-2,1}]]=={Interval[{-1,2}],Inter
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,2}]^2]=={Interval[{0,4}],Interval[{-2^-51,2^-51}]}];
+Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,2}]^2]=={Interval[{0,4}],Interval[{-2^-52,2^-52}]}];
 (* The error after the squaring is [0, 2^-50]. *)
 Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^3]=={Interval[{-1,27}],Interval[{-3 2^-50-2^-49,3 2^-50+2^-49}]}];
 Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^4]=={Interval[{0,81}],Interval[{-18 2^-50-2^-47,2^-100+18 2^-50+2^-47}]}];
 
 
-(* ::Input:: *)
-(*IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^4]*)
-
-
-(* ::Input:: *)
-(*{v,\[Delta]}=IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^2]*)
-
-
-(* ::Input:: *)
-(*2 v \[Delta]+\[Delta]^2+Interval[{-2^-47,2^-47}]*)
-
-
-(* ::Input:: *)
-(*-18 2^-50-2^-47*)
-
-
-(* ::Input:: *)
-(*2^-50*)
-
-
-(* ::Input:: *)
-(*3 2^-50+2^-49*)
-
-
-(* ::Input:: *)
-(*NumberQ[Interval[{-1,2}]]*)
-
-
-(* ::Input:: *)
-(*Trace[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^3],applyOp|Expand|ReplaceAll|Interval]*)
-
-
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[1]==1];
-Assert[IEEEEvaluateWithAbsoluteError[0.1]==CorrectlyRound[0.1]];
-
-
-(* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[Undefined]===Undefined];
-Assert[IEEEEvaluateWithAbsoluteError[Interval[{1,Undefined}]]===Interval[{1,Undefined}]];
+Assert[IEEEEvaluateWithAbsoluteError[1]=={Interval[{1,1}],Interval[{0,0}]}];
+Assert[IEEEEvaluateWithAbsoluteError[0.1]=={Interval[{CorrectlyRound[0.1],CorrectlyRound[0.1]}],Interval[{0,0}]}];
 
 
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[2,3]==$Failed];
-
-
-(* ::Input:: *)
-(*(Interval[{CorrectlyRound[intervalMin[hh^2]],CorrectlyRound[intervalMax[hh^2]]}]-hh)/.hh->aa*)
-
-
-(* ::Input:: *)
-(*IEEEEvaluateWithAbsoluteError[3 Interval[{-1,2}]^2]*)
-
-
-(* ::Input:: *)
-(*aa=Interval[{-1,2}]*)
-
-
-(* ::Input:: *)
-(*IEEEEvaluateWithAbsoluteError[3 aa^2]*)
-
-
-(* ::Input:: *)
-(*PowerExpand[IEEEEvaluateWithAbsoluteError[3 hh^2]/.hh->aa]*)
-
-
-(* ::Input:: *)
-(*Trace[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^3],IEEE754FloatingPointEvaluation`Private`addHalfULPInterval|IEEE754FloatingPointEvaluation`Private`evae|IEEE754FloatingPointEvaluation`Private`halfULP]*)
-
-
-(* ::Input:: *)
-(*addHalfULPInterval[nonnegative[aa]]*)
-
-
-(* ::Input:: *)
-(*\!\(\**)
-(*TagBox[*)
-(*RowBox[{"addHalfULPInterval", "[", *)
-(*SuperscriptBox[*)
-(*RowBox[{"nonnegative", "[", *)
-(*RowBox[{*)
-(*RowBox[{"Interval", "[", *)
-(*RowBox[{"{", *)
-(*RowBox[{"0", ",", "9"}], "}"}], "]"}], "+", *)
-(*RowBox[{"Interval", "[", *)
-(*RowBox[{"{", *)
-(*RowBox[{*)
-(*RowBox[{"-", *)
-(*RowBox[{"Min", "[", *)
-(*RowBox[{"0", ",", *)
-(*FractionBox[*)
-(*SuperscriptBox["2", *)
-(*RowBox[{"Floor", "[", *)
-(*FractionBox[*)
-(*RowBox[{"Log", "[", "9", "]"}], *)
-(*RowBox[{"Log", "[", "2", "]"}]], "]"}]], "9007199254740992"]}], "]"}]}], ",", *)
-(*FractionBox[*)
-(*SuperscriptBox["2", *)
-(*RowBox[{"Floor", "[", *)
-(*FractionBox[*)
-(*RowBox[{"Log", "[", "9", "]"}], *)
-(*RowBox[{"Log", "[", "2", "]"}]], "]"}]], "9007199254740992"]}], "}"}], "]"}]}], "]"}], "2"], "]"}],*)
-(*HoldForm]\)//Trace*)
-
-
-(* ::Input:: *)
-(*Interval[{0,9}]+Interval[{-Min[0,2^Floor[Log[9]/Log[2]]/9007199254740992],2^Floor[Log[9]/Log[2]]/9007199254740992}]*)
-
-
-(* ::Input:: *)
-(*??\!\(\**)
-(*TagBox["addHalfULPInterval",*)
-(*HoldForm]\)*)
 
 
 (* ::Text:: *)
@@ -298,7 +192,7 @@ Begin["`SZ05`"]
 
 
 (* ::Input::Initialization:: *)
-bits[x_Interval]:=N[Log2[Max[Abs[x]]]];
+bits[{v_Interval,\[Delta]v_Interval}]:=N[Log2[Map[Max,Abs[{v,\[Delta]v}]]]];
 
 
 (* ::Input::Initialization:: *)
@@ -326,15 +220,7 @@ k=IEEEEvaluateWithAbsoluteError[h^2]
 
 
 (* ::Input::Initialization:: *)
-\[Delta]k=Abs[IEEEEvaluateWithAbsoluteError[hh^2]-hh^2/.hh->h]
-
-
-(* ::Input::Initialization:: *)
 bits[k]
-
-
-(* ::Input::Initialization:: *)
-bits[\[Delta]k]
 
 
 (* ::Input::Initialization:: *)
@@ -342,19 +228,7 @@ k'=IEEEEvaluateWithAbsoluteError[h^3]
 
 
 (* ::Input::Initialization:: *)
-\[Delta]k'=Abs[Collect[IEEEEvaluateWithAbsoluteError[hh^3]-hh^3,hh]/.hh->h]
-
-
-(* ::Input::Initialization:: *)
 bits[k']
-
-
-(* ::Input::Initialization:: *)
-bits[\[Delta]k']
-
-
-(* ::Text:: *)
-(*TODO(phl): Propagate positiveness of the lower bound.*)
 
 
 (* ::Input::Initialization:: *)
@@ -362,15 +236,7 @@ S\[FivePointedStar]1=IEEEEvaluateWithAbsoluteError[a5 k]
 
 
 (* ::Input::Initialization:: *)
-\[Delta]S\[FivePointedStar]1=Abs[Collect[IEEEEvaluateWithAbsoluteError[a5 hh^2]-a5 hh^2,hh]/.hh->h]
-
-
-(* ::Input::Initialization:: *)
 bits[S\[FivePointedStar]1]
-
-
-(* ::Input::Initialization:: *)
-bits[\[Delta]S\[FivePointedStar]1]
 
 
 (* ::Input::Initialization:: *)
@@ -378,15 +244,7 @@ S\[FivePointedStar]2=IEEEEvaluateWithAbsoluteError[S\[FivePointedStar]1-a3]
 
 
 (* ::Input::Initialization:: *)
-\[Delta]S\[FivePointedStar]2=Abs[Collect[IEEEEvaluateWithAbsoluteError[a5 hh^2-a3]-(a5 hh^2-a3),hh]/.hh->h]
-
-
-(* ::Input::Initialization:: *)
 bits[S\[FivePointedStar]2]
-
-
-(* ::Input::Initialization:: *)
-bits[\[Delta]S\[FivePointedStar]2]
 
 
 (* ::Input::Initialization:: *)
@@ -394,15 +252,7 @@ S\[FivePointedStar]3=IEEEEvaluateWithAbsoluteError[k' S\[FivePointedStar]2]
 
 
 (* ::Input::Initialization:: *)
-\[Delta]S\[FivePointedStar]3=Abs[Collect[IEEEEvaluateWithAbsoluteError[hh^3(a5 hh^2-a3)]-hh^3(a5 hh^2-a3),hh]/.hh->h]
-
-
-(* ::Input::Initialization:: *)
 bits[S\[FivePointedStar]3]
-
-
-(* ::Input::Initialization:: *)
-bits[\[Delta]S\[FivePointedStar]3]
 
 
 (* ::Input::Initialization:: *)
@@ -410,15 +260,7 @@ C\[FivePointedStar]1=IEEEEvaluateWithAbsoluteError[a4 k]
 
 
 (* ::Input::Initialization:: *)
-\[Delta]C\[FivePointedStar]1=Abs[Collect[IEEEEvaluateWithAbsoluteError[a4 hh^2]-a4 hh^2,hh]/.hh->h]
-
-
-(* ::Input::Initialization:: *)
 bits[C\[FivePointedStar]1]
-
-
-(* ::Input::Initialization:: *)
-bits[\[Delta]C\[FivePointedStar]1]
 
 
 (* ::Input::Initialization:: *)
@@ -434,15 +276,7 @@ Min[C\[FivePointedStar]2]>=-1/2
 
 
 (* ::Input::Initialization:: *)
-\[Delta]C\[FivePointedStar]2=Abs[Collect[IEEEEvaluateWithAbsoluteError[a4 hh^2-a2]-(a4 hh^2-a2),hh]/.hh->h]
-
-
-(* ::Input::Initialization:: *)
 bits[C\[FivePointedStar]2]
-
-
-(* ::Input::Initialization:: *)
-bits[\[Delta]C\[FivePointedStar]2]
 
 
 (* ::Input::Initialization:: *)
@@ -450,15 +284,7 @@ C\[FivePointedStar]3=IEEEEvaluateWithAbsoluteError[k C\[FivePointedStar]2]
 
 
 (* ::Input::Initialization:: *)
-\[Delta]C\[FivePointedStar]3=Abs[Collect[IEEEEvaluateWithAbsoluteError[hh^2(a4 hh^2-a2)]-hh^2(a4 hh^2-a2),hh]/.hh->h]
-
-
-(* ::Input::Initialization:: *)
 bits[C\[FivePointedStar]3]
-
-
-(* ::Input::Initialization:: *)
-bits[\[Delta]C\[FivePointedStar]3]
 
 
 (* ::Input::Initialization:: *)

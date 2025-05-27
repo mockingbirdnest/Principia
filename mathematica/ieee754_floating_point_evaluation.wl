@@ -75,7 +75,7 @@ IEEEEvaluate[_, args__]:=
 (Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);
 
 
-halfULPAbove1:=FromRepresentation[Representation[1]+1/2]-1;
+halfULPBelow1:=1-FromRepresentation[Representation[1]-1/2];
 
 
 (* ::Text:: *)
@@ -91,7 +91,7 @@ intervalMin[x_Interval]:=Min[x];
 
 
 (* Would want to write Max[Log[...]] below but that doesn't work somehow because evae is HoldAll. *)
-halfULP[x_]:=Block[{exponent=Log2[intervalMax[Abs[x]]]},halfULPAbove1 2^Floor[exponent]];
+halfULP[x_]:=Block[{exponent=Log2[intervalMax[Abs[x]]]},halfULPBelow1 2^Ceiling[exponent]];
 
 
 (* ::Text:: *)
@@ -165,8 +165,11 @@ evae[-a_]:=-evae[a];
 evae[a_^2]:=applyOp[#^2&,evae[a]];
 evae[a_^3]:=applyOp[cube,evae[a]];
 evae[a_^4]:=applyOp[#^2&,applyOp[#^2&,evae[a]]];
-evae[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},{Interval[{cra,cra}],Interval[{0,0}]}];
-evae[a_]:={ReleaseHold[a],Interval[{0,0}]};
+evae[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},evae[Interval[{cra,cra}]]];
+evae[{v_Interval,\[Delta]_Interval}]:={v,\[Delta]};
+evae[a_Interval]:={a,Interval[{0,0}]};
+evae[a_?ValueQ]:=evae[Evaluate[a]];
+evae[a_]:=a;
 evae[x]];
 IEEEEvaluateWithAbsoluteError[_, args__]:=
 (Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);
