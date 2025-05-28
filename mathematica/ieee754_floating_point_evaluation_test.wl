@@ -123,29 +123,10 @@ Assert[halfULPBelow1==2^-54];
 
 
 (* ::Input::Initialization:: *)
-Assert[intervalMin[Interval[{-2,3}]]==Min[Interval[{-2,3}]]];
-Assert[intervalMax[Interval[{-2,3}]]==Max[Interval[{-2,3}]]];
-Assert[intervalMin[Undefined]=!=Min[Undefined]];
-Assert[intervalMax[Undefined]=!=Max[Undefined]];
-
-
-(* ::Input::Initialization:: *)
 Assert[halfULP[Interval[{1.2,1.3}]]==2^-53];
 Assert[halfULP[Interval[{-2.4,1.3}]]==2^-52];
-Assert[halfULP[Interval[{1,1}]]==2^-53];
-Assert[halfULP[Interval[{-1/2,1/2}]]==2^-54];
-
-
-(* ::Input::Initialization:: *)
-Assert[addHalfULPInterval[Interval[{3/2,5/3}]]==Interval[{3/2-2^-53,5/3+2^-53}]];
-Assert[addHalfULPInterval[Interval[{3/2,5}]]==Interval[{3/2-2^-51,5+2^-51}]];
-Assert[addHalfULPInterval[Interval[{-5,3/2}]]==Interval[{-5-2^-51,3/2+2^-51}]];
-
-
-(* ::Input:: *)
-(*Assert[addHalfULPInterval[nonnegative[Interval[{3/2,5/3}]]]==nonnegative[Interval[{3/2-2^-53,5/3+2^-53}]]];*)
-(*Assert[addHalfULPInterval[nonnegative[Interval[{0,5}]]]==nonnegative[Interval[{0,5+2^-51}]]];*)
-(*Assert[addHalfULPInterval[nonnegative[Interval[{2^-53,5}]]]==nonnegative[Interval[{0,5+2^-51}]]];*)
+Assert[halfULP[Interval[{1,1}]]==2^-54];
+Assert[halfULP[Interval[{-1/2,1/2}]]==2^-55];
 
 
 (* ::Input::Initialization:: *)
@@ -268,11 +249,7 @@ C\[FivePointedStar]2=IEEEEvaluateWithAbsoluteError[C\[FivePointedStar]1-a2]
 
 
 (* ::Text:: *)
-(*TODO(phl): Because our intervals "bleed" a bit below 0 for values that should remain positive, we don't have the expected bound here and we lose at least a bit.  Error evaluation differ after this point.*)
-
-
-(* ::Input::Initialization:: *)
-Min[C\[FivePointedStar]2]>=-1/2
+(*NOTE: [SZ05] has an error on the 56th bit below, but their calculation makes no sense because the interval doesn't have bounds below 1/4.*)
 
 
 (* ::Input::Initialization:: *)

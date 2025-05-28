@@ -79,34 +79,11 @@ halfULPBelow1:=1-FromRepresentation[Representation[1]-1/2];
 
 
 (* ::Text:: *)
-(*Min and Max when applied to an undefined value return that value.  These functions don't do that, they just stay unevaluated.*)
-
-
-intervalMax[x_Interval]:=Max[x];
-intervalMin[x_Interval]:=Min[x];
-
-
-(* ::Text:: *)
 (*Returns a half ULP above for the largest element (in absolute value) of its argument.  The returned value is positive, regardless of the sign of the argument.  The argument is an interval or an unbound variable.*)
 
 
-(* Would want to write Max[Log[...]] below but that doesn't work somehow because evae is HoldAll. *)
-halfULP[x_]:=Block[{exponent=Log2[intervalMax[Abs[x]]]},halfULPBelow1 2^Ceiling[exponent]];
-
-
-(* ::Text:: *)
-(*Extends the interval of its argument by a half ULP on both sides.  If Positive is True, the lower bound is not extended below 0.  This is pessimistic as we use the largest ULP over the interval.*)
-
-
-Options[addHalfULPInterval]={Positive->False};
-addHalfULPInterval[x_,OptionsPattern[]]:=
-Block[{h=halfULP[x]},
-(* The returned interval must explicitly contain x.  This ensures that, if x is unbound it can
-later be removed to get the absolute error. *)
-If[
-OptionValue[Positive],
-x+Interval[{-Min[h,IEEE754FloatingPointEvaluation`Private`intervalMin[x]],h}],
-x+Interval[{-h,h}]]];
+(* Would want to write Max[Log2[...]] below but that doesn't work somehow. *)
+halfULP[x_]:=Block[{exponent=Log2[Max[Abs[x]]]},halfULPBelow1 2^Ceiling[exponent]];
 
 
 (* Special case because for an interval x*x^2 is not x^3. *)
