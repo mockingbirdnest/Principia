@@ -249,7 +249,7 @@ C\[FivePointedStar]2=IEEEEvaluateWithAbsoluteError[C\[FivePointedStar]1-a2]
 
 
 (* ::Text:: *)
-(*NOTE: [SZ05] has an error on the 56th bit below, but their calculation makes no sense because the interval doesn't have bounds below 1/4.*)
+(*NOTE: [SZ05] has an error on the 56th bit below, but their calculation looks wrong because the interval doesn't have bounds below 1/4.*)
 
 
 (* ::Input::Initialization:: *)

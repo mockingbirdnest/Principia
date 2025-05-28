@@ -37,8 +37,8 @@ IEEEEvaluateWithAbsoluteError::badass =
 
 UseFMA;
 UseFMA::usage =
-"UseFMA is an option for IEEEEvaluate that specifies whether to use FMA " <>
-"for expressions of the form \!\(\*
+"UseFMA is an option for IEEEEvaluate and IEEEEvaluateWithAbsoluteError that " <>
+"specifies whether to use FMA for expressions of the form \!\(\*
 StyleBox[\"a\",\nFontSlant->\"Italic\"]\) * \!\(\*
 StyleBox[\"b\",\nFontSlant->\"Italic\"]\) + \!\(\*
 StyleBox[\"c\",\nFontSlant->\"Italic\"]\).";
@@ -79,7 +79,7 @@ halfULPBelow1:=1-FromRepresentation[Representation[1]-1/2];
 
 
 (* ::Text:: *)
-(*Returns a half ULP above for the largest element (in absolute value) of its argument.  The returned value is positive, regardless of the sign of the argument.  The argument is an interval or an unbound variable.*)
+(*Returns a half ULP below for the largest element (in absolute value) of its argument.  The returned value is positive, regardless of the sign of the argument.  The argument is an interval or an unbound variable.*)
 
 
 (* Would want to write Max[Log2[...]] below but that doesn't work somehow. *)
