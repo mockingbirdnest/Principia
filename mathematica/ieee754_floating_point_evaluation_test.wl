@@ -21,7 +21,7 @@ On[Assert]
 ?"IEEE754FloatingPointEvaluation`*"
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*IEEEEvaluate*)
 
 
@@ -31,6 +31,10 @@ On[Assert]
 
 (* ::Input::Initialization:: *)
 ?IEEEEvaluate
+
+
+(* ::Input::Initialization:: *)
+Assert[RoundingMode[]==NearestTiesToEven];
 
 
 (* ::Input::Initialization:: *)
@@ -119,14 +123,14 @@ $ContextPath=Prepend[$ContextPath,"IEEE754FloatingPointEvaluation`Private`"]
 
 
 (* ::Input::Initialization:: *)
-Assert[halfULPBelow1==2^-54];
+Assert[errorBelow1==2^-54];
 
 
 (* ::Input::Initialization:: *)
-Assert[halfULP[Interval[{1.2,1.3}]]==2^-53];
-Assert[halfULP[Interval[{-2.4,1.3}]]==2^-52];
-Assert[halfULP[Interval[{1,1}]]==2^-54];
-Assert[halfULP[Interval[{-1/2,1/2}]]==2^-55];
+Assert[absoluteErrorBound[Interval[{1.2,1.3}]]==2^-53];
+Assert[absoluteErrorBound[Interval[{-2.4,1.3}]]==2^-52];
+Assert[absoluteErrorBound[Interval[{1,1}]]==2^-54];
+Assert[absoluteErrorBound[Interval[{-1/2,1/2}]]==2^-55];
 
 
 (* ::Input::Initialization:: *)
