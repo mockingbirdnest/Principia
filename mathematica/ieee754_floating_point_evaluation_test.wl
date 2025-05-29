@@ -264,5 +264,25 @@ C\[FivePointedStar]3=IEEEEvaluateWithAbsoluteError[k C\[FivePointedStar]2]
 bits[C\[FivePointedStar]3]
 
 
+(* ::Text:: *)
+(*In a single operation :*)
+
+
+(* ::Input::Initialization:: *)
+S\[FivePointedStar]=IEEEEvaluateWithAbsoluteError[(a5 h^2-a3)h^3]
+
+
+(* ::Input::Initialization:: *)
+bits[S\[FivePointedStar]]
+
+
+(* ::Input::Initialization:: *)
+C\[FivePointedStar]=IEEEEvaluateWithAbsoluteError[h^2(a4 h^2-a2)]
+
+
+(* ::Input::Initialization:: *)
+bits[C\[FivePointedStar]]
+
+
 (* ::Input::Initialization:: *)
 End[]
