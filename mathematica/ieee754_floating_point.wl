@@ -167,6 +167,9 @@ TowardPositiveInfinity=Ceiling;
 TowardNegativeInfinity=Floor;
 
 
+RoundingMode[] := correctlyRoundRepresentation;
+
+
 mantissaExponent12[x_]:={#[[1]]*2,#[[2]]-1}&[MantissaExponent[x,2]];
 
 Representation[x_]:=Block[
