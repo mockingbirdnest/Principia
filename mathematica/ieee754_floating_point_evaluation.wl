@@ -27,11 +27,12 @@ IEEEEvaluateWithAbsoluteError::usage =
 "IEEEEvaluateWithAbsoluteError[\!\(\*StyleBox[\"x\",\nFontSlant->\"Italic\"]\)] " <>
 "evaluates \!\(\*StyleBox[\"x\",\nFontSlant->\"Italic\"]\) using the rules of " <>
 "IEEE arithmetic, and propagates the absolute error bounds at each stage of " <>
-"the computation.  The argument is an expression which can include numbers " <>
-"(assumed to be exact after correct rounding) and intervals (assumed to not " <>
-"carry any error).  Returns a list of two intervals: the first one is the " <>
+"the computation.  Returns a list of two intervals: the first one is the " <>
 "interval of the result evaluated with proper IEEE rounding, the second one is " <>
-"the range of the absolute error on the result."
+"the range of the absolute error on the result.  The argument is an expression " <>
+"which can include numbers (assumed to be exact after correct rounding), " <>
+"intervals (assumed to not carry any error), or a list of two intervals " <> 
+"for a value and its absolute error."
 IEEEEvaluateWithAbsoluteError::argnum =
 "IEEEEvaluate called with `1` arguments; 1 argument is expected.";
 IEEEEvaluateWithAbsoluteError::badass =
