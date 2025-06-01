@@ -180,34 +180,32 @@ relativeErrorBound := 2^-53;
 applyOpWithRelativeError[cube,{va_,\[Delta]a_}]:=Block[
 	{va2,\[Delta]a2,h,r,\[Delta]r},
 	{va2,\[Delta]a2}=applyOpWithRelativeError[#^2&,{va,\[Delta]a}];
-	r=va^3;(* Wrong! *)
+	r=va^3;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	h=absoluteErrorBound[r];
-	\[Delta]r=ReplaceAll[Expand[(v2+\[Delta]2)(v+\[Delta])-(v2 v)],{v->va,\[Delta]->\[Delta]a,v2->va2,\[Delta]2->\[Delta]a2}]+Interval[{-h,h}];
+	h=relativeErrorBound;
+	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[Apart[(v2(1+\[Delta]2)v(1+\[Delta]))/(v2 v)-1]],{v->va,\[Delta]->\[Delta]a,v2->va2,\[Delta]2->\[Delta]a2}]+1)-1;
 	{r,\[Delta]r}];
 applyOpWithRelativeError[op_,{va_,\[Delta]a_}]:=Block[
 	{h,r,\[Delta]r},
 	r=op[va];
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	h=absoluteErrorBound[r];
-	\[Delta]r=ReplaceAll[Expand[op[v+\[Delta]]-op[v]],{v->va,\[Delta]->\[Delta]a}]+Interval[{-h,h}];
+	h=relativeErrorBound;
+	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[op[v(1+\[Delta])]/op[v]-1],{v->va,\[Delta]->\[Delta]a}]+1)-1;
 	{r,\[Delta]r}];
 applyOpWithRelativeError[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
 	{h,r,\[Delta]r},
 	r=op[va,vb];
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	h=absoluteErrorBound[r];
-	\[Delta]r=ReplaceAll[Expand[op[v1+\[Delta]1,v2+\[Delta]2]-op[v1,v2]],{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b}]+Interval[{-h,h}];
+	h=relativeErrorBound;
+	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[op[v1(1+\[Delta]1),v2(1+\[Delta]2)]/op[v1,v2]-1],{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b}]+1)-1;
 	{r,\[Delta]r}];
 applyOpWithRelativeError[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_}]:=Block[
 	{h,r,\[Delta]r},
 	r=op[va,vb,vc];
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	h=absoluteErrorBound[r];
-	\[Delta]r=ReplaceAll[
-		Expand[op[v1+\[Delta]1,v2+\[Delta]2,v3+\[Delta]3]-op[v1,v2,v3]],
-		{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b,v3->vc,\[Delta]3->\[Delta]c}]+
-		Interval[{-h,h}];
+	h=relativeErrorBound;
+	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[op[v1(1+\[Delta]1),v2(1+\[Delta]2),v3(1+\[Delta]3)]/op[v1,v2,v3]-1],
+		{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b,v3->vc,\[Delta]3->\[Delta]c}]+1)-1;
 	{r,\[Delta]r}];
 
 
