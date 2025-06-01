@@ -190,21 +190,21 @@ applyOpWithRelativeError[op_,{va_,\[Delta]a_}]:=Block[
 	r=op[va];
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=relativeErrorBound;
-	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[op[v(1+\[Delta])]/op[v]-1],{v->va,\[Delta]->\[Delta]a}]+1)-1;
+	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[Apart[op[v(1+\[Delta])]/op[v]-1]],{v->va,\[Delta]->\[Delta]a}]+1)-1;
 	{r,\[Delta]r}];
 applyOpWithRelativeError[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
 	{h,r,\[Delta]r},
 	r=op[va,vb];
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=relativeErrorBound;
-	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[op[v1(1+\[Delta]1),v2(1+\[Delta]2)]/op[v1,v2]-1],{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b}]+1)-1;
+	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[Apart[op[v1(1+\[Delta]1),v2(1+\[Delta]2)]/op[v1,v2]-1]],{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b}]+1)-1;
 	{r,\[Delta]r}];
 applyOpWithRelativeError[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_}]:=Block[
 	{h,r,\[Delta]r},
 	r=op[va,vb,vc];
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=relativeErrorBound;
-	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[op[v1(1+\[Delta]1),v2(1+\[Delta]2),v3(1+\[Delta]3)]/op[v1,v2,v3]-1],
+	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[Apart[op[v1(1+\[Delta]1),v2(1+\[Delta]2),v3(1+\[Delta]3)]/op[v1,v2,v3]-1]],
 		{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b,v3->vc,\[Delta]3->\[Delta]c}]+1)-1;
 	{r,\[Delta]r}];
 
