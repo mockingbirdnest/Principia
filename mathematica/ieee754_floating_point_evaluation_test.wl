@@ -340,7 +340,7 @@ Assert[IEEEEvaluateWithRelativeError[2,3]==$Failed];
 
 
 (* ::Input::Initialization:: *)
-Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]Interval[{RandomReal[],RandomReal[]}]]][[2]]]<=\[Gamma][21],{100}],TrueQ]]
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]Interval[{RandomReal[],RandomReal[]}]]][[2]]]<=\[Gamma][1],{100}],TrueQ]]
 
 
 (* ::Input::Initialization:: *)

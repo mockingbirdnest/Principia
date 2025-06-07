@@ -41,7 +41,16 @@ IEEEEvaluateWithAbsoluteError::badass =
 
 
 IEEEEvaluateWithRelativeError;
-IEEEEvaluateWithRelativeError::usage = "Usage";
+IEEEEvaluateWithRelativeError::usage =
+"IEEEEvaluateWithRelativeeError[\!\(\*StyleBox[\"x\",\nFontSlant->\"Italic\"]\)] " <>
+"evaluates \!\(\*StyleBox[\"x\",\nFontSlant->\"Italic\"]\) using the rules of " <>
+"IEEE arithmetic, and propagates the relative error bounds at each stage of " <>
+"the computation.  Returns a list of two intervals: the first one is the " <>
+"interval of the result evaluated with proper IEEE rounding, the second one is " <>
+"the range of the relative error on the result.  The argument is an expression " <>
+"which can include numbers (assumed to be exact after correct rounding), " <>
+"intervals (assumed to not carry any error), or a list of two intervals " <>
+"for a value and its relative error.";
 IEEEEvaluateWithRelativeError::argnum =
 "IEEEEvaluateWithRelativeError called with `1` arguments; 1 argument is expected.";
 IEEEEvaluateWithRelativeError::badass =
@@ -51,8 +60,9 @@ IEEEEvaluateWithRelativeError::badass =
 
 UseFMA;
 UseFMA::usage =
-"UseFMA is an option for IEEEEvaluate and IEEEEvaluateWithAbsoluteError that " <>
-"specifies whether to use FMA for expressions of the form \!\(\*
+"UseFMA is an option for IEEEEvaluate, IEEEEvaluateWithAbsoluteError, and " <>
+"IEEEEvaluateWithRelativeError that specifies whether to use FMA for " <>
+"expressions of the form \!\(\*
 StyleBox[\"a\",\nFontSlant->\"Italic\"]\) * \!\(\*
 StyleBox[\"b\",\nFontSlant->\"Italic\"]\) + \!\(\*
 StyleBox[\"c\",\nFontSlant->\"Italic\"]\).";
@@ -100,7 +110,7 @@ errorBelow1:=If[
 
 
 (* ::Text:: *)
-(*Returns the error bound for the largest element (in absolute value) of its argument.  The returned value is positive, regardless of the sign of the argument.  The argument is an interval or an unbound variable.  Note that if the largest element is a power of two, the error bound is the one below that power of two.*)
+(*Returns the error bound for the largest element (in absolute value) of its argument.  The returned value is positive, regardless of the sign of the argument.  The argument is an interval.  Note that if the largest element is a power of two, the error bound is the one below that power of two.*)
 
 
 (* Would want to write Max[Log2[...]] below but that doesn't work somehow. *)
@@ -173,7 +183,18 @@ IEEEEvaluateWithAbsoluteError[_, args__]:=
 (Message[IEEEEvaluateWithAbsoluteError::argnum, Length[{args}] + 1]; $Failed);
 
 
-relativeErrorBound := 2^-53;
+(* ::Text:: *)
+(*The relative error bound on an IEEE computation.*)
+
+
+relativeErrorBound := If[
+	RoundingMode[]==NearestTiesToEven,
+	FromRepresentation[Representation[1]+1/2]-1,
+	FromRepresentation[Representation[1]+1]-1];
+
+
+(* ::Text:: *)
+(*Returns the relative error bound for a computation.  The relative error is "small", i.e., close to 2^-53, not to (1+2^-53), and is an interval.  The arguments are pairs of {value interval, relative error interval}.*)
 
 
 (* Special case because for an interval x*x^2 is not x^3. *)
