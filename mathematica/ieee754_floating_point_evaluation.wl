@@ -197,36 +197,56 @@ relativeErrorBound := If[
 (*Returns the relative error bound for a computation.  The relative error is "small", i.e., close to 2^-53, not to (1+2^-53), and is an interval.  The arguments are pairs of {value interval, relative error interval}.*)
 
 
-(* Special case because for an interval x*x^2 is not x^3. *)
+applyOpWithRelativeError[square,{va_,\[Delta]a_}]:=Block[
+	{h,r,\[Delta]r},
+	r=va^2;
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=relativeErrorBound;
+	\[Delta]r=(1+\[Delta]a)^2 Interval[{1-h,1+h}]-1;
+	{r,\[Delta]r}];
 applyOpWithRelativeError[cube,{va_,\[Delta]a_}]:=Block[
-	{va2,\[Delta]a2,h,r,\[Delta]r},
-	{va2,\[Delta]a2}=applyOpWithRelativeError[#^2&,{va,\[Delta]a}];
+	{h,r,\[Delta]r},
 	r=va^3;
-	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=relativeErrorBound;
-	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[Apart[(v2(1+\[Delta]2)v(1+\[Delta]))/(v2 v)-1]],{v->va,\[Delta]->\[Delta]a,v2->va2,\[Delta]2->\[Delta]a2}]+1)-1;
+	\[Delta]r=(1+\[Delta]a)^3 Interval[{1-h,1+h}] Interval[{1-h,1+h}]-1;
 	{r,\[Delta]r}];
-applyOpWithRelativeError[op_,{va_,\[Delta]a_}]:=Block[
+applyOpWithRelativeError[fourth,{va_,\[Delta]a_}]:=Block[
 	{h,r,\[Delta]r},
-	r=op[va];
-	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	r=va^4;
 	h=relativeErrorBound;
-	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[Apart[op[v(1+\[Delta])]/op[v]-1]],{v->va,\[Delta]->\[Delta]a}]+1)-1;
+	\[Delta]r=(1+\[Delta]a)^4 Interval[{1-h,1+h}]Interval[{1-h,1+h}]-1;
 	{r,\[Delta]r}];
-applyOpWithRelativeError[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
-	{h,r,\[Delta]r},
-	r=op[va,vb];
+applyOpWithRelativeError[Plus,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
+	{h,\[Theta]2,\[Theta]\[Prime]2,r,\[Delta]r},
+	r=va+vb;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=relativeErrorBound;
-	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[Apart[op[v1(1+\[Delta]1),v2(1+\[Delta]2)]/op[v1,v2]-1]],{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b}]+1)-1;
+	\[Theta]2=(1+\[Delta]a)Interval[{1-h,1+h}]-1;
+	\[Theta]\[Prime]2=(1+\[Delta]b)Interval[{1-h,1+h}]-1;
+	\[Delta]r=Interval[{Min[{\[Theta]2,\[Theta]\[Prime]2}],Max[{\[Theta]2,\[Theta]\[Prime]2}]}];
 	{r,\[Delta]r}];
-applyOpWithRelativeError[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_}]:=Block[
+applyOpWithRelativeError[Times,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
 	{h,r,\[Delta]r},
-	r=op[va,vb,vc];
+	r=va vb;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=relativeErrorBound;
-	\[Delta]r=Interval[{1-h,1+h}](ReplaceAll[Expand[Apart[op[v1(1+\[Delta]1),v2(1+\[Delta]2),v3(1+\[Delta]3)]/op[v1,v2,v3]-1]],
-		{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b,v3->vc,\[Delta]3->\[Delta]c}]+1)-1;
+	\[Delta]r=(1+\[Delta]a)(1+\[Delta]b)Interval[{1-h,1+h}]-1;
+	{r,\[Delta]r}];
+applyOpWithRelativeError[Divide,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
+	{h,r,\[Delta]r},
+	r=va/vb;
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=relativeErrorBound;
+	\[Delta]r=Interval[{1-h,1+h}](1+\[Delta]a)/(1+\[Delta]b)-1;
+	{r,\[Delta]r}];
+applyOpWithRelativeError[fma,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_}]:=Block[
+	{h,r,\[Delta]r},
+	r=va vb+vc;
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=relativeErrorBound;
+	\[Theta]3=(1+\[Delta]a)(1+\[Delta]b)Interval[{1-h,1+h}]-1;
+	\[Theta]2=(1+\[Delta]c)Interval[{1-h,1+h}]-1;
+	\[Delta]r=Interval[{Min[\[Theta]3,\[Theta]2],Max[\[Theta]3,\[Theta]2]}];
 	{r,\[Delta]r}];
 
 
@@ -238,7 +258,7 @@ Block[
 SetAttributes[evre,HoldAll];
 evre[a_*b_+c_]:=If[
 usefma,
-applyOpWithRelativeError[#1 #2+#3&,evre[a],evre[b],evre[c]],
+applyOpWithRelativeError[fma,evre[a],evre[b],evre[c]],
 applyOpWithRelativeError[Plus,applyOpWithRelativeError[Times,evre[a],evre[b]],evre[c]]];
 evre[a_+b_]:=applyOpWithRelativeError[Plus,evre[a],evre[b]];
 evre[a_+b__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
@@ -248,9 +268,9 @@ evre[a_/b_]:=applyOpWithRelativeError[Divide,evre[a],evre[b]];
 (* Negation is exact. *)
 evre[-a_]:=-evre[a];
 (* Squaring an interval is not the same as multiplying two identical intervals. *) 
-evre[a_^2]:=applyOpWithRelativeError[#^2&,evre[a]];
+evre[a_^2]:=applyOpWithRelativeError[square,evre[a]];
 evre[a_^3]:=applyOpWithRelativeError[cube,evre[a]];
-evre[a_^4]:=applyOpWithRelativeError[#^2&,applyOpWithRelativeError[#^2&,evre[a]]];
+evre[a_^4]:=applyOpWithRelativeError[fourth,evre[a]];
 evre[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},evre[Interval[{cra,cra}]]];
 evre[{v_Interval,\[Delta]_Interval}]:={v,\[Delta]};
 evre[a_Interval]:={a,Interval[{0,0}]};
