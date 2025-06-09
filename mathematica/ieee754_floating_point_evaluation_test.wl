@@ -110,7 +110,7 @@ Assert[
 IEEEEvaluate[-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10]==$Failed];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*IEEEEvaluateWithAbsoluteError*)
 
 
@@ -294,6 +294,44 @@ End[]
 
 (* ::Section:: *)
 (*IEEEEvaluateWithRelativeError*)
+
+
+?IEEEEvaluateWithRelativeError
+
+
+(* ::Input::Initialization:: *)
+$ContextPath=Prepend[$ContextPath,"IEEE754FloatingPointEvaluation`Private`"]
+
+
+Assert[relativeErrorBound==2^-53];
+
+
+Assert[applyOpWithRelativeError[
+Plus,
+{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
+{Interval[{6,6}],Interval[{-2^-53,2^-53}]},Exact->False]==
+applyOpWithRelativeError[
+Plus,
+{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
+{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]]
+
+
+Assert[applyOpWithRelativeError[
+Plus,
+{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
+{Interval[{6,6}],Interval[{-2^-53,2^-53}]},Exact->False]==
+{Interval[{11,11}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
+
+
+Assert[applyOpWithRelativeError[
+Plus,
+{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
+{Interval[{6,6}],Interval[{-2^-53,2^-53}]},Exact->True]==
+{Interval[{11,11}],Interval[{-2^-53,2^-53}]}]
+
+
+(* ::Input::Initialization:: *)
+$ContextPath=Drop[$ContextPath,1]
 
 
 (* ::Subsection:: *)
