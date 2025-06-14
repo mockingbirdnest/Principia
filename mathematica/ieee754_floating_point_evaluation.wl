@@ -217,13 +217,25 @@ applyOpWithRelativeError[fourth,{va_,\[Delta]a_}]:=Block[
 	\[Delta]r=(1+\[Delta]a)^4 Interval[{1-h,1+h}]Interval[{1-h,1+h}]-1;
 	{r,\[Delta]r}];
 applyOpWithRelativeError[Plus,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
-	{h,\[Theta]2,\[Theta]\[Prime]2,r,\[Delta]r},
+	{corners,err,h,\[Theta]2,\[Theta]\[Prime]2,r,\[Delta]r},
 	r=va+vb;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	h=relativeErrorBound;
-	\[Theta]2=(1+\[Delta]a)Interval[{1-h,1+h}]-1;
-	\[Theta]\[Prime]2=(1+\[Delta]b)Interval[{1-h,1+h}]-1;
-	\[Delta]r=Interval[{Min[{\[Theta]2,\[Theta]\[Prime]2}],Max[{\[Theta]2,\[Theta]\[Prime]2}]}];
+	If[
+		IntervalMemberQ[r,0],
+		\[Delta]r=Interval[{-\[Infinity],+\[Infinity]}],
+		h=relativeErrorBound;
+		\[Theta]2=(1+\[Delta]a)Interval[{1-h,1+h}]-1;
+		\[Theta]\[Prime]2=(1+\[Delta]b)Interval[{1-h,1+h}]-1;
+		err[wa_,\[Delta]wa_,wb_,\[Delta]wb_]:=(wa \[Delta]wa+wb \[Delta]wb)/(wa+wb);
+		(* The function err is monotonic, and therefore its extrema
+		are reached at the corners of its domain. *)
+		corners=Outer[
+			err,
+			{Min[va],Max[va]},
+			{Min[\[Theta]2],Max[\[Theta]2]},
+			{Min[vb],Max[vb]},
+			{Min[\[Theta]\[Prime]2],Max[\[Theta]\[Prime]2]}];
+		\[Delta]r=Interval[{Min[corners],Max[corners]}]];
 	{r,\[Delta]r}];
 applyOpWithRelativeError[Times,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
 	{h,r,\[Delta]r},

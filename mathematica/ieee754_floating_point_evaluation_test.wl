@@ -302,7 +302,7 @@ End[]
 
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[2*3+4,UseFMA->True]=={Interval[{10,10}],Interval[{-2^-53,2^-53}]}];
-Assert[IEEEEvaluateWithRelativeError[2*3+4,UseFMA->False]=={Interval[{10,10}],Interval[{2 2^-53+2^-106,-2 2^-53 +2^-106}]}];
+Assert[IEEEEvaluateWithRelativeError[2*3+4,UseFMA->False]=={Interval[{10,10}],Interval[{(6(-2 2^-53+2^-106)-4 2^-53)/10,(6(2 2^-53 +2^-106)+4 2^-53)/10}]}];
 
 
 (* ::Input::Initialization:: *)
