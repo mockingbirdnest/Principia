@@ -592,6 +592,9 @@ void FlightPlan::AddLastSegment() {
 void FlightPlan::ResetLastSegment() {
   auto const& last_segment = segments_.back();
   trajectory_.ForgetAfter(std::next(last_segment->begin()));
+  // If the last segment is being changed, no point in letting the analyser
+  // complete its computation (#4216).
+  coast_analysers_.back()->Interrupt();
   if (anomalous_segments_ == 1) {
     anomalous_segments_ = 0;
   }
@@ -601,10 +604,13 @@ void FlightPlan::PopLastSegments(std::int64_t const count) {
   CHECK_EQ(0, count % 2) << count;
   // It is important that the segments be destroyed in (reverse chronological)
   // order of the forks.
-  for (std::int64_t i; i < count; ++i) {
+  for (std::int64_t i = 0; i < count; ++i) {
     auto& last_segment = segments_.back();
     trajectory_.DeleteSegments(last_segment);
     segments_.pop_back();
+    if (i % 2 == 0) {
+      coast_analysers_.pop_back();
+    }
     if (anomalous_segments_ > 0) {
       --anomalous_segments_;
     }
