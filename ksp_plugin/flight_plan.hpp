@@ -207,9 +207,11 @@ class FlightPlan {
   // only anomalous one, there are no anomalous trajectories after this call.
   void ResetLastSegment();
 
-  // Deletes the last trajectory and removes it from `segments_`.  If there are
-  // anomalous trajectories, their number is decremented and may become 0.
-  void PopLastSegment();
+  // Deletes the last `count` trajectories and removes them from `segments_`. If
+  // there are anomalous trajectories, their number is decremented and may
+  // become 0.  `count` must be even (possibly 0) to maintain the invariant that
+  // the number of segments is odd.
+  void PopLastSegments(std::int64_t count);
 
   // Pops the burn of the manœuvre with the given index and all following
   // segments, then resets the last segment (which is the coast preceding
