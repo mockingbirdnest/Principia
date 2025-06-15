@@ -532,7 +532,7 @@ absl::Status FlightPlan::ComputeSegments(
       if (analysis_is_enabled_) {
         auto const& [first_time, first_degrees_of_freedom] = coast->front();
         auto& analyser = coast_analysers_[it - manœuvres_.begin()];
-        // Interrupt the analyses for the coast that are being recomputed as we
+        // Interrupt the analyses for the coasts that are being recomputed as we
         // won't use their result.
         analyser->Interrupt();
         analyser->RequestAnalysis(
