@@ -616,10 +616,20 @@ internal class
       }
       UnityEngine.GUILayout.Label(celestial.StandaloneName());
       UnityEngine.GUILayout.FlexibleSpace();
+      if (UnityEngine.GUILayout.Button("F",
+                                       UnityEngine.GUI.skin.button,
+                                       GUILayoutWidth(1))) {
+        PlanetariumCamera.fetch.SetTarget(celestial);
+        PlanetariumCamera.fetch.SetDistance((float)(10 * celestial.Radius));
+      }
       if (celestial.is_root()) {
         UnityEngine.GUILayout.Label(
-            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"));
-      } else if (UnityEngine.GUILayout.Toggle(pinned[celestial], "") !=
+            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"),
+            UnityEngine.GUI.skin.label,
+            GUILayoutWidth(1));
+      } else if (UnityEngine.GUILayout.Toggle(pinned[celestial],
+                                              "",
+                                              GUILayoutWidth(1)) !=
                  pinned[celestial]) {
         pinned[celestial] = !pinned[celestial];
         ScheduleShrink();
