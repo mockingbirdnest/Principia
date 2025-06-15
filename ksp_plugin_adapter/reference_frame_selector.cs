@@ -616,12 +616,6 @@ internal class
       }
       UnityEngine.GUILayout.Label(celestial.StandaloneName());
       UnityEngine.GUILayout.FlexibleSpace();
-      if (UnityEngine.GUILayout.Button("F",
-                                       UnityEngine.GUI.skin.button,
-                                       GUILayoutWidth(1))) {
-        PlanetariumCamera.fetch.SetTarget(celestial);
-        PlanetariumCamera.fetch.SetDistance((float)(10 * celestial.Radius));
-      }
       if (celestial.is_root()) {
         UnityEngine.GUILayout.Label(
             L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"),
@@ -633,6 +627,18 @@ internal class
                  pinned[celestial]) {
         pinned[celestial] = !pinned[celestial];
         ScheduleShrink();
+      }
+      if (focus_ == null) {
+        PrincipiaPluginAdapter.LoadTextureOrDie(out focus_, "focus.png");
+      }
+      if (UnityEngine.GUILayout.Button(
+              new UnityEngine.GUIContent(
+                  focus_,
+                  L10N.CacheFormat(
+                      "#Principia_ReferenceFrameSelector_Focus")),
+              UnityEngine.GUI.skin.button,
+              GUILayoutWidth(1))) {
+        PlanetariumCamera.fetch.SetTarget(celestial);
       }
     }
     if (!celestial.is_leaf(target)) {
@@ -797,6 +803,7 @@ internal class
   private bool target_pinned_ = true;
   private bool is_freshly_constructed_;
   private FrameType last_orbital_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
+  private static UnityEngine.Texture focus_;
 }
 
 }  // namespace ksp_plugin_adapter
