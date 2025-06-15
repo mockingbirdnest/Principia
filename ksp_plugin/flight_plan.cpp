@@ -172,7 +172,7 @@ absl::Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
                          max_ephemeris_steps_per_frame);
 }
 
-absl::Status FlightPlan::Remove(int index) {
+absl::Status FlightPlan::Remove(int const index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, number_of_manœuvres());
   manœuvres_.erase(manœuvres_.begin() + index);
@@ -531,7 +531,11 @@ absl::Status FlightPlan::ComputeSegments(
       }
       if (analysis_is_enabled_) {
         auto const& [first_time, first_degrees_of_freedom] = coast->front();
-        coast_analysers_[it - manœuvres_.begin()]->RequestAnalysis(
+        auto& analyser = coast_analysers_[it - manœuvres_.begin()];
+        // Interrupt the analyses for the coast that are being recomputed as we
+        // won't use their result.
+        analyser->Interrupt();
+        analyser->RequestAnalysis(
             {.first_time = first_time,
              .first_degrees_of_freedom = first_degrees_of_freedom,
              .mission_duration = coast->back().time - first_time,
@@ -565,7 +569,10 @@ absl::Status FlightPlan::ComputeSegments(
     if (analysis_is_enabled_) {
       auto const& [first_time, first_degrees_of_freedom] =
           segments_.back()->front();
-      coast_analysers_.back()->RequestAnalysis(
+      auto& analyser = coast_analysers_.back();
+      // Interrupt the analysis for the last coast as we won't use its result.
+      analyser->Interrupt();
+      analyser->RequestAnalysis(
           {.first_time = first_time,
            .first_degrees_of_freedom = first_degrees_of_freedom,
            .mission_duration = desired_final_time_ - first_time});
@@ -592,9 +599,6 @@ void FlightPlan::AddLastSegment() {
 void FlightPlan::ResetLastSegment() {
   auto const& last_segment = segments_.back();
   trajectory_.ForgetAfter(std::next(last_segment->begin()));
-  // If the last segment is being changed, no point in letting the analyser
-  // complete its computation (#4216).
-  coast_analysers_.back()->Interrupt();
   if (anomalous_segments_ == 1) {
     anomalous_segments_ = 0;
   }
@@ -608,9 +612,6 @@ void FlightPlan::PopLastSegments(std::int64_t const count) {
     auto& last_segment = segments_.back();
     trajectory_.DeleteSegments(last_segment);
     segments_.pop_back();
-    if (i % 2 == 0) {
-      coast_analysers_.pop_back();
-    }
     if (anomalous_segments_ > 0) {
       --anomalous_segments_;
     }
