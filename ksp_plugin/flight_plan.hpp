@@ -205,15 +205,12 @@ class FlightPlan {
 
   // Forgets the last trajectory after its fork.  If that trajectory was the
   // only anomalous one, there are no anomalous trajectories after this call.
-  // Interrupts the corresponding coast analyzer.
   void ResetLastSegment();
 
   // Deletes the last `count` trajectories and removes them from `segments_`. If
   // there are anomalous trajectories, their number is decremented and may
   // become 0.  `count` must be even (possibly 0) to maintain the invariant that
-  // the number of segments is odd.  Doesn't delete the `manœuvres_` or the
-  // `coast_analysers_`, but interrupts all the analysers for the popped
-  // segments.NONONO
+  // the number of segments is odd.
   void PopLastSegments(std::int64_t count);
 
   // Pops the burn of the manœuvre with the given index and all following
