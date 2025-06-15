@@ -636,7 +636,8 @@ internal class
                   focus_,
                   L10N.CacheFormat(
                       "#Principia_ReferenceFrameSelector_Focus")),
-              UnityEngine.GUI.skin.button,
+              Style.Aligned(UnityEngine.TextAnchor.LowerCenter,
+                            UnityEngine.GUI.skin.button),
               GUILayoutWidth(1))) {
         PlanetariumCamera.fetch.SetTarget(celestial);
         PlanetariumCamera.fetch.SetDistance(
