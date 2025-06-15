@@ -549,8 +549,11 @@ internal class
           RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
         }
 
-        // Right-hand side: toggles for reference frame type selection.
-        using (new UnityEngine.GUILayout.VerticalScope()) {
+        // Right-hand side: toggles for reference frame type selection.  The
+        // width of 0 will be adjusted when the shrink happens, but it is
+        // necessary to ensure proper vertical alignment of the two
+        // `VerticalScope`s (don't ask).
+        using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(0))) {
           RenderSubtreeToggleGrid(Planetarium.fetch.Sun);
         }
       }
