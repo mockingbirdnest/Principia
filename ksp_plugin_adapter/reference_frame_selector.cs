@@ -639,6 +639,8 @@ internal class
               UnityEngine.GUI.skin.button,
               GUILayoutWidth(1))) {
         PlanetariumCamera.fetch.SetTarget(celestial);
+        PlanetariumCamera.fetch.SetDistance(
+            (float)celestial.Radius * ScaledSpace.InverseScaleFactor * 2f);
       }
     }
     if (!celestial.is_leaf(target)) {
