@@ -221,11 +221,14 @@ applyOpWithRelativeError[Plus,{va_,\[Delta]a_},{vb_,\[Delta]b_}]:=Block[
 	r=va+vb;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	If[
-		IntervalMemberQ[r,0],
+		Min[r]<0 && Max[r]>0,
 		\[Delta]r=Interval[{-\[Infinity],+\[Infinity]}],
 		h=relativeErrorBound;
 		\[Theta]2=(1+\[Delta]a)Interval[{1-h,1+h}]-1;
 		\[Theta]\[Prime]2=(1+\[Delta]b)Interval[{1-h,1+h}]-1;
+		(* At the origin the function err has an indeterminate value
+		bounded by \[Delta]wa and \[Delta]wb *)
+		err[0,\[Delta]wa_,0,\[Delta]wb_]:=Interval[Min[{\[Delta]wa,\[Delta]wb}],Max[{\[Delta]wa,\[Delta]wb}]];
 		err[wa_,\[Delta]wa_,wb_,\[Delta]wb_]:=(wa \[Delta]wa+wb \[Delta]wb)/(wa+wb);
 		(* The function err is monotonic, and therefore its extrema
 		are reached at the corners of its domain. *)

@@ -327,6 +327,16 @@ Assert[IEEEEvaluateWithRelativeError[0.1]=={Interval[{CorrectlyRound[0.1],Correc
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{0,2}]]==
+	{Interval[{0,3}],Interval[{-2^-53,2^-53}]}];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{-2,0}]]==
+	{Interval[{-2,1}],Interval[{-\[Infinity],\[Infinity]}]}];
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[2,3]==$Failed];
 
 
