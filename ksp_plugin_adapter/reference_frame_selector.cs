@@ -549,8 +549,11 @@ internal class
           RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
         }
 
-        // Right-hand side: toggles for reference frame type selection.
-        using (new UnityEngine.GUILayout.VerticalScope()) {
+        // Right-hand side: toggles for reference frame type selection.  The
+        // width of 0 will be adjusted when the shrink happens, but it is
+        // necessary to ensure proper vertical alignment of the two
+        // `VerticalScope`s (don't ask).
+        using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(0))) {
           RenderSubtreeToggleGrid(Planetarium.fetch.Sun);
         }
       }
@@ -615,11 +618,30 @@ internal class
       UnityEngine.GUILayout.FlexibleSpace();
       if (celestial.is_root()) {
         UnityEngine.GUILayout.Label(
-            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"));
-      } else if (UnityEngine.GUILayout.Toggle(pinned[celestial], "") !=
+            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"),
+            UnityEngine.GUI.skin.label,
+            GUILayoutWidth(1));
+      } else if (UnityEngine.GUILayout.Toggle(pinned[celestial],
+                                              "",
+                                              GUILayoutWidth(1)) !=
                  pinned[celestial]) {
         pinned[celestial] = !pinned[celestial];
         ScheduleShrink();
+      }
+      if (focus_ == null) {
+        PrincipiaPluginAdapter.LoadTextureOrDie(out focus_, "focus.png");
+      }
+      if (UnityEngine.GUILayout.Button(
+              new UnityEngine.GUIContent(
+                  focus_,
+                  L10N.CacheFormat(
+                      "#Principia_ReferenceFrameSelector_Focus")),
+              Style.Aligned(UnityEngine.TextAnchor.LowerCenter,
+                            UnityEngine.GUI.skin.button),
+              GUILayoutWidth(1))) {
+        PlanetariumCamera.fetch.SetTarget(celestial);
+        PlanetariumCamera.fetch.SetDistance(
+            (float)celestial.Radius * ScaledSpace.InverseScaleFactor * 2f);
       }
     }
     if (!celestial.is_leaf(target)) {
@@ -784,6 +806,7 @@ internal class
   private bool target_pinned_ = true;
   private bool is_freshly_constructed_;
   private FrameType last_orbital_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
+  private static UnityEngine.Texture focus_;
 }
 
 }  // namespace ksp_plugin_adapter
