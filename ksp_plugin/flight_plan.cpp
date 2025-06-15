@@ -172,7 +172,7 @@ absl::Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
                          max_ephemeris_steps_per_frame);
 }
 
-absl::Status FlightPlan::Remove(int index) {
+absl::Status FlightPlan::Remove(int const index) {
   CHECK_GE(index, 0);
   CHECK_LT(index, number_of_manœuvres());
   manœuvres_.erase(manœuvres_.begin() + index);
@@ -427,11 +427,7 @@ FlightPlan::FlightPlan()
           /*speed_integration_tolerance=*/1 * Metre / Second) {}
 
 absl::Status FlightPlan::RecomputeAllSegments() {
-  // It is important that the segments be destroyed in (reverse chronological)
-  // order of the forks.
-  while (segments_.size() > 1) {
-    PopLastSegment();
-  }
+  PopLastSegments(segments_.size() - 1);
   ResetLastSegment();
   return ComputeSegments(manœuvres_.begin(),
                          manœuvres_.end(),
@@ -447,8 +443,7 @@ absl::Status FlightPlan::RecomputeSegmentsAvoidingDeadlineIfNeeded() {
   int const anomalous_manœuvres = anomalous_segments_ / 2;
   auto it = manœuvres_.end();
   for (int i = 0; i < anomalous_manœuvres; ++i) {
-    PopLastSegment();
-    PopLastSegment();
+    PopLastSegments(2);
     --it;
   }
   ResetLastSegment();
@@ -536,7 +531,11 @@ absl::Status FlightPlan::ComputeSegments(
       }
       if (analysis_is_enabled_) {
         auto const& [first_time, first_degrees_of_freedom] = coast->front();
-        coast_analysers_[it - manœuvres_.begin()]->RequestAnalysis(
+        auto& analyser = coast_analysers_[it - manœuvres_.begin()];
+        // Interrupt the analyses for the coasts that are being recomputed as we
+        // won't use their result.
+        analyser->Interrupt();
+        analyser->RequestAnalysis(
             {.first_time = first_time,
              .first_degrees_of_freedom = first_degrees_of_freedom,
              .mission_duration = coast->back().time - first_time,
@@ -570,7 +569,10 @@ absl::Status FlightPlan::ComputeSegments(
     if (analysis_is_enabled_) {
       auto const& [first_time, first_degrees_of_freedom] =
           segments_.back()->front();
-      coast_analysers_.back()->RequestAnalysis(
+      auto& analyser = coast_analysers_.back();
+      // Interrupt the analysis for the last coast as we won't use its result.
+      analyser->Interrupt();
+      analyser->RequestAnalysis(
           {.first_time = first_time,
            .first_degrees_of_freedom = first_degrees_of_freedom,
            .mission_duration = desired_final_time_ - first_time});
@@ -602,12 +604,17 @@ void FlightPlan::ResetLastSegment() {
   }
 }
 
-void FlightPlan::PopLastSegment() {
-  auto& last_segment = segments_.back();
-  trajectory_.DeleteSegments(last_segment);
-  segments_.pop_back();
-  if (anomalous_segments_ > 0) {
-    --anomalous_segments_;
+void FlightPlan::PopLastSegments(std::int64_t const count) {
+  CHECK_EQ(0, count % 2) << count;
+  // It is important that the segments be destroyed in (reverse chronological)
+  // order of the forks.
+  for (std::int64_t i = 0; i < count; ++i) {
+    auto& last_segment = segments_.back();
+    trajectory_.DeleteSegments(last_segment);
+    segments_.pop_back();
+    if (anomalous_segments_ > 0) {
+      --anomalous_segments_;
+    }
   }
 }
 
@@ -615,9 +622,7 @@ void FlightPlan::PopSegmentsAffectedByManœuvre(int const index) {
   // We will keep, for each manœuvre in [0, index[, its burn and the coast
   // preceding it, as well as the coast preceding manœuvre `index`.
   int const segments_kept = 2 * index + 1;
-  while (number_of_segments() > segments_kept) {
-    PopLastSegment();
-  }
+  PopLastSegments(number_of_segments() - segments_kept);
   ResetLastSegment();
 }
 
