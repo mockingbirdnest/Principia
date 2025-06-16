@@ -31,7 +31,7 @@ IEEEEvaluateWithAbsoluteError::usage =
 "interval of the result evaluated with proper IEEE rounding, the second one is " <>
 "the range of the absolute error on the result.  The argument is an expression " <>
 "which can include numbers (assumed to be exact after correct rounding), " <>
-"intervals (assumed to not carry any error), or a list of two intervals " <> 
+"intervals (assumed to not carry any error), or a list of two intervals " <>
 "for a value and its absolute error."
 IEEEEvaluateWithAbsoluteError::argnum =
 "IEEEEvaluateWithAbsoluteError called with `1` arguments; 1 argument is expected.";
@@ -72,7 +72,7 @@ Exact;
 Exact::usage =
 "Exact is a wrapper for expressions passed to IEEEEvaluateWithAbsoluteError, and " <>
 "IEEEEvaluateWithRelativeError that specifies that the top-level operation " <>
-"is exact (errors may still be propagated from the subexpressions."
+"is exact (errors may still be propagated from the subexpressions)."
 
 
 Begin["`Private`"]
@@ -185,7 +185,7 @@ evae[a_*b__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
 evae[a_/b_,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[Divide,evae[a],evae[b],opts];
 (* Negation is exact. *)
 evae[-a_]:=-evae[a];
-(* Squaring an interval is not the same as multiplying two identical intervals. *) 
+(* Squaring an interval is not the same as multiplying two identical intervals. *)
 evae[a_^2,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[#^2&,evae[a],opts];
 evae[a_^3,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[cube,evae[a],opts];
 evae[a_^4,opts:OptionsPattern[]]:=
@@ -216,42 +216,71 @@ relativeErrorBound := If[
 
 
 Options[applyOpWithRelativeError]={Exact->False};
-(* Special case because for an interval x*x^2 is not x^3. *)
+applyOpWithRelativeError[square,{va_,\[Delta]a_},OptionsPattern[]]:=Block[
+	{h,r,\[Delta]r},
+	r=va^2;
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=If[OptionValue[Exact],0,relativeErrorBound];
+	\[Delta]r=(1+\[Delta]a)^2 Interval[{1-h,1+h}]-1;
+	{r,\[Delta]r}];
 applyOpWithRelativeError[cube,{va_,\[Delta]a_},OptionsPattern[]]:=Block[
-	{va2,\[Delta]a2,h,r,\[Delta]r},
-	{va2,\[Delta]a2}=applyOpWithRelativeError[#^2&,{va,\[Delta]a}];
+	{h,r,\[Delta]r},
 	r=va^3;
-	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=If[OptionValue[Exact],0,relativeErrorBound];
-	\[Delta]r=Interval[{1-h,1+h}]
-		(ReplaceAll[Expand[Apart[(v2(1+\[Delta]2)v(1+\[Delta]))/(v2 v)-1]],
-			{v->va,\[Delta]->\[Delta]a,v2->va2,\[Delta]2->\[Delta]a2}]+1)-1;
+	\[Delta]r=(1+\[Delta]a)^3 Interval[{1-h,1+h}] Interval[{1-h,1+h}]-1;
 	{r,\[Delta]r}];
-applyOpWithRelativeError[op_,{va_,\[Delta]a_},OptionsPattern[]]:=Block[
+applyOpWithRelativeError[fourth,{va_,\[Delta]a_},OptionsPattern[]]:=Block[
 	{h,r,\[Delta]r},
-	r=op[va];
-	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	r=va^4;
 	h=If[OptionValue[Exact],0,relativeErrorBound];
-	\[Delta]r=Interval[{1-h,1+h}]
-		(ReplaceAll[Expand[Apart[op[v(1+\[Delta])]/op[v]-1]],{v->va,\[Delta]->\[Delta]a}]+1)-1;
+	\[Delta]r=(1+\[Delta]a)^4 Interval[{1-h,1+h}]Interval[{1-h,1+h}]-1;
 	{r,\[Delta]r}];
-applyOpWithRelativeError[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_},OptionsPattern[]]:=Block[
-	{h,r,\[Delta]r},
-	r=op[va,vb];
+applyOpWithRelativeError[Plus,{va_,\[Delta]a_},{vb_,\[Delta]b_},OptionsPattern[]]:=Block[
+	{corners,err,h,\[Theta]2,\[Theta]\[Prime]2,r,\[Delta]r},
+	r=va+vb;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	h=If[OptionValue[Exact],0,relativeErrorBound];
-	\[Delta]r=Interval[{1-h,1+h}]
-		(ReplaceAll[Expand[Apart[op[v1(1+\[Delta]1),v2(1+\[Delta]2)]/op[v1,v2]-1]],
-			{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b}]+1)-1;
+	If[
+		Min[r]<0 && Max[r]>0,
+		\[Delta]r=Interval[{-\[Infinity],+\[Infinity]}],
+		h=If[OptionValue[Exact],0,relativeErrorBound];
+		\[Theta]2=(1+\[Delta]a)Interval[{1-h,1+h}]-1;
+		\[Theta]\[Prime]2=(1+\[Delta]b)Interval[{1-h,1+h}]-1;
+		(* At the origin the function err has an indeterminate value
+		bounded by \[Delta]wa and \[Delta]wb *)
+		err[0,\[Delta]wa_,0,\[Delta]wb_]:=Interval[Min[{\[Delta]wa,\[Delta]wb}],Max[{\[Delta]wa,\[Delta]wb}]];
+		err[wa_,\[Delta]wa_,wb_,\[Delta]wb_]:=(wa \[Delta]wa+wb \[Delta]wb)/(wa+wb);
+		(* The function err is monotonic, and therefore its extrema
+		are reached at the corners of its domain. *)
+		corners=Outer[
+			err,
+			{Min[va],Max[va]},
+			{Min[\[Theta]2],Max[\[Theta]2]},
+			{Min[vb],Max[vb]},
+			{Min[\[Theta]\[Prime]2],Max[\[Theta]\[Prime]2]}];
+		\[Delta]r=Interval[{Min[corners],Max[corners]}]];
 	{r,\[Delta]r}];
-applyOpWithRelativeError[op_,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_},OptionsPattern[]]:=Block[
+applyOpWithRelativeError[Times,{va_,\[Delta]a_},{vb_,\[Delta]b_},OptionsPattern[]]:=Block[
 	{h,r,\[Delta]r},
-	r=op[va,vb,vc];
+	r=va vb;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=If[OptionValue[Exact],0,relativeErrorBound];
-	\[Delta]r=Interval[{1-h,1+h}]
-		(ReplaceAll[Expand[Apart[op[v1(1+\[Delta]1),v2(1+\[Delta]2),v3(1+\[Delta]3)]/op[v1,v2,v3]-1]],
-			{v1->va,\[Delta]1->\[Delta]a,v2->vb,\[Delta]2->\[Delta]b,v3->vc,\[Delta]3->\[Delta]c}]+1)-1;
+	\[Delta]r=(1+\[Delta]a)(1+\[Delta]b)Interval[{1-h,1+h}]-1;
+	{r,\[Delta]r}];
+applyOpWithRelativeError[Divide,{va_,\[Delta]a_},{vb_,\[Delta]b_},OptionsPattern[]]:=Block[
+	{h,r,\[Delta]r},
+	r=va/vb;
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=If[OptionValue[Exact],0,relativeErrorBound];
+	\[Delta]r=Interval[{1-h,1+h}](1+\[Delta]a)/(1+\[Delta]b)-1;
+	{r,\[Delta]r}];
+applyOpWithRelativeError[fma,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_},OptionsPattern[]]:=Block[
+	{h,r,\[Delta]r},
+	r=va vb+vc;
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
+	h=If[OptionValue[Exact],0,relativeErrorBound];
+	\[Theta]3=(1+\[Delta]a)(1+\[Delta]b)Interval[{1-h,1+h}]-1;
+	\[Theta]2=(1+\[Delta]c)Interval[{1-h,1+h}]-1;
+	\[Delta]r=Interval[{Min[\[Theta]3,\[Theta]2],Max[\[Theta]3,\[Theta]2]}];
 	{r,\[Delta]r}];
 
 
@@ -264,22 +293,19 @@ SetAttributes[evre,HoldAll];
 Options[evre]={Exact->False};
 evre[a_*b_+c_,opts:OptionsPattern[]]:=If[
 usefma,
-applyOpWithRelativeError[
-	#1 #2+#3&,evre[a],evre[b],evre[c],opts],
-applyOpWithRelativeError[
-	Plus,applyOpWithRelativeError[Times,evre[a],evre[b],opts],evre[c]],opts];
-evre[a_+b_,opts:OptionsPattern[]]:=applyOpWithRelativeError[Plus,evre[a],evre[b],opts];
+applyOpWithRelativeError[fma,evre[a],evre[b],evre[c],opts],
+applyOpWithRelativeError[Plus,applyOpWithRelativeError[Times,evre[a],evre[b],opts],evre[c],opts]];
+evre[a_+b_]:=applyOpWithRelativeError[Plus,evre[a],evre[b]];
 evre[a_+b__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
 evre[a_*b_,opts:OptionsPattern[]]:=applyOpWithRelativeError[Times,evre[a],evre[b],opts];
 evre[a_*b__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
 evre[a_/b_,opts:OptionsPattern[]]:=applyOpWithRelativeError[Divide,evre[a],evre[b],opts];
 (* Negation is exact. *)
 evre[-a_]:=-evre[a];
-(* Squaring an interval is not the same as multiplying two identical intervals. *) 
-evre[a_^2,opts:OptionsPattern[]]:=applyOpWithRelativeError[#^2&,evre[a],opts];
+(* Squaring an interval is not the same as multiplying two identical intervals. *)
+evre[a_^2,opts:OptionsPattern[]]:=applyOpWithRelativeError[square,evre[a],opts];
 evre[a_^3,opts:OptionsPattern[]]:=applyOpWithRelativeError[cube,evre[a],opts];
-evre[a_^4,opts:OptionsPattern[]]:=
-	applyOpWithRelativeError[#^2&,applyOpWithRelativeError[#^2&,evre[a],opts],opts];
+evre[a_^4,opts:OptionsPattern[]]:=applyOpWithRelativeError[fourth,evre[a],opts];
 evre[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},evre[Interval[{cra,cra}]]];
 evre[{v_Interval,\[Delta]_Interval}]:={v,\[Delta]};
 evre[a_Interval]:={a,Interval[{0,0}]};
