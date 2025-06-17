@@ -21,7 +21,7 @@ On[Assert]
 ?"IEEE754FloatingPointEvaluation`*"
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*IEEEEvaluate*)
 
 
@@ -110,8 +110,8 @@ Assert[
 IEEEEvaluate[-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10]==$Failed];
 
 
-(* ::Section:: *)
-(*IEEEEvaluateInterval*)
+(* ::Section::Closed:: *)
+(*IEEEEvaluateWithAbsoluteError*)
 
 
 (* ::Input::Initialization:: *)
@@ -290,3 +290,111 @@ bits[C\[FivePointedStar]]
 
 (* ::Input::Initialization:: *)
 End[]
+
+
+(* ::Section:: *)
+(*IEEEEvaluateWithRelativeError*)
+
+
+(* ::Subsection:: *)
+(*Explicit Bounds*)
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[2*3+4,UseFMA->True]=={Interval[{10,10}],Interval[{-2^-53,2^-53}]}];
+Assert[IEEEEvaluateWithRelativeError[2*3+4,UseFMA->False]=={Interval[{10,10}],Interval[{(6(-2 2^-53+2^-106)-4 2^-53)/10,(6(2 2^-53 +2^-106)+4 2^-53)/10}]}];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[1+2]=={Interval[{3,3}],Interval[{-2^-53,2^-53}]}];
+Assert[IEEEEvaluateWithRelativeError[2*3]=={Interval[{6,6}],Interval[{-2^-53,2^-53}]}];
+Assert[IEEEEvaluateWithRelativeError[2/3]=={Interval[{CorrectlyRound[2/3],CorrectlyRound[2/3]}],Interval[{-2^-53,2^-53}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[-Interval[{-2,1}]]=={Interval[{-1,2}],Interval[{0,0}]}];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[Interval[{-1,2}]^2]=={Interval[{0,4}],Interval[{-2^-53,2^-53}]}];
+Assert[IEEEEvaluateWithRelativeError[Interval[{-1,3}]^3]=={Interval[{-1,27}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}];
+Assert[IEEEEvaluateWithRelativeError[Interval[{-1,3}]^4]=={Interval[{0,81}],Interval[{-2 2^-53+ 2^-106,2 2^-53+ 2^-106}]}];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[1]=={Interval[{1,1}],Interval[{0,0}]}];
+Assert[IEEEEvaluateWithRelativeError[0.1]=={Interval[{CorrectlyRound[0.1],CorrectlyRound[0.1]}],Interval[{0,0}]}];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{0,2}]]==
+	{Interval[{0,3}],Interval[{-2^-53,2^-53}]}];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{-2,0}]]==
+	{Interval[{-2,1}],Interval[{-\[Infinity],\[Infinity]}]}];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[2,3]==$Failed];
+
+
+(* ::Subsection:: *)
+(*Higham' s \[Gamma] Model*)
+
+
+(* ::Text:: *)
+(*[Hig02], Lemma 3.1.*)
+
+
+(* ::Input::Initialization:: *)
+\[Gamma][n_]:=n 2^-53/(1-n 2^-53)
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]Interval[{RandomReal[],RandomReal[]}]]][[2]]]<=\[Gamma][1],{100}],TrueQ]]
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[(Interval[{RandomReal[],RandomReal[]}]Interval[{RandomReal[],RandomReal[]}]) Interval[{RandomReal[],RandomReal[]}]]][[2]]]<=\[Gamma][2],{100}],TrueQ]]
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[((Interval[{RandomReal[],RandomReal[]}]Interval[{RandomReal[],RandomReal[]}]) Interval[{RandomReal[],RandomReal[]}])Interval[{RandomReal[],RandomReal[]}]]][[2]]]<=\[Gamma][3],{100}],TrueQ]]
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]^2]][[2]]]<=\[Gamma][1],{100}],TrueQ]]
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]^3]][[2]]]<=\[Gamma][2],{100}],TrueQ]]
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]^4]][[2]]]<=\[Gamma][3],{100}],TrueQ]]
+
+
+(* ::Text:: *)
+(*[Hig02], equation 3.5.*)
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[
+Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]][[2]]]]<=\[Gamma][2],{100}],TrueQ]]
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[
+Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+(Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}])][[2]]]]<=\[Gamma][3],{100}],TrueQ]]
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[
+Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+(Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}])][[2]]]]<=\[Gamma][3],{100}],TrueQ]]
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[
+Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+(Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+(Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]))][[2]]]]<=\[Gamma][4],{100}],TrueQ]]
