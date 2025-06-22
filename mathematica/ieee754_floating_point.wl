@@ -145,7 +145,7 @@ Attributes[CorrectlyRound]={Listable};
 
 Truncate;
 Truncate::usage =
-"Truncate[\!\(\*StyleBox[\"x\", \"TI\"]\),\!\(\*StyleBox[\"\[Kappa]\", \"TI\"]\)] " <>
+"Truncate[\!\(\*StyleBox[\"\[Kappa]\", \"TI\"]\),\!\(\*StyleBox[\"x\", \"TI\"]\)] " <>
 "returns the value obtained by clearing the last \!\(\*StyleBox[\"\[Kappa]\", \"TI\"]\) " <>
 "bits of the mantissa of \!\(\*StyleBox[\"x\", \"TI\"]\)."
 
@@ -270,7 +270,7 @@ CorrectlyRound[args___] :=
 (Message[CorrectlyRound::argnum, Length[{args}]]; $Failed)
 
 
-Truncate[x_,\[Kappa]_]:=IntegerPart[Representation[x]2^-\[Kappa]]2^\[Kappa]
+Truncate[\[Kappa]_,x_]:=FromRepresentation[IntegerPart[Representation[x]2^-\[Kappa]]2^\[Kappa]]
 
 
 End[]
