@@ -68,6 +68,13 @@ Assert[Bits[-Sqrt[2]]=="1|01111111111|011010100000100111100110011001111111001110
 Assert[Bits[\[LeftAngleBracket]-Sqrt[2]\[RightAngleBracket]]=="1|01111111111|0110101000001001111001100110011111110011101111001101;"]
 
 
+(* ::Input::Initialization:: *)
+Assert[Bits[Truncate[Sqrt[2],0]]=="0|01111111111|0110101000001001111001100110011111110011101111001101;"];
+Assert[Bits[Truncate[Sqrt[2],1]]=="0|01111111111|0110101000001001111001100110011111110011101111001100;"];
+Assert[Bits[Truncate[Sqrt[2],4]]=="0|01111111111|0110101000001001111001100110011111110011101111000000;"];
+Assert[Bits[Truncate[-Sqrt[2],10]]=="1|01111111111|0110101000001001111001100110011111110011100000000000;"];
+
+
 Table[
 SetFloatingPointFormat[format];
 {#,{Bits[#],HexLiteral[#]},{Bits[CorrectlyRound[#]],HexLiteral[CorrectlyRound[#]]}}&/@{\[Pi],1/3,Sqrt[2],1+2^-format[[1]],1+2^(-format[[1]]-5)}//TableForm,
