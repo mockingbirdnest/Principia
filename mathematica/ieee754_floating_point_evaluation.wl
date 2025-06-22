@@ -70,7 +70,7 @@ StyleBox[\"c\",\nFontSlant->\"Italic\"]\).";
 
 Exact;
 Exact::usage =
-"Exact is a wrapper for expressions passed to IEEEEvaluateWithAbsoluteError, and " <>
+"Exact is a wrapper for expressions passed to IEEEEvaluateWithAbsoluteError and " <>
 "IEEEEvaluateWithRelativeError that specifies that the top-level operation " <>
 "is exact (errors may still be propagated from the subexpressions)."
 
@@ -87,11 +87,10 @@ IEEEEvaluate[x:(_Plus|_Subtract|_Times|_Divide|_Power|_?NumberQ),OptionsPattern[
 Block[
 {Plus,Times,ev},
 SetAttributes[ev,HoldAll];
-ev[a_*b_+c_]:=
-If[
-OptionValue[UseFMA],
-CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]+IEEEEvaluate[c]],
-CorrectlyRound[CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]]+IEEEEvaluate[c]]];
+ev[a_*b_+c_]:=If[
+	OptionValue[UseFMA],
+	CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]+IEEEEvaluate[c]],
+	CorrectlyRound[CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]]+IEEEEvaluate[c]]];
 ev[a_+b_]:=CorrectlyRound[IEEEEvaluate[a]+IEEEEvaluate[b]];
 ev[a_+b__]:=(Message[IEEEEvaluate::badass]; $Failed);
 ev[a_-b_]:=CorrectlyRound[IEEEEvaluate[a]-IEEEEvaluate[b]];
@@ -103,10 +102,8 @@ ev[a_^3]:=CorrectlyRound[IEEEEvaluate[a^2]IEEEEvaluate[a]];
 ev[a_^4]:=CorrectlyRound[IEEEEvaluate[a^2]IEEEEvaluate[a^2]];
 ev[a_?NumberQ]:=CorrectlyRound[a];
 ev[x]];
-IEEEEvaluate[_]:=
-(Message[IEEEEvaluate::badarg]; $Failed);
-IEEEEvaluate[_, args__]:=
-(Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);
+IEEEEvaluate[_]:=(Message[IEEEEvaluate::badarg]; $Failed);
+IEEEEvaluate[_, args__]:=(Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);
 
 
 (* ::Text:: *)
@@ -174,10 +171,10 @@ Block[
 SetAttributes[evae,HoldAll];
 Options[evae]={Exact->False};
 evae[a_*b_+c_,opts:OptionsPattern[]]:=If[
-usefma,
-applyOpWithAbsoluteError[#1 #2+#3&,evae[a],evae[b],evae[c],opts],
-applyOpWithAbsoluteError[
-	Plus,applyOpWithAbsoluteError[Times,evae[a],evae[b],opts],evae[c]],opts];
+	usefma,
+	applyOpWithAbsoluteError[#1 #2+#3&,evae[a],evae[b],evae[c],opts],
+	applyOpWithAbsoluteError[
+		Plus,applyOpWithAbsoluteError[Times,evae[a],evae[b],opts],evae[c]],opts];
 evae[a_+b_,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[Plus,evae[a],evae[b],opts];
 evae[a_+b__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
 evae[a_*b_,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[Times,evae[a],evae[b],opts];
@@ -198,7 +195,7 @@ evae[a_?ValueQ]:=evae[Evaluate[a]];
 evae[a_]:=a;
 evae[x]];
 IEEEEvaluateWithAbsoluteError[_, args__]:=
-(Message[IEEEEvaluateWithAbsoluteError::argnum, Length[{args}] + 1]; $Failed);
+	(Message[IEEEEvaluateWithAbsoluteError::argnum, Length[{args}] + 1]; $Failed);
 
 
 (* ::Text:: *)
@@ -292,9 +289,10 @@ Block[
 SetAttributes[evre,HoldAll];
 Options[evre]={Exact->False};
 evre[a_*b_+c_,opts:OptionsPattern[]]:=If[
-usefma,
-applyOpWithRelativeError[fma,evre[a],evre[b],evre[c],opts],
-applyOpWithRelativeError[Plus,applyOpWithRelativeError[Times,evre[a],evre[b],opts],evre[c],opts]];
+	usefma,
+	applyOpWithRelativeError[fma,evre[a],evre[b],evre[c],opts],
+	applyOpWithRelativeError[
+		Plus,applyOpWithRelativeError[Times,evre[a],evre[b],opts],evre[c],opts]];
 evre[a_+b_]:=applyOpWithRelativeError[Plus,evre[a],evre[b]];
 evre[a_+b__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
 evre[a_*b_,opts:OptionsPattern[]]:=applyOpWithRelativeError[Times,evre[a],evre[b],opts];
@@ -314,7 +312,7 @@ evre[a_?ValueQ]:=evre[Evaluate[a]];
 evre[a_]:=a;
 evre[x]];
 IEEEEvaluateWithRelativeError[_, args__]:=
-(Message[IEEEEvaluateWithRelativeError::argnum, Length[{args}] + 1]; $Failed);
+	(Message[IEEEEvaluateWithRelativeError::argnum, Length[{args}] + 1]; $Failed);
 
 
 End[]
