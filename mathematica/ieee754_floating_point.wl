@@ -202,8 +202,8 @@ magnitude=Mod[n,2^(exponentBits+significandBits-1)];
 \[Mu]=Mod[magnitude,2^(significandBits-1)];
 e=IntegerPart[magnitude/2^(significandBits-1)];
 If[e==0,
-\[Mu]/2^(significandBits-1) 2^(1-bias),
-sign(1+\[Mu]/2^(significandBits-1))2^(e-bias)]];
+Evaluate[\[Mu]/2^(significandBits-1) 2^(1-bias)],
+Evaluate[sign(1+\[Mu]/2^(significandBits-1))2^(e-bias)]]];
 FromRepresentation[args___] :=
 (Message[FromRepresentation::argnum, Length[{args}]]; $Failed)
 
