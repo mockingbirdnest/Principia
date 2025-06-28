@@ -181,6 +181,20 @@ Assert[IEEEEvaluateWithAbsoluteError[0.1]=={Interval[{CorrectlyRound[0.1],Correc
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithAbsoluteError[\[Pi]]=={Interval[{5778952871261281/70368744177664,5778952871261281/70368744177664}],Interval[{0,0}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithAbsoluteError[CorrectlyRound[\[Pi]]]=={Interval[{5778952871261281/70368744177664,5778952871261281/70368744177664}],Interval[{0,0}]}]
+
+
+(* ::Input::Initialization:: *)
+Block[
+{x=3},
+Assert[IEEEEvaluateWithAbsoluteError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[2,3]==$Failed];
 
 
@@ -420,6 +434,20 @@ Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{0,2}]]==
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{-2,0}]]==
 	{Interval[{-2,1}],Interval[{-\[Infinity],\[Infinity]}]}];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[\[Pi]]=={Interval[{5778952871261281/70368744177664,5778952871261281/70368744177664}],Interval[{0,0}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[CorrectlyRound[\[Pi]]]=={Interval[{5778952871261281/70368744177664,5778952871261281/70368744177664}],Interval[{0,0}]}]
+
+
+(* ::Input::Initialization:: *)
+Block[
+{x=3},
+Assert[IEEEEvaluateWithRelativeError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
 
 
 (* ::Input::Initialization:: *)
