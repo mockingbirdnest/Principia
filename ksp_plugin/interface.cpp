@@ -224,6 +224,21 @@ serialization::GravityModel::Body MakeGravityModel(
     return (c_string == nullptr) ? std::nullopt
                                  : std::make_optional(c_string);
   };
+  auto const make_optional_geopotential_size =
+      [](BodyGeopotentialElement const* const* const geopotential)
+      -> std::optional<std::int64_t> {
+    if (geopotential == nullptr) {
+      return std::nullopt;
+    } else {
+      std::int64_t size = 0;
+      for (BodyGeopotentialElement const* const* e = geopotential;
+           *e != nullptr;
+           ++e) {
+        ++size;
+      }
+      return size;
+    }
+  };
   LOG(INFO)
       << __FUNCTION__ << "\n"
       << NAMED(make_optional_c_string(body_parameters.gravitational_parameter))
@@ -239,7 +254,8 @@ serialization::GravityModel::Body MakeGravityModel(
       << NAMED(make_optional_c_string(body_parameters.angular_frequency))
       << "\n"
       << NAMED(make_optional_c_string(body_parameters.j2)) << "\n"
-      << NAMED(make_optional_c_string(body_parameters.reference_radius));
+      << NAMED(make_optional_c_string(body_parameters.reference_radius)) << "\n"
+      << NAMED(make_optional_geopotential_size(body_parameters.geopotential));
   serialization::GravityModel::Body gravity_model;
   gravity_model.set_name(body_parameters.name);
   gravity_model.set_gravitational_parameter(
