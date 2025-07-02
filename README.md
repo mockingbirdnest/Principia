@@ -1,8 +1,8 @@
 # Principia
 
-**&lrm;[‎Lagrange](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#lagrange), the May version of Principia, is available, with performance improvements.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/l4gr4nge).**
+**&lrm;[‎Laguerre](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#laguerre), the June version of Principia, is available, with usability improvements.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/l4guerre).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Lagrange for 1.8.1—1.12.5](https://share.weiyun.com/uYkxyYQz).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Laguerre for 1.8.1—1.12.5](https://share.weiyun.com/Ru6fpVvh).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/l4gr4nge).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Lagrange](https://github.com/mockingbirdnest/Principia/releases/tag/2025052703-Lagrange) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/l4guerre).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Laguerre](https://github.com/mockingbirdnest/Principia/releases/tag/2025062511-Laguerre) release.
