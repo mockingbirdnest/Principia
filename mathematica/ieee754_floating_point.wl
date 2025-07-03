@@ -143,6 +143,13 @@ CorrectlyRound::argnum =
 Attributes[CorrectlyRound]={Listable};
 
 
+Truncate;
+Truncate::usage =
+"Truncate[\!\(\*StyleBox[\"\[Kappa]\", \"TI\"]\),\!\(\*StyleBox[\"x\", \"TI\"]\)] " <>
+"returns the value obtained by clearing the last \!\(\*StyleBox[\"\[Kappa]\", \"TI\"]\) " <>
+"bits of the mantissa of \!\(\*StyleBox[\"x\", \"TI\"]\)."
+
+
 Begin["`Private`"]
 
 
@@ -261,6 +268,9 @@ If[Abs[#]>=2^(bias+1),Sign[x]\[Infinity],#]&
 Options[CorrectlyRound]={RoundingMode->Automatic};
 CorrectlyRound[args___] :=
 (Message[CorrectlyRound::argnum, Length[{args}]]; $Failed)
+
+
+Truncate[\[Kappa]_,x_]:=FromRepresentation[Floor[Representation[x], 2^\[Kappa]]]
 
 
 End[]
