@@ -110,7 +110,7 @@ Assert[
 IEEEEvaluate[-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10]==$Failed];
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*IEEEEvaluateWithAbsoluteError*)
 
 
@@ -165,7 +165,26 @@ Assert[IEEEEvaluateWithAbsoluteError[0.1]=={Interval[{CorrectlyRound[0.1],Correc
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithAbsoluteError[
+	{Interval[{2,2}],Interval[{-2^-50,2^-50}]}+
+	{Interval[{3,3}],Interval[{-2^-51,2^-51}]}]==
+	{Interval[{5,5}],Interval[{-2^-50-2 2^-51,2^-50+2 2^-51}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithAbsoluteError[
+Exact[
+		{Interval[{2,2}],Interval[{-2^-50,2^-50}]}+
+		{Interval[{3,3}],Interval[{-2^-51,2^-51}]}]]==
+	{Interval[{5,5}],Interval[{-2^-50- 2^-51,2^-50+ 2^-51}]}]
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[2,3]==$Failed];
+
+
+(* ::Subsection::Closed:: *)
+(*[SZ05] Analysis*)
 
 
 (* ::Text:: *)
@@ -296,6 +315,21 @@ End[]
 (*IEEEEvaluateWithRelativeError*)
 
 
+?IEEEEvaluateWithRelativeError
+
+
+(* ::Input::Initialization:: *)
+$ContextPath=Prepend[$ContextPath,"IEEE754FloatingPointEvaluation`Private`"]
+
+
+(* ::Input::Initialization:: *)
+Assert[relativeErrorBound==2^-53];
+
+
+(* ::Input::Initialization:: *)
+$ContextPath=Drop[$ContextPath,1]
+
+
 (* ::Subsection:: *)
 (*Explicit Bounds*)
 
@@ -337,10 +371,40 @@ Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{-2,0}]]==
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[
+	{Interval[{5,5}],Interval[{-2^-53,2^-53}]}+
+	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]==
+	{Interval[{11,11}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[
+	Exact[
+		{Interval[{5,5}],Interval[{-2^-53,2^-53}]}+
+		{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]]==
+	{Interval[{11,11}],Interval[{-2^-53,2^-53}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[
+	{Interval[{5,5}],Interval[{-2^-53,2^-53}]} *
+	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]==
+	{Interval[{30,30}],Interval[{-3 2^-53+3 2^-106-2^-159,3 2^-53+3 2^-106+2^-159}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[
+Exact[
+		{Interval[{5,5}],Interval[{-2^-53,2^-53}]}*
+		{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]]==
+	{Interval[{30,30}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[2,3]==$Failed];
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Higham' s \[Gamma] Model*)
 
 
