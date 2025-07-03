@@ -293,7 +293,7 @@ evre[a_*b_+c_,opts:OptionsPattern[]]:=If[
 	applyOpWithRelativeError[fma,evre[a],evre[b],evre[c],opts],
 	applyOpWithRelativeError[
 		Plus,applyOpWithRelativeError[Times,evre[a],evre[b],opts],evre[c],opts]];
-evre[a_+b_]:=applyOpWithRelativeError[Plus,evre[a],evre[b]];
+evre[a_+b_,opts:OptionsPattern[]]:=applyOpWithRelativeError[Plus,evre[a],evre[b],opts];
 evre[a_+b__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
 evre[a_*b_,opts:OptionsPattern[]]:=applyOpWithRelativeError[Times,evre[a],evre[b],opts];
 evre[a_*b__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
