@@ -137,7 +137,7 @@ CorrectlyRound::usage =
 "CorrectlyRound[\!\(\*StyleBox[\"x\", \"TI\"]\)] returns a signed rational " <>
 "obtained by rounding \!\(\*StyleBox[\"x\", \"TI\"]\) according to the " <>
 "rounding mode set by SetRoundingMode and the format set by " <>
-"SetFloatingPointFormat."
+"SetFloatingPointFormat, or by the option RoundingMode."
 CorrectlyRound::argnum =
 "CorrectlyRound called with `1` arguments; 1 argument is expected.";
 Attributes[CorrectlyRound]={Listable};
