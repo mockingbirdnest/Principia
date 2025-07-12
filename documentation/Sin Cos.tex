@@ -203,6 +203,7 @@ Given an argument $x$, the purpose of argument reduction is to compute a pair of
 
 \subsection*{Argument Reduction for Small Angles}
 If $\abs x < \round{\frac{\Pi}{4}}$ then $\hat x = x$ and $\gd \hat x = 0$.
+
 \subsection*{Argument Reduction Using the Two-Term Approximation}
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -213,15 +214,41 @@ y &= x - n \; C_1 \\
 \pa{\hat x, \gd \hat x} &= \twodifference\of{y, \gd y}
 \end{dcases}
 \]
-Let's first show that $\abs n \leq 2^{\gk_1}$. :
+The first thing to note is that $\abs n \leq 2^{\gk_1}$.  We have:
+\[
+\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}} = 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} 
+\]
+and:
+\begin{equation}
+\round{x \round{\frac{2}{\Pi}}} = x \frac{2}{\Pi} \pa{1 + \gd_2}\pa{1 + \gd_3}
+\label{eqnxerror}
+\end{equation}
+from which we deduce the upper bound:
 \begin{align*}
-\abs x &\leq 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \\
 \abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
 &\leq \iround{2^{\gk_1} \pa{1 + \gg_3}}
 \end{align*}
-As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
+If $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
+Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.  One case of misrounding is if:
+\[
+x < \pa{n - \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} > \pa{n - \frac{1}{2}}
+\]
+(There is a symmetric case where $x$ is above the odd multiple of $\frac{\Pi}{4}$ and moves below because of floating point rounding.)  Using equation (\ref{eqnxerror}) we find that misrounding is possible iff:
+\[
+x > \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \geq \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gg_2}}
+\]
+In which case the computation of $n$ results in:
+\[
+n \frac{\Pi}{2} - x < \frac{\Pi}{4} \frac{1 + 2 n \gg_2}{1 + \gg_2} = \frac{\Pi}{4} \pa{1 + 2 \pa{2 n - 1} u}
+\]
+This bound tells us that the absolute value of the reduced angle may exceed $\frac{\Pi}{4}$ by as much as:
+\[
+\frac{\Pi}{4} \pa{2^{\gk_1 + 1} - 1} \ULP\of{\frac{\Pi}{2}}
+\]
+This needs to be taken into account when building the accurate tables.
+
+Using the bound on $\abs n$ and the fact that $C_1$ has $\gk_1$ trailing zeroes, we see that the product $n \; C_1$ is exact.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
 \[ 
 \abs{\gd y} \geq n \; 2^{\gk'_1 - 1} \ULP\of{\frac{\Pi}{2}} \geq 2^{\gk'_1 + M - 2} \ULP\of{\frac{\Pi}{2}} \ULP\of{n}
 \]
@@ -236,7 +263,7 @@ plugging $\ULP\of{\frac{\Pi}{2}} = 2^{1 - M}$ we find:
 Therefore, as long as $\gk'_1 > 2$, there exist arguments $x$ for which $\abs{\gd y} > \abs y$.
 } using algorithm 4 of \cite{HidaLiBailey2007}.
 
-To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpitwoterms}), we have:
+To compute the overall error on argument reduction\footnote{Note that this error analysis is correct even in the face of misrounding.  Misrounding can combine with the argument reduction error, though, to cause $\abs{y - {\gd y}}$ to move farther above $\frac{\Pi}{4}$}, first remember that, from equation (\ref{eqnpitwoterms}), we have:
 \[
 C_1 + \gd C_1 = \frac{\Pi}{2} + \gz \quad \text{with} \quad \abs{\gz} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
