@@ -160,8 +160,7 @@ Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^4]=={Interval[{0,81}],Inte
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[1]=={Interval[{1,1}],Interval[{0,0}]}];
-Assert[IEEEEvaluateWithAbsoluteError[0.1]=={Interval[{CorrectlyRound[0.1],CorrectlyRound[0.1]}],Interval[{0,0}]}];
+Assert[IEEEEvaluateWithAbsoluteError[CorrectlyRound[\[Pi]]]=={Interval[{884279719003555/281474976710656,884279719003555/281474976710656}],Interval[{0,0}]}]
 
 
 (* ::Input::Initialization:: *)
@@ -177,6 +176,12 @@ Exact[
 		{Interval[{2,2}],Interval[{-2^-50,2^-50}]}+
 		{Interval[{3,3}],Interval[{-2^-51,2^-51}]}]]==
 	{Interval[{5,5}],Interval[{-2^-50- 2^-51,2^-50+ 2^-51}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithAbsoluteError[\[Pi]]==$Failed];
+Assert[IEEEEvaluateWithAbsoluteError[0.1]==$Failed];
+Assert[IEEEEvaluateWithAbsoluteError[33333333333333333]==$Failed];
 
 
 (* ::Input::Initialization:: *)
@@ -356,11 +361,6 @@ Assert[IEEEEvaluateWithRelativeError[Interval[{-1,3}]^4]=={Interval[{0,81}],Inte
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithRelativeError[1]=={Interval[{1,1}],Interval[{0,0}]}];
-Assert[IEEEEvaluateWithRelativeError[0.1]=={Interval[{CorrectlyRound[0.1],CorrectlyRound[0.1]}],Interval[{0,0}]}];
-
-
-(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{0,2}]]==
 	{Interval[{0,3}],Interval[{-2^-53,2^-53}]}];
 
@@ -375,6 +375,10 @@ Assert[IEEEEvaluateWithRelativeError[
 	{Interval[{5,5}],Interval[{-2^-53,2^-53}]}+
 	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]==
 	{Interval[{11,11}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[CorrectlyRound[\[Pi]]]=={Interval[{884279719003555/281474976710656,884279719003555/281474976710656}],Interval[{0,0}]}]
 
 
 (* ::Input::Initialization:: *)
@@ -393,11 +397,23 @@ Assert[IEEEEvaluateWithRelativeError[
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[\[Pi]]==$Failed];
+Assert[IEEEEvaluateWithRelativeError[0.1]==$Failed];
+Assert[IEEEEvaluateWithRelativeError[33333333333333333]==$Failed]
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[
 Exact[
 		{Interval[{5,5}],Interval[{-2^-53,2^-53}]}*
 		{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]]==
 	{Interval[{30,30}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{x=3},
+Assert[IEEEEvaluateWithRelativeError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
 
 
 (* ::Input::Initialization:: *)
