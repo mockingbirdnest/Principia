@@ -397,17 +397,17 @@ Assert[IEEEEvaluateWithRelativeError[
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithRelativeError[\[Pi]]==$Failed];
-Assert[IEEEEvaluateWithRelativeError[0.1]==$Failed];
-Assert[IEEEEvaluateWithRelativeError[33333333333333333]==$Failed]
-
-
-(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[
 Exact[
 		{Interval[{5,5}],Interval[{-2^-53,2^-53}]}*
 		{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]]==
 	{Interval[{30,30}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[\[Pi]]==$Failed];
+Assert[IEEEEvaluateWithRelativeError[0.1]==$Failed];
+Assert[IEEEEvaluateWithRelativeError[33333333333333333]==$Failed];
 
 
 (* ::Input::Initialization:: *)
@@ -420,7 +420,7 @@ Assert[IEEEEvaluateWithRelativeError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
 Assert[IEEEEvaluateWithRelativeError[2,3]==$Failed];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Higham' s \[Gamma] Model*)
 
 
