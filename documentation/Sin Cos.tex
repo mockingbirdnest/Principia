@@ -230,23 +230,45 @@ from which we deduce the upper bound:
 \end{align*}
 If $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.  One case of misrounding is if:
+Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.  In the following analysis we assume that $n > 0$.  The results are symmetrical if $n < 0$.  There are two possible kinds of misrounding, with different bounds.
+
+A misrounding of the first kind occurs if:
 \[
-x < \pa{n - \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} > \pa{n - \frac{1}{2}}
+x < \pa{n - \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} > n - \frac{1}{2}
 \]
-(There is a symmetric case where $x$ is above the odd multiple of $\frac{\Pi}{4}$ and moves below because of floating point rounding.)  Using equation (\ref{eqnxerror}) we find that misrounding is possible iff:
+Using equation (\ref{eqnxerror}) we find that this misrounding is possible iff:
 \[
 x > \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \geq \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gg_2}}
 \]
 In which case the computation of $n$ results in:
 \[
-n \frac{\Pi}{2} - x < \frac{\Pi}{4} \frac{1 + 2 n \gg_2}{1 + \gg_2} = \frac{\Pi}{4} \pa{1 + 2 \pa{2 n - 1} u}
+n \frac{\Pi}{2} - x < \frac{\Pi}{4} \pa{1 + \frac{\gg_2}{1 + \gg_2} \pa{2 n - 1}}
 \]
 This bound tells us that the absolute value of the reduced angle may exceed $\frac{\Pi}{4}$ by as much as:
+\begin{equation}
+\frac{\Pi}{4} \frac{\gg_2}{1 + \gg_2} \pa{2^{\gk_1 + 1} - 1}
+\label{eqnboundabove}
+\end{equation}
+
+A misrounding of the second kind occurs if:
 \[
-\frac{\Pi}{4} \pa{2^{\gk_1 + 1} - 1} \ULP\of{\frac{\Pi}{2}}
+x > \pa{n + \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} < n + \frac{1}{2}
 \]
-This needs to be taken into account when building the accurate tables.
+A derivation similar to the one above gives the following condition for this misrounding to be possible.  Using equation (\ref{eqnxerror}):
+\[
+x < \frac{\Pi}{2} \pa{n + \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \leq \frac{\Pi}{2} \pa{n + \frac{1}{2}} \pa{1 + \gg_2}
+\]
+from which we derive the bound:
+\[
+x - n \frac{\Pi}{2} < \frac{\Pi}{4} \pa{1 + \gg_2 \pa{2 n + 1}}
+\]
+and thus the excess above $\frac{\Pi}{4}$:
+\begin{equation}
+\frac{\Pi}{4} \gg_2 \pa{2^{\gk_1 + 1} + 1}
+\label{eqnboundbelow}
+\end{equation}
+
+The bounds (\ref{eqnboundabove}) and (\ref{eqnboundbelow}) need to be taken into account when building the accurate tables.
 
 Using the bound on $\abs n$ and the fact that $C_1$ has $\gk_1$ trailing zeroes, we see that the product $n \; C_1$ is exact.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
 \[ 
@@ -311,7 +333,7 @@ It is straightforward to show, like we did in the preceding section, that:
 \[
 \abs n \leq \iround{2^{\gk_2} \pa{1 + \gg_3}}
 \]
-and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.
+and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.  Similarly, the misrounding bounds (\ref{eqnboundabove}) and (\ref{eqnboundbelow}) are applicable with $\gk_2$ replacing $\gk_1$.
 
 To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpithreeterms}), we have:
 \[

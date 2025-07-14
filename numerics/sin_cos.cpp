@@ -75,8 +75,8 @@ constexpr Argument three_term_θ_threshold = π / 2 * (1LL << κ₂);
 constexpr Argument C₁ = 0x1.921fb'54442'd00p0;
 constexpr Argument δC₁ = 0x1.84698'98cc5'17p-48;
 constexpr Argument C₂ = 0x1.921fb'54440'000p0;
-constexpr Argument Cʹ₂ = 0x2.d1846'98980'000p-40;
-constexpr Argument δC₂ = 0xc.c5170'1b839'a28p-80;
+constexpr Argument Cʹ₂ = 0x1.68c23'4c4c0'000p-39;
+constexpr Argument δC₂ = 0x1.98a2e'03707'345p-77;
 constexpr Argument two_term_θ_reduced_threshold =
     1.0 / (1LL << (-(κ₁ + κʹ₁ + κ₃ - std::numeric_limits<double>::digits + 2)));
 constexpr Argument three_term_θ_reduced_threshold =
