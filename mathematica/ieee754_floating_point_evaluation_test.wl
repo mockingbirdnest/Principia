@@ -21,7 +21,7 @@ On[Assert]
 ?"IEEE754FloatingPointEvaluation`*"
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*IEEEEvaluate*)
 
 
@@ -110,6 +110,12 @@ Assert[
 IEEEEvaluate[-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10]==$Failed];
 
 
+(* ::Input::Initialization:: *)
+Module[
+{x=3},
+Assert[IEEEEvaluate[x]==3]];
+
+
 (* ::Section:: *)
 (*IEEEEvaluateWithAbsoluteError*)
 
@@ -180,15 +186,24 @@ Exact[
 
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[\[Pi]]==$Failed];
-Assert[IEEEEvaluateWithAbsoluteError[0.1]==$Failed];
 Assert[IEEEEvaluateWithAbsoluteError[33333333333333333]==$Failed];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithAbsoluteError[0.1`20]=={Interval[{3602879701896397/36028797018963968,3602879701896397/36028797018963968}],Interval[{3602879701896397/36028797018963968-0.1`20,3602879701896397/36028797018963968-0.1`20}]}]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{x=3},
+Assert[IEEEEvaluateWithAbsoluteError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
 
 
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[2,3]==$Failed];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*[SZ05] Analysis*)
 
 
@@ -406,8 +421,11 @@ Exact[
 
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[\[Pi]]==$Failed];
-Assert[IEEEEvaluateWithRelativeError[0.1]==$Failed];
 Assert[IEEEEvaluateWithRelativeError[33333333333333333]==$Failed];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[0.1`20]=={Interval[{3602879701896397/36028797018963968,3602879701896397/36028797018963968}],Interval[{(3602879701896397/36028797018963968)/0.1`20 -1,(3602879701896397/36028797018963968)/0.1`20 -1}]}]
 
 
 (* ::Input::Initialization:: *)
