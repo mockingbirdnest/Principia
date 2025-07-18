@@ -21,7 +21,7 @@ On[Assert]
 ?"IEEE754FloatingPointEvaluation`*"
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*IEEEEvaluate*)
 
 
@@ -124,6 +124,22 @@ b=0.00833333316414932033147740536488;
 v=0.000975`30;
 w=CorrectlyRound[v];
 poly[u_]:=u^3(a+b u^2);
+Assert[IEEEEvaluate[poly[v]]!=CorrectlyRound[poly[v]]];
+Assert[IEEEEvaluate[poly[v]]==
+CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+CorrectlyRound[
+CorrectlyRound[a]+
+CorrectlyRound[b]CorrectlyRound[w^2]]]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly=Function[u,u^3(a+b u^2)];
 Assert[IEEEEvaluate[poly[v]]!=CorrectlyRound[poly[v]]];
 Assert[IEEEEvaluate[poly[v]]==
 CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]

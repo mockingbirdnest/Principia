@@ -87,10 +87,14 @@ IEEEEvaluate[x_,OptionsPattern[]]:=
 Block[
 {ev,evh},
 SetAttributes[ev,HoldAll];
+(*For OwnValues that are Function (aka pure functions).*)
+evh[Hold[Function[a_,body_][b_]]]:=evh[Hold[body]/.a->b];
+(*For functions defined with SetDelayed.*)
 evh[Hold[a_]]:=ev[a];
 ev[a_+b_+c__]:=(Message[IEEEEvaluate::badass]; $Failed);
 ev[a_*b_*c__]:=(Message[IEEEEvaluate::badass]; $Failed);
-ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.DownValues[fn]];
+ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
+ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 ev[a_*b_+c_]:=If[
 	OptionValue[UseFMA],
 	CorrectlyRound[ev[a]ev[b]+ev[c]],
