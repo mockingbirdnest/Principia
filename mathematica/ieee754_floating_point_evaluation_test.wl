@@ -110,7 +110,29 @@ Assert[
 IEEEEvaluate[-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10]==$Failed];
 
 
-(* ::Section:: *)
+(* ::Input::Initialization:: *)
+Module[
+{x=3},
+Assert[IEEEEvaluate[x]==3]];
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly[u_]:=u^3(a+b u^2);
+Assert[IEEEEvaluate[poly[v]]!=CorrectlyRound[poly[v]]];
+Assert[IEEEEvaluate[poly[v]]==
+CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+CorrectlyRound[
+CorrectlyRound[a]+
+CorrectlyRound[b]CorrectlyRound[w^2]]]]]
+
+
+(* ::Section::Closed:: *)
 (*IEEEEvaluateWithAbsoluteError*)
 
 
@@ -180,15 +202,24 @@ Exact[
 
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[\[Pi]]==$Failed];
-Assert[IEEEEvaluateWithAbsoluteError[0.1]==$Failed];
 Assert[IEEEEvaluateWithAbsoluteError[33333333333333333]==$Failed];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithAbsoluteError[0.1`20]=={Interval[{3602879701896397/36028797018963968,3602879701896397/36028797018963968}],Interval[{3602879701896397/36028797018963968-0.1`20,3602879701896397/36028797018963968-0.1`20}]}]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{x=3},
+Assert[IEEEEvaluateWithAbsoluteError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
 
 
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[2,3]==$Failed];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*[SZ05] Analysis*)
 
 
@@ -316,7 +347,7 @@ bits[C\[FivePointedStar]]
 End[]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*IEEEEvaluateWithRelativeError*)
 
 
@@ -382,6 +413,10 @@ Assert[IEEEEvaluateWithRelativeError[CorrectlyRound[\[Pi]]]=={Interval[{88427971
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[CorrectlyRound[\[Pi]]]=={Interval[{884279719003555/281474976710656,884279719003555/281474976710656}],Interval[{0,0}]}]
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[
 	Exact[
 		{Interval[{5,5}],Interval[{-2^-53,2^-53}]}+
@@ -411,6 +446,15 @@ Exact[
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[\[Pi]]==$Failed];
+Assert[IEEEEvaluateWithRelativeError[33333333333333333]==$Failed];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[0.1`20]=={Interval[{3602879701896397/36028797018963968,3602879701896397/36028797018963968}],Interval[{(3602879701896397/36028797018963968)/0.1`20 -1,(3602879701896397/36028797018963968)/0.1`20 -1}]}]
+
+
+(* ::Input::Initialization:: *)
 Module[
 {x=3},
 Assert[IEEEEvaluateWithRelativeError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
@@ -420,7 +464,7 @@ Assert[IEEEEvaluateWithRelativeError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
 Assert[IEEEEvaluateWithRelativeError[2,3]==$Failed];
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Higham' s \[Gamma] Model*)
 
 
