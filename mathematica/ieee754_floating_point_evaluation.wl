@@ -167,7 +167,7 @@ SetAttributes[IEEEEvaluateWithAbsoluteError,HoldAll];
 Options[IEEEEvaluateWithAbsoluteError]={UseFMA->True};
 IEEEEvaluateWithAbsoluteError[x_,OptionsPattern[]]:=
 Block[
-{Plus,Times,evae,usefma=OptionValue[UseFMA]},
+{evae,usefma=OptionValue[UseFMA]},
 SetAttributes[evae,HoldAll];
 Options[evae]={Exact->False};
 evae[a_*b_+c_,opts:OptionsPattern[]]:=If[
@@ -187,12 +187,13 @@ evae[a_^2,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[#^2&,evae[a],opts];
 evae[a_^3,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[cube,evae[a],opts];
 evae[a_^4,opts:OptionsPattern[]]:=
 	applyOpWithAbsoluteError[#^2&,applyOpWithAbsoluteError[#^2&,evae[a],opts],opts];
-evae[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},evae[Interval[{cra,cra}]]];
+evae[a_CorrectlyRound]:=evae[Interval[{a,a}]];
+evae[a_Integer|a_Rational]:=evae[Interval[{a,a}]]/;a==CorrectlyRound[a];
 evae[{v_Interval,\[Delta]_Interval}]:={v,\[Delta]};
 evae[a_Interval]:={a,Interval[{0,0}]};
 evae[Exact[a_]]:=evae[a,Exact->True];
 evae[a_?ValueQ]:=evae[Evaluate[a]];
-evae[a_]:=a;
+evae[a_]:=$Failed;
 evae[x]];
 IEEEEvaluateWithAbsoluteError[_, args__]:=
 	(Message[IEEEEvaluateWithAbsoluteError::argnum, Length[{args}] + 1]; $Failed);
@@ -285,7 +286,7 @@ SetAttributes[IEEEEvaluateWithRelativeError,HoldAll];
 Options[IEEEEvaluateWithRelativeError]={UseFMA->True};
 IEEEEvaluateWithRelativeError[x_,OptionsPattern[]]:=
 Block[
-{Plus,Times,evre,usefma=OptionValue[UseFMA]},
+{evre,usefma=OptionValue[UseFMA]},
 SetAttributes[evre,HoldAll];
 Options[evre]={Exact->False};
 evre[a_*b_+c_,opts:OptionsPattern[]]:=If[
@@ -304,12 +305,13 @@ evre[-a_]:=-evre[a];
 evre[a_^2,opts:OptionsPattern[]]:=applyOpWithRelativeError[square,evre[a],opts];
 evre[a_^3,opts:OptionsPattern[]]:=applyOpWithRelativeError[cube,evre[a],opts];
 evre[a_^4,opts:OptionsPattern[]]:=applyOpWithRelativeError[fourth,evre[a],opts];
-evre[a_?NumberQ]:=Block[{cra=CorrectlyRound[a]},evre[Interval[{cra,cra}]]];
+evre[a_CorrectlyRound]:=evre[Interval[{a,a}]];
+evre[a_Integer|a_Rational]:=evre[Interval[{a,a}]]/;a==CorrectlyRound[a];
 evre[{v_Interval,\[Delta]_Interval}]:={v,\[Delta]};
 evre[a_Interval]:={a,Interval[{0,0}]};
 evre[Exact[a_]]:=evre[a,Exact->True];
 evre[a_?ValueQ]:=evre[Evaluate[a]];
-evre[a_]:=a;
+evre[a_]:=$Failed;
 evre[x]];
 IEEEEvaluateWithRelativeError[_, args__]:=
 	(Message[IEEEEvaluateWithRelativeError::argnum, Length[{args}] + 1]; $Failed);
