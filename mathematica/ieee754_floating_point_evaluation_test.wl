@@ -21,7 +21,7 @@ On[Assert]
 ?"IEEE754FloatingPointEvaluation`*"
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*IEEEEvaluate*)
 
 
@@ -132,7 +132,7 @@ CorrectlyRound[a]+
 CorrectlyRound[b]CorrectlyRound[w^2]]]]]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*IEEEEvaluateWithAbsoluteError*)
 
 
@@ -347,7 +347,7 @@ bits[C\[FivePointedStar]]
 End[]
 
 
-(* ::Section:: *)
+(* ::Section::Closed:: *)
 (*IEEEEvaluateWithRelativeError*)
 
 
