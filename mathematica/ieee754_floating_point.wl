@@ -246,7 +246,7 @@ leastHexDigitValue<1,
 ""]<>
 If[FractionalPart[Representation[Abs[x]]]==0,
 "",
-"'"<>ToString/@RealDigits[
+"'"<>(IntegerString[#,16]&)/@RealDigits[
 N[FractionalPart[Representation[Abs[x]]/leastHexDigitValue],5],
 16,3,-1][[1]]<>"\[Ellipsis]"]]<>
 "p"<>ToString[IntegerPart[Representation[Abs[x]]/2^(significandBits-1)]-bias]<>
