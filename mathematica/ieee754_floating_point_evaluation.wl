@@ -85,10 +85,12 @@ SetAttributes[IEEEEvaluate,HoldAll];
 Options[IEEEEvaluate]={UseFMA->True};
 IEEEEvaluate[x_,OptionsPattern[]]:=
 Block[
-{ev},
+{ev,evh},
 SetAttributes[ev,HoldAll];
+evh[Hold[a_]]:=ev[a];
 ev[a_+b_+c__]:=(Message[IEEEEvaluate::badass]; $Failed);
 ev[a_*b_*c__]:=(Message[IEEEEvaluate::badass]; $Failed);
+ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.DownValues[fn]];
 ev[a_*b_+c_]:=If[
 	OptionValue[UseFMA],
 	CorrectlyRound[ev[a]ev[b]+ev[c]],

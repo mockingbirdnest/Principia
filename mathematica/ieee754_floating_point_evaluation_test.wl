@@ -116,6 +116,42 @@ Module[
 Assert[IEEEEvaluate[x]==3]];
 
 
+Module[
+{poly},
+poly[x_]=0.1`20x+0.2`20;
+IEEEEvaluate[poly[0.3`20]]]
+
+
+poly[u_]=u^3 (-0.166666666666666666666648443029 + 
+   0.00833333316414932033147740536488 u^2)
+
+
+v=0.000975`30
+
+
+poly[v]//CorrectlyRound
+
+
+IEEEEvaluate[poly[v],UseFMA->True]
+
+
+CorrectlyRound[CorrectlyRound[v CorrectlyRound[v^2]](CorrectlyRound[
+CorrectlyRound[-0.166666666666666666666648443029]+
+CorrectlyRound[0.00833333316414932033147740536488]CorrectlyRound[v^2]])]
+
+
+Trace[IEEEEvaluate[poly[v]],IEEE754FloatingPointEvaluation`Private`ev|IEEE754FloatingPointEvaluation`Private`evh]
+
+
+MatchQ[poly[v],_Real]
+
+
+CorrectlyRound[CorrectlyRound[CorrectlyRound[0.1`20]CorrectlyRound[0.3`20]]+CorrectlyRound[0.2`20]]
+
+
+CorrectlyRound[CorrectlyRound[0.1`20]CorrectlyRound[0.3`20]+CorrectlyRound[0.2`20]]
+
+
 (* ::Section:: *)
 (*IEEEEvaluateWithAbsoluteError*)
 
