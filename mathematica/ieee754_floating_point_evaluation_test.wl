@@ -148,7 +148,7 @@ CorrectlyRound[a]+
 CorrectlyRound[b]CorrectlyRound[w^2]]]]]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*IEEEEvaluateWithAbsoluteError*)
 
 
@@ -232,6 +232,40 @@ Assert[IEEEEvaluateWithAbsoluteError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
 
 
 (* ::Input::Initialization:: *)
+Module[
+{a,b,poly,p,q,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly[u_]:=u^3(a+b u^2);
+p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+	CorrectlyRound[
+	CorrectlyRound[a]+
+	CorrectlyRound[b]CorrectlyRound[w^2]]];
+q=CorrectlyRound[poly[v]];
+Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]!=Interval[{q,q}]];
+Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]==Interval[{p,p}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,p,q,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly=Function[u,u^3(a+b u^2)];
+p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+	CorrectlyRound[
+	CorrectlyRound[a]+
+	CorrectlyRound[b]CorrectlyRound[w^2]]];
+q=CorrectlyRound[poly[v]];
+Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]!=Interval[{q,q}]];
+Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]==Interval[{p,p}]]]
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[2,3]==$Failed];
 
 
@@ -280,11 +314,11 @@ bits[k]
 
 
 (* ::Input::Initialization:: *)
-k'=IEEEEvaluateWithAbsoluteError[h^3]
+k\[Prime]=IEEEEvaluateWithAbsoluteError[h^3]
 
 
 (* ::Input::Initialization:: *)
-bits[k']
+bits[k\[Prime]]
 
 
 (* ::Input::Initialization:: *)
@@ -304,7 +338,7 @@ bits[S\[FivePointedStar]2]
 
 
 (* ::Input::Initialization:: *)
-S\[FivePointedStar]3=IEEEEvaluateWithAbsoluteError[k' S\[FivePointedStar]2]
+S\[FivePointedStar]3=IEEEEvaluateWithAbsoluteError[k\[Prime] S\[FivePointedStar]2]
 
 
 (* ::Input::Initialization:: *)
@@ -363,7 +397,7 @@ bits[C\[FivePointedStar]]
 End[]
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*IEEEEvaluateWithRelativeError*)
 
 
@@ -474,6 +508,40 @@ Assert[IEEEEvaluateWithRelativeError[0.1`20]=={Interval[{3602879701896397/360287
 Module[
 {x=3},
 Assert[IEEEEvaluateWithRelativeError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,p,q,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly[u_]:=u^3(a+b u^2);
+p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+	CorrectlyRound[
+	CorrectlyRound[a]+
+	CorrectlyRound[b]CorrectlyRound[w^2]]];
+q=CorrectlyRound[poly[v]];
+Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]!=Interval[{q,q}]];
+Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]==Interval[{p,p}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,p,q,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly=Function[u,u^3(a+b u^2)];
+p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+	CorrectlyRound[
+	CorrectlyRound[a]+
+	CorrectlyRound[b]CorrectlyRound[w^2]]];
+q=CorrectlyRound[poly[v]];
+Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]!=Interval[{q,q}]];
+Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]==Interval[{p,p}]]]
 
 
 (* ::Input::Initialization:: *)

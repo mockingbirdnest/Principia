@@ -91,3 +91,6 @@ Assert[CorrectlyRound[1/3,RoundingMode->Toward0]==6004799503160661/1801439850948
 Assert[CorrectlyRound[1/3,RoundingMode->TowardPositiveInfinity]==3002399751580331/9007199254740992]
 Assert[CorrectlyRound[1/3,RoundingMode->TowardNegativeInfinity]==6004799503160661/18014398509481984]
 Assert[CorrectlyRound[1/3,RoundingMode->NearestTiesToEven]==6004799503160661/18014398509481984]
+
+
+Assert[HexLiteral[1+16^^A/16^14]=="0x1.0000000000000'A00\[Ellipsis]p0"]

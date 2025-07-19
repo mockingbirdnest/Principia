@@ -173,18 +173,24 @@ SetAttributes[IEEEEvaluateWithAbsoluteError,HoldAll];
 Options[IEEEEvaluateWithAbsoluteError]={UseFMA->True};
 IEEEEvaluateWithAbsoluteError[x_,OptionsPattern[]]:=
 Block[
-{evae,usefma=OptionValue[UseFMA]},
+{evae,evaeh,usefma=OptionValue[UseFMA]},
 SetAttributes[evae,HoldAll];
 Options[evae]={Exact->False};
+(*For OwnValues that are Function (aka pure functions).*)
+evaeh[Hold[Function[a_,body_][b_]]]:=evaeh[Hold[body]/.a->b];
+(*For functions defined with SetDelayed.*)
+evaeh[Hold[a_]]:=evae[a];
+evae[a_+b_+c__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
+evae[a_*b_*c__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
+evae[fn_[arg_]]:=evaeh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
+evae[fn_[arg_]]:=evaeh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 evae[a_*b_+c_,opts:OptionsPattern[]]:=If[
 	usefma,
 	applyOpWithAbsoluteError[#1 #2+#3&,evae[a],evae[b],evae[c],opts],
 	applyOpWithAbsoluteError[
 		Plus,applyOpWithAbsoluteError[Times,evae[a],evae[b],opts],evae[c]],opts];
 evae[a_+b_,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[Plus,evae[a],evae[b],opts];
-evae[a_+b__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
 evae[a_*b_,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[Times,evae[a],evae[b],opts];
-evae[a_*b__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
 evae[a_/b_,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[Divide,evae[a],evae[b],opts];
 (* Negation is exact. *)
 evae[-a_]:=-evae[a];
@@ -193,13 +199,11 @@ evae[a_^2,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[#^2&,evae[a],opts];
 evae[a_^3,opts:OptionsPattern[]]:=applyOpWithAbsoluteError[cube,evae[a],opts];
 evae[a_^4,opts:OptionsPattern[]]:=
 	applyOpWithAbsoluteError[#^2&,applyOpWithAbsoluteError[#^2&,evae[a],opts],opts];
-evae[a_CorrectlyRound]:=evae[Interval[{a,a}]];
-evae[a_Integer|a_Rational]:=evae[Interval[{a,a}]]/;a==CorrectlyRound[a];
-evae[a_Real]:=Module[{cra=CorrectlyRound[a]},{Interval[{cra,cra}],Interval[{cra-a,cra-a}]}];
-evae[{v_Interval,\[Delta]_Interval}]:={v,\[Delta]};
-evae[a_Interval]:={a,Interval[{0,0}]};
+evae[a_]:=evae[Interval[{a,a}]]/;a==CorrectlyRound[a]&&(MatchQ[a,_Rational]||MatchQ[a,_Integer]);
+evae[a_]:=Module[{cra=CorrectlyRound[a]},{Interval[{cra,cra}],Interval[{cra-a,cra-a}]}]/;MatchQ[a,_Real];
+evae[a_]:=a/;MatchQ[a,{_Interval,_Interval}];
+evae[a_]:={a,Interval[{0,0}]}/;MatchQ[a,_Interval];
 evae[Exact[a_]]:=evae[a,Exact->True];
-evae[a_?ValueQ]:=evae[Evaluate[a]];
 evae[a_]:=$Failed;
 evae[x]];
 IEEEEvaluateWithAbsoluteError[_, args__]:=
@@ -231,12 +235,14 @@ applyOpWithRelativeError[square,{va_,\[Delta]a_},OptionsPattern[]]:=Block[
 applyOpWithRelativeError[cube,{va_,\[Delta]a_},OptionsPattern[]]:=Block[
 	{h,r,\[Delta]r},
 	r=va^3;
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=If[OptionValue[Exact],0,relativeErrorBound];
 	\[Delta]r=(1+\[Delta]a)^3 Interval[{1-h,1+h}] Interval[{1-h,1+h}]-1;
 	{r,\[Delta]r}];
 applyOpWithRelativeError[fourth,{va_,\[Delta]a_},OptionsPattern[]]:=Block[
 	{h,r,\[Delta]r},
 	r=va^4;
+	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
 	h=If[OptionValue[Exact],0,relativeErrorBound];
 	\[Delta]r=(1+\[Delta]a)^4 Interval[{1-h,1+h}]Interval[{1-h,1+h}]-1;
 	{r,\[Delta]r}];
@@ -293,18 +299,24 @@ SetAttributes[IEEEEvaluateWithRelativeError,HoldAll];
 Options[IEEEEvaluateWithRelativeError]={UseFMA->True};
 IEEEEvaluateWithRelativeError[x_,OptionsPattern[]]:=
 Block[
-{evre,usefma=OptionValue[UseFMA]},
+{evre,evreh,usefma=OptionValue[UseFMA]},
 SetAttributes[evre,HoldAll];
 Options[evre]={Exact->False};
+(*For OwnValues that are Function (aka pure functions).*)
+evreh[Hold[Function[a_,body_][b_]]]:=evreh[Hold[body]/.a->b];
+(*For functions defined with SetDelayed.*)
+evreh[Hold[a_]]:=evre[a];
+evre[a_+b_+c__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
+evre[a_*b_*c__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
+evre[fn_[arg_]]:=evreh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
+evre[fn_[arg_]]:=evreh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 evre[a_*b_+c_,opts:OptionsPattern[]]:=If[
 	usefma,
 	applyOpWithRelativeError[fma,evre[a],evre[b],evre[c],opts],
 	applyOpWithRelativeError[
 		Plus,applyOpWithRelativeError[Times,evre[a],evre[b],opts],evre[c],opts]];
 evre[a_+b_,opts:OptionsPattern[]]:=applyOpWithRelativeError[Plus,evre[a],evre[b],opts];
-evre[a_+b__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
 evre[a_*b_,opts:OptionsPattern[]]:=applyOpWithRelativeError[Times,evre[a],evre[b],opts];
-evre[a_*b__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
 evre[a_/b_,opts:OptionsPattern[]]:=applyOpWithRelativeError[Divide,evre[a],evre[b],opts];
 (* Negation is exact. *)
 evre[-a_]:=-evre[a];
@@ -312,13 +324,11 @@ evre[-a_]:=-evre[a];
 evre[a_^2,opts:OptionsPattern[]]:=applyOpWithRelativeError[square,evre[a],opts];
 evre[a_^3,opts:OptionsPattern[]]:=applyOpWithRelativeError[cube,evre[a],opts];
 evre[a_^4,opts:OptionsPattern[]]:=applyOpWithRelativeError[fourth,evre[a],opts];
-evre[a_CorrectlyRound]:=evre[Interval[{a,a}]];
-evre[a_Integer|a_Rational]:=evre[Interval[{a,a}]]/;a==CorrectlyRound[a];
-evre[a_Real]:=Module[{cra=CorrectlyRound[a]},{Interval[{cra,cra}],Interval[{cra/a-1,cra/a-1}]}];
-evre[{v_Interval,\[Delta]_Interval}]:={v,\[Delta]};
-evre[a_Interval]:={a,Interval[{0,0}]};
+evre[a_]:=evre[Interval[{a,a}]]/;a==CorrectlyRound[a]&&(MatchQ[a,_Rational]||MatchQ[a,_Integer]);
+evre[a_]:=Module[{cra=CorrectlyRound[a]},{Interval[{cra,cra}],Interval[{cra/a-1,cra/a-1}]}]/;MatchQ[a,_Real];
+evre[a_]:=a/;MatchQ[a,{_Interval,_Interval}];
+evre[a_]:={a,Interval[{0,0}]}/;MatchQ[a,_Interval];
 evre[Exact[a_]]:=evre[a,Exact->True];
-evre[a_?ValueQ]:=evre[Evaluate[a]];
 evre[a_]:=$Failed;
 evre[x]];
 IEEEEvaluateWithRelativeError[_, args__]:=
