@@ -83,26 +83,32 @@ SetAttributes[Exact,HoldAll];
 
 SetAttributes[IEEEEvaluate,HoldAll];
 Options[IEEEEvaluate]={UseFMA->True};
-IEEEEvaluate[x:(_Plus|_Subtract|_Times|_Divide|_Power|_?NumberQ),OptionsPattern[]]:=
+IEEEEvaluate[x_,OptionsPattern[]]:=
 Block[
-{Plus,Times,ev},
+{ev,evh},
 SetAttributes[ev,HoldAll];
+(*For OwnValues that are Function (aka pure functions).*)
+evh[Hold[Function[a_,body_][b_]]]:=evh[Hold[body]/.a->b];
+(*For functions defined with SetDelayed.*)
+evh[Hold[a_]]:=ev[a];
+ev[a_+b_+c__]:=(Message[IEEEEvaluate::badass]; $Failed);
+ev[a_*b_*c__]:=(Message[IEEEEvaluate::badass]; $Failed);
+ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
+ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 ev[a_*b_+c_]:=If[
 	OptionValue[UseFMA],
-	CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]+IEEEEvaluate[c]],
-	CorrectlyRound[CorrectlyRound[IEEEEvaluate[a]IEEEEvaluate[b]]+IEEEEvaluate[c]]];
-ev[a_+b_]:=CorrectlyRound[IEEEEvaluate[a]+IEEEEvaluate[b]];
-ev[a_+b__]:=(Message[IEEEEvaluate::badass]; $Failed);
-ev[a_-b_]:=CorrectlyRound[IEEEEvaluate[a]-IEEEEvaluate[b]];
-ev[a_*b_]:=CorrectlyRound[IEEEEvaluate[a]*IEEEEvaluate[b]];
-ev[a_*b__]:=(Message[IEEEEvaluate::badass]; $Failed);
-ev[a_/b_]:=CorrectlyRound[IEEEEvaluate[a]/IEEEEvaluate[b]];
-ev[a_^2]:=CorrectlyRound[IEEEEvaluate[a ]IEEEEvaluate[a]];
-ev[a_^3]:=CorrectlyRound[IEEEEvaluate[a^2]IEEEEvaluate[a]];
-ev[a_^4]:=CorrectlyRound[IEEEEvaluate[a^2]IEEEEvaluate[a^2]];
-ev[a_?NumberQ]:=CorrectlyRound[a];
+	CorrectlyRound[ev[a]ev[b]+ev[c]],
+	CorrectlyRound[CorrectlyRound[ev[a]ev[b]]+ev[c]]];
+ev[a_+b_]:=CorrectlyRound[ev[a]+ev[b]];
+ev[a_-b_]:=CorrectlyRound[ev[a]-ev[b]];
+ev[a_*b_]:=CorrectlyRound[ev[a]*ev[b]];
+ev[a_/b_]:=CorrectlyRound[ev[a]/ev[b]];
+ev[a_^2]:=CorrectlyRound[ev[a ]ev[a]];
+ev[a_^3]:=CorrectlyRound[ev[a^2]ev[a]];
+ev[a_^4]:=CorrectlyRound[ev[a^2]ev[a^2]];
+ev[a_]:=CorrectlyRound[a]/;MatchQ[a,_Rational]||MatchQ[a,_Real]||MatchQ[a,_Integer];
+ev[a_]:=(Message[IEEEEvaluate::badarg];$Failed);
 ev[x]];
-IEEEEvaluate[_]:=(Message[IEEEEvaluate::badarg]; $Failed);
 IEEEEvaluate[_, args__]:=(Message[IEEEEvaluate::argnum, Length[{args}] + 1]; $Failed);
 
 
@@ -189,6 +195,7 @@ evae[a_^4,opts:OptionsPattern[]]:=
 	applyOpWithAbsoluteError[#^2&,applyOpWithAbsoluteError[#^2&,evae[a],opts],opts];
 evae[a_CorrectlyRound]:=evae[Interval[{a,a}]];
 evae[a_Integer|a_Rational]:=evae[Interval[{a,a}]]/;a==CorrectlyRound[a];
+evae[a_Real]:=Module[{cra=CorrectlyRound[a]},{Interval[{cra,cra}],Interval[{cra-a,cra-a}]}];
 evae[{v_Interval,\[Delta]_Interval}]:={v,\[Delta]};
 evae[a_Interval]:={a,Interval[{0,0}]};
 evae[Exact[a_]]:=evae[a,Exact->True];
@@ -307,6 +314,7 @@ evre[a_^3,opts:OptionsPattern[]]:=applyOpWithRelativeError[cube,evre[a],opts];
 evre[a_^4,opts:OptionsPattern[]]:=applyOpWithRelativeError[fourth,evre[a],opts];
 evre[a_CorrectlyRound]:=evre[Interval[{a,a}]];
 evre[a_Integer|a_Rational]:=evre[Interval[{a,a}]]/;a==CorrectlyRound[a];
+evre[a_Real]:=Module[{cra=CorrectlyRound[a]},{Interval[{cra,cra}],Interval[{cra/a-1,cra/a-1}]}];
 evre[{v_Interval,\[Delta]_Interval}]:={v,\[Delta]};
 evre[a_Interval]:={a,Interval[{0,0}]};
 evre[Exact[a_]]:=evre[a,Exact->True];
