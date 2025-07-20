@@ -256,14 +256,14 @@ template<FMAPolicy fma_policy>
 Value SinPolynomial(Argument const x) {
   // Absolute error better than 84.8 bits over an interval of radius 1/1024.
   return Polynomial1<fma_policy>::Evaluate(
-      {-0x1.5555555555555'555p-3, 0x1.111110B24ACB5'617p-7}, x);
+      {-0x1.5555'5555'5555'5p-3, 0x1.1111'0F94'4E47'8p-7}, x);
 }
 
 template<FMAPolicy fma_policy>
 Value SinPolynomialNearZero(Argument const x) {
-  // Relative error better than 74.5 bits over an interval of radius 1/1024.
+  // Relative error better than 73.3 bits over an interval of radius 1/1024.
   return Polynomial1<fma_policy>::Evaluate(
-      {-0x1.5555555555555'555p-3, 0x1.111110B40E889'1076p-7}, x);
+      {-0x1.5555'5555'5555'5p-3, 0x1.1111'10B4'0E88'Ap-7}, x);
 }
 
 template<FMAPolicy fma_policy>
