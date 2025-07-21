@@ -1190,10 +1190,20 @@ void Vessel::AppendToVesselTrajectory(
 }
 
 void Vessel::AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory) {
-  trajectory.ForgetBefore(psychohistory_->back().time);
+  // In the unlikely case where `psychohistory_` and `trajectory` each have a
+  // point at the exact same time, it is very important for that point to be
+  // removed from `trajectory`.  Otherwise, we'll fail a check in
+  // `AttachSegment` because these points will generally have different degrees
+  // of freedom.  The call to `upper_bound` achieves this.  See #4239.
+  Instant const psychohistory_back = psychohistory_->back().time;
+  auto const it = trajectory.upper_bound(psychohistory_back);
+  CHECK(it == trajectory.end() || psychohistory_back < it->time);
+  trajectory.ForgetBefore(it);
+
   if (trajectory.empty()) {
     prediction_ = trajectory_.NewSegment();
   } else {
+    CHECK_LT(psychohistory_back, trajectory.front().time);
     if (prediction_ != trajectory_.segments().end()) {
       trajectory_.DeleteSegments(prediction_);
     }
