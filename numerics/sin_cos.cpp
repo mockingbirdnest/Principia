@@ -285,7 +285,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     double const x³ = x² * x;
     double const x³_term = FusedMultiplyAdd<fma_policy>(
         x³, SinPolynomialNearZero<fma_policy>(x²), e);
-    // Relative error of the result better than 73.3 bits.
+    // Relative error of the result better than 72.8 bits.
     return DetectDangerousRounding(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
