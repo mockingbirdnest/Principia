@@ -72,11 +72,11 @@ constexpr std::int64_t κʺ₂ = 15;
 constexpr std::int64_t κ₃ = 18;
 constexpr Argument two_term_θ_threshold = π / 2 * (1LL << κ₁);
 constexpr Argument three_term_θ_threshold = π / 2 * (1LL << κ₂);
-constexpr Argument C₁ = 0x1.921fb'54442'd00p0;
-constexpr Argument δC₁ = 0x1.84698'98cc5'17p-48;
-constexpr Argument C₂ = 0x1.921fb'54440'000p0;
-constexpr Argument Cʹ₂ = 0x1.68c23'4c4c0'000p-39;
-constexpr Argument δC₂ = 0x1.98a2e'03707'345p-77;
+constexpr Argument C₁ = 0x1.921F'B544'42D0'0p0;
+constexpr Argument δC₁ = 0x1.8469'898C'C517'0p-48;
+constexpr Argument C₂ = 0x1.921F'B544'4000'0p0;
+constexpr Argument Cʹ₂ = 0x1.68C2'34C4'C000'0p-39;
+constexpr Argument δC₂ = 0x1.98A2'E037'0734'5p-77;
 constexpr Argument two_term_θ_reduced_threshold =
     1.0 / (1LL << (-(κ₁ + κʹ₁ + κ₃ - std::numeric_limits<double>::digits + 2)));
 constexpr Argument three_term_θ_reduced_threshold =
@@ -250,27 +250,28 @@ void Reduce(Argument const θ,
   θ_reduced.error = std::numeric_limits<double>::quiet_NaN();
 }
 
-// TODO(phl): Take the perturbation into account in the polynomials.
-
 template<FMAPolicy fma_policy>
 Value SinPolynomial(Argument const x) {
-  // Absolute error better than 84.8 bits over an interval of radius 1/1024.
+  // Absolute error of the exact polynomial better than 85.7 bits over an
+  // interval slightly larger than [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
-      {-0x1.5555555555555'555p-3, 0x1.111110B24ACB5'617p-7}, x);
+      {-0x1.5555'5555'5555'5p-3, 0x1.1111'10B1'75B5'Fp-7}, x);
 }
 
 template<FMAPolicy fma_policy>
 Value SinPolynomialNearZero(Argument const x) {
-  // Relative error better than 74.5 bits over an interval of radius 1/1024.
+  // Relative error of the exact polynomial better than 75.5 bits over
+  // [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
-      {-0x1.5555555555555'555p-3, 0x1.111110B40E889'1076p-7}, x);
+      {-0x1.5555'5555'5555'5p-3, 0x1.1111'10B4'0E88'Ap-7}, x);
 }
 
 template<FMAPolicy fma_policy>
 Value CosPolynomial(Argument const x) {
-  // Absolute error better than 72.4 bits over an interval of radius 1/1024.
+  // Absolute error of the exact polynomial better than 72.6 bits over an
+  // interval slightly larger than [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
-      {-0x1.FFFFFFFFFFFFF'000p-2, 0x1.555554B290E69'14113p-5}, x);
+      {-0x1.0000'0000'0000'0p-1, 0x1.5555'54B1'22F2'9p-5}, x);
 }
 
 template<FMAPolicy fma_policy>
@@ -284,6 +285,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     double const x³ = x² * x;
     double const x³_term = FusedMultiplyAdd<fma_policy>(
         x³, SinPolynomialNearZero<fma_policy>(x²), e);
+    // Relative error of the result better than 72.8 bits.
     return DetectDangerousRounding(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));

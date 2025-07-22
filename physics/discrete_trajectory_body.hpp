@@ -211,7 +211,8 @@ DiscreteTrajectory<Frame>::AttachSegments(DiscreteTrajectory trajectory) {
     *this = DiscreteTrajectory(uninitialized);
   } else if (back().time == trajectory.front().time) {
     CHECK_EQ(back().degrees_of_freedom, trajectory.front().degrees_of_freedom)
-        << "Mismatching degrees of freedom when attaching segments";
+        << "Mismatching degrees of freedom when attaching segments at time "
+        << back().time;
   } else {
     // If the points are not matching, prepend a matching point to `trajectory`
     // and update the time-to-segment map.
