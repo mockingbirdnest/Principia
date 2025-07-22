@@ -260,7 +260,7 @@ Value SinPolynomial(Argument const x) {
 
 template<FMAPolicy fma_policy>
 Value SinPolynomialNearZero(Argument const x) {
-  // Relative error better of the exact polynomial than 75.5 bits over
+  // Relative error of the exact polynomial better than 75.5 bits over
   // [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
       {-0x1.5555'5555'5555'5p-3, 0x1.1111'10B4'0E88'Ap-7}, x);
@@ -268,7 +268,7 @@ Value SinPolynomialNearZero(Argument const x) {
 
 template<FMAPolicy fma_policy>
 Value CosPolynomial(Argument const x) {
-  // Absolute error better of the exact polynomial than 72.6 bits over an
+  // Absolute error of the exact polynomial better than 72.6 bits over an
   // interval slightly larger than [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
       {-0x1.0000'0000'0000'0p-1, 0x1.5555'54B1'22F2'9p-5}, x);
