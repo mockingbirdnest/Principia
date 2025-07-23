@@ -88,13 +88,13 @@ Block[
 {ev,evh},
 SetAttributes[ev,HoldAll];
 (*For OwnValues that are Function (aka pure functions).*)
-evh[Hold[Function[a_,body_][b_]]]:=evh[Hold[body]/.a->b];
+evh[Hold[Function[a_,body_][b__]]]:=evh[Hold[body]/.MapThread[Rule,{Flatten[{a}],{b}}]];
 (*For functions defined with SetDelayed.*)
 evh[Hold[a_]]:=ev[a];
 ev[a_+b_+c__]:=(Message[IEEEEvaluate::badass]; $Failed);
 ev[a_*b_*c__]:=(Message[IEEEEvaluate::badass]; $Failed);
-ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
-ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
+ev[fn_[args__]]:=evh[Hold[fn[args]]/.DownValues[fn]]/;DownValues[fn]!={};
+ev[fn_[args__]]:=evh[Hold[fn[args]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 ev[a_*b_+c_]:=If[
 	OptionValue[UseFMA],
 	CorrectlyRound[ev[a]ev[b]+ev[c]],
@@ -177,13 +177,13 @@ Block[
 SetAttributes[evae,HoldAll];
 Options[evae]={Exact->False};
 (*For OwnValues that are Function (aka pure functions).*)
-evaeh[Hold[Function[a_,body_][b_]]]:=evaeh[Hold[body]/.a->b];
+evaeh[Hold[Function[a_,body_][b__]]]:=evaeh[Hold[body]/.MapThread[Rule,{Flatten[{a}],{b}}]];
 (*For functions defined with SetDelayed.*)
 evaeh[Hold[a_]]:=evae[a];
 evae[a_+b_+c__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
 evae[a_*b_*c__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
-evae[fn_[arg_]]:=evaeh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
-evae[fn_[arg_]]:=evaeh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
+evae[fn_[args__]]:=evaeh[Hold[fn[args]]/.DownValues[fn]]/;DownValues[fn]!={};
+evae[fn_[args__]]:=evaeh[Hold[fn[args]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 evae[a_*b_+c_,opts:OptionsPattern[]]:=If[
 	usefma,
 	applyOpWithAbsoluteError[#1 #2+#3&,evae[a],evae[b],evae[c],opts],
@@ -303,13 +303,13 @@ Block[
 SetAttributes[evre,HoldAll];
 Options[evre]={Exact->False};
 (*For OwnValues that are Function (aka pure functions).*)
-evreh[Hold[Function[a_,body_][b_]]]:=evreh[Hold[body]/.a->b];
+evreh[Hold[Function[a_,body_][b__]]]:=evreh[Hold[body]/.MapThread[Rule,{Flatten[{a}],{b}}]];
 (*For functions defined with SetDelayed.*)
 evreh[Hold[a_]]:=evre[a];
 evre[a_+b_+c__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
 evre[a_*b_*c__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
-evre[fn_[arg_]]:=evreh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
-evre[fn_[arg_]]:=evreh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
+evre[fn_[args__]]:=evreh[Hold[fn[args]]/.DownValues[fn]]/;DownValues[fn]!={};
+evre[fn_[args__]]:=evreh[Hold[fn[args]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 evre[a_*b_+c_,opts:OptionsPattern[]]:=If[
 	usefma,
 	applyOpWithRelativeError[fma,evre[a],evre[b],evre[c],opts],
