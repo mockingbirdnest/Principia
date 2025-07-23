@@ -480,6 +480,20 @@ Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{-2,0}]]==
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{0,2}],UseFMA->True]==
+	{Interval[{0,5}],Interval[{-2^-53,2^-53}]}];
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{0,2}],UseFMA->False]==
+	IEEEEvaluateWithRelativeError[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]]+Interval[{0,2}]]];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{-2,0}],UseFMA->True]==
+	{Interval[{-2,3}],Interval[{-\[Infinity],\[Infinity]}]}];
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{-2,0}],UseFMA->False]==
+	{Interval[{-2,3}],Interval[{-\[Infinity],\[Infinity]}]}];
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[
 	{Interval[{5,5}],Interval[{-2^-53,2^-53}]}+
 	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]==

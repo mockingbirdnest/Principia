@@ -285,13 +285,32 @@ applyOpWithRelativeError[Divide,{va_,\[Delta]a_},{vb_,\[Delta]b_},OptionsPattern
 	\[Delta]r=Interval[{1-h,1+h}](1+\[Delta]a)/(1+\[Delta]b)-1;
 	{r,\[Delta]r}];
 applyOpWithRelativeError[fma,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_},OptionsPattern[]]:=Block[
-	{h,r,\[Delta]r},
+	{vab,\[Delta]ab,corners,err,h,\[Theta]2,\[Theta]\[Prime]2,r,\[Delta]r},
 	r=va vb+vc;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	h=If[OptionValue[Exact],0,relativeErrorBound];
-	\[Theta]3=(1+\[Delta]a)(1+\[Delta]b)Interval[{1-h,1+h}]-1;
-	\[Theta]2=(1+\[Delta]c)Interval[{1-h,1+h}]-1;
-	\[Delta]r=Interval[{Min[\[Theta]3,\[Theta]2],Max[\[Theta]3,\[Theta]2]}];
+	If[
+		Min[r]<0 && Max[r]>0,
+		\[Delta]r=Interval[{-\[Infinity],+\[Infinity]}],
+		h=If[OptionValue[Exact],0,relativeErrorBound];
+		(* Compute the exact value of va vb and the error derived from \[Delta]a and \[Delta]b. 
+		We'll apply h to the result of the sum. *)
+		vab=va vb;
+		\[Delta]ab=\[Delta]a+\[Delta]b+\[Delta]a \[Delta]b;
+		\[Theta]2=(1+\[Delta]ab)Interval[{1-h,1+h}]-1;
+		\[Theta]\[Prime]2=(1+\[Delta]c)Interval[{1-h,1+h}]-1;
+		(* At the origin the function err has an indeterminate value
+		bounded by \[Delta]wab and \[Delta]wc *)
+		err[0,\[Delta]wab_,0,\[Delta]wc_]:=Interval[Min[{\[Delta]wab,\[Delta]wc}],Max[{\[Delta]wab,\[Delta]wc}]];
+		err[wab_,\[Delta]wab_,wc_,\[Delta]wc_]:=(wab \[Delta]wab+wc \[Delta]wc)/(wab+wc);
+		(* The function err is monotonic, and therefore its extrema
+		are reached at the corners of its domain. *)
+		corners=Outer[
+			err,
+			{Min[vab],Max[vab]},
+			{Min[\[Theta]2],Max[\[Theta]2]},
+			{Min[vc],Max[vc]},
+			{Min[\[Theta]\[Prime]2],Max[\[Theta]\[Prime]2]}];
+		\[Delta]r=Interval[{Min[corners],Max[corners]}]];
 	{r,\[Delta]r}];
 
 
