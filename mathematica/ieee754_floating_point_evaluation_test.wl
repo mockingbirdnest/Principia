@@ -148,6 +148,20 @@ CorrectlyRound[a]+
 CorrectlyRound[b]CorrectlyRound[w^2]]]]]
 
 
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly[x_,y_]:=2x+3y;
+Assert[IEEEEvaluate[poly[4,5]]==23]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly=Function[{x,y},2x+3y];
+Assert[IEEEEvaluate[poly[4,5]]==23]]
+
+
 (* ::Section:: *)
 (*IEEEEvaluateWithAbsoluteError*)
 
@@ -263,6 +277,20 @@ p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
 q=CorrectlyRound[poly[v]];
 Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]!=Interval[{q,q}]];
 Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]==Interval[{p,p}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly[x_,y_]:=2x+3y;
+Assert[IEEEEvaluateWithAbsoluteError[poly[4,5]][[1]]==Interval[{23,23}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly:=Function[{x,y},2x+3y];
+Assert[IEEEEvaluateWithAbsoluteError[poly[4,5]][[1]]==Interval[{23,23}]]]
 
 
 (* ::Input::Initialization:: *)
@@ -452,6 +480,20 @@ Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{-2,0}]]==
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{0,2}],UseFMA->True]==
+	{Interval[{0,5}],Interval[{-2^-53,2^-53}]}];
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{0,2}],UseFMA->False]==
+	IEEEEvaluateWithRelativeError[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]]+Interval[{0,2}]]];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{-2,0}],UseFMA->True]==
+	{Interval[{-2,3}],Interval[{-\[Infinity],\[Infinity]}]}];
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{-2,0}],UseFMA->False]==
+	{Interval[{-2,3}],Interval[{-\[Infinity],\[Infinity]}]}];
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[
 	{Interval[{5,5}],Interval[{-2^-53,2^-53}]}+
 	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]==
@@ -532,6 +574,20 @@ p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
 q=CorrectlyRound[poly[v]];
 Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]!=Interval[{q,q}]];
 Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]==Interval[{p,p}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly[x_,y_]:=2x+3y;
+Assert[IEEEEvaluateWithRelativeError[poly[4,5]][[1]]==Interval[{23,23}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly:=Function[{x,y},2x+3y];
+Assert[IEEEEvaluateWithRelativeError[poly[4,5]][[1]]==Interval[{23,23}]]]
 
 
 (* ::Input::Initialization:: *)

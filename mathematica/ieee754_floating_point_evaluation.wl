@@ -88,13 +88,13 @@ Block[
 {ev,evh},
 SetAttributes[ev,HoldAll];
 (*For OwnValues that are Function (aka pure functions).*)
-evh[Hold[Function[a_,body_][b_]]]:=evh[Hold[body]/.a->b];
+evh[Hold[Function[a_,body_][b__]]]:=evh[Hold[body]/.MapThread[Rule,{Flatten[{a}],{b}}]];
 (*For functions defined with SetDelayed.*)
 evh[Hold[a_]]:=ev[a];
 ev[a_+b_+c__]:=(Message[IEEEEvaluate::badass]; $Failed);
 ev[a_*b_*c__]:=(Message[IEEEEvaluate::badass]; $Failed);
-ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
-ev[fn_[arg_]]:=evh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
+ev[fn_[args__]]:=evh[Hold[fn[args]]/.DownValues[fn]]/;DownValues[fn]!={};
+ev[fn_[args__]]:=evh[Hold[fn[args]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 ev[a_*b_+c_]:=If[
 	OptionValue[UseFMA],
 	CorrectlyRound[ev[a]ev[b]+ev[c]],
@@ -177,13 +177,13 @@ Block[
 SetAttributes[evae,HoldAll];
 Options[evae]={Exact->False};
 (*For OwnValues that are Function (aka pure functions).*)
-evaeh[Hold[Function[a_,body_][b_]]]:=evaeh[Hold[body]/.a->b];
+evaeh[Hold[Function[a_,body_][b__]]]:=evaeh[Hold[body]/.MapThread[Rule,{Flatten[{a}],{b}}]];
 (*For functions defined with SetDelayed.*)
 evaeh[Hold[a_]]:=evae[a];
 evae[a_+b_+c__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
 evae[a_*b_*c__]:=(Message[IEEEEvaluateWithAbsoluteError::badass]; $Failed);
-evae[fn_[arg_]]:=evaeh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
-evae[fn_[arg_]]:=evaeh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
+evae[fn_[args__]]:=evaeh[Hold[fn[args]]/.DownValues[fn]]/;DownValues[fn]!={};
+evae[fn_[args__]]:=evaeh[Hold[fn[args]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 evae[a_*b_+c_,opts:OptionsPattern[]]:=If[
 	usefma,
 	applyOpWithAbsoluteError[#1 #2+#3&,evae[a],evae[b],evae[c],opts],
@@ -285,13 +285,32 @@ applyOpWithRelativeError[Divide,{va_,\[Delta]a_},{vb_,\[Delta]b_},OptionsPattern
 	\[Delta]r=Interval[{1-h,1+h}](1+\[Delta]a)/(1+\[Delta]b)-1;
 	{r,\[Delta]r}];
 applyOpWithRelativeError[fma,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_},OptionsPattern[]]:=Block[
-	{h,r,\[Delta]r},
+	{vab,\[Delta]ab,corners,err,h,\[Theta]2,\[Theta]\[Prime]2,r,\[Delta]r},
 	r=va vb+vc;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	h=If[OptionValue[Exact],0,relativeErrorBound];
-	\[Theta]3=(1+\[Delta]a)(1+\[Delta]b)Interval[{1-h,1+h}]-1;
-	\[Theta]2=(1+\[Delta]c)Interval[{1-h,1+h}]-1;
-	\[Delta]r=Interval[{Min[\[Theta]3,\[Theta]2],Max[\[Theta]3,\[Theta]2]}];
+	If[
+		Min[r]<0 && Max[r]>0,
+		\[Delta]r=Interval[{-\[Infinity],+\[Infinity]}],
+		h=If[OptionValue[Exact],0,relativeErrorBound];
+		(* Compute the exact value of va vb and the error derived from \[Delta]a and \[Delta]b. 
+		We'll apply h to the result of the sum. *)
+		vab=va vb;
+		\[Delta]ab=\[Delta]a+\[Delta]b+\[Delta]a \[Delta]b;
+		\[Theta]2=(1+\[Delta]ab)Interval[{1-h,1+h}]-1;
+		\[Theta]\[Prime]2=(1+\[Delta]c)Interval[{1-h,1+h}]-1;
+		(* At the origin the function err has an indeterminate value
+		bounded by \[Delta]wab and \[Delta]wc *)
+		err[0,\[Delta]wab_,0,\[Delta]wc_]:=Interval[Min[{\[Delta]wab,\[Delta]wc}],Max[{\[Delta]wab,\[Delta]wc}]];
+		err[wab_,\[Delta]wab_,wc_,\[Delta]wc_]:=(wab \[Delta]wab+wc \[Delta]wc)/(wab+wc);
+		(* The function err is monotonic, and therefore its extrema
+		are reached at the corners of its domain. *)
+		corners=Outer[
+			err,
+			{Min[vab],Max[vab]},
+			{Min[\[Theta]2],Max[\[Theta]2]},
+			{Min[vc],Max[vc]},
+			{Min[\[Theta]\[Prime]2],Max[\[Theta]\[Prime]2]}];
+		\[Delta]r=Interval[{Min[corners],Max[corners]}]];
 	{r,\[Delta]r}];
 
 
@@ -303,13 +322,13 @@ Block[
 SetAttributes[evre,HoldAll];
 Options[evre]={Exact->False};
 (*For OwnValues that are Function (aka pure functions).*)
-evreh[Hold[Function[a_,body_][b_]]]:=evreh[Hold[body]/.a->b];
+evreh[Hold[Function[a_,body_][b__]]]:=evreh[Hold[body]/.MapThread[Rule,{Flatten[{a}],{b}}]];
 (*For functions defined with SetDelayed.*)
 evreh[Hold[a_]]:=evre[a];
 evre[a_+b_+c__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
 evre[a_*b_*c__]:=(Message[IEEEEvaluateWithRelativeError::badass]; $Failed);
-evre[fn_[arg_]]:=evreh[Hold[fn[arg]]/.DownValues[fn]]/;DownValues[fn]!={};
-evre[fn_[arg_]]:=evreh[Hold[fn[arg]]/.OwnValues[fn]]/;OwnValues[fn]!={};
+evre[fn_[args__]]:=evreh[Hold[fn[args]]/.DownValues[fn]]/;DownValues[fn]!={};
+evre[fn_[args__]]:=evreh[Hold[fn[args]]/.OwnValues[fn]]/;OwnValues[fn]!={};
 evre[a_*b_+c_,opts:OptionsPattern[]]:=If[
 	usefma,
 	applyOpWithRelativeError[fma,evre[a],evre[b],evre[c],opts],
