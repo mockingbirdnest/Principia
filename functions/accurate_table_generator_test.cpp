@@ -552,8 +552,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Not1) {
   // The centre of the interval with index `i`.
   auto const centre = [h](std::int64_t const i) { return 2 * i * h; };
 
-  // The index of the first interval, which starts at `h` with a centre at
-  // `2 * h`.
+  // See the next test for the first interval.
   std::int64_t const i_min = 2;
 
   // The index of the last interval, which goes a bit beyond π / 4.
@@ -577,6 +576,8 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Only1) {
   // The centre of the interval with index `i`.
   auto const centre = [h](std::int64_t const i) { return 2 * i * h; };
 
+  // The index of the first interval, which starts at `h` with a centre at
+  // `2 * h`.
   std::int64_t const i_min = 1;
   std::int64_t const i_max = 1;
 
