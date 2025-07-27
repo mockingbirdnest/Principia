@@ -13,7 +13,11 @@
 
 
 (* ::Input:: *)
-(*<< "functions\\sin_cos_18.wl"*)
+(*<< "functions\\sin_cos_18_only1.wl"*)
+
+
+(* ::Input:: *)
+(*<< "functions\\sin_cos_18_not1.wl"*)
 
 
 (* ::Input:: *)
@@ -55,6 +59,7 @@
 (*  double x;*)
 (*  double sin_x;*)
 (*  double cos_x;*)
+(*  double padding;*)
 (*};*)
 (**)
 (*constexpr std::array<SinCosAccurateValues, " <> ToString[max + 1] <> "> SinCosAccurateTable{{\n" <>*)
