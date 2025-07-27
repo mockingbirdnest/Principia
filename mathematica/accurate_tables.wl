@@ -27,11 +27,11 @@
 (* ::Input:: *)
 (*hexFloatLiteral[x_Rational,signed_]:=*)
 (* With[*)
-(*  {groups=5,*)
-(*group=5,*)
+(*  {group=4,*)
+(*groups=6,*)
 (*i=IntegerPart[N[x,100]],*)
 (*f=FractionalPart[N[x,100]]},*)
-(*  StringJoin[If[signed,If[x<0,"-","+"],""],"0x",IntegerString[i,16],".",StringRiffle[StringPartition[IntegerString[Round[f*16^(group*groups)],16,group*groups],UpTo[groups]],"'"],"p0"]]*)
+(*  StringJoin[If[signed,If[x<0,"-","+"],""],"0x",IntegerString[i,16],".",StringRiffle[StringPartition[IntegerString[Round[f*16^(group*groups)],16,group*groups],UpTo[group]],"'"],"p0"]]*)
 
 
 (* ::Text:: *)
