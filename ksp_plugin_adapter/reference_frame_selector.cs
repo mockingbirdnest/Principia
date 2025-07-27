@@ -641,7 +641,7 @@ internal class
               GUILayoutWidth(1))) {
         PlanetariumCamera.fetch.SetTarget(celestial);
         PlanetariumCamera.fetch.SetDistance(
-            (float)celestial.Radius * ScaledSpace.InverseScaleFactor * 2f);
+            (float)celestial.Radius * ScaledSpace.InverseScaleFactor * 2f * 4);
       }
     }
     if (!celestial.is_leaf(target)) {
