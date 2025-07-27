@@ -277,10 +277,11 @@ absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
 // Slices may be processed independently of one another.
 // Returns a *scaled* argument, or `NotFound` if no solution was found in the
 // slice.
-template<std::int64_t zeroes>
+template<std::int64_t zeroes, bool above, bool below>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
     StehléZimmermannSpecification const& scaled,
     std::int64_t const slice_index) {
+  static_assert(above || below);
   constexpr std::int64_t M = 1LL << zeroes;
   constexpr std::int64_t N = 1LL << std::numeric_limits<double>::digits;
 
@@ -310,8 +311,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
 
   // The radii of the intervals remaining to cover above and below the
   // `scaled.argument`.
-  std::int64_t high_T_to_cover = T₀;
-  std::int64_t low_T_to_cover = T₀;
+  std::int64_t high_T_to_cover = above ? T₀ : 0;
+  std::int64_t low_T_to_cover = below ? T₀ : 0;
 
   // When exiting this loop, we have completely processed
   // `initial_high_interval` and `initial_low_interval`.
@@ -640,7 +641,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   return starting_argument + t₀ / N;
 }
 
-template<std::int64_t zeroes>
+template<std::int64_t zeroes, bool above, bool below>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2> const&
@@ -648,6 +649,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<ApproximateFunctionFactory, 2> const& remainders,
     cpp_rational const& starting_argument,
     ThreadPool<void>* const search_pool) {
+  static_assert(above || below);
   // Start by scaling the specification of the search.  The rest of this
   // function only uses the scaled objects.
   double argument_scale;
@@ -671,7 +673,8 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     auto const start = std::chrono::system_clock::now();
 
     auto const status_or_scaled_solution =
-        StehléZimmermannSimultaneousSliceSearch<zeroes>(scaled, slice_index);
+        StehléZimmermannSimultaneousSliceSearch<zeroes, above, below>(
+            scaled, slice_index);
     auto const end = std::chrono::system_clock::now();
     VLOG(1) << "Search for slice #" << slice_index << " around "
             << starting_argument << " took "
@@ -815,7 +818,7 @@ StehléZimmermannSimultaneousMultisearch(
   return result;
 }
 
-template<std::int64_t zeroes>
+template<std::int64_t zeroes, bool above, bool below>
 void StehléZimmermannSimultaneousStreamingMultisearch(
     std::array<AccurateFunction, 2> const& functions,
     std::vector<std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2>>
@@ -824,6 +827,7 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
     std::vector<cpp_rational> const& starting_arguments,
     std::function<void(/*index=*/std::int64_t,
                        absl::StatusOr<cpp_rational>)> const& callback) {
+  static_assert(above || below);
   ThreadPool<void> search_pool(std::thread::hardware_concurrency());
 
   std::vector<std::future<void>> futures;
@@ -838,11 +842,12 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
       auto const& starting_argument = starting_arguments[i];
       LOG(INFO) << "Starting search around " << starting_argument;
       auto status_or_final_argument =
-          StehléZimmermannSimultaneousFullSearch<zeroes>(functions,
-                                                         polynomials[i],
-                                                         remainders[i],
-                                                         starting_argument,
-                                                         &search_pool);
+          StehléZimmermannSimultaneousFullSearch<zeroes, above, below>(
+              functions,
+              polynomials[i],
+              remainders[i],
+              starting_argument,
+              &search_pool);
       if (status_or_final_argument.ok()) {
         LOG(INFO) << "Finished search around " << starting_argument
                   << ", found " << status_or_final_argument.value();
