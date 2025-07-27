@@ -12,15 +12,16 @@ struct SinCosAccurateValues {
   double x;
   double sin_x;
   double cos_x;
+  double padding;
 };
 
 constexpr std::array<SinCosAccurateValues, 403> SinCosAccurateTable{{
     /*  0*/{.x =     std::numeric_limits<double>::signaling_NaN(),
             .sin_x = std::numeric_limits<double>::signaling_NaN(),
             .cos_x = std::numeric_limits<double>::signaling_NaN()},
-    /*  1*/{.x =     0x0.0080'002c'2b8f'8aa0'0000'0000p0,
-            .sin_x = 0x0.0080'0026'd634'c0e7'ffff'c57bp0,
-            .cos_x = 0x0.ffff'dfff'ea94'e000'01a7'df27p0},
+    /*  1*/{.x =     0x0.007f'ffce'7f29'afe0'0000'0000p0,
+            .sin_x = 0x0.007f'ffc9'29da'9bb4'0000'db97p0,
+            .cos_x = 0x0.ffff'e000'196b'1000'0148'882dp0},
     /*  2*/{.x =     0x0.00ff'ffb6'09f3'4ce0'0000'0000p0,
             .sin_x = 0x0.00ff'ff8b'5f6f'bf4f'fffe'81bcp0,
             .cos_x = 0x0.ffff'8000'54a0'9fff'fe4b'78edp0},
