@@ -45,6 +45,97 @@ class AccurateTableGeneratorTest : public ::testing::Test {
     FLAGS_v = 0;
     google::LogToStderr();
   }
+
+  template<std::int64_t zeroes, bool above, bool below>
+  void Generator(std::int64_t const i_min,
+                 std::int64_t const i_max,
+                 std::function<double(std::int64_t const)> const& centre,
+                 Logger& logger) {
+    // No need for fancy angle reduction as the angles are small.
+    AccurateFunction const accurate_sin = [](cpp_rational const& x) {
+      return sin(static_cast<cpp_bin_float_50>(x));
+    };
+    AccurateFunction const accurate_cos = [](cpp_rational const& x) {
+      return cos(static_cast<cpp_bin_float_50>(x));
+    };
+
+    std::vector<cpp_rational> starting_arguments;
+    std::vector<std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2>>
+        polynomials;
+    std::vector<std::array<ApproximateFunctionFactory, 2>> remainders;
+    for (std::int64_t i = i_min; i <= i_max; ++i) {
+      double const x₀ = centre(i);
+      auto const sin_taylor2 = [](cpp_rational const& x₀) {
+        return AccuratePolynomial<cpp_rational, 2>({cpp_rational(Sin(x₀)),
+                                                    cpp_rational(Cos(x₀)),
+                                                    -cpp_rational(Sin(x₀)) / 2},
+                                                   x₀);
+      };
+      auto const cos_taylor2 = [](cpp_rational const& x₀) {
+        return AccuratePolynomial<cpp_rational, 2>({cpp_rational(Cos(x₀)),
+                                                    -cpp_rational(Sin(x₀)),
+                                                    -cpp_rational(Cos(x₀) / 2)},
+                                                   x₀);
+      };
+
+      auto const remainder_sin_taylor2 = [](cpp_rational const& x₀) {
+        return [x₀ = static_cast<double>(x₀)](cpp_rational const& x) {
+          auto const Δx = static_cast<double>(x) - x₀;
+          auto const Δx³ = Δx * Δx * Δx;
+          return -Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
+        };
+      };
+      auto const remainder_cos_taylor2 = [](cpp_rational const& x₀) {
+        return [x₀ = static_cast<double>(x₀)](cpp_rational const& x) {
+          auto const Δx = static_cast<double>(x) - x₀;
+          auto const Δx³ = Δx * Δx * Δx;
+          return Δx³ * std::sin(std::max(x₀ + Δx, x₀)) / Factorial(3);
+        };
+      };
+
+      starting_arguments.push_back(x₀);
+      polynomials.push_back({sin_taylor2, cos_taylor2});
+      remainders.push_back({remainder_sin_taylor2, remainder_cos_taylor2});
+    }
+
+    StehléZimmermannSimultaneousStreamingMultisearch<zeroes, above, below>(
+        {accurate_sin, accurate_cos},
+        polynomials,
+        remainders,
+        starting_arguments,
+        [i_min, &logger](std::int64_t const index,
+                         absl::StatusOr<cpp_rational> status_or_x) {
+          auto const& x = status_or_x.value();
+          auto const sin_x = Sin(x);
+          auto const cos_x = Cos(x);
+          {
+            std::string const mathematica =
+                ToMathematica(sin_x,
+                              /*express_in=*/std::nullopt,
+                              /*base=*/2);
+            std::string_view mantissa = mathematica;
+            CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+            EXPECT_THAT(mantissa.substr(53, zeroes),
+                        AnyOf(Eq("00000""00000""00000""000"),
+                              Eq("11111""11111""11111""111")));
+          }
+          {
+            std::string const mathematica =
+                ToMathematica(cos_x,
+                              /*express_in=*/std::nullopt,
+                              /*base=*/2);
+            std::string_view mantissa = mathematica;
+            CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
+            EXPECT_THAT(mantissa.substr(53, zeroes),
+                        AnyOf(Eq("00000""00000""00000""000"),
+                              Eq("11111""11111""11111""111")));
+          }
+          logger.Set(
+              absl::StrCat("accurateTables[", index + i_min, "]"),
+              std::tuple{static_cast<cpp_bin_float_50>(x), sin_x, cos_x});
+          logger.FlushAndClear();
+        });
+  }
 };
 
 #if !_DEBUG
@@ -450,9 +541,9 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
+TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Not1) {
   static constexpr std::int64_t bits = 18;
-  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, ".wl"),
+  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_not1.wl"),
                 /*make_unique=*/false);
 
   // The radius of each interval.
@@ -463,7 +554,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
 
   // The index of the first interval, which starts at `h` with a centre at
   // `2 * h`.
-  std::int64_t const i_min = 1;
+  std::int64_t const i_min = 2;
 
   // The index of the last interval, which goes a bit beyond π / 4.
   std::int64_t i_max = std::ceil(π / (8 * h) - 0.5);
@@ -472,89 +563,27 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18) {
   CHECK_LT(centre(i_max) - h, π / 4);
   CHECK_LT(π / 4, centre(i_max) + h);
 
-  // No need for fancy angle reduction as the angles are small.
-  AccurateFunction const accurate_sin = [](cpp_rational const& x) {
-    return sin(static_cast<cpp_bin_float_50>(x));
-  };
-  AccurateFunction const accurate_cos = [](cpp_rational const& x) {
-    return cos(static_cast<cpp_bin_float_50>(x));
-  };
+  Generator<bits, /*above=*/true, /*below=*/true>(i_min, i_max, centre, logger);
+}
 
-  std::vector<cpp_rational> starting_arguments;
-  std::vector<std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2>>
-      polynomials;
-  std::vector<std::array<ApproximateFunctionFactory, 2>> remainders;
-  for (std::int64_t i = i_min; i <= i_max; ++i) {
-    double const x₀ = centre(i);
-    auto const sin_taylor2 = [](cpp_rational const& x₀) {
-      return AccuratePolynomial<cpp_rational, 2>({cpp_rational(Sin(x₀)),
-                                                  cpp_rational(Cos(x₀)),
-                                                  -cpp_rational(Sin(x₀)) / 2},
-                                                 x₀);
-    };
-    auto const cos_taylor2 = [](cpp_rational const& x₀) {
-      return AccuratePolynomial<cpp_rational, 2>({cpp_rational(Cos(x₀)),
-                                                  -cpp_rational(Sin(x₀)),
-                                                  -cpp_rational(Cos(x₀) / 2)},
-                                                 x₀);
-    };
+TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Only1) {
+  static constexpr std::int64_t bits = 18;
+  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_only1.wl"),
+                /*make_unique=*/false);
 
-    auto const remainder_sin_taylor2 = [](cpp_rational const& x₀) {
-      return [x₀ = static_cast<double>(x₀)](cpp_rational const& x) {
-        auto const Δx = static_cast<double>(x) - x₀;
-        auto const Δx³ = Δx * Δx * Δx;
-        return -Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
-      };
-    };
-    auto const remainder_cos_taylor2 = [](cpp_rational const& x₀) {
-      return [x₀ = static_cast<double>(x₀)](cpp_rational const& x) {
-        auto const Δx = static_cast<double>(x) - x₀;
-        auto const Δx³ = Δx * Δx * Δx;
-        return Δx³ * std::sin(std::max(x₀ + Δx, x₀)) / Factorial(3);
-      };
-    };
+  // The radius of each interval.
+  double const h = 1.0 / (1 << 10);
 
-    starting_arguments.push_back(x₀);
-    polynomials.push_back({sin_taylor2, cos_taylor2});
-    remainders.push_back({remainder_sin_taylor2, remainder_cos_taylor2});
-  }
+  // The centre of the interval with index `i`.
+  auto const centre = [h](std::int64_t const i) { return 2 * i * h; };
 
-  StehléZimmermannSimultaneousStreamingMultisearch<bits>(
-      {accurate_sin, accurate_cos},
-      polynomials,
-      remainders,
-      starting_arguments,
-      [i_min, &logger](std::int64_t const index,
-                       absl::StatusOr<cpp_rational> status_or_x) {
-        auto const& x = status_or_x.value();
-        auto const sin_x = Sin(x);
-        auto const cos_x = Cos(x);
-        {
-          std::string const mathematica =
-              ToMathematica(sin_x,
-                            /*express_in=*/std::nullopt,
-                            /*base=*/2);
-          std::string_view mantissa = mathematica;
-          CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
-          EXPECT_THAT(mantissa.substr(53, bits),
-                      AnyOf(Eq("00000""00000""00000""000"),
-                            Eq("11111""11111""11111""111")));
-        }
-        {
-          std::string const mathematica =
-              ToMathematica(cos_x,
-                            /*express_in=*/std::nullopt,
-                            /*base=*/2);
-          std::string_view mantissa = mathematica;
-          CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
-          EXPECT_THAT(mantissa.substr(53, bits),
-                      AnyOf(Eq("00000""00000""00000""000"),
-                            Eq("11111""11111""11111""111")));
-        }
-        logger.Set(absl::StrCat("accurateTables[", index + i_min, "]"),
-                   std::tuple{static_cast<cpp_bin_float_50>(x), sin_x, cos_x});
-        logger.FlushAndClear();
-      });
+  std::int64_t const i_min = 1;
+  std::int64_t const i_max = 1;
+
+  // The first interval must only search below to meet the Sterbenz condition on
+  // the computation of s0 + c0 h.
+  Generator<bits, /*above=*/false, /*below=*/true>(
+      i_min, i_max, centre, logger);
 }
 
 #endif
