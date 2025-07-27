@@ -69,7 +69,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
 // automatically adjusting the interval over which the search happens.  The
 // argument and function values must be nonzero.  If `search_pool` is not null,
 // the search may use speculative execution.
-template<std::int64_t zeroes>
+template<std::int64_t zeroes, bool above = true, bool below = true>
 absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
     std::array<AccurateFunction, 2> const& functions,
     std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2> const&
@@ -93,7 +93,7 @@ StehléZimmermannSimultaneousMultisearch(
 // Same as above, but instead of accumulating all the results and returning them
 // in a vector, it runs `callback` each time a computation is complete.  The
 // `index` indicates to which parameters the result corresponds.
-template<std::int64_t zeroes>
+template<std::int64_t zeroes, bool above = true, bool below = true>
 void StehléZimmermannSimultaneousStreamingMultisearch(
     std::array<AccurateFunction, 2> const& functions,
     std::vector<std::array<AccuratePolynomialFactory<cpp_rational, 2>, 2>>

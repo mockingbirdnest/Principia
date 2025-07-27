@@ -121,6 +121,16 @@ Bits::argnum =
 "Bits called with `1` arguments; 1 or 2 arguments are expected.";
 
 
+Quotes;
+Quotes::usage =
+"Quotes is an option for " <>
+"\!\(\*StyleBox[\"HexLiteral\", \"TI\"]\) that specifies if/how quotes should be " <>
+"produced to separate the digits after the decimal point; allowed values are " <>
+"\!\(\*StyleBox[\"Automatic\", \"TI\"]\) to emit quotes based on representable " <>
+"nibbles, and \!\(\*StyleBox[\"n\", \"TI\"]\) to emit quotes every " <> 
+"\!\(\*StyleBox[\"n\", \"TI\"]\) digits.";
+
+
 HexLiteral;
 HexLiteral::usage =
 "HexLiteral[\!\(\*StyleBox[\"x\", \"TI\"]\)] returns a string " <>
@@ -137,7 +147,7 @@ CorrectlyRound::usage =
 "CorrectlyRound[\!\(\*StyleBox[\"x\", \"TI\"]\)] returns a signed rational " <>
 "obtained by rounding \!\(\*StyleBox[\"x\", \"TI\"]\) according to the " <>
 "rounding mode set by SetRoundingMode and the format set by " <>
-"SetFloatingPointFormat."
+"SetFloatingPointFormat, or by the option RoundingMode."
 CorrectlyRound::argnum =
 "CorrectlyRound called with `1` arguments; 1 argument is expected.";
 Attributes[CorrectlyRound]={Listable};
@@ -233,39 +243,55 @@ Bits[args___] :=
 (Message[Bits::argnum, Length[{args}]]; $Failed)
 
 
-fullHexDigits:=Floor[(significandBits-1)/4]
-leastFullHexDigitValue:=2^(significandBits-1)/16^fullHexDigits
-leastHexDigitValue:=If[leastFullHexDigitValue>1,leastFullHexDigitValue/16,leastFullHexDigitValue]
-HexLiteral[x_]:=If[x==0,"0.0",If[x<0,"-",""]<>
+Options[HexLiteral]={Quotes->Automatic};
+HexLiteral[x_,OptionsPattern[]]:=
+Module[{
+	quotes=OptionValue[Quotes],
+	fullHexDigits=Floor[(significandBits-1)/4],
+	rep=Representation[Abs[x]],
+	maybeQuote,
+	leastFullHexDigitValue,
+	leastHexDigitValue,
+	insertQuotesIfNeeded},
+maybeQuote=If[quotes===Automatic,"'",""];
+leastFullHexDigitValue=2^(significandBits-1)/16^fullHexDigits;
+leastHexDigitValue=If[leastFullHexDigitValue>1,leastFullHexDigitValue/16,leastFullHexDigitValue];
+insertQuotesIfNeeded[s_,previousDigits_:0]:=If[
+	quotes===Automatic,
+	s,
+	StringRiffle[StringPartition[s,UpTo[quotes]],"'"]];
+If[x==0,"0.0",If[x<0,"-",""]<>
 "0x1."<>ToUpperCase[
-IntegerString[
-Mod[IntegerPart[Representation[Abs[x]]/leastFullHexDigitValue],16^fullHexDigits],16,fullHexDigits]<>
+insertQuotesIfNeeded[IntegerString[
+Mod[IntegerPart[rep/leastFullHexDigitValue],16^fullHexDigits],16,fullHexDigits]<>
 If[
 leastHexDigitValue<1,
-"'"<>IntegerString[Mod[IntegerPart[Representation[Abs[x]]/leastHexDigitValue],16],16,1],
+maybeQuote<>IntegerString[Mod[IntegerPart[rep/leastHexDigitValue],16],16,1],
 ""]<>
-If[FractionalPart[Representation[Abs[x]]]==0,
+If[FractionalPart[rep]==0,
 "",
-"'"<>ToString/@RealDigits[
-N[FractionalPart[Representation[Abs[x]]/leastHexDigitValue],5],
-16,3,-1][[1]]<>"\[Ellipsis]"]]<>
+maybeQuote<>(IntegerString[#,16]&)/@RealDigits[
+N[FractionalPart[rep/leastHexDigitValue],5],
+16,3,-1][[1]]]]]<>
+If[FractionalPart[rep]==0,
+"",
+"\[Ellipsis]"]<>
 "p"<>ToString[IntegerPart[Representation[Abs[x]]/2^(significandBits-1)]-bias]<>
 Switch[
 {significandBits,exponentBits},
 binary32,"f",
 binary64,"",
 x87extended,"l",
-_,"_"<>ToString[significandBits]<>"_sigbits"]]
-HexLiteral[args___] :=
-(Message[HexLiteral::argnum, Length[{args}]]; $Failed)
+_,"_"<>ToString[significandBits]<>"_sigbits"]]]
+HexLiteral[args___]:=(Message[HexLiteral::argnum, Length[{args}]]; $Failed)
 
 
+Options[CorrectlyRound]={RoundingMode->Automatic};
 CorrectlyRound[x_,OptionsPattern[]]:=With[
 {rounding=If[OptionValue[RoundingMode]===Automatic,correctlyRoundRepresentation,OptionValue[RoundingMode]]},
 If[x==\[Infinity]||x==-\[Infinity],x,
 If[Abs[#]>=2^(bias+1),Sign[x]\[Infinity],#]&
 @FromRepresentation[rounding[Representation[x]]]]];
-Options[CorrectlyRound]={RoundingMode->Automatic};
 CorrectlyRound[args___] :=
 (Message[CorrectlyRound::argnum, Length[{args}]]; $Failed)
 
