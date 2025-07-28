@@ -640,8 +640,11 @@ internal class
                             UnityEngine.GUI.skin.button),
               GUILayoutWidth(1))) {
         PlanetariumCamera.fetch.SetTarget(celestial);
+        const double degree = Math.PI / 180;
+        const double apparent_size = 15 * degree;
         PlanetariumCamera.fetch.SetDistance(
-            (float)celestial.Radius * ScaledSpace.InverseScaleFactor * 2f * 4);
+            (float)celestial.Radius * ScaledSpace.InverseScaleFactor /
+                (float)Math.Tan(apparent_size / 2));
       }
     }
     if (!celestial.is_leaf(target)) {
