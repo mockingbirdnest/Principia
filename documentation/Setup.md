@@ -1,7 +1,7 @@
 # Instructions for building Principia on Windows
 
 Before starting, make sure the following are installed on your machine:
-* Visual Studio 2022 version 17.8.6 with C# and C++ support;
+* Visual Studio 2022 version 17.14.8 with C# and C++ support;
 * Windows SDK 10.0.22621;
 * .NET Framework 4.7.2 SDK (and Targeting Pack).
 
@@ -55,6 +55,8 @@ In `<root>`, run the following command:
 ```powershell
 .\Principia\rebuild_all_solutions.ps1
 ```
+
+*NOTE*: If the build step fails with error C1060, try changing the `/m` flag of the `msbuild` command in the above script to reduce the parallelism (for instance, `/m:1` or `/m:2`).  The script is optimized for machines with a sizeable amount of RAM.
 
 # Instructions for building Principia on Linux and macOS
 
