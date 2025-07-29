@@ -56,7 +56,7 @@ In `<root>`, run the following command:
 .\Principia\rebuild_all_solutions.ps1
 ```
 
-*NOTE*: If the build step fails with error C1060, try changing the `/m` flag of the `msbuild` command in the above script to reduce the parallelism (for instance, `/m:1` or `/m:2`).  The script is optimized for machines with a sizeable amount of RAM.
+*NOTE*: If the build step fails with error C1060, try changing the `/m` flag of the `msbuild` command in the above script to reduce the parallelism (for instance, `/m:1` or `/m:2`).  It may also be necessary to increase the size of the Windows paging file.  The script is optimized for machines with a sizeable amount of RAM.
 
 # Instructions for building Principia on Linux and macOS
 
