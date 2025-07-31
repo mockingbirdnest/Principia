@@ -368,9 +368,47 @@ If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ 
 If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
 
 \section*{Accurate Tables and Their Generation}
+\marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
 \section*{Polynomial Approximations}
-The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p\of{x}$ approximating a function $f\of{x}$ by minizing the quantity $\frac{f\of{x} - p\of{x}}{g\of{x}}$.  By choosing $g\of{x}$ appropriately, we can obtain an approximation that minimizes either the absolute or relative error on the result.
+The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p\of{h\of{x}}$ approximating a function $f\of{x}$ by minimizing the quantity $\frac{f\of{x} - p\of{h\of{x}}}{g\of{x}}$.  By choosing $g\of{x}$ appropriately, we can obtain an approximation that minimizes either the absolute or relative error on the result.
 \subsection*{Sin Near Zero}
+For the $\sin$ function near zero the accurate tables method is not usable because the correction term is not small compared to the tabulated value of the function (which would be zero)\footnote{It would be possible to have one set of tables per binade with progressively denser intervals, but that would have a terrible performance as the tables would end up being very large.}.  Instead we use a polynomial approximation that minimizes the relative error on the result.  Since $\sin x$ is an even function and since its dominant term is $x$, we are looking for an approximation having the form:
+\[
+\sin x ≃ x + x^3 p_{s0}\of{x^2}
+\]
+over the interval $\intclos{0}{h}$\marginnote{TODO(phl): Call this $\gD$?}, where $h$ is chosen so that $h^2 \ll 1$.  By leaving the sum unevaluated, the two terms $x$ and $x^3 p_{s0}\of{x}$ may be used to perform the rounding test (see below)\marginnote{TODO(phl): Document the rounding test and xref here.}.
 
+We are therefore calling \texttt{GeneralMiniMaxApproximation} with:
+\[
+\begin{dcases}
+h\of{x} &\DefineAs x^2 \\
+f\of{x} &\DefineAs \frac{\sin x - x}{x^3} \\
+g\of{x} &\DefineAs \frac{\sin x}{x^3}
+\end{dcases}
+\]
+which results in a polynomial $p_{s0}$ which minimizes the relative error $\frac{\sin x}{x}$; the degree of $p_{s0}$ is choosen so that the error is less than $\ULP\of{h^2}$.
+
+In practice we choose $h = 2^{-10}$, and compute a degree-1 polynomial which induces a relative error smaller than $2^{-75.538}$ before rounding the coefficients to machine numbers.
+
+\subsection*{Sin Between Accurate Table Entries}
+Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval containing $x_k$ is $\intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$\marginnote{TODO(phl): This cannot be a closed interval.}.  The algorithm starts by choosing, from the argument $x$, a $k$ such that $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and computing $h = x - x_k$.  We are therefore looking for an approximation of the form:
+\[
+\sin h ≃ h + h^3 p_s\of{h^2}
+\]
+which must cover the interval $\intclos{0}{h_{max}}$ with:
+\[
+h_{max} \DefineAs \max\limits_{k}\curlyBrackets{x_k - \pa{2 k - 1}\gD, \pa{2 k + 1}\gD - x_k}
+\]
+
+It is difficult to find a theoretical justification for the error function used in that approximation, as the polynomials for $\sin$ and $\cos$ both contribute in complicated ways to the final error.  In practice it appears that an absolute error bound results in a slightly lower error on the result, so we call \texttt{GeneralMiniMaxApproximation} with:
+\[
+\begin{dcases}
+h\of{x} &\DefineAs x^2 \\
+f\of{x} &\DefineAs \frac{\sin x - x}{x^3} \\
+g\of{x} &\DefineAs \frac{1}{x^3}
+\end{dcases}
+\]
+
+In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): xref} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an absolute error smaller than $2^{-85.746}$ before rounding the coefficients to machine numbers.
 
 \end{document}
