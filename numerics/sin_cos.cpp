@@ -87,6 +87,10 @@ constexpr Argument three_term_θ_reduced_threshold =
 constexpr Argument mantissa_reduce_shifter =
     1LL << (std::numeric_limits<double>::digits - 1);
 
+constexpr double sin_near_zero_e = 0x1.0000'32D7'5E64'Cp0;
+constexpr double sin_e = 0x1.0000'A03C'34D3'9p0;
+constexpr double cos_e = 0x1.0000'A07E'1980'8p0;
+
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 
@@ -149,31 +153,23 @@ double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
   }
 }
 
-// Evaluates the sum `x + Δx`.  If that sum has a dangerous rounding
-// configuration (that is, the bits after the last mantissa bit of the sum are
-// either 1000... or 0111..., then returns `NaN`.  Otherwise returns the sum.
-// `x` is always positive.  `Δx` may be positive or negative.
-inline double DetectDangerousRounding(double const x, double const Δx) {
+// Evaluates the sum `x + Δx` and performs the rounding test using the technique
+// described in [Mul+10], section 11.6.3.  If rounding is safe, returns the sum;
+// otherwise, returns `NaN`.  `x` is always positive.  `Δx` may be positive or
+// negative.
+template<FMAPolicy fma_policy, double e>
+double DetectDangerousRounding(double const x, double const Δx) {
   DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
   double const& value = sum.value;
   double const& error = sum.error;
-  __m128i const value_exponent_128i =
-      _mm_castpd_si128(_mm_and_pd(masks::exponent_bits, _mm_set_sd(value)));
-  __m128i const error_128i =
-      _mm_castpd_si128(_mm_andnot_pd(masks::sign_bit, _mm_set_sd(error)));
-  double const normalized_error = _mm_cvtsd_f64(
-      _mm_castsi128_pd(_mm_sub_epi64(error_128i, value_exponent_128i)));
-  // TODO(phl): Error analysis to refine the thresholds.  Also, can we avoid
-  // negative numbers?
-  OSACA_IF(normalized_error < -0x1.ffffp971 &&
-           normalized_error > -0x1.00008p972) {
+  OSACA_IF(value == FusedMultiplyAdd<fma_policy>(error, e, value)) {
+    return value;
+  } else {
 #if _DEBUG
     LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat << value
                << " " << error << " " << normalized_error;
 #endif
     return std::numeric_limits<double>::quiet_NaN();
-  } else {
-    return value;
   }
 }
 
@@ -286,7 +282,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     double const x³_term = FusedMultiplyAdd<fma_policy>(
         x³, SinPolynomialNearZero<fma_policy>(x²), e);
     // Relative error of the result better than 72.8 bits.
-    return DetectDangerousRounding(x, x³_term);
+    return DetectDangerousRounding<fma_policy, sin_near_zero_e>(x, x³_term);
   } else {
     __m128d const sign = _mm_and_pd(masks::sign_bit, _mm_set_sd(x));
     double const e_abs = _mm_cvtsd_f64(_mm_xor_pd(_mm_set_sd(e), sign));
@@ -313,7 +309,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
             sin_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
         FusedMultiplyAdd<fma_policy>(cos_x₀, e_abs, sin_x₀_plus_h_cos_x₀.error);
     return _mm_cvtsd_f64(
-        _mm_xor_pd(_mm_set_sd(DetectDangerousRounding(
+        _mm_xor_pd(_mm_set_sd(DetectDangerousRounding<fma_policy, sin_e>(
                        sin_x₀_plus_h_cos_x₀.value, polynomial_term)),
                    sign));
   }
@@ -350,7 +346,8 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
           cos_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀, e_abs, cos_x₀_minus_h_sin_x₀.error);
-  return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
+  return DetectDangerousRounding<fma_policy, cos_e>(cos_x₀_minus_h_sin_x₀.value,
+                                                    polynomial_term);
 }
 
 template<FMAPolicy fma_policy>
