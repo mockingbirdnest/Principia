@@ -167,7 +167,7 @@ double DetectDangerousRounding(double const x, double const Δx) {
   } else {
 #if _DEBUG
     LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat << value
-               << " " << error << " " << normalized_error;
+               << " " << error << " " << e;
 #endif
     return std::numeric_limits<double>::quiet_NaN();
   }
