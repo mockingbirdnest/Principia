@@ -368,17 +368,9 @@ If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ 
 If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
 
 \section*{Accurate Tables and Their Generation}
-\section*{Computation of the Functions}
-\subsection*{Sin}
-\subsubsection*{Near Zero}
-For $\hat x$ near zero we evaluate:
-\begin{align*}
-\widehat{x^2} &= \round{{\hat x}^2} = {\hat x}^2 \pa{1 + \gd_1}\\
-\widehat{x^3} &= \round{\hat x \; \widehat{x^2}} = {\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2}\\
-\hat p &= \round{a \widehat{x^2} + b} = \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3}\\
-s\of{x} &\DefineAs \hat x + \round{\round{\widehat{x^3} \hat p} + \gd \hat x} \\
-&= \hat x + \pa{{\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3} \pa{1 + \gd_4} + \gd \hat x}\pa{1 + \gd_5} \\
-&= \hat x + a {\hat x}^3 \pa{1 + \gq_5} + b {\hat x}^5 \pa{1 + \gq_4} + \gd \hat x \pa{1 + \gd_5}
-\end{align*}
+\section*{Polynomial Approximations}
+The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p\of{x}$ approximating a function $f\of{x}$ by minizing the quantity $\frac{f\of{x} - p\of{x}}{g\of{x}}$.  By choosing $g\of{x}$ appropriately, we can obtain an approximation that minimizes either the absolute or relative error on the result.
+\subsection*{Sin Near Zero}
+
 
 \end{document}
