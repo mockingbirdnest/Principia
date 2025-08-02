@@ -388,19 +388,20 @@ g\of{x} &\DefineAs \frac{\sin x}{x^3}
 \]
 which results in a polynomial $p_{s0}$ which minimizes the relative error $\frac{\sin x}{x}$; the degree of $p_{s0}$ is choosen so that the error is less than $\ULP\of{h^2}$.
 
-In practice we choose $h = 2^{-10}$, and compute a degree-1 polynomial which induces a relative error smaller than $2^{-75.538}$ before rounding the coefficients to machine numbers.
+In practice we choose $h = 2^{-10}$, and compute a degree-1 polynomial which induces a relative error smaller than $2^{-75.538}$ (before rounding the coefficients to machine numbers).
 
-\subsection*{Sin Between Accurate Table Entries}
-Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval containing $x_k$ is $\intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$\marginnote{TODO(phl): This cannot be a closed interval.}.  The algorithm starts by choosing, from the argument $x$, a $k$ such that $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and computing $h = x - x_k$.  We are therefore looking for an approximation of the form:
-\[
-\sin h ≃ h + h^3 p_s\of{h^2}
-\]
+\subsection*{Around Table Entries}
+Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval containing $x_k$ is $\intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$\marginnote{TODO(phl): This cannot be a closed interval.}.  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $x$ (which in the case of $\sin$, is not close to zero\marginnote{TODO(phl): and in the case of cos?}), a $k$ such that $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and computing $h = x - x_k$.  We are therefore looking for approximations of the form:
+\begin{align*}
+\sin h &≃ h + h^3 p_s\of{h^2} \\
+\cos h &≃ 1 + h^2 p_c\of{h^2}
+\end{align*}
 which must cover the interval $\intclos{0}{h_{max}}$ with:
 \[
 h_{max} \DefineAs \max\limits_{k}\curlyBrackets{x_k - \pa{2 k - 1}\gD, \pa{2 k + 1}\gD - x_k}
 \]
 
-It is difficult to find a theoretical justification for the error function used in that approximation, as the polynomials for $\sin$ and $\cos$ both contribute in complicated ways to the final error.  In practice it appears that an absolute error bound results in a slightly lower error on the result, so we call \texttt{GeneralMiniMaxApproximation} with:
+It is difficult to find a theoretical justification for the error function used in these approximations, as the polynomials $p_s$ and $p_c$ contribute in complicated ways to the final error on $\sin$ and $\cos$.  In practice it appears that an absolute error bound results in a slightly lower final relative error, so for $\sin$ we call \texttt{GeneralMiniMaxApproximation} with:
 \[
 \begin{dcases}
 h\of{x} &\DefineAs x^2 \\
@@ -408,7 +409,34 @@ f\of{x} &\DefineAs \frac{\sin x - x}{x^3} \\
 g\of{x} &\DefineAs \frac{1}{x^3}
 \end{dcases}
 \]
+and for $\cos$:
+\[
+\begin{dcases}
+h\of{x} &\DefineAs x^2 \\
+f\of{x} &\DefineAs \frac{\cos x - 1}{x^2} \\
+g\of{x} &\DefineAs \frac{1}{x^2}
+\end{dcases}
+\]
 
-In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): xref} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an absolute error smaller than $2^{-85.746}$ before rounding the coefficients to machine numbers.
+In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): xref} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an absolute error smaller than $2^{-85.746}$ and a 1-degree polynomial $p_c$ with an absolute error smaller than $2^{-72.693}$ (before rounding the coefficients to machine numbers).
+
+\section*{Core Implementation}
+This section documents the core of the algorithm.  It takes as input the result of argument reduction, $\hat x + \gd \hat x$ and produces a pair $y + \gd y$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether we need to fall back to the CORE-MATH implementation.  Most of the time (with a probability close to $1 - 2^{-18}$) $y$ is the correctly-rounded result.
+
+In this analysis we assume the availability of an FMA operation, and rounding to nearest.  The evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations.  The error interval is computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \linebreak\texttt{mathematica/ieee754\_floating\_point\_evaluation.wl}.  It is generally asymmetrical because rounding the coefficients introduces a bias\marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
+
+\subsection*{Sin Near Zero}
+If $\abs{x} \le 2^{-10}$ we have:\marginnote{TODO(phl): Align the notation in the notebook.}
+\[
+\begin{dcases}
+\begin{align*}
+1 - \frac{x + x^3 p_{s0}\of{x^2}}{\sin x} &= \gh_0 &\abs{\gh_0} < 2^{-75.538} \\
+\round{x^3 p_{s0}\of{x^2}} &= \pa{1 + \gh_1}\pa{x^3 p_{s0}\of{x^2}} &\gh_1 \in \intopen{-2^{-50.830}}{2^{-51.192}}
+\end{align*}
+\end{dcases}
+\]
+
+\subsection*{Sin Around Table Entries}
+\subsection*{Cos Around Table Entries}
 
 \end{document}
