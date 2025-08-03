@@ -228,7 +228,7 @@ from which we deduce the upper bound:
 \abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
 &\leq \iround{2^{\gk_1} \pa{1 + \gg_3}}
 \end{align*}
-If $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
+If $2^{\gk_1} \gg_3$ is small enough (less than $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
 Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.  In the following analysis we assume that $n > 0$.  The results are symmetrical if $n < 0$.  There are two possible kinds of misrounding, with different bounds.
 
@@ -238,7 +238,7 @@ x < \pa{n - \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\fr
 \]
 Using equation (\ref{eqnxerror}) we find that this misrounding is only possible if:
 \[
-x > \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \geq \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gg_2}}
+x > \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \geq \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{1 + \gg_2}
 \]
 In which case the computation of $n$ results in:
 \[
@@ -284,7 +284,7 @@ plugging $\ULP\of{\frac{\Pi}{2}} = 2^{1 - M}$ we find:
 Therefore, as long as $\gk'_1 > 2$, there exist arguments $x$ for which $\abs{\gd y} > \abs y$.
 } using algorithm 4 of \cite{HidaLiBailey2007}.
 
-To compute the overall error on argument reduction\footnote{Note that this error analysis is correct even in the face of misrounding.  Misrounding can combine with the argument reduction error, though, to cause $\abs{y - {\gd y}}$ to move farther above $\frac{\Pi}{4}$}, first remember that, from equation (\ref{eqnpitwoterms}), we have:
+To compute the overall error on argument reduction\footnote{Note that this error analysis is correct even in the face of misrounding.  Misrounding can combine with the argument reduction error, though, to cause $\abs{y - {\gd y}}$ to move farther above $\frac{\Pi}{4}$.}, first remember that, from equation (\ref{eqnpitwoterms}), we have:
 \[
 C_1 + \gd C_1 = \frac{\Pi}{2} + \gz \quad \text{with} \quad \abs{\gz} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
