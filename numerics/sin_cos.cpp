@@ -310,7 +310,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
         FusedMultiplyAdd<fma_policy>(
             cos_x₀,
             h³ * SinPolynomial<fma_policy>(h²),
-            sin_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
+            sin_x₀ * (h² * CosPolynomial<fma_policy>(h²))) +
         FusedMultiplyAdd<fma_policy>(cos_x₀, e_abs, sin_x₀_plus_h_cos_x₀.error);
     return _mm_cvtsd_f64(
         _mm_xor_pd(_mm_set_sd(DetectDangerousRounding(
@@ -347,7 +347,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀,
           h³ * SinPolynomial<fma_policy>(h²),
-          cos_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
+          cos_x₀ * (h² * CosPolynomial<fma_policy>(h²))) +
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀, e_abs, cos_x₀_minus_h_sin_x₀.error);
   return DetectDangerousRounding(cos_x₀_minus_h_sin_x₀.value, polynomial_term);
