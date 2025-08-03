@@ -505,6 +505,10 @@ Assert[IEEEEvaluateWithRelativeError[CorrectlyRound[\[Pi]]]=={Interval[{88427971
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[CorrectlyRound[\[Pi]]]=={Interval[{884279719003555/281474976710656,884279719003555/281474976710656}],Interval[{0,0}]}]
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[
 	Exact[
 		{Interval[{5,5}],Interval[{-2^-53,2^-53}]}+
@@ -517,6 +521,12 @@ Assert[IEEEEvaluateWithRelativeError[
 	{Interval[{5,5}],Interval[{-2^-53,2^-53}]} *
 	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]==
 	{Interval[{30,30}],Interval[{-3 2^-53+3 2^-106-2^-159,3 2^-53+3 2^-106+2^-159}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[\[Pi]]==$Failed];
+Assert[IEEEEvaluateWithRelativeError[0.1]==$Failed];
+Assert[IEEEEvaluateWithRelativeError[33333333333333333]==$Failed]
 
 
 (* ::Input::Initialization:: *)

@@ -203,6 +203,7 @@ Given an argument $x$, the purpose of argument reduction is to compute a pair of
 
 \subsection*{Argument Reduction for Small Angles}
 If $\abs x < \round{\frac{\Pi}{4}}$ then $\hat x = x$ and $\gd \hat x = 0$.
+
 \subsection*{Argument Reduction Using the Two-Term Approximation}
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -213,15 +214,63 @@ y &= x - n \; C_1 \\
 \pa{\hat x, \gd \hat x} &= \twodifference\of{y, \gd y}
 \end{dcases}
 \]
-Let's first show that $\abs n \leq 2^{\gk_1}$. :
+The first thing to note is that $\abs n \leq 2^{\gk_1}$.  We have:
+\[
+\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}} = 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} 
+\]
+and:
+\begin{equation}
+\round{x \round{\frac{2}{\Pi}}} = x \frac{2}{\Pi} \pa{1 + \gd_2}\pa{1 + \gd_3}
+\label{eqnxerror}
+\end{equation}
+from which we deduce the upper bound:
 \begin{align*}
-\abs x &\leq 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \\
 \abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
 &\leq \iround{2^{\gk_1} \pa{1 + \gg_3}}
 \end{align*}
-As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
+If $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
+Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.  In the following analysis we assume that $n > 0$.  The results are symmetrical if $n < 0$.  There are two possible kinds of misrounding, with different bounds.
+
+A misrounding of the first kind occurs if:
+\[
+x < \pa{n - \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} > n - \frac{1}{2}
+\]
+Using equation (\ref{eqnxerror}) we find that this misrounding is possible iff:
+\[
+x > \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \geq \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gg_2}}
+\]
+In which case the computation of $n$ results in:
+\[
+n \frac{\Pi}{2} - x < \frac{\Pi}{4} \pa{1 + \frac{\gg_2}{1 + \gg_2} \pa{2 n - 1}}
+\]
+This bound tells us that the absolute value of the reduced angle may exceed $\frac{\Pi}{4}$ by as much as:
+\begin{equation}
+\frac{\Pi}{4} \frac{\gg_2}{1 + \gg_2} \pa{2^{\gk_1 + 1} - 1}
+\label{eqnboundabove}
+\end{equation}
+
+A misrounding of the second kind occurs if:
+\[
+x > \pa{n + \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} < n + \frac{1}{2}
+\]
+A derivation similar to the one above gives the following condition for this misrounding to be possible.  Using equation (\ref{eqnxerror}):
+\[
+x < \frac{\Pi}{2} \pa{n + \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \leq \frac{\Pi}{2} \pa{n + \frac{1}{2}} \pa{1 + \gg_2}
+\]
+from which we derive the bound:
+\[
+x - n \frac{\Pi}{2} < \frac{\Pi}{4} \pa{1 + \gg_2 \pa{2 n + 1}}
+\]
+and thus the excess above $\frac{\Pi}{4}$:
+\begin{equation}
+\frac{\Pi}{4} \gg_2 \pa{2^{\gk_1 + 1} + 1}
+\label{eqnboundbelow}
+\end{equation}
+
+The bounds (\ref{eqnboundabove}) and (\ref{eqnboundbelow}) need to be taken into account when building the accurate tables.
+
+Using the bound on $\abs n$ and the fact that $C_1$ has $\gk_1$ trailing zeroes, we see that the product $n \; C_1$ is exact.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
 \[ 
 \abs{\gd y} \geq n \; 2^{\gk'_1 - 1} \ULP\of{\frac{\Pi}{2}} \geq 2^{\gk'_1 + M - 2} \ULP\of{\frac{\Pi}{2}} \ULP\of{n}
 \]
@@ -236,7 +285,7 @@ plugging $\ULP\of{\frac{\Pi}{2}} = 2^{1 - M}$ we find:
 Therefore, as long as $\gk'_1 > 2$, there exist arguments $x$ for which $\abs{\gd y} > \abs y$.
 } using algorithm 4 of \cite{HidaLiBailey2007}.
 
-To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpitwoterms}), we have:
+To compute the overall error on argument reduction\footnote{Note that this error analysis is correct even in the face of misrounding.  Misrounding can combine with the argument reduction error, though, to cause $\abs{y - {\gd y}}$ to move farther above $\frac{\Pi}{4}$}, first remember that, from equation (\ref{eqnpitwoterms}), we have:
 \[
 C_1 + \gd C_1 = \frac{\Pi}{2} + \gz \quad \text{with} \quad \abs{\gz} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
@@ -284,7 +333,7 @@ It is straightforward to show, like we did in the preceding section, that:
 \[
 \abs n \leq \iround{2^{\gk_2} \pa{1 + \gg_3}}
 \]
-and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.
+and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.  Similarly, the misrounding bounds (\ref{eqnboundabove}) and (\ref{eqnboundbelow}) are applicable with $\gk_2$ replacing $\gk_1$.
 
 To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpithreeterms}), we have:
 \[
@@ -313,23 +362,81 @@ and it is therefore sufficient to have:
 \abs{\hat x} \geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + 4}
 \]
 
-If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 13$ and $\gk''_2 = 14$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 257 \times 2^{-42} ≃ 1.2 \times 10^{-10}$.
+If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ and $\gk''_2 = 15$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 65 \times 2^{-39} ≃ 1.2 \times 10^{-10}$.
 
 \subsection*{Fallback}
 If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
 
 \section*{Accurate Tables and Their Generation}
-\section*{Computation of the Functions}
-\subsection*{Sin}
-\subsubsection*{Near Zero}
-For $\hat x$ near zero we evaluate:
+\marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
+\section*{Polynomial Approximations}
+The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p\of{h\of{x}}$ approximating a function $f\of{x}$ by minimizing the quantity $\frac{f\of{x} - p\of{h\of{x}}}{g\of{x}}$.  By choosing $g\of{x}$ appropriately, we can obtain an approximation that minimizes either the absolute or relative error on the result.
+\subsection*{Sin Near Zero}
+For the $\sin$ function near zero the accurate tables method is not usable because the correction term is not small compared to the tabulated value of the function (which would be zero)\footnote{It would be possible to have one set of tables per binade with progressively denser intervals, but that would have a terrible performance as the tables would end up being very large.}.  Instead we use a polynomial approximation that minimizes the relative error on the result.  Since $\sin x$ is an even function and since its dominant term is $x$, we are looking for an approximation having the form:
+\[
+\sin x ≃ x + x^3 p_{s0}\of{x^2}
+\]
+over the interval $\intclos{0}{h}$\marginnote{TODO(phl): Call this $\gD$?}, where $h$ is chosen so that $h^2 \ll 1$.  By leaving the sum unevaluated, the two terms $x$ and $x^3 p_{s0}\of{x}$ may be used to perform the rounding test (see below)\marginnote{TODO(phl): Document the rounding test and xref here.}.
+
+We are therefore calling \texttt{GeneralMiniMaxApproximation} with:
+\[
+\begin{dcases}
+h\of{x} &\DefineAs x^2 \\
+f\of{x} &\DefineAs \frac{\sin x - x}{x^3} \\
+g\of{x} &\DefineAs \frac{\sin x}{x^3}
+\end{dcases}
+\]
+which results in a polynomial $p_{s0}$ which minimizes the relative error $\frac{\sin x}{x}$; the degree of $p_{s0}$ is choosen so that the error is less than $\ULP\of{h^2}$.
+
+In practice we choose $h = 2^{-10}$, and compute a degree-1 polynomial which induces a relative error smaller than $2^{-75.538}$ (before rounding the coefficients to machine numbers).
+
+\subsection*{Around Table Entries}
+Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval containing $x_k$ is $\intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$\marginnote{TODO(phl): This cannot be a closed interval.}.  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $x$ (which in the case of $\sin$, is not close to zero\marginnote{TODO(phl): and in the case of cos?}), a $k$ such that $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and computing $h = x - x_k$.  We are therefore looking for approximations of the form:
 \begin{align*}
-\widehat{x^2} &= \round{{\hat x}^2} = {\hat x}^2 \pa{1 + \gd_1}\\
-\widehat{x^3} &= \round{\hat x \; \widehat{x^2}} = {\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2}\\
-\hat p &= \round{a \widehat{x^2} + b} = \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3}\\
-s\of{x} &\DefineAs \hat x + \round{\round{\widehat{x^3} \hat p} + \gd \hat x} \\
-&= \hat x + \pa{{\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3} \pa{1 + \gd_4} + \gd \hat x}\pa{1 + \gd_5} \\
-&= \hat x + a {\hat x}^3 \pa{1 + \gq_5} + b {\hat x}^5 \pa{1 + \gq_4} + \gd \hat x \pa{1 + \gd_5}
+\sin h &≃ h + h^3 p_s\of{h^2} \\
+\cos h &≃ 1 + h^2 p_c\of{h^2}
 \end{align*}
+which must cover the interval $\intclos{0}{h_{max}}$ with:
+\[
+h_{max} \DefineAs \max\limits_{k}\curlyBrackets{x_k - \pa{2 k - 1}\gD, \pa{2 k + 1}\gD - x_k}
+\]
+
+It is difficult to find a theoretical justification for the error function used in these approximations, as the polynomials $p_s$ and $p_c$ contribute in complicated ways to the final error on $\sin$ and $\cos$.  In practice it appears that an absolute error bound results in a slightly lower final relative error, so for $\sin$ we call \texttt{GeneralMiniMaxApproximation} with:
+\[
+\begin{dcases}
+h\of{x} &\DefineAs x^2 \\
+f\of{x} &\DefineAs \frac{\sin x - x}{x^3} \\
+g\of{x} &\DefineAs \frac{1}{x^3}
+\end{dcases}
+\]
+and for $\cos$:
+\[
+\begin{dcases}
+h\of{x} &\DefineAs x^2 \\
+f\of{x} &\DefineAs \frac{\cos x - 1}{x^2} \\
+g\of{x} &\DefineAs \frac{1}{x^2}
+\end{dcases}
+\]
+
+In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): xref} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an absolute error smaller than $2^{-85.746}$ and a 1-degree polynomial $p_c$ with an absolute error smaller than $2^{-72.693}$ (before rounding the coefficients to machine numbers).
+
+\section*{Core Implementation}
+This section documents the core of the algorithm.  It takes as input the result of argument reduction, $\hat x + \gd \hat x$ and produces a pair $y + \gd y$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether we need to fall back to the CORE-MATH implementation.  Most of the time (with a probability close to $1 - 2^{-18}$) $y$ is the correctly-rounded result.
+
+In this analysis we assume the availability of an FMA operation, and rounding to nearest.  The evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations.  The error interval is computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \linebreak\texttt{mathematica/ieee754\_floating\_point\_evaluation.wl}.  It is generally asymmetrical because rounding the coefficients introduces a bias\marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
+
+\subsection*{Sin Near Zero}
+If $\abs{x} \le 2^{-10}$ we have:\marginnote{TODO(phl): Align the notation in the notebook.}
+\[
+\begin{dcases}
+\begin{align*}
+1 - \frac{x + x^3 p_{s0}\of{x^2}}{\sin x} &= \gh_0 &\abs{\gh_0} < 2^{-75.538} \\
+\round{x^3 p_{s0}\of{x^2}} &= \pa{1 + \gh_1}\pa{x^3 p_{s0}\of{x^2}} &\gh_1 \in \intopen{-2^{-50.830}}{2^{-51.192}}
+\end{align*}
+\end{dcases}
+\]
+
+\subsection*{Sin Around Table Entries}
+\subsection*{Cos Around Table Entries}
 
 \end{document}
