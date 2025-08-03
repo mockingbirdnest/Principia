@@ -203,6 +203,7 @@ Given an argument $x$, the purpose of argument reduction is to compute a pair of
 
 \subsection*{Argument Reduction for Small Angles}
 If $\abs x < \round{\frac{\Pi}{4}}$ then $\hat x = x$ and $\gd \hat x = 0$.
+
 \subsection*{Argument Reduction Using the Two-Term Approximation}
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -213,15 +214,62 @@ y &= x - n \; C_1 \\
 \pa{\hat x, \gd \hat x} &= \twodifference\of{y, \gd y}
 \end{dcases}
 \]
-Let's first show that $\abs n \leq 2^{\gk_1}$. :
+The first thing to note is that $\abs n \leq 2^{\gk_1}$.  We have:
+\[
+\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}} = 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} 
+\]
+and:
+\begin{equation}
+\round{x \round{\frac{2}{\Pi}}} = x \frac{2}{\Pi} \pa{1 + \gd_2}\pa{1 + \gd_3}
+\label{eqnxerror}
+\end{equation}
+from which we deduce the upper bound:
 \begin{align*}
-\abs x &\leq 2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \\
 \abs n &\leq \iround{2^{\gk_1} \frac{\Pi}{2} \pa{1 + \gd_1} \frac{2}{\Pi} \pa{1 + \gd_2} \pa{1 + \gd_3}} \\
 &\leq \iround{2^{\gk_1} \pa{1 + \gg_3}}
 \end{align*}
-As long as $2^{\gk_1} \gg_3$ is small enough (less that $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
+If $2^{\gk_1} \gg_3$ is small enough (less than $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-The product $n \; C_1$ is exact thanks to the $\gk_1$ trailing zeroes of $C_1$.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
+Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.  In the following analysis we assume that $n > 0$.  The results are symmetrical if $n < 0$.  There are two possible kinds of misrounding, with different bounds.
+
+A misrounding of the first kind occurs if:
+\[
+x < \pa{n - \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} > n - \frac{1}{2}
+\]
+Using equation (\ref{eqnxerror}) we find that this misrounding is only possible if:
+\[
+x > \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \geq \frac{\Pi}{2} \pa{n - \frac{1}{2}} \frac{1}{1 + \gg_2}
+\]
+In which case the computation of $n$ results in:
+\[
+n \frac{\Pi}{2} - x < \frac{\Pi}{4} \pa{1 + \frac{\gg_2}{1 + \gg_2} \pa{2 n - 1}}
+\]
+This bound tells us that the absolute value of the reduced angle may exceed $\frac{\Pi}{4}$ by as much as:
+\[
+\frac{\Pi}{4} \frac{\gg_2}{1 + \gg_2} \pa{2^{\gk_1 + 1} - 1}
+\]
+
+A misrounding of the second kind occurs if:
+\[
+x > \pa{n + \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} < n + \frac{1}{2}
+\]
+A derivation similar to the one above gives the following condition for this misrounding to be possible.  Using equation (\ref{eqnxerror}):
+\[
+x < \frac{\Pi}{2} \pa{n + \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \leq \frac{\Pi}{2} \pa{n + \frac{1}{2}} \pa{1 + \gg_2}
+\]
+from which we derive the bound:
+\[
+x - n \frac{\Pi}{2} < \frac{\Pi}{4} \pa{1 + \gg_2 \pa{2 n + 1}}
+\]
+and thus the excess above $\frac{\Pi}{4}$:
+\begin{equation}
+\frac{\Pi}{4} \gg_2 \pa{2^{\gk_1 + 1} + 1}
+\label{eqnmisroundingbound}
+\end{equation}
+
+It's clear that the error of the second kind is always larger than that of the first kind, so (\ref{eqnmisroundingbound}) is the largest possible misrounding and must be taken into account when building the accurate tables.
+
+Using the bound on $\abs n$ and the fact that $C_1$ has $\gk_1$ trailing zeroes, we see that the product $n \; C_1$ is exact.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
 \[ 
 \abs{\gd y} \geq n \; 2^{\gk'_1 - 1} \ULP\of{\frac{\Pi}{2}} \geq 2^{\gk'_1 + M - 2} \ULP\of{\frac{\Pi}{2}} \ULP\of{n}
 \]
@@ -236,7 +284,7 @@ plugging $\ULP\of{\frac{\Pi}{2}} = 2^{1 - M}$ we find:
 Therefore, as long as $\gk'_1 > 2$, there exist arguments $x$ for which $\abs{\gd y} > \abs y$.
 } using algorithm 4 of \cite{HidaLiBailey2007}.
 
-To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpitwoterms}), we have:
+To compute the overall error on argument reduction\footnote{Note that this error analysis is correct even in the face of misrounding.  Misrounding can combine with the argument reduction error, though, to cause $\abs{y - {\gd y}}$ to move farther above $\frac{\Pi}{4}$.}, first remember that, from equation (\ref{eqnpitwoterms}), we have:
 \[
 C_1 + \gd C_1 = \frac{\Pi}{2} + \gz \quad \text{with} \quad \abs{\gz} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
@@ -284,7 +332,7 @@ It is straightforward to show, like we did in the preceding section, that:
 \[
 \abs n \leq \iround{2^{\gk_2} \pa{1 + \gg_3}}
 \]
-and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.
+and therefore that $\abs n \leq 2^{\gk_2}$ as long as $2^{\gk_2} \gg_3 < 1/2$.  Similarly, the misrounding bound (\ref{eqnmisroundingbound}) is applicable with $\gk_2$ replacing $\gk_1$.
 
 To compute the overall error on argument reduction, first remember that, from equation (\ref{eqnpithreeterms}), we have:
 \[
@@ -296,24 +344,26 @@ y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \p
 &= \pa{x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4}} \pa{1 + \gz_2} \\
 &= x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4} \pa{1 + \gz_2} + \pa{x - n \frac{\Pi}{2}} \; \gz_2
 \end{align*}
-from which we deduce an upper bound on the absolute error of the reduction, noting that $\abs{x - n \frac{\Pi}{2}} \leq \frac{\Pi}{4}$:
+from which we deduce an upper bound on the absolute error of the reduction, noting that $\abs{x - n \frac{\Pi}{2}} \leq \frac{\Pi}{4}\pa{1 + \gg_2 \pa{2^{\gk_2 + 1} + 1}}$ as per (\ref{eqnmisroundingbound}):
 \begin{align*}
 &\abs{y - y' - \gd y - \pa{x - n \frac{\Pi}{2}}} \\ 
-& \qquad \leq 2^{\gk_2 + \gk'_2 + \gk''_2} \pa{2^{-2 M - 1} + 2^{-2 M} + 2^{-3 M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{2 - 2 M} \frac{\Pi}{4} \\
-& \qquad = 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi \\
-& \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M + 1} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi
+& \qquad \leq 2^{\gk_2 + \gk'_2 + \gk''_2} \pa{2^{-2 M - 1} + 2^{-2 M} + 2^{-3 M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{2 - 2 M} \frac{\Pi}{4}\pa{1 + \gg_2 \pa{2^{\gk_2 + 1} + 1}} \\
+& \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi \pa{1 + 3 \times 2^{\gk_2} \ULP\of{\frac{\Pi}{2}}} \\
+& \qquad < 2^{\gk_2 - 2 M} \pa{2^{\gk'_2 + \gk''_2 + 1} + 3} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi
 \end{align*}
+where the second inequality uses $\gg_2 \pa{2^{\gk_2 + 1} + 1} < 3 u \; 2^{\gk_2 + 1}$.
+
 A sufficient condition for the reduction to guarantee $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}}$ which itself is less than $2^{-\gk_3 - M} \abs{\hat{x}}$.  Therefore we want:
 \begin{align*}
-\abs{\hat x} &\geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 + 1} \ULP\of{\frac{\Pi}{2}} + \Pi} \\
-&= 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + \Pi}
+\abs{\hat x} &\geq 2^{\gk_3 - M} \pa{2^{\gk_2} \pa{2^{\gk'_2 + \gk''_2 + 1} + 3} \ULP\of{\frac{\Pi}{2}} + \Pi} \\
+&= 2^{\gk_3 - M} \pa{2^{\gk_2 - M + 1} \pa{2^{\gk'_2 + \gk''_2 + 1} + 3} + \Pi}
 \end{align*}
 and it is therefore sufficient to have:
 \[
-\abs{\hat x} \geq 2^{\gk_3 - M}\pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2}  + 4}
+\abs{\hat x} \geq 2^{\gk_3 - M} \pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2} + 4}
 \]
 
-If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 13$ and $\gk''_2 = 14$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 257 \times 2^{-42} ≃ 1.2 \times 10^{-10}$.
+If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ and $\gk''_2 = 15$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 65 \times 2^{-39} ≃ 1.2 \times 10^{-10}$.
 
 \subsection*{Fallback}
 If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
