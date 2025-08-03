@@ -21,7 +21,7 @@ On[Assert]
 ?"IEEE754FloatingPointEvaluation`*"
 
 
-(* ::Section::Closed:: *)
+(* ::Section:: *)
 (*IEEEEvaluate*)
 
 
@@ -110,6 +110,58 @@ Assert[
 IEEEEvaluate[-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10-1/10]==$Failed];
 
 
+(* ::Input::Initialization:: *)
+Module[
+{x=3},
+Assert[IEEEEvaluate[x]==3]];
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly[u_]:=u^3(a+b u^2);
+Assert[IEEEEvaluate[poly[v]]!=CorrectlyRound[poly[v]]];
+Assert[IEEEEvaluate[poly[v]]==
+CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+CorrectlyRound[
+CorrectlyRound[a]+
+CorrectlyRound[b]CorrectlyRound[w^2]]]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly=Function[u,u^3(a+b u^2)];
+Assert[IEEEEvaluate[poly[v]]!=CorrectlyRound[poly[v]]];
+Assert[IEEEEvaluate[poly[v]]==
+CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+CorrectlyRound[
+CorrectlyRound[a]+
+CorrectlyRound[b]CorrectlyRound[w^2]]]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly[x_,y_]:=2x+3y;
+Assert[IEEEEvaluate[poly[4,5]]==23]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly=Function[{x,y},2x+3y];
+Assert[IEEEEvaluate[poly[4,5]]==23]]
+
+
 (* ::Section:: *)
 (*IEEEEvaluateWithAbsoluteError*)
 
@@ -131,22 +183,6 @@ Assert[absoluteErrorBound[Interval[{1.2,1.3}]]==2^-53];
 Assert[absoluteErrorBound[Interval[{-2.4,1.3}]]==2^-52];
 Assert[absoluteErrorBound[Interval[{1,1}]]==2^-54];
 Assert[absoluteErrorBound[Interval[{-1/2,1/2}]]==2^-55];
-
-
-(* ::Input::Initialization:: *)
-Assert[applyOpWithAbsoluteError[
-	Plus,
-	{Interval[{2,2}],Interval[{-2^-50,2^-50}]},
-	{Interval[{3,3}],Interval[{-2^-51,2^-51}]},Exact->False]==
-	{Interval[{5,5}],Interval[{-2^-50-2 2^-51,2^-50+2 2^-51}]}]
-
-
-(* ::Input::Initialization:: *)
-Assert[applyOpWithAbsoluteError[
-	Plus,
-	{Interval[{2,2}],Interval[{-2^-50,2^-50}]},
-	{Interval[{3,3}],Interval[{-2^-51,2^-51}]},Exact->True]==
-	{Interval[{5,5}],Interval[{-2^-50- 2^-51,2^-50+ 2^-51}]}]
 
 
 (* ::Input::Initialization:: *)
@@ -176,26 +212,93 @@ Assert[IEEEEvaluateWithAbsoluteError[Interval[{-1,3}]^4]=={Interval[{0,81}],Inte
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[1]=={Interval[{1,1}],Interval[{0,0}]}];
-Assert[IEEEEvaluateWithAbsoluteError[0.1]=={Interval[{CorrectlyRound[0.1],CorrectlyRound[0.1]}],Interval[{0,0}]}];
+Assert[IEEEEvaluateWithAbsoluteError[CorrectlyRound[\[Pi]]]=={Interval[{884279719003555/281474976710656,884279719003555/281474976710656}],Interval[{0,0}]}]
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[\[Pi]]=={Interval[{5778952871261281/70368744177664,5778952871261281/70368744177664}],Interval[{0,0}]}]
+Assert[IEEEEvaluateWithAbsoluteError[
+	{Interval[{2,2}],Interval[{-2^-50,2^-50}]}+
+	{Interval[{3,3}],Interval[{-2^-51,2^-51}]}]==
+	{Interval[{5,5}],Interval[{-2^-50-2 2^-51,2^-50+2 2^-51}]}]
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithAbsoluteError[CorrectlyRound[\[Pi]]]=={Interval[{5778952871261281/70368744177664,5778952871261281/70368744177664}],Interval[{0,0}]}]
+Assert[IEEEEvaluateWithAbsoluteError[
+Exact[
+		{Interval[{2,2}],Interval[{-2^-50,2^-50}]}+
+		{Interval[{3,3}],Interval[{-2^-51,2^-51}]}]]==
+	{Interval[{5,5}],Interval[{-2^-50- 2^-51,2^-50+ 2^-51}]}]
 
 
 (* ::Input::Initialization:: *)
-Block[
+Assert[IEEEEvaluateWithAbsoluteError[\[Pi]]==$Failed];
+Assert[IEEEEvaluateWithAbsoluteError[33333333333333333]==$Failed];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithAbsoluteError[0.1`20]=={Interval[{3602879701896397/36028797018963968,3602879701896397/36028797018963968}],Interval[{3602879701896397/36028797018963968-0.1`20,3602879701896397/36028797018963968-0.1`20}]}]
+
+
+(* ::Input::Initialization:: *)
+Module[
 {x=3},
 Assert[IEEEEvaluateWithAbsoluteError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
 
 
 (* ::Input::Initialization:: *)
+Module[
+{a,b,poly,p,q,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly[u_]:=u^3(a+b u^2);
+p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+	CorrectlyRound[
+	CorrectlyRound[a]+
+	CorrectlyRound[b]CorrectlyRound[w^2]]];
+q=CorrectlyRound[poly[v]];
+Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]!=Interval[{q,q}]];
+Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]==Interval[{p,p}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,p,q,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly=Function[u,u^3(a+b u^2)];
+p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+	CorrectlyRound[
+	CorrectlyRound[a]+
+	CorrectlyRound[b]CorrectlyRound[w^2]]];
+q=CorrectlyRound[poly[v]];
+Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]!=Interval[{q,q}]];
+Assert[IEEEEvaluateWithAbsoluteError[poly[v]][[1]]==Interval[{p,p}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly[x_,y_]:=2x+3y;
+Assert[IEEEEvaluateWithAbsoluteError[poly[4,5]][[1]]==Interval[{23,23}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly:=Function[{x,y},2x+3y];
+Assert[IEEEEvaluateWithAbsoluteError[poly[4,5]][[1]]==Interval[{23,23}]]]
+
+
+(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithAbsoluteError[2,3]==$Failed];
+
+
+(* ::Subsection:: *)
+(*[SZ05] Analysis*)
 
 
 (* ::Text:: *)
@@ -239,11 +342,11 @@ bits[k]
 
 
 (* ::Input::Initialization:: *)
-k'=IEEEEvaluateWithAbsoluteError[h^3]
+k\[Prime]=IEEEEvaluateWithAbsoluteError[h^3]
 
 
 (* ::Input::Initialization:: *)
-bits[k']
+bits[k\[Prime]]
 
 
 (* ::Input::Initialization:: *)
@@ -263,7 +366,7 @@ bits[S\[FivePointedStar]2]
 
 
 (* ::Input::Initialization:: *)
-S\[FivePointedStar]3=IEEEEvaluateWithAbsoluteError[k' S\[FivePointedStar]2]
+S\[FivePointedStar]3=IEEEEvaluateWithAbsoluteError[k\[Prime] S\[FivePointedStar]2]
 
 
 (* ::Input::Initialization:: *)
@@ -338,61 +441,6 @@ Assert[relativeErrorBound==2^-53];
 
 
 (* ::Input::Initialization:: *)
-Assert[
-applyOpWithRelativeError[
-	Plus,
-	{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
-	{Interval[{6,6}],Interval[{-2^-53,2^-53}]},Exact->False]==
-applyOpWithRelativeError[
-	Plus,
-	{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
-	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]]
-
-
-(* ::Input::Initialization:: *)
-Assert[applyOpWithRelativeError[
-	Plus,
-	{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
-	{Interval[{6,6}],Interval[{-2^-53,2^-53}]},Exact->False]==
-	{Interval[{11,11}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
-
-
-(* ::Input::Initialization:: *)
-Assert[applyOpWithRelativeError[
-	Plus,
-	{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
-	{Interval[{6,6}],Interval[{-2^-53,2^-53}]},Exact->True]==
-	{Interval[{11,11}],Interval[{-2^-53,2^-53}]}]
-
-
-(* ::Input::Initialization:: *)
-Assert[applyOpWithRelativeError[
-	Times,
-	{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
-	{Interval[{6,6}],Interval[{-2^-53,2^-53}]},Exact->False]==
-applyOpWithRelativeError[
-	Times,
-	{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
-	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]]
-
-
-(* ::Input::Initialization:: *)
-Assert[applyOpWithRelativeError[
-Times,
-	{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
-	{Interval[{6,6}],Interval[{-2^-53,2^-53}]},Exact->False]==
-	{Interval[{30,30}],Interval[{-3 2^-53+3 2^-106-2^-159,3 2^-53+3 2^-106+2^-159}]}]
-
-
-(* ::Input::Initialization:: *)
-Assert[applyOpWithRelativeError[
-	Times,
-	{Interval[{5,5}],Interval[{-2^-53,2^-53}]},
-	{Interval[{6,6}],Interval[{-2^-53,2^-53}]},Exact->True]==
-	{Interval[{30,30}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
-
-
-(* ::Input::Initialization:: *)
 $ContextPath=Drop[$ContextPath,1]
 
 
@@ -422,11 +470,6 @@ Assert[IEEEEvaluateWithRelativeError[Interval[{-1,3}]^4]=={Interval[{0,81}],Inte
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithRelativeError[1]=={Interval[{1,1}],Interval[{0,0}]}];
-Assert[IEEEEvaluateWithRelativeError[0.1]=={Interval[{CorrectlyRound[0.1],CorrectlyRound[0.1]}],Interval[{0,0}]}];
-
-
-(* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{0,2}]]==
 	{Interval[{0,3}],Interval[{-2^-53,2^-53}]}];
 
@@ -437,17 +480,114 @@ Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{-2,0}]]==
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithRelativeError[\[Pi]]=={Interval[{5778952871261281/70368744177664,5778952871261281/70368744177664}],Interval[{0,0}]}]
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{0,2}],UseFMA->True]==
+	{Interval[{0,5}],Interval[{-2^-53,2^-53}]}];
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{0,2}],UseFMA->False]==
+	IEEEEvaluateWithRelativeError[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]]+Interval[{0,2}]]];
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithRelativeError[CorrectlyRound[\[Pi]]]=={Interval[{5778952871261281/70368744177664,5778952871261281/70368744177664}],Interval[{0,0}]}]
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{-2,0}],UseFMA->True]==
+	{Interval[{-2,3}],Interval[{-\[Infinity],\[Infinity]}]}];
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{-2,0}],UseFMA->False]==
+	{Interval[{-2,3}],Interval[{-\[Infinity],\[Infinity]}]}];
 
 
 (* ::Input::Initialization:: *)
-Block[
+Assert[IEEEEvaluateWithRelativeError[
+	{Interval[{5,5}],Interval[{-2^-53,2^-53}]}+
+	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]==
+	{Interval[{11,11}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[CorrectlyRound[\[Pi]]]=={Interval[{884279719003555/281474976710656,884279719003555/281474976710656}],Interval[{0,0}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[
+	Exact[
+		{Interval[{5,5}],Interval[{-2^-53,2^-53}]}+
+		{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]]==
+	{Interval[{11,11}],Interval[{-2^-53,2^-53}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[
+	{Interval[{5,5}],Interval[{-2^-53,2^-53}]} *
+	{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]==
+	{Interval[{30,30}],Interval[{-3 2^-53+3 2^-106-2^-159,3 2^-53+3 2^-106+2^-159}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[
+Exact[
+		{Interval[{5,5}],Interval[{-2^-53,2^-53}]}*
+		{Interval[{6,6}],Interval[{-2^-53,2^-53}]}]]==
+	{Interval[{30,30}],Interval[{-2 2^-53+2^-106,2 2^-53+2^-106}]}]
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[\[Pi]]==$Failed];
+Assert[IEEEEvaluateWithRelativeError[33333333333333333]==$Failed];
+
+
+(* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[0.1`20]=={Interval[{3602879701896397/36028797018963968,3602879701896397/36028797018963968}],Interval[{(3602879701896397/36028797018963968)/0.1`20 -1,(3602879701896397/36028797018963968)/0.1`20 -1}]}]
+
+
+(* ::Input::Initialization:: *)
+Module[
 {x=3},
 Assert[IEEEEvaluateWithRelativeError[x]=={Interval[{3,3}],Interval[{0,0}]}]];
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,p,q,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly[u_]:=u^3(a+b u^2);
+p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+	CorrectlyRound[
+	CorrectlyRound[a]+
+	CorrectlyRound[b]CorrectlyRound[w^2]]];
+q=CorrectlyRound[poly[v]];
+Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]!=Interval[{q,q}]];
+Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]==Interval[{p,p}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{a,b,poly,p,q,v,w},
+a=-0.166666666666666666666648443029;
+b=0.00833333316414932033147740536488;
+v=0.000975`30;
+w=CorrectlyRound[v];
+poly=Function[u,u^3(a+b u^2)];
+p=CorrectlyRound[CorrectlyRound[w CorrectlyRound[w^2]]
+	CorrectlyRound[
+	CorrectlyRound[a]+
+	CorrectlyRound[b]CorrectlyRound[w^2]]];
+q=CorrectlyRound[poly[v]];
+Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]!=Interval[{q,q}]];
+Assert[IEEEEvaluateWithRelativeError[poly[v]][[1]]==Interval[{p,p}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly[x_,y_]:=2x+3y;
+Assert[IEEEEvaluateWithRelativeError[poly[4,5]][[1]]==Interval[{23,23}]]]
+
+
+(* ::Input::Initialization:: *)
+Module[
+{poly},
+poly:=Function[{x,y},2x+3y];
+Assert[IEEEEvaluateWithRelativeError[poly[4,5]][[1]]==Interval[{23,23}]]]
 
 
 (* ::Input::Initialization:: *)

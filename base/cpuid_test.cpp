@@ -31,7 +31,8 @@ TEST_F(CPUIDTest, Vendor) {
 
 TEST_F(CPUIDTest, Brand) {
   EXPECT_THAT(ProcessorBrandString(),
-              AnyOf(HasSubstr("AMD Ryzen"),
+              AnyOf(HasSubstr("AMD EPYC"),
+                    HasSubstr("AMD Ryzen"),
                     HasSubstr("Intel(R) Core(TM)"),
                     HasSubstr("Intel(R) Xeon(R)"),
                     HasSubstr("VirtualApple")));
