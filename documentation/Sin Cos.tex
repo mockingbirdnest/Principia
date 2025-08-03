@@ -426,7 +426,7 @@ This section documents the core of the algorithm.  It takes as input the result 
 In this analysis we assume the availability of an FMA operation, and rounding to nearest.  The evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations.  The error interval is computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \linebreak\texttt{mathematica/ieee754\_floating\_point\_evaluation.wl}.  It is generally asymmetrical because rounding the coefficients introduces a bias\marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
 
 \subsection*{Sin Near Zero}
-If $\abs{x} \le 2^{-10}$ the steps of the computation are as follows:\marginnote{TODO(phl): Align the notation in the notebook.}
+If $\abs{x} \le 2^{-10}$ the steps of the computation are as follows:
 \[
 \begin{dcases}
 t_1\of{x} &\DefineAs \round{p_{s0}\of{x^2}} \\
@@ -456,6 +456,24 @@ r\of{x, \gd x} \DefineAs \frac{x + t_3\of{x, \gd x}}{\sin{x + \gd x}} - 1
 The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs x \le 2^{-10}$, $\abs{\gd x} \le u \abs x$ (the second inequality is guaranteed by argument reduction).  Plotting shows that it is monotonic over that domain, and its extrema are therefore reached on the corners of the domain.  In practice we find that $\abs{r\of{x, \gd x}} < 2^{-72.678}$.
 
 \subsection*{Sin Around Table Entries}
+If $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $h = x - x_k$ the steps of the computation are as follows:\marginnote{TODO(phl): Align the notation in the notebook.}
+\[
+\begin{dcases}
+t_1\of{h} &\DefineAs h c_k + s_k \\
+t_2\of{h, \gd h} &\DefineAs \round{h \round{h + 2 \gd h}} \\
+t_3\of{h, \gd h} &\DefineAs \round{t_2\of{h, \gd h} h} \\
+t_4\of{h, \gd h} &\DefineAs \round{p_s\of{t_2\of{h, \gd h}}} \\
+t_5\of{h, \gd h} &\DefineAs \round{t_3\of{h, \gd h} t_4\of{h, \gd h}} \\
+t_6\of{h, \gd h} &\DefineAs \round{p_c\of{t_2\of{h, \gd h}}} \\
+t_7\of{h, \gd h} &\DefineAs \round{t_2\of{h} t_6\of{h, \gd h}} \\
+t_8\of{h, \gd h} &\DefineAs \round{s_k t_7\of{h, \gd h}} \\
+t_9\of{h, \gd h} &\DefineAs \round{c_k t_5\of{h, \gd h} + t_8\of{h, \gd h}} \\
+t_{10}\of{h, \gd h} &\DefineAs \round{t_9\of{h, \gd h} + t_1\of{h, \gd h}.error} \\
+y &= t_1\of{h, \gd h}.value \\
+\gd y &= t_{10}\of{h, \gd h}
+\end{dcases}
+\]
+
 \subsection*{Cos Around Table Entries}
 
 \end{document}
