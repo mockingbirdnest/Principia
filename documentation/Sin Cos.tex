@@ -425,17 +425,17 @@ In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): xref} and the a
 \section*{Core Implementation}
 This section documents the core of the algorithm.  It takes as input the result of argument reduction, $\hat x + \gd \hat x$\marginnote{TODO(phl): Decide what to do with the hats.} and produces a pair $y + \gd y$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether we need to fall back to the CORE-MATH implementation.  Most of the time (with a probability close to $1 - 2^{-18}$) $y$ is the correctly-rounded result.
 
-In this analysis we assume the availability of an FMA operation, and rounding to nearest.  The evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations.  The error interval is computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \linebreak\texttt{mathematica/ieee754\_floating\_point\_evaluation.wl}.  It is generally asymmetrical because rounding the coefficients introduces a bias.  We use $\roundAll{expr}$ to denote evaluation where rounding happens on each literal or operation of the expression $expr$.\marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
+In this analysis we assume that $\hat x$ is positive ($\gd \hat x$ may be positive or negative).  We also assume the availability of an FMA operation, and the rounding direction $roundTiesToEven$.  The evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations.  The error interval is computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \linebreak\texttt{mathematica/ieee754\_floating\_point\_evaluation.wl}.  It is generally asymmetrical because rounding the coefficients introduces a bias.  We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.\marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
 
 \subsection*{Sin Near Zero}
 If $\abs{x} \le 2^{-10}$ the steps of the computation are as follows:
 \[
 \begin{dcases}
-t_1\of{x} &\DefineAs \roundAll{p_{s0}\of{x^2}} \\
-t_2\of{x} &\DefineAs \roundAll{x^3} \\
-t_3\of{x, \gd x} &\DefineAs \round{t_1\of{x} \; t_2\of{x} + \gd x} \\
+t_1 &= \roundAll{p_{s0}\of{x^2}} \\
+t_2 &= \roundAll{x^3} \\
+t_3 &= \round{t_1 t_2 + \gd x} \\
 y &= x \\
-\gd y &= t_3\of{x, \gd x}
+\gd y &= t_3
 \end{dcases}
 \]
 
@@ -444,18 +444,18 @@ The errors entailed at each step are as follows:
 \left\{
 \begin{alignedat}{3}
 x^3 p_{s0}\of{x^2} &= \pa{1 + \gz_1} \sin x - x &\abs{\gz_1} &< 2^{-75.538} \\
-t_1\of{x} &= p_{s0}\of{x^2} \pa{1 + \gz_2} &\gz_2 &\in \intopen{-2^{-52.415}}{2^{-53.999}} \\
-t_2\of{x} &= x^3 \pa{1 + \gz_3} &\gz_3 &\in \intopen{-2^{-52.000}}{2^{-51.999}} \\
-t_3\of{x, \gd x} &= \pa{t_1\of{x} \; t_2\of{x} + \gd x} \pa{1 + \gd_1} \\
+t_1 &= p_{s0}\of{x^2} \pa{1 + \gz_2} &\gz_2 &\in \intopen{-2^{-52.415}}{2^{-53.999}} \\
+t_2 &= x^3 \pa{1 + \gz_3} &\gz_3 &\in \intopen{-2^{-52.000}}{2^{-51.999}} \\
+t_3 &= \pa{t_1 t_2 + \gd x} \pa{1 + \gd_1} \\
 &= \pa{\pa{1 + \gz_1} \pa{1 + \gz_2} \pa{1 + \gz_3} \pa{\sin x - x} + \gd x} &\pa{1 + \gd_1}&
 \end{alignedat}
 \right.
 \]
 where the first equation is a restatement of the relative error on the minimax polynomial.  The relative error on the entire computation is thus:
 \[
-r\of{x, \gd x} \DefineAs \frac{x + t_3\of{x, \gd x}}{\sin{x + \gd x}} - 1
+r\of{x, \gd x} \DefineAs \frac{y + \gd y}{\sin\of{x + \gd x}} - 1
 \]
-The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs x \le 2^{-10}$, $\abs{\gd x} \le u \abs x$ (the second inequality is guaranteed by argument reduction).  Plotting shows that it is monotonic over that domain, and its extrema are therefore reached on the corners of the domain.  In practice we find that $\abs{r\of{x, \gd x}} < 2^{-72.678}$.
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs x \le 2^{-10}$, $\abs{\gd x} \le 2^{-M} \abs x $ (the second inequality is guaranteed by argument reduction).  Plotting shows that it is monotonic over that domain, and its extrema are therefore reached on the corners of the domain.  In practice we find that $\abs{r\of{x, \gd x}} < 2^{-72.678}$.
 
 \subsection*{Sin Around Table Entries}
 If $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $h = x - x_k$ we first compute exactly $h c_k + s_k$ using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
@@ -466,16 +466,16 @@ z + \gd z = h c_k + s_k
 The steps of the computation are then as follows:\marginnote{TODO(phl): Align the notation in the notebook.}
 \[
 \begin{dcases}
-t_1\of{h, \gd h} &\DefineAs \round{h + 2 \gd h} \\
-t_2\of{h, \gd h} &\DefineAs \round{h \; t_1\of{h, \gd h}} \\
-t_3\of{h, \gd h} &\DefineAs \round{t_2\of{h, \gd h} h} \\
-t_4\of{h, \gd h} &\DefineAs \round{p_s\of{t_2\of{h, \gd h}}} \\
-t_5\of{h, \gd h} &\DefineAs \round{t_3\of{h, \gd h} \; t_4\of{h, \gd h}} \\
-t_6\of{h, \gd h} &\DefineAs \round{p_c\of{t_2\of{h, \gd h}}} \\
-t_7\of{h, \gd h} &\DefineAs \round{t_2\of{h} \; t_6\of{h, \gd h}} \\
-t_8\of{h, \gd h} &\DefineAs \round{s_k \; t_7\of{h, \gd h}} \\
-t_9\of{h, \gd h} &\DefineAs \round{c_k \; t_5\of{h, \gd h} + t_8\of{h, \gd h}} \\
-t_{10}\of{h, \gd h} &\DefineAs \round{t_9\of{h, \gd h} + \gd z} \\
+t_1\of{h, \gd x} &\DefineAs \round{h + 2 \gd x} \\
+t_2\of{h, \gd x} &\DefineAs \round{h \; t_1\of{h, \gd x}} \\
+t_3\of{h, \gd x} &\DefineAs \round{t_2\of{h, \gd x} h} \\
+t_4\of{h, \gd x} &\DefineAs \round{p_s\of{t_2\of{h, \gd x}}} \\
+t_5\of{h, \gd x} &\DefineAs \round{t_3\of{h, \gd h} \; t_4\of{h, \gd x}} \\
+t_6\of{h, \gd x} &\DefineAs \round{p_c\of{t_2\of{h, \gd x}}} \\
+t_7\of{h, \gd x} &\DefineAs \round{t_2\of{h} \; t_6\of{h, \gd x}} \\
+t_8\of{h, \gd x} &\DefineAs \round{s_k \; t_7\of{h, \gd x}} \\
+t_9\of{h, \gd x} &\DefineAs \round{c_k \; t_5\of{h, \gd x} + t_8\of{h, \gd x}} \\
+t_{10}\of{h, \gd x} &\DefineAs \round{t_9\of{h, \gd x} + \gd z} \\
 y &= z \\
 \gd y &= t_{10}\of{h, \gd h}
 \end{dcases}
