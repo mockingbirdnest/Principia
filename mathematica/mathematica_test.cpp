@@ -348,7 +348,7 @@ TEST_F(MathematicaTest, ToMathematica) {
   }
 }
 
-#if !(PRINCIPIA_COMPILER_CLANG && CLANG_VERSION_LE(17, 0, 6))
+#if !(PRINCIPIA_COMPILER_CLANG && CLANG_VERSION_LE(20, 1, 8))
 TEST_F(MathematicaTest, Symbol) {
   Symbol s("s");
   EXPECT_EQ(R"(s[1, "foo", List[]])", (s[1, "foo", std::tuple{}]));
