@@ -146,8 +146,11 @@ endif
 ifeq ($(UNAME_S),Darwin)
     INCLUDES += \
 			-include "base/macos_allocator_replacement.hpp" \
-			-include "base/macos_filesystem_replacement.hpp"
-    LIBS += -framework CoreFoundation
+			-include "base/macos_filesystem_replacement.hpp" \
+			-I$(brew --prefix llvm)/include
+    LIBS += \
+			-framework CoreFoundation \
+			-L$(brew --prefix llvm)/lib/c++
     SHARED_ARGS += \
 			-mmacosx-version-min=$(OSX_DEPLOYMENT_TARGET) \
 			-arch x86_64 \
