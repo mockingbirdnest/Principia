@@ -89,7 +89,7 @@ LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(ABSL_GROUP_LIBS) \
 	$(DEP_DIR)core-math/libcore-math.a \
 	$(DEP_DIR)zfp/build/lib/libzfp.a \
-	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
+	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++abi
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
@@ -139,7 +139,9 @@ ifeq ($(UNAME_S),Linux)
     else
         SHARED_ARGS += -m32
     endif
-    LIBS += -lsupc++
+    LIBS += \
+			-lsupc++ \
+			-lc++
     TEST_LIBS += -lsupc++
     SHAREDFLAG := -shared
 endif
@@ -147,10 +149,12 @@ ifeq ($(UNAME_S),Darwin)
     INCLUDES += \
 			-include "base/macos_allocator_replacement.hpp" \
 			-include "base/macos_filesystem_replacement.hpp" \
-			-I$(brew --prefix llvm)/include
+			-I/usr/local/opt/llvm/include
     LIBS += \
 			-framework CoreFoundation \
-			-L$(brew --prefix llvm)/lib/c++
+			-L/usr/local/opt/llvm/lib/c++ \
+			-L/usr/local/opt/llvm/lib/unwind \
+			-lunwind
     SHARED_ARGS += \
 			-mmacosx-version-min=$(OSX_DEPLOYMENT_TARGET) \
 			-arch x86_64 \
