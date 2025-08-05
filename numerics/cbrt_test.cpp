@@ -1,6 +1,7 @@
 #include "numerics/cbrt.hpp"
 
 #include <cfenv>
+#include <cmath>
 #include <pmmintrin.h>
 #include <random>
 
@@ -165,6 +166,9 @@ TEST_F(CubeRootTest, DigitByDigit1e6) {
 #endif
 
 TEST_F(CubeRootTest, SpecialValues) {
+  auto is_double_nan = [](double const x) {
+    return std::isnan(x);
+  };
   EXPECT_THAT(Bits(Cbrt(0)), Eq(0));
   EXPECT_THAT(Bits(Cbrt(-0.0)), Eq(0x8000'0000'0000'0000));
   EXPECT_THAT(Cbrt(std::numeric_limits<double>::infinity()),
@@ -172,9 +176,9 @@ TEST_F(CubeRootTest, SpecialValues) {
   EXPECT_THAT(Cbrt(-std::numeric_limits<double>::infinity()),
               Eq(-std::numeric_limits<double>::infinity()));
   EXPECT_THAT(Cbrt(std::numeric_limits<double>::quiet_NaN()),
-              Truly(&std::isnan<double>));
+              Truly(is_double_nan));
   EXPECT_THAT(Cbrt(-std::numeric_limits<double>::quiet_NaN()),
-              Truly(&std::isnan<double>));
+              Truly(is_double_nan));
   // Preserve the payload of quiet NaNs as per IEEE 754-2008 6.2.
   EXPECT_THAT(Bits(Cbrt(quiet_dead_beef_)), Eq(Bits(quiet_dead_beef_)));
   EXPECT_THAT(Bits(Cbrt(signaling_dead_beef_)), Eq(Bits(quiet_dead_beef_)));
