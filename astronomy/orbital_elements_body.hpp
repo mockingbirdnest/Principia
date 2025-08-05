@@ -470,14 +470,14 @@ OrbitalElements::ToClassicalElements(
          .eccentricity = e,
          .inclination = i,
          .longitude_of_ascending_node = classical_elements.empty()
-             ? ReduceAngle<0, 2 * π>(Ω)
+             ? ReduceAngle<0.0, 2 * π>(Ω)
              : UnwindFrom(classical_elements.back().longitude_of_ascending_node,
                           Ω),
          .argument_of_periapsis = classical_elements.empty()
-             ? ReduceAngle<0, 2 * π>(ω)
+             ? ReduceAngle<0.0, 2 * π>(ω)
              : UnwindFrom(classical_elements.back().argument_of_periapsis, ω),
          .mean_anomaly = classical_elements.empty()
-             ? ReduceAngle<0, 2 * π>(M)
+             ? ReduceAngle<0.0, 2 * π>(M)
              : UnwindFrom(classical_elements.back().mean_anomaly, M),
          .periapsis_distance = (1 - e) * equinoctial.a,
          .apoapsis_distance = (1 + e) * equinoctial.a});

@@ -182,7 +182,7 @@ void Genome::Mutate(std::mt19937_64& engine,
         *element.argument_of_periapsis +
         distribution(engine) * 10 * Degree * multiplicator;
     mutated_element.argument_of_periapsis =
-        ReduceAngle<0, 2 * π>(*mutated_element.argument_of_periapsis);
+        ReduceAngle<0.0, 2 * π>(*mutated_element.argument_of_periapsis);
     mutated_element.period =
         *element.period +
         distribution(engine) * 5 * Second * Sqrt(multiplicator);
@@ -202,7 +202,7 @@ void Genome::Mutate(std::mt19937_64& engine,
         *element.mean_anomaly +
         distribution(engine) * 10 * Degree * multiplicator;
     mutated_element.mean_anomaly =
-        ReduceAngle<0, 2 * π>(*mutated_element.mean_anomaly);
+        ReduceAngle<0.0, 2 * π>(*mutated_element.mean_anomaly);
 
     element = mutated_element;
   }
@@ -385,7 +385,7 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
     if (best_genome_) {
       file_ << "old L = "
             << absl::StrCat(
-                   ReduceAngle<0, 2 * π>(
+                   ReduceAngle<0.0, 2 * π>(
                        best_genome_->elements()[j].longitude_of_ascending_node +
                        *best_genome_->elements()[j].argument_of_periapsis +
                        *best_genome_->elements()[j].mean_anomaly) /
@@ -403,7 +403,7 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
             << "°\n";
     }
     file_ << "new L = "
-          << absl::StrCat(ReduceAngle<0, 2 * π>(
+          << absl::StrCat(ReduceAngle<0.0, 2 * π>(
                               genome.elements()[j].longitude_of_ascending_node +
                               *genome.elements()[j].argument_of_periapsis +
                               *genome.elements()[j].mean_anomaly) /
@@ -1453,12 +1453,12 @@ TEST_F(TrappistDynamicsTest, DISABLED_SECULAR_Optimization) {
                  << *elements.period / Day << " d\"";
       LOG(ERROR) << std::setprecision(std::numeric_limits<double>::max_digits10)
                  << "        argument_of_periapsis       : \""
-                 << ReduceAngle<0, 2 * π>(*elements.argument_of_periapsis) /
+                 << ReduceAngle<0.0, 2 * π>(*elements.argument_of_periapsis) /
                         Degree
                  << " deg\"";
       LOG(ERROR) << std::setprecision(std::numeric_limits<double>::max_digits10)
                  << "        mean_anomaly                : \""
-                 << ReduceAngle<0, 2 * π>(*elements.mean_anomaly) / Degree
+                 << ReduceAngle<0.0, 2 * π>(*elements.mean_anomaly) / Degree
                  << " deg\"";
     }
   }

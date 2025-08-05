@@ -93,20 +93,20 @@ TYPED_TEST_P(AngleReductionTest, Reduce0To2π) {
   Angle fractional_part;
   std::int64_t integer_part;
 
-  ReduceAngle<0, 2 * π>(Angle(1 * Radian), fractional_part, integer_part);
+  ReduceAngle<0.0, 2 * π>(Angle(1 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
-  ReduceAngle<0, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
+  ReduceAngle<0.0, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part, AlmostEquals(Angle(4 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
-  ReduceAngle<0, 2 * π>(Angle(-1 * Radian), fractional_part, integer_part);
+  ReduceAngle<0.0, 2 * π>(Angle(-1 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
               AlmostEquals(two_π<Angle> + Angle(-1 * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
-  ReduceAngle<0, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
+  ReduceAngle<0.0, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
               AlmostEquals(Angle(7 * Radian) - two_π<Angle>, 0));
   EXPECT_EQ(1, integer_part);

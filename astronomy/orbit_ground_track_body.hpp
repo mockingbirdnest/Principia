@@ -70,7 +70,7 @@ Interval<Angle> MeanSolarTimesOfNodes(
       mean_solar_time =
           UnwindFrom(*mean_solar_time, MeanSolarTime(node, mean_sun));
     } else {
-      mean_solar_time = ReduceAngle<0, 2 * π>(MeanSolarTime(node, mean_sun));
+      mean_solar_time = ReduceAngle<0.0, 2 * π>(MeanSolarTime(node, mean_sun));
     }
     mean_solar_times.Include(*mean_solar_time);
   }
@@ -93,7 +93,7 @@ inline Interval<Angle> ReducedLongitudesOfEquatorialCrossings(
         longitude - initial_offset - n * nominal_recurrence.equatorial_shift();
     reduced_longitude = reduced_longitude.has_value()
                             ? UnwindFrom(*reduced_longitude, offset_longitude)
-                            : ReduceAngle<0, 2 * π>(offset_longitude);
+                            : ReduceAngle<0.0, 2 * π>(offset_longitude);
     reduced_longitudes.Include(*reduced_longitude);
   }
   return reduced_longitudes;
