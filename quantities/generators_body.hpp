@@ -31,7 +31,7 @@ struct Collapse<Quantity<NoDimensions>> : not_constructible {
 };
 
 template<template<typename> typename Quantity, typename D, int n>
-  requires (!is_number<Quantity<D>>::value)
+  requires (!is_number<Quantity<D>>::value)  // NOLINT
 struct ExponentiationGenerator<Quantity<D>, n> : not_constructible {
   using Type = typename Collapse<
       Quantity<typename DimensionsExponentiationGenerator<D, n>::Type>>::Type;
