@@ -73,8 +73,7 @@ std::uint64_t SerializePointer(T* t) {
   // Note that the string constructed here contains the final char16_t null.
   return std::string(
       reinterpret_cast<char const*>(deserialized),
-      sizeof(char16_t) *
-          (std::char_traits<char16_t const>::length(deserialized)));
+      sizeof(char16_t) * (std::char_traits<char16_t>::length(deserialized)));
 }
 
 }  // namespace
