@@ -456,7 +456,7 @@ Assert[IEEEEvaluateWithRelativeError[2*3+4,UseFMA->False]=={Interval[{10,10}],In
 (* ::Input::Initialization:: *)
 Assert[IEEEEvaluateWithRelativeError[1+2]=={Interval[{3,3}],Interval[{-2^-53,2^-53}]}];
 Assert[IEEEEvaluateWithRelativeError[2*3]=={Interval[{6,6}],Interval[{-2^-53,2^-53}]}];
-Assert[IEEEEvaluateWithRelativeError[2/3]=={Interval[{CorrectlyRound[2/3],CorrectlyRound[2/3]}],Interval[{-2^-53,2^-53}]}]
+Assert[IEEEEvaluateWithRelativeError[2/3]=={Interval[{CorrectlyRound[2/3],CorrectlyRound[2/3]}],Interval[{-2^-53,2^-53}]}];
 
 
 (* ::Input::Initialization:: *)
@@ -470,12 +470,11 @@ Assert[IEEEEvaluateWithRelativeError[Interval[{-1,3}]^4]=={Interval[{0,81}],Inte
 
 
 (* ::Input::Initialization:: *)
+Assert[IEEEEvaluateWithRelativeError[{Interval[{-4,-2}],Interval[{0,0}]}+{Interval[{1,3}],Interval[{0,0}]}]==
+	{Interval[{-3,1}],Interval[{-2^-53,2^-53}]}];
 Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{0,2}]]==
 	{Interval[{0,3}],Interval[{-2^-53,2^-53}]}];
-
-
-(* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]+Interval[{-2,0}]]==
+Assert[IEEEEvaluateWithRelativeError[{Interval[{0,1}],Interval[{-2^-1,2^-1}]}+Interval[{-2,0}]]==
 	{Interval[{-2,1}],Interval[{-\[Infinity],\[Infinity]}]}];
 
 
@@ -487,9 +486,9 @@ Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{0,
 
 
 (* ::Input::Initialization:: *)
-Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{-2,0}],UseFMA->True]==
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+{Interval[{-2,0}],Interval[{-2^-1,2^-1}]},UseFMA->True]==
 	{Interval[{-2,3}],Interval[{-\[Infinity],\[Infinity]}]}];
-Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+Interval[{-2,0}],UseFMA->False]==
+Assert[IEEEEvaluateWithRelativeError[Interval[{0,1}]Interval[{0,3}]+{Interval[{-2,0}],Interval[{-2^-1,2^-1}]},UseFMA->False]==
 	{Interval[{-2,3}],Interval[{-\[Infinity],\[Infinity]}]}];
 
 
