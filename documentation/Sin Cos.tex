@@ -231,9 +231,9 @@ from which we deduce the upper bound:
 \end{align*}
 If $2^{\gk_1} \gg_3$ is small enough (less than $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.  In the following analysis we assume that $n > 0$.  The results are symmetrical if $n < 0$.  There are two possible kinds of misrounding, with different bounds.
+Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.   There are two possible kinds of misrounding, with different bounds.
 
-A misrounding of the first kind occurs if:
+A misrounding of the first kind occurs if, assuming $n > 0$:
 \[
 x < \pa{n - \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} > n - \frac{1}{2}
 \]
@@ -245,12 +245,14 @@ In which case the computation of $n$ results in:
 \[
 n \frac{\Pi}{2} - x < \frac{\Pi}{4} \pa{1 + \frac{\gg_2}{1 + \gg_2} \pa{2 n - 1}}
 \]
-This bound tells us that the absolute value of the reduced angle may exceed $\frac{\Pi}{4}$ by as much as:
-\[
+This misrounding causes the absolute value of the reduced angle to increase and it may thus exceed $\frac{\Pi}{4}$ by as much as:
+\begin{equation}
 \frac{\Pi}{4} \frac{\gg_2}{1 + \gg_2} \pa{2^{\gk_1 + 1} - 1}
-\]
+\label{eqnmisroundingbound}
+\end{equation}
+The accurate tables must be constructed so that the last interval covers angles misrounded in that manner\footnote{In practice this is not a stringent constraint because the distance between accurate table entries is much larger than the quantity given by (\ref{eqnmisroundingbound}).}.
 
-A misrounding of the second kind occurs if:
+A misrounding of the second kind occurs if, assuming $n \geq 0$:
 \[
 x > \pa{n + \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} < n + \frac{1}{2}
 \]
@@ -262,13 +264,11 @@ from which we derive the bound:
 \[
 x - n \frac{\Pi}{2} < \frac{\Pi}{4} \pa{1 + \gg_2 \pa{2 n + 1}}
 \]
-and thus the excess above $\frac{\Pi}{4}$:
-\begin{equation}
+This misrounding causes the absolute value of the reduced angle to decrease by as much as:
+\[
 \frac{\Pi}{4} \gg_2 \pa{2^{\gk_1 + 1} + 1}
-\label{eqnmisroundingbound}
-\end{equation}
-
-It's clear that the error of the second kind is always larger than that of the first kind, so (\ref{eqnmisroundingbound}) is the largest possible misrounding and must be taken into account when building the accurate tables.
+\]
+This is however not a concern for the accurate tables or the polynomials as it cannot cause the reduced angle to become negative.
 
 Using the bound on $\abs n$ and the fact that $C_1$ has $\gk_1$ trailing zeroes, we see that the product $n \; C_1$ is exact.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
 \[ 
@@ -285,7 +285,7 @@ plugging $\ULP\of{\frac{\Pi}{2}} = 2^{1 - M}$ we find:
 Therefore, as long as $\gk'_1 > 2$, there exist arguments $x$ for which $\abs{\gd y} > \abs y$.
 } using algorithm 4 of \cite{HidaLiBailey2007}.
 
-To compute the overall error on argument reduction\footnote{Note that this error analysis is correct even in the face of misrounding.  Misrounding can combine with the argument reduction error, though, to cause $\abs{y - {\gd y}}$ to move farther above $\frac{\Pi}{4}$.}, first remember that, from equation (\ref{eqnpitwoterms}), we have:
+To compute the overall error on argument reduction\footnote{Note that this error analysis is correct even in the face of misrounding.}, first remember that, from equation (\ref{eqnpitwoterms}), we have:
 \[
 C_1 + \gd C_1 = \frac{\Pi}{2} + \gz \quad \text{with} \quad \abs{\gz} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
@@ -302,6 +302,12 @@ from which we deduce an upper bound on the absolute error of the reduction:
 &< 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
 \end{align*}
 where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).
+
+Overall $\hat x + \gd \hat x$ may move above $\frac{\Pi}{4}$ because of misrounding of the first kind, and because of the above error on the reduction, by as much as:
+\[
+\frac{\Pi}{4} \frac{\gg_2}{1 + \gg_2} \pa{2^{\gk_1 + 1} - 1} + 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
+\]
+This must be taken into account when building the polynomials.
 
 In the computation of the trigonometric functions, we need $\hat x + \gd \hat x$ to provide enough accuracy that the final result is correctly rounded most of the time, and that any case of incorrect rounding may be detected.  The above error bound shows that, if $\hat x$ is very small (i.e., if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\hat x + \gd \hat x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
 \[
