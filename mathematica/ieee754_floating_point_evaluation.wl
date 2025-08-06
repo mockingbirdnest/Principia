@@ -250,10 +250,17 @@ applyOpWithRelativeError[Plus,{va_,\[Delta]a_},{vb_,\[Delta]b_},OptionsPattern[]
 	{corners,err,h,\[Theta]2,\[Theta]\[Prime]2,r,\[Delta]r},
 	r=va+vb;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	If[
+	h=If[OptionValue[Exact],0,relativeErrorBound];
+	Which[
+		\[Delta]a===Interval[{0,0}]&&\[Delta]b===Interval[{0,0}],
+		(* If the arguments have no error, the addition merely produces
+		the minimal relative error. *)
+		\[Delta]r=Interval[{-h,h}],
 		Min[r]<0 && Max[r]>0,
 		\[Delta]r=Interval[{-\[Infinity],+\[Infinity]}],
-		h=If[OptionValue[Exact],0,relativeErrorBound];
+		True,
+		(* The two h-intervals are really the same, but unfortunately 
+		we lose that correlation. *)
 		\[Theta]2=(1+\[Delta]a)Interval[{1-h,1+h}]-1;
 		\[Theta]\[Prime]2=(1+\[Delta]b)Interval[{1-h,1+h}]-1;
 		(* At the origin the function err has an indeterminate value
@@ -288,10 +295,15 @@ applyOpWithRelativeError[fma,{va_,\[Delta]a_},{vb_,\[Delta]b_},{vc_,\[Delta]c_},
 	{vab,\[Delta]ab,corners,err,h,\[Theta]2,\[Theta]\[Prime]2,r,\[Delta]r},
 	r=va vb+vc;
 	r=Interval[{CorrectlyRound[Min[r]],CorrectlyRound[Max[r]]}];
-	If[
+	h=If[OptionValue[Exact],0,relativeErrorBound];
+	Which[
+		\[Delta]a===Interval[{0,0}]&&\[Delta]b===Interval[{0,0}]&&\[Delta]c===Interval[{0,0}],
+		(* If the arguments have no error, the operation merely produces
+		the minimal relative error. *)
+		\[Delta]r=Interval[{-h,h}],
 		Min[r]<0 && Max[r]>0,
 		\[Delta]r=Interval[{-\[Infinity],+\[Infinity]}],
-		h=If[OptionValue[Exact],0,relativeErrorBound];
+		True,
 		(* Compute the exact value of va vb and the error derived from \[Delta]a and \[Delta]b. 
 		We'll apply h to the result of the sum. *)
 		vab=va vb;
