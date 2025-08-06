@@ -317,9 +317,10 @@ Furthermore, misrounding of the first kind and the above error on the reduction 
 This must be taken into account when building the polynomials.
 
 In the computation of the trigonometric functions, we need $\red x + \gd \red x$ to provide enough accuracy that the final result is correctly rounded most of the time.  The above error bound shows that, if $\red x$ is very small (i.e., if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\red x + \gd \red x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
-\[
+\begin{equation}
 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
-\]
+\label{eqnreductionbound}
+\end{equation}
 which leads to the following condition on the reduced angle:
 \[
 \abs{\red x} \geq 2^{\gk_1 + \gk'_1 + \gk_3 + 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 2}
@@ -436,15 +437,25 @@ g\of{x} &\DefineAs \frac{1}{x^2}
 In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): xref} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an absolute error smaller than $2^{-85.746}$ and a 1-degree polynomial $p_c$ with an absolute error smaller than $2^{-72.693}$ (before rounding the coefficients to machine numbers).
 
 \section*{Core Implementation}
-This section documents the core of the algorithm.  It takes as input the result of argument reduction, $\pa{\red x, \gd \red x}$\marginnote{TODO(phl): Decide what to do with the hats.} and produces a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether we need to fall back to the CORE-MATH implementation.  Most of the time (with a probability close to $1 - 2^{-18}$) $y$ is the correctly-rounded result.
+This section documents the core of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether we need to fall back to the CORE-MATH implementation.  Most of the time (with a probability close to $1 - 2^{-18}$) $y$ is the correctly-rounded result.  We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative).
 
-In this analysis we assume that $\red x$ is positive ($\gd \red x$ may be positive or negative).  We also assume the availability of an FMA operation, and the rounding direction $roundTiesToEven$.  The evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations.  The error interval is computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \linebreak\href{https://github.com/mockingbirdnest/Principia/blob/master/mathematica/ieee754_floating_point_evaluation.wl}{\texttt{mathematica/ieee754\_floating\_point\_evaluation.wl}}.  It is generally asymmetrical because rounding the coefficients introduces a bias.  We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.\marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
+We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.  This notation is typically used for error intervals computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \href{https://github.com/mockingbirdnest/Principia/blob/master/mathematica/ieee754_floating_point_evaluation.wl}{\texttt{mathematica/{\linebreak}ieee754\_floating\_point\_evaluation.wl}}.  In particular, these functions take into account that the evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations; this may leading to asymmetrical error intervals. \marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
+
+We assume the availability of an FMA operation, and the rounding direction $roundTiesToEven$.
+
+\subsection*{Reduced Angle}
+
+Argument reduction took the input angle $x$ and produced a pair $\red x, \gd \red x$ approximating the angle reduced modulo $\frac{\Pi}{4}$.  That approximation is correct to $M + \gk_3$ bits.  We therefore have, from equation (\ref{eqnreductionbound}):
+\[
+x \equiv \red x + \gd \red x + \gz_0 \; \red x \pmod{\frac{\Pi}{4}} \qquad \abs{\gz_0} \le 2^{-\gk_3 - M}
+\]
+For simplicity of the error analysis we can assume $0 \le x \le \frac{\Pi}{4}$: even though we do not do argument reduction when $x$ is less than $\frac{\Pi}{4}$, the error analysis would work exactly the same if $x$ was simply provided as a high-accuracy value (e.g., a double-double) and reduced using the techniques above, so this equivalence is really an equality.
 
 \subsection*{Sin Near Zero}
 If $\abs{\red x} \le \gD = 2^{-10}$ the steps of the computation are as follows:
 \[
 \begin{dcases}
-t_1 &= \roundAll{p_{s0}\of{{\red x}^2}} \\
+t_1 &= \roundAll{{\red x}^3 p_{s0}\of{{\red x}^2}} \\
 t_2 &= \roundAll{{\red x}^3} \\
 t_3 &= \round{t_1 t_2 + \gd \red x} \\
 y &= \red x \\
@@ -452,30 +463,30 @@ y &= \red x \\
 \end{dcases}
 \]
 
-First note that, in the error analysis (and in the computation itself) the terms ${\red x}^n \; \gd \red x$ for $n > 0$ are irrelevant.  The reason is that $\abs{\red x \; \gd \red x} < \gD^2 / 2^M = 2^{-M - 20}$.  But we chose $\gk_3 = 18$ so we are already willing to tolerate errors significantly larger than $\red x \; \gd \red x$.  This is why we do not involve $\gd \red x$ in steps $t_1$ and $t_2$ above: the most significant term of $t_1 t_2$ would be ${\red x}^3 \; \gd \red x$.
+First, note that, in the computation, the terms ${\red x}^n \; \gd \red x$ for $n > 0$ are irrelevant.  The reason is that $\abs{\red x \; \gd \red x} < \gD^2 / 2^M = 2^{-M - 20}$.  But we chose $\gk_3 = 18$ so we are already willing to tolerate errors significantly larger than $\red x \; \gd \red x$.  This is why we do not involve $\gd \red x$ in steps $t_1$ and $t_2$ above: the most significant term of $t_1 t_2$ would be ${\red x}^3 \; \gd \red x$.
 
 The relative error on the minimax polynomial may be rewritten as:
 \[
 x^3 p_{s0}\of{x^2} = \pa{1 + \gz_1} \sin x - x \qquad \abs{\gz_1} < 2^{-75.538}
 \]
-for $x \in \intclos{0}{x_{max}}$.
+for $x \in \intclos{0}{x_{max}}$.\marginnote{TODO(phl): Document $x_{max}$.}
 
-The errors entailed at each step are as follows:
+The errors committed at each step are as follows:
 \[
 \left\{
 \begin{alignedat}{3}
 t_1 &= p_{s0}\of{{\red x}^2} \pa{1 + \gz_2} &\gz_2 &\in \intopen{-2^{-52.415}}{2^{-53.999}} \\
 t_2 &= {\red x}^3 \pa{1 + \gz_3} &\gz_3 &\in \intopen{-2^{-52.000}}{2^{-51.999}} \\
 t_3 &= \pa{t_1 t_2 + \gd \red x} \pa{1 + \gd_1} \\
-&= \pa{\pa{1 + \gz_1} \pa{1 + \gz_2} \pa{1 + \gz_3} \pa{\sin \red x - \red x} + \gd \red x} &\pa{1 + \gd_1}&
+&= \pa{\pa{1 + \gz_2} \pa{1 + \gz_3} \pa{\pa{1 + \gz_1} \sin \red x - \red x} + \gd \red x} &\pa{1 + \gd_1}&
 \end{alignedat}
 \right.
 \]
-where the first equation is a restatement of the relative error on the minimax polynomial.  The relative error on the entire computation is thus:
+We can then express the relative error on the entire computation as:
 \[
-r\of{x, \gd x} \DefineAs \frac{y + \gd y}{\sin\of{x + \gd x}} - 1
+r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
 \]
-The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs x \le 2^{-10}$, $\abs{\gd x} \le 2^{-M} \abs x $ (the second inequality is guaranteed by argument reduction).  Plotting shows that it is monotonic over that domain, and its extrema are therefore reached on the corners of the domain.  In practice we find that $\abs{r\of{x, \gd x}} < 2^{-72.678}$.
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le 2^{-10}$, $\abs{\gd \red x} \le 2^{-M} \abs x $.  Plotting shows that it is monotonic and its extrema are therefore reached on the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
 
 \subsection*{Sin Around Table Entries}
 If $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $h = x - x_k$ we first compute exactly $h c_k + s_k$ using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
