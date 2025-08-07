@@ -463,7 +463,7 @@ y &= \red x \\
 \end{dcases}
 \]
 
-First note that, in the computation, the terms ${\red x}^n \; \gd \red x$ for $n > 0$ are irrelevant.  The reason is that $\abs{\red x \; \gd \red x} < \gD^2 / 2^M = 2^{-M - 20}$.  But we chose $\gk_3 = 18$ so we are already willing to tolerate errors significantly larger than $\red x \; \gd \red x$.  This is why we do not involve $\gd \red x$ in steps $t_1$ and $t_2$ above: specifically the most significant term in $t_1 t_2$ would be $\frac{1}{2}{\red x}^2 \; \gd \red x$ which corresponds to a relative error of $2^{-72.999}$, much smaller to the one we get from the analysis below.
+First note that, in the computation, the terms ${\red x}^n \; \gd \red x$ for $n > 0$ are irrelevant.  The reason is that $\abs{\red x \; \gd \red x} < \gD^2 / 2^M = 2^{-M - 20}$.  But we chose $\gk_3 = 18$ so we are already willing to tolerate errors significantly larger than $\red x \; \gd \red x$.  This is why we do not involve $\gd \red x$ in steps $t_1$ and $t_2$ above: specifically the most significant term in $t_1 t_2$ would be $\frac{1}{2}{\red x}^2 \; \gd \red x$ which corresponds to a relative error of $2^{-73.999}$, much smaller to the one we get from the analysis below.
 
 The relative error on the minimax polynomial may be rewritten as:
 \[
