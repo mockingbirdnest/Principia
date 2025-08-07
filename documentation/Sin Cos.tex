@@ -386,7 +386,7 @@ If any of the conditions above is not met, we fall back on the CORE-MATH impleme
 \section*{Accurate Tables and Their Generation}
 \marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
 \section*{Polynomial Approximations}
-The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p\of{h\of{x}}$ approximating a function $f\of{x}$ by minimizing the quantity $\frac{f\of{x} - p\of{h\of{x}}}{g\of{x}}$.  By choosing $g\of{x}$ appropriately, we can obtain an approximation that minimizes either the absolute or relative error on the result.
+The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p\of{h\of{x}}$ approximating a function $f\of{x}$ by minimizing the quantity $\frac{f\of{x} - p\of{h\of{x}}}{g\of{x}}$\marginnote{TODO(phl): $h$ is rather unfortunate here.}.  By choosing $g\of{x}$ appropriately, we can obtain an approximation that minimizes either the absolute or relative error on the result.
 \subsection*{Sin Near Zero}
 For the $\sin$ function near zero the accurate tables method is not usable because the correction term is not small compared to the tabulated value of the function (which would be zero)\footnote{It would be possible to have one set of tables per binade with progressively denser intervals, but that would have a terrible performance as the tables would end up being very large.}.  Instead we use a polynomial approximation that minimizes the relative error on the result.  Since $\sin x$ is an even function and since its dominant term is $x$, we are looking for an approximation having the form:
 \[
