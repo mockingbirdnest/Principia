@@ -346,9 +346,8 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 #if _DEBUG
   using quantities::_quantities::DebugString;
   using Comparator = ComponentwiseComparator<T, U>;
-  if (!Comparator::GreaterThanOrEqualOrZero(a, b)) {
-    LOG(FATAL) << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
-  }
+  CHECK(Comparator::GreaterThanOrEqualOrZero(a, b))
+      << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
 #endif
   // [HLB07].
   DoublePrecision<Sum<T, U>> result{uninitialized};
