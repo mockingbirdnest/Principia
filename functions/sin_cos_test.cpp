@@ -35,7 +35,8 @@ class SinCosTest : public ::testing::Test {
   struct FunctionStatistics {
     cpp_bin_float_50 max_ulps_error = 0;
     double worst_argument = 0;
-    double fn_worst_argument = 0;
+    cpp_bin_float_50 boost_fn_worst_argument = 0;
+    double principia_fn_worst_argument = 0;
     std::int64_t incorrectly_rounded = 0;
   };
 
@@ -72,7 +73,8 @@ class SinCosTest : public ::testing::Test {
         if (sin_ulps_error > s.sin.max_ulps_error) {
           s.sin.max_ulps_error = sin_ulps_error;
           s.sin.worst_argument = principia_argument;
-          s.sin.fn_worst_argument = principia_sin;
+          s.sin.boost_fn_worst_argument = boost_sin;
+          s.sin.principia_fn_worst_argument = principia_sin;
         }
         if (sin_ulps_error > 0.5) {
           ++s.sin.incorrectly_rounded;
@@ -90,7 +92,8 @@ class SinCosTest : public ::testing::Test {
         if (cos_ulps_error > s.cos.max_ulps_error) {
           s.cos.max_ulps_error = cos_ulps_error;
           s.cos.worst_argument = principia_argument;
-          s.cos.fn_worst_argument = principia_cos;
+          s.cos.boost_fn_worst_argument = boost_cos;
+          s.cos.principia_fn_worst_argument = principia_cos;
         }
         if (cos_ulps_error > 0.5) {
           ++s.cos.incorrectly_rounded;
@@ -136,31 +139,41 @@ class SinCosTest : public ::testing::Test {
       if (s.sin.max_ulps_error > final_statistics.sin.max_ulps_error) {
         final_statistics.sin.max_ulps_error = s.sin.max_ulps_error;
         final_statistics.sin.worst_argument = s.sin.worst_argument;
-        final_statistics.sin.fn_worst_argument = s.sin.fn_worst_argument;
+        final_statistics.sin.boost_fn_worst_argument =
+            s.sin.boost_fn_worst_argument;
+        final_statistics.sin.principia_fn_worst_argument =
+            s.sin.principia_fn_worst_argument;
       }
       final_statistics.sin.incorrectly_rounded += s.sin.incorrectly_rounded;
       if (s.cos.max_ulps_error > final_statistics.cos.max_ulps_error) {
         final_statistics.cos.max_ulps_error = s.cos.max_ulps_error;
         final_statistics.cos.worst_argument = s.cos.worst_argument;
-        final_statistics.cos.fn_worst_argument = s.cos.fn_worst_argument;
+        final_statistics.cos.boost_fn_worst_argument =
+            s.cos.boost_fn_worst_argument;
+        final_statistics.cos.principia_fn_worst_argument =
+            s.cos.principia_fn_worst_argument;
       }
       final_statistics.cos.incorrectly_rounded += s.cos.incorrectly_rounded;
     }
 
-    LOG(ERROR) << "Sin error: " << final_statistics.sin.max_ulps_error
-               << std::setprecision(25)
-               << " ulps for argument: " << final_statistics.sin.worst_argument
-               << " value: " << final_statistics.sin.fn_worst_argument
-               << "; incorrectly rounded: " << std::setprecision(3)
-               << final_statistics.sin.incorrectly_rounded /
-                      static_cast<double>(iterations);
-    LOG(ERROR) << "Cos error: " << final_statistics.cos.max_ulps_error
-               << std::setprecision(25)
-               << " ulps for argument: " << final_statistics.cos.worst_argument
-               << " value: " << final_statistics.cos.fn_worst_argument
-               << "; incorrectly rounded: " << std::setprecision(3)
-               << final_statistics.cos.incorrectly_rounded /
-                      static_cast<double>(iterations);
+    auto log_statistics = [](std::string_view const fn_name,
+                             FunctionStatistics const& s) {
+      LOG(ERROR) << fn_name << " error: " << s.max_ulps_error
+                 << std::setprecision(25)
+                 << " ulps for argument: " << s.worst_argument << " ("
+                 << std::hexfloat << s.worst_argument << std::defaultfloat
+                 << ") value: " << s.principia_fn_worst_argument << " ("
+                 << std::hexfloat << s.principia_fn_worst_argument
+                 << std::defaultfloat << ") vs. expected "
+                 << s.boost_fn_worst_argument << " (" << std::hexfloat
+                 << static_cast<double>(s.boost_fn_worst_argument)
+                 << std::defaultfloat << "); incorrectly rounded probability: "
+                 << std::setprecision(3)
+                 << s.incorrectly_rounded / static_cast<double>(iterations);
+    };
+
+    log_statistics("Sin", final_statistics.sin);
+    log_statistics("Cos", final_statistics.cos);
   }
 };
 
