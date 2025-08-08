@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <limits>
 #include <random>
+#include <vector>
 
 #include "base/bundle.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
