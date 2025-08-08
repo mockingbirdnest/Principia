@@ -305,13 +305,13 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     DoublePrecision<double> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
     double const h² = h * h;
-    double const he2 = h * FusedMultiplyAdd<fma_policy>(2, e_abs, h);
-    double const he3 = h² * FusedMultiplyAdd<fma_policy>(3, e_abs, h);
+    double const h³ = h² * h;
+    double const h_plus_e_abs² = h * FusedMultiplyAdd<fma_policy>(2, e_abs, h);
     double const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
             cos_x₀,
-            he3 * SinPolynomial<fma_policy>(h²),
-            (sin_x₀ * he2) * CosPolynomial<fma_policy>(h²)) +
+            h³ * SinPolynomial<fma_policy>(h²),
+            (sin_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
         FusedMultiplyAdd<fma_policy>(cos_x₀, e_abs, sin_x₀_plus_h_cos_x₀.error);
     return _mm_cvtsd_f64(
         _mm_xor_pd(_mm_set_sd(DetectDangerousRounding<fma_policy, sin_e>(
@@ -342,13 +342,14 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
 
   DoublePrecision<double> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
-  double const h² = Pow<2>(h + e_abs);
+  double const h² = h * h;
   double const h³ = h² * h;
+  double const h_plus_e_abs² = h * FusedMultiplyAdd<fma_policy>(2, e_abs, h);
   double const polynomial_term =
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀,
           h³ * SinPolynomial<fma_policy>(h²),
-          (cos_x₀ * h²) * CosPolynomial<fma_policy>(h²)) +
+          (cos_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀, e_abs, cos_x₀_minus_h_sin_x₀.error);
   return DetectDangerousRounding<fma_policy, cos_e>(cos_x₀_minus_h_sin_x₀.value,
