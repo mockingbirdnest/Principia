@@ -107,7 +107,7 @@ which can be made more precise by noting that the function $\ULP$ is always a po
 \subsubsection*{Two-Term Approximation}
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of two floating-point numbers:
 \[
-\frac{\Pi}{2} ≃ C_1 + \gd C_1
+\frac{\Pi}{2} \simeq C_1 + \gd C_1
 \]
 which are defined as:
 \begin{equation*}
@@ -142,7 +142,7 @@ This scheme gives a representation with a significand that has effectively $2 M 
 \subsubsection*{Three-Term Approximation}
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of three floating-point numbers:
 \[
-\frac{\Pi}{2} ≃ C_2 + C'_2 + \gd C_2
+\frac{\Pi}{2} \simeq C_2 + C'_2 + \gd C_2
 \]
 which are defined as:
 \begin{equation*}
@@ -326,7 +326,7 @@ which leads to the following condition on the reduced angle:
 \abs{\red x} \geq 2^{\gk_1 + \gk'_1 + \gk_3 + 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 2}
 \]
 
-The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} ≃ 9.5 \times 10^{-7}$.
+The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.
 
 \subsection*{Argument Reduction Using the Three-Term Approximation}
 If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
@@ -378,7 +378,7 @@ and it is therefore sufficient to have:
 \abs{\red x} \geq 2^{\gk_3 - M} \pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2} + 4}
 \]
 
-If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ and $\gk''_2 = 15$.  Therefore, the desired accuracy is obtained as long as $\abs{\red x} \geq 65 \times 2^{-39} ≃ 1.2 \times 10^{-10}$.
+If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ and $\gk''_2 = 15$.  Therefore, the desired accuracy is obtained as long as $\abs{\red x} \geq 65 \times 2^{-39} \simeq 1.2 \times 10^{-10}$.
 
 \subsection*{Fallback}
 If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
@@ -390,7 +390,7 @@ The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces 
 \subsection*{Sin Near Zero}
 For the $\sin$ function near zero the accurate tables method is not usable because the correction term is not small compared to the tabulated value of the function (which would be zero)\footnote{It would be possible to have one set of tables per binade with progressively denser intervals, but that would have a terrible performance as the tables would end up being very large.}.  Instead we use a polynomial approximation that minimizes the relative error on the result.  Since $\sin x$ is an even function and since its dominant term is $x$, we are looking for an approximation having the form:
 \[
-\sin x ≃ x + x^3 p_{s0}\of{x^2}
+\sin x \simeq x + x^3 p_{s0}\of{x^2}
 \]
 over the interval $\intclos{0}{\gD}$, where $\gD$ is chosen so that $\gD^2 \ll 1$.  By leaving the sum unevaluated, the two terms $x$ and $x^3 p_{s0}\of{x}$ may be used to perform the rounding test (see below)\marginnote{TODO(phl): Document the rounding test and xref here.}.
 
@@ -409,15 +409,15 @@ In practice we choose $\gD = 2^{-10}$, and compute a degree-1 polynomial which i
 \subsection*{Around Table Entries}
 Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval containing $x_k$ is $\intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$\marginnote{TODO(phl): This cannot be a closed interval.}.  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $x$ (which in the case of $\sin$, is not close to zero\marginnote{TODO(phl): and in the case of cos?}), a $k$ such that $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and computing $h = x - x_k$.  We are therefore looking for approximations of the form:
 \begin{align*}
-\sin h &≃ h + h^3 p_s\of{h^2} \\
-\cos h &≃ 1 + h^2 p_c\of{h^2}
+\sin h &\simeq h + h^3 p_s\of{h^2} \\
+\cos h &\simeq 1 + h^2 p_c\of{h^2}
 \end{align*}
 which must cover the interval $\intclos{0}{h_{max}}$ with:
 \[
 h_{max} \DefineAs \max\limits_{k}\curlyBrackets{x_k - \pa{2 k - 1}\gD, \pa{2 k + 1}\gD - x_k}
 \]
 
-It is difficult to find a theoretical justification for the error function used in these approximations, as the polynomials $p_s$ and $p_c$ contribute in complicated ways to the final error on $\sin$ and $\cos$.  In practice it appears that an absolute error bound results in a slightly lower final relative error, so for $\sin$ we call \texttt{GeneralMiniMaxApproximation} with:
+It is difficult to find a theoretical justification for the error function used in these approximations, as the polynomials $p_s$ and $p_c$ contribute in complicated ways to the final error on $\sin$ and $\cos$.  In practice it appears that an absolute error bound results in a slightly lower final relative error, so for $\sin$ we call \texttt{GeneralMiniMaxApproximation} with:\marginnote{TODO(phl): Use the funky error.}
 \[
 \begin{dcases}
 h\of{x} &\DefineAs x^2 \\
@@ -467,7 +467,7 @@ First note that, in the computation, the terms ${\red x}^n \; \gd \red x$ for $n
 
 The relative error on the minimax polynomial may be rewritten as:
 \[
-x^3 p_{s0}\of{x^2} = \pa{1 + \gz_1} \sin x - x \qquad \abs{\gz_1} < 2^{-75.538}
+p_{s0}\of{x^2} = \frac{\pa{1 + \gz_1} \sin x - x}{x^3} \qquad \abs{\gz_1} < 2^{-75.538}
 \]
 for $\abs x \le \gD$.
 
@@ -476,8 +476,9 @@ The errors committed at each step are as follows:
 \left\{
 \begin{alignedat}{3}
 t_1 &= p_{s0}\of{{\red x}^2} \pa{1 + \gz_2} &\gz_2 &\in \intopen{-2^{-52.415}}{2^{-53.999}} \\
-t_2 &= {\red x}^3 \pa{1 + \gz_3} &\gz_3 &\in \intopen{-2^{-52.000}}{2^{-51.999}} \\
-t_3 &= \pa{t_1 t_2 + \gd \red x} \pa{1 + \gd_1}
+&= \frac{\pa{1 + \gz_1} \sin {\red x} - x}{{\red x^3}} \pa{1 + \gz_2} \\
+t_2 &= {\red x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+t_3 &= \pa{t_1 t_2 + \gd \red x} \pa{1 + \gd_3}
 \end{alignedat}
 \right.
 \]
@@ -485,31 +486,38 @@ The relative error on the entire computation is:
 \[
 r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
 \]
-The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le 2^{-10}$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that it is monotonic and its extrema are therefore reached at the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.606}$ (as expected, this is a bit worse than the error originating from the angle reduction).\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le 2^{-10}$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that it is monotonic and its extrema are therefore reached at the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
 
 \subsection*{Sin Around Table Entries}
-If $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $h = x - x_k$ we first compute exactly $h c_k + s_k$ using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
+If $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ we first compute $h = x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $x / 2 \le x_k \le 2 x$.  Based on the range of $x$, a sufficient condition for this is:
 \[
-z + \gd z = h c_k + s_k
+\frac{2 k + 1}{2} \gD \le x_k \le 2 \pa{2 k - 1} \gD
 \]
+Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_k \le 2 \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \gD$.\marginnote{TODO(phl): xref in the accurate tables section.}
 
-The steps of the computation are then as follows:\marginnote{TODO(phl): Align the notation in the notebook.}
+The first step of the computation is to evaluate $h c_k + s_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
+\[
+\pa{z, \gd z} = t_0 = h c_k + s_k
+\]
+where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$.
+
+The remaining steps of the computation are then as follows:\marginnote{TODO(phl): Align the notation in the notebook.}
 \[
 \begin{dcases}
-t_1 &= \round{h + 2 \gd x} \\
-t_2 &= \round{h \; t_1} \\
-t_3 &= \round{t_2 h} \\
-t_4 &= \round{p_s\of{t_2}} \\
-t_5 &= \round{t_3 t_4} \\
-t_6 &= \round{p_c\of{t_2}} \\
-t_7 &= \round{t_2 t_6} \\
-t_8 &= \round{s_k t_7} \\
-t_9 &= \round{c_k t_5 + t_8} \\
-t_{10} &= \round{t_9 + \gd z} \\
-y &= z \\
-\gd y &= t_{10}
+t_1 &= \roundAll{p_s\of{h^2}} \\
+t_2 &= \roundAll{p_c\of{h^2}} \\
+t_3 &= \round{h \round{2 \gd \red x + h}} \\
+t_4 &= \roundAll{h^3} \\
+t_5 &= \roundAll{\round{s_k} \; t2 \; t3} \\
+t_6 &= \round{t1 \; t4} \\
+t_7 &= \round{\round{c_k} t6 + t5} \\
+t_8 &= \round{\round{c_k} \gd \red x + t_0 \; \gd_0} \\
+t_9 &= \round{t7 + t8} \\
+y &= t_0 \pa{1 - \gd_0} \\
+\gd y &= t_9
 \end{dcases}
 \]
+where we have systematically made the rounding of the accurate table elements $s_k$ and $c_k$ explicit.
 
 The errors entailed at each step are as follows:
 \[
