@@ -407,7 +407,8 @@ which results in a polynomial $p_{s0}$ which minimizes the relative error on $\s
 In practice we choose $\gD = 2^{-10}$, and compute a degree-1 polynomial which induces a relative error smaller than $2^{-75.538}$ (before rounding the coefficients to machine numbers).
 
 \subsection*{Around Table Entries}
-Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval containing $x_k$ is $\intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$\marginnote{TODO(phl): This cannot be a closed interval.}.  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $x$ (which in the case of $\sin$, is not close to zero\marginnote{TODO(phl): and in the case of cos?}), a $k$ such that $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and computing $h = x - x_k$.  We are therefore looking for approximations of the form:
+
+Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$\marginnote{TODO(phl): This cannot be a closed interval.} (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $x \in \mathscr{I}_k$ and computes $h = x - x_k$.  We are therefore looking for approximations of the form:
 \begin{align*}
 \sin h &\simeq h + h^3 p_s\of{h^2} \\
 \cos h &\simeq 1 + h^2 p_c\of{h^2}
@@ -417,29 +418,35 @@ which must cover the interval $\intclos{0}{h_{max}}$ with:
 h_{max} \DefineAs \max\limits_{k}\curlyBrackets{x_k - \pa{2 k - 1}\gD, \pa{2 k + 1}\gD - x_k}
 \]
 
-It is difficult to find a theoretical justification for the error function used in these approximations, as the polynomials $p_s$ and $p_c$ contribute in complicated ways to the final error on $\sin$ and $\cos$.  In practice it appears that an absolute error bound results in a slightly lower final relative error, so for $\sin$ we call \texttt{GeneralMiniMaxApproximation} with:\marginnote{TODO(phl): Use the funky error.}
+The error function used in these approximations is guided by the error analysis.  We will see below (see \nameref{secerroranalysissin} and \nameref{secerroranalysiscos}) that the analysis involves an expression like:
+\begin{align*}
+h \pa{2 \; \gd \red x + h} p_c\of{h^2} &= h \pa{2 \; \gd \red x + h} \pa{\frac{\cos h - 1}{h^2} + \mathscr{E}\of{h}} \\
+&= \cos h - 1 + 2 \; \gd \red x \frac{\cos h - 1}{h} + 2 h \; \gd \red x \; \mathscr{E}\of{h}
+\end{align*}
+where $\mathscr{E}\of{h}$ is an error term resulting from the minimax approximation.  For this expression to behave properly when $h \to 0$ it is necessary that $\mathscr{E}\of{h} = \BigO\of{1}$.  This is not a trivial property: it is not verified by approximations with a relative error or an absolute error on $\cos$.  While this leaves us with many choices for the error function, the simplest choice is $ \mathscr{E}\of{h} \propto \pa{\cos h - 1}/h^2$.  Therefore, for $\sin$ we call \texttt{GeneralMiniMaxApproximation} with:\marginnote{TODO(phl): Use the funky error.}
 \[
 \begin{dcases}
-q\of{x} &\DefineAs x^2 \\
-f\of{x} &\DefineAs \frac{\sin x - x}{x^3} \\
-g\of{x} &\DefineAs \frac{1}{x^3}
+q\of{h} &\DefineAs h^2 \\
+f\of{h} &\DefineAs \frac{\sin h - h}{h^3} \\
+g\of{h} &\DefineAs \frac{\sin h - h}{h^3}
 \end{dcases}
 \]
 and for $\cos$:
 \[
 \begin{dcases}
-q\of{x} &\DefineAs x^2 \\
-f\of{x} &\DefineAs \frac{\cos x - 1}{x^2} \\
-g\of{x} &\DefineAs \frac{1}{x^2}
+q\of{h} &\DefineAs h^2 \\
+f\of{h} &\DefineAs \frac{\cos h - 1}{h^2} \\
+g\of{h} &\DefineAs \frac{\cos h - 1}{h^2}
 \end{dcases}
 \]
 
 In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an absolute error smaller than $2^{-85.746}$ and a 1-degree polynomial $p_c$ with an absolute error smaller than $2^{-72.693}$ (before rounding the coefficients to machine numbers).
 
 \section*{Core Implementation}
-This section documents the core of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether we need to fall back to the CORE-MATH implementation.  Most of the time (with a probability close to $1 - 2^{-18}$) $y$ is the correctly-rounded result.  We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative).
 
-We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.  This notation is typically used for error intervals computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \href{https://github.com/mockingbirdnest/Principia/blob/master/mathematica/ieee754_floating_point_evaluation.wl}{\texttt{mathematica/{\linebreak}ieee754\_floating\_point\_evaluation.wl}}.  In particular, these functions take into account that the evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations; this may leading to asymmetrical error intervals. \marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
+This section documents the core of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether we need to fall back to the CORE-MATH implementation.  Most of the time $y$ is the correctly-rounded result.  We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative).
+
+We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.  This notation is typically used for error intervals computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \href{https://github.com/mockingbirdnest/Principia/blob/master/mathematica/ieee754_floating_point_evaluation.wl}{\texttt{mathematica/ieee754\_floating\_point\_{\linebreak}evaluation.wl}}.  In particular, these functions take into account that the evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations; this may leading to asymmetrical error intervals. \marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
 
 We assume the availability of an FMA operation, and the rounding direction $roundTiesToEven$.
 
@@ -463,7 +470,7 @@ y &= \red x \\
 \end{dcases}
 \]
 
-First note that, in the computation, the terms ${\red x}^n \; \gd \red x$ for $n > 0$ are irrelevant.  The reason is that $\abs{\red x \; \gd \red x} < \gD^2 / 2^M = 2^{-M - 20}$.  But we chose $\gk_3 = 18$ so we are already willing to tolerate errors significantly larger than $\red x \; \gd \red x$.  This is why we do not involve $\gd \red x$ in steps $t_1$ and $t_2$ above: specifically the most significant term in $t_1 t_2$ would be $\frac{1}{2}{\red x}^2 \; \gd \red x$ which corresponds to a relative error of $2^{-73.999}$, much smaller to the one we get from the analysis below.
+First note that, in the computation, the terms ${\red x}^n \; \gd \red x$ for $n > 0$ are irrelevant\marginnote{TODO(phl): This needs a more rigorous analysis, same for the other sections.}.  The reason is that $\abs{\red x \; \gd \red x} < \gD^2 / 2^M = 2^{-M - 20}$.  But we chose $\gk_3 = 18$ so we are already willing to tolerate errors significantly larger than $\red x \; \gd \red x$.  This is why we do not involve $\gd \red x$ in steps $t_1$ and $t_2$ above: specifically the most significant term in $t_1 t_2$ would be $\frac{1}{2}{\red x}^2 \; \gd \red x$ which corresponds to a relative error of $2^{-73.999}$, much smaller to the one we get from the analysis below.
 
 The relative error on the minimax polynomial may be rewritten as:
 \[
@@ -486,21 +493,21 @@ The relative error on the entire computation is:
 \[
 r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
 \]
-The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le 2^{-10}$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that it is monotonic and its extrema are therefore reached at the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that it is monotonic and its extrema are therefore reached at the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
 
 \subsection*{Around Table Entries}
-If $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ we compute $h = \red x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $\red x / 2 \le x_k \le 2 \red x$.  Based on the range of $\red x$, a sufficient condition for this is:
+If $\red x \in \mathscr{I}_k$ we first compute $h = \red x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $\red x / 2 \le x_k \le 2 \red x$.  Based on the range of $\red x$, a sufficient condition for this is:
 \[
 \frac{2 k + 1}{2} \gD \le x_k \le 2 \pa{2 k - 1} \gD
 \]
-Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_k \le 2 \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \gD$.\marginnote{TODO(phl): Cross-reference in the accurate tables section.}
+Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_k \le 2 \; \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \; \gD$.\marginnote{TODO(phl): Cross-reference in the accurate tables section.}
 
-For $\sin$ we do not use the interval with $k = 0$  (see \nameref{secsinnearzero}, above) but for $\cos$ we do.  That interval is special because it has bounds $\intclos{0}{\gD}$ and $x_0 = 0$.  The computation of $h$ is therefore trivially correct.
+For $\sin$ we do not use the interval $\mathscr{I}_0$ (see \nameref{secsinnearzero}, above) but for $\cos$ we do.  That interval is special because $x_0 = 0$: the computation of $h$ is therefore trivially correct.
 
 The relative errors on the minimax polynomials may be rewritten as:
 \begin{align*}
-p_s\of{x^2} &= \pa{1 + \gz_1} \frac{\sin x - x}{x^3} \qquad & \abs{\gz_1} < 2^{-52.689} \\
-p_c\of{x^2} &= \pa{1 + \gz_2} \frac{\cos x - 1}{x^2} \qquad & \abs{\gz_2} < 2^{-51.466}
+p_s\of{h^2} &= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \qquad & \abs{\gz_1} < 2^{-52.689} \\
+p_c\of{h^2} &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-51.466}
 \end{align*}
 
 \subsubsection*{Sin}\label{secerroranalysissin}
@@ -516,7 +523,7 @@ The remaining steps of the computation are then as follows:
 \begin{dcases}
 t_1 &= \roundAll{p_s\of{h^2}} \\
 t_2 &= \roundAll{p_c\of{h^2}} \\
-t_3 &= \round{h \round{2 \gd \red x + h}} \\
+t_3 &= \round{h \round{2 \; \gd \red x + h}} \\
 t_4 &= \roundAll{h^3} \\
 t_5 &= \roundAll{\round{s_k} \; t3 \; t2} \\
 t_6 &= \round{t4 \; t1} \\
@@ -534,8 +541,10 @@ The errors commited at each step are as follows:
 \left\{
 \begin{alignedat}{2}
 t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-54.946}}{2^{-52.200}} \\
+&= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \pa{1 + \gz_3} \\
 t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
-t_3 &= h \pa{2 \gd \red x + h} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+&= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
+t_3 &= h \pa{2 \; \gd \red x + h} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
 t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
 t_5 &= \round{s_k} \; t_3 \; t_2 \pa{1 + \gd_5} \pa{1 + \gd_6} \\
 t_6 &= t_4 \; t_1 \pa{1 + \gd_7} \\
@@ -558,7 +567,7 @@ which is pleasantly small, and even though $\gd_9$ and $\gd_{10}$ also appear in
 
 The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.751}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones)\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}.
 
-\subsubsection*{Cos}
+\subsubsection*{Cos}\label{secerroranalysiscos}
 
 The first step of the computation is to evaluate $-h s_k + c_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
 \[
@@ -571,7 +580,7 @@ The remaining steps of the computation are then as follows:
 \begin{dcases}
 t_1 &= \roundAll{p_s\of{h^2}} \\
 t_2 &= \roundAll{p_c\of{h^2}} \\
-t_3 &= \round{h \round{2 \gd \red x + h}} \\
+t_3 &= \round{h \round{2 \; \gd \red x + h}} \\
 t_4 &= \roundAll{h^3} \\
 t_5 &= \roundAll{\round{c_k} \; t3 \; t2} \\
 t_6 &= \round{t4 \; t1} \\
@@ -589,8 +598,10 @@ The errors commited at each step are as follows:
 \left\{
 \begin{alignedat}{2}
 t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-54.946}}{2^{-52.200}} \\
+&= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \pa{1 + \gz_3} \\
 t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
-t_3 &= h \pa{2 \gd \red x + h} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+&= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
+t_3 &= h \pa{2 \; \gd \red x + h} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
 t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
 t_5 &= \round{c_k} \; t_3 \; t_2 \pa{1 + \gd_5} \pa{1 + \gd_6} \\
 t_6 &= t_4 \; t_1 \pa{1 + \gd_7} \\
