@@ -159,6 +159,7 @@ double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
 // negative.
 template<FMAPolicy fma_policy, double e>
 double DetectDangerousRounding(double const x, double const Δx) {
+  DCHECK(x == x && Δx == Δx);
   DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
   double const& value = sum.value;
   double const& error = sum.error;
