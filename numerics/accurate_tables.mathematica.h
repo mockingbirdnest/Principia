@@ -16,9 +16,9 @@ struct SinCosAccurateValues {
 };
 
 constexpr std::array<SinCosAccurateValues, 403> SinCosAccurateTable{{
-    /*  0*/{.x =     std::numeric_limits<double>::signaling_NaN(),
-            .sin_x = std::numeric_limits<double>::signaling_NaN(),
-            .cos_x = std::numeric_limits<double>::signaling_NaN()},
+    /*  0*/{.x =     0,
+            .sin_x = 0,
+            .cos_x = 1},
     /*  1*/{.x =     0x0.007f'ffce'7f29'afe0'0000'0000p0,
             .sin_x = 0x0.007f'ffc9'29da'9bb4'0000'db97p0,
             .cos_x = 0x0.ffff'e000'196b'1000'0148'882dp0},

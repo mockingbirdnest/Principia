@@ -102,5 +102,8 @@
     <None Include="ieee754_floating_point_test.wl">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="accurate_tables.wl">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>
