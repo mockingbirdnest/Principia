@@ -489,7 +489,7 @@ r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x 
 The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le 2^{-10}$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that it is monotonic and its extrema are therefore reached at the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
 
 \subsection*{Around Table Entries}
-If $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ we compute $h = x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $x / 2 \le x_k \le 2 x$.  Based on the range of $x$, a sufficient condition for this is:
+If $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ we compute $h = \red x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $\red x / 2 \le x_k \le 2 \red x$.  Based on the range of $\red x$, a sufficient condition for this is:
 \[
 \frac{2 k + 1}{2} \gD \le x_k \le 2 \pa{2 k - 1} \gD
 \]
@@ -555,6 +555,8 @@ Great care is required when evaluating this expression using interval arithmetic
 \gd_0 \pa{h \round{c_k} + \round{s_k}}\pa{\pa{1 + \gd_{10}} \pa{1 + \gd_9} - 1}
 \]
 which is pleasantly small, and even though $\gd_9$ and $\gd_{10}$ also appear in the term that does not involve $\gd_0$, the effect of replicating them is acceptable.
+
+The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.751}$.  The worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).
 
 
 \subsubsection*{Cos}
