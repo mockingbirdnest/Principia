@@ -386,23 +386,23 @@ If any of the conditions above is not met, we fall back on the CORE-MATH impleme
 \section*{Accurate Tables and Their Generation}
 \marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
 \section*{Polynomial Approximations}
-The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p\of{h\of{x}}$ approximating a function $f\of{x}$ by minimizing the quantity $\frac{f\of{x} - p\of{h\of{x}}}{g\of{x}}$\marginnote{TODO(phl): $h$ is rather unfortunate here.}.  By choosing $g\of{x}$ appropriately, we can obtain an approximation that minimizes either the absolute or relative error on the result.
+The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p$ such that $p\of{q\of{x}}$ approximates a function $f\of{x}$ by minimizing the quantity $\frac{f\of{x} - p\of{q\of{x}}}{g\of{x}}$.  By choosing $g\of{x}$ appropriately, we can obtain an approximation that minimizes either the absolute or relative error on the result.
 \subsection*{Sin Near Zero}
 For the $\sin$ function near zero the accurate tables method is not usable because the correction term is not small compared to the tabulated value of the function (which would be zero)\footnote{It would be possible to have one set of tables per binade with progressively denser intervals, but that would have a terrible performance as the tables would end up being very large.}.  Instead we use a polynomial approximation that minimizes the relative error on the result.  Since $\sin x$ is an even function and since its dominant term is $x$, we are looking for an approximation having the form:
 \[
 \sin x \simeq x + x^3 p_{s0}\of{x^2}
 \]
-over the interval $\intclos{0}{\gD}$, where $\gD$ is chosen so that $\gD^2 \ll 1$.  By leaving the sum unevaluated, the two terms $x$ and $x^3 p_{s0}\of{x}$ may be used to perform the rounding test (see below)\marginnote{TODO(phl): Document the rounding test and xref here.}.
+over the interval $\intclos{0}{\gD}$, where $\gD$ is chosen so that $\gD^2 \ll 1$.  By leaving the sum unevaluated, the two terms $x$ and $x^3 p_{s0}\of{x}$ may be used to perform the rounding test (see below)\marginnote{TODO(phl): Document the rounding test and cross-reference here.}.
 
 We are therefore calling \texttt{GeneralMiniMaxApproximation} with:
 \[
 \begin{dcases}
-h\of{x} &\DefineAs x^2 \\
+q\of{x} &\DefineAs x^2 \\
 f\of{x} &\DefineAs \frac{\sin x - x}{x^3} \\
 g\of{x} &\DefineAs \frac{\sin x}{x^3}
 \end{dcases}
 \]
-which results in a polynomial $p_{s0}$ which minimizes the relative error $\frac{\sin x}{x}$; the degree of $p_{s0}$ is choosen so that the error is less than $\ULP\of{\gD^2}$.
+which results in a polynomial $p_{s0}$ which minimizes the relative error on $\sin x$; the degree of $p_{s0}$ is choosen so that the error is less than $\ULP\of{\gD^2}$.
 
 In practice we choose $\gD = 2^{-10}$, and compute a degree-1 polynomial which induces a relative error smaller than $2^{-75.538}$ (before rounding the coefficients to machine numbers).
 
@@ -420,7 +420,7 @@ h_{max} \DefineAs \max\limits_{k}\curlyBrackets{x_k - \pa{2 k - 1}\gD, \pa{2 k +
 It is difficult to find a theoretical justification for the error function used in these approximations, as the polynomials $p_s$ and $p_c$ contribute in complicated ways to the final error on $\sin$ and $\cos$.  In practice it appears that an absolute error bound results in a slightly lower final relative error, so for $\sin$ we call \texttt{GeneralMiniMaxApproximation} with:\marginnote{TODO(phl): Use the funky error.}
 \[
 \begin{dcases}
-h\of{x} &\DefineAs x^2 \\
+q\of{x} &\DefineAs x^2 \\
 f\of{x} &\DefineAs \frac{\sin x - x}{x^3} \\
 g\of{x} &\DefineAs \frac{1}{x^3}
 \end{dcases}
@@ -428,13 +428,13 @@ g\of{x} &\DefineAs \frac{1}{x^3}
 and for $\cos$:
 \[
 \begin{dcases}
-h\of{x} &\DefineAs x^2 \\
+q\of{x} &\DefineAs x^2 \\
 f\of{x} &\DefineAs \frac{\cos x - 1}{x^2} \\
 g\of{x} &\DefineAs \frac{1}{x^2}
 \end{dcases}
 \]
 
-In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): xref} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an absolute error smaller than $2^{-85.746}$ and a 1-degree polynomial $p_c$ with an absolute error smaller than $2^{-72.693}$ (before rounding the coefficients to machine numbers).
+In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an absolute error smaller than $2^{-85.746}$ and a 1-degree polynomial $p_c$ with an absolute error smaller than $2^{-72.693}$ (before rounding the coefficients to machine numbers).
 
 \section*{Core Implementation}
 This section documents the core of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether we need to fall back to the CORE-MATH implementation.  Most of the time (with a probability close to $1 - 2^{-18}$) $y$ is the correctly-rounded result.  We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative).
@@ -493,7 +493,7 @@ If $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ we compute $h = \red 
 \[
 \frac{2 k + 1}{2} \gD \le x_k \le 2 \pa{2 k - 1} \gD
 \]
-Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_k \le 2 \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \gD$.\marginnote{TODO(phl): xref in the accurate tables section.  Also say something about interval 0.}
+Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_k \le 2 \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \gD$.\marginnote{TODO(phl): Cross-reference in the accurate tables section.}
 
 For $\sin$ we do not use the interval with $k = 0$  (see \nameref{secsinnearzero}, above) but for $\cos$ we do.  That interval is special because it has bounds $\intclos{0}{\gD}$ and $x_0 = 0$.  The computation of $h$ is therefore trivially correct.
 
@@ -503,13 +503,13 @@ p_s\of{x^2} &= \pa{1 + \gz_1} \frac{\sin x - x}{x^3} \qquad & \abs{\gz_1} < 2^{-
 p_c\of{x^2} &= \pa{1 + \gz_2} \frac{\cos x - 1}{x^2} \qquad & \abs{\gz_2} < 2^{-51.466}
 \end{align*}
 
-\subsubsection*{Sin}
+\subsubsection*{Sin}\label{secerroranalysissin}
 
 The first step of the computation is to evaluate $h c_k + s_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
 \[
 \pa{z, \gd z} = t_0 = h c_k + s_k
 \]
-where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$ where the two terms are exact.
+where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$, where the two terms are exact.
 
 The remaining steps of the computation are then as follows:
 \[
@@ -518,8 +518,8 @@ t_1 &= \roundAll{p_s\of{h^2}} \\
 t_2 &= \roundAll{p_c\of{h^2}} \\
 t_3 &= \round{h \round{2 \gd \red x + h}} \\
 t_4 &= \roundAll{h^3} \\
-t_5 &= \roundAll{\round{s_k} \; t2 \; t3} \\
-t_6 &= \round{t1 \; t4} \\
+t_5 &= \roundAll{\round{s_k} \; t3 \; t2} \\
+t_6 &= \round{t4 \; t1} \\
 t_7 &= \round{\round{c_k} t6 + t5} \\
 t_8 &= \round{\round{c_k} \gd \red x + t_0 \; \gd_0} \\
 t_9 &= \round{t7 + t8} \\
@@ -537,8 +537,8 @@ t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-54.946}}{2^{-
 t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
 t_3 &= h \pa{2 \gd \red x + h} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
 t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
-t_5 &= \round{s_k} \; t_2 \; t_3 \pa{1 + \gd_5} \pa{1 + \gd_6} \\
-t_6 &= t_1 \; t_4 \pa{1 + \gd_7} \\
+t_5 &= \round{s_k} \; t_3 \; t_2 \pa{1 + \gd_5} \pa{1 + \gd_6} \\
+t_6 &= t_4 \; t_1 \pa{1 + \gd_7} \\
 t_7 &= \pa{\round{c_k} \; t_6 + t_5} \pa{1 + \gd_8} \\
 t_8 &= \pa{\round{c_k} \; \gd \red x + t_0 \; \gd_0} \pa{1 + \gd_9} \\
 t_9 &= \pa{t_7 + t_8} \pa{1 + \gd_{10}}
@@ -556,9 +556,58 @@ Great care is required when evaluating this expression using interval arithmetic
 \]
 which is pleasantly small, and even though $\gd_9$ and $\gd_{10}$ also appear in the term that does not involve $\gd_0$, the effect of replicating them is acceptable.
 
-The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.751}$.  The worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).
-
+The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.751}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones)\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}.
 
 \subsubsection*{Cos}
+
+The first step of the computation is to evaluate $-h s_k + c_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
+\[
+\pa{z, \gd z} = t_0 = -h s_k + c_k
+\]
+where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$, where the two terms are exact.
+
+The remaining steps of the computation are then as follows:
+\[
+\begin{dcases}
+t_1 &= \roundAll{p_s\of{h^2}} \\
+t_2 &= \roundAll{p_c\of{h^2}} \\
+t_3 &= \round{h \round{2 \gd \red x + h}} \\
+t_4 &= \roundAll{h^3} \\
+t_5 &= \roundAll{\round{c_k} \; t3 \; t2} \\
+t_6 &= \round{t4 \; t1} \\
+t_7 &= \round{-\round{s_k} t6 + t5} \\
+t_8 &= \round{-\round{s_k} \gd \red x + t_0 \; \gd_0} \\
+t_9 &= \round{t7 + t8} \\
+y &= t_0 \pa{1 - \gd_0} \\
+\gd y &= t_9
+\end{dcases}
+\]
+where we have made the rounding of the accurate table elements $s_k$ and $c_k$ explicit.
+
+The errors commited at each step are as follows:
+\[
+\left\{
+\begin{alignedat}{2}
+t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-54.946}}{2^{-52.200}} \\
+t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
+t_3 &= h \pa{2 \gd \red x + h} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
+t_5 &= \round{c_k} \; t_3 \; t_2 \pa{1 + \gd_5} \pa{1 + \gd_6} \\
+t_6 &= t_4 \; t_1 \pa{1 + \gd_7} \\
+t_7 &= \pa{\round{s_k} \; t_6 + t_5} \pa{1 + \gd_8} \\
+t_8 &= \pa{\round{s_k} \; \gd \red x + t_0 \; \gd_0} \pa{1 + \gd_9} \\
+t_9 &= \pa{t_7 + t_8} \pa{1 + \gd_{10}}
+\end{alignedat}
+\right.
+\]
+The relative error on the entire computation is:
+\[
+r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
+\]
+As explained above (see \nameref{secerroranalysissin}) the expression for $r$ must be rewritten so that $\gd_0$ only appears once.  In this case the $\gd_0$ term is:
+\[
+\gd_0 \pa{-\round{c_k} + h \round{s_k}} \pa{1 - \pa{1 + \gd_{10}} \pa{1 + \gd_9}}
+\]
+and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).
 
 \end{document}
