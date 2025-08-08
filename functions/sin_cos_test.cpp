@@ -35,6 +35,7 @@ class SinCosTest : public ::testing::Test {
   struct FunctionStatistics {
     cpp_bin_float_50 max_ulps_error = 0;
     double worst_argument = 0;
+    double fn_worst_argument = 0;
     std::int64_t incorrectly_rounded = 0;
   };
 
@@ -71,6 +72,7 @@ class SinCosTest : public ::testing::Test {
         if (sin_ulps_error > s.sin.max_ulps_error) {
           s.sin.max_ulps_error = sin_ulps_error;
           s.sin.worst_argument = principia_argument;
+          s.sin.fn_worst_argument = principia_sin;
         }
         if (sin_ulps_error > 0.5) {
           ++s.sin.incorrectly_rounded;
@@ -88,6 +90,7 @@ class SinCosTest : public ::testing::Test {
         if (cos_ulps_error > s.cos.max_ulps_error) {
           s.cos.max_ulps_error = cos_ulps_error;
           s.cos.worst_argument = principia_argument;
+          s.cos.fn_worst_argument = principia_cos;
         }
         if (cos_ulps_error > 0.5) {
           ++s.cos.incorrectly_rounded;
@@ -108,7 +111,7 @@ class SinCosTest : public ::testing::Test {
   void ParallelRandomArgumentTest(double const lower_bound,
                                   double const upper_bound) {
 #if _DEBUG
-    static constexpr std::int64_t iterations = 1000;
+    static constexpr std::int64_t iterations = 30'000;
     static constexpr std::int64_t iterations_quantum = 100;
 #else
     static constexpr std::int64_t iterations = 10'000'000;
@@ -133,11 +136,13 @@ class SinCosTest : public ::testing::Test {
       if (s.sin.max_ulps_error > final_statistics.sin.max_ulps_error) {
         final_statistics.sin.max_ulps_error = s.sin.max_ulps_error;
         final_statistics.sin.worst_argument = s.sin.worst_argument;
+        final_statistics.sin.fn_worst_argument = s.sin.fn_worst_argument;
       }
       final_statistics.sin.incorrectly_rounded += s.sin.incorrectly_rounded;
       if (s.cos.max_ulps_error > final_statistics.cos.max_ulps_error) {
         final_statistics.cos.max_ulps_error = s.cos.max_ulps_error;
         final_statistics.cos.worst_argument = s.cos.worst_argument;
+        final_statistics.cos.fn_worst_argument = s.cos.fn_worst_argument;
       }
       final_statistics.cos.incorrectly_rounded += s.cos.incorrectly_rounded;
     }
@@ -145,14 +150,14 @@ class SinCosTest : public ::testing::Test {
     LOG(ERROR) << "Sin error: " << final_statistics.sin.max_ulps_error
                << std::setprecision(25)
                << " ulps for argument: " << final_statistics.sin.worst_argument
-               << " value: " << Sin(final_statistics.sin.worst_argument)
+               << " value: " << final_statistics.sin.fn_worst_argument
                << "; incorrectly rounded: " << std::setprecision(3)
                << final_statistics.sin.incorrectly_rounded /
                       static_cast<double>(iterations);
     LOG(ERROR) << "Cos error: " << final_statistics.cos.max_ulps_error
                << std::setprecision(25)
                << " ulps for argument: " << final_statistics.cos.worst_argument
-               << " value: " << Cos(final_statistics.cos.worst_argument)
+               << " value: " << final_statistics.cos.fn_worst_argument
                << "; incorrectly rounded: " << std::setprecision(3)
                << final_statistics.cos.incorrectly_rounded /
                       static_cast<double>(iterations);
