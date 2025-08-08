@@ -451,7 +451,7 @@ x \equiv \red x + \gd \red x + \gz_0 \; \red x \pmod{\frac{\Pi}{4}} \qquad \abs{
 \]
 For simplicity of the error analysis we can assume $0 \le x \le \frac{\Pi}{4}$: even though we do not do argument reduction when $x$ is less than $\frac{\Pi}{4}$, the error analysis would work exactly the same if $x$ was simply provided as a high-accuracy value (e.g., a double-double) and reduced using the techniques above.
 
-\subsection*{Sin Near Zero}
+\subsection*{Sin Near Zero}\label{secsinnearzero}
 If $\abs{\red x} \le \gD = 2^{-10}$ the steps of the computation are as follows:
 \[
 \begin{dcases}
@@ -488,20 +488,30 @@ r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x 
 \]
 The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le 2^{-10}$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that it is monotonic and its extrema are therefore reached at the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
 
-\subsection*{Sin Around Table Entries}
-If $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ we first compute $h = x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $x / 2 \le x_k \le 2 x$.  Based on the range of $x$, a sufficient condition for this is:
+\subsection*{Around Table Entries}
+If $x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ we compute $h = x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $x / 2 \le x_k \le 2 x$.  Based on the range of $x$, a sufficient condition for this is:
 \[
 \frac{2 k + 1}{2} \gD \le x_k \le 2 \pa{2 k - 1} \gD
 \]
-Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_k \le 2 \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \gD$.\marginnote{TODO(phl): xref in the accurate tables section.}
+Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_k \le 2 \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \gD$.\marginnote{TODO(phl): xref in the accurate tables section.  Also say something about interval 0.}
+
+For $\sin$ we do not use the interval with $k = 0$  (see \nameref{secsinnearzero}, above) but for $\cos$ we do.  That interval is special because it has bounds $\intclos{0}{\gD}$ and $x_0 = 0$.  The computation of $h$ is therefore trivially correct.
+
+The relative errors on the minimax polynomials may be rewritten as:
+\begin{align*}
+p_s\of{x^2} &= \pa{1 + \gz_1} \frac{\sin x - x}{x^3} \qquad & \abs{\gz_1} < 2^{-52.689} \\
+p_c\of{x^2} &= \pa{1 + \gz_2} \frac{\cos x - 1}{x^2} \qquad & \abs{\gz_2} < 2^{-51.466}
+\end{align*}
+
+\subsubsection*{Sin}
 
 The first step of the computation is to evaluate $h c_k + s_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
 \[
 \pa{z, \gd z} = t_0 = h c_k + s_k
 \]
-where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$.
+where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$ where the two terms are exact.
 
-The remaining steps of the computation are then as follows:\marginnote{TODO(phl): Align the notation in the notebook.}
+The remaining steps of the computation are then as follows:
 \[
 \begin{dcases}
 t_1 &= \roundAll{p_s\of{h^2}} \\
@@ -517,31 +527,36 @@ y &= t_0 \pa{1 - \gd_0} \\
 \gd y &= t_9
 \end{dcases}
 \]
-where we have systematically made the rounding of the accurate table elements $s_k$ and $c_k$ explicit.
+where we have made the rounding of the accurate table elements $s_k$ and $c_k$ explicit.
 
-The errors entailed at each step are as follows:
+The errors commited at each step are as follows:
 \[
-\begin{dcases}
-t_1 &= \pa{h + 2 \gd x} \pa{1 + \gd_1} \\
-t_2 &= \pa{t_1 h} \pa{1 + \gd_2} \\
-t_3 &= \pa{t_2 h} \pa{1 + \gd_3} \\
-t_4 &= p_s\of{t_2} \pa{1 + \gz_1}
-\end{dcases}
+\left\{
+\begin{alignedat}{2}
+t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-54.946}}{2^{-52.200}} \\
+t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
+t_3 &= h \pa{2 \gd \red x + h} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
+t_5 &= \round{s_k} \; t_2 \; t_3 \pa{1 + \gd_5} \pa{1 + \gd_6} \\
+t_6 &= t_1 \; t_4 \pa{1 + \gd_7} \\
+t_7 &= \pa{\round{c_k} \; t_6 + t_5} \pa{1 + \gd_8} \\
+t_8 &= \pa{\round{c_k} \; \gd \red x + t_0 \; \gd_0} \pa{1 + \gd_9} \\
+t_9 &= \pa{t_7 + t_8} \pa{1 + \gd_{10}}
+\end{alignedat}
+\right.
 \]
-\begin{center}
-% The phantom/llap dance is there to work around the impossibility of alignment across
-% matched brackets.
-\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} r}
-Expression                    & Bounds on the absolute error\\
-\hline
-$t_1 = \round{h\round{h + 2 \gd x}}$ & $\intopen{-2^{-71.996}}{2^{-71.996}}$ \\
-$t_2 = \round{t_1 h}$ & $\intopen{-2^{-81.408}}{2^{-81.408}}$ \\
-$t_3 = \roundAll{t_1 \; p_c\of{t_1}}$ & $\intopen{-2^{-71.995}}{2^{-71.995}}$ \\
-$t_4 = \roundAll{t_2 \; p_s\of{t_1}}$ & $\intopen{-2^{-83.254}}{2^{-83.254}}$
+The relative error on the entire computation is:
+\[
+r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
+\]
 
-\end{tabular*}
-\end{center}
+Great care is required when evaluating this expression using interval arithmetic because the terms in $\gd_0$ in $t_9$ and $y$ could be considered independent and lead to a useless bound.  To avoid this issue $\gd_0$ must be factored out to appear only once.  Specifically the $\gd_0$ term after factoring is:
+\[
+\gd_0 \pa{h \round{c_k} + \round{s_k}}\pa{\pa{1 + \gd_{10}} \pa{1 + \gd_9} - 1}
+\]
+which is pleasantly small, and even though $\gd_9$ and $\gd_{10}$ also appear in the term that does not involve $\gd_0$, the effect of replicating them is acceptable.
 
-\subsection*{Cos Around Table Entries}
+
+\subsubsection*{Cos}
 
 \end{document}
