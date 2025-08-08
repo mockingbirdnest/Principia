@@ -272,6 +272,12 @@
     <ClInclude Include="sin_cos.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="osaca.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="accurate_tables.mathematica.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fixed_arrays_test.cpp">

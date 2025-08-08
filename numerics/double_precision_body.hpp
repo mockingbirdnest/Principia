@@ -102,7 +102,11 @@ template<typename T, typename U>
   requires convertible_to_quantity<T> && convertible_to_quantity<U>
 struct ComponentwiseComparator<T, U> {
   static bool GreaterThanOrEqualOrZero(T const& left, U const& right) {
-    return Abs(left) >= Abs(right) || left == T{} || !IsFinite(left);
+    // In the elementary functions, we use NaN to fall back to the CORE-MATH
+    // implementation.  We don't want to die because of the weird comparisons of
+    // NaNs.
+    return Abs(left) >= Abs(right) || left == T{} ||
+           !IsFinite(left) || !IsFinite(right);
   }
 };
 
