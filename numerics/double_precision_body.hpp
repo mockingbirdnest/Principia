@@ -102,7 +102,11 @@ template<typename T, typename U>
   requires convertible_to_quantity<T> && convertible_to_quantity<U>
 struct ComponentwiseComparator<T, U> {
   static bool GreaterThanOrEqualOrZero(T const& left, U const& right) {
-    return Abs(left) >= Abs(right) || left == T{} || !IsFinite(left);
+    // In the elementary functions, we use NaN to fall back to the CORE-MATH
+    // implementation.  We don't want to die because of the weird comparisons of
+    // NaNs.
+    return Abs(left) >= Abs(right) || left == T{} ||
+           !IsFinite(left) || !IsFinite(right);
   }
 };
 
@@ -342,8 +346,9 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 #if _DEBUG
   using quantities::_quantities::DebugString;
   using Comparator = ComponentwiseComparator<T, U>;
-  CHECK(Comparator::GreaterThanOrEqualOrZero(a, b))
-      << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
+  if (!Comparator::GreaterThanOrEqualOrZero(a, b)) {
+    LOG(FATAL) << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
+  }
 #endif
   // [HLB07].
   DoublePrecision<Sum<T, U>> result{uninitialized};
