@@ -392,7 +392,7 @@ For the $\sin$ function near zero the accurate tables method is not usable becau
 \[
 \sin x \simeq x + x^3 p_{s0}\of{x^2}
 \]
-over the interval $\intclos{0}{\gD}$, where $\gD$ is chosen so that $\gD^2 \ll 1$.  By leaving the sum unevaluated, the two terms $x$ and $x^3 p_{s0}\of{x}$ may be used to perform the rounding test (see below)\marginnote{TODO(phl): Document the rounding test and cross-reference here.}.
+over the interval $\intclos{0}{\gD}$, where $\gD$ is chosen so that $\gD^2 \ll 1$.
 
 We are therefore calling \texttt{GeneralMiniMaxApproximation} with:
 \[
@@ -408,7 +408,7 @@ In practice we choose $\gD = 2^{-10}$, and compute a degree-1 polynomial which i
 
 \subsection*{Around Table Entries}
 
-Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$\marginnote{TODO(phl): This cannot be a closed interval.} (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $x \in \mathscr{I}_k$ and computes $h = x - x_k$.  We are therefore looking for approximations of the form:
+Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval\footnote{Obviously the intervals $\mathscr{I}_k$ cannot all contain their bounds.  Because of the way they are computed, the odd multiples of $\gD$ which separate the intervals are rounded to the nearest even $k$.  Therefore, there is an alternation of open-open intervals (for $k$ odd) and closed-closed intervals (for $k$ even).  We do not have a convenient notation for this, and anyway this detail is mostly irrelevant.} containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $x \in \mathscr{I}_k$ and computes $h = x - x_k$.  We are therefore looking for approximations of the form:
 \begin{align*}
 \sin h &\simeq h + h^3 p_s\of{h^2} \\
 \cos h &\simeq 1 + h^2 p_c\of{h^2}
@@ -423,7 +423,7 @@ The error function used in these approximations is guided by the error analysis.
 h \pa{2 \; \gd \red x + h} p_c\of{h^2} &= h \pa{2 \; \gd \red x + h} \pa{\frac{\cos h - 1}{h^2} + \mathscr{E}\of{h}} \\
 &= \cos h - 1 + 2 \; \gd \red x \frac{\cos h - 1}{h} + 2 h \; \gd \red x \; \mathscr{E}\of{h}
 \end{align*}
-where $\mathscr{E}\of{h}$ is an error term resulting from the minimax approximation.  For this expression to behave properly when $h \to 0$ it is necessary that $\mathscr{E}\of{h} = \BigO\of{1}$.  This is not a trivial property: it is not verified by approximations with a relative error or an absolute error on $\cos$.  While this leaves us with many choices for the error function, the simplest choice is $ \mathscr{E}\of{h} \propto \pa{\cos h - 1}/h^2$.  Therefore, for $\sin$ we call \texttt{GeneralMiniMaxApproximation} with:\marginnote{TODO(phl): Use the funky error.}
+where $\mathscr{E}\of{h}$ is an error term resulting from the minimax approximation.  For this expression to behave properly when $h \to 0$ it is necessary that $\mathscr{E}\of{h} = \BigO\of{1}$.  This is not a trivial property: it is not verified by approximations with a relative error or an absolute error on $\cos$.  While this leaves us with many choices for the error function, the simplest one is $ \mathscr{E}\of{h} \propto \pa{\cos h - 1}/h^2$.  Therefore, for $\sin$ we call \texttt{GeneralMiniMaxApproximation} with:
 \[
 \begin{dcases}
 q\of{h} &\DefineAs h^2 \\
@@ -440,15 +440,15 @@ g\of{h} &\DefineAs \frac{\cos h - 1}{h^2}
 \end{dcases}
 \]
 
-In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an absolute error smaller than $2^{-85.746}$ and a 1-degree polynomial $p_c$ with an absolute error smaller than $2^{-72.693}$ (before rounding the coefficients to machine numbers).
+In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an error smaller than $2^{-52.689}$ and a 1-degree polynomial $p_c$ with an error smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
 
 \section*{Core Implementation}
 
-This section documents the core of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether we need to fall back to the CORE-MATH implementation.  Most of the time $y$ is the correctly-rounded result.  We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative).
+This section documents the core of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether $\round{y + \gd y}$ is the correctly-rounded result (this is the case with high probability) or whether we need to fall back to the CORE-MATH implementation\marginnote{TODO(phl): Give the values of $e$.}.
 
 We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.  This notation is typically used for error intervals computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \href{https://github.com/mockingbirdnest/Principia/blob/master/mathematica/ieee754_floating_point_evaluation.wl}{\texttt{mathematica/ieee754\_floating\_point\_{\linebreak}evaluation.wl}}.  In particular, these functions take into account that the evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations; this may leading to asymmetrical error intervals. \marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
 
-We assume the availability of an FMA operation, and the rounding direction $roundTiesToEven$.
+We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative), that an FMA operation is available, and that the rounding direction is $roundTiesToEven$.
 
 \subsection*{Reduced Angle}
 
