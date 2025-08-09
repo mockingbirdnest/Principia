@@ -134,12 +134,15 @@ Noting that the absolute error on the rounding that appears in the definition of
 \abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \label{eqnpitwoterms}
 \end{align}
-and the following upper bound for $\gd C_1$:
+In practice this quantity is smaller than $2^{-103.217}$ (which is much tighter than the theoretical bound) because of the actual bit pattern of $\Pi$.
+
+From this we derive the following upper bound for $\gd C_1$:
 \begin{align}
 \abs{\gd C_1} &< \frac{\Pi}{2} - C_1 + \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} \nonumber \\
 &< 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}+2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk'_1} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
 \label{eqnabsdc1}
 \end{align}
+In practice this quantity is smaller than $2^{-47.398}$.
  
 This scheme gives a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
 
@@ -184,6 +187,7 @@ Equation (\ref{eqnulptr}) applied to the definition of $C'_2$ yields, for the un
 \ULP\of{\frac{\Pi}{2} - C_2 - C'_2} &= 2^{\gk''_2 - M} \ULP\of{\frac{\Pi}{2} - C_2} \\
 &= 2^{\gk'_2 + \gk''_2 - 2 M} \ULP\of{\frac{\Pi}{2}}
 \end{align*}
+In practice this quantity is smaller than $2^{-130.477}$ so the theoretical bound is rather tight.
 
 Noting that the absolute error on the rounding that appears in the definition of $\gd C_2$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_2 - C'_2}$, we obtain the absolute error on the three-term approximation:
 \begin{align}
@@ -195,6 +199,7 @@ and the following upper bound for $\gd C_2$:
 \abs{\gd C_2} < 2^{\gk'_2 + \gk''_2 - M} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
 \label{eqnabsdc2}
 \end{equation}
+In practice this quantity is smaller than $2^{-76.325}$.
  
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
@@ -213,7 +218,7 @@ Given an argument $x$, the purpose of argument reduction is to compute a pair of
 
 If $\abs x < \round{\frac{\Pi}{4}}$ then $\red x = x$ and $\gd \red x = 0$.
 
-\subsection*{Argument Reduction Using the Two-Term Approximation}\marginnote{TODO(phl): In this section and the next, document the ``better'' bounds computed with \textit{Mathematica}.}
+\subsection*{Argument Reduction Using the Two-Term Approximation}
 
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -309,7 +314,7 @@ from which we deduce an upper bound on the absolute error of the reduction:
 &= 2^{\gk_1 + \gk'_1 - M}\pa{\frac{3}{2} + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}} \\
 &< 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
 \end{align*}
-where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).
+where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).  In practice this quantity is smaller than $2^{-92.719}$.
 
 The exact $\twodifference$ yields a pair such that $\abs{\gd \red x} \le \frac{\ULP\of{\red x}}{2} \le 2^{-M} \abs{\red x}$.  Furthermore, misrounding of the first kind and the above error on the reduction may combine to cause $\abs{\red x}$ to move above $\frac{\pi}{4}$ by as much as:
 \[
@@ -327,7 +332,7 @@ which leads to the following condition on the reduced angle:
 \abs{\red x} \geq 2^{\gk_1 + \gk'_1 + \gk_3 + 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 2}
 \]
 
-The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.
+The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.\marginnote{TODO(phl): A tighter threshold, $2.4 \times 10^{-7}$ would work because of the bit pattern of $\Pi$.  Should we use it?  Same question for the three-term reduction.}
 
 \subsection*{Argument Reduction Using the Three-Term Approximation}
 
@@ -368,7 +373,7 @@ from which we deduce an upper bound on the absolute error of the reduction, noti
 & \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi \pa{1 + 3 \times 2^{\gk_2} \ULP\of{\frac{\Pi}{2}}} \\
 & \qquad < 2^{\gk_2 - 2 M} \pa{2^{\gk'_2 + \gk''_2 + 1} + 3} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi
 \end{align*}
-where the second inequality uses $\gg_2 \pa{2^{\gk_2 + 1} + 1} < 3 u \; 2^{\gk_2 + 1}$.
+where the second inequality uses $\gg_2 \pa{2^{\gk_2 + 1} + 1} < 3 u \; 2^{\gk_2 + 1}$.  In practice this quantity is smaller than $2^{-104.336}$.
 
 A sufficient condition for the reduction to guarantee $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3 - 1} \ULP\of{\red x}$ which itself is less than $2^{-\gk_3 - M} \abs{\red{x}}$.  Therefore we want:
 \begin{align*}
@@ -509,8 +514,6 @@ y &\DefineAs \red x \\
 \end{dcases}
 \]
 
-First note that, in the computation, the terms ${\red x}^n \; \gd \red x$ for $n > 0$ are irrelevant\marginnote{TODO(phl): This needs a more rigorous analysis, same for the other sections.}.  The reason is that $\abs{\red x \; \gd \red x} < \gD^2 / 2^M = 2^{-M - 20}$.  But we chose $\gk_3 = 18$ so we are already willing to tolerate errors significantly larger than $\red x \; \gd \red x$.  This is why we do not involve $\gd \red x$ in steps $t_1$ and $t_2$ above: specifically the most significant term in $t_1 t_2$ would be $\frac{1}{2}{\red x}^2 \; \gd \red x$ which corresponds to a relative error of $2^{-73.999}$, much smaller to the one we get from the analysis below.
-
 The relative error on the minimax polynomial may be rewritten as:
 \[
 p_{s0}\of{x^2} = \frac{\pa{1 + \gz_1} \sin x - x}{x^3} \qquad \abs{\gz_1} < 2^{-75.538}
@@ -532,7 +535,13 @@ The relative error on the entire computation is:
 \[
 r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
 \]
-The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that it is monotonic and its extrema are therefore reached at the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'AD82'A723'6p0}.$\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that this function reaches its extrema at the corners of the domain, which is logical because we expect the minimax polynomial to reach its largest errors on the bounds of the optimization interval.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'AD82'A723'6p0}.$\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
+
+Note that the above steps do not compute the terms ${\red x}^n \; \gd \red x$ for $n > 0$.  The largest such term is for $n = 2$ and the relative error that it induces is:
+\[
+-\frac{1}{2} \frac{{\red x}^2 \; \gd \red x}{\sin\of{\red x + \gd \red x}}
+\]
+This function reaches its extrema on the corners of the triangular domain and is found to be smaller than $2^{-73.999}$, so its contribution to the overall relative error would be very small.
 
 \subsection*{Sin and Cos Around Table Entries}
 
@@ -625,6 +634,12 @@ which is pleasantly small, and even though $\gd_9$ and $\gd_{10}$ also appear in
 
 The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.751}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'6013'6BD9'Dp0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}.
 
+Note that the above steps do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
+\[
+-\frac{1}{2}\frac{h^2 \; \gd \red x \; \cos x_k}{\sin\of{\red x + \gd \red x}}
+\]
+This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-73.999}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.348}$ so it must be computed.)
+
 \subsubsection*{Cos}\label{secerroranalysiscos}
 
 The first step of the computation is to evaluate $-h \; s_k + c_k$ exactly using an FMA:
@@ -678,5 +693,11 @@ As explained above (see \nameref{secerroranalysissin}) the expression for $r$ mu
 \gd_0 \pa{-\round{c_k} + h \round{s_k}} \pa{1 - \pa{1 + \gd_{10}} \pa{1 + \gd_9}}
 \]
 and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B836'988A'Dp0}$.
+
+Note that the above steps do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
+\[
+\frac{1}{2}\frac{h^2 \; \gd \red x \; \sin x_k}{\cos\of{\red x + \gd \red x}}
+\]
+This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-74.348}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.346}$ so it must be computed.)
 
 \end{document}
