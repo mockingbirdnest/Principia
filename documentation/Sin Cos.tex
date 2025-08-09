@@ -259,7 +259,6 @@ In this case, misrounding causes the absolute value of the reduced angle to incr
 \frac{\Pi}{4} \frac{\gg_2}{1 + \gg_2} \pa{2^{\gk_1 + 1} - 1}
 \label{eqnmisroundingbound}
 \end{equation}
-The accurate tables must be constructed so that the last interval covers angles misrounded in that manner\footnote{In practice this is not a stringent constraint because the distance between accurate table entries is much larger than the quantity given by (\ref{eqnmisroundingbound}).}.
 
 A misrounding of the second kind occurs if, assuming $n \geq 0$:
 \[
@@ -277,7 +276,7 @@ In this case, misrounding causes the absolute value of the reduced angle to decr
 \[
 \frac{\Pi}{4} \gg_2 \pa{2^{\gk_1 + 1} + 1}
 \]
-This is however not a concern for the accurate tables and the polynomials as it cannot cause the reduced angle to become negative.
+This is however not a concern for the accurate tables as it cannot cause the reduced angle to become negative.
 
 Using the bound on $\abs n$ and the fact that $C_1$ has $\gk_1$ trailing zeroes, we see that the product $n \; C_1$ is exact.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
 \[ 
@@ -312,17 +311,11 @@ from which we deduce an upper bound on the absolute error of the reduction:
 \end{align*}
 where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).
 
-The exact $\twodifference$ yields a pair such that $\abs{\gd \red x} \le \frac{\ULP\of{\red x}}{2}$ which implies the bounds:
-\begin{align*}
-\text{Relative:} \qquad &\abs{\gd \red x} \le \frac{\abs{\red x}}{2^M} \\
-\text{Absolute:} \qquad &\abs{\gd \red x} \le \frac{\ULP\of{\frac{\Pi}{4}}}{2} = 2^{-M - 1}
-\end{align*}
-
-Furthermore, misrounding of the first kind and the above error on the reduction may combine to cause $\abs{\red x}$ to move above $\frac{\pi}{4}$ by as much as:
+The exact $\twodifference$ yields a pair such that $\abs{\gd \red x} \le \frac{\ULP\of{\red x}}{2} \le 2^{-M} \abs{\red x}$.  Furthermore, misrounding of the first kind and the above error on the reduction may combine to cause $\abs{\red x}$ to move above $\frac{\pi}{4}$ by as much as:
 \[
 \frac{\Pi}{4} \frac{\gg_2}{1 + \gg_2} \pa{2^{\gk_1 + 1} - 1} + 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
 \]
-This must be taken into account when building the polynomials.
+The accurate tables must be constructed so that the last interval covers angles misrounded in that manner\footnote{In practice this is not a stringent constraint because the distance between accurate table entries is much larger than this quantity.}.
 
 In the computation of the trigonometric functions, we need $\red x + \gd \red x$ to provide enough accuracy that the final result is correctly rounded most of the time.  The above error bound shows that, if $\red x$ is very small (i.e., if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\red x + \gd \red x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
 \begin{equation}
@@ -508,11 +501,11 @@ e &\DefineAs 1 + \frac{1 + 2^{M + 1} \; \overbar\ge_1}{1 - \overbar\ge_1 - 2^{-k
 If $\abs{\red x} \le \gD = 2^{-10}$ the steps of the computation are as follows:
 \[
 \begin{dcases}
-t_1 &= \roundAll{p_{s0}\of{{\red x}^2}} \\
-t_2 &= \roundAll{{\red x}^3} \\
-t_3 &= \round{t_1 t_2 + \gd \red x} \\
-y &= \red x \\
-\gd y &= t_3
+t_1 &\DefineAs \roundAll{p_{s0}\of{{\red x}^2}} \\
+t_2 &\DefineAs \roundAll{{\red x}^3} \\
+t_3 &\DefineAs \round{t_1 t_2 + \gd \red x} \\
+y &\DefineAs \red x \\
+\gd y &\DefineAs t_3
 \end{dcases}
 \]
 
@@ -547,11 +540,29 @@ If $\red x \in \mathscr{I}_k$ we first compute $h = \red x - x_k$.  It is essent
 \[
 \frac{2 k + 1}{2} \gD \le x_k \le 2 \pa{2 k - 1} \gD
 \]
-Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_k \le 2 \; \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \; \gD$.\marginnote{TODO(phl): Cross-reference in the accurate tables section.}
+Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_1 \le 2 \; \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \; \gD$.\marginnote{TODO(phl): Cross-reference in the accurate tables section.}
 
 For $\sin$ we do not use the interval $\mathscr{I}_0$ (see \nameref{secsinnearzero}, above) but for $\cos$ we do.  That interval is special because $x_0 = 0$: the computation of $h$ is therefore trivially correct.
 
-The relative errors on the minimax polynomials may be rewritten as:
+Interestingly, $x_1 < 2 \gD$ is also the necessary condition to compute $h \; c_k + s_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}.  The subtraction in the second step of their algorithm must be exact, therefore the following Sterbenz inequalities must hold\footnote{Note that $\mathscr{I}_0$ is uninteresting because $c_0 = 1$ and $s_0 = 0$ so the computation is trivially exact.}:
+\[
+\frac{s_k}{2} \le h \; c_k + s_k \le 2 \; s_k
+\]
+This may be rewritten as:
+\[
+-\frac{1}{2} \tan x_k \le h \le \tan x_k
+\]
+Let $x_k = 2 k \gD + \ge_k$ for some small $\ge_k$.  By the definition of $h$ we have:
+\[
+-\gD - \ge_k \le h \le \gD - \ge_k
+\]
+Now we know that $x_k < \tan x_k$ and since $\gD - \ge_k < 2 k \gD + \ge_k$ for all $k > 0$ the right side of the Sterbenz condition is always true.  The left side is more interesting though as:
+\[
+-\frac{1}{2} \tan x_k < -\frac{x_k}{2} = -k \gD - \frac{\ge_k}{2}
+\]
+For $k > 1$, this quantity is clearly smaller than $-\gD - \ge_k$, the lower bound of $h$.  However, when $k = 1$, $-\gD - \ge_1 / 2 \le -\gD - \ge_1$ requires that $\ge_1 \le 0$, in other words, that $x_1$ be below $2 \gD$.  Note that we do not need to go through a similar proof for the exactness of $-h \; s_k + c_k$ because $h \; s_k$ is much smaller than $c_k$ for all $k$.
+
+Finally, for the purpose of error analysis, the relative errors on the minimax polynomials may be rewritten as:
 \begin{align*}
 p_s\of{h^2} &= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \qquad & \abs{\gz_1} < 2^{-52.689} \\
 p_c\of{h^2} &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-51.466}
@@ -559,26 +570,26 @@ p_c\of{h^2} &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-
 
 \subsubsection*{Sin}\label{secerroranalysissin}
 
-The first step of the computation is to evaluate $h c_k + s_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
+The first step of the computation is to evaluate $h \; c_k + s_k$ exactly using an FMA:
 \[
-\pa{z, \gd z} = t_0 = h c_k + s_k
+\pa{z, \gd z} = t_0 = h \; c_k + s_k
 \]
 where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$, where the two terms are exact.
 
 The remaining steps of the computation are then as follows:
 \[
 \begin{dcases}
-t_1 &= \roundAll{p_s\of{h^2}} \\
-t_2 &= \roundAll{p_c\of{h^2}} \\
-t_3 &= \round{h \round{2 \; \gd \red x + h}} \\
-t_4 &= \roundAll{h^3} \\
-t_5 &= \roundAll{\round{s_k} \; t3 \; t2} \\
-t_6 &= \round{t4 \; t1} \\
-t_7 &= \round{\round{c_k} t6 + t5} \\
-t_8 &= \round{\round{c_k} \gd \red x + t_0 \; \gd_0} \\
-t_9 &= \round{t7 + t8} \\
-y &= t_0 \pa{1 - \gd_0} \\
-\gd y &= t_9
+t_1 &\DefineAs \roundAll{p_s\of{h^2}} \\
+t_2 &\DefineAs \roundAll{p_c\of{h^2}} \\
+t_3 &\DefineAs \round{h \round{2 \; \gd \red x + h}} \\
+t_4 &\DefineAs \roundAll{h^3} \\
+t_5 &\DefineAs \roundAll{\round{s_k} \; t3 \; t2} \\
+t_6 &\DefineAs \round{t4 \; t1} \\
+t_7 &\DefineAs \round{\round{c_k} t6 + t5} \\
+t_8 &\DefineAs \round{\round{c_k} \gd \red x + t_0 \; \gd_0} \\
+t_9 &\DefineAs \round{t7 + t8} \\
+y &\DefineAs t_0 \pa{1 - \gd_0} \\
+\gd y &\DefineAs t_9
 \end{dcases}
 \]
 where we have made the rounding of the accurate table elements $s_k$ and $c_k$ explicit.
@@ -616,26 +627,26 @@ The function $r$ must be evaluated separately for each interval around $x_k$, wi
 
 \subsubsection*{Cos}\label{secerroranalysiscos}
 
-The first step of the computation is to evaluate $-h s_k + c_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}:
+The first step of the computation is to evaluate $-h \; s_k + c_k$ exactly using an FMA:
 \[
-\pa{z, \gd z} = t_0 = -h s_k + c_k
+\pa{z, \gd z} = t_0 = -h \; s_k + c_k
 \]
 where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$, where the two terms are exact.
 
 The remaining steps of the computation are then as follows:
 \[
 \begin{dcases}
-t_1 &= \roundAll{p_s\of{h^2}} \\
-t_2 &= \roundAll{p_c\of{h^2}} \\
-t_3 &= \round{h \round{2 \; \gd \red x + h}} \\
-t_4 &= \roundAll{h^3} \\
-t_5 &= \roundAll{\round{c_k} \; t3 \; t2} \\
-t_6 &= \round{t4 \; t1} \\
-t_7 &= \round{-\round{s_k} t6 + t5} \\
-t_8 &= \round{-\round{s_k} \gd \red x + t_0 \; \gd_0} \\
-t_9 &= \round{t7 + t8} \\
-y &= t_0 \pa{1 - \gd_0} \\
-\gd y &= t_9
+t_1 &\DefineAs \roundAll{p_s\of{h^2}} \\
+t_2 &\DefineAs \roundAll{p_c\of{h^2}} \\
+t_3 &\DefineAs \round{h \round{2 \; \gd \red x + h}} \\
+t_4 &\DefineAs \roundAll{h^3} \\
+t_5 &\DefineAs \roundAll{\round{c_k} \; t3 \; t2} \\
+t_6 &\DefineAs \round{t4 \; t1} \\
+t_7 &\DefineAs \round{-\round{s_k} t6 + t5} \\
+t_8 &\DefineAs \round{-\round{s_k} \gd \red x + t_0 \; \gd_0} \\
+t_9 &\DefineAs \round{t7 + t8} \\
+y &\DefineAs t_0 \pa{1 - \gd_0} \\
+\gd y &\DefineAs t_9
 \end{dcases}
 \]
 where we have made the rounding of the accurate table elements $s_k$ and $c_k$ explicit.
