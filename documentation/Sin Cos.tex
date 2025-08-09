@@ -44,6 +44,7 @@ This document describes the implementation of functions \texttt{Sin} and \texttt
 \end{sloppypar}
 
 \section*{Overview}
+
 The implementation follows the ideas described by \cite{GalBachelis1991} and uses accurate tables produced by the method presented in \cite{StehléZimmermann2005}.  It guarantees correct rounding with a high probability.  In circumstances where it cannot guarantee correct rounding, it falls back to the (slower but correct) implementation provided by the CORE-MATH project \cite{SibidanovZimmermannGlondu2022} \cite{ZimmermannSibidanovGlondu2024}.  More precisely, the algorithm proceeds through the following steps:
 \begin{itemize}[nosep]
 \item perform argument reduction using Cody and Waite's algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010});
@@ -54,13 +55,14 @@ The implementation follows the ideas described by \cite{GalBachelis1991} and use
 \end{itemize}
 
 \section*{Notation and Accuracy Model} 
+
 In this document we assume a base-2 floating-point number system with $M$ significand bits\footnote{In \texttt{binary64}, $M = 53$.} similar to the IEEE formats.  We define a real  function $\mant$ and an integer function $\expn$ denoting the \emph{significand} and \emph{exponent} of a real number, respectively:
 \[
 x = ±\mant\of{x} \times 2^{\expn\of{x}} \qquad\text{with}\qquad 2^{M-1} \leq \mant\of{x} \leq 2^M - 1
 \]
 Note that this representation is unique.  Furthermore, if $x$ is a floating-point number, $\mant\of{x}$ is an integer.
 
-The \emph{unit of the last place} of $x$ is defined as:
+The \emph{unit of the last place\footnote{Intuitively, this is the ULP ``above'' for powers of 2.}} of $x$ is defined as:
 \[
 \ULP\of{x} \DefineAs 2^{\expn\of{x}}
 \]
@@ -72,9 +74,10 @@ In particular, $\ULP\of{1} = 2^{1 - M}$ and:
 
 We ignore the exponent bias, overflow and underflow as they play no role in this discussion.
 
-Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\abs{\gd_i} < u = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
+Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\abs{\gd_i} < u = \ULP\of{\frac{1}{2}} = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
 
 \section*{Approximation of $\frac{\Pi}{2}$}
+
 To perform argument reduction, we need to build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
 
 Let $z \geq 0$.  We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
@@ -105,6 +108,7 @@ which can be made more precise by noting that the function $\ULP$ is always a po
 \end{equation}
 
 \subsubsection*{Two-Term Approximation}
+
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of two floating-point numbers:
 \[
 \frac{\Pi}{2} \simeq C_1 + \gd C_1
@@ -140,6 +144,7 @@ and the following upper bound for $\gd C_1$:
 This scheme gives a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
 
 \subsubsection*{Three-Term Approximation}
+
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of three floating-point numbers:
 \[
 \frac{\Pi}{2} \simeq C_2 + C'_2 + \gd C_2
@@ -194,6 +199,7 @@ and the following upper bound for $\gd C_2$:
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
 \section*{Argument Reduction}
+
 Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\red x, \gd \red x}$ such that:
 \[
 \begin{dcases}
@@ -204,9 +210,11 @@ Given an argument $x$, the purpose of argument reduction is to compute a pair of
 \]
 
 \subsection*{Argument Reduction for Small Angles}
+
 If $\abs x < \round{\frac{\Pi}{4}}$ then $\red x = x$ and $\gd \red x = 0$.
 
 \subsection*{Argument Reduction Using the Two-Term Approximation}\marginnote{TODO(phl): In this section and the next, document the ``better'' bounds computed with \textit{Mathematica}.}
+
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
 \begin{dcases}
@@ -329,6 +337,7 @@ which leads to the following condition on the reduced angle:
 The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.
 
 \subsection*{Argument Reduction Using the Three-Term Approximation}
+
 If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
 \[
 \begin{dcases}
@@ -381,13 +390,19 @@ and it is therefore sufficient to have:
 If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ and $\gk''_2 = 15$.  Therefore, the desired accuracy is obtained as long as $\abs{\red x} \geq 65 \times 2^{-39} \simeq 1.2 \times 10^{-10}$.
 
 \subsection*{Fallback}
+
 If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
 
 \section*{Accurate Tables and Their Generation}
+
 \marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
+
 \section*{Polynomial Approximations}
+
 The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p$ such that $p\of{q\of{x}}$ approximates a function $f\of{x}$ by minimizing the quantity $\frac{f\of{x} - p\of{q\of{x}}}{g\of{x}}$.  By choosing $g\of{x}$ appropriately, we can obtain an approximation that minimizes either the absolute or relative error on the result.
+
 \subsection*{Sin Near Zero}
+
 For the $\sin$ function near zero the accurate tables method is not usable because the correction term is not small compared to the tabulated value of the function (which would be zero)\footnote{It would be possible to have one set of tables per binade with progressively denser intervals, but that would have a terrible performance as the tables would end up being very large.}.  Instead we use a polynomial approximation that minimizes the relative error on the result.  Since $\sin x$ is an even function and since its dominant term is $x$, we are looking for an approximation having the form:
 \[
 \sin x \simeq x + x^3 p_{s0}\of{x^2}
@@ -406,7 +421,7 @@ which results in a polynomial $p_{s0}$ which minimizes the relative error on $\s
 
 In practice we choose $\gD = 2^{-10}$, and compute a degree-1 polynomial which induces a relative error smaller than $2^{-75.538}$ (before rounding the coefficients to machine numbers).
 
-\subsection*{Around Table Entries}
+\subsection*{Sin and Cos Around Table Entries}
 
 Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval\footnote{Obviously the intervals $\mathscr{I}_k$ cannot all contain their bounds.  Because of the way they are computed, the odd multiples of $\gD$ which separate the intervals are rounded to the nearest even $k$.  Therefore, there is an alternation of open-open intervals (for $k$ odd) and closed-closed intervals (for $k$ even).  We do not have a convenient notation for this, and anyway this detail is mostly irrelevant.} containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $x \in \mathscr{I}_k$ and computes $h = x - x_k$.  We are therefore looking for approximations of the form:
 \begin{align*}
@@ -444,7 +459,7 @@ In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference
 
 \section*{Core Implementation}
 
-This section documents the core of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether $\round{y + \gd y}$ is the correctly-rounded result (this is the case with high probability) or whether we need to fall back to the CORE-MATH implementation\marginnote{TODO(phl): Give the values of $e$.}.
+This section documents the core of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether $\round{y + \gd y}$ is the correctly-rounded result (this is the case with high probability) or whether we need to fall back to the CORE-MATH implementation.
 
 We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.  This notation is typically used for error intervals computed using the functions \texttt{IEEEEvaluateWithRelativeError} and \texttt{IEEEEvaluateWithAbsoluteError} in file \href{https://github.com/mockingbirdnest/Principia/blob/master/mathematica/ieee754_floating_point_evaluation.wl}{\texttt{mathematica/ieee754\_floating\_point\_{\linebreak}evaluation.wl}}.  In particular, these functions take into account that the evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations; this may leading to asymmetrical error intervals. \marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
 
@@ -458,7 +473,38 @@ x \equiv \red x + \gd \red x + \gz_0 \; \red x \pmod{\frac{\Pi}{4}} \qquad \abs{
 \]
 For simplicity of the error analysis we can assume $0 \le x \le \frac{\Pi}{4}$: even though we do not do argument reduction when $x$ is less than $\frac{\Pi}{4}$, the error analysis would work exactly the same if $x$ was simply provided as a high-accuracy value (e.g., a double-double) and reduced using the techniques above.
 
+\subsection*{Rounding Test}
+
+The rounding test described in \cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} is done by comparing $y$ and $\round{y + \round{\gd y \; e}}$ for equality, where $e > 1$ is computed based on the relative error bound on $y + \gd y$.  In our case, where an FMA is available, we want to compute the second part as $\round{y + \gd y \; e}$.  We must analyse what this implies for the computation of $e$.
+
+The proof of the rounding test is rather convoluted, but for our purpose the important part is the implication\footnote{We adapt the proof to use our notation.}, when $y$ is not a power of 2 or $\gd y \geq 0$:
+\[
+y = \round{y + \round{\gd y \; e}} \implies \round{\gd y \; e} \le \frac{\ULP\of{y}}{2} \implies \gd y \; e \; \pa{1 - \ULP\of{\frac{1}{2}}} \le \frac{\ULP\of{y}}{2}
+\]
+When an FMA is used the smaller term has to be less that half a ULP of the larger term, otherwise the result would round away from $y$.  This gives the tighter bound:
+\[
+y = \round{y + \gd y \; e} \implies \gd y \; e \le \frac{\ULP\of{y}}{2}
+\]
+
+Similarly when $y$ is a power of 2 and $\gd y < 0$ the proof depends on the implications:
+\[
+y = \round{y + \round{\gd y \; e}} \implies \abs{\round{\gd y \; e}} \le \frac{\ULP\of{y}}{4} \implies -\gd y \; e \; \pa{1 - \ULP\of{\frac{1}{2}}} \le \frac{\ULP\of{y}}{4}
+\]
+When an FMA is used the smaller term, which is negative, has to be less than half a ULP \emph{below} the larger term otherwise the result would round below $y$.  Because the ULP below is half the ULP above, this gives the tighter bound:
+\[
+y = \round{y + \gd y \; e} \implies -\gd y \; e \le \frac{\ULP\of{y}}{4}
+\]
+
+Putting these tighter bounds together we obtain a slightly smaller value for $e$:
+\begin{align*}
+k &\DefineAs \floor{-\log_2{\overbar\ge_1} - M} \\
+e &\DefineAs 1 + \frac{1 + 2^{M + 1} \; \overbar\ge_1}{1 - \overbar\ge_1 - 2^{-k + 1}}
+\end{align*}
+
+ In each of the error analyses below we document the factor $e$ to use for the rounding test.
+
 \subsection*{Sin Near Zero}\label{secsinnearzero}
+
 If $\abs{\red x} \le \gD = 2^{-10}$ the steps of the computation are as follows:
 \[
 \begin{dcases}
@@ -493,9 +539,10 @@ The relative error on the entire computation is:
 \[
 r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
 \]
-The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that it is monotonic and its extrema are therefore reached at the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that it is monotonic and its extrema are therefore reached at the corners of the domain.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.561}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'AD82'A723'6p0}.$\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
 
-\subsection*{Around Table Entries}
+\subsection*{Sin and Cos Around Table Entries}
+
 If $\red x \in \mathscr{I}_k$ we first compute $h = \red x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $\red x / 2 \le x_k \le 2 \red x$.  Based on the range of $\red x$, a sufficient condition for this is:
 \[
 \frac{2 k + 1}{2} \gD \le x_k \le 2 \pa{2 k - 1} \gD
@@ -565,7 +612,7 @@ Great care is required when evaluating this expression using interval arithmetic
 \]
 which is pleasantly small, and even though $\gd_9$ and $\gd_{10}$ also appear in the term that does not involve $\gd_0$, the effect of replicating them is acceptable.
 
-The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.751}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones)\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}.
+The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.751}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'6013'6BD9'Dp0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}.
 
 \subsubsection*{Cos}\label{secerroranalysiscos}
 
@@ -619,6 +666,6 @@ As explained above (see \nameref{secerroranalysissin}) the expression for $r$ mu
 \[
 \gd_0 \pa{-\round{c_k} + h \round{s_k}} \pa{1 - \pa{1 + \gd_{10}} \pa{1 + \gd_9}}
 \]
-and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).
+and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B836'988A'Dp0}$.
 
 \end{document}
