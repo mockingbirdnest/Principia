@@ -181,6 +181,10 @@
 (*N[{Abs[\[Pi]/2-C1-\[Delta]C1],2^(\[Kappa]\[Prime]1-M-1)\[GothicU][\[Pi]/2]},20]*)
 
 
+(* ::Input:: *)
+(*N[Log2[{Abs[\[Pi]/2-C1-\[Delta]C1],2^(\[Kappa]\[Prime]1-M-1)\[GothicU][\[Pi]/2]}],20]*)
+
+
 (* ::Text:: *)
 (*That's probably because there are three zeroes after \[Delta]C1:*)
 
@@ -195,6 +199,10 @@
 
 (* ::Input:: *)
 (*N[{Abs[\[Delta]C1],2^\[Kappa]\[Prime]1(1+2^(-M-1))\[GothicU][\[Pi]/2]},20]*)
+
+
+(* ::Input:: *)
+(*N[Log2[{Abs[\[Delta]C1],2^\[Kappa]\[Prime]1(1+2^(-M-1))\[GothicU][\[Pi]/2]}],20]*)
 
 
 (* ::Input:: *)
@@ -267,6 +275,10 @@
 (*N[{Abs[\[Pi]/2-C2-C\[Prime]2-\[Delta]C2],2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-2 M-1)\[GothicU][\[Pi]/2]},20]*)
 
 
+(* ::Input:: *)
+(*N[Log2[{Abs[\[Pi]/2-C2-C\[Prime]2-\[Delta]C2],2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-2 M-1)\[GothicU][\[Pi]/2]}],20]*)
+
+
 (* ::Text:: *)
 (*That's because the first bit after \[Delta]C2 is one:*)
 
@@ -281,6 +293,10 @@
 
 (* ::Input:: *)
 (*N[{Abs[\[Delta]C2],2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-M)(1+2^(-M-1))\[GothicU][\[Pi]/2]},20]*)
+
+
+(* ::Input:: *)
+(*N[Log2[{Abs[\[Delta]C2],2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-M)(1+2^(-M-1))\[GothicU][\[Pi]/2]}],20]*)
 
 
 (* ::Input:: *)
@@ -443,6 +459,10 @@
 (*N[{Max[reductionInterval],2^(\[Kappa]1+\[Kappa]\[Prime]1-M+1)\[GothicU][\[Pi]/2]},20]*)
 
 
+(* ::Input:: *)
+(*N[Log2[{Max[reductionInterval],2^(\[Kappa]1+\[Kappa]\[Prime]1-M+1)\[GothicU][\[Pi]/2]}],20]*)
+
+
 (* ::Text:: *)
 (*Threshold for dangerous rounding:*)
 
@@ -457,6 +477,14 @@
 
 (* ::Input:: *)
 (*N[angleReducedThreshold]*)
+
+
+(* ::Text:: *)
+(*Tighter threshold possible:*)
+
+
+(* ::Input:: *)
+(*N[2^(\[Kappa]3+M)Max[reductionInterval]]*)
 
 
 (* ::Input:: *)
@@ -560,10 +588,6 @@
 
 
 (* ::Text:: *)
-(*The paper should use misrounding in the following bound!*)
-
-
-(* ::Text:: *)
 (*Error on the overall reduction:*)
 
 
@@ -577,6 +601,10 @@
 
 (* ::Input:: *)
 (*N[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]},20]*)
+
+
+(* ::Input:: *)
+(*N[Log2[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]}],20]*)
 
 
 (* ::Text:: *)
@@ -593,6 +621,14 @@
 
 (* ::Input:: *)
 (*N[angleReducedThreshold]*)
+
+
+(* ::Text:: *)
+(*Tighter threshold possible:*)
+
+
+(* ::Input:: *)
+(*N[2^(\[Kappa]3+M)Max[reductionInterval]]*)
 
 
 (* ::Input:: *)
@@ -901,6 +937,10 @@
 (*Error Analysis*)
 
 
+(* ::Text:: *)
+(*This section analyses the relative error of the various algorithms and computes Muller's e factor.*)
+
+
 (* ::Input:: *)
 (*Options[mullerE]={UseFMA->False};*)
 (*mullerE[\[Epsilon]1_Real,OptionsPattern[]]:=Module[{k=Floor[-Log2[\[Epsilon]1]-M],e},Assert[k>=3];e=If[OptionValue[UseFMA],1,(1-2^-M)^-1](1+2^(M+1) \[Epsilon]1/(1-\[Epsilon]1-2^(-k+1)));Assert[e<=2];e]*)
@@ -971,19 +1011,31 @@
 
 
 (* ::Input:: *)
-(*t0[x\:0303_]:=(1+\[Zeta]1)Sin[x\:0303]-x\:0303*)
+(*\[Delta]2=uInterval;*)
 
 
 (* ::Input:: *)
-(*t1t2[x\:0303_]:=t0[x\:0303] (1+\[Zeta]2)(1+\[Zeta]3)*)
+(*\[Delta]3=uInterval;*)
 
 
 (* ::Input:: *)
-(*t3[x\:0303_,\[Delta]x\:0303_]:=(t1t2[x\:0303]+\[Delta]x\:0303)(1+\[Delta]1)*)
+(*t1[x\:0303_]:=(1+\[Zeta]2)((1+\[Zeta]1)Sin[x\:0303]-x\:0303)/x\:0303^3*)
+
+
+(* ::Input:: *)
+(*t2[x\:0303_]:=x\:0303^3(1+\[Delta]1)(1+\[Delta]2)*)
+
+
+(* ::Input:: *)
+(*t3[x\:0303_,\[Delta]x\:0303_]:=(t1[x\:0303]t2[x\:0303]+\[Delta]x\:0303)(1+\[Delta]3)*)
 
 
 (* ::Input:: *)
 (*sin0ImplementationRelativeError[x\:0303_,\[Delta]x\:0303_]:=(x\:0303+t3[x\:0303,\[Delta]x\:0303])/Sin[x\:0303+\[Delta]x\:0303+\[Zeta]0Interval x\:0303]-1*)
+
+
+(* ::Input:: *)
+(*Plot[{Min[sin0ImplementationRelativeError[x\:0303,0]],Max[sin0ImplementationRelativeError[x\:0303,0]]},{x\:0303,0,x0Max},WorkingPrecision->30]*)
 
 
 (* ::Text:: *)
@@ -991,11 +1043,11 @@
 
 
 (* ::Input:: *)
-(*Plot3D[{Min[sin0ImplementationRelativeError[x,\[Delta]x]],Max[sin0ImplementationRelativeError[x,\[Delta]x]]},{x,0,x0Max},{\[Delta]x,-x0Max \[GothicU][1/2],x0Max \[GothicU][1/2]},RegionFunction->Function[{x,\[Delta]x},-x \[GothicU][1/2]<\[Delta]x<x \[GothicU][1/2]],WorkingPrecision->40,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
+(*smol=1*^-100;*)
 
 
 (* ::Input:: *)
-(*smol=1*^-100;*)
+(*Plot3D[{Min[sin0ImplementationRelativeError[x\:0303,\[Delta]x\:0303]],Max[sin0ImplementationRelativeError[x\:0303,\[Delta]x\:0303]]},{x\:0303,smol,x0Max},{\[Delta]x\:0303,-x0Max \[GothicU][1/2],x0Max \[GothicU][1/2]},RegionFunction->Function[{x\:0303,\[Delta]x\:0303},-x\:0303 \[GothicU][1/2]<\[Delta]x\:0303<x\:0303 \[GothicU][1/2]],WorkingPrecision->40,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
 
 
 (* ::Input:: *)
@@ -1087,7 +1139,15 @@
 
 
 (* ::Input:: *)
+(*Log2[\[Eta]s]*)
+
+
+(* ::Input:: *)
 (*\[Eta]c=Abs[cosApproximationResult[[2,2]]]*)
+
+
+(* ::Input:: *)
+(*Log2[\[Eta]c]*)
 
 
 (* ::Input:: *)
@@ -1183,7 +1243,11 @@
 
 
 (* ::Input:: *)
-(*(*\[Delta]1=.;\[Delta]2=.;\[Delta]3=.;\[Delta]4=.;\[Delta]5=.;\[Delta]6=.;\[Delta]7=.;\[Delta]8=.;*)*)
+(*(*\[Delta]1=.;\[Delta]2=.;\[Delta]3=.;\[Delta]4=.;\[Delta]5=.;\[Delta]6=.;\[Delta]7=.;\[Delta]8=.;\[Delta]9=.;\[Delta]10=.;*)*)
+
+
+(* ::Input:: *)
+(*(*\[Zeta]1=.;\[Zeta]2=.;\[Zeta]3=.;\[Zeta]4=.;*)*)
 
 
 (* ::Input:: *)
@@ -1207,11 +1271,11 @@
 
 
 (* ::Input:: *)
-(*t5[h_,\[Delta]x\:0303_,sk_]:=Hold[CorrectlyRound[sk]] t2[h]t3[h,\[Delta]x\:0303](1+\[Delta]5)(1+\[Delta]6)*)
+(*t5[h_,\[Delta]x\:0303_,sk_]:=Hold[CorrectlyRound[sk]]t3[h,\[Delta]x\:0303] t2[h](1+\[Delta]5)(1+\[Delta]6)*)
 
 
 (* ::Input:: *)
-(*t6[h_,\[Delta]x\:0303_]:=t1[h]t4[h,\[Delta]x\:0303](1+\[Delta]7)*)
+(*t6[h_,\[Delta]x\:0303_]:=t4[h,\[Delta]x\:0303]t1[h](1+\[Delta]7)*)
 
 
 (* ::Input:: *)
@@ -1219,23 +1283,23 @@
 
 
 (* ::Input:: *)
-(*t8[h_,\[Delta]x\:0303_,sk_,ck_,\[Epsilon]_]:=(Hold[CorrectlyRound[ck]] \[Delta]x\:0303+\[Epsilon] t0[h,sk,ck])(1+\[Delta]9)*)
+(*t8[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=(Hold[CorrectlyRound[ck]] \[Delta]x\:0303+\[Delta]0 t0[h,sk,ck])(1+\[Delta]9)*)
 
 
 (* ::Input:: *)
-(*t9[h_,\[Delta]x\:0303_,sk_,ck_,\[Epsilon]_]:=(t7[h,\[Delta]x\:0303,sk,ck]+t8[h,\[Delta]x\:0303,sk,ck,\[Epsilon]])(1+\[Delta]10)*)
+(*t9[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=(t7[h,\[Delta]x\:0303,sk,ck]+t8[h,\[Delta]x\:0303,sk,ck,\[Delta]0])(1+\[Delta]10)*)
 
 
 (* ::Input:: *)
-(*t10[h_,\[Delta]x\:0303_,sk_,ck_,\[Epsilon]_]:=t0[h,sk,ck](1-\[Epsilon])+t9[h,\[Delta]x\:0303,sk,ck,\[Epsilon]]*)
+(*t10[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=t0[h,sk,ck](1-\[Delta]0)+t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0]*)
 
 
 (* ::Input:: *)
-(*t11[h_,\[Delta]x\:0303_,sk_,ck_,\[Epsilon]_]:=ReleaseHold[CoefficientList[Collect[t10[h,\[Delta]x\:0303,sk,ck,\[Epsilon]],\[Epsilon]],\[Epsilon]]]*)
+(*t11[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=ReleaseHold[CoefficientList[Collect[t10[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0]]*)
 
 
 (* ::Input:: *)
-(*t12[h_,\[Delta]x\:0303_,sk_,ck_]:=Module[{\[Epsilon],cl=t11[h,\[Delta]x\:0303,sk,ck,\[Epsilon]]},cl[[1]]+uInterval cl[[2]]]*)
+(*t12[h_,\[Delta]x\:0303_,sk_,ck_]:=Module[{\[Delta]0,cl=t11[h,\[Delta]x\:0303,sk,ck,\[Delta]0]},cl[[1]]+uInterval cl[[2]]]*)
 
 
 (* ::Input:: *)
@@ -1243,57 +1307,45 @@
 
 
 (* ::Input:: *)
-(*m=Max[Abs[accurateTablesHIntervals[[65]]]]*)
+(*$Context*)
 
 
 (* ::Input:: *)
-(*at=accurateTables[65]*)
+(*xi=accurateTablesXIntervals[[65]];*)
 
 
 (* ::Input:: *)
-(*(*\[Zeta]0Interval=Interval[{0,0}]*)*)
+(*at=accurateTables[65];*)
 
 
 (* ::Input:: *)
-(*(*\[Delta]11=Interval[{0,0}];\[Delta]10=\[Delta]11;\[Delta]9=\[Delta]10;\[Delta]8=\[Delta]9;\[Delta]7=\[Delta]8;\[Delta]6=\[Delta]7;\[Delta]5=\[Delta]6;\[Delta]4=\[Delta]5;\[Delta]3=\[Delta]4;\[Delta]2=\[Delta]3;\[Delta]1=\[Delta]2;*)*)
+(*sinImplementationRelativeError[Min[xi],-Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]*)
 
 
 (* ::Input:: *)
-(*(*\[Zeta]4=Interval[{0,0}];\[Zeta]3=\[Zeta]4;\[Zeta]2=\[Zeta]3;\[Zeta]1=\[Zeta]2;*)*)
+(*Plot[{Min[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},WorkingPrecision->30]*)
 
 
 (* ::Input:: *)
-(*sinImplementationRelativeError[at[[1]]+m,m \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]*)
+(*Plot3D[{Min[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},{\[Delta]x\:0303,-Min[xi]\[GothicU][1/2],Max[xi] \[GothicU][1/2]},RegionFunction->Function[{x\:0303,\[Delta]x\:0303},-x\:0303 \[GothicU][1/2]<\[Delta]x\:0303<x\:0303 \[GothicU][1/2]],WorkingPrecision->30,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
 
 
 (* ::Input:: *)
-(*Plot[{Min[sinImplementationRelativeError[at[[1]]+h,m \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[at[[1]]+h,m \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]]},{h,0,m},WorkingPrecision->30]*)
-
-
-(* ::Input:: *)
-(*Plot3D[{Min[sinImplementationRelativeError[at[[1]]+h,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[at[[1]]+h,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]]},{h,0,m},{\[Delta]x\:0303,-m \[GothicU][1/2],m \[GothicU][1/2]},WorkingPrecision->30,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
-
-
-(* ::Input:: *)
-(*smol=1*^-100;*)
-
-
-(* ::Input:: *)
-(*sinImplementationMaxRelativeErrorPerInterval[i_]:=*)
+(*sinImplementationMaxRelativeErrorPerInterval[k_]:=*)
 (*Module[*)
-(*{at=accurateTables[i],m=Max[Abs[accurateTablesHIntervals[[i]]]],corners,r},*)
-(*corners={{smol,-m \[GothicU][1/2]},{smol,m \[GothicU][1/2]},{m,-m \[GothicU][1/2]},{m,m \[GothicU][1/2]}};*)
-(*r=Block[{$MaxExtraPrecision=1000},Map[sinImplementationRelativeError[at[[1]]+#[[1]],#[[2]],at[[1]],at[[2]],at[[3]]]&,corners]];*)
+(*{at=accurateTables[k],xi=accurateTablesXIntervals[[k]],corners,r},*)
+(*corners={{Min[xi],-Min[xi]\[GothicU][1/2]},{Min[xi],Min[xi] \[GothicU][1/2]},{Max[xi],-Max[xi]\[GothicU][1/2]},{Max[xi],Max[xi]\[GothicU][1/2]}};*)
+(*r=Block[{$MaxExtraPrecision=1000},Map[sinImplementationRelativeError[#[[1]],#[[2]],at[[1]],at[[2]],at[[3]]]&,corners]];*)
 (*Max[Abs/@r]*)
 (*]*)
 
 
 (* ::Input:: *)
-(*ListLogPlot[Table[{i,sinImplementationMaxRelativeErrorPerInterval[i]},{i,1,accurateTablesMaxIndex}]]*)
+(*ListLogPlot[Table[{k,sinImplementationMaxRelativeErrorPerInterval[k]},{k,1,accurateTablesMaxIndex}]]*)
 
 
 (* ::Text:: *)
-(*The dispersion of the error is largely due to the bit pattern of sk after the 18th accurate bit:*)
+(*The error has an outlier for k=1.  Other than that the dispersion of the error is largely due to the bit pattern of sk after the 18th accurate bit:*)
 
 
 (* ::Input:: *)
@@ -1333,7 +1385,7 @@
 
 
 (* ::Text:: *)
-(*Proof that the terms in h^2\[Delta]h and above can be ignored:*)
+(*Proof that the terms in h^2\[Delta]x\:0303 and above can be ignored:*)
 
 
 (* ::Input:: *)
@@ -1353,14 +1405,18 @@
 
 
 (* ::Input:: *)
-(*Plot3D[sinNextTermRelativeSize[at[[1]]+h,\[Delta]x\:0303,at[[1]]],{h,0,m},{\[Delta]x\:0303,-m \[GothicU][1/2],m \[GothicU][1/2]},WorkingPrecision->40,MeshShading->{{Automatic,None},{None,Automatic}},PlotRange->Full]*)
+(*(*sinNextTermRelativeSize[x\:0303_,\[Delta]x\:0303_,xk_]:=-(\[Delta]x\:0303 (x\:0303-xk)Sin[xk])/Sin[x\:0303+\[Delta]x\:0303]*)*)
 
 
 (* ::Input:: *)
-(*nextTermsAtCorners[i_]:=Module[*)
-(*{at=accurateTables[i],m=Max[Abs[accurateTablesHIntervals[[i]]]],corners,r},*)
-(*corners={{smol,-m \[GothicU][1/2]},{smol,m \[GothicU][1/2]},{m,-m \[GothicU][1/2]},{m,m \[GothicU][1/2]}};*)
-(*r=Block[{$MaxExtraPrecision=1000},Map[sinNextTermRelativeSize[at[[1]]+#[[1]],#[[2]],at[[1]]]&,corners]];*)
+(*Plot3D[sinNextTermRelativeSize[x\:0303,\[Delta]x\:0303,at[[1]]],{x\:0303,Min[xi],Max[xi]},{\[Delta]x\:0303,-Max[xi]\[GothicU][1/2],Max[xi] \[GothicU][1/2]},RegionFunction->Function[{x\:0303,\[Delta]x\:0303},-x\:0303 \[GothicU][1/2]<\[Delta]x\:0303<x\:0303 \[GothicU][1/2]],WorkingPrecision->40,MeshShading->{{Automatic,None},{None,Automatic}},PlotRange->Full]*)
+
+
+(* ::Input:: *)
+(*nextTermsAtCorners[k_]:=Module[*)
+(*{at=accurateTables[k],xi=accurateTablesXIntervals[[k]],corners,r},*)
+(*corners={{Min[xi],-Min[xi]\[GothicU][1/2]},{Min[xi],Min[xi] \[GothicU][1/2]},{Max[xi],-Max[xi]\[GothicU][1/2]},{Max[xi],Max[xi]\[GothicU][1/2]}};*)
+(*r=Block[{$MaxExtraPrecision=1000},Map[sinNextTermRelativeSize[#[[1]],#[[2]],at[[1]]]&,corners]];*)
 (*Max[Abs/@r]*)
 (*]*)
 
@@ -1430,7 +1486,11 @@
 
 
 (* ::Input:: *)
-(*(*\[Delta]1=.;\[Delta]2=.;\[Delta]3=.;\[Delta]4=.;\[Delta]5=.;\[Delta]6=.;\[Delta]7=.;\[Delta]8=.;*)*)
+(*(*\[Delta]1=.;\[Delta]2=.;\[Delta]3=.;\[Delta]4=.;\[Delta]5=.;\[Delta]6=.;\[Delta]7=.;\[Delta]8=.;\[Delta]9=.;\[Delta]10=.;*)*)
+
+
+(* ::Input:: *)
+(*(*\[Zeta]1=.;\[Zeta]2=.;\[Zeta]3=.;\[Zeta]4=.;*)*)
 
 
 (* ::Input:: *)
@@ -1466,23 +1526,23 @@
 
 
 (* ::Input:: *)
-(*t8[h_,\[Delta]x\:0303_,sk_,ck_,\[Epsilon]_]:=(-Hold[CorrectlyRound[sk]] \[Delta]x\:0303+\[Epsilon] t0[h,sk,ck])(1+\[Delta]9)*)
+(*t8[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=(-Hold[CorrectlyRound[sk]] \[Delta]x\:0303+\[Delta]0 t0[h,sk,ck])(1+\[Delta]9)*)
 
 
 (* ::Input:: *)
-(*t9[h_,\[Delta]x\:0303_,sk_,ck_,\[Epsilon]_]:=(t7[h,\[Delta]x\:0303,sk,ck]+t8[h,\[Delta]x\:0303,sk,ck,\[Epsilon]])(1+\[Delta]10)*)
+(*t9[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=(t7[h,\[Delta]x\:0303,sk,ck]+t8[h,\[Delta]x\:0303,sk,ck,\[Delta]0])(1+\[Delta]10)*)
 
 
 (* ::Input:: *)
-(*t10[h_,\[Delta]x\:0303_,sk_,ck_,\[Epsilon]_]:=t0[h,sk,ck](1-\[Epsilon])+t9[h,\[Delta]x\:0303,sk,ck,\[Epsilon]]*)
+(*t10[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=t0[h,sk,ck](1-\[Delta]0)+t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0]*)
 
 
 (* ::Input:: *)
-(*t11[h_,\[Delta]x\:0303_,sk_,ck_,\[Epsilon]_]:=ReleaseHold[CoefficientList[Collect[t10[h,\[Delta]x\:0303,sk,ck,\[Epsilon]],\[Epsilon]],\[Epsilon]]]*)
+(*t11[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=ReleaseHold[CoefficientList[Collect[t10[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0]]*)
 
 
 (* ::Input:: *)
-(*t12[h_,\[Delta]x\:0303_,sk_,ck_]:=Module[{\[Epsilon],cl=t11[h,\[Delta]x\:0303,sk,ck,\[Epsilon]]},cl[[1]]+uInterval cl[[2]]]*)
+(*t12[h_,\[Delta]x\:0303_,sk_,ck_]:=Module[{\[Delta]0,cl=t11[h,\[Delta]x\:0303,sk,ck,\[Delta]0]},cl[[1]]+uInterval cl[[2]]]*)
 
 
 (* ::Input:: *)
@@ -1490,53 +1550,37 @@
 
 
 (* ::Input:: *)
-(*m=Max[Abs[accurateTablesHIntervals[[65]]]]*)
+(*xi=accurateTablesXIntervals[[396]];*)
 
 
 (* ::Input:: *)
-(*at=accurateTables[396]*)
+(*at=accurateTables[396];*)
 
 
 (* ::Input:: *)
-(*(*\[Zeta]0Interval=Interval[{0,0}]*)*)
+(*cosImplementationRelativeError[Min[xi],-Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]*)
 
 
 (* ::Input:: *)
-(*(*\[Delta]11=Interval[{0,0}];\[Delta]10=\[Delta]11;\[Delta]9=\[Delta]10;\[Delta]8=\[Delta]9;\[Delta]7=\[Delta]8;\[Delta]6=\[Delta]7;\[Delta]5=\[Delta]6;\[Delta]4=\[Delta]5;\[Delta]3=\[Delta]4;\[Delta]2=\[Delta]3;\[Delta]1=\[Delta]2;*)*)
+(*Plot[{Min[cosImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]],Max[cosImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},WorkingPrecision->30]*)
 
 
 (* ::Input:: *)
-(*(*\[Zeta]4=Interval[{0,0}];\[Zeta]3=\[Zeta]4;\[Zeta]2=\[Zeta]3;\[Zeta]1=\[Zeta]2;*)*)
+(*Plot3D[{Min[cosImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]],Max[cosImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},{\[Delta]x\:0303,-Min[xi]\[GothicU][1/2],Max[xi] \[GothicU][1/2]},RegionFunction->Function[{x\:0303,\[Delta]x\:0303},-x\:0303 \[GothicU][1/2]<\[Delta]x\:0303<x\:0303 \[GothicU][1/2]],WorkingPrecision->30,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
 
 
 (* ::Input:: *)
-(*cosImplementationRelativeError[at[[1]]+m,m \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]*)
-
-
-(* ::Input:: *)
-(*Plot[{Min[cosImplementationRelativeError[at[[1]]+h,m \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]],Max[cosImplementationRelativeError[at[[1]]+h,m \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]]},{h,0,m},WorkingPrecision->30]*)
-
-
-(* ::Input:: *)
-(*Plot3D[{Min[cosImplementationRelativeError[at[[1]]+h,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]],Max[cosImplementationRelativeError[at[[1]]+h,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]]},{h,0,m},{\[Delta]x\:0303,-m \[GothicU][1/2],m \[GothicU][1/2]},WorkingPrecision->30,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
-
-
-(* ::Input:: *)
-(*smol=1*^-100;*)
-
-
-(* ::Input:: *)
-(*cosImplementationMaxRelativeErrorPerInterval[i_]:=*)
+(*cosImplementationMaxRelativeErrorPerInterval[k_]:=*)
 (*Module[*)
-(*{at=accurateTables[i],m=Max[Abs[accurateTablesHIntervals[[i]]]],corners,r},*)
-(*corners={{smol,-m \[GothicU][1/2]},{smol,m \[GothicU][1/2]},{m,-m \[GothicU][1/2]},{m,m \[GothicU][1/2]}};*)
-(*r=Block[{$MaxExtraPrecision=1000},Map[cosImplementationRelativeError[at[[1]]+#[[1]],#[[2]],at[[1]],at[[2]],at[[3]]]&,corners]];*)
+(*{at=accurateTables[k],xi=accurateTablesXIntervals[[k]],corners,r},*)
+(*corners={{Min[xi],-Min[xi]\[GothicU][1/2]},{Min[xi],Min[xi] \[GothicU][1/2]},{Max[xi],-Max[xi]\[GothicU][1/2]},{Max[xi],Max[xi]\[GothicU][1/2]}};*)
+(*r=Block[{$MaxExtraPrecision=1000},Map[cosImplementationRelativeError[#[[1]],#[[2]],at[[1]],at[[2]],at[[3]]]&,corners]];*)
 (*Max[Abs/@r]*)
 (*]*)
 
 
 (* ::Input:: *)
-(*ListLogPlot[Table[{i,cosImplementationMaxRelativeErrorPerInterval[i]},{i,1,accurateTablesMaxIndex}]]*)
+(*ListLogPlot[Table[{k,cosImplementationMaxRelativeErrorPerInterval[k]},{k,1,accurateTablesMaxIndex}]]*)
 
 
 (* ::Text:: *)
@@ -1580,7 +1624,7 @@
 
 
 (* ::Text:: *)
-(*Proof that the terms in h^2 \[Delta]h and above can be ignored:*)
+(*Proof that the terms in h^2 \[Delta]x\:0303 and above can be ignored:*)
 
 
 (* ::Input:: *)
@@ -1600,24 +1644,28 @@
 
 
 (* ::Input:: *)
-(*Plot3D[cosNextTermRelativeSize[at[[1]]+h,\[Delta]x\:0303,at[[1]]],{h,0,m},{\[Delta]x\:0303,-m \[GothicU][1/2],m \[GothicU][1/2]},WorkingPrecision->40,MeshShading->{{Automatic,None},{None,Automatic}},PlotRange->Full]*)
+(*(*cosNextTermRelativeSize[x\:0303_,\[Delta]x\:0303_,xk_]:=-(\[Delta]x\:0303 (x\:0303-xk)Cos[xk])/Cos[x\:0303+\[Delta]x\:0303]*)*)
 
 
 (* ::Input:: *)
-(*nextTermsAtCorners[i_]:=Module[*)
-(*{at=accurateTables[i],m=Max[Abs[accurateTablesHIntervals[[i]]]],corners,r},*)
-(*corners={{smol,-m \[GothicU][1/2]},{smol,m \[GothicU][1/2]},{m,-m \[GothicU][1/2]},{m,m \[GothicU][1/2]}};*)
-(*r=Block[{$MaxExtraPrecision=1000},Map[cosNextTermRelativeSize[at[[1]]+#[[1]],#[[2]],at[[1]]]&,corners]];*)
+(*Plot3D[cosNextTermRelativeSize[x\:0303,\[Delta]x\:0303,at[[1]]],{x\:0303,Min[xi],Max[xi]},{\[Delta]x\:0303,-Max[xi]\[GothicU][1/2],Max[xi] \[GothicU][1/2]},RegionFunction->Function[{x\:0303,\[Delta]x\:0303},-x\:0303 \[GothicU][1/2]<\[Delta]x\:0303<x\:0303 \[GothicU][1/2]],WorkingPrecision->40,MeshShading->{{Automatic,None},{None,Automatic}},PlotRange->Full]*)
+
+
+(* ::Input:: *)
+(*nextTermsAtCorners[k_]:=Module[*)
+(*{at=accurateTables[k],xi=accurateTablesXIntervals[[k]],corners,r},*)
+(*corners={{Min[xi],-Min[xi]\[GothicU][1/2]},{Min[xi],Min[xi] \[GothicU][1/2]},{Max[xi],-Max[xi]\[GothicU][1/2]},{Max[xi],Max[xi]\[GothicU][1/2]}};*)
+(*r=Block[{$MaxExtraPrecision=1000},Map[cosNextTermRelativeSize[#[[1]],#[[2]],at[[1]]]&,corners]];*)
 (*Max[Abs/@r]*)
 (*]*)
 
 
 (* ::Input:: *)
-(*ListLogPlot[Table[{i,nextTermsAtCorners[i]},{i,1,accurateTablesMaxIndex}]]*)
+(*ListLogPlot[Table[{k,nextTermsAtCorners[k]},{k,1,accurateTablesMaxIndex}]]*)
 
 
 (* ::Input:: *)
-(*cosNextTermMaxRelativeSize=Max[Table[nextTermsAtCorners[i],{i,1,accurateTablesMaxIndex}]];*)
+(*cosNextTermMaxRelativeSize=Max[Table[nextTermsAtCorners[k],{k,1,accurateTablesMaxIndex}]];*)
 
 
 (* ::Input:: *)
