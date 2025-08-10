@@ -305,9 +305,10 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     double const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
             cos_x₀,
-            h³ * SinPolynomial<fma_policy>(h²),
+            FusedMultiplyAdd<fma_policy>(
+                h³, SinPolynomial<fma_policy>(h²), e_abs),
             (sin_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
-        FusedMultiplyAdd<fma_policy>(cos_x₀, e_abs, sin_x₀_plus_h_cos_x₀.error);
+        sin_x₀_plus_h_cos_x₀.error;
     return _mm_cvtsd_f64(
         _mm_xor_pd(_mm_set_sd(DetectDangerousRounding<fma_policy, sin_e>(
                        sin_x₀_plus_h_cos_x₀.value, polynomial_term)),
@@ -340,6 +341,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   double const h² = h * h;
   double const h³ = h² * h;
   double const h_plus_e_abs² = h * FusedMultiplyAdd<fma_policy>(2, e_abs, h);
+  // TODO(phl): Redo the error analysis.
   double const polynomial_term =
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀,
