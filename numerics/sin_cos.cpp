@@ -159,6 +159,9 @@ double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
 // negative.
 template<FMAPolicy fma_policy, double e>
 double DetectDangerousRounding(double const x, double const Δx) {
+  // We don't check that `Δx` is not NaN because that's how we trigger fallback
+  // to the slow path.
+  DCHECK(x == x);
   DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
   double const& value = sum.value;
   double const& error = sum.error;
@@ -166,8 +169,9 @@ double DetectDangerousRounding(double const x, double const Δx) {
     return value;
   } else {
 #if _DEBUG
-    LOG(ERROR) << std::setprecision(25) << x << " " << std::hexfloat << value
-               << " " << error << " " << e;
+    LOG_IF(ERROR, value == value && error == error)
+        << std::setprecision(25) << x << " " << std::hexfloat << value << " "
+        << error << " " << e;
 #endif
     return std::numeric_limits<double>::quiet_NaN();
   }
