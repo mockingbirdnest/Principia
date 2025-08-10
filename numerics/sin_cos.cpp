@@ -52,6 +52,7 @@ using namespace principia::numerics::_polynomial_evaluators;
     /* Not NaN is the only part that matters; used at the end of the    */   \
     /* top-level functions to determine whether to call the slow path.  */   \
     constexpr double value = 1;                                              \
+    constexpr double muller_test_expression = value;                         \
     return expression;                                                       \
   }()
 
@@ -164,7 +165,9 @@ double DetectDangerousRounding(double const x, double const Δx) {
   DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
   double const& value = sum.value;
   double const& error = sum.error;
-  OSACA_IF(value == FusedMultiplyAdd<fma_policy>(error, e, value)) {
+  double const muller_test_expression =
+      FusedMultiplyAdd<fma_policy>(error, e, value);
+  OSACA_IF(value == muller_test_expression) {
     return value;
   } else {
 #if _DEBUG
