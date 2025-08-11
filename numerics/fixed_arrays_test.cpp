@@ -59,7 +59,7 @@ class FixedArraysTest : public ::testing::Test {
   FixedUpperTriangularMatrix<double, 4> u4_;
 };
 
-TEST(FixedArraysTest, AlgebraConcepts) {
+TEST_F(FixedArraysTest, AlgebraConcepts) {
   static_assert(affine<FixedMatrix<double, 2, 3>>);
   static_assert(affine<FixedMatrix<double, 3, 3>>);
   static_assert(affine<FixedMatrix<Length, 3, 3>>);
@@ -79,7 +79,7 @@ TEST(FixedArraysTest, AlgebraConcepts) {
   static_assert(!homogeneous_field<FixedMatrix<Length, 3, 3>>);
 }
 
-TEST(FixedArraysTest, LinearAlgebraConcepts) {
+TEST_F(FixedArraysTest, LinearAlgebraConcepts) {
   static_assert(!homogeneous_vector_space<FixedMatrix<double, 3, 3>,
                                           FixedMatrix<double, 3, 3>>);
   static_assert(homogeneous_vector_space<FixedMatrix<Length, 3, 3>, Time>);
