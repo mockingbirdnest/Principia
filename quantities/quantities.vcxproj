@@ -16,8 +16,6 @@
     <ClInclude Include="constants.hpp" />
     <ClInclude Include="dimensions.hpp" />
     <ClInclude Include="dimensions_body.hpp" />
-    <ClInclude Include="elementary_functions.hpp" />
-    <ClInclude Include="elementary_functions_body.hpp" />
     <ClInclude Include="generators.hpp" />
     <ClInclude Include="generators_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />
@@ -35,7 +33,6 @@
     <ClInclude Include="uk.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="elementary_functions_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
     <ClCompile Include="concepts_test.cpp" />

@@ -13,6 +13,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -21,7 +22,6 @@
 #include "physics/oblate_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -42,6 +42,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -50,7 +51,6 @@ using namespace principia::physics::_massless_body;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

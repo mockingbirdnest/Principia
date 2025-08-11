@@ -11,10 +11,10 @@
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/scale_b.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 
 namespace principia {
@@ -22,10 +22,10 @@ namespace functions {
 
 using namespace principia::benchmarks::_metric;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_scale_b;
-using namespace principia::quantities::_elementary_functions;
 
 using Value = double;
 using Argument = double;

@@ -7,14 +7,14 @@
 #include <utility>
 
 #include "glog/logging.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _r3x3_matrix {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<typename Scalar>
 R3x3Matrix<Scalar>::R3x3Matrix(uninitialized_t) {}

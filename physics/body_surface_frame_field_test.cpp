@@ -10,13 +10,13 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
 #include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rotating_body.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/vanishes_before.hpp"
@@ -32,12 +32,12 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_body_surface_frame_field;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rotating_body;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_vanishes_before;

@@ -15,12 +15,12 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
@@ -44,12 +44,12 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_orbit_analyser;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;

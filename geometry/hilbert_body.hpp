@@ -2,14 +2,14 @@
 
 #include "geometry/hilbert.hpp"
 
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _hilbert {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<typename T1, typename T2>
   requires convertible_to_quantity<T1> && convertible_to_quantity<T2>

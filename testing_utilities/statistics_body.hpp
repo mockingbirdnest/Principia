@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -11,7 +11,7 @@ namespace testing_utilities {
 namespace _statistics {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 template<typename T>

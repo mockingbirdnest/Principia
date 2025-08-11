@@ -20,6 +20,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -27,7 +28,6 @@
 #include "physics/massive_body.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_body.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -57,6 +57,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_integrators;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -64,7 +65,6 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_body;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -23,8 +23,8 @@
 namespace principia {
 namespace functions_test {
 
-using namespace principia::base::_bundle;
 using namespace boost::multiprecision;
+using namespace principia::base::_bundle;
 using namespace principia::functions::_multiprecision;
 using namespace principia::numerics::_next;
 using namespace principia::numerics::_sin_cos;

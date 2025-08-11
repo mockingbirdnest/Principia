@@ -1,11 +1,6 @@
-#include "quantities/elementary_functions.hpp"
-
-#include <functional>
-#include <string>
+#include "numerics/elementary_functions.hpp"
 
 #include "base/cpuid.hpp"
-#include "glog/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "gtest/gtest.h"
 #include "numerics/fma.hpp"
 #include "quantities/astronomy.hpp"
@@ -23,10 +18,10 @@ namespace quantities {
 using ::testing::Eq;
 using ::testing::Lt;
 using namespace principia::base::_cpuid;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;

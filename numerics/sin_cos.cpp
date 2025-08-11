@@ -10,10 +10,10 @@
 #include "core-math/sin.h"
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/elementary_functions.hpp"
 
 // The algorithms in this file are documented in `Sin Cos.pdf`.  To the extent
 // possible, the code follows the notation of that document.
@@ -24,9 +24,9 @@ namespace internal {
 
 using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::quantities::_elementary_functions;
 
 #define OSACA_ANALYSED_FUNCTION Cos
 #define OSACA_ANALYSED_FUNCTION_NAMESPACE
@@ -135,7 +135,7 @@ template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
   static_assert(fma_policy != FMAPolicy::Auto);
   if constexpr (fma_policy == FMAPolicy::Force) {
-    using quantities::_elementary_functions::FusedMultiplyAdd;
+    using numerics::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, b, c);
   } else {
     return a * b + c;
@@ -146,7 +146,7 @@ template<FMAPolicy fma_policy>
 double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
   static_assert(fma_policy != FMAPolicy::Auto);
   if constexpr (fma_policy == FMAPolicy::Force) {
-    using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
+    using numerics::_elementary_functions::FusedNegatedMultiplyAdd;
     return FusedNegatedMultiplyAdd(a, b, c);
   } else {
     return c - a * b;

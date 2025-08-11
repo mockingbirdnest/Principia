@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "absl/strings/str_replace.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -15,7 +15,7 @@ namespace testing_utilities {
 namespace _approximate_quantity {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<typename Dimensions>
