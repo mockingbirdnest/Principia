@@ -16,6 +16,8 @@ TEST_F(M128DTest, Arithmetic) {
   M128D a(-5.0);
   M128D b(2.0);
   M128D c(3.0);
+
+  EXPECT_THAT(static_cast<double>(-b), AlmostEquals(-2.0, 0));
   EXPECT_THAT(static_cast<double>(a + b), AlmostEquals(-3.0, 0));
   EXPECT_THAT(static_cast<double>(a - b), AlmostEquals(-7.0, 0));
   EXPECT_THAT(static_cast<double>(a * b), AlmostEquals(-10.0, 0));
@@ -30,6 +32,15 @@ TEST_F(M128DTest, Arithmetic) {
               AlmostEquals(13.0, 0));
   EXPECT_THAT(static_cast<double>(FusedNegatedMultiplySubtract(a, b, c)),
               AlmostEquals(7.0, 0));
+
+  a += b;
+  EXPECT_THAT(static_cast<double>(a), AlmostEquals(-3.0, 0));
+  a -= c;
+  EXPECT_THAT(static_cast<double>(a), AlmostEquals(-6.0, 0));
+  a *= b;
+  EXPECT_THAT(static_cast<double>(a), AlmostEquals(-12.0, 0));
+  a /= c;
+  EXPECT_THAT(static_cast<double>(a), AlmostEquals(-4.0, 0));
 }
 
 TEST_F(M128DTest, Logical) {

@@ -33,7 +33,39 @@ inline M128D::operator std::uint64_t() const {
   return _mm_cvtsi128_si64(_mm_castpd_si128(value_));
 }
 
+inline M128D::operator __m128d() const {
+  return value_;
+}
+
+inline M128D& M128D::operator+=(M128D const right) {
+  *this = *this + right;
+  return *this;
+}
+
+inline M128D& M128D::operator-=(M128D const right) {
+  *this = *this - right;
+  return *this;
+}
+
+inline M128D& M128D::operator*=(M128D const right) {
+  *this = *this * right;
+  return *this;
+}
+
+inline M128D& M128D::operator/=(M128D const right) {
+  *this = *this / right;
+  return *this;
+}
+
 inline M128D::M128D(__m128d const value) : value_(value) {}
+
+inline M128D operator+(M128D const right) {
+  return right;
+}
+
+inline M128D operator-(M128D const right) {
+  return M128D(_mm_xor_pd(right.value_, sign_bit.value_));
+}
 
 inline M128D operator+(M128D const left, M128D const right) {
   return M128D(_mm_add_sd(left.value_, right.value_));

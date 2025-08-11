@@ -11,6 +11,7 @@ namespace internal {
 
 class M128D {
  public:
+  M128D() = default;
   M128D(double value);
   explicit M128D(std::int64_t value);
   explicit M128D(std::uint64_t value);
@@ -18,7 +19,15 @@ class M128D {
   explicit operator double() const;
   explicit operator std::int64_t() const;
   explicit operator std::uint64_t() const;
+  explicit operator __m128d() const;
 
+  M128D& operator+=(M128D right);
+  M128D& operator-=(M128D right);
+  M128D& operator*=(M128D right);
+  M128D& operator/=(M128D right);
+
+  friend M128D operator+(M128D right);
+  friend M128D operator-(M128D right);
   friend M128D operator+(M128D left, M128D right);
   friend M128D operator-(M128D left, M128D right);
   friend M128D operator*(M128D left, M128D right);
@@ -50,6 +59,8 @@ class M128D {
   __m128d value_;
 };
 
+M128D operator+(M128D right);
+M128D operator-(M128D right);
 M128D operator+(M128D left, M128D right);
 M128D operator-(M128D left, M128D right);
 M128D operator*(M128D left, M128D right);
