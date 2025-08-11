@@ -4,8 +4,8 @@
 #include <cmath>
 #include <cstdint>
 
-#include "numerics/fixed_arrays.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -13,8 +13,8 @@ namespace testing_utilities {
 namespace _optimization_test_functions {
 namespace internal {
 
-using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_si;
 
 namespace branin_parameters {

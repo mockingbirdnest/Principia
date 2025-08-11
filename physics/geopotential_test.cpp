@@ -12,6 +12,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/legendre_normalization_factor.mathematica.h"
 #include "physics/harmonic_damping.hpp"
@@ -19,7 +20,6 @@
 #include "physics/oblate_body.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
@@ -51,6 +51,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_legendre_normalization_factor;
 using namespace principia::physics::_geopotential;
@@ -59,7 +60,6 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;

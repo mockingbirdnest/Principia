@@ -2,8 +2,8 @@
 
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 
-#include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -11,8 +11,8 @@ namespace testing_utilities {
 namespace _discrete_trajectory_factories {
 namespace internal {
 
-using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::quantities::_si;
 
 template<typename Frame>

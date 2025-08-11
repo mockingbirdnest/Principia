@@ -31,6 +31,7 @@
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
 #include "numerics/angle_reduction.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
@@ -38,7 +39,6 @@
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -66,6 +66,7 @@ using namespace principia::integrators::_symplectic_runge_kutta_nyström_integra
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_angle_reduction;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
@@ -73,7 +74,6 @@ using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

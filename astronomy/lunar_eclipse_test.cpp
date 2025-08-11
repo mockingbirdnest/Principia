@@ -9,11 +9,11 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -32,11 +32,11 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_sign;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;

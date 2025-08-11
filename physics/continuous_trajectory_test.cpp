@@ -12,12 +12,12 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/astronomy.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -39,13 +39,13 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_astronomy;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

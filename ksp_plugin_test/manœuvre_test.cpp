@@ -15,6 +15,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -26,7 +27,6 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -59,6 +59,7 @@ using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_manœuvre;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -68,7 +69,6 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -30,6 +30,7 @@
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
 #include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
+#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
@@ -38,7 +39,6 @@
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -86,6 +86,7 @@ using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
@@ -93,7 +94,6 @@ using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

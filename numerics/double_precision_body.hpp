@@ -14,8 +14,8 @@
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
-#include "quantities/concepts.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -28,8 +28,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
-using namespace principia::quantities::_concepts;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
 
 // A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly

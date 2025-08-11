@@ -11,9 +11,9 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/gradient_descent.hpp"
 #include "numerics/root_finders.hpp"
-#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace physics {
@@ -25,9 +25,9 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::numerics::_root_finders;
-using namespace principia::numerics::_elementary_functions;
 
 // If the potential is below the total energy by this factor, return an empty
 // equipotential line.

@@ -16,6 +16,7 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/poisson_series.hpp"
@@ -24,7 +25,6 @@
 #include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -45,6 +45,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
@@ -53,7 +54,6 @@ using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

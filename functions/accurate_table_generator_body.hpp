@@ -19,10 +19,10 @@
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "geometry/interval.hpp"
 #include "glog/logging.h"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/lattices.hpp"
 #include "numerics/matrix_views.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -33,10 +33,10 @@ namespace internal {
 using namespace principia::base::_bits;
 using namespace principia::base::_for_all_of;
 using namespace principia::geometry::_interval;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
 using namespace principia::numerics::_matrix_views;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 // For intervals with a radius less or equal to this value, we use exhaustive

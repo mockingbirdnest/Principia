@@ -8,8 +8,8 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "numerics/angle_reduction.hpp"
-#include "physics/apsides.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "physics/apsides.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -20,8 +20,8 @@ namespace internal {
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_angle_reduction;
-using namespace principia::physics::_apsides;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::physics::_apsides;
 using namespace principia::quantities::_si;
 
 // Note that the origin of this celestial longitude is arbitrary: it is not the

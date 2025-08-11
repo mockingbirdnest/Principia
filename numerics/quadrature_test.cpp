@@ -18,8 +18,8 @@ namespace quadrature {
 
 using ::testing::AnyOf;
 using ::testing::Eq;
-using namespace principia::numerics::_quadrature;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_quadrature;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

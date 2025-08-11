@@ -2,9 +2,9 @@
 
 #include <algorithm>
 
+#include "numerics/elementary_functions.hpp"
 #include "physics/geopotential.hpp"
 #include "physics/oblate_body.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -12,9 +12,9 @@ namespace ksp_plugin {
 namespace _equator_relevance_threshold {
 namespace internal {
 
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_geopotential;
 using namespace principia::physics::_oblate_body;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 Length EquatorRelevanceThreshold(RotatingBody<Barycentric> const& body) {

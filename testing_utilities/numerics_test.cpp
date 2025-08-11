@@ -10,8 +10,8 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "numerics/ulp_distance.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/ulp_distance.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -27,8 +27,8 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
-using namespace principia::numerics::_ulp_distance;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_ulp_distance;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;

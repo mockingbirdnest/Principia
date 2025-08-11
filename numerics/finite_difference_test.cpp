@@ -17,8 +17,8 @@ namespace numerics {
 using ::testing::Each;
 using ::testing::Lt;
 using ::testing::Types;
-using namespace principia::numerics::_finite_difference;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_finite_difference;
 using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_is_near;

@@ -11,11 +11,11 @@
 #include "base/tags.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/poisson_series_basis.hpp"
 #include "numerics/root_finders.hpp"
 #include "numerics/unbounded_arrays.hpp"
-#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
@@ -32,11 +32,11 @@ namespace internal {
 using namespace principia::base::_tags;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_poisson_series_basis;
 using namespace principia::numerics::_root_finders;
 using namespace principia::numerics::_unbounded_arrays;
-using namespace principia::numerics::_elementary_functions;
 
 // Appends basis elements for `ω` to `basis` and `basis_subspaces`.  Returns the
 // number of elements that were appended.

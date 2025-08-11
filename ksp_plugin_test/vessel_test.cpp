@@ -26,6 +26,7 @@
 #include "ksp_plugin/pile_up.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -34,7 +35,6 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/tensors.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -73,6 +73,7 @@ using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::ksp_plugin_test::_plugin_io;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -80,7 +81,6 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_tensors;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "quantities/elementary_functions.hpp"
+#include "numerics/cbrt.hpp"
+#include "numerics/fma.hpp"
+#include "numerics/next.hpp"
+#include "quantities/si.hpp"
 
 #include <pmmintrin.h>
 

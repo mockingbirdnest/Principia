@@ -1,4 +1,14 @@
+#include "base/cpuid.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/fma.hpp"
+#include "quantities/astronomy.hpp"
+#include "quantities/constants.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
+#include "quantities/uk.hpp"
+#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 #include <functional>
 #include <string>
@@ -23,10 +33,10 @@ namespace quantities {
 using ::testing::Eq;
 using ::testing::Lt;
 using namespace principia::base::_cpuid;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;

@@ -10,8 +10,8 @@
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/apodization.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -32,9 +32,9 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_apodization;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

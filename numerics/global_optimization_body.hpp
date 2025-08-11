@@ -11,8 +11,8 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
-#include "numerics/gradient_descent.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/gradient_descent.hpp"
 
 namespace principia {
 namespace numerics {
@@ -21,8 +21,8 @@ namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
-using namespace principia::numerics::_gradient_descent;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_gradient_descent;
 
 // Values that are too small cause extra activity in `Add` and deeper recursion
 // in `FindNearestNeighbour`.  Values that are too large cause extra function

@@ -22,10 +22,10 @@
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/oblate_body.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -46,10 +46,10 @@ using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_oblate_body;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 using namespace std::chrono_literals;

@@ -28,6 +28,7 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -37,7 +38,6 @@
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -76,6 +76,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -86,7 +87,6 @@ using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

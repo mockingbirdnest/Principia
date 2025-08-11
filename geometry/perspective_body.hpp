@@ -10,8 +10,8 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
-#include "numerics/root_finders.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/root_finders.hpp"
 
 namespace principia {
 namespace geometry {
@@ -21,8 +21,8 @@ namespace internal {
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
-using namespace principia::numerics::_root_finders;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_root_finders;
 
 template<typename FromFrame, typename ToFrame>
 Perspective<FromFrame, ToFrame>::Perspective(

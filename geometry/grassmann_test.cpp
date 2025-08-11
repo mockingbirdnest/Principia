@@ -10,10 +10,10 @@
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -30,10 +30,10 @@ using namespace principia::base::_cpuid;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

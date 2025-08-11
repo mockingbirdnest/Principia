@@ -23,6 +23,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/quadrature.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -34,12 +35,11 @@
 #include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
 #include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
-#include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
+#include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -77,8 +77,8 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_quadrature;
-using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -89,8 +89,8 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

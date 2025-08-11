@@ -7,10 +7,10 @@
 #include "astronomy/frames.hpp"
 #include "base/map_util.hpp"
 #include "numerics/angle_reduction.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
@@ -24,10 +24,10 @@ namespace internal {
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_map_util;
 using namespace principia::numerics::_angle_reduction;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_constants;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;

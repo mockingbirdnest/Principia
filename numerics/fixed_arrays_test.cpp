@@ -2,15 +2,15 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "numerics/transposed_view.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/transposed_view.hpp"
 
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
-using namespace principia::numerics::_elementary_functions;
 using ::testing::Pointer;
 
 class FixedArraysTest : public ::testing::Test {

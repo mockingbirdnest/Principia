@@ -5,9 +5,9 @@
 #include <memory>
 
 #include "geometry/r3x3_matrix.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -16,9 +16,9 @@ namespace _reference_frame {
 namespace internal {
 
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>

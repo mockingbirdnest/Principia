@@ -6,8 +6,8 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "physics/degrees_of_freedom.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -20,8 +20,8 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
-using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

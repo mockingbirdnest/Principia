@@ -4,10 +4,10 @@
 #include <tuple>
 
 #include "glog/logging.h"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -15,10 +15,10 @@ namespace numerics {
 namespace _elliptic_functions {
 namespace internal {
 
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 namespace {

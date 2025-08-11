@@ -19,10 +19,10 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/renderer.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

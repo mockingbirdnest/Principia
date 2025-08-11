@@ -26,6 +26,7 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/hierarchical_system.hpp"
@@ -34,7 +35,6 @@
 #include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -61,6 +61,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_hierarchical_system;
@@ -69,7 +70,6 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

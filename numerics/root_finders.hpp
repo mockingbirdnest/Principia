@@ -6,8 +6,8 @@
 
 #include "absl/container/btree_set.h"
 #include "base/array.hpp"
-#include "numerics/scale_b.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/scale_b.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -16,8 +16,8 @@ namespace _root_finders {
 namespace internal {
 
 using namespace principia::base::_array;
-using namespace principia::numerics::_scale_b;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_scale_b;
 using namespace principia::quantities::_named_quantities;
 
 // Approximates a root of `f` between `lower_bound` and `upper_bound` by

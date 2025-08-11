@@ -6,9 +6,9 @@
 #include "glog/logging.h"
 #include "google/protobuf/stubs/common.h"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
@@ -20,9 +20,9 @@ namespace quantities {
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::MatchesRegex;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

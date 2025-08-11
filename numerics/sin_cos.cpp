@@ -10,10 +10,10 @@
 #include "core-math/sin.h"
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
-#include "numerics/elementary_functions.hpp"
 
 // The algorithms in this file are documented in `Sin Cos.pdf`.  To the extent
 // possible, the code follows the notation of that document.
@@ -24,9 +24,9 @@ namespace internal {
 
 using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::numerics::_elementary_functions;
 
 #define OSACA_ANALYSED_FUNCTION Cos
 #define OSACA_ANALYSED_FUNCTION_NAMESPACE

@@ -4,11 +4,11 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
@@ -18,12 +18,12 @@
 namespace principia {
 namespace numerics {
 
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
