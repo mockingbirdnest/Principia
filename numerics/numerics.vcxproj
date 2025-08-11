@@ -42,6 +42,8 @@
     <ClInclude Include="hermite2_body.hpp" />
     <ClInclude Include="lattices.hpp" />
     <ClInclude Include="lattices_body.hpp" />
+    <ClInclude Include="m128d.hpp" />
+    <ClInclude Include="m128d_body.hpp" />
     <ClInclude Include="matrix_computations.hpp" />
     <ClInclude Include="matrix_computations_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
