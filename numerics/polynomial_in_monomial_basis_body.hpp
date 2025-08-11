@@ -17,7 +17,7 @@
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/quadrature.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -31,7 +31,7 @@ using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_quadrature;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 // A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the

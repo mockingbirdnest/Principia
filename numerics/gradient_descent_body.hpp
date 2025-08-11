@@ -12,7 +12,7 @@
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/hermite2.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
@@ -24,7 +24,7 @@ using namespace principia::geometry::_point;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_hermite2;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<typename Scalar, typename S, int s>
 struct Generator<Scalar, FixedVector<S, s>> {

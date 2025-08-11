@@ -6,14 +6,14 @@
 #include <utility>
 #include <vector>
 
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _unbounded_arrays {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<class T>
 template<class U, class... Args>

@@ -3,7 +3,7 @@
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 
 #include "physics/discrete_trajectory_segment_iterator.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -12,7 +12,7 @@ namespace _discrete_trajectory_factories {
 namespace internal {
 
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<typename Frame>

@@ -22,7 +22,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/lattices.hpp"
 #include "numerics/matrix_views.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -36,7 +36,7 @@ using namespace principia::geometry::_interval;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
 using namespace principia::numerics::_matrix_views;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 // For intervals with a radius less or equal to this value, we use exhaustive

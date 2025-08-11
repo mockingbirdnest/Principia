@@ -12,7 +12,7 @@
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/чебышёв_lobatto.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -24,7 +24,7 @@ using namespace principia::base::_tags;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_чебышёв_lobatto;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 // Compute the interpolation matrix and cache it in a static variable.

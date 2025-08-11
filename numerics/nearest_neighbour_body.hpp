@@ -11,7 +11,7 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -20,7 +20,7 @@ namespace _nearest_neighbour {
 namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 constexpr std::int32_t no_min_index = -1;

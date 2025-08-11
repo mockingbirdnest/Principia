@@ -12,7 +12,7 @@
 #include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
@@ -21,7 +21,7 @@ namespace internal {
 
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 #define OSACA_ANALYSED_FUNCTION Cbrt
 #define OSACA_ANALYSED_FUNCTION_NAMESPACE method_5²Z4¹FMA::

@@ -14,7 +14,7 @@
 #include "numerics/global_optimization.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -31,7 +31,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::numerics::_global_optimization;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

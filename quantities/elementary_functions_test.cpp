@@ -1,4 +1,4 @@
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 #include <functional>
 #include <string>
@@ -26,7 +26,7 @@ using namespace principia::base::_cpuid;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;

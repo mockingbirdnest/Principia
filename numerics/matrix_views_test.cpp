@@ -4,7 +4,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -14,7 +14,7 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::testing_utilities::_almost_equals;
 
 class MatrixViewsTest : public ::testing::Test {

@@ -7,14 +7,14 @@
 #include <vector>
 
 #include "glog/logging.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _fixed_arrays {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 // A helper class to compute the dot product of two arrays.  `LScalar` and
 // `RScalar` are the types of the elements of the arrays.  `Left` and `Right`

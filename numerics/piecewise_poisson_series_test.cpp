@@ -12,7 +12,7 @@
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/root_finders.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/numerics.pb.h"
@@ -34,7 +34,7 @@ using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_root_finders;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

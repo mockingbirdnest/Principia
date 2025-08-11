@@ -12,7 +12,7 @@
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin_test/fake_plugin.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -34,7 +34,7 @@ using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::ksp_plugin_test::_fake_plugin;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;

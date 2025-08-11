@@ -6,7 +6,7 @@
 #include <cstdint>
 
 #include "glog/logging.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -14,7 +14,7 @@ namespace numerics {
 namespace _чебышёв_lobatto {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 // Returns the Чебышёв-Lobatto point Cos(πk/N).  Should only be called with odd

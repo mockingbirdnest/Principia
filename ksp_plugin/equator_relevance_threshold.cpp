@@ -4,7 +4,7 @@
 
 #include "physics/geopotential.hpp"
 #include "physics/oblate_body.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -14,7 +14,7 @@ namespace internal {
 
 using namespace principia::physics::_geopotential;
 using namespace principia::physics::_oblate_body;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 Length EquatorRelevanceThreshold(RotatingBody<Barycentric> const& body) {

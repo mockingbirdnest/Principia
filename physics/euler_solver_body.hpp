@@ -10,7 +10,7 @@
 #include "geometry/space_transformations.hpp"
 #include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -24,7 +24,7 @@ using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::numerics::_elliptic_functions;
 using namespace principia::numerics::_elliptic_integrals;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename PrincipalAxesFrame>

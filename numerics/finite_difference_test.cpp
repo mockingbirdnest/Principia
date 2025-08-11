@@ -4,7 +4,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
@@ -18,7 +18,7 @@ using ::testing::Each;
 using ::testing::Lt;
 using ::testing::Types;
 using namespace principia::numerics::_finite_difference;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_is_near;

@@ -10,14 +10,14 @@
 #include <utility>
 
 #include "gmock/gmock.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace testing_utilities {
 namespace _is_near {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<typename T>
 testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(

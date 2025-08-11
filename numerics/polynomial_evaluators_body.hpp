@@ -6,7 +6,7 @@
 #include <tuple>
 
 #include "base/bits.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
@@ -14,7 +14,7 @@ namespace _polynomial_evaluators {
 namespace internal {
 
 using namespace principia::base::_bits;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 
 // Internal helper for Estrin evaluation.  `degree` is the degree of the overall

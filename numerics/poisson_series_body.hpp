@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "numerics/double_precision.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -19,7 +19,7 @@ namespace _poisson_series {
 namespace internal {
 
 using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 // These parameters have been tuned for approximation of the Moon over 3 months

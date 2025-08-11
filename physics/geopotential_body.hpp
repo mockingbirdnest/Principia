@@ -12,7 +12,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/legendre_normalization_factor.mathematica.h"
 #include "numerics/max_abs_normalized_associated_legendre_function.mathematica.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace physics {
@@ -24,7 +24,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_legendre_normalization_factor;
 using namespace principia::numerics::_max_abs_normalized_associated_legendre_function;  // NOLINT
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 

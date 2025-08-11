@@ -5,7 +5,7 @@
 #include <string>
 
 #include "geometry/sign.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -14,7 +14,7 @@ namespace _quaternion {
 namespace internal {
 
 using namespace principia::geometry::_sign;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 inline Quaternion::Quaternion(double const real_part)

@@ -8,7 +8,7 @@
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
@@ -22,7 +22,7 @@ using ::testing::Lt;
 using ::testing::MatchesRegex;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

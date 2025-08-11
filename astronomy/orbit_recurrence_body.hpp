@@ -9,7 +9,7 @@
 #include "base/mod.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "geometry/sign.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -19,7 +19,7 @@ namespace internal {
 
 using namespace principia::base::_mod;
 using namespace principia::geometry::_sign;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 inline absl::StatusOr<int> SafeNearbyInt(double const x) {

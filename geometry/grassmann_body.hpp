@@ -6,7 +6,7 @@
 
 #include "base/not_constructible.hpp"
 #include "geometry/sign.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace geometry {
@@ -15,7 +15,7 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_sign;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)
