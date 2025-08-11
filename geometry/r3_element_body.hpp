@@ -9,8 +9,8 @@
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
 #include "glog/logging.h"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/serialization.hpp"
 
 namespace principia {
@@ -18,8 +18,8 @@ namespace geometry {
 namespace _r3_element {
 namespace internal {
 
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_serialization;
 
 // We want zero initialization here, so the default constructor won't do.

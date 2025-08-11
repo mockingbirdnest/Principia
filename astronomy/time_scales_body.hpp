@@ -9,7 +9,7 @@
 #include "astronomy/epoch.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -19,7 +19,7 @@ namespace internal {
 
 using namespace principia::astronomy::_epoch;
 using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 // Returns the duration between 2000-01-01T12:00:00 and `date_time` (of the same

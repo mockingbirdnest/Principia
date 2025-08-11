@@ -9,7 +9,7 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space_transformations.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -21,7 +21,7 @@ namespace internal {
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_space_transformations;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

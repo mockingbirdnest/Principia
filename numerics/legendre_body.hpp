@@ -5,7 +5,7 @@
 #include <tuple>
 
 #include "numerics/combinatorics.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
@@ -13,7 +13,7 @@ namespace _legendre {
 namespace internal {
 
 using namespace principia::numerics::_combinatorics;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<int degree, typename>
 struct LegendreCoefficientsGenerator;

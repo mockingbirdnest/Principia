@@ -5,7 +5,7 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
-namespace quantities {
+namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
@@ -53,11 +53,6 @@ template<typename Q>
 constexpr Q NextUp(Q const& x);
 template<typename Q>
 constexpr Q NextDown(Q const& x);
-
-// Equivalent to `std::pow(x, exponent)` unless -3 ≤ x ≤ 3, in which case
-// explicit specialization yields multiplications statically.
-template<int exponent, typename Q>
-constexpr Exponentiation<Q, exponent> Pow(Q const& x);
 
 double Sin(Angle const& α);
 double Cos(Angle const& α);
@@ -120,7 +115,7 @@ using internal::Tanh;
 using internal::UnwindFrom;
 
 }  // namespace _elementary_functions
-}  // namespace quantities
+}  // namespace numerics
 }  // namespace principia
 
-#include "quantities/elementary_functions_body.hpp"
+#include "numerics/elementary_functions_body.hpp"

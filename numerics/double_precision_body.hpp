@@ -14,8 +14,8 @@
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/concepts.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -28,8 +28,8 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 // A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly
@@ -251,7 +251,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
-    using quantities::_elementary_functions::FusedMultiplySubtract;
+    using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = a * b;
     result.error = FusedMultiplySubtract(a, b, result.value);
@@ -268,8 +268,8 @@ DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              Product<T, U> const& c) {
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
-    using quantities::_elementary_functions::FusedMultiplyAdd;
-    using quantities::_elementary_functions::FusedMultiplySubtract;
+    using numerics::_elementary_functions::FusedMultiplyAdd;
+    using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = FusedMultiplyAdd(a, b, c);
     result.error = FusedMultiplySubtract(a, b, result.value - c);
@@ -288,7 +288,7 @@ DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   Product<T, U> const& c) {
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
-    using quantities::_elementary_functions::FusedMultiplySubtract;
+    using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = FusedMultiplySubtract(a, b, c);
     result.error = FusedMultiplySubtract(a, b, result.value + c);
@@ -307,8 +307,8 @@ DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     Product<T, U> const& c) {
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
-    using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
-    using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
+    using numerics::_elementary_functions::FusedNegatedMultiplyAdd;
+    using numerics::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = FusedNegatedMultiplyAdd(a, b, c);
     result.error = FusedNegatedMultiplySubtract(a, b, result.value - c);
@@ -328,7 +328,7 @@ TwoProductNegatedSubtract(T const& a,
                           Product<T, U> const& c) {
   if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
       (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
-    using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
+    using numerics::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = FusedNegatedMultiplySubtract(a, b, c);
     result.error = FusedNegatedMultiplySubtract(a, b, result.value + c);

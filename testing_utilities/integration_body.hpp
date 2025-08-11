@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -15,7 +15,7 @@ namespace _integration {
 namespace internal {
 
 using namespace principia::astronomy::_epoch;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 inline absl::Status ComputeHarmonicOscillatorAcceleration1D(

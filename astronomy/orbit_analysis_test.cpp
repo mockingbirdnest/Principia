@@ -21,6 +21,7 @@
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
 #include "numerics/angle_reduction.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
@@ -31,7 +32,6 @@
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -62,6 +62,7 @@ using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_angle_reduction;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
@@ -72,7 +73,6 @@ using namespace principia::physics::_massless_body;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;

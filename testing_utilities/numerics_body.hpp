@@ -7,7 +7,7 @@
 #include <functional>
 #include <limits>
 
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -15,7 +15,7 @@ namespace testing_utilities {
 namespace _numerics {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<typename Scalar>

@@ -6,11 +6,11 @@
 #include <utility>
 
 #include "geometry/r3x3_matrix.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_reference_frame.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -19,11 +19,11 @@ namespace _rigid_reference_frame {
 namespace internal {
 
 using namespace principia::geometry::_r3x3_matrix;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>

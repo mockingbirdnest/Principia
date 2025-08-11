@@ -8,10 +8,10 @@
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -24,11 +24,11 @@ namespace physics {
 using ::testing::ElementsAre;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_hierarchical_system;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

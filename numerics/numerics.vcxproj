@@ -33,6 +33,8 @@
     <ClInclude Include="approximation_body.hpp" />
     <ClInclude Include="concepts.hpp" />
     <ClInclude Include="davenport_q_method_body.hpp" />
+    <ClInclude Include="elementary_functions.hpp" />
+    <ClInclude Include="elementary_functions_body.hpp" />
     <ClInclude Include="finite_difference_coefficients.mathematica.h" />
     <ClInclude Include="global_optimization.hpp" />
     <ClInclude Include="global_optimization_body.hpp" />
@@ -127,6 +129,7 @@
     <ClCompile Include="davenport_q_method.hpp" />
     <ClCompile Include="davenport_q_method_test.cpp" />
     <ClCompile Include="double_precision_test.cpp" />
+    <ClCompile Include="elementary_functions_test.cpp" />
     <ClCompile Include="elliptic_integrals.cpp" />
     <ClCompile Include="elliptic_integrals_test.cpp" />
     <ClCompile Include="elliptic_functions.cpp" />

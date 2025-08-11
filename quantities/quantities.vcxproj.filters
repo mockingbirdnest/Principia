@@ -26,9 +26,6 @@
     <ClInclude Include="constants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="elementary_functions.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="named_quantities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -43,9 +40,6 @@
     </ClInclude>
     <ClInclude Include="uk.hpp">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="elementary_functions_body.hpp">
-      <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="quantities_body.hpp">
       <Filter>Source Files</Filter>
@@ -92,9 +86,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="parser_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="elementary_functions_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="wide_test.cpp">

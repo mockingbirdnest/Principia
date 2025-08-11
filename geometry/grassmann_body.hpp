@@ -6,7 +6,7 @@
 
 #include "base/not_constructible.hpp"
 #include "geometry/sign.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace geometry {
@@ -15,7 +15,7 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_sign;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<quantity Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector(R3Element<Scalar> const& coordinates)
@@ -453,7 +453,7 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  using quantities::_elementary_functions::FusedMultiplyAdd;
+  using numerics::_elementary_functions::FusedMultiplyAdd;
   using _r3_element::FusedMultiplyAdd;
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       FusedMultiplyAdd(a.coordinates(), b, c.coordinates()));
@@ -465,7 +465,7 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  using quantities::_elementary_functions::FusedMultiplySubtract;
+  using numerics::_elementary_functions::FusedMultiplySubtract;
   using _r3_element::FusedMultiplySubtract;
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       FusedMultiplySubtract(a.coordinates(), b, c.coordinates()));
@@ -477,7 +477,7 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
+  using numerics::_elementary_functions::FusedNegatedMultiplyAdd;
   using _r3_element::FusedNegatedMultiplyAdd;
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       FusedNegatedMultiplyAdd(a.coordinates(), b, c.coordinates()));
@@ -490,7 +490,7 @@ FusedNegatedMultiplySubtract(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
+  using numerics::_elementary_functions::FusedNegatedMultiplySubtract;
   using _r3_element::FusedNegatedMultiplySubtract;
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       FusedNegatedMultiplySubtract(a.coordinates(), b, c.coordinates()));
@@ -502,7 +502,7 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  using quantities::_elementary_functions::FusedMultiplyAdd;
+  using numerics::_elementary_functions::FusedMultiplyAdd;
   using _r3_element::FusedMultiplyAdd;
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       FusedMultiplyAdd(a, b.coordinates(), c.coordinates()));
@@ -514,7 +514,7 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  using quantities::_elementary_functions::FusedMultiplySubtract;
+  using numerics::_elementary_functions::FusedMultiplySubtract;
   using _r3_element::FusedMultiplySubtract;
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       FusedMultiplySubtract(a, b.coordinates(), c.coordinates()));
@@ -526,7 +526,7 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
+  using numerics::_elementary_functions::FusedNegatedMultiplyAdd;
   using _r3_element::FusedNegatedMultiplyAdd;
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       FusedNegatedMultiplyAdd(a, b.coordinates(), c.coordinates()));
@@ -539,7 +539,7 @@ FusedNegatedMultiplySubtract(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
-  using quantities::_elementary_functions::FusedNegatedMultiplySubtract;
+  using numerics::_elementary_functions::FusedNegatedMultiplySubtract;
   using _r3_element::FusedNegatedMultiplySubtract;
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       FusedNegatedMultiplySubtract(a, b.coordinates(), c.coordinates()));
