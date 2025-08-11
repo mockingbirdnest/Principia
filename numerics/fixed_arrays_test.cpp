@@ -4,6 +4,8 @@
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/transposed_view.hpp"
+#include "quantities/concepts.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -11,6 +13,8 @@ namespace numerics {
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
+using namespace principia::quantities::_concepts;
+using namespace principia::quantities::_quantities;
 using ::testing::Pointer;
 
 class FixedArraysTest : public ::testing::Test {
@@ -54,6 +58,34 @@ class FixedArraysTest : public ::testing::Test {
   FixedStrictlyUpperTriangularMatrix<double, 4> su4_;
   FixedUpperTriangularMatrix<double, 4> u4_;
 };
+
+TEST(FixedArraysTest, AlgebraConcepts) {
+  static_assert(affine<FixedMatrix<double, 2, 3>>);
+  static_assert(affine<FixedMatrix<double, 3, 3>>);
+  static_assert(affine<FixedMatrix<Length, 3, 3>>);
+
+  static_assert(additive_group<FixedMatrix<double, 2, 3>>);
+  static_assert(additive_group<FixedMatrix<double, 3, 3>>);
+  static_assert(additive_group<FixedMatrix<Length, 3, 3>>);
+
+  static_assert(!homogeneous_ring<FixedMatrix<double, 2, 3>>);
+  static_assert(homogeneous_ring<FixedMatrix<double, 3, 3>>);
+  static_assert(homogeneous_ring<FixedMatrix<Length, 3, 3>>);
+
+  static_assert(ring<FixedMatrix<double, 3, 3>>);
+  static_assert(!ring<FixedMatrix<Length, 3, 3>>);
+
+  static_assert(!homogeneous_field<FixedMatrix<double, 3, 3>>);
+  static_assert(!homogeneous_field<FixedMatrix<Length, 3, 3>>);
+}
+
+TEST(FixedArraysTest, LinearAlgebraConcepts) {
+  static_assert(!homogeneous_vector_space<FixedMatrix<double, 3, 3>,
+                                          FixedMatrix<double, 3, 3>>);
+  static_assert(homogeneous_vector_space<FixedMatrix<Length, 3, 3>, Time>);
+  static_assert(real_vector_space<FixedMatrix<Length, 3, 3>>);
+  static_assert(!vector_space<FixedMatrix<Length, 3, 3>, Time>);
+}
 
 TEST_F(FixedArraysTest, Assignment) {
   {
