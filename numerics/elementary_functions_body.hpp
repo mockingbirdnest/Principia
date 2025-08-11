@@ -120,62 +120,6 @@ constexpr Q NextDown(Q const& x) {
   return si::Unit<Q> * numerics::_next::NextDown(x / si::Unit<Q>);
 }
 
-template<int exponent>
-constexpr double Pow(double x) {
-  // Use the Russian peasant algorithm for small exponents.
-  if constexpr (exponent > 0 && exponent < 32) {
-    // The end of the recursion is handled by the specializations below.
-    auto const y = Pow<exponent / 2>(x);
-    auto const y² = y * y;
-    if constexpr (exponent % 2 == 1) {
-      return y² * x;
-    } else {
-      return y²;
-    }
-  } else if constexpr (exponent < 0 && exponent > -32) {
-    return 1 / Pow<-exponent>(x);
-  } else {
-    return std::pow(x, exponent);
-  }
-}
-
-// Static specializations for frequently-used exponents, so that this gets
-// turned into multiplications at compile time.
-
-template<>
-inline constexpr double Pow<0>(double) {
-  return 1;
-}
-
-template<>
-inline constexpr double Pow<1>(double x) {
-  return x;
-}
-
-template<>
-inline constexpr double Pow<2>(double x) {
-  return x * x;
-}
-
-template<>
-inline constexpr double Pow<3>(double x) {
-  return x * x * x;
-}
-
-template<int exponent, typename Q>
-constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
-  if constexpr (number_category<Q>::value == number_kind_rational) {
-    // It seems that Boost does not define `pow` for `cpp_rational`.
-    return cpp_rational(pow(numerator(x), exponent),
-                        pow(denominator(x), exponent));
-  } else if constexpr (is_number<Q>::value) {
-    return pow(x, exponent);
-  } else {
-    return si::Unit<Exponentiation<Q, exponent>> *
-           Pow<exponent>(x / si::Unit<Q>);
-  }
-}
-
 inline double Sin(Angle const& α) {
   return std::sin(α / Radian);
 }

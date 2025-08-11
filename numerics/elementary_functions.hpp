@@ -54,11 +54,6 @@ constexpr Q NextUp(Q const& x);
 template<typename Q>
 constexpr Q NextDown(Q const& x);
 
-// Equivalent to `std::pow(x, exponent)` unless -3 ≤ x ≤ 3, in which case
-// explicit specialization yields multiplications statically.
-template<int exponent, typename Q>
-constexpr Exponentiation<Q, exponent> Pow(Q const& x);
-
 double Sin(Angle const& α);
 double Cos(Angle const& α);
 double Tan(Angle const& α);
