@@ -1,21 +1,6 @@
-#include "base/cpuid.hpp"
 #include "numerics/elementary_functions.hpp"
-#include "numerics/fma.hpp"
-#include "quantities/astronomy.hpp"
-#include "quantities/constants.hpp"
-#include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
-#include "quantities/uk.hpp"
-#include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/numerics.hpp"
-#include "testing_utilities/vanishes_before.hpp"
-
-#include <functional>
-#include <string>
 
 #include "base/cpuid.hpp"
-#include "glog/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "gtest/gtest.h"
 #include "numerics/fma.hpp"
 #include "quantities/astronomy.hpp"
