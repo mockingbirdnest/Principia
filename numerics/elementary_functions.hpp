@@ -5,7 +5,7 @@
 #include "quantities/quantities.hpp"
 
 namespace principia {
-namespace quantities {
+namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
@@ -120,7 +120,7 @@ using internal::Tanh;
 using internal::UnwindFrom;
 
 }  // namespace _elementary_functions
-}  // namespace quantities
+}  // namespace numerics
 }  // namespace principia
 
-#include "quantities/elementary_functions_body.hpp"
+#include "numerics/elementary_functions_body.hpp"

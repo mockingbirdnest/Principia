@@ -17,7 +17,7 @@
 #include "quantities/si.hpp"
 
 namespace principia {
-namespace quantities {
+namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
@@ -243,5 +243,5 @@ inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
 
 }  // namespace internal
 }  // namespace _elementary_functions
-}  // namespace quantities
+}  // namespace numerics
 }  // namespace principia

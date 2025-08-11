@@ -135,7 +135,7 @@ template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
   static_assert(fma_policy != FMAPolicy::Auto);
   if constexpr (fma_policy == FMAPolicy::Force) {
-    using quantities::_elementary_functions::FusedMultiplyAdd;
+    using numerics::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, b, c);
   } else {
     return a * b + c;
@@ -146,7 +146,7 @@ template<FMAPolicy fma_policy>
 double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
   static_assert(fma_policy != FMAPolicy::Auto);
   if constexpr (fma_policy == FMAPolicy::Force) {
-    using quantities::_elementary_functions::FusedNegatedMultiplyAdd;
+    using numerics::_elementary_functions::FusedNegatedMultiplyAdd;
     return FusedNegatedMultiplyAdd(a, b, c);
   } else {
     return c - a * b;
