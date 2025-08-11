@@ -2,6 +2,8 @@
 
 #include "numerics/m128d.hpp"
 
+#include <immintrin.h>
+
 namespace principia {
 namespace numerics {
 namespace _m128d {
