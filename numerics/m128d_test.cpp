@@ -20,6 +20,8 @@ TEST_F(M128DTest, Arithmetic) {
   EXPECT_THAT(static_cast<double>(a - b), AlmostEquals(-7.0, 0));
   EXPECT_THAT(static_cast<double>(a * b), AlmostEquals(-10.0, 0));
   EXPECT_THAT(static_cast<double>(a / b), AlmostEquals(-2.5, 0));
+  EXPECT_THAT(static_cast<double>(Abs(a)), AlmostEquals(5.0, 0));
+  EXPECT_THAT(static_cast<double>(Sign(a)), AlmostEquals(-0.0, 0));
   EXPECT_THAT(static_cast<double>(FusedMultiplyAdd(a, b, c)),
               AlmostEquals(-7.0, 0));
   EXPECT_THAT(static_cast<double>(FusedMultiplySubtract(a, b, c)),
@@ -33,9 +35,21 @@ TEST_F(M128DTest, Arithmetic) {
 TEST_F(M128DTest, Logical) {
   M128D a(5.0);
   M128D const sign_bit(0x8000'0000'0000'0000);
+  EXPECT_THAT(static_cast<double>(~a), AlmostEquals(-6.0, 0));
   EXPECT_THAT(static_cast<double>(a & sign_bit), AlmostEquals(-0.0, 0));
   EXPECT_THAT(static_cast<double>(a | sign_bit), AlmostEquals(-5.0, 0));
   EXPECT_THAT(static_cast<double>(a ^ sign_bit), AlmostEquals(-5.0, 0));
+}
+
+TEST_F(M128DTest, Comparison) {
+  M128D a(-5.0);
+  M128D b(2.0);
+  EXPECT_TRUE(a == a);
+  EXPECT_TRUE(a != b);
+  EXPECT_TRUE(a < b);
+  EXPECT_TRUE(a <= b);
+  EXPECT_TRUE(b >= a);
+  EXPECT_TRUE(b > a);
 }
 
 }  // namespace numerics

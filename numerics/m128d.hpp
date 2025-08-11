@@ -12,18 +12,32 @@ namespace internal {
 class M128D {
  public:
   M128D(double value);
+  explicit M128D(std::int64_t value);
   explicit M128D(std::uint64_t value);
 
   explicit operator double() const;
+  explicit operator std::int64_t() const;
+  explicit operator std::uint64_t() const;
 
   friend M128D operator+(M128D left, M128D right);
   friend M128D operator-(M128D left, M128D right);
   friend M128D operator*(M128D left, M128D right);
   friend M128D operator/(M128D left, M128D right);
 
+  friend M128D operator~(M128D right);
   friend M128D operator&(M128D left, M128D right);
   friend M128D operator|(M128D left, M128D right);
   friend M128D operator^(M128D left, M128D right);
+
+  friend bool operator==(M128D left, M128D right);
+  friend bool operator!=(M128D left, M128D right);
+  friend bool operator<(M128D left, M128D right);
+  friend bool operator<=(M128D left, M128D right);
+  friend bool operator>=(M128D left, M128D right);
+  friend bool operator>(M128D left, M128D right);
+
+  friend M128D Abs(M128D a);
+  friend M128D Sign(M128D a);
 
   friend M128D FusedMultiplyAdd(M128D a, M128D b, M128D c);
   friend M128D FusedMultiplySubtract(M128D a, M128D b, M128D c);
@@ -41,9 +55,20 @@ M128D operator-(M128D left, M128D right);
 M128D operator*(M128D left, M128D right);
 M128D operator/(M128D left, M128D right);
 
+M128D operator~(M128D right);
 M128D operator&(M128D left, M128D right);
 M128D operator|(M128D left, M128D right);
 M128D operator^(M128D left, M128D right);
+
+bool operator==(M128D const left, M128D const right);
+bool operator!=(M128D const left, M128D const right);
+bool operator<(M128D const left, M128D const right);
+bool operator<=(M128D const left, M128D const right);
+bool operator>=(M128D const left, M128D const right);
+bool operator>(M128D const left, M128D const right);
+
+M128D Abs(M128D a);
+M128D Sign(M128D a);
 
 // ⟦ab + c⟧.
 M128D FusedMultiplyAdd(M128D a, M128D b, M128D c);
@@ -59,7 +84,13 @@ M128D FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
 
 }  // namespace internal
 
+using internal::Abs;
+using internal::FusedMultiplyAdd;
+using internal::FusedMultiplySubtract;
+using internal::FusedNegatedMultiplyAdd;
+using internal::FusedNegatedMultiplySubtract;
 using internal::M128D;
+using internal::Sign;
 
 }  // namespace _m128d
 }  // namespace numerics
