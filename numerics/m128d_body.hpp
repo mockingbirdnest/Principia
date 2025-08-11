@@ -1,8 +1,8 @@
 #pragma once
 
-#include <immintrin.h>
-
 #include "numerics/m128d.hpp"
+
+#include <immintrin.h>
 
 namespace principia {
 namespace numerics {
