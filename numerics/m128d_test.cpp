@@ -30,5 +30,13 @@ TEST_F(M128DTest, Arithmetic) {
               AlmostEquals(7.0, 0));
 }
 
+TEST_F(M128DTest, Logical) {
+  M128D a(5.0);
+  M128D const sign_bit(0x8000'0000'0000'0000);
+  EXPECT_THAT(static_cast<double>(a & sign_bit), AlmostEquals(-0.0, 0));
+  EXPECT_THAT(static_cast<double>(a | sign_bit), AlmostEquals(-5.0, 0));
+  EXPECT_THAT(static_cast<double>(a ^ sign_bit), AlmostEquals(-5.0, 0));
+}
+
 }  // namespace numerics
 }  // namespace principia

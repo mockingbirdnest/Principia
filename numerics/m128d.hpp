@@ -12,7 +12,7 @@ namespace internal {
 class M128D {
  public:
   M128D(double value);
-  explicit M128D(std::int64_t value);
+  explicit M128D(std::uint64_t value);
 
   explicit operator double() const;
 
