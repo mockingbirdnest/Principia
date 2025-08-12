@@ -2,15 +2,15 @@
 
 #include "numerics/elementary_functions.hpp"
 
-#include <pmmintrin.h>
-
 #include <cmath>
 
+#include "base/traits.hpp"
 #include "boost/multiprecision/cpp_bin_float.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
+#include "boost/multiprecision/fwd.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -18,29 +18,53 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace base::_traits;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
+
+template<typename T>
+concept countable =
+    std::integral<T> || std::same_as<T, boost::multiprecision::cpp_int> ||
+    std::same_as<T, boost::multiprecision::cpp_rational>;
+
+template<typename T>
+concept cpp_bin_float = is_number<T>::value &&
+                        number_category<T>::value == number_kind_floating_point;
+
+// For these types there is no concern about performance or accuracy, but
+// `FusedMultiplyAdd` and friends need to exist.
+namespace noncritical {
+
+template<cpp_bin_float Q1, cpp_bin_float Q2>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z) {
+  return fma(x, y, z);
+}
+
+template<countable Q1, countable Q2>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z) {
+  return x * y + z;
+}
+
+}  // namespace noncritical
 
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  if constexpr (is_number<Q1>::value || is_number<Q2>::value) {
-    if constexpr ((number_category<Q1>::value == number_kind_integer ||
-                   number_category<Q1>::value == number_kind_rational) &&
-                  (number_category<Q2>::value == number_kind_integer ||
-                   number_category<Q2>::value == number_kind_rational)) {
-      return x * y + z;
-    } else {
-      return fma(x, y, z);
-    }
-  } else {
+  if constexpr (quantity<Q1> && quantity<Q2>) {
     return si::Unit<Product<Q1, Q2>> *
-            numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
-                                             y / si::Unit<Q2>,
-                                             z / si::Unit<Product<Q1, Q2>>);
+           numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
+                                            y / si::Unit<Q2>,
+                                            z / si::Unit<Product<Q1, Q2>>);
+  } else {
+    return noncritical::FusedMultiplyAdd(x, y, z);
   }
 }
 
@@ -48,27 +72,43 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedMultiplySubtract(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+  if constexpr (quantity<Q1> && quantity<Q2>) {
+    return si::Unit<Product<Q1, Q2>> *
+           numerics::_fma::FusedMultiplySubtract(x / si::Unit<Q1>,
+                                                 y / si::Unit<Q2>,
+                                                 z / si::Unit<Product<Q1, Q2>>);
+  } else {
+    return noncritical::FusedMultiplyAdd(x, y, -z);
+  }
 }
 
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedNegatedMultiplyAdd(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+  if constexpr (quantity<Q1> && quantity<Q2>) {
+    return si::Unit<Product<Q1, Q2>> * numerics::_fma::FusedNegatedMultiplyAdd(
+                                           x / si::Unit<Q1>,
+                                           y / si::Unit<Q2>,
+                                           z / si::Unit<Product<Q1, Q2>>);
+  } else {
+    return noncritical::FusedMultiplyAdd(-x, y, z);
+  }
 }
 
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedNegatedMultiplySubtract(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+  if constexpr (quantity<Q1> && quantity<Q2>) {
+    return si::Unit<Product<Q1, Q2>> *
+           numerics::_fma::FusedNegatedMultiplySubtract(
+               x / si::Unit<Q1>,
+               y / si::Unit<Q2>,
+               z / si::Unit<Product<Q1, Q2>>);
+  } else {
+    return noncritical::FusedMultiplyAdd(-x, y, -z);
+  }
 }
 
 template<typename Q>
