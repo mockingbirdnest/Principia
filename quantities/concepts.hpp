@@ -4,6 +4,7 @@
 #include <type_traits>
 
 #include "base/traits.hpp"
+#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -12,6 +13,7 @@ namespace _concepts {
 namespace internal {
 
 using namespace base::_traits;
+using namespace boost::multiprecision;
 using namespace quantities::_quantities;
 
 // TODO(egg): additive_group should subsume affine, but we use it there.
@@ -120,6 +122,19 @@ template<typename V>
 concept real_affine_space = affine_space<V, double>;
 
 template<typename T>
+concept cpp_bin_float = is_number<T>::value &&
+                        number_category<T>::value == number_kind_floating_point;
+
+template<typename T>
+concept countable =
+    std::integral<T> || std::same_as<T, boost::multiprecision::cpp_int> ||
+    std::same_as<T, boost::multiprecision::cpp_rational>;
+
+template<typename T>
+concept continuum =
+    instance<T, Quantity> || std::floating_point<T> || cpp_bin_float<T>;
+
+template<typename T>
 concept quantity = instance<T, Quantity> || std::same_as<T, double>;
 
 // std::integral || std::floating_point rather than
@@ -136,7 +151,10 @@ concept convertible_to_quantity =
 using internal::additive_group;
 using internal::affine;
 using internal::affine_space;
+using internal::continuum;
 using internal::convertible_to_quantity;
+using internal::countable;
+using internal::cpp_bin_float;
 using internal::field;
 using internal::homogeneous_field;
 using internal::homogeneous_ring;
