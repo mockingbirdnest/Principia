@@ -17,9 +17,21 @@ using namespace boost::multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::quantities::_dimensions;
 
+template<typename T>
+struct is_dimension : std::false_type {};
+
+template<std::int64_t... exponents>
+struct is_dimension<Dimensions<exponents...>> : std::true_type {};
+
+template<typename T>
+inline constexpr bool is_dimension_v = is_dimension<T>::value;
+
+template<typename T>
+concept dimension = is_dimension_v<T>;
+
 template<typename Q>
 concept dimensionful = requires {
-  typename Q::Dimensions;
+  requires dimension<typename Q::Dimensions>;
 };
 
 template<typename Q>
@@ -39,8 +51,7 @@ struct Collapse<Quantity<NoDimensions>> : not_constructible {
   using Type = double;
 };
 
-template<template<typename> typename Quantity, typename D, int n>
-  requires dimensionful<Quantity<D>>
+template<template<typename> typename Quantity, dimension D, int n>
 struct ExponentiationGenerator<Quantity<D>, n> : not_constructible {
   using Type = typename Collapse<
       Quantity<typename DimensionsExponentiationGenerator<D, n>::Type>>::Type;
@@ -53,8 +64,7 @@ struct ExponentiationGenerator<Q, n> : not_constructible {
 };
 
 
-template<template<typename> typename Quantity, typename D, int n>
-  requires dimensionful<Quantity<D>>
+template<template<typename> typename Quantity, dimension D, int n>
 struct NthRootGenerator<Quantity<D>, n> : not_constructible {
   using Type = typename Collapse<
       Quantity<typename DimensionsNthRootGenerator<D, n>::Type>>::Type;
@@ -68,8 +78,7 @@ struct NthRootGenerator<Q, n> : not_constructible {
 };
 
 
-template<template<typename> typename Quantity, typename Left, typename Right>
-  requires dimensionful<Quantity<Left>> && dimensionful<Quantity<Right>>
+template<template<typename> typename Quantity, dimension Left, dimension Right>
 struct ProductGenerator<Quantity<Left>, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
       typename DimensionsProductGenerator<Left, Right>::Type>>::Type;
@@ -91,8 +100,7 @@ struct ProductGenerator<Q, Q> : not_constructible {
 };
 
 
-template<template<typename> typename Quantity, typename Left, typename Right>
-  requires dimensionful<Quantity<Left>> && dimensionful<Quantity<Right>>
+template<template<typename> typename Quantity, dimension Left, dimension Right>
 struct QuotientGenerator<Quantity<Left>, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
       typename DimensionsQuotientGenerator<Left, Right>::Type>>::Type;
@@ -103,8 +111,9 @@ struct QuotientGenerator<Q1, Q2> : not_constructible {
   using Type = Q1;
 };
 
-template<dimensionless Q1, template<typename> typename Quantity, typename Right>
-  requires dimensionful<Quantity<Right>>
+template<dimensionless Q1,
+         template<typename> typename Quantity,
+         dimension Right>
 struct QuotientGenerator<Q1, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
       typename DimensionsQuotientGenerator<NoDimensions, Right>::Type>>::Type;
