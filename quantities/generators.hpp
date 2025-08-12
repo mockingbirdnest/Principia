@@ -13,7 +13,7 @@ template<typename Q, int n>
 struct ExponentiationGenerator;
 
 // Only legal if `n` divides the dimensions of `Q`.
-template<typename Q, int n, typename = void>
+template<typename Q, int n>
 struct NthRootGenerator;
 
 template<typename Left, typename Right>
