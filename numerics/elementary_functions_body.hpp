@@ -4,9 +4,6 @@
 
 #include <cmath>
 
-#include "base/traits.hpp"
-#include "boost/multiprecision/cpp_bin_float.hpp"
-#include "boost/multiprecision/fwd.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
@@ -18,21 +15,11 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
-using namespace base::_traits;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
-
-template<typename T>
-concept countable =
-    std::integral<T> || std::same_as<T, boost::multiprecision::cpp_int> ||
-    std::same_as<T, boost::multiprecision::cpp_rational>;
-
-template<typename T>
-concept cpp_bin_float = is_number<T>::value &&
-                        number_category<T>::value == number_kind_floating_point;
 
 // For these types there is no concern about performance or accuracy, but
 // `FusedMultiplyAdd` and friends need to exist.
