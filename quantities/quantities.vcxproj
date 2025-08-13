@@ -11,6 +11,7 @@
   <ItemGroup>
     <ClInclude Include="astronomy.hpp" />
     <ClInclude Include="bipm.hpp" />
+    <ClInclude Include="cantor.hpp" />
     <ClInclude Include="cgs.hpp" />
     <ClInclude Include="concepts.hpp" />
     <ClInclude Include="constants.hpp" />

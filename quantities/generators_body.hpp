@@ -5,7 +5,6 @@
 #include <tuple>
 
 #include "base/not_constructible.hpp"
-#include "boost/multiprecision/number.hpp"
 #include "quantities/dimensions.hpp"
 
 namespace principia {
@@ -13,30 +12,8 @@ namespace quantities {
 namespace _generators {
 namespace internal {
 
-using namespace boost::multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::quantities::_dimensions;
-
-template<typename T>
-struct is_dimension : std::false_type {};
-
-template<std::int64_t... exponents>
-struct is_dimension<Dimensions<exponents...>> : std::true_type {};
-
-template<typename T>
-inline constexpr bool is_dimension_v = is_dimension<T>::value;
-
-template<typename T>
-concept dimension = is_dimension_v<T>;
-
-template<typename Q>
-concept dimensionful = requires {
-  requires dimension<typename Q::Dimensions>;
-};
-
-template<typename Q>
-concept dimensionless =
-    std::floating_point<Q> || std::integral<Q> || is_number<Q>::value;
 
 // The template template parameter `Quantity` on specializations lifts a
 // circular dependency.
