@@ -12,12 +12,12 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "base/not_constructible.hpp"
-#include "boost/multiprecision/number.hpp"
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/quadrature.hpp"
+#include "quantities/cantor.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -32,6 +32,7 @@ using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_quadrature;
+using namespace principia::quantities::_cantor;
 using namespace principia::quantities::_quantities;
 
 // A helper for changing the origin of a monomial (x - x₁)ⁿ.  It computes the
@@ -518,7 +519,7 @@ template<typename Value_, typename Argument_, int degree_>
 void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
     WriteToMessage(not_null<serialization::Polynomial*> message) const {
   // No serialization for Boost types.
-  if constexpr (!is_number<Value>::value) {
+  if constexpr (!cpp_number<Value>) {
     message->set_degree(degree_);
     auto* const extension = message->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);

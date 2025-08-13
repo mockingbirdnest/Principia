@@ -12,6 +12,7 @@
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "boost/multiprecision/number.hpp"
+#include "quantities/cantor.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
 #include "serialization/quantities.pb.h"
@@ -25,6 +26,7 @@ using namespace boost::multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
+using namespace principia::quantities::_cantor;
 using namespace principia::quantities::_dimensions;
 using namespace principia::quantities::_generators;
 
@@ -141,9 +143,12 @@ __m128d ToM128D(Quantity<Dimensions> x);
 // A positive infinity of `Q`.
 template<typename Q>
 constexpr Q Infinity = SIUnit<Q>() * std::numeric_limits<double>::infinity();
-// A quiet NaN of `Q`.
+
+// A quiet NaN of `Q`.  Note that NaN for `cpp_number` cannot be constexpr.
 template <typename Q>
 CONSTEXPR_NAN Q NaN = SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
+template<cpp_number Q>
+Q NaN<Q> = std::numeric_limits<Q>::quiet_NaN();
 
 template<typename Q>
 constexpr bool IsFinite(Q const& x);
@@ -155,14 +160,13 @@ std::string Format();
 std::string DebugString(
     double number,
     int precision = std::numeric_limits<double>::max_digits10);
-template<typename N>
-  requires is_number<N>::value
-std::string DebugString(
-    N const& number,
-    int precision = std::numeric_limits<double>::max_digits10);
 template<typename D>
 std::string DebugString(
     Quantity<D> const& quantity,
+    int precision = std::numeric_limits<double>::max_digits10);
+template<cpp_number N>
+std::string DebugString(
+    N const& number,
     int precision = std::numeric_limits<double>::max_digits10);
 
 template<typename D>

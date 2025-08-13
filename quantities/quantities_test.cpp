@@ -3,6 +3,7 @@
 #include <functional>
 #include <string>
 
+#include "boost/multiprecision/cpp_int.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
@@ -18,6 +19,8 @@ namespace quantities {
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::MatchesRegex;
+using ::testing::Ne;
+using namespace boost::multiprecision;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
@@ -37,7 +40,7 @@ TEST_F(QuantitiesTest, DimensionfulComparisons) {
   TestOrder(SpeedOfLight * Day, LightYear);
 }
 
-TEST_F(QuantitiesTest, DimensionlfulOperations) {
+TEST_F(QuantitiesTest, DimensionfulOperations) {
   TestVectorSpace(
       0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
       -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 0, 2);
@@ -87,6 +90,13 @@ TEST_F(QuantitiesTest, IsFinite) {
   EXPECT_TRUE(IsFinite(2 * Gallon));
   EXPECT_FALSE(IsFinite((2 * Gallon) / l));
   EXPECT_FALSE(IsFinite((0 * Gallon) / l));
+}
+
+TEST_F(QuantitiesTest, NaN) {
+  auto const n1 = NaN<Length>;
+  auto const n2 = NaN<cpp_rational>;
+  EXPECT_THAT(n1, Ne(n1));
+  EXPECT_THAT(n2, Ne(n2));
 }
 
 TEST_F(QuantitiesDeathTest, SerializationError) {

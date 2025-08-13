@@ -44,6 +44,11 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
 }
 
 template<typename Q>
+Q Abs(Q const& x) {
+  return abs(x);
+}
+
+template<typename Q>
 Q Round(Q const& x) {
   // TODO(phl): This is clunky.  Use `divide_qr` or something.
   return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
@@ -111,10 +116,10 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
 template<typename Q>
 FORCE_INLINE(inline)
 Q Abs(Q const& x) {
-  if constexpr (is_number<Q>::value) {
-    return abs(x);
-  } else {
+  if constexpr (quantity<Q>) {
     return si::Unit<Q> * std::abs(x / si::Unit<Q>);
+  } else {
+    return noncritical::Abs(x);
   }
 }
 
