@@ -60,7 +60,7 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  if constexpr (quantity<Q1> && quantity<Q2>) {
+  if constexpr (convertible_to_quantity<Q1> && convertible_to_quantity<Q2>) {
     return si::Unit<Product<Q1, Q2>> *
            numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
                                             y / si::Unit<Q2>,
@@ -74,7 +74,7 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
-  if constexpr (quantity<Q1> && quantity<Q2>) {
+  if constexpr (convertible_to_quantity<Q1> && convertible_to_quantity<Q2>) {
     return si::Unit<Product<Q1, Q2>> *
            numerics::_fma::FusedMultiplySubtract(x / si::Unit<Q1>,
                                                  y / si::Unit<Q2>,
@@ -88,7 +88,7 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
-  if constexpr (quantity<Q1> && quantity<Q2>) {
+  if constexpr (convertible_to_quantity<Q1> && convertible_to_quantity<Q2>) {
     return si::Unit<Product<Q1, Q2>> * numerics::_fma::FusedNegatedMultiplyAdd(
                                            x / si::Unit<Q1>,
                                            y / si::Unit<Q2>,
@@ -102,7 +102,7 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {
-  if constexpr (quantity<Q1> && quantity<Q2>) {
+  if constexpr (convertible_to_quantity<Q1> && convertible_to_quantity<Q2>) {
     return si::Unit<Product<Q1, Q2>> *
            numerics::_fma::FusedNegatedMultiplySubtract(
                x / si::Unit<Q1>,
@@ -116,7 +116,7 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
 template<typename Q>
 FORCE_INLINE(inline)
 Q Abs(Q const& x) {
-  if constexpr (quantity<Q>) {
+  if constexpr (convertible_to_quantity<Q>) {
     return si::Unit<Q> * std::abs(x / si::Unit<Q>);
   } else {
     return noncritical::Abs(x);

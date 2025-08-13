@@ -3,7 +3,6 @@
 #include <type_traits>
 
 #include "base/traits.hpp"
-#include "quantities/cantor.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -12,7 +11,6 @@ namespace _concepts {
 namespace internal {
 
 using namespace principia::base::_traits;
-using namespace principia::quantities::_cantor;
 using namespace principia::quantities::_quantities;
 
 // A quantity is operated upon using floating-point machine arithmetic.
@@ -24,7 +22,9 @@ concept quantity = instance<T, Quantity> || std::floating_point<T>;
 // the latter introduces ambiguities on Sign * Vector.
 template<typename T>
 concept convertible_to_quantity =
-    quantity<std::remove_cvref_t<T>> || countable<T> || continuum<T>;
+    quantity<std::remove_cvref_t<T>> ||
+    std::integral<std::remove_cvref_t<T>> ||
+    std::floating_point<std::remove_cvref_t<T>>;
 
 }  // namespace internal
 
