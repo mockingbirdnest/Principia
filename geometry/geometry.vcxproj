@@ -71,6 +71,7 @@
   <ItemGroup>
     <ClCompile Include="barycentre_calculator_test.cpp" />
     <ClCompile Include="complexification_test.cpp" />
+    <ClCompile Include="concepts_test.cpp" />
     <ClCompile Include="conformal_map_test.cpp" />
     <ClCompile Include="frame_test.cpp" />
     <ClCompile Include="grassmann_test.cpp" />

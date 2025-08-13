@@ -1,19 +1,19 @@
 #include "numerics/fixed_arrays.hpp"
 
+#include "geometry/concepts.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/transposed_view.hpp"
-#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {
 
+using namespace principia::geometry::_concepts;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
-using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 using ::testing::Pointer;
 

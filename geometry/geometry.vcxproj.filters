@@ -271,5 +271,8 @@
     <ClCompile Include="instant_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="concepts_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
