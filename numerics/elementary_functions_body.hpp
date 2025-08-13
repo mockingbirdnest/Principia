@@ -2,15 +2,14 @@
 
 #include "numerics/elementary_functions.hpp"
 
-#include <pmmintrin.h>
-
 #include <cmath>
 
 #include "boost/multiprecision/cpp_bin_float.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
+#include "quantities/cantor.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -18,29 +17,56 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
+using namespace principia::quantities::_cantor;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
+
+// For these types there is no concern about performance or accuracy, but
+// `FusedMultiplyAdd` and friends need to exist.
+namespace noncritical {
+
+template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z) {
+  return fma(x, y, z);
+}
+
+template<countable Q1, countable Q2>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z) {
+  return x * y + z;
+}
+
+template<boost_cpp_number Q>
+Q Abs(Q const& x) {
+  return abs(x);
+}
+
+template<boost_cpp_number Q>
+Q Round(Q const& x) {
+  // TODO(phl): This is clunky.  Use `divide_qr` or something.
+  return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
+}
+
+}  // namespace noncritical
 
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  if constexpr (is_number<Q1>::value || is_number<Q2>::value) {
-    if constexpr ((number_category<Q1>::value == number_kind_integer ||
-                   number_category<Q1>::value == number_kind_rational) &&
-                  (number_category<Q2>::value == number_kind_integer ||
-                   number_category<Q2>::value == number_kind_rational)) {
-      return x * y + z;
-    } else {
-      return fma(x, y, z);
-    }
-  } else {
+  if constexpr (convertible_to_quantity<Q1> && convertible_to_quantity<Q2>) {
     return si::Unit<Product<Q1, Q2>> *
-            numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
-                                             y / si::Unit<Q2>,
-                                             z / si::Unit<Product<Q1, Q2>>);
+           numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
+                                            y / si::Unit<Q2>,
+                                            z / si::Unit<Product<Q1, Q2>>);
+  } else {
+    return noncritical::FusedMultiplyAdd(x, y, z);
   }
 }
 
@@ -48,36 +74,52 @@ template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedMultiplySubtract(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+  if constexpr (convertible_to_quantity<Q1> && convertible_to_quantity<Q2>) {
+    return si::Unit<Product<Q1, Q2>> *
+           numerics::_fma::FusedMultiplySubtract(x / si::Unit<Q1>,
+                                                 y / si::Unit<Q2>,
+                                                 z / si::Unit<Product<Q1, Q2>>);
+  } else {
+    return noncritical::FusedMultiplyAdd(x, y, -z);
+  }
 }
 
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedNegatedMultiplyAdd(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+  if constexpr (convertible_to_quantity<Q1> && convertible_to_quantity<Q2>) {
+    return si::Unit<Product<Q1, Q2>> * numerics::_fma::FusedNegatedMultiplyAdd(
+                                           x / si::Unit<Q1>,
+                                           y / si::Unit<Q2>,
+                                           z / si::Unit<Product<Q1, Q2>>);
+  } else {
+    return noncritical::FusedMultiplyAdd(-x, y, z);
+  }
 }
 
 template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedNegatedMultiplySubtract(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+  if constexpr (convertible_to_quantity<Q1> && convertible_to_quantity<Q2>) {
+    return si::Unit<Product<Q1, Q2>> *
+           numerics::_fma::FusedNegatedMultiplySubtract(
+               x / si::Unit<Q1>,
+               y / si::Unit<Q2>,
+               z / si::Unit<Product<Q1, Q2>>);
+  } else {
+    return noncritical::FusedMultiplyAdd(-x, y, -z);
+  }
 }
 
 template<typename Q>
 FORCE_INLINE(inline)
 Q Abs(Q const& x) {
-  if constexpr (is_number<Q>::value) {
-    return abs(x);
-  } else {
+  if constexpr (convertible_to_quantity<Q>) {
     return si::Unit<Q> * std::abs(x / si::Unit<Q>);
+  } else {
+    return noncritical::Abs(x);
   }
 }
 
@@ -146,14 +188,14 @@ Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
   return ArcTan(y / si::Unit<Quantity<D>>, x / si::Unit<Quantity<D>>);
 }
 
-template<typename Q>
-  requires is_number<Q>::value || std::floating_point<Q>
+template<dimensionless Q>
 Q Round(Q const& x) {
-  if constexpr (is_number<Q>::value) {
-    // TODO(phl): This is clunky.  Use `divide_qr` or something.
-    return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
-  } else {
+  if constexpr (std::floating_point<Q>) {
     return std::round(x);
+  } else if constexpr (std::integral<Q>) {
+    return x;
+  } else {
+    return noncritical::Round(x);
   }
 }
 

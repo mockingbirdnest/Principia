@@ -26,12 +26,7 @@ bool Interval<T>::empty() const {
 
 template<typename T>
 T Interval<T>::midpoint() const {
-  if constexpr (is_number<T>::value) {
-    DCHECK_GE(max, min);
-    return min + measure() / 2;
-  } else {
-    return max >= min ? min + measure() / 2 : min + NaN<Difference<T>>;
-  }
+  return max >= min ? min + measure() / 2 : min + NaN<Difference<T>>;
 }
 
 template<typename T>

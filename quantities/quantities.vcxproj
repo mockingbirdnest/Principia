@@ -11,6 +11,7 @@
   <ItemGroup>
     <ClInclude Include="astronomy.hpp" />
     <ClInclude Include="bipm.hpp" />
+    <ClInclude Include="cantor.hpp" />
     <ClInclude Include="cgs.hpp" />
     <ClInclude Include="concepts.hpp" />
     <ClInclude Include="constants.hpp" />
@@ -33,6 +34,7 @@
     <ClInclude Include="uk.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cantor_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
     <ClCompile Include="concepts_test.cpp" />
