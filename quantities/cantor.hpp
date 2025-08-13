@@ -15,20 +15,22 @@ using namespace boost::multiprecision;
 using namespace principia::base::_traits;
 
 // This concept should be used sparingly, and only in places where the Boost
-// multiprecision API differs from our or from the standard C++ API.
+// multiprecision API differs from our or from the standard C++ API.  At any
+// rate, the multiprecision traits should never be used directly.
 template<typename T>
-concept cpp_bin_float = is_number<T>::value &&
-                        number_category<T>::value == number_kind_floating_point;
+concept cpp_bin_float =
+    (is_number<T>::value || is_number_expression<T>::value) &&
+    number_category<T>::value == number_kind_floating_point;
 
 template<typename T>
-concept discrete =
-    std::integral<T> ||
-    (is_number<T>::value && number_category<T>::value == number_kind_integer);
+concept discrete = std::integral<T> ||
+                   ((is_number<T>::value || is_number_expression<T>::value) &&
+                    number_category<T>::value == number_kind_integer);
 
 template<typename T>
 concept countable =
-    discrete<T> ||
-    (is_number<T>::value && number_category<T>::value == number_kind_rational);
+    discrete<T> || ((is_number<T>::value || is_number_expression<T>::value) &&
+                    number_category<T>::value == number_kind_rational);
 
 template<typename T>
 concept continuum = std::floating_point<T> || cpp_bin_float<T>;

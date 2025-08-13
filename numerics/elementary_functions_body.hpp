@@ -4,9 +4,11 @@
 
 #include <cmath>
 
+#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
+#include "quantities/cantor.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/si.hpp"
 
@@ -15,9 +17,11 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
+using namespace principia::quantities::_cantor;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
 
@@ -37,6 +41,12 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
   return x * y + z;
+}
+
+template<typename Q>
+Q Round(Q const& x) {
+  // TODO(phl): This is clunky.  Use `divide_qr` or something.
+  return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
 }
 
 }  // namespace noncritical
@@ -173,14 +183,14 @@ Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
   return ArcTan(y / si::Unit<Quantity<D>>, x / si::Unit<Quantity<D>>);
 }
 
-template<typename Q>
-  requires is_number<Q>::value || std::floating_point<Q>
+template<dimensionless Q>
 Q Round(Q const& x) {
-  if constexpr (is_number<Q>::value) {
-    // TODO(phl): This is clunky.  Use `divide_qr` or something.
-    return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
-  } else {
+  if constexpr (std::floating_point<Q>) {
     return std::round(x);
+  } else if constexpr (std::integral<Q>) {
+    return x;
+  } else {
+    return noncritical::Round(x);
   }
 }
 

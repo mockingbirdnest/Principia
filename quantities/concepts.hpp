@@ -15,8 +15,9 @@ using namespace principia::base::_traits;
 using namespace principia::quantities::_cantor;
 using namespace principia::quantities::_quantities;
 
+// A quantity is operated upon using floating-point machine arithmetic.
 template<typename T>
-concept quantity = instance<T, Quantity> || continuum<T>;
+concept quantity = instance<T, Quantity> || std::floating_point<T>;
 
 // std::integral || std::floating_point rather than
 // std::convertible_to<double, T> because
