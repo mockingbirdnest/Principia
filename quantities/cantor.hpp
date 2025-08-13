@@ -48,7 +48,9 @@ concept continuum = std::floating_point<T> || cpp_bin_float<T>;
 using internal::continuum;
 using internal::countable;
 using internal::cpp_bin_float;
+using internal::cpp_int;
 using internal::cpp_number;
+using internal::cpp_rational;
 using internal::discrete;
 
 }  // namespace _cantor
