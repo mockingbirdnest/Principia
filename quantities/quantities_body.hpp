@@ -171,11 +171,11 @@ inline constexpr double Pow<3>(double x) {
 
 template<int exponent, typename Q>
 constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
-  if constexpr (number_category<Q>::value == number_kind_rational) {
+  if constexpr (boost_cpp_rational<Q>) {
     // It seems that Boost does not define `pow` for `cpp_rational`.
     return cpp_rational(pow(numerator(x), exponent),
                         pow(denominator(x), exponent));
-  } else if constexpr (is_number<Q>::value) {
+  } else if constexpr (boost_cpp_number<Q>) {
     return pow(x, exponent);
   } else {
     return SIUnit<Exponentiation<Q, exponent>>() *
@@ -243,7 +243,7 @@ std::string DebugString(Quantity<D> const& quantity, int const precision) {
          Format<D>();
 }
 
-template<cpp_number N>
+template<boost_cpp_number N>
 std::string DebugString(N const& number, int const precision) {
   return number.str();
 }

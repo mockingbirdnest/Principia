@@ -144,10 +144,11 @@ __m128d ToM128D(Quantity<Dimensions> x);
 template<typename Q>
 constexpr Q Infinity = SIUnit<Q>() * std::numeric_limits<double>::infinity();
 
-// A quiet NaN of `Q`.  Note that NaN for `cpp_number` cannot be constexpr.
+// A quiet NaN of `Q`.  Note that NaN for `boost_cpp_number` cannot be
+// constexpr.
 template <typename Q>
 CONSTEXPR_NAN Q NaN = SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
-template<cpp_number Q>
+template<boost_cpp_number Q>
 Q NaN<Q> = std::numeric_limits<Q>::quiet_NaN();
 
 template<typename Q>
@@ -164,7 +165,7 @@ template<typename D>
 std::string DebugString(
     Quantity<D> const& quantity,
     int precision = std::numeric_limits<double>::max_digits10);
-template<cpp_number N>
+template<boost_cpp_number N>
 std::string DebugString(
     N const& number,
     int precision = std::numeric_limits<double>::max_digits10);

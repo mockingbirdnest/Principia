@@ -25,7 +25,6 @@ namespace numerics {
 namespace _polynomial_in_monomial_basis {
 namespace internal {
 
-using namespace boost::multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_serialization;
@@ -519,7 +518,7 @@ template<typename Value_, typename Argument_, int degree_>
 void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
     WriteToMessage(not_null<serialization::Polynomial*> message) const {
   // No serialization for Boost types.
-  if constexpr (!cpp_number<Value>) {
+  if constexpr (!boost_cpp_number<Value>) {
     message->set_degree(degree_);
     auto* const extension = message->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);

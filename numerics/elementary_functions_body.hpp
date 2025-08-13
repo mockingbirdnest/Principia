@@ -29,7 +29,7 @@ using namespace principia::quantities::_si;
 // `FusedMultiplyAdd` and friends need to exist.
 namespace noncritical {
 
-template<cpp_bin_float Q1, cpp_bin_float Q2>
+template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
@@ -43,12 +43,12 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
   return x * y + z;
 }
 
-template<cpp_number Q>
+template<boost_cpp_number Q>
 Q Abs(Q const& x) {
   return abs(x);
 }
 
-template<cpp_number Q>
+template<boost_cpp_number Q>
 Q Round(Q const& x) {
   // TODO(phl): This is clunky.  Use `divide_qr` or something.
   return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
