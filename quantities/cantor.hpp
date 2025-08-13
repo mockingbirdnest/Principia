@@ -3,8 +3,8 @@
 #include <concepts>
 
 #include "base/traits.hpp"
-#include "boost/multiprecision/detail/number_base.hpp"
-#include "boost/multiprecision/fwd.hpp"
+#include "boost/multiprecision/cpp_bin_float.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
 
 namespace principia {
 namespace quantities {
@@ -22,11 +22,13 @@ concept cpp_bin_float = is_number<T>::value &&
 
 template<typename T>
 concept discrete =
-    std::integral<T> || std::same_as<T, boost::multiprecision::cpp_int>;
+    std::integral<T> ||
+    (is_number<T>::value && number_category<T>::value == number_kind_integer);
 
 template<typename T>
 concept countable =
-    discrete<T> || std::same_as<T, boost::multiprecision::cpp_rational>;
+    discrete<T> ||
+    (is_number<T>::value && number_category<T>::value == number_kind_rational);
 
 template<typename T>
 concept continuum = std::floating_point<T> || cpp_bin_float<T>;
@@ -34,8 +36,8 @@ concept continuum = std::floating_point<T> || cpp_bin_float<T>;
 }  // namespace internal
 
 using internal::continuum;
-using internal::cpp_bin_float;
 using internal::countable;
+using internal::cpp_bin_float;
 using internal::discrete;
 
 }  // namespace _cantor

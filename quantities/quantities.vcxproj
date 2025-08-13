@@ -34,6 +34,7 @@
     <ClInclude Include="uk.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cantor_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
     <ClCompile Include="concepts_test.cpp" />
