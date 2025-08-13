@@ -3,7 +3,7 @@
 #include <functional>
 #include <string>
 
-#include "boost/multiprecision/cpp_int.hpp"
+#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
@@ -94,7 +94,7 @@ TEST_F(QuantitiesTest, IsFinite) {
 
 TEST_F(QuantitiesTest, NaN) {
   auto const n1 = NaN<Length>;
-  auto const n2 = NaN<cpp_rational>;
+  auto const n2 = NaN<cpp_bin_float_50>;
   EXPECT_THAT(n1, Ne(n1));
   EXPECT_THAT(n2, Ne(n2));
 }
