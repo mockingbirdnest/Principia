@@ -11,12 +11,12 @@ using namespace boost::multiprecision;
 using namespace principia::quantities::_cantor;
 
 TEST(Cantor, CppBinFloat) {
-  static_assert(cpp_bin_float<cpp_bin_float_50>);
-  static_assert(cpp_bin_float<cpp_bin_float_100>);
-  static_assert(!cpp_bin_float<cpp_int>);
-  static_assert(!cpp_bin_float<cpp_rational>);
-  static_assert(!cpp_bin_float<double>);
-  static_assert(!cpp_bin_float<int>);
+  static_assert(boost_cpp_bin_float<cpp_bin_float_50>);
+  static_assert(boost_cpp_bin_float<cpp_bin_float_100>);
+  static_assert(!boost_cpp_bin_float<cpp_int>);
+  static_assert(!boost_cpp_bin_float<cpp_rational>);
+  static_assert(!boost_cpp_bin_float<double>);
+  static_assert(!boost_cpp_bin_float<int>);
 }
 
 TEST(Cantor, Discrete) {
