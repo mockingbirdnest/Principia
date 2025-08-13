@@ -8,8 +8,8 @@
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
+#include "geometry/concepts.hpp"
 #include "geometry/space.hpp"
-#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -29,8 +29,8 @@ using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_space;
-using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 
 template<typename T1, typename T2>
