@@ -48,9 +48,9 @@ struct NthRootGenerator<Quantity<D>, n> : not_constructible {
 };
 
 // NOTE(phl): This is designed so that we can write something like `Sqrt(2)`.
-template<typename Q, int n>
-  requires dimensionless<Q>
+template<dimensionless Q, int n>
 struct NthRootGenerator<Q, n> : not_constructible {
+  // TODO(phl): This is not what we want for things like Boost types.
   using Type = double;
 };
 

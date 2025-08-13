@@ -43,12 +43,12 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
   return x * y + z;
 }
 
-template<typename Q>
+template<cpp_number Q>
 Q Abs(Q const& x) {
   return abs(x);
 }
 
-template<typename Q>
+template<cpp_number Q>
 Q Round(Q const& x) {
   // TODO(phl): This is clunky.  Use `divide_qr` or something.
   return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
