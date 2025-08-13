@@ -18,12 +18,14 @@ using namespace principia::base::_traits;
 // At any rate, the multiprecision traits should never be used directly.
 
 template<typename T>
-concept boost_cpp_number = (is_number<T>::value || is_number_expression<T>::value) &&
-                     number_category<T>::value != number_kind_unknown;
+concept boost_cpp_number =
+    (is_number<T>::value || is_number_expression<T>::value) &&
+    number_category<T>::value != number_kind_unknown;
 
 template<typename T>
 concept boost_cpp_bin_float =
-    boost_cpp_number<T> && number_category<T>::value == number_kind_floating_point;
+    boost_cpp_number<T> &&
+    number_category<T>::value == number_kind_floating_point;
 
 template<typename T>
 concept boost_cpp_int =
@@ -32,7 +34,6 @@ concept boost_cpp_int =
 template<typename T>
 concept boost_cpp_rational =
     boost_cpp_number<T> && number_category<T>::value == number_kind_rational;
-
 
 template<typename T>
 concept discrete = std::integral<T> || boost_cpp_int<T>;
