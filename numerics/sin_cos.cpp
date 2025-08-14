@@ -151,12 +151,14 @@ M128D FusedNegatedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
 
 template<FMAPolicy fma_policy>
 double FusedMultiplyAdd(double const a, double const b, double const c) {
-  return static_cast<double>(FusedMultiplyAdd<fma_policy>(a, b, c));
+  return static_cast<double>(
+      FusedMultiplyAdd<fma_policy>(M128D(a), M128D(b), M128D(c)));
 }
 
 template<FMAPolicy fma_policy>
 double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
-  return static_cast<double>(FusedNegatedMultiplyAdd<fma_policy>(a, b, c));
+  return static_cast<double>(
+      FusedNegatedMultiplyAdd<fma_policy>(M128D(a), M128D(b), M128D(c)));
 }
 
 // Evaluates the sum `x + Δx` and performs the rounding test using the technique
@@ -168,11 +170,11 @@ double DetectDangerousRounding(M128D const x, M128D const Δx) {
   // We don't check that `Δx` is not NaN because that's how we trigger fallback
   // to the slow path.
   DCHECK(x == x);
-  DoublePrecision<double> const sum = QuickTwoSum(x, Δx);
-  double const& value = sum.value;
-  double const& error = sum.error;
+  DoublePrecision<M128D> const sum = QuickTwoSum(x, Δx);
+  auto const& value = sum.value;
+  auto const& error = sum.error;
   OSACA_IF(value == FusedMultiplyAdd<fma_policy>(error, e, value)) {
-    return value;
+    return static_cast<double>(value);
   } else {
 #if _DEBUG
     LOG_IF(ERROR, value == value && error == error)
@@ -257,7 +259,7 @@ void Reduce(Argument const θ,
 }
 
 template<FMAPolicy fma_policy>
-Value SinPolynomial(M128D const x) {
+M128D SinPolynomial(M128D const x) {
   // Absolute error of the exact polynomial better than 85.7 bits over an
   // interval slightly larger than [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
@@ -265,7 +267,7 @@ Value SinPolynomial(M128D const x) {
 }
 
 template<FMAPolicy fma_policy>
-Value SinPolynomialNearZero(M128D const x) {
+M128D SinPolynomialNearZero(M128D const x) {
   // Relative error of the exact polynomial better than 75.5 bits over
   // [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
@@ -273,7 +275,7 @@ Value SinPolynomialNearZero(M128D const x) {
 }
 
 template<FMAPolicy fma_policy>
-Value CosPolynomial(M128D const x) {
+M128D CosPolynomial(M128D const x) {
   // Absolute error of the exact polynomial better than 72.6 bits over an
   // interval slightly larger than [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(

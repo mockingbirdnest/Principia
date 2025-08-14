@@ -4,6 +4,7 @@
 
 #include "base/traits.hpp"
 #include "boost/multiprecision/number.hpp"
+#include "quantities/m128d.hpp"
 
 namespace principia {
 namespace quantities {
@@ -12,6 +13,7 @@ namespace internal {
 
 using namespace boost::multiprecision;
 using namespace principia::base::_traits;
+using namespace principia::quantities::_m128d;
 
 // The `boost_cpp_` concepts should be used sparingly, and only in places where
 // the Boost multiprecision API differs from ours or from the standard C++ API.
@@ -42,7 +44,8 @@ template<typename T>
 concept countable = discrete<T> || boost_cpp_rational<T>;
 
 template<typename T>
-concept continuum = std::floating_point<T> || boost_cpp_bin_float<T>;
+concept continuum =
+    std::floating_point<T> || std::same_as<T, M128D> || boost_cpp_bin_float<T>;
 
 }  // namespace internal
 
