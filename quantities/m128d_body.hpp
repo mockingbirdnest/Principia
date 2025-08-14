@@ -1,11 +1,11 @@
 #pragma once
 
-#include "numerics/m128d.hpp"
+#include "quantities/m128d.hpp"
 
 #include <immintrin.h>
 
 namespace principia {
-namespace numerics {
+namespace quantities {
 namespace _m128d {
 namespace internal {
 
@@ -155,5 +155,5 @@ inline M128D FusedNegatedMultiplySubtract(M128D const a,
 
 }  // namespace internal
 }  // namespace _m128d
-}  // namespace numerics
+}  // namespace quantities
 }  // namespace principia

@@ -12,9 +12,9 @@
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
-#include "numerics/m128d.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
+#include "quantities/m128d.hpp"
 
 // The algorithms in this file are documented in `Sin Cos.pdf`.  To the extent
 // possible, the code follows the notation of that document.
@@ -27,8 +27,8 @@ using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
-using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::quantities::_m128d;
 
 #define OSACA_ANALYSED_FUNCTION Cos
 #define OSACA_ANALYSED_FUNCTION_NAMESPACE

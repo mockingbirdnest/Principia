@@ -1,13 +1,13 @@
-#include "numerics/m128d.hpp"
+#include "quantities/m128d.hpp"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-namespace numerics {
+namespace quantities {
 
-using namespace principia::numerics::_m128d;
+using namespace principia::quantities::_m128d;
 using namespace principia::testing_utilities::_almost_equals;
 
 class M128DTest : public testing::Test {};
@@ -63,5 +63,5 @@ TEST_F(M128DTest, Comparison) {
   EXPECT_TRUE(b > a);
 }
 
-}  // namespace numerics
+}  // namespace quantities
 }  // namespace principia

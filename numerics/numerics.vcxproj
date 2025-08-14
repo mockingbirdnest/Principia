@@ -44,8 +44,6 @@
     <ClInclude Include="hermite2_body.hpp" />
     <ClInclude Include="lattices.hpp" />
     <ClInclude Include="lattices_body.hpp" />
-    <ClInclude Include="m128d.hpp" />
-    <ClInclude Include="m128d_body.hpp" />
     <ClInclude Include="matrix_computations.hpp" />
     <ClInclude Include="matrix_computations_body.hpp" />
     <ClInclude Include="combinatorics.hpp" />
@@ -146,7 +144,6 @@
     <ClCompile Include="hermite3_test.cpp" />
     <ClCompile Include="lattices_test.cpp" />
     <ClCompile Include="legendre_test.cpp" />
-    <ClCompile Include="m128d_test.cpp" />
     <ClCompile Include="matrix_computations_test.cpp" />
     <ClCompile Include="matrix_views_test.cpp" />
     <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc" />

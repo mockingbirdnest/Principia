@@ -1,6 +1,5 @@
 #pragma once
 
-#include <quantities/concepts.hpp>
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -9,12 +8,11 @@ namespace geometry {
 namespace _interval {
 namespace internal {
 
-using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // Represents the interval [min, max]; T must be an ordered affine space.
-template<continuum T>
+template<typename T>
 struct Interval {
   T min = T{} + Infinity<Difference<T>>;  // NOLINT(whitespace/braces)
   T max = T{} - Infinity<Difference<T>>;  // NOLINT(whitespace/braces)

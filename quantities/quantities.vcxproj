@@ -19,6 +19,8 @@
     <ClInclude Include="dimensions_body.hpp" />
     <ClInclude Include="generators.hpp" />
     <ClInclude Include="generators_body.hpp" />
+    <ClInclude Include="m128d.hpp" />
+    <ClInclude Include="m128d_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="numbers.hpp" />
     <ClInclude Include="parser.hpp" />
@@ -35,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cantor_test.cpp" />
+    <ClCompile Include="m128d_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
     <ClCompile Include="concepts_test.cpp" />
