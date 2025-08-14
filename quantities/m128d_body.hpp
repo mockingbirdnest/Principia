@@ -1,8 +1,8 @@
 #pragma once
 
-#include "quantities/m128d.hpp"
-
 #include <immintrin.h>
+
+#include "quantities/m128d.hpp"
 
 namespace principia {
 namespace quantities {
@@ -151,6 +151,10 @@ inline M128D FusedNegatedMultiplySubtract(M128D const a,
                                           M128D const b,
                                           M128D const c) {
   return M128D(_mm_fnmsub_sd(a.value_, b.value_, c.value_));
+}
+
+inline std::ostream& operator<<(std::ostream& os, M128D x) {
+  return os << static_cast<double>(x);
 }
 
 }  // namespace internal

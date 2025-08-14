@@ -16,6 +16,7 @@
 #include "geometry/serialization.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/concepts.hpp"
+#include "quantities/m128d.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -30,6 +31,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_concepts;
+using namespace principia::quantities::_m128d;
 using namespace principia::quantities::_si;
 
 // A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly
@@ -95,6 +97,14 @@ struct ComponentwiseComparator<R3Element<T>, R3Element<U>> : not_constructible {
           left[i], right[i]);
     }
     return result;
+  }
+};
+
+template<>
+struct ComponentwiseComparator<M128D, M128D> {
+  static bool GreaterThanOrEqualOrZero(M128D const& left, M128D const& right) {
+    // TODO(phl)Nans.
+    return Abs(left) >= Abs(right);
   }
 };
 

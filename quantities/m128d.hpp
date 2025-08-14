@@ -3,6 +3,7 @@
 #include <pmmintrin.h>
 
 #include <cstdint>
+#include <ostream>
 
 namespace principia {
 namespace quantities {
@@ -92,6 +93,8 @@ M128D FusedNegatedMultiplyAdd(M128D a, M128D b, M128D c);
 
 // ⟦-ab - c⟧.
 M128D FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
+
+std::ostream& operator<<(std::ostream& os, M128D x);
 
 }  // namespace internal
 

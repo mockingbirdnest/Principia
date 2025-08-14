@@ -237,6 +237,10 @@ inline std::string DebugString(double const number, int const precision) {
   return result;
 }
 
+inline std::string DebugString(M128D const number, int const precision) {
+  return DebugString(static_cast<double>(number), precision);
+}
+
 template<typename D>
 std::string DebugString(Quantity<D> const& quantity, int const precision) {
   return DebugString(quantity / SIUnit<Quantity<D>>(), precision) + " " +

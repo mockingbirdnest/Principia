@@ -15,6 +15,7 @@
 #include "quantities/cantor.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
+#include "quantities/m128d.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
@@ -29,6 +30,7 @@ using namespace principia::base::_tags;
 using namespace principia::quantities::_cantor;
 using namespace principia::quantities::_dimensions;
 using namespace principia::quantities::_generators;
+using namespace principia::quantities::_m128d;
 
 template<typename D>
 class Quantity;
@@ -160,6 +162,9 @@ std::string Format();
 
 std::string DebugString(
     double number,
+    int precision = std::numeric_limits<double>::max_digits10);
+std::string DebugString(
+    M128D number,
     int precision = std::numeric_limits<double>::max_digits10);
 template<typename D>
 std::string DebugString(
