@@ -88,6 +88,8 @@ constexpr Argument three_term_θ_reduced_threshold =
 
 constexpr Argument mantissa_reduce_shifter =
     1LL << (std::numeric_limits<double>::digits - 1);
+constexpr Argument accurate_table_index_addend =
+    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1);
 
 constexpr double sin_near_zero_e = 0x1.0000'32D7'5E64'Cp0;
 constexpr double sin_e = 0x1.0000'A03C'34D3'9p0;
@@ -123,10 +125,8 @@ inline std::int64_t AccurateTableIndex(M128D const abs_x) {
   // 2. An `and` operation is used to only retain the last 9 bits of the
   //    mantissa.
   // 3. The result is interpreted as an integer and returned as the index.
-  return static_cast<std::int64_t>(
-      masks::mantissa_index_bits &
-      abs_x + M128D(1LL << (std::numeric_limits<double>::digits -
-                            table_spacing_bits - 1)));
+  return static_cast<std::int64_t>(masks::mantissa_index_bits &
+                                   abs_x + M128D(accurate_table_index_addend));
 }
 
 template<FMAPolicy fma_policy>

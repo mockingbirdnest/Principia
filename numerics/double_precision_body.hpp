@@ -103,8 +103,9 @@ struct ComponentwiseComparator<R3Element<T>, R3Element<U>> : not_constructible {
 template<>
 struct ComponentwiseComparator<M128D, M128D> {
   static bool GreaterThanOrEqualOrZero(M128D const& left, M128D const& right) {
-    // TODO(phl)Nans.
-    return Abs(left) >= Abs(right);
+    static M128D const zero(0.0);
+    return Abs(left) >= Abs(right) || left == zero ||
+           left != left || right != right;
   }
 };
 
