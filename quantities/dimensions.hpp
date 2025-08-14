@@ -2,10 +2,14 @@
 
 #include <cstdint>
 
+#include "quantities/cantor.hpp"
+
 namespace principia {
 namespace quantities {
 namespace _dimensions {
 namespace internal {
+
+using namespace principia::quantities::_cantor;
 
 // Dimensionality of physical quantities.  Note that we strongly type angles.
 template<std::int64_t LengthExponent,
@@ -43,15 +47,37 @@ struct DimensionsProductGenerator;
 template<typename LDimensions, typename RDimensions>
 struct DimensionsQuotientGenerator;
 
+// Metaprogramming.
+
+template<typename T>
+struct is_dimension;
+
+template<typename T>
+inline constexpr bool is_dimension_v = is_dimension<T>::value;
+
+template<typename T>
+concept dimension = is_dimension_v<T>;
+
+template<typename Q>
+concept dimensionful = requires {
+  requires dimension<typename Q::Dimensions>;
+};
+
+template<typename Q>
+concept dimensionless = countable<Q> || continuum<Q>;
+
 }  // namespace internal
 
-using internal::NoDimensions;
-using internal::DimensionsQuotientGenerator;
-using internal::DimensionsProductGenerator;
-using internal::DimensionsNthRootGenerator;
-using internal::DimensionsExponentiationGenerator;
-using internal::DimensionsAreSerializable;
+using internal::dimension;
+using internal::dimensionful;
+using internal::dimensionless;
 using internal::Dimensions;
+using internal::DimensionsAreSerializable;
+using internal::DimensionsExponentiationGenerator;
+using internal::DimensionsNthRootGenerator;
+using internal::DimensionsProductGenerator;
+using internal::DimensionsQuotientGenerator;
+using internal::NoDimensions;
 
 }  // namespace _dimensions
 }  // namespace quantities

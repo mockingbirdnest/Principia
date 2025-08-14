@@ -1,8 +1,8 @@
 #pragma once
 
 #include "base/not_null.hpp"
+#include "geometry/concepts.hpp"
 #include "numerics/fma.hpp"
-#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
@@ -13,8 +13,8 @@ namespace _polynomial_evaluators {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_concepts;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_tuples;
 
