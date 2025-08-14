@@ -58,13 +58,14 @@ using namespace principia::quantities::_m128d;
     return expression;                                                       \
   }()
 
-using Argument = double;
-using Value = double;
+using Argument = M128D;
+using Value = M128D;
 
 constexpr std::int64_t table_spacing_bits = 9;
-constexpr Argument table_spacing_reciprocal = 1 << table_spacing_bits;
-constexpr Argument table_spacing = 1.0 / table_spacing_reciprocal;
-constexpr Argument sin_near_zero_cutoff = table_spacing / 2.0;
+Argument const table_spacing_reciprocal =
+    static_cast<double>(1 << table_spacing_bits);
+Argument const table_spacing = 1.0 / table_spacing_reciprocal;
+Argument const sin_near_zero_cutoff = table_spacing / 2.0;
 
 constexpr std::int64_t κ₁ = 8;
 constexpr std::int64_t κʹ₁ = 5;
@@ -72,31 +73,31 @@ constexpr std::int64_t κ₂ = 18;
 constexpr std::int64_t κʹ₂ = 14;
 constexpr std::int64_t κʺ₂ = 15;
 constexpr std::int64_t κ₃ = 18;
-constexpr Argument two_term_θ_threshold = π / 2 * (1LL << κ₁);
-constexpr Argument three_term_θ_threshold = π / 2 * (1LL << κ₂);
-constexpr Argument C₁ = 0x1.921F'B544'42D0'0p0;
-constexpr Argument δC₁ = 0x1.8469'898C'C517'0p-48;
-constexpr Argument C₂ = 0x1.921F'B544'4000'0p0;
-constexpr Argument Cʹ₂ = 0x1.68C2'34C4'C000'0p-39;
-constexpr Argument δC₂ = 0x1.98A2'E037'0734'5p-77;
-constexpr Argument two_term_θ_reduced_threshold =
+Argument const two_term_θ_threshold = π / 2 * (1LL << κ₁);
+Argument const three_term_θ_threshold = π / 2 * (1LL << κ₂);
+Argument const C₁ = 0x1.921F'B544'42D0'0p0;
+Argument const δC₁ = 0x1.8469'898C'C517'0p-48;
+Argument const C₂ = 0x1.921F'B544'4000'0p0;
+Argument const Cʹ₂ = 0x1.68C2'34C4'C000'0p-39;
+Argument const δC₂ = 0x1.98A2'E037'0734'5p-77;
+Argument const two_term_θ_reduced_threshold =
     1.0 / (1LL << (-(κ₁ + κʹ₁ + κ₃ - std::numeric_limits<double>::digits + 2)));
-constexpr Argument three_term_θ_reduced_threshold =
+Argument const three_term_θ_reduced_threshold =
     (1.0 / (1LL << (-(κ₃ - std::numeric_limits<double>::digits)))) *
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
      4);
 
-constexpr Argument mantissa_reduce_shifter =
-    1LL << (std::numeric_limits<double>::digits - 1);
-constexpr Argument accurate_table_index_addend =
-    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1);
+Argument const mantissa_reduce_shifter =
+    static_cast<double>(1LL << (std::numeric_limits<double>::digits - 1));
+Argument const accurate_table_index_addend = static_cast<double>(
+    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1));
 
 constexpr double sin_near_zero_e = 0x1.0000'32D7'5E64'Cp0;
 constexpr double sin_e = 0x1.0000'A03C'34D3'9p0;
 constexpr double cos_e = 0x1.0000'A07E'1980'8p0;
 
 template<FMAPolicy fma_policy>
-using Polynomial1 = HornerEvaluator<M128D, M128D, 1, fma_policy>;
+using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 
 // Pointers used for indirect calls, set by `StaticInitialization`.
 Value (__cdecl *cos)(Argument θ) = nullptr;
@@ -115,7 +116,7 @@ M128D const mantissa_bits(0x000f'ffff'ffff'ffffull);
 M128D const mantissa_index_bits(0x0000'0000'0000'01ffull);
 }  // namespace masks
 
-inline std::int64_t AccurateTableIndex(M128D const abs_x) {
+inline std::int64_t AccurateTableIndex(Argument const abs_x) {
   // This function computes the index in the accurate table:
   // 1. A suitable (large) power of 2 is added to the argument so that the last
   //    bit of the mantissa of the result corresponds to units of 1/512 of the
@@ -126,7 +127,7 @@ inline std::int64_t AccurateTableIndex(M128D const abs_x) {
   //    mantissa.
   // 3. The result is interpreted as an integer and returned as the index.
   return static_cast<std::int64_t>(masks::mantissa_index_bits &
-                                   abs_x + M128D(accurate_table_index_addend));
+                                   (abs_x + accurate_table_index_addend));
 }
 
 template<FMAPolicy fma_policy>
@@ -149,24 +150,12 @@ M128D FusedNegatedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
   }
 }
 
-template<FMAPolicy fma_policy>
-double FusedMultiplyAdd(double const a, double const b, double const c) {
-  return static_cast<double>(
-      FusedMultiplyAdd<fma_policy>(M128D(a), M128D(b), M128D(c)));
-}
-
-template<FMAPolicy fma_policy>
-double FusedNegatedMultiplyAdd(double const a, double const b, double const c) {
-  return static_cast<double>(
-      FusedNegatedMultiplyAdd<fma_policy>(M128D(a), M128D(b), M128D(c)));
-}
-
 // Evaluates the sum `x + Δx` and performs the rounding test using the technique
 // described in [Mul+10], section 11.6.3.  If rounding is safe, returns the sum;
 // otherwise, returns `NaN`.  `x` is always positive.  `Δx` may be positive or
 // negative.
 template<FMAPolicy fma_policy, double e>
-double DetectDangerousRounding(M128D const x, M128D const Δx) {
+Value DetectDangerousRounding(Value const x, Value const Δx) {
   // We don't check that `Δx` is not NaN because that's how we trigger fallback
   // to the slow path.
   DCHECK(x == x);
@@ -174,7 +163,7 @@ double DetectDangerousRounding(M128D const x, M128D const Δx) {
   auto const& value = sum.value;
   auto const& error = sum.error;
   OSACA_IF(value == FusedMultiplyAdd<fma_policy>(error, e, value)) {
-    return static_cast<double>(value);
+    return value;
   } else {
 #if _DEBUG
     LOG_IF(ERROR, value == value && error == error)
@@ -190,7 +179,7 @@ FORCE_INLINE(inline)
 void Reduce(Argument const θ,
             DoublePrecision<Argument>& θ_reduced,
             std::int64_t& quadrant) {
-  double const abs_θ = std::abs(θ);
+  Argument const abs_θ = Abs(θ);
   OSACA_IF(abs_θ < π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = 0;
@@ -202,7 +191,7 @@ void Reduce(Argument const θ,
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
     // of the quadrant.
     M128D const sign = Sign(θ);
-    double n_double =
+    M128D n_double =
         FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter) -
         mantissa_reduce_shifter;
 
@@ -211,11 +200,11 @@ void Reduce(Argument const θ,
     Argument y;
     std::int64_t n;
     if constexpr (preserve_sign) {
-      n_double = static_cast<double>(n_double ^ sign);
-      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+      n_double = n_double ^ sign;
+      n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
       y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, θ);
     } else {
-      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+      n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
       y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, abs_θ);
     }
 
@@ -229,18 +218,18 @@ void Reduce(Argument const θ,
   } OSACA_ELSE_IF(abs_θ <= three_term_θ_threshold) {
     // Same code as above.
     M128D const sign = Sign(θ);
-    double n_double =
+    M128D n_double =
         FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter) -
         mantissa_reduce_shifter;
 
     Argument y;
     std::int64_t n;
     if constexpr (preserve_sign) {
-      n_double = static_cast<double>(n_double ^ sign);
-      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+      n_double = n_double ^ sign;
+      n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
       y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₂, θ);
     } else {
-      n = _mm_cvtsd_si64(_mm_set_sd(n_double));
+      n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
       y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₂, abs_θ);
     }
 
@@ -285,8 +274,8 @@ M128D CosPolynomial(M128D const x) {
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
-  M128D const x = θ_reduced.value;
-  M128D const e = θ_reduced.error;
+  auto const x = θ_reduced.value;
+  auto const e = θ_reduced.error;
   auto const abs_x = Abs(x);
   OSACA_IF(abs_x < sin_near_zero_cutoff) {
     auto const x² = x * x;
@@ -320,17 +309,16 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
             h³ * SinPolynomial<fma_policy>(h²),
             sin_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
         FusedMultiplyAdd<fma_policy>(cos_x₀, e_abs, sin_x₀_plus_h_cos_x₀.error);
-    return static_cast<double>(
-        sign ^ DetectDangerousRounding<fma_policy, sin_e>(
-                   sin_x₀_plus_h_cos_x₀.value, polynomial_term));
+    return sign ^ DetectDangerousRounding<fma_policy, sin_e>(
+                      sin_x₀_plus_h_cos_x₀.value, polynomial_term);
   }
 }
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
 Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
-  M128D const x = θ_reduced.value;
-  M128D const e = θ_reduced.error;
+  auto const x = θ_reduced.value;
+  auto const e = θ_reduced.error;
   auto const abs_x = Abs(x);
   auto const sign = Sign(x);
   auto const e_abs = e ^ sign;
@@ -366,7 +354,7 @@ Value __cdecl Sin(Argument θ) {
   OSACA_FUNCTION_BEGIN(θ, <fma_policy>);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  double value;
+  Value value;
   Reduce<fma_policy, /*preserve_sign=*/true>(θ, θ_reduced, quadrant);
   OSACA_IF(quadrant & 0b1) {
     value = CosImplementation<fma_policy>(θ_reduced);
@@ -374,7 +362,7 @@ Value __cdecl Sin(Argument θ) {
     value = SinImplementation<fma_policy>(θ_reduced);
   }
   OSACA_IF(value != value) {
-    OSACA_RETURN(cr_sin(θ));
+    OSACA_RETURN(cr_sin(static_cast<double>(θ)));
   } OSACA_ELSE_IF(quadrant & 0b10) {
     OSACA_RETURN(-value);
   } else {
@@ -387,7 +375,7 @@ Value __cdecl Cos(Argument θ) {
   OSACA_FUNCTION_BEGIN(θ, <fma_policy>);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  double value;
+  Value value;
   Reduce<fma_policy, /*preserve_sign=*/false>(θ, θ_reduced, quadrant);
   OSACA_IF(quadrant & 0b1) {
     value = SinImplementation<fma_policy>(θ_reduced);
@@ -395,7 +383,7 @@ Value __cdecl Cos(Argument θ) {
     value = CosImplementation<fma_policy>(θ_reduced);
   }
   OSACA_IF(value != value) {
-    OSACA_RETURN(cr_cos(θ));
+    OSACA_RETURN(cr_cos(static_cast<double>(θ)));
   } OSACA_ELSE_IF(quadrant == 1 || quadrant == 2) {
     OSACA_RETURN(-value);
   } else {
@@ -413,12 +401,12 @@ void StaticInitialization() {
   }
 }
 
-Value __cdecl Sin(Argument const θ) {
-  return sin(θ);
+double __cdecl Sin(double const θ) {
+  return static_cast<double>(sin(θ));
 }
 
-Value __cdecl Cos(Argument const θ) {
-  return cos(θ);
+double __cdecl Cos(double const θ) {
+  return static_cast<double>(cos(θ));
 }
 
 }  // namespace internal
