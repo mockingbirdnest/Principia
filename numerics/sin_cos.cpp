@@ -97,8 +97,8 @@ template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 
 // Pointers used for indirect calls, set by `StaticInitialization`.
-Value (__cdecl *cos)(Argument θ) = nullptr;
-Value (__cdecl *sin)(Argument θ) = nullptr;
+double (__cdecl *cos)(double θ) = nullptr;
+double (__cdecl *sin)(double θ) = nullptr;
 
 // Forward declarations needed by the OSACA macros.
 template<FMAPolicy fma_policy>
@@ -347,19 +347,19 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
 }
 
 template<FMAPolicy fma_policy>
-Value __cdecl Sin(Argument θ) {
+double __cdecl Sin(double θ) {
   OSACA_FUNCTION_BEGIN(θ, <fma_policy>);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  Value value;
-  Reduce<fma_policy, /*preserve_sign=*/true>(θ, θ_reduced, quadrant);
+  double value;
+  Reduce<fma_policy, /*preserve_sign=*/true>(M128D(θ), θ_reduced, quadrant);
   OSACA_IF(quadrant & 0b1) {
-    value = CosImplementation<fma_policy>(θ_reduced);
+    value = static_cast<double>(CosImplementation<fma_policy>(θ_reduced));
   } else {
-    value = SinImplementation<fma_policy>(θ_reduced);
+    value = static_cast<double>(SinImplementation<fma_policy>(θ_reduced));
   }
   OSACA_IF(value != value) {
-    OSACA_RETURN(M128D(cr_sin(static_cast<double>(θ))));
+    OSACA_RETURN(cr_sin(θ));
   } OSACA_ELSE_IF(quadrant & 0b10) {
     OSACA_RETURN(-value);
   } else {
@@ -368,19 +368,19 @@ Value __cdecl Sin(Argument θ) {
 }
 
 template<FMAPolicy fma_policy>
-Value __cdecl Cos(Argument θ) {
+double __cdecl Cos(double θ) {
   OSACA_FUNCTION_BEGIN(θ, <fma_policy>);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
-  Value value;
-  Reduce<fma_policy, /*preserve_sign=*/false>(θ, θ_reduced, quadrant);
+  double value;
+  Reduce<fma_policy, /*preserve_sign=*/false>(M128D(θ), θ_reduced, quadrant);
   OSACA_IF(quadrant & 0b1) {
-    value = SinImplementation<fma_policy>(θ_reduced);
+    value = static_cast<double>(SinImplementation<fma_policy>(θ_reduced));
   } else {
-    value = CosImplementation<fma_policy>(θ_reduced);
+    value = static_cast<double>(CosImplementation<fma_policy>(θ_reduced));
   }
   OSACA_IF(value != value) {
-    OSACA_RETURN(M128D(cr_cos(static_cast<double>(θ))));
+    OSACA_RETURN(cr_cos(θ));
   } OSACA_ELSE_IF(quadrant == 1 || quadrant == 2) {
     OSACA_RETURN(-value);
   } else {
@@ -399,11 +399,11 @@ void StaticInitialization() {
 }
 
 double __cdecl Sin(double const θ) {
-  return static_cast<double>(sin(M128D(θ)));
+  return sin(θ);
 }
 
 double __cdecl Cos(double const θ) {
-  return static_cast<double>(cos(M128D(θ)));
+  return cos(θ);
 }
 
 }  // namespace internal
