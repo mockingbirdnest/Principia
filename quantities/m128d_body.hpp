@@ -57,7 +57,8 @@ inline M128D& M128D::operator*=(M128D const right) {
   return *this;
 }
 
-inline M128D& M128D::operator*=(int const right) {
+template<std::integral T>
+M128D& M128D::operator*=(T const right) {
   *this = *this * M128D(static_cast<double>(right));
   return *this;
 }
@@ -89,11 +90,13 @@ inline M128D operator*(M128D const left, M128D const right) {
   return M128D(_mm_mul_sd(left.value_, right.value_));
 }
 
-inline M128D operator*(M128D const left, int const right) {
+template<std::integral T>
+inline M128D operator*(M128D const left, T const right) {
   return left * M128D(static_cast<double>(right));
 }
 
-inline M128D operator*(int const left, M128D const right) {
+template<std::integral T>
+inline M128D operator*(T const left, M128D const right) {
   return M128D(static_cast<double>(left)) * right;
 }
 

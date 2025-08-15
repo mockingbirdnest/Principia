@@ -29,7 +29,8 @@ class M128D {
   M128D& operator+=(M128D right);
   M128D& operator-=(M128D right);
   M128D& operator*=(M128D right);
-  M128D& operator*=(int right);
+  template<std::integral T>
+  M128D& operator*=(T right);
   M128D& operator/=(M128D right);
 
   friend M128D operator+(M128D right);
@@ -37,8 +38,10 @@ class M128D {
   friend M128D operator+(M128D left, M128D right);
   friend M128D operator-(M128D left, M128D right);
   friend M128D operator*(M128D left, M128D right);
-  friend M128D operator*(M128D left, int right);
-  friend M128D operator*(int left, M128D right);
+  template<std::integral T>
+  friend M128D operator*(M128D left, T right);
+  template<std::integral T>
+  friend M128D operator*(T left, M128D right);
   friend M128D operator/(M128D left, M128D right);
 
   friend M128D operator~(M128D right);
@@ -75,8 +78,10 @@ M128D operator-(M128D right);
 M128D operator+(M128D left, M128D right);
 M128D operator-(M128D left, M128D right);
 M128D operator*(M128D left, M128D right);
-M128D operator*(M128D left, int right);
-M128D operator*(int left, M128D right);
+template<std::integral T>
+M128D operator*(M128D left, T right);
+template<std::integral T>
+M128D operator*(T left, M128D right);
 M128D operator/(M128D left, M128D right);
 
 M128D operator~(M128D right);
