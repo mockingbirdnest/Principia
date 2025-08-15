@@ -47,8 +47,6 @@ using namespace principia::numerics::_polynomial_evaluators;
         θ_reduced.value > 0 ? θ_reduced.value : -θ_reduced.value;            \
     /* Used throughout the top-level functions. */                           \
     constexpr std::int64_t quadrant = n & 0b11;                              \
-    /* Used in DetectDangerousRounding. */                                   \
-    constexpr double normalized_error = 0;                                   \
     /* Not NaN is the only part that matters; used at the end of the    */   \
     /* top-level functions to determine whether to call the slow path.  */   \
     constexpr double value = 1;                                              \
