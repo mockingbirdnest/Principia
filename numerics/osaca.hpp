@@ -1,6 +1,6 @@
 #pragma once
 
-#define PRINCIPIA_USE_OSACA 0
+#define PRINCIPIA_USE_OSACA 1
 
 // The macros OSACA_FUNCTION_BEGIN and OSACA_RETURN are used to analyse the
 // latency of a double -> double function, as measured, e.g., by the
@@ -129,7 +129,7 @@ static bool volatile OSACA_loop_terminator = false;
 
 #define OSACA_FUNCTION_BEGIN(arg, ...)                              \
   LOG(ERROR) << "Cannot execute an OSACA binary";                   \
-  double OSACA_LOOP_CARRY_QUALIFIER OSACA_loop_carry = arg;         \
+  auto OSACA_LOOP_CARRY_QUALIFIER OSACA_loop_carry = arg;           \
   OSACA_outer_loop:                                                 \
   constexpr auto* OSACA_analysed_function_with_current_parameters = \
       &OSACA_ANALYSED_FUNCTION __VA_ARGS__;                         \
@@ -155,7 +155,7 @@ static bool volatile OSACA_loop_terminator = false;
       if (!OSACA_loop_terminator) {                                         \
         goto OSACA_loop;                                                    \
       }                                                                     \
-      double volatile OSACA_result = OSACA_loop_carry;                      \
+      auto volatile OSACA_result = OSACA_loop_carry;                        \
       IACA_VC64_END;                                                        \
       /* The outer loop prevents the the start and end marker from being */ \
       /* interleaved with register saving and restoring moves.           */ \

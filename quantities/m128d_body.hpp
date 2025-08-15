@@ -21,6 +21,11 @@ inline M128D::M128D(std::int64_t const value)
 inline M128D::M128D(std::uint64_t const value)
     : value_(_mm_castsi128_pd(_mm_cvtsi64_si128(value))) {}
 
+inline M128D::M128D(M128D const volatile& v) {
+  M128D* vv = const_cast<M128D*>(&v);
+  value_ = vv->value_;
+};
+
 inline M128D::operator double() const {
   return _mm_cvtsd_f64(value_);
 }
@@ -52,6 +57,11 @@ inline M128D& M128D::operator*=(M128D const right) {
   return *this;
 }
 
+inline M128D& M128D::operator*=(int const right) {
+  *this = *this * M128D(static_cast<double>(right));
+  return *this;
+}
+
 inline M128D& M128D::operator/=(M128D const right) {
   *this = *this / right;
   return *this;
@@ -77,6 +87,14 @@ inline M128D operator-(M128D const left, M128D const right) {
 
 inline M128D operator*(M128D const left, M128D const right) {
   return M128D(_mm_mul_sd(left.value_, right.value_));
+}
+
+inline M128D operator*(M128D const left, int const right) {
+  return left * M128D(static_cast<double>(right));
+}
+
+inline M128D operator*(int const left, M128D const right) {
+  return M128D(static_cast<double>(left)) * right;
 }
 
 inline M128D operator/(M128D const left, M128D const right) {
@@ -111,12 +129,24 @@ inline bool operator<(M128D const left, M128D const right) {
   return _mm_comilt_sd(left.value_, right.value_);
 }
 
+inline bool operator<(M128D const left, double const right) {
+  return left < M128D(right);
+}
+
 inline bool operator<=(M128D const left, M128D const right) {
   return _mm_comile_sd(left.value_, right.value_);
 }
 
+inline bool operator<=(M128D const left, double const right) {
+  return left <= M128D(right);
+}
+
 inline bool operator>=(M128D const left, M128D const right) {
   return _mm_comige_sd(left.value_, right.value_);
+}
+
+inline bool operator>=(M128D const left, double const right) {
+  return left >= M128D(right);
 }
 
 inline bool operator>(M128D const left, M128D const right) {

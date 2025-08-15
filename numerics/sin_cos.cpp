@@ -51,7 +51,7 @@ using namespace principia::quantities::_m128d;
     /* Used throughout the top-level functions. */                           \
     constexpr std::int64_t quadrant = n & 0b11;                              \
     /* Used in DetectDangerousRounding. */                                   \
-    constexpr double normalized_error = 0;                                   \
+    constexpr double test_value = 1;                                   \
     /* Not NaN is the only part that matters; used at the end of the    */   \
     /* top-level functions to determine whether to call the slow path.  */   \
     constexpr double value = 1;                                              \
@@ -62,10 +62,9 @@ using Argument = M128D;
 using Value = M128D;
 
 constexpr std::int64_t table_spacing_bits = 9;
-Argument const table_spacing_reciprocal =
-    static_cast<double>(1 << table_spacing_bits);
-Argument const table_spacing = 1.0 / table_spacing_reciprocal;
-Argument const sin_near_zero_cutoff = table_spacing / 2.0;
+constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
+constexpr double table_spacing = 1.0 / table_spacing_reciprocal;
+constexpr double sin_near_zero_cutoff = table_spacing / 2.0;
 
 constexpr std::int64_t κ₁ = 8;
 constexpr std::int64_t κʹ₁ = 5;
@@ -73,24 +72,24 @@ constexpr std::int64_t κ₂ = 18;
 constexpr std::int64_t κʹ₂ = 14;
 constexpr std::int64_t κʺ₂ = 15;
 constexpr std::int64_t κ₃ = 18;
-Argument const two_term_θ_threshold = π / 2 * (1LL << κ₁);
-Argument const three_term_θ_threshold = π / 2 * (1LL << κ₂);
-Argument const C₁ = 0x1.921F'B544'42D0'0p0;
-Argument const δC₁ = 0x1.8469'898C'C517'0p-48;
-Argument const C₂ = 0x1.921F'B544'4000'0p0;
-Argument const Cʹ₂ = 0x1.68C2'34C4'C000'0p-39;
-Argument const δC₂ = 0x1.98A2'E037'0734'5p-77;
-Argument const two_term_θ_reduced_threshold =
+constexpr double two_term_θ_threshold = π / 2 * (1LL << κ₁);
+constexpr double three_term_θ_threshold = π / 2 * (1LL << κ₂);
+constexpr double C₁ = 0x1.921F'B544'42D0'0p0;
+constexpr double δC₁ = 0x1.8469'898C'C517'0p-48;
+constexpr double C₂ = 0x1.921F'B544'4000'0p0;
+constexpr double Cʹ₂ = 0x1.68C2'34C4'C000'0p-39;
+constexpr double δC₂ = 0x1.98A2'E037'0734'5p-77;
+constexpr double two_term_θ_reduced_threshold =
     1.0 / (1LL << (-(κ₁ + κʹ₁ + κ₃ - std::numeric_limits<double>::digits + 2)));
-Argument const three_term_θ_reduced_threshold =
+constexpr double three_term_θ_reduced_threshold =
     (1.0 / (1LL << (-(κ₃ - std::numeric_limits<double>::digits)))) *
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
      4);
 
-Argument const mantissa_reduce_shifter =
-    static_cast<double>(1LL << (std::numeric_limits<double>::digits - 1));
-Argument const accurate_table_index_addend = static_cast<double>(
-    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1));
+M128D const mantissa_reduce_shifter(
+    static_cast<double>(1LL << (std::numeric_limits<double>::digits - 1)));
+M128D const accurate_table_index_addend(static_cast<double>(
+    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1)));
 
 constexpr double sin_near_zero_e = 0x1.0000'32D7'5E64'Cp0;
 constexpr double sin_e = 0x1.0000'A03C'34D3'9p0;
@@ -162,7 +161,8 @@ Value DetectDangerousRounding(Value const x, Value const Δx) {
   DoublePrecision<M128D> const sum = QuickTwoSum(x, Δx);
   auto const& value = sum.value;
   auto const& error = sum.error;
-  OSACA_IF(value == FusedMultiplyAdd<fma_policy>(error, e, value)) {
+  auto const test_value = FusedMultiplyAdd<fma_policy>(error, M128D(e), value);
+  OSACA_IF(value == test_value) {
     return value;
   } else {
 #if _DEBUG
@@ -170,7 +170,7 @@ Value DetectDangerousRounding(Value const x, Value const Δx) {
         << std::setprecision(25) << x << " " << std::hexfloat << value << " "
         << error << " " << e;
 #endif
-    return std::numeric_limits<double>::quiet_NaN();
+    return M128D(std::numeric_limits<double>::quiet_NaN());
   }
 }
 
@@ -180,9 +180,14 @@ void Reduce(Argument const θ,
             DoublePrecision<Argument>& θ_reduced,
             std::int64_t& quadrant) {
   Argument const abs_θ = Abs(θ);
+  //if constexpr (int const OSACA_evaluate =                              \
+  //                  UNDER_OSACA_HYPOTHESES(abs_θ < π / 4)                   \
+  //                      ? ((abs_θ < π / 4) ? 0 : OSACA_branch_not_taken())  \
+  //                      : ((abs_θ < π / 4) ? OSACA_branch_not_taken() : 0); \
+  //              UNDER_OSACA_HYPOTHESES(abs_θ < π / 4)) {}
   OSACA_IF(abs_θ < π / 4) {
     θ_reduced.value = θ;
-    θ_reduced.error = 0;
+    θ_reduced.error = M128D(0.0);
     quadrant = 0;
     return;
   } OSACA_ELSE_IF(abs_θ <= two_term_θ_threshold) {
@@ -191,9 +196,9 @@ void Reduce(Argument const θ,
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
     // of the quadrant.
     M128D const sign = Sign(θ);
-    M128D n_double =
-        FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter) -
-        mantissa_reduce_shifter;
+    M128D n_double = FusedMultiplyAdd<fma_policy>(
+                         abs_θ, M128D(2 / π), mantissa_reduce_shifter) -
+                     mantissa_reduce_shifter;
 
     // Don't move the computation of `n` after the if, it generates some extra
     // moves.
@@ -202,13 +207,13 @@ void Reduce(Argument const θ,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, M128D(C₁), θ);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₁, abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, M128D(C₁), abs_θ);
     }
 
-    Argument const δy = n_double * δC₁;
+    Argument const δy = n_double * M128D(δC₁);
     θ_reduced = TwoDifference(y, δy);
     OSACA_IF(θ_reduced.value <= -two_term_θ_reduced_threshold ||
              θ_reduced.value >= two_term_θ_reduced_threshold) {
@@ -218,23 +223,23 @@ void Reduce(Argument const θ,
   } OSACA_ELSE_IF(abs_θ <= three_term_θ_threshold) {
     // Same code as above.
     M128D const sign = Sign(θ);
-    M128D n_double =
-        FusedMultiplyAdd<fma_policy>(abs_θ, (2 / π), mantissa_reduce_shifter) -
-        mantissa_reduce_shifter;
+    M128D n_double = FusedMultiplyAdd<fma_policy>(
+                         abs_θ, M128D(2 / π), mantissa_reduce_shifter) -
+                     mantissa_reduce_shifter;
 
     Argument y;
     std::int64_t n;
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₂, θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, M128D(C₂), θ);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C₂, abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, M128D(C₂), abs_θ);
     }
 
-    Argument const yʹ = n_double * Cʹ₂;
-    Argument const δy = n_double * δC₂;
+    Argument const yʹ = n_double * M128D(Cʹ₂);
+    Argument const δy = n_double * M128D(δC₂);
     auto const z = QuickTwoSum(yʹ, δy);
     θ_reduced = y - z;
     OSACA_IF(θ_reduced.value <= -three_term_θ_reduced_threshold ||
@@ -243,8 +248,8 @@ void Reduce(Argument const θ,
       return;
     }
   }
-  θ_reduced.value = 0;
-  θ_reduced.error = std::numeric_limits<double>::quiet_NaN();
+  θ_reduced.value = M128D(0.0);
+  θ_reduced.error = M128D(std::numeric_limits<double>::quiet_NaN());
 }
 
 template<FMAPolicy fma_policy>
@@ -252,7 +257,7 @@ M128D SinPolynomial(M128D const x) {
   // Absolute error of the exact polynomial better than 85.7 bits over an
   // interval slightly larger than [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
-      {-0x1.5555'5555'5555'5p-3, 0x1.1111'10B1'75B5'Fp-7}, x);
+      {M128D(-0x1.5555'5555'5555'5p-3), M128D(0x1.1111'10B1'75B5'Fp-7)}, x);
 }
 
 template<FMAPolicy fma_policy>
@@ -260,7 +265,7 @@ M128D SinPolynomialNearZero(M128D const x) {
   // Relative error of the exact polynomial better than 75.5 bits over
   // [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
-      {-0x1.5555'5555'5555'5p-3, 0x1.1111'10B4'0E88'Ap-7}, x);
+      {M128D(-0x1.5555'5555'5555'5p-3), M128D(0x1.1111'10B4'0E88'Ap-7)}, x);
 }
 
 template<FMAPolicy fma_policy>
@@ -268,7 +273,7 @@ M128D CosPolynomial(M128D const x) {
   // Absolute error of the exact polynomial better than 72.6 bits over an
   // interval slightly larger than [-1/1024, 1/1024].
   return Polynomial1<fma_policy>::Evaluate(
-      {-0x1.0000'0000'0000'0p-1, 0x1.5555'54B1'22F2'9p-5}, x);
+      {M128D(-0x1.0000'0000'0000'0p-1), M128D(0x1.5555'54B1'22F2'9p-5)}, x);
 }
 
 template<FMAPolicy fma_policy>
@@ -289,9 +294,9 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     auto const e_abs = e ^ sign;
     auto const i = AccurateTableIndex(abs_x);
     auto const& accurate_values = SinCosAccurateTable[i];
-    M128D const x₀ = accurate_values.x;
-    M128D const sin_x₀ = accurate_values.sin_x;
-    M128D const cos_x₀ = accurate_values.cos_x;
+    M128D const x₀(accurate_values.x);
+    M128D const sin_x₀(accurate_values.sin_x);
+    M128D const cos_x₀(accurate_values.cos_x);
     // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
     // don't overlap and in the first interval `x` and `h` may be of the same
     // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
@@ -301,7 +306,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
 
     DoublePrecision<M128D> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
-    auto const h² = h * (h + 2 * e_abs);
+    auto const h² = h * (h + M128D(2.0) * e_abs);
     auto const h³ = h² * h;
     auto const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
@@ -324,9 +329,9 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const e_abs = e ^ sign;
   auto const i = AccurateTableIndex(abs_x);
   auto const& accurate_values = SinCosAccurateTable[i];
-  M128D const x₀ = accurate_values.x;
-  M128D const sin_x₀ = accurate_values.sin_x;
-  M128D const cos_x₀ = accurate_values.cos_x;
+  M128D const x₀(accurate_values.x);
+  M128D const sin_x₀(accurate_values.sin_x);
+  M128D const cos_x₀(accurate_values.cos_x);
   // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
   // don't overlap and in the first interval `x` and `h` may be of the same
   // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
@@ -336,7 +341,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
 
   DoublePrecision<M128D> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
-  auto const h² = h * (h + 2 * e_abs);
+  auto const h² = h * (h + M128D(2.0) * e_abs);
   auto const h³ = h² * h;
   auto const polynomial_term =
       FusedNegatedMultiplyAdd<fma_policy>(
@@ -362,7 +367,7 @@ Value __cdecl Sin(Argument θ) {
     value = SinImplementation<fma_policy>(θ_reduced);
   }
   OSACA_IF(value != value) {
-    OSACA_RETURN(cr_sin(static_cast<double>(θ)));
+    OSACA_RETURN(M128D(cr_sin(static_cast<double>(θ))));
   } OSACA_ELSE_IF(quadrant & 0b10) {
     OSACA_RETURN(-value);
   } else {
@@ -383,7 +388,7 @@ Value __cdecl Cos(Argument θ) {
     value = CosImplementation<fma_policy>(θ_reduced);
   }
   OSACA_IF(value != value) {
-    OSACA_RETURN(cr_cos(static_cast<double>(θ)));
+    OSACA_RETURN(M128D(cr_cos(static_cast<double>(θ))));
   } OSACA_ELSE_IF(quadrant == 1 || quadrant == 2) {
     OSACA_RETURN(-value);
   } else {
@@ -402,11 +407,11 @@ void StaticInitialization() {
 }
 
 double __cdecl Sin(double const θ) {
-  return static_cast<double>(sin(θ));
+  return static_cast<double>(sin(M128D(θ)));
 }
 
 double __cdecl Cos(double const θ) {
-  return static_cast<double>(cos(θ));
+  return static_cast<double>(cos(M128D(θ)));
 }
 
 }  // namespace internal

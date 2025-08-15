@@ -13,9 +13,13 @@ namespace internal {
 class M128D {
  public:
   M128D() = default;
-  M128D(double value);
+  explicit M128D(double value);
   explicit M128D(std::int64_t value);
   explicit M128D(std::uint64_t value);
+
+  M128D(M128D const volatile& v);
+  M128D(M128D const& v) = default;
+  M128D& operator=(M128D const&) = default;
 
   explicit operator double() const;
   explicit operator std::int64_t() const;
@@ -25,6 +29,7 @@ class M128D {
   M128D& operator+=(M128D right);
   M128D& operator-=(M128D right);
   M128D& operator*=(M128D right);
+  M128D& operator*=(int right);
   M128D& operator/=(M128D right);
 
   friend M128D operator+(M128D right);
@@ -32,6 +37,8 @@ class M128D {
   friend M128D operator+(M128D left, M128D right);
   friend M128D operator-(M128D left, M128D right);
   friend M128D operator*(M128D left, M128D right);
+  friend M128D operator*(M128D left, int right);
+  friend M128D operator*(int left, M128D right);
   friend M128D operator/(M128D left, M128D right);
 
   friend M128D operator~(M128D right);
@@ -42,8 +49,11 @@ class M128D {
   friend bool operator==(M128D left, M128D right);
   friend bool operator!=(M128D left, M128D right);
   friend bool operator<(M128D left, M128D right);
+  friend bool operator<(M128D left, double right);
   friend bool operator<=(M128D left, M128D right);
+  friend bool operator<=(M128D left, double right);
   friend bool operator>=(M128D left, M128D right);
+  friend bool operator>=(M128D left, double right);
   friend bool operator>(M128D left, M128D right);
 
   friend M128D Abs(M128D a);
@@ -65,6 +75,8 @@ M128D operator-(M128D right);
 M128D operator+(M128D left, M128D right);
 M128D operator-(M128D left, M128D right);
 M128D operator*(M128D left, M128D right);
+M128D operator*(M128D left, int right);
+M128D operator*(int left, M128D right);
 M128D operator/(M128D left, M128D right);
 
 M128D operator~(M128D right);
@@ -72,12 +84,15 @@ M128D operator&(M128D left, M128D right);
 M128D operator|(M128D left, M128D right);
 M128D operator^(M128D left, M128D right);
 
-bool operator==(M128D const left, M128D const right);
-bool operator!=(M128D const left, M128D const right);
-bool operator<(M128D const left, M128D const right);
-bool operator<=(M128D const left, M128D const right);
-bool operator>=(M128D const left, M128D const right);
-bool operator>(M128D const left, M128D const right);
+bool operator==(M128D left, M128D right);
+bool operator!=(M128D left, M128D right);
+bool operator<(M128D left, M128D right);
+bool operator<(M128D left, double right);
+bool operator<=(M128D left, M128D right);
+bool operator<=(M128D left, double right);
+bool operator>=(M128D left, M128D right);
+bool operator>=(M128D left, double right);
+bool operator>(M128D left, M128D right);
 
 M128D Abs(M128D a);
 M128D Sign(M128D a);
