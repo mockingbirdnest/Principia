@@ -100,6 +100,14 @@ inline M128D operator*(T const left, M128D const right) {
   return M128D(static_cast<double>(left)) * right;
 }
 
+inline M128D operator*(M128D const left, double const right) {
+  return left * M128D(right);
+}
+
+inline M128D operator*(double const left, M128D const right) {
+  return M128D(left) * right;
+}
+
 inline M128D operator/(M128D const left, M128D const right) {
   return M128D(_mm_div_sd(left.value_, right.value_));
 }
@@ -121,39 +129,39 @@ inline M128D operator^(M128D const left, M128D const right) {
 }
 
 inline bool operator==(M128D const left, M128D const right) {
-  return _mm_comieq_sd(left.value_, right.value_);
+  return static_cast<double>(left) == static_cast<double>(right);
 }
 
 inline bool operator!=(M128D const left, M128D const right) {
-  return _mm_comineq_sd(left.value_, right.value_);
+  return static_cast<double>(left) != static_cast<double>(right);
 }
 
 inline bool operator<(M128D const left, M128D const right) {
-  return _mm_comilt_sd(left.value_, right.value_);
+  return static_cast<double>(left) < static_cast<double>(right);
 }
 
 inline bool operator<(M128D const left, double const right) {
-  return left < M128D(right);
+  return static_cast<double>(left) < right;
 }
 
 inline bool operator<=(M128D const left, M128D const right) {
-  return _mm_comile_sd(left.value_, right.value_);
+  return static_cast<double>(left) <= static_cast<double>(right);
 }
 
 inline bool operator<=(M128D const left, double const right) {
-  return left <= M128D(right);
+  return static_cast<double>(left) <= right;
 }
 
 inline bool operator>=(M128D const left, M128D const right) {
-  return _mm_comige_sd(left.value_, right.value_);
+  return static_cast<double>(left) >= static_cast<double>(right);
 }
 
 inline bool operator>=(M128D const left, double const right) {
-  return left >= M128D(right);
+  return static_cast<double>(left) >= right;
 }
 
 inline bool operator>(M128D const left, M128D const right) {
-  return _mm_comigt_sd(left.value_, right.value_);
+  return static_cast<double>(left) > static_cast<double>(right);
 }
 
 inline M128D Abs(M128D const a) {
