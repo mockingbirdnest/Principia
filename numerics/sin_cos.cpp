@@ -1,5 +1,3 @@
-#pragma once
-
 #include "numerics/sin_cos.hpp"
 
 #include <pmmintrin.h>
@@ -18,6 +16,7 @@
 
 // The algorithms in this file are documented in `Sin Cos.pdf`.  To the extent
 // possible, the code follows the notation of that document.
+// TODO(phl): Update the code to match the notation of the document.
 namespace principia {
 namespace numerics {
 namespace _sin_cos {
@@ -50,11 +49,10 @@ using namespace principia::quantities::_m128d;
         θ_reduced.value > 0 ? θ_reduced.value : -θ_reduced.value;            \
     /* Used throughout the top-level functions. */                           \
     constexpr std::int64_t quadrant = n & 0b11;                              \
-    /* Used in DetectDangerousRounding. */                                   \
-    constexpr double test_value = 1;                                   \
     /* Not NaN is the only part that matters; used at the end of the    */   \
     /* top-level functions to determine whether to call the slow path.  */   \
     constexpr double value = 1;                                              \
+    constexpr double muller_test_expression = value;                         \
     return expression;                                                       \
   }()
 
@@ -91,9 +89,9 @@ M128D const mantissa_reduce_shifter(
 M128D const accurate_table_index_addend(static_cast<double>(
     1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1)));
 
-constexpr double sin_near_zero_e = 0x1.0000'32D7'5E64'Cp0;
-constexpr double sin_e = 0x1.0000'A03C'34D3'9p0;
-constexpr double cos_e = 0x1.0000'A07E'1980'8p0;
+constexpr double sin_near_zero_e = 0x1.0000'AD82'A723'6p0;  // 2^-70.561.
+constexpr double sin_e = 0x1.0002'6013'6BD9'Dp0;  // 2^-68.751.
+constexpr double cos_e = 0x1.0001'B836'988A'Dp0;  // 2^-69.217.
 
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
@@ -161,8 +159,8 @@ Value DetectDangerousRounding(Value const x, Value const Δx) {
   DoublePrecision<M128D> const sum = QuickTwoSum(x, Δx);
   auto const& value = sum.value;
   auto const& error = sum.error;
-  auto const test_value = FusedMultiplyAdd<fma_policy>(error, M128D(e), value);
-  OSACA_IF(value == test_value) {
+  auto const muller_test_expression = FusedMultiplyAdd<fma_policy>(error, M128D(e), value);
+  OSACA_IF(value == muller_test_expression) {
     return value;
   } else {
 #if _DEBUG
@@ -180,11 +178,6 @@ void Reduce(Argument const θ,
             DoublePrecision<Argument>& θ_reduced,
             std::int64_t& quadrant) {
   Argument const abs_θ = Abs(θ);
-  //if constexpr (int const OSACA_evaluate =                              \
-  //                  UNDER_OSACA_HYPOTHESES(abs_θ < π / 4)                   \
-  //                      ? ((abs_θ < π / 4) ? 0 : OSACA_branch_not_taken())  \
-  //                      : ((abs_θ < π / 4) ? OSACA_branch_not_taken() : 0); \
-  //              UNDER_OSACA_HYPOTHESES(abs_θ < π / 4)) {}
   OSACA_IF(abs_θ < π / 4) {
     θ_reduced.value = θ;
     θ_reduced.error = M128D(0.0);
@@ -253,27 +246,21 @@ void Reduce(Argument const θ,
 }
 
 template<FMAPolicy fma_policy>
-M128D SinPolynomial(M128D const x) {
-  // Absolute error of the exact polynomial better than 85.7 bits over an
-  // interval slightly larger than [-1/1024, 1/1024].
+Value SinPolynomial(Argument const x) {
   return Polynomial1<fma_policy>::Evaluate(
-      {M128D(-0x1.5555'5555'5555'5p-3), M128D(0x1.1111'10B1'75B5'Fp-7)}, x);
+      {M128D(-0x1.5555'5555'5555'5p-3), M128D(0x1.1111'10A8'20AE'Cp-7)}, x);
 }
 
 template<FMAPolicy fma_policy>
-M128D SinPolynomialNearZero(M128D const x) {
-  // Relative error of the exact polynomial better than 75.5 bits over
-  // [-1/1024, 1/1024].
+Value SinPolynomialNearZero(Argument const x) {
   return Polynomial1<fma_policy>::Evaluate(
       {M128D(-0x1.5555'5555'5555'5p-3), M128D(0x1.1111'10B4'0E88'Ap-7)}, x);
 }
 
 template<FMAPolicy fma_policy>
-M128D CosPolynomial(M128D const x) {
-  // Absolute error of the exact polynomial better than 72.6 bits over an
-  // interval slightly larger than [-1/1024, 1/1024].
+Value CosPolynomial(Argument const x) {
   return Polynomial1<fma_policy>::Evaluate(
-      {M128D(-0x1.0000'0000'0000'0p-1), M128D(0x1.5555'54B1'22F2'9p-5)}, x);
+      {M128D(-0x1.FFFF'FFFF'FFFF'Dp-2), M128D(0x1.5555'549D'B0A9'5p-5)}, x);
 }
 
 template<FMAPolicy fma_policy>
@@ -287,7 +274,6 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     auto const x³ = x² * x;
     auto const x³_term = FusedMultiplyAdd<fma_policy>(
         x³, SinPolynomialNearZero<fma_policy>(x²), e);
-    // Relative error of the result better than 72.8 bits.
     return DetectDangerousRounding<fma_policy, sin_near_zero_e>(x, x³_term);
   } else {
     auto const sign = Sign(x);
@@ -301,19 +287,22 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     // don't overlap and in the first interval `x` and `h` may be of the same
     // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
     // later in the computation.  Note that the terms in `e * h²` and higher are
-    // *not* computed correctly below because they don't matter.
+    // *not* computed because they don't matter.
     auto const h = abs_x - x₀;
 
     DoublePrecision<M128D> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
-    auto const h² = h * (h + M128D(2.0) * e_abs);
+    auto const h² = h * h;
     auto const h³ = h² * h;
+    auto const h_plus_e_abs² =
+        h * FusedMultiplyAdd<fma_policy>(M128D(2.0), e_abs, h);
     auto const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
             cos_x₀,
-            h³ * SinPolynomial<fma_policy>(h²),
-            sin_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
-        FusedMultiplyAdd<fma_policy>(cos_x₀, e_abs, sin_x₀_plus_h_cos_x₀.error);
+            FusedMultiplyAdd<fma_policy>(
+                h³, SinPolynomial<fma_policy>(h²), e_abs),
+            (sin_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
+        sin_x₀_plus_h_cos_x₀.error;
     return sign ^ DetectDangerousRounding<fma_policy, sin_e>(
                       sin_x₀_plus_h_cos_x₀.value, polynomial_term);
   }
@@ -336,20 +325,23 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   // don't overlap and in the first interval `x` and `h` may be of the same
   // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
   // later in the computation.  Note that the terms in `e * h²` and higher are
-  // *not* computed correctly below because they don't matter.
+  // *not* computed because they don't matter.
   auto const h = abs_x - x₀;
 
   DoublePrecision<M128D> const cos_x₀_minus_h_sin_x₀ =
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
-  auto const h² = h * (h + M128D(2.0) * e_abs);
+  auto const h² = h * h;
   auto const h³ = h² * h;
+  auto const h_plus_e_abs² =
+      h * FusedMultiplyAdd<fma_policy>(M128D(2.0), e_abs, h);
+  // TODO(phl): Redo the error analysis.
   auto const polynomial_term =
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀,
-          h³ * SinPolynomial<fma_policy>(h²),
-          cos_x₀ * h² * CosPolynomial<fma_policy>(h²)) +
-      FusedNegatedMultiplyAdd<fma_policy>(
-          sin_x₀, e_abs, cos_x₀_minus_h_sin_x₀.error);
+          FusedMultiplyAdd<fma_policy>(
+              h³, SinPolynomial<fma_policy>(h²), e_abs),
+          h_plus_e_abs² * (cos_x₀ * CosPolynomial<fma_policy>(h²))) +
+      cos_x₀_minus_h_sin_x₀.error;
   return DetectDangerousRounding<fma_policy, cos_e>(cos_x₀_minus_h_sin_x₀.value,
                                                     polynomial_term);
 }
