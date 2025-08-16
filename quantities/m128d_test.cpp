@@ -1,5 +1,7 @@
 #include "quantities/m128d.hpp"
 
+#include <cstdint>
+
 // TODO(phl): This dependency is backwards...
 #include "geometry/concepts.hpp"
 #include "gmock/gmock.h"
@@ -49,11 +51,15 @@ TEST_F(M128DTest, Arithmetic) {
   EXPECT_THAT(static_cast<double>(a), AlmostEquals(-12.0, 0));
   a /= c;
   EXPECT_THAT(static_cast<double>(a), AlmostEquals(-4.0, 0));
+
+  EXPECT_THAT(Abs(a), AlmostEquals(5.0, 0));
+  EXPECT_THAT(Abs(b), AlmostEquals(2.0, 0));
 }
 
 TEST_F(M128DTest, Logical) {
   M128D a(5.0);
   M128D const sign_bit = M128D::MakeFromBits(0x8000'0000'0000'0000);
+  EXPECT_EQ(0x8000'0000'0000'000, sign_bit.Bits<std::int64_t>());
   EXPECT_THAT(static_cast<double>(~a), AlmostEquals(-6.0, 0));
   EXPECT_THAT(static_cast<double>(a & sign_bit), AlmostEquals(-0.0, 0));
   EXPECT_THAT(static_cast<double>(a | sign_bit), AlmostEquals(-5.0, 0));
@@ -64,11 +70,23 @@ TEST_F(M128DTest, Comparison) {
   M128D a(-5.0);
   M128D b(2.0);
   EXPECT_TRUE(a == a);
+  EXPECT_TRUE(a == -5.0);
+  EXPECT_TRUE(-5.0 == a);
   EXPECT_TRUE(a != b);
+  EXPECT_TRUE(a != 2.0);
+  EXPECT_TRUE(-5.0 != b);
   EXPECT_TRUE(a < b);
+  EXPECT_TRUE(a < 2.0);
+  EXPECT_TRUE(-5.0 < b);
   EXPECT_TRUE(a <= b);
+  EXPECT_TRUE(a <= 2.0);
+  EXPECT_TRUE(-5.0 <= b);
   EXPECT_TRUE(b >= a);
+  EXPECT_TRUE(b >= -5.0);
+  EXPECT_TRUE(2.0 >= a);
   EXPECT_TRUE(b > a);
+  EXPECT_TRUE(b > -5.0);
+  EXPECT_TRUE(2.0 > a);
 }
 
 }  // namespace quantities

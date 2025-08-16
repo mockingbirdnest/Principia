@@ -119,11 +119,13 @@ inline bool operator==(M128D const left, M128D const right) {
   return static_cast<double>(left) == static_cast<double>(right);
 }
 
-inline bool operator==(M128D const left, double const right) {
+template<std::floating_point T>
+bool operator==(M128D const left, T const right) {
   return static_cast<double>(left) == right;
 }
 
-inline bool operator==(double const left, M128D const right) {
+template<std::floating_point T>
+bool operator==(T const left, M128D const right) {
   return left == static_cast<double>(right);
 }
 
@@ -131,11 +133,13 @@ inline bool operator!=(M128D const left, M128D const right) {
   return static_cast<double>(left) != static_cast<double>(right);
 }
 
-inline bool operator!=(M128D const left, double const right) {
+template<std::floating_point T>
+bool operator!=(M128D const left, T const right) {
   return static_cast<double>(left) != right;
 }
 
-inline bool operator!=(double const left, M128D const right) {
+template<std::floating_point T>
+bool operator!=(T const left, M128D const right) {
   return left != static_cast<double>(right);
 }
 
@@ -143,11 +147,13 @@ inline bool operator<(M128D const left, M128D const right) {
   return static_cast<double>(left) < static_cast<double>(right);
 }
 
-inline bool operator<(M128D const left, double const right) {
+template<std::floating_point T>
+bool operator<(M128D const left, T const right) {
   return static_cast<double>(left) < right;
 }
 
-inline bool operator<(double const left, M128D const right) {
+template<std::floating_point T>
+bool operator<(T const left, M128D const right) {
   return left < static_cast<double>(right);
 }
 
@@ -155,11 +161,13 @@ inline bool operator<=(M128D const left, M128D const right) {
   return static_cast<double>(left) <= static_cast<double>(right);
 }
 
-inline bool operator<=(M128D const left, double const right) {
+template<std::floating_point T>
+bool operator<=(M128D const left, T const right) {
   return static_cast<double>(left) <= right;
 }
 
-inline bool operator<=(double const left, M128D const right) {
+template<std::floating_point T>
+bool operator<=(T const left, M128D const right) {
   return left <= static_cast<double>(right);
 }
 
@@ -167,11 +175,13 @@ inline bool operator>=(M128D const left, M128D const right) {
   return static_cast<double>(left) >= static_cast<double>(right);
 }
 
-inline bool operator>=(M128D const left, double const right) {
+template<std::floating_point T>
+bool operator>=(M128D const left, T const right) {
   return static_cast<double>(left) >= right;
 }
 
-inline bool operator>=(double const left, M128D const right) {
+template<std::floating_point T>
+bool operator>=(T const left, M128D const right) {
   return left >= static_cast<double>(right);
 }
 
@@ -179,11 +189,13 @@ inline bool operator>(M128D const left, M128D const right) {
   return static_cast<double>(left) > static_cast<double>(right);
 }
 
-inline bool operator>(M128D const left, double const right) {
+template<std::floating_point T>
+bool operator>(M128D const left, T const right) {
   return static_cast<double>(left) > right;
 }
 
-inline bool operator>(double const left, M128D const right) {
+template<std::floating_point T>
+bool operator>(T const left, M128D const right) {
   return left > static_cast<double>(right);
 }
 
