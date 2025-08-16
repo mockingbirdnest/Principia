@@ -107,10 +107,7 @@ template<FMAPolicy fma_policy>
 Value __cdecl Cos(Argument θ);
 
 namespace masks {
-M128D const sign_bit(0x8000'0000'0000'0000ull);
-M128D const exponent_bits(0x7ff0'0000'0000'0000ull);
-M128D const mantissa_bits(0x000f'ffff'ffff'ffffull);
-M128D const mantissa_index_bits(0x0000'0000'0000'01ffull);
+M128D const mantissa_index_bits = M128D::MakeFromBits(0x0000'0000'0000'01ffull);
 }  // namespace masks
 
 inline std::int64_t AccurateTableIndex(Argument const abs_x) {
@@ -123,8 +120,8 @@ inline std::int64_t AccurateTableIndex(Argument const abs_x) {
   // 2. An `and` operation is used to only retain the last 9 bits of the
   //    mantissa.
   // 3. The result is interpreted as an integer and returned as the index.
-  return static_cast<std::int64_t>(masks::mantissa_index_bits &
-                                   (abs_x + accurate_table_index_addend));
+  return (masks::mantissa_index_bits & (abs_x + accurate_table_index_addend))
+      .Bits<std::int64_t>();
 }
 
 template<FMAPolicy fma_policy>

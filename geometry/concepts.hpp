@@ -25,6 +25,8 @@ concept additive_group = requires(G x, G y, int n) {
   { x += y } -> std::convertible_to<G&>;
   { x -= y } -> std::convertible_to<G&>;
   // An abelian group is a ℤ-module; we require the corresponding operations.
+  // Note that `std::integral`, not `int`, should be used when implementing
+  // these operations to avoid implicit conversions from `double`.
   { n * x } -> std::convertible_to<G>;
   { x * n } -> std::convertible_to<G>;
   { x *= n } -> std::convertible_to<G&>;

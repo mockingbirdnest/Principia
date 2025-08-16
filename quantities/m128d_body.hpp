@@ -9,17 +9,10 @@ namespace quantities {
 namespace _m128d {
 namespace internal {
 
-M128D const all_ones(0xffff'ffff'ffff'ffffull);
-M128D const negated_sign_bit(0x7fff'ffff'ffff'ffffull);
-M128D const sign_bit(0x8000'0000'0000'0000ull);
+template<std::floating_point T>
+M128D::M128D(T const value) : value_(_mm_set_sd(value)) {}
 
-inline M128D::M128D(double const lo) : value_(_mm_set_sd(lo)) {}
-
-inline M128D::M128D(std::int64_t const value)
-    : value_(_mm_castsi128_pd(_mm_cvtsi64_si128(value))) {}
-
-inline M128D::M128D(std::uint64_t const value)
-    : value_(_mm_castsi128_pd(_mm_cvtsi64_si128(value))) {}
+inline M128D::M128D(__m128d const value) : value_(value) {}
 
 inline M128D::M128D(M128D const volatile& v) {
   M128D* vv = const_cast<M128D*>(&v);
@@ -30,16 +23,18 @@ inline M128D::operator double() const {
   return _mm_cvtsd_f64(value_);
 }
 
-inline M128D::operator std::int64_t() const {
-  return _mm_cvtsi128_si64(_mm_castpd_si128(value_));
-}
-
-inline M128D::operator std::uint64_t() const {
-  return _mm_cvtsi128_si64(_mm_castpd_si128(value_));
-}
-
 inline M128D::operator __m128d() const {
   return value_;
+}
+
+template<std::integral T>
+M128D M128D::MakeFromBits(T const value) {
+  return M128D(_mm_castsi128_pd(_mm_cvtsi64_si128(value)));
+}
+
+template<std::integral T>
+T M128D::Bits() const {
+  return _mm_cvtsi128_si64(_mm_castpd_si128(value_));
 }
 
 inline M128D& M128D::operator+=(M128D const right) {
@@ -57,25 +52,24 @@ inline M128D& M128D::operator*=(M128D const right) {
   return *this;
 }
 
-template<std::integral T>
-M128D& M128D::operator*=(T const right) {
-  *this = *this * M128D(static_cast<double>(right));
-  return *this;
-}
-
 inline M128D& M128D::operator/=(M128D const right) {
   *this = *this / right;
   return *this;
 }
 
-inline M128D::M128D(__m128d const value) : value_(value) {}
+inline M128D const M128D::all_ones_ =
+    M128D::MakeFromBits(0xffff'ffff'ffff'ffffull);
+inline M128D const M128D::negated_sign_bit_ =
+    M128D::MakeFromBits(0x7fff'ffff'ffff'ffffull);
+inline M128D const M128D::sign_bit_ =
+    M128D::MakeFromBits(0x8000'0000'0000'0000ull);
 
 inline M128D operator+(M128D const right) {
   return right;
 }
 
 inline M128D operator-(M128D const right) {
-  return M128D(_mm_xor_pd(right.value_, sign_bit.value_));
+  return M128D(_mm_xor_pd(right.value_, M128D::sign_bit_.value_));
 }
 
 inline M128D operator+(M128D const left, M128D const right) {
@@ -90,16 +84,6 @@ inline M128D operator*(M128D const left, M128D const right) {
   return M128D(_mm_mul_sd(left.value_, right.value_));
 }
 
-template<std::integral T>
-inline M128D operator*(M128D const left, T const right) {
-  return left * M128D(static_cast<double>(right));
-}
-
-template<std::integral T>
-inline M128D operator*(T const left, M128D const right) {
-  return M128D(static_cast<double>(left)) * right;
-}
-
 inline M128D operator*(M128D const left, double const right) {
   return left * M128D(right);
 }
@@ -112,8 +96,24 @@ inline M128D operator/(M128D const left, M128D const right) {
   return M128D(_mm_div_sd(left.value_, right.value_));
 }
 
+template<std::integral T>
+M128D& M128D::operator*=(T const right) {
+  *this = *this * M128D(static_cast<double>(right));
+  return *this;
+}
+
+template<std::integral T>
+M128D operator*(M128D const left, T const right) {
+  return left * M128D(static_cast<double>(right));
+}
+
+template<std::integral T>
+M128D operator*(T const left, M128D const right) {
+  return M128D(static_cast<double>(left)) * right;
+}
+
 inline M128D operator~(M128D const right) {
-  return M128D(_mm_xor_pd(right.value_, all_ones.value_));
+  return M128D(_mm_xor_pd(right.value_, M128D::all_ones_.value_));
 }
 
 inline M128D operator&(M128D const left, M128D const right) {
@@ -165,11 +165,11 @@ inline bool operator>(M128D const left, M128D const right) {
 }
 
 inline M128D Abs(M128D const a) {
-  return a & negated_sign_bit;
+  return a & M128D::negated_sign_bit_;
 }
 
 inline M128D Sign(M128D const a) {
-  return a & sign_bit;
+  return a & M128D::sign_bit_;
 }
 
 inline M128D FusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {

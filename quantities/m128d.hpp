@@ -2,6 +2,7 @@
 
 #include <pmmintrin.h>
 
+#include <concepts>
 #include <cstdint>
 #include <ostream>
 
@@ -13,24 +14,33 @@ namespace internal {
 class M128D {
  public:
   M128D() = default;
-  explicit M128D(double value);
-  explicit M128D(std::int64_t value);
-  explicit M128D(std::uint64_t value);
+
+  // No constructors taking integral types, because the integral-to-floating
+  // conversions are costly.  The client should write `M128D(2.0)`, not
+  // `M128D(2)`.
+  template<std::floating_point T>
+  explicit M128D(T value);
+  explicit M128D(__m128d value);
 
   M128D(M128D const volatile& v);
   M128D(M128D const& v) = default;
   M128D& operator=(M128D const&) = default;
 
+  // No conversion to integral types because the floating-to-integral conversion
+  // is costly and should be explicit in client code.
   explicit operator double() const;
-  explicit operator std::int64_t() const;
-  explicit operator std::uint64_t() const;
   explicit operator __m128d() const;
+
+  // These functions are the equivalent of `reinterpret_cast`, they just copy
+  // the bits without any integral/floating conversion.
+  template<std::integral T>
+  static M128D MakeFromBits(T value);
+  template<std::integral T>
+  T Bits() const;
 
   M128D& operator+=(M128D right);
   M128D& operator-=(M128D right);
   M128D& operator*=(M128D right);
-  template<std::integral T>
-  M128D& operator*=(T right);
   M128D& operator/=(M128D right);
 
   friend M128D operator+(M128D right);
@@ -38,13 +48,19 @@ class M128D {
   friend M128D operator+(M128D left, M128D right);
   friend M128D operator-(M128D left, M128D right);
   friend M128D operator*(M128D left, M128D right);
+  friend M128D operator*(M128D left, double right);//TODO(phl)remove
+  friend M128D operator*(double left, M128D right);
+  friend M128D operator/(M128D left, M128D right);
+
+  // The ℤ-module structure.  It is important to use `std::integral` here to
+  // make sure that these operations are not callable with an implicitly-
+  // converted `double`.
+  template<std::integral T>
+  M128D& operator*=(T right);
   template<std::integral T>
   friend M128D operator*(M128D left, T right);
   template<std::integral T>
   friend M128D operator*(T left, M128D right);
-  friend M128D operator*(M128D left, double right);
-  friend M128D operator*(double left, M128D right);
-  friend M128D operator/(M128D left, M128D right);
 
   friend M128D operator~(M128D right);
   friend M128D operator&(M128D left, M128D right);
@@ -70,9 +86,11 @@ class M128D {
   friend M128D FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
 
  private:
-  explicit M128D(__m128d value);
-
   __m128d value_;
+
+  static M128D const all_ones_;
+  static M128D const negated_sign_bit_;
+  static M128D const sign_bit_;
 };
 
 M128D operator+(M128D right);
@@ -80,11 +98,12 @@ M128D operator-(M128D right);
 M128D operator+(M128D left, M128D right);
 M128D operator-(M128D left, M128D right);
 M128D operator*(M128D left, M128D right);
+M128D operator/(M128D left, M128D right);
+
 template<std::integral T>
 M128D operator*(M128D left, T right);
 template<std::integral T>
 M128D operator*(T left, M128D right);
-M128D operator/(M128D left, M128D right);
 
 M128D operator~(M128D right);
 M128D operator&(M128D left, M128D right);
