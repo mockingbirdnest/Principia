@@ -147,6 +147,8 @@ M128D FusedNegatedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
   }
 }
 
+M128D const nan(std::numeric_limits<double>::quiet_NaN());
+
 // Evaluates the sum `x + Δx` and performs the rounding test using the technique
 // described in [Mul+10], section 11.6.3.  If rounding is safe, returns the sum;
 // otherwise, returns `NaN`.  `x` is always positive.  `Δx` may be positive or
@@ -159,7 +161,8 @@ Value DetectDangerousRounding(Value const x, Value const Δx) {
   DoublePrecision<M128D> const sum = QuickTwoSum(x, Δx);
   auto const& value = sum.value;
   auto const& error = sum.error;
-  auto const muller_test_expression = FusedMultiplyAdd<fma_policy>(error, M128D(e), value);
+  auto const muller_test_expression =
+      FusedMultiplyAdd<fma_policy>(error, M128D(e), value);
   OSACA_IF(value == muller_test_expression) {
     return value;
   } else {
@@ -168,9 +171,17 @@ Value DetectDangerousRounding(Value const x, Value const Δx) {
         << std::setprecision(25) << x << " " << std::hexfloat << value << " "
         << error << " " << e;
 #endif
-    return M128D(std::numeric_limits<double>::quiet_NaN());
+    return nan;
   }
 }
+
+M128D const zero(0.0);
+M128D const two_over_π(2.0 / π);
+M128D const C1(C₁);
+M128D const δC1(δC₁);
+M128D const C2(C₂);
+M128D const Cp2(Cʹ₂);
+M128D const δC2(δC₂);
 
 template<FMAPolicy fma_policy, bool preserve_sign>
 FORCE_INLINE(inline)
@@ -180,7 +191,7 @@ void Reduce(Argument const θ,
   Argument const abs_θ = Abs(θ);
   OSACA_IF(abs_θ < π / 4) {
     θ_reduced.value = θ;
-    θ_reduced.error = M128D(0.0);
+    θ_reduced.error = zero;
     quadrant = 0;
     return;
   } OSACA_ELSE_IF(abs_θ <= two_term_θ_threshold) {
@@ -190,7 +201,7 @@ void Reduce(Argument const θ,
     // of the quadrant.
     M128D const sign = Sign(θ);
     M128D n_double = FusedMultiplyAdd<fma_policy>(
-                         abs_θ, M128D(2 / π), mantissa_reduce_shifter) -
+                         abs_θ, two_over_π, mantissa_reduce_shifter) -
                      mantissa_reduce_shifter;
 
     // Don't move the computation of `n` after the if, it generates some extra
@@ -200,13 +211,13 @@ void Reduce(Argument const θ,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, M128D(C₁), θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C1, θ);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, M128D(C₁), abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C1, abs_θ);
     }
 
-    Argument const δy = n_double * M128D(δC₁);
+    Argument const δy = n_double * δC1;
     θ_reduced = TwoDifference(y, δy);
     OSACA_IF(θ_reduced.value <= -two_term_θ_reduced_threshold ||
              θ_reduced.value >= two_term_θ_reduced_threshold) {
@@ -217,7 +228,7 @@ void Reduce(Argument const θ,
     // Same code as above.
     M128D const sign = Sign(θ);
     M128D n_double = FusedMultiplyAdd<fma_policy>(
-                         abs_θ, M128D(2 / π), mantissa_reduce_shifter) -
+                         abs_θ, two_over_π, mantissa_reduce_shifter) -
                      mantissa_reduce_shifter;
 
     Argument y;
@@ -225,14 +236,14 @@ void Reduce(Argument const θ,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, M128D(C₂), θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C2, θ);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, M128D(C₂), abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, C2, abs_θ);
     }
 
-    Argument const yʹ = n_double * M128D(Cʹ₂);
-    Argument const δy = n_double * M128D(δC₂);
+    Argument const yʹ = n_double * Cp2;
+    Argument const δy = n_double * δC2;
     auto const z = QuickTwoSum(yʹ, δy);
     θ_reduced = y - z;
     OSACA_IF(θ_reduced.value <= -three_term_θ_reduced_threshold ||
@@ -241,27 +252,35 @@ void Reduce(Argument const θ,
       return;
     }
   }
-  θ_reduced.value = M128D(0.0);
-  θ_reduced.error = M128D(std::numeric_limits<double>::quiet_NaN());
+  θ_reduced.value = zero;
+  θ_reduced.error = nan;
 }
+
+M128D const s0(-0x1.5555'5555'5555'5p-3);
+M128D const s1(0x1.1111'10A8'20AE'Cp-7);
 
 template<FMAPolicy fma_policy>
 Value SinPolynomial(Argument const x) {
-  return Polynomial1<fma_policy>::Evaluate(
-      {M128D(-0x1.5555'5555'5555'5p-3), M128D(0x1.1111'10A8'20AE'Cp-7)}, x);
+  return Polynomial1<fma_policy>::Evaluate({s0, s1}, x);
 }
+
+M128D const s00(-0x1.5555'5555'5555'5p-3);
+M128D const s01(0x1.1111'10B4'0E88'Ap-7);
 
 template<FMAPolicy fma_policy>
 Value SinPolynomialNearZero(Argument const x) {
-  return Polynomial1<fma_policy>::Evaluate(
-      {M128D(-0x1.5555'5555'5555'5p-3), M128D(0x1.1111'10B4'0E88'Ap-7)}, x);
+  return Polynomial1<fma_policy>::Evaluate({s00, s01}, x);
 }
+
+M128D const c0(-0x1.FFFF'FFFF'FFFF'Dp-2);
+M128D const c1(0x1.5555'549D'B0A9'5p-5);
 
 template<FMAPolicy fma_policy>
 Value CosPolynomial(Argument const x) {
-  return Polynomial1<fma_policy>::Evaluate(
-      {M128D(-0x1.FFFF'FFFF'FFFF'Dp-2), M128D(0x1.5555'549D'B0A9'5p-5)}, x);
+  return Polynomial1<fma_policy>::Evaluate({c0, c1}, x);
 }
+
+M128D const two(2.0);
 
 template<FMAPolicy fma_policy>
 FORCE_INLINE(inline)
@@ -295,7 +314,7 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     auto const h² = h * h;
     auto const h³ = h² * h;
     auto const h_plus_e_abs² =
-        h * FusedMultiplyAdd<fma_policy>(M128D(2.0), e_abs, h);
+        h * FusedMultiplyAdd<fma_policy>(two, e_abs, h);
     auto const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
             cos_x₀,
@@ -333,7 +352,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const h² = h * h;
   auto const h³ = h² * h;
   auto const h_plus_e_abs² =
-      h * FusedMultiplyAdd<fma_policy>(M128D(2.0), e_abs, h);
+      h * FusedMultiplyAdd<fma_policy>(two, e_abs, h);
   // TODO(phl): Redo the error analysis.
   auto const polynomial_term =
       FusedNegatedMultiplyAdd<fma_policy>(
