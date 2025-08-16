@@ -102,9 +102,9 @@ double (__cdecl *sin)(double θ) = nullptr;
 
 // Forward declarations needed by the OSACA macros.
 template<FMAPolicy fma_policy>
-Value __cdecl Sin(Argument θ);
+double __cdecl Sin(double θ);
 template<FMAPolicy fma_policy>
-Value __cdecl Cos(Argument θ);
+double __cdecl Cos(double θ);
 
 namespace masks {
 M128D const mantissa_index_bits = M128D::MakeFromBits(0x0000'0000'0000'01ffull);

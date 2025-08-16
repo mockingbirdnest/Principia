@@ -22,10 +22,6 @@ class M128D {
   explicit M128D(T value);
   explicit M128D(__m128d value);
 
-  M128D(M128D const volatile& v);
-  M128D(M128D const& v) = default;
-  M128D& operator=(M128D const&) = default;
-
   // No conversion to integral types because the floating-to-integral conversion
   // is costly and should be explicit in client code.
   explicit operator double() const;

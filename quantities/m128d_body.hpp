@@ -14,11 +14,11 @@ M128D::M128D(T const value) : value_(_mm_set_sd(value)) {}
 
 inline M128D::M128D(__m128d const value) : value_(value) {}
 
-inline M128D::M128D(M128D const volatile& v) {
-  M128D* vv = const_cast<M128D*>(&v);
-  value_ = vv->value_;
-};
-
+//inline M128D::M128D(M128D const volatile& v) {
+//  M128D* vv = const_cast<M128D*>(&v);
+//  value_ = vv->value_;
+//};
+//
 inline M128D::operator double() const {
   return _mm_cvtsd_f64(value_);
 }
