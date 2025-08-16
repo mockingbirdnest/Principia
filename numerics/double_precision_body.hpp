@@ -10,6 +10,7 @@
 #include <type_traits>
 
 #include "base/not_constructible.hpp"
+#include "geometry/concepts.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
@@ -25,6 +26,7 @@ namespace _double_precision {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
+using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
@@ -237,10 +239,26 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
   // Split x and y as in mul12 from [Dek71, p. 241]; see also [Dek71, p. 235].
   constexpr std::int64_t t = std::numeric_limits<double>::digits;
   constexpr double c = 1 << (t - t / 2);
-  T const px = x * c;
+  T px;
+  if constexpr (real_vector_space<T>) {
+    px = x * c;
+  } else if constexpr (ring<T>) {
+    T const ct(c);
+    px = x * ct;
+  } else {
+    static_assert(false);
+  }
   T const hx = x - px + px;
   T const tx = x - hx;
-  U const py = y * c;
+  U py;
+  if constexpr (real_vector_space<T>) {
+    py = y * c;
+  } else if constexpr (ring<T>) {
+    U const cu(c);
+    py = y * cu;
+  } else {
+    static_assert(false);
+  }
   U const hy = y - py + py;
   U const ty = y - hy;
   // Veltkamp’s 1968 algorithm, as given in [Dek71, p. 234].

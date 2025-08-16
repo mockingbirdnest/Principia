@@ -229,7 +229,7 @@ inline M128D FusedNegatedMultiplySubtract(M128D const a,
   return M128D(_mm_fnmsub_sd(a.value_, b.value_, c.value_));
 }
 
-inline std::ostream& operator<<(std::ostream& os, M128D x) {
+inline std::ostream& operator<<(std::ostream& os, M128D const x) {
   return os << static_cast<double>(x);
 }
 
