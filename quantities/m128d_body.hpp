@@ -14,11 +14,6 @@ M128D::M128D(T const value) : value_(_mm_set_sd(value)) {}
 
 inline M128D::M128D(__m128d const value) : value_(value) {}
 
-//inline M128D::M128D(M128D const volatile& v) {
-//  M128D* vv = const_cast<M128D*>(&v);
-//  value_ = vv->value_;
-//};
-//
 inline M128D::operator double() const {
   return _mm_cvtsd_f64(value_);
 }
@@ -132,8 +127,24 @@ inline bool operator==(M128D const left, M128D const right) {
   return static_cast<double>(left) == static_cast<double>(right);
 }
 
+inline bool operator==(M128D const left, double const right) {
+  return static_cast<double>(left) == right;
+}
+
+inline bool operator==(double const left, M128D const right) {
+  return left == static_cast<double>(right);
+}
+
 inline bool operator!=(M128D const left, M128D const right) {
   return static_cast<double>(left) != static_cast<double>(right);
+}
+
+inline bool operator!=(M128D const left, double const right) {
+  return static_cast<double>(left) != right;
+}
+
+inline bool operator!=(double const left, M128D const right) {
+  return left != static_cast<double>(right);
 }
 
 inline bool operator<(M128D const left, M128D const right) {
@@ -144,12 +155,20 @@ inline bool operator<(M128D const left, double const right) {
   return static_cast<double>(left) < right;
 }
 
+inline bool operator<(double const left, M128D const right) {
+  return left < static_cast<double>(right);
+}
+
 inline bool operator<=(M128D const left, M128D const right) {
   return static_cast<double>(left) <= static_cast<double>(right);
 }
 
 inline bool operator<=(M128D const left, double const right) {
   return static_cast<double>(left) <= right;
+}
+
+inline bool operator<=(double const left, M128D const right) {
+  return left <= static_cast<double>(right);
 }
 
 inline bool operator>=(M128D const left, M128D const right) {
@@ -160,8 +179,20 @@ inline bool operator>=(M128D const left, double const right) {
   return static_cast<double>(left) >= right;
 }
 
+inline bool operator>=(double const left, M128D const right) {
+  return left >= static_cast<double>(right);
+}
+
 inline bool operator>(M128D const left, M128D const right) {
   return static_cast<double>(left) > static_cast<double>(right);
+}
+
+inline bool operator>(M128D const left, double const right) {
+  return static_cast<double>(left) > right;
+}
+
+inline bool operator>(double const left, M128D const right) {
+  return left > static_cast<double>(right);
 }
 
 inline M128D Abs(M128D const a) {

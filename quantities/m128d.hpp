@@ -63,15 +63,32 @@ class M128D {
   friend M128D operator|(M128D left, M128D right);
   friend M128D operator^(M128D left, M128D right);
 
+  // Comparisons should be implemented as vanilla float comparisons, not as
+  // calls to intrinsics like `_mm_comieq_sd`.  The former generates an
+  // instruction like `ucomisd` and does a conditional branch, while the latter
+  // produces `setcc` instruction to build an integer from the flags, and then
+  // does a `test`.  For this reason, we need overloads that take `double` (we
+  // are not going to build an `M128D` and immediately tear it apart).
+  // This also helps with OSACA constexpr-ness.
   friend bool operator==(M128D left, M128D right);
+  friend bool operator==(M128D left, double right);
+  friend bool operator==(double left, M128D right);
   friend bool operator!=(M128D left, M128D right);
+  friend bool operator!=(M128D left, double right);
+  friend bool operator!=(double left, M128D right);
   friend bool operator<(M128D left, M128D right);
   friend bool operator<(M128D left, double right);
+  friend bool operator<(double left, M128D right);
   friend bool operator<=(M128D left, M128D right);
   friend bool operator<=(M128D left, double right);
+  friend bool operator<=(double left, M128D right);
   friend bool operator>=(M128D left, M128D right);
   friend bool operator>=(M128D left, double right);
+  friend bool operator>=(double left, M128D right);
+  friend bool operator>=(M128D left, double right);
   friend bool operator>(M128D left, M128D right);
+  friend bool operator>(M128D left, double right);
+  friend bool operator>(double left, M128D right);
 
   friend M128D Abs(M128D a);
   friend M128D Sign(M128D a);
@@ -107,14 +124,24 @@ M128D operator|(M128D left, M128D right);
 M128D operator^(M128D left, M128D right);
 
 bool operator==(M128D left, M128D right);
+bool operator==(M128D left, double right);
+bool operator==(double left, M128D right);
 bool operator!=(M128D left, M128D right);
+bool operator!=(M128D left, double right);
+bool operator!=(double left, M128D right);
 bool operator<(M128D left, M128D right);
 bool operator<(M128D left, double right);
+bool operator<(double left, M128D right);
 bool operator<=(M128D left, M128D right);
 bool operator<=(M128D left, double right);
+bool operator<=(double left, M128D right);
 bool operator>=(M128D left, M128D right);
 bool operator>=(M128D left, double right);
+bool operator>=(double left, M128D right);
+bool operator>=(M128D left, double right);
 bool operator>(M128D left, M128D right);
+bool operator>(M128D left, double right);
+bool operator>(double left, M128D right);
 
 M128D Abs(M128D a);
 M128D Sign(M128D a);
