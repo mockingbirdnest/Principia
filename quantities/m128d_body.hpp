@@ -79,14 +79,6 @@ inline M128D operator*(M128D const left, M128D const right) {
   return M128D(_mm_mul_sd(left.value_, right.value_));
 }
 
-inline M128D operator*(M128D const left, double const right) {
-  return left * M128D(right);
-}
-
-inline M128D operator*(double const left, M128D const right) {
-  return M128D(left) * right;
-}
-
 inline M128D operator/(M128D const left, M128D const right) {
   return M128D(_mm_div_sd(left.value_, right.value_));
 }

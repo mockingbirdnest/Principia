@@ -1,5 +1,7 @@
 #include "quantities/m128d.hpp"
 
+// TODO(phl): This dependency is backwards...
+#include "geometry/concepts.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/almost_equals.hpp"
@@ -7,10 +9,16 @@
 namespace principia {
 namespace quantities {
 
+using namespace principia::geometry::_concepts;
 using namespace principia::quantities::_m128d;
 using namespace principia::testing_utilities::_almost_equals;
 
 class M128DTest : public testing::Test {};
+
+TEST_F(M128DTest, Concepts) {
+  // Not a field because 1 cannot be converted to M128D.
+  static_assert(ring<M128D>);
+}
 
 TEST_F(M128DTest, Arithmetic) {
   M128D a(-5.0);
@@ -45,7 +53,7 @@ TEST_F(M128DTest, Arithmetic) {
 
 TEST_F(M128DTest, Logical) {
   M128D a(5.0);
-  M128D const sign_bit(0x8000'0000'0000'0000);
+  M128D const sign_bit = M128D::MakeFromBits(0x8000'0000'0000'0000);
   EXPECT_THAT(static_cast<double>(~a), AlmostEquals(-6.0, 0));
   EXPECT_THAT(static_cast<double>(a & sign_bit), AlmostEquals(-0.0, 0));
   EXPECT_THAT(static_cast<double>(a | sign_bit), AlmostEquals(-5.0, 0));

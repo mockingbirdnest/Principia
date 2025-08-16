@@ -44,8 +44,6 @@ class M128D {
   friend M128D operator+(M128D left, M128D right);
   friend M128D operator-(M128D left, M128D right);
   friend M128D operator*(M128D left, M128D right);
-  friend M128D operator*(M128D left, double right);//TODO(phl)remove
-  friend M128D operator*(double left, M128D right);
   friend M128D operator/(M128D left, M128D right);
 
   // The ℤ-module structure.  It is important to use `std::integral` here to
