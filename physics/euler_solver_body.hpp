@@ -11,6 +11,7 @@
 #include "numerics/elementary_functions.hpp"
 #include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

@@ -18,6 +18,7 @@
 #include "numerics/quadrature.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

@@ -26,6 +26,7 @@
 #include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/oblate_body.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

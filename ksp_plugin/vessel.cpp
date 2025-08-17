@@ -13,6 +13,7 @@
 #include "base/map_util.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "quantities/named_quantities.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
@@ -25,8 +26,8 @@ using namespace principia::base::_concepts;
 using namespace principia::base::_map_util;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::ksp_plugin::_integrators;
-using namespace principia::testing_utilities::_make_not_null;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::testing_utilities::_make_not_null;
 
 using namespace std::chrono_literals;
 

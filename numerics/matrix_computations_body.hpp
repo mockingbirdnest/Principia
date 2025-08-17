@@ -15,6 +15,8 @@
 #include "numerics/root_finders.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
+#include "quantities/arithmetic.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

@@ -4,6 +4,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/arithmetic.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -11,8 +12,8 @@
 namespace principia {
 namespace quantities {
 
-using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_arithmetic;
+using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

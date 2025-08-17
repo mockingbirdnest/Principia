@@ -4,6 +4,8 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -24,8 +26,8 @@ using ::testing::_;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_space;
-using namespace principia::numerics::_global_optimization;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_global_optimization;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
