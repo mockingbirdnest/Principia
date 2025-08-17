@@ -65,7 +65,6 @@ concept ring = homogeneous_ring<A> && requires(A x, A y) {
 
 template<typename K>
 concept field = ring<K> && !std::integral<K> && requires(K x, K y, K z) {
-  { 1 } -> std::convertible_to<K>;
   { 1 / y } -> std::same_as<K>;
   { x / y } -> std::same_as<K>;
   { x /= y } -> std::same_as<K&>;
