@@ -1,6 +1,6 @@
 #pragma once
 
-#include "boost/multiprecision/number.hpp"
+#include "base/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -9,7 +9,7 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -88,7 +88,7 @@ Angle UnwindFrom(Angle const& previous_angle, Angle const& α);
 
 // Only dimensionless quantities can be rounded.
 template<typename Q>
-  requires is_number<Q>::value || std::floating_point<Q>
+  requires boost_cpp_number<Q> || std::floating_point<Q>
 Q Round(Q const& x);
 
 }  // namespace internal
