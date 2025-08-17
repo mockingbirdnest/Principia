@@ -300,7 +300,7 @@ FixedMatrix<Scalar_, rows_, columns_>::operator()(
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 FixedMatrix<Scalar_, rows_, columns_>
 FixedMatrix<Scalar_, rows_, columns_>::Identity()
-  requires (std::is_arithmetic_v<Scalar_> && rows_ == columns_) {
+  requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_) {
   FixedMatrix<Scalar, rows(), columns()> m;
   for (std::int64_t i = 0; i < rows(); ++i) {
     m(i, i) = 1;
