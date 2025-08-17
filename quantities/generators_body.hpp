@@ -62,11 +62,6 @@ struct ProductGenerator<double, Right> : not_constructible {
   using Type = Right;
 };
 
-template<>
-struct ProductGenerator<double, double> : not_constructible {
-  using Type = double;
-};
-
 template<template<typename> typename Quantity, typename Left, typename Right>
 struct QuotientGenerator<Quantity<Left>, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
@@ -82,11 +77,6 @@ template<template<typename> typename Quantity, typename Right>
 struct QuotientGenerator<double, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
       typename DimensionsQuotientGenerator<NoDimensions, Right>::Type>>::Type;
-};
-
-template<>
-struct QuotientGenerator<double, double> : not_constructible {
-  using Type = double;
 };
 
 }  // namespace internal
