@@ -4,7 +4,6 @@
 #include <string>
 
 #include "glog/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/astronomy.hpp"
