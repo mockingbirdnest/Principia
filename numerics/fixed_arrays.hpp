@@ -156,7 +156,7 @@ class FixedMatrix final {
                  FixedVector<RScalar, rows_> const& right) const;
 
   static FixedMatrix Identity()
-    requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_);  // NOLINT
+    requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_);
 
  private:
   std::array<Scalar, size_> data_;
