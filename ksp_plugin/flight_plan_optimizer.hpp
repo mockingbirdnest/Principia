@@ -16,6 +16,7 @@
 #include "numerics/gradient_descent.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/reference_frame.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -34,6 +35,7 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_reference_frame;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

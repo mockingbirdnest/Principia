@@ -11,7 +11,6 @@
 #include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -24,7 +23,6 @@ using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rigid_motion;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,

@@ -10,6 +10,7 @@
 #include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/interval.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -25,6 +26,7 @@ using namespace principia::base::_bits;
 using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_interval;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

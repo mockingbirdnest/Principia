@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base/not_constructible.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -7,28 +9,9 @@ namespace quantities {
 namespace _named_quantities {
 namespace internal {
 
+using namespace principia::base::_not_constructible;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
-
-// The result type of +, -, * and / on arguments of types `Left` and `Right`.
-template<typename Left, typename Right>
-using Sum = decltype(std::declval<Left>() + std::declval<Right>());
-template<typename Left, typename Right = Left>
-using Difference = decltype(std::declval<Left>() - std::declval<Right>());
-template<typename Left, typename Right>
-using Product = decltype(std::declval<Left>() * std::declval<Right>());
-template<typename Left, typename Right>
-using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
-
-template<typename Q>
-using Inverse = Quotient<double, Q>;
-
-template<typename T, int exponent>
-using Exponentiation =
-    typename _generators::ExponentiationGenerator<T, exponent>::Type;
-template<typename Q>
-using Square = Exponentiation<Q, 2>;
-template<typename Q>
-using Cube = Exponentiation<Q, 3>;
 
 template<typename Q, int n>
 using NthRoot = typename _generators::NthRootGenerator<Q, n>::Type;
@@ -36,20 +19,6 @@ template<typename Q>
 using SquareRoot = NthRoot<Q, 2>;
 template<typename Q>
 using CubeRoot = NthRoot<Q, 3>;
-
-// The result type of the N-th derivative of a `Value`-valued function with
-// respect to its `Argument`-valued argument.
-template<typename Value, typename Argument, int order = 1>
-using Derivative = typename std::conditional_t<
-    order == 0,
-    Value,
-    Quotient<Difference<Value>, Exponentiation<Difference<Argument>, order>>>;
-
-// The result type of the primitive of a `Value`-valued function with respect to
-// its `Argument`-valued argument.  The primitive of an affine-valued function
-// does not make much sense, but it must compile, hence the Difference.
-template<typename Value, typename Argument>
-using Primitive = Product<Difference<Value>, Difference<Argument>>;
 
 // `Variation<T>` is the type of the time derivative of a `T`-valued function.
 template<typename T, int order = 1>
@@ -176,25 +145,20 @@ using internal::CatalyticActivity;
 using internal::Charge;
 using internal::Concentration;
 using internal::Conductance;
-using internal::Cube;
 using internal::CubeRoot;
 using internal::Degree2SphericalHarmonicCoefficient;
 using internal::Degree3SphericalHarmonicCoefficient;
 using internal::Density;
-using internal::Derivative;
-using internal::Difference;
 using internal::DynamicViscosity;
 using internal::ElectricDisplacementField;
 using internal::ElectricField;
 using internal::Energy;
 using internal::Entropy;
-using internal::Exponentiation;
 using internal::Force;
 using internal::Frequency;
 using internal::GravitationalParameter;
 using internal::Illuminance;
 using internal::Inductance;
-using internal::Inverse;
 using internal::Irradiance;
 using internal::Jerk;
 using internal::KinematicViscosity;
@@ -215,9 +179,6 @@ using internal::Permeability;
 using internal::Permittivity;
 using internal::Power;
 using internal::Pressure;
-using internal::Primitive;
-using internal::Product;
-using internal::Quotient;
 using internal::Radiance;
 using internal::RadiantEnergy;
 using internal::RadiantExposure;
@@ -232,10 +193,8 @@ using internal::SpecificImpulse;
 using internal::SpecificVolume;
 using internal::SpectroscopicWavenumber;
 using internal::Speed;
-using internal::Square;
 using internal::SquareRoot;
 using internal::Stiffness;
-using internal::Sum;
 using internal::Torque;
 using internal::Variation;
 using internal::Voltage;

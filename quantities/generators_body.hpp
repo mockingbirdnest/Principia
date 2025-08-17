@@ -31,29 +31,6 @@ struct Collapse<Quantity<NoDimensions>> : not_constructible {
 };
 
 template<template<typename> typename Quantity, typename D, int n>
-  requires (!is_number<Quantity<D>>::value)  // NOLINT
-struct ExponentiationGenerator<Quantity<D>, n> : not_constructible {
-  using Type = typename Collapse<
-      Quantity<typename DimensionsExponentiationGenerator<D, n>::Type>>::Type;
-};
-
-template<int n>
-struct ExponentiationGenerator<double, n> : not_constructible {
-  using Type = double;
-};
-
-template<int n>
-struct ExponentiationGenerator<int, n> : not_constructible {
-  using Type = int;
-};
-
-template<typename Number, int n>
-  requires is_number<Number>::value
-struct ExponentiationGenerator<Number, n> : not_constructible {
-  using Type = Number;
-};
-
-template<template<typename> typename Quantity, typename D, int n>
 struct NthRootGenerator<Quantity<D>, n, void> : not_constructible {
   using Type = typename Collapse<
       Quantity<typename DimensionsNthRootGenerator<D, n>::Type>>::Type;
@@ -85,11 +62,6 @@ struct ProductGenerator<double, Right> : not_constructible {
   using Type = Right;
 };
 
-template<>
-struct ProductGenerator<double, double> : not_constructible {
-  using Type = double;
-};
-
 template<template<typename> typename Quantity, typename Left, typename Right>
 struct QuotientGenerator<Quantity<Left>, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
@@ -105,11 +77,6 @@ template<template<typename> typename Quantity, typename Right>
 struct QuotientGenerator<double, Quantity<Right>> : not_constructible {
   using Type = typename Collapse<Quantity<
       typename DimensionsQuotientGenerator<NoDimensions, Right>::Type>>::Type;
-};
-
-template<>
-struct QuotientGenerator<double, double> : not_constructible {
-  using Type = double;
 };
 
 }  // namespace internal

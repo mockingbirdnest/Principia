@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -11,7 +11,7 @@ namespace testing_utilities {
 namespace _approximate_quantity {
 namespace internal {
 
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 template<typename Quantity>

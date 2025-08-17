@@ -15,6 +15,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -50,6 +51,7 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -108,7 +110,7 @@ class PoissonSeries {
                 aperiodic_degree_ + 1, periodic_degree_ + 1>
   Primitive() const;
 
-  quantities::_named_quantities::Primitive<Value, Time> Integrate(
+  quantities::_arithmetic::Primitive<Value, Time> Integrate(
       Instant const& t1,
       Instant const& t2) const;
 

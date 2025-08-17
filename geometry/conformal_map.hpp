@@ -10,7 +10,7 @@
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace geometry {
@@ -39,7 +39,7 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // This is really a *linear* conformal map, but we don't call it
 // LinearConformalMap because that's a mouthful.

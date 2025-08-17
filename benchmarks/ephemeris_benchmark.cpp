@@ -35,6 +35,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/bipm.hpp"
 #include "quantities/named_quantities.hpp"
@@ -69,6 +70,7 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_bipm;
 using namespace principia::quantities::_named_quantities;

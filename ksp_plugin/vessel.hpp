@@ -33,7 +33,6 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/rotating_body.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
@@ -68,7 +67,6 @@ using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_rotating_body;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // Represents a KSP `Vessel`.

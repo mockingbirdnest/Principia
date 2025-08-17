@@ -12,6 +12,7 @@
 #include "geometry/space_transformations.hpp"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -38,6 +39,7 @@ using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

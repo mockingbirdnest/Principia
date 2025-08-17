@@ -8,6 +8,7 @@
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -20,6 +21,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 
 // Computes a Newhall approximation of the given `degree` in the Чебышёв basis.

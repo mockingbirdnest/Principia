@@ -476,7 +476,7 @@ PolynomialInMonomialBasis<
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 Derivative() const {
   return PolynomialInMonomialBasis<
-             quantities::_named_quantities::Derivative<Value, Argument, order>,
+             quantities::_arithmetic::Derivative<Value, Argument, order>,
              Argument,
              degree_ - order>(
              TupleDerivation<Coefficients, order>::Derive(coefficients_),
@@ -488,7 +488,7 @@ PolynomialInMonomialBasis<Primitive<Value_, Argument_>, Argument_, degree_ + 1>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::Primitive() const
   requires additive_group<Value> {
   return PolynomialInMonomialBasis<
-             quantities::_named_quantities::Primitive<Value, Argument>,
+             quantities::_arithmetic::Primitive<Value, Argument>,
              Argument,
              degree_ + 1>(
              TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),

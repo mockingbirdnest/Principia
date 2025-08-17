@@ -24,7 +24,6 @@
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -49,7 +48,6 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 namespace {

@@ -310,7 +310,7 @@ Begin["`SZ05`"]
 
 
 (* ::Input::Initialization:: *)
-bits[{v_Interval,\[Delta]v_Interval}]:=N[Log2[Map[Max,Abs[{v,\[Delta]v}]]]];
+bits[{v_Interval,\[Delta]v_Interval}]:=N[Log2[Map[Max,Abs[{v,\[Delta]v}]]],5];
 
 
 (* ::Input::Initialization:: *)
@@ -338,7 +338,7 @@ k=IEEEEvaluateWithAbsoluteError[h^2]
 
 
 (* ::Input::Initialization:: *)
-bits[k]
+Assert[bits[k]=={-21.954,-75.}]
 
 
 (* ::Input::Initialization:: *)
@@ -346,7 +346,7 @@ k\[Prime]=IEEEEvaluateWithAbsoluteError[h^3]
 
 
 (* ::Input::Initialization:: *)
-bits[k\[Prime]]
+Assert[bits[k\[Prime]]=={-32.931,-84.988}]
 
 
 (* ::Input::Initialization:: *)
@@ -354,7 +354,7 @@ S\[FivePointedStar]1=IEEEEvaluateWithAbsoluteError[a5 k]
 
 
 (* ::Input::Initialization:: *)
-bits[S\[FivePointedStar]1]
+Assert[bits[S\[FivePointedStar]1]=={-28.861,-80.953}]
 
 
 (* ::Input::Initialization:: *)
@@ -362,7 +362,7 @@ S\[FivePointedStar]2=IEEEEvaluateWithAbsoluteError[S\[FivePointedStar]1-a3]
 
 
 (* ::Input::Initialization:: *)
-bits[S\[FivePointedStar]2]
+Assert[bits[S\[FivePointedStar]2]=={-2.585,-56.}]
 
 
 (* ::Input::Initialization:: *)
@@ -370,7 +370,7 @@ S\[FivePointedStar]3=IEEEEvaluateWithAbsoluteError[k\[Prime] S\[FivePointedStar]
 
 
 (* ::Input::Initialization:: *)
-bits[S\[FivePointedStar]3]
+Assert[bits[S\[FivePointedStar]3]=={-35.516,-86.756}]
 
 
 (* ::Input::Initialization:: *)
@@ -378,7 +378,7 @@ C\[FivePointedStar]1=IEEEEvaluateWithAbsoluteError[a4 k]
 
 
 (* ::Input::Initialization:: *)
-bits[C\[FivePointedStar]1]
+Assert[bits[C\[FivePointedStar]1]=={-26.539,-78.778}]
 
 
 (* ::Input::Initialization:: *)
@@ -390,7 +390,7 @@ C\[FivePointedStar]2=IEEEEvaluateWithAbsoluteError[C\[FivePointedStar]1-a2]
 
 
 (* ::Input::Initialization:: *)
-bits[C\[FivePointedStar]2]
+Assert[bits[C\[FivePointedStar]2]=={-1.,-55}]
 
 
 (* ::Input::Initialization:: *)
@@ -398,7 +398,7 @@ C\[FivePointedStar]3=IEEEEvaluateWithAbsoluteError[k C\[FivePointedStar]2]
 
 
 (* ::Input::Initialization:: *)
-bits[C\[FivePointedStar]3]
+Assert[bits[C\[FivePointedStar]3]=={-22.954,-74.669}]
 
 
 (* ::Text:: *)
@@ -410,7 +410,7 @@ S\[FivePointedStar]=IEEEEvaluateWithAbsoluteError[(a5 h^2-a3)h^3]
 
 
 (* ::Input::Initialization:: *)
-bits[S\[FivePointedStar]]
+Assert[bits[S\[FivePointedStar]]=={-35.516,-86.756}]
 
 
 (* ::Input::Initialization:: *)
@@ -418,7 +418,7 @@ C\[FivePointedStar]=IEEEEvaluateWithAbsoluteError[h^2(a4 h^2-a2)]
 
 
 (* ::Input::Initialization:: *)
-bits[C\[FivePointedStar]]
+Assert[bits[C\[FivePointedStar]]=={-22.954,-74.669}]
 
 
 (* ::Input::Initialization:: *)
@@ -606,27 +606,31 @@ Assert[IEEEEvaluateWithRelativeError[2,3]==$Failed];
 
 
 (* ::Input::Initialization:: *)
-Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]Interval[{RandomReal[],RandomReal[]}]]][[2]]]<=\[Gamma][1],{100}],TrueQ]]
+ri[]:=Interval[{RandomReal[WorkingPrecision->30],RandomReal[WorkingPrecision->30]}]
 
 
 (* ::Input::Initialization:: *)
-Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[(Interval[{RandomReal[],RandomReal[]}]Interval[{RandomReal[],RandomReal[]}]) Interval[{RandomReal[],RandomReal[]}]]][[2]]]<=\[Gamma][2],{100}],TrueQ]]
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[ri[]ri[]]][[2]]]<=\[Gamma][1],{100}],TrueQ]]
 
 
 (* ::Input::Initialization:: *)
-Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[((Interval[{RandomReal[],RandomReal[]}]Interval[{RandomReal[],RandomReal[]}]) Interval[{RandomReal[],RandomReal[]}])Interval[{RandomReal[],RandomReal[]}]]][[2]]]<=\[Gamma][3],{100}],TrueQ]]
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[(ri[]ri[]) ri[]]][[2]]]<=\[Gamma][2],{100}],TrueQ]]
 
 
 (* ::Input::Initialization:: *)
-Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]^2]][[2]]]<=\[Gamma][1],{100}],TrueQ]]
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[((ri[]ri[]) ri[])ri[]]][[2]]]<=\[Gamma][3],{100}],TrueQ]]
 
 
 (* ::Input::Initialization:: *)
-Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]^3]][[2]]]<=\[Gamma][2],{100}],TrueQ]]
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[ri[]^2]][[2]]]<=\[Gamma][1],{100}],TrueQ]]
 
 
 (* ::Input::Initialization:: *)
-Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}]^4]][[2]]]<=\[Gamma][3],{100}],TrueQ]]
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[ri[]^3]][[2]]]<=\[Gamma][2],{100}],TrueQ]]
+
+
+(* ::Input::Initialization:: *)
+Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[ri[]^4]][[2]]]<=\[Gamma][3],{100}],TrueQ]]
 
 
 (* ::Text:: *)
@@ -635,19 +639,19 @@ Assert[AllTrue[Table[Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[
 
 (* ::Input::Initialization:: *)
 Assert[AllTrue[Table[
-Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]][[2]]]]<=\[Gamma][2],{100}],TrueQ]]
+Max[Abs[IEEEEvaluateWithRelativeError[ri[] ri[]+ri[] ri[]][[2]]]]<=\[Gamma][2],{100}],TrueQ]]
 
 
 (* ::Input::Initialization:: *)
 Assert[AllTrue[Table[
-Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+(Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}])][[2]]]]<=\[Gamma][3],{100}],TrueQ]]
+Max[Abs[IEEEEvaluateWithRelativeError[ri[] ri[]+(ri[] ri[]+ri[] ri[])][[2]]]]<=\[Gamma][3],{100}],TrueQ]]
 
 
 (* ::Input::Initialization:: *)
 Assert[AllTrue[Table[
-Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+(Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}])][[2]]]]<=\[Gamma][3],{100}],TrueQ]]
+Max[Abs[IEEEEvaluateWithRelativeError[ri[] ri[]+(ri[] ri[]+ri[] ri[])][[2]]]]<=\[Gamma][3],{100}],TrueQ]]
 
 
 (* ::Input::Initialization:: *)
 Assert[AllTrue[Table[
-Max[Abs[IEEEEvaluateWithRelativeError[Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+(Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+(Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]+Interval[{RandomReal[],RandomReal[]}] Interval[{RandomReal[],RandomReal[]}]))][[2]]]]<=\[Gamma][4],{100}],TrueQ]]
+Max[Abs[IEEEEvaluateWithRelativeError[ri[] ri[]+(ri[] ri[]+(ri[] ri[]+ri[] ri[]))][[2]]]]<=\[Gamma][4],{100}],TrueQ]]

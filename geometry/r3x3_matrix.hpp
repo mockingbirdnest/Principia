@@ -9,8 +9,8 @@
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "geometry/r3_element.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
-#include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -21,8 +21,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_r3_element;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
 
 // An `R3x3Matrix` is an element of the associative algebra of 3-by-3 matrices
 // over `Scalar`.  `Scalar` should be a vector space over ℝ, represented by

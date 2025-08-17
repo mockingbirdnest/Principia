@@ -1,6 +1,7 @@
 #pragma once
 
 #include "boost/multiprecision/number.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -10,6 +11,7 @@ namespace _elementary_functions {
 namespace internal {
 
 using namespace boost::multiprecision;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -53,6 +55,11 @@ template<typename Q>
 constexpr Q NextUp(Q const& x);
 template<typename Q>
 constexpr Q NextDown(Q const& x);
+
+// Equivalent to `std::pow(x, exponent)` unless -3 ≤ x ≤ 3, in which case
+// explicit specialization yields multiplications statically.
+template<int exponent, typename Q>
+constexpr Exponentiation<Q, exponent> Pow(Q const& x);
 
 double Sin(Angle const& α);
 double Cos(Angle const& α);

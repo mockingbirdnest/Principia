@@ -10,6 +10,7 @@
 #include "numerics/polynomial.hpp"
 #include "physics/harmonic_damping.hpp"
 #include "physics/oblate_body.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -26,6 +27,7 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
 using namespace principia::physics::_harmonic_damping;
 using namespace principia::physics::_oblate_body;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
