@@ -364,7 +364,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
           sin_x₀,
           FusedMultiplyAdd<fma_policy>(
               h³, SinPolynomial<fma_policy>(h²), e_abs),
-          h_plus_e_abs² * (cos_x₀ * CosPolynomial<fma_policy>(h²))) +
+          (cos_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
       cos_x₀_minus_h_sin_x₀.error;
   return DetectDangerousRounding<fma_policy, cos_e>(cos_x₀_minus_h_sin_x₀.value,
                                                     polynomial_term);
