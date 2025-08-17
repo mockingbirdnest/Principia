@@ -7,6 +7,7 @@ namespace quantities {
 namespace _named_quantities {
 namespace internal {
 
+using namespace principia::base::_not_constructible;
 using namespace principia::quantities::_quantities;
 
 // The result type of +, -, * and / on arguments of types `Left` and `Right`.
@@ -23,8 +24,23 @@ template<typename Q>
 using Inverse = Quotient<double, Q>;
 
 template<typename T, int exponent>
-using Exponentiation =
-    typename _generators::ExponentiationGenerator<T, exponent>::Type;
+struct ExponentiationGenerator : not_constructible {
+  using type =
+      Product<T, typename ExponentiationGenerator<T, exponent - 1>::type>;
+};
+template<typename T, int exponent>
+  requires(exponent < 0)
+struct ExponentiationGenerator<T, exponent> : not_constructible {
+  using type =
+      Quotient<T, typename ExponentiationGenerator<T, -exponent + 1>::type>;
+};
+template<typename T>
+struct ExponentiationGenerator<T, 1> : not_constructible {
+  using type = T;
+};
+
+template<typename T, int exponent>
+using Exponentiation = typename ExponentiationGenerator<T, exponent>::type;
 template<typename Q>
 using Square = Exponentiation<Q, 2>;
 template<typename Q>
