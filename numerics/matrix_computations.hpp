@@ -8,7 +8,6 @@ namespace numerics {
 namespace _matrix_computations {
 namespace internal {
 
-
 // Declares:
 //   using Result = ⟨upper triangular matrix⟩;
 template<typename U>
