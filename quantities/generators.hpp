@@ -9,9 +9,6 @@ namespace internal {
 // the result of the operation applied to argument(s) of the `Quantity` types
 // given as template parameter(s).
 
-template<typename Q, int n>
-struct ExponentiationGenerator;
-
 // Only legal if `n` divides the dimensions of `Q`.
 template<typename Q, int n, typename = void>
 struct NthRootGenerator;
@@ -24,7 +21,6 @@ struct QuotientGenerator;
 
 }  // namespace internal
 
-using internal::ExponentiationGenerator;
 using internal::NthRootGenerator;
 using internal::ProductGenerator;
 using internal::QuotientGenerator;
