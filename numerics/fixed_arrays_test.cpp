@@ -72,6 +72,7 @@ TEST_F(FixedArraysTest, AlgebraConcepts) {
   static_assert(homogeneous_ring<FixedMatrix<double, 3, 3>>);
   static_assert(homogeneous_ring<FixedMatrix<Length, 3, 3>>);
 
+  static_assert(!ring<FixedMatrix<double, 2, 3>>);
   static_assert(ring<FixedMatrix<double, 3, 3>>);
   static_assert(!ring<FixedMatrix<Length, 3, 3>>);
 
