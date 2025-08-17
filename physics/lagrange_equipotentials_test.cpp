@@ -15,7 +15,6 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -47,7 +46,6 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -129,7 +127,8 @@ TEST_F(LagrangeEquipotentialsTest,
   Position<World> const q_moon = moon_world_dof.position();
   Position<World> const initial_earth_moon_l5 =
       Barycentre({q_earth, q_moon}, {1.0, 1.0}) +
-      (q_earth - q_moon).Norm() * Vector<double, World>({0, Sqrt(3) / 2, 0});
+      (q_earth - q_moon).Norm() *
+          Vector<double, World>({0, quantities::Sqrt(3) / 2, 0});
   using MEO = Frame<struct MEOTag, Arbitrary>;
   BodyCentredBodyDirectionReferenceFrame<Barycentric, MEO> meo(
       ephemeris_.get(), moon, earth);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "numerics/elementary_functions.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -14,6 +15,7 @@ namespace quantities {
 namespace _uk {
 namespace internal {
 
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

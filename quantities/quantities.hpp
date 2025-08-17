@@ -49,10 +49,6 @@ using Product = typename ProductGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
 using Quotient = typename QuotientGenerator<Left, Right>::Type;
 
-template<typename T, int exponent>
-using Exponentiation =
-    typename _generators::ExponentiationGenerator<T, exponent>::Type;
-
 template<typename D>
 class Quantity final {
  public:
@@ -123,11 +119,6 @@ template<typename RDimensions>
 constexpr Quotient<double, Quantity<RDimensions>>
 operator/(double, Quantity<RDimensions> const&);
 
-// Equivalent to `std::pow(x, exponent)` unless -3 ≤ x ≤ 3, in which case
-// explicit specialization yields multiplications statically.
-template<int exponent, typename Q>
-constexpr Exponentiation<Q, exponent> Pow(Q const& x);
-
 // Used for implementing `si::Unit`.  Don't call directly, don't export from
 // this namespace.  Defined here to break circular dependencies.
 template<typename Q>
@@ -181,7 +172,6 @@ using internal::Length;
 using internal::LuminousIntensity;
 using internal::Mass;
 using internal::NaN;
-using internal::Pow;
 using internal::Quantity;
 using internal::Temperature;
 using internal::Time;
