@@ -40,10 +40,11 @@ concept affine = requires(A x, A y) {
   { y -= (x - y) } -> std::same_as<A&>;
 };
 
-// A graded ring restricted to its homogeneous elements; multiplication can
-// alter the type, and addition is only defined between homogeneous elements.
+// A graded pseudo-ring restricted to its homogeneous elements; multiplication
+// can alter the type, and addition is only defined between homogeneous
+// elements.
 template<typename A>
-concept homogeneous_ring =
+concept homogeneous_pseudo_ring =
     additive_group<A> && requires(A x, A y, A z) {
       // Really, multiplication should return a homogeneous_ring.
       { x * y } -> additive_group;
@@ -52,9 +53,18 @@ concept homogeneous_ring =
 };
 
 template<typename A>
-concept ring = homogeneous_ring<A> && requires(A x, A y) {
+concept pseudo_ring = homogeneous_pseudo_ring<A> && requires(A x, A y) {
   { x * y } -> std::same_as<A>;
   { x *= y } -> std::same_as<A&>;
+};
+
+// A pseudo-ring with a multiplicative identity.
+template<typename P>
+concept homogeneous_ring = homogeneous_pseudo_ring<P>;
+
+template<typename P>
+concept ring = homogeneous_ring<P> && requires {
+  { 1 } -> std::convertible_to<P>;
 };
 
 // TODO(egg): field should subsume homogeneous_field, but we use it in
@@ -62,7 +72,6 @@ concept ring = homogeneous_ring<A> && requires(A x, A y) {
 
 template<typename K>
 concept field = ring<K> && !std::integral<K> && requires(K x, K y, K z) {
-  { 1 } -> std::convertible_to<K>;
   { 1 / y } -> std::same_as<K>;
   { x / y } -> std::same_as<K>;
   { x /= y } -> std::same_as<K&>;
@@ -130,8 +139,10 @@ using internal::affine_space;
 using internal::hilbert;
 using internal::field;
 using internal::homogeneous_field;
+using internal::homogeneous_pseudo_ring;
 using internal::homogeneous_ring;
 using internal::homogeneous_vector_space;
+using internal::pseudo_ring;
 using internal::real_affine_space;
 using internal::real_vector_space;
 using internal::ring;

@@ -24,7 +24,7 @@ TEST(Concepts, Algebra) {
   static_assert(additive_group<int>);
   static_assert(additive_group<double>);
 
-  static_assert(homogeneous_ring<Length>);
+  static_assert(homogeneous_pseudo_ring<Length>);
   static_assert(homogeneous_ring<int>);
   static_assert(homogeneous_ring<double>);
 
