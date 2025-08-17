@@ -85,6 +85,7 @@
     <ClCompile Include="bits_test.cpp" />
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
+    <ClCompile Include="concepts_test.cpp" />
     <ClCompile Include="cpuid.cpp" />
     <ClCompile Include="cpuid_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
