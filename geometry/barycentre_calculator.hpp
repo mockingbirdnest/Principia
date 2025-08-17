@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "geometry/concepts.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace geometry {

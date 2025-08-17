@@ -3,7 +3,7 @@
 #include "base/not_null.hpp"
 #include "geometry/concepts.hpp"
 #include "numerics/fma.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 

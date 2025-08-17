@@ -20,7 +20,7 @@
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 

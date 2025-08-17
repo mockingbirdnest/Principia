@@ -7,7 +7,7 @@
 
 #include "base/not_null.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {

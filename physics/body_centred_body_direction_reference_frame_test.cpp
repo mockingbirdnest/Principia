@@ -20,6 +20,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

@@ -8,7 +8,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "numerics/global_optimization.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/optimization_test_functions.hpp"

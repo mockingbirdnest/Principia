@@ -24,7 +24,6 @@
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

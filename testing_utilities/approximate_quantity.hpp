@@ -3,7 +3,7 @@
 #include <string>
 #include <string_view>
 
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {

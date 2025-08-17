@@ -4,7 +4,7 @@
 #include <ostream>
 
 #include "geometry/hilbert.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace geometry {

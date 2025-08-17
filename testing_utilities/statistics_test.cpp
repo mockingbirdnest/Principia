@@ -4,6 +4,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

@@ -20,6 +20,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/similar_motion.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"

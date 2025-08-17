@@ -12,6 +12,7 @@
 #include "numerics/apodization.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

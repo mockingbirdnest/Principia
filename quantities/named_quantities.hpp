@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/not_constructible.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 

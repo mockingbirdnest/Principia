@@ -3,6 +3,7 @@
 #include <optional>
 #include <type_traits>
 
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 

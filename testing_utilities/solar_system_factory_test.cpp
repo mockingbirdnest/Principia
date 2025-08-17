@@ -16,7 +16,6 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"

@@ -7,7 +7,7 @@
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "serialization/numerics.pb.h"
 
 namespace principia {

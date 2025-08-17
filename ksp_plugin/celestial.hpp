@@ -10,7 +10,6 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rotating_body.hpp"
-#include "quantities/named_quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {

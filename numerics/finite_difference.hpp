@@ -2,7 +2,7 @@
 
 #include <array>
 
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {

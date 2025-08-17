@@ -2,8 +2,6 @@
 
 #include <limits>
 
-#include "quantities/named_quantities.hpp"
-
 namespace principia {
 namespace numerics {
 namespace _matrix_computations {

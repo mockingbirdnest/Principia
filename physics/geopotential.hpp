@@ -10,6 +10,7 @@
 #include "numerics/polynomial.hpp"
 #include "physics/harmonic_damping.hpp"
 #include "physics/oblate_body.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 

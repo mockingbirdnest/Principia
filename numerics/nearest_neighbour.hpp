@@ -11,7 +11,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {

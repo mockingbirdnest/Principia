@@ -11,6 +11,7 @@
 #include "gtest/gtest.h"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -38,8 +39,8 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::quantities::_constants;
 using namespace principia::quantities::_arithmetic;
+using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

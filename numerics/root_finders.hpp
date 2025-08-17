@@ -8,7 +8,7 @@
 #include "base/array.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/scale_b.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {

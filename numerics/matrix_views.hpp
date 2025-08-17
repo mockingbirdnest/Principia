@@ -5,7 +5,7 @@
 
 #include "numerics/concepts.hpp"
 #include "numerics/transposed_view.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {

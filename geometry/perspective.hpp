@@ -9,7 +9,7 @@
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
 #include "geometry/sphere.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {

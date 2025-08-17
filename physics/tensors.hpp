@@ -2,6 +2,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 

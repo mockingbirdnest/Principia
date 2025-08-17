@@ -4,7 +4,7 @@
 
 #include "absl/status/statusor.h"
 #include "geometry/hilbert.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {

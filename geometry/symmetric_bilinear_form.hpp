@@ -8,7 +8,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {

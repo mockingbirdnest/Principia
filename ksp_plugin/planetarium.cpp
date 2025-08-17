@@ -9,7 +9,7 @@
 #include "numerics/elementary_functions.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/similar_motion.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace ksp_plugin {

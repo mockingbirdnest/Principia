@@ -42,6 +42,7 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -106,8 +107,8 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_arithmetic;
+using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

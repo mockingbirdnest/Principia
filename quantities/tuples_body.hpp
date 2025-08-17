@@ -1,6 +1,6 @@
 #pragma once
 
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/tuples.hpp"
 
 #include <algorithm>

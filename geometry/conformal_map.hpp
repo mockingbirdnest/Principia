@@ -10,7 +10,7 @@
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace geometry {

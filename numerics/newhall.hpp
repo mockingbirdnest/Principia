@@ -8,6 +8,7 @@
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {

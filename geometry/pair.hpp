@@ -10,6 +10,7 @@
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
 #include "geometry/concepts.hpp"
 #include "geometry/space.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 

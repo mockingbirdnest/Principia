@@ -11,7 +11,6 @@
 #include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

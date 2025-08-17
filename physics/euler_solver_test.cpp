@@ -18,6 +18,7 @@
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

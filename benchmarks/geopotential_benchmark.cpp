@@ -19,6 +19,7 @@
 #include "physics/oblate_body.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"

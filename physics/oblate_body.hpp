@@ -13,6 +13,7 @@
 #include "geometry/grassmann.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "physics/massive_body.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 

@@ -25,7 +25,7 @@
 #include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/tuples.hpp"

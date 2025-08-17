@@ -4,7 +4,6 @@
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"

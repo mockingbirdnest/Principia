@@ -13,6 +13,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/legendre.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

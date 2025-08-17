@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "geometry/hilbert.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {

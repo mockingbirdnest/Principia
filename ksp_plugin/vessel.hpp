@@ -33,7 +33,6 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/rotating_body.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 

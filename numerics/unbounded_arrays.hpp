@@ -12,7 +12,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

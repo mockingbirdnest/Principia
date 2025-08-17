@@ -14,6 +14,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

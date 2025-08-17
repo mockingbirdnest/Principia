@@ -9,7 +9,7 @@
 #include "base/not_null.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/nearest_neighbour.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {

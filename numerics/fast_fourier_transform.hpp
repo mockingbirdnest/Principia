@@ -10,6 +10,7 @@
 #include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/interval.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
