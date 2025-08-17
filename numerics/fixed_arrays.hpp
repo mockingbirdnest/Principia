@@ -155,7 +155,8 @@ class FixedMatrix final {
       operator()(FixedVector<LScalar, columns_> const& left,
                  FixedVector<RScalar, rows_> const& right) const;
 
-  static FixedMatrix Identity();
+  static FixedMatrix Identity()
+    requires (std::is_arithmetic_v<Scalar_> && rows_ == columns_);
 
  private:
   std::array<Scalar, size_> data_;
