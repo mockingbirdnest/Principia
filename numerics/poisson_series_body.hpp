@@ -311,7 +311,7 @@ PoissonSeries<Primitive<Value, Time>,
 PoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 Primitive() const {
   using Result =
-      PoissonSeries<quantities::_named_quantities::Primitive<Value, Time>,
+      PoissonSeries<quantities::_arithmetic::Primitive<Value, Time>,
                     aperiodic_degree_ + 1, periodic_degree_ + 1>;
   typename Result::AperiodicPolynomial aperiodic = aperiodic_.Primitive();
   typename Result::PolynomialsByAngularFrequency periodic;
@@ -332,7 +332,7 @@ Primitive<Value, Time>
 PoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 Integrate(Instant const& t1,
           Instant const& t2) const {
-  quantities::_named_quantities::Primitive<Value, Time> result =
+  quantities::_arithmetic::Primitive<Value, Time> result =
       aperiodic_.Integrate(t1, t2);
   for (auto const& [ω, polynomials] : periodic_) {
     // This implementation follows [HO09], Theorem 1 and [INO06] equation 4.

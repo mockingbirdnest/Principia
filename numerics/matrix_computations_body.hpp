@@ -30,6 +30,8 @@ using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_root_finders;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::quantities::_arithmetic;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 // As mentioned in [GV13] section 5.1.4, "It is critical to exploit structure

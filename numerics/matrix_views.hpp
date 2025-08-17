@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <ostream>
 #include <utility>
 
 #include "numerics/concepts.hpp"

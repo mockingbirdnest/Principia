@@ -32,7 +32,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_space;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 template<typename T1, typename T2>
 class Pair;
@@ -240,7 +240,6 @@ namespace _mappable {
 namespace internal {
 
 using namespace principia::geometry::_pair;
-using namespace principia::quantities::_arithmetic;
 
 template<typename Functor, typename T1, typename T2>
 class Mappable<Functor,

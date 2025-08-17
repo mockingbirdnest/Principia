@@ -110,7 +110,7 @@ class PoissonSeries {
                 aperiodic_degree_ + 1, periodic_degree_ + 1>
   Primitive() const;
 
-  quantities::_named_quantities::Primitive<Value, Time> Integrate(
+  quantities::_arithmetic::Primitive<Value, Time> Integrate(
       Instant const& t1,
       Instant const& t2) const;
 
