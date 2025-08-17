@@ -13,7 +13,7 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
-namespace quantities {
+namespace numerics {
 
 using ::testing::Eq;
 using ::testing::Lt;
@@ -175,5 +175,5 @@ TEST_F(ElementaryFunctionsTest, ExpLogAndRoots) {
       AlmostEquals(std::exp(std::log(Gallon / Pow<3>(Foot)) / 3) * Foot, 0, 1));
 }
 
-}  // namespace quantities
+}  // namespace numerics
 }  // namespace principia
