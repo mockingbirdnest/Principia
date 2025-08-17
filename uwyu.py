@@ -153,6 +153,11 @@ for bodies in False, True:
         print("    using directive for _named_quantities will be removed from",
               file)
         del lines[using_named_quantities_line]
+
+      # TODO(egg): This is wrong. If we inherited a using directive for
+      # _named_quantities for the header but used _arithmetic only in the body,
+      # we need to add a using directive for _arithmetic even though
+      # using_named_quantities_line is None.
       if (arithmetic_symbols_used and
           not arithmetic_used_in_header and
           using_named_quantities_line is not None):

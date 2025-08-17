@@ -28,7 +28,7 @@ Cube<Scalar> ConformalMap<Scalar, FromFrame, ToFrame>::Determinant() const {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 ConformalMap<Inverse<Scalar>, ToFrame, FromFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::Inverse() const {
-  return ConformalMap<quantities::_named_quantities::Inverse<Scalar>,
+  return ConformalMap<quantities::_arithmetic::Inverse<Scalar>,
                       ToFrame, FromFrame>(
     1 / scale_, quaternion_.Inverse());
 }

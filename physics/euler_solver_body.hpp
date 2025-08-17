@@ -25,6 +25,7 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_elliptic_functions;
 using namespace principia::numerics::_elliptic_integrals;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename PrincipalAxesFrame>

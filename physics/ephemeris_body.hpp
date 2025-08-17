@@ -50,6 +50,7 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_oblate_body;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_si;
 
 using namespace std::chrono_literals;

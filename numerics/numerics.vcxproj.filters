@@ -388,7 +388,7 @@
     <ClCompile Include="nearest_neighbour_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="global_optimization_test.cc">
+    <ClCompile Include="global_optimization_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="angle_reduction_test.cpp">

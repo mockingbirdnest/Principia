@@ -26,6 +26,7 @@ using namespace principia::base::_map_util;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::testing_utilities::_make_not_null;
+using namespace principia::quantities::_named_quantities;
 
 using namespace std::chrono_literals;
 
