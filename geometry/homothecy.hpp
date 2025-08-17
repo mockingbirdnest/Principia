@@ -6,7 +6,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/space.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace geometry {
@@ -19,7 +19,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_space;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,

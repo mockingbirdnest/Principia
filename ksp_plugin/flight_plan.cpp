@@ -12,6 +12,7 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "ksp_plugin/integrators.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
@@ -25,6 +26,7 @@ using namespace principia::integrators::_embedded_explicit_generalized_runge_kut
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_integrators;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_make_not_null;

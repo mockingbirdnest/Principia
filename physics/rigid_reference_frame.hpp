@@ -20,6 +20,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/similar_motion.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
@@ -41,6 +42,7 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_similar_motion;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

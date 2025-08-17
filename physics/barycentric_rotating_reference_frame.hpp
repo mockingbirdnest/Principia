@@ -22,6 +22,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/tuples.hpp"
@@ -43,6 +44,7 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_tuples;

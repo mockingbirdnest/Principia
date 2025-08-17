@@ -18,6 +18,7 @@
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -48,6 +49,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_euler_solver;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

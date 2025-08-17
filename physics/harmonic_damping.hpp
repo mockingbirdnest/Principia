@@ -3,7 +3,7 @@
 #include "geometry/grassmann.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -14,7 +14,7 @@ namespace internal {
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 // Specification of the damping of a spherical harmonic, acting as a radial

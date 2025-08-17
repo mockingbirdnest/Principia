@@ -13,6 +13,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "numerics/poisson_series.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -49,6 +50,7 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_poisson_series;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "boost/multiprecision/number.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -10,6 +11,7 @@ namespace _elementary_functions {
 namespace internal {
 
 using namespace boost::multiprecision;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

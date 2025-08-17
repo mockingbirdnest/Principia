@@ -8,7 +8,7 @@
 #include "base/array.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/scale_b.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
@@ -18,7 +18,7 @@ namespace internal {
 using namespace principia::base::_array;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_scale_b;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // Approximates a root of `f` between `lower_bound` and `upper_bound` by
 // bisection.  The result is less than one ULP from a root of any continuous

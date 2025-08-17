@@ -18,6 +18,7 @@
 #include "numerics/quadrature.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -35,6 +36,7 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_quadrature;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_kepler_orbit;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_si;
 
 constexpr int osculating_equinoctial_elements_per_sidereal_period = 256;

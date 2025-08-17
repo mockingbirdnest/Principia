@@ -10,7 +10,6 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rotating_body.hpp"
-#include "quantities/named_quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
@@ -26,7 +25,6 @@ using namespace principia::physics::_body;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rotating_body;
-using namespace principia::quantities::_named_quantities;
 
 // Represents a KSP `CelestialBody`.
 class Celestial {
