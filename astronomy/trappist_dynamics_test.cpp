@@ -74,7 +74,7 @@ using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace std::chrono_literals;

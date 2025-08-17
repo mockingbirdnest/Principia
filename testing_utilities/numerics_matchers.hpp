@@ -9,7 +9,7 @@ namespace _numerics_matchers {
 namespace internal {
 
 using ::testing::Matcher;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 template<typename Value>
 Matcher<Value> DifferenceFrom(

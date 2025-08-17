@@ -22,7 +22,6 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rotating_body;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 class OrbitGroundTrack {

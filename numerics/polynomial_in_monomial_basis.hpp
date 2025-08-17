@@ -73,7 +73,7 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_tuples;
 
 // Used to decide which evaluator to use for a particular polynomial.

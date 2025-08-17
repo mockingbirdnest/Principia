@@ -49,7 +49,6 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 namespace {

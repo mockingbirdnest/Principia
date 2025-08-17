@@ -20,6 +20,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 
 // Computes a Newhall approximation of the given `degree` in the Чебышёв basis.

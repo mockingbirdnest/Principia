@@ -37,7 +37,6 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;

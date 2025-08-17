@@ -12,6 +12,7 @@ namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

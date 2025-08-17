@@ -21,7 +21,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 

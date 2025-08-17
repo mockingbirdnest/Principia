@@ -12,7 +12,7 @@ namespace _complexification {
 namespace internal {
 
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 template<typename Vector>
 class Complexification {

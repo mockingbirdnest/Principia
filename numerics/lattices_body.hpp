@@ -32,7 +32,7 @@ using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // The largest `int64_t` that can be converted to and from `double` without loss
 // of accuracy.

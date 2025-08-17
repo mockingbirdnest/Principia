@@ -33,7 +33,7 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_similar_motion;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

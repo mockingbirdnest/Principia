@@ -26,7 +26,6 @@ using namespace principia::physics::_body;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rotating_body;
-using namespace principia::quantities::_named_quantities;
 
 // Represents a KSP `CelestialBody`.
 class Celestial {

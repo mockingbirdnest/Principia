@@ -34,7 +34,6 @@ using namespace principia::geometry::_instant;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_fixed_arrays;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // This class solves ordinary differential equations of the form q″ = f(q, t)

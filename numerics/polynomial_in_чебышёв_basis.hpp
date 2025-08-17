@@ -52,7 +52,7 @@ using namespace principia::base::_not_null;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 template<typename Value_, typename Argument_, auto _ = std::nullopt>
 class PolynomialInЧебышёвBasis;

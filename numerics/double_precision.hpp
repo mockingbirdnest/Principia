@@ -17,7 +17,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 // A simple container for accumulating a value using double precision.  The

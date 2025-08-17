@@ -26,6 +26,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

@@ -50,6 +50,7 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

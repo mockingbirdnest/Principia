@@ -16,7 +16,7 @@ namespace internal {
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_concepts;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // A trait that represents a Hilbert space, i.e., a space with an inner product
 // and (possibly) a norm.  The struct Hilbert exports a type InnerProductType

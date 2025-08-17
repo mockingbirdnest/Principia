@@ -45,6 +45,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

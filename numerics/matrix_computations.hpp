@@ -9,7 +9,6 @@ namespace numerics {
 namespace _matrix_computations {
 namespace internal {
 
-using namespace principia::quantities::_named_quantities;
 
 // Declares:
 //   using Result = ⟨upper triangular matrix⟩;

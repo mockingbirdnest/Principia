@@ -10,6 +10,7 @@ namespace _elementary_functions {
 namespace internal {
 
 using namespace boost::multiprecision;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

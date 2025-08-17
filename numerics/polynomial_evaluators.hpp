@@ -15,7 +15,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_concepts;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_tuples;
 
 template<template<typename, typename, int> typename Evaluator_>

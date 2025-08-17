@@ -21,7 +21,7 @@ using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_concepts;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // Point<Vector> is an affine space on the vector space Vector.
 template<typename Vector>

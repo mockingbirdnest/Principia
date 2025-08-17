@@ -14,7 +14,7 @@ namespace internal {
 
 using namespace principia::numerics::_concepts;
 using namespace principia::numerics::_transposed_view;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // A view of a rectangular block of a matrix.  This view is `two_dimensional`.
 template<typename Matrix>

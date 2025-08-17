@@ -33,6 +33,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

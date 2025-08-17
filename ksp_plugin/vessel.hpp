@@ -68,7 +68,6 @@ using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_rotating_body;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // Represents a KSP `Vessel`.

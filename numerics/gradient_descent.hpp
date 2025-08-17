@@ -13,7 +13,7 @@ namespace _gradient_descent {
 namespace internal {
 
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 // In this file `Argument` must be such that its difference belongs to a Hilbert

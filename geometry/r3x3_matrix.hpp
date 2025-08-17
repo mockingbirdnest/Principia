@@ -22,7 +22,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // An `R3x3Matrix` is an element of the associative algebra of 3-by-3 matrices
 // over `Scalar`.  `Scalar` should be a vector space over ℝ, represented by

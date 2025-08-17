@@ -20,7 +20,7 @@ using namespace principia::geometry::_sign;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_similar_motion;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 namespace {
 constexpr int max_plot_method_2_steps = 10'000;

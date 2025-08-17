@@ -239,7 +239,7 @@ namespace _mappable {
 namespace internal {
 
 using namespace principia::geometry::_pair;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 template<typename Functor, typename T1, typename T2>
 class Mappable<Functor,

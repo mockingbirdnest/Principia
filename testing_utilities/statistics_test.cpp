@@ -13,6 +13,7 @@ namespace principia {
 namespace testing_utilities {
 
 using ::testing::Eq;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -11,6 +11,7 @@ namespace numerics {
 namespace _quadrature {
 namespace internal {
 
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

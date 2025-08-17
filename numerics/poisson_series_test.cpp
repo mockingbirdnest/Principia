@@ -35,6 +35,7 @@ using namespace principia::numerics::_apodization;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial_evaluators;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

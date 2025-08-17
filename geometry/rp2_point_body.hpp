@@ -15,7 +15,7 @@ namespace _rp2_point {
 namespace internal {
 
 using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 template<typename Scalar, typename Frame>

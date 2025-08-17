@@ -25,7 +25,6 @@ using ::testing::Property;
 using ::testing::SizeIs;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;

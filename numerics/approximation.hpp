@@ -16,7 +16,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 template<typename Argument, typename Function>
 using Value = std::invoke_result_t<Function, Argument>;

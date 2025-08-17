@@ -18,7 +18,7 @@ namespace internal {
 using namespace principia::base::_tags;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_si;
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>

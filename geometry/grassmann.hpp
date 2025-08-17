@@ -21,7 +21,7 @@ using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 // A multivector of rank `rank` on a three-dimensional real inner product
