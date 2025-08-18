@@ -27,6 +27,9 @@ class M128D {
   explicit operator double() const;
   explicit operator __m128d() const;
 
+  // For the ring concept.
+  static M128D Identity();
+
   // These functions are the equivalent of `reinterpret_cast`, they just copy
   // the bits without any integral/floating conversion.
   template<std::integral T>
@@ -112,6 +115,7 @@ class M128D {
  private:
   __m128d value_;
 
+  static M128D const identity_;
   static M128D const all_ones_;
   static M128D const negated_sign_bit_;
   static M128D const sign_bit_;

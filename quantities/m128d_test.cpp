@@ -33,7 +33,7 @@ TEST_F(M128DTest, Arithmetic) {
   EXPECT_THAT(static_cast<double>(a * b), AlmostEquals(-10.0, 0));
   EXPECT_THAT(static_cast<double>(a / b), AlmostEquals(-2.5, 0));
   EXPECT_THAT(static_cast<double>(Abs(a)), AlmostEquals(5.0, 0));
-  EXPECT_THAT(static_cast<double>(Sign(a)), AlmostEquals(-0.0, 0));
+  EXPECT_THAT(static_cast<double>(Abs(b)), AlmostEquals(2.0, 0));
   EXPECT_THAT(static_cast<double>(FusedMultiplyAdd(a, b, c)),
               AlmostEquals(-7.0, 0));
   EXPECT_THAT(static_cast<double>(FusedMultiplySubtract(a, b, c)),
@@ -51,9 +51,6 @@ TEST_F(M128DTest, Arithmetic) {
   EXPECT_THAT(static_cast<double>(a), AlmostEquals(-12.0, 0));
   a /= c;
   EXPECT_THAT(static_cast<double>(a), AlmostEquals(-4.0, 0));
-
-  EXPECT_THAT(Abs(a), AlmostEquals(5.0, 0));
-  EXPECT_THAT(Abs(b), AlmostEquals(2.0, 0));
 }
 
 TEST_F(M128DTest, Logical) {

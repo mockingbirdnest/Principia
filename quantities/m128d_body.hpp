@@ -22,6 +22,10 @@ inline M128D::operator __m128d() const {
   return value_;
 }
 
+inline M128D M128D::Identity() {
+  return identity_;
+}
+
 template<std::integral T>
 M128D M128D::MakeFromBits(T const value) {
   return M128D(_mm_castsi128_pd(_mm_cvtsi64_si128(value)));
@@ -52,6 +56,7 @@ inline M128D& M128D::operator/=(M128D const right) {
   return *this;
 }
 
+inline M128D const M128D::identity_(1.0);
 inline M128D const M128D::all_ones_ =
     M128D::MakeFromBits(0xffff'ffff'ffff'ffffull);
 inline M128D const M128D::negated_sign_bit_ =
