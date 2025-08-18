@@ -1,11 +1,11 @@
 #pragma once
 
+#include "numerics/m128d.hpp"
+
 #include <immintrin.h>
 
-#include "quantities/m128d.hpp"
-
 namespace principia {
-namespace quantities {
+namespace numerics {
 namespace _m128d {
 namespace internal {
 
@@ -240,5 +240,5 @@ inline std::ostream& operator<<(std::ostream& os, M128D const x) {
 
 }  // namespace internal
 }  // namespace _m128d
-}  // namespace quantities
+}  // namespace numerics
 }  // namespace principia

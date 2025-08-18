@@ -7,7 +7,7 @@
 #include <ostream>
 
 namespace principia {
-namespace quantities {
+namespace numerics {
 namespace _m128d {
 namespace internal {
 
@@ -197,7 +197,7 @@ using internal::M128D;
 using internal::Sign;
 
 }  // namespace _m128d
-}  // namespace quantities
+}  // namespace numerics
 }  // namespace principia
 
-#include "quantities/m128d_body.hpp"
+#include "numerics/m128d_body.hpp"

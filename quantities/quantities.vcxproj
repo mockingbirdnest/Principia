@@ -13,7 +13,6 @@
     <ClInclude Include="arithmetic_body.hpp" />
     <ClInclude Include="astronomy.hpp" />
     <ClInclude Include="bipm.hpp" />
-    <ClInclude Include="cantor.hpp" />
     <ClInclude Include="cgs.hpp" />
     <ClInclude Include="concepts.hpp" />
     <ClInclude Include="constants.hpp" />
@@ -21,8 +20,6 @@
     <ClInclude Include="dimensions_body.hpp" />
     <ClInclude Include="generators.hpp" />
     <ClInclude Include="generators_body.hpp" />
-    <ClInclude Include="m128d.hpp" />
-    <ClInclude Include="m128d_body.hpp" />
     <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="numbers.hpp" />
     <ClInclude Include="parser.hpp" />
@@ -38,8 +35,6 @@
     <ClInclude Include="uk.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cantor_test.cpp" />
-    <ClCompile Include="m128d_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
     <ClCompile Include="concepts_test.cpp" />

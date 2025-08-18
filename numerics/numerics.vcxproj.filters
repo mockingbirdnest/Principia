@@ -421,10 +421,10 @@
     <ClCompile Include="sin_cos.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="m128d_test.cpp">
+    <ClCompile Include="elementary_functions_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="elementary_functions_test.cpp">
+    <ClCompile Include="m128d_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

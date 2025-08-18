@@ -1,18 +1,17 @@
-#include "quantities/m128d.hpp"
+#include "numerics/m128d.hpp"
 
 #include <cstdint>
 
-// TODO(phl): This dependency is backwards...
 #include "geometry/concepts.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
-namespace quantities {
+namespace numerics {
 
 using namespace principia::geometry::_concepts;
-using namespace principia::quantities::_m128d;
+using namespace principia::numerics::_m128d;
 using namespace principia::testing_utilities::_almost_equals;
 
 class M128DTest : public testing::Test {};
@@ -86,5 +85,5 @@ TEST_F(M128DTest, Comparison) {
   EXPECT_TRUE(2.0 > a);
 }
 
-}  // namespace quantities
+}  // namespace numerics
 }  // namespace principia
