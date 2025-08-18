@@ -4,10 +4,14 @@
 
 #include <immintrin.h>
 
+#include "quantities/quantities.hpp"
+
 namespace principia {
 namespace numerics {
 namespace _m128d {
 namespace internal {
+
+using namespace principia::quantities::_quantities;
 
 template<std::floating_point T>
 M128D::M128D(T const value) : value_(_mm_set_sd(value)) {}
@@ -234,8 +238,13 @@ inline M128D FusedNegatedMultiplySubtract(M128D const a,
   return M128D(_mm_fnmsub_sd(a.value_, b.value_, c.value_));
 }
 
+inline std::string DebugString(M128D const x) {
+  using quantities::_quantities::DebugString;
+  return DebugString(static_cast<double>(x));
+}
+
 inline std::ostream& operator<<(std::ostream& os, M128D const x) {
-  return os << static_cast<double>(x);
+  return os << DebugString(x);
 }
 
 }  // namespace internal

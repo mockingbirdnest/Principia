@@ -184,11 +184,13 @@ M128D FusedNegatedMultiplyAdd(M128D a, M128D b, M128D c);
 // ⟦-ab - c⟧.
 M128D FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
 
+std::string DebugString(M128D x);
 std::ostream& operator<<(std::ostream& os, M128D x);
 
 }  // namespace internal
 
 using internal::Abs;
+using internal::DebugString;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;
