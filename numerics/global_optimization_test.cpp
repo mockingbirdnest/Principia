@@ -280,27 +280,27 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                                    tolerance);
 
     EXPECT_THAT(function_invocations,
-                AnyOf(Eq(1364),    // MSVC.
+                AnyOf(Eq(1319),    // MSVC.
                       Eq(1357)));  // Clang.
-    EXPECT_EQ(463, gradient_invocations);
+    EXPECT_EQ(429, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
             Componentwise(
-                AbsoluteErrorFrom(0.114589 * Metre, IsNear(3.4e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.555649 * Metre, IsNear(2.7e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.114614 * Metre, IsNear(2.0e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.555649 * Metre, IsNear(9.4e-8_(1) * Metre)),
                 AbsoluteErrorFrom(0.852547 * Metre,
-                                  IsNear(3.9e-7_(1) * Metre))),
+                                  IsNear(6.0e-8_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0.109337 * Metre, IsNear(7.0e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.860556 * Metre, IsNear(4.7e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.564135 * Metre,
-                                  IsNear(3.4e-7_(1) * Metre))),
+                AbsoluteErrorFrom(0.109338 * Metre, IsNear(1.8e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.860524 * Metre, IsNear(1.8e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.564123 * Metre,
+                                  IsNear(1.6e-7_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0.688823 * Metre, IsNear(2.4e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.117274 * Metre, IsNear(5.8e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.267465 * Metre,
-                                  IsNear(1.3e-6_(1) * Metre)))));
+                AbsoluteErrorFrom(0.368723 * Metre, IsNear(1.7e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.117561 * Metre, IsNear(4.8e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.267573 * Metre,
+                                  IsNear(7.5e-7_(1) * Metre)))));
   }
   function_invocations = 0;
   gradient_invocations = 0;
@@ -311,20 +311,20 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                    tolerance);
 
     EXPECT_EQ(199, function_invocations);
-    EXPECT_EQ(124, gradient_invocations);
+    EXPECT_EQ(126, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
             Componentwise(
-                AbsoluteErrorFrom(0.688823 * Metre, IsNear(2.6e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.117274 * Metre, IsNear(4.1e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.267465 * Metre,
-                                  IsNear(1.2e-6_(1) * Metre))),
+                AbsoluteErrorFrom(0.368723 * Metre, IsNear(2.1e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.117561 * Metre, IsNear(6.5e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.267573 * Metre,
+                                  IsNear(7.3e-7_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0.114589 * Metre, IsNear(3.9e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.555649 * Metre, IsNear(6.3e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.114614 * Metre, IsNear(1.6e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.555649 * Metre, IsNear(2.7e-7_(1) * Metre)),
                 AbsoluteErrorFrom(0.852547 * Metre,
-                                  IsNear(4.8e-7_(1) * Metre)))));
+                                  IsNear(2.1e-8_(1) * Metre)))));
   }
 }
 
