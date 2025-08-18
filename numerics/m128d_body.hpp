@@ -4,6 +4,8 @@
 
 #include <immintrin.h>
 
+#include <string>
+
 #include "quantities/quantities.hpp"
 
 namespace principia {

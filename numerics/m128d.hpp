@@ -5,6 +5,7 @@
 #include <concepts>
 #include <cstdint>
 #include <ostream>
+#include <string>
 
 namespace principia {
 namespace numerics {
