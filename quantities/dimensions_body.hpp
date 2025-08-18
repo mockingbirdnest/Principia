@@ -11,12 +11,6 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 
-template<typename T>
-struct is_dimension : std::false_type {};
-
-template<std::int64_t... exponents>
-struct is_dimension<Dimensions<exponents...>> : std::true_type {};
-
 class ExponentSerializer : not_constructible {
  public:
   // Returns true if the exponent is in the range that we can serialize.
