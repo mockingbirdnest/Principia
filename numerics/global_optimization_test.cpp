@@ -20,7 +20,9 @@
 namespace principia {
 namespace numerics {
 
+using ::testing::AnyOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::IsEmpty;
 using ::testing::_;
 using namespace principia::geometry::_frame;
@@ -87,7 +89,9 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1264, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(1264),    // MSVC.
+                      Eq(1243)));  // Clang.
     EXPECT_EQ(316, gradient_invocations);
 
     EXPECT_THAT(
@@ -114,7 +118,9 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(1019, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(1019),   // MSVC.
+                      Eq(997)));  // Clang.
     EXPECT_EQ(136, gradient_invocations);
 
     EXPECT_THAT(
@@ -176,7 +182,9 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(2129, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(2129),    // MSVC.
+                      Eq(2078)));  // Clang.
     EXPECT_EQ(278, gradient_invocations);
     EXPECT_THAT(
         minima,
@@ -202,7 +210,9 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(5730, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(5730),    // MSVC.
+                      Eq(5674)));  // Clang.
     EXPECT_EQ(178, gradient_invocations);
     EXPECT_THAT(
         minima,
@@ -269,7 +279,9 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1364, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(1364),    // MSVC.
+                      Eq(1357)));  // Clang.
     EXPECT_EQ(463, gradient_invocations);
     EXPECT_THAT(
         minima,
@@ -352,7 +364,9 @@ TEST_F(GlobalOptimizationTest, Potential) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1452, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(1452),    // MSVC.
+                      Eq(1448)));  // Clang.
     EXPECT_EQ(503, gradient_invocations);
     EXPECT_THAT(minima, IsEmpty());
   }
