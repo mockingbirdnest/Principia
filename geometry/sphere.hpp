@@ -1,7 +1,7 @@
 #pragma once
 
 #include "geometry/space.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -10,7 +10,7 @@ namespace _sphere {
 namespace internal {
 
 using namespace principia::geometry::_space;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 template<typename Frame>

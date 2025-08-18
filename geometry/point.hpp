@@ -8,8 +8,8 @@
 #include "base/concepts.hpp"
 #include "base/not_null.hpp"
 #include "geometry/concepts.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
-#include "quantities/named_quantities.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -20,8 +20,8 @@ namespace internal {
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_concepts;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
 
 // Point<Vector> is an affine space on the vector space Vector.
 template<typename Vector>

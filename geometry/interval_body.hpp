@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "boost/multiprecision/number.hpp"
+#include "base/concepts.hpp"
 #include "glog/logging.h"
 
 namespace principia {
@@ -12,7 +12,7 @@ namespace geometry {
 namespace _interval {
 namespace internal {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_concepts;
 
 template<typename T>
 Difference<T> Interval<T>::measure() const {
@@ -26,7 +26,12 @@ bool Interval<T>::empty() const {
 
 template<typename T>
 T Interval<T>::midpoint() const {
-  return max >= min ? min + measure() / 2 : min + NaN<Difference<T>>;
+  if constexpr (boost_cpp_number<T>) {
+    DCHECK_GE(max, min);
+    return min + measure() / 2;
+  } else {
+    return max >= min ? min + measure() / 2 : min + NaN<Difference<T>>;
+  }
 }
 
 template<typename T>

@@ -127,62 +127,6 @@ constexpr Quotient<double, Quantity<RDimensions>> operator/(
   return Quotient<double, Quantity<RDimensions>>(left / right.magnitude_);
 }
 
-// Static specializations for frequently-used exponents, so that this gets
-// turned into multiplications at compile time.
-
-template<int exponent>
-constexpr double Pow(double x) {
-  // Use the Russian peasant algorithm for small exponents.
-  if constexpr (exponent > 0 && exponent < 32) {
-    // The end of the recursion is handled by the specializations below.
-    auto const y = Pow<exponent / 2>(x);
-    auto const y² = y * y;
-    if constexpr (exponent % 2 == 1) {
-      return y² * x;
-    } else {
-      return y²;
-    }
-  } else if constexpr (exponent < 0 && exponent > -32) {
-    return 1 / Pow<-exponent>(x);
-  } else {
-    return std::pow(x, exponent);
-  }
-}
-
-template<>
-inline constexpr double Pow<0>(double) {
-  return 1;
-}
-
-template<>
-inline constexpr double Pow<1>(double x) {
-  return x;
-}
-
-template<>
-inline constexpr double Pow<2>(double x) {
-  return x * x;
-}
-
-template<>
-inline constexpr double Pow<3>(double x) {
-  return x * x * x;
-}
-
-template<int exponent, typename Q>
-constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
-  if constexpr (boost_cpp_rational<Q>) {
-    // It seems that Boost does not define `pow` for `cpp_rational`.
-    return cpp_rational(pow(numerator(x), exponent),
-                        pow(denominator(x), exponent));
-  } else if constexpr (boost_cpp_number<Q>) {
-    return pow(x, exponent);
-  } else {
-    return SIUnit<Exponentiation<Q, exponent>>() *
-           Pow<exponent>(x / SIUnit<Q>());
-  }
-}
-
 inline __m128d ToM128D(double const x) {
   return _mm_set1_pd(x);
 }
@@ -237,19 +181,15 @@ inline std::string DebugString(double const number, int const precision) {
   return result;
 }
 
-inline std::string DebugString(M128D const number, int const precision) {
-  return DebugString(static_cast<double>(number), precision);
+template<boost_cpp_number N>
+std::string DebugString(N const& number, int const precision) {
+  return number.str();
 }
 
 template<typename D>
 std::string DebugString(Quantity<D> const& quantity, int const precision) {
   return DebugString(quantity / SIUnit<Quantity<D>>(), precision) + " " +
          Format<D>();
-}
-
-template<boost_cpp_number N>
-std::string DebugString(N const& number, int const precision) {
-  return number.str();
 }
 
 template<typename D>

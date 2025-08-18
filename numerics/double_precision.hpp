@@ -5,7 +5,7 @@
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "numerics/fma.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -17,7 +17,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 // A simple container for accumulating a value using double precision.  The

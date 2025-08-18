@@ -9,6 +9,8 @@
   <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
+    <ClInclude Include="arithmetic.hpp" />
+    <ClInclude Include="arithmetic_body.hpp" />
     <ClInclude Include="astronomy.hpp" />
     <ClInclude Include="bipm.hpp" />
     <ClInclude Include="cantor.hpp" />

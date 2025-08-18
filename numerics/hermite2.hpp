@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "geometry/hilbert.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
@@ -13,7 +13,7 @@ namespace _hermite2 {
 namespace internal {
 
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // A 2nd degree Hermite polynomial defined by its values at the bounds of some
 // interval and one of its derivatives.

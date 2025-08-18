@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "physics/rigid_motion.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -33,7 +33,7 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_similar_motion;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

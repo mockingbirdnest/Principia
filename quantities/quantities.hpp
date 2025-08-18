@@ -7,15 +7,14 @@
 #include <string>
 #include <type_traits>
 
+#include "base/concepts.hpp"
 #include "base/macros.hpp"  // 🧙 For CONSTEXPR_NAN.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "boost/multiprecision/number.hpp"
-#include "quantities/cantor.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
-#include "quantities/m128d.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
@@ -23,14 +22,12 @@ namespace quantities {
 namespace _quantities {
 namespace internal {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
-using namespace principia::quantities::_cantor;
 using namespace principia::quantities::_dimensions;
 using namespace principia::quantities::_generators;
-using namespace principia::quantities::_m128d;
 
 template<typename D>
 class Quantity;
@@ -52,10 +49,6 @@ template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
 using Quotient = typename QuotientGenerator<Left, Right>::Type;
-
-template<typename T, int exponent>
-using Exponentiation =
-    typename _generators::ExponentiationGenerator<T, exponent>::Type;
 
 template<typename D>
 class Quantity final {
@@ -127,11 +120,6 @@ template<typename RDimensions>
 constexpr Quotient<double, Quantity<RDimensions>>
 operator/(double, Quantity<RDimensions> const&);
 
-// Equivalent to `std::pow(x, exponent)` unless -3 ≤ x ≤ 3, in which case
-// explicit specialization yields multiplications statically.
-template<int exponent, typename Q>
-constexpr Exponentiation<Q, exponent> Pow(Q const& x);
-
 // Used for implementing `si::Unit`.  Don't call directly, don't export from
 // this namespace.  Defined here to break circular dependencies.
 template<typename Q>
@@ -145,13 +133,9 @@ __m128d ToM128D(Quantity<Dimensions> x);
 // A positive infinity of `Q`.
 template<typename Q>
 constexpr Q Infinity = SIUnit<Q>() * std::numeric_limits<double>::infinity();
-
-// A quiet NaN of `Q`.  Note that NaN for `boost_cpp_number` cannot be
-// constexpr.
+// A quiet NaN of `Q`.
 template <typename Q>
 CONSTEXPR_NAN Q NaN = SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
-template<boost_cpp_number Q>
-Q NaN<Q> = std::numeric_limits<Q>::quiet_NaN();
 
 template<typename Q>
 constexpr bool IsFinite(Q const& x);
@@ -163,16 +147,13 @@ std::string Format();
 std::string DebugString(
     double number,
     int precision = std::numeric_limits<double>::max_digits10);
+template<boost_cpp_number N>
 std::string DebugString(
-    M128D number,
+    N const& number,
     int precision = std::numeric_limits<double>::max_digits10);
 template<typename D>
 std::string DebugString(
     Quantity<D> const& quantity,
-    int precision = std::numeric_limits<double>::max_digits10);
-template<boost_cpp_number N>
-std::string DebugString(
-    N const& number,
     int precision = std::numeric_limits<double>::max_digits10);
 
 template<typename D>
@@ -191,7 +172,6 @@ using internal::Length;
 using internal::LuminousIntensity;
 using internal::Mass;
 using internal::NaN;
-using internal::Pow;
 using internal::Quantity;
 using internal::Temperature;
 using internal::Time;

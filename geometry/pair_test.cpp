@@ -6,6 +6,7 @@
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -23,6 +24,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_pair;
 using namespace principia::geometry::_point;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

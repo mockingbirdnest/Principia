@@ -1,6 +1,7 @@
 #pragma once
 
-#include "quantities/dimensions.hpp"
+#include "base/concepts.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -9,7 +10,8 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
-using namespace principia::quantities::_dimensions;
+using namespace principia::base::_concepts;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -54,6 +56,11 @@ constexpr Q NextUp(Q const& x);
 template<typename Q>
 constexpr Q NextDown(Q const& x);
 
+// Equivalent to `std::pow(x, exponent)` unless -3 ≤ x ≤ 3, in which case
+// explicit specialization yields multiplications statically.
+template<int exponent, typename Q>
+constexpr Exponentiation<Q, exponent> Pow(Q const& x);
+
 double Sin(Angle const& α);
 double Cos(Angle const& α);
 double Tan(Angle const& α);
@@ -81,7 +88,9 @@ Angle ArcTanh(double x);
 // `previous_angle`.
 Angle UnwindFrom(Angle const& previous_angle, Angle const& α);
 
-template<dimensionless Q>
+// Only dimensionless quantities can be rounded.
+template<typename Q>
+  requires boost_cpp_number<Q> || std::floating_point<Q>
 Q Round(Q const& x);
 
 }  // namespace internal

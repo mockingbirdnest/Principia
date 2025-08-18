@@ -80,8 +80,11 @@
     <ClInclude Include="concepts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cantor.hpp">
+    <ClInclude Include="arithmetic.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="arithmetic_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -95,9 +98,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="concepts_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="cantor_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
