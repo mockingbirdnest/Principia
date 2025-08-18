@@ -12,7 +12,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -25,7 +25,7 @@ using namespace principia::numerics::_concepts;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_si;
 
 // An allocator that does not initialize the allocated objects.

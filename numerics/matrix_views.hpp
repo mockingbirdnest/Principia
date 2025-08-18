@@ -1,11 +1,12 @@
 #pragma once
 
 #include <concepts>
+#include <ostream>
 #include <utility>
 
 #include "numerics/concepts.hpp"
 #include "numerics/transposed_view.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
@@ -14,7 +15,7 @@ namespace internal {
 
 using namespace principia::numerics::_concepts;
 using namespace principia::numerics::_transposed_view;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // A view of a rectangular block of a matrix.  This view is `two_dimensional`.
 template<typename Matrix>

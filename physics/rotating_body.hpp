@@ -14,6 +14,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -29,6 +30,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_massive_body;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

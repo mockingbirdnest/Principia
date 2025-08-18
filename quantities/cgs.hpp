@@ -1,5 +1,8 @@
 #pragma once
 
+#include "numerics/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -11,12 +14,15 @@ namespace quantities {
 namespace _cgs {
 namespace internal {
 
+using namespace principia::numerics::_elementary_functions;
+using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-constexpr Length Centimetre = si::Centi(si::Metre);
+constexpr Length Centimetre = Centi(Metre);
 
-constexpr Energy       Erg  = 1e-7 * si::Joule;
-constexpr Force        Dyne = 1e-5 * si::Newton;
+constexpr Energy       Erg  = 1e-7 * Joule;
+constexpr Force        Dyne = 1e-5 * Newton;
 constexpr Acceleration Gal  = Centimetre / Pow<2>(Second);
 
 constexpr Pressure Barye = 1 * Dyne / Pow<2>(Centimetre);
@@ -24,13 +30,13 @@ constexpr Pressure Barye = 1 * Dyne / Pow<2>(Centimetre);
 constexpr DynamicViscosity   Poise  = Barye * Second;
 constexpr KinematicViscosity Stokes = Pow<2>(Centimetre) / Second;
 
-constexpr Luminance   Stilb = si::Candela / Pow<2>(Centimetre);
-constexpr Illuminance Phot  = Stilb * si::Steradian;
+constexpr Luminance   Stilb = Candela / Pow<2>(Centimetre);
+constexpr Illuminance Phot  = Stilb * Steradian;
 
-constexpr MagneticFluxDensity Gauss   = 1e-4 * si::Tesla;
+constexpr MagneticFluxDensity Gauss   = 1e-4 * Tesla;
 constexpr MagneticFlux        Maxwell = Gauss * Pow<2>(Centimetre);
 constexpr MagneticField       Œrsted  =
-    1e3 / (4 * π * si::Steradian) * si::Ampere / si::Metre;
+    1e3 / (4 * π * Steradian) * Ampere / Metre;
 
 constexpr SpectroscopicWavenumber Kayser = 1 / Centimetre;
 

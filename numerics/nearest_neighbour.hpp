@@ -11,7 +11,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
@@ -23,7 +23,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_symmetric_bilinear_form;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // Principal component partitioning trees (PCP trees) are introduced by [WZ91]
 // in the context of quantization.  Their use for nearest neighbour search was

@@ -14,8 +14,8 @@
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
-#include "quantities/named_quantities.hpp"
 #include "serialization/numerics.pb.h"
 
 namespace principia {
@@ -51,8 +51,8 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_polynomial;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
 
 template<typename Value_, typename Argument_, auto _ = std::nullopt>
 class PolynomialInЧебышёвBasis;

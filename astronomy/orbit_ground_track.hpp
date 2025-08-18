@@ -9,7 +9,6 @@
 #include "geometry/interval.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rotating_body.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -22,7 +21,6 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rotating_body;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 class OrbitGroundTrack {

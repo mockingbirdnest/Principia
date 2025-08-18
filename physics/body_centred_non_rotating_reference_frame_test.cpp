@@ -16,6 +16,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -45,6 +46,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -13,6 +13,7 @@
 #include "geometry/grassmann.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "physics/massive_body.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -26,6 +27,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rotating_body;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

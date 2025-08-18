@@ -6,7 +6,7 @@
 #include <string>
 
 #include "numerics/double_precision.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -15,7 +15,7 @@ namespace _rp2_point {
 namespace internal {
 
 using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 template<typename Scalar, typename Frame>

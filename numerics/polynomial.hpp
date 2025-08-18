@@ -7,7 +7,7 @@
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "serialization/numerics.pb.h"
 
 namespace principia {
@@ -17,7 +17,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // `Value_` must belong to an affine space.  `Argument_` must belong to a ring
 // or to Point based on a ring.

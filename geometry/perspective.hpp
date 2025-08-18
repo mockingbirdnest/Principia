@@ -9,7 +9,7 @@
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
 #include "geometry/sphere.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -22,7 +22,7 @@ using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::geometry::_sphere;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 template<typename Frame>

@@ -17,7 +17,6 @@
 #include "base/traits.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
-#include "quantities/named_quantities.hpp"
 #include "serialization/integrators.pb.h"
 
 namespace principia {
@@ -31,7 +30,6 @@ using namespace principia::base::_traits;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_fixed_arrays;
-using namespace principia::quantities::_named_quantities;
 
 // This class solves ordinary differential equations of the form q′ = f(q, t)
 // using an embedded Runge-Kutta method.  We follow the standard conventions for

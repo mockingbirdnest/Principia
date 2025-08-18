@@ -15,8 +15,8 @@
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
-#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -31,8 +31,8 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
 
 // The largest `int64_t` that can be converted to and from `double` without loss
 // of accuracy.
