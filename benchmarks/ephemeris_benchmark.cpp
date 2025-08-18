@@ -142,7 +142,7 @@ void BM_EphemerisKSPSystem(benchmark::State& state) {
                  Norm();
     state.ResumeTiming();
   }
-  state.SetLabel(quantities::DebugString(error / AstronomicalUnit) + " ua");
+  state.SetLabel(DebugString(error / AstronomicalUnit) + " ua");
 }
 
 template<SolarSystemFactory::Accuracy accuracy>
@@ -174,7 +174,7 @@ void BM_EphemerisSolarSystem(benchmark::State& state) {
                  Norm();
     state.ResumeTiming();
   }
-  state.SetLabel(quantities::DebugString(error / AstronomicalUnit) + " ua");
+  state.SetLabel(DebugString(error / AstronomicalUnit) + " ua");
 }
 
 template<SolarSystemFactory::Accuracy accuracy, Flow* flow>
@@ -239,10 +239,10 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
   std::stringstream ss;
   ss << steps;
   state.SetLabel(ss.str() + " steps, " +
-                 quantities::DebugString(sun_error / AstronomicalUnit) +
+                 DebugString(sun_error / AstronomicalUnit) +
                  " au, " +
-                 quantities::DebugString((earth_error - 6371 * Kilo(Metre)) /
-                                         NauticalMile) +
+                 DebugString((earth_error - 6371 * Kilo(Metre)) /
+                             NauticalMile) +
                  " nmi");
 }
 
@@ -308,10 +308,10 @@ void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
   std::stringstream ss;
   ss << steps;
   state.SetLabel(ss.str() + " steps, " +
-                 quantities::DebugString(sun_error / AstronomicalUnit) +
+                 DebugString(sun_error / AstronomicalUnit) +
                  " au, " +
-                 quantities::DebugString((earth_error - 6371 * Kilo(Metre)) /
-                                         Kilo(Metre)) +
+                 DebugString((earth_error - 6371 * Kilo(Metre)) /
+                             Kilo(Metre)) +
                  " km");
 }
 
@@ -496,9 +496,9 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
   std::stringstream ss;
   ss << steps;
   state.SetLabel(ss.str() + " steps, " +
-                 quantities::DebugString(sun_error / AstronomicalUnit) +
+                 DebugString(sun_error / AstronomicalUnit) +
                  " ua, " +
-                 quantities::DebugString(earth_error / AstronomicalUnit) +
+                 DebugString(earth_error / AstronomicalUnit) +
                  " ua, degree " +
                  std::to_string(total_degree));
 }

@@ -7,6 +7,8 @@
 
 namespace principia {
 namespace quantities {
+namespace _bipm {
+namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
@@ -16,8 +18,6 @@ using namespace principia::quantities::_si;
 // This namespace contains the other non-SI units listed in the BIPM's
 // SI brochure 8, section 4.1, table 8,
 // http://www.bipm.org/en/si/si_brochure/chapter4/table8.html.
-namespace _bipm {
-namespace internal {
 
 constexpr Pressure Bar                 = 1e5 * Pascal;
 constexpr Pressure MillimetreOfMercury = 133.322 * Pascal;
