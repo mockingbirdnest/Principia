@@ -2,6 +2,8 @@
 
 #include "numerics/elementary_functions.hpp"
 
+#include <pmmintrin.h>
+
 #include <cmath>
 
 #include "boost/multiprecision/cpp_bin_float.hpp"
