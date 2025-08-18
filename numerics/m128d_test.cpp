@@ -55,8 +55,9 @@ TEST_F(M128DTest, Arithmetic) {
 TEST_F(M128DTest, Logical) {
   M128D a(5.0);
   M128D const sign_bit = M128D::MakeFromBits(0x8000'0000'0000'0000);
-  EXPECT_EQ(0x8000'0000'0000'000, sign_bit.Bits<std::int64_t>());
-  EXPECT_THAT(static_cast<double>(~a), AlmostEquals(-6.0, 0));
+  EXPECT_EQ(0x8000'0000'0000'0000, sign_bit.Bits<std::uint64_t>());
+  EXPECT_THAT(static_cast<double>(~a),
+              AlmostEquals(-0.874999999999999888977697537484, 0));
   EXPECT_THAT(static_cast<double>(a & sign_bit), AlmostEquals(-0.0, 0));
   EXPECT_THAT(static_cast<double>(a | sign_bit), AlmostEquals(-5.0, 0));
   EXPECT_THAT(static_cast<double>(a ^ sign_bit), AlmostEquals(-5.0, 0));
