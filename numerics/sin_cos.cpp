@@ -301,7 +301,6 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     return DetectDangerousRounding<fma_policy, sin_near_zero_e>(x, x³_term);
   } else {
     auto const sign = Sign(x);
-    auto const e_abs = e ^ sign;
     auto const i = AccurateTableIndex(abs_x);
     auto const& accurate_values = SinCosAccurateTable[i];
     M128D const x₀(accurate_values.x);
@@ -319,19 +318,20 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     M128D const signed_sin_x₀ = sign ^ sin_x₀;
     M128D const signed_cos_x₀ = sign ^ cos_x₀;
     M128D const signed_two = sign ^ m128d::two;
+    M128D const signed_e = sign ^ e;
 
     DoublePrecision<M128D> const sin_x₀_plus_h_cos_x₀ =
         TwoProductAdd<fma_policy>(signed_cos_x₀, h, signed_sin_x₀);
     auto const h² = h * h;
     auto const h³ = h² * h;
-    auto const h_plus_e_abs² =
+    auto const h_plus_e² =
         h * FusedMultiplyAdd<fma_policy>(signed_two, e, h);
     auto const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
             signed_cos_x₀,
             FusedMultiplyAdd<fma_policy>(
-                h³, SinPolynomial<fma_policy>(h²), e_abs),
-            (signed_sin_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
+                h³, SinPolynomial<fma_policy>(h²), signed_e),
+            (signed_sin_x₀ * h_plus_e²) * CosPolynomial<fma_policy>(h²)) +
         sin_x₀_plus_h_cos_x₀.error;
     return DetectDangerousRounding<fma_policy, sin_e>(
         sin_x₀_plus_h_cos_x₀.value, polynomial_term);
