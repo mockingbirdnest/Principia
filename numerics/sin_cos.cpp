@@ -314,21 +314,27 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     // *not* computed because they don't matter.
     auto const h = abs_x - x₀;
 
+    // The sign of argument must be applied to the result.  It's best to do this
+    // by applying it to elements of the computation that are available early.
+    M128D const signed_sin_x₀ = sign ^ sin_x₀;
+    M128D const signed_cos_x₀ = sign ^ cos_x₀;
+    M128D const signed_two = sign ^ m128d::two;
+
     DoublePrecision<M128D> const sin_x₀_plus_h_cos_x₀ =
-        TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
+        TwoProductAdd<fma_policy>(signed_cos_x₀, h, signed_sin_x₀);
     auto const h² = h * h;
     auto const h³ = h² * h;
     auto const h_plus_e_abs² =
-        h * FusedMultiplyAdd<fma_policy>(m128d::two, e_abs, h);
+        h * FusedMultiplyAdd<fma_policy>(signed_two, e, h);
     auto const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
-            cos_x₀,
+            signed_cos_x₀,
             FusedMultiplyAdd<fma_policy>(
                 h³, SinPolynomial<fma_policy>(h²), e_abs),
-            (sin_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
+            (signed_sin_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
         sin_x₀_plus_h_cos_x₀.error;
-    return sign ^ DetectDangerousRounding<fma_policy, sin_e>(
-                      sin_x₀_plus_h_cos_x₀.value, polynomial_term);
+    return DetectDangerousRounding<fma_policy, sin_e>(
+        sin_x₀_plus_h_cos_x₀.value, polynomial_term);
   }
 }
 
