@@ -5,6 +5,7 @@
 #include <random>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "absl/synchronization/mutex.h"
 #include "base/bundle.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
@@ -195,8 +196,10 @@ class SinCosTest : public ::testing::Test {
                  << std::defaultfloat << "); incorrectly rounded probability: "
                  << std::setprecision(3)
                  << s.incorrectly_rounded / static_cast<double>(iterations)
-                 << "; fallback probability: 1/"
-                 << iterations / s.fallbacks;
+                 << "; fallback probability: "
+                 << (s.fallbacks == 0
+                         ? "0"
+                         : absl::StrCat("1/", iterations / s.fallbacks));
     };
 
     log_statistics("Sin", final_statistics.sin);
