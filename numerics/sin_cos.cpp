@@ -3,6 +3,7 @@
 #include <pmmintrin.h>
 
 #include <limits>
+#include <utility>
 
 #include "core-math/cos.h"
 #include "core-math/sin.h"
