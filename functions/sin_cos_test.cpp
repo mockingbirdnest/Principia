@@ -5,6 +5,8 @@
 #include <random>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
+#include "absl/synchronization/mutex.h"
 #include "base/bundle.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "functions/multiprecision.hpp"
@@ -56,6 +58,7 @@ class SinCosTest : public ::testing::Test {
     cpp_bin_float_50 boost_fn_worst_argument = 0;
     double principia_fn_worst_argument = 0;
     std::int64_t incorrectly_rounded = 0;
+    std::int64_t fallbacks = 0;
   };
 
   struct SinCosStatistics {
@@ -64,7 +67,17 @@ class SinCosTest : public ::testing::Test {
   };
 
   static void SetUpTestCase() {
-    sin_cos::StaticInitialization();
+    sin_cos::StaticInitialization(&CountSinFallbacks, &CountCosFallbacks);
+  }
+
+  static void CountSinFallbacks(double const θ) {
+    absl::MutexLock lock(&lock_);
+    ++sin_fallbacks_;
+  }
+
+  static void CountCosFallbacks(double const θ) {
+    absl::MutexLock lock(&lock_);
+    ++cos_fallbacks_;
   }
 
   template<std::int64_t iterations_quantum>
@@ -140,6 +153,12 @@ class SinCosTest : public ::testing::Test {
 #endif
     static_assert(iterations % iterations_quantum == 0);
 
+    {
+      absl::MutexLock l(&lock_);
+      sin_fallbacks_ = 0;
+      cos_fallbacks_ = 0;
+    }
+
     Bundle bundle;
 
     std::vector<SinCosStatistics> statistics(iterations / iterations_quantum);
@@ -174,6 +193,12 @@ class SinCosTest : public ::testing::Test {
       final_statistics.cos.incorrectly_rounded += s.cos.incorrectly_rounded;
     }
 
+    {
+      absl::ReaderMutexLock l(&lock_);
+      final_statistics.sin.fallbacks = sin_fallbacks_;
+      final_statistics.cos.fallbacks = cos_fallbacks_;
+    }
+
     auto log_statistics = [](std::string_view const fn_name,
                              FunctionStatistics const& s) {
       LOG(ERROR) << fn_name << " error: " << s.max_ulps_error
@@ -187,13 +212,25 @@ class SinCosTest : public ::testing::Test {
                  << static_cast<double>(s.boost_fn_worst_argument)
                  << std::defaultfloat << "); incorrectly rounded probability: "
                  << std::setprecision(3)
-                 << s.incorrectly_rounded / static_cast<double>(iterations);
+                 << s.incorrectly_rounded / static_cast<double>(iterations)
+                 << "; fallback probability: "
+                 << (s.fallbacks == 0
+                         ? "0"
+                         : absl::StrCat("1/", iterations / s.fallbacks));
     };
 
     log_statistics("Sin", final_statistics.sin);
     log_statistics("Cos", final_statistics.cos);
   }
+
+  static absl::Mutex lock_;
+  static std::int64_t sin_fallbacks_;
+  static std::int64_t cos_fallbacks_;
 };
+
+ABSL_CONST_INIT absl::Mutex SinCosTest::lock_(absl::kConstInit);
+std::int64_t SinCosTest::sin_fallbacks_ = 0;
+std::int64_t SinCosTest::cos_fallbacks_ = 0;
 
 TEST_F(SinCosTest, AccurateTableIndex) {
   static constexpr std::int64_t iterations = 100;
