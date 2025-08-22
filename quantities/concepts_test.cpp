@@ -9,7 +9,7 @@ namespace quantities {
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 
-TEST(Concepts, IsQuantityV) {
+TEST(Concepts, Quantity) {
   static_assert(convertible_to_quantity<int>);
   static_assert(convertible_to_quantity<double>);
   static_assert(convertible_to_quantity<Area>);

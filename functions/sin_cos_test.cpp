@@ -12,6 +12,7 @@
 #include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
+#include "numerics/m128d.hpp"
 #include "numerics/next.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "testing_utilities/almost_equals.hpp"
@@ -28,10 +29,26 @@ namespace functions_test {
 using namespace boost::multiprecision;
 using namespace principia::base::_bundle;
 using namespace principia::functions::_multiprecision;
+using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_next;
 using namespace principia::numerics::_sin_cos;
 using namespace principia::testing_utilities::_almost_equals;
 namespace sin_cos = principia::numerics::_sin_cos;
+
+constexpr std::int64_t table_spacing_bits = 9;
+constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
+
+namespace m128d {
+
+M128D const mantissa_index_bits = M128D::MakeFromBits(0x0000'0000'0000'01ffull);
+M128D const accurate_table_index_addend(static_cast<double>(
+    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1)));
+
+M128D const mantissa_reduce_shifter(
+    static_cast<double>(1LL << (std::numeric_limits<double>::digits - 1)));
+M128D const two_over_π(2.0 / π);
+
+}  // namespace m128d
 
 class SinCosTest : public ::testing::Test {
  protected:
@@ -218,8 +235,6 @@ std::int64_t SinCosTest::cos_fallbacks_ = 0;
 TEST_F(SinCosTest, AccurateTableIndex) {
   static constexpr std::int64_t iterations = 100;
 
-  constexpr std::int64_t table_spacing_bits = 9;
-  constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
   static const __m128d mantissa_index_bits =
       _mm_castsi128_pd(_mm_cvtsi64_si128(0x0000'0000'0000'01ff));
   std::mt19937_64 random(42);
@@ -227,6 +242,7 @@ TEST_F(SinCosTest, AccurateTableIndex) {
 
   for (std::int64_t i = 0; i < iterations; ++i) {
     double const x = uniformly_at(random);
+    M128D const x_m128d(x);
 
     std::int64_t const n =
         _mm_cvtsd_si64(_mm_set_sd(x * table_spacing_reciprocal));
@@ -236,7 +252,12 @@ TEST_F(SinCosTest, AccurateTableIndex) {
                    _mm_set_sd(x + (1LL << (std::numeric_limits<double>::digits -
                                            table_spacing_bits - 1))))));
 
+    std::int64_t const p = (m128d::mantissa_index_bits &
+          (x_m128d + m128d::accurate_table_index_addend))
+      .Bits<std::int64_t>();
+
     EXPECT_EQ(n, m);
+    EXPECT_EQ(n, p);
   }
 }
 
@@ -252,6 +273,7 @@ TEST_F(SinCosTest, ReduceIndex) {
 
   for (std::int64_t i = 0; i < iterations; ++i) {
     double const θ = uniformly_at(random);
+    M128D const θ_m128d(θ);
 
     __m128d const n_128d = _mm_round_sd(
         _mm_setzero_pd(), _mm_set_sd(θ * (2 / π)), _MM_FROUND_RINT);
@@ -264,8 +286,17 @@ TEST_F(SinCosTest, ReduceIndex) {
         _mm_xor_pd(_mm_set_sd(m_shifted - mantissa_reduce_shifter), sign));
     std::int64_t const m = _mm_cvtsd_si64(_mm_set_sd(m_double));
 
+    M128D const abs_θ_m128d = Abs(θ_m128d);
+    M128D const sign_m128d = Sign(θ_m128d);
+    M128D p_m128d =
+        FusedMultiplyAdd(
+            abs_θ_m128d, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+        m128d::mantissa_reduce_shifter;
+    p_m128d = p_m128d ^ sign_m128d;
+
     EXPECT_EQ(n, m);
     EXPECT_EQ(m, m_double);
+    EXPECT_EQ(m_double, static_cast<double>(p_m128d));
   }
 }
 
