@@ -45,13 +45,13 @@ struct DimensionsQuotientGenerator;
 
 }  // namespace internal
 
-using internal::NoDimensions;
-using internal::DimensionsQuotientGenerator;
-using internal::DimensionsProductGenerator;
-using internal::DimensionsNthRootGenerator;
-using internal::DimensionsExponentiationGenerator;
-using internal::DimensionsAreSerializable;
 using internal::Dimensions;
+using internal::DimensionsAreSerializable;
+using internal::DimensionsExponentiationGenerator;
+using internal::DimensionsNthRootGenerator;
+using internal::DimensionsProductGenerator;
+using internal::DimensionsQuotientGenerator;
+using internal::NoDimensions;
 
 }  // namespace _dimensions
 }  // namespace quantities

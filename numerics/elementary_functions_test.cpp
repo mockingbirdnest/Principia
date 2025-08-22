@@ -1,6 +1,7 @@
 #include "numerics/elementary_functions.hpp"
 
 #include "base/cpuid.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
 #include "gtest/gtest.h"
 #include "numerics/fma.hpp"
 #include "quantities/astronomy.hpp"
@@ -17,6 +18,7 @@ namespace numerics {
 
 using ::testing::Eq;
 using ::testing::Lt;
+using namespace boost::multiprecision;
 using namespace principia::base::_cpuid;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
@@ -32,6 +34,15 @@ using namespace principia::testing_utilities::_vanishes_before;
 class ElementaryFunctionsTest : public testing::Test {};
 
 TEST_F(ElementaryFunctionsTest, FMA) {
+  EXPECT_EQ(cpp_int(11), FusedMultiplyAdd(cpp_int(2), cpp_int(3), cpp_int(5)));
+  EXPECT_EQ(cpp_rational(11, 2),
+            FusedMultiplyAdd(
+                cpp_rational(2, 1), cpp_rational(3, 2), cpp_rational(5, 2)));
+  EXPECT_EQ(cpp_bin_float_50("11.0"),
+            FusedMultiplyAdd(cpp_bin_float_50("2.0"),
+                             cpp_bin_float_50("3.0"),
+                             cpp_bin_float_50("5.0")));
+
   if (!CanEmitFMAInstructions || !CPUIDFeatureFlag::FMA.IsSet()) {
     GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }

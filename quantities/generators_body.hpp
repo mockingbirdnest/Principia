@@ -5,7 +5,6 @@
 #include <tuple>
 
 #include "base/not_constructible.hpp"
-#include "boost/multiprecision/number.hpp"
 #include "quantities/dimensions.hpp"
 
 namespace principia {
@@ -13,7 +12,6 @@ namespace quantities {
 namespace _generators {
 namespace internal {
 
-using namespace boost::multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::quantities::_dimensions;
 

@@ -39,7 +39,7 @@ TEST_F(QuantitiesTest, DimensionfulComparisons) {
   TestOrder(SpeedOfLight * Day, LightYear);
 }
 
-TEST_F(QuantitiesTest, DimensionlfulOperations) {
+TEST_F(QuantitiesTest, DimensionfulOperations) {
   TestVectorSpace(
       0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
       -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 0, 2);

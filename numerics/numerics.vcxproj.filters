@@ -284,6 +284,12 @@
     <ClInclude Include="elementary_functions_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="m128d.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="m128d_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fixed_arrays_test.cpp">
@@ -416,6 +422,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="elementary_functions_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="m128d_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
