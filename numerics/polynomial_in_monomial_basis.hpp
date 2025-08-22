@@ -16,11 +16,11 @@
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
+#include "geometry/concepts.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/concepts.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -68,12 +68,12 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_tuples;
 
 // Used to decide which evaluator to use for a particular polynomial.
@@ -167,7 +167,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   Primitive() const
     requires additive_group<Value>;
 
-  quantities::_named_quantities::Primitive<Value, Argument> Integrate(
+  quantities::_arithmetic::Primitive<Value, Argument> Integrate(
       Argument const& argument1,
       Argument const& argument2) const
     requires additive_group<Value>;

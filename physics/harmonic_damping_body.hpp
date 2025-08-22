@@ -2,14 +2,14 @@
 
 #include "physics/harmonic_damping.hpp"
 
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace physics {
 namespace _harmonic_damping {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 

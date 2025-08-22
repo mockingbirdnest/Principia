@@ -8,8 +8,8 @@
 
 #include "geometry/sign.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/ulp_distance.hpp"
-#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace integrators {
@@ -18,8 +18,8 @@ namespace internal {
 
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_ulp_distance;
-using namespace principia::quantities::_elementary_functions;
 
 template<typename Method, typename ODE_>
 absl::Status SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::

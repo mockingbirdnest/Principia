@@ -1950,6 +1950,7 @@ std::string JournalProtoProcessor::MarshalAs(
     (_MSC_FULL_VER == 193'933'523 || \
      _MSC_FULL_VER == 194'033'813 || \
      _MSC_FULL_VER == 194'134'123 || \
+     _MSC_FULL_VER == 194'234'435 || \
      _MSC_FULL_VER == 194'334'809 || \
      _MSC_FULL_VER == 194'435'213)
   std::abort();

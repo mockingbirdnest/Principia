@@ -22,7 +22,7 @@
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "numerics/davenport_q_method.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/si.hpp"
 
@@ -47,7 +47,7 @@ using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::numerics::_davenport_q_method;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_si;
 

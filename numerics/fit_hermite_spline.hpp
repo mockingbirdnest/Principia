@@ -4,7 +4,7 @@
 
 #include "absl/status/statusor.h"
 #include "geometry/hilbert.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
@@ -12,7 +12,7 @@ namespace _fit_hermite_spline {
 namespace internal {
 
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 
 // Given `samples` for which the arguments, values, and derivatives can be
 // obtained via the given functors, returns a sequence of iterators

@@ -7,6 +7,7 @@
 #include <string>
 #include <type_traits>
 
+#include "base/concepts.hpp"
 #include "base/macros.hpp"  // 🧙 For CONSTEXPR_NAN.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
@@ -21,7 +22,7 @@ namespace quantities {
 namespace _quantities {
 namespace internal {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
@@ -146,8 +147,7 @@ std::string Format();
 std::string DebugString(
     double number,
     int precision = std::numeric_limits<double>::max_digits10);
-template<typename N>
-  requires is_number<N>::value
+template<boost_cpp_number N>
 std::string DebugString(
     N const& number,
     int precision = std::numeric_limits<double>::max_digits10);

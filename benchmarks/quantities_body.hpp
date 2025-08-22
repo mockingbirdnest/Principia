@@ -5,7 +5,7 @@
 #include <cmath>
 #include <vector>
 
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -13,7 +13,7 @@ namespace benchmarks {
 namespace _quantities {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 #define TRIGGER_DEAD_CODE_ELIMINATION

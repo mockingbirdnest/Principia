@@ -5,8 +5,8 @@
 #include "base/not_constructible.hpp"
 #include "geometry/concepts.hpp"
 #include "geometry/grassmann.hpp"  // 🧙 For _grassmann::internal.
+#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
-#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace geometry {
@@ -15,8 +15,8 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_concepts;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
 
 // A trait that represents a Hilbert space, i.e., a space with an inner product
 // and (possibly) a norm.  The struct Hilbert exports a type InnerProductType
@@ -74,6 +74,7 @@ struct Hilbert<T1, T2> : not_constructible {
     _MSC_FULL_VER == 194'033'813 || \
     _MSC_FULL_VER == 194'134'120 || \
     _MSC_FULL_VER == 194'134'123 || \
+    _MSC_FULL_VER == 194'234'435 || \
     _MSC_FULL_VER == 194'334'809 || \
     _MSC_FULL_VER == 194'435'211 || \
     _MSC_FULL_VER == 194'435'213

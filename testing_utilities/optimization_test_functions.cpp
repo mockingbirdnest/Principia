@@ -4,8 +4,8 @@
 #include <cmath>
 #include <cstdint>
 
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -13,8 +13,8 @@ namespace testing_utilities {
 namespace _optimization_test_functions {
 namespace internal {
 
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_si;
 
 namespace branin_parameters {
@@ -54,11 +54,17 @@ constexpr FixedMatrix<double, /*rows=*/4, /*columns=*/3> A({3.0, 10, 30,
 // and that the other value commonly found, 6890e-4, is the correct one; and
 // finally that the minimum at 0.114614 is the outcome of the garbled code and
 // is therefore garbled too.
+// Three years later: The reference to "the traditional test set" is found at
+// https://arnold-neumaier.at/glopt/test.html, which mentions [DS78].  I finally
+// managed to put my (virtual) hands on that book, and sure enough, on page 13
+// it has the same matrix as the Matlab code, with 3689e-4 for A(0, 0) and
+// 381.5e-4 for A(3, 0).  So pretty much everybody copied it incorrectly.  I am
+// fixing the test.
 constexpr FixedMatrix<double, /*rows=*/4, /*columns=*/3> P(
-    {6890e-4, 1170e-4, 2673e-4,
-     4699e-4, 4387e-4, 7470e-4,
-     1091e-4, 8732e-4, 5547e-4,
-      381e-4, 5743e-4, 8828e-4});
+    {3689e-4,   1170e-4, 2673e-4,
+     4699e-4,   4387e-4, 7470e-4,
+     1091e-4,   8732e-4, 5547e-4,
+      381.5e-4, 5743e-4, 8828e-4});
 }  // namespace hartmann_parameters
 
 double Branin(double const x₁, double const x₂) {

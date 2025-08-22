@@ -1,15 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <limits>
-
-#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _matrix_computations {
 namespace internal {
-
-using namespace principia::quantities::_named_quantities;
 
 // Declares:
 //   using Result = ⟨upper triangular matrix⟩;

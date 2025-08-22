@@ -8,7 +8,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "numerics/global_optimization.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/optimization_test_functions.hpp"
@@ -20,7 +20,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_global_optimization;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_optimization_test_functions;

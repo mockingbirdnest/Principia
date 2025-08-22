@@ -4,11 +4,10 @@
 #include <string>
 
 #include "glog/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
@@ -20,9 +19,9 @@ namespace quantities {
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::MatchesRegex;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -40,7 +39,7 @@ TEST_F(QuantitiesTest, DimensionfulComparisons) {
   TestOrder(SpeedOfLight * Day, LightYear);
 }
 
-TEST_F(QuantitiesTest, DimensionlfulOperations) {
+TEST_F(QuantitiesTest, DimensionfulOperations) {
   TestVectorSpace(
       0 * Metre / Second, SpeedOfLight, 88 * Mile / Hour,
       -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 0, 2);

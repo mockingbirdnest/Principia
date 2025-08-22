@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -16,7 +16,7 @@ namespace geometry {
 namespace _symmetric_bilinear_form {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

@@ -5,7 +5,7 @@
 #include <utility>
 
 #include "base/tags.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
@@ -13,7 +13,7 @@ namespace _matrix_views {
 namespace internal {
 
 using namespace principia::base::_tags;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<typename Matrix>
   requires two_dimensional<Matrix>

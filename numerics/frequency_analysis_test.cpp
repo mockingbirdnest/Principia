@@ -14,11 +14,11 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/apodization.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fast_fourier_transform.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -40,12 +40,12 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_apodization;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fast_fourier_transform;
 using namespace principia::numerics::_frequency_analysis;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::quantities::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

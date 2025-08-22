@@ -9,14 +9,14 @@
 
 #include "base/tags.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
-#include "quantities/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -25,14 +25,14 @@ namespace internal {
 
 using namespace boost::multiprecision;
 using namespace principia::base::_tags;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 
 // The largest `int64_t` that can be converted to and from `double` without loss
 // of accuracy.

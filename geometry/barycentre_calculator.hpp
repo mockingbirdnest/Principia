@@ -4,16 +4,16 @@
 #include <vector>
 #include <utility>
 
-#include "quantities/concepts.hpp"
-#include "quantities/named_quantities.hpp"
+#include "geometry/concepts.hpp"
+#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _barycentre_calculator {
 namespace internal {
 
-using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_named_quantities;
+using namespace principia::geometry::_concepts;
+using namespace principia::quantities::_arithmetic;
 
 template<affine Point, homogeneous_field Weight>
   requires homogeneous_vector_space<Difference<Point>, Weight>

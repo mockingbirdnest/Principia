@@ -11,8 +11,8 @@
 
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/gradient_descent.hpp"
-#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
@@ -21,8 +21,8 @@ namespace internal {
 
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_gradient_descent;
-using namespace principia::quantities::_elementary_functions;
 
 // Values that are too small cause extra activity in `Add` and deeper recursion
 // in `FindNearestNeighbour`.  Values that are too large cause extra function
@@ -306,7 +306,7 @@ typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Norm²Type
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius²(
     double const σ,
     std::int64_t const kN) {
-  using quantities::_elementary_functions::Cbrt;
+  using numerics::_elementary_functions::Cbrt;
   if constexpr (dimensions == 1) {
     return Pow<2>(box_measure_ * σ * std::log(kN) / (2.0 * kN));
   } else if constexpr (dimensions == 2) {

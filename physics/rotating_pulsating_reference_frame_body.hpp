@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "geometry/homothecy.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -17,7 +17,7 @@ namespace _rotating_pulsating_reference_frame {
 namespace internal {
 
 using namespace principia::geometry::_homothecy;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename ThisFrame>

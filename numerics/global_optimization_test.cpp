@@ -4,6 +4,8 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
+#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -18,14 +20,17 @@
 namespace principia {
 namespace numerics {
 
+using ::testing::AnyOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::IsEmpty;
 using ::testing::_;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_global_optimization;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -84,7 +89,9 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1264, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(1264),    // MSVC.
+                      Eq(1243)));  // Clang.
     EXPECT_EQ(316, gradient_invocations);
 
     EXPECT_THAT(
@@ -111,7 +118,9 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(1019, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(1019),   // MSVC.
+                      Eq(997)));  // Clang.
     EXPECT_EQ(136, gradient_invocations);
 
     EXPECT_THAT(
@@ -173,7 +182,9 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(2129, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(2129),    // MSVC.
+                      Eq(2078)));  // Clang.
     EXPECT_EQ(278, gradient_invocations);
     EXPECT_THAT(
         minima,
@@ -199,7 +210,9 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(5730, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(5730),    // MSVC.
+                      Eq(5674)));  // Clang.
     EXPECT_EQ(178, gradient_invocations);
     EXPECT_THAT(
         minima,
@@ -266,26 +279,28 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1364, function_invocations);
-    EXPECT_EQ(463, gradient_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(1319),    // MSVC.
+                      Eq(1357)));  // Clang.
+    EXPECT_EQ(429, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
             Componentwise(
-                AbsoluteErrorFrom(0.114589 * Metre, IsNear(3.4e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.555649 * Metre, IsNear(2.7e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.114614 * Metre, IsNear(2.0e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.555649 * Metre, IsNear(9.4e-8_(1) * Metre)),
                 AbsoluteErrorFrom(0.852547 * Metre,
-                                  IsNear(3.9e-7_(1) * Metre))),
+                                  IsNear(6.0e-8_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0.109337 * Metre, IsNear(7.0e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.860556 * Metre, IsNear(4.7e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.564135 * Metre,
-                                  IsNear(3.4e-7_(1) * Metre))),
+                AbsoluteErrorFrom(0.109338 * Metre, IsNear(1.8e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.860524 * Metre, IsNear(1.8e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.564123 * Metre,
+                                  IsNear(1.6e-7_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0.688823 * Metre, IsNear(2.4e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.117274 * Metre, IsNear(5.8e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.267465 * Metre,
-                                  IsNear(1.3e-6_(1) * Metre)))));
+                AbsoluteErrorFrom(0.368723 * Metre, IsNear(1.7e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.117561 * Metre, IsNear(4.8e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.267573 * Metre,
+                                  IsNear(7.5e-7_(1) * Metre)))));
   }
   function_invocations = 0;
   gradient_invocations = 0;
@@ -296,20 +311,20 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                    tolerance);
 
     EXPECT_EQ(199, function_invocations);
-    EXPECT_EQ(124, gradient_invocations);
+    EXPECT_EQ(126, gradient_invocations);
     EXPECT_THAT(
         minima,
         ElementsAre(
             Componentwise(
-                AbsoluteErrorFrom(0.688823 * Metre, IsNear(2.6e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.117274 * Metre, IsNear(4.1e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.267465 * Metre,
-                                  IsNear(1.2e-6_(1) * Metre))),
+                AbsoluteErrorFrom(0.368723 * Metre, IsNear(2.1e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.117561 * Metre, IsNear(6.5e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.267573 * Metre,
+                                  IsNear(7.3e-7_(1) * Metre))),
             Componentwise(
-                AbsoluteErrorFrom(0.114589 * Metre, IsNear(3.9e-7_(1) * Metre)),
-                AbsoluteErrorFrom(0.555649 * Metre, IsNear(6.3e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.114614 * Metre, IsNear(1.6e-7_(1) * Metre)),
+                AbsoluteErrorFrom(0.555649 * Metre, IsNear(2.7e-7_(1) * Metre)),
                 AbsoluteErrorFrom(0.852547 * Metre,
-                                  IsNear(4.8e-7_(1) * Metre)))));
+                                  IsNear(2.1e-8_(1) * Metre)))));
   }
 }
 
@@ -349,7 +364,9 @@ TEST_F(GlobalOptimizationTest, Potential) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(1452, function_invocations);
+    EXPECT_THAT(function_invocations,
+                AnyOf(Eq(1452),    // MSVC.
+                      Eq(1448)));  // Clang.
     EXPECT_EQ(503, gradient_invocations);
     EXPECT_THAT(minima, IsEmpty());
   }

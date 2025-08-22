@@ -3,7 +3,7 @@
 #include "geometry/homothecy.hpp"
 
 #include "geometry/quaternion.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace geometry {
@@ -11,7 +11,7 @@ namespace _homothecy {
 namespace internal {
 
 using namespace principia::geometry::_quaternion;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(Scalar const& scale)
@@ -27,7 +27,7 @@ Cube<Scalar> Homothecy<Scalar, FromFrame, ToFrame>::Determinant() const {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Inverse<Scalar>, ToFrame, FromFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Inverse() const {
-  return Homothecy<quantities::_named_quantities::Inverse<Scalar>,
+  return Homothecy<quantities::_arithmetic::Inverse<Scalar>,
                    ToFrame, FromFrame>(1 / scale_);
 }
 

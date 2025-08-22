@@ -3,18 +3,19 @@
 #include "numerics/fixed_arrays.hpp"
 
 #include <algorithm>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "glog/logging.h"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _fixed_arrays {
 namespace internal {
 
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 
 // A helper class to compute the dot product of two arrays.  `LScalar` and
 // `RScalar` are the types of the elements of the arrays.  `Left` and `Right`
@@ -298,7 +299,8 @@ FixedMatrix<Scalar_, rows_, columns_>::operator()(
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
 FixedMatrix<Scalar_, rows_, columns_>
-FixedMatrix<Scalar_, rows_, columns_>::Identity() {
+FixedMatrix<Scalar_, rows_, columns_>::Identity()
+  requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_) {
   FixedMatrix<Scalar, rows(), columns()> m;
   for (std::int64_t i = 0; i < rows(); ++i) {
     m(i, i) = 1;

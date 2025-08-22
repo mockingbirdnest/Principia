@@ -3,7 +3,7 @@
 #include "geometry/conformal_map.hpp"
 
 #include "geometry/homothecy.hpp"
-#include "quantities/elementary_functions.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/serialization.hpp"
 
 namespace principia {
@@ -12,7 +12,7 @@ namespace _conformal_map {
 namespace internal {
 
 using namespace principia::geometry::_homothecy;
-using namespace principia::quantities::_elementary_functions;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_serialization;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
@@ -28,7 +28,7 @@ Cube<Scalar> ConformalMap<Scalar, FromFrame, ToFrame>::Determinant() const {
 template<typename Scalar, typename FromFrame, typename ToFrame>
 ConformalMap<Inverse<Scalar>, ToFrame, FromFrame>
 ConformalMap<Scalar, FromFrame, ToFrame>::Inverse() const {
-  return ConformalMap<quantities::_named_quantities::Inverse<Scalar>,
+  return ConformalMap<quantities::_arithmetic::Inverse<Scalar>,
                       ToFrame, FromFrame>(
     1 / scale_, quaternion_.Inverse());
 }

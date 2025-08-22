@@ -2,9 +2,8 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
-#include "quantities/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -23,9 +22,8 @@ using ::testing::Lt;
 using ::testing::Pointee;
 using ::testing::Property;
 using ::testing::SizeIs;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
-using namespace principia::quantities::_elementary_functions;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
