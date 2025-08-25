@@ -590,15 +590,14 @@ The remaining steps of the computation are then as follows:
 \begin{dcases}
 t_1 &\DefineAs \roundAll{p_s\of{h^2}} \\
 t_2 &\DefineAs \roundAll{p_c\of{h^2}} \\
-t_3 &\DefineAs \round{h \round{2 \; \gd \red x + h}} \\
+t_3 &\DefineAs \round{h \round{\pa{\gd \red x + \gd \red x} + h}} \\
 t_4 &\DefineAs \roundAll{h^3} \\
-t_5 &\DefineAs \roundAll{\round{s_k} \; t3 \; t2} \\
-t_6 &\DefineAs \round{t4 \; t1} \\
-t_7 &\DefineAs \round{\round{c_k} t6 + t5} \\
-t_8 &\DefineAs \round{\round{c_k} \gd \red x + t_0 \; \gd_0} \\
-t_9 &\DefineAs \round{t7 + t8} \\
+t_5 &\DefineAs \round{\round{\round{s_k} \; t_3} \; t_2} \\
+t_6 &\DefineAs \round{t_4 \; t_1 + \gd \red x} \\
+t_7 &\DefineAs \round{\round{c_k} t_6 + t_5} \\
+t_8 &\DefineAs \round{t_7 + t_0 \; \gd_0} \\
 y &\DefineAs t_0 \pa{1 - \gd_0} \\
-\gd y &\DefineAs t_9
+\gd y &\DefineAs t_8
 \end{dcases}
 \]
 where we have made the rounding of the accurate table elements $s_k$ and $c_k$ explicit.
@@ -613,11 +612,10 @@ t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
 t_3 &= h \pa{2 \; \gd \red x + h} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
 t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
-t_5 &= \round{s_k} \; t_3 \; t_2 \pa{1 + \gd_5} \pa{1 + \gd_6} \\
-t_6 &= t_4 \; t_1 \pa{1 + \gd_7} \\
+t_5 &= \round{s_k} \; t_3 \; t_2 \; \pa{1 + \gd_5} \pa{1 + \gd_6} \\
+t_6 &= \pa{t_4 \; t_1 + \gd \red x} \pa{1 + \gd_7} \\
 t_7 &= \pa{\round{c_k} \; t_6 + t_5} \pa{1 + \gd_8} \\
-t_8 &= \pa{\round{c_k} \; \gd \red x + t_0 \; \gd_0} \pa{1 + \gd_9} \\
-t_9 &= \pa{t_7 + t_8} \pa{1 + \gd_{10}}
+t_8 &= \pa{t_7 + t_0 \; \gd_0} \pa{1 + \gd_9} \\
 \end{alignedat}
 \right.
 \]
@@ -626,13 +624,13 @@ The relative error on the entire computation is:
 r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
 \]
 
-Great care is required when evaluating this expression using interval arithmetic because the terms in $\gd_0$ in $t_9$ and $y$ could be considered independent and lead to a useless bound.  To avoid this issue $\gd_0$ must be factored out to appear only once.  Specifically the $\gd_0$ term after factoring is:
+Great care is required when evaluating this expression using interval arithmetic because the terms in $\gd_0$ in $t_8$ and $y$ could be considered independent and lead to a useless bound.  To avoid this issue $\gd_0$ must be factored out to appear only once.  Specifically the $\gd_0$ term after factoring is:
 \[
-\gd_0 \pa{h \round{c_k} + \round{s_k}}\pa{\pa{1 + \gd_{10}} \pa{1 + \gd_9} - 1}
+\gd_0 \; \gd_9 \; \pa{h \round{c_k} + \round{s_k}}
 \]
-which is pleasantly small, and even though $\gd_9$ and $\gd_{10}$ also appear in the term that does not involve $\gd_0$, the effect of replicating them is acceptable.
+which is pleasantly small, and even though $\gd_9$ also appears in the term that does not involve $\gd_0$, the effect of replicating it is acceptable.
 
-The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.751}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'6013'6BD9'Dp0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}.
+The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.751}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'6013'6BD9'Bp0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}.
 
 Note that the above steps do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
@@ -653,15 +651,14 @@ The remaining steps of the computation are then as follows:
 \begin{dcases}
 t_1 &\DefineAs \roundAll{p_s\of{h^2}} \\
 t_2 &\DefineAs \roundAll{p_c\of{h^2}} \\
-t_3 &\DefineAs \round{h \round{2 \; \gd \red x + h}} \\
+t_3 &\DefineAs \round{h \round{\pa{\gd \red x + \gd \red x} + h}} \\
 t_4 &\DefineAs \roundAll{h^3} \\
-t_5 &\DefineAs \roundAll{\round{c_k} \; t3 \; t2} \\
-t_6 &\DefineAs \round{t4 \; t1} \\
-t_7 &\DefineAs \round{-\round{s_k} t6 + t5} \\
-t_8 &\DefineAs \round{-\round{s_k} \gd \red x + t_0 \; \gd_0} \\
-t_9 &\DefineAs \round{t7 + t8} \\
+t_5 &\DefineAs \round{\round{\round{c_k} \; t_3} \; t_2} \\
+t_6 &\DefineAs \round{t_4 \; t_1 + \gd \red x} \\
+t_7 &\DefineAs \round{-\round{s_k} t_6 + t_5} \\
+t_8 &\DefineAs \round{t_7 + t_0 \; \gd_0} \\
 y &\DefineAs t_0 \pa{1 - \gd_0} \\
-\gd y &\DefineAs t_9
+\gd y &\DefineAs t_8
 \end{dcases}
 \]
 where we have made the rounding of the accurate table elements $s_k$ and $c_k$ explicit.
@@ -676,11 +673,10 @@ t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
 t_3 &= h \pa{2 \; \gd \red x + h} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
 t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
-t_5 &= \round{c_k} \; t_3 \; t_2 \pa{1 + \gd_5} \pa{1 + \gd_6} \\
-t_6 &= t_4 \; t_1 \pa{1 + \gd_7} \\
+t_5 &= \round{c_k} \; t_3 \; t_2 \; \pa{1 + \gd_5} \pa{1 + \gd_6} \\
+t_6 &= \pa{t_4 \; t_1 + \gd \red x} \pa{1 + \gd_7} \\
 t_7 &= \pa{\round{s_k} \; t_6 + t_5} \pa{1 + \gd_8} \\
-t_8 &= \pa{\round{s_k} \; \gd \red x + t_0 \; \gd_0} \pa{1 + \gd_9} \\
-t_9 &= \pa{t_7 + t_8} \pa{1 + \gd_{10}}
+t_8 &= \pa{t_7 + t_0 \; \gd_0} \pa{1 + \gd_9}
 \end{alignedat}
 \right.
 \]
@@ -690,9 +686,9 @@ r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x 
 \]
 As explained above (see \nameref{secerroranalysissin}) the expression for $r$ must be rewritten so that $\gd_0$ only appears once.  In this case the $\gd_0$ term is:
 \[
-\gd_0 \pa{-\round{c_k} + h \round{s_k}} \pa{1 - \pa{1 + \gd_{10}} \pa{1 + \gd_9}}
+\gd_0 \; \gd_9 \; \pa{-\round{c_k} + h \round{s_k}}
 \]
-and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B836'988A'Dp0}$.
+and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B836'988A'Bp0}$.
 
 Note that the above steps do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[

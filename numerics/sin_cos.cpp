@@ -89,8 +89,8 @@ constexpr double three_term_θ_reduced_threshold =
      4);
 
 constexpr double sin_near_zero_e = 0x1.0000'AD82'A723'6p0;  // 2^-70.561.
-constexpr double sin_e = 0x1.0002'6013'6BD9'Dp0;  // 2^-68.751.
-constexpr double cos_e = 0x1.0001'B836'988A'Dp0;  // 2^-69.217.
+constexpr double sin_e = 0x1.0002'6013'6BD9'Bp0;  // 2^-68.751.
+constexpr double cos_e = 0x1.0001'B836'988A'Bp0;  // 2^-69.217.
 
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
@@ -364,7 +364,6 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const h² = h * h;
   auto const h³ = h² * h;
   auto const h_plus_e² = h * ((e_abs + e_abs) + h);
-  // TODO(phl): Redo the error analysis.
   auto const polynomial_term =
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀,
