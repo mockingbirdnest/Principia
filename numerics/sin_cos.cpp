@@ -3,6 +3,7 @@
 #include <pmmintrin.h>
 
 #include <limits>
+#include <utility>
 
 #include "core-math/cos.h"
 #include "core-math/sin.h"
@@ -95,6 +96,8 @@ template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
 
 // Pointers used for indirect calls, set by `StaticInitialization`.
+SlowPathCallback slow_path_sin_callback = nullptr;
+SlowPathCallback slow_path_cos_callback = nullptr;
 double (__cdecl *cos)(double θ) = nullptr;
 double (__cdecl *sin)(double θ) = nullptr;
 
@@ -386,6 +389,9 @@ double __cdecl Sin(double θ) {
     value = static_cast<double>(SinImplementation<fma_policy>(θ_reduced));
   }
   OSACA_IF(value != value) {
+    if (slow_path_sin_callback != nullptr) {
+      slow_path_sin_callback(θ);
+    }
     OSACA_RETURN(cr_sin(θ));
   } OSACA_ELSE_IF(quadrant & 0b10) {
     OSACA_RETURN(-value);
@@ -407,6 +413,9 @@ double __cdecl Cos(double θ) {
     value = static_cast<double>(CosImplementation<fma_policy>(θ_reduced));
   }
   OSACA_IF(value != value) {
+    if (slow_path_cos_callback != nullptr) {
+      slow_path_cos_callback(θ);
+    }
     OSACA_RETURN(cr_cos(θ));
   } OSACA_ELSE_IF(quadrant == 1 || quadrant == 2) {
     OSACA_RETURN(-value);
@@ -415,7 +424,9 @@ double __cdecl Cos(double θ) {
   }
 }
 
-void StaticInitialization() {
+void StaticInitialization(SlowPathCallback sin_cb, SlowPathCallback cos_cb) {
+  slow_path_sin_callback = std::move(sin_cb);
+  slow_path_cos_callback = std::move(cos_cb);
   if (UseHardwareFMA) {
     cos = &Cos<FMAPolicy::Force>;
     sin = &Sin<FMAPolicy::Force>;
