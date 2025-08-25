@@ -111,7 +111,6 @@ namespace m128d {
 
 M128D const quiet_NaN(std::numeric_limits<double>::quiet_NaN());
 M128D const zero(0.0);
-M128D const two(2.0);
 
 // Argument reduction.
 M128D const mantissa_reduce_shifter(
@@ -304,7 +303,6 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     return DetectDangerousRounding<fma_policy, sin_near_zero_e>(x, x³_term);
   } else {
     auto const sign = Sign(x);
-    auto const e_abs = e ^ sign;
     auto const i = AccurateTableIndex(abs_x);
     auto const& accurate_values = SinCosAccurateTable[i];
     M128D const x₀(accurate_values.x);
@@ -317,21 +315,27 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     // *not* computed because they don't matter.
     auto const h = abs_x - x₀;
 
+    // The sign of the argument must be applied to the result.  It's best to do
+    // this by applying it to elements of the computation that are available
+    // early.
+    M128D const signed_sin_x₀ = sign ^ sin_x₀;
+    M128D const signed_cos_x₀ = sign ^ cos_x₀;
+    M128D const signed_e = sign ^ e;
+
     DoublePrecision<M128D> const sin_x₀_plus_h_cos_x₀ =
-        TwoProductAdd<fma_policy>(cos_x₀, h, sin_x₀);
+        TwoProductAdd<fma_policy>(signed_cos_x₀, h, signed_sin_x₀);
     auto const h² = h * h;
     auto const h³ = h² * h;
-    auto const h_plus_e_abs² =
-        h * FusedMultiplyAdd<fma_policy>(m128d::two, e_abs, h);
+    auto const h_plus_e² = h * ((signed_e + signed_e) + h);
     auto const polynomial_term =
         FusedMultiplyAdd<fma_policy>(
-            cos_x₀,
+            signed_cos_x₀,
             FusedMultiplyAdd<fma_policy>(
-                h³, SinPolynomial<fma_policy>(h²), e_abs),
-            (sin_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
+                h³, SinPolynomial<fma_policy>(h²), signed_e),
+            (signed_sin_x₀ * h_plus_e²) * CosPolynomial<fma_policy>(h²)) +
         sin_x₀_plus_h_cos_x₀.error;
-    return sign ^ DetectDangerousRounding<fma_policy, sin_e>(
-                      sin_x₀_plus_h_cos_x₀.value, polynomial_term);
+    return DetectDangerousRounding<fma_policy, sin_e>(
+        sin_x₀_plus_h_cos_x₀.value, polynomial_term);
   }
 }
 
@@ -359,15 +363,14 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
       TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const h_plus_e_abs² =
-      h * FusedMultiplyAdd<fma_policy>(m128d::two, e_abs, h);
+  auto const h_plus_e² = h * ((e_abs + e_abs) + h);
   // TODO(phl): Redo the error analysis.
   auto const polynomial_term =
       FusedNegatedMultiplyAdd<fma_policy>(
           sin_x₀,
           FusedMultiplyAdd<fma_policy>(
               h³, SinPolynomial<fma_policy>(h²), e_abs),
-          (cos_x₀ * h_plus_e_abs²) * CosPolynomial<fma_policy>(h²)) +
+          (cos_x₀ * h_plus_e²) * CosPolynomial<fma_policy>(h²)) +
       cos_x₀_minus_h_sin_x₀.error;
   return DetectDangerousRounding<fma_policy, cos_e>(cos_x₀_minus_h_sin_x₀.value,
                                                     polynomial_term);
