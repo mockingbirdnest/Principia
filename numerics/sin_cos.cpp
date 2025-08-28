@@ -158,7 +158,7 @@ M128D FusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
   if constexpr (fma_policy == FMAPolicy::Force) {
     return FusedMultiplyAdd(a, b, c);
   } else {
-    return TwoProductAdd(a, b, c).value;
+    return TwoProductAdd<FMAPolicy::Auto>(a, b, c).value;
   }
 }
 
@@ -168,7 +168,7 @@ M128D FusedNegatedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
   if constexpr (fma_policy == FMAPolicy::Force) {
     return FusedNegatedMultiplyAdd(a, b, c);
   } else {
-    return TwoProductNegatedAdd(a, b, c).value;
+    return TwoProductNegatedAdd<FMAPolicy::Auto>(a, b, c).value;
   }
 }
 

@@ -64,33 +64,33 @@ DoublePrecision<Product<T, U>> Scale(T const& scale,
 // from context, it may be preferable to either:
 // — use VeltkampDekkerProduct(a, b) below;
 // — directly compute value = a * b, error = FusedMultiplySubtract(a, b, value).
-template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
+template<FMAPolicy fma_policy, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
 
 // Returns the exact value of `a * b + c` iff `c / 2 <= a * b + c <= 2 * c`,
 // assuming `c > 0`.  See [SZ05], section 2.1.
-template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
+template<FMAPolicy fma_policy, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              U const& b,
                                              Product<T, U> const& c);
 
 // Returns the exact value of `a * b - c` iff `-2 * c <= a * b - c <= -c / 2`,
 // assuming `c > 0`.  See [SZ05], section 2.1.
-template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
+template<FMAPolicy fma_policy, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   U const& b,
                                                   Product<T, U> const& c);
 
 // Returns the exact value of `-a * b + c` iff `c / 2 <= -a * b + c <= 2 * c`,
 // assuming `c > 0`.  See [SZ05], section 2.1.
-template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
+template<FMAPolicy fma_policy, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     U const& b,
                                                     Product<T, U> const& c);
 
 // Returns the exact value of `-a * b - c` iff `-2 * c <= -a * b - c <= -c / 2`,
 // assuming `c > 0`.  See [SZ05], section 2.1.
-template<FMAPolicy fma_policy = FMAPolicy::Auto, typename T, typename U>
+template<FMAPolicy fma_policy, typename T, typename U>
 DoublePrecision<Product<T, U>>
 TwoProductNegatedSubtract(T const& a,
                           U const& b,

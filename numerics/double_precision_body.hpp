@@ -518,7 +518,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> operator*(T const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.
-  auto product = TwoProduct(left, right.value);
+  auto product = TwoProduct<FMAPolicy::Auto>(left, right.value);
   product.error += left * right.error;
   return QuickTwoSum(product.value, product.error);
 }
@@ -528,7 +528,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          U const& right) {
   // [Lin81], algorithm longmul.
-  auto product = TwoProduct(left.value, right);
+  auto product = TwoProduct<FMAPolicy::Auto>(left.value, right);
   product.error += +left.error * right;
   return QuickTwoSum(product.value, product.error);
 }
@@ -538,7 +538,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.
-  auto product = TwoProduct(left.value, right.value);
+  auto product = TwoProduct<FMAPolicy::Auto>(left.value, right.value);
   product.error +=
       (left.value + left.error) * right.error + left.error * right.value;
   return QuickTwoSum(product.value, product.error);
@@ -549,7 +549,7 @@ DoublePrecision<Quotient<T, U>> operator/(T const& left,
                                           DoublePrecision<U> const& right) {
   // [Lin81], algorithm longdiv.
   auto const z = left / right.value;
-  auto const product = TwoProduct(right.value, z);
+  auto const product = TwoProduct<FMAPolicy::Auto>(right.value, z);
   auto const zz = (((left - product.value) - product.error) - z * right.error) /
                   (right.value + right.error);
   return QuickTwoSum(z, zz);
@@ -560,7 +560,7 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
                                           U const& right) {
   // [Lin81], algorithm longdiv.
   auto const z = left.value / right;
-  auto const product = TwoProduct(right, z);
+  auto const product = TwoProduct<FMAPolicy::Auto>(right, z);
   auto const zz =
       (((left.value - product.value) - product.error) + left.error) / right;
   return QuickTwoSum(z, zz);
@@ -571,7 +571,7 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
                                           DoublePrecision<U> const& right) {
   // [Lin81], algorithm longdiv.
   auto const z = left.value / right.value;
-  auto const product = TwoProduct(right.value, z);
+  auto const product = TwoProduct<FMAPolicy::Auto>(right.value, z);
   auto const zz =
       ((((left.value - product.value) - product.error) + left.error) -
        z * right.error) /

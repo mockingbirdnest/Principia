@@ -339,10 +339,11 @@ double Cbrt(double const y) {
 bool CbrtOneBit(double const y, double const a, double const b) {
   double const b² = b * b;
   double const b³ = b² * b;
-  DoublePrecision<double> const a² = TwoProduct(a, a);
+  DoublePrecision<double> const a² = TwoProduct<FMAPolicy::Auto>(a, a);
   auto const& [a²₀, a²₁] = a²;
-  DoublePrecision<double> const a³₀ = TwoProduct(a²₀, a);
-  DoublePrecision<double> const minus_a³₁ = TwoProduct(a²₁, -a);
+  DoublePrecision<double> const a³₀ = TwoProduct<FMAPolicy::Auto>(a²₀, a);
+  DoublePrecision<double> const minus_a³₁ =
+      TwoProduct<FMAPolicy::Auto>(a²₁, -a);
   auto const& [a³₀₀, a³₀₁] = a³₀;
   // In cbrt.pdf, where we are specifically considering the computation of the
   // 54th bit, ρ is referred to as ρ₅₃, and ρ_next as ρ₅₄ˌ₁.

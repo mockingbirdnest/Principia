@@ -10,6 +10,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -34,6 +35,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -269,7 +271,7 @@ TEST_F(DoublePrecisionTest, Consistencies) {
 TEST_F(DoublePrecisionTest, Product) {
   Mass const a = 1.0 / 3.0 * Kilogram;
   Speed const b = 1.0 / 7.0 * Metre / Second;
-  DoublePrecision<Momentum> const c = TwoProduct(a, b);
+  DoublePrecision<Momentum> const c = TwoProduct<FMAPolicy::Auto>(a, b);
   DoublePrecision<Momentum> const d = VeltkampDekkerProduct(a, b);
   EXPECT_THAT(c.value, AlmostEquals(d.value, 0));
   EXPECT_THAT(c.error, AlmostEquals(d.error, 0));
@@ -288,13 +290,17 @@ TEST_F(DoublePrecisionTest, ProductAndAdd) {
   Time const a = 3.0 * Second;
   Speed const b =  7.0 * Metre / Second;
   Length const c = 5.0 * Metre;
-  auto const add = TwoProductAdd(a, b, c);
+  auto const add =
+      TwoProductAdd<FMAPolicy::Auto>(a, b, c);
   EXPECT_THAT(add.value, AlmostEquals(26.0 * Metre, 0));
-  auto const subtract = TwoProductSubtract(a, b, c);
+  auto const subtract =
+      TwoProductSubtract<FMAPolicy::Auto>(a, b, c);
   EXPECT_THAT(subtract.value, AlmostEquals(16.0 * Metre, 0));
-  auto const negated_add = TwoProductNegatedAdd(a, b, c);
+  auto const negated_add =
+      TwoProductNegatedAdd<FMAPolicy::Auto>(a, b, c);
   EXPECT_THAT(negated_add.value, AlmostEquals(-16.0 * Metre, 0));
-  auto const negated_subtract = TwoProductNegatedSubtract(a, b, c);
+  auto const negated_subtract =
+      TwoProductNegatedSubtract<FMAPolicy::Auto>(a, b, c);
   EXPECT_THAT(negated_subtract.value, AlmostEquals(-26.0 * Metre, 0));
 }
 
