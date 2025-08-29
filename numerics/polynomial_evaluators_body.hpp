@@ -82,7 +82,7 @@ Evaluate(Coefficients const& coefficients,
       InternalEstrinEvaluator<Value, Argument, degree, fma_policy, low, m - 1>::
           Evaluate(coefficients, argument);
 
-  // Because this function is heavily inline (including the recursive calls) we
+  // Because this function is heavily inlined (including the recursive calls) we
   // rely on common subexpression elimination to detect that we repeatedly
   // compute x², x⁴, etc. and to only compute each power once.  Inspecting the
   // generated code, we verified that the right thing actually happens.
