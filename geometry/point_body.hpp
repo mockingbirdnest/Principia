@@ -120,14 +120,14 @@ constexpr Point<Vector> operator+(Vector const& translation,
   return point + translation;
 }
 
-template<typename L, typename R>
+template<FMAPresence fma_presence, typename L, typename R>
 Point<Product<L, R>> FusedMultiplyAdd(L const& a, R const& b,
                                       Point<Product<L, R>> const& c) {
   using numerics::_elementary_functions::FusedMultiplyAdd;
   return Point<Product<L, R>>(FusedMultiplyAdd(a, b, c.coordinates_));
 }
 
-template<typename L, typename R>
+template<FMAPresence fma_presence, typename L, typename R>
 Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a, R const& b,
                                              Point<Product<L, R>> const& c) {
   using numerics::_elementary_functions::FusedNegatedMultiplyAdd;

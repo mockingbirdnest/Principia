@@ -447,7 +447,8 @@ operator/(Multivector<LScalar, Frame, rank> const& left,
       left.coordinates() / right);
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
+template<FMAPresence fma_presence,
+         typename LScalar, typename RScalar, typename Frame, int rank>
   requires convertible_to_quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
@@ -455,11 +456,13 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c) {
   using numerics::_elementary_functions::FusedMultiplyAdd;
   using _r3_element::FusedMultiplyAdd;
+  // TODO(phl): Pass `fma_presence` to the callee in all these functions.
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       FusedMultiplyAdd(a.coordinates(), b, c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
+template<FMAPresence fma_presence,
+         typename LScalar, typename RScalar, typename Frame, int rank>
   requires convertible_to_quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     Multivector<LScalar, Frame, rank> const& a,
@@ -471,7 +474,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
       FusedMultiplySubtract(a.coordinates(), b, c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
+template<FMAPresence fma_presence,
+         typename LScalar, typename RScalar, typename Frame, int rank>
   requires convertible_to_quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
@@ -483,7 +487,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
       FusedNegatedMultiplyAdd(a.coordinates(), b, c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
+template<FMAPresence fma_presence,
+         typename LScalar, typename RScalar, typename Frame, int rank>
   requires convertible_to_quantity<RScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 FusedNegatedMultiplySubtract(
@@ -496,7 +501,8 @@ FusedNegatedMultiplySubtract(
       FusedNegatedMultiplySubtract(a.coordinates(), b, c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
+template<FMAPresence fma_presence,
+         typename LScalar, typename RScalar, typename Frame, int rank>
   requires convertible_to_quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     LScalar const& a,
@@ -508,7 +514,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
       FusedMultiplyAdd(a, b.coordinates(), c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
+template<FMAPresence fma_presence,
+         typename LScalar, typename RScalar, typename Frame, int rank>
   requires convertible_to_quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     LScalar const& a,
@@ -520,7 +527,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
       FusedMultiplySubtract(a, b.coordinates(), c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
+template<FMAPresence fma_presence,
+         typename LScalar, typename RScalar, typename Frame, int rank>
   requires convertible_to_quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     LScalar const& a,
@@ -532,7 +540,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
       FusedNegatedMultiplyAdd(a, b.coordinates(), c.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
+template<FMAPresence fma_presence,
+         typename LScalar, typename RScalar, typename Frame, int rank>
   requires convertible_to_quantity<LScalar>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 FusedNegatedMultiplySubtract(

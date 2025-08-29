@@ -41,8 +41,8 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z);
 template<FMAPresence fma_presence = FMAPresence::Unknown,
-         typename Q1,
-         typename Q2>
+         quantity Q1,
+         quantity Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z);

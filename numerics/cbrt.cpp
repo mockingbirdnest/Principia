@@ -378,6 +378,10 @@ bool CbrtOneBit(double const y, double const a, double const b) {
   return ρ_next_positive;
 }
 
+bool CbrtOneBit(double const y, double const a, double const b) {
+  return CbrtOneBit<FMAPresence::Unknown>(y, a, b);
+}
+
 }  // namespace internal
 }  // namespace _cbrt
 }  // namespace numerics
