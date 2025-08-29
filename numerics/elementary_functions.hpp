@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/concepts.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -11,24 +12,33 @@ namespace _elementary_functions {
 namespace internal {
 
 using namespace principia::base::_concepts;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // Equivalent to `std::fma(x, y, z)`.
-template<typename Q1, typename Q2>
+template<FMAAvailability fma_availability = FMAAvailability::Unknown,
+         typename Q1,
+         typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z);
-template<typename Q1, typename Q2>
+template<FMAAvailability fma_availability = FMAAvailability::Unknown,
+         typename Q1,
+         typename Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z);
-template<typename Q1, typename Q2>
+template<FMAAvailability fma_availability = FMAAvailability::Unknown,
+         typename Q1,
+         typename Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z);
-template<typename Q1, typename Q2>
+template<FMAAvailability fma_availability = FMAAvailability::Unknown,
+         typename Q1,
+         typename Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z);

@@ -275,11 +275,11 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
   return result;
 }
 
-template<FMAPolicy fma_policy, typename T, typename U>
+template<FMAAvailability fma_availability, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  if (fma_availability == FMAAvailability::Available ||
+      (fma_availability == FMAAvailability::Unknown && UseHardwareFMA)) {
     using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = a * b;
@@ -290,13 +290,13 @@ DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   }
 }
 
-template<FMAPolicy fma_policy, typename T, typename U>
+template<FMAAvailability fma_availability, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              U const& b,
                                              Product<T, U> const& c) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  if (fma_availability == FMAAvailability::Available ||
+      (fma_availability == FMAAvailability::Unknown && UseHardwareFMA)) {
     using numerics::_elementary_functions::FusedMultiplyAdd;
     using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
@@ -310,13 +310,13 @@ DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
   }
 }
 
-template<FMAPolicy fma_policy, typename T, typename U>
+template<FMAAvailability fma_availability, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   U const& b,
                                                   Product<T, U> const& c) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  if (fma_availability == FMAAvailability::Available ||
+      (fma_availability == FMAAvailability::Unknown && UseHardwareFMA)) {
     using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = FusedMultiplySubtract(a, b, c);
@@ -329,13 +329,13 @@ DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
   }
 }
 
-template<FMAPolicy fma_policy, typename T, typename U>
+template<FMAAvailability fma_availability, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     U const& b,
                                                     Product<T, U> const& c) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  if (fma_availability == FMAAvailability::Available ||
+      (fma_availability == FMAAvailability::Unknown && UseHardwareFMA)) {
     using numerics::_elementary_functions::FusedNegatedMultiplyAdd;
     using numerics::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
@@ -349,14 +349,14 @@ DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
   }
 }
 
-template<FMAPolicy fma_policy, typename T, typename U>
+template<FMAAvailability fma_availability, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>>
 TwoProductNegatedSubtract(T const& a,
                           U const& b,
                           Product<T, U> const& c) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  if (fma_availability == FMAAvailability::Available ||
+      (fma_availability == FMAAvailability::Unknown && UseHardwareFMA)) {
     using numerics::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = FusedNegatedMultiplySubtract(a, b, c);
@@ -518,7 +518,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> operator*(T const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.
-  auto product = TwoProduct<FMAPolicy::Auto>(left, right.value);
+  auto product = TwoProduct<FMAAvailability::Unknown>(left, right.value);
   product.error += left * right.error;
   return QuickTwoSum(product.value, product.error);
 }
@@ -528,7 +528,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          U const& right) {
   // [Lin81], algorithm longmul.
-  auto product = TwoProduct<FMAPolicy::Auto>(left.value, right);
+  auto product = TwoProduct<FMAAvailability::Unknown>(left.value, right);
   product.error += +left.error * right;
   return QuickTwoSum(product.value, product.error);
 }
@@ -538,7 +538,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.
-  auto product = TwoProduct<FMAPolicy::Auto>(left.value, right.value);
+  auto product = TwoProduct<FMAAvailability::Unknown>(left.value, right.value);
   product.error +=
       (left.value + left.error) * right.error + left.error * right.value;
   return QuickTwoSum(product.value, product.error);
@@ -549,7 +549,7 @@ DoublePrecision<Quotient<T, U>> operator/(T const& left,
                                           DoublePrecision<U> const& right) {
   // [Lin81], algorithm longdiv.
   auto const z = left / right.value;
-  auto const product = TwoProduct<FMAPolicy::Auto>(right.value, z);
+  auto const product = TwoProduct<FMAAvailability::Unknown>(right.value, z);
   auto const zz = (((left - product.value) - product.error) - z * right.error) /
                   (right.value + right.error);
   return QuickTwoSum(z, zz);
@@ -560,7 +560,7 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
                                           U const& right) {
   // [Lin81], algorithm longdiv.
   auto const z = left.value / right;
-  auto const product = TwoProduct<FMAPolicy::Auto>(right, z);
+  auto const product = TwoProduct<FMAAvailability::Unknown>(right, z);
   auto const zz =
       (((left.value - product.value) - product.error) + left.error) / right;
   return QuickTwoSum(z, zz);
@@ -571,7 +571,7 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
                                           DoublePrecision<U> const& right) {
   // [Lin81], algorithm longdiv.
   auto const z = left.value / right.value;
-  auto const product = TwoProduct<FMAPolicy::Auto>(right.value, z);
+  auto const product = TwoProduct<FMAAvailability::Unknown>(right.value, z);
   auto const zz =
       ((((left.value - product.value) - product.error) + left.error) -
        z * right.error) /

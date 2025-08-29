@@ -65,9 +65,10 @@ class CubeRootTest : public ::testing::Test {
     for (int i = 1; i < 53; ++i, b /= 2) {
       a = CbrtOneBit(y, a, b) ? a + b : a;
     }
-    bool const exact = TwoProduct<FMAPolicy::Auto>(a, a).error == 0 &&
-                       TwoProduct<FMAPolicy::Auto>(a * a, a).error == 0 &&
-                       a * a * a == y;
+    bool const exact =
+        TwoProduct<FMAAvailability::Unknown>(a, a).error == 0 &&
+        TwoProduct<FMAAvailability::Unknown>(a * a, a).error == 0 &&
+        a * a * a == y;
     RoundedReal result;
     result.rounded_down = a;
     result.rounded_to_nearest = CbrtOneBit(y, a, b) ? a + 2 * b : a;

@@ -6,6 +6,7 @@
 #include <string>
 
 #include "numerics/double_precision.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
@@ -15,6 +16,7 @@ namespace _rp2_point {
 namespace internal {
 
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
@@ -70,10 +72,13 @@ bool operator==(RP2Point<Scalar, Frame> const& left,
     return left_is_singular && right_is_singular;
   } else {
     if (left.z_ == 0.0 && right.z_ == 0.0) {
-      return TwoProduct(left.x_, right.y_) == TwoProduct(right.x_, left.y_);
+      return TwoProduct<FMAAvailability::Unknown>(left.x_, right.y_) ==
+             TwoProduct<FMAAvailability::Unknown>(right.x_, left.y_);
     } else {
-      return TwoProduct(left.x_, right.z_) == TwoProduct(right.x_, left.z_) &&
-             TwoProduct(left.y_, right.z_) == TwoProduct(right.y_, left.z_);
+      return TwoProduct<FMAAvailability::Unknown>(left.x_, right.z_) ==
+                 TwoProduct<FMAAvailability::Unknown>(right.x_, left.z_) &&
+             TwoProduct<FMAAvailability::Unknown>(left.y_, right.z_) ==
+                 TwoProduct<FMAAvailability::Unknown>(right.y_, left.z_);
     }
   }
 }

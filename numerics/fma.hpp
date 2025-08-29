@@ -26,6 +26,13 @@ inline bool const UseHardwareFMA =
 inline bool const UseHardwareFMA = false;
 #endif
 
+//TODO(phl)comments
+enum class FMAAvailability {
+  Unknown = 0,
+  Unavailable = 1,
+  Available = 2,
+};
+
 // The policy used for emitting FMA instructions.  This type is not used by this
 // file, but is declared here for the convenience of the clients.  The intended
 // semantics are:
@@ -58,6 +65,7 @@ inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 }  // namespace internal
 
 using internal::CanEmitFMAInstructions;
+using internal::FMAAvailability;
 using internal::FMAPolicy;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
