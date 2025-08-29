@@ -92,8 +92,7 @@ constexpr double sin_near_zero_e = 0x1.0000'AD82'A723'6p0;  // 2^-70.561.
 constexpr double sin_e = 0x1.0002'6013'6BD9'Dp0;  // 2^-68.751.
 constexpr double cos_e = 0x1.0001'B836'988A'Dp0;  // 2^-69.217.
 
-template<FMAPolicy fma_policy>
-using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
+using Polynomial1 = HornerEvaluator<Value, Argument, 1, FMAPolicy::Force>;
 
 // Pointers used for indirect calls, set by `StaticInitialization`.
 SlowPathCallback slow_path_sin_callback = nullptr;
@@ -275,18 +274,18 @@ void Reduce(Argument const θ,
 
 template<FMAPolicy fma_policy>
 Value SinPolynomial(Argument const x) {
-  return Polynomial1<fma_policy>::Evaluate({m128d::sin_0, m128d::sin_1}, x);
+  return Polynomial1::Evaluate({m128d::sin_0, m128d::sin_1}, x);
 }
 
 template<FMAPolicy fma_policy>
 Value SinPolynomialNearZero(Argument const x) {
-  return Polynomial1<fma_policy>::Evaluate(
+  return Polynomial1::Evaluate(
       {m128d::sin_near_zero_0, m128d::sin_near_zero_1}, x);
 }
 
 template<FMAPolicy fma_policy>
 Value CosPolynomial(Argument const x) {
-  return Polynomial1<fma_policy>::Evaluate({m128d::cos_0, m128d::cos_1}, x);
+  return Polynomial1::Evaluate({m128d::cos_0, m128d::cos_1}, x);
 }
 
 template<FMAPolicy fma_policy>
