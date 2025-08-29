@@ -8,7 +8,6 @@
 
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "numerics/cbrt.hpp"
-#include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/m128d.hpp"
 #include "numerics/next.hpp"
@@ -22,7 +21,6 @@ namespace internal {
 
 using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
-using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_next;
@@ -60,7 +58,9 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                             y / si::Unit<Q2>,
                                             z / si::Unit<Product<Q1, Q2>>);
   } else {
-    return TwoProductAdd<FMAAvailability::Unavailable>(x, y, z).value;
+    return si::Unit<Product<Q1, Q2>> * std::fma(x / si::Unit<Q1>,
+                                                y / si::Unit<Q2>,
+                                                z / si::Unit<Product<Q1, Q2>>);
   }
 }
 
@@ -69,7 +69,9 @@ M128D FusedMultiplyAdd(M128D const& x, M128D const& y, M128D const& z) {
   if constexpr (fma_availability == FMAAvailability::Available) {
     return numerics::_m128d::FusedMultiplyAdd(x, y, z);
   } else {
-    return TwoProductAdd<FMAAvailability::Unavailable>(x, y, z).value;
+    return M128D(std::fma(static_cast<double>(x),
+                          static_cast<double>(y),
+                          static_cast<double>(z)));
   }
 }
 
@@ -105,7 +107,9 @@ Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                                  y / si::Unit<Q2>,
                                                  z / si::Unit<Product<Q1, Q2>>);
   } else {
-    return TwoProductSubtract<FMAAvailability::Unavailable>(x, y, z).value;
+    return si::Unit<Product<Q1, Q2>> * std::fma(x / si::Unit<Q1>,
+                                                y / si::Unit<Q2>,
+                                                -z / si::Unit<Product<Q1, Q2>>);
   }
 }
 
@@ -114,7 +118,9 @@ M128D FusedMultiplySubtract(M128D const& x, M128D const& y, M128D const& z) {
   if constexpr (fma_availability == FMAAvailability::Available) {
     return numerics::_m128d::FusedMultiplySubtract(x, y, z);
   } else {
-    return TwoProductSubtract<FMAAvailability::Unavailable>(x, y, z).value;
+    return M128D(std::fma(static_cast<double>(x),
+                          static_cast<double>(y),
+                          -static_cast<double>(z)));
   }
 }
 
@@ -150,7 +156,9 @@ Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                            y / si::Unit<Q2>,
                                            z / si::Unit<Product<Q1, Q2>>);
   } else {
-    return TwoProductNegatedAdd<FMAAvailability::Unavailable>(x, y, z).value;
+    return si::Unit<Product<Q1, Q2>> * std::fma(-x / si::Unit<Q1>,
+                                                y / si::Unit<Q2>,
+                                                z / si::Unit<Product<Q1, Q2>>);
   }
 }
 
@@ -159,7 +167,9 @@ M128D FusedNegatedMultiplyAdd(M128D const& x, M128D const& y, M128D const& z) {
   if constexpr (fma_availability == FMAAvailability::Available) {
     return numerics::_m128d::FusedNegatedMultiplyAdd(x, y, z);
   } else {
-    return TwoProductNegatedAdd<FMAAvailability::Unavailable>(x, y, z).value;
+    return M128D(std::fma(-static_cast<double>(x),
+                          static_cast<double>(y),
+                          static_cast<double>(z)));
   }
 }
 
@@ -196,8 +206,9 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                y / si::Unit<Q2>,
                z / si::Unit<Product<Q1, Q2>>);
   } else {
-    return TwoProductNegatedSubtract<FMAAvailability::Unavailable>(x, y, z)
-        .value;
+    return si::Unit<Product<Q1, Q2>> * std::fma(-x / si::Unit<Q1>,
+                                                y / si::Unit<Q2>,
+                                                -z / si::Unit<Product<Q1, Q2>>);
   }
 }
 
@@ -208,8 +219,9 @@ M128D FusedNegatedMultiplySubtract(M128D const& x,
   if constexpr (fma_availability == FMAAvailability::Available) {
     return numerics::_m128d::FusedNegatedMultiplySubtract(x, y, z);
   } else {
-    return TwoProductNegatedSubtract<FMAAvailability::Unavailable>(x, y, z)
-        .value;
+    return M128D(std::fma(-static_cast<double>(x),
+                          static_cast<double>(y),
+                          -static_cast<double>(z)));
   }
 }
 
