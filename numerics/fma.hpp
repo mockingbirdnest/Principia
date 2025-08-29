@@ -65,8 +65,8 @@ inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 }  // namespace internal
 
 using internal::CanEmitFMAInstructions;
-using internal::FMAPresence;
 using internal::FMAPolicy;
+using internal::FMAPresence;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;

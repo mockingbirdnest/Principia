@@ -27,21 +27,23 @@ using namespace principia::numerics::_next;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
 
-template<boost_cpp_int Q1, boost_cpp_int Q2>
+template<FMAPresence fma_presence, boost_cpp_int Q1, boost_cpp_int Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
   return x * y + z;
 }
 
-template<boost_cpp_rational Q1, boost_cpp_rational Q2>
+template<FMAPresence fma_presence, boost_cpp_rational Q1, boost_cpp_rational Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
   return x * y + z;
 }
 
-template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
+template<FMAPresence fma_presence,
+         boost_cpp_bin_float Q1,
+         boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
@@ -76,21 +78,23 @@ M128D FusedMultiplyAdd(M128D const& x, M128D const& y, M128D const& z) {
 }
 
 
-template<boost_cpp_int Q1, boost_cpp_int Q2>
+template<FMAPresence fma_presence, boost_cpp_int Q1, boost_cpp_int Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
   return x * y - z;
 }
 
-template<boost_cpp_rational Q1, boost_cpp_rational Q2>
+template<FMAPresence fma_presence, boost_cpp_rational Q1, boost_cpp_rational Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
   return x * y - z;
 }
 
-template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
+template<FMAPresence fma_presence,
+         boost_cpp_bin_float Q1,
+         boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
@@ -125,21 +129,23 @@ M128D FusedMultiplySubtract(M128D const& x, M128D const& y, M128D const& z) {
 }
 
 
-template<boost_cpp_int Q1, boost_cpp_int Q2>
+template<FMAPresence fma_presence, boost_cpp_int Q1, boost_cpp_int Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
   return -x * y + z;
 }
 
-template<boost_cpp_rational Q1, boost_cpp_rational Q2>
+template<FMAPresence fma_presence, boost_cpp_rational Q1, boost_cpp_rational Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
   return -x * y + z;
 }
 
-template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
+template<FMAPresence fma_presence,
+         boost_cpp_bin_float Q1,
+         boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
@@ -174,21 +180,23 @@ M128D FusedNegatedMultiplyAdd(M128D const& x, M128D const& y, M128D const& z) {
 }
 
 
-template<boost_cpp_int Q1, boost_cpp_int Q2>
+template<FMAPresence fma_presence, boost_cpp_int Q1, boost_cpp_int Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {
   return -x * y - z;
 }
 
-template<boost_cpp_rational Q1, boost_cpp_rational Q2>
+template<FMAPresence fma_presence, boost_cpp_rational Q1, boost_cpp_rational Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {
   return -x * y - z;
 }
 
-template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
+template<FMAPresence fma_presence,
+         boost_cpp_bin_float Q1,
+         boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {

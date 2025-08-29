@@ -49,31 +49,41 @@ struct Evaluator {
       serialization::PolynomialInMonomialBasis::Evaluator const& message);
 };
 
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
 class EstrinEvaluator;
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
 class HornerEvaluator;
 
 }  // namespace internal
 
 template<typename Value, typename Argument, int degree>
-using Estrin = internal::
-    EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Auto>;
+using Estrin = internal::EstrinEvaluator<Value, Argument, degree,
+                                         internal::FMAPolicy::Auto,
+                                         internal::FMAPresence::Unknown>;
 template<typename Value, typename Argument, int degree>
-using EstrinWithoutFMA = internal::
-    EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Disallow>;
+using EstrinWithoutFMA =
+    internal::EstrinEvaluator<Value, Argument, degree,
+                              internal::FMAPolicy::Disallow,
+                              internal::FMAPresence::Unknown>;
 template<typename Value, typename Argument, int degree>
-using EstrinWithFMA = internal::
-    EstrinEvaluator<Value, Argument, degree, internal::FMAPolicy::Force>;
+using EstrinWithFMA = internal::EstrinEvaluator<Value, Argument, degree,
+                                                internal::FMAPolicy::Force,
+                                                internal::FMAPresence::Unknown>;
 template<typename Value, typename Argument, int degree>
-using Horner = internal::
-    HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Auto>;
+using Horner = internal::HornerEvaluator<Value, Argument, degree,
+                                         internal::FMAPolicy::Auto,
+                                         internal::FMAPresence::Unknown>;
 template<typename Value, typename Argument, int degree>
-using HornerWithoutFMA = internal::
-    HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Disallow>;
+using HornerWithoutFMA =
+    internal::HornerEvaluator<Value, Argument, degree,
+                              internal::FMAPolicy::Disallow,
+                              internal::FMAPresence::Unknown>;
 template<typename Value, typename Argument, int degree>
-using HornerWithFMA = internal::
-    HornerEvaluator<Value, Argument, degree, internal::FMAPolicy::Force>;
+using HornerWithFMA = internal::HornerEvaluator<Value, Argument, degree,
+                                                internal::FMAPolicy::Force,
+                                                internal::FMAPresence::Unknown>;
 
 using internal::EstrinEvaluator;
 using internal::Evaluator;
