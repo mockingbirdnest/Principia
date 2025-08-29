@@ -471,8 +471,8 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
   // cancellations.  Higham mentions that it is necessary “to use extended
   // precision (or some trick tantamount to the use of extended precision).”
   DoublePrecision<Discriminant> const discriminant =
-      TwoProduct<FMAAvailability::Unknown>(a₁, a₁) -
-      TwoProduct<FMAAvailability::Unknown>(4.0 * a₀, a₂);
+      TwoProduct<FMAPresence::Unknown>(a₁, a₁) -
+      TwoProduct<FMAPresence::Unknown>(4.0 * a₀, a₂);
 
   if (discriminant.value == zero) {
     // One solution.

@@ -34,13 +34,13 @@ template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z);
-template<FMAAvailability fma_availability = FMAAvailability::Unknown,
+template<FMAPresence fma_presence = FMAPresence::Unknown,
          quantity Q1,
          quantity Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z);
-template<FMAAvailability fma_availability = FMAAvailability::Unknown>
+template<FMAPresence fma_presence = FMAPresence::Unknown>
 M128D FusedMultiplyAdd(M128D const& x, M128D const& y, M128D const& z);
 
 template<boost_cpp_int Q1, boost_cpp_int Q2>
@@ -55,13 +55,13 @@ template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z);
-template<FMAAvailability fma_availability = FMAAvailability::Unknown,
+template<FMAPresence fma_presence = FMAPresence::Unknown,
          quantity Q1,
          quantity Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z);
-template<FMAAvailability fma_availability = FMAAvailability::Unknown>
+template<FMAPresence fma_presence = FMAPresence::Unknown>
 M128D FusedMultiplySubtract(M128D const& x, M128D const& y, M128D const& z);
 
 template<boost_cpp_int Q1, boost_cpp_int Q2>
@@ -76,13 +76,13 @@ template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z);
-template<FMAAvailability fma_availability = FMAAvailability::Unknown,
+template<FMAPresence fma_presence = FMAPresence::Unknown,
          quantity Q1,
          quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z);
-template<FMAAvailability fma_availability = FMAAvailability::Unknown>
+template<FMAPresence fma_presence = FMAPresence::Unknown>
 M128D FusedNegatedMultiplyAdd(M128D const& x, M128D const& y, M128D const& z);
 
 template<boost_cpp_int Q1, boost_cpp_int Q2>
@@ -97,13 +97,13 @@ template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z);
-template<FMAAvailability fma_availability = FMAAvailability::Unknown,
+template<FMAPresence fma_presence = FMAPresence::Unknown,
          quantity Q1,
          quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z);
-template<FMAAvailability fma_availability = FMAAvailability::Unknown>
+template<FMAPresence fma_presence = FMAPresence::Unknown>
 M128D FusedNegatedMultiplySubtract(M128D const& x,
                                    M128D const& y,
                                    M128D const& z);

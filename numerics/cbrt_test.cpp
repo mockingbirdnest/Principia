@@ -66,8 +66,8 @@ class CubeRootTest : public ::testing::Test {
       a = CbrtOneBit(y, a, b) ? a + b : a;
     }
     bool const exact =
-        TwoProduct<FMAAvailability::Unknown>(a, a).error == 0 &&
-        TwoProduct<FMAAvailability::Unknown>(a * a, a).error == 0 &&
+        TwoProduct<FMAPresence::Unknown>(a, a).error == 0 &&
+        TwoProduct<FMAPresence::Unknown>(a * a, a).error == 0 &&
         a * a * a == y;
     RoundedReal result;
     result.rounded_down = a;

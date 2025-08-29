@@ -72,13 +72,13 @@ bool operator==(RP2Point<Scalar, Frame> const& left,
     return left_is_singular && right_is_singular;
   } else {
     if (left.z_ == 0.0 && right.z_ == 0.0) {
-      return TwoProduct<FMAAvailability::Unknown>(left.x_, right.y_) ==
-             TwoProduct<FMAAvailability::Unknown>(right.x_, left.y_);
+      return TwoProduct<FMAPresence::Unknown>(left.x_, right.y_) ==
+             TwoProduct<FMAPresence::Unknown>(right.x_, left.y_);
     } else {
-      return TwoProduct<FMAAvailability::Unknown>(left.x_, right.z_) ==
-                 TwoProduct<FMAAvailability::Unknown>(right.x_, left.z_) &&
-             TwoProduct<FMAAvailability::Unknown>(left.y_, right.z_) ==
-                 TwoProduct<FMAAvailability::Unknown>(right.y_, left.z_);
+      return TwoProduct<FMAPresence::Unknown>(left.x_, right.z_) ==
+                 TwoProduct<FMAPresence::Unknown>(right.x_, left.z_) &&
+             TwoProduct<FMAPresence::Unknown>(left.y_, right.z_) ==
+                 TwoProduct<FMAPresence::Unknown>(right.y_, left.z_);
     }
   }
 }

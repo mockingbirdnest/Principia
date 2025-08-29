@@ -48,11 +48,11 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
   return fma(x, y, z);
 }
 
-template<FMAAvailability fma_availability, quantity Q1, quantity Q2>
+template<FMAPresence fma_presence, quantity Q1, quantity Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  if constexpr (fma_availability == FMAAvailability::Available) {
+  if constexpr (fma_presence == FMAPresence::Present) {
     return si::Unit<Product<Q1, Q2>> *
            numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
                                             y / si::Unit<Q2>,
@@ -64,9 +64,9 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
   }
 }
 
-template<FMAAvailability fma_availability>
+template<FMAPresence fma_presence>
 M128D FusedMultiplyAdd(M128D const& x, M128D const& y, M128D const& z) {
-  if constexpr (fma_availability == FMAAvailability::Available) {
+  if constexpr (fma_presence == FMAPresence::Present) {
     return numerics::_m128d::FusedMultiplyAdd(x, y, z);
   } else {
     return M128D(std::fma(static_cast<double>(x),
@@ -97,11 +97,11 @@ Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
   return fma(x, y, -z);
 }
 
-template<FMAAvailability fma_availability, quantity Q1, quantity Q2>
+template<FMAPresence fma_presence, quantity Q1, quantity Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
-  if constexpr (fma_availability == FMAAvailability::Available) {
+  if constexpr (fma_presence == FMAPresence::Present) {
     return si::Unit<Product<Q1, Q2>> *
            numerics::_fma::FusedMultiplySubtract(x / si::Unit<Q1>,
                                                  y / si::Unit<Q2>,
@@ -113,9 +113,9 @@ Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
   }
 }
 
-template<FMAAvailability fma_availability>
+template<FMAPresence fma_presence>
 M128D FusedMultiplySubtract(M128D const& x, M128D const& y, M128D const& z) {
-  if constexpr (fma_availability == FMAAvailability::Available) {
+  if constexpr (fma_presence == FMAPresence::Present) {
     return numerics::_m128d::FusedMultiplySubtract(x, y, z);
   } else {
     return M128D(std::fma(static_cast<double>(x),
@@ -146,11 +146,11 @@ Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
   return fma(-x, y, z);
 }
 
-template<FMAAvailability fma_availability, quantity Q1, quantity Q2>
+template<FMAPresence fma_presence, quantity Q1, quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
-  if constexpr (fma_availability == FMAAvailability::Available) {
+  if constexpr (fma_presence == FMAPresence::Present) {
     return si::Unit<Product<Q1, Q2>> * numerics::_fma::FusedNegatedMultiplyAdd(
                                            x / si::Unit<Q1>,
                                            y / si::Unit<Q2>,
@@ -162,9 +162,9 @@ Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
   }
 }
 
-template<FMAAvailability fma_availability>
+template<FMAPresence fma_presence>
 M128D FusedNegatedMultiplyAdd(M128D const& x, M128D const& y, M128D const& z) {
-  if constexpr (fma_availability == FMAAvailability::Available) {
+  if constexpr (fma_presence == FMAPresence::Present) {
     return numerics::_m128d::FusedNegatedMultiplyAdd(x, y, z);
   } else {
     return M128D(std::fma(-static_cast<double>(x),
@@ -195,11 +195,11 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
   return fma(-x, y, -z);
 }
 
-template<FMAAvailability fma_availability, quantity Q1, quantity Q2>
+template<FMAPresence fma_presence, quantity Q1, quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {
-  if constexpr (fma_availability == FMAAvailability::Available) {
+  if constexpr (fma_presence == FMAPresence::Present) {
     return si::Unit<Product<Q1, Q2>> *
            numerics::_fma::FusedNegatedMultiplySubtract(
                x / si::Unit<Q1>,
@@ -212,11 +212,11 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
   }
 }
 
-template<FMAAvailability fma_availability>
+template<FMAPresence fma_presence>
 M128D FusedNegatedMultiplySubtract(M128D const& x,
                                    M128D const& y,
                                    M128D const& z) {
-  if constexpr (fma_availability == FMAAvailability::Available) {
+  if constexpr (fma_presence == FMAPresence::Present) {
     return numerics::_m128d::FusedNegatedMultiplySubtract(x, y, z);
   } else {
     return M128D(std::fma(-static_cast<double>(x),

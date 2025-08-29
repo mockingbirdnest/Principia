@@ -115,12 +115,12 @@ bool CorrectionPossiblyNeeded(double const r₀,
   return std::abs(0.5 * (r̃ - r₀) - r₁) <= τ * r₀ && r̃ != r₀;
 }
 
-template<FMAAvailability fma_availability>
+template<FMAPresence fma_presence>
 double CorrectLastBit(double const y, double const r₀, double const r̃) {
-  static_assert(fma_availability != FMAAvailability::Unknown);
+  static_assert(fma_presence != FMAPresence::Unknown);
   double const a = std::min(r₀, r̃);
   double const b = 0.5 * std::abs(r₀ - r̃);
-  return CbrtOneBit<fma_availability>(y, a, b) ? std::max(r₀, r̃) : a;
+  return CbrtOneBit<fma_presence>(y, a, b) ? std::max(r₀, r̃) : a;
 }
 
 }  // namespace
@@ -222,7 +222,7 @@ double Cbrt(double y) {
   OSACA_IF(rounding == Rounding::Correct &&
            CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.7C73DBBD9FA60p-66)) {
     OSACA_RETURN(_mm_cvtsd_f64(
-        _mm_or_pd(_mm_set_sd(CorrectLastBit<FMAAvailability::Unavailable>(
+        _mm_or_pd(_mm_set_sd(CorrectLastBit<FMAPresence::Absent>(
                       abs_y, std::abs(r₀), std::abs(r̃))),
                   sign)));
   }
@@ -327,7 +327,7 @@ double Cbrt(double y) {
   OSACA_IF(rounding == Rounding::Correct &&
            CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.E45E16EF5480Fp-76)) {
     OSACA_RETURN(_mm_cvtsd_f64(
-        _mm_or_pd(_mm_set_sd(CorrectLastBit<FMAAvailability::Available>(
+        _mm_or_pd(_mm_set_sd(CorrectLastBit<FMAPresence::Present>(
                       abs_y, std::abs(r₀), std::abs(r̃))),
                   sign)));
   }
@@ -342,15 +342,15 @@ double Cbrt(double const y) {
                         : method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(y);
 }
 
-template<FMAAvailability fma_availability>
+template<FMAPresence fma_presence>
 bool CbrtOneBit(double const y, double const a, double const b) {
   double const b² = b * b;
   double const b³ = b² * b;
-  DoublePrecision<double> const a² = TwoProduct<fma_availability>(a, a);
+  DoublePrecision<double> const a² = TwoProduct<fma_presence>(a, a);
   auto const& [a²₀, a²₁] = a²;
-  DoublePrecision<double> const a³₀ = TwoProduct<fma_availability>(a²₀, a);
+  DoublePrecision<double> const a³₀ = TwoProduct<fma_presence>(a²₀, a);
   DoublePrecision<double> const minus_a³₁ =
-      TwoProduct<fma_availability>(a²₁, -a);
+      TwoProduct<fma_presence>(a²₁, -a);
   auto const& [a³₀₀, a³₀₁] = a³₀;
   // In cbrt.pdf, where we are specifically considering the computation of the
   // 54th bit, ρ is referred to as ρ₅₃, and ρ_next as ρ₅₄ˌ₁.
