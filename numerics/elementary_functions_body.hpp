@@ -50,7 +50,9 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
   return fma(x, y, z);
 }
 
-template<FMAPresence fma_presence, quantity Q1, quantity Q2>
+template<FMAPresence fma_presence,
+         convertible_to_quantity Q1,
+         convertible_to_quantity Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
@@ -101,7 +103,9 @@ Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
   return fma(x, y, -z);
 }
 
-template<FMAPresence fma_presence, quantity Q1, quantity Q2>
+template<FMAPresence fma_presence,
+         convertible_to_quantity Q1,
+         convertible_to_quantity Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
@@ -152,7 +156,9 @@ Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
   return fma(-x, y, z);
 }
 
-template<FMAPresence fma_presence, quantity Q1, quantity Q2>
+template<FMAPresence fma_presence,
+         convertible_to_quantity Q1,
+         convertible_to_quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
@@ -203,7 +209,9 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
   return fma(-x, y, -z);
 }
 
-template<FMAPresence fma_presence, quantity Q1, quantity Q2>
+template<FMAPresence fma_presence,
+         convertible_to_quantity Q1,
+         convertible_to_quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {

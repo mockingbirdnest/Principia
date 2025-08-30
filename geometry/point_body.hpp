@@ -124,14 +124,18 @@ template<FMAPresence fma_presence, typename L, typename R>
 Point<Product<L, R>> FusedMultiplyAdd(L const& a, R const& b,
                                       Point<Product<L, R>> const& c) {
   using numerics::_elementary_functions::FusedMultiplyAdd;
-  return Point<Product<L, R>>(FusedMultiplyAdd(a, b, c.coordinates_));
+  using geometry::_grassmann::FusedMultiplyAdd;
+  return Point<Product<L, R>>(
+      FusedMultiplyAdd<fma_presence>(a, b, c.coordinates_));
 }
 
 template<FMAPresence fma_presence, typename L, typename R>
 Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a, R const& b,
                                              Point<Product<L, R>> const& c) {
   using numerics::_elementary_functions::FusedNegatedMultiplyAdd;
-  return Point<Product<L, R>>(FusedNegatedMultiplyAdd(a, b, c.coordinates_));
+  using geometry::_grassmann::FusedNegatedMultiplyAdd;
+  return Point<Product<L, R>>(
+      FusedNegatedMultiplyAdd<fma_presence>(a, b, c.coordinates_));
 }
 
 template<typename Vector>

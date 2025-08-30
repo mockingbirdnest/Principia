@@ -344,6 +344,10 @@ std::ostream& operator<<(std::ostream& out,
 using internal::AngleBetween;
 using internal::Bivector;
 using internal::Commutator;
+using internal::FusedMultiplyAdd;
+using internal::FusedMultiplySubtract;
+using internal::FusedNegatedMultiplyAdd;
+using internal::FusedNegatedMultiplySubtract;
 using internal::InnerProduct;
 using internal::Multivector;
 using internal::Normalize;
