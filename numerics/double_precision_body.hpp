@@ -279,7 +279,7 @@ template<FMAPresence fma_presence, typename T, typename U>
 FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   if (fma_presence == FMAPresence::Present ||
-      (fma_presence == FMAPresence::Unknown && UseHardwareFMA)) {
+      (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
     using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = a * b;
@@ -296,7 +296,7 @@ DoublePrecision<Product<T, U>> TwoProductAdd(T const& a,
                                              U const& b,
                                              Product<T, U> const& c) {
   if (fma_presence == FMAPresence::Present ||
-      (fma_presence == FMAPresence::Unknown && UseHardwareFMA)) {
+      (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
     using numerics::_elementary_functions::FusedMultiplyAdd;
     using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
@@ -316,7 +316,7 @@ DoublePrecision<Product<T, U>> TwoProductSubtract(T const& a,
                                                   U const& b,
                                                   Product<T, U> const& c) {
   if (fma_presence == FMAPresence::Present ||
-      (fma_presence == FMAPresence::Unknown && UseHardwareFMA)) {
+      (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
     using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = FusedMultiplySubtract(a, b, c);
@@ -335,7 +335,7 @@ DoublePrecision<Product<T, U>> TwoProductNegatedAdd(T const& a,
                                                     U const& b,
                                                     Product<T, U> const& c) {
   if (fma_presence == FMAPresence::Present ||
-      (fma_presence == FMAPresence::Unknown && UseHardwareFMA)) {
+      (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
     using numerics::_elementary_functions::FusedNegatedMultiplyAdd;
     using numerics::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
@@ -356,7 +356,7 @@ TwoProductNegatedSubtract(T const& a,
                           U const& b,
                           Product<T, U> const& c) {
   if (fma_presence == FMAPresence::Present ||
-      (fma_presence == FMAPresence::Unknown && UseHardwareFMA)) {
+      (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
     using numerics::_elementary_functions::FusedNegatedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = FusedNegatedMultiplySubtract(a, b, c);

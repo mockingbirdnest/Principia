@@ -20,10 +20,10 @@ constexpr bool CanEmitFMAInstructions = false;
 #endif
 
 #if PRINCIPIA_USE_FMA_IF_AVAILABLE()
-inline bool const UseHardwareFMA =
+inline bool const CanUseHardwareFMA =
     (CanEmitFMAInstructions && CPUIDFeatureFlag::FMA.IsSet());
 #else
-inline bool const UseHardwareFMA = false;
+inline bool const CanUseHardwareFMA = false;
 #endif
 
 //TODO(phl)comments
@@ -65,13 +65,13 @@ inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 }  // namespace internal
 
 using internal::CanEmitFMAInstructions;
+using internal::CanUseHardwareFMA;
 using internal::FMAPolicy;
 using internal::FMAPresence;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;
 using internal::FusedNegatedMultiplySubtract;
-using internal::UseHardwareFMA;
 
 }  // namespace _fma
 }  // namespace numerics

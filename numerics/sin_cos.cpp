@@ -35,7 +35,7 @@ using namespace principia::numerics::_m128d;
 #define OSACA_ANALYSED_FUNCTION_TEMPLATE_PARAMETERS <FMAPolicy::Force>
 #define UNDER_OSACA_HYPOTHESES(expression)                                   \
   [&] {                                                                      \
-    constexpr bool UseHardwareFMA = true;                                    \
+    constexpr bool CanUseHardwareFMA = true;                                 \
     constexpr double θ = 3;                                                  \
     /* From argument reduction. */                                           \
     constexpr double abs_θ = θ > 0 ? θ : -θ;                                 \
@@ -413,7 +413,7 @@ double __cdecl Cos(double θ) {
 void StaticInitialization(SlowPathCallback sin_cb, SlowPathCallback cos_cb) {
   slow_path_sin_callback = std::move(sin_cb);
   slow_path_cos_callback = std::move(cos_cb);
-  if (UseHardwareFMA) {
+  if (CanUseHardwareFMA) {
     cos = &Cos<FMAPresence::Present>;
     sin = &Sin<FMAPresence::Present>;
   } else {

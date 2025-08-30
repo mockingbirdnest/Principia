@@ -338,8 +338,8 @@ template double Cbrt<Rounding::Correct>(double y);
 }  // namespace method_5²Z4¹FMA
 
 double Cbrt(double const y) {
-  return UseHardwareFMA ? method_5²Z4¹FMA::Cbrt<Rounding::Correct>(y)
-                        : method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(y);
+  return CanUseHardwareFMA ? method_5²Z4¹FMA::Cbrt<Rounding::Correct>(y)
+                           : method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(y);
 }
 
 template<FMAPresence fma_presence>

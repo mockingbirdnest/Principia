@@ -709,8 +709,8 @@ FMAImplementation::FMAImplementation() {
 
 FORCE_INLINE(inline)
 Value FMAImplementation::Sin(Argument const x) {
-  return UseHardwareFMA ? SinImplementation<FMAPresence::Present>(x)
-                        : SinImplementation<FMAPresence::Absent>(x);
+  return CanUseHardwareFMA ? SinImplementation<FMAPresence::Present>(x)
+                           : SinImplementation<FMAPresence::Absent>(x);
 }
 
 template<FMAPresence fma_presence>
@@ -754,7 +754,7 @@ Value FMAImplementation::SinImplementation(Argument const x) {
 
 FORCE_INLINE(inline)
 Value FMAImplementation::Cos(Argument const x) {
-  return UseHardwareFMA ? CosImplementation<FMAPresence::Present>(x)
+  return CanUseHardwareFMA ? CosImplementation<FMAPresence::Present>(x)
                         : CosImplementation<FMAPresence::Absent>(x);
 }
 
