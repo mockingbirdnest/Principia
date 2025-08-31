@@ -76,18 +76,16 @@ class Point final {
   template<typename V>
   friend constexpr Point<V> operator+(V const& translation,
                                       Point<V> const& point);
-  template<FMAPresence fma_presence, typename L, typename R>
+  template<typename L, typename R>
   friend Point<Product<L, R>> FusedMultiplyAdd(L const& a, R const& b,
                                                Point<Product<L, R>> const& c);
-  template<FMAPresence fma_presence, typename L, typename R>
+  template<typename L, typename R>
   friend Point<Product<L, R>> FusedNegatedMultiplyAdd(
       L const& a, R const& b, Point<Product<L, R>> const& c);
 
-  template<typename V>
-    requires convertible_to_quantity<V>
+  template<convertible_to_quantity V>
   friend constexpr Point<V> NextUp(Point<V> x);
-  template<typename V>
-    requires convertible_to_quantity<V>
+  template<convertible_to_quantity V>
   friend constexpr Point<V> NextDown(Point<V> x);
 
   template<typename V>
@@ -98,22 +96,18 @@ template<typename Vector>
 constexpr Point<Vector> operator+(Vector const& translation,
                                   Point<Vector> const& point);
 
-template<FMAPresence fma_presence = FMAPresence::Unknown,
-         typename L, typename R>
+template<typename L, typename R>
 Point<Product<L, R>> FusedMultiplyAdd(L const& a,
                                       R const& b,
                                       Point<Product<L, R>> const& c);
-template<FMAPresence fma_presence = FMAPresence::Unknown,
-         typename L, typename R>
+template<typename L, typename R>
 Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a,
                                              R const& b,
                                              Point<Product<L, R>> const& c);
 
-template<typename Vector>
-  requires convertible_to_quantity<Vector>
+template<convertible_to_quantity Vector>
 constexpr Point<Vector> NextUp(Point<Vector> x);
-template<typename Vector>
-  requires convertible_to_quantity<Vector>
+template<convertible_to_quantity Vector>
 constexpr Point<Vector> NextDown(Point<Vector> x);
 
 template<typename Vector>

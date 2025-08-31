@@ -32,7 +32,7 @@ using namespace principia::numerics::_m128d;
 
 #define OSACA_ANALYSED_FUNCTION Cos
 #define OSACA_ANALYSED_FUNCTION_NAMESPACE
-#define OSACA_ANALYSED_FUNCTION_TEMPLATE_PARAMETERS <FMAPolicy::Force>
+#define OSACA_ANALYSED_FUNCTION_TEMPLATE_PARAMETERS <FMAPresence::Present>
 #define UNDER_OSACA_HYPOTHESES(expression)                                   \
   [&] {                                                                      \
     constexpr bool CanUseHardwareFMA = true;                                 \
@@ -134,6 +134,26 @@ M128D const cos_1(0x1.5555'549D'B0A9'5p-5);
 
 }  // namespace m128d
 
+template<FMAPresence fma_presence>
+M128D FusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
+  static_assert(fma_presence != FMAPresence::Unknown);
+  if constexpr (fma_presence == FMAPresence::Present) {
+    return FusedMultiplyAdd(a, b, c);
+  } else {
+    return a * b + c;
+  }
+}
+
+template<FMAPresence fma_presence>
+M128D FusedNegatedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
+  static_assert(fma_presence != FMAPresence::Unknown);
+  if constexpr (fma_presence == FMAPresence::Present) {
+    return FusedNegatedMultiplyAdd(a, b, c);
+  } else {
+    return c - a * b;
+  }
+}
+
 inline std::int64_t AccurateTableIndex(Argument const abs_x) {
   // This function computes the index in the accurate table:
   // 1. A suitable (large) power of 2 is added to the argument so that the last
@@ -193,7 +213,7 @@ void Reduce(Argument const θ,
     // of the quadrant.
     M128D const sign = Sign(θ);
     M128D n_double =
-        FusedMultiplyAdd<fma_presence>(
+        FusedMultiplyAdd(
             abs_θ, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
@@ -253,14 +273,14 @@ void Reduce(Argument const θ,
 template<FMAPresence fma_presence>
 Value SinPolynomial(Argument const x) {
   using Polynomial1 =
-      HornerEvaluator<Value, Argument, 1, FMAPolicy::Force, fma_presence>;
+      HornerEvaluator<Value, Argument, 1, FMAPolicy::Auto, fma_presence>;
   return Polynomial1::Evaluate({m128d::sin_0, m128d::sin_1}, x);
 }
 
 template<FMAPresence fma_presence>
 Value SinPolynomialNearZero(Argument const x) {
   using Polynomial1 =
-      HornerEvaluator<Value, Argument, 1, FMAPolicy::Force, fma_presence>;
+      HornerEvaluator<Value, Argument, 1, FMAPolicy::Auto, fma_presence>;
   return Polynomial1::Evaluate(
       {m128d::sin_near_zero_0, m128d::sin_near_zero_1}, x);
 }
@@ -268,7 +288,7 @@ Value SinPolynomialNearZero(Argument const x) {
 template<FMAPresence fma_presence>
 Value CosPolynomial(Argument const x) {
   using Polynomial1 =
-      HornerEvaluator<Value, Argument, 1, FMAPolicy::Force, fma_presence>;
+      HornerEvaluator<Value, Argument, 1, FMAPolicy::Auto, fma_presence>;
   return Polynomial1::Evaluate({m128d::cos_0, m128d::cos_1}, x);
 }
 
