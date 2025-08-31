@@ -32,10 +32,10 @@ using namespace principia::numerics::_m128d;
 
 #define OSACA_ANALYSED_FUNCTION Cos
 #define OSACA_ANALYSED_FUNCTION_NAMESPACE
-#define OSACA_ANALYSED_FUNCTION_TEMPLATE_PARAMETERS <FMAPolicy::Force>
+#define OSACA_ANALYSED_FUNCTION_TEMPLATE_PARAMETERS <FMAPresence::Present>
 #define UNDER_OSACA_HYPOTHESES(expression)                                   \
   [&] {                                                                      \
-    constexpr bool UseHardwareFMA = true;                                    \
+    constexpr bool CanUseHardwareFMA = true;                                 \
     constexpr double θ = 3;                                                  \
     /* From argument reduction. */                                           \
     constexpr double abs_θ = θ > 0 ? θ : -θ;                                 \
@@ -92,9 +92,6 @@ constexpr double sin_near_zero_e = 0x1.0000'AD82'A723'6p0;  // 2^-70.561.
 constexpr double sin_e = 0x1.0002'6013'6BD9'Dp0;  // 2^-68.751.
 constexpr double cos_e = 0x1.0001'B836'988A'Dp0;  // 2^-69.217.
 
-template<FMAPolicy fma_policy>
-using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;
-
 // Pointers used for indirect calls, set by `StaticInitialization`.
 SlowPathCallback slow_path_sin_callback = nullptr;
 SlowPathCallback slow_path_cos_callback = nullptr;
@@ -102,9 +99,9 @@ double (__cdecl *cos)(double θ) = nullptr;
 double (__cdecl *sin)(double θ) = nullptr;
 
 // Forward declarations needed by the OSACA macros.
-template<FMAPolicy fma_policy>
+template<FMAPresence fma_presence>
 double __cdecl Sin(double θ);
-template<FMAPolicy fma_policy>
+template<FMAPresence fma_presence>
 double __cdecl Cos(double θ);
 
 namespace m128d {
@@ -137,6 +134,26 @@ M128D const cos_1(0x1.5555'549D'B0A9'5p-5);
 
 }  // namespace m128d
 
+template<FMAPresence fma_presence>
+M128D FusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
+  static_assert(fma_presence != FMAPresence::Unknown);
+  if constexpr (fma_presence == FMAPresence::Present) {
+    return FusedMultiplyAdd(a, b, c);
+  } else {
+    return a * b + c;
+  }
+}
+
+template<FMAPresence fma_presence>
+M128D FusedNegatedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
+  static_assert(fma_presence != FMAPresence::Unknown);
+  if constexpr (fma_presence == FMAPresence::Present) {
+    return FusedNegatedMultiplyAdd(a, b, c);
+  } else {
+    return c - a * b;
+  }
+}
+
 inline std::int64_t AccurateTableIndex(Argument const abs_x) {
   // This function computes the index in the accurate table:
   // 1. A suitable (large) power of 2 is added to the argument so that the last
@@ -152,31 +169,11 @@ inline std::int64_t AccurateTableIndex(Argument const abs_x) {
       .Bits<std::int64_t>();
 }
 
-template<FMAPolicy fma_policy>
-M128D FusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
-  static_assert(fma_policy != FMAPolicy::Auto);
-  if constexpr (fma_policy == FMAPolicy::Force) {
-    return FusedMultiplyAdd(a, b, c);
-  } else {
-    return a * b + c;
-  }
-}
-
-template<FMAPolicy fma_policy>
-M128D FusedNegatedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
-  static_assert(fma_policy != FMAPolicy::Auto);
-  if constexpr (fma_policy == FMAPolicy::Force) {
-    return FusedNegatedMultiplyAdd(a, b, c);
-  } else {
-    return c - a * b;
-  }
-}
-
 // Evaluates the sum `x + Δx` and performs the rounding test using the technique
 // described in [Mul+10], section 11.6.3.  If rounding is safe, returns the sum;
 // otherwise, returns `NaN`.  `x` is always positive.  `Δx` may be positive or
 // negative.
-template<FMAPolicy fma_policy, double e>
+template<FMAPresence fma_presence, double e>
 Value DetectDangerousRounding(Value const x, Value const Δx) {
   // We don't check that `Δx` is not NaN because that's how we trigger fallback
   // to the slow path.
@@ -185,7 +182,7 @@ Value DetectDangerousRounding(Value const x, Value const Δx) {
   auto const& value = sum.value;
   auto const& error = sum.error;
   auto const muller_test_expression =
-      FusedMultiplyAdd<fma_policy>(error, M128D(e), value);
+      FusedMultiplyAdd<fma_presence>(error, M128D(e), value);
   OSACA_IF(value == muller_test_expression) {
     return value;
   } else {
@@ -198,7 +195,7 @@ Value DetectDangerousRounding(Value const x, Value const Δx) {
   }
 }
 
-template<FMAPolicy fma_policy, bool preserve_sign>
+template<FMAPresence fma_presence, bool preserve_sign>
 FORCE_INLINE(inline)
 void Reduce(Argument const θ,
             DoublePrecision<Argument>& θ_reduced,
@@ -216,7 +213,7 @@ void Reduce(Argument const θ,
     // of the quadrant.
     M128D const sign = Sign(θ);
     M128D n_double =
-        FusedMultiplyAdd<fma_policy>(
+        FusedMultiplyAdd(
             abs_θ, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
@@ -227,10 +224,10 @@ void Reduce(Argument const θ,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, m128d::C₁, θ);
+      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, θ);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, m128d::C₁, abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, abs_θ);
     }
 
     Argument const δy = n_double * m128d::δC₁;
@@ -244,7 +241,7 @@ void Reduce(Argument const θ,
     // Same code as above.
     M128D const sign = Sign(θ);
     M128D n_double =
-        FusedMultiplyAdd<fma_policy>(
+        FusedMultiplyAdd<fma_presence>(
             abs_θ, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
@@ -253,10 +250,10 @@ void Reduce(Argument const θ,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, m128d::C₂, θ);
+      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, θ);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_policy>(n_double, m128d::C₂, abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, abs_θ);
     }
 
     Argument const yʹ = n_double * m128d::Cʹ₂;
@@ -273,23 +270,29 @@ void Reduce(Argument const θ,
   θ_reduced.error = m128d::quiet_NaN;
 }
 
-template<FMAPolicy fma_policy>
+template<FMAPresence fma_presence>
 Value SinPolynomial(Argument const x) {
-  return Polynomial1<fma_policy>::Evaluate({m128d::sin_0, m128d::sin_1}, x);
+  using Polynomial1 =
+      HornerEvaluator<Value, Argument, 1, FMAPolicy::Auto, fma_presence>;
+  return Polynomial1::Evaluate({m128d::sin_0, m128d::sin_1}, x);
 }
 
-template<FMAPolicy fma_policy>
+template<FMAPresence fma_presence>
 Value SinPolynomialNearZero(Argument const x) {
-  return Polynomial1<fma_policy>::Evaluate(
+  using Polynomial1 =
+      HornerEvaluator<Value, Argument, 1, FMAPolicy::Auto, fma_presence>;
+  return Polynomial1::Evaluate(
       {m128d::sin_near_zero_0, m128d::sin_near_zero_1}, x);
 }
 
-template<FMAPolicy fma_policy>
+template<FMAPresence fma_presence>
 Value CosPolynomial(Argument const x) {
-  return Polynomial1<fma_policy>::Evaluate({m128d::cos_0, m128d::cos_1}, x);
+  using Polynomial1 =
+      HornerEvaluator<Value, Argument, 1, FMAPolicy::Auto, fma_presence>;
+  return Polynomial1::Evaluate({m128d::cos_0, m128d::cos_1}, x);
 }
 
-template<FMAPolicy fma_policy>
+template<FMAPresence fma_presence>
 FORCE_INLINE(inline)
 Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const x = θ_reduced.value;
@@ -298,9 +301,10 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
   OSACA_IF(abs_x < sin_near_zero_cutoff) {
     auto const x² = x * x;
     auto const x³ = x² * x;
-    auto const x³_term = FusedMultiplyAdd<fma_policy>(
-        x³, SinPolynomialNearZero<fma_policy>(x²), e);
-    return DetectDangerousRounding<fma_policy, sin_near_zero_e>(x, x³_term);
+    auto const x³_term = FusedMultiplyAdd<fma_presence>(
+        x³, SinPolynomialNearZero<fma_presence>(x²), e);
+    return DetectDangerousRounding<fma_presence, sin_near_zero_e>(
+        x, x³_term);
   } else {
     auto const sign = Sign(x);
     auto const i = AccurateTableIndex(abs_x);
@@ -323,23 +327,23 @@ Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
     M128D const signed_e = sign ^ e;
 
     DoublePrecision<M128D> const sin_x₀_plus_h_cos_x₀ =
-        TwoProductAdd<fma_policy>(signed_cos_x₀, h, signed_sin_x₀);
+        TwoProductAdd<fma_presence>(signed_cos_x₀, h, signed_sin_x₀);
     auto const h² = h * h;
     auto const h³ = h² * h;
     auto const h_plus_e² = h * ((signed_e + signed_e) + h);
     auto const polynomial_term =
-        FusedMultiplyAdd<fma_policy>(
+        FusedMultiplyAdd<fma_presence>(
             signed_cos_x₀,
-            FusedMultiplyAdd<fma_policy>(
-                h³, SinPolynomial<fma_policy>(h²), signed_e),
-            (signed_sin_x₀ * h_plus_e²) * CosPolynomial<fma_policy>(h²)) +
+            FusedMultiplyAdd<fma_presence>(
+                h³, SinPolynomial<fma_presence>(h²), signed_e),
+            (signed_sin_x₀ * h_plus_e²) * CosPolynomial<fma_presence>(h²)) +
         sin_x₀_plus_h_cos_x₀.error;
-    return DetectDangerousRounding<fma_policy, sin_e>(
+    return DetectDangerousRounding<fma_presence, sin_e>(
         sin_x₀_plus_h_cos_x₀.value, polynomial_term);
   }
 }
 
-template<FMAPolicy fma_policy>
+template<FMAPresence fma_presence>
 FORCE_INLINE(inline)
 Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const x = θ_reduced.value;
@@ -360,33 +364,34 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const h = abs_x - x₀;
 
   DoublePrecision<M128D> const cos_x₀_minus_h_sin_x₀ =
-      TwoProductNegatedAdd<fma_policy>(sin_x₀, h, cos_x₀);
+      TwoProductNegatedAdd<fma_presence>(sin_x₀, h, cos_x₀);
   auto const h² = h * h;
   auto const h³ = h² * h;
   auto const h_plus_e² = h * ((e_abs + e_abs) + h);
   // TODO(phl): Redo the error analysis.
   auto const polynomial_term =
-      FusedNegatedMultiplyAdd<fma_policy>(
+      FusedNegatedMultiplyAdd<fma_presence>(
           sin_x₀,
-          FusedMultiplyAdd<fma_policy>(
-              h³, SinPolynomial<fma_policy>(h²), e_abs),
-          (cos_x₀ * h_plus_e²) * CosPolynomial<fma_policy>(h²)) +
+          FusedMultiplyAdd<fma_presence>(
+              h³, SinPolynomial<fma_presence>(h²), e_abs),
+          (cos_x₀ * h_plus_e²) * CosPolynomial<fma_presence>(h²)) +
       cos_x₀_minus_h_sin_x₀.error;
-  return DetectDangerousRounding<fma_policy, cos_e>(cos_x₀_minus_h_sin_x₀.value,
-                                                    polynomial_term);
+  return DetectDangerousRounding<fma_presence, cos_e>(
+      cos_x₀_minus_h_sin_x₀.value, polynomial_term);
 }
 
-template<FMAPolicy fma_policy>
+template<FMAPresence fma_presence>
 double __cdecl Sin(double θ) {
-  OSACA_FUNCTION_BEGIN(θ, <fma_policy>);
+  OSACA_FUNCTION_BEGIN(θ, <fma_presence>);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   double value;
-  Reduce<fma_policy, /*preserve_sign=*/true>(M128D(θ), θ_reduced, quadrant);
+  Reduce<fma_presence, /*preserve_sign=*/true>(
+      M128D(θ), θ_reduced, quadrant);
   OSACA_IF(quadrant & 0b1) {
-    value = static_cast<double>(CosImplementation<fma_policy>(θ_reduced));
+    value = static_cast<double>(CosImplementation<fma_presence>(θ_reduced));
   } else {
-    value = static_cast<double>(SinImplementation<fma_policy>(θ_reduced));
+    value = static_cast<double>(SinImplementation<fma_presence>(θ_reduced));
   }
   OSACA_IF(value != value) {
     if (slow_path_sin_callback != nullptr) {
@@ -400,17 +405,18 @@ double __cdecl Sin(double θ) {
   }
 }
 
-template<FMAPolicy fma_policy>
+template<FMAPresence fma_presence>
 double __cdecl Cos(double θ) {
-  OSACA_FUNCTION_BEGIN(θ, <fma_policy>);
+  OSACA_FUNCTION_BEGIN(θ, <fma_presence>);
   DoublePrecision<Argument> θ_reduced;
   std::int64_t quadrant;
   double value;
-  Reduce<fma_policy, /*preserve_sign=*/false>(M128D(θ), θ_reduced, quadrant);
+  Reduce<fma_presence, /*preserve_sign=*/false>(
+      M128D(θ), θ_reduced, quadrant);
   OSACA_IF(quadrant & 0b1) {
-    value = static_cast<double>(SinImplementation<fma_policy>(θ_reduced));
+    value = static_cast<double>(SinImplementation<fma_presence>(θ_reduced));
   } else {
-    value = static_cast<double>(CosImplementation<fma_policy>(θ_reduced));
+    value = static_cast<double>(CosImplementation<fma_presence>(θ_reduced));
   }
   OSACA_IF(value != value) {
     if (slow_path_cos_callback != nullptr) {
@@ -427,12 +433,12 @@ double __cdecl Cos(double θ) {
 void StaticInitialization(SlowPathCallback sin_cb, SlowPathCallback cos_cb) {
   slow_path_sin_callback = std::move(sin_cb);
   slow_path_cos_callback = std::move(cos_cb);
-  if (UseHardwareFMA) {
-    cos = &Cos<FMAPolicy::Force>;
-    sin = &Sin<FMAPolicy::Force>;
+  if (CanUseHardwareFMA) {
+    cos = &Cos<FMAPresence::Present>;
+    sin = &Sin<FMAPresence::Present>;
   } else {
-    cos = &Cos<FMAPolicy::Disallow>;
-    sin = &Sin<FMAPolicy::Disallow>;
+    cos = &Cos<FMAPresence::Absent>;
+    sin = &Sin<FMAPresence::Absent>;
   }
 }
 

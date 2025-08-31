@@ -64,9 +64,9 @@ struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0> {
 template<typename Value, typename Argument,
          int degree, bool fma, int low, int subdegree>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::
+Evaluate(Coefficients const& coefficients,
+         Argument const& argument) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::Evaluate");
   constexpr int m = PowerOf2Le(subdegree);
@@ -79,7 +79,7 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::Evaluate(
       InternalEstrinEvaluator<Value, Argument, degree, fma, low, m - 1>::
           Evaluate(coefficients, argument);
 
-  // Because this function is heavily inline (including the recursive calls) we
+  // Because this function is heavily inlined (including the recursive calls) we
   // rely on common subexpression elimination to detect that we repeatedly
   // compute x², x⁴, etc. and to only compute each power once.  Inspecting the
   // generated code, we verified that the right thing actually happens.
@@ -87,7 +87,6 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::Evaluate(
   // algorithm.
   auto const xᵐ = Pow<m>(argument);
   if constexpr (fma) {
-    using numerics::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, xᵐ, b);
   } else {
     return a * xᵐ + b;
@@ -115,7 +114,6 @@ EvaluateDerivative(Coefficients const& coefficients,
 
   auto const xᵐ = Pow<m>(argument);
   if constexpr (fma) {
-    using numerics::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, xᵐ, b);
   } else {
     return a * xᵐ + b;
@@ -124,14 +122,13 @@ EvaluateDerivative(Coefficients const& coefficients,
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
+Evaluate(Coefficients const& coefficients,
+         Argument const& argument) {
   auto const& x = argument;
   auto const& a = std::get<low + 1>(coefficients);
   auto const& b = std::get<low>(coefficients);
   if constexpr (fma) {
-    using numerics::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, x, b);
   } else {
     return a * x + b;
@@ -140,9 +137,9 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::Evaluate(
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
+Evaluate(Coefficients const& coefficients,
+         Argument const& argument) {
   return std::get<low>(coefficients);
 }
 
@@ -155,7 +152,6 @@ EvaluateDerivative(Coefficients const& coefficients,
   auto const& a = (low + 1) * std::get<low + 1>(coefficients);
   auto const& b = low * std::get<low>(coefficients);
   if constexpr (fma) {
-    using numerics::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, x, b);
   } else {
     return a * x + b;
@@ -201,16 +197,15 @@ struct InternalHornerEvaluator<Value, Argument, degree, fma, degree> {
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
-InternalHornerEvaluator<Value, Argument, degree, fma, low>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+InternalHornerEvaluator<Value, Argument, degree, fma, low>::
+Evaluate(Coefficients const& coefficients,
+         Argument const& argument) {
   auto const& x = argument;
   auto const a =
       InternalHornerEvaluator<Value, Argument, degree, fma, low + 1>::Evaluate(
           coefficients, argument);
   auto const& b = std::get<low>(coefficients);
   if constexpr (fma) {
-    using numerics::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, x, b);
   } else {
     return a * x + b;
@@ -219,16 +214,15 @@ InternalHornerEvaluator<Value, Argument, degree, fma, low>::Evaluate(
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE(inline) Derivative<Value, Argument, low>
-InternalHornerEvaluator<Value, Argument, degree, fma, low>::EvaluateDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+InternalHornerEvaluator<Value, Argument, degree, fma, low>::
+EvaluateDerivative(Coefficients const& coefficients,
+                   Argument const& argument) {
   auto const& x = argument;
   auto const a =
       InternalHornerEvaluator<Value, Argument, degree, fma, low + 1>::
           EvaluateDerivative(coefficients, argument);
   auto const b = std::get<low>(coefficients) * low;
   if constexpr (fma) {
-    using numerics::_elementary_functions::FusedMultiplyAdd;
     return FusedMultiplyAdd(a, x, b);
   } else {
     return a * x + b;
@@ -237,17 +231,17 @@ InternalHornerEvaluator<Value, Argument, degree, fma, low>::EvaluateDerivative(
 
 template<typename Value, typename Argument, int degree, bool fma>
 FORCE_INLINE(inline) Derivative<Value, Argument, degree>
-InternalHornerEvaluator<Value, Argument, degree, fma, degree>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
+Evaluate(Coefficients const& coefficients,
+         Argument const& argument) {
   return std::get<degree>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree, bool fma>
 FORCE_INLINE(inline) Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
-    EvaluateDerivative(Coefficients const& coefficients,
-                        Argument const& argument) {
+EvaluateDerivative(Coefficients const& coefficients,
+                    Argument const& argument) {
   return std::get<degree>(coefficients) * degree;
 }
 
@@ -359,7 +353,8 @@ Evaluator<Value, Argument, degree>::ReadFromMessage(
   LOG(FATAL) << "Unexpected evaluator " << message.DebugString();
 }
 
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
 class EstrinEvaluator : public Evaluator<Value, Argument, degree> {
  public:
   using Coefficients =
@@ -378,19 +373,23 @@ class EstrinEvaluator : public Evaluator<Value, Argument, degree> {
   EstrinEvaluator() = default;
 };
 
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
 constexpr Evaluator<Value, Argument, degree> const*
-EstrinEvaluator<Value, Argument, degree, fma_policy>::Singleton() {
+EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+Singleton() {
   static constexpr EstrinEvaluator singleton;
   return &singleton;
 }
 
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
-Value EstrinEvaluator<Value, Argument, degree, fma_policy>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
+Value EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+Evaluate(Coefficients const& coefficients,
+         Argument const& argument) {
+  if (fma_policy == FMAPolicy::Auto &&
+      (fma_presence == FMAPresence::Present ||
+       (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
     using InternalEvaluator = InternalEstrinEvaluator<Value,
                                                       Argument,
                                                       degree,
@@ -409,20 +408,22 @@ Value EstrinEvaluator<Value, Argument, degree, fma_policy>::Evaluate(
   }
 }
 
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
 Derivative<Value, Argument>
-EstrinEvaluator<Value, Argument, degree, fma_policy>::EvaluateDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+EvaluateDerivative(Coefficients const& coefficients,
+                   Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
-  } else if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-             (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
+  } else if (fma_policy == FMAPolicy::Auto &&
+             (fma_presence == FMAPresence::Present ||
+              (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
     using InternalEvaluator =
         InternalEstrinEvaluator<Value,
                                 Argument,
                                 degree,
-                                true,
+                                /*fma=*/true,
                                 /*low=*/1,
                                 /*subdegree=*/degree - 1>;
     return InternalEvaluator::EvaluateDerivative(coefficients, argument);
@@ -431,14 +432,15 @@ EstrinEvaluator<Value, Argument, degree, fma_policy>::EvaluateDerivative(
         InternalEstrinEvaluator<Value,
                                 Argument,
                                 degree,
-                                false,
+                                /*fma=*/false,
                                 /*low=*/1,
                                 /*subdegree=*/degree - 1>;
     return InternalEvaluator::EvaluateDerivative(coefficients, argument);
   }
 }
 
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
 class HornerEvaluator : public Evaluator<Value, Argument, degree> {
  public:
   using Coefficients =
@@ -457,47 +459,61 @@ class HornerEvaluator : public Evaluator<Value, Argument, degree> {
   HornerEvaluator() = default;
 };
 
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
 constexpr Evaluator<Value, Argument, degree> const*
-HornerEvaluator<Value, Argument, degree, fma_policy>::Singleton() {
+HornerEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+Singleton() {
   static constexpr HornerEvaluator singleton;
   return &singleton;
 }
 
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
-Value HornerEvaluator<Value, Argument, degree, fma_policy>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument) {
-  if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-      (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
-    return InternalHornerEvaluator<
-        Value, Argument, degree, /*fma=*/true, /*low=*/0>::Evaluate(
-            coefficients, argument);
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
+Value HornerEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+Evaluate(Coefficients const& coefficients,
+         Argument const& argument) {
+  if (fma_policy == FMAPolicy::Auto &&
+      (fma_presence == FMAPresence::Present ||
+       (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
+    return InternalHornerEvaluator<Value,
+                                   Argument,
+                                   degree,
+                                   /*fma=*/true,
+                                   /*low=*/0>::Evaluate(coefficients, argument);
   } else {
-    return InternalHornerEvaluator<
-        Value, Argument, degree, /*fma=*/false, /*low=*/0>::Evaluate(
-            coefficients, argument);
+    return InternalHornerEvaluator<Value,
+                                   Argument,
+                                   degree,
+                                   /*fma=*/false,
+                                   /*low=*/0>::Evaluate(coefficients, argument);
   }
 }
 
-template<typename Value, typename Argument, int degree, FMAPolicy fma_policy>
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
 Derivative<Value, Argument>
-HornerEvaluator<Value, Argument, degree, fma_policy>::EvaluateDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument) {
+HornerEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+EvaluateDerivative(Coefficients const& coefficients,
+                   Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
-  } else if ((fma_policy == FMAPolicy::Force && CanEmitFMAInstructions) ||
-             (fma_policy == FMAPolicy::Auto && UseHardwareFMA)) {
-    return InternalHornerEvaluator<
-        Value, Argument, degree,
-        /*fma=*/true, /*low=*/1>::EvaluateDerivative(
-            coefficients, argument);
+  } else if (fma_policy == FMAPolicy::Auto &&
+             (fma_presence == FMAPresence::Present ||
+              (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
+    return InternalHornerEvaluator<Value,
+                                   Argument,
+                                   degree,
+                                   /*fma=*/true,
+                                   /*low=*/1>::EvaluateDerivative(coefficients,
+                                                                  argument);
   } else {
-    return InternalHornerEvaluator<
-        Value, Argument, degree,
-        /*fma=*/false, /*low=*/1>::EvaluateDerivative(
-            coefficients, argument);
+    return InternalHornerEvaluator<Value,
+                                   Argument,
+                                   degree,
+                                   /*fma=*/false,
+                                   /*low=*/1>::EvaluateDerivative(coefficients,
+                                                                  argument);
   }
 }
 

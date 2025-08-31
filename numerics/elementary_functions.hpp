@@ -2,6 +2,7 @@
 
 #include "base/concepts.hpp"
 #include "quantities/arithmetic.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -12,29 +13,84 @@ namespace internal {
 
 using namespace principia::base::_concepts;
 using namespace principia::quantities::_arithmetic;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 // Equivalent to `std::fma(x, y, z)`.
 template<typename Q1, typename Q2>
+  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
+           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z);
+template<boost_cpp_bin_float Q1,
+         boost_cpp_bin_float Q2>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z);
+template<convertible_to_quantity Q1,
+         convertible_to_quantity Q2>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z);
+
 template<typename Q1, typename Q2>
+  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
+           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z);
+template<boost_cpp_bin_float Q1,
+         boost_cpp_bin_float Q2>
+Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
+                                      Q2 const& y,
+                                      Product<Q1, Q2> const& z);
+template<convertible_to_quantity Q1,
+         convertible_to_quantity Q2>
+Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
+                                      Q2 const& y,
+                                      Product<Q1, Q2> const& z);
+
 template<typename Q1, typename Q2>
+  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
+           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z);
+template<boost_cpp_bin_float Q1,
+         boost_cpp_bin_float Q2>
+Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
+                                        Q2 const& y,
+                                        Product<Q1, Q2> const& z);
+template<convertible_to_quantity Q1,
+         convertible_to_quantity Q2>
+Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
+                                        Q2 const& y,
+                                        Product<Q1, Q2> const& z);
+
 template<typename Q1, typename Q2>
+  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
+           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
+Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
+                                             Q2 const& y,
+                                             Product<Q1, Q2> const& z);
+template<boost_cpp_bin_float Q1,
+         boost_cpp_bin_float Q2>
+Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
+                                             Q2 const& y,
+                                             Product<Q1, Q2> const& z);
+template<convertible_to_quantity Q1,
+         convertible_to_quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z);
 
+
 // Equivalent to `std::abs(x)`.
-template<typename Q>
+template<boost_cpp_number Q>
+Q Abs(Q const& quantity);
+template<convertible_to_quantity Q>
 Q Abs(Q const& quantity);
 
 // Returns a value between zero and `modulus`.

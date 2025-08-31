@@ -24,57 +24,123 @@ using namespace principia::numerics::_next;
 using namespace principia::quantities::_si;
 
 template<typename Q1, typename Q2>
+  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
+           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
-  if constexpr ((boost_cpp_int<Q1> || boost_cpp_rational<Q1>) &&
-                (boost_cpp_int<Q2> || boost_cpp_rational<Q2>)) {
-    return x * y + z;
-  } else if constexpr (boost_cpp_bin_float<Q1> || boost_cpp_bin_float<Q2>) {
-    return fma(x, y, z);
-  } else {
-    return si::Unit<Product<Q1, Q2>> *
-           numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
-                                            y / si::Unit<Q2>,
-                                            z / si::Unit<Product<Q1, Q2>>);
-  }
+  return x * y + z;
 }
 
+template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z) {
+  return fma(x, y, z);
+}
+
+template<convertible_to_quantity Q1, convertible_to_quantity Q2>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z) {
+  return si::Unit<Product<Q1, Q2>> *
+          numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
+                                          y / si::Unit<Q2>,
+                                          z / si::Unit<Product<Q1, Q2>>);
+}
+
+
 template<typename Q1, typename Q2>
+  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
+           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
+Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
+                                      Q2 const& y,
+                                      Product<Q1, Q2> const& z) {
+  return x * y - z;
+}
+
+template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
+Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
+                                      Q2 const& y,
+                                      Product<Q1, Q2> const& z) {
+  return fma(x, y, -z);
+}
+
+template<convertible_to_quantity Q1, convertible_to_quantity Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z) {
   return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedMultiplySubtract(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+          numerics::_fma::FusedMultiplySubtract(x / si::Unit<Q1>,
+                                                y / si::Unit<Q2>,
+                                                z / si::Unit<Product<Q1, Q2>>);
 }
 
+
 template<typename Q1, typename Q2>
+  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
+           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z) {
-  return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedNegatedMultiplyAdd(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+  return -x * y + z;
 }
 
+template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
+Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
+                                        Q2 const& y,
+                                        Product<Q1, Q2> const& z) {
+  return fma(-x, y, z);
+}
+
+template<convertible_to_quantity Q1, convertible_to_quantity Q2>
+Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
+                                        Q2 const& y,
+                                        Product<Q1, Q2> const& z) {
+  return si::Unit<Product<Q1, Q2>> * numerics::_fma::FusedNegatedMultiplyAdd(
+                                          x / si::Unit<Q1>,
+                                          y / si::Unit<Q2>,
+                                          z / si::Unit<Product<Q1, Q2>>);
+}
+
+
 template<typename Q1, typename Q2>
+  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
+           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
+Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
+                                             Q2 const& y,
+                                             Product<Q1, Q2> const& z) {
+  return -x * y - z;
+}
+
+template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
+Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
+                                             Q2 const& y,
+                                             Product<Q1, Q2> const& z) {
+  return fma(-x, y, -z);
+}
+
+template<convertible_to_quantity Q1, convertible_to_quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
                                              Q2 const& y,
                                              Product<Q1, Q2> const& z) {
   return si::Unit<Product<Q1, Q2>> *
-         numerics::_fma::FusedNegatedMultiplySubtract(
-             x / si::Unit<Q1>, y / si::Unit<Q2>, z / si::Unit<Product<Q1, Q2>>);
+          numerics::_fma::FusedNegatedMultiplySubtract(
+              x / si::Unit<Q1>,
+              y / si::Unit<Q2>,
+              z / si::Unit<Product<Q1, Q2>>);
 }
 
-template<typename Q>
+
+template<boost_cpp_number Q>
+Q Abs(Q const& x) {
+  return abs(x);
+}
+
+template<convertible_to_quantity Q>
 FORCE_INLINE(inline)
 Q Abs(Q const& x) {
-  if constexpr (boost_cpp_number<Q>) {
-    return abs(x);
-  } else {
-    return si::Unit<Q> * std::abs(x / si::Unit<Q>);
-  }
+  return si::Unit<Q> * std::abs(x / si::Unit<Q>);
 }
 
 template<typename Q>

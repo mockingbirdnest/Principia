@@ -8,6 +8,7 @@
 #include "base/concepts.hpp"
 #include "base/not_null.hpp"
 #include "geometry/concepts.hpp"
+#include "numerics/fma.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 #include "serialization/geometry.pb.h"
@@ -20,6 +21,7 @@ namespace internal {
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_concepts;
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 
@@ -81,11 +83,9 @@ class Point final {
   friend Point<Product<L, R>> FusedNegatedMultiplyAdd(
       L const& a, R const& b, Point<Product<L, R>> const& c);
 
-  template<typename V>
-    requires convertible_to_quantity<V>
+  template<convertible_to_quantity V>
   friend constexpr Point<V> NextUp(Point<V> x);
-  template<typename V>
-    requires convertible_to_quantity<V>
+  template<convertible_to_quantity V>
   friend constexpr Point<V> NextDown(Point<V> x);
 
   template<typename V>
@@ -105,11 +105,9 @@ Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a,
                                              R const& b,
                                              Point<Product<L, R>> const& c);
 
-template<typename Vector>
-  requires convertible_to_quantity<Vector>
+template<convertible_to_quantity Vector>
 constexpr Point<Vector> NextUp(Point<Vector> x);
-template<typename Vector>
-  requires convertible_to_quantity<Vector>
+template<convertible_to_quantity Vector>
 constexpr Point<Vector> NextDown(Point<Vector> x);
 
 template<typename Vector>
