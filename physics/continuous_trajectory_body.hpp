@@ -450,10 +450,10 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
         bool const is_pre_καραθεοδωρή =
             !polynomial.HasExtension(
                 serialization::PolynomialInMonomialBasis::extension) ||
-            polynomial
-                .GetExtension(
-                    serialization::PolynomialInMonomialBasis::extension)
-                .has_evaluator();
+            !polynomial
+                 .GetExtension(
+                     serialization::PolynomialInMonomialBasis::extension)
+                 .has_evaluator();
         if (is_pre_καραθεοδωρή) {
           continuous_trajectory->polynomials_.emplace_back(
               Instant::ReadFromMessage(pair.t_max()),
