@@ -53,7 +53,7 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
       is_unstable_(false),
       degree_(min_degree),
       degree_age_(0),
-      polynomial_evaluator_policy_(UseHardwareFMA
+      polynomial_evaluator_policy_(CanUseHardwareFMA
                                        ? Policy::AlwaysEstrin()
                                        : Policy::AlwaysEstrinWithoutFMA()) {
   CHECK_LT(0 * Metre, tolerance_);
@@ -457,14 +457,14 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
         if (is_pre_καραθεοδωρή) {
           continuous_trajectory->polynomials_.emplace_back(
               Instant::ReadFromMessage(pair.t_max()),
-              UseHardwareFMA
+              CanUseHardwareFMA
                   ? Polynomial<Position<Frame>, Instant>::
                         template ReadFromMessage<Estrin>(polynomial)
                   : Polynomial<Position<Frame>, Instant>::
                         template ReadFromMessage<EstrinWithoutFMA>(polynomial));
         } else {
           auto rewritten_polynomial = polynomial;
-          if (!UseHardwareFMA) {
+          if (!CanUseHardwareFMA) {
             // If we are on a machine without FMA, turn Estrin into
             // EstrinWithoutFMA so that plans made on this machine can be read
             // on a more modern machine.
@@ -513,7 +513,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
   }
   if (is_pre_کاشانی) {
     // See the comment above for the defaults here.
-    if (is_pre_gröbner || !UseHardwareFMA) {
+    if (is_pre_gröbner || !CanUseHardwareFMA) {
       continuous_trajectory->polynomial_evaluator_policy_ =
           Policy::AlwaysEstrinWithoutFMA();
     } else {
@@ -522,8 +522,8 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     }
   } else {
     continuous_trajectory->polynomial_evaluator_policy_ =
-        UseHardwareFMA ? Policy::ReadFromMessage(message.policy())
-                       : Policy::AlwaysEstrinWithoutFMA();
+        CanUseHardwareFMA ? Policy::ReadFromMessage(message.policy())
+                          : Policy::AlwaysEstrinWithoutFMA();
   }
   if (message.has_first_time()) {
     continuous_trajectory->first_time_ =
@@ -727,7 +727,7 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory()
               Checkpointer<serialization::ContinuousTrajectory>>(
           /*reader=*/nullptr,
           /*writer=*/nullptr)),
-      polynomial_evaluator_policy_(UseHardwareFMA
+      polynomial_evaluator_policy_(CanUseHardwareFMA
                                        ? Policy::AlwaysEstrin()
                                        : Policy::AlwaysEstrinWithoutFMA()) {}
 
