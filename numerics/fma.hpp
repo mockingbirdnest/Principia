@@ -20,24 +20,34 @@ constexpr bool CanEmitFMAInstructions = false;
 #endif
 
 #if PRINCIPIA_USE_FMA_IF_AVAILABLE()
-inline bool const UseHardwareFMA =
+inline bool const CanUseHardwareFMA =
     (CanEmitFMAInstructions && CPUIDFeatureFlag::FMA.IsSet());
 #else
-inline bool const UseHardwareFMA = false;
+inline bool const CanUseHardwareFMA = false;
 #endif
+
+// Whether FMA support is present.  This type is not used by this file, but is
+// declared here for the convenience of clients.  The intended semantics are:
+// * `Unknown`: FMA may or may not be present, the bit `CanUseHardwareFMA` must
+//   be tested because trying to execute an FMA instruction.
+// * `Absent`: Hardware FMA is not availabile, an attempt to use an FMA
+//   instruction will cause a compile-time or run-time error.
+// * `Present`: Hardware FMA support is available.
+enum class FMAPresence {
+  Unknown = 0,
+  Absent = 1,
+  Present = 2,
+};
 
 // The policy used for emitting FMA instructions.  This type is not used by this
 // file, but is declared here for the convenience of the clients.  The intended
 // semantics are:
 // * `Auto`: FMA is used if supported by the processor, the decision must be
-//   made dynamically by calling `UseHardwareFMA`.
+//   made dynamically by calling `CanUseHardwareFMA`.
 // * `Disallow`: FMA is never used.
-// * `Force`: FMA is always used.  The caller is expected to determine upstream
-//   if FMA is supported by the processor by calling `UseHardwareFMA`.
 enum class FMAPolicy {
   Auto = 0,
   Disallow = 1,
-  Force = 2,
 };
 
 // The functions in this file unconditionally wrap the appropriate intrinsics.
@@ -58,12 +68,13 @@ inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 }  // namespace internal
 
 using internal::CanEmitFMAInstructions;
+using internal::CanUseHardwareFMA;
 using internal::FMAPolicy;
+using internal::FMAPresence;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;
 using internal::FusedNegatedMultiplySubtract;
-using internal::UseHardwareFMA;
 
 }  // namespace _fma
 }  // namespace numerics
