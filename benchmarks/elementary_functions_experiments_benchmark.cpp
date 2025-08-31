@@ -34,10 +34,10 @@ using Argument = double;
 // evaluators directly.
 template<FMAPresence fma_presence>
 using Polynomial1 =
-    HornerEvaluator<Value, Argument, 1, FMAPolicy::Force, fma_presence>;
+    HornerEvaluator<Value, Argument, 1, FMAPolicy::Auto, fma_presence>;
 template<FMAPresence fma_presence>
 using Polynomial2 =
-    HornerEvaluator<Value, Argument, 2, FMAPolicy::Force, fma_presence>;
+    HornerEvaluator<Value, Argument, 2, FMAPolicy::Auto, fma_presence>;
 
 constexpr Argument x_min = π / 6;  // The sinus is greater than 1/2.
 constexpr Argument x_max = π / 4;  // Upper bound after argument reduction.

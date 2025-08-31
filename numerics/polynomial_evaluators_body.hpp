@@ -465,8 +465,9 @@ template<typename Value, typename Argument, int degree,
 Value EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
 Evaluate(Coefficients const& coefficients,
          Argument const& argument) {
-  if (fma_policy == FMAPolicy::Force ||
-      (fma_policy == FMAPolicy::Auto && CanUseHardwareFMA)) {
+  if (fma_policy == FMAPolicy::Auto &&
+      (fma_presence == FMAPresence::Present ||
+       (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
     using InternalEvaluator = InternalEstrinEvaluator<Value,
                                                       Argument,
                                                       degree,
@@ -495,8 +496,9 @@ EvaluateDerivative(Coefficients const& coefficients,
                    Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
-  } else if (fma_policy == FMAPolicy::Force ||
-             (fma_policy == FMAPolicy::Auto && CanUseHardwareFMA)) {
+  } else if (fma_policy == FMAPolicy::Auto &&
+             (fma_presence == FMAPresence::Present ||
+              (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
     using InternalEvaluator =
         InternalEstrinEvaluator<Value,
                                 Argument,
@@ -553,8 +555,9 @@ template<typename Value, typename Argument, int degree,
 Value HornerEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
 Evaluate(Coefficients const& coefficients,
          Argument const& argument) {
-  if (fma_policy == FMAPolicy::Force ||
-      (fma_policy == FMAPolicy::Auto && CanUseHardwareFMA)) {
+  if (fma_policy == FMAPolicy::Auto &&
+      (fma_presence == FMAPresence::Present ||
+       (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
     return InternalHornerEvaluator<Value,
                                    Argument,
                                    degree,
@@ -579,8 +582,9 @@ EvaluateDerivative(Coefficients const& coefficients,
                    Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
-  } else if (fma_policy == FMAPolicy::Force ||
-             (fma_policy == FMAPolicy::Auto && CanUseHardwareFMA)) {
+  } else if (fma_policy == FMAPolicy::Auto &&
+             (fma_presence == FMAPresence::Present ||
+              (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
     return InternalHornerEvaluator<Value,
                                    Argument,
                                    degree,

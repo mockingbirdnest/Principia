@@ -39,12 +39,9 @@ enum class FMAPresence {
 // * `Auto`: FMA is used if supported by the processor, the decision must be
 //   made dynamically by calling `UseHardwareFMA`.
 // * `Disallow`: FMA is never used.
-// * `Force`: FMA is always used.  The caller is expected to determine upstream
-//   if FMA is supported by the processor by calling `UseHardwareFMA`.
 enum class FMAPolicy {
   Auto = 0,
   Disallow = 1,
-  Force = 2,
 };
 
 // The functions in this file unconditionally wrap the appropriate intrinsics.

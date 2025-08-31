@@ -68,10 +68,6 @@ using EstrinWithoutFMA =
                               internal::FMAPolicy::Disallow,
                               internal::FMAPresence::Unknown>;
 template<typename Value, typename Argument, int degree>
-using EstrinWithFMA = internal::EstrinEvaluator<Value, Argument, degree,
-                                                internal::FMAPolicy::Force,
-                                                internal::FMAPresence::Unknown>;
-template<typename Value, typename Argument, int degree>
 using Horner = internal::HornerEvaluator<Value, Argument, degree,
                                          internal::FMAPolicy::Auto,
                                          internal::FMAPresence::Unknown>;
@@ -80,10 +76,6 @@ using HornerWithoutFMA =
     internal::HornerEvaluator<Value, Argument, degree,
                               internal::FMAPolicy::Disallow,
                               internal::FMAPresence::Unknown>;
-template<typename Value, typename Argument, int degree>
-using HornerWithFMA = internal::HornerEvaluator<Value, Argument, degree,
-                                                internal::FMAPolicy::Force,
-                                                internal::FMAPresence::Unknown>;
 
 using internal::EstrinEvaluator;
 using internal::Evaluator;
