@@ -1,8 +1,6 @@
 #pragma once
 
 #include "base/concepts.hpp"
-#include "numerics/fma.hpp"
-#include "numerics/m128d.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
@@ -14,8 +12,6 @@ namespace _elementary_functions {
 namespace internal {
 
 using namespace principia::base::_concepts;
-using namespace principia::numerics::_fma;
-using namespace principia::numerics::_m128d;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;

@@ -9,9 +9,7 @@
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
-#include "numerics/m128d.hpp"
 #include "numerics/next.hpp"
-#include "quantities/concepts.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -22,9 +20,7 @@ namespace internal {
 using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
-using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_next;
-using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
 
 template<typename Q1, typename Q2>
