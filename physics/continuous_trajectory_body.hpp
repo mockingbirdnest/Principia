@@ -465,9 +465,9 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
         } else {
           auto rewritten_polynomial = polynomial;
           if (!CanUseHardwareFMA) {
-            // If we are on a machine without FMA, turn Estrin into
-            // EstrinWithoutFMA so that plans made on this machine can be read
-            // on a more modern machine.
+            // If we are on a machine without FMA, turn evaluators that allow
+            // FMA into their counterparts without FMA so that plans made on
+            // this machine can be read on a more modern machine.
             // Note that until Lánczos, we created and serialized polynomials
             // with Estrin even when FMA was unavailable, so we cannot trust the
             // evaluator kind here.  Downgrading the evaluators also seems like
@@ -499,8 +499,6 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
               case Evaluator::HORNER_WITHOUT_FMA:
               case Evaluator::ESTRIN_WITHOUT_FMA:
                 break;
-              default:
-                LOG(FATAL) << "Unexpected evaluator " << evaluator_kind;
             }
           }
           continuous_trajectory->polynomials_.emplace_back(
