@@ -446,25 +446,24 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
                 EstrinWithoutFMA>(polynomial));
       } else {
-        not_null<serialization::Polynomial const*> polynomial =
-            &pair.polynomial();
+        serialization::Polynomial const& polynomial = pair.polynomial();
         bool const is_pre_καραθεοδωρή =
-            !polynomial->HasExtension(
+            !polynomial.HasExtension(
                 serialization::PolynomialInMonomialBasis::extension) ||
             polynomial
-                ->GetExtension(
+                .GetExtension(
                     serialization::PolynomialInMonomialBasis::extension)
                 .has_evaluator();
         if (is_pre_καραθεοδωρή) {
           continuous_trajectory->polynomials_.emplace_back(
               Instant::ReadFromMessage(pair.t_max()),
-              UseHardwareFMA ? Polynomial<Position<Frame>, Instant>::
-                                   template ReadFromMessage<Estrin>(*polynomial)
-                             : Polynomial<Position<Frame>, Instant>::
-                                   template ReadFromMessage<EstrinWithoutFMA>(
-                                       *polynomial));
+              UseHardwareFMA
+                  ? Polynomial<Position<Frame>, Instant>::
+                        template ReadFromMessage<Estrin>(polynomial)
+                  : Polynomial<Position<Frame>, Instant>::
+                        template ReadFromMessage<EstrinWithoutFMA>(polynomial));
         } else {
-          std::optional<serialization::Polynomial> rewritten_polynomial;
+          auto rewritten_polynomial = polynomial;
           if (!UseHardwareFMA) {
             // If we are on a machine without FMA, turn Estrin into
             // EstrinWithoutFMA so that plans made on this machine can be read
@@ -479,26 +478,35 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             // faithfully reproduced when it is read again on a new machine.
             auto const evaluator_kind =
                 polynomial
-                    ->GetExtension(
+                    .GetExtension(
                         serialization::PolynomialInMonomialBasis::extension)
                     .evaluator()
                     .kind();
-            if (evaluator_kind ==
-                serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN) {
-              rewritten_polynomial = *polynomial;
-              rewritten_polynomial
-                  ->MutableExtension(
-                      serialization::PolynomialInMonomialBasis::extension)
-                  ->mutable_evaluator()
-                  ->set_kind(serialization::PolynomialInMonomialBasis::
-                                 Evaluator::ESTRIN_WITHOUT_FMA);
-              polynomial = &*rewritten_polynomial;
+            auto& rewritten_evaluator =
+                *rewritten_polynomial
+                     .MutableExtension(
+                         serialization::PolynomialInMonomialBasis::extension)
+                     ->mutable_evaluator();
+            using Evaluator =
+                serialization::PolynomialInMonomialBasis::Evaluator;
+            switch (evaluator_kind) {
+              case Evaluator::ESTRIN:
+                rewritten_evaluator.set_kind(Evaluator::ESTRIN_WITHOUT_FMA);
+                break;
+              case Evaluator::HORNER:
+                rewritten_evaluator.set_kind(Evaluator::HORNER_WITHOUT_FMA);
+                break;
+              case Evaluator::HORNER_WITHOUT_FMA:
+              case Evaluator::ESTRIN_WITHOUT_FMA:
+                break;
+              default:
+                LOG(FATAL) << "Unexpected evaluator " << evaluator_kind;
             }
           }
           continuous_trajectory->polynomials_.emplace_back(
               Instant::ReadFromMessage(pair.t_max()),
               Polynomial<Position<Frame>, Instant>::ReadFromMessage(
-                  *polynomial));
+                  rewritten_polynomial));
         }
       }
     }
