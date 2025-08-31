@@ -23,6 +23,7 @@ namespace physics {
 namespace _continuous_trajectory {
 namespace internal {
 
+using namespace principia::numerics::_fma;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_poisson_series;
@@ -51,7 +52,9 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
       is_unstable_(false),
       degree_(min_degree),
       degree_age_(0),
-      polynomial_evaluator_policy_(Policy::AlwaysEstrin()) {
+      polynomial_evaluator_policy_(UseHardwareFMA
+                                       ? Policy::AlwaysEstrin()
+                                       : Policy::AlwaysEstrinWithoutFMA()) {
   CHECK_LT(0 * Metre, tolerance_);
 }
 
@@ -442,32 +445,66 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
                 EstrinWithoutFMA>(polynomial));
       } else {
-        serialization::Polynomial const& polynomial = pair.polynomial();
-        if (polynomial.HasExtension(
-                serialization::PolynomialInMonomialBasis::extension) &&
+        not_null<serialization::Polynomial const*> polynomial =
+            &pair.polynomial();
+        bool const is_pre_καραθεοδωρή =
+            !polynomial->HasExtension(
+                serialization::PolynomialInMonomialBasis::extension) ||
             polynomial
-                .GetExtension(
+                ->GetExtension(
                     serialization::PolynomialInMonomialBasis::extension)
-                .has_evaluator()) {
-          // The post-Καραθεοδωρή path, do not specify an evaluator when calling
-          // `ReadFromMessage`.
+                .has_evaluator();
+        if (is_pre_καραθεοδωρή) {
+          continuous_trajectory->polynomials_.emplace_back(
+              Instant::ReadFromMessage(pair.t_max()),
+              UseHardwareFMA ? Polynomial<Position<Frame>, Instant>::
+                                   template ReadFromMessage<Estrin>(*polynomial)
+                             : Polynomial<Position<Frame>, Instant>::
+                                   template ReadFromMessage<EstrinWithoutFMA>(
+                                       *polynomial));
+        } else {
+          std::optional<serialization::Polynomial> rewritten_polynomial;
+          if (!UseHardwareFMA) {
+            // If we are on a machine without FMA, turn Estrin into
+            // EstrinWithoutFMA so that plans made on this machine can be read
+            // on a more modern machine.
+            // Note that until Lánczos, we created and serialized polynomials
+            // with Estrin even when FMA was unavailable, so we cannot trust the
+            // evaluator kind here.  Downgrading the evaluators also seems like
+            // a better way to handle the case where a save gets moved from a
+            // modern machine to an ancient one: in that direction, we cannot
+            // preserve the behaviour, but by serializing EstrinWithoutFMA at
+            // that transition, whatever work is done on the old machine will be
+            // faithfully reproduced when it is read again on a new machine.
+            auto const evaluator_kind =
+                polynomial
+                    ->GetExtension(
+                        serialization::PolynomialInMonomialBasis::extension)
+                    .evaluator()
+                    .kind();
+            if (evaluator_kind ==
+                serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN) {
+              rewritten_polynomial = *polynomial;
+              rewritten_polynomial
+                  ->MutableExtension(
+                      serialization::PolynomialInMonomialBasis::extension)
+                  ->mutable_evaluator()
+                  ->set_kind(serialization::PolynomialInMonomialBasis::
+                                 Evaluator::ESTRIN_WITHOUT_FMA);
+              polynomial = &*rewritten_polynomial;
+            }
+          }
           continuous_trajectory->polynomials_.emplace_back(
               Instant::ReadFromMessage(pair.t_max()),
               Polynomial<Position<Frame>, Instant>::ReadFromMessage(
-                  polynomial));
-        } else {
-          // The pre-Καραθεοδωρή path.
-          continuous_trajectory->polynomials_.emplace_back(
-              Instant::ReadFromMessage(pair.t_max()),
-              Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
-                  Estrin>(polynomial));
+                  *polynomial));
         }
       }
     }
   }
   if (is_pre_کاشانی) {
     // See the comment above for the defaults here.
-    if (is_pre_gröbner) {
+    if (is_pre_gröbner || !UseHardwareFMA) {
       continuous_trajectory->polynomial_evaluator_policy_ =
           Policy::AlwaysEstrinWithoutFMA();
     } else {
@@ -476,7 +513,8 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     }
   } else {
     continuous_trajectory->polynomial_evaluator_policy_ =
-        Policy::ReadFromMessage(message.policy());
+        UseHardwareFMA ? Policy::ReadFromMessage(message.policy())
+                       : Policy::AlwaysEstrinWithoutFMA();
   }
   if (message.has_first_time()) {
     continuous_trajectory->first_time_ =
@@ -680,7 +718,9 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory()
               Checkpointer<serialization::ContinuousTrajectory>>(
           /*reader=*/nullptr,
           /*writer=*/nullptr)),
-          polynomial_evaluator_policy_(Policy::AlwaysEstrin()) {}
+      polynomial_evaluator_policy_(UseHardwareFMA
+                                       ? Policy::AlwaysEstrin()
+                                       : Policy::AlwaysEstrinWithoutFMA()) {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
