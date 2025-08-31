@@ -12,6 +12,7 @@
 
 #include "geometry/interval.hpp"
 #include "glog/stl_logging.h"
+#include "numerics/fma.hpp"
 #include "numerics/newhall.hpp"
 #include "numerics/poisson_series.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
@@ -23,8 +24,8 @@ namespace physics {
 namespace _continuous_trajectory {
 namespace internal {
 
-using namespace principia::numerics::_fma;
 using namespace principia::geometry::_interval;
+using namespace principia::numerics::_fma;
 using namespace principia::numerics::_newhall;
 using namespace principia::numerics::_poisson_series;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
