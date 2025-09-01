@@ -12,6 +12,7 @@
 #include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
+#include "numerics/fma.hpp"
 #include "numerics/m128d.hpp"
 #include "numerics/next.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
@@ -29,6 +30,7 @@ namespace functions_test {
 using namespace boost::multiprecision;
 using namespace principia::base::_bundle;
 using namespace principia::functions::_multiprecision;
+using namespace principia::numerics::_fma;
 using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_next;
 using namespace principia::numerics::_sin_cos;
@@ -286,17 +288,20 @@ TEST_F(SinCosTest, ReduceIndex) {
         _mm_xor_pd(_mm_set_sd(m_shifted - mantissa_reduce_shifter), sign));
     std::int64_t const m = _mm_cvtsd_si64(_mm_set_sd(m_double));
 
-    M128D const abs_θ_m128d = Abs(θ_m128d);
-    M128D const sign_m128d = Sign(θ_m128d);
-    M128D p_m128d =
-        FusedMultiplyAdd(
-            abs_θ_m128d, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
-        m128d::mantissa_reduce_shifter;
-    p_m128d = p_m128d ^ sign_m128d;
-
     EXPECT_EQ(n, m);
     EXPECT_EQ(m, m_double);
-    EXPECT_EQ(m_double, static_cast<double>(p_m128d));
+
+    if constexpr (CanEmitFMAInstructions) {
+      M128D const abs_θ_m128d = Abs(θ_m128d);
+      M128D const sign_m128d = Sign(θ_m128d);
+      M128D p_m128d =
+          FusedMultiplyAdd(
+              abs_θ_m128d, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+          m128d::mantissa_reduce_shifter;
+      p_m128d = p_m128d ^ sign_m128d;
+
+      EXPECT_EQ(m_double, static_cast<double>(p_m128d));
+    }
   }
 }
 

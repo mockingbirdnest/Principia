@@ -149,11 +149,11 @@ ifeq ($(UNAME_S),Darwin)
     INCLUDES += \
 			-include "base/macos_allocator_replacement.hpp" \
 			-include "base/macos_filesystem_replacement.hpp" \
-			-I/usr/local/opt/llvm/include
+			-I/usr/local/opt/llvm@20/include
     LIBS += \
 			-framework CoreFoundation \
-			-L/usr/local/opt/llvm/lib/c++ \
-			-L/usr/local/opt/llvm/lib/unwind \
+			-L/usr/local/opt/llvm@20/lib/c++ \
+			-L/usr/local/opt/llvm@20/lib/unwind \
 			-lunwind
     SHARED_ARGS += \
 			-mmacosx-version-min=$(OSX_DEPLOYMENT_TARGET) \
