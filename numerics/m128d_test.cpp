@@ -5,12 +5,14 @@
 #include "geometry/concepts.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/fma.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace numerics {
 
 using namespace principia::geometry::_concepts;
+using namespace principia::numerics::_fma;
 using namespace principia::numerics::_m128d;
 using namespace principia::testing_utilities::_almost_equals;
 
@@ -33,14 +35,16 @@ TEST_F(M128DTest, Arithmetic) {
   EXPECT_THAT(static_cast<double>(a / b), AlmostEquals(-2.5, 0));
   EXPECT_THAT(static_cast<double>(Abs(a)), AlmostEquals(5.0, 0));
   EXPECT_THAT(static_cast<double>(Abs(b)), AlmostEquals(2.0, 0));
-  EXPECT_THAT(static_cast<double>(FusedMultiplyAdd(a, b, c)),
-              AlmostEquals(-7.0, 0));
-  EXPECT_THAT(static_cast<double>(FusedMultiplySubtract(a, b, c)),
-              AlmostEquals(-13.0, 0));
-  EXPECT_THAT(static_cast<double>(FusedNegatedMultiplyAdd(a, b, c)),
-              AlmostEquals(13.0, 0));
-  EXPECT_THAT(static_cast<double>(FusedNegatedMultiplySubtract(a, b, c)),
-              AlmostEquals(7.0, 0));
+  if constexpr (CanEmitFMAInstructions) {
+    EXPECT_THAT(static_cast<double>(FusedMultiplyAdd(a, b, c)),
+                AlmostEquals(-7.0, 0));
+    EXPECT_THAT(static_cast<double>(FusedMultiplySubtract(a, b, c)),
+                AlmostEquals(-13.0, 0));
+    EXPECT_THAT(static_cast<double>(FusedNegatedMultiplyAdd(a, b, c)),
+                AlmostEquals(13.0, 0));
+    EXPECT_THAT(static_cast<double>(FusedNegatedMultiplySubtract(a, b, c)),
+                AlmostEquals(7.0, 0));
+  }
 
   a += b;
   EXPECT_THAT(static_cast<double>(a), AlmostEquals(-3.0, 0));
