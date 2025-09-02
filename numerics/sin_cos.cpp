@@ -213,7 +213,7 @@ void Reduce(Argument const θ,
     // of the quadrant.
     M128D const sign = Sign(θ);
     M128D n_double =
-        FusedMultiplyAdd(
+        FusedMultiplyAdd<fma_presence>(
             abs_θ, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
