@@ -88,9 +88,9 @@ constexpr double three_term_θ_reduced_threshold =
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
      4);
 
-constexpr double sin_near_zero_e = 0x1.0000'AD82'A723'6p0;  // 2^-70.561.
-constexpr double sin_e = 0x1.0002'6013'6BD9'Bp0;  // 2^-68.751.
-constexpr double cos_e = 0x1.0001'B836'988A'Bp0;  // 2^-69.217.
+constexpr double sin_near_zero_e = 0x1.0000'B2D8'01D8'0p0;  // 2^-70.517.
+constexpr double sin_e = 0x1.0002'6ABE'272D'9p0;  // 2^-68.726.
+constexpr double cos_e = 0x1.0001'B839'335E'1p0;  // 2^-69.217.
 
 template<FMAPolicy fma_policy>
 using Polynomial1 = HornerEvaluator<Value, Argument, 1, fma_policy>;

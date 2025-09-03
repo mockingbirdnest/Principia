@@ -1019,6 +1019,10 @@
 
 
 (* ::Input:: *)
+(*\[Delta]4=uInterval;*)
+
+
+(* ::Input:: *)
 (*t1[x\:0303_]:=(1+\[Zeta]2)((1+\[Zeta]1)Sin[x\:0303]-x\:0303)/x\:0303^3*)
 
 
@@ -1027,7 +1031,7 @@
 
 
 (* ::Input:: *)
-(*t3[x\:0303_,\[Delta]x\:0303_]:=(t1[x\:0303]t2[x\:0303]+\[Delta]x\:0303)(1+\[Delta]3)*)
+(*t3[x\:0303_,\[Delta]x\:0303_]:=(t1[x\:0303]t2[x\:0303](1+\[Delta]3)+\[Delta]x\:0303)(1+\[Delta]4)*)
 
 
 (* ::Input:: *)
@@ -1116,10 +1120,6 @@
 
 (* ::Subsection::Closed:: *)
 (*Around Table Entries*)
-
-
-(* ::Text:: *)
-(*These analyses  will need to be documented\:202f!*)
 
 
 (* ::Text:: *)
@@ -1239,11 +1239,15 @@
 
 
 (* ::Input:: *)
-(*(*\[Delta]1=.;\[Delta]2=.;\[Delta]3=.;\[Delta]4=.;\[Delta]5=.;\[Delta]6=.;\[Delta]7=.;\[Delta]8=.;\[Delta]9=.;*)*)
+(*\[Delta]10=uInterval;*)
 
 
 (* ::Input:: *)
-(*(*\[Zeta]1=.;\[Zeta]2=.;\[Zeta]3=.;\[Zeta]4=.;*)*)
+(*\[Delta]11=uInterval;*)
+
+
+(* ::Input:: *)
+(*\[Delta]12=uInterval;*)
 
 
 (* ::Input:: *)
@@ -1251,11 +1255,11 @@
 
 
 (* ::Input:: *)
-(*t1[h_]:=(1+\[Zeta]3)(1+\[Zeta]1)(Sin[h]-h)/h^3*)
+(*t1[h_]:=((Sin[h]-h)/h^3)(1+\[Zeta]1)(1+\[Zeta]3)*)
 
 
 (* ::Input:: *)
-(*t2[h_]:=(1+\[Zeta]4)(1+\[Zeta]2)(Cos[h]-1)/h^2*)
+(*t2[h_]:=((Cos[h]-1)/h^2)(1+\[Zeta]2)(1+\[Zeta]4)*)
 
 
 (* ::Input:: *)
@@ -1271,15 +1275,15 @@
 
 
 (* ::Input:: *)
-(*t6[h_,\[Delta]x\:0303_]:=(t4[h,\[Delta]x\:0303]t1[h]+\[Delta]x\:0303)(1+\[Delta]7)*)
+(*t6[h_,\[Delta]x\:0303_]:=(t4[h,\[Delta]x\:0303]t1[h](1+\[Delta]7)+\[Delta]x\:0303)(1+\[Delta]8)*)
 
 
 (* ::Input:: *)
-(*t7[h_,\[Delta]x\:0303_,sk_,ck_]:=(Hold[CorrectlyRound[ck]]t6[h,\[Delta]x\:0303]+t5[h,\[Delta]x\:0303,sk])(1+\[Delta]8)*)
+(*t7[h_,\[Delta]x\:0303_,sk_,ck_]:=(Hold[CorrectlyRound[ck]]t6[h,\[Delta]x\:0303](1+\[Delta]9)+t5[h,\[Delta]x\:0303,sk])(1+\[Delta]10)*)
 
 
 (* ::Input:: *)
-(*t8[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=(t7[h,\[Delta]x\:0303,sk,ck]+\[Delta]0 t0[h,sk,ck])(1+\[Delta]9)*)
+(*t8[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=(\[Delta]0 t0[h,sk,ck](1+\[Delta]11)+t7[h,\[Delta]x\:0303,sk,ck])(1+\[Delta]12)*)
 
 
 (* ::Input:: *)
@@ -1295,11 +1299,11 @@
 
 
 (* ::Input:: *)
-(*(*CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]*)*)
+(*sinImplementationRelativeError[x\:0303_,\[Delta]x\:0303_,xk_,sk_,ck_]:=t11[x\:0303-xk,\[Delta]x\:0303,sk,ck]/Sin[x\:0303+\[Delta]x\:0303+\[Zeta]0Interval x\:0303]-1*)
 
 
 (* ::Input:: *)
-(*sinImplementationRelativeError[x\:0303_,\[Delta]x\:0303_,xk_,sk_,ck_]:=t11[x\:0303-xk,\[Delta]x\:0303,sk,ck]/Sin[x\:0303+\[Delta]x\:0303+\[Zeta]0Interval x\:0303]-1*)
+(*Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
 
 
 (* ::Input:: *)
@@ -1478,11 +1482,11 @@
 
 
 (* ::Input:: *)
-(*(*\[Delta]1=.;\[Delta]2=.;\[Delta]3=.;\[Delta]4=.;\[Delta]5=.;\[Delta]6=.;\[Delta]7=.;\[Delta]8=.;\[Delta]9=.;*)*)
+(*\[Delta]11=uInterval;*)
 
 
 (* ::Input:: *)
-(*(*\[Zeta]1=.;\[Zeta]2=.;\[Zeta]3=.;\[Zeta]4=.;*)*)
+(*\[Delta]12=uInterval;*)
 
 
 (* ::Input:: *)
@@ -1490,11 +1494,11 @@
 
 
 (* ::Input:: *)
-(*t1[h_]:=(1+\[Zeta]3)(1+\[Zeta]1)(Sin[h]-h)/h^3*)
+(*t1[h_]:=((Sin[h]-h)/h^3)(1+\[Zeta]1)(1+\[Zeta]3)*)
 
 
 (* ::Input:: *)
-(*t2[h_]:=(1+\[Zeta]4)(1+\[Zeta]2)(Cos[h]-1)/h^2*)
+(*t2[h_]:=((Cos[h]-1)/h^2)(1+\[Zeta]2)(1+\[Zeta]4)*)
 
 
 (* ::Input:: *)
@@ -1510,15 +1514,15 @@
 
 
 (* ::Input:: *)
-(*t6[h_,\[Delta]x\:0303_]:=(t4[h,\[Delta]x\:0303]t1[h]+\[Delta]x\:0303)(1+\[Delta]7)*)
+(*t6[h_,\[Delta]x\:0303_]:=(t4[h,\[Delta]x\:0303]t1[h](1+\[Delta]7)+\[Delta]x\:0303)(1+\[Delta]8)*)
 
 
 (* ::Input:: *)
-(*t7[h_,\[Delta]x\:0303_,sk_,ck_]:=(-Hold[CorrectlyRound[sk]]t6[h,\[Delta]x\:0303]+t5[h,\[Delta]x\:0303,ck])(1+\[Delta]8)*)
+(*t7[h_,\[Delta]x\:0303_,sk_,ck_]:=(-Hold[CorrectlyRound[sk]]t6[h,\[Delta]x\:0303](1+\[Delta]9)+t5[h,\[Delta]x\:0303,ck])(1+\[Delta]10)*)
 
 
 (* ::Input:: *)
-(*t8[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=(t7[h,\[Delta]x\:0303,sk,ck]+\[Delta]0 t0[h,sk,ck])(1+\[Delta]9)*)
+(*t8[h_,\[Delta]x\:0303_,sk_,ck_,\[Delta]0_]:=(\[Delta]0 t0[h,sk,ck](1+\[Delta]11)+t7[h,\[Delta]x\:0303,sk,ck])(1+\[Delta]12)*)
 
 
 (* ::Input:: *)
@@ -1534,11 +1538,11 @@
 
 
 (* ::Input:: *)
-(*(*CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)*)
+(*cosImplementationRelativeError[x\:0303_,\[Delta]x\:0303_,xk_,sk_,ck_]:=t11[x\:0303-xk,\[Delta]x\:0303,sk,ck]/Cos[x\:0303+\[Delta]x\:0303+\[Zeta]0Interval x\:0303]-1*)
 
 
 (* ::Input:: *)
-(*cosImplementationRelativeError[x\:0303_,\[Delta]x\:0303_,xk_,sk_,ck_]:=t11[x\:0303-xk,\[Delta]x\:0303,sk,ck]/Cos[x\:0303+\[Delta]x\:0303+\[Zeta]0Interval x\:0303]-1*)
+(*Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
 
 
 (* ::Input:: *)
