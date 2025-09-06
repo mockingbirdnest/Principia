@@ -16,8 +16,8 @@ using SlowPathCallback = std::function<void(double θ)>;
 
 template<FMAPresence fma_presence>
 double __cdecl Sin(double x);
-//extern template double __cdecl Sine<FMAPresence::Absent>(double x);
-//extern template double __cdecl Sine<FMAPresence::Present>(double x);
+extern template double __cdecl Sin<FMAPresence::Absent>(double x);
+extern template double __cdecl Sin<FMAPresence::Present>(double x);
 
 template<FMAPresence fma_presence>
 double __cdecl Cos(double x);

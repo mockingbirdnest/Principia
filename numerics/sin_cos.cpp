@@ -430,13 +430,10 @@ void SetSlowPathsCallbacks(SlowPathCallback sin_cb, SlowPathCallback cos_cb) {
   slow_path_cos_callback = std::move(cos_cb);
 }
 
-double __cdecl Sin(double const θ) {
-  return sin(θ);
-}
-
-double __cdecl Cos(double const θ) {
-  return cos(θ);
-}
+template double __cdecl Sin<FMAPresence::Absent>(double x);
+template double __cdecl Sin<FMAPresence::Present>(double x);
+template double __cdecl Cos<FMAPresence::Absent>(double x);
+template double __cdecl Cos<FMAPresence::Present>(double x);
 
 }  // namespace internal
 }  // namespace _sin_cos

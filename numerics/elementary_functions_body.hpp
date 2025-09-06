@@ -26,8 +26,8 @@ using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_si;
 
 // Pointers used for indirect calls, set by `StaticInitialization`.
-double (__cdecl *cos)(double θ) = nullptr;
-double (__cdecl *sin)(double θ) = nullptr;
+inline double (__cdecl *cos)(double θ) = nullptr;
+inline double (__cdecl *sin)(double θ) = nullptr;
 
 template<typename Q1, typename Q2>
   requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
@@ -306,7 +306,7 @@ inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
                  (2 * π * Radian);
 }
 
-void StaticInitialization(bool const uses_correct_sin_cos) {
+inline void StaticInitialization(bool const uses_correct_sin_cos) {
   if (!uses_correct_sin_cos) {
     cos = &std::cos;
     sin = &std::sin;
