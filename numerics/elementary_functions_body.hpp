@@ -10,6 +10,7 @@
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
+#include "numerics/sin_cos.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -21,7 +22,12 @@ using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
+using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_si;
+
+// Pointers used for indirect calls, set by `StaticInitialization`.
+double (__cdecl *cos)(double θ) = nullptr;
+double (__cdecl *sin)(double θ) = nullptr;
 
 template<typename Q1, typename Q2>
   requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
@@ -236,11 +242,11 @@ constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
 }
 
 inline double Sin(Angle const& α) {
-  return std::sin(α / Radian);
+  return sin(α / Radian);
 }
 
 inline double Cos(Angle const& α) {
-  return std::cos(α / Radian);
+  return cos(α / Radian);
 }
 
 inline double Tan(Angle const& α) {
@@ -298,6 +304,19 @@ inline Angle ArcTanh(double const x) {
 inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
   return α + std::nearbyint((previous_angle - α) / (2 * π * Radian)) *
                  (2 * π * Radian);
+}
+
+void StaticInitialization(bool const uses_correct_sin_cos) {
+  if (!uses_correct_sin_cos) {
+    cos = &std::cos;
+    sin = &std::sin;
+  } else if (CanUseHardwareFMA) {
+    cos = &numerics::_sin_cos::Cos<FMAPresence::Present>;
+    sin = &numerics::_sin_cos::Sin<FMAPresence::Present>;
+  } else {
+    cos = &numerics::_sin_cos::Cos<FMAPresence::Absent>;
+    sin = &numerics::_sin_cos::Sin<FMAPresence::Absent>;
+  }
 }
 
 }  // namespace internal

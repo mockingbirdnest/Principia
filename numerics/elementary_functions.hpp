@@ -149,6 +149,13 @@ template<typename Q>
   requires boost_cpp_number<Q> || std::floating_point<Q>
 Q Round(Q const& x);
 
+using SlowPathCallback = std::function<void(double θ)>;
+
+// Initializes the library to use either the platform functions or correctly-
+// rounded ones, depending on the state of the save and the capabilities of the
+// platform.
+void StaticInitialization(bool uses_correct_sin_cos);
+
 }  // namespace internal
 
 using internal::Abs;
@@ -172,6 +179,7 @@ using internal::Pow;
 using internal::Round;
 using internal::Sin;
 using internal::Sinh;
+using internal::StaticInitialization;
 using internal::Sqrt;
 using internal::Tan;
 using internal::Tanh;

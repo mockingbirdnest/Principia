@@ -35,7 +35,6 @@ using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_next;
 using namespace principia::numerics::_sin_cos;
 using namespace principia::testing_utilities::_almost_equals;
-namespace sin_cos = principia::numerics::_sin_cos;
 
 constexpr std::int64_t table_spacing_bits = 9;
 constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
@@ -69,7 +68,7 @@ class SinCosTest : public ::testing::Test {
   };
 
   static void SetUpTestCase() {
-    sin_cos::StaticInitialization(&CountSinFallbacks, &CountCosFallbacks);
+    SetSlowPathsCallbacks(&CountSinFallbacks, &CountCosFallbacks);
   }
 
   static void CountSinFallbacks(double const θ) {
@@ -80,6 +79,24 @@ class SinCosTest : public ::testing::Test {
   static void CountCosFallbacks(double const θ) {
     absl::MutexLock lock(&lock_);
     ++cos_fallbacks_;
+  }
+
+  static double Sin(double const θ) {
+    return CanUseHardwareFMA ? numerics::_sin_cos::Sin<FMAPresence::Present>(θ)
+                             : numerics::_sin_cos::Sin<FMAPresence::Absent>(θ);
+  }
+
+  static cpp_bin_float_50 Sin(cpp_rational const& θ) {
+    return functions::_multiprecision::Sin(θ);
+  }
+
+  static double Cos(double const θ) {
+    return CanUseHardwareFMA ? numerics::_sin_cos::Cos<FMAPresence::Present>(θ)
+                             : numerics::_sin_cos::Cos<FMAPresence::Absent>(θ);
+  }
+
+  static cpp_bin_float_50 Cos(cpp_rational const& θ) {
+    return functions::_multiprecision::Sin(θ);
   }
 
   template<std::int64_t iterations_quantum>
