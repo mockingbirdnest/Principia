@@ -25,7 +25,7 @@ BENCHMARKED_FUNCTION(inc) {
   return x + 1;
 }
 
-BENCHMARKED_FUNCTION(add_4_times) {
+BENCHMARKED_FUNCTION(multiply_4_times) {
   return x * x * x * x * x;
 }
 
