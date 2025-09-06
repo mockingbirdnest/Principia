@@ -86,17 +86,9 @@ class SinCosTest : public ::testing::Test {
                              : numerics::_sin_cos::Sin<FMAPresence::Absent>(θ);
   }
 
-  static cpp_bin_float_50 Sin(cpp_rational const& θ) {
-    return functions::_multiprecision::Sin(θ);
-  }
-
   static double Cos(double const θ) {
     return CanUseHardwareFMA ? numerics::_sin_cos::Cos<FMAPresence::Present>(θ)
                              : numerics::_sin_cos::Cos<FMAPresence::Absent>(θ);
-  }
-
-  static cpp_bin_float_50 Cos(cpp_rational const& θ) {
-    return functions::_multiprecision::Sin(θ);
   }
 
   template<std::int64_t iterations_quantum>
@@ -114,7 +106,7 @@ class SinCosTest : public ::testing::Test {
           uniformly_at(random) * ((uniform_sign(random) << 1) - 1);
       auto const boost_argument = cpp_rational(principia_argument);
       {
-        auto const boost_sin = Sin(boost_argument);
+        auto const boost_sin = functions::_multiprecision::Sin(boost_argument);
         double const principia_sin = Sin(principia_argument);
         auto const sin_error =
             abs(boost_sin - static_cast<cpp_bin_float_50>(principia_sin));
@@ -133,7 +125,7 @@ class SinCosTest : public ::testing::Test {
         }
       }
       {
-        auto const boost_cos = Cos(boost_argument);
+        auto const boost_cos = functions::_multiprecision::Cos(boost_argument);
         double const principia_cos = Cos(principia_argument);
         auto const cos_error =
             abs(boost_cos - static_cast<cpp_bin_float_50>(principia_cos));

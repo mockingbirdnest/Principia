@@ -149,8 +149,6 @@ template<typename Q>
   requires boost_cpp_number<Q> || std::floating_point<Q>
 Q Round(Q const& x);
 
-using SlowPathCallback = std::function<void(double θ)>;
-
 // Initializes the library to use either the platform functions or correctly-
 // rounded ones, depending on the state of the save and the capabilities of the
 // platform.
