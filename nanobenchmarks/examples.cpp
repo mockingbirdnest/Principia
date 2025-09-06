@@ -2,6 +2,7 @@
 
 #include "nanobenchmarks/function_registry.hpp"  // 🧙 For BENCHMARK_FUNCTION etc.
 #include "numerics/cbrt.hpp"
+#include "numerics/fma.hpp"
 #include "numerics/sin_cos.hpp"
 
 namespace principia {
@@ -9,7 +10,11 @@ namespace nanobenchmarks {
 namespace _examples {
 
 using namespace principia::numerics::_cbrt;
+using namespace principia::numerics::_fma;
 using namespace principia::numerics::_sin_cos;
+
+constexpr FMAPresence fma_presence =
+    CanEmitFMAInstructions ? FMAPresence::Present : FMAPresence::Absent;
 
 BENCHMARKED_FUNCTION(twice) {
   return 2 * x;
@@ -60,7 +65,7 @@ BENCHMARKED_FUNCTION(std_sin) {
 }
 
 BENCHMARKED_FUNCTION(principia_sin) {
-  return Sin(x);
+  return Sin<fma_presence>(x);
 }
 
 BENCHMARKED_FUNCTION(std_cos) {
@@ -68,7 +73,7 @@ BENCHMARKED_FUNCTION(std_cos) {
 }
 
 BENCHMARKED_FUNCTION(principia_cos) {
-  return Cos(x);
+  return Cos<fma_presence>(x);
 }
 
 }  // namespace _examples
