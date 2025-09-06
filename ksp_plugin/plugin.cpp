@@ -1454,6 +1454,7 @@ void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {
   LOG(INFO) << __FUNCTION__;
   CHECK(!initializing_);
+  message->set_uses_correct_sin_cos(uses_correct_sin_cos_);
   if (system_fingerprint_ != 0) {
     message->set_system_fingerprint(system_fingerprint_);
   }
@@ -1540,6 +1541,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   not_null<std::unique_ptr<Plugin>> plugin =
       std::unique_ptr<Plugin>(new Plugin(history_parameters,
                                          psychohistory_parameters));
+
+  plugin->uses_correct_sin_cos_ = message.has_uses_correct_sin_cos() &&
+      message.uses_correct_sin_cos();
 
   if (message.has_system_fingerprint()) {
     plugin->system_fingerprint_ = message.system_fingerprint();

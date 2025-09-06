@@ -534,6 +534,7 @@ class Plugin {
 
   // Initialization objects.
   Monostable initializing_;
+  bool uses_correct_sin_cos_ = true;
   serialization::GravityModel gravity_model_;
   serialization::InitialState initial_state_;
   std::map<std::string, Index> name_to_index_;
