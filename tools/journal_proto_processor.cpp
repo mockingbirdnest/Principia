@@ -641,7 +641,9 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   if (options.HasExtension(journal::serialization::is_subject)) {
     CHECK(options.GetExtension(journal::serialization::is_subject))
         << descriptor->full_name() << " has incorrect (is_subject) option";
-    field_cs_type_[descriptor] = "this " + field_cs_type_[descriptor];
+    field_cs_extension_method_fn_[descriptor] = [](std::string const& type) {
+      return "this " + type;
+    };
   }
   field_cxx_type_[descriptor] = pointer_to + "*";
 
@@ -1080,6 +1082,9 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
       [](std::string const& identifier) -> std::vector<std::string> {
         return {identifier};
       };
+  field_cs_extension_method_fn_[descriptor] = [](std::string const& type) {
+    return type;
+  };
   field_cxx_assignment_fn_[descriptor] =
       [this, descriptor](std::string const& prefix, std::string const& expr) {
         return "  " + prefix + "set_" + descriptor->name() + "(" +
@@ -1200,6 +1205,8 @@ void JournalProtoProcessor::ProcessInOut(
   }
 
   cs_interface_parameters_[descriptor].clear();
+  cs_interface_marshalled_parameters_[descriptor].clear();
+  cs_interface_arguments_[descriptor].clear();
   cxx_interface_parameters_[descriptor].clear();
   cxx_run_body_prolog_[descriptor] =
       "  [[maybe_unused]] auto const& " + ToLower(name) + " = message." +
@@ -1303,6 +1310,12 @@ void JournalProtoProcessor::ProcessInOut(
 
     if (must_generate_code) {
       cs_interface_parameters_[descriptor].push_back(
+          "  " +
+          field_cs_mode_fn_[field_descriptor](
+              field_cs_extension_method_fn_[field_descriptor](
+                  field_cs_type_[field_descriptor])) +
+          " " + field_descriptor_name);
+      cs_interface_marshalled_parameters_[descriptor].push_back(
           "  " + Join({HasMarshaler(field_descriptor)
                            ? "[" + MarshalAs(field_descriptor) + "]"
                            : "",
@@ -1310,6 +1323,8 @@ void JournalProtoProcessor::ProcessInOut(
                            field_cs_type_[field_descriptor])},
                       /*joiner=*/" ") +
           " " + field_descriptor_name);
+      cs_interface_arguments_[descriptor].push_back(
+          "  " + field_cs_mode_fn_[field_descriptor](field_descriptor_name));
       cxx_interface_parameters_[descriptor].push_back(
           field_cxx_mode_fn_[field_descriptor](
               field_cxx_type_[field_descriptor]) +
@@ -1772,6 +1787,8 @@ void JournalProtoProcessor::ProcessMethodExtension(
 
   // The second pass that produces the actual output.
   std::vector<std::string> cs_interface_parameters;
+  std::vector<std::string> cs_interface_marshalled_parameters;
+  std::vector<std::string> cs_interface_arguments;
   std::vector<std::string> cxx_interface_parameters;
   std::vector<std::string> cxx_run_arguments;
   std::string cs_interface_return_marshal;
@@ -1795,6 +1812,12 @@ void JournalProtoProcessor::ProcessMethodExtension(
       std::copy(cs_interface_parameters_[nested_descriptor].begin(),
                 cs_interface_parameters_[nested_descriptor].end(),
                 std::back_inserter(cs_interface_parameters));
+      std::copy(cs_interface_marshalled_parameters_[nested_descriptor].begin(),
+                cs_interface_marshalled_parameters_[nested_descriptor].end(),
+                std::back_inserter(cs_interface_marshalled_parameters));
+      std::copy(cs_interface_arguments_[nested_descriptor].begin(),
+                cs_interface_arguments_[nested_descriptor].end(),
+                std::back_inserter(cs_interface_arguments));
       std::copy(cxx_interface_parameters_[nested_descriptor].begin(),
                 cxx_interface_parameters_[nested_descriptor].end(),
                 std::back_inserter(cxx_interface_parameters));
@@ -1812,6 +1835,12 @@ void JournalProtoProcessor::ProcessMethodExtension(
       std::copy(cs_interface_parameters_[nested_descriptor].begin(),
                 cs_interface_parameters_[nested_descriptor].end(),
                 std::back_inserter(cs_interface_parameters));
+      std::copy(cs_interface_marshalled_parameters_[nested_descriptor].begin(),
+                cs_interface_marshalled_parameters_[nested_descriptor].end(),
+                std::back_inserter(cs_interface_marshalled_parameters));
+      std::copy(cs_interface_arguments_[nested_descriptor].begin(),
+                cs_interface_arguments_[nested_descriptor].end(),
+                std::back_inserter(cs_interface_arguments));
       std::copy(cxx_interface_parameters_[nested_descriptor].begin(),
                 cxx_interface_parameters_[nested_descriptor].end(),
                 std::back_inserter(cxx_interface_parameters));
@@ -1891,18 +1920,46 @@ void JournalProtoProcessor::ProcessMethodExtension(
   }
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
-  cs_interface_method_declaration_[descriptor] = Join(
-      {"  [DllImport(dllName           : dll_path,\n"
-       "             EntryPoint        = \"principia__" + name + "\",\n"
-       "             CallingConvention = CallingConvention.Cdecl)]",
+  cs_interface_method_declaration_[descriptor] =
+      "  private partial class Symbols {\n";
+  cs_interface_method_declaration_[descriptor] +=
+      Join(
+      {"    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]",
        cs_interface_return_marshal,
-       "internal static extern " + cs_interface_return_type + " " + name + "("},
-      "\n  ");
+       "public delegate " + cs_interface_return_type + " " + name + "Delegate("},
+      "\n    ");
+  if (!cs_interface_marshalled_parameters.empty()) {
+    cs_interface_method_declaration_[descriptor] +=
+        "\n      " + Join(cs_interface_marshalled_parameters,
+                        /*joiner=*/",\n      ");  // NOLINT
+  }
+  cs_interface_method_declaration_[descriptor] += ");\n";
+  cs_interface_method_declaration_[descriptor] +=
+      "    public " + name + "Delegate " + name + " =\n";
+  cs_interface_method_declaration_[descriptor] +=
+      "          Loader.LoadFunction<" + name + "Delegate>(\n";
+  cs_interface_method_declaration_[descriptor] +=
+      "              \"principia__" + name + "\");\n";
+  cs_interface_method_declaration_[descriptor] +=
+      "  }\n";
+
+  cs_interface_method_declaration_[descriptor] +=
+      "  internal static " + cs_interface_return_type + " " + name + "(";
   if (!cs_interface_parameters.empty()) {
     cs_interface_method_declaration_[descriptor] +=
         "\n    " + Join(cs_interface_parameters, /*joiner=*/",\n    ");  // NOLINT
   }
-  cs_interface_method_declaration_[descriptor] += ");\n\n";
+  cs_interface_method_declaration_[descriptor] += ") {\n";
+  cs_interface_method_declaration_[descriptor] +=
+      (cs_interface_return_type == "void" ? "    symbols_."
+                                          : "    return symbols_.") +
+      name + "(" +
+      (cs_interface_arguments.empty()
+           ? ""
+           : "\n        " +
+                 Join(cs_interface_arguments, /*joiner=*/",\n        ")) +
+      ");\n";
+  cs_interface_method_declaration_[descriptor] += "  }\n\n";
 
   cxx_interface_method_declaration_[descriptor] =
       "extern \"C\" PRINCIPIA_DLL\n" +

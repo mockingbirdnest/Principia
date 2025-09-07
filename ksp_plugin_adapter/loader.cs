@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
@@ -80,6 +81,8 @@ internal static class Loader {
       }
     }
     try {
+      principia_dll_ = LoadLibrary(possible_dll_paths[0]);
+      Interface.LoadSymbols();
       loaded_principia_dll = true;
       Log.InitGoogleLogging();
       return null;
@@ -122,6 +125,17 @@ internal static class Loader {
     }
   }
 
+  private static IntPtr principia_dll_;
+
+  internal static T LoadFunction<T>(string function) where T : Delegate {
+    T result = Marshal.GetDelegateForFunctionPointer(
+        GetProcAddress(principia_dll_, function), typeof(T)) as T;
+    if (result == null) {
+      throw new EntryPointNotFoundException(function);
+    }
+    return result;
+  }
+
   [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
   [return: MarshalAs(UnmanagedType.Bool)]
   static extern bool SetDllDirectory(string lpPathName);
@@ -129,6 +143,10 @@ internal static class Loader {
   [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
   private static extern IntPtr LoadLibrary(
       [MarshalAs(UnmanagedType.LPStr)] string lpFileName);
+
+  [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
+  private static extern IntPtr GetProcAddress(
+      IntPtr hModule, [MarshalAs(UnmanagedType.LPStr)] string lpProcName);
 
   internal static bool loaded_principia_dll { get; private set; } = false;
 }
