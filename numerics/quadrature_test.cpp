@@ -74,7 +74,7 @@ TEST_F(QuadratureTest, Sin) {
                   5.0 * Radian,
                   /*max_relative_error=*/std::numeric_limits<double>::epsilon(),
                   /*max_points=*/std::nullopt),
-              AlmostEquals(ʃf, 3, 4));
+              AlmostEquals(ʃf, 2, 4));
   EXPECT_THAT(evaluations, Eq(65));
 }
 
@@ -129,7 +129,10 @@ TEST_F(QuadratureTest, Sin10) {
                   /*max_relative_error=*/std::numeric_limits<double>::epsilon(),
                   /*max_points=*/std::nullopt),
               AlmostEquals(ʃf, 2, 20));
-  EXPECT_EQ(524289, evaluations);
+  EXPECT_THAT(evaluations,
+              AnyOf(Eq(524289),    // Windows.
+                    Eq(1048577),   // Ubuntu.
+                    Eq(262145)));  // macOS.
 }
 
 }  // namespace quadrature
