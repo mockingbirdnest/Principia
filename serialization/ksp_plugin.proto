@@ -140,6 +140,7 @@ message Plugin {
   repeated PileUp pile_up = 17;
   optional Renderer renderer = 18;  // Added in Cauchy.
   repeated ZombieAndProperties zombie = 19;  // Added in Frege.
+  optional bool uses_correct_sin_cos = 21;  // Added in Lánczos.
 
   // Pre-Cardano.
   reserved 3;

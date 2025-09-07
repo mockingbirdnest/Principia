@@ -10,7 +10,6 @@
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
-#include "numerics/fma.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/m128d.hpp"
@@ -26,7 +25,6 @@ namespace internal {
 using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_m128d;
 
@@ -92,11 +90,8 @@ constexpr double sin_near_zero_e = 0x1.0000'AD82'A723'6p0;  // 2^-70.561.
 constexpr double sin_e = 0x1.0002'6013'6BD9'Dp0;  // 2^-68.751.
 constexpr double cos_e = 0x1.0001'B836'988A'Dp0;  // 2^-69.217.
 
-// Pointers used for indirect calls, set by `StaticInitialization`.
 SlowPathCallback slow_path_sin_callback = nullptr;
 SlowPathCallback slow_path_cos_callback = nullptr;
-double (__cdecl *cos)(double θ) = nullptr;
-double (__cdecl *sin)(double θ) = nullptr;
 
 // Forward declarations needed by the OSACA macros.
 template<FMAPresence fma_presence>
@@ -430,25 +425,15 @@ double __cdecl Cos(double θ) {
   }
 }
 
-void StaticInitialization(SlowPathCallback sin_cb, SlowPathCallback cos_cb) {
+void SetSlowPathsCallbacks(SlowPathCallback sin_cb, SlowPathCallback cos_cb) {
   slow_path_sin_callback = std::move(sin_cb);
   slow_path_cos_callback = std::move(cos_cb);
-  if (CanUseHardwareFMA) {
-    cos = &Cos<FMAPresence::Present>;
-    sin = &Sin<FMAPresence::Present>;
-  } else {
-    cos = &Cos<FMAPresence::Absent>;
-    sin = &Sin<FMAPresence::Absent>;
-  }
 }
 
-double __cdecl Sin(double const θ) {
-  return sin(θ);
-}
-
-double __cdecl Cos(double const θ) {
-  return cos(θ);
-}
+template double __cdecl Sin<FMAPresence::Absent>(double x);
+template double __cdecl Sin<FMAPresence::Present>(double x);
+template double __cdecl Cos<FMAPresence::Absent>(double x);
+template double __cdecl Cos<FMAPresence::Present>(double x);
 
 }  // namespace internal
 }  // namespace _sin_cos

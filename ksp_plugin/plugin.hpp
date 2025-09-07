@@ -494,7 +494,8 @@ class Plugin {
   using NewtonianMotionEquation =
       Ephemeris<Barycentric>::NewtonianMotionEquation;
 
-  // This constructor should only be used during deserialization.
+  // This constructor should only be used during deserialization.  The plugin is
+  // not fully initialized when it returns.
   Plugin(Ephemeris<Barycentric>::FixedStepParameters history_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters
              psychohistory_parameters);
@@ -534,6 +535,7 @@ class Plugin {
 
   // Initialization objects.
   Monostable initializing_;
+  bool uses_correct_sin_cos_ = true;
   serialization::GravityModel gravity_model_;
   serialization::InitialState initial_state_;
   std::map<std::string, Index> name_to_index_;

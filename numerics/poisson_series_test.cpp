@@ -597,8 +597,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
                      t_min, t_max);
     EXPECT_THAT(product,
                 RelativeErrorFrom(expected_product,
-                                  AnyOf(IsNear(0.000576_(1)),    // Windows.
-                                        IsNear(0.00124_(1)),     // Windows.
+                                  AnyOf(IsNear(0.000487_(1)),    // Windows.
                                         IsNear(0.00116_(1)),     // Ubuntu.
                                         IsNear(0.00131_(1)))));  // macOS.
   }
