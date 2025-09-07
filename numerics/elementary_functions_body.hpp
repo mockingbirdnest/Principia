@@ -28,6 +28,12 @@ using namespace principia::quantities::_si;
 // Pointers used for indirect calls, set by `StaticInitialization`.
 inline double (__cdecl *cos)(double θ) = nullptr;
 inline double (__cdecl *sin)(double θ) = nullptr;
+inline nullptr_t static_initialization = [](){
+  // By default, use the correctly-rounded implementation.  This can be
+  // overridden based on the save.
+  StaticInitialization(/*uses_correct_sin_cos=*/true);
+  return nullptr;
+}();
 
 template<typename Q1, typename Q2>
   requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
@@ -307,10 +313,13 @@ inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
 }
 
 inline void StaticInitialization(bool const uses_correct_sin_cos) {
+  // Beware!  This function cannot use `CanUseHardwareFMA` as it's called from a
+  // static declaration and we have no way to know if that variable has already
+  // been initialized.
   if (!uses_correct_sin_cos) {
     cos = &std::cos;
     sin = &std::sin;
-  } else if (CanUseHardwareFMA) {
+  } else if (EarlyCanUseHardwareFMA()) {
     cos = &numerics::_sin_cos::Cos<FMAPresence::Present>;
     sin = &numerics::_sin_cos::Sin<FMAPresence::Present>;
   } else {

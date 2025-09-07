@@ -12,6 +12,10 @@ namespace internal {
 
 using namespace principia::base::_cpuid;
 
+// Same as `CanUseHardwareFMA`, but may be used in static contexts where we
+// don't know if `CanUseHardwareFMA` has already been initialized.
+bool EarlyCanUseHardwareFMA();
+
 // With clang, using FMA requires VEX-encoding everything; see #3019.
 #if PRINCIPIA_COMPILER_MSVC
 constexpr bool CanEmitFMAInstructions = true;
@@ -20,8 +24,7 @@ constexpr bool CanEmitFMAInstructions = false;
 #endif
 
 #if PRINCIPIA_USE_FMA_IF_AVAILABLE()
-inline bool const CanUseHardwareFMA =
-    (CanEmitFMAInstructions && CPUIDFeatureFlag::FMA.IsSet());
+inline bool const CanUseHardwareFMA = EarlyCanUseHardwareFMA();
 #else
 inline bool const CanUseHardwareFMA = false;
 #endif
@@ -69,6 +72,7 @@ inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 
 using internal::CanEmitFMAInstructions;
 using internal::CanUseHardwareFMA;
+using internal::EarlyCanUseHardwareFMA;
 using internal::FMAPolicy;
 using internal::FMAPresence;
 using internal::FusedMultiplyAdd;

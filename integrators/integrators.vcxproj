@@ -8,6 +8,7 @@
   <ImportGroup Label="Shared">
     <Import Project="..\shared\base.vcxitems" Label="Shared" />
     <Import Project="..\shared\geometry.vcxitems" Label="Shared" />
+    <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemGroup>
     <ClInclude Include="adams_moulton_integrator.hpp" />

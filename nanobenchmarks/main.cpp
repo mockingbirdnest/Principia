@@ -25,7 +25,6 @@
 #include "nanobenchmarks/function_registry.hpp"
 #include "nanobenchmarks/microarchitectures.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "testing_utilities/statistics.hpp"
 
 
@@ -88,7 +87,6 @@ using namespace principia::mathematica::_mathematica;
 using namespace principia::nanobenchmarks::_function_registry;
 using namespace principia::nanobenchmarks::_microarchitectures;
 using namespace principia::nanobenchmarks::_performance_settings_controller;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::testing_utilities::_statistics;
 
 struct LatencyDistributionTable {
@@ -212,7 +210,6 @@ std::size_t FormattedWidth(std::string const& s) {
 }
 
 void Main() {
-  StaticInitialization(/*uses_correct_sin_cos=*/true);
   std::regex const name_matcher(absl::GetFlag(FLAGS_benchmark_filter));
   auto controller = PerformanceSettingsController::New();
   std::unique_ptr<Logger> logger;
