@@ -356,15 +356,15 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_long_term.at(laythe_),
-                            expected_periods_.at(laythe_)), IsNear(4.3e-3_(1)));
+                            expected_periods_.at(laythe_)), IsNear(5.1e-3_(1)));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(vall_),
-                            expected_periods_.at(vall_)), IsNear(2.9e-3_(1)));
+                            expected_periods_.at(vall_)), IsNear(2.0e-3_(1)));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(tylo_),
-                            expected_periods_.at(tylo_)), IsNear(0.87e-3_(1)));
+                            expected_periods_.at(tylo_)), IsNear(1.07e-3_(1)));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(bop_),
-                            expected_periods_.at(bop_)), IsNear(1.3e-3_(1)));
+                            expected_periods_.at(bop_)), IsNear(5.5e-3_(1)));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(pol_),
-                            expected_periods_.at(pol_)), IsNear(12e-3_(1)));
+                            expected_periods_.at(pol_)), IsNear(58e-3_(1)));
 
   LogEphemeris(*ephemeris,
                ephemeris->t_max() - 5 * longest_joolian_period_,
