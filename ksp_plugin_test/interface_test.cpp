@@ -164,7 +164,7 @@ class InterfaceTest : public InterfaceTestWithoutPlugin {
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
 };
 
-Recorder* InterfaceTest::recorder_ = nullptr;
+Recorder* InterfaceTestWithoutPlugin::recorder_ = nullptr;
 
 using InterfaceDeathTest = InterfaceTest;
 
