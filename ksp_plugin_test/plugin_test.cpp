@@ -280,13 +280,14 @@ class PluginTest : public PluginTestWithoutPlugin {
   not_null<std::unique_ptr<TestablePlugin>> plugin_;
 };
 
-RigidMotion<ICRS, Barycentric> const PluginTest::id_icrs_barycentric_(
-    RigidTransformation<ICRS, Barycentric>(
-        ICRS::origin,
-        Barycentric::origin,
-        OrthogonalMap<ICRS, Barycentric>::Identity()),
-    ICRS::nonrotating,
-    ICRS::unmoving);
+RigidMotion<ICRS, Barycentric> const
+    PluginTestWithoutPlugin::id_icrs_barycentric_(
+        RigidTransformation<ICRS, Barycentric>(
+            ICRS::origin,
+            Barycentric::origin,
+            OrthogonalMap<ICRS, Barycentric>::Identity()),
+        ICRS::nonrotating,
+        ICRS::unmoving);
 
 using PluginDeathTestWithoutPlugin = PluginTestWithoutPlugin;
 using PluginDeathTest = PluginTest;
