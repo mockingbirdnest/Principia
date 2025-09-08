@@ -74,7 +74,7 @@ TEST_F(QuadratureTest, Sin) {
                   5.0 * Radian,
                   /*max_relative_error=*/std::numeric_limits<double>::epsilon(),
                   /*max_points=*/std::nullopt),
-              AlmostEquals(ʃf, 2, 4));
+              AlmostEquals(ʃf, 3, 4));
   EXPECT_THAT(evaluations, Eq(65));
 }
 
