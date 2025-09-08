@@ -43,8 +43,7 @@ class PlayerTest : public ::testing::Test {
   PlayerTest()
       : test_info_(testing::UnitTest::GetInstance()->current_test_info()),
         test_case_name_(test_info_->test_case_name()),
-        test_name_(test_info_->name()),
-        plugin_(interface::principia__NewPlugin("MJD0", "MJD0", 0)) {}
+        test_name_(test_info_->name()) {}
 
   template<typename Profile>
   bool RunIfAppropriate(serialization::Method const& method_in,
@@ -56,21 +55,23 @@ class PlayerTest : public ::testing::Test {
   ::testing::TestInfo const* const test_info_;
   std::string const test_case_name_;
   std::string const test_name_;
-  std::unique_ptr<Plugin> plugin_;
 };
 
 TEST_F(PlayerTest, PlayTiny) {
   {
+    std::unique_ptr<Plugin> const plugin(
+        interface::principia__NewPlugin("MJD0", "MJD0", 0));
+
     Recorder* const r(new Recorder(test_name_ + ".journal.hex"));
     Recorder::Activate(r);
 
     {
       Method<NewPlugin> m({"MJD1", "MJD2", 3});
-      m.Return(plugin_.get());
+      m.Return(plugin.get());
     }
     {
-      const Plugin* plugin = plugin_.get();
-      Method<DeletePlugin> m({&plugin}, {&plugin});
+      const Plugin* p = plugin.get();
+      Method<DeletePlugin> m({&p}, {&p});
       m.Return();
     }
     Recorder::Deactivate();
