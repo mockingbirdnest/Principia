@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include "base/concepts.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
@@ -16,6 +18,24 @@ using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
+
+//TODO(phl)comments
+using ElementaryFunctionPointer = double(__cdecl*)(double θ);
+class ElementaryFunctionsConfigurationSaver {
+ public:
+  ElementaryFunctionsConfigurationSaver();
+  ~ElementaryFunctionsConfigurationSaver();
+
+ private:
+  static std::atomic_bool active_;
+  ElementaryFunctionPointer cos_;
+  ElementaryFunctionPointer sin_;
+};
+
+// Initializes the library to use either the platform functions or correctly-
+// rounded ones, depending on the state of the save and the capabilities of the
+// platform.
+void ConfigureElementaryFunctions(bool uses_correct_sin_cos);
 
 // Equivalent to `std::fma(x, y, z)`.
 template<typename Q1, typename Q2>
@@ -149,11 +169,6 @@ template<typename Q>
   requires boost_cpp_number<Q> || std::floating_point<Q>
 Q Round(Q const& x);
 
-// Initializes the library to use either the platform functions or correctly-
-// rounded ones, depending on the state of the save and the capabilities of the
-// platform.
-void StaticInitialization(bool uses_correct_sin_cos);
-
 }  // namespace internal
 
 using internal::Abs;
@@ -164,8 +179,10 @@ using internal::ArcSinh;
 using internal::ArcTan;
 using internal::ArcTanh;
 using internal::Cbrt;
+using internal::ConfigureElementaryFunctions;
 using internal::Cos;
 using internal::Cosh;
+using internal::ElementaryFunctionsConfigurationSaver;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;
@@ -177,7 +194,6 @@ using internal::Pow;
 using internal::Round;
 using internal::Sin;
 using internal::Sinh;
-using internal::StaticInitialization;
 using internal::Sqrt;
 using internal::Tan;
 using internal::Tanh;
