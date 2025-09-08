@@ -32,6 +32,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -97,6 +98,7 @@ using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_continuous_trajectory;
@@ -250,12 +252,6 @@ class PluginTest : public testing::Test {
     }
   }
 
-  // The time of the `step`th history step of `plugin_`.  `HistoryTime(0)` is
-  // `initial_time_`.
-  Instant HistoryTime(Instant const time, int const step) {
-    return time + step * plugin_->Δt();
-  }
-
   void PrintSerializedPlugin(const Plugin& plugin) {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
@@ -273,7 +269,7 @@ class PluginTest : public testing::Test {
   std::string const initial_time_;
   Angle planetarium_rotation_;
 
-  not_null<std::unique_ptr<TestablePlugin>> plugin_;
+  std::unique_ptr<TestablePlugin> plugin_;
 
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
@@ -292,6 +288,7 @@ using PluginDeathTest = PluginTest;
 
 TEST_F(PluginDeathTest, SerializationError) {
   EXPECT_DEATH({
+    plugin_ = nullptr;
     auto plugin =
         make_not_null_unique<Plugin>(
             initial_time_,
@@ -303,12 +300,13 @@ TEST_F(PluginDeathTest, SerializationError) {
 }
 
 TEST_F(PluginTest, Serialization) {
+  plugin_ = nullptr;
   GUID const satellite = "satellite";
   PartId const part_id = 666;
 
   // We need an actual `Plugin` here rather than a `TestablePlugin`, since
   // that's what `ReadFromMessage` returns.
-  auto plugin = make_not_null_unique<Plugin>(
+  auto plugin = std::make_unique<Plugin>(
                     initial_time_,
                     initial_time_,
                     planetarium_rotation_);
@@ -388,6 +386,12 @@ TEST_F(PluginTest, Serialization) {
   PrintSerializedPlugin(*plugin);
 #endif
 
+  // The time of the `step`th history step of the plugin.  `history_time(0)` is
+  // `initial_time_`.
+  auto const history_time = [](Instant const time, int const step) {
+    return time + step * DefaultHistoryParameters().step();
+  };
+
   // Add a handful of points to the history and then forget some of them.  This
   // is the most convenient way to check that forgetting works as expected.
   plugin->InsertOrKeepVessel(satellite,
@@ -395,18 +399,18 @@ TEST_F(PluginTest, Serialization) {
                              SolarSystemFactory::Earth,
                              /*loaded=*/false,
                              inserted);
-  plugin->AdvanceTime(HistoryTime(time, 3), Angle());
+  plugin->AdvanceTime(history_time(time, 3), Angle());
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->InsertOrKeepVessel(satellite,
                              "v" + satellite,
                              SolarSystemFactory::Earth,
                              /*loaded=*/false,
                              inserted);
-  plugin->AdvanceTime(HistoryTime(time, 6), Angle());
+  plugin->AdvanceTime(history_time(time, 6), Angle());
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->UpdatePrediction({satellite});
 
-  plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
+  plugin->CreateFlightPlan(satellite, history_time(time, 7), 4 * Kilogram);
   plugin->renderer().SetPlottingFrame(
       plugin->NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Venus));
@@ -442,6 +446,7 @@ TEST_F(PluginTest, Serialization) {
                 serialization::BodyCentredNonRotatingReferenceFrame::extension).
                     centre());
 
+  plugin = nullptr;
   plugin = Plugin::ReadFromMessage(message);
   serialization::Plugin second_message;
   plugin->WriteToMessage(&second_message);
@@ -828,6 +833,7 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
 }
 
 TEST_F(PluginTest, Navball) {
+  plugin_ = nullptr;
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
                 initial_time_,
@@ -876,6 +882,7 @@ TEST_F(PluginTest, Navball) {
 }
 
 TEST_F(PluginTest, NavballTargetVessel) {
+  plugin_ = nullptr;
   GUID const guid = "Target Vessel";
   PartId const part_id = 666;
 
@@ -926,6 +933,7 @@ TEST_F(PluginTest, NavballTargetVessel) {
 }
 
 TEST_F(PluginTest, Frenet) {
+  plugin_ = nullptr;
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
                 initial_time_,

@@ -141,7 +141,7 @@ class PluginIntegrationTest : public testing::Test {
   std::string initial_time_;
   Angle planetarium_rotation_;
 
-  not_null<std::unique_ptr<Plugin>> plugin_;
+  std::unique_ptr<Plugin> plugin_;
 
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
@@ -171,6 +171,7 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
       Lt(0.01));
   serialization::Plugin plugin_message;
   plugin_->WriteToMessage(&plugin_message);
+  plugin_ = nullptr;
   plugin_ = Plugin::ReadFromMessage(plugin_message);
   // Having saved and loaded, we compute a new segment again, this probably
   // exercises apocalypse-type bugs.
@@ -666,6 +667,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
 // with unit gravitational parameter at unit distance.  Since predictions are
 // only computed on `AdvanceTime()`, we advance time by a small amount.
 TEST_F(PluginIntegrationTest, Prediction) {
+  plugin_ = nullptr;
   Index const celestial = 0;
   Plugin plugin("JD2451545.0", "JD2451545.0", 0 * Radian);
   serialization::GravityModel::Body gravity_model;

@@ -143,7 +143,7 @@ class InterfaceTest : public testing::Test {
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin")) {}
 
   MockRenderer renderer_;
-  not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
+  std::unique_ptr<StrictMock<MockPlugin>> plugin_;
   std::string const hexadecimal_simple_plugin_;
   std::vector<std::uint8_t> const serialized_simple_plugin_;
   Instant const t0_;
@@ -224,6 +224,7 @@ TEST_F(InterfaceTest, Log) {
 }
 
 TEST_F(InterfaceTest, NewPlugin) {
+  plugin_ = nullptr;
   std::unique_ptr<Plugin> plugin(principia__NewPlugin(
                                      "MJD1",
                                      "MJD2",
@@ -648,6 +649,7 @@ TEST_F(InterfaceTest, SerializePlugin) {
 }
 
 TEST_F(InterfaceTest, DeserializePlugin) {
+  plugin_ = nullptr;
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
