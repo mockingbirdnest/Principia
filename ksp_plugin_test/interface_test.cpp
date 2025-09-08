@@ -135,7 +135,7 @@ class InterfaceTestWithoutPlugin : public testing::Test {
   }
 
   InterfaceTestWithoutPlugin()
-      : // Use PluginTest.Serialization to create these files.
+      : // Use PluginTest.Serialization to create these files.  // NOLINT
         hexadecimal_simple_plugin_(ReadFromHexadecimalFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex")),
         serialized_simple_plugin_(ReadFromBinaryFile(

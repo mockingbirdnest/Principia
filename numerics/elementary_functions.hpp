@@ -19,8 +19,11 @@ using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-//TODO(phl)comments
-using ElementaryFunctionPointer = double(__cdecl*)(double θ);
+using ElementaryFunctionPointer = double(__cdecl*)(double θ);  // NOLINT
+
+// An RAII object that saves the configuration of the elementary function
+// pointers when it is constructed and restores them when it is destroyed.  This
+// is required to isolate the tests that construct plugins.
 class ElementaryFunctionsConfigurationSaver {
  public:
   ElementaryFunctionsConfigurationSaver();
@@ -32,9 +35,9 @@ class ElementaryFunctionsConfigurationSaver {
   ElementaryFunctionPointer sin_;
 };
 
-// Initializes the library to use either the platform functions or correctly-
+// Configures the library to use either the platform functions or correctly-
 // rounded ones, depending on the state of the save and the capabilities of the
-// platform.
+// platform.  By default, correctly-rounded functions are used.
 void ConfigureElementaryFunctions(bool uses_correct_sin_cos);
 
 // Equivalent to `std::fma(x, y, z)`.
