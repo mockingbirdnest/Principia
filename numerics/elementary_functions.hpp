@@ -31,8 +31,8 @@ class ElementaryFunctionsConfigurationSaver {
 
  private:
   static std::atomic_bool active_;
-  ElementaryFunctionPointer cos_;
-  ElementaryFunctionPointer sin_;
+  ElementaryFunctionPointer const cos_;
+  ElementaryFunctionPointer const sin_;
 };
 
 // Configures the library to use either the platform functions or correctly-

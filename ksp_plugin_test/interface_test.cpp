@@ -166,10 +166,10 @@ class InterfaceTest : public InterfaceTestWithoutPlugin {
 
 Recorder* InterfaceTestWithoutPlugin::recorder_ = nullptr;
 
-using InterfaceDeathTest = InterfaceTest;
+using InterfaceDeathTestWithoutPlugin = InterfaceTestWithoutPlugin;
 
 // And there is only one thing we say to Death.
-TEST_F(InterfaceDeathTest, Errors) {
+TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
     principia__DeletePlugin(nullptr);
@@ -211,7 +211,7 @@ TEST_F(InterfaceTest, InitGoogleLogging1) {
   principia__InitGoogleLogging();
 }
 
-TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
+TEST_F(InterfaceDeathTestWithoutPlugin, InitGoogleLogging2) {
   // We use EXPECT_EXIT in this test to avoid interfering with the execution of
   // the other tests.
   int const exit_code = 66;
@@ -223,7 +223,7 @@ TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
   }, ExitedWithCode(exit_code), "");
 }
 
-TEST_F(InterfaceDeathTest, ActivateRecorder) {
+TEST_F(InterfaceDeathTestWithoutPlugin, ActivateRecorder) {
   EXPECT_DEATH({
     Recorder::Deactivate();
     // Fails because the glog directory doesn't exist.
@@ -678,7 +678,7 @@ TEST_F(InterfaceTestWithoutPlugin, DeserializePlugin) {
   principia__DeletePlugin(&plugin);
 }
 
-TEST_F(InterfaceDeathTest, SettersAndGetters) {
+TEST_F(InterfaceDeathTestWithoutPlugin, SettersAndGetters) {
   // We use EXPECT_EXITs in this test to avoid interfering with the execution of
   // the other tests.
   int const exit_code = 66;
