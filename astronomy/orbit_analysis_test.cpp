@@ -642,7 +642,7 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval(),
               AllOf(Field(&Interval<Angle>::min,
                           AnyOf(IsNear(74.7_(1) * Degree),    // Windows.
-                                IsNear(75.1_(1) * Degree))),  // Ubuntu.
+                                IsNear(75.1_(1) * Degree),    // Ubuntu.
                                 IsNear(75.0_(1) * Degree))),  // macOS.
                     Field(&Interval<Angle>::max,
                           AnyOf(IsNear(99.0_(1) * Degree),      // Windows.
