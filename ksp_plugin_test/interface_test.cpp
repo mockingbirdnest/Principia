@@ -121,7 +121,7 @@ QP parent_relative_degrees_of_freedom = {parent_position, parent_velocity};
 
 }  // namespace
 
-class InterfaceTest : public testing::Test {
+class InterfaceTestWithoutPlugin : public testing::Test {
  protected:
   static void SetUpTestCase() {
     std::string const test_case_name =
@@ -134,20 +134,34 @@ class InterfaceTest : public testing::Test {
     Recorder::Deactivate();
   }
 
-  InterfaceTest()
-      : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
-        // Use PluginTest.Serialization to create these files.
+  InterfaceTestWithoutPlugin()
+      : // Use PluginTest.Serialization to create these files.
         hexadecimal_simple_plugin_(ReadFromHexadecimalFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex")),
         serialized_simple_plugin_(ReadFromBinaryFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin")) {}
 
   MockRenderer renderer_;
-  std::unique_ptr<StrictMock<MockPlugin>> plugin_;
   std::string const hexadecimal_simple_plugin_;
   std::vector<std::uint8_t> const serialized_simple_plugin_;
   Instant const t0_;
   static Recorder* recorder_;
+};
+
+class InterfaceTest : public InterfaceTestWithoutPlugin {
+ protected:
+  static void SetUpTestCase() {
+    InterfaceTestWithoutPlugin::SetUpTestCase();
+  }
+
+  static void TearDownTestCase() {
+    InterfaceTestWithoutPlugin::TearDownTestCase();
+  }
+
+  InterfaceTest()
+      : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
+
+  not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
 };
 
 Recorder* InterfaceTest::recorder_ = nullptr;
@@ -223,8 +237,7 @@ TEST_F(InterfaceTest, Log) {
   principia__LogError("yet another file", 3, "An error");
 }
 
-TEST_F(InterfaceTest, NewPlugin) {
-  plugin_ = nullptr;
+TEST_F(InterfaceTestWithoutPlugin, NewPlugin) {
   std::unique_ptr<Plugin> plugin(principia__NewPlugin(
                                      "MJD1",
                                      "MJD2",
@@ -648,8 +661,7 @@ TEST_F(InterfaceTest, SerializePlugin) {
   EXPECT_THAT(serialization, IsNull());
 }
 
-TEST_F(InterfaceTest, DeserializePlugin) {
-  plugin_ = nullptr;
+TEST_F(InterfaceTestWithoutPlugin, DeserializePlugin) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),

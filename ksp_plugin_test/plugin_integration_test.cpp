@@ -89,17 +89,14 @@ char const vessel_name[] = "NCC-1701-D";
 
 }  // namespace
 
-class PluginIntegrationTest : public testing::Test {
+class PluginIntegrationTestWithoutPlugin : public testing::Test {
  protected:
-  PluginIntegrationTest()
+  PluginIntegrationTestWithoutPlugin()
       : solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
         initial_time_("JD2451545.0625"),
-        planetarium_rotation_(1 * Radian),
-        plugin_(make_not_null_unique<Plugin>(initial_time_,
-                                             initial_time_,
-                                             planetarium_rotation_)) {
+        planetarium_rotation_(1 * Radian) {
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -119,6 +116,22 @@ class PluginIntegrationTest : public testing::Test {
                  satellite_initial_displacement_.Norm()) * unit_tangent;
   }
 
+  not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system_;
+  std::string initial_time_;
+  Angle planetarium_rotation_;
+
+  // These initial conditions will yield a low circular orbit around Earth.
+  Displacement<AliceSun> satellite_initial_displacement_;
+  Velocity<AliceSun> satellite_initial_velocity_;
+};
+
+class PluginIntegrationTest : public PluginIntegrationTestWithoutPlugin {
+ protected:
+  PluginIntegrationTest()
+      : plugin_(std::make_unique<Plugin>(initial_time_,
+                                         initial_time_,
+                                         planetarium_rotation_)) {}
+
   void InsertAllSolarSystemBodies() {
     for (int index = SolarSystemFactory::Sun;
          index <= SolarSystemFactory::LastBody;
@@ -137,15 +150,7 @@ class PluginIntegrationTest : public testing::Test {
     }
   }
 
-  not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system_;
-  std::string initial_time_;
-  Angle planetarium_rotation_;
-
   std::unique_ptr<Plugin> plugin_;
-
-  // These initial conditions will yield a low circular orbit around Earth.
-  Displacement<AliceSun> satellite_initial_displacement_;
-  Velocity<AliceSun> satellite_initial_velocity_;
 };
 
 TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
@@ -666,8 +671,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
 // Checks that we correctly predict a full circular orbit around a massive body
 // with unit gravitational parameter at unit distance.  Since predictions are
 // only computed on `AdvanceTime()`, we advance time by a small amount.
-TEST_F(PluginIntegrationTest, Prediction) {
-  plugin_ = nullptr;
+TEST_F(PluginIntegrationTestWithoutPlugin, Prediction) {
   Index const celestial = 0;
   Plugin plugin("JD2451545.0", "JD2451545.0", 0 * Radian);
   serialization::GravityModel::Body gravity_model;

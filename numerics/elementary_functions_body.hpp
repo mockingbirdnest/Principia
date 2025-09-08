@@ -39,7 +39,6 @@ inline nullptr_t static_initialization = [](){
 inline ElementaryFunctionsConfigurationSaver::
 ElementaryFunctionsConfigurationSaver()
     : cos_(cos), sin_(sin) {
-  LOG(ERROR)<<"Plugin!";
   CHECK(!active_);
   active_ = true;
 }
