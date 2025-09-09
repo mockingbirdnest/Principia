@@ -61,7 +61,13 @@ static std::vector<
                   std::map<double (*)(double), int>{std::pair{&identity, 0},
                            std::pair{&mulsd_xmm0_xmm0, 3},
                            std::pair{&mulsd_xmm0_xmm0_4x, 4 * 3},
-                           std::pair{&sqrtps_xmm0_xmm0, 14}}}};
+                           std::pair{&sqrtps_xmm0_xmm0, 14}}},
+        // Rosetta 2.
+        std::pair{std::regex("VirtualApple .*"),
+                  std::map<double (*)(double), int>{std::pair{&identity, 0},
+                           std::pair{&mulsd_xmm0_xmm0, 4},
+                           std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
+                           }}};
 }  // namespace
 
 std::map<BenchmarkedFunction, int> const& ReferenceCycleCounts() {
