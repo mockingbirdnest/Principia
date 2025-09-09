@@ -25,8 +25,8 @@ bool FunctionRegistry::Register(std::string_view name,
 }
 
 FunctionRegistry& FunctionRegistry::singleton() {
-   static auto& singleton = *new FunctionRegistry;
-   return singleton;
+  static auto& singleton = *new FunctionRegistry;
+  return singleton;
 }
 
 std::map<std::string, BenchmarkedFunction, std::less<>> const&
