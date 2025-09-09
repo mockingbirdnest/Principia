@@ -115,10 +115,48 @@ bool CorrectionPossiblyNeeded(double const r₀,
   return std::abs(0.5 * (r̃ - r₀) - r₁) <= τ * r₀ && r̃ != r₀;
 }
 
+template<FMAPresence fma_presence>
+bool CbrtOneBit(double const y, double const a, double const b) {
+  double const b² = b * b;
+  double const b³ = b² * b;
+  DoublePrecision<double> const a² = TwoProduct<fma_presence>(a, a);
+  auto const& [a²₀, a²₁] = a²;
+  DoublePrecision<double> const a³₀ = TwoProduct<fma_presence>(a²₀, a);
+  DoublePrecision<double> const minus_a³₁ =
+      TwoProduct<fma_presence>(a²₁, -a);
+  auto const& [a³₀₀, a³₀₁] = a³₀;
+  // In cbrt.pdf, where we are specifically considering the computation of the
+  // 54th bit, ρ is referred to as ρ₅₃, and ρ_next as ρ₅₄ˌ₁.
+  // ρ = y - a³ = y - a³₀ - a³₁ = y - a³₀₀ - a³₀₁ - a³₁;
+  double const ρ₀ = y - a³₀₀;  // Exact.
+  // ρ = ρ₀ - a³₀₁ - a³₁;
+  std::array<double, 4> const ρ = PriestNievergeltNormalize(
+      NievergeltQuadruplyCompensatedStep(TwoDifference(ρ₀, a³₀₁), minus_a³₁));
+  DCHECK_EQ(ρ[3], 0);
+  std::array<double, 3> ρ_next{ρ[0], ρ[1], ρ[2]};
+  double const a²₀b = a²₀ * b;
+  double const a²₁b = a²₁ * b;
+  double const ab² = a * b²;
+  for (double rhs : {2 * a²₀b, a²₀b, 2 * a²₁b, a²₁b,  // 3 a²b
+                     2 * ab², ab²,                    // 3 ab²
+                     b³}) {
+    auto const ρ = PriestNievergeltNormalize(NievergeltQuadruplyCompensatedStep(
+        TwoSum(ρ_next[0], ρ_next[1]), TwoDifference(ρ_next[2], rhs)));
+    DCHECK_EQ(ρ[3], 0);
+    ρ_next = {ρ[0], ρ[1], ρ[2]};
+  }
+  bool const ρ_next_positive =
+      ρ_next[0] > 0 || (ρ_next[0] == 0 && ρ_next[1] > 0) ||
+      (ρ_next[0] == 0 && ρ_next[1] == 0 && ρ_next[2] >= 0);
+  return ρ_next_positive;
+}
+
+template<FMAPresence fma_presence>
 double CorrectLastBit(double const y, double const r₀, double const r̃) {
+  static_assert(fma_presence != FMAPresence::Unknown);
   double const a = std::min(r₀, r̃);
   double const b = 0.5 * std::abs(r₀ - r̃);
-  return CbrtOneBit(y, a, b) ? std::max(r₀, r̃) : a;
+  return CbrtOneBit<fma_presence>(y, a, b) ? std::max(r₀, r̃) : a;
 }
 
 }  // namespace
@@ -219,8 +257,10 @@ double Cbrt(double y) {
   double const r̃ = r₀ + 2 * r₁;
   OSACA_IF(rounding == Rounding::Correct &&
            CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.7C73DBBD9FA60p-66)) {
-    OSACA_RETURN(_mm_cvtsd_f64(_mm_or_pd(
-        _mm_set_sd(CorrectLastBit(abs_y, std::abs(r₀), std::abs(r̃))), sign)));
+    OSACA_RETURN(_mm_cvtsd_f64(
+        _mm_or_pd(_mm_set_sd(CorrectLastBit<FMAPresence::Absent>(
+                      abs_y, std::abs(r₀), std::abs(r̃))),
+                  sign)));
   }
   OSACA_RETURN(r₀);
 }
@@ -322,8 +362,10 @@ double Cbrt(double y) {
   double const r̃ = r₀ + 2 * r₁;
   OSACA_IF(rounding == Rounding::Correct &&
            CorrectionPossiblyNeeded(r₀, r₁, r̃, /*τ=*/0x1.E45E16EF5480Fp-76)) {
-    OSACA_RETURN(_mm_cvtsd_f64(_mm_or_pd(
-        _mm_set_sd(CorrectLastBit(abs_y, std::abs(r₀), std::abs(r̃))), sign)));
+    OSACA_RETURN(_mm_cvtsd_f64(
+        _mm_or_pd(_mm_set_sd(CorrectLastBit<FMAPresence::Present>(
+                      abs_y, std::abs(r₀), std::abs(r̃))),
+                  sign)));
   }
   OSACA_RETURN(r₀);
 }
@@ -332,42 +374,12 @@ template double Cbrt<Rounding::Correct>(double y);
 }  // namespace method_5²Z4¹FMA
 
 double Cbrt(double const y) {
-  return UseHardwareFMA ? method_5²Z4¹FMA::Cbrt<Rounding::Correct>(y)
-                        : method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(y);
+  return CanUseHardwareFMA ? method_5²Z4¹FMA::Cbrt<Rounding::Correct>(y)
+                           : method_3²ᴄZ5¹::Cbrt<Rounding::Correct>(y);
 }
 
 bool CbrtOneBit(double const y, double const a, double const b) {
-  double const b² = b * b;
-  double const b³ = b² * b;
-  DoublePrecision<double> const a² = TwoProduct(a, a);
-  auto const& [a²₀, a²₁] = a²;
-  DoublePrecision<double> const a³₀ = TwoProduct(a²₀, a);
-  DoublePrecision<double> const minus_a³₁ = TwoProduct(a²₁, -a);
-  auto const& [a³₀₀, a³₀₁] = a³₀;
-  // In cbrt.pdf, where we are specifically considering the computation of the
-  // 54th bit, ρ is referred to as ρ₅₃, and ρ_next as ρ₅₄ˌ₁.
-  // ρ = y - a³ = y - a³₀ - a³₁ = y - a³₀₀ - a³₀₁ - a³₁;
-  double const ρ₀ = y - a³₀₀;  // Exact.
-  // ρ = ρ₀ - a³₀₁ - a³₁;
-  std::array<double, 4> const ρ = PriestNievergeltNormalize(
-      NievergeltQuadruplyCompensatedStep(TwoDifference(ρ₀, a³₀₁), minus_a³₁));
-  DCHECK_EQ(ρ[3], 0);
-  std::array<double, 3> ρ_next{ρ[0], ρ[1], ρ[2]};
-  double const a²₀b = a²₀ * b;
-  double const a²₁b = a²₁ * b;
-  double const ab² = a * b²;
-  for (double rhs : {2 * a²₀b, a²₀b, 2 * a²₁b, a²₁b,  // 3 a²b
-                     2 * ab², ab²,                    // 3 ab²
-                     b³}) {
-    auto const ρ = PriestNievergeltNormalize(NievergeltQuadruplyCompensatedStep(
-        TwoSum(ρ_next[0], ρ_next[1]), TwoDifference(ρ_next[2], rhs)));
-    DCHECK_EQ(ρ[3], 0);
-    ρ_next = {ρ[0], ρ[1], ρ[2]};
-  }
-  bool const ρ_next_positive =
-      ρ_next[0] > 0 || (ρ_next[0] == 0 && ρ_next[1] > 0) ||
-      (ρ_next[0] == 0 && ρ_next[1] == 0 && ρ_next[2] >= 0);
-  return ρ_next_positive;
+  return CbrtOneBit<FMAPresence::Unknown>(y, a, b);
 }
 
 }  // namespace internal

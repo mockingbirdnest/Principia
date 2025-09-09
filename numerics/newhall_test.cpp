@@ -221,7 +221,8 @@ class NewhallTest : public ::testing::Test {
 
     EXPECT_THAT(Abs(argument_error_estimate),
                 IsNear(expected_value_error_estimate));
-    if (expected_value_absolute_error_with_fma.has_value() && UseHardwareFMA) {
+    if (expected_value_absolute_error_with_fma.has_value() &&
+        CanUseHardwareFMA) {
       EXPECT_THAT(argument_absolute_error,
                   IsNear(*expected_value_absolute_error_with_fma));
     } else {

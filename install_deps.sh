@@ -9,13 +9,14 @@ echo "Required runtime dependencies: libc++1"
 mkdir -p deps
 pushd deps
 
-for repo in abseil-cpp benchmark config gipfeli glog googletest multiprecision protobuf zfp; do
+for repo in abseil-cpp benchmark config gipfeli glog googletest multiprecision protobuf zfp core-math; do
   if [ ! -d "$repo" ]; then
     git clone "https://github.com/mockingbirdnest/$repo.git"
   fi
   pushd "$repo"
-  git checkout master
-  git pull
+  ln -s .. deps
+  git fetch
+  git checkout origin/HEAD
 
   # Azure pipelines define this variable for us.
   AGENT_OS=$(uname -s)

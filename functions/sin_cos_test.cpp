@@ -12,6 +12,7 @@
 #include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
+#include "numerics/fma.hpp"
 #include "numerics/m128d.hpp"
 #include "numerics/next.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
@@ -29,11 +30,11 @@ namespace functions_test {
 using namespace boost::multiprecision;
 using namespace principia::base::_bundle;
 using namespace principia::functions::_multiprecision;
+using namespace principia::numerics::_fma;
 using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_next;
 using namespace principia::numerics::_sin_cos;
 using namespace principia::testing_utilities::_almost_equals;
-namespace sin_cos = principia::numerics::_sin_cos;
 
 constexpr std::int64_t table_spacing_bits = 9;
 constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
@@ -67,7 +68,7 @@ class SinCosTest : public ::testing::Test {
   };
 
   static void SetUpTestCase() {
-    sin_cos::StaticInitialization(&CountSinFallbacks, &CountCosFallbacks);
+    SetSlowPathsCallbacks(&CountSinFallbacks, &CountCosFallbacks);
   }
 
   static void CountSinFallbacks(double const θ) {
@@ -78,6 +79,16 @@ class SinCosTest : public ::testing::Test {
   static void CountCosFallbacks(double const θ) {
     absl::MutexLock lock(&lock_);
     ++cos_fallbacks_;
+  }
+
+  static double Sin(double const θ) {
+    return CanUseHardwareFMA ? numerics::_sin_cos::Sin<FMAPresence::Present>(θ)
+                             : numerics::_sin_cos::Sin<FMAPresence::Absent>(θ);
+  }
+
+  static double Cos(double const θ) {
+    return CanUseHardwareFMA ? numerics::_sin_cos::Cos<FMAPresence::Present>(θ)
+                             : numerics::_sin_cos::Cos<FMAPresence::Absent>(θ);
   }
 
   template<std::int64_t iterations_quantum>
@@ -95,7 +106,7 @@ class SinCosTest : public ::testing::Test {
           uniformly_at(random) * ((uniform_sign(random) << 1) - 1);
       auto const boost_argument = cpp_rational(principia_argument);
       {
-        auto const boost_sin = Sin(boost_argument);
+        auto const boost_sin = functions::_multiprecision::Sin(boost_argument);
         double const principia_sin = Sin(principia_argument);
         auto const sin_error =
             abs(boost_sin - static_cast<cpp_bin_float_50>(principia_sin));
@@ -114,7 +125,7 @@ class SinCosTest : public ::testing::Test {
         }
       }
       {
-        auto const boost_cos = Cos(boost_argument);
+        auto const boost_cos = functions::_multiprecision::Cos(boost_argument);
         double const principia_cos = Cos(principia_argument);
         auto const cos_error =
             abs(boost_cos - static_cast<cpp_bin_float_50>(principia_cos));
@@ -286,17 +297,20 @@ TEST_F(SinCosTest, ReduceIndex) {
         _mm_xor_pd(_mm_set_sd(m_shifted - mantissa_reduce_shifter), sign));
     std::int64_t const m = _mm_cvtsd_si64(_mm_set_sd(m_double));
 
-    M128D const abs_θ_m128d = Abs(θ_m128d);
-    M128D const sign_m128d = Sign(θ_m128d);
-    M128D p_m128d =
-        FusedMultiplyAdd(
-            abs_θ_m128d, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
-        m128d::mantissa_reduce_shifter;
-    p_m128d = p_m128d ^ sign_m128d;
-
     EXPECT_EQ(n, m);
     EXPECT_EQ(m, m_double);
-    EXPECT_EQ(m_double, static_cast<double>(p_m128d));
+
+    if constexpr (CanEmitFMAInstructions) {
+      M128D const abs_θ_m128d = Abs(θ_m128d);
+      M128D const sign_m128d = Sign(θ_m128d);
+      M128D p_m128d =
+          FusedMultiplyAdd(
+              abs_θ_m128d, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+          m128d::mantissa_reduce_shifter;
+      p_m128d = p_m128d ^ sign_m128d;
+
+      EXPECT_EQ(m_double, static_cast<double>(p_m128d));
+    }
   }
 }
 

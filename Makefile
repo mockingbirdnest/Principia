@@ -120,6 +120,8 @@ SHARED_ARGS   := \
 	-fno-char8_t                                                  \
 	-Wall -Wpedantic                                              \
 	-Wno-c++23-extensions                                         \
+	-Wno-deprecated-declarations                                  \
+	-Wno-deprecated-literal-operator                              \
 	-Wno-char-subscripts                                          \
 	-Wno-elaborated-enum-class                                    \
 	-Wno-gnu-anonymous-struct                                     \
@@ -146,14 +148,14 @@ ifeq ($(UNAME_S),Linux)
     SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
+    LLVM_PATH = $(shell brew --prefix llvm@20)
     INCLUDES += \
 			-include "base/macos_allocator_replacement.hpp" \
-			-include "base/macos_filesystem_replacement.hpp" \
-			-I/usr/local/opt/llvm/include
+			-I$(LLVM_PATH)/include
     LIBS += \
 			-framework CoreFoundation \
-			-L/usr/local/opt/llvm/lib/c++ \
-			-L/usr/local/opt/llvm/lib/unwind \
+			-L$(LLVM_PATH)/lib/c++ \
+			-L$(LLVM_PATH)/lib/unwind \
 			-lunwind
     SHARED_ARGS += \
 			-mmacosx-version-min=$(OSX_DEPLOYMENT_TARGET) \

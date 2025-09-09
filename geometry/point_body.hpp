@@ -124,6 +124,7 @@ template<typename L, typename R>
 Point<Product<L, R>> FusedMultiplyAdd(L const& a, R const& b,
                                       Point<Product<L, R>> const& c) {
   using numerics::_elementary_functions::FusedMultiplyAdd;
+  using geometry::_grassmann::FusedMultiplyAdd;
   return Point<Product<L, R>>(FusedMultiplyAdd(a, b, c.coordinates_));
 }
 
@@ -131,18 +132,17 @@ template<typename L, typename R>
 Point<Product<L, R>> FusedNegatedMultiplyAdd(L const& a, R const& b,
                                              Point<Product<L, R>> const& c) {
   using numerics::_elementary_functions::FusedNegatedMultiplyAdd;
+  using geometry::_grassmann::FusedNegatedMultiplyAdd;
   return Point<Product<L, R>>(FusedNegatedMultiplyAdd(a, b, c.coordinates_));
 }
 
-template<typename Vector>
-  requires convertible_to_quantity<Vector>
+template<convertible_to_quantity Vector>
 constexpr Point<Vector> NextUp(Point<Vector> const x) {
   using numerics::_elementary_functions::NextUp;
   return Point<Vector>(NextUp(x.coordinates_));
 }
 
-template<typename Vector>
-  requires convertible_to_quantity<Vector>
+template<convertible_to_quantity Vector>
 constexpr Point<Vector> NextDown(Point<Vector> const x) {
   using numerics::_elementary_functions::NextDown;
   return Point<Vector>(NextDown(x.coordinates_));
