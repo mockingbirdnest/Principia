@@ -120,6 +120,8 @@ SHARED_ARGS   := \
 	-fno-char8_t                                                  \
 	-Wall -Wpedantic                                              \
 	-Wno-c++23-extensions                                         \
+	-Wno-deprecated-declarations                                  \
+	-Wno-deprecated-literal-operator                              \
 	-Wno-char-subscripts                                          \
 	-Wno-elaborated-enum-class                                    \
 	-Wno-gnu-anonymous-struct                                     \
@@ -149,7 +151,6 @@ ifeq ($(UNAME_S),Darwin)
     LLVM_PATH = $(shell brew --prefix llvm@20)
     INCLUDES += \
 			-include "base/macos_allocator_replacement.hpp" \
-			-include "base/macos_filesystem_replacement.hpp" \
 			-I$(LLVM_PATH)/include
     LIBS += \
 			-framework CoreFoundation \

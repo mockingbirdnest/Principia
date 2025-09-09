@@ -1,5 +1,3 @@
-#pragma once
-
 #include "numerics/apodization.hpp"
 
 #include "geometry/barycentre_calculator.hpp"
