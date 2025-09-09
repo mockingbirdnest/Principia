@@ -7,9 +7,11 @@
 #include <cmath>
 
 #include "boost/multiprecision/cpp_bin_float.hpp"
+#include "glog/logging.h"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
+#include "numerics/sin_cos.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -21,7 +23,50 @@ using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
+using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_si;
+
+// Pointers used for indirect calls, set by `ConfigureElementaryFunctions`.
+inline ElementaryFunctionPointer cos = nullptr;
+inline ElementaryFunctionPointer sin = nullptr;
+inline nullptr_t static_initialization = [](){
+  // By default, use the correctly-rounded implementation.  This can be
+  // overridden based on the save.
+  ConfigureElementaryFunctions(/*uses_correct_sin_cos=*/true);
+  return nullptr;
+}();
+
+inline ElementaryFunctionsConfigurationSaver::
+ElementaryFunctionsConfigurationSaver()
+    : cos_(cos), sin_(sin) {
+  CHECK(!active_);
+  active_ = true;
+}
+
+inline ElementaryFunctionsConfigurationSaver::
+~ElementaryFunctionsConfigurationSaver() {
+  cos = cos_;
+  sin = sin_;
+  active_ = false;
+}
+
+inline std::atomic_bool ElementaryFunctionsConfigurationSaver::active_ = false;
+
+inline void ConfigureElementaryFunctions(bool const uses_correct_sin_cos) {
+  // Beware!  This function cannot use `CanUseHardwareFMA` as it's called from a
+  // static declaration and we have no way to know if that variable has already
+  // been initialized.
+  if (!uses_correct_sin_cos) {
+    cos = &std::cos;
+    sin = &std::sin;
+  } else if (EarlyCanUseHardwareFMA()) {
+    cos = &numerics::_sin_cos::Cos<FMAPresence::Present>;
+    sin = &numerics::_sin_cos::Sin<FMAPresence::Present>;
+  } else {
+    cos = &numerics::_sin_cos::Cos<FMAPresence::Absent>;
+    sin = &numerics::_sin_cos::Sin<FMAPresence::Absent>;
+  }
+}
 
 template<typename Q1, typename Q2>
   requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
@@ -236,11 +281,11 @@ constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
 }
 
 inline double Sin(Angle const& α) {
-  return std::sin(α / Radian);
+  return sin(α / Radian);
 }
 
 inline double Cos(Angle const& α) {
-  return std::cos(α / Radian);
+  return cos(α / Radian);
 }
 
 inline double Tan(Angle const& α) {

@@ -39,6 +39,7 @@
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/part_subsets.hpp"  // 🧙 For Subset<Part>.
+#include "numerics/elementary_functions.hpp"
 #include "physics/apsides.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
@@ -76,6 +77,7 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_part;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
@@ -117,6 +119,7 @@ Plugin::Plugin(std::string const& game_epoch,
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(ParseTT(game_epoch)),
       current_time_(ParseTT(solar_system_epoch)) {
+  ConfigureElementaryFunctions(uses_correct_sin_cos_);
   gravity_model_.set_plugin_frame(serialization::Frame::BARYCENTRIC);
   initial_state_.set_epoch(solar_system_epoch);
   initial_state_.set_plugin_frame(serialization::Frame::BARYCENTRIC);
@@ -1454,6 +1457,7 @@ void Plugin::WriteToMessage(
     not_null<serialization::Plugin*> const message) const {
   LOG(INFO) << __FUNCTION__;
   CHECK(!initializing_);
+  message->set_uses_correct_sin_cos(uses_correct_sin_cos_);
   if (system_fingerprint_ != 0) {
     message->set_system_fingerprint(system_fingerprint_);
   }
@@ -1540,6 +1544,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   not_null<std::unique_ptr<Plugin>> plugin =
       std::unique_ptr<Plugin>(new Plugin(history_parameters,
                                          psychohistory_parameters));
+
+  plugin->uses_correct_sin_cos_ = message.has_uses_correct_sin_cos() &&
+      message.uses_correct_sin_cos();
+  ConfigureElementaryFunctions(plugin->uses_correct_sin_cos_);
 
   if (message.has_system_fingerprint()) {
     plugin->system_fingerprint_ = message.system_fingerprint();

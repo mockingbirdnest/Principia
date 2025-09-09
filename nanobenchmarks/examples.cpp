@@ -2,14 +2,16 @@
 
 #include "nanobenchmarks/function_registry.hpp"  // 🧙 For BENCHMARK_FUNCTION etc.
 #include "numerics/cbrt.hpp"
-#include "numerics/sin_cos.hpp"
+#include "numerics/elementary_functions.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace nanobenchmarks {
 namespace _examples {
 
 using namespace principia::numerics::_cbrt;
-using namespace principia::numerics::_sin_cos;
+using namespace principia::numerics::_elementary_functions;
+using namespace principia::quantities::_si;
 
 BENCHMARKED_FUNCTION(twice) {
   return 2 * x;
@@ -23,7 +25,7 @@ BENCHMARKED_FUNCTION(inc) {
   return x + 1;
 }
 
-BENCHMARKED_FUNCTION(add_4_times) {
+BENCHMARKED_FUNCTION(multiply_4_times) {
   return x * x * x * x * x;
 }
 
@@ -60,7 +62,7 @@ BENCHMARKED_FUNCTION(std_sin) {
 }
 
 BENCHMARKED_FUNCTION(principia_sin) {
-  return Sin(x);
+  return Sin(x * Radian);
 }
 
 BENCHMARKED_FUNCTION(std_cos) {
@@ -68,7 +70,7 @@ BENCHMARKED_FUNCTION(std_cos) {
 }
 
 BENCHMARKED_FUNCTION(principia_cos) {
-  return Cos(x);
+  return Cos(x * Radian);
 }
 
 }  // namespace _examples

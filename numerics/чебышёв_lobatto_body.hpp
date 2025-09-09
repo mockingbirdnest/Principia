@@ -6,7 +6,8 @@
 #include <cstdint>
 
 #include "glog/logging.h"
-#include "numerics/elementary_functions.hpp"
+#include "numerics/fma.hpp"
+#include "numerics/sin_cos.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -14,7 +15,8 @@ namespace numerics {
 namespace _чебышёв_lobatto {
 namespace internal {
 
-using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_fma;
+using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_si;
 
 // Returns the Чебышёв-Lobatto point Cos(πk/N).  Should only be called with odd
@@ -24,7 +26,13 @@ double ЧебышёвLobattoPoint(std::int64_t const k) {
   static const std::array<double, N>* const points = []() {
     auto* const points = new std::array<double, N>;
     for (std::int64_t k = 1; k <= N; k += 2) {
-      (*points)[k] = Cos(π * k * Radian / N);
+      // These points are always computed using a correctly-rounded
+      // implementation.  They may be evaluated at any time during the
+      // execution, and we wouldn't want them to depend on the current
+      // configuration of the elementary functions.
+      double const πk_over_N = π * k / N;
+      (*points)[k] = CanUseHardwareFMA ? Cos<FMAPresence::Present>(πk_over_N)
+                                       : Cos<FMAPresence::Absent>(πk_over_N);
     }
     return points;
   }();

@@ -25,7 +25,6 @@
 #include "nanobenchmarks/function_registry.hpp"
 #include "nanobenchmarks/microarchitectures.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
-#include "numerics/sin_cos.hpp"
 #include "testing_utilities/statistics.hpp"
 
 
@@ -88,9 +87,7 @@ using namespace principia::mathematica::_mathematica;
 using namespace principia::nanobenchmarks::_function_registry;
 using namespace principia::nanobenchmarks::_microarchitectures;
 using namespace principia::nanobenchmarks::_performance_settings_controller;
-using namespace principia::numerics::_sin_cos;
 using namespace principia::testing_utilities::_statistics;
-namespace sin_cos = principia::numerics::_sin_cos;
 
 struct LatencyDistributionTable {
   double min;
@@ -213,7 +210,6 @@ std::size_t FormattedWidth(std::string const& s) {
 }
 
 void Main() {
-  sin_cos::StaticInitialization();
   std::regex const name_matcher(absl::GetFlag(FLAGS_benchmark_filter));
   auto controller = PerformanceSettingsController::New();
   std::unique_ptr<Logger> logger;

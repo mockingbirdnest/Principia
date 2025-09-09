@@ -35,7 +35,6 @@ using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_next;
 using namespace principia::numerics::_sin_cos;
 using namespace principia::testing_utilities::_almost_equals;
-namespace sin_cos = principia::numerics::_sin_cos;
 
 constexpr std::int64_t table_spacing_bits = 9;
 constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
@@ -69,7 +68,7 @@ class SinCosTest : public ::testing::Test {
   };
 
   static void SetUpTestCase() {
-    sin_cos::StaticInitialization(&CountSinFallbacks, &CountCosFallbacks);
+    SetSlowPathsCallbacks(&CountSinFallbacks, &CountCosFallbacks);
   }
 
   static void CountSinFallbacks(double const θ) {
@@ -80,6 +79,16 @@ class SinCosTest : public ::testing::Test {
   static void CountCosFallbacks(double const θ) {
     absl::MutexLock lock(&lock_);
     ++cos_fallbacks_;
+  }
+
+  static double Sin(double const θ) {
+    return CanUseHardwareFMA ? numerics::_sin_cos::Sin<FMAPresence::Present>(θ)
+                             : numerics::_sin_cos::Sin<FMAPresence::Absent>(θ);
+  }
+
+  static double Cos(double const θ) {
+    return CanUseHardwareFMA ? numerics::_sin_cos::Cos<FMAPresence::Present>(θ)
+                             : numerics::_sin_cos::Cos<FMAPresence::Absent>(θ);
   }
 
   template<std::int64_t iterations_quantum>
@@ -97,7 +106,7 @@ class SinCosTest : public ::testing::Test {
           uniformly_at(random) * ((uniform_sign(random) << 1) - 1);
       auto const boost_argument = cpp_rational(principia_argument);
       {
-        auto const boost_sin = Sin(boost_argument);
+        auto const boost_sin = functions::_multiprecision::Sin(boost_argument);
         double const principia_sin = Sin(principia_argument);
         auto const sin_error =
             abs(boost_sin - static_cast<cpp_bin_float_50>(principia_sin));
@@ -116,7 +125,7 @@ class SinCosTest : public ::testing::Test {
         }
       }
       {
-        auto const boost_cos = Cos(boost_argument);
+        auto const boost_cos = functions::_multiprecision::Cos(boost_argument);
         double const principia_cos = Cos(principia_argument);
         auto const cos_error =
             abs(boost_cos - static_cast<cpp_bin_float_50>(principia_cos));

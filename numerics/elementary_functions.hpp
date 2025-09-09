@@ -1,5 +1,7 @@
 #pragma once
 
+#include <atomic>
+
 #include "base/concepts.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
@@ -16,6 +18,27 @@ using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
+
+using ElementaryFunctionPointer = double(__cdecl*)(double θ);  // NOLINT
+
+// An RAII object that saves the configuration of the elementary function
+// pointers when it is constructed and restores them when it is destroyed.  This
+// is required to isolate the tests that construct plugins.
+class ElementaryFunctionsConfigurationSaver {
+ public:
+  ElementaryFunctionsConfigurationSaver();
+  ~ElementaryFunctionsConfigurationSaver();
+
+ private:
+  static std::atomic_bool active_;
+  ElementaryFunctionPointer const cos_;
+  ElementaryFunctionPointer const sin_;
+};
+
+// Configures the library to use either the platform functions or correctly-
+// rounded ones, depending on the state of the save and the capabilities of the
+// platform.  By default, correctly-rounded functions are used.
+void ConfigureElementaryFunctions(bool uses_correct_sin_cos);
 
 // Equivalent to `std::fma(x, y, z)`.
 template<typename Q1, typename Q2>
@@ -159,8 +182,10 @@ using internal::ArcSinh;
 using internal::ArcTan;
 using internal::ArcTanh;
 using internal::Cbrt;
+using internal::ConfigureElementaryFunctions;
 using internal::Cos;
 using internal::Cosh;
+using internal::ElementaryFunctionsConfigurationSaver;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;

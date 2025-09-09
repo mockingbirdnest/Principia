@@ -121,7 +121,7 @@ QP parent_relative_degrees_of_freedom = {parent_position, parent_velocity};
 
 }  // namespace
 
-class InterfaceTest : public testing::Test {
+class InterfaceTestWithoutPlugin : public testing::Test {
  protected:
   static void SetUpTestCase() {
     std::string const test_case_name =
@@ -134,28 +134,42 @@ class InterfaceTest : public testing::Test {
     Recorder::Deactivate();
   }
 
-  InterfaceTest()
-      : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
-        // Use PluginTest.Serialization to create these files.
+  InterfaceTestWithoutPlugin()
+      : // Use PluginTest.Serialization to create these files.  // NOLINT
         hexadecimal_simple_plugin_(ReadFromHexadecimalFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex")),
         serialized_simple_plugin_(ReadFromBinaryFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin")) {}
 
   MockRenderer renderer_;
-  not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
   std::string const hexadecimal_simple_plugin_;
   std::vector<std::uint8_t> const serialized_simple_plugin_;
   Instant const t0_;
   static Recorder* recorder_;
 };
 
-Recorder* InterfaceTest::recorder_ = nullptr;
+class InterfaceTest : public InterfaceTestWithoutPlugin {
+ protected:
+  static void SetUpTestCase() {
+    InterfaceTestWithoutPlugin::SetUpTestCase();
+  }
 
-using InterfaceDeathTest = InterfaceTest;
+  static void TearDownTestCase() {
+    InterfaceTestWithoutPlugin::TearDownTestCase();
+  }
+
+  InterfaceTest()
+      : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
+
+  not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
+};
+
+Recorder* InterfaceTestWithoutPlugin::recorder_ = nullptr;
+
+using InterfaceDeathTestWithoutPlugin = InterfaceTestWithoutPlugin;
 
 // And there is only one thing we say to Death.
-TEST_F(InterfaceDeathTest, Errors) {
+TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
     principia__DeletePlugin(nullptr);
@@ -197,7 +211,7 @@ TEST_F(InterfaceTest, InitGoogleLogging1) {
   principia__InitGoogleLogging();
 }
 
-TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
+TEST_F(InterfaceDeathTestWithoutPlugin, InitGoogleLogging2) {
   // We use EXPECT_EXIT in this test to avoid interfering with the execution of
   // the other tests.
   int const exit_code = 66;
@@ -209,7 +223,7 @@ TEST_F(InterfaceDeathTest, InitGoogleLogging2) {
   }, ExitedWithCode(exit_code), "");
 }
 
-TEST_F(InterfaceDeathTest, ActivateRecorder) {
+TEST_F(InterfaceDeathTestWithoutPlugin, ActivateRecorder) {
   EXPECT_DEATH({
     Recorder::Deactivate();
     // Fails because the glog directory doesn't exist.
@@ -223,7 +237,7 @@ TEST_F(InterfaceTest, Log) {
   principia__LogError("yet another file", 3, "An error");
 }
 
-TEST_F(InterfaceTest, NewPlugin) {
+TEST_F(InterfaceTestWithoutPlugin, NewPlugin) {
   std::unique_ptr<Plugin> plugin(principia__NewPlugin(
                                      "MJD1",
                                      "MJD2",
@@ -647,7 +661,7 @@ TEST_F(InterfaceTest, SerializePlugin) {
   EXPECT_THAT(serialization, IsNull());
 }
 
-TEST_F(InterfaceTest, DeserializePlugin) {
+TEST_F(InterfaceTestWithoutPlugin, DeserializePlugin) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
@@ -664,7 +678,7 @@ TEST_F(InterfaceTest, DeserializePlugin) {
   principia__DeletePlugin(&plugin);
 }
 
-TEST_F(InterfaceDeathTest, SettersAndGetters) {
+TEST_F(InterfaceDeathTestWithoutPlugin, SettersAndGetters) {
   // We use EXPECT_EXITs in this test to avoid interfering with the execution of
   // the other tests.
   int const exit_code = 66;

@@ -374,9 +374,9 @@ TEST_F(OrbitAnalysisTest, 北斗MEO) {
               AnyOf(IsNear(0.000554_(1)),    // Windows, Ubuntu.
                     IsNear(0.000550_(1))));  // macOS.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              AnyOf(IsNear(0.7849_(1) * Degree),      // Windows.
-                    IsNear(1.133_(1) * Degree),       // Ubuntu.
-                    IsNear(-0.07348_(1) * Degree)));  // macOS.
+              AnyOf(IsNear(0.7875_(1) * Degree),   // Windows.
+                    IsNear(1.349_(1) * Degree),    // Ubuntu.
+                    IsNear(1.011_(1) * Degree)));  // macOS.
 }
 
 // COSPAR ID 2016-030A.
@@ -409,10 +409,11 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   EXPECT_THAT(2 * π * Radian / elements.anomalistic_period(),
               AllOf(AbsoluteErrorFrom(
                         nominal_anomalistic_mean_motion,
-                        AnyOf(IsNear(0.66_(1) * Degree / Day),    // Windows.
+                        AnyOf(IsNear(0.46_(1) * Degree / Day),    // Windows.
+                              IsNear(0.65_(1) * Degree / Day),    // Ubuntu.
                               IsNear(0.63_(1) * Degree / Day))),  // macOS.
                     RelativeErrorFrom(nominal_anomalistic_mean_motion,
-                                      AnyOf(IsNear(0.00108_(1)),  // Windows.
+                                      AnyOf(IsNear(0.00075_(1)),  // Windows.
                                             IsNear(0.00107_(1)),  // Ubuntu.
                                             IsNear(0.00103_(1))))));  // macOS.
 
@@ -420,16 +421,17 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
               AbsoluteErrorFrom(29'599.8 * Kilo(Metre),
                                 IsNear(0.33_(1) * Kilo(Metre))));
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(00'000.089_(1) * Kilo(Metre)));
+              AnyOf(IsNear(0.087_(1) * Kilo(Metre)),    // Windows.
+                    IsNear(0.089_(1) * Kilo(Metre)),    // Ubuntu.
+                    IsNear(0.092_(1) * Kilo(Metre))));  // macOS.
 
   // Nominal: 0.0.
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               AnyOf(IsNear(0.000'17_(1)),    // Windows, Ubuntu.
                     IsNear(0.000'18_(1))));  // macOS.
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
-              AnyOf(IsNear(0.000'018_(1)),    // Windows.
-                    IsNear(0.000'025_(1)),    // Ubuntu.
-                    IsNear(0.000'022_(1))));  // macOS.
+              AnyOf(IsNear(0.000'020_(1)),    // Windows.
+                    IsNear(0.000'017_(1))));  // Ubuntu, macOS.
 
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(56.0 * Degree, IsNear(0.61_(1) * Degree)));
@@ -446,11 +448,12 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   // set ω = 0, ω′ = 0.
   // However, e is never quite 0; we can compute a mean ω.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              IsNear(89_(1) * Degree));
+              AnyOf(IsNear(88_(1) * Degree),    // Windows.
+                    IsNear(89_(1) * Degree)));  // Ubuntu.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().measure(),
-              AnyOf(IsNear(7.8_(1) * Degree),    // Windows.
-                    IsNear(7.2_(1) * Degree),    // Ubuntu.
-                    IsNear(7.3_(1) * Degree)));  // macOS.
+              AnyOf(IsNear(5.2_(1) * Degree),    // Windows.
+                    IsNear(7.5_(1) * Degree),    // Ubuntu.
+                    IsNear(6.2_(1) * Degree)));  // macOS.
 
   // Since the reference parameters conventionally set ω = 0, the given mean
   // anomaly is actually the mean argument of latitude; in order to get numbers
@@ -499,13 +502,13 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
 
   EXPECT_THAT(
       elements.mean_semimajor_axis_interval().midpoint(),
-      AbsoluteErrorFrom(27'977.6 * Kilo(Metre),
-                        AnyOf(IsNear(0.0485_(1) * Kilo(Metre)),     // Windows.
-                              IsNear(0.0531_(1) * Kilo(Metre)),     // Ubuntu.
-                              IsNear(0.0534_(1) * Kilo(Metre)))));  // macOS.
+              AbsoluteErrorFrom(27'977.6 * Kilo(Metre),
+                        AnyOf(IsNear(0.0534_(1) * Kilo(Metre)),     // Windows.
+                              IsNear(0.0490_(1) * Kilo(Metre)),     // Ubuntu.
+                              IsNear(0.0503_(1) * Kilo(Metre)))));  // macOS.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
               AnyOf(IsNear(00'000.101_(1) * Kilo(Metre)),    // Windows.
-                    IsNear(00'000.099_(1) * Kilo(Metre)),    // Ubuntu.
+                    IsNear(00'000.105_(1) * Kilo(Metre)),    // Ubuntu.
                     IsNear(00'000.098_(1) * Kilo(Metre))));  // macOS.
 
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
@@ -601,9 +604,9 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   EXPECT_THAT(
       elements.mean_semimajor_axis_interval().midpoint(),
               DifferenceFrom(7714.42938 * Kilo(Metre),
-                             AnyOf(IsNear(2.63_(1) * Metre),     // Windows.
-                                   IsNear(2.52_(1) * Metre),     // Ubuntu.
-                                   IsNear(2.34_(1) * Metre))));  // macOS.
+                             AnyOf(IsNear(2.73_(1) * Metre),     // Windows.
+                                   IsNear(2.15_(1) * Metre),     // Ubuntu.
+                                   IsNear(1.91_(1) * Metre))));  // macOS.
   // Reference inclination from the legend of figure 9 of [BSFL98]; that
   // value is given as 66.040° in table 1 of [BSFL98], 66.039° in [BS96], and
   // 66.04° in [Ben97].
@@ -630,19 +633,19 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // between 60° and 120°, respectively.
   EXPECT_THAT(elements.mean_eccentricity_interval(),
               AllOf(Field(&Interval<double>::min,
-                          AnyOf(IsNear(83e-6_(1)),    // Windows.
+                          AnyOf(IsNear(87e-6_(1)),    // Windows.
                                 IsNear(88e-6_(1)),    // Ubuntu.
                                 IsNear(88e-6_(1)))),  // macOS.
                     Field(&Interval<double>::max,
                           AnyOf(IsNear(109e-6_(1)),      // Windows, macOS.
-                                IsNear(112e-6_(1))))));  // Ubuntu.
+                                IsNear(110e-6_(1))))));  // Ubuntu.
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval(),
               AllOf(Field(&Interval<Angle>::min,
-                          AnyOf(IsNear(73.8_(1) * Degree),    // Windows.
-                                IsNear(74.0_(1) * Degree),    // Ubuntu.
-                                IsNear(74.7_(1) * Degree))),  // macOS.
+                          AnyOf(IsNear(74.7_(1) * Degree),    // Windows.
+                                IsNear(75.1_(1) * Degree),    // Ubuntu.
+                                IsNear(75.0_(1) * Degree))),  // macOS.
                     Field(&Interval<Angle>::max,
-                          AnyOf(IsNear(99.2_(1) * Degree),      // Windows.
+                          AnyOf(IsNear(99.0_(1) * Degree),      // Windows.
                                 IsNear(98.9_(1) * Degree),      // Ubuntu.
                                 IsNear(98.8_(1) * Degree)))));  // macOS.
 
@@ -726,9 +729,9 @@ TEST_F(OrbitAnalysisTest, SPOT5) {
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               IsNear(0.0012_(1)));
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().midpoint(),
-              AnyOf(IsNear(89.63_(1) * Degree),    // Windows.
-                    IsNear(89.24_(1) * Degree),    // Ubuntu.
-                    IsNear(89.47_(1) * Degree)));  // macOS.
+              AnyOf(IsNear(89.58_(1) * Degree),    // Windows.
+                    IsNear(89.41_(1) * Degree),    // Ubuntu.
+                    IsNear(89.64_(1) * Degree)));  // macOS.
 
   // The nominal mean solar times of the nodes are 22:30 ascending, 10:30
   // descending.

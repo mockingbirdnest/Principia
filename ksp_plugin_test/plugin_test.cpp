@@ -32,6 +32,7 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -97,6 +98,7 @@ using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_continuous_trajectory;
@@ -203,17 +205,13 @@ class TestablePlugin : public Plugin {
   MockEphemeris<Barycentric>* mock_ephemeris_;
 };
 
-class PluginTest : public testing::Test {
+class PluginTestWithoutPlugin : public testing::Test {
  protected:
-  PluginTest()
+  PluginTestWithoutPlugin()
       : solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::MajorBodiesOnly)),
         initial_time_("JD2451545.0625"),
-        planetarium_rotation_(1 * Radian),
-        plugin_(make_not_null_unique<TestablePlugin>(
-                    initial_time_,
-                    initial_time_,
-                    planetarium_rotation_)) {
+        planetarium_rotation_(1 * Radian) {
     satellite_initial_displacement_ =
         Displacement<AliceSun>({3111.0 * Kilo(Metre),
                                 4400.0 * Kilo(Metre),
@@ -233,29 +231,6 @@ class PluginTest : public testing::Test {
                  satellite_initial_displacement_.Norm()) * unit_tangent;
   }
 
-  void InsertAllSolarSystemBodies() {
-    for (int index = SolarSystemFactory::Sun;
-         index <= SolarSystemFactory::LastMajorBody;
-         ++index) {
-      std::optional<Index> parent_index;
-      if (index != SolarSystemFactory::Sun) {
-        parent_index = SolarSystemFactory::parent(index);
-      }
-      std::string const name = SolarSystemFactory::name(index);
-      plugin_->InsertCelestialAbsoluteCartesian(
-          index,
-          parent_index,
-          solar_system_->gravity_model_message(name),
-          solar_system_->cartesian_initial_state_message(name));
-    }
-  }
-
-  // The time of the `step`th history step of `plugin_`.  `HistoryTime(0)` is
-  // `initial_time_`.
-  Instant HistoryTime(Instant const time, int const step) {
-    return time + step * plugin_->Δt();
-  }
-
   void PrintSerializedPlugin(const Plugin& plugin) {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
@@ -273,24 +248,51 @@ class PluginTest : public testing::Test {
   std::string const initial_time_;
   Angle planetarium_rotation_;
 
-  not_null<std::unique_ptr<TestablePlugin>> plugin_;
-
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
   Velocity<AliceSun> satellite_initial_velocity_;
 };
 
-RigidMotion<ICRS, Barycentric> const PluginTest::id_icrs_barycentric_(
-    RigidTransformation<ICRS, Barycentric>(
-        ICRS::origin,
-        Barycentric::origin,
-        OrthogonalMap<ICRS, Barycentric>::Identity()),
-    ICRS::nonrotating,
-    ICRS::unmoving);
+class PluginTest : public PluginTestWithoutPlugin {
+ protected:
+  PluginTest()
+      : plugin_(make_not_null_unique<TestablePlugin>(initial_time_,
+                                                     initial_time_,
+                                                     planetarium_rotation_)) {}
 
+  void InsertAllSolarSystemBodies() {
+    for (int index = SolarSystemFactory::Sun;
+         index <= SolarSystemFactory::LastMajorBody;
+         ++index) {
+      std::optional<Index> parent_index;
+      if (index != SolarSystemFactory::Sun) {
+        parent_index = SolarSystemFactory::parent(index);
+      }
+      std::string const name = SolarSystemFactory::name(index);
+      plugin_->InsertCelestialAbsoluteCartesian(
+          index,
+          parent_index,
+          solar_system_->gravity_model_message(name),
+          solar_system_->cartesian_initial_state_message(name));
+    }
+  }
+
+  not_null<std::unique_ptr<TestablePlugin>> plugin_;
+};
+
+RigidMotion<ICRS, Barycentric> const
+    PluginTestWithoutPlugin::id_icrs_barycentric_(
+        RigidTransformation<ICRS, Barycentric>(
+            ICRS::origin,
+            Barycentric::origin,
+            OrthogonalMap<ICRS, Barycentric>::Identity()),
+        ICRS::nonrotating,
+        ICRS::unmoving);
+
+using PluginDeathTestWithoutPlugin = PluginTestWithoutPlugin;
 using PluginDeathTest = PluginTest;
 
-TEST_F(PluginDeathTest, SerializationError) {
+TEST_F(PluginDeathTestWithoutPlugin, SerializationError) {
   EXPECT_DEATH({
     auto plugin =
         make_not_null_unique<Plugin>(
@@ -302,13 +304,13 @@ TEST_F(PluginDeathTest, SerializationError) {
   }, "!initializing");
 }
 
-TEST_F(PluginTest, Serialization) {
+TEST_F(PluginTestWithoutPlugin, Serialization) {
   GUID const satellite = "satellite";
   PartId const part_id = 666;
 
   // We need an actual `Plugin` here rather than a `TestablePlugin`, since
   // that's what `ReadFromMessage` returns.
-  auto plugin = make_not_null_unique<Plugin>(
+  auto plugin = std::make_unique<Plugin>(
                     initial_time_,
                     initial_time_,
                     planetarium_rotation_);
@@ -388,6 +390,12 @@ TEST_F(PluginTest, Serialization) {
   PrintSerializedPlugin(*plugin);
 #endif
 
+  // The time of the `step`th history step of the plugin.  `history_time(0)` is
+  // `initial_time_`.
+  auto const history_time = [](Instant const time, int const step) {
+    return time + step * DefaultHistoryParameters().step();
+  };
+
   // Add a handful of points to the history and then forget some of them.  This
   // is the most convenient way to check that forgetting works as expected.
   plugin->InsertOrKeepVessel(satellite,
@@ -395,18 +403,18 @@ TEST_F(PluginTest, Serialization) {
                              SolarSystemFactory::Earth,
                              /*loaded=*/false,
                              inserted);
-  plugin->AdvanceTime(HistoryTime(time, 3), Angle());
+  plugin->AdvanceTime(history_time(time, 3), Angle());
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->InsertOrKeepVessel(satellite,
                              "v" + satellite,
                              SolarSystemFactory::Earth,
                              /*loaded=*/false,
                              inserted);
-  plugin->AdvanceTime(HistoryTime(time, 6), Angle());
+  plugin->AdvanceTime(history_time(time, 6), Angle());
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->UpdatePrediction({satellite});
 
-  plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
+  plugin->CreateFlightPlan(satellite, history_time(time, 7), 4 * Kilogram);
   plugin->renderer().SetPlottingFrame(
       plugin->NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Venus));
@@ -442,6 +450,7 @@ TEST_F(PluginTest, Serialization) {
                 serialization::BodyCentredNonRotatingReferenceFrame::extension).
                     centre());
 
+  plugin = nullptr;
   plugin = Plugin::ReadFromMessage(message);
   serialization::Plugin second_message;
   plugin->WriteToMessage(&second_message);
@@ -827,7 +836,7 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   }
 }
 
-TEST_F(PluginTest, Navball) {
+TEST_F(PluginTestWithoutPlugin, Navball) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
                 initial_time_,
@@ -875,7 +884,7 @@ TEST_F(PluginTest, Navball) {
       VanishesBefore(1, 1, 3));
 }
 
-TEST_F(PluginTest, NavballTargetVessel) {
+TEST_F(PluginTestWithoutPlugin, NavballTargetVessel) {
   GUID const guid = "Target Vessel";
   PartId const part_id = 666;
 
@@ -925,7 +934,7 @@ TEST_F(PluginTest, NavballTargetVessel) {
   plugin.NavballFrameField(World::origin)->FromThisFrame(World::origin);
 }
 
-TEST_F(PluginTest, Frenet) {
+TEST_F(PluginTestWithoutPlugin, Frenet) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
                 initial_time_,
