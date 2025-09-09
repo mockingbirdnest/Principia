@@ -86,9 +86,9 @@ constexpr double three_term_θ_reduced_threshold =
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
      4);
 
-constexpr double sin_near_zero_e = 0x1.0000'AD82'A723'6p0;  // 2^-70.561.
-constexpr double sin_e = 0x1.0002'6013'6BD9'Dp0;  // 2^-68.751.
-constexpr double cos_e = 0x1.0001'B836'988A'Dp0;  // 2^-69.217.
+constexpr double sin_near_zero_e = 0x1.0000'B2D8'01D8'0p0;  // 2^-70.517.
+constexpr double sin_e = 0x1.0002'6ABE'272D'9p0;  // 2^-68.726.
+constexpr double cos_e = 0x1.0001'B839'335E'1p0;  // 2^-69.217.
 
 SlowPathCallback slow_path_sin_callback = nullptr;
 SlowPathCallback slow_path_cos_callback = nullptr;
@@ -363,7 +363,6 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const h² = h * h;
   auto const h³ = h² * h;
   auto const h_plus_e² = h * ((e_abs + e_abs) + h);
-  // TODO(phl): Redo the error analysis.
   auto const polynomial_term =
       FusedNegatedMultiplyAdd<fma_presence>(
           sin_x₀,
