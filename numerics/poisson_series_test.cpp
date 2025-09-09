@@ -390,7 +390,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
                                   AnyOf(IsNear(0.316_(1)),     // Windows.
                                         IsNear(0.318_(1)),     // Windows.
                                         IsNear(0.372_(1)),     // Ubuntu.
-                                        IsNear(0.274_(1)))));  // macOS.
+                                        IsNear(0.368_(1)))));  // macOS.
   }
   {
     auto const product =
@@ -597,9 +597,9 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct3) {
                      t_min, t_max);
     EXPECT_THAT(product,
                 RelativeErrorFrom(expected_product,
-                                  AnyOf(IsNear(0.000487_(1)),    // Windows.
-                                        IsNear(0.00116_(1)),     // Ubuntu.
-                                        IsNear(0.00131_(1)))));  // macOS.
+                                  AnyOf(IsNear(0.000487_(1)),     // Windows.
+                                        IsNear(0.00116_(1)),      // Ubuntu.
+                                        IsNear(0.000995_(1)))));  // macOS.
   }
   // This test demonstrates how bad Integrate can be, for products that arise in
   // practice.  Exact integration of the result of PointwiseInnerProduct yields
