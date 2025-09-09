@@ -652,7 +652,6 @@ Ephemeris<Frame>::ComputeGravitationalAccelerationOnMassiveBody(
     absl::ReaderMutexLock l(&lock_);
     positions.reserve(bodies_.size());
     for (int b = 0; b < bodies_.size(); ++b) {
-      auto const& current_body = bodies_[b];
       auto const& current_body_trajectory = trajectories_[b];
       positions.push_back(current_body_trajectory->EvaluatePositionLocked(t));
     }

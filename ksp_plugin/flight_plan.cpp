@@ -82,10 +82,10 @@ FlightPlan::FlightPlan(FlightPlan const& other)
     : initial_mass_(other.initial_mass_),
       initial_time_(other.initial_time_),
       initial_degrees_of_freedom_(other.initial_degrees_of_freedom_),
+      ephemeris_(other.ephemeris_),
       desired_final_time_(other.desired_final_time_),
       anomalous_segments_(other.anomalous_segments_),
       manœuvres_(other.manœuvres_),
-      ephemeris_(other.ephemeris_),
       analysis_is_enabled_(other.analysis_is_enabled_),
       adaptive_step_parameters_(other.adaptive_step_parameters_),
       generalized_adaptive_step_parameters_(
