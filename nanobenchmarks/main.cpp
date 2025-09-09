@@ -30,6 +30,8 @@
 
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
+#else
+#include <x86intrin.h>
 #endif
 
 ABSL_FLAG(std::size_t,

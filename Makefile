@@ -16,10 +16,11 @@ PLUGIN_TEST_TRANSLATION_UNITS           := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS               := $(wildcard journal/*.cpp)
 FAKE_OR_MOCK_TRANSLATION_UNITS          := $(wildcard */fake_*.cpp */mock_*.cpp)
 BENCHMARK_TRANSLATION_UNITS             := $(wildcard benchmarks/*.cpp */benchmark.cpp)
+NANOBENCHMARK_TRANSLATION_UNITS         := $(wildcard nanobenchmarks/*.cpp)
 TEST_TRANSLATION_UNITS                  := $(wildcard */*_test.cpp)
 TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS  := $(TEST_TRANSLATION_UNITS) $(FAKE_OR_MOCK_TRANSLATION_UNITS)
 TOOLS_TRANSLATION_UNITS                 := $(wildcard tools/*.cpp)
-LIBRARY_TRANSLATION_UNITS               := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS) $(BENCHMARK_TRANSLATION_UNITS), $(wildcard */*.cpp))
+LIBRARY_TRANSLATION_UNITS               := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS) $(BENCHMARK_TRANSLATION_UNITS) $(NANOBENCHMARK_TRANSLATION_UNITS), $(wildcard */*.cpp))
 ASTRONOMY_LIB_TRANSLATION_UNITS         := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard astronomy/*.cpp))
 BASE_LIB_TRANSLATION_UNITS              := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard base/*.cpp))
 FUNCTIONS_LIB_TRANSLATION_UNITS         := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard functions/*.cpp))
@@ -73,6 +74,7 @@ ABSL_LIBS     := \
 	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/container/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/flags/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/hash/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/status/libabsl_*.a \
@@ -102,7 +104,7 @@ INCLUDES      := -I. -I$(DEP_DIR)glog/src \
 	-I$(DEP_DIR)config/include \
 	-I$(DEP_DIR)multiprecision/include
 SHARED_ARGS   := \
-	-std=c++20 -stdlib=libc++ -O3 -g                              \
+	-std=c++23 -stdlib=libc++ -O3 -g                              \
 	--system-header-prefix=serialization/                         \
 	--system-header-prefix=absl/                                  \
 	--system-header-prefix=benchmark/                             \
@@ -113,6 +115,7 @@ SHARED_ARGS   := \
 	--system-header-prefix=zfp/                                   \
 	-fPIC                                                         \
 	-fbracket-depth=257                                           \
+	-fdeclspec                                                    \
 	-fexceptions                                                  \
 	-ferror-limit=1000                                            \
 	-ffp-contract=off                                             \
@@ -172,13 +175,14 @@ LDFLAGS := $(SHARED_ARGS)
 
 BUILD_DIRECTORY := build/
 
-TEST_OR_MOCK_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
-BENCHMARK_DEPENDENCIES    := $(addprefix $(BUILD_DIRECTORY), $(BENCHMARK_TRANSLATION_UNITS:.cpp=.d))
-TOOLS_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
-LIBRARY_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.d))
-PLUGIN_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
-PLUGIN_TEST_DEPENDENCIES  := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
-JOURNAL_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
+TEST_OR_MOCK_DEPENDENCIES  := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
+BENCHMARK_DEPENDENCIES     := $(addprefix $(BUILD_DIRECTORY), $(BENCHMARK_TRANSLATION_UNITS:.cpp=.d))
+NANOBENCHMARK_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(NANOBENCHMARK_TRANSLATION_UNITS:.cpp=.d))
+TOOLS_DEPENDENCIES         := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
+LIBRARY_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
+PLUGIN_TEST_DEPENDENCIES   := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TEST_TRANSLATION_UNITS:.cpp=.d))
+JOURNAL_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(JOURNAL_TRANSLATION_UNITS:.cpp=.d))
 
 # As a prerequisite for listing the includes of things that depend on
 # generated headers, we must generate said code.
@@ -194,7 +198,7 @@ $(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
 	$(CXX) -M -MT '$(OBJ_DIRECTORY)$(<:.cpp=.o) $@' $(COMPILER_OPTIONS) $< -MF $@
 
-$(TEST_OR_MOCK_DEPENDENCIES) $(BENCHMARK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
+$(TEST_OR_MOCK_DEPENDENCIES) $(BENCHMARK_DEPENDENCIES) $(NANOBENCHMARK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
 	$(CXX) -M -MT '$(OBJ_DIRECTORY)$(<:.cpp=.o) $@' $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -MF $@
 
@@ -202,6 +206,7 @@ ifneq ($(MAKECMDGOALS), clean)
 include $(LIBRARY_DEPENDENCIES)
 include $(TEST_OR_MOCK_DEPENDENCIES)
 include $(BENCHMARK_DEPENDENCIES)
+include $(NANOBENCHMARK_DEPENDENCIES)
 endif
 
 ########## Compilation
@@ -227,6 +232,7 @@ PROTO_OBJECTS                 := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATI
 GMOCK_OBJECTS                 := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
 GMOCK_MAIN_OBJECT             := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_MAIN_TRANSLATION_UNIT:.cc=.o))
 BENCHMARK_OBJECTS             := $(addprefix $(OBJ_DIRECTORY), $(BENCHMARK_TRANSLATION_UNITS:.cpp=.o))
+NANOBENCHMARK_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(NANOBENCHMARK_TRANSLATION_UNITS:.cpp=.o))
 TOOLS_OBJECTS                 := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
 PLUGIN_OBJECTS                := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
 VERSION_OBJECTS               := $(addprefix $(OBJ_DIRECTORY), $(VERSION_TRANSLATION_UNIT:.cc=.o))
@@ -254,6 +260,10 @@ $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT): $(OBJ_DIRECTORY)%.o: %.cc
 $(BENCHMARK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
+
+$(NANOBENCHMARK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $< -o $@
 
 $(LIBRARY_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
@@ -343,6 +353,17 @@ $(PRINCIPIA_BENCHMARK_BIN) : $(BENCHMARK_OBJECTS) $(FAKE_OR_MOCK_OBJECTS) $(GMOC
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
 
 benchmark: $(PRINCIPIA_BENCHMARK_BIN)
+	-$^
+
+########## Nanobenchmarks
+
+PRINCIPIA_NANOBENCHMARK_BIN := $(BIN_DIRECTORY)nanobenchmark
+
+$(PRINCIPIA_NANOBENCHMARK_BIN) : $(NANOBENCHMARK_OBJECTS) $(PROTO_OBJECTS) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS) $(GEOMETRY_LIB_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ $(LIBS) -lpthread -o $@
+
+nanobenchmark: $(PRINCIPIA_NANOBENCHMARK_BIN)
 	-$^
 
 ########## Adapter

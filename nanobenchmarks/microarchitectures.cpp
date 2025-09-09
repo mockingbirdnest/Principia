@@ -17,18 +17,18 @@ BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
 #if PRINCIPIA_COMPILER_CLANG
 asm(R"(
 .intel_syntax
-identity:
+_identity:
   ret
-sqrtps_xmm0_xmm0:
+_sqrtps_xmm0_xmm0:
   sqrtps xmm0, xmm0
   ret
-sqrtsd_xmm0_xmm0:
+_sqrtsd_xmm0_xmm0:
   sqrtsd xmm0, xmm0
   ret
-mulsd_xmm0_xmm0:
+_mulsd_xmm0_xmm0:
   mulsd xmm0, xmm0
   ret
-mulsd_xmm0_xmm0_4x:
+_mulsd_xmm0_xmm0_4x:
   mulsd xmm0, xmm0
   mulsd xmm0, xmm0
   mulsd xmm0, xmm0
@@ -52,13 +52,13 @@ static std::vector<
         // Lake, Golden Cove(?).
         std::pair{std::regex(R"(((6|7|9|10|11|12)th Gen Intel\(R\) Core\(TM\))"
                              R"(|Intel\(R\) Xeon\(R\) W-[23]).*)"),
-                  std::map{std::pair{&identity, 0},
+                  std::map<double (*)(double), int>{std::pair{&identity, 0},
                            std::pair{&mulsd_xmm0_xmm0, 4},
                            std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
                            std::pair{&sqrtps_xmm0_xmm0, 12}}},
         // Zen3.
         std::pair{std::regex("AMD Ryzen Threadripper PRO 5.*"),
-                  std::map{std::pair{&identity, 0},
+                  std::map<double (*)(double), int>{std::pair{&identity, 0},
                            std::pair{&mulsd_xmm0_xmm0, 3},
                            std::pair{&mulsd_xmm0_xmm0_4x, 4 * 3},
                            std::pair{&sqrtps_xmm0_xmm0, 14}}}};
