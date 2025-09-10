@@ -134,7 +134,7 @@ Noting that the absolute error on the rounding that appears in the definition of
 \abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \label{eqnpitwoterms}
 \end{align}
-With the chosen value of $\gk_1$, this error turns out to be significantly smaller the theoretical bound thanks to the bit pattern of $\Pi$: a numerical computation taking into account the actual value of $\Pi$ shows that it is less that $2^{-103.217}$.
+With the chosen value $\gk_1 = 8$, the two sides of this inequality turn out to be $2^{-103.217}$ and $2^{-101}$.  The difference comes from the fact that $\abs{\frac{\Pi}{2} - C_1 - \gd C_1}$ has three zeroes after the last bit of its mantissa, but the theoretical computation above assumes the worse, i.e., a run of ones.  In the rest of our discussion of approximations of $\Pi$ we will give the (tighter) error bounds obtained by computing the left-hand side with the actual value of $\Pi$.
 
 From this we derive the following upper bound for $\gd C_1$:
 \begin{align}
