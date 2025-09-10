@@ -239,11 +239,12 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
       Ω, i, ω,
       EulerAngles::ZXZ,
       DefinesFrame<OrbitPlane>{});
-  Length const r = ℓ / (1 + e * Cos(ν));
+  auto const [sin_ν, cos_ν] = SinCos(ν);
+  Length const r = ℓ / (1 + e * cos_ν);
   Displacement<Frame> const displacement =
-      r * from_orbit_plane(Vector<double, OrbitPlane>({Cos(ν), Sin(ν), 0}));
+      r * from_orbit_plane(Vector<double, OrbitPlane>({cos_ν, sin_ν, 0}));
   // Flight path angle.
-  Angle const φ = ArcTan(e * Sin(ν), 1 + e * Cos(ν));
+  Angle const φ = ArcTan(e * sin_ν, 1 + e * cos_ν);
   // The norm comes from the vis-viva equation.
   Velocity<Frame> const velocity =
       Sqrt(2 * (ε + μ / r)) *
@@ -600,12 +601,13 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
     auto const positive_angle = [](Angle const& α) -> Angle {
       return α > 0 * Radian ? α : α + 2 * π * Radian;
     };
+    auto const [sin_ν, cos_ν] = SinCos(ν);
     Angle const eccentric_anomaly =
-        ArcTan(Sqrt(1 - Pow<2>(e)) * Sin(ν), e + Cos(ν));
+        ArcTan(Sqrt(1 - Pow<2>(e)) * sin_ν, e + cos_ν);
     mean_anomaly =
         positive_angle(eccentric_anomaly - e * Sin(eccentric_anomaly) * Radian);
     Angle const hyperbolic_eccentric_anomaly =
-        ArcCosh((e + Cos(ν)) / (1 + e * Cos(ν)));
+        ArcCosh((e + cos_ν) / (1 + e * cos_ν));
     hyperbolic_mean_anomaly = e * Sinh(hyperbolic_eccentric_anomaly) * Radian -
                               hyperbolic_eccentric_anomaly;
   } else if (mean_anomaly) {
@@ -618,8 +620,10 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
                                            : Brent(kepler_equation,
                                                    *mean_anomaly - e * Radian,
                                                    *mean_anomaly + e * Radian);
-    true_anomaly = 2 * ArcTan(Sqrt(1 + e) * Sin(eccentric_anomaly / 2),
-                              Sqrt(1 - e) * Cos(eccentric_anomaly / 2));
+    auto const [sin_eccentric_anomaly_over_2,
+                cos_eccentric_anomaly_over_2] = SinCos(eccentric_anomaly / 2);
+    true_anomaly = 2 * ArcTan(Sqrt(1 + e) * sin_eccentric_anomaly_over_2,
+                              Sqrt(1 - e) * cos_eccentric_anomaly_over_2);
     hyperbolic_mean_anomaly = NaN<Angle>;
   } else if (hyperbolic_mean_anomaly) {
     auto const hyperbolic_kepler_equation =
