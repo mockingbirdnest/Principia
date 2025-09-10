@@ -134,7 +134,7 @@ Noting that the absolute error on the rounding that appears in the definition of
 \abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \label{eqnpitwoterms}
 \end{align}
-In practice this quantity is smaller than $2^{-103.217}$ (which is much tighter than the theoretical bound) because of the actual bit pattern of $\Pi$.
+With the chosen value of $\gk_1$, this error turns out to be significantly smaller the theoretical bound thanks to the bit pattern of $\Pi$: a numerical computation taking into account the actual value of $\Pi$ shows that it is less that $2^{-103.217}$.
 
 From this we derive the following upper bound for $\gd C_1$:
 \begin{align}
@@ -142,7 +142,7 @@ From this we derive the following upper bound for $\gd C_1$:
 &< 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}+2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk'_1} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
 \label{eqnabsdc1}
 \end{align}
-In practice this quantity is smaller than $2^{-47.398}$.
+With the chosen value of $\gk_1$, and using the actual value of $\Pi$, this quantity is found to be less than $2^{-47.398}$.
  
 This scheme gives a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
 
@@ -187,7 +187,7 @@ Equation (\ref{eqnulptr}) applied to the definition of $C'_2$ yields, for the un
 \ULP\of{\frac{\Pi}{2} - C_2 - C'_2} &= 2^{\gk''_2 - M} \ULP\of{\frac{\Pi}{2} - C_2} \\
 &= 2^{\gk'_2 + \gk''_2 - 2 M} \ULP\of{\frac{\Pi}{2}}
 \end{align*}
-In practice this quantity is smaller than $2^{-130.477}$ so the theoretical bound is rather tight.
+With the chosen value of $\gk_2$, and using the actual value of $\Pi$, this quantity is found to be less than $2^{-130.477}$.
 
 Noting that the absolute error on the rounding that appears in the definition of $\gd C_2$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_2 - C'_2}$, we obtain the absolute error on the three-term approximation:
 \begin{align}
@@ -199,7 +199,7 @@ and the following upper bound for $\gd C_2$:
 \abs{\gd C_2} < 2^{\gk'_2 + \gk''_2 - M} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
 \label{eqnabsdc2}
 \end{equation}
-In practice this quantity is smaller than $2^{-76.325}$.
+With the chosen value of $\gk_2$, and using the actual value of $\Pi$, this quantity is found to be less than $2^{-76.325}$.
  
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
@@ -314,7 +314,7 @@ from which we deduce an upper bound on the absolute error of the reduction:
 &= 2^{\gk_1 + \gk'_1 - M}\pa{\frac{3}{2} + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}} \\
 &< 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
 \end{align*}
-where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).  In practice this quantity is smaller than $2^{-92.719}$.
+where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).  With the chosen value of $\gk_1$, and using the actual value of $\Pi$, this quantity is found to be less than $2^{-92.719}$.
 
 The exact $\twodifference$ yields a pair such that $\abs{\gd \red x} \le \frac{\ULP\of{\red x}}{2} \le 2^{-M} \abs{\red x}$.  Furthermore, misrounding of the first kind and the above error on the reduction may combine to cause $\abs{\red x}$ to move above $\frac{\pi}{4}$ by as much as:
 \[
