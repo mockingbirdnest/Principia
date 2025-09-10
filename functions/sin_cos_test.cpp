@@ -91,9 +91,16 @@ class SinCosTest : public ::testing::Test {
                              : numerics::_sin_cos::Cos<FMAPresence::Absent>(θ);
   }
 
+  static auto SinCos(double const θ) {
+    return CanUseHardwareFMA
+               ? numerics::_sin_cos::SinCos<FMAPresence::Present>(θ)
+               : numerics::_sin_cos::SinCos<FMAPresence::Absent>(θ);
+  }
+
   template<std::int64_t iterations_quantum>
   static SinCosStatistics RandomArgumentTest(double const lower_bound,
                                              double const upper_bound,
+                                             bool const sin_cos,
                                              std::int64_t const seed) {
     std::mt19937_64 random(seed);
     std::uniform_real_distribution<> uniformly_at(lower_bound, upper_bound);
@@ -105,9 +112,18 @@ class SinCosTest : public ::testing::Test {
       double const principia_argument =
           uniformly_at(random) * ((uniform_sign(random) << 1) - 1);
       auto const boost_argument = cpp_rational(principia_argument);
+      double principia_sin;
+      double principia_cos;
+      if (sin_cos) {
+        const auto [sin, cos] = SinCos(principia_argument);
+        principia_sin = sin;
+        principia_cos = cos;
+      } else {
+        principia_sin = Sin(principia_argument);
+        principia_cos = Cos(principia_argument);
+      }
       {
         auto const boost_sin = functions::_multiprecision::Sin(boost_argument);
-        double const principia_sin = Sin(principia_argument);
         auto const sin_error =
             abs(boost_sin - static_cast<cpp_bin_float_50>(principia_sin));
         auto const ulp = NextUp(principia_sin) - principia_sin;
@@ -126,7 +142,6 @@ class SinCosTest : public ::testing::Test {
       }
       {
         auto const boost_cos = functions::_multiprecision::Cos(boost_argument);
-        double const principia_cos = Cos(principia_argument);
         auto const cos_error =
             abs(boost_cos - static_cast<cpp_bin_float_50>(principia_cos));
         auto const ulp = NextUp(principia_cos) - principia_cos;
@@ -154,7 +169,8 @@ class SinCosTest : public ::testing::Test {
   }
 
   void ParallelRandomArgumentTest(double const lower_bound,
-                                  double const upper_bound) {
+                                  double const upper_bound,
+                                  bool const sin_cos) {
 #if _DEBUG
     static constexpr std::int64_t iterations = 30'000;
     static constexpr std::int64_t iterations_quantum = 100;
@@ -174,9 +190,9 @@ class SinCosTest : public ::testing::Test {
 
     std::vector<SinCosStatistics> statistics(iterations / iterations_quantum);
     for (std::int64_t i = 0; i < statistics.size(); ++i) {
-      bundle.Add([i, lower_bound, upper_bound, &statistics]() {
+      bundle.Add([i, lower_bound, upper_bound, sin_cos, &statistics]() {
         statistics[i] = RandomArgumentTest<iterations_quantum>(
-            lower_bound, upper_bound, /*seed=*/i);
+            lower_bound, upper_bound, sin_cos, /*seed=*/i);
         return absl::OkStatus();
       });
     }
@@ -315,20 +331,25 @@ TEST_F(SinCosTest, ReduceIndex) {
 }
 
 TEST_F(SinCosTest, RandomSmall) {
-  ParallelRandomArgumentTest(0, π / 4);
+  ParallelRandomArgumentTest(0, π / 4, /*sin_cos=*/false);
 }
 
 TEST_F(SinCosTest, RandomTwoTerms) {
-  ParallelRandomArgumentTest(π / 4, 1 << 8);
+  ParallelRandomArgumentTest(π / 4, 1 << 8, /*sin_cos=*/false);
 }
 
 TEST_F(SinCosTest, RandomThreeTerms) {
-  ParallelRandomArgumentTest(1 << 8, 1 << 18);
+  ParallelRandomArgumentTest(1 << 8, 1 << 18, /*sin_cos=*/false);
 }
 
 TEST_F(SinCosTest, RandomLarge) {
-  ParallelRandomArgumentTest(1 << 18,
-                             std::numeric_limits<double>::max() / 1.0e30);
+  ParallelRandomArgumentTest(
+      1 << 18, std::numeric_limits<double>::max() / 1.0e30, /*sin_cos=*/false);
+}
+
+TEST_F(SinCosTest, RandomSinCos) {
+  ParallelRandomArgumentTest(
+      0, 1 << 18, /*sin_cos=*/true);
 }
 
 // Values for which the base algorithm gives an error of 1 ULP.
