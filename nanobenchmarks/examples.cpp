@@ -73,6 +73,13 @@ BENCHMARKED_FUNCTION(principia_cos) {
   return Cos(x * Radian);
 }
 
+BENCHMARKED_FUNCTION(principia_sin_cos) {
+  auto const values = SinCos(x * Radian);
+  // The nanobenchmark library wants to result to be a double, so we'll pay the
+  // price of an extra addition.
+  return values.sin + values.cos;
+}
+
 }  // namespace _examples
 }  // namespace nanobenchmarks
 }  // namespace principia

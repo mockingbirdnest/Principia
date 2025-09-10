@@ -24,6 +24,7 @@ double __cdecl Cos(double x);
 extern template double __cdecl Cos<FMAPresence::Absent>(double x);
 extern template double __cdecl Cos<FMAPresence::Present>(double x);
 
+// Keep this type internal and use structured bindings to extract the parts.
 template<typename T>
 struct SC {
   T sin;
