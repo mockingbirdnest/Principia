@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <tuple>
 #include <utility>
 
@@ -10,7 +11,7 @@ namespace internal {
 
 template<typename... Tuple>
 class Iteration {
-  static constexpr size_t size =
+  static constexpr std::size_t size =
       (std::tuple_size_v<std::remove_cvref_t<Tuple>>, ...);
   static_assert(((std::tuple_size_v<std::remove_cvref_t<Tuple>> == size) &&
                  ...),
