@@ -52,6 +52,7 @@ using namespace principia::numerics::_m128d;
     /* top-level functions to determine whether to call the slow path.  */   \
     constexpr double value = 1;                                              \
     constexpr double muller_test_expression = value;                         \
+    constexpr SC<double> values = {.sin = 0, .cos = 1};                      \
     return expression;                                                       \
   }()
 
