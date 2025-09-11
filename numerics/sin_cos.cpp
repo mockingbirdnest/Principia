@@ -16,7 +16,6 @@
 
 // The algorithms in this file are documented in `Sin Cos.pdf`.  To the extent
 // possible, the code follows the notation of that document.
-// TODO(phl): Update the code to match the notation of the document.
 namespace principia {
 namespace numerics {
 namespace _sin_cos {
@@ -34,18 +33,18 @@ using namespace principia::numerics::_m128d;
 #define UNDER_OSACA_HYPOTHESES(expression)                                   \
   [&] {                                                                      \
     constexpr bool CanUseHardwareFMA = true;                                 \
-    constexpr double θ = 3;                                                  \
+    constexpr double x = 3;                                                  \
     /* From argument reduction. */                                           \
-    constexpr double abs_θ = θ > 0 ? θ : -θ;                                 \
-    constexpr std::int64_t n = static_cast<std::int64_t>(θ * (2 / π) + 0.5); \
-    constexpr double reduction_value = θ - n * C₁;                           \
+    constexpr double abs_x = x > 0 ? x : -x;                                 \
+    constexpr std::int64_t n = static_cast<std::int64_t>(x * (2 / π) + 0.5); \
+    constexpr double reduction_value = x - n * C₁;                           \
     constexpr double reduction_error = n * δC₁;                              \
     /* Used to determine whether a better argument reduction is needed. */   \
-    constexpr DoublePrecision<double> θ_reduced =                            \
+    constexpr DoublePrecision<double> x_reduced =                            \
         TwoDifference(reduction_value, reduction_error);                     \
     /* Used in Sin to detect the near-0 case. */                             \
     constexpr double abs_x =                                                 \
-        θ_reduced.value > 0 ? θ_reduced.value : -θ_reduced.value;            \
+        x_reduced.value > 0 ? x_reduced.value : -x_reduced.value;            \
     /* Used throughout the top-level functions. */                           \
     constexpr std::int64_t quadrant = n & 0b11;                              \
     /* Not NaN is the only part that matters; used at the end of the    */   \
@@ -73,16 +72,16 @@ constexpr std::int64_t κ₃ = 18;
 
 // These constants must be `constexpr` (and therefore `double`) to be used in
 // the `OSACA_` macros.
-constexpr double two_term_θ_threshold = π / 2 * (1LL << κ₁);
-constexpr double three_term_θ_threshold = π / 2 * (1LL << κ₂);
+constexpr double two_term_x_threshold = π / 2 * (1LL << κ₁);
+constexpr double three_term_x_threshold = π / 2 * (1LL << κ₂);
 constexpr double C₁ = 0x1.921F'B544'42D0'0p0;
 constexpr double δC₁ = 0x1.8469'898C'C517'0p-48;
 constexpr double C₂ = 0x1.921F'B544'4000'0p0;
 constexpr double Cʹ₂ = 0x1.68C2'34C4'C000'0p-39;
 constexpr double δC₂ = 0x1.98A2'E037'0734'5p-77;
-constexpr double two_term_θ_reduced_threshold =
+constexpr double two_term_x_reduced_threshold =
     1.0 / (1LL << (-(κ₁ + κʹ₁ + κ₃ - std::numeric_limits<double>::digits + 2)));
-constexpr double three_term_θ_reduced_threshold =
+constexpr double three_term_x_reduced_threshold =
     (1.0 / (1LL << (-(κ₃ - std::numeric_limits<double>::digits)))) *
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
      4);
@@ -96,9 +95,9 @@ SlowPathCallback slow_path_cos_callback = nullptr;
 
 // Forward declarations needed by the OSACA macros.
 template<FMAPresence fma_presence>
-double __cdecl Sin(double θ);
+double __cdecl Sin(double x);
 template<FMAPresence fma_presence>
-double __cdecl Cos(double θ);
+double __cdecl Cos(double x);
 
 namespace m128d {
 
@@ -165,16 +164,16 @@ inline std::int64_t AccurateTableIndex(Argument const abs_x) {
       .Bits<std::int64_t>();
 }
 
-// Evaluates the sum `x + Δx` and performs the rounding test using the technique
+// Evaluates the sum `y + δy` and performs the rounding test using the technique
 // described in [Mul+10], section 11.6.3.  If rounding is safe, returns the sum;
-// otherwise, returns `NaN`.  `x` is always positive.  `Δx` may be positive or
+// otherwise, returns `NaN`.  `y` is always positive.  `δy` may be positive or
 // negative.
 template<FMAPresence fma_presence, double e>
-Value DetectDangerousRounding(Value const x, Value const Δx) {
-  // We don't check that `Δx` is not NaN because that's how we trigger fallback
+Value DetectDangerousRounding(Value const y, Value const δy) {
+  // We don't check that `δy` is not NaN because that's how we trigger fallback
   // to the slow path.
-  DCHECK(x == x);
-  DoublePrecision<M128D> const sum = QuickTwoSum(x, Δx);
+  DCHECK(y == y);
+  DoublePrecision<M128D> const sum = QuickTwoSum(y, δy);
   auto const& value = sum.value;
   auto const& error = sum.error;
   auto const muller_test_expression =
@@ -184,7 +183,7 @@ Value DetectDangerousRounding(Value const x, Value const Δx) {
   } else {
 #if _DEBUG
     LOG_IF(ERROR, value == value && error == error)
-        << std::setprecision(25) << x << " " << std::hexfloat << value << " "
+        << std::setprecision(25) << y << " " << std::hexfloat << value << " "
         << error << " " << e;
 #endif
     return m128d::quiet_NaN;
@@ -193,24 +192,24 @@ Value DetectDangerousRounding(Value const x, Value const Δx) {
 
 template<FMAPresence fma_presence, bool preserve_sign>
 FORCE_INLINE(inline)
-void Reduce(Argument const θ,
-            DoublePrecision<Argument>& θ_reduced,
+void Reduce(Argument const x,
+            DoublePrecision<Argument>& x_reduced,
             std::int64_t& quadrant) {
-  Argument const abs_θ = Abs(θ);
-  OSACA_IF(abs_θ < π / 4) {
-    θ_reduced.value = θ;
-    θ_reduced.error = m128d::zero;
+  Argument const abs_x = Abs(x);
+  OSACA_IF(abs_x < π / 4) {
+    x_reduced.value = x;
+    x_reduced.error = m128d::zero;
     quadrant = 0;
     return;
-  } OSACA_ELSE_IF(abs_θ <= two_term_θ_threshold) {
+  } OSACA_ELSE_IF(abs_x <= two_term_x_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
     // of the quadrant.
-    M128D const sign = Sign(θ);
+    M128D const sign = Sign(x);
     M128D n_double =
         FusedMultiplyAdd<fma_presence>(
-            abs_θ, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+            abs_x, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
     // Don't move the computation of `n` after the if, it generates some extra
@@ -220,25 +219,25 @@ void Reduce(Argument const θ,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, θ);
+      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, x);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, abs_x);
     }
 
     Argument const δy = n_double * m128d::δC₁;
-    θ_reduced = TwoDifference(y, δy);
-    OSACA_IF(θ_reduced.value <= -two_term_θ_reduced_threshold ||
-             θ_reduced.value >= two_term_θ_reduced_threshold) {
+    x_reduced = TwoDifference(y, δy);
+    OSACA_IF(x_reduced.value <= -two_term_x_reduced_threshold ||
+             x_reduced.value >= two_term_x_reduced_threshold) {
       quadrant = n & 0b11;
       return;
     }
-  } OSACA_ELSE_IF(abs_θ <= three_term_θ_threshold) {
+  } OSACA_ELSE_IF(abs_x <= three_term_x_threshold) {
     // Same code as above.
-    M128D const sign = Sign(θ);
+    M128D const sign = Sign(x);
     M128D n_double =
         FusedMultiplyAdd<fma_presence>(
-            abs_θ, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+            abs_x, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
     Argument y;
@@ -246,24 +245,24 @@ void Reduce(Argument const θ,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, θ);
+      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, x);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, abs_θ);
+      y = FusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, abs_x);
     }
 
     Argument const yʹ = n_double * m128d::Cʹ₂;
     Argument const δy = n_double * m128d::δC₂;
     auto const z = QuickTwoSum(yʹ, δy);
-    θ_reduced = y - z;
-    OSACA_IF(θ_reduced.value <= -three_term_θ_reduced_threshold ||
-             θ_reduced.value >= three_term_θ_reduced_threshold) {
+    x_reduced = y - z;
+    OSACA_IF(x_reduced.value <= -three_term_x_reduced_threshold ||
+             x_reduced.value >= three_term_x_reduced_threshold) {
       quadrant = n & 0b11;
       return;
     }
   }
-  θ_reduced.value = m128d::zero;
-  θ_reduced.error = m128d::quiet_NaN;
+  x_reduced.value = m128d::zero;
+  x_reduced.error = m128d::quiet_NaN;
 }
 
 template<FMAPresence fma_presence>
@@ -290,175 +289,175 @@ Value CosPolynomial(Argument const x) {
 
 template<FMAPresence fma_presence>
 FORCE_INLINE(inline)
-Value SinImplementation(DoublePrecision<Argument> const θ_reduced) {
-  auto const x = θ_reduced.value;
-  auto const e = θ_reduced.error;
-  auto const abs_x = Abs(x);
-  OSACA_IF(abs_x < sin_near_zero_cutoff) {
-    auto const x² = x * x;
-    auto const x³ = x² * x;
-    auto const x³_term = FusedMultiplyAdd<fma_presence>(
-        x³, SinPolynomialNearZero<fma_presence>(x²), e);
+Value SinImplementation(DoublePrecision<Argument> const x_reduced) {
+  auto const x̃ = x_reduced.value;
+  auto const δx̃ = x_reduced.error;
+  auto const abs_x̃ = Abs(x̃);
+  OSACA_IF(abs_x̃ < sin_near_zero_cutoff) {
+    auto const x̃² = x̃ * x̃;
+    auto const x̃³ = x̃² * x̃;
+    auto const x̃³_term = FusedMultiplyAdd<fma_presence>(
+        x̃³, SinPolynomialNearZero<fma_presence>(x̃²), δx̃);
     return DetectDangerousRounding<fma_presence, sin_near_zero_e>(
-        x, x³_term);
+        x̃, x̃³_term);
   } else {
-    auto const sign = Sign(x);
-    auto const i = AccurateTableIndex(abs_x);
-    auto const& accurate_values = SinCosAccurateTable[i];
-    M128D const x₀(accurate_values.x);
-    M128D const sin_x₀(accurate_values.sin_x);
-    M128D const cos_x₀(accurate_values.cos_x);
-    // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
-    // don't overlap and in the first interval `x` and `h` may be of the same
-    // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
-    // later in the computation.  Note that the terms in `e * h²` and higher are
-    // *not* computed because they don't matter.
-    auto const h = abs_x - x₀;
+    auto const sign = Sign(x̃);
+    auto const k = AccurateTableIndex(abs_x̃);
+    auto const& accurate_values = SinCosAccurateTable[k];
+    M128D const xₖ(accurate_values.x);
+    M128D const sin_xₖ(accurate_values.sin_x);
+    M128D const cos_xₖ(accurate_values.cos_x);
+    // [GB91] incorporates `δx̃` in the computation of `h`.  However, `x̃` and
+    // `δx̃` don't overlap and in the first interval `x̃` and `h` may be of the
+    // same order of magnitude.  Instead we incorporate the terms in `δx̃` and
+    // `δx̃ * h` later in the computation.  Note that the terms in `δx̃ * h²` and
+    // higher are *not* computed because they don't matter.
+    auto const h = abs_x̃ - xₖ;
 
     // The sign of the argument must be applied to the result.  It's best to do
     // this by applying it to elements of the computation that are available
     // early.
-    M128D const signed_sin_x₀ = sign ^ sin_x₀;
-    M128D const signed_cos_x₀ = sign ^ cos_x₀;
-    M128D const signed_e = sign ^ e;
+    M128D const signed_sin_xₖ = sign ^ sin_xₖ;
+    M128D const signed_cos_xₖ = sign ^ cos_xₖ;
+    M128D const signed_δx̃ = sign ^ δx̃;
 
-    DoublePrecision<M128D> const sin_x₀_plus_h_cos_x₀ =
-        TwoProductAdd<fma_presence>(signed_cos_x₀, h, signed_sin_x₀);
+    DoublePrecision<M128D> const sin_xₖ_plus_h_cos_xₖ =
+        TwoProductAdd<fma_presence>(signed_cos_xₖ, h, signed_sin_xₖ);
     auto const h² = h * h;
     auto const h³ = h² * h;
-    auto const h_plus_e² = h * ((signed_e + signed_e) + h);
+    auto const h_plus_δx̃² = h * ((signed_δx̃ + signed_δx̃) + h);
     auto const polynomial_term =
         FusedMultiplyAdd<fma_presence>(
-            signed_cos_x₀,
+            signed_cos_xₖ,
             FusedMultiplyAdd<fma_presence>(
-                h³, SinPolynomial<fma_presence>(h²), signed_e),
-            (signed_sin_x₀ * h_plus_e²) * CosPolynomial<fma_presence>(h²)) +
-        sin_x₀_plus_h_cos_x₀.error;
+                h³, SinPolynomial<fma_presence>(h²), signed_δx̃),
+            (signed_sin_xₖ * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
+        sin_xₖ_plus_h_cos_xₖ.error;
     return DetectDangerousRounding<fma_presence, sin_e>(
-        sin_x₀_plus_h_cos_x₀.value, polynomial_term);
+        sin_xₖ_plus_h_cos_xₖ.value, polynomial_term);
   }
 }
 
 template<FMAPresence fma_presence>
 FORCE_INLINE(inline)
-Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
-  auto const x = θ_reduced.value;
-  auto const e = θ_reduced.error;
-  auto const abs_x = Abs(x);
-  auto const sign = Sign(x);
-  auto const signed_e = sign ^ e;
-  auto const i = AccurateTableIndex(abs_x);
-  auto const& accurate_values = SinCosAccurateTable[i];
-  M128D const x₀(accurate_values.x);
-  M128D const sin_x₀(accurate_values.sin_x);
-  M128D const cos_x₀(accurate_values.cos_x);
-  // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
-  // don't overlap and in the first interval `x` and `h` may be of the same
-  // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
-  // later in the computation.  Note that the terms in `e * h²` and higher are
+Value CosImplementation(DoublePrecision<Argument> const x_reduced) {
+  auto const x̃ = x_reduced.value;
+  auto const δx̃ = x_reduced.error;
+  auto const abs_x̃ = Abs(x̃);
+  auto const sign = Sign(x̃);
+  auto const signed_δx̃ = sign ^ δx̃;
+  auto const k = AccurateTableIndex(abs_x̃);
+  auto const& accurate_values = SinCosAccurateTable[k];
+  M128D const xₖ(accurate_values.x);
+  M128D const sin_xₖ(accurate_values.sin_x);
+  M128D const cos_xₖ(accurate_values.cos_x);
+  // [GB91] incorporates `δx̃` in the computation of `h`.  However, `x̃` and `δx̃`
+  // don't overlap and in the first interval `x̃` and `h` may be of the same
+  // order of magnitude.  Instead we incorporate the terms in `δx̃` and `δx̃ * h`
+  // later in the computation.  Note that the terms in `δx̃ * h²` and higher are
   // *not* computed because they don't matter.
-  auto const h = abs_x - x₀;
+  auto const h = abs_x̃ - xₖ;
 
-  DoublePrecision<M128D> const cos_x₀_minus_h_sin_x₀ =
-      TwoProductNegatedAdd<fma_presence>(sin_x₀, h, cos_x₀);
+  DoublePrecision<M128D> const cos_xₖ_minus_h_sin_xₖ =
+      TwoProductNegatedAdd<fma_presence>(sin_xₖ, h, cos_xₖ);
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const h_plus_e² = h * ((signed_e + signed_e) + h);
+  auto const h_plus_δx̃² = h * ((signed_δx̃ + signed_δx̃) + h);
   auto const polynomial_term =
       FusedNegatedMultiplyAdd<fma_presence>(
-          sin_x₀,
+          sin_xₖ,
           FusedMultiplyAdd<fma_presence>(
-              h³, SinPolynomial<fma_presence>(h²), signed_e),
-          (cos_x₀ * h_plus_e²) * CosPolynomial<fma_presence>(h²)) +
-      cos_x₀_minus_h_sin_x₀.error;
+              h³, SinPolynomial<fma_presence>(h²), signed_δx̃),
+          (cos_xₖ * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
+      cos_xₖ_minus_h_sin_xₖ.error;
   return DetectDangerousRounding<fma_presence, cos_e>(
-      cos_x₀_minus_h_sin_x₀.value, polynomial_term);
+      cos_xₖ_minus_h_sin_xₖ.value, polynomial_term);
 }
 
 template<FMAPresence fma_presence>
 FORCE_INLINE(inline)
-SC<Value> SinCosImplementation(DoublePrecision<Argument> const θ_reduced) {
+SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
   SC<Value> m128ds;
-  auto const x = θ_reduced.value;
-  auto const e = θ_reduced.error;
-  auto const abs_x = Abs(x);
-  auto const sign = Sign(x);
-  auto const i = AccurateTableIndex(abs_x);
-  auto const& accurate_values = SinCosAccurateTable[i];
-  M128D const x₀(accurate_values.x);
-  M128D const sin_x₀(accurate_values.sin_x);
-  M128D const cos_x₀(accurate_values.cos_x);
-  // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
-  // don't overlap and in the first interval `x` and `h` may be of the same
-  // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
-  // later in the computation.  Note that the terms in `e * h²` and higher are
+  auto const x̃ = x_reduced.value;
+  auto const δx̃ = x_reduced.error;
+  auto const abs_x̃ = Abs(x̃);
+  auto const sign = Sign(x̃);
+  auto const k = AccurateTableIndex(abs_x̃);
+  auto const& accurate_values = SinCosAccurateTable[k];
+  M128D const xₖ(accurate_values.x);
+  M128D const sin_xₖ(accurate_values.sin_x);
+  M128D const cos_xₖ(accurate_values.cos_x);
+  // [GB91] incorporates `δx̃` in the computation of `h`.  However, `x̃` and `δx̃`
+  // don't overlap and in the first interval `x̃` and `h` may be of the same
+  // order of magnitude.  Instead we incorporate the terms in `δx̃` and `δx̃ * h`
+  // later in the computation.  Note that the terms in `δx̃ * h²` and higher are
   // *not* computed because they don't matter.
-  auto const h = abs_x - x₀;
+  auto const h = abs_x̃ - xₖ;
 
   // The sign of the argument must be applied to the result.  It's best to do
   // this by applying it to elements of the computation that are available
   // early.
-  M128D const signed_sin_x₀ = sign ^ sin_x₀;
-  M128D const signed_cos_x₀ = sign ^ cos_x₀;
-  M128D const signed_e = sign ^ e;
+  M128D const signed_sin_xₖ = sign ^ sin_xₖ;
+  M128D const signed_cos_xₖ = sign ^ cos_xₖ;
+  M128D const signed_δx̃ = sign ^ δx̃;
 
-  DoublePrecision<M128D> const sin_x₀_plus_h_cos_x₀ =
-      TwoProductAdd<fma_presence>(signed_cos_x₀, h, signed_sin_x₀);
-  DoublePrecision<M128D> const cos_x₀_minus_h_sin_x₀ =
-      TwoProductNegatedAdd<fma_presence>(sin_x₀, h, cos_x₀);
+  DoublePrecision<M128D> const sin_xₖ_plus_h_cos_xₖ =
+      TwoProductAdd<fma_presence>(signed_cos_xₖ, h, signed_sin_xₖ);
+  DoublePrecision<M128D> const cos_xₖ_minus_h_sin_xₖ =
+      TwoProductNegatedAdd<fma_presence>(sin_xₖ, h, cos_xₖ);
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const h_plus_e² = h * ((signed_e + signed_e) + h);
+  auto const h_plus_δx̃² = h * ((signed_δx̃ + signed_δx̃) + h);
 
   auto const h³_sin_polynomial = FusedMultiplyAdd<fma_presence>(
-      h³, SinPolynomial<fma_presence>(h²), signed_e);
+      h³, SinPolynomial<fma_presence>(h²), signed_δx̃);
   auto const h_plus_e²_cos_polynomial =
-      h_plus_e² * CosPolynomial<fma_presence>(h²);
+      h_plus_δx̃² * CosPolynomial<fma_presence>(h²);
 
   auto const sin_polynomial_term =
-      FusedMultiplyAdd<fma_presence>(signed_cos_x₀,
+      FusedMultiplyAdd<fma_presence>(signed_cos_xₖ,
                                      h³_sin_polynomial,
-                                     signed_sin_x₀ * h_plus_e²_cos_polynomial) +
-      sin_x₀_plus_h_cos_x₀.error;
+                                     signed_sin_xₖ * h_plus_e²_cos_polynomial) +
+      sin_xₖ_plus_h_cos_xₖ.error;
   auto const cos_polynomial_term =
-      FusedNegatedMultiplyAdd<fma_presence>(sin_x₀,
+      FusedNegatedMultiplyAdd<fma_presence>(sin_xₖ,
                                             h³_sin_polynomial,
-                                            cos_x₀ * h_plus_e²_cos_polynomial) +
-      cos_x₀_minus_h_sin_x₀.error;
+                                            cos_xₖ * h_plus_e²_cos_polynomial) +
+      cos_xₖ_minus_h_sin_xₖ.error;
   m128ds.cos = DetectDangerousRounding<fma_presence, cos_e>(
-      cos_x₀_minus_h_sin_x₀.value, cos_polynomial_term);
-  OSACA_IF(abs_x < sin_near_zero_cutoff) {
-    auto const x² = x * x;
-    auto const x³ = x² * x;
-    auto const x³_term = FusedMultiplyAdd<fma_presence>(
-        x³, SinPolynomialNearZero<fma_presence>(x²), e);
+      cos_xₖ_minus_h_sin_xₖ.value, cos_polynomial_term);
+  OSACA_IF(abs_x̃ < sin_near_zero_cutoff) {
+    auto const x̃² = x̃ * x̃;
+    auto const x̃³ = x̃² * x̃;
+    auto const x̃³_term = FusedMultiplyAdd<fma_presence>(
+        x̃³, SinPolynomialNearZero<fma_presence>(x̃²), δx̃);
     m128ds.sin =
-        DetectDangerousRounding<fma_presence, sin_near_zero_e>(x, x³_term);
+        DetectDangerousRounding<fma_presence, sin_near_zero_e>(x̃, x̃³_term);
   } else {
     m128ds.sin = DetectDangerousRounding<fma_presence, sin_e>(
-        sin_x₀_plus_h_cos_x₀.value, sin_polynomial_term);
+        sin_xₖ_plus_h_cos_xₖ.value, sin_polynomial_term);
   }
   return m128ds;
 }
 
 template<FMAPresence fma_presence>
-double __cdecl Sin(double θ) {
-  OSACA_FUNCTION_BEGIN(θ, <fma_presence>);
-  DoublePrecision<Argument> θ_reduced;
+double __cdecl Sin(double x) {
+  OSACA_FUNCTION_BEGIN(x, <fma_presence>);
+  DoublePrecision<Argument> x_reduced;
   std::int64_t quadrant;
   double value;
   Reduce<fma_presence, /*preserve_sign=*/true>(
-      M128D(θ), θ_reduced, quadrant);
+      M128D(x), x_reduced, quadrant);
   OSACA_IF(quadrant & 0b1) {
-    value = static_cast<double>(CosImplementation<fma_presence>(θ_reduced));
+    value = static_cast<double>(CosImplementation<fma_presence>(x_reduced));
   } else {
-    value = static_cast<double>(SinImplementation<fma_presence>(θ_reduced));
+    value = static_cast<double>(SinImplementation<fma_presence>(x_reduced));
   }
   OSACA_IF(value != value) {
     if (slow_path_sin_callback != nullptr) {
-      slow_path_sin_callback(θ);
+      slow_path_sin_callback(x);
     }
-    OSACA_RETURN(cr_sin(θ));
+    OSACA_RETURN(cr_sin(x));
   } OSACA_ELSE_IF(quadrant & 0b10) {
     OSACA_RETURN(-value);
   } else {
@@ -467,23 +466,23 @@ double __cdecl Sin(double θ) {
 }
 
 template<FMAPresence fma_presence>
-double __cdecl Cos(double θ) {
-  OSACA_FUNCTION_BEGIN(θ, <fma_presence>);
-  DoublePrecision<Argument> θ_reduced;
+double __cdecl Cos(double x) {
+  OSACA_FUNCTION_BEGIN(x, <fma_presence>);
+  DoublePrecision<Argument> x_reduced;
   std::int64_t quadrant;
   double value;
   Reduce<fma_presence, /*preserve_sign=*/false>(
-      M128D(θ), θ_reduced, quadrant);
+      M128D(x), x_reduced, quadrant);
   OSACA_IF(quadrant & 0b1) {
-    value = static_cast<double>(SinImplementation<fma_presence>(θ_reduced));
+    value = static_cast<double>(SinImplementation<fma_presence>(x_reduced));
   } else {
-    value = static_cast<double>(CosImplementation<fma_presence>(θ_reduced));
+    value = static_cast<double>(CosImplementation<fma_presence>(x_reduced));
   }
   OSACA_IF(value != value) {
     if (slow_path_cos_callback != nullptr) {
-      slow_path_cos_callback(θ);
+      slow_path_cos_callback(x);
     }
-    OSACA_RETURN(cr_cos(θ));
+    OSACA_RETURN(cr_cos(x));
   } OSACA_ELSE_IF(quadrant == 1 || quadrant == 2) {
     OSACA_RETURN(-value);
   } else {
@@ -492,14 +491,14 @@ double __cdecl Cos(double θ) {
 }
 
 template<FMAPresence fma_presence>
-SC<double> __cdecl SinCos(double θ) {
-  OSACA_FUNCTION_BEGIN(θ, <fma_presence>);
+SC<double> __cdecl SinCos(double x) {
+  OSACA_FUNCTION_BEGIN(x, <fma_presence>);
   SC<double> values;
-  DoublePrecision<Argument> θ_reduced;
+  DoublePrecision<Argument> x_reduced;
   std::int64_t quadrant;
   Reduce<fma_presence, /*preserve_sign=*/true>(
-      M128D(θ), θ_reduced, quadrant);
-  auto m128ds = SinCosImplementation<fma_presence>(θ_reduced);
+      M128D(x), x_reduced, quadrant);
+  auto m128ds = SinCosImplementation<fma_presence>(x_reduced);
   OSACA_IF(quadrant & 0b1) {
     values.sin = static_cast<double>(m128ds.cos);
     values.cos = static_cast<double>(m128ds.sin);
@@ -509,12 +508,12 @@ SC<double> __cdecl SinCos(double θ) {
   }
   OSACA_IF(values.sin != values.sin || values.cos != values.cos) {
     if (slow_path_sin_callback != nullptr) {
-      slow_path_sin_callback(θ);
+      slow_path_sin_callback(x);
     }
     if (slow_path_cos_callback != nullptr) {
-      slow_path_cos_callback(θ);
+      slow_path_cos_callback(x);
     }
-    OSACA_RETURN((SC<double>{.sin = cr_sin(θ), .cos = cr_cos(θ)}));
+    OSACA_RETURN((SC<double>{.sin = cr_sin(x), .cos = cr_cos(x)}));
   }
   OSACA_IF(quadrant & 0b10) {
     values.sin = -values.sin;
