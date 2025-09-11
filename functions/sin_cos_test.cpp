@@ -348,8 +348,7 @@ TEST_F(SinCosTest, RandomLarge) {
 }
 
 TEST_F(SinCosTest, RandomSinCos) {
-  ParallelRandomArgumentTest(
-      0, 1 << 18, /*sin_cos=*/true);
+  ParallelRandomArgumentTest(0, 1 << 18, /*sin_cos=*/true);
 }
 
 // Values for which the base algorithm gives an error of 1 ULP.
