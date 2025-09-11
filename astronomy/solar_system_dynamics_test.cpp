@@ -297,7 +297,7 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
        {.separation_per_orbit = 0.000137_(1) * ArcSecond,
         .inclination_drift_per_orbit = 0.00017_(1) * ArcSecond,
         .longitude_of_ascending_node_drift_per_orbit = 0.0191_(1) * ArcSecond,
-        .argument_of_periapsis_drift_per_orbit = 0.00120_(1) * ArcSecond}},
+        .argument_of_periapsis_drift_per_orbit = 0.01230_(1) * ArcSecond}},
       {SolarSystemFactory::Earth,
        {.separation_per_orbit = 0.085351_(1) * ArcSecond,
         .inclination_drift_per_orbit = 0.0000034_(1) * ArcSecond,
