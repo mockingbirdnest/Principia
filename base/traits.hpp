@@ -18,11 +18,48 @@ constexpr bool all_different_v<T0, Ts...> =
     (!std::is_same_v<T0, Ts> && ...) && all_different_v<Ts...>;
 
 
+// Has a true `value` member iff the template `T` can be instantiated with the
+// arguments `Args...`.
+template<template<typename...> typename T, typename... Args>
+struct can_be_instantiated {
+  template<template<typename...> typename TT, typename = void>
+  struct test : std::false_type {};
+
+  template<template<typename...> typename TT>
+  struct test<TT, std::void_t<TT<Args...>>> : std::true_type {};
+
+  static constexpr bool value = test<T>::value;
+};
+
+
+// `matches_instantiation<U, can_instantiate, T, Args...>` has a true `value`
+// member iff `U` is the same type as `T<Args...>`.  The parameter
+// `can_be_instantiated` must indicate whether `T<Args...>` is a valid
+// instantiation.
+template<typename U,
+         bool can_be_instantiated,
+         template<typename...> typename T,
+         typename... Args>
+struct matches_instantiation : std::false_type {};
+
+template<typename U, template<typename...> typename T, typename... Args>
+struct matches_instantiation<U, true, T, Args...> {
+  static constexpr bool value = std::is_same_v<T<Args...>, U>;
+};
+
+
+// This trait works even if T is an alias template.
 template<template<typename...> typename T, typename U>
 struct is_instance_of : std::false_type {};
 
-template<template<typename...> typename T, typename... Args>
-struct is_instance_of<T, T<Args...>> : std::true_type {};
+template<template<typename...> typename T,
+         template<typename...> typename U,
+         typename... Args>
+struct is_instance_of<T, U<Args...>>
+    : matches_instantiation<U<Args...>,
+                            can_be_instantiated<T, Args...>::value,
+                            T,
+                            Args...> {};
 
 
 template<template<typename...> typename T,
