@@ -30,7 +30,11 @@ using namespace principia::numerics::_m128d;
 
 #define OSACA_ANALYSED_FUNCTION Cos
 #define OSACA_ANALYSED_FUNCTION_NAMESPACE
+#if PRINCIPIA_COMPILER_MSVC
 #define OSACA_ANALYSED_FUNCTION_TEMPLATE_PARAMETERS <FMAPresence::Present>
+#else
+#define OSACA_ANALYSED_FUNCTION_TEMPLATE_PARAMETERS <FMAPresence::Absent>
+#endif
 #define UNDER_OSACA_HYPOTHESES(expression)                                   \
   [&] {                                                                      \
     constexpr bool CanUseHardwareFMA = true;                                 \
