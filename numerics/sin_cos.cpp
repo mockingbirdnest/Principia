@@ -44,6 +44,8 @@ using namespace principia::numerics::_m128d;
     /* Used to determine whether a better argument reduction is needed. */   \
     constexpr DoublePrecision<double> x_reduced =                            \
         TwoDifference(reduction_value, reduction_error);                     \
+    constexpr double abs_x_reduced_value =                                   \
+        x_reduced.value > 0 ? x_reduced.value : -x_reduced.value;            \
     /* Used in Sin to detect the near-0 case. */                             \
     constexpr double abs_x̃ =                                                 \
         x_reduced.value > 0 ? x_reduced.value : -x_reduced.value;            \
@@ -267,8 +269,8 @@ void Reduce(Argument const x,
 
     Argument const δy = n_double * m128d::δC₁;
     x_reduced = TwoDifference(y, δy);
-    OSACA_IF(x_reduced.value <= -two_term_x_reduced_threshold ||
-             x_reduced.value >= two_term_x_reduced_threshold) {
+    Argument const abs_x_reduced_value = Abs(x_reduced.value);
+    OSACA_IF(abs_x_reduced_value >= two_term_x_reduced_threshold) {
       quadrant = n & 0b11;
       return;
     }
@@ -295,8 +297,8 @@ void Reduce(Argument const x,
     Argument const δy = n_double * m128d::δC₂;
     auto const z = QuickTwoSum(yʹ, δy);
     x_reduced = y - z;
-    OSACA_IF(x_reduced.value <= -three_term_x_reduced_threshold ||
-             x_reduced.value >= three_term_x_reduced_threshold) {
+    Argument const abs_x_reduced_value = Abs(x_reduced.value);
+    OSACA_IF(abs_x_reduced_value >= three_term_x_reduced_threshold) {
       quadrant = n & 0b11;
       return;
     }
