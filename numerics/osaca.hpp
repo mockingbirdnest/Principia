@@ -107,8 +107,8 @@
 // result in multiple back edges from the final instruction that computed the
 // result.  Carrying the loop through the memory could also potentially prevent
 // the compiler from reusing intermediate values in the next iteration, e.g., if
-// the the computation of f(x) depends on -x and produces -f(x) before f(x), as
-// in an even function defined in terms of its positive half, the compiler might
+// the computation of f(x) depends on -x and produces -f(x) before f(x), as in
+// an even function defined in terms of its positive half, the compiler might
 // reuse -f(x₀)=-x₁ instead of computing -x₁ from x₁=f(x₀).  However:
 // — it adds a spurious move to the latency;
 // — some tools (IACA) cannot see the dependency through memory.
@@ -120,6 +120,14 @@
 #if PRINCIPIA_USE_OSACA
 
 #include "intel/iacaMarks.h"
+
+#ifdef _WIN64
+#define OSACA_START IACA_VC64_START
+#define OSACA_END IACA_VC64_START
+#else
+#define OSACA_START IACA_START
+#define OSACA_END IACA_START
+#endif
 
 #define OSACA_QUALIFIED_ANALYSED_FUNCTION                   \
   OSACA_ANALYSED_FUNCTION_NAMESPACE OSACA_ANALYSED_FUNCTION \
@@ -137,7 +145,7 @@ static bool volatile OSACA_loop_terminator = false;
                     STRINGIFY_EXPANSION(OSACA_ANALYSED_FUNCTION) && \
                 OSACA_analysed_function_with_current_parameters ==  \
                     &OSACA_QUALIFIED_ANALYSED_FUNCTION) {           \
-    IACA_VC64_START;                                                \
+    OSACA_START;                                                    \
   }                                                                 \
   _Pragma("warning(push)");                                         \
   _Pragma("warning(disable : 4102)");                               \
@@ -156,8 +164,8 @@ static bool volatile OSACA_loop_terminator = false;
         goto OSACA_loop;                                                    \
       }                                                                     \
       auto volatile OSACA_result = OSACA_loop_carry;                        \
-      IACA_VC64_END;                                                        \
-      /* The outer loop prevents the the start and end marker from being */ \
+      OSACA_END;                                                            \
+      /* The outer loop prevents the start and end marker from being     */ \
       /* interleaved with register saving and restoring moves.           */ \
       if (!OSACA_loop_terminator) {                                         \
         goto OSACA_outer_loop;                                              \

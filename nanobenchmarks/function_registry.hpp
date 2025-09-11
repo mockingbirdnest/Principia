@@ -21,7 +21,7 @@ class FunctionRegistry {
 
  private:
   FunctionRegistry() = default;
-  static FunctionRegistry& singleton_;
+  static FunctionRegistry& singleton();
   std::map<std::string, BenchmarkedFunction, std::less<>> functions_by_name_;
   std::map<BenchmarkedFunction, std::string> names_by_function_;
 };
