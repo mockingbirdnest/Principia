@@ -427,6 +427,9 @@
     <ClCompile Include="m128d_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="sin_cos_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="xgscd.proto.txt">
