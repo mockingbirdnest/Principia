@@ -222,6 +222,15 @@ CubeRoot<Q> Cbrt(Q const& x) {
   return si::Unit<CubeRoot<Q>> * numerics::_cbrt::Cbrt(x / si::Unit<Q>);
 }
 
+template<int N, typename Q>
+NthRoot<Q, N> Root(Q const& x) {
+  return si::Unit<NthRoot<Q, N>> * Root(N, x / si::Unit<Q>);
+}
+
+inline double Root(int const n, double const x) {
+  return std::pow(x, 1.0 / n);
+}
+
 template<typename Q>
 constexpr Q NextUp(Q const& x) {
   return si::Unit<Q> * numerics::_next::NextUp(x / si::Unit<Q>);

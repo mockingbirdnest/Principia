@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 
 #include "base/array.hpp"
@@ -18,11 +19,11 @@ class ArraySource : public google::compression::Source {
   explicit ArraySource(Array<Element> const& array);
   ~ArraySource() override = default;
 
-  size_t Available() const override;
+  std::size_t Available() const override;
 
-  const char* Peek(size_t* length) override;
+  const char* Peek(std::size_t* length) override;
 
-  void Skip(size_t n) override;
+  void Skip(std::size_t n) override;
 
  private:
   const Array<Element> array_;
@@ -37,13 +38,13 @@ class ArraySink : public google::compression::Sink {
 
   Array<Element> array() const;
 
-  void Append(const char* data, size_t n) override;
+  void Append(const char* data, std::size_t n) override;
 
-  char* GetAppendBuffer(size_t min_size,
-                        size_t desired_size_hint,
+  char* GetAppendBuffer(std::size_t min_size,
+                        std::size_t desired_size_hint,
                         char* scratch,
-                        size_t scratch_size,
-                        size_t* allocated_size) override;
+                        std::size_t scratch_size,
+                        std::size_t* allocated_size) override;
 
  private:
   const Array<Element> array_;
