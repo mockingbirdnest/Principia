@@ -13,6 +13,7 @@
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -23,6 +24,7 @@ namespace internal {
 using namespace principia::base::_for_all_of;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 
 template<typename Method, typename ODE_>
@@ -141,7 +143,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
       h *= parameters.safety_factor *
-               std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
+           Root<lower_order + 1>(tolerance_to_error_ratio);
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
       if (s.value + (s.error + h) == s.value) {

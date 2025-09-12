@@ -90,7 +90,7 @@ TEST_F(ElementaryFunctionsTest, PhysicalConstants) {
   Length const lunar_distance = 384402 * Kilo(Metre);
   // By definition.
   EXPECT_THAT(1 / Pow<2>(SpeedOfLight),
-              AlmostEquals(VacuumPermittivity * VacuumPermeability, 1));
+              AlmostEquals(VacuumPermittivity * VacuumPermeability, 0));
   // The Keplerian approximation for the mass of the Sun
   // is fairly accurate.
   EXPECT_THAT(RelativeError(
@@ -184,6 +184,12 @@ TEST_F(ElementaryFunctionsTest, ExpLogAndRoots) {
   EXPECT_THAT(
       Cbrt(Gallon),
       AlmostEquals(std::exp(std::log(Gallon / Pow<3>(Foot)) / 3) * Foot, 0, 1));
+  // The numerical value of the Stefan-Boltzmann constant below is from
+  // https://oeis.org/A081820.
+  EXPECT_THAT(
+      Root<4>(StefanBoltzmannConstant * Pow<2>(Metre) / Watt),
+      AlmostEquals(Sqrt(Sqrt(5.670'374'419'184'429'453'970e-8)) / Kelvin, 1));
+  EXPECT_THAT(Root(6, 100), AlmostEquals(Sqrt(Cbrt(100)), 0));
 }
 
 }  // namespace numerics

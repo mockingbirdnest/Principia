@@ -128,6 +128,11 @@ SquareRoot<Q> Sqrt(Q const& x);
 template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x);
 
+template<int N, typename Q>
+NthRoot<Q, N> Root(Q const& x);
+
+double Root(int n, double x);
+
 // Not equivalent to `std::nextafter(x)`; follows IEEE 754:2008 conventions
 // instead of C++ ones.  In particular, `NextUp(-0.0) == NextUp(+0.0)`.
 template<typename Q>
@@ -194,6 +199,7 @@ using internal::Mod;
 using internal::NextDown;
 using internal::NextUp;
 using internal::Pow;
+using internal::Root;
 using internal::Round;
 using internal::Sin;
 using internal::Sinh;
