@@ -148,7 +148,9 @@ M128D MaybeFusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
 }
 
 template<FMAPresence fma_presence>
-M128D MaybeFusedNegatedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
+M128D MaybeFusedNegatedMultiplyAdd(M128D const a,
+                                   M128D const b,
+                                   M128D const c) {
   static_assert(fma_presence != FMAPresence::Unknown);
   if constexpr (fma_presence == FMAPresence::Present) {
     return FusedNegatedMultiplyAdd(a, b, c);
@@ -268,7 +270,8 @@ void Reduce(Argument const x,
       y = MaybeFusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, x);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, abs_x);
+      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(
+          n_double, m128d::C₁, abs_x);
     }
 
     Argument const δy = n_double * m128d::δC₁;
@@ -294,7 +297,8 @@ void Reduce(Argument const x,
       y = MaybeFusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, x);
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, abs_x);
+      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(
+          n_double, m128d::C₂, abs_x);
     }
 
     Argument const yʹ = n_double * m128d::Cʹ₂;
