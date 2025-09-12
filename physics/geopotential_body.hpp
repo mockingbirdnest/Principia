@@ -701,10 +701,10 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
       Length const r = Cnm == 0 && Snm == 0
                            ? Length{}
                            : body->reference_radius() *
-                                 std::pow((max_abs_Pnm * (n + 1) *
-                                           Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) /
-                                              ε,
-                                          1.0 / n);
+                                 Root(n,
+                                      (max_abs_Pnm * (n + 1) *
+                                       Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) /
+                                          ε);
       harmonic_thresholds.push({r, n, m});
     }
   }
