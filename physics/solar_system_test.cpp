@@ -12,7 +12,10 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace physics {
@@ -26,7 +29,10 @@ using namespace principia::integrators::_symplectic_runge_kutta_nyström_integra
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class SolarSystemTest : public ::testing::Test {};
 
@@ -84,7 +90,8 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
               Ephemeris<ICRS>::NewtonianMotionEquation>(),
           /*step=*/1 * Second));
   auto const earth = solar_system.massive_body(*ephemeris, "Earth");
-  EXPECT_LT(RelativeError(5.9723653 * Yotta(Kilogram), earth->mass()), 7e-9);
+  EXPECT_THAT(earth->mass(),
+              RelativeErrorFrom(5.972168 * Yotta(Kilogram), IsNear(7e-8_(1))));
   auto const& earth_trajectory = solar_system.trajectory(*ephemeris, "Earth");
   EXPECT_TRUE(earth_trajectory.empty());
   EXPECT_EQ("Earth", earth->name());
@@ -136,7 +143,8 @@ TEST_F(SolarSystemTest, KSPSystem) {
               Ephemeris<KSP>::NewtonianMotionEquation>(),
           /*step=*/1 * Second));
   auto const kerbin = solar_system.massive_body(*ephemeris, "Kerbin");
-  EXPECT_LT(RelativeError(52.915158 * Zetta(Kilogram), kerbin->mass()), 7e-9);
+  EXPECT_THAT(kerbin->mass(),
+              RelativeErrorFrom(52.913414 * Zetta(Kilogram), IsNear(3e-9_(1))));
   auto const& kerbin_trajectory =
       solar_system.trajectory(*ephemeris, "Kerbin");
   EXPECT_TRUE(kerbin_trajectory.empty());
