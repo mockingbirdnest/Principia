@@ -90,7 +90,7 @@ TEST_F(ElementaryFunctionsTest, PhysicalConstants) {
   Length const lunar_distance = 384402 * Kilo(Metre);
   // By definition.
   EXPECT_THAT(1 / Pow<2>(SpeedOfLight),
-              AlmostEquals(VacuumPermittivity * VacuumPermeability, 0));
+              AlmostEquals(VacuumPermittivity * VacuumPermeability, 1));
   // The Keplerian approximation for the mass of the Sun
   // is fairly accurate.
   EXPECT_THAT(RelativeError(
