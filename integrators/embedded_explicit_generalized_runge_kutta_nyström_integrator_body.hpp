@@ -15,6 +15,7 @@
 #include "glog/logging.h"
 #include "integrators/methods.hpp"  // 🧙 For _methods.
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace integrators {
@@ -23,6 +24,7 @@ namespace internal {
 
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 
 template<typename Method, typename ODE_>
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
@@ -148,7 +150,7 @@ absl::Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
       h *= parameters.safety_factor *
-               std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
+           Root<lower_order + 1>(tolerance_to_error_ratio);
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
       if (t.value + (t.error + h) == t.value) {

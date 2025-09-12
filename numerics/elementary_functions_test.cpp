@@ -10,6 +10,8 @@
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -28,6 +30,8 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_uk;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_vanishes_before;
 
@@ -184,6 +188,11 @@ TEST_F(ElementaryFunctionsTest, ExpLogAndRoots) {
   EXPECT_THAT(
       Cbrt(Gallon),
       AlmostEquals(std::exp(std::log(Gallon / Pow<3>(Foot)) / 3) * Foot, 0, 1));
+  auto const Lⵙ = SolarLuminosity;
+  auto const Rⵙ = SolarRadius;
+  auto const Tⵙ = Root<4>(Lⵙ / (4 * π * StefanBoltzmannConstant * Pow<2>(Rⵙ)));
+  EXPECT_THAT(Tⵙ, IsNear(5772_(1) * Kelvin));
+  EXPECT_THAT(Root(6, 100), AlmostEquals(Sqrt(Cbrt(100)), 0));
 }
 
 }  // namespace numerics

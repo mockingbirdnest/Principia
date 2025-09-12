@@ -56,6 +56,7 @@ using namespace principia::numerics::_m128d;
     /* top-level functions to determine whether to call the slow path.  */   \
     constexpr double value = 1;                                              \
     constexpr double muller_test_expression = value;                         \
+    constexpr SC<double> values = {.sin = 0, .cos = 1};                      \
     return expression;                                                       \
   }()
 
@@ -349,7 +350,7 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
   auto const e = θ_reduced.error;
   auto const abs_x = Abs(x);
   auto const sign = Sign(x);
-  auto const e_abs = e ^ sign;
+  auto const signed_e = sign ^ e;
   auto const i = AccurateTableIndex(abs_x);
   auto const& accurate_values = SinCosAccurateTable[i];
   M128D const x₀(accurate_values.x);
@@ -366,16 +367,82 @@ Value CosImplementation(DoublePrecision<Argument> const θ_reduced) {
       TwoProductNegatedAdd<fma_presence>(sin_x₀, h, cos_x₀);
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const h_plus_e² = h * ((e_abs + e_abs) + h);
+  auto const h_plus_e² = h * ((signed_e + signed_e) + h);
   auto const polynomial_term =
       FusedNegatedMultiplyAdd<fma_presence>(
           sin_x₀,
           FusedMultiplyAdd<fma_presence>(
-              h³, SinPolynomial<fma_presence>(h²), e_abs),
+              h³, SinPolynomial<fma_presence>(h²), signed_e),
           (cos_x₀ * h_plus_e²) * CosPolynomial<fma_presence>(h²)) +
       cos_x₀_minus_h_sin_x₀.error;
   return DetectDangerousRounding<fma_presence, cos_e>(
       cos_x₀_minus_h_sin_x₀.value, polynomial_term);
+}
+
+template<FMAPresence fma_presence>
+FORCE_INLINE(inline)
+SC<Value> SinCosImplementation(DoublePrecision<Argument> const θ_reduced) {
+  SC<Value> m128ds;
+  auto const x = θ_reduced.value;
+  auto const e = θ_reduced.error;
+  auto const abs_x = Abs(x);
+  auto const sign = Sign(x);
+  auto const i = AccurateTableIndex(abs_x);
+  auto const& accurate_values = SinCosAccurateTable[i];
+  M128D const x₀(accurate_values.x);
+  M128D const sin_x₀(accurate_values.sin_x);
+  M128D const cos_x₀(accurate_values.cos_x);
+  // [GB91] incorporates `e` in the computation of `h`.  However, `x` and `e`
+  // don't overlap and in the first interval `x` and `h` may be of the same
+  // order of magnitude.  Instead we incorporate the terms in `e` and `e * h`
+  // later in the computation.  Note that the terms in `e * h²` and higher are
+  // *not* computed because they don't matter.
+  auto const h = abs_x - x₀;
+
+  // The sign of the argument must be applied to the result.  It's best to do
+  // this by applying it to elements of the computation that are available
+  // early.
+  M128D const signed_sin_x₀ = sign ^ sin_x₀;
+  M128D const signed_cos_x₀ = sign ^ cos_x₀;
+  M128D const signed_e = sign ^ e;
+
+  DoublePrecision<M128D> const sin_x₀_plus_h_cos_x₀ =
+      TwoProductAdd<fma_presence>(signed_cos_x₀, h, signed_sin_x₀);
+  DoublePrecision<M128D> const cos_x₀_minus_h_sin_x₀ =
+      TwoProductNegatedAdd<fma_presence>(sin_x₀, h, cos_x₀);
+  auto const h² = h * h;
+  auto const h³ = h² * h;
+  auto const h_plus_e² = h * ((signed_e + signed_e) + h);
+
+  auto const h³_sin_polynomial = FusedMultiplyAdd<fma_presence>(
+      h³, SinPolynomial<fma_presence>(h²), signed_e);
+  auto const h_plus_e²_cos_polynomial =
+      h_plus_e² * CosPolynomial<fma_presence>(h²);
+
+  auto const sin_polynomial_term =
+      FusedMultiplyAdd<fma_presence>(signed_cos_x₀,
+                                     h³_sin_polynomial,
+                                     signed_sin_x₀ * h_plus_e²_cos_polynomial) +
+      sin_x₀_plus_h_cos_x₀.error;
+  auto const cos_polynomial_term =
+      FusedNegatedMultiplyAdd<fma_presence>(sin_x₀,
+                                            h³_sin_polynomial,
+                                            cos_x₀ * h_plus_e²_cos_polynomial) +
+      cos_x₀_minus_h_sin_x₀.error;
+  m128ds.cos = DetectDangerousRounding<fma_presence, cos_e>(
+      cos_x₀_minus_h_sin_x₀.value, cos_polynomial_term);
+  OSACA_IF(abs_x < sin_near_zero_cutoff) {
+    auto const x² = x * x;
+    auto const x³ = x² * x;
+    auto const x³_term = FusedMultiplyAdd<fma_presence>(
+        x³, SinPolynomialNearZero<fma_presence>(x²), e);
+    m128ds.sin =
+        DetectDangerousRounding<fma_presence, sin_near_zero_e>(x, x³_term);
+  } else {
+    m128ds.sin = DetectDangerousRounding<fma_presence, sin_e>(
+        sin_x₀_plus_h_cos_x₀.value, sin_polynomial_term);
+  }
+  return m128ds;
 }
 
 template<FMAPresence fma_presence>
@@ -428,6 +495,40 @@ double __cdecl Cos(double θ) {
   }
 }
 
+template<FMAPresence fma_presence>
+SC<double> __cdecl SinCos(double θ) {
+  OSACA_FUNCTION_BEGIN(θ, <fma_presence>);
+  SC<double> values;
+  DoublePrecision<Argument> θ_reduced;
+  std::int64_t quadrant;
+  Reduce<fma_presence, /*preserve_sign=*/true>(
+      M128D(θ), θ_reduced, quadrant);
+  auto m128ds = SinCosImplementation<fma_presence>(θ_reduced);
+  OSACA_IF(quadrant & 0b1) {
+    values.sin = static_cast<double>(m128ds.cos);
+    values.cos = static_cast<double>(m128ds.sin);
+  } else {
+    values.sin = static_cast<double>(m128ds.sin);
+    values.cos = static_cast<double>(m128ds.cos);
+  }
+  OSACA_IF(values.sin != values.sin || values.cos != values.cos) {
+    if (slow_path_sin_callback != nullptr) {
+      slow_path_sin_callback(θ);
+    }
+    if (slow_path_cos_callback != nullptr) {
+      slow_path_cos_callback(θ);
+    }
+    OSACA_RETURN((SC<double>{.sin = cr_sin(θ), .cos = cr_cos(θ)}));
+  }
+  OSACA_IF(quadrant & 0b10) {
+    values.sin = -values.sin;
+  }
+  OSACA_IF(quadrant == 1 || quadrant == 2) {
+    values.cos = -values.cos;
+  }
+  OSACA_RETURN(values);
+}
+
 void SetSlowPathsCallbacks(SlowPathCallback sin_cb, SlowPathCallback cos_cb) {
   slow_path_sin_callback = std::move(sin_cb);
   slow_path_cos_callback = std::move(cos_cb);
@@ -437,6 +538,8 @@ template double __cdecl Sin<FMAPresence::Absent>(double x);
 template double __cdecl Sin<FMAPresence::Present>(double x);
 template double __cdecl Cos<FMAPresence::Absent>(double x);
 template double __cdecl Cos<FMAPresence::Present>(double x);
+template SC<double> __cdecl SinCos<FMAPresence::Absent>(double x);
+template SC<double> __cdecl SinCos<FMAPresence::Present>(double x);
 
 }  // namespace internal
 }  // namespace _sin_cos

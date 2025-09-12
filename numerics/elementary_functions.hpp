@@ -3,6 +3,7 @@
 #include <atomic>
 
 #include "base/concepts.hpp"
+#include "numerics/sin_cos.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
@@ -14,12 +15,18 @@ namespace _elementary_functions {
 namespace internal {
 
 using namespace principia::base::_concepts;
+using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
-using ElementaryFunctionPointer = double(__cdecl*)(double θ);  // NOLINT
+// Keep internal.
+template<typename T>
+using SC = _sin_cos::internal::SC<T>;
+
+template<typename Result>
+using ElementaryFunctionPointer = Result(__cdecl*)(double θ);  // NOLINT
 
 // An RAII object that saves the configuration of the elementary function
 // pointers when it is constructed and restores them when it is destroyed.  This
@@ -31,8 +38,9 @@ class ElementaryFunctionsConfigurationSaver {
 
  private:
   static std::atomic_bool active_;
-  ElementaryFunctionPointer const cos_;
-  ElementaryFunctionPointer const sin_;
+  ElementaryFunctionPointer<double> const cos_;
+  ElementaryFunctionPointer<double> const sin_;
+  ElementaryFunctionPointer<SC<double>> const sin_cos_;
 };
 
 // Configures the library to use either the platform functions or correctly-
@@ -128,6 +136,11 @@ SquareRoot<Q> Sqrt(Q const& x);
 template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x);
 
+template<int N, typename Q>
+NthRoot<Q, N> Root(Q const& x);
+
+double Root(int n, double x);
+
 // Not equivalent to `std::nextafter(x)`; follows IEEE 754:2008 conventions
 // instead of C++ ones.  In particular, `NextUp(-0.0) == NextUp(+0.0)`.
 template<typename Q>
@@ -143,6 +156,7 @@ constexpr Exponentiation<Q, exponent> Pow(Q const& x);
 double Sin(Angle const& α);
 double Cos(Angle const& α);
 double Tan(Angle const& α);
+SC<double> SinCos(Angle const& α);
 
 Angle ArcSin(double x);
 Angle ArcCos(double x);
@@ -194,8 +208,10 @@ using internal::Mod;
 using internal::NextDown;
 using internal::NextUp;
 using internal::Pow;
+using internal::Root;
 using internal::Round;
 using internal::Sin;
+using internal::SinCos;
 using internal::Sinh;
 using internal::Sqrt;
 using internal::Tan;

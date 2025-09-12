@@ -216,12 +216,12 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForRelativeDegreesOfFreedom(
     Angle const& i = elements.inclination;
     double const tg_iⳆ2 = Tan(i / 2);
     double const cotg_iⳆ2 = 1 / tg_iⳆ2;
-    double const sin_Ω = Sin(Ω);
-    double const cos_Ω = Cos(Ω);
+    auto const [sin_Ω, cos_Ω] = SinCos(Ω);
+    auto const [sin_ϖ, cos_ϖ] = SinCos(ϖ);
     return {.t = time,
             .a = *elements.semimajor_axis,
-            .h = e * Sin(ϖ),
-            .k = e * Cos(ϖ),
+            .h = e * sin_ϖ,
+            .k = e * cos_ϖ,
             .λ = UnwindFrom(
                 unwound_λs[(time - t_min) / third_of_estimated_period], ϖ + M),
             .p = tg_iⳆ2 * sin_Ω,
