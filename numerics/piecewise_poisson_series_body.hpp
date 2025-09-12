@@ -161,7 +161,8 @@ FourierTransform() const -> Spectrum {
           [this, &cache_index, &f = series_[k], t0, ω](
               Instant const& t) -> Complexification<Value> {
             Angle const θ = ω * (t - t0);
-            auto const e⁻ⁱᶿ = Complexification<double>{Cos(θ), -Sin(θ)};
+            auto const [sin_θ, cos_θ] = SinCos(θ);
+            auto const e⁻ⁱᶿ = Complexification<double>{cos_θ, -sin_θ};
 
             // If we reach a point that has not been cached, evaluate it now and
             // cache the result.

@@ -11,7 +11,6 @@
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
-#include "numerics/sin_cos.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -23,12 +22,13 @@ using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
-using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_si;
 
 // Pointers used for indirect calls, set by `ConfigureElementaryFunctions`.
-inline ElementaryFunctionPointer cos = nullptr;
-inline ElementaryFunctionPointer sin = nullptr;
+inline ElementaryFunctionPointer<double> cos = nullptr;
+inline ElementaryFunctionPointer<double> sin = nullptr;
+inline ElementaryFunctionPointer<SC<double>> sin_cos = nullptr;
+
 inline nullptr_t static_initialization = [](){
   // By default, use the correctly-rounded implementation.  This can be
   // overridden based on the save.
@@ -36,9 +36,13 @@ inline nullptr_t static_initialization = [](){
   return nullptr;
 }();
 
+inline SC<double> __cdecl StdSinCos(double const x) {
+  return {.sin = std::sin(x), .cos = std::cos(x)};
+}
+
 inline ElementaryFunctionsConfigurationSaver::
 ElementaryFunctionsConfigurationSaver()
-    : cos_(cos), sin_(sin) {
+    : cos_(cos), sin_(sin), sin_cos_(sin_cos) {
   CHECK(!active_);
   active_ = true;
 }
@@ -47,6 +51,7 @@ inline ElementaryFunctionsConfigurationSaver::
 ~ElementaryFunctionsConfigurationSaver() {
   cos = cos_;
   sin = sin_;
+  sin_cos = sin_cos_;
   active_ = false;
 }
 
@@ -59,12 +64,15 @@ inline void ConfigureElementaryFunctions(bool const uses_correct_sin_cos) {
   if (!uses_correct_sin_cos) {
     cos = &std::cos;
     sin = &std::sin;
+    sin_cos = &StdSinCos;
   } else if (EarlyCanUseHardwareFMA()) {
     cos = &numerics::_sin_cos::Cos<FMAPresence::Present>;
     sin = &numerics::_sin_cos::Sin<FMAPresence::Present>;
+    sin_cos = &numerics::_sin_cos::SinCos<FMAPresence::Present>;
   } else {
     cos = &numerics::_sin_cos::Cos<FMAPresence::Absent>;
     sin = &numerics::_sin_cos::Sin<FMAPresence::Absent>;
+    sin_cos = &numerics::_sin_cos::SinCos<FMAPresence::Absent>;
   }
 }
 
@@ -290,6 +298,10 @@ inline double Cos(Angle const& α) {
 
 inline double Tan(Angle const& α) {
   return std::tan(α / Radian);
+}
+
+inline SC<double> SinCos(Angle const& α) {
+  return sin_cos(α / Radian);
 }
 
 inline Angle ArcSin(double const x) {
