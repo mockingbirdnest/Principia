@@ -6,6 +6,7 @@ on:
     tags: [ '*' ]
   pull_request_target:
     branches: [ '*' ]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}
