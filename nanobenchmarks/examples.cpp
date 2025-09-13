@@ -54,8 +54,10 @@ using namespace principia::numerics::_cbrt::internal;
 
 BENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Faithful>);
 BENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>);
+#if PRINCIPIA_COMPILER_MSVC
 BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Faithful>);
 BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Correct>);
+#endif
 
 BENCHMARKED_FUNCTION(std_sin) {
   return std::sin(x);
@@ -71,6 +73,14 @@ BENCHMARKED_FUNCTION(std_cos) {
 
 BENCHMARKED_FUNCTION(principia_cos) {
   return Cos(x * Radian);
+}
+
+BENCHMARKED_FUNCTION(principia_sin_cos) {
+  auto const values = SinCos(x * Radian);
+  // The nanobenchmark library wants the result to be a double, so we'll pay the
+  // price of an extra `and` (1 cycle).
+  return _mm_cvtsd_f64(
+      _mm_and_pd(_mm_set_sd(values.sin), _mm_set_sd(values.cos)));
 }
 
 }  // namespace _examples

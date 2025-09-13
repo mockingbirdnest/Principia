@@ -66,7 +66,8 @@ FORCE_INLINE(inline) Quaternion ToQuaternion(R3x3Matrix<double> const& matrix) {
 // Returns a rotation of `angle` around `axis`.  `axis` must be normalized.
 inline Quaternion AngleAxis(Angle const& angle, R3Element<double> const& axis) {
   Angle const half_angle = 0.5 * angle;
-  return Quaternion(Cos(half_angle), Sin(half_angle) * axis);
+  auto const [sin_half_angle, cos_half_angle] = SinCos(half_angle);
+  return Quaternion(cos_half_angle, sin_half_angle * axis);
 }
 
 // Returns the digits of the 3ⁿs from the given `BinaryCodedTernary number`.

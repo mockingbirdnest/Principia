@@ -1,5 +1,6 @@
 #include "base/zfp_compressor.hpp"
 
+#include <cstddef>
 #include <functional>
 #include <memory>
 #include <string>
@@ -34,14 +35,14 @@ void ZfpCompressor::WriteToMessage(const zfp_field* const field,
   } else {
     zfp_stream_set_accuracy(zfp.get(), *accuracy_);
   }
-  size_t const buffer_size = zfp_stream_maximum_size(zfp.get(), field);
+  std::size_t const buffer_size = zfp_stream_maximum_size(zfp.get(), field);
   UniqueArray<std::uint8_t> const buffer(buffer_size);
   not_null<bitstream*> const stream =
       check_not_null(stream_open(buffer.data.get(), buffer_size));
   zfp_stream_set_bit_stream(zfp.get(), &*stream);
 
   zfp_write_header(zfp.get(), field, header_mask);
-  size_t const compressed_size = zfp_compress(zfp.get(), field);
+  std::size_t const compressed_size = zfp_compress(zfp.get(), field);
   CHECK_LT(0, compressed_size);
   message->append(static_cast<char const*>(stream_data(stream)),
                   stream_size(stream));
@@ -56,10 +57,11 @@ void ZfpCompressor::ReadFromMessage(zfp_field* const field,
   not_null<bitstream*> const stream = check_not_null(
       stream_open(const_cast<char*>(&message.front()), message.size()));
   zfp_stream_set_bit_stream(zfp.get(), &*stream);
-  size_t const header_bits = zfp_read_header(zfp.get(), field, header_mask);
+  std::size_t const header_bits =
+      zfp_read_header(zfp.get(), field, header_mask);
   CHECK_LT(0, header_bits);
 
-  size_t const compressed_size = zfp_decompress(zfp.get(), field);
+  std::size_t const compressed_size = zfp_decompress(zfp.get(), field);
   CHECK_LT(0, compressed_size);
   message.remove_prefix(compressed_size);
 }
