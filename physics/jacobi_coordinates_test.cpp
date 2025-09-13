@@ -68,8 +68,8 @@ TEST_F(JacobiCoordinatesTest, Jacobi) {
   EXPECT_EQ(3 * Kilogram, system.System().mass());
   EXPECT_THAT(
       x_positions(system),
-      ElementsAre(AlmostEquals(-1.0 / 3.0 * Metre, 1),
-                  AlmostEquals(2.0 / 3.0 * Metre, 0)));
+      ElementsAre(AlmostEquals(-1.0 / 3.0 * Metre, 0),
+                  AlmostEquals(2.0 / 3.0 * Metre, 1)));
 
   elements.semimajor_axis = 5.0 / 3.0 * Metre;
   system.Add(m2_, elements);
