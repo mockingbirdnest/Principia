@@ -134,7 +134,7 @@ Noting that the absolute error on the rounding that appears in the definition of
 \abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \label{eqnpitwoterms}
 \end{align}
-With the chosen value $\gk_1 = 8$, the two sides of this inequality turn out to be $2^{-103.217}$ and $2^{-101}$.  The difference comes from the fact that $\abs{\frac{\Pi}{2} - C_1 - \gd C_1}$ has three zeroes after the last bit of its mantissa, but the theoretical computation above assumes the worse, i.e., a run of ones.  In the rest of our discussion of approximations of $\Pi$ we will give the (tighter) error bounds obtained by computing the left-hand side with the actual value of $\Pi$.
+\footnote{With the chosen value $\gk_1 = 8$, the two sides of this inequality turn out to be $2^{-103.217}$ and $2^{-101}$.  The difference comes from the fact that $\abs{\frac{\Pi}{2} - C_1 - \gd C_1}$ has three zeroes after the last bit of its mantissa, but the theoretical computation above assumes the worse, i.e., a run of ones.}
 
 From this we derive the following upper bound for $\gd C_1$:
 \begin{align}
@@ -142,7 +142,6 @@ From this we derive the following upper bound for $\gd C_1$:
 &< 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}+2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk'_1} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
 \label{eqnabsdc1}
 \end{align}
-With the chosen value of $\gk_1$, and using the actual value of $\Pi$, this quantity is found to be less than $2^{-47.398}$.
  
 This scheme gives a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
 
@@ -187,7 +186,6 @@ Equation (\ref{eqnulptr}) applied to the definition of $C'_2$ yields, for the un
 \ULP\of{\frac{\Pi}{2} - C_2 - C'_2} &= 2^{\gk''_2 - M} \ULP\of{\frac{\Pi}{2} - C_2} \\
 &= 2^{\gk'_2 + \gk''_2 - 2 M} \ULP\of{\frac{\Pi}{2}}
 \end{align*}
-With the chosen value of $\gk_2$, and using the actual value of $\Pi$, this quantity is found to be less than $2^{-130.477}$.
 
 Noting that the absolute error on the rounding that appears in the definition of $\gd C_2$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_2 - C'_2}$, we obtain the absolute error on the three-term approximation:
 \begin{align}
@@ -199,7 +197,6 @@ and the following upper bound for $\gd C_2$:
 \abs{\gd C_2} < 2^{\gk'_2 + \gk''_2 - M} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
 \label{eqnabsdc2}
 \end{equation}
-With the chosen value of $\gk_2$, and using the actual value of $\Pi$, this quantity is found to be less than $2^{-76.325}$.
  
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
@@ -314,7 +311,7 @@ from which we deduce an upper bound on the absolute error of the reduction:
 &= 2^{\gk_1 + \gk'_1 - M}\pa{\frac{3}{2} + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}} \\
 &< 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
 \end{align*}
-where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).  With the chosen value of $\gk_1$, and using the actual value of $\Pi$, this quantity is found to be less than $2^{-92.719}$.
+where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).
 
 The exact $\twodifference$ yields a pair such that $\abs{\gd \red x} \le \frac{\ULP\of{\red x}}{2} \le 2^{-M} \abs{\red x}$.  Furthermore, misrounding of the first kind and the above error on the reduction may combine to cause $\abs{\red x}$ to move above $\frac{\pi}{4}$ by as much as:
 \[
@@ -332,7 +329,7 @@ which leads to the following condition on the reduced angle:
 \abs{\red x} \geq 2^{\gk_1 + \gk'_1 + \gk_3 + 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 2}
 \]
 
-The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.\marginnote{TODO(phl): A tighter threshold, $2.4 \times 10^{-7}$ would work because of the bit pattern of $\Pi$.  Should we use it?  Same question for the three-term reduction.}
+The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.
 
 \subsection*{Argument Reduction Using the Three-Term Approximation}
 
@@ -373,7 +370,7 @@ from which we deduce an upper bound on the absolute error of the reduction, noti
 & \qquad < 2^{\gk_2 + \gk'_2 + \gk''_2 - 2 M} \pa{\frac{3}{2} + 2^{-M - 1}} \pa{1 + 2^{2 - 2 M}} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi \pa{1 + 3 \times 2^{\gk_2} \ULP\of{\frac{\Pi}{2}}} \\
 & \qquad < 2^{\gk_2 - 2 M} \pa{2^{\gk'_2 + \gk''_2 + 1} + 3} \ULP\of{\frac{\Pi}{2}} + 2^{-2 M} \; \Pi
 \end{align*}
-where the second inequality uses $\gg_2 \pa{2^{\gk_2 + 1} + 1} < 3 u \; 2^{\gk_2 + 1}$.  In practice this quantity is smaller than $2^{-104.336}$.
+where the second inequality uses $\gg_2 \pa{2^{\gk_2 + 1} + 1} < 3 u \; 2^{\gk_2 + 1}$.
 
 A sufficient condition for the reduction to guarantee $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3 - 1} \ULP\of{\red x}$ which itself is less than $2^{-\gk_3 - M} \abs{\red{x}}$.  Therefore we want:
 \begin{align*}
@@ -461,7 +458,7 @@ This section documents the core of the algorithms used to compute $\sin$ and $\c
 
 We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.  This notation is used for error intervals computed using the function \texttt{IEEEEvaluateWithRelativeError} in file {\linebreak}\href{https://github.com/mockingbirdnest/Principia/blob/master/mathematica/ieee754_floating_point_evaluation.wl}{\texttt{mathematica/ieee754\_floating\_point\_evaluation.wl}}.  In particular, this function takes into account that the evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations; this may lead to asymmetrical error intervals. \marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
 
-We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative) and that the rounding direction is $roundTiesToEven$.  We \emph{do not} assume that the machine has an FMA instruction in our error analysis: even though we actually use this instruction when available (for performance) our rounding bounds are valid even in the absence of an FMA\footnote{This means that the accuracy computed below is possibly pessimistic by a few hundredth of bits, which has no effect on performance.}.
+We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative) and that the rounding direction is roundTiesToEven.  We \emph{do not} assume that the machine has an FMA instruction in our error analysis: even though we actually use this instruction when available (for performance) our rounding bounds are valid even in the absence of an FMA\footnote{This means that the accuracy computed below is possibly pessimistic by a few hundredth of bits, which has no effect on performance.}.
 
 \subsection*{Reduced Angle}
 
