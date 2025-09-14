@@ -14,7 +14,9 @@ for repo in abseil-cpp benchmark config gipfeli glog googletest multiprecision p
     git clone "https://github.com/mockingbirdnest/$repo.git"
   fi
   pushd "$repo"
-  ln -s .. deps
+  if [ ! -h deps ]; then
+    ln -s .. deps
+  fi
   git fetch
   git checkout origin/HEAD
 
