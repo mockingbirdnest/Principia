@@ -1075,7 +1075,7 @@
 
 
 (* ::Input:: *)
-(*e=mullerE[sin0ImplementationMaxRelativeError,UseFMA->True]*)
+(*e=mullerE[sin0ImplementationMaxRelativeError,UseFMA->False]*)
 
 
 (* ::Input:: *)
@@ -1369,7 +1369,7 @@
 
 
 (* ::Input:: *)
-(*e=mullerE[sinImplementationMaxRelativeError,UseFMA->True];*)
+(*e=mullerE[sinImplementationMaxRelativeError,UseFMA->False];*)
 
 
 (* ::Input:: *)
@@ -1608,7 +1608,7 @@
 
 
 (* ::Input:: *)
-(*e=mullerE[cosImplementationMaxRelativeError,UseFMA->True];*)
+(*e=mullerE[cosImplementationMaxRelativeError,UseFMA->False];*)
 
 
 (* ::Input:: *)
