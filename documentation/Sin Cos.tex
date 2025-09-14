@@ -50,7 +50,7 @@ The implementation follows the ideas described by \cite{GalBachelis1991} and use
 \item perform argument reduction using Cody and Waite's algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010});
 \item if argument reduction loses too many bits (i.e., the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise, uses accurate tables and polynomial approximations to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
-\item if the result has fails Muller's rounding test (\cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item if the result fails Muller's rounding test (\cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise return the rounded result of the preceding computation.
 \end{itemize}
 
@@ -129,12 +129,12 @@ where $\gk'_1 \leq \gk_1$ accounts for any leading zeroes in the bits of $\frac{
 \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M} \ULP\of{\frac{\Pi}{2}}
 \]
 
-Noting that the absolute error on the rounding that appears in the definition of $\gd C_1$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1}$, we obtain the absolute error on the two-term approximation:
+Noting that the absolute error on the rounding that appears in the definition of $\gd C_1$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1}$, we obtain the absolute error on the two-term approximation\footnote{With the chosen value $\gk_1 = 8$, the two sides of this inequality turn out to be $2^{-103.217}$ and $2^{-101}$.  The difference comes from the fact that $\abs{\frac{\Pi}{2} - C_1 - \gd C_1}$ has three zeroes after the last bit of its mantissa, but the theoretical computation above assumes the worse, i.e., a run of ones.}:
 \begin{align}
 \abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \label{eqnpitwoterms}
 \end{align}
-\footnote{With the chosen value $\gk_1 = 8$, the two sides of this inequality turn out to be $2^{-103.217}$ and $2^{-101}$.  The difference comes from the fact that $\abs{\frac{\Pi}{2} - C_1 - \gd C_1}$ has three zeroes after the last bit of its mantissa, but the theoretical computation above assumes the worse, i.e., a run of ones.}
+
 
 From this we derive the following upper bound for $\gd C_1$:
 \begin{align}
@@ -406,17 +406,17 @@ For the $\sin$ function near zero the accurate tables method is not usable becau
 \]
 and we compute:
 \[
-\sin\of{\red x + \gd \red x} \simeq \red x + {\red x}^3 p_{s0}\of{{\red x}^2} + \gd \red x
+\sin x \simeq \sin\of{\red x + \gd \red x} \simeq \red x + {\red x}^3 p_{s0}\of{{\red x}^2} + \gd \red x
 \]
 
 \subsection*{Sin and Cos Around Table Entries}
 
 Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval\footnote{Obviously the intervals $\mathscr{I}_k$ cannot all contain their bounds.  Because of the way they are computed, the odd multiples of $\gD$ which separate the intervals are rounded to the nearest even $k$.  Therefore, there is an alternation of open-open intervals (for $k$ odd) and closed-closed intervals (for $k$ even).  We do not have a convenient notation for this, and anyway this detail is mostly irrelevant.} containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $\red x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $\red x \in \mathscr{I}_k$ and computing $h = \red x - x_k$.  We then use the addition formulæ to separate out the terms in $x_k$:
 \begin{align*}
-\sin x &= sin\of{\red x + \gd \red x} \\
+\sin x &\simeq \sin\of{\red x + \gd \red x} \\
 &= \sin\of{x_k + h + \gd \red x} \\
-&= \sin x_k \; cos\of{h + \gd \red x} + \cos x_k \; \sin\of{h + \gd \red x} \\
-\cos x &= \cos\of{\red x + \gd \red x}  \\
+&= \sin x_k \; \cos\of{h + \gd \red x} + \cos x_k \; \sin\of{h + \gd \red x} \\
+\cos x &\simeq \cos\of{\red x + \gd \red x}  \\
 &= \cos\of{x_k + h + \gd \red x} \\
 &= \cos x_k \; \cos\of{h + \gd \red x} - \sin x_k \; \sin\of{h + \gd \red x}
 \end{align*}
@@ -425,7 +425,7 @@ The quantities $\sin x_k$ and $\cos x_k$ are extremely close to $s_k$ and $c_k$ 
 \sin t &\simeq t + t^3 \; p_s\of{t^2} \\
 \cos t &\simeq 1 + t^2 \; p_c\of{t^2}
 \end{align*}
-After neglecting the terms in $\gd \red x$ that do not contribute to the final result we obtain:\footnote{The alert reader will note that the formulæ for $\sin$ and $\cos$ are very similar, which creates an opportunity for implementing a function that computes both together with significant performance savings.}
+After neglecting the terms in $\gd \red x$ that do not contribute to the final result we obtain\footnote{The alert reader will note that the formulæ for $\sin$ and $\cos$ are very similar, which creates an opportunity for implementing a function that computes both together with significant performance savings.}:
 \begin{align*}
 \sin x &\simeq s_k \pa{1 + h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2}} + c_k \pa{h + \gd \red x + h^3 \; p_s\of{h^2}} \\
 &= \pa{s_k + c_k h} + s_k h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2} + c_k h^3 \; p_s\of{h^2} + c_k \gd \red x \\
@@ -442,7 +442,7 @@ The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces 
 \[
 \mathscr{E}\of{t} \DefineAs \frac{f\of{t} - p\of{q\of{t}}}{g\of{t}}
 \]
-The residual is equioscillatory and bounded.  The choice of $f$ and $q$ is dictated by the properties desired for the polynomial approximation: parity, value at zero, etc.  The error function $g$, however, can be freely chosen to achieve the desired error bound on the approximation (e.g., minizing the relative or absolute error).
+The residual is equioscillatory and bounded.  The choice of $f$ and $q$ is dictated by the properties desired for the polynomial approximation: parity, value at zero, etc.  The error function $g$, however, can be freely chosen to achieve the desired error bound on the approximation (e.g., minimizing the relative or absolute error).
 
 \subsection*{Sin Near Zero}
 
@@ -529,16 +529,16 @@ y = \round{y + \gd y \; e} \implies -\gd y \; e \le \frac{\ULP\of{y}}{4}
 Putting these tighter bounds together we obtain:
 \begin{align*}
 k &\DefineAs \floor{-\log_2{\overbar\ge_1} - M} \\
-e_{FMA} &\DefineAs 1 + \frac{1 + 2^{M + 1} \; \overbar\ge_1}{1 - \overbar\ge_1 - 2^{-k + 1}}
+e_{\text{FMA}} &\DefineAs 1 + \frac{1 + 2^{M + 1} \; \overbar\ge_1}{1 - \overbar\ge_1 - 2^{-k + 1}}
 \end{align*}
 
 In the absence of FMA, \cite{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} gives the same value for $k$ and for $e$:
 \[
-e_{NoFMA} \DefineAs \pa{1 - 2^{-M}}^{-1}\pa{1 + \frac{1 + 2^{M + 1} \; \overbar\ge_1}{1 - \overbar\ge_1 - 2^{-k + 1}}}
+e_{\text{NoFMA}} \DefineAs \pa{1 - 2^{-M}}^{-1}\pa{1 + \frac{1 + 2^{M + 1} \; \overbar\ge_1}{1 - \overbar\ge_1 - 2^{-k + 1}}}
 \]
-We see immediately that $e_{FMA} < e_{NoFMA}$, and it is therefore correct to perform the rounding test using $e_{NoFMA}$, even if an FMA is used to compute $\round{y + \gd y \; e}$.
+We see immediately that $e_{\text{FMA}} < e_{\text{NoFMA}}$, and it is therefore correct to perform the rounding test using $e_{\text{NoFMA}}$, even if an FMA is used to compute $\round{y + \gd y \; e}$.
 
-Obviously, if the above expression does not produce a machine number, it must be rounded towards $+\infty$.  In each of the error analyses below we document the concrete factor $\roundTowardPositive{e_{NoFMA}}$ to use for the rounding test.
+Obviously, if the above expression does not produce a machine number, it must be rounded towards $+\infty$.  In each of the error analyses below we document the concrete factor $\roundTowardPositive{e_{\text{NoFMA}}}$ to use for the rounding test.
 
 \subsection*{Sin Near Zero}\label{secsinnearzero}
 
