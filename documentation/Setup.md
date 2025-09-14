@@ -85,9 +85,10 @@ Before going further, make sure the following are installed on your machine:
   arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   ```
   The `arch` command ensures that this gets the right version when run on a Mac M1.
-* Plugin build prerequisites: `cmake` `autoconf` `automake` `libtool`;  to install:
+* Plugin build prerequisites: `cmake` `autoconf` `automake` `libtool` `python`;  to install:
   ```bash
-  arch -x86_64 /usr/local/bin/brew install cmake autoconf automake libtool
+  arch -x86_64 /usr/local/bin/brew install cmake autoconf automake libtool python
+  export PATH="$(brew --prefix python3)/libexec/bin:$PATH"
   ```
 * Clang version 20; to install: 
   ```bash
