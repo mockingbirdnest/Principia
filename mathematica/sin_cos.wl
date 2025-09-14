@@ -719,7 +719,7 @@
 
 (* ::Input:: *)
 (*sin0ApproximationResult=GeneralMiniMaxApproximation[*)
-(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1,Sin[t]/t^3]},*)
+(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^10,Sin[t]/t^3]},*)
 (*{t,{0,x0Max},1,0},*)
 (*x,WorkingPrecision->30]*)
 
@@ -801,7 +801,7 @@
 
 (* ::Input:: *)
 (*sinApproximationResult=GeneralMiniMaxApproximation[*)
-(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,-1/6,sinFn[t]]},*)
+(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^10,Sin[t]/t^3]},*)
 (*{t,{0,hMax},1,0},*)
 (*x,WorkingPrecision->30]*)
 
@@ -1068,10 +1068,6 @@
 
 (* ::Input:: *)
 (*Log2[sin0ImplementationMaxRelativeError]*)
-
-
-(* ::Text:: *)
-(*This error preserves 17.6 bits after the mantissa of the result, which is sufficient for ensuring correct rounding with high probability.*)
 
 
 (* ::Text:: *)

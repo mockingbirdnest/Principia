@@ -34,7 +34,7 @@
 %%%% Title and authors.
 
 \title{An Implementation of Sin and Cos Using Gal's Accurate Tables}
-\date{\printdate{2025-02-02}}
+\date{\printdate{2025-09-14}}
 \author{Pascal~Leroy (phl)}
 \begin{document}
 \maketitle
@@ -458,7 +458,7 @@ g\of{t} &\DefineAs \frac{\sin t}{t^3}
 \]
 The degree of $p_{s0}$ is choosen so that the approximation error is less than $\ULP\of{\gD^2}$.
 
-In practice we choose $\gD = 2^{-10}$, and compute a degree-1 polynomial which induces a relative error smaller than $2^{-75.538}$ (before rounding the coefficients to machine numbers).
+In practice we choose $\gD = 2^{-10}$, and compute a degree-1 polynomial with a residual smaller than $2^{-85.560}$ (before rounding the coefficients to machine numbers).
 
 \subsection*{Sin and Cos Around Table Entries}
 
@@ -488,7 +488,7 @@ g\of{t} &\DefineAs \frac{\sin t}{t^3}
 \end{dcases}
 \]
 
-In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an error smaller than $2^{-52.689}$ and a 1-degree polynomial $p_c$ with an error smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
+In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with with a residual smaller than $2^{-85.534}$ and a 1-degree polynomial $p_c$ with a residual smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
 
 \section*{Error Analysis}
 
@@ -549,7 +549,7 @@ y &\DefineAs \red x \\
 
 The relative error on the minimax polynomial may be rewritten as:
 \[
-p_{s0}\of{x^2} = \frac{\pa{1 + \gz_1} \sin x - x}{x^3} \qquad \abs{\gz_1} < 2^{-75.538}
+p_{s0}\of{x^2} = \frac{\pa{1 + \gz_1} \sin x - x}{x^3} \qquad \abs{\gz_1} < 2^{-85.560}
 \]
 for $\abs x \le \gD$.
 
@@ -568,7 +568,7 @@ The relative error on the entire computation is:
 \[
 r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
 \]
-The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that this function reaches its extrema at the corners of the domain, which is logical because we expect the minimax polynomial to reach its largest errors on the bounds of the optimization interval.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.517}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'B2D8'01D8'0p0}.$\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows that this function reaches its extrema at the corners of the domain, which is logical because we expect the minimax polynomial to reach its largest errors on the bounds of the optimization interval.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.583}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'AAD0'391A'Dp0}.$\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
 
 Note that the above steps do not compute the terms ${\red x}^n \; \gd \red x$ for $n > 0$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
@@ -606,7 +606,7 @@ For $k > 1$, this quantity is clearly smaller than $-\gD - \ge_k$, the lower bou
 
 Finally, for the purpose of error analysis, the relative errors on the minimax polynomials may be rewritten as:
 \begin{align*}
-p_s\of{h^2} &= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \qquad & \abs{\gz_1} < 2^{-52.689} \\
+p_s\of{h^2} &= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \qquad & \abs{\gz_1} < 2^{-85.534} \\
 p_c\of{h^2} &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-51.466}
 \end{align*}
 
@@ -639,7 +639,7 @@ The errors commited at each step are as follows:
 \[
 \left\{
 \begin{alignedat}{2}
-t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-54.946}}{2^{-52.200}} \\
+t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-53.221}}{2^{-52.808}} \\
 &= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \pa{1 + \gz_3} \\
 t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
@@ -663,7 +663,7 @@ Great care is required when evaluating this expression using interval arithmetic
 \]
 which is pleasantly small, and even though $\gd_{12}$ also appears in the term that does not involve $\gd_0$, the effect of replicating it is acceptable.
 
-The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.726}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'6ABE'272D'9p0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}.
+The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.734}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'6751'2409'6p0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}
 
 Note that the above steps do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
@@ -700,7 +700,7 @@ The errors commited at each step are as follows:
 \[
 \left\{
 \begin{alignedat}{2}
-t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-54.946}}{2^{-52.200}} \\
+t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-53.221}}{2^{-52.808}} \\
 &= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \pa{1 + \gz_3} \\
 t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
@@ -721,7 +721,7 @@ As explained above (see \nameref{secerroranalysissin}) the expression for $r$ mu
 \[
 \pa{h \round{s_k} - \round{c_k}} \pa{1 - \pa{1 + \gd_{11}} \pa{1 + \gd_{12}}}
 \]
-and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B839'335E'1p0}$.
+and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B838'5D35'1p0}$.
 
 Note that the above steps do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
