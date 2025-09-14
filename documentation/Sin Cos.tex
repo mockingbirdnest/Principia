@@ -49,8 +49,8 @@ The implementation follows the ideas described by \cite{GalBachelis1991} and use
 \begin{itemize}[nosep]
 \item perform argument reduction using Cody and Waite's algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010});
 \item if argument reduction loses too many bits (i.e., the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
-\item otherwise, uses accurate tables and a polynomial approximation to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
-\item if the result has a ``dangerous rounding configuration'' (as defined by \cite{GalBachelis1991}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item otherwise, uses accurate tables and polynomial approximations to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
+\item if the result has fails Muller's rounding test (\cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise return the rounded result of the preceding computation.
 \end{itemize}
 
@@ -392,6 +392,50 @@ If any of the conditions above is not met, we fall back on the CORE-MATH impleme
 
 \marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
 
+\section*{Overview of the Algorithms}
+
+This section presents an overview of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether $\round{y + \gd y}$ is the correctly-rounded result (this is the case with high probability) or whether we need to fall back to the CORE-MATH implementation.
+
+The lower part of the reduced angle, $\gd \red x$, must be used with care: on the one hand, it would not make sense to explicitly compute expressions like $\round{\red x + \gd \red x}$ as the second term vanishes before the first one; on the other hand, we must avoid the computation of expressions involving $\gd \red x$ that have no bearing on the final result (see \cite[402-404]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} for a discussion of this issue).  We are going to spell out the places where $\gd \red x$ is actually used and we will prove later that neglecting it in other places has no effect.
+
+\subsection*{Sin Near Zero}
+
+For the $\sin$ function near zero the accurate tables method is not usable because the correction term is not small compared to the tabulated value of the function (which can be arbitrarily close to zero).  Instead we use a polynomial approximation that minimizes the relative error on the result.  Since $\sin \gq$ is an odd function and since its dominant term is $\gq$, we are using an approximation of the form:
+\[
+\sin \gq \simeq \gq + \gq^3 \; p_{s0}\of{\gq^2}
+\]
+and we compute:
+\[
+\sin\of{\red x + \gd \red x} \simeq \red x + {\red x}^3 p_{s0}\of{{\red x}^2} + \gd \red x
+\]
+
+\subsection*{Sin and Cos Around Table Entries}
+
+Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval\footnote{Obviously the intervals $\mathscr{I}_k$ cannot all contain their bounds.  Because of the way they are computed, the odd multiples of $\gD$ which separate the intervals are rounded to the nearest even $k$.  Therefore, there is an alternation of open-open intervals (for $k$ odd) and closed-closed intervals (for $k$ even).  We do not have a convenient notation for this, and anyway this detail is mostly irrelevant.} containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $\red x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $\red x \in \mathscr{I}_k$ and computing $h = \red x - x_k$.  We then use the addition formulæ to separate out the terms in $x_k$:
+\begin{align*}
+\sin x &= sin\of{\red x + \gd \red x} \\
+&= \sin\of{x_k + h + \gd \red x} \\
+&= \sin x_k \; cos\of{h + \gd \red x} + \cos x_k \; \sin\of{h + \gd \red x} \\
+\cos x &= \cos\of{\red x + \gd \red x}  \\
+&= \cos\of{x_k + h + \gd \red x} \\
+&= \cos x_k \; \cos\of{h + \gd \red x} - \sin x_k \; \sin\of{h + \gd \red x}
+\end{align*}
+The quantities $\sin x_k$ and $\cos x_k$ are extremely close to $s_k$ and $c_k$ (this is the core of the accurates table method).  The terms in $h + \gd \red x$ may be approximated by polynomials chosen to respect the parity of $\sin$ and $\cos$ and their values at $0$:
+\begin{align*}
+\sin \gq &\simeq \gq + \gq^3 \; p_s\of{\gq^2} \\
+\cos \gq &\simeq 1 + \gq^2 \; p_c\of{\gq^2}
+\end{align*}
+After neglecting the terms in $\gd \red x$ that do not contribute to the final result we obtain:\footnote{The alert reader will note that the formulæ for $\sin$ and $\cos$ are very similar, which creates an opportunity for implementing a function that computes both together with significant performance savings.}
+\begin{align*}
+\sin x &\simeq s_k \pa{1 + h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2}} + c_k \pa{h + \gd \red x + h^3 \; p_s\of{h^2}} \\
+&= \pa{s_k + c_k h} + s_k h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2} + c_k h^3 \; p_s\of{h^2} + c_k \gd \red x \\
+\cos x &\simeq c_k \pa{1 + h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2}} - s_k \pa{h + \gd \red x + h^3 \; p_s\of{h^2}} \\
+&= \pa{c_k - s_k h} + c_k h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2} - s_k h^3 \; p_s\of{h^2} - s_k \gd \red x
+\end{align*}
+where $h \pa{h + 2 \; \gd \red x}$ is an approximation of $\pa{h + \gd \red x}^2$.  For accuracy reasons, the leading term of these formulæ must be computed with extra accuracy.
+
+We are now going to look at the techniques used to obtain polynomial approximation and we will later analyze the errors committed by these formulæ.
+
 \section*{Polynomial Approximations}
 
 The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p$ such that $p\of{q\of{x}}$ approximates a function $f\of{x}$ by minimizing the $\Lspace$ norm of the \emph{residual} function defined as:
@@ -457,8 +501,6 @@ g\of{h} &\DefineAs \frac{\cos h - 1}{h^2}
 In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with an error smaller than $2^{-52.689}$ and a 1-degree polynomial $p_c$ with an error smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
 
 \section*{Core Implementation}
-
-This section documents the core of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether $\round{y + \gd y}$ is the correctly-rounded result (this is the case with high probability) or whether we need to fall back to the CORE-MATH implementation.
 
 We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.  This notation is used for error intervals computed using the function \texttt{IEEEEvaluateWithRelativeError} in file {\linebreak}\href{https://github.com/mockingbirdnest/Principia/blob/master/mathematica/ieee754_floating_point_evaluation.wl}{\texttt{mathematica/ieee754\_floating\_point\_evaluation.wl}}.  In particular, this function takes into account that the evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations; this may lead to asymmetrical error intervals. \marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
 
