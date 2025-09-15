@@ -650,9 +650,10 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   if (options.HasExtension(journal::serialization::is_subject)) {
     CHECK(options.GetExtension(journal::serialization::is_subject))
         << descriptor->full_name() << " has incorrect (is_subject) option";
-    field_cs_extension_method_fn_[descriptor] = [](std::string const& type) {
-      return "this " + type;
-    };
+    field_cs_extension_method_parameter_fn_[descriptor] =
+        [](std::string const& type) {
+          return "this " + type;
+        };
   }
   field_cxx_type_[descriptor] = pointer_to + "*";
 
@@ -1091,9 +1092,10 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
       [](std::string const& identifier) -> std::vector<std::string> {
         return {identifier};
       };
-  field_cs_extension_method_fn_[descriptor] = [](std::string const& type) {
-    return type;
-  };
+  field_cs_extension_method_parameter_fn_[descriptor] =
+      [](std::string const& type) {
+        return type;
+      };
   field_cxx_assignment_fn_[descriptor] =
       [this, descriptor](std::string const& prefix, std::string const& expr) {
         return "  " + prefix + "set_" + descriptor->name() + "(" +
@@ -1321,7 +1323,7 @@ void JournalProtoProcessor::ProcessInOut(
       cs_interface_parameters_[descriptor].push_back(
           "  " +
           field_cs_mode_fn_[field_descriptor](
-              field_cs_extension_method_fn_[field_descriptor](
+              field_cs_extension_method_parameter_fn_[field_descriptor](
                   field_cs_type_[field_descriptor])) +
           " " + field_descriptor_name);
       cs_interface_marshaled_parameters_[descriptor].push_back(
