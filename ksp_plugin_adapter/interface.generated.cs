@@ -256,17 +256,17 @@ internal static partial class Interface {
         double t,
         double planetarium_rotation);
     public AdvanceTimeDelegate AdvanceTime =
-          Loader.LoadFunction<AdvanceTimeDelegate>(
-              "principia__AdvanceTime");
+        Loader.LoadFunction<AdvanceTimeDelegate>(
+            "principia__AdvanceTime");
   }
   internal static void AdvanceTime(
       this IntPtr plugin,
       double t,
       double planetarium_rotation) {
     symbols_.AdvanceTime(
-          plugin,
-          t,
-          planetarium_rotation);
+        plugin,
+        t,
+        planetarium_rotation);
   }
 
   private partial class Symbols {
@@ -277,8 +277,8 @@ internal static partial class Interface {
         WXYZ principal_axes_rotation,
         WXYZ part_rotation);
     public AngularMomentumFromAngularVelocityDelegate AngularMomentumFromAngularVelocity =
-          Loader.LoadFunction<AngularMomentumFromAngularVelocityDelegate>(
-              "principia__AngularMomentumFromAngularVelocity");
+        Loader.LoadFunction<AngularMomentumFromAngularVelocityDelegate>(
+            "principia__AngularMomentumFromAngularVelocity");
   }
   internal static XYZ AngularMomentumFromAngularVelocity(
       XYZ world_angular_velocity,
@@ -286,10 +286,10 @@ internal static partial class Interface {
       WXYZ principal_axes_rotation,
       WXYZ part_rotation) {
     return symbols_.AngularMomentumFromAngularVelocity(
-          world_angular_velocity,
-          moments_of_inertia_in_tonnes,
-          principal_axes_rotation,
-          part_rotation);
+        world_angular_velocity,
+        moments_of_inertia_in_tonnes,
+        principal_axes_rotation,
+        part_rotation);
   }
 
   private partial class Symbols {
@@ -297,13 +297,13 @@ internal static partial class Interface {
     public delegate WXYZ CameraReferenceRotationDelegate(
         IntPtr plugin);
     public CameraReferenceRotationDelegate CameraReferenceRotation =
-          Loader.LoadFunction<CameraReferenceRotationDelegate>(
-              "principia__CameraReferenceRotation");
+        Loader.LoadFunction<CameraReferenceRotationDelegate>(
+            "principia__CameraReferenceRotation");
   }
   internal static WXYZ CameraReferenceRotation(
       this IntPtr plugin) {
     return symbols_.CameraReferenceRotation(
-          plugin);
+        plugin);
   }
 
   private partial class Symbols {
@@ -311,13 +311,13 @@ internal static partial class Interface {
     public delegate double CameraScaleDelegate(
         IntPtr plugin);
     public CameraScaleDelegate CameraScale =
-          Loader.LoadFunction<CameraScaleDelegate>(
-              "principia__CameraScale");
+        Loader.LoadFunction<CameraScaleDelegate>(
+            "principia__CameraScale");
   }
   internal static double CameraScale(
       this IntPtr plugin) {
     return symbols_.CameraScale(
-          plugin);
+        plugin);
   }
 
   private partial class Symbols {
@@ -326,15 +326,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator collided_vessels);
     public CatchUpLaggingVesselsDelegate CatchUpLaggingVessels =
-          Loader.LoadFunction<CatchUpLaggingVesselsDelegate>(
-              "principia__CatchUpLaggingVessels");
+        Loader.LoadFunction<CatchUpLaggingVesselsDelegate>(
+            "principia__CatchUpLaggingVessels");
   }
   internal static void CatchUpLaggingVessels(
       this IntPtr plugin,
       out DisposableIterator collided_vessels) {
     symbols_.CatchUpLaggingVessels(
-          plugin,
-          out collided_vessels);
+        plugin,
+        out collided_vessels);
   }
 
   private partial class Symbols {
@@ -343,15 +343,15 @@ internal static partial class Interface {
         IntPtr plugin,
         int celestial_index);
     public CelestialFromParentDelegate CelestialFromParent =
-          Loader.LoadFunction<CelestialFromParentDelegate>(
-              "principia__CelestialFromParent");
+        Loader.LoadFunction<CelestialFromParentDelegate>(
+            "principia__CelestialFromParent");
   }
   internal static QP CelestialFromParent(
       this IntPtr plugin,
       int celestial_index) {
     return symbols_.CelestialFromParent(
-          plugin,
-          celestial_index);
+        plugin,
+        celestial_index);
   }
 
   private partial class Symbols {
@@ -360,15 +360,15 @@ internal static partial class Interface {
         IntPtr plugin,
         int celestial_index);
     public CelestialInitialRotationInDegreesDelegate CelestialInitialRotationInDegrees =
-          Loader.LoadFunction<CelestialInitialRotationInDegreesDelegate>(
-              "principia__CelestialInitialRotationInDegrees");
+        Loader.LoadFunction<CelestialInitialRotationInDegreesDelegate>(
+            "principia__CelestialInitialRotationInDegrees");
   }
   internal static double CelestialInitialRotationInDegrees(
       this IntPtr plugin,
       int celestial_index) {
     return symbols_.CelestialInitialRotationInDegrees(
-          plugin,
-          celestial_index);
+        plugin,
+        celestial_index);
   }
 
   private partial class Symbols {
@@ -377,15 +377,15 @@ internal static partial class Interface {
         IntPtr plugin,
         int index);
     public CelestialRotationDelegate CelestialRotation =
-          Loader.LoadFunction<CelestialRotationDelegate>(
-              "principia__CelestialRotation");
+        Loader.LoadFunction<CelestialRotationDelegate>(
+            "principia__CelestialRotation");
   }
   internal static WXYZ CelestialRotation(
       this IntPtr plugin,
       int index) {
     return symbols_.CelestialRotation(
-          plugin,
-          index);
+        plugin,
+        index);
   }
 
   private partial class Symbols {
@@ -394,15 +394,15 @@ internal static partial class Interface {
         IntPtr plugin,
         int celestial_index);
     public CelestialRotationPeriodDelegate CelestialRotationPeriod =
-          Loader.LoadFunction<CelestialRotationPeriodDelegate>(
-              "principia__CelestialRotationPeriod");
+        Loader.LoadFunction<CelestialRotationPeriodDelegate>(
+            "principia__CelestialRotationPeriod");
   }
   internal static double CelestialRotationPeriod(
       this IntPtr plugin,
       int celestial_index) {
     return symbols_.CelestialRotationPeriod(
-          plugin,
-          celestial_index);
+        plugin,
+        celestial_index);
   }
 
   private partial class Symbols {
@@ -410,13 +410,13 @@ internal static partial class Interface {
     public delegate WXYZ CelestialSphereRotationDelegate(
         IntPtr plugin);
     public CelestialSphereRotationDelegate CelestialSphereRotation =
-          Loader.LoadFunction<CelestialSphereRotationDelegate>(
-              "principia__CelestialSphereRotation");
+        Loader.LoadFunction<CelestialSphereRotationDelegate>(
+            "principia__CelestialSphereRotation");
   }
   internal static WXYZ CelestialSphereRotation(
       this IntPtr plugin) {
     return symbols_.CelestialSphereRotation(
-          plugin);
+        plugin);
   }
 
   private partial class Symbols {
@@ -427,8 +427,8 @@ internal static partial class Interface {
         Origin origin,
         double time);
     public CelestialWorldDegreesOfFreedomDelegate CelestialWorldDegreesOfFreedom =
-          Loader.LoadFunction<CelestialWorldDegreesOfFreedomDelegate>(
-              "principia__CelestialWorldDegreesOfFreedom");
+        Loader.LoadFunction<CelestialWorldDegreesOfFreedomDelegate>(
+            "principia__CelestialWorldDegreesOfFreedom");
   }
   internal static QP CelestialWorldDegreesOfFreedom(
       this IntPtr plugin,
@@ -436,10 +436,10 @@ internal static partial class Interface {
       Origin origin,
       double time) {
     return symbols_.CelestialWorldDegreesOfFreedom(
-          plugin,
-          index,
-          origin,
-          time);
+        plugin,
+        index,
+        origin,
+        time);
   }
 
   private partial class Symbols {
@@ -450,17 +450,17 @@ internal static partial class Interface {
         ref IntPtr executor,
         out TQP collision);
     public CollisionDeleteExecutorDelegate CollisionDeleteExecutor =
-          Loader.LoadFunction<CollisionDeleteExecutorDelegate>(
-              "principia__CollisionDeleteExecutor");
+        Loader.LoadFunction<CollisionDeleteExecutorDelegate>(
+            "principia__CollisionDeleteExecutor");
   }
   internal static bool CollisionDeleteExecutor(
       this IntPtr plugin,
       ref IntPtr executor,
       out TQP collision) {
     return symbols_.CollisionDeleteExecutor(
-          plugin,
-          ref executor,
-          out collision);
+        plugin,
+        ref executor,
+        out collision);
   }
 
   private partial class Symbols {
@@ -471,17 +471,17 @@ internal static partial class Interface {
         out double latitude_in_degrees,
         out double longitude_in_degrees);
     public CollisionGetLatitudeLongitudeDelegate CollisionGetLatitudeLongitude =
-          Loader.LoadFunction<CollisionGetLatitudeLongitudeDelegate>(
-              "principia__CollisionGetLatitudeLongitude");
+        Loader.LoadFunction<CollisionGetLatitudeLongitudeDelegate>(
+            "principia__CollisionGetLatitudeLongitude");
   }
   internal static bool CollisionGetLatitudeLongitude(
       this IntPtr executor,
       out double latitude_in_degrees,
       out double longitude_in_degrees) {
     return symbols_.CollisionGetLatitudeLongitude(
-          executor,
-          out latitude_in_degrees,
-          out longitude_in_degrees);
+        executor,
+        out latitude_in_degrees,
+        out longitude_in_degrees);
   }
 
   private partial class Symbols {
@@ -493,8 +493,8 @@ internal static partial class Interface {
         int max_points,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public CollisionNewFlightPlanExecutorDelegate CollisionNewFlightPlanExecutor =
-          Loader.LoadFunction<CollisionNewFlightPlanExecutorDelegate>(
-              "principia__CollisionNewFlightPlanExecutor");
+        Loader.LoadFunction<CollisionNewFlightPlanExecutorDelegate>(
+            "principia__CollisionNewFlightPlanExecutor");
   }
   internal static IntPtr CollisionNewFlightPlanExecutor(
       this IntPtr plugin,
@@ -503,11 +503,11 @@ internal static partial class Interface {
       int max_points,
       string vessel_guid) {
     return symbols_.CollisionNewFlightPlanExecutor(
-          plugin,
-          celestial_index,
-          sun_world_position,
-          max_points,
-          vessel_guid);
+        plugin,
+        celestial_index,
+        sun_world_position,
+        max_points,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -519,8 +519,8 @@ internal static partial class Interface {
         int max_points,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public CollisionNewPredictionExecutorDelegate CollisionNewPredictionExecutor =
-          Loader.LoadFunction<CollisionNewPredictionExecutorDelegate>(
-              "principia__CollisionNewPredictionExecutor");
+        Loader.LoadFunction<CollisionNewPredictionExecutorDelegate>(
+            "principia__CollisionNewPredictionExecutor");
   }
   internal static IntPtr CollisionNewPredictionExecutor(
       this IntPtr plugin,
@@ -529,11 +529,11 @@ internal static partial class Interface {
       int max_points,
       string vessel_guid) {
     return symbols_.CollisionNewPredictionExecutor(
-          plugin,
-          celestial_index,
-          sun_world_position,
-          max_points,
-          vessel_guid);
+        plugin,
+        celestial_index,
+        sun_world_position,
+        max_points,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -542,23 +542,23 @@ internal static partial class Interface {
         IntPtr executor,
         double radius);
     public CollisionSetRadiusDelegate CollisionSetRadius =
-          Loader.LoadFunction<CollisionSetRadiusDelegate>(
-              "principia__CollisionSetRadius");
+        Loader.LoadFunction<CollisionSetRadiusDelegate>(
+            "principia__CollisionSetRadius");
   }
   internal static void CollisionSetRadius(
       this IntPtr executor,
       double radius) {
     symbols_.CollisionSetRadius(
-          executor,
-          radius);
+        executor,
+        radius);
   }
 
   private partial class Symbols {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void ClearFlagsDelegate();
     public ClearFlagsDelegate ClearFlags =
-          Loader.LoadFunction<ClearFlagsDelegate>(
-              "principia__ClearFlags");
+        Loader.LoadFunction<ClearFlagsDelegate>(
+            "principia__ClearFlags");
   }
   internal static void ClearFlags() {
     symbols_.ClearFlags();
@@ -569,13 +569,13 @@ internal static partial class Interface {
     public delegate void ClearTargetVesselDelegate(
         IntPtr plugin);
     public ClearTargetVesselDelegate ClearTargetVessel =
-          Loader.LoadFunction<ClearTargetVesselDelegate>(
-              "principia__ClearTargetVessel");
+        Loader.LoadFunction<ClearTargetVesselDelegate>(
+            "principia__ClearTargetVessel");
   }
   internal static void ClearTargetVessel(
       this IntPtr plugin) {
     symbols_.ClearTargetVessel(
-          plugin);
+        plugin);
   }
 
   private partial class Symbols {
@@ -583,13 +583,13 @@ internal static partial class Interface {
     public delegate void ClearWorldRotationalReferenceFrameDelegate(
         IntPtr plugin);
     public ClearWorldRotationalReferenceFrameDelegate ClearWorldRotationalReferenceFrame =
-          Loader.LoadFunction<ClearWorldRotationalReferenceFrameDelegate>(
-              "principia__ClearWorldRotationalReferenceFrame");
+        Loader.LoadFunction<ClearWorldRotationalReferenceFrameDelegate>(
+            "principia__ClearWorldRotationalReferenceFrame");
   }
   internal static void ClearWorldRotationalReferenceFrame(
       this IntPtr plugin) {
     symbols_.ClearWorldRotationalReferenceFrame(
-          plugin);
+        plugin);
   }
 
   private partial class Symbols {
@@ -597,13 +597,13 @@ internal static partial class Interface {
     public delegate double CurrentTimeDelegate(
         IntPtr plugin);
     public CurrentTimeDelegate CurrentTime =
-          Loader.LoadFunction<CurrentTimeDelegate>(
-              "principia__CurrentTime");
+        Loader.LoadFunction<CurrentTimeDelegate>(
+            "principia__CurrentTime");
   }
   internal static double CurrentTime(
       this IntPtr plugin) {
     return symbols_.CurrentTime(
-          plugin);
+        plugin);
   }
 
   private partial class Symbols {
@@ -611,13 +611,13 @@ internal static partial class Interface {
     public delegate void DeleteInterchangeDelegate(
         ref IntPtr native_pointer);
     public DeleteInterchangeDelegate DeleteInterchange =
-          Loader.LoadFunction<DeleteInterchangeDelegate>(
-              "principia__DeleteInterchange");
+        Loader.LoadFunction<DeleteInterchangeDelegate>(
+            "principia__DeleteInterchange");
   }
   internal static void DeleteInterchange(
       ref IntPtr native_pointer) {
     symbols_.DeleteInterchange(
-          ref native_pointer);
+        ref native_pointer);
   }
 
   private partial class Symbols {
@@ -625,13 +625,13 @@ internal static partial class Interface {
     public delegate void DeletePluginDelegate(
         ref IntPtr plugin);
     public DeletePluginDelegate DeletePlugin =
-          Loader.LoadFunction<DeletePluginDelegate>(
-              "principia__DeletePlugin");
+        Loader.LoadFunction<DeletePluginDelegate>(
+            "principia__DeletePlugin");
   }
   internal static void DeletePlugin(
       ref IntPtr plugin) {
     symbols_.DeletePlugin(
-          ref plugin);
+        ref plugin);
   }
 
   private partial class Symbols {
@@ -639,13 +639,13 @@ internal static partial class Interface {
     public delegate void DeleteStringDelegate(
         ref IntPtr native_string);
     public DeleteStringDelegate DeleteString =
-          Loader.LoadFunction<DeleteStringDelegate>(
-              "principia__DeleteString");
+        Loader.LoadFunction<DeleteStringDelegate>(
+            "principia__DeleteString");
   }
   internal static void DeleteString(
       ref IntPtr native_string) {
     symbols_.DeleteString(
-          ref native_string);
+        ref native_string);
   }
 
   private partial class Symbols {
@@ -653,13 +653,13 @@ internal static partial class Interface {
     public delegate void DeleteU16StringDelegate(
         ref IntPtr native_string);
     public DeleteU16StringDelegate DeleteU16String =
-          Loader.LoadFunction<DeleteU16StringDelegate>(
-              "principia__DeleteU16String");
+        Loader.LoadFunction<DeleteU16StringDelegate>(
+            "principia__DeleteU16String");
   }
   internal static void DeleteU16String(
       ref IntPtr native_string) {
     symbols_.DeleteU16String(
-          ref native_string);
+        ref native_string);
   }
 
   private partial class Symbols {
@@ -671,8 +671,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string compressor,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string encoder);
     public DeserializePluginDelegate DeserializePlugin =
-          Loader.LoadFunction<DeserializePluginDelegate>(
-              "principia__DeserializePlugin");
+        Loader.LoadFunction<DeserializePluginDelegate>(
+            "principia__DeserializePlugin");
   }
   internal static void DeserializePlugin(
       string serialization,
@@ -681,11 +681,11 @@ internal static partial class Interface {
       string compressor,
       string encoder) {
     symbols_.DeserializePlugin(
-          serialization,
-          ref deserializer,
-          ref plugin,
-          compressor,
-          encoder);
+        serialization,
+        ref deserializer,
+        ref plugin,
+        compressor,
+        encoder);
   }
 
   private partial class Symbols {
@@ -693,13 +693,13 @@ internal static partial class Interface {
     public delegate void EndInitializationDelegate(
         IntPtr plugin);
     public EndInitializationDelegate EndInitialization =
-          Loader.LoadFunction<EndInitializationDelegate>(
-              "principia__EndInitialization");
+        Loader.LoadFunction<EndInitializationDelegate>(
+            "principia__EndInitialization");
   }
   internal static void EndInitialization(
       this IntPtr plugin) {
     symbols_.EndInitialization(
-          plugin);
+        plugin);
   }
 
   private partial class Symbols {
@@ -707,13 +707,13 @@ internal static partial class Interface {
     public delegate int EquipotentialCountDelegate(
         IntPtr plugin);
     public EquipotentialCountDelegate EquipotentialCount =
-          Loader.LoadFunction<EquipotentialCountDelegate>(
-              "principia__EquipotentialCount");
+        Loader.LoadFunction<EquipotentialCountDelegate>(
+            "principia__EquipotentialCount");
   }
   internal static int EquipotentialCount(
       this IntPtr plugin) {
     return symbols_.EquipotentialCount(
-          plugin);
+        plugin);
   }
 
   private partial class Symbols {
@@ -725,8 +725,8 @@ internal static partial class Interface {
         double time,
         out XYZ position);
     public ExternalCelestialGetPositionDelegate ExternalCelestialGetPosition =
-          Loader.LoadFunction<ExternalCelestialGetPositionDelegate>(
-              "principia__ExternalCelestialGetPosition");
+        Loader.LoadFunction<ExternalCelestialGetPositionDelegate>(
+            "principia__ExternalCelestialGetPosition");
   }
   internal static Status ExternalCelestialGetPosition(
       this IntPtr plugin,
@@ -734,10 +734,10 @@ internal static partial class Interface {
       double time,
       out XYZ position) {
     return symbols_.ExternalCelestialGetPosition(
-          plugin,
-          body_index,
-          time,
-          out position);
+        plugin,
+        body_index,
+        time,
+        out position);
   }
 
   private partial class Symbols {
@@ -752,8 +752,8 @@ internal static partial class Interface {
         double time,
         out XYZ position);
     public ExternalCelestialGetSurfacePositionDelegate ExternalCelestialGetSurfacePosition =
-          Loader.LoadFunction<ExternalCelestialGetSurfacePositionDelegate>(
-              "principia__ExternalCelestialGetSurfacePosition");
+        Loader.LoadFunction<ExternalCelestialGetSurfacePositionDelegate>(
+            "principia__ExternalCelestialGetSurfacePosition");
   }
   internal static Status ExternalCelestialGetSurfacePosition(
       this IntPtr plugin,
@@ -764,13 +764,13 @@ internal static partial class Interface {
       double time,
       out XYZ position) {
     return symbols_.ExternalCelestialGetSurfacePosition(
-          plugin,
-          body_index,
-          planetocentric_latitude_in_degrees,
-          planetocentric_longitude_in_degrees,
-          radius,
-          time,
-          out position);
+        plugin,
+        body_index,
+        planetocentric_latitude_in_degrees,
+        planetocentric_longitude_in_degrees,
+        radius,
+        time,
+        out position);
   }
 
   private partial class Symbols {
@@ -784,8 +784,8 @@ internal static partial class Interface {
         double t_final,
         out QP world_body_centred_final_degrees_of_freedom);
     public ExternalFlowFreefallDelegate ExternalFlowFreefall =
-          Loader.LoadFunction<ExternalFlowFreefallDelegate>(
-              "principia__ExternalFlowFreefall");
+        Loader.LoadFunction<ExternalFlowFreefallDelegate>(
+            "principia__ExternalFlowFreefall");
   }
   internal static Status ExternalFlowFreefall(
       this IntPtr plugin,
@@ -795,12 +795,12 @@ internal static partial class Interface {
       double t_final,
       out QP world_body_centred_final_degrees_of_freedom) {
     return symbols_.ExternalFlowFreefall(
-          plugin,
-          central_body_index,
-          world_body_centred_initial_degrees_of_freedom,
-          t_initial,
-          t_final,
-          out world_body_centred_final_degrees_of_freedom);
+        plugin,
+        central_body_index,
+        world_body_centred_initial_degrees_of_freedom,
+        t_initial,
+        t_final,
+        out world_body_centred_final_degrees_of_freedom);
   }
 
   private partial class Symbols {
@@ -813,8 +813,8 @@ internal static partial class Interface {
         int order,
         out XY coefficient);
     public ExternalGeopotentialGetCoefficientDelegate ExternalGeopotentialGetCoefficient =
-          Loader.LoadFunction<ExternalGeopotentialGetCoefficientDelegate>(
-              "principia__ExternalGeopotentialGetCoefficient");
+        Loader.LoadFunction<ExternalGeopotentialGetCoefficientDelegate>(
+            "principia__ExternalGeopotentialGetCoefficient");
   }
   internal static Status ExternalGeopotentialGetCoefficient(
       this IntPtr plugin,
@@ -823,11 +823,11 @@ internal static partial class Interface {
       int order,
       out XY coefficient) {
     return symbols_.ExternalGeopotentialGetCoefficient(
-          plugin,
-          body_index,
-          degree,
-          order,
-          out coefficient);
+        plugin,
+        body_index,
+        degree,
+        order,
+        out coefficient);
   }
 
   private partial class Symbols {
@@ -838,17 +838,17 @@ internal static partial class Interface {
         int body_index,
         out double reference_radius);
     public ExternalGeopotentialGetReferenceRadiusDelegate ExternalGeopotentialGetReferenceRadius =
-          Loader.LoadFunction<ExternalGeopotentialGetReferenceRadiusDelegate>(
-              "principia__ExternalGeopotentialGetReferenceRadius");
+        Loader.LoadFunction<ExternalGeopotentialGetReferenceRadiusDelegate>(
+            "principia__ExternalGeopotentialGetReferenceRadius");
   }
   internal static Status ExternalGeopotentialGetReferenceRadius(
       this IntPtr plugin,
       int body_index,
       out double reference_radius) {
     return symbols_.ExternalGeopotentialGetReferenceRadius(
-          plugin,
-          body_index,
-          out reference_radius);
+        plugin,
+        body_index,
+        out reference_radius);
   }
 
   private partial class Symbols {
@@ -860,8 +860,8 @@ internal static partial class Interface {
         double time,
         out XYZ position);
     public ExternalVesselGetPositionDelegate ExternalVesselGetPosition =
-          Loader.LoadFunction<ExternalVesselGetPositionDelegate>(
-              "principia__ExternalVesselGetPosition");
+        Loader.LoadFunction<ExternalVesselGetPositionDelegate>(
+            "principia__ExternalVesselGetPosition");
   }
   internal static Status ExternalVesselGetPosition(
       this IntPtr plugin,
@@ -869,10 +869,10 @@ internal static partial class Interface {
       double time,
       out XYZ position) {
     return symbols_.ExternalVesselGetPosition(
-          plugin,
-          vessel_guid,
-          time,
-          out position);
+        plugin,
+        vessel_guid,
+        time,
+        out position);
   }
 
   private partial class Symbols {
@@ -886,8 +886,8 @@ internal static partial class Interface {
         XYZ world_body_centred_reference_position,
         out QP world_body_centred_nearest_degrees_of_freedom);
     public ExternalGetNearestPlannedCoastDegreesOfFreedomDelegate ExternalGetNearestPlannedCoastDegreesOfFreedom =
-          Loader.LoadFunction<ExternalGetNearestPlannedCoastDegreesOfFreedomDelegate>(
-              "principia__ExternalGetNearestPlannedCoastDegreesOfFreedom");
+        Loader.LoadFunction<ExternalGetNearestPlannedCoastDegreesOfFreedomDelegate>(
+            "principia__ExternalGetNearestPlannedCoastDegreesOfFreedom");
   }
   internal static Status ExternalGetNearestPlannedCoastDegreesOfFreedom(
       this IntPtr plugin,
@@ -897,12 +897,12 @@ internal static partial class Interface {
       XYZ world_body_centred_reference_position,
       out QP world_body_centred_nearest_degrees_of_freedom) {
     return symbols_.ExternalGetNearestPlannedCoastDegreesOfFreedom(
-          plugin,
-          central_body_index,
-          vessel_guid,
-          manoeuvre_index,
-          world_body_centred_reference_position,
-          out world_body_centred_nearest_degrees_of_freedom);
+        plugin,
+        central_body_index,
+        vessel_guid,
+        manoeuvre_index,
+        world_body_centred_reference_position,
+        out world_body_centred_nearest_degrees_of_freedom);
   }
 
   private partial class Symbols {
@@ -911,15 +911,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanCountDelegate FlightPlanCount =
-          Loader.LoadFunction<FlightPlanCountDelegate>(
-              "principia__FlightPlanCount");
+        Loader.LoadFunction<FlightPlanCountDelegate>(
+            "principia__FlightPlanCount");
   }
   internal static int FlightPlanCount(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanCount(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -930,8 +930,8 @@ internal static partial class Interface {
         double final_time,
         double mass_in_tonnes);
     public FlightPlanCreateDelegate FlightPlanCreate =
-          Loader.LoadFunction<FlightPlanCreateDelegate>(
-              "principia__FlightPlanCreate");
+        Loader.LoadFunction<FlightPlanCreateDelegate>(
+            "principia__FlightPlanCreate");
   }
   internal static void FlightPlanCreate(
       this IntPtr plugin,
@@ -939,10 +939,10 @@ internal static partial class Interface {
       double final_time,
       double mass_in_tonnes) {
     symbols_.FlightPlanCreate(
-          plugin,
-          vessel_guid,
-          final_time,
-          mass_in_tonnes);
+        plugin,
+        vessel_guid,
+        final_time,
+        mass_in_tonnes);
   }
 
   private partial class Symbols {
@@ -951,15 +951,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanDeleteDelegate FlightPlanDelete =
-          Loader.LoadFunction<FlightPlanDeleteDelegate>(
-              "principia__FlightPlanDelete");
+        Loader.LoadFunction<FlightPlanDeleteDelegate>(
+            "principia__FlightPlanDelete");
   }
   internal static void FlightPlanDelete(
       this IntPtr plugin,
       string vessel_guid) {
     symbols_.FlightPlanDelete(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -968,15 +968,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanDuplicateDelegate FlightPlanDuplicate =
-          Loader.LoadFunction<FlightPlanDuplicateDelegate>(
-              "principia__FlightPlanDuplicate");
+        Loader.LoadFunction<FlightPlanDuplicateDelegate>(
+            "principia__FlightPlanDuplicate");
   }
   internal static void FlightPlanDuplicate(
       this IntPtr plugin,
       string vessel_guid) {
     symbols_.FlightPlanDuplicate(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -986,15 +986,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanExistsDelegate FlightPlanExists =
-          Loader.LoadFunction<FlightPlanExistsDelegate>(
-              "principia__FlightPlanExists");
+        Loader.LoadFunction<FlightPlanExistsDelegate>(
+            "principia__FlightPlanExists");
   }
   internal static bool FlightPlanExists(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanExists(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1003,15 +1003,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanGetAdaptiveStepParametersDelegate FlightPlanGetAdaptiveStepParameters =
-          Loader.LoadFunction<FlightPlanGetAdaptiveStepParametersDelegate>(
-              "principia__FlightPlanGetAdaptiveStepParameters");
+        Loader.LoadFunction<FlightPlanGetAdaptiveStepParametersDelegate>(
+            "principia__FlightPlanGetAdaptiveStepParameters");
   }
   internal static FlightPlanAdaptiveStepParameters FlightPlanGetAdaptiveStepParameters(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanGetAdaptiveStepParameters(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1020,15 +1020,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanGetActualFinalTimeDelegate FlightPlanGetActualFinalTime =
-          Loader.LoadFunction<FlightPlanGetActualFinalTimeDelegate>(
-              "principia__FlightPlanGetActualFinalTime");
+        Loader.LoadFunction<FlightPlanGetActualFinalTimeDelegate>(
+            "principia__FlightPlanGetActualFinalTime");
   }
   internal static double FlightPlanGetActualFinalTime(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanGetActualFinalTime(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1038,15 +1038,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanGetAnomalousStatusDelegate FlightPlanGetAnomalousStatus =
-          Loader.LoadFunction<FlightPlanGetAnomalousStatusDelegate>(
-              "principia__FlightPlanGetAnomalousStatus");
+        Loader.LoadFunction<FlightPlanGetAnomalousStatusDelegate>(
+            "principia__FlightPlanGetAnomalousStatus");
   }
   internal static Status FlightPlanGetAnomalousStatus(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanGetAnomalousStatus(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1060,8 +1060,8 @@ internal static partial class Interface {
         int ground_track_revolution,
         int index);
     public FlightPlanGetCoastAnalysisDelegate FlightPlanGetCoastAnalysis =
-          Loader.LoadFunction<FlightPlanGetCoastAnalysisDelegate>(
-              "principia__FlightPlanGetCoastAnalysis");
+        Loader.LoadFunction<FlightPlanGetCoastAnalysisDelegate>(
+            "principia__FlightPlanGetCoastAnalysis");
   }
   internal static OrbitAnalysis FlightPlanGetCoastAnalysis(
       this IntPtr plugin,
@@ -1071,12 +1071,12 @@ internal static partial class Interface {
       int ground_track_revolution,
       int index) {
     return symbols_.FlightPlanGetCoastAnalysis(
-          plugin,
-          vessel_guid,
-          revolutions_per_cycle,
-          days_per_cycle,
-          ground_track_revolution,
-          index);
+        plugin,
+        vessel_guid,
+        revolutions_per_cycle,
+        days_per_cycle,
+        ground_track_revolution,
+        index);
   }
 
   private partial class Symbols {
@@ -1085,15 +1085,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanGetDesiredFinalTimeDelegate FlightPlanGetDesiredFinalTime =
-          Loader.LoadFunction<FlightPlanGetDesiredFinalTimeDelegate>(
-              "principia__FlightPlanGetDesiredFinalTime");
+        Loader.LoadFunction<FlightPlanGetDesiredFinalTimeDelegate>(
+            "principia__FlightPlanGetDesiredFinalTime");
   }
   internal static double FlightPlanGetDesiredFinalTime(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanGetDesiredFinalTime(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1103,17 +1103,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         int index);
     public FlightPlanGetGuidanceDelegate FlightPlanGetGuidance =
-          Loader.LoadFunction<FlightPlanGetGuidanceDelegate>(
-              "principia__FlightPlanGetGuidance");
+        Loader.LoadFunction<FlightPlanGetGuidanceDelegate>(
+            "principia__FlightPlanGetGuidance");
   }
   internal static XYZ FlightPlanGetGuidance(
       this IntPtr plugin,
       string vessel_guid,
       int index) {
     return symbols_.FlightPlanGetGuidance(
-          plugin,
-          vessel_guid,
-          index);
+        plugin,
+        vessel_guid,
+        index);
   }
 
   private partial class Symbols {
@@ -1122,15 +1122,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanGetInitialTimeDelegate FlightPlanGetInitialTime =
-          Loader.LoadFunction<FlightPlanGetInitialTimeDelegate>(
-              "principia__FlightPlanGetInitialTime");
+        Loader.LoadFunction<FlightPlanGetInitialTimeDelegate>(
+            "principia__FlightPlanGetInitialTime");
   }
   internal static double FlightPlanGetInitialTime(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanGetInitialTime(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1141,17 +1141,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         int index);
     public FlightPlanGetManoeuvreDelegate FlightPlanGetManoeuvre =
-          Loader.LoadFunction<FlightPlanGetManoeuvreDelegate>(
-              "principia__FlightPlanGetManoeuvre");
+        Loader.LoadFunction<FlightPlanGetManoeuvreDelegate>(
+            "principia__FlightPlanGetManoeuvre");
   }
   internal static NavigationManoeuvre FlightPlanGetManoeuvre(
       this IntPtr plugin,
       string vessel_guid,
       int index) {
     return symbols_.FlightPlanGetManoeuvre(
-          plugin,
-          vessel_guid,
-          index);
+        plugin,
+        vessel_guid,
+        index);
   }
 
   private partial class Symbols {
@@ -1161,17 +1161,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         int index);
     public FlightPlanGetManoeuvreFrenetTrihedronDelegate FlightPlanGetManoeuvreFrenetTrihedron =
-          Loader.LoadFunction<FlightPlanGetManoeuvreFrenetTrihedronDelegate>(
-              "principia__FlightPlanGetManoeuvreFrenetTrihedron");
+        Loader.LoadFunction<FlightPlanGetManoeuvreFrenetTrihedronDelegate>(
+            "principia__FlightPlanGetManoeuvreFrenetTrihedron");
   }
   internal static NavigationManoeuvreFrenetTrihedron FlightPlanGetManoeuvreFrenetTrihedron(
       this IntPtr plugin,
       string vessel_guid,
       int index) {
     return symbols_.FlightPlanGetManoeuvreFrenetTrihedron(
-          plugin,
-          vessel_guid,
-          index);
+        plugin,
+        vessel_guid,
+        index);
   }
 
   private partial class Symbols {
@@ -1181,17 +1181,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         int index);
     public FlightPlanGetManoeuvreInitialPlottedVelocityDelegate FlightPlanGetManoeuvreInitialPlottedVelocity =
-          Loader.LoadFunction<FlightPlanGetManoeuvreInitialPlottedVelocityDelegate>(
-              "principia__FlightPlanGetManoeuvreInitialPlottedVelocity");
+        Loader.LoadFunction<FlightPlanGetManoeuvreInitialPlottedVelocityDelegate>(
+            "principia__FlightPlanGetManoeuvreInitialPlottedVelocity");
   }
   internal static XYZ FlightPlanGetManoeuvreInitialPlottedVelocity(
       this IntPtr plugin,
       string vessel_guid,
       int index) {
     return symbols_.FlightPlanGetManoeuvreInitialPlottedVelocity(
-          plugin,
-          vessel_guid,
-          index);
+        plugin,
+        vessel_guid,
+        index);
   }
 
   private partial class Symbols {
@@ -1203,8 +1203,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Burn.Marshaler))] Burn burn,
         int index);
     public FlightPlanInsertDelegate FlightPlanInsert =
-          Loader.LoadFunction<FlightPlanInsertDelegate>(
-              "principia__FlightPlanInsert");
+        Loader.LoadFunction<FlightPlanInsertDelegate>(
+            "principia__FlightPlanInsert");
   }
   internal static Status FlightPlanInsert(
       this IntPtr plugin,
@@ -1212,10 +1212,10 @@ internal static partial class Interface {
       Burn burn,
       int index) {
     return symbols_.FlightPlanInsert(
-          plugin,
-          vessel_guid,
-          burn,
-          index);
+        plugin,
+        vessel_guid,
+        burn,
+        index);
   }
 
   private partial class Symbols {
@@ -1224,15 +1224,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanNumberOfAnomalousManoeuvresDelegate FlightPlanNumberOfAnomalousManoeuvres =
-          Loader.LoadFunction<FlightPlanNumberOfAnomalousManoeuvresDelegate>(
-              "principia__FlightPlanNumberOfAnomalousManoeuvres");
+        Loader.LoadFunction<FlightPlanNumberOfAnomalousManoeuvresDelegate>(
+            "principia__FlightPlanNumberOfAnomalousManoeuvres");
   }
   internal static int FlightPlanNumberOfAnomalousManoeuvres(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanNumberOfAnomalousManoeuvres(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1241,15 +1241,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanNumberOfManoeuvresDelegate FlightPlanNumberOfManoeuvres =
-          Loader.LoadFunction<FlightPlanNumberOfManoeuvresDelegate>(
-              "principia__FlightPlanNumberOfManoeuvres");
+        Loader.LoadFunction<FlightPlanNumberOfManoeuvresDelegate>(
+            "principia__FlightPlanNumberOfManoeuvres");
   }
   internal static int FlightPlanNumberOfManoeuvres(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanNumberOfManoeuvres(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1258,15 +1258,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanNumberOfSegmentsDelegate FlightPlanNumberOfSegments =
-          Loader.LoadFunction<FlightPlanNumberOfSegmentsDelegate>(
-              "principia__FlightPlanNumberOfSegments");
+        Loader.LoadFunction<FlightPlanNumberOfSegmentsDelegate>(
+            "principia__FlightPlanNumberOfSegments");
   }
   internal static int FlightPlanNumberOfSegments(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanNumberOfSegments(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1275,15 +1275,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanOptimizationDriverInProgressDelegate FlightPlanOptimizationDriverInProgress =
-          Loader.LoadFunction<FlightPlanOptimizationDriverInProgressDelegate>(
-              "principia__FlightPlanOptimizationDriverInProgress");
+        Loader.LoadFunction<FlightPlanOptimizationDriverInProgressDelegate>(
+            "principia__FlightPlanOptimizationDriverInProgress");
   }
   internal static int FlightPlanOptimizationDriverInProgress(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanOptimizationDriverInProgress(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1296,8 +1296,8 @@ internal static partial class Interface {
         int celestial_index,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NavigationFrameParameters.Marshaler))] NavigationFrameParameters navigation_frame_parameters);
     public FlightPlanOptimizationDriverMakeDelegate FlightPlanOptimizationDriverMake =
-          Loader.LoadFunction<FlightPlanOptimizationDriverMakeDelegate>(
-              "principia__FlightPlanOptimizationDriverMake");
+        Loader.LoadFunction<FlightPlanOptimizationDriverMakeDelegate>(
+            "principia__FlightPlanOptimizationDriverMake");
   }
   internal static void FlightPlanOptimizationDriverMake(
       this IntPtr plugin,
@@ -1307,12 +1307,12 @@ internal static partial class Interface {
       int celestial_index,
       NavigationFrameParameters navigation_frame_parameters) {
     symbols_.FlightPlanOptimizationDriverMake(
-          plugin,
-          vessel_guid,
-          distance,
-          inclination_in_degrees,
-          celestial_index,
-          navigation_frame_parameters);
+        plugin,
+        vessel_guid,
+        distance,
+        inclination_in_degrees,
+        celestial_index,
+        navigation_frame_parameters);
   }
 
   private partial class Symbols {
@@ -1322,17 +1322,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         int manoeuvre_index);
     public FlightPlanOptimizationDriverStartDelegate FlightPlanOptimizationDriverStart =
-          Loader.LoadFunction<FlightPlanOptimizationDriverStartDelegate>(
-              "principia__FlightPlanOptimizationDriverStart");
+        Loader.LoadFunction<FlightPlanOptimizationDriverStartDelegate>(
+            "principia__FlightPlanOptimizationDriverStart");
   }
   internal static void FlightPlanOptimizationDriverStart(
       this IntPtr plugin,
       string vessel_guid,
       int manoeuvre_index) {
     symbols_.FlightPlanOptimizationDriverStart(
-          plugin,
-          vessel_guid,
-          manoeuvre_index);
+        plugin,
+        vessel_guid,
+        manoeuvre_index);
   }
 
   private partial class Symbols {
@@ -1343,17 +1343,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         double mass_in_tonnes);
     public FlightPlanRebaseDelegate FlightPlanRebase =
-          Loader.LoadFunction<FlightPlanRebaseDelegate>(
-              "principia__FlightPlanRebase");
+        Loader.LoadFunction<FlightPlanRebaseDelegate>(
+            "principia__FlightPlanRebase");
   }
   internal static Status FlightPlanRebase(
       this IntPtr plugin,
       string vessel_guid,
       double mass_in_tonnes) {
     return symbols_.FlightPlanRebase(
-          plugin,
-          vessel_guid,
-          mass_in_tonnes);
+        plugin,
+        vessel_guid,
+        mass_in_tonnes);
   }
 
   private partial class Symbols {
@@ -1364,17 +1364,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         int index);
     public FlightPlanRemoveDelegate FlightPlanRemove =
-          Loader.LoadFunction<FlightPlanRemoveDelegate>(
-              "principia__FlightPlanRemove");
+        Loader.LoadFunction<FlightPlanRemoveDelegate>(
+            "principia__FlightPlanRemove");
   }
   internal static Status FlightPlanRemove(
       this IntPtr plugin,
       string vessel_guid,
       int index) {
     return symbols_.FlightPlanRemove(
-          plugin,
-          vessel_guid,
-          index);
+        plugin,
+        vessel_guid,
+        index);
   }
 
   private partial class Symbols {
@@ -1389,8 +1389,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator apoapsides,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator periapsides);
     public FlightPlanRenderedApsidesDelegate FlightPlanRenderedApsides =
-          Loader.LoadFunction<FlightPlanRenderedApsidesDelegate>(
-              "principia__FlightPlanRenderedApsides");
+        Loader.LoadFunction<FlightPlanRenderedApsidesDelegate>(
+            "principia__FlightPlanRenderedApsides");
   }
   internal static void FlightPlanRenderedApsides(
       this IntPtr plugin,
@@ -1402,14 +1402,14 @@ internal static partial class Interface {
       out DisposableIterator apoapsides,
       out DisposableIterator periapsides) {
     symbols_.FlightPlanRenderedApsides(
-          plugin,
-          vessel_guid,
-          t_max,
-          celestial_index,
-          sun_world_position,
-          max_points,
-          out apoapsides,
-          out periapsides);
+        plugin,
+        vessel_guid,
+        t_max,
+        celestial_index,
+        sun_world_position,
+        max_points,
+        out apoapsides,
+        out periapsides);
   }
 
   private partial class Symbols {
@@ -1421,8 +1421,8 @@ internal static partial class Interface {
         int max_points,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator closest_approaches);
     public FlightPlanRenderedClosestApproachesDelegate FlightPlanRenderedClosestApproaches =
-          Loader.LoadFunction<FlightPlanRenderedClosestApproachesDelegate>(
-              "principia__FlightPlanRenderedClosestApproaches");
+        Loader.LoadFunction<FlightPlanRenderedClosestApproachesDelegate>(
+            "principia__FlightPlanRenderedClosestApproaches");
   }
   internal static void FlightPlanRenderedClosestApproaches(
       this IntPtr plugin,
@@ -1431,11 +1431,11 @@ internal static partial class Interface {
       int max_points,
       out DisposableIterator closest_approaches) {
     symbols_.FlightPlanRenderedClosestApproaches(
-          plugin,
-          vessel_guid,
-          sun_world_position,
-          max_points,
-          out closest_approaches);
+        plugin,
+        vessel_guid,
+        sun_world_position,
+        max_points,
+        out closest_approaches);
   }
 
   private partial class Symbols {
@@ -1449,8 +1449,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator ascending,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator descending);
     public FlightPlanRenderedNodesDelegate FlightPlanRenderedNodes =
-          Loader.LoadFunction<FlightPlanRenderedNodesDelegate>(
-              "principia__FlightPlanRenderedNodes");
+        Loader.LoadFunction<FlightPlanRenderedNodesDelegate>(
+            "principia__FlightPlanRenderedNodes");
   }
   internal static void FlightPlanRenderedNodes(
       this IntPtr plugin,
@@ -1461,13 +1461,13 @@ internal static partial class Interface {
       out DisposableIterator ascending,
       out DisposableIterator descending) {
     symbols_.FlightPlanRenderedNodes(
-          plugin,
-          vessel_guid,
-          t_max,
-          sun_world_position,
-          max_points,
-          out ascending,
-          out descending);
+        plugin,
+        vessel_guid,
+        t_max,
+        sun_world_position,
+        max_points,
+        out ascending,
+        out descending);
   }
 
   private partial class Symbols {
@@ -1479,8 +1479,8 @@ internal static partial class Interface {
         XYZ sun_world_position,
         int index);
     public FlightPlanRenderedSegmentDelegate FlightPlanRenderedSegment =
-          Loader.LoadFunction<FlightPlanRenderedSegmentDelegate>(
-              "principia__FlightPlanRenderedSegment");
+        Loader.LoadFunction<FlightPlanRenderedSegmentDelegate>(
+            "principia__FlightPlanRenderedSegment");
   }
   internal static DisposableIterator FlightPlanRenderedSegment(
       this IntPtr plugin,
@@ -1488,10 +1488,10 @@ internal static partial class Interface {
       XYZ sun_world_position,
       int index) {
     return symbols_.FlightPlanRenderedSegment(
-          plugin,
-          vessel_guid,
-          sun_world_position,
-          index);
+        plugin,
+        vessel_guid,
+        sun_world_position,
+        index);
   }
 
   private partial class Symbols {
@@ -1503,8 +1503,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Burn.Marshaler))] Burn burn,
         int index);
     public FlightPlanReplaceDelegate FlightPlanReplace =
-          Loader.LoadFunction<FlightPlanReplaceDelegate>(
-              "principia__FlightPlanReplace");
+        Loader.LoadFunction<FlightPlanReplaceDelegate>(
+            "principia__FlightPlanReplace");
   }
   internal static Status FlightPlanReplace(
       this IntPtr plugin,
@@ -1512,10 +1512,10 @@ internal static partial class Interface {
       Burn burn,
       int index) {
     return symbols_.FlightPlanReplace(
-          plugin,
-          vessel_guid,
-          burn,
-          index);
+        plugin,
+        vessel_guid,
+        burn,
+        index);
   }
 
   private partial class Symbols {
@@ -1525,17 +1525,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         int index);
     public FlightPlanSelectDelegate FlightPlanSelect =
-          Loader.LoadFunction<FlightPlanSelectDelegate>(
-              "principia__FlightPlanSelect");
+        Loader.LoadFunction<FlightPlanSelectDelegate>(
+            "principia__FlightPlanSelect");
   }
   internal static void FlightPlanSelect(
       this IntPtr plugin,
       string vessel_guid,
       int index) {
     symbols_.FlightPlanSelect(
-          plugin,
-          vessel_guid,
-          index);
+        plugin,
+        vessel_guid,
+        index);
   }
 
   private partial class Symbols {
@@ -1544,15 +1544,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanSelectedDelegate FlightPlanSelected =
-          Loader.LoadFunction<FlightPlanSelectedDelegate>(
-              "principia__FlightPlanSelected");
+        Loader.LoadFunction<FlightPlanSelectedDelegate>(
+            "principia__FlightPlanSelected");
   }
   internal static int FlightPlanSelected(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanSelected(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1563,17 +1563,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         FlightPlanAdaptiveStepParameters flight_plan_adaptive_step_parameters);
     public FlightPlanSetAdaptiveStepParametersDelegate FlightPlanSetAdaptiveStepParameters =
-          Loader.LoadFunction<FlightPlanSetAdaptiveStepParametersDelegate>(
-              "principia__FlightPlanSetAdaptiveStepParameters");
+        Loader.LoadFunction<FlightPlanSetAdaptiveStepParametersDelegate>(
+            "principia__FlightPlanSetAdaptiveStepParameters");
   }
   internal static Status FlightPlanSetAdaptiveStepParameters(
       this IntPtr plugin,
       string vessel_guid,
       FlightPlanAdaptiveStepParameters flight_plan_adaptive_step_parameters) {
     return symbols_.FlightPlanSetAdaptiveStepParameters(
-          plugin,
-          vessel_guid,
-          flight_plan_adaptive_step_parameters);
+        plugin,
+        vessel_guid,
+        flight_plan_adaptive_step_parameters);
   }
 
   private partial class Symbols {
@@ -1584,17 +1584,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         double final_time);
     public FlightPlanSetDesiredFinalTimeDelegate FlightPlanSetDesiredFinalTime =
-          Loader.LoadFunction<FlightPlanSetDesiredFinalTimeDelegate>(
-              "principia__FlightPlanSetDesiredFinalTime");
+        Loader.LoadFunction<FlightPlanSetDesiredFinalTimeDelegate>(
+            "principia__FlightPlanSetDesiredFinalTime");
   }
   internal static Status FlightPlanSetDesiredFinalTime(
       this IntPtr plugin,
       string vessel_guid,
       double final_time) {
     return symbols_.FlightPlanSetDesiredFinalTime(
-          plugin,
-          vessel_guid,
-          final_time);
+        plugin,
+        vessel_guid,
+        final_time);
   }
 
   private partial class Symbols {
@@ -1604,15 +1604,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FlightPlanUpdateFromOptimizationDelegate FlightPlanUpdateFromOptimization =
-          Loader.LoadFunction<FlightPlanUpdateFromOptimizationDelegate>(
-              "principia__FlightPlanUpdateFromOptimization");
+        Loader.LoadFunction<FlightPlanUpdateFromOptimizationDelegate>(
+            "principia__FlightPlanUpdateFromOptimization");
   }
   internal static bool FlightPlanUpdateFromOptimization(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FlightPlanUpdateFromOptimization(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1621,15 +1621,15 @@ internal static partial class Interface {
         IntPtr plugin,
         double delta_t);
     public FreeVesselsAndPartsAndCollectPileUpsDelegate FreeVesselsAndPartsAndCollectPileUps =
-          Loader.LoadFunction<FreeVesselsAndPartsAndCollectPileUpsDelegate>(
-              "principia__FreeVesselsAndPartsAndCollectPileUps");
+        Loader.LoadFunction<FreeVesselsAndPartsAndCollectPileUpsDelegate>(
+            "principia__FreeVesselsAndPartsAndCollectPileUps");
   }
   internal static void FreeVesselsAndPartsAndCollectPileUps(
       this IntPtr plugin,
       double delta_t) {
     symbols_.FreeVesselsAndPartsAndCollectPileUps(
-          plugin,
-          delta_t);
+        plugin,
+        delta_t);
   }
 
   private partial class Symbols {
@@ -1638,15 +1638,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public FutureCatchUpVesselDelegate FutureCatchUpVessel =
-          Loader.LoadFunction<FutureCatchUpVesselDelegate>(
-              "principia__FutureCatchUpVessel");
+        Loader.LoadFunction<FutureCatchUpVesselDelegate>(
+            "principia__FutureCatchUpVessel");
   }
   internal static IntPtr FutureCatchUpVessel(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.FutureCatchUpVessel(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1656,25 +1656,25 @@ internal static partial class Interface {
         ref IntPtr future,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator collided_vessels);
     public FutureWaitForVesselToCatchUpDelegate FutureWaitForVesselToCatchUp =
-          Loader.LoadFunction<FutureWaitForVesselToCatchUpDelegate>(
-              "principia__FutureWaitForVesselToCatchUp");
+        Loader.LoadFunction<FutureWaitForVesselToCatchUpDelegate>(
+            "principia__FutureWaitForVesselToCatchUp");
   }
   internal static void FutureWaitForVesselToCatchUp(
       this IntPtr plugin,
       ref IntPtr future,
       out DisposableIterator collided_vessels) {
     symbols_.FutureWaitForVesselToCatchUp(
-          plugin,
-          ref future,
-          out collided_vessels);
+        plugin,
+        ref future,
+        out collided_vessels);
   }
 
   private partial class Symbols {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int GetBufferDurationDelegate();
     public GetBufferDurationDelegate GetBufferDuration =
-          Loader.LoadFunction<GetBufferDurationDelegate>(
-              "principia__GetBufferDuration");
+        Loader.LoadFunction<GetBufferDurationDelegate>(
+            "principia__GetBufferDuration");
   }
   internal static int GetBufferDuration() {
     return symbols_.GetBufferDuration();
@@ -1684,8 +1684,8 @@ internal static partial class Interface {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int GetBufferedLoggingDelegate();
     public GetBufferedLoggingDelegate GetBufferedLogging =
-          Loader.LoadFunction<GetBufferedLoggingDelegate>(
-              "principia__GetBufferedLogging");
+        Loader.LoadFunction<GetBufferedLoggingDelegate>(
+            "principia__GetBufferedLogging");
   }
   internal static int GetBufferedLogging() {
     return symbols_.GetBufferedLogging();
@@ -1695,8 +1695,8 @@ internal static partial class Interface {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int GetStderrLoggingDelegate();
     public GetStderrLoggingDelegate GetStderrLogging =
-          Loader.LoadFunction<GetStderrLoggingDelegate>(
-              "principia__GetStderrLogging");
+        Loader.LoadFunction<GetStderrLoggingDelegate>(
+            "principia__GetStderrLogging");
   }
   internal static int GetStderrLogging() {
     return symbols_.GetStderrLogging();
@@ -1706,8 +1706,8 @@ internal static partial class Interface {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int GetSuppressedLoggingDelegate();
     public GetSuppressedLoggingDelegate GetSuppressedLogging =
-          Loader.LoadFunction<GetSuppressedLoggingDelegate>(
-              "principia__GetSuppressedLogging");
+        Loader.LoadFunction<GetSuppressedLoggingDelegate>(
+            "principia__GetSuppressedLogging");
   }
   internal static int GetSuppressedLogging() {
     return symbols_.GetSuppressedLogging();
@@ -1717,8 +1717,8 @@ internal static partial class Interface {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate int GetVerboseLoggingDelegate();
     public GetVerboseLoggingDelegate GetVerboseLogging =
-          Loader.LoadFunction<GetVerboseLoggingDelegate>(
-              "principia__GetVerboseLogging");
+        Loader.LoadFunction<GetVerboseLoggingDelegate>(
+            "principia__GetVerboseLogging");
   }
   internal static int GetVerboseLogging() {
     return symbols_.GetVerboseLogging();
@@ -1730,15 +1730,15 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] out string build_date,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] out string version);
     public GetVersionDelegate GetVersion =
-          Loader.LoadFunction<GetVersionDelegate>(
-              "principia__GetVersion");
+        Loader.LoadFunction<GetVersionDelegate>(
+            "principia__GetVersion");
   }
   internal static void GetVersion(
       out string build_date,
       out string version) {
     symbols_.GetVersion(
-          out build_date,
-          out version);
+        out build_date,
+        out version);
   }
 
   private partial class Symbols {
@@ -1748,15 +1748,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))] out string details);
     public HasEncounteredApocalypseDelegate HasEncounteredApocalypse =
-          Loader.LoadFunction<HasEncounteredApocalypseDelegate>(
-              "principia__HasEncounteredApocalypse");
+        Loader.LoadFunction<HasEncounteredApocalypseDelegate>(
+            "principia__HasEncounteredApocalypse");
   }
   internal static bool HasEncounteredApocalypse(
       this IntPtr plugin,
       out string details) {
     return symbols_.HasEncounteredApocalypse(
-          plugin,
-          out details);
+        plugin,
+        out details);
   }
 
   private partial class Symbols {
@@ -1766,15 +1766,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public HasVesselDelegate HasVessel =
-          Loader.LoadFunction<HasVesselDelegate>(
-              "principia__HasVessel");
+        Loader.LoadFunction<HasVesselDelegate>(
+            "principia__HasVessel");
   }
   internal static bool HasVessel(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.HasVessel(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -1783,15 +1783,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationDownsamplingParameters.Marshaler))] ConfigurationDownsamplingParameters downsampling_parameters);
     public InitializeDownsamplingParametersDelegate InitializeDownsamplingParameters =
-          Loader.LoadFunction<InitializeDownsamplingParametersDelegate>(
-              "principia__InitializeDownsamplingParameters");
+        Loader.LoadFunction<InitializeDownsamplingParametersDelegate>(
+            "principia__InitializeDownsamplingParameters");
   }
   internal static void InitializeDownsamplingParameters(
       this IntPtr plugin,
       ConfigurationDownsamplingParameters downsampling_parameters) {
     symbols_.InitializeDownsamplingParameters(
-          plugin,
-          downsampling_parameters);
+        plugin,
+        downsampling_parameters);
   }
 
   private partial class Symbols {
@@ -1801,17 +1801,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAccuracyParameters.Marshaler))] ConfigurationAccuracyParameters accuracy_parameters,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParameters.Marshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
     public InitializeEphemerisParametersDelegate InitializeEphemerisParameters =
-          Loader.LoadFunction<InitializeEphemerisParametersDelegate>(
-              "principia__InitializeEphemerisParameters");
+        Loader.LoadFunction<InitializeEphemerisParametersDelegate>(
+            "principia__InitializeEphemerisParameters");
   }
   internal static void InitializeEphemerisParameters(
       this IntPtr plugin,
       ConfigurationAccuracyParameters accuracy_parameters,
       ConfigurationFixedStepParameters fixed_step_parameters) {
     symbols_.InitializeEphemerisParameters(
-          plugin,
-          accuracy_parameters,
-          fixed_step_parameters);
+        plugin,
+        accuracy_parameters,
+        fixed_step_parameters);
   }
 
   private partial class Symbols {
@@ -1820,15 +1820,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParameters.Marshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
     public InitializeHistoryParametersDelegate InitializeHistoryParameters =
-          Loader.LoadFunction<InitializeHistoryParametersDelegate>(
-              "principia__InitializeHistoryParameters");
+        Loader.LoadFunction<InitializeHistoryParametersDelegate>(
+            "principia__InitializeHistoryParameters");
   }
   internal static void InitializeHistoryParameters(
       this IntPtr plugin,
       ConfigurationFixedStepParameters fixed_step_parameters) {
     symbols_.InitializeHistoryParameters(
-          plugin,
-          fixed_step_parameters);
+        plugin,
+        fixed_step_parameters);
   }
 
   private partial class Symbols {
@@ -1837,15 +1837,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAdaptiveStepParameters.Marshaler))] ConfigurationAdaptiveStepParameters parameters);
     public InitializePsychohistoryParametersDelegate InitializePsychohistoryParameters =
-          Loader.LoadFunction<InitializePsychohistoryParametersDelegate>(
-              "principia__InitializePsychohistoryParameters");
+        Loader.LoadFunction<InitializePsychohistoryParametersDelegate>(
+            "principia__InitializePsychohistoryParameters");
   }
   internal static void InitializePsychohistoryParameters(
       this IntPtr plugin,
       ConfigurationAdaptiveStepParameters parameters) {
     symbols_.InitializePsychohistoryParameters(
-          plugin,
-          parameters);
+        plugin,
+        parameters);
   }
 
   private partial class Symbols {
@@ -1862,8 +1862,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vy,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vz);
     public InsertCelestialAbsoluteCartesianDelegate InsertCelestialAbsoluteCartesian =
-          Loader.LoadFunction<InsertCelestialAbsoluteCartesianDelegate>(
-              "principia__InsertCelestialAbsoluteCartesian");
+        Loader.LoadFunction<InsertCelestialAbsoluteCartesianDelegate>(
+            "principia__InsertCelestialAbsoluteCartesian");
   }
   internal static void InsertCelestialAbsoluteCartesian(
       this IntPtr plugin,
@@ -1877,16 +1877,16 @@ internal static partial class Interface {
       string vy,
       string vz) {
     symbols_.InsertCelestialAbsoluteCartesian(
-          plugin,
-          celestial_index,
-          parent_index,
-          body_parameters,
-          x,
-          y,
-          z,
-          vx,
-          vy,
-          vz);
+        plugin,
+        celestial_index,
+        parent_index,
+        body_parameters,
+        x,
+        y,
+        z,
+        vx,
+        vy,
+        vz);
   }
 
   private partial class Symbols {
@@ -1898,8 +1898,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParameters.Marshaler))] BodyParameters body_parameters,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<KeplerianElements>))] BoxedKeplerianElements keplerian_elements);
     public InsertCelestialJacobiKeplerianDelegate InsertCelestialJacobiKeplerian =
-          Loader.LoadFunction<InsertCelestialJacobiKeplerianDelegate>(
-              "principia__InsertCelestialJacobiKeplerian");
+        Loader.LoadFunction<InsertCelestialJacobiKeplerianDelegate>(
+            "principia__InsertCelestialJacobiKeplerian");
   }
   internal static void InsertCelestialJacobiKeplerian(
       this IntPtr plugin,
@@ -1908,11 +1908,11 @@ internal static partial class Interface {
       BodyParameters body_parameters,
       BoxedKeplerianElements keplerian_elements) {
     symbols_.InsertCelestialJacobiKeplerian(
-          plugin,
-          celestial_index,
-          parent_index,
-          body_parameters,
-          keplerian_elements);
+        plugin,
+        celestial_index,
+        parent_index,
+        body_parameters,
+        keplerian_elements);
   }
 
   private partial class Symbols {
@@ -1925,8 +1925,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.I1)] bool loaded,
         [MarshalAs(UnmanagedType.I1)] out bool inserted);
     public InsertOrKeepVesselDelegate InsertOrKeepVessel =
-          Loader.LoadFunction<InsertOrKeepVesselDelegate>(
-              "principia__InsertOrKeepVessel");
+        Loader.LoadFunction<InsertOrKeepVesselDelegate>(
+            "principia__InsertOrKeepVessel");
   }
   internal static void InsertOrKeepVessel(
       this IntPtr plugin,
@@ -1936,12 +1936,12 @@ internal static partial class Interface {
       bool loaded,
       out bool inserted) {
     symbols_.InsertOrKeepVessel(
-          plugin,
-          vessel_guid,
-          vessel_name,
-          parent_index,
-          loaded,
-          out inserted);
+        plugin,
+        vessel_guid,
+        vessel_name,
+        parent_index,
+        loaded,
+        out inserted);
   }
 
   private partial class Symbols {
@@ -1963,8 +1963,8 @@ internal static partial class Interface {
         XYZ part_angular_velocity,
         double delta_t);
     public InsertOrKeepLoadedPartDelegate InsertOrKeepLoadedPart =
-          Loader.LoadFunction<InsertOrKeepLoadedPartDelegate>(
-              "principia__InsertOrKeepLoadedPart");
+        Loader.LoadFunction<InsertOrKeepLoadedPartDelegate>(
+            "principia__InsertOrKeepLoadedPart");
   }
   internal static void InsertOrKeepLoadedPart(
       this IntPtr plugin,
@@ -1983,21 +1983,21 @@ internal static partial class Interface {
       XYZ part_angular_velocity,
       double delta_t) {
     symbols_.InsertOrKeepLoadedPart(
-          plugin,
-          part_id,
-          name,
-          mass_in_tonnes,
-          centre_of_mass,
-          moments_of_inertia_in_tonnes,
-          principal_axes_rotation,
-          is_solid_rocket_motor,
-          vessel_guid,
-          main_body_index,
-          main_body_world_degrees_of_freedom,
-          part_world_degrees_of_freedom,
-          part_rotation,
-          part_angular_velocity,
-          delta_t);
+        plugin,
+        part_id,
+        name,
+        mass_in_tonnes,
+        centre_of_mass,
+        moments_of_inertia_in_tonnes,
+        principal_axes_rotation,
+        is_solid_rocket_motor,
+        vessel_guid,
+        main_body_index,
+        main_body_world_degrees_of_freedom,
+        part_world_degrees_of_freedom,
+        part_rotation,
+        part_angular_velocity,
+        delta_t);
   }
 
   private partial class Symbols {
@@ -2009,8 +2009,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         QP from_parent);
     public InsertUnloadedPartDelegate InsertUnloadedPart =
-          Loader.LoadFunction<InsertUnloadedPartDelegate>(
-              "principia__InsertUnloadedPart");
+        Loader.LoadFunction<InsertUnloadedPartDelegate>(
+            "principia__InsertUnloadedPart");
   }
   internal static void InsertUnloadedPart(
       this IntPtr plugin,
@@ -2019,11 +2019,11 @@ internal static partial class Interface {
       string vessel_guid,
       QP from_parent) {
     symbols_.InsertUnloadedPart(
-          plugin,
-          part_id,
-          name,
-          vessel_guid,
-          from_parent);
+        plugin,
+        part_id,
+        name,
+        vessel_guid,
+        from_parent);
   }
 
   private partial class Symbols {
@@ -2032,13 +2032,13 @@ internal static partial class Interface {
     public delegate bool IteratorAtEndDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorAtEndDelegate IteratorAtEnd =
-          Loader.LoadFunction<IteratorAtEndDelegate>(
-              "principia__IteratorAtEnd");
+        Loader.LoadFunction<IteratorAtEndDelegate>(
+            "principia__IteratorAtEnd");
   }
   internal static bool IteratorAtEnd(
       this DisposableIterator iterator) {
     return symbols_.IteratorAtEnd(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2046,13 +2046,13 @@ internal static partial class Interface {
     public delegate void IteratorDeleteDelegate(
         ref IntPtr iterator);
     public IteratorDeleteDelegate IteratorDelete =
-          Loader.LoadFunction<IteratorDeleteDelegate>(
-              "principia__IteratorDelete");
+        Loader.LoadFunction<IteratorDeleteDelegate>(
+            "principia__IteratorDelete");
   }
   internal static void IteratorDelete(
       ref IntPtr iterator) {
     symbols_.IteratorDelete(
-          ref iterator);
+        ref iterator);
   }
 
   private partial class Symbols {
@@ -2060,13 +2060,13 @@ internal static partial class Interface {
     public delegate QP IteratorGetDiscreteTrajectoryQPDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorGetDiscreteTrajectoryQPDelegate IteratorGetDiscreteTrajectoryQP =
-          Loader.LoadFunction<IteratorGetDiscreteTrajectoryQPDelegate>(
-              "principia__IteratorGetDiscreteTrajectoryQP");
+        Loader.LoadFunction<IteratorGetDiscreteTrajectoryQPDelegate>(
+            "principia__IteratorGetDiscreteTrajectoryQP");
   }
   internal static QP IteratorGetDiscreteTrajectoryQP(
       this DisposableIterator iterator) {
     return symbols_.IteratorGetDiscreteTrajectoryQP(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2074,13 +2074,13 @@ internal static partial class Interface {
     public delegate double IteratorGetDiscreteTrajectoryTimeDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorGetDiscreteTrajectoryTimeDelegate IteratorGetDiscreteTrajectoryTime =
-          Loader.LoadFunction<IteratorGetDiscreteTrajectoryTimeDelegate>(
-              "principia__IteratorGetDiscreteTrajectoryTime");
+        Loader.LoadFunction<IteratorGetDiscreteTrajectoryTimeDelegate>(
+            "principia__IteratorGetDiscreteTrajectoryTime");
   }
   internal static double IteratorGetDiscreteTrajectoryTime(
       this DisposableIterator iterator) {
     return symbols_.IteratorGetDiscreteTrajectoryTime(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2088,13 +2088,13 @@ internal static partial class Interface {
     public delegate XYZ IteratorGetDiscreteTrajectoryXYZDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorGetDiscreteTrajectoryXYZDelegate IteratorGetDiscreteTrajectoryXYZ =
-          Loader.LoadFunction<IteratorGetDiscreteTrajectoryXYZDelegate>(
-              "principia__IteratorGetDiscreteTrajectoryXYZ");
+        Loader.LoadFunction<IteratorGetDiscreteTrajectoryXYZDelegate>(
+            "principia__IteratorGetDiscreteTrajectoryXYZ");
   }
   internal static XYZ IteratorGetDiscreteTrajectoryXYZ(
       this DisposableIterator iterator) {
     return symbols_.IteratorGetDiscreteTrajectoryXYZ(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2102,13 +2102,13 @@ internal static partial class Interface {
     public delegate Node IteratorGetNodeDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorGetNodeDelegate IteratorGetNode =
-          Loader.LoadFunction<IteratorGetNodeDelegate>(
-              "principia__IteratorGetNode");
+        Loader.LoadFunction<IteratorGetNodeDelegate>(
+            "principia__IteratorGetNode");
   }
   internal static Node IteratorGetNode(
       this DisposableIterator iterator) {
     return symbols_.IteratorGetNode(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2117,13 +2117,13 @@ internal static partial class Interface {
     public delegate DisposableIterator IteratorGetRP2LinesIteratorDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorGetRP2LinesIteratorDelegate IteratorGetRP2LinesIterator =
-          Loader.LoadFunction<IteratorGetRP2LinesIteratorDelegate>(
-              "principia__IteratorGetRP2LinesIterator");
+        Loader.LoadFunction<IteratorGetRP2LinesIteratorDelegate>(
+            "principia__IteratorGetRP2LinesIterator");
   }
   internal static DisposableIterator IteratorGetRP2LinesIterator(
       this DisposableIterator iterator) {
     return symbols_.IteratorGetRP2LinesIterator(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2131,13 +2131,13 @@ internal static partial class Interface {
     public delegate XY IteratorGetRP2LineXYDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorGetRP2LineXYDelegate IteratorGetRP2LineXY =
-          Loader.LoadFunction<IteratorGetRP2LineXYDelegate>(
-              "principia__IteratorGetRP2LineXY");
+        Loader.LoadFunction<IteratorGetRP2LineXYDelegate>(
+            "principia__IteratorGetRP2LineXY");
   }
   internal static XY IteratorGetRP2LineXY(
       this DisposableIterator iterator) {
     return symbols_.IteratorGetRP2LineXY(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2146,13 +2146,13 @@ internal static partial class Interface {
     public delegate string IteratorGetVesselGuidDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorGetVesselGuidDelegate IteratorGetVesselGuid =
-          Loader.LoadFunction<IteratorGetVesselGuidDelegate>(
-              "principia__IteratorGetVesselGuid");
+        Loader.LoadFunction<IteratorGetVesselGuidDelegate>(
+            "principia__IteratorGetVesselGuid");
   }
   internal static string IteratorGetVesselGuid(
       this DisposableIterator iterator) {
     return symbols_.IteratorGetVesselGuid(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2160,13 +2160,13 @@ internal static partial class Interface {
     public delegate void IteratorIncrementDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorIncrementDelegate IteratorIncrement =
-          Loader.LoadFunction<IteratorIncrementDelegate>(
-              "principia__IteratorIncrement");
+        Loader.LoadFunction<IteratorIncrementDelegate>(
+            "principia__IteratorIncrement");
   }
   internal static void IteratorIncrement(
       this DisposableIterator iterator) {
     symbols_.IteratorIncrement(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2174,13 +2174,13 @@ internal static partial class Interface {
     public delegate void IteratorResetDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorResetDelegate IteratorReset =
-          Loader.LoadFunction<IteratorResetDelegate>(
-              "principia__IteratorReset");
+        Loader.LoadFunction<IteratorResetDelegate>(
+            "principia__IteratorReset");
   }
   internal static void IteratorReset(
       this DisposableIterator iterator) {
     symbols_.IteratorReset(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2188,13 +2188,13 @@ internal static partial class Interface {
     public delegate int IteratorSizeDelegate(
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
     public IteratorSizeDelegate IteratorSize =
-          Loader.LoadFunction<IteratorSizeDelegate>(
-              "principia__IteratorSize");
+        Loader.LoadFunction<IteratorSizeDelegate>(
+            "principia__IteratorSize");
   }
   internal static int IteratorSize(
       this DisposableIterator iterator) {
     return symbols_.IteratorSize(
-          iterator);
+        iterator);
   }
 
   private partial class Symbols {
@@ -2204,17 +2204,17 @@ internal static partial class Interface {
         int line,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
     public LogErrorDelegate LogError =
-          Loader.LoadFunction<LogErrorDelegate>(
-              "principia__LogError");
+        Loader.LoadFunction<LogErrorDelegate>(
+            "principia__LogError");
   }
   internal static void LogError(
       string file,
       int line,
       string text) {
     symbols_.LogError(
-          file,
-          line,
-          text);
+        file,
+        line,
+        text);
   }
 
   private partial class Symbols {
@@ -2224,17 +2224,17 @@ internal static partial class Interface {
         int line,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
     public LogFatalDelegate LogFatal =
-          Loader.LoadFunction<LogFatalDelegate>(
-              "principia__LogFatal");
+        Loader.LoadFunction<LogFatalDelegate>(
+            "principia__LogFatal");
   }
   internal static void LogFatal(
       string file,
       int line,
       string text) {
     symbols_.LogFatal(
-          file,
-          line,
-          text);
+        file,
+        line,
+        text);
   }
 
   private partial class Symbols {
@@ -2244,17 +2244,17 @@ internal static partial class Interface {
         int line,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
     public LogInfoDelegate LogInfo =
-          Loader.LoadFunction<LogInfoDelegate>(
-              "principia__LogInfo");
+        Loader.LoadFunction<LogInfoDelegate>(
+            "principia__LogInfo");
   }
   internal static void LogInfo(
       string file,
       int line,
       string text) {
     symbols_.LogInfo(
-          file,
-          line,
-          text);
+        file,
+        line,
+        text);
   }
 
   private partial class Symbols {
@@ -2264,17 +2264,17 @@ internal static partial class Interface {
         int line,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
     public LogWarningDelegate LogWarning =
-          Loader.LoadFunction<LogWarningDelegate>(
-              "principia__LogWarning");
+        Loader.LoadFunction<LogWarningDelegate>(
+            "principia__LogWarning");
   }
   internal static void LogWarning(
       string file,
       int line,
       string text) {
     symbols_.LogWarning(
-          file,
-          line,
-          text);
+        file,
+        line,
+        text);
   }
 
   private partial class Symbols {
@@ -2283,15 +2283,15 @@ internal static partial class Interface {
         int i,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name);
     public MonitorSetNameDelegate MonitorSetName =
-          Loader.LoadFunction<MonitorSetNameDelegate>(
-              "principia__MonitorSetName");
+        Loader.LoadFunction<MonitorSetNameDelegate>(
+            "principia__MonitorSetName");
   }
   internal static void MonitorSetName(
       int i,
       string name) {
     symbols_.MonitorSetName(
-          i,
-          name);
+        i,
+        name);
   }
 
   private partial class Symbols {
@@ -2299,13 +2299,13 @@ internal static partial class Interface {
     public delegate void MonitorStartDelegate(
         int i);
     public MonitorStartDelegate MonitorStart =
-          Loader.LoadFunction<MonitorStartDelegate>(
-              "principia__MonitorStart");
+        Loader.LoadFunction<MonitorStartDelegate>(
+            "principia__MonitorStart");
   }
   internal static void MonitorStart(
       int i) {
     symbols_.MonitorStart(
-          i);
+        i);
   }
 
   private partial class Symbols {
@@ -2313,13 +2313,13 @@ internal static partial class Interface {
     public delegate void MonitorStopDelegate(
         int i);
     public MonitorStopDelegate MonitorStop =
-          Loader.LoadFunction<MonitorStopDelegate>(
-              "principia__MonitorStop");
+        Loader.LoadFunction<MonitorStopDelegate>(
+            "principia__MonitorStop");
   }
   internal static void MonitorStop(
       int i) {
     symbols_.MonitorStop(
-          i);
+        i);
   }
 
   private partial class Symbols {
@@ -2329,17 +2329,17 @@ internal static partial class Interface {
         XYZ sun_world_position,
         XYZ ship_world_position);
     public NavballOrientationDelegate NavballOrientation =
-          Loader.LoadFunction<NavballOrientationDelegate>(
-              "principia__NavballOrientation");
+        Loader.LoadFunction<NavballOrientationDelegate>(
+            "principia__NavballOrientation");
   }
   internal static WXYZ NavballOrientation(
       this IntPtr plugin,
       XYZ sun_world_position,
       XYZ ship_world_position) {
     return symbols_.NavballOrientation(
-          plugin,
-          sun_world_position,
-          ship_world_position);
+        plugin,
+        sun_world_position,
+        ship_world_position);
   }
 
   private partial class Symbols {
@@ -2349,17 +2349,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string solar_system_epoch,
         double planetarium_rotation_in_degrees);
     public NewPluginDelegate NewPlugin =
-          Loader.LoadFunction<NewPluginDelegate>(
-              "principia__NewPlugin");
+        Loader.LoadFunction<NewPluginDelegate>(
+            "principia__NewPlugin");
   }
   internal static IntPtr NewPlugin(
       string game_epoch,
       string solar_system_epoch,
       double planetarium_rotation_in_degrees) {
     return symbols_.NewPlugin(
-          game_epoch,
-          solar_system_epoch,
-          planetarium_rotation_in_degrees);
+        game_epoch,
+        solar_system_epoch,
+        planetarium_rotation_in_degrees);
   }
 
   private partial class Symbols {
@@ -2369,17 +2369,17 @@ internal static partial class Interface {
         uint part_id,
         XYZ force_in_kilonewtons);
     public PartApplyIntrinsicForceDelegate PartApplyIntrinsicForce =
-          Loader.LoadFunction<PartApplyIntrinsicForceDelegate>(
-              "principia__PartApplyIntrinsicForce");
+        Loader.LoadFunction<PartApplyIntrinsicForceDelegate>(
+            "principia__PartApplyIntrinsicForce");
   }
   internal static void PartApplyIntrinsicForce(
       this IntPtr plugin,
       uint part_id,
       XYZ force_in_kilonewtons) {
     symbols_.PartApplyIntrinsicForce(
-          plugin,
-          part_id,
-          force_in_kilonewtons);
+        plugin,
+        part_id,
+        force_in_kilonewtons);
   }
 
   private partial class Symbols {
@@ -2390,8 +2390,8 @@ internal static partial class Interface {
         XYZ force_in_kilonewtons,
         XYZ lever_arm);
     public PartApplyIntrinsicForceAtPositionDelegate PartApplyIntrinsicForceAtPosition =
-          Loader.LoadFunction<PartApplyIntrinsicForceAtPositionDelegate>(
-              "principia__PartApplyIntrinsicForceAtPosition");
+        Loader.LoadFunction<PartApplyIntrinsicForceAtPositionDelegate>(
+            "principia__PartApplyIntrinsicForceAtPosition");
   }
   internal static void PartApplyIntrinsicForceAtPosition(
       this IntPtr plugin,
@@ -2399,10 +2399,10 @@ internal static partial class Interface {
       XYZ force_in_kilonewtons,
       XYZ lever_arm) {
     symbols_.PartApplyIntrinsicForceAtPosition(
-          plugin,
-          part_id,
-          force_in_kilonewtons,
-          lever_arm);
+        plugin,
+        part_id,
+        force_in_kilonewtons,
+        lever_arm);
   }
 
   private partial class Symbols {
@@ -2412,17 +2412,17 @@ internal static partial class Interface {
         uint part_id,
         XYZ torque_in_kilonewton_metre);
     public PartApplyIntrinsicTorqueDelegate PartApplyIntrinsicTorque =
-          Loader.LoadFunction<PartApplyIntrinsicTorqueDelegate>(
-              "principia__PartApplyIntrinsicTorque");
+        Loader.LoadFunction<PartApplyIntrinsicTorqueDelegate>(
+            "principia__PartApplyIntrinsicTorque");
   }
   internal static void PartApplyIntrinsicTorque(
       this IntPtr plugin,
       uint part_id,
       XYZ torque_in_kilonewton_metre) {
     symbols_.PartApplyIntrinsicTorque(
-          plugin,
-          part_id,
-          torque_in_kilonewton_metre);
+        plugin,
+        part_id,
+        torque_in_kilonewton_metre);
   }
 
   private partial class Symbols {
@@ -2432,17 +2432,17 @@ internal static partial class Interface {
         uint part_id,
         Origin origin);
     public PartGetActualRigidMotionDelegate PartGetActualRigidMotion =
-          Loader.LoadFunction<PartGetActualRigidMotionDelegate>(
-              "principia__PartGetActualRigidMotion");
+        Loader.LoadFunction<PartGetActualRigidMotionDelegate>(
+            "principia__PartGetActualRigidMotion");
   }
   internal static QPRW PartGetActualRigidMotion(
       this IntPtr plugin,
       uint part_id,
       Origin origin) {
     return symbols_.PartGetActualRigidMotion(
-          plugin,
-          part_id,
-          origin);
+        plugin,
+        part_id,
+        origin);
   }
 
   private partial class Symbols {
@@ -2452,15 +2452,15 @@ internal static partial class Interface {
         IntPtr plugin,
         uint part_id);
     public PartIsTruthfulDelegate PartIsTruthful =
-          Loader.LoadFunction<PartIsTruthfulDelegate>(
-              "principia__PartIsTruthful");
+        Loader.LoadFunction<PartIsTruthfulDelegate>(
+            "principia__PartIsTruthful");
   }
   internal static bool PartIsTruthful(
       this IntPtr plugin,
       uint part_id) {
     return symbols_.PartIsTruthful(
-          plugin,
-          part_id);
+        plugin,
+        part_id);
   }
 
   private partial class Symbols {
@@ -2472,8 +2472,8 @@ internal static partial class Interface {
         WXYZ rotation,
         XYZ angular_velocity);
     public PartSetApparentRigidMotionDelegate PartSetApparentRigidMotion =
-          Loader.LoadFunction<PartSetApparentRigidMotionDelegate>(
-              "principia__PartSetApparentRigidMotion");
+        Loader.LoadFunction<PartSetApparentRigidMotionDelegate>(
+            "principia__PartSetApparentRigidMotion");
   }
   internal static void PartSetApparentRigidMotion(
       this IntPtr plugin,
@@ -2482,11 +2482,11 @@ internal static partial class Interface {
       WXYZ rotation,
       XYZ angular_velocity) {
     symbols_.PartSetApparentRigidMotion(
-          plugin,
-          part_id,
-          degrees_of_freedom,
-          rotation,
-          angular_velocity);
+        plugin,
+        part_id,
+        degrees_of_freedom,
+        rotation,
+        angular_velocity);
   }
 
   private partial class Symbols {
@@ -2505,8 +2505,8 @@ internal static partial class Interface {
         double angular_resolution,
         XYZ scaled_space_origin);
     public PlanetariumCreateDelegate PlanetariumCreate =
-          Loader.LoadFunction<PlanetariumCreateDelegate>(
-              "principia__PlanetariumCreate");
+        Loader.LoadFunction<PlanetariumCreateDelegate>(
+            "principia__PlanetariumCreate");
   }
   internal static DisposablePlanetarium PlanetariumCreate(
       this IntPtr plugin,
@@ -2521,17 +2521,17 @@ internal static partial class Interface {
       double angular_resolution,
       XYZ scaled_space_origin) {
     return symbols_.PlanetariumCreate(
-          plugin,
-          sun_world_position,
-          xyz_opengl_camera_x_in_world,
-          xyz_opengl_camera_y_in_world,
-          xyz_opengl_camera_z_in_world,
-          xyz_camera_position_in_world,
-          focal,
-          field_of_view,
-          inverse_scale_factor,
-          angular_resolution,
-          scaled_space_origin);
+        plugin,
+        sun_world_position,
+        xyz_opengl_camera_x_in_world,
+        xyz_opengl_camera_y_in_world,
+        xyz_opengl_camera_z_in_world,
+        xyz_camera_position_in_world,
+        focal,
+        field_of_view,
+        inverse_scale_factor,
+        angular_resolution,
+        scaled_space_origin);
   }
 
   private partial class Symbols {
@@ -2539,13 +2539,13 @@ internal static partial class Interface {
     public delegate void PlanetariumDeleteDelegate(
         ref IntPtr planetarium);
     public PlanetariumDeleteDelegate PlanetariumDelete =
-          Loader.LoadFunction<PlanetariumDeleteDelegate>(
-              "principia__PlanetariumDelete");
+        Loader.LoadFunction<PlanetariumDeleteDelegate>(
+            "principia__PlanetariumDelete");
   }
   internal static void PlanetariumDelete(
       ref IntPtr planetarium) {
     symbols_.PlanetariumDelete(
-          ref planetarium);
+        ref planetarium);
   }
 
   private partial class Symbols {
@@ -2560,8 +2560,8 @@ internal static partial class Interface {
         out double minimal_distance_from_camera,
         out int vertex_count);
     public PlanetariumPlotCelestialFutureTrajectoryDelegate PlanetariumPlotCelestialFutureTrajectory =
-          Loader.LoadFunction<PlanetariumPlotCelestialFutureTrajectoryDelegate>(
-              "principia__PlanetariumPlotCelestialFutureTrajectory");
+        Loader.LoadFunction<PlanetariumPlotCelestialFutureTrajectoryDelegate>(
+            "principia__PlanetariumPlotCelestialFutureTrajectory");
   }
   internal static void PlanetariumPlotCelestialFutureTrajectory(
       this DisposablePlanetarium planetarium,
@@ -2573,14 +2573,14 @@ internal static partial class Interface {
       out double minimal_distance_from_camera,
       out int vertex_count) {
     symbols_.PlanetariumPlotCelestialFutureTrajectory(
-          planetarium,
-          plugin,
-          celestial_index,
-          vessel_guid,
-          vertices,
-          vertices_size,
-          out minimal_distance_from_camera,
-          out vertex_count);
+        planetarium,
+        plugin,
+        celestial_index,
+        vessel_guid,
+        vertices,
+        vertices_size,
+        out minimal_distance_from_camera,
+        out vertex_count);
   }
 
   private partial class Symbols {
@@ -2595,8 +2595,8 @@ internal static partial class Interface {
         out double minimal_distance_from_camera,
         out int vertex_count);
     public PlanetariumPlotCelestialPastTrajectoryDelegate PlanetariumPlotCelestialPastTrajectory =
-          Loader.LoadFunction<PlanetariumPlotCelestialPastTrajectoryDelegate>(
-              "principia__PlanetariumPlotCelestialPastTrajectory");
+        Loader.LoadFunction<PlanetariumPlotCelestialPastTrajectoryDelegate>(
+            "principia__PlanetariumPlotCelestialPastTrajectory");
   }
   internal static void PlanetariumPlotCelestialPastTrajectory(
       this DisposablePlanetarium planetarium,
@@ -2608,14 +2608,14 @@ internal static partial class Interface {
       out double minimal_distance_from_camera,
       out int vertex_count) {
     symbols_.PlanetariumPlotCelestialPastTrajectory(
-          planetarium,
-          plugin,
-          celestial_index,
-          max_history_length,
-          vertices,
-          vertices_size,
-          out minimal_distance_from_camera,
-          out vertex_count);
+        planetarium,
+        plugin,
+        celestial_index,
+        max_history_length,
+        vertices,
+        vertices_size,
+        out minimal_distance_from_camera,
+        out vertex_count);
   }
 
   private partial class Symbols {
@@ -2628,8 +2628,8 @@ internal static partial class Interface {
         int vertices_size,
         out int vertex_count);
     public PlanetariumPlotEquipotentialDelegate PlanetariumPlotEquipotential =
-          Loader.LoadFunction<PlanetariumPlotEquipotentialDelegate>(
-              "principia__PlanetariumPlotEquipotential");
+        Loader.LoadFunction<PlanetariumPlotEquipotentialDelegate>(
+            "principia__PlanetariumPlotEquipotential");
   }
   internal static void PlanetariumPlotEquipotential(
       this DisposablePlanetarium planetarium,
@@ -2639,12 +2639,12 @@ internal static partial class Interface {
       int vertices_size,
       out int vertex_count) {
     symbols_.PlanetariumPlotEquipotential(
-          planetarium,
-          plugin,
-          index,
-          vertices,
-          vertices_size,
-          out vertex_count);
+        planetarium,
+        plugin,
+        index,
+        vertices,
+        vertices_size,
+        out vertex_count);
   }
 
   private partial class Symbols {
@@ -2659,8 +2659,8 @@ internal static partial class Interface {
         int vertices_size,
         out int vertex_count);
     public PlanetariumPlotFlightPlanSegmentDelegate PlanetariumPlotFlightPlanSegment =
-          Loader.LoadFunction<PlanetariumPlotFlightPlanSegmentDelegate>(
-              "principia__PlanetariumPlotFlightPlanSegment");
+        Loader.LoadFunction<PlanetariumPlotFlightPlanSegmentDelegate>(
+            "principia__PlanetariumPlotFlightPlanSegment");
   }
   internal static void PlanetariumPlotFlightPlanSegment(
       this DisposablePlanetarium planetarium,
@@ -2672,14 +2672,14 @@ internal static partial class Interface {
       int vertices_size,
       out int vertex_count) {
     symbols_.PlanetariumPlotFlightPlanSegment(
-          planetarium,
-          plugin,
-          vessel_guid,
-          index,
-          t_max,
-          vertices,
-          vertices_size,
-          out vertex_count);
+        planetarium,
+        plugin,
+        vessel_guid,
+        index,
+        t_max,
+        vertices,
+        vertices_size,
+        out vertex_count);
   }
 
   private partial class Symbols {
@@ -2693,8 +2693,8 @@ internal static partial class Interface {
         int vertices_size,
         out int vertex_count);
     public PlanetariumPlotPredictionDelegate PlanetariumPlotPrediction =
-          Loader.LoadFunction<PlanetariumPlotPredictionDelegate>(
-              "principia__PlanetariumPlotPrediction");
+        Loader.LoadFunction<PlanetariumPlotPredictionDelegate>(
+            "principia__PlanetariumPlotPrediction");
   }
   internal static void PlanetariumPlotPrediction(
       this DisposablePlanetarium planetarium,
@@ -2705,13 +2705,13 @@ internal static partial class Interface {
       int vertices_size,
       out int vertex_count) {
     symbols_.PlanetariumPlotPrediction(
-          planetarium,
-          plugin,
-          vessel_guid,
-          t_max,
-          vertices,
-          vertices_size,
-          out vertex_count);
+        planetarium,
+        plugin,
+        vessel_guid,
+        t_max,
+        vertices,
+        vertices_size,
+        out vertex_count);
   }
 
   private partial class Symbols {
@@ -2726,8 +2726,8 @@ internal static partial class Interface {
         int vertices_size,
         out int vertex_count);
     public PlanetariumPlotPsychohistoryDelegate PlanetariumPlotPsychohistory =
-          Loader.LoadFunction<PlanetariumPlotPsychohistoryDelegate>(
-              "principia__PlanetariumPlotPsychohistory");
+        Loader.LoadFunction<PlanetariumPlotPsychohistoryDelegate>(
+            "principia__PlanetariumPlotPsychohistory");
   }
   internal static void PlanetariumPlotPsychohistory(
       this DisposablePlanetarium planetarium,
@@ -2739,14 +2739,14 @@ internal static partial class Interface {
       int vertices_size,
       out int vertex_count) {
     symbols_.PlanetariumPlotPsychohistory(
-          planetarium,
-          plugin,
-          vessel_guid,
-          max_history_length,
-          t_max,
-          vertices,
-          vertices_size,
-          out vertex_count);
+        planetarium,
+        plugin,
+        vessel_guid,
+        max_history_length,
+        t_max,
+        vertices,
+        vertices_size,
+        out vertex_count);
   }
 
   private partial class Symbols {
@@ -2754,13 +2754,13 @@ internal static partial class Interface {
     public delegate void PrepareToReportCollisionsDelegate(
         IntPtr plugin);
     public PrepareToReportCollisionsDelegate PrepareToReportCollisions =
-          Loader.LoadFunction<PrepareToReportCollisionsDelegate>(
-              "principia__PrepareToReportCollisions");
+        Loader.LoadFunction<PrepareToReportCollisionsDelegate>(
+            "principia__PrepareToReportCollisions");
   }
   internal static void PrepareToReportCollisions(
       this IntPtr plugin) {
     symbols_.PrepareToReportCollisions(
-          plugin);
+        plugin);
   }
 
   private partial class Symbols {
@@ -2775,8 +2775,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator apoapsides,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator periapsides);
     public RenderedPredictionApsidesDelegate RenderedPredictionApsides =
-          Loader.LoadFunction<RenderedPredictionApsidesDelegate>(
-              "principia__RenderedPredictionApsides");
+        Loader.LoadFunction<RenderedPredictionApsidesDelegate>(
+            "principia__RenderedPredictionApsides");
   }
   internal static void RenderedPredictionApsides(
       this IntPtr plugin,
@@ -2788,14 +2788,14 @@ internal static partial class Interface {
       out DisposableIterator apoapsides,
       out DisposableIterator periapsides) {
     symbols_.RenderedPredictionApsides(
-          plugin,
-          vessel_guid,
-          t_max,
-          celestial_index,
-          sun_world_position,
-          max_points,
-          out apoapsides,
-          out periapsides);
+        plugin,
+        vessel_guid,
+        t_max,
+        celestial_index,
+        sun_world_position,
+        max_points,
+        out apoapsides,
+        out periapsides);
   }
 
   private partial class Symbols {
@@ -2807,8 +2807,8 @@ internal static partial class Interface {
         int max_points,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator closest_approaches);
     public RenderedPredictionClosestApproachesDelegate RenderedPredictionClosestApproaches =
-          Loader.LoadFunction<RenderedPredictionClosestApproachesDelegate>(
-              "principia__RenderedPredictionClosestApproaches");
+        Loader.LoadFunction<RenderedPredictionClosestApproachesDelegate>(
+            "principia__RenderedPredictionClosestApproaches");
   }
   internal static void RenderedPredictionClosestApproaches(
       this IntPtr plugin,
@@ -2817,11 +2817,11 @@ internal static partial class Interface {
       int max_points,
       out DisposableIterator closest_approaches) {
     symbols_.RenderedPredictionClosestApproaches(
-          plugin,
-          vessel_guid,
-          sun_world_position,
-          max_points,
-          out closest_approaches);
+        plugin,
+        vessel_guid,
+        sun_world_position,
+        max_points,
+        out closest_approaches);
   }
 
   private partial class Symbols {
@@ -2835,8 +2835,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator ascending,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator descending);
     public RenderedPredictionNodesDelegate RenderedPredictionNodes =
-          Loader.LoadFunction<RenderedPredictionNodesDelegate>(
-              "principia__RenderedPredictionNodes");
+        Loader.LoadFunction<RenderedPredictionNodesDelegate>(
+            "principia__RenderedPredictionNodes");
   }
   internal static void RenderedPredictionNodes(
       this IntPtr plugin,
@@ -2847,13 +2847,13 @@ internal static partial class Interface {
       out DisposableIterator ascending,
       out DisposableIterator descending) {
     symbols_.RenderedPredictionNodes(
-          plugin,
-          vessel_guid,
-          t_max,
-          sun_world_position,
-          max_points,
-          out ascending,
-          out descending);
+        plugin,
+        vessel_guid,
+        t_max,
+        sun_world_position,
+        max_points,
+        out ascending,
+        out descending);
   }
 
   private partial class Symbols {
@@ -2862,15 +2862,15 @@ internal static partial class Interface {
         IntPtr plugin,
         uint part_id);
     public ReportGroundCollisionDelegate ReportGroundCollision =
-          Loader.LoadFunction<ReportGroundCollisionDelegate>(
-              "principia__ReportGroundCollision");
+        Loader.LoadFunction<ReportGroundCollisionDelegate>(
+            "principia__ReportGroundCollision");
   }
   internal static void ReportGroundCollision(
       this IntPtr plugin,
       uint part_id) {
     symbols_.ReportGroundCollision(
-          plugin,
-          part_id);
+        plugin,
+        part_id);
   }
 
   private partial class Symbols {
@@ -2880,17 +2880,17 @@ internal static partial class Interface {
         uint part1_id,
         uint part2_id);
     public ReportPartCollisionDelegate ReportPartCollision =
-          Loader.LoadFunction<ReportPartCollisionDelegate>(
-              "principia__ReportPartCollision");
+        Loader.LoadFunction<ReportPartCollisionDelegate>(
+            "principia__ReportPartCollision");
   }
   internal static void ReportPartCollision(
       this IntPtr plugin,
       uint part1_id,
       uint part2_id) {
     symbols_.ReportPartCollision(
-          plugin,
-          part1_id,
-          part2_id);
+        plugin,
+        part1_id,
+        part2_id);
   }
 
   private partial class Symbols {
@@ -2898,8 +2898,8 @@ internal static partial class Interface {
     [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))]
     public delegate string SayHelloDelegate();
     public SayHelloDelegate SayHello =
-          Loader.LoadFunction<SayHelloDelegate>(
-              "principia__SayHello");
+        Loader.LoadFunction<SayHelloDelegate>(
+            "principia__SayHello");
   }
   internal static string SayHello() {
     return symbols_.SayHello();
@@ -2910,8 +2910,8 @@ internal static partial class Interface {
     [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
     public delegate Status SayNotFoundDelegate();
     public SayNotFoundDelegate SayNotFound =
-          Loader.LoadFunction<SayNotFoundDelegate>(
-              "principia__SayNotFound");
+        Loader.LoadFunction<SayNotFoundDelegate>(
+            "principia__SayNotFound");
   }
   internal static Status SayNotFound() {
     return symbols_.SayNotFound();
@@ -2926,8 +2926,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string compressor,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string encoder);
     public SerializePluginDelegate SerializePlugin =
-          Loader.LoadFunction<SerializePluginDelegate>(
-              "principia__SerializePlugin");
+        Loader.LoadFunction<SerializePluginDelegate>(
+            "principia__SerializePlugin");
   }
   internal static string SerializePlugin(
       this IntPtr plugin,
@@ -2935,10 +2935,10 @@ internal static partial class Interface {
       string compressor,
       string encoder) {
     return symbols_.SerializePlugin(
-          plugin,
-          ref serializer,
-          compressor,
-          encoder);
+        plugin,
+        ref serializer,
+        compressor,
+        encoder);
   }
 
   private partial class Symbols {
@@ -2946,13 +2946,13 @@ internal static partial class Interface {
     public delegate void SetBufferDurationDelegate(
         int seconds);
     public SetBufferDurationDelegate SetBufferDuration =
-          Loader.LoadFunction<SetBufferDurationDelegate>(
-              "principia__SetBufferDuration");
+        Loader.LoadFunction<SetBufferDurationDelegate>(
+            "principia__SetBufferDuration");
   }
   internal static void SetBufferDuration(
       int seconds) {
     symbols_.SetBufferDuration(
-          seconds);
+        seconds);
   }
 
   private partial class Symbols {
@@ -2960,13 +2960,13 @@ internal static partial class Interface {
     public delegate void SetBufferedLoggingDelegate(
         int max_severity);
     public SetBufferedLoggingDelegate SetBufferedLogging =
-          Loader.LoadFunction<SetBufferedLoggingDelegate>(
-              "principia__SetBufferedLogging");
+        Loader.LoadFunction<SetBufferedLoggingDelegate>(
+            "principia__SetBufferedLogging");
   }
   internal static void SetBufferedLogging(
       int max_severity) {
     symbols_.SetBufferedLogging(
-          max_severity);
+        max_severity);
   }
 
   private partial class Symbols {
@@ -2975,15 +2975,15 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string value);
     public SetFlagDelegate SetFlag =
-          Loader.LoadFunction<SetFlagDelegate>(
-              "principia__SetFlag");
+        Loader.LoadFunction<SetFlagDelegate>(
+            "principia__SetFlag");
   }
   internal static void SetFlag(
       string name,
       string value) {
     symbols_.SetFlag(
-          name,
-          value);
+        name,
+        value);
   }
 
   private partial class Symbols {
@@ -2992,15 +2992,15 @@ internal static partial class Interface {
         IntPtr plugin,
         int index);
     public SetMainBodyDelegate SetMainBody =
-          Loader.LoadFunction<SetMainBodyDelegate>(
-              "principia__SetMainBody");
+        Loader.LoadFunction<SetMainBodyDelegate>(
+            "principia__SetMainBody");
   }
   internal static void SetMainBody(
       this IntPtr plugin,
       int index) {
     symbols_.SetMainBody(
-          plugin,
-          index);
+        plugin,
+        index);
   }
 
   private partial class Symbols {
@@ -3009,15 +3009,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(PlottingFrameParameters.Marshaler))] PlottingFrameParameters parameters);
     public SetPlottingFrameDelegate SetPlottingFrame =
-          Loader.LoadFunction<SetPlottingFrameDelegate>(
-              "principia__SetPlottingFrame");
+        Loader.LoadFunction<SetPlottingFrameDelegate>(
+            "principia__SetPlottingFrame");
   }
   internal static void SetPlottingFrame(
       this IntPtr plugin,
       PlottingFrameParameters parameters) {
     symbols_.SetPlottingFrame(
-          plugin,
-          parameters);
+        plugin,
+        parameters);
   }
 
   private partial class Symbols {
@@ -3025,13 +3025,13 @@ internal static partial class Interface {
     public delegate void SetStderrLoggingDelegate(
         int min_severity);
     public SetStderrLoggingDelegate SetStderrLogging =
-          Loader.LoadFunction<SetStderrLoggingDelegate>(
-              "principia__SetStderrLogging");
+        Loader.LoadFunction<SetStderrLoggingDelegate>(
+            "principia__SetStderrLogging");
   }
   internal static void SetStderrLogging(
       int min_severity) {
     symbols_.SetStderrLogging(
-          min_severity);
+        min_severity);
   }
 
   private partial class Symbols {
@@ -3039,13 +3039,13 @@ internal static partial class Interface {
     public delegate void SetSuppressedLoggingDelegate(
         int min_severity);
     public SetSuppressedLoggingDelegate SetSuppressedLogging =
-          Loader.LoadFunction<SetSuppressedLoggingDelegate>(
-              "principia__SetSuppressedLogging");
+        Loader.LoadFunction<SetSuppressedLoggingDelegate>(
+            "principia__SetSuppressedLogging");
   }
   internal static void SetSuppressedLogging(
       int min_severity) {
     symbols_.SetSuppressedLogging(
-          min_severity);
+        min_severity);
   }
 
   private partial class Symbols {
@@ -3055,17 +3055,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         int reference_body_index);
     public SetTargetVesselDelegate SetTargetVessel =
-          Loader.LoadFunction<SetTargetVesselDelegate>(
-              "principia__SetTargetVessel");
+        Loader.LoadFunction<SetTargetVesselDelegate>(
+            "principia__SetTargetVessel");
   }
   internal static void SetTargetVessel(
       this IntPtr plugin,
       string vessel_guid,
       int reference_body_index) {
     symbols_.SetTargetVessel(
-          plugin,
-          vessel_guid,
-          reference_body_index);
+        plugin,
+        vessel_guid,
+        reference_body_index);
   }
 
   private partial class Symbols {
@@ -3073,13 +3073,13 @@ internal static partial class Interface {
     public delegate void SetVerboseLoggingDelegate(
         int level);
     public SetVerboseLoggingDelegate SetVerboseLogging =
-          Loader.LoadFunction<SetVerboseLoggingDelegate>(
-              "principia__SetVerboseLogging");
+        Loader.LoadFunction<SetVerboseLoggingDelegate>(
+            "principia__SetVerboseLogging");
   }
   internal static void SetVerboseLogging(
       int level) {
     symbols_.SetVerboseLogging(
-          level);
+        level);
   }
 
   private partial class Symbols {
@@ -3088,15 +3088,15 @@ internal static partial class Interface {
         IntPtr plugin,
         int index);
     public SetWorldRotationalReferenceFrameDelegate SetWorldRotationalReferenceFrame =
-          Loader.LoadFunction<SetWorldRotationalReferenceFrameDelegate>(
-              "principia__SetWorldRotationalReferenceFrame");
+        Loader.LoadFunction<SetWorldRotationalReferenceFrameDelegate>(
+            "principia__SetWorldRotationalReferenceFrame");
   }
   internal static void SetWorldRotationalReferenceFrame(
       this IntPtr plugin,
       int index) {
     symbols_.SetWorldRotationalReferenceFrame(
-          plugin,
-          index);
+        plugin,
+        index);
   }
 
   private partial class Symbols {
@@ -3106,17 +3106,17 @@ internal static partial class Interface {
         QP degrees_of_freedom,
         int celestial_index);
     public UnmanageableVesselVelocityDelegate UnmanageableVesselVelocity =
-          Loader.LoadFunction<UnmanageableVesselVelocityDelegate>(
-              "principia__UnmanageableVesselVelocity");
+        Loader.LoadFunction<UnmanageableVesselVelocityDelegate>(
+            "principia__UnmanageableVesselVelocity");
   }
   internal static XYZ UnmanageableVesselVelocity(
       this IntPtr plugin,
       QP degrees_of_freedom,
       int celestial_index) {
     return symbols_.UnmanageableVesselVelocity(
-          plugin,
-          degrees_of_freedom,
-          celestial_index);
+        plugin,
+        degrees_of_freedom,
+        celestial_index);
   }
 
   private partial class Symbols {
@@ -3126,17 +3126,17 @@ internal static partial class Interface {
         int celestial_index,
         int parent_index);
     public UpdateCelestialHierarchyDelegate UpdateCelestialHierarchy =
-          Loader.LoadFunction<UpdateCelestialHierarchyDelegate>(
-              "principia__UpdateCelestialHierarchy");
+        Loader.LoadFunction<UpdateCelestialHierarchyDelegate>(
+            "principia__UpdateCelestialHierarchy");
   }
   internal static void UpdateCelestialHierarchy(
       this IntPtr plugin,
       int celestial_index,
       int parent_index) {
     symbols_.UpdateCelestialHierarchy(
-          plugin,
-          celestial_index,
-          parent_index);
+        plugin,
+        celestial_index,
+        parent_index);
   }
 
   private partial class Symbols {
@@ -3145,15 +3145,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(RepeatedMarshaler<String, NoOwnershipTransferUTF8Marshaler>))] string[] vessel_guids);
     public UpdatePredictionDelegate UpdatePrediction =
-          Loader.LoadFunction<UpdatePredictionDelegate>(
-              "principia__UpdatePrediction");
+        Loader.LoadFunction<UpdatePredictionDelegate>(
+            "principia__UpdatePrediction");
   }
   internal static void UpdatePrediction(
       this IntPtr plugin,
       string[] vessel_guids) {
     symbols_.UpdatePrediction(
-          plugin,
-          vessel_guids);
+        plugin,
+        vessel_guids);
   }
 
   private partial class Symbols {
@@ -3162,15 +3162,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public VesselBinormalDelegate VesselBinormal =
-          Loader.LoadFunction<VesselBinormalDelegate>(
-              "principia__VesselBinormal");
+        Loader.LoadFunction<VesselBinormalDelegate>(
+            "principia__VesselBinormal");
   }
   internal static XYZ VesselBinormal(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.VesselBinormal(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -3180,17 +3180,17 @@ internal static partial class Interface {
         int parent_index,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public VesselFromParentDelegate VesselFromParent =
-          Loader.LoadFunction<VesselFromParentDelegate>(
-              "principia__VesselFromParent");
+        Loader.LoadFunction<VesselFromParentDelegate>(
+            "principia__VesselFromParent");
   }
   internal static QP VesselFromParent(
       this IntPtr plugin,
       int parent_index,
       string vessel_guid) {
     return symbols_.VesselFromParent(
-          plugin,
-          parent_index,
-          vessel_guid);
+        plugin,
+        parent_index,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -3203,8 +3203,8 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 days_per_cycle,
         int ground_track_revolution);
     public VesselGetAnalysisDelegate VesselGetAnalysis =
-          Loader.LoadFunction<VesselGetAnalysisDelegate>(
-              "principia__VesselGetAnalysis");
+        Loader.LoadFunction<VesselGetAnalysisDelegate>(
+            "principia__VesselGetAnalysis");
   }
   internal static OrbitAnalysis VesselGetAnalysis(
       this IntPtr plugin,
@@ -3213,11 +3213,11 @@ internal static partial class Interface {
       BoxedInt32 days_per_cycle,
       int ground_track_revolution) {
     return symbols_.VesselGetAnalysis(
-          plugin,
-          vessel_guid,
-          revolutions_per_cycle,
-          days_per_cycle,
-          ground_track_revolution);
+        plugin,
+        vessel_guid,
+        revolutions_per_cycle,
+        days_per_cycle,
+        ground_track_revolution);
   }
 
   private partial class Symbols {
@@ -3226,15 +3226,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public VesselGetPredictionAdaptiveStepParametersDelegate VesselGetPredictionAdaptiveStepParameters =
-          Loader.LoadFunction<VesselGetPredictionAdaptiveStepParametersDelegate>(
-              "principia__VesselGetPredictionAdaptiveStepParameters");
+        Loader.LoadFunction<VesselGetPredictionAdaptiveStepParametersDelegate>(
+            "principia__VesselGetPredictionAdaptiveStepParameters");
   }
   internal static AdaptiveStepParameters VesselGetPredictionAdaptiveStepParameters(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.VesselGetPredictionAdaptiveStepParameters(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -3243,15 +3243,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public VesselNormalDelegate VesselNormal =
-          Loader.LoadFunction<VesselNormalDelegate>(
-              "principia__VesselNormal");
+        Loader.LoadFunction<VesselNormalDelegate>(
+            "principia__VesselNormal");
   }
   internal static XYZ VesselNormal(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.VesselNormal(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -3261,17 +3261,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         double mission_duration);
     public VesselRequestAnalysisDelegate VesselRequestAnalysis =
-          Loader.LoadFunction<VesselRequestAnalysisDelegate>(
-              "principia__VesselRequestAnalysis");
+        Loader.LoadFunction<VesselRequestAnalysisDelegate>(
+            "principia__VesselRequestAnalysis");
   }
   internal static void VesselRequestAnalysis(
       this IntPtr plugin,
       string vessel_guid,
       double mission_duration) {
     symbols_.VesselRequestAnalysis(
-          plugin,
-          vessel_guid,
-          mission_duration);
+        plugin,
+        vessel_guid,
+        mission_duration);
   }
 
   private partial class Symbols {
@@ -3281,17 +3281,17 @@ internal static partial class Interface {
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
         AdaptiveStepParameters adaptive_step_parameters);
     public VesselSetPredictionAdaptiveStepParametersDelegate VesselSetPredictionAdaptiveStepParameters =
-          Loader.LoadFunction<VesselSetPredictionAdaptiveStepParametersDelegate>(
-              "principia__VesselSetPredictionAdaptiveStepParameters");
+        Loader.LoadFunction<VesselSetPredictionAdaptiveStepParametersDelegate>(
+            "principia__VesselSetPredictionAdaptiveStepParameters");
   }
   internal static void VesselSetPredictionAdaptiveStepParameters(
       this IntPtr plugin,
       string vessel_guid,
       AdaptiveStepParameters adaptive_step_parameters) {
     symbols_.VesselSetPredictionAdaptiveStepParameters(
-          plugin,
-          vessel_guid,
-          adaptive_step_parameters);
+        plugin,
+        vessel_guid,
+        adaptive_step_parameters);
   }
 
   private partial class Symbols {
@@ -3300,15 +3300,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public VesselTangentDelegate VesselTangent =
-          Loader.LoadFunction<VesselTangentDelegate>(
-              "principia__VesselTangent");
+        Loader.LoadFunction<VesselTangentDelegate>(
+            "principia__VesselTangent");
   }
   internal static XYZ VesselTangent(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.VesselTangent(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
   private partial class Symbols {
@@ -3317,15 +3317,15 @@ internal static partial class Interface {
         IntPtr plugin,
         [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
     public VesselVelocityDelegate VesselVelocity =
-          Loader.LoadFunction<VesselVelocityDelegate>(
-              "principia__VesselVelocity");
+        Loader.LoadFunction<VesselVelocityDelegate>(
+            "principia__VesselVelocity");
   }
   internal static XYZ VesselVelocity(
       this IntPtr plugin,
       string vessel_guid) {
     return symbols_.VesselVelocity(
-          plugin,
-          vessel_guid);
+        plugin,
+        vessel_guid);
   }
 
 }
