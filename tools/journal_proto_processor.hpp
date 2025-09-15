@@ -215,7 +215,7 @@ class JournalProtoProcessor final {
 
   // For all fields, a lambda that takes a C# parameter type as stored in
   // `field_cs_type_`, and adds `this` to it if `is_subject`; the result can be
-  // used to declare an parameter in an extension method.
+  // used to declare a parameter in an extension method.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& type)>>
       field_cs_extension_method_fn_;
