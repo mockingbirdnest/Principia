@@ -48,7 +48,7 @@ This document describes the implementation of functions \texttt{Sin} and \texttt
 The implementation follows the ideas described by \cite{GalBachelis1991} and uses accurate tables produced by the method presented in \cite{StehléZimmermann2005}.  It guarantees correct rounding with a high probability.  In circumstances where it cannot guarantee correct rounding, it falls back to the (slower but correct) implementation provided by the CORE-MATH project \cite{SibidanovZimmermannGlondu2022} \cite{ZimmermannSibidanovGlondu2024}.  More precisely, the algorithm proceeds through the following steps:
 \begin{itemize}[nosep]
 \item perform argument reduction using Cody and Waite's algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010});
-\item if argument reduction loses too many bits (i.e., the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item if argument reduction loses too many bits (\idest, the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise, uses accurate tables and polynomial approximations to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
 \item if the result fails Muller's rounding test (\cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise return the rounded result of the preceding computation.
@@ -129,7 +129,7 @@ where $\gk'_1 \leq \gk_1$ accounts for any leading zeroes in the bits of $\frac{
 \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M} \ULP\of{\frac{\Pi}{2}}
 \]
 
-Noting that the absolute error on the rounding that appears in the definition of $\gd C_1$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1}$, we obtain the absolute error on the two-term approximation\footnote{With the chosen value $\gk_1 = 8$, the two sides of this inequality turn out to be $2^{-103.217}$ and $2^{-101}$.  The difference comes from the fact that $\abs{\frac{\Pi}{2} - C_1 - \gd C_1}$ has three zeroes after the last bit of its mantissa, but the theoretical computation above assumes the worse, i.e., a run of ones.}:
+Noting that the absolute error on the rounding that appears in the definition of $\gd C_1$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1}$, we obtain the absolute error on the two-term approximation\footnote{With the chosen value $\gk_1 = 8$, the two sides of this inequality turn out to be $2^{-103.217}$ and $2^{-101}$.  The difference comes from the fact that $\abs{\frac{\Pi}{2} - C_1 - \gd C_1}$ has three zeroes after the last bit of its mantissa, but the theoretical computation above assumes the worst, \idest, a run of ones.}:
 \begin{align}
 \abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \label{eqnpitwoterms}
@@ -319,7 +319,7 @@ The exact $\twodifference$ yields a pair such that $\abs{\gd \red x} \le \frac{\
 \]
 The accurate tables must be constructed so that the last interval covers angles misrounded in that manner\footnote{In practice this is not a stringent constraint because the distance between accurate table entries is much larger than this quantity.}.
 
-In the computation of the trigonometric functions, we need $\red x + \gd \red x$ to provide enough accuracy that the final result is correctly rounded most of the time.  The above error bound shows that, if $\red x$ is very small (i.e., if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\red x + \gd \red x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
+In the computation of the trigonometric functions, we need $\red x + \gd \red x$ to provide enough accuracy that the final result is correctly rounded most of the time.  The above error bound shows that, if $\red x$ is very small (\idest, if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\red x + \gd \red x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
 \begin{equation}
 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \label{eqnreductionbound}
@@ -442,7 +442,7 @@ The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces 
 \[
 \mathscr{E}\of{t} \DefineAs \frac{f\of{t} - p\of{q\of{t}}}{g\of{t}}
 \]
-The residual is equioscillatory and bounded.  The choice of $f$ and $q$ is dictated by the properties desired for the polynomial approximation: parity, value at zero, etc.  The error function $g$, however, can be freely chosen to achieve the desired error bound on the approximation (e.g., minimizing the relative or absolute error).
+The residual is equioscillatory and bounded.  The choice of $f$ and $q$ is dictated by the properties desired for the polynomial approximation: parity, value at zero, etc.  The error function $g$, however, can be freely chosen to achieve the desired error bound on the approximation (\exempligratia, minimizing the relative or absolute error).
 
 \subsection*{Sin Near Zero}
 
@@ -498,11 +498,11 @@ We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative) a
 
 \subsection*{Reduced Angle}
 
-Argument reduction took the input angle $x$ and produced a pair $\pa{\red x, \gd \red x}$ approximating the angle reduced modulo $\frac{\Pi}{4}$.  That approximation is correct to $M + \gk_3$ bits.  We therefore have, from equation (\ref{eqnreductionbound}):
+Argument reduction took the input angle $x$ and produced a pair $\pa{\red x, \gd \red x}$ approximating the angle reduced modulo $\frac{\Pi}{2}$.  That approximation is correct to $M + \gk_3$ bits.  We therefore have, from equation (\ref{eqnreductionbound}):
 \[
 x \equiv \red x + \gd \red x + \gz_0 \; \red x \pmod{\frac{\Pi}{4}} \qquad \abs{\gz_0} \le 2^{-\gk_3 - M}
 \]
-For simplicity of the error analysis we can assume $0 \le x \le \frac{\Pi}{4}$: even though we do not do argument reduction when $x$ is less than $\frac{\Pi}{4}$, the error analysis would work exactly the same if $x$ was simply provided as a high-accuracy value (e.g., a double-double) and reduced using the techniques above.
+For simplicity of the error analysis we can assume $0 \le x \le \frac{\Pi}{4}$: even though we do not do argument reduction when $x$ is less than $\frac{\Pi}{4}$, the error analysis would work exactly the same if $x$ was simply provided as a high-accuracy value (\exempligratia, a double-double) and reduced using the techniques above.
 
 \subsection*{Rounding Test}
 
@@ -727,7 +727,7 @@ As explained above (see \nameref{secerroranalysissin}) the expression for $r$ mu
 \[
 \pa{h \round{s_k} - \round{c_k}} \pa{1 - \pa{1 + \gd_{11}} \pa{1 + \gd_{12}}}
 \]
-and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B838'5D35'1p0}$.
+and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B838'5D8B'6p0}$.
 
 As mentioned above (see \nameref{overview}), in these steps we do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
