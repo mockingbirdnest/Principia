@@ -26,13 +26,15 @@
 \newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
 \newcommand{\roundTowardPositive}[1]{\doubleSquareBrackets{#1}_+}
 \newcommand{\roundTowardNegative}[1]{\doubleSquareBrackets{#1}_-}
+\newcommand{\roundAll}[1]{\doubleSquareBrackets{#1}_⋯}
 \newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
 \newcommand{\bin}[1]{{_{2}}\mathrm{#1}}
+\newcommand{\red}[1]{\tilde{#1}}
 
 %%%% Title and authors.
 
 \title{An Implementation of Sin and Cos Using Gal's Accurate Tables}
-\date{\printdate{2025-02-02}}
+\date{\printdate{2025-09-14}}
 \author{Pascal~Leroy (phl)}
 \begin{document}
 \maketitle
@@ -42,23 +44,25 @@ This document describes the implementation of functions \texttt{Sin} and \texttt
 \end{sloppypar}
 
 \section*{Overview}
+
 The implementation follows the ideas described by \cite{GalBachelis1991} and uses accurate tables produced by the method presented in \cite{StehléZimmermann2005}.  It guarantees correct rounding with a high probability.  In circumstances where it cannot guarantee correct rounding, it falls back to the (slower but correct) implementation provided by the CORE-MATH project \cite{SibidanovZimmermannGlondu2022} \cite{ZimmermannSibidanovGlondu2024}.  More precisely, the algorithm proceeds through the following steps:
 \begin{itemize}[nosep]
 \item perform argument reduction using Cody and Waite's algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010});
-\item if argument reduction loses too many bits (i.e., the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
-\item otherwise, uses accurate tables and a polynomial approximation to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
-\item if the result has a ``dangerous rounding configuration'' (as defined by \cite{GalBachelis1991}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item if argument reduction loses too many bits (\idest, the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item otherwise, uses accurate tables and polynomial approximations to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
+\item if the result fails Muller's rounding test (\cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise return the rounded result of the preceding computation.
 \end{itemize}
 
 \section*{Notation and Accuracy Model} 
+
 In this document we assume a base-2 floating-point number system with $M$ significand bits\footnote{In \texttt{binary64}, $M = 53$.} similar to the IEEE formats.  We define a real  function $\mant$ and an integer function $\expn$ denoting the \emph{significand} and \emph{exponent} of a real number, respectively:
 \[
 x = ±\mant\of{x} \times 2^{\expn\of{x}} \qquad\text{with}\qquad 2^{M-1} \leq \mant\of{x} \leq 2^M - 1
 \]
 Note that this representation is unique.  Furthermore, if $x$ is a floating-point number, $\mant\of{x}$ is an integer.
 
-The \emph{unit of the last place} of $x$ is defined as:
+The \emph{unit of the last place\footnote{Intuitively, this is the ULP ``above'' for powers of 2.}} of $x$ is defined as:
 \[
 \ULP\of{x} \DefineAs 2^{\expn\of{x}}
 \]
@@ -70,9 +74,10 @@ In particular, $\ULP\of{1} = 2^{1 - M}$ and:
 
 We ignore the exponent bias, overflow and underflow as they play no role in this discussion.
 
-Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\abs{\gd_i} < u = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
+Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\abs{\gd_i} < u = \ULP\of{\frac{1}{2}} = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
 
 \section*{Approximation of $\frac{\Pi}{2}$}
+
 To perform argument reduction, we need to build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
 
 Let $z \geq 0$.  We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
@@ -103,9 +108,10 @@ which can be made more precise by noting that the function $\ULP$ is always a po
 \end{equation}
 
 \subsubsection*{Two-Term Approximation}
+
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of two floating-point numbers:
 \[
-\frac{\Pi}{2} ≃ C_1 + \gd C_1
+\frac{\Pi}{2} \simeq C_1 + \gd C_1
 \]
 which are defined as:
 \begin{equation*}
@@ -123,12 +129,14 @@ where $\gk'_1 \leq \gk_1$ accounts for any leading zeroes in the bits of $\frac{
 \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M} \ULP\of{\frac{\Pi}{2}}
 \]
 
-Noting that the absolute error on the rounding that appears in the definition of $\gd C_1$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1}$, we obtain the absolute error on the two-term approximation:
+Noting that the absolute error on the rounding that appears in the definition of $\gd C_1$ is bounded by $\frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1}$, we obtain the absolute error on the two-term approximation\footnote{With the chosen value $\gk_1 = 8$, the two sides of this inequality turn out to be $2^{-103.217}$ and $2^{-101}$.  The difference comes from the fact that $\abs{\frac{\Pi}{2} - C_1 - \gd C_1}$ has three zeroes after the last bit of its mantissa, but the theoretical computation above assumes the worst, \idest, a run of ones.}:
 \begin{align}
 \abs{\frac{\Pi}{2} - C_1 - \gd C_1} \leq \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} = 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \label{eqnpitwoterms}
 \end{align}
-and the following upper bound for $\gd C_1$:
+
+
+From this we derive the following upper bound for $\gd C_1$:
 \begin{align}
 \abs{\gd C_1} &< \frac{\Pi}{2} - C_1 + \frac{1}{2} \ULP\of{\frac{\Pi}{2} - C_1} \nonumber \\
 &< 2^{\gk'_1} \ULP\of{\frac{\Pi}{2}}+2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk'_1} \pa{1 + 2^{-M - 1}} \ULP\of{\frac{\Pi}{2}}
@@ -138,9 +146,10 @@ and the following upper bound for $\gd C_1$:
 This scheme gives a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
 
 \subsubsection*{Three-Term Approximation}
+
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of three floating-point numbers:
 \[
-\frac{\Pi}{2} ≃ C_2 + C'_2 + \gd C_2
+\frac{\Pi}{2} \simeq C_2 + C'_2 + \gd C_2
 \]
 which are defined as:
 \begin{equation*}
@@ -192,26 +201,29 @@ and the following upper bound for $\gd C_2$:
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
 \section*{Argument Reduction}
-Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\hat x, \gd \hat x}$ such that:
+
+Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\red x, \gd \red x}$ such that:
 \[
 \begin{dcases}
-\hat x + \gd \hat x ≅ x \pmod{\frac{\Pi}{2}} \\
-\hat x \;\text{is approximately in}\; \intclos{-\frac{\Pi}{4}}{\frac{\Pi}{4}} \\
-\abs{\gd \hat x} \leq \frac{1}{2} \ULP\of{\hat x} 
+\red x + \gd \red x ≅ x \pmod{\frac{\Pi}{2}} \\
+\red x \;\text{is approximately in}\; \intclos{-\frac{\Pi}{4}}{\frac{\Pi}{4}} \\
+\abs{\gd \red x} \leq \frac{1}{2} \ULP\of{\red x} 
 \end{dcases}
 \]
 
 \subsection*{Argument Reduction for Small Angles}
-If $\abs x < \round{\frac{\Pi}{4}}$ then $\hat x = x$ and $\gd \hat x = 0$.
+
+If $\abs x < \round{\frac{\Pi}{4}}$ then $\red x = x$ and $\gd \red x = 0$.
 
 \subsection*{Argument Reduction Using the Two-Term Approximation}
+
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
 \begin{dcases}
 n &= \iround{\round{x \round{\frac{2}{\Pi}}}} \\
 y &= x - n \; C_1 \\
 \gd y &= \round{n \; \gd C_1} \\
-\pa{\hat x, \gd \hat x} &= \twodifference\of{y, \gd y}
+\pa{\red x, \gd \red x} &= \twodifference\of{y, \gd y}
 \end{dcases}
 \]
 The first thing to note is that $\abs n \leq 2^{\gk_1}$.  We have:
@@ -230,9 +242,9 @@ from which we deduce the upper bound:
 \end{align*}
 If $2^{\gk_1} \gg_3$ is small enough (less than $1/2$), the rounding cannot cause $n$ to exceed $2^{\gk_1}$.  In practice we choose a relatively small value for $\gk_1$, so this condition is met.
 
-Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.  In the following analysis we assume that $n > 0$.  The results are symmetrical if $n < 0$.  There are two possible kinds of misrounding, with different bounds.
+Now if $x$ is close to an odd multiple of $\frac{\Pi}{4}$ it is possible for misrounding to happen.   There are two kinds of misrounding, with different bounds.
 
-A misrounding of the first kind occurs if:
+A misrounding of the first kind occurs if, assuming $n > 0$:
 \[
 x < \pa{n - \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} > n - \frac{1}{2}
 \]
@@ -244,12 +256,13 @@ In which case the computation of $n$ results in:
 \[
 n \frac{\Pi}{2} - x < \frac{\Pi}{4} \pa{1 + \frac{\gg_2}{1 + \gg_2} \pa{2 n - 1}}
 \]
-This bound tells us that the absolute value of the reduced angle may exceed $\frac{\Pi}{4}$ by as much as:
-\[
+In this case, misrounding causes the absolute value of the reduced angle to increase and it may thus exceed $\frac{\Pi}{4}$ by as much as:
+\begin{equation}
 \frac{\Pi}{4} \frac{\gg_2}{1 + \gg_2} \pa{2^{\gk_1 + 1} - 1}
-\]
+\label{eqnmisroundingbound}
+\end{equation}
 
-A misrounding of the second kind occurs if:
+A misrounding of the second kind occurs if, assuming $n \geq 0$:
 \[
 x > \pa{n + \frac{1}{2}}\frac{\Pi}{2} \quad \text{and} \quad \round{x \round{\frac{2}{\Pi}}} < n + \frac{1}{2}
 \]
@@ -257,17 +270,15 @@ A derivation similar to the one above gives the following condition for this mis
 \[
 x < \frac{\Pi}{2} \pa{n + \frac{1}{2}} \frac{1}{\pa{1 + \gd_2} \pa{1 + \gd_3}} \leq \frac{\Pi}{2} \pa{n + \frac{1}{2}} \pa{1 + \gg_2}
 \]
-from which we derive the bound:
+we derive the bound:
 \[
 x - n \frac{\Pi}{2} < \frac{\Pi}{4} \pa{1 + \gg_2 \pa{2 n + 1}}
 \]
-and thus the excess above $\frac{\Pi}{4}$:
-\begin{equation}
+In this case, misrounding causes the absolute value of the reduced angle to decrease by as much as:
+\[
 \frac{\Pi}{4} \gg_2 \pa{2^{\gk_1 + 1} + 1}
-\label{eqnmisroundingbound}
-\end{equation}
-
-It's clear that the error of the second kind is always larger than that of the first kind, so (\ref{eqnmisroundingbound}) is the largest possible misrounding and must be taken into account when building the accurate tables.
+\]
+This is however not a concern for the accurate tables as it cannot cause the reduced angle to become negative.
 
 Using the bound on $\abs n$ and the fact that $C_1$ has $\gk_1$ trailing zeroes, we see that the product $n \; C_1$ is exact.  The subtraction $x - n \; C_1$ is exact by Sterbenz's Lemma.  Finally, the last step performs an exact addition\footnote{The more efficient $\quicktwodifference$ is not usable here.  First, note that $\abs y$ is equal to $\ULP\of{x}$ if we take $x$ to be the successor or the predecessor of $n C_1$ for any $n$. Ignoring rounding errors we have:
 \[ 
@@ -284,7 +295,7 @@ plugging $\ULP\of{\frac{\Pi}{2}} = 2^{1 - M}$ we find:
 Therefore, as long as $\gk'_1 > 2$, there exist arguments $x$ for which $\abs{\gd y} > \abs y$.
 } using algorithm 4 of \cite{HidaLiBailey2007}.
 
-To compute the overall error on argument reduction\footnote{Note that this error analysis is correct even in the face of misrounding.  Misrounding can combine with the argument reduction error, though, to cause $\abs{y - {\gd y}}$ to move farther above $\frac{\Pi}{4}$.}, first remember that, from equation (\ref{eqnpitwoterms}), we have:
+To compute the overall error on argument reduction\footnote{Note that this error analysis is correct even in the face of misrounding.}, first remember that, from equation (\ref{eqnpitwoterms}), we have:
 \[
 C_1 + \gd C_1 = \frac{\Pi}{2} + \gz \quad \text{with} \quad \abs{\gz} \leq 2^{\gk'_1 - M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
@@ -302,18 +313,26 @@ from which we deduce an upper bound on the absolute error of the reduction:
 \end{align*}
 where we have used the upper bound for $\gd C_1$ given by equation (\ref{eqnabsdc1}).
 
-In the computation of the trigonometric functions, we need $\hat x + \gd \hat x$ to provide enough accuracy that the final result is correctly rounded most of the time, and that any case of incorrect rounding may be detected.  The above error bound shows that, if $\hat x$ is very small (i.e., if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\hat x + \gd \hat x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
+The exact $\twodifference$ yields a pair such that $\abs{\gd \red x} \le \frac{\ULP\of{\red x}}{2} \le 2^{-M} \abs{\red x}$.  Furthermore, misrounding of the first kind and the above error on the reduction may combine to cause $\abs{\red x}$ to move above $\frac{\pi}{4}$ by as much as:
 \[
-2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}} \leq 2^{-\gk_3 - M} \abs{\hat x}
+\frac{\Pi}{4} \frac{\gg_2}{1 + \gg_2} \pa{2^{\gk_1 + 1} - 1} + 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}}
 \]
+The accurate tables must be constructed so that the last interval covers angles misrounded in that manner\footnote{In practice this is not a stringent constraint because the distance between accurate table entries is much larger than this quantity.}.
+
+In the computation of the trigonometric functions, we need $\red x + \gd \red x$ to provide enough accuracy that the final result is correctly rounded most of the time.  The above error bound shows that, if $\red x$ is very small (\idest, if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\red x + \gd \red x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
+\begin{equation}
+2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
+\label{eqnreductionbound}
+\end{equation}
 which leads to the following condition on the reduced angle:
 \[
-\abs{\hat x} \geq 2^{\gk_1 + \gk'_1 + \gk_3 + 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 2}
+\abs{\red x} \geq 2^{\gk_1 + \gk'_1 + \gk_3 + 1} \ULP\of{\frac{\Pi}{2}} = 2^{\gk_1 + \gk'_1 + \gk_3 - M + 2}
 \]
 
-The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding most of the time and detect cases of dangerous rounding.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\hat x} \geq 2^{-20} ≃ 9.5 \times 10^{-7}$.
+The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.
 
 \subsection*{Argument Reduction Using the Three-Term Approximation}
+
 If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
 \[
 \begin{dcases}
@@ -322,7 +341,7 @@ y &= x - n \; C_2 \\
 y' &= n \; C'_2 \\
 \gd y &= \round{n \; \gd C_2} \\
 \pa{z, \gd z} &= \quicktwosum\of{y', \gd y} \\
-\pa{\hat x, \gd \hat x} &= \longsub\of{y, \pa{z, \gd z}}
+\pa{\red x, \gd \red x} &= \longsub\of{y, \pa{z, \gd z}}
 \end{dcases}
 \]
 The products $n \; C_2$ and $n \; C'_2$ are exact thanks to the $\gk_2$ trailing zeroes of $C_2$ and $C'_2$.  The subtraction $x - n \; C_2$ is exact by Sterbenz's Lemma.  $\quicktwosum$ performs an exact addition using algorithm 3 of \cite{HidaLiBailey2007}; it is usable in this case because clearly $\abs{\gd y} < \abs{y'}$.
@@ -353,33 +372,367 @@ from which we deduce an upper bound on the absolute error of the reduction, noti
 \end{align*}
 where the second inequality uses $\gg_2 \pa{2^{\gk_2 + 1} + 1} < 3 u \; 2^{\gk_2 + 1}$.
 
-A sufficient condition for the reduction to guarantee $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3 - 1} \abs{\ULP\of{\hat x}}$ which itself is less than $2^{-\gk_3 - M} \abs{\hat{x}}$.  Therefore we want:
+A sufficient condition for the reduction to guarantee $\gk_3$ extra bits of accuracy is for this error to be less than $2^{-\gk_3 - 1} \ULP\of{\red x}$ which itself is less than $2^{-\gk_3 - M} \abs{\red{x}}$.  Therefore we want:
 \begin{align*}
-\abs{\hat x} &\geq 2^{\gk_3 - M} \pa{2^{\gk_2} \pa{2^{\gk'_2 + \gk''_2 + 1} + 3} \ULP\of{\frac{\Pi}{2}} + \Pi} \\
+\abs{\red x} &\geq 2^{\gk_3 - M} \pa{2^{\gk_2} \pa{2^{\gk'_2 + \gk''_2 + 1} + 3} \ULP\of{\frac{\Pi}{2}} + \Pi} \\
 &= 2^{\gk_3 - M} \pa{2^{\gk_2 - M + 1} \pa{2^{\gk'_2 + \gk''_2 + 1} + 3} + \Pi}
 \end{align*}
 and it is therefore sufficient to have:
 \[
-\abs{\hat x} \geq 2^{\gk_3 - M} \pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2} + 4}
+\abs{\red x} \geq 2^{\gk_3 - M} \pa{2^{\gk_2 + \gk'_2 + \gk''_2 - M + 2} + 4}
 \]
 
-If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ and $\gk''_2 = 15$.  Therefore, the desired accuracy is obtained as long as $\abs{\hat x} \geq 65 \times 2^{-39} ≃ 1.2 \times 10^{-10}$.
+If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ and $\gk''_2 = 15$.  Therefore, the desired accuracy is obtained as long as $\abs{\red x} \geq 65 \times 2^{-39} \simeq 1.2 \times 10^{-10}$.
 
 \subsection*{Fallback}
+
 If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
 
 \section*{Accurate Tables and Their Generation}
-\section*{Computation of the Functions}
-\subsection*{Sin}
-\subsubsection*{Near Zero}
-For $\hat x$ near zero we evaluate:
+
+\marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
+
+\section*{Overview of the Algorithms}\label{overview}
+
+This section presents an overview of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether $\round{y + \gd y}$ is the correctly-rounded result (this is the case with high probability) or whether we need to fall back to the CORE-MATH implementation.
+
+The lower part of the reduced angle, $\gd \red x$, must be used with care: on the one hand, it would not make sense to explicitly compute expressions like $\round{\red x + \gd \red x}$ as the second term vanishes before the first one; on the other hand, we must avoid the computation of expressions involving $\gd \red x$ that have no bearing on the final result (see \cite[402-404]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} for a discussion of this issue).  We are going to spell out the places where $\gd \red x$ is actually used and we will prove later that neglecting it in other places has no effect.
+
+\subsection*{Sin Near Zero}
+
+For the $\sin$ function near zero the accurate tables method is not usable because the correction term is not small compared to the tabulated value of the function (which can be arbitrarily close to zero).  Instead we use a polynomial approximation that minimizes the relative error on the result.  Since $\sin t$ is an odd function and since its dominant term is $t$, we are using an approximation of the form:
+\[
+\sin t \simeq t + t^3 \; p_{s0}\of{t^2}
+\]
+and we compute:
+\[
+\sin x \simeq \sin\of{\red x + \gd \red x} \simeq \red x + {\red x}^3 p_{s0}\of{{\red x}^2} + \gd \red x
+\]
+
+\subsection*{Sin and Cos Around Table Entries}
+
+Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval\footnote{Obviously the intervals $\mathscr{I}_k$ cannot all contain their bounds.  Because of the way they are computed, the odd multiples of $\gD$ which separate the intervals are rounded to the nearest even $k$.  Therefore, there is an alternation of open-open intervals (for $k$ odd) and closed-closed intervals (for $k$ even).  We do not have a convenient notation for this, and anyway this detail is mostly irrelevant.} containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $\red x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $\red x \in \mathscr{I}_k$ and computing $h = \red x - x_k$.  We then use the addition formulæ to separate out the terms in $x_k$:
 \begin{align*}
-\widehat{x^2} &= \round{{\hat x}^2} = {\hat x}^2 \pa{1 + \gd_1}\\
-\widehat{x^3} &= \round{\hat x \; \widehat{x^2}} = {\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2}\\
-\hat p &= \round{a \widehat{x^2} + b} = \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3}\\
-s\of{x} &\DefineAs \hat x + \round{\round{\widehat{x^3} \hat p} + \gd \hat x} \\
-&= \hat x + \pa{{\hat x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \pa{a {\hat x}^2 \pa{1 + \gd_1} + b} \pa{1 + \gd_3} \pa{1 + \gd_4} + \gd \hat x}\pa{1 + \gd_5} \\
-&= \hat x + a {\hat x}^3 \pa{1 + \gq_5} + b {\hat x}^5 \pa{1 + \gq_4} + \gd \hat x \pa{1 + \gd_5}
+\sin x &\simeq \sin\of{\red x + \gd \red x} \\
+&= \sin\of{x_k + h + \gd \red x} \\
+&= \sin x_k \; \cos\of{h + \gd \red x} + \cos x_k \; \sin\of{h + \gd \red x} \\
+\cos x &\simeq \cos\of{\red x + \gd \red x}  \\
+&= \cos\of{x_k + h + \gd \red x} \\
+&= \cos x_k \; \cos\of{h + \gd \red x} - \sin x_k \; \sin\of{h + \gd \red x}
 \end{align*}
+The quantities $\sin x_k$ and $\cos x_k$ are extremely close to $s_k$ and $c_k$ (this is the core of the accurates table method).  The terms in $h + \gd \red x$ may be approximated by polynomials chosen to respect the parity of $\sin$ and $\cos$ and their values at $0$:
+\begin{align*}
+\sin t &\simeq t + t^3 \; p_s\of{t^2} \\
+\cos t &\simeq 1 + t^2 \; p_c\of{t^2}
+\end{align*}
+After neglecting the terms in $\gd \red x$ that do not contribute to the final result we obtain\footnote{The alert reader will note that the formulæ for $\sin$ and $\cos$ are very similar, which creates an opportunity for implementing a function that computes both together with significant performance savings.}:
+\begin{align*}
+\sin x &\simeq s_k \pa{1 + h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2}} + c_k \pa{h + \gd \red x + h^3 \; p_s\of{h^2}} \\
+&= \pa{s_k + c_k h} + s_k h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2} + c_k h^3 \; p_s\of{h^2} + c_k \gd \red x \\
+\cos x &\simeq c_k \pa{1 + h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2}} - s_k \pa{h + \gd \red x + h^3 \; p_s\of{h^2}} \\
+&= \pa{c_k - s_k h} + c_k h \pa{h + 2 \; \gd \red x} \; p_c\of{h^2} - s_k h^3 \; p_s\of{h^2} - s_k \gd \red x
+\end{align*}
+where $h \pa{h + 2 \; \gd \red x}$ is an approximation of $\pa{h + \gd \red x}^2$.  For accuracy reasons, the leading term of these formulæ must be computed with extra accuracy.
+
+We are now going to look at the techniques used to obtain polynomial approximation and we will later analyze the errors committed by these formulæ.
+
+\section*{Polynomial Approximations}
+
+The \textit{Mathematica} function \texttt{GeneralMiniMaxApproximation} produces a minimax polynomial $p$ such that $p\of{q\of{t}}$ approximates a function $f\of{t}$ by minimizing the $\Lspace$ norm of the \emph{residual} function defined as:
+\[
+\mathscr{E}\of{t} \DefineAs \frac{f\of{t} - p\of{q\of{t}}}{g\of{t}}
+\]
+The residual is equioscillatory and bounded.  The choice of $f$ and $q$ is dictated by the properties desired for the polynomial approximation: parity, value at zero, etc.  The error function $g$, however, can be freely chosen to achieve the desired error bound on the approximation (\exempligratia, minimizing the relative or absolute error).
+
+\subsection*{Sin Near Zero}
+
+Near zero we are looking for an approximation that minimizes the relative error of the result over the interval $\intclos{0}{\gD}$, where $\gD$ is chosen so that $\gD^2 \ll 1$.
+
+We are therefore calling \texttt{GeneralMiniMaxApproximation} with:
+\[
+\begin{dcases}
+q\of{t} &\DefineAs t^2 \\
+f\of{t} &\DefineAs \frac{\sin t - t}{t^3} \\
+g\of{t} &\DefineAs \frac{\sin t}{t^3}
+\end{dcases}
+\]
+The degree of $p_{s0}$ is choosen so that the approximation error is less than $\ULP\of{\gD^2}$.
+
+In practice we choose $\gD = 2^{-10}$, and compute a degree-1 polynomial with a residual smaller than $2^{-85.560}$ (before rounding the coefficients to machine numbers).
+
+\subsection*{Sin and Cos Around Table Entries}
+
+Around table entries, it would be natural to approximate $\cos$ by a polynomial minimizing the absolute or relative error.  Unfortunately this creates singularities in the error analysis.  To see why, consider the term $h \pa{h + 2 \; \gd \red x} p_c\of{h^2}$ which appears in the computations above, and expand it by making the error function $g$ and the residual $\mathscr{E}$ explicit:
+\begin{align*}
+h \; \pa{h + 2 \; \gd \red x} p_c\of{h^2} &= h \; \pa{h + 2 \; \gd \red x} \pa{\frac{\cos h - 1}{h^2} + g\of{h} \mathscr{E}\of{h}} \\
+&= \cos h - 1 + 2 \; \gd \red x \frac{\cos h - 1}{h} + 2 \; h \; \gd \red x \; g\of{h} \mathscr{E}\of{h} + h^2 g\of{h} \mathscr{E}\of{h}
+\end{align*}
+When $h \to 0$, the dominant term is $2 \; h \; \gd \red x \; g\of{h} \mathscr{E}\of{h}$.  Since $\mathscr{E}\of{h}$ is bounded, this term is of order $\BigO\of{h \; g\of{h}}$.  To obtain an absolute or relative error on $\cos$ we would need to choose $g\of{h} = 1/h^2$ or $g\of{h} = \cos h/h^2$, respectively.  However, these choices yield a dominant term of order $\BigO\of{1/h}$ which diverges when $h \to 0$.  The root cause is that we are computing an approximation based on $h$ alone, but we use it in combination with the term in $\gd \red x$ which was not part of the optimization.
+
+To avoid this issue, we choose $g\of{h} = \pa{\cos h - 1}/h^2$ which minimizes the relative error on $p_c\of{h}$ and leads to a straightforward error analysis.  Therefore, for $\cos$ we call \texttt{GeneralMiniMaxApproximation} with:
+\[
+\begin{dcases}
+q\of{t} &\DefineAs t^2 \\
+f\of{t} &\DefineAs \frac{\cos t - 1}{t^2} \\
+g\of{t} &\DefineAs \frac{\cos t - 1}{t^2}
+\end{dcases}
+\]
+
+For $\sin$ there is no such issue, therefore we simply minimize the relative error on $\sin t$:
+
+\[
+\begin{dcases}
+q\of{t} &\DefineAs t^2 \\
+f\of{t} &\DefineAs \frac{\sin t - t}{t^3} \\
+g\of{t} &\DefineAs \frac{\sin t}{t^3}
+\end{dcases}
+\]
+
+In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with with a residual smaller than $2^{-85.534}$ and a 1-degree polynomial $p_c$ with a residual smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
+
+\section*{Error Analysis}
+
+We use $\roundAll{expr}$ to denote evaluation where appropriate rounding happens on each literal or operation of the expression $expr$.  This notation is used for error intervals computed using the function \texttt{IEEEEvaluateWithRelativeError} in file {\linebreak}\href{https://github.com/mockingbirdnest/Principia/blob/master/mathematica/ieee754_floating_point_evaluation.wl}{\texttt{mathematica/ieee754\_floating\_point\_evaluation.wl}}.  In particular, $\roundAll{\;}$ takes into account that the evaluation of the polynomials $p_{s0}$, $p_s$, and $p_c$ has two sources of errors: the rounding of the coefficients to machine numbers, and the error due to the floating-point operations; this may lead to asymmetrical error intervals. \marginnote{TODO(phl): Try to tune the high-degree coefficient after rounding the low-degree one.}
+
+We assume that $\red x$ is positive ($\gd \red x$ may be positive or negative) and that the rounding direction is roundTiesToEven.  We \emph{do not} assume that the machine has an FMA instruction in our error analysis: even though we actually use this instruction when available (for performance) our rounding bounds are valid even in the absence of an FMA\footnote{This means that the accuracy computed below is possibly pessimistic by a few hundredth of bits, which has no effect on performance.}.
+
+\subsection*{Reduced Angle}
+
+Argument reduction took the input angle $x$ and produced a pair $\pa{\red x, \gd \red x}$ approximating the angle reduced modulo $\frac{\Pi}{2}$.  That approximation is correct to $M + \gk_3$ bits.  We therefore have, from equation (\ref{eqnreductionbound}):
+\[
+x \equiv \red x + \gd \red x + \gz_0 \; \red x \pmod{\frac{\Pi}{4}} \qquad \abs{\gz_0} \le 2^{-\gk_3 - M}
+\]
+For simplicity of the error analysis we can assume $0 \le x \le \frac{\Pi}{4}$: even though we do not do argument reduction when $x$ is less than $\frac{\Pi}{4}$, the error analysis would work exactly the same if $x$ was simply provided as a high-accuracy value (\exempligratia, a double-double) and reduced using the techniques above.
+
+\subsection*{Rounding Test}
+
+The rounding test described in \cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} is done by comparing $y$ and $\round{y + \round{\gd y \; e}}$ for equality, where $e > 1$ is computed based on the bound on the relative error of $y + \gd y$ with respect to $\sin x$ or $\cos x$.  In our case, when an FMA is available, we want to compute the second part as $\round{y + \gd y \; e}$.  We must analyse what this implies for the computation of $e$.
+
+The proof of the rounding test is rather convoluted, but for our purpose the important part is the implication\footnote{We adapt the proof to use our notation.}, when $y$ is not a power of 2 or $\gd y \geq 0$:
+\[
+y = \round{y + \round{\gd y \; e}} \implies \round{\gd y \; e} \le \frac{\ULP\of{y}}{2} \implies \gd y \; e \; \pa{1 - \ULP\of{\frac{1}{2}}} \le \frac{\ULP\of{y}}{2}
+\]
+When an FMA is used the smaller term has to be less that half a ULP of the larger term, otherwise the result would round away from $y$.  This gives the tighter bound:
+\[
+y = \round{y + \gd y \; e} \implies \gd y \; e \le \frac{\ULP\of{y}}{2}
+\]
+
+Similarly when $y$ is a power of 2 and $\gd y < 0$ the proof depends on the implications:
+\[
+y = \round{y + \round{\gd y \; e}} \implies \abs{\round{\gd y \; e}} \le \frac{\ULP\of{y}}{4} \implies -\gd y \; e \; \pa{1 - \ULP\of{\frac{1}{2}}} \le \frac{\ULP\of{y}}{4}
+\]
+When an FMA is used the smaller term, which is negative, has to be less than half a ULP \emph{below} the larger term otherwise the result would round below $y$.  Because the ULP below is half the ULP above, this gives the tighter bound:
+\[
+y = \round{y + \gd y \; e} \implies -\gd y \; e \le \frac{\ULP\of{y}}{4}
+\]
+
+Putting these tighter bounds together we obtain:
+\begin{align*}
+k &\DefineAs \floor{-\log_2{\overbar\ge_1} - M} \\
+e_{\text{FMA}} &\DefineAs 1 + \frac{1 + 2^{M + 1} \; \overbar\ge_1}{1 - \overbar\ge_1 - 2^{-k + 1}}
+\end{align*}
+
+In the absence of FMA, \cite{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} gives the same value for $k$ and for $e$:
+\[
+e_{\text{NoFMA}} \DefineAs \pa{1 - 2^{-M}}^{-1}\pa{1 + \frac{1 + 2^{M + 1} \; \overbar\ge_1}{1 - \overbar\ge_1 - 2^{-k + 1}}}
+\]
+We see immediately that $e_{\text{FMA}} < e_{\text{NoFMA}}$, and it is therefore correct to perform the rounding test using $e_{\text{NoFMA}}$, even if an FMA is used to compute $\round{y + \gd y \; e}$.
+
+Obviously, if the above expression does not produce a machine number, it must be rounded towards $+\infty$.  In each of the error analyses below we document the concrete factor $\roundTowardPositive{e_{\text{NoFMA}}}$ to use for the rounding test.
+
+\subsection*{Sin Near Zero}\label{secsinnearzero}
+
+If $\abs{\red x} \le \gD = 2^{-10}$ the steps of the computation are as follows:
+\[
+\begin{dcases}
+t_1 &\DefineAs \roundAll{p_{s0}\of{{\red x}^2}} \\
+t_2 &\DefineAs \round{\round{{\red x}^2} \; \red x} \\
+t_3 &\DefineAs \round{\round{t_1 t_2} + \gd \red x} \\
+y &\DefineAs \red x \\
+\gd y &\DefineAs t_3
+\end{dcases}
+\]
+
+We gave above the upper bound of the residual of the minimax approximation.  It may be rewritten as:
+\[
+p_{s0}\of{t^2} = \frac{\pa{1 + \gz_1} \sin t - t}{t^3} \qquad \abs{\gz_1} < 2^{-85.560}
+\]
+for $\abs t \le \gD$.
+
+The errors committed at each step are as follows:
+\[
+\left\{
+\begin{alignedat}{3}
+t_1 &= p_{s0}\of{{\red x}^2} \pa{1 + \gz_2} &\gz_2 &\in \intopen{-2^{-52.415}}{2^{-53.999}} \\
+&= \frac{\pa{1 + \gz_1} \sin {\red x} - x}{{\red x^3}} \pa{1 + \gz_2} \\
+t_2 &= {\red x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+t_3 &= \pa{t_1 t_2 \pa{1 + \gd_3} + \gd \red x} \pa{1 + \gd_4}
+\end{alignedat}
+\right.
+\]
+The relative error of the entire computation is:
+\[
+r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
+\]
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows\marginnote{TODO(phl): See if this can be proven rigourously.} that this function reaches its extrema at the corners of the domain, which is logical because we expect the minimax polynomial to reach its largest errors on the bounds of the optimization interval.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.583}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'AAD0'391A'Dp0}.$\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
+
+As mentioned above (see \nameref{overview}), in these steps we do not compute the terms ${\red x}^n \; \gd \red x$ for $n > 0$.  The largest such term is for $n = 2$ and the relative error that it induces is:
+\[
+-\frac{1}{2} \frac{{\red x}^2 \; \gd \red x}{\sin\of{\red x + \gd \red x}}
+\]
+This function reaches its extrema on the corners of the triangular domain and is found to be smaller than $2^{-73.999}$, so its contribution to the overall relative error would be very small.
+
+\subsection*{Sin and Cos Around Table Entries}
+
+If $\red x \in \mathscr{I}_k$ we first compute $h = \red x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $\red x / 2 \le x_k \le 2 \red x$.  Based on the range of $\red x$, a sufficient condition for this is:
+\[
+\frac{2 k + 1}{2} \gD \le x_k \le 2 \pa{2 k - 1} \gD
+\]
+Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_1 \le 2 \; \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \; \gD$.\marginnote{TODO(phl): Cross-reference in the accurate tables section.}
+
+For $\sin$ we do not use the interval $\mathscr{I}_0$ (see \nameref{secsinnearzero}, above) but for $\cos$ we do.  That interval is special because $x_0 = 0$: the computation of $h$ is therefore trivially correct.
+
+Interestingly, $x_1 < 2 \gD$ is also the necessary condition to compute $h \; c_k + s_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}.  The subtraction in the second step of their algorithm must be exact, therefore the following Sterbenz inequalities must hold\footnote{Note that $\mathscr{I}_0$ is uninteresting because $c_0 = 1$ and $s_0 = 0$ so the computation is trivially exact.}:
+\[
+\frac{s_k}{2} \le h \; c_k + s_k \le 2 \; s_k
+\]
+This may be rewritten as:
+\[
+-\frac{1}{2} \tan x_k \le h \le \tan x_k
+\]
+Let $x_k = 2 k \gD + \ge_k$ for some small $\ge_k$.  By the definition of $h$ we have:
+\[
+-\gD - \ge_k \le h \le \gD - \ge_k
+\]
+Now we know that $x_k < \tan x_k$ and since $\gD - \ge_k < 2 k \gD + \ge_k$ for all $k > 0$ the right side of the Sterbenz condition is always true.  The left side is more interesting though as:
+\[
+-\frac{1}{2} \tan x_k < -\frac{x_k}{2} = -k \gD - \frac{\ge_k}{2}
+\]
+For $k > 1$, this quantity is clearly smaller than $-\gD - \ge_k$, the lower bound of $h$.  However, when $k = 1$, $-\gD - \ge_1 / 2 \le -\gD - \ge_1$ requires that $\ge_1 \le 0$, in other words, that $x_1$ be below $2 \gD$.  Note that we do not need to go through a similar proof for the exactness of $-h \; s_k + c_k$ because $h \; s_k$ is much smaller than $c_k$ for all $k$.
+
+Finally, for the purpose of error analysis, the relative errors of the minimax polynomials may be rewritten as:
+\begin{align*}
+p_s\of{t^2} &= \frac{\sin t \; \pa{1 + \gz_1} - t}{t^3} \qquad & \abs{\gz_1} < 2^{-85.534} \\
+p_c\of{t^2} &= \frac{\cos t - 1}{t^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-51.466}
+\end{align*}
+
+\subsubsection*{Sin}\label{secerroranalysissin}
+
+The first step of the computation is to evaluate $h \; c_k + s_k$ exactly using an FMA:\marginnote{TODO(phl): Prove that this works, and examine what happens when we don't have FMA.}
+\[
+\pa{z, \gd z} = t_0 = h \; c_k + s_k
+\]
+where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$, where the two terms are exact.
+
+The remaining steps of the computation are then as follows:
+\[
+\begin{dcases}
+t_1 &\DefineAs \roundAll{p_s\of{h^2}} \\
+t_2 &\DefineAs \roundAll{p_c\of{h^2}} \\
+t_3 &\DefineAs \round{h \round{h + \pa{\gd \red x + \gd \red x}}} \\
+t_4 &\DefineAs \round{\round{h^2} \; h} \\
+t_5 &\DefineAs \round{\round{\round{s_k} \; t_3} \; t_2} \\
+t_6 &\DefineAs \round{\round{t_4 \; t_1} + \gd \red x} \\
+t_7 &\DefineAs \round{\round{\round{c_k} \; t_6} + t_5} \\
+t_8 &\DefineAs \round{\round{t_0 \; \gd_0} + t7} \\
+y &\DefineAs t_0 \pa{1 - \gd_0} \\
+\gd y &\DefineAs t_8
+\end{dcases}
+\]
+where we have made the rounding of the accurate table elements $s_k$ and $c_k$ explicit, and used the fact that the computation of $\gd \red x + \gd \red x$ is exact.
+
+The errors commited at each step are as follows:
+\[
+\left\{
+\begin{alignedat}{2}
+t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-53.221}}{2^{-52.808}} \\
+&= \frac{\sin h \; \pa{1 + \gz_1} - h}{h^3} \pa{1 + \gz_3} \\
+t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
+&= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
+t_3 &= h \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
+t_5 &= \round{s_k} \; t_3 \; t_2 \; \pa{1 + \gd_5} \pa{1 + \gd_6} \\
+t_6 &= \pa{t_4 \; t_1 \; \pa{1 + \gd_7} + \gd \red x} \pa{1 + \gd_8} \\
+t_7 &= \pa{\round{c_k} \; t_6 \; \pa{1 + \gd_9} + t_5} \pa{1 + \gd_{10}} \\
+t_8 &= \pa{t_0 \; \gd_0 \; \pa{1 + \gd_{11}} + t_7} \pa{1 + \gd_{12}} \\
+\end{alignedat}
+\right.
+\]
+The relative error of the entire computation is:
+\[
+r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
+\]
+
+Great care is required when evaluating this expression using interval arithmetic because the terms in $\gd_0$ in $t_8$ and $y$ could be considered independent and lead to a useless bound.  To avoid this issue $\gd_0$ must be factored out to appear only once.  Specifically the $\gd_0$ term after factoring is:
+\[
+\pa{h \round{c_k} + \round{s_k}} \pa{\pa{1 + \gd_{11}} \pa{1 + \gd_{12}} - 1}
+\]
+which is pleasantly small, and even though $\gd_{12}$ also appears in the term that does not involve $\gd_0$, the effect of replicating it is acceptable.
+
+The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.734}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'6752'8572'Dp0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}
+
+As mentioned above (see \nameref{overview}), in these steps we do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
+\[
+-\frac{1}{2}\frac{h^2 \; \gd \red x \; \cos x_k}{\sin\of{\red x + \gd \red x}}
+\]
+This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-73.999}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.348}$ so it must be computed.)
+
+\subsubsection*{Cos}\label{secerroranalysiscos}
+
+The first step of the computation is to evaluate $-h \; s_k + c_k$ exactly using an FMA:\marginnote{TODO(phl): Prove that this works, and examine what happens when we don't have FMA.}
+\[
+\pa{z, \gd z} = t_0 = -h \; s_k + c_k
+\]
+where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$, where the two terms are exact.
+
+The remaining steps of the computation are then as follows:
+\[
+\begin{dcases}
+t_1 &\DefineAs \roundAll{p_s\of{h^2}} \\
+t_2 &\DefineAs \roundAll{p_c\of{h^2}} \\
+t_3 &\DefineAs \round{h \round{h + \pa{\gd \red x + \gd \red x}}} \\
+t_4 &\DefineAs \round{\round{h^2} \; h} \\
+t_5 &\DefineAs \round{\round{\round{c_k} \; t_3} \; t_2} \\
+t_6 &\DefineAs \round{\round{t_4 \; t_1} + \gd \red x} \\
+t_7 &\DefineAs \round{-\round{\round{s_k} \; t_6} + t_5} \\
+t_8 &\DefineAs \round{\round{t_0 \; \gd_0} + t_7} \\
+y &\DefineAs t_0 \pa{1 - \gd_0} \\
+\gd y &\DefineAs t_8
+\end{dcases}
+\]
+where we have made the rounding of the accurate table elements $s_k$ and $c_k$ explicit, and used the fact that the computation of $\gd \red x + \gd \red x$ is exact.
+
+The errors commited at each step are as follows:
+\[
+\left\{
+\begin{alignedat}{2}
+t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-53.221}}{2^{-52.808}} \\
+&= \frac{\sin h \; \pa{1 + \gz_1} - h}{h^3} \pa{1 + \gz_3} \\
+t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
+&= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
+t_3 &= h \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
+t_5 &= \round{c_k} \; t_3 \; t_2 \; \pa{1 + \gd_5} \pa{1 + \gd_6} \\
+t_6 &= \pa{t_4 \; t_1 \; \pa{1 + \gd_7} + \gd \red x} \pa{1 + \gd_8} \\
+t_7 &= \pa{\round{s_k} \; t_6 \; \pa{1 + \gd_9} + t_5} \pa{1 + \gd_{10}} \\
+t_8 &= \pa{t_0 \; \gd_0 \; \pa{1 + \gd_{11}} + t_7} \pa{1 + \gd_{12}}
+\end{alignedat}
+\right.
+\]
+The relative error of the entire computation is:
+\[
+r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
+\]
+As explained above (see \nameref{secerroranalysissin}) the expression for $r$ must be rewritten so that $\gd_0$ only appears once.  In this case the $\gd_0$ term is:
+\[
+\pa{h \round{s_k} - \round{c_k}} \pa{1 - \pa{1 + \gd_{11}} \pa{1 + \gd_{12}}}
+\]
+and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B838'5D8B'6p0}$.
+
+As mentioned above (see \nameref{overview}), in these steps we do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
+\[
+\frac{1}{2}\frac{h^2 \; \gd \red x \; \sin x_k}{\cos\of{\red x + \gd \red x}}
+\]
+This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-74.348}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.346}$ so it must be computed.)
 
 \end{document}
