@@ -7,10 +7,10 @@
 #include <cmath>
 
 #include "boost/multiprecision/cpp_bin_float.hpp"
+#include "glog/logging.h"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
-#include "numerics/sin_cos.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -22,18 +22,59 @@ using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
-using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_si;
 
-// Pointers used for indirect calls, set by `StaticInitialization`.
-inline double (__cdecl *cos)(double θ) = nullptr;
-inline double (__cdecl *sin)(double θ) = nullptr;
+// Pointers used for indirect calls, set by `ConfigureElementaryFunctions`.
+inline ElementaryFunctionPointer<double> cos = nullptr;
+inline ElementaryFunctionPointer<double> sin = nullptr;
+inline ElementaryFunctionPointer<SC<double>> sin_cos = nullptr;
+
 inline nullptr_t static_initialization = [](){
   // By default, use the correctly-rounded implementation.  This can be
   // overridden based on the save.
-  StaticInitialization(/*uses_correct_sin_cos=*/true);
+  ConfigureElementaryFunctions(/*uses_correct_sin_cos=*/true);
   return nullptr;
 }();
+
+inline SC<double> __cdecl StdSinCos(double const x) {
+  return {.sin = std::sin(x), .cos = std::cos(x)};
+}
+
+inline ElementaryFunctionsConfigurationSaver::
+ElementaryFunctionsConfigurationSaver()
+    : cos_(cos), sin_(sin), sin_cos_(sin_cos) {
+  CHECK(!active_);
+  active_ = true;
+}
+
+inline ElementaryFunctionsConfigurationSaver::
+~ElementaryFunctionsConfigurationSaver() {
+  cos = cos_;
+  sin = sin_;
+  sin_cos = sin_cos_;
+  active_ = false;
+}
+
+inline std::atomic_bool ElementaryFunctionsConfigurationSaver::active_ = false;
+
+inline void ConfigureElementaryFunctions(bool const uses_correct_sin_cos) {
+  // Beware!  This function cannot use `CanUseHardwareFMA` as it's called from a
+  // static declaration and we have no way to know if that variable has already
+  // been initialized.
+  if (!uses_correct_sin_cos) {
+    cos = &std::cos;
+    sin = &std::sin;
+    sin_cos = &StdSinCos;
+  } else if (EarlyCanUseHardwareFMA()) {
+    cos = &numerics::_sin_cos::Cos<FMAPresence::Present>;
+    sin = &numerics::_sin_cos::Sin<FMAPresence::Present>;
+    sin_cos = &numerics::_sin_cos::SinCos<FMAPresence::Present>;
+  } else {
+    cos = &numerics::_sin_cos::Cos<FMAPresence::Absent>;
+    sin = &numerics::_sin_cos::Sin<FMAPresence::Absent>;
+    sin_cos = &numerics::_sin_cos::SinCos<FMAPresence::Absent>;
+  }
+}
 
 template<typename Q1, typename Q2>
   requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
@@ -181,6 +222,15 @@ CubeRoot<Q> Cbrt(Q const& x) {
   return si::Unit<CubeRoot<Q>> * numerics::_cbrt::Cbrt(x / si::Unit<Q>);
 }
 
+template<int N, typename Q>
+NthRoot<Q, N> Root(Q const& x) {
+  return si::Unit<NthRoot<Q, N>> * Root(N, x / si::Unit<Q>);
+}
+
+inline double Root(int const n, double const x) {
+  return std::pow(x, 1.0 / n);
+}
+
 template<typename Q>
 constexpr Q NextUp(Q const& x) {
   return si::Unit<Q> * numerics::_next::NextUp(x / si::Unit<Q>);
@@ -259,6 +309,10 @@ inline double Tan(Angle const& α) {
   return std::tan(α / Radian);
 }
 
+inline SC<double> SinCos(Angle const& α) {
+  return sin_cos(α / Radian);
+}
+
 inline Angle ArcSin(double const x) {
   return std::asin(x) * Radian;
 }
@@ -310,22 +364,6 @@ inline Angle ArcTanh(double const x) {
 inline Angle UnwindFrom(Angle const& previous_angle, Angle const& α) {
   return α + std::nearbyint((previous_angle - α) / (2 * π * Radian)) *
                  (2 * π * Radian);
-}
-
-inline void StaticInitialization(bool const uses_correct_sin_cos) {
-  // Beware!  This function cannot use `CanUseHardwareFMA` as it's called from a
-  // static declaration and we have no way to know if that variable has already
-  // been initialized.
-  if (!uses_correct_sin_cos) {
-    cos = &std::cos;
-    sin = &std::sin;
-  } else if (EarlyCanUseHardwareFMA()) {
-    cos = &numerics::_sin_cos::Cos<FMAPresence::Present>;
-    sin = &numerics::_sin_cos::Sin<FMAPresence::Present>;
-  } else {
-    cos = &numerics::_sin_cos::Cos<FMAPresence::Absent>;
-    sin = &numerics::_sin_cos::Sin<FMAPresence::Absent>;
-  }
 }
 
 }  // namespace internal

@@ -119,7 +119,7 @@ Plugin::Plugin(std::string const& game_epoch,
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(ParseTT(game_epoch)),
       current_time_(ParseTT(solar_system_epoch)) {
-  StaticInitialization(uses_correct_sin_cos_);
+  ConfigureElementaryFunctions(uses_correct_sin_cos_);
   gravity_model_.set_plugin_frame(serialization::Frame::BARYCENTRIC);
   initial_state_.set_epoch(solar_system_epoch);
   initial_state_.set_plugin_frame(serialization::Frame::BARYCENTRIC);
@@ -1547,7 +1547,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 
   plugin->uses_correct_sin_cos_ = message.has_uses_correct_sin_cos() &&
       message.uses_correct_sin_cos();
-  StaticInitialization(plugin->uses_correct_sin_cos_);
+  ConfigureElementaryFunctions(plugin->uses_correct_sin_cos_);
 
   if (message.has_system_fingerprint()) {
     plugin->system_fingerprint_ = message.system_fingerprint();

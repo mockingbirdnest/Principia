@@ -1,6 +1,9 @@
 #pragma once
 
+#include <atomic>
+
 #include "base/concepts.hpp"
+#include "numerics/sin_cos.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
@@ -12,10 +15,38 @@ namespace _elementary_functions {
 namespace internal {
 
 using namespace principia::base::_concepts;
+using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
+
+// Keep internal.
+template<typename T>
+using SC = _sin_cos::internal::SC<T>;
+
+template<typename Result>
+using ElementaryFunctionPointer = Result(__cdecl*)(double θ);  // NOLINT
+
+// An RAII object that saves the configuration of the elementary function
+// pointers when it is constructed and restores them when it is destroyed.  This
+// is required to isolate the tests that construct plugins.
+class ElementaryFunctionsConfigurationSaver {
+ public:
+  ElementaryFunctionsConfigurationSaver();
+  ~ElementaryFunctionsConfigurationSaver();
+
+ private:
+  static std::atomic_bool active_;
+  ElementaryFunctionPointer<double> const cos_;
+  ElementaryFunctionPointer<double> const sin_;
+  ElementaryFunctionPointer<SC<double>> const sin_cos_;
+};
+
+// Configures the library to use either the platform functions or correctly-
+// rounded ones, depending on the state of the save and the capabilities of the
+// platform.  By default, correctly-rounded functions are used.
+void ConfigureElementaryFunctions(bool uses_correct_sin_cos);
 
 // Equivalent to `std::fma(x, y, z)`.
 template<typename Q1, typename Q2>
@@ -105,6 +136,11 @@ SquareRoot<Q> Sqrt(Q const& x);
 template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x);
 
+template<int N, typename Q>
+NthRoot<Q, N> Root(Q const& x);
+
+double Root(int n, double x);
+
 // Not equivalent to `std::nextafter(x)`; follows IEEE 754:2008 conventions
 // instead of C++ ones.  In particular, `NextUp(-0.0) == NextUp(+0.0)`.
 template<typename Q>
@@ -120,6 +156,7 @@ constexpr Exponentiation<Q, exponent> Pow(Q const& x);
 double Sin(Angle const& α);
 double Cos(Angle const& α);
 double Tan(Angle const& α);
+SC<double> SinCos(Angle const& α);
 
 Angle ArcSin(double x);
 Angle ArcCos(double x);
@@ -149,11 +186,6 @@ template<typename Q>
   requires boost_cpp_number<Q> || std::floating_point<Q>
 Q Round(Q const& x);
 
-// Initializes the library to use either the platform functions or correctly-
-// rounded ones, depending on the state of the save and the capabilities of the
-// platform.
-void StaticInitialization(bool uses_correct_sin_cos);
-
 }  // namespace internal
 
 using internal::Abs;
@@ -164,8 +196,10 @@ using internal::ArcSinh;
 using internal::ArcTan;
 using internal::ArcTanh;
 using internal::Cbrt;
+using internal::ConfigureElementaryFunctions;
 using internal::Cos;
 using internal::Cosh;
+using internal::ElementaryFunctionsConfigurationSaver;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;
@@ -174,10 +208,11 @@ using internal::Mod;
 using internal::NextDown;
 using internal::NextUp;
 using internal::Pow;
+using internal::Root;
 using internal::Round;
 using internal::Sin;
+using internal::SinCos;
 using internal::Sinh;
-using internal::StaticInitialization;
 using internal::Sqrt;
 using internal::Tan;
 using internal::Tanh;

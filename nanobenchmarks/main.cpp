@@ -30,6 +30,8 @@
 
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
+#else
+#include <x86intrin.h>
 #endif
 
 ABSL_FLAG(std::size_t,
@@ -157,7 +159,7 @@ __declspec(noinline) LatencyDistributionTable
     #if PRINCIPIA_COMPILER_MSVC
     __cpuid(registers, leaf);
     #else
-    asm volatile("cpuid");
+    asm volatile("cpuid" ::: "eax", "ebx", "ecx", "edx", "memory");
     #endif
     auto const tsc_start = __rdtsc();
     for (int i = 0; i < loop_iterations; ++i) {
@@ -176,7 +178,7 @@ __declspec(noinline) LatencyDistributionTable
     #if PRINCIPIA_COMPILER_MSVC
     __cpuid(registers, leaf);
     #else
-    asm volatile("cpuid");
+    asm volatile("cpuid" ::: "eax", "ebx", "ecx", "edx", "memory");
     #endif
     double const δtsc = tsc_stop - tsc_start;
     samples[j] = δtsc / loop_iterations;

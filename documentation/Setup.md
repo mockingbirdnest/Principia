@@ -1,8 +1,8 @@
 # Instructions for building Principia on Windows
 
 Before starting, make sure the following are installed on your machine:
-* Visual Studio 2022 version 17.14.8 with C# and C++ support;
-* Windows SDK 10.0.22621;
+* Visual Studio 2022 version 17.14.9 with C# and C++ support;
+* Windows SDK 10.0.26100;
 * .NET Framework 4.7.2 SDK (and Targeting Pack).
 
 The solution contains a C# project named `coverage_analyser` which requires
@@ -63,26 +63,43 @@ In `<root>`, run the following command:
 *Note that the released binaries for Linux and macOS are built using [Azure pipelines](https://dev.azure.com/mockingbirdnest/Principia/_build).  The instructions below are best effort.*
 
 ## Build Prerequisites
-Before starting, make sure the following are installed on your machine:
+Start by cloning the repository; it will create a directory named `<root>/Principia`:
+```bash
+git clone https://github.com/mockingbirdnest/Principia.git
+cd Principia
+```
+
+Before going further, make sure the following are installed on your machine:
 ### Linux
 * Plugin build prerequisites: `unzip` `wget` `binutils` `make` `automake` `libtool` `curl` `cmake`;
 * Adapter build prequisites: `msbuild`
-* Clang version 17, which can be installed thus:
+* Clang version 20, which can be installed thus:
   ```bash
   wget https://apt.llvm.org/llvm.sh
   chmod +x llvm.sh
-  sudo ./llvm.sh 17 all
+  sudo ./llvm.sh 20 all
   ```
 ### macOS
-* Plugin build prerequisites: `autoconf` `automake` `libtool`;
+* Installation prerequisite: `brew`; to install:
+  ```bash
+  arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  ```
+  The `arch` command ensures that this gets the right version when run on a Mac M1.
+* Plugin build prerequisites: `cmake` `autoconf` `automake` `libtool` `python`;  to install:
+  ```bash
+  arch -x86_64 /usr/local/bin/brew install cmake autoconf automake libtool python
+  export PATH="$(brew --prefix python3)/libexec/bin:$PATH"
+  ```
+* Clang version 20; to install: 
+  ```bash
+  arch -x86_64 /usr/local/bin/brew install llvm@20
+  export PATH="/usr/local/opt/llvm@20/bin:$PATH"
+  ```
 * Adapter build prequisites: `msbuild`. It is included as part of [Mono](https://www.mono-project.com/download/stable/), and can alternatively be installed directly using a package manager.
 You might be able to build it using [Visual Studio for Mac](https://visualstudio.microsoft.com/vs/mac/),
 but this is untested.
-* Clang version 17, which can be installed thus:
-  ```bash
-  brew install llvm@17
-  ```
-Note that the resulting binary targets macOS 10.13 (High Sierra) but running with old versions of macOS may or may not work.
+
+Note that the resulting binary targets macOS 13 (Ventura); running with older versions of macOS may or may not work.
   
 ## Installing the dependencies
 

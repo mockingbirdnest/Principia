@@ -9,6 +9,7 @@
     <Import Project="..\shared\base.vcxitems" Label="Shared" />
     <Import Project="..\shared\geometry.vcxitems" Label="Shared" />
     <Import Project="..\shared\testing_utilities.vcxitems" Label="Shared" />
+    <Import Project="..\shared\functions\functions.vcxitems" Label="Shared" />
   </ImportGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -163,6 +164,7 @@
     <ClCompile Include="root_finders_test.cpp" />
     <ClCompile Include="scale_b_test.cpp" />
     <ClCompile Include="sin_cos.cpp" />
+    <ClCompile Include="sin_cos_test.cpp" />
     <ClCompile Include="unbounded_arrays_test.cpp" />
   </ItemGroup>
   <ItemGroup>

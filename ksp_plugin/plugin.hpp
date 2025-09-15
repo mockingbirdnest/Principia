@@ -34,6 +34,7 @@
 #include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -82,6 +83,7 @@ using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_body;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -534,8 +536,9 @@ class Plugin {
   bool is_loaded(not_null<Vessel*> vessel) const;
 
   // Initialization objects.
-  Monostable initializing_;
+  ElementaryFunctionsConfigurationSaver configuration_saver_;  // Must be first.
   bool uses_correct_sin_cos_ = true;
+  Monostable initializing_;
   serialization::GravityModel gravity_model_;
   serialization::InitialState initial_state_;
   std::map<std::string, Index> name_to_index_;

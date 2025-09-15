@@ -273,7 +273,8 @@ operator()(Instant const& t) const {
   Value result = aperiodic_(t);
   for (auto const& [ω, polynomials] : periodic_) {
     Angle const ωΔt = ω * Δt;
-    result += polynomials.sin(t) * Sin(ωΔt) + polynomials.cos(t) * Cos(ωΔt);
+    auto const [sin_ωΔt, cos_ωΔt] = SinCos(ωΔt);
+    result += polynomials.sin(t) * sin_ωΔt + polynomials.cos(t) * cos_ωΔt;
   }
   return result;
 }
@@ -289,8 +290,7 @@ PoissonSeries<Value, aperiodic_degree_, periodic_degree_>::AtOrigin(
   PolynomialsByAngularFrequency periodic;
   periodic.reserve(periodic_.size());
   for (auto const& [ω, polynomials] : periodic_) {
-    double const cos_ω_shift = Cos(ω * shift);
-    double const sin_ω_shift = Sin(ω * shift);
+    auto const [sin_ω_shift, cos_ω_shift] = SinCos(ω * shift);
     PeriodicPolynomial const sin_at_origin = polynomials.sin.AtOrigin(origin);
     PeriodicPolynomial const cos_at_origin = polynomials.cos.AtOrigin(origin);
     periodic.emplace_back(ω,
@@ -338,10 +338,8 @@ Integrate(Instant const& t1,
     // This implementation follows [HO09], Theorem 1 and [INO06] equation 4.
     // The trigonometric functions are computed only once as we iterate through
     // the degree of the polynomials.
-    auto const sin_ωt1 = Sin(ω * (t1 - origin_));
-    auto const cos_ωt1 = Cos(ω * (t1 - origin_));
-    auto const sin_ωt2 = Sin(ω * (t2 - origin_));
-    auto const cos_ωt2 = Cos(ω * (t2 - origin_));
+    auto const [sin_ωt1, cos_ωt1] = SinCos(ω * (t1 - origin_));
+    auto const [sin_ωt2, cos_ωt2] = SinCos(ω * (t2 - origin_));
     result += AngularFrequencyIntegrate(ω,
                                         polynomials.sin, polynomials.cos,
                                         t1, t2,

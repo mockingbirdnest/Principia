@@ -209,9 +209,6 @@
     <ClInclude Include="recurring_thread_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="macos_filesystem_replacement.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="for_all_of.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

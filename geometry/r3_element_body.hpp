@@ -189,10 +189,11 @@ SphericalCoordinates<Scalar>::SphericalCoordinates() {}
 
 template<typename Scalar>
 R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() {
-  double const cos_latitude = Cos(latitude);
-  return {radius * Cos(longitude) * cos_latitude,
-          radius * Sin(longitude) * cos_latitude,
-          radius * Sin(latitude)};
+  auto const [sin_latitude, cos_latitude] = SinCos(latitude);
+  auto const [sin_longitude, cos_longitude] = SinCos(longitude);
+  return {radius * cos_longitude * cos_latitude,
+          radius * sin_longitude * cos_latitude,
+          radius * sin_latitude};
 }
 
 template<typename Scalar>

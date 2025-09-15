@@ -8,6 +8,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_REPEAT.
+#include "base/tags.hpp"
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
 #include "numerics/double_precision.hpp"
@@ -20,6 +21,7 @@
 namespace principia {
 namespace functions {
 
+using namespace principia::base::_tags;
 using namespace principia::benchmarks::_metric;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_elementary_functions;
@@ -42,6 +44,42 @@ using Polynomial2 =
 constexpr Argument x_min = π / 6;  // The sinus is greater than 1/2.
 constexpr Argument x_max = π / 4;  // Upper bound after argument reduction.
 static constexpr std::int64_t number_of_iterations = 1000;
+
+template<FMAPresence fma_presence>
+DoublePrecision<double> TwoProductAdd(double const a,
+                                      double const b,
+                                      double const c) {
+  static_assert(fma_presence != FMAPresence::Unknown);
+  // Somehow `if constexpr` loses a cycle on MSVC 17.
+  if (fma_presence == FMAPresence::Present) {
+    DoublePrecision<double> result(uninitialized);
+    result.value = FusedMultiplyAdd(a, b, c);
+    result.error = FusedMultiplySubtract(a, b, result.value - c);
+    return result;
+  } else {
+    auto result = VeltkampDekkerProduct(a, b);
+    result += c;
+    return result;
+  }
+}
+
+template<FMAPresence fma_presence>
+DoublePrecision<double> TwoProductNegatedAdd(double const a,
+                                             double const b,
+                                             double const c) {
+  static_assert(fma_presence != FMAPresence::Unknown);
+  // Somehow `if constexpr` loses a cycle on MSVC 17.
+  if (fma_presence == FMAPresence::Present) {
+    DoublePrecision<double> result(uninitialized);
+    result.value = FusedNegatedMultiplyAdd(a, b, c);
+    result.error = FusedNegatedMultiplySubtract(a, b, result.value - c);
+    return result;
+  } else {
+    auto result = VeltkampDekkerProduct(-a, b);
+    result += c;
+    return result;
+  }
+}
 
 // A helper class to benchmark implementations with various table spacings, and
 // compare the effect of reduced table spacing with the effect of increased
