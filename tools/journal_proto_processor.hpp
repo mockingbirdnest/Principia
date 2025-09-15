@@ -24,6 +24,7 @@ class JournalProtoProcessor final {
 
   // ksp_plugin_adapter/interface.generated.cs
   std::vector<std::string> GetCsInterfaceMethodDeclarations() const;
+  std::vector<std::string> GetCsInterfaceSymbolDeclarations() const;
   std::vector<std::string> GetCsInterchangeTypeDeclarations() const;
 
   // ksp_plugin_adapter/marshalers.generated.cs
@@ -288,6 +289,11 @@ class JournalProtoProcessor final {
   // message.  The key is a descriptor for a method message.
   std::map<Descriptor const*, std::string> cs_interface_method_declaration_;
   std::map<Descriptor const*, std::string> cxx_interface_method_declaration_;
+
+  // A partial declaration of the C# class Interface.Symbols containing the
+  // declaration of the delegate corresponding to a method message.  The key is
+  // a descriptor for a method message.
+  std::map<Descriptor const*, std::string> cs_interface_symbol_declaration_;
 
   // A list of C#/C++ parameters for an interface method.  The key is a
   // descriptor for an In or Out message.  Produced but not used for Out

@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <ranges>
 
 #include "glog/logging.h"
 #include "google/protobuf/descriptor.h"
@@ -85,8 +86,11 @@ void GenerateProfiles() {
     interface_generated_cs << cs_interface_type_declaration;
   }
   interface_generated_cs << "internal static partial class Interface {\n\n";
-  for (auto const& cs_interface_method_declaration :
-           processor.GetCsInterfaceMethodDeclarations()) {
+  for (auto const& [cs_interface_symbol_declaration,
+                    cs_interface_method_declaration] :
+       std::views::zip(processor.GetCsInterfaceSymbolDeclarations(),
+                       processor.GetCsInterfaceMethodDeclarations())) {
+    interface_generated_cs << cs_interface_symbol_declaration;
     interface_generated_cs << cs_interface_method_declaration;
   }
   interface_generated_cs << "}\n\n";

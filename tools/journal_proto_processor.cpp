@@ -115,6 +115,15 @@ JournalProtoProcessor::GetCsInterfaceMethodDeclarations() const {
 }
 
 std::vector<std::string>
+JournalProtoProcessor::GetCsInterfaceSymbolDeclarations() const {
+  std::vector<std::string> result;
+  for (auto const& pair : cs_interface_symbol_declaration_) {
+    result.push_back(pair.second);
+  }
+  return result;
+}
+
+std::vector<std::string>
 JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
   std::vector<std::string> result;
   for (auto const& pair : cs_interchange_type_declaration_) {
@@ -1920,30 +1929,30 @@ void JournalProtoProcessor::ProcessMethodExtension(
   }
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
-  cs_interface_method_declaration_[descriptor] =
+  cs_interface_symbol_declaration_[descriptor] =
       "  private partial class Symbols {\n";
-  cs_interface_method_declaration_[descriptor] +=
+  cs_interface_symbol_declaration_[descriptor] +=
       Join({"    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]",
             cs_interface_return_marshal,
             "public delegate " + cs_interface_return_type + " " + name +
                 "Delegate("},
            "\n    ");
   if (!cs_interface_marshaled_parameters.empty()) {
-    cs_interface_method_declaration_[descriptor] +=
+    cs_interface_symbol_declaration_[descriptor] +=
         "\n      " + Join(cs_interface_marshaled_parameters,
                           /*joiner=*/",\n      ");  // NOLINT
   }
-  cs_interface_method_declaration_[descriptor] += ");\n";
-  cs_interface_method_declaration_[descriptor] +=
+  cs_interface_symbol_declaration_[descriptor] += ");\n";
+  cs_interface_symbol_declaration_[descriptor] +=
       "    public " + name + "Delegate " + name + " =\n";
-  cs_interface_method_declaration_[descriptor] +=
+  cs_interface_symbol_declaration_[descriptor] +=
       "        Loader.LoadFunction<" + name + "Delegate>(\n";
-  cs_interface_method_declaration_[descriptor] +=
+  cs_interface_symbol_declaration_[descriptor] +=
       "            \"principia__" + name + "\");\n";
-  cs_interface_method_declaration_[descriptor] +=
+  cs_interface_symbol_declaration_[descriptor] +=
       "  }\n";
 
-  cs_interface_method_declaration_[descriptor] +=
+  cs_interface_method_declaration_[descriptor] =
       "  internal static " + cs_interface_return_type + " " + name + "(";
   if (!cs_interface_parameters.empty()) {
     cs_interface_method_declaration_[descriptor] +=
