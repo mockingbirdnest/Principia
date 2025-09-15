@@ -94,9 +94,9 @@ constexpr double three_term_x_reduced_threshold =
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
      4);
 
-constexpr double sin_near_zero_e = 0x1.0000'AAD0'391A'Dp0;  // 2^-70.583.
-constexpr double sin_e = 0x1.0002'6751'2409'6p0;  // 2^-68.734.
-constexpr double cos_e = 0x1.0001'B838'5D35'1p0;  // 2^-69.217.
+constexpr double e_sin_near_zero = 0x1.0000'AAD0'391A'Dp0;  // 2^-70.583.
+constexpr double e_sin = 0x1.0002'6752'8572'Dp0;  // 2^-68.734.
+constexpr double e_cos = 0x1.0001'B838'5D8B'6p0;  // 2^-69.217.
 
 SlowPathCallback slow_path_sin_callback = nullptr;
 SlowPathCallback slow_path_cos_callback = nullptr;
@@ -348,7 +348,7 @@ Value SinImplementation(DoublePrecision<Argument> const x_reduced) {
     auto const x̃³ = x̃² * x̃;
     auto const x̃³_term = MaybeFusedMultiplyAdd<fma_presence>(
         x̃³, SinPolynomialNearZero<fma_presence>(x̃²), δx̃);
-    return DetectDangerousRounding<fma_presence, sin_near_zero_e>(
+    return DetectDangerousRounding<fma_presence, e_sin_near_zero>(
         x̃, x̃³_term);
   } else {
     auto const sign = Sign(x̃);
@@ -383,7 +383,7 @@ Value SinImplementation(DoublePrecision<Argument> const x_reduced) {
                 h³, SinPolynomial<fma_presence>(h²), signed_δx̃),
             (signed_sin_xₖ * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
         sin_xₖ_plus_h_cos_xₖ.error;
-    return DetectDangerousRounding<fma_presence, sin_e>(
+    return DetectDangerousRounding<fma_presence, e_sin>(
         sin_xₖ_plus_h_cos_xₖ.value, polynomial_term);
   }
 }
@@ -420,7 +420,7 @@ Value CosImplementation(DoublePrecision<Argument> const x_reduced) {
               h³, SinPolynomial<fma_presence>(h²), signed_δx̃),
           (cos_xₖ * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
       cos_xₖ_minus_h_sin_xₖ.error;
-  return DetectDangerousRounding<fma_presence, cos_e>(
+  return DetectDangerousRounding<fma_presence, e_cos>(
       cos_xₖ_minus_h_sin_xₖ.value, polynomial_term);
 }
 
@@ -476,7 +476,7 @@ SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
           h³_sin_polynomial,
           cos_xₖ * h_plus_e²_cos_polynomial) +
       cos_xₖ_minus_h_sin_xₖ.error;
-  m128ds.cos = DetectDangerousRounding<fma_presence, cos_e>(
+  m128ds.cos = DetectDangerousRounding<fma_presence, e_cos>(
       cos_xₖ_minus_h_sin_xₖ.value, cos_polynomial_term);
   OSACA_IF(abs_x̃ < sin_near_zero_cutoff) {
     auto const x̃² = x̃ * x̃;
@@ -484,9 +484,9 @@ SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
     auto const x̃³_term = MaybeFusedMultiplyAdd<fma_presence>(
         x̃³, SinPolynomialNearZero<fma_presence>(x̃²), δx̃);
     m128ds.sin =
-        DetectDangerousRounding<fma_presence, sin_near_zero_e>(x̃, x̃³_term);
+        DetectDangerousRounding<fma_presence, e_sin_near_zero>(x̃, x̃³_term);
   } else {
-    m128ds.sin = DetectDangerousRounding<fma_presence, sin_e>(
+    m128ds.sin = DetectDangerousRounding<fma_presence, e_sin>(
         sin_xₖ_plus_h_cos_xₖ.value, sin_polynomial_term);
   }
   return m128ds;

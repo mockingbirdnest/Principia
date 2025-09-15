@@ -555,9 +555,9 @@ y &\DefineAs \red x \\
 
 We gave above the upper bound of the residual of the minimax approximation.  It may be rewritten as:
 \[
-p_{s0}\of{x^2} = \frac{\pa{1 + \gz_1} \sin x - x}{x^3} \qquad \abs{\gz_1} < 2^{-85.560}
+p_{s0}\of{t^2} = \frac{\pa{1 + \gz_1} \sin t - t}{t^3} \qquad \abs{\gz_1} < 2^{-85.560}
 \]
-for $\abs x \le \gD$.
+for $\abs t \le \gD$.
 
 The errors committed at each step are as follows:
 \[
@@ -612,8 +612,8 @@ For $k > 1$, this quantity is clearly smaller than $-\gD - \ge_k$, the lower bou
 
 Finally, for the purpose of error analysis, the relative errors of the minimax polynomials may be rewritten as:
 \begin{align*}
-p_s\of{h^2} &= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \qquad & \abs{\gz_1} < 2^{-85.534} \\
-p_c\of{h^2} &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-51.466}
+p_s\of{t^2} &= \frac{\sin t \; \pa{1 + \gz_1} - t}{t^3} \qquad & \abs{\gz_1} < 2^{-85.534} \\
+p_c\of{t^2} &= \frac{\cos t - 1}{t^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-51.466}
 \end{align*}
 
 \subsubsection*{Sin}\label{secerroranalysissin}
@@ -646,7 +646,7 @@ The errors commited at each step are as follows:
 \left\{
 \begin{alignedat}{2}
 t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-53.221}}{2^{-52.808}} \\
-&= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \pa{1 + \gz_3} \\
+&= \frac{\sin h \; \pa{1 + \gz_1} - h}{h^3} \pa{1 + \gz_3} \\
 t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
 t_3 &= h \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
@@ -669,7 +669,7 @@ Great care is required when evaluating this expression using interval arithmetic
 \]
 which is pleasantly small, and even though $\gd_{12}$ also appears in the term that does not involve $\gd_0$, the effect of replicating it is acceptable.
 
-The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.734}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'6751'2409'6p0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}
+The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.734}$.  The relative error for $k = 1$ is particularly high and is an outlier\marginnote{TODO(phl): Try to understand why.}.  Other than than, the worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'6752'8572'Dp0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}
 
 As mentioned above (see \nameref{overview}), in these steps we do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
@@ -707,7 +707,7 @@ The errors commited at each step are as follows:
 \left\{
 \begin{alignedat}{2}
 t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-53.221}}{2^{-52.808}} \\
-&= \frac{\sin h - h}{h^3} \pa{1 + \gz_1} \pa{1 + \gz_3} \\
+&= \frac{\sin h \; \pa{1 + \gz_1} - h}{h^3} \pa{1 + \gz_3} \\
 t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
 t_3 &= h \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
