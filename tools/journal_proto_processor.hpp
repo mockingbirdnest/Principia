@@ -213,7 +213,8 @@ class JournalProtoProcessor final {
       field_cxx_mode_fn_;
 
   // For all fields, a lambda that takes a C# parameter type as stored in
-  // `field_cs_type_`, and adds `this` to it if needed.
+  // `field_cs_type_`, and adds `this` to it if `is_subject`; the result can be
+  // used to declare an parameter in an extension method.
   std::map<FieldDescriptor const*,
            std::function<std::string(std::string const& type)>>
       field_cs_extension_method_fn_;
@@ -262,7 +263,7 @@ class JournalProtoProcessor final {
   std::map<FieldDescriptor const*, std::string> field_cs_custom_marshaler_;
   std::map<FieldDescriptor const*, std::string> field_cs_predefined_marshaler_;
 
-  // The fields that must be marshalled by simply copying their fields.  This is
+  // The fields that must be marshaled by simply copying their fields.  This is
   // useful for classes-within-classes when we don't need a level of
   // indirection.
   std::set<FieldDescriptor const*> field_cs_marshal_by_copy_;
@@ -294,11 +295,13 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::vector<std::string>>
       cs_interface_parameters_;
   std::map<Descriptor const*, std::vector<std::string>>
-      cs_interface_marshalled_parameters_;
-  std::map<Descriptor const*, std::vector<std::string>>
-      cs_interface_arguments_;
-  std::map<Descriptor const*, std::vector<std::string>>
       cxx_interface_parameters_;
+  // Same as `cs_interface_parameters_`, but with `MarshalAs` attributes.
+  std::map<Descriptor const*, std::vector<std::string>>
+      cs_interface_marshaled_parameters_;
+  // A list of arguments for a call to the interface method from C#, including
+  // modes `out` or `ref`, with the same identifiers as the parameter names.
+  std::map<Descriptor const*, std::vector<std::string>> cs_interface_arguments_;
 
   // The C#/C++ return type of an interface method.  The key is a descriptor for
   // a Return message.
