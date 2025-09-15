@@ -81,7 +81,18 @@ internal static class Loader {
       }
     }
     try {
-      principia_dll_ = LoadLibrary(possible_dll_paths[0]);
+      if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+        principia_dll_ = LoadLibrary(possible_dll_paths[0]);
+      } else {
+        const int RTLD_NOW = 2;
+        const int RTLD_GLOBAL = 8;
+        foreach (string path in possible_dll_paths) {
+          principia_dll_ = dlopen(path, RTLD_NOW|RTLD_GLOBAL);
+          if (principia_dll_ != IntPtr.Zero) {
+            break;
+          }
+        }
+      }
       Interface.LoadSymbols();
       loaded_principia_dll = true;
       Log.InitGoogleLogging();
@@ -128,17 +139,19 @@ internal static class Loader {
   private static IntPtr principia_dll_;
 
   internal static T LoadFunction<T>(string function) where T : Delegate {
+    IntPtr function_pointer;
+    if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+      function_pointer = GetProcAddress(principia_dll_, function);
+    } else {
+      function_pointer = dlsym(principia_dll_, function);
+    }
     T result = Marshal.GetDelegateForFunctionPointer(
-        GetProcAddress(principia_dll_, function), typeof(T)) as T;
+        function_pointer, typeof(T)) as T;
     if (result == null) {
       throw new EntryPointNotFoundException(function);
     }
     return result;
   }
-
-  [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-  [return: MarshalAs(UnmanagedType.Bool)]
-  static extern bool SetDllDirectory(string lpPathName);
 
   [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
   private static extern IntPtr LoadLibrary(
@@ -147,6 +160,12 @@ internal static class Loader {
   [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
   private static extern IntPtr GetProcAddress(
       IntPtr hModule, [MarshalAs(UnmanagedType.LPStr)] string lpProcName);
+
+  [DllImport("dl")]
+  private static extern IntPtr dlopen(string filename, int flags);
+
+  [DllImport("dl")]
+  private static extern IntPtr dlsym(IntPtr handle, string symbol);
 
   internal static bool loaded_principia_dll { get; private set; } = false;
 }
