@@ -1923,11 +1923,11 @@ void JournalProtoProcessor::ProcessMethodExtension(
   cs_interface_method_declaration_[descriptor] =
       "  private partial class Symbols {\n";
   cs_interface_method_declaration_[descriptor] +=
-      Join(
-      {"    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]",
-       cs_interface_return_marshal,
-       "public delegate " + cs_interface_return_type + " " + name + "Delegate("},
-      "\n    ");
+      Join({"    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]",
+            cs_interface_return_marshal,
+            "public delegate " + cs_interface_return_type + " " + name +
+                "Delegate("},
+           "\n    ");
   if (!cs_interface_marshalled_parameters.empty()) {
     cs_interface_method_declaration_[descriptor] +=
         "\n      " + Join(cs_interface_marshalled_parameters,
@@ -1957,7 +1957,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       (cs_interface_arguments.empty()
            ? ""
            : "\n        " +
-                 Join(cs_interface_arguments, /*joiner=*/",\n        ")) +
+                 Join(cs_interface_arguments, /*joiner=*/",\n        ")) +  // NOLINT
       ");\n";
   cs_interface_method_declaration_[descriptor] += "  }\n\n";
 
