@@ -249,929 +249,2266 @@ internal partial class OrbitAnalysis {
 
 internal static partial class Interface {
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__AdvanceTime",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void AdvanceTime(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void AdvanceTimeDelegate(
+        IntPtr plugin,
+        double t,
+        double planetarium_rotation);
+    public AdvanceTimeDelegate AdvanceTime =
+          Loader.LoadFunction<AdvanceTimeDelegate>(
+              "principia__AdvanceTime");
+  }
+  internal static void AdvanceTime(
       this IntPtr plugin,
       double t,
-      double planetarium_rotation);
+      double planetarium_rotation) {
+    symbols_.AdvanceTime(
+          plugin,
+          t,
+          planetarium_rotation);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__AngularMomentumFromAngularVelocity",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ AngularMomentumFromAngularVelocity(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XYZ AngularMomentumFromAngularVelocityDelegate(
+        XYZ world_angular_velocity,
+        XYZ moments_of_inertia_in_tonnes,
+        WXYZ principal_axes_rotation,
+        WXYZ part_rotation);
+    public AngularMomentumFromAngularVelocityDelegate AngularMomentumFromAngularVelocity =
+          Loader.LoadFunction<AngularMomentumFromAngularVelocityDelegate>(
+              "principia__AngularMomentumFromAngularVelocity");
+  }
+  internal static XYZ AngularMomentumFromAngularVelocity(
       XYZ world_angular_velocity,
       XYZ moments_of_inertia_in_tonnes,
       WXYZ principal_axes_rotation,
-      WXYZ part_rotation);
+      WXYZ part_rotation) {
+    return symbols_.AngularMomentumFromAngularVelocity(
+          world_angular_velocity,
+          moments_of_inertia_in_tonnes,
+          principal_axes_rotation,
+          part_rotation);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CameraReferenceRotation",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern WXYZ CameraReferenceRotation(
-      this IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate WXYZ CameraReferenceRotationDelegate(
+        IntPtr plugin);
+    public CameraReferenceRotationDelegate CameraReferenceRotation =
+          Loader.LoadFunction<CameraReferenceRotationDelegate>(
+              "principia__CameraReferenceRotation");
+  }
+  internal static WXYZ CameraReferenceRotation(
+      this IntPtr plugin) {
+    return symbols_.CameraReferenceRotation(
+          plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CameraScale",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double CameraScale(
-      this IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate double CameraScaleDelegate(
+        IntPtr plugin);
+    public CameraScaleDelegate CameraScale =
+          Loader.LoadFunction<CameraScaleDelegate>(
+              "principia__CameraScale");
+  }
+  internal static double CameraScale(
+      this IntPtr plugin) {
+    return symbols_.CameraScale(
+          plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CatchUpLaggingVessels",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void CatchUpLaggingVessels(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void CatchUpLaggingVesselsDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator collided_vessels);
+    public CatchUpLaggingVesselsDelegate CatchUpLaggingVessels =
+          Loader.LoadFunction<CatchUpLaggingVesselsDelegate>(
+              "principia__CatchUpLaggingVessels");
+  }
+  internal static void CatchUpLaggingVessels(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator collided_vessels);
+      out DisposableIterator collided_vessels) {
+    symbols_.CatchUpLaggingVessels(
+          plugin,
+          out collided_vessels);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CelestialFromParent",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern QP CelestialFromParent(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate QP CelestialFromParentDelegate(
+        IntPtr plugin,
+        int celestial_index);
+    public CelestialFromParentDelegate CelestialFromParent =
+          Loader.LoadFunction<CelestialFromParentDelegate>(
+              "principia__CelestialFromParent");
+  }
+  internal static QP CelestialFromParent(
       this IntPtr plugin,
-      int celestial_index);
+      int celestial_index) {
+    return symbols_.CelestialFromParent(
+          plugin,
+          celestial_index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CelestialInitialRotationInDegrees",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double CelestialInitialRotationInDegrees(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate double CelestialInitialRotationInDegreesDelegate(
+        IntPtr plugin,
+        int celestial_index);
+    public CelestialInitialRotationInDegreesDelegate CelestialInitialRotationInDegrees =
+          Loader.LoadFunction<CelestialInitialRotationInDegreesDelegate>(
+              "principia__CelestialInitialRotationInDegrees");
+  }
+  internal static double CelestialInitialRotationInDegrees(
       this IntPtr plugin,
-      int celestial_index);
+      int celestial_index) {
+    return symbols_.CelestialInitialRotationInDegrees(
+          plugin,
+          celestial_index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CelestialRotation",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern WXYZ CelestialRotation(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate WXYZ CelestialRotationDelegate(
+        IntPtr plugin,
+        int index);
+    public CelestialRotationDelegate CelestialRotation =
+          Loader.LoadFunction<CelestialRotationDelegate>(
+              "principia__CelestialRotation");
+  }
+  internal static WXYZ CelestialRotation(
       this IntPtr plugin,
-      int index);
+      int index) {
+    return symbols_.CelestialRotation(
+          plugin,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CelestialRotationPeriod",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double CelestialRotationPeriod(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate double CelestialRotationPeriodDelegate(
+        IntPtr plugin,
+        int celestial_index);
+    public CelestialRotationPeriodDelegate CelestialRotationPeriod =
+          Loader.LoadFunction<CelestialRotationPeriodDelegate>(
+              "principia__CelestialRotationPeriod");
+  }
+  internal static double CelestialRotationPeriod(
       this IntPtr plugin,
-      int celestial_index);
+      int celestial_index) {
+    return symbols_.CelestialRotationPeriod(
+          plugin,
+          celestial_index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CelestialSphereRotation",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern WXYZ CelestialSphereRotation(
-      this IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate WXYZ CelestialSphereRotationDelegate(
+        IntPtr plugin);
+    public CelestialSphereRotationDelegate CelestialSphereRotation =
+          Loader.LoadFunction<CelestialSphereRotationDelegate>(
+              "principia__CelestialSphereRotation");
+  }
+  internal static WXYZ CelestialSphereRotation(
+      this IntPtr plugin) {
+    return symbols_.CelestialSphereRotation(
+          plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CelestialWorldDegreesOfFreedom",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern QP CelestialWorldDegreesOfFreedom(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate QP CelestialWorldDegreesOfFreedomDelegate(
+        IntPtr plugin,
+        int index,
+        Origin origin,
+        double time);
+    public CelestialWorldDegreesOfFreedomDelegate CelestialWorldDegreesOfFreedom =
+          Loader.LoadFunction<CelestialWorldDegreesOfFreedomDelegate>(
+              "principia__CelestialWorldDegreesOfFreedom");
+  }
+  internal static QP CelestialWorldDegreesOfFreedom(
       this IntPtr plugin,
       int index,
       Origin origin,
-      double time);
+      double time) {
+    return symbols_.CelestialWorldDegreesOfFreedom(
+          plugin,
+          index,
+          origin,
+          time);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CollisionDeleteExecutor",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.I1)]
-  internal static extern bool CollisionDeleteExecutor(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.I1)]
+    public delegate bool CollisionDeleteExecutorDelegate(
+        IntPtr plugin,
+        ref IntPtr executor,
+        out TQP collision);
+    public CollisionDeleteExecutorDelegate CollisionDeleteExecutor =
+          Loader.LoadFunction<CollisionDeleteExecutorDelegate>(
+              "principia__CollisionDeleteExecutor");
+  }
+  internal static bool CollisionDeleteExecutor(
       this IntPtr plugin,
       ref IntPtr executor,
-      out TQP collision);
+      out TQP collision) {
+    return symbols_.CollisionDeleteExecutor(
+          plugin,
+          ref executor,
+          out collision);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CollisionGetLatitudeLongitude",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.I1)]
-  internal static extern bool CollisionGetLatitudeLongitude(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.I1)]
+    public delegate bool CollisionGetLatitudeLongitudeDelegate(
+        IntPtr executor,
+        out double latitude_in_degrees,
+        out double longitude_in_degrees);
+    public CollisionGetLatitudeLongitudeDelegate CollisionGetLatitudeLongitude =
+          Loader.LoadFunction<CollisionGetLatitudeLongitudeDelegate>(
+              "principia__CollisionGetLatitudeLongitude");
+  }
+  internal static bool CollisionGetLatitudeLongitude(
       this IntPtr executor,
       out double latitude_in_degrees,
-      out double longitude_in_degrees);
+      out double longitude_in_degrees) {
+    return symbols_.CollisionGetLatitudeLongitude(
+          executor,
+          out latitude_in_degrees,
+          out longitude_in_degrees);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CollisionNewFlightPlanExecutor",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr CollisionNewFlightPlanExecutor(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate IntPtr CollisionNewFlightPlanExecutorDelegate(
+        IntPtr plugin,
+        int celestial_index,
+        XYZ sun_world_position,
+        int max_points,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public CollisionNewFlightPlanExecutorDelegate CollisionNewFlightPlanExecutor =
+          Loader.LoadFunction<CollisionNewFlightPlanExecutorDelegate>(
+              "principia__CollisionNewFlightPlanExecutor");
+  }
+  internal static IntPtr CollisionNewFlightPlanExecutor(
       this IntPtr plugin,
       int celestial_index,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.CollisionNewFlightPlanExecutor(
+          plugin,
+          celestial_index,
+          sun_world_position,
+          max_points,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CollisionNewPredictionExecutor",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr CollisionNewPredictionExecutor(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate IntPtr CollisionNewPredictionExecutorDelegate(
+        IntPtr plugin,
+        int celestial_index,
+        XYZ sun_world_position,
+        int max_points,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public CollisionNewPredictionExecutorDelegate CollisionNewPredictionExecutor =
+          Loader.LoadFunction<CollisionNewPredictionExecutorDelegate>(
+              "principia__CollisionNewPredictionExecutor");
+  }
+  internal static IntPtr CollisionNewPredictionExecutor(
       this IntPtr plugin,
       int celestial_index,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.CollisionNewPredictionExecutor(
+          plugin,
+          celestial_index,
+          sun_world_position,
+          max_points,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CollisionSetRadius",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void CollisionSetRadius(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void CollisionSetRadiusDelegate(
+        IntPtr executor,
+        double radius);
+    public CollisionSetRadiusDelegate CollisionSetRadius =
+          Loader.LoadFunction<CollisionSetRadiusDelegate>(
+              "principia__CollisionSetRadius");
+  }
+  internal static void CollisionSetRadius(
       this IntPtr executor,
-      double radius);
+      double radius) {
+    symbols_.CollisionSetRadius(
+          executor,
+          radius);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ClearFlags",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ClearFlags();
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ClearFlagsDelegate();
+    public ClearFlagsDelegate ClearFlags =
+          Loader.LoadFunction<ClearFlagsDelegate>(
+              "principia__ClearFlags");
+  }
+  internal static void ClearFlags() {
+    symbols_.ClearFlags();
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ClearTargetVessel",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ClearTargetVessel(
-      this IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ClearTargetVesselDelegate(
+        IntPtr plugin);
+    public ClearTargetVesselDelegate ClearTargetVessel =
+          Loader.LoadFunction<ClearTargetVesselDelegate>(
+              "principia__ClearTargetVessel");
+  }
+  internal static void ClearTargetVessel(
+      this IntPtr plugin) {
+    symbols_.ClearTargetVessel(
+          plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ClearWorldRotationalReferenceFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ClearWorldRotationalReferenceFrame(
-      this IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ClearWorldRotationalReferenceFrameDelegate(
+        IntPtr plugin);
+    public ClearWorldRotationalReferenceFrameDelegate ClearWorldRotationalReferenceFrame =
+          Loader.LoadFunction<ClearWorldRotationalReferenceFrameDelegate>(
+              "principia__ClearWorldRotationalReferenceFrame");
+  }
+  internal static void ClearWorldRotationalReferenceFrame(
+      this IntPtr plugin) {
+    symbols_.ClearWorldRotationalReferenceFrame(
+          plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__CurrentTime",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double CurrentTime(
-      this IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate double CurrentTimeDelegate(
+        IntPtr plugin);
+    public CurrentTimeDelegate CurrentTime =
+          Loader.LoadFunction<CurrentTimeDelegate>(
+              "principia__CurrentTime");
+  }
+  internal static double CurrentTime(
+      this IntPtr plugin) {
+    return symbols_.CurrentTime(
+          plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__DeleteInterchange",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeleteInterchange(
-      ref IntPtr native_pointer);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void DeleteInterchangeDelegate(
+        ref IntPtr native_pointer);
+    public DeleteInterchangeDelegate DeleteInterchange =
+          Loader.LoadFunction<DeleteInterchangeDelegate>(
+              "principia__DeleteInterchange");
+  }
+  internal static void DeleteInterchange(
+      ref IntPtr native_pointer) {
+    symbols_.DeleteInterchange(
+          ref native_pointer);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__DeletePlugin",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeletePlugin(
-      ref IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void DeletePluginDelegate(
+        ref IntPtr plugin);
+    public DeletePluginDelegate DeletePlugin =
+          Loader.LoadFunction<DeletePluginDelegate>(
+              "principia__DeletePlugin");
+  }
+  internal static void DeletePlugin(
+      ref IntPtr plugin) {
+    symbols_.DeletePlugin(
+          ref plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__DeleteString",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeleteString(
-      ref IntPtr native_string);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void DeleteStringDelegate(
+        ref IntPtr native_string);
+    public DeleteStringDelegate DeleteString =
+          Loader.LoadFunction<DeleteStringDelegate>(
+              "principia__DeleteString");
+  }
+  internal static void DeleteString(
+      ref IntPtr native_string) {
+    symbols_.DeleteString(
+          ref native_string);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__DeleteU16String",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeleteU16String(
-      ref IntPtr native_string);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void DeleteU16StringDelegate(
+        ref IntPtr native_string);
+    public DeleteU16StringDelegate DeleteU16String =
+          Loader.LoadFunction<DeleteU16StringDelegate>(
+              "principia__DeleteU16String");
+  }
+  internal static void DeleteU16String(
+      ref IntPtr native_string) {
+    symbols_.DeleteU16String(
+          ref native_string);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__DeserializePlugin",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeserializePlugin(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string serialization,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void DeserializePluginDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string serialization,
+        ref IntPtr deserializer,
+        ref IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string compressor,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string encoder);
+    public DeserializePluginDelegate DeserializePlugin =
+          Loader.LoadFunction<DeserializePluginDelegate>(
+              "principia__DeserializePlugin");
+  }
+  internal static void DeserializePlugin(
+      string serialization,
       ref IntPtr deserializer,
       ref IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string compressor,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string encoder);
+      string compressor,
+      string encoder) {
+    symbols_.DeserializePlugin(
+          serialization,
+          ref deserializer,
+          ref plugin,
+          compressor,
+          encoder);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__EndInitialization",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void EndInitialization(
-      this IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void EndInitializationDelegate(
+        IntPtr plugin);
+    public EndInitializationDelegate EndInitialization =
+          Loader.LoadFunction<EndInitializationDelegate>(
+              "principia__EndInitialization");
+  }
+  internal static void EndInitialization(
+      this IntPtr plugin) {
+    symbols_.EndInitialization(
+          plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__EquipotentialCount",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int EquipotentialCount(
-      this IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int EquipotentialCountDelegate(
+        IntPtr plugin);
+    public EquipotentialCountDelegate EquipotentialCount =
+          Loader.LoadFunction<EquipotentialCountDelegate>(
+              "principia__EquipotentialCount");
+  }
+  internal static int EquipotentialCount(
+      this IntPtr plugin) {
+    return symbols_.EquipotentialCount(
+          plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ExternalCelestialGetPosition",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status ExternalCelestialGetPosition(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status ExternalCelestialGetPositionDelegate(
+        IntPtr plugin,
+        int body_index,
+        double time,
+        out XYZ position);
+    public ExternalCelestialGetPositionDelegate ExternalCelestialGetPosition =
+          Loader.LoadFunction<ExternalCelestialGetPositionDelegate>(
+              "principia__ExternalCelestialGetPosition");
+  }
+  internal static Status ExternalCelestialGetPosition(
       this IntPtr plugin,
       int body_index,
       double time,
-      out XYZ position);
+      out XYZ position) {
+    return symbols_.ExternalCelestialGetPosition(
+          plugin,
+          body_index,
+          time,
+          out position);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ExternalCelestialGetSurfacePosition",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status ExternalCelestialGetSurfacePosition(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status ExternalCelestialGetSurfacePositionDelegate(
+        IntPtr plugin,
+        int body_index,
+        double planetocentric_latitude_in_degrees,
+        double planetocentric_longitude_in_degrees,
+        double radius,
+        double time,
+        out XYZ position);
+    public ExternalCelestialGetSurfacePositionDelegate ExternalCelestialGetSurfacePosition =
+          Loader.LoadFunction<ExternalCelestialGetSurfacePositionDelegate>(
+              "principia__ExternalCelestialGetSurfacePosition");
+  }
+  internal static Status ExternalCelestialGetSurfacePosition(
       this IntPtr plugin,
       int body_index,
       double planetocentric_latitude_in_degrees,
       double planetocentric_longitude_in_degrees,
       double radius,
       double time,
-      out XYZ position);
+      out XYZ position) {
+    return symbols_.ExternalCelestialGetSurfacePosition(
+          plugin,
+          body_index,
+          planetocentric_latitude_in_degrees,
+          planetocentric_longitude_in_degrees,
+          radius,
+          time,
+          out position);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ExternalFlowFreefall",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status ExternalFlowFreefall(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status ExternalFlowFreefallDelegate(
+        IntPtr plugin,
+        int central_body_index,
+        QP world_body_centred_initial_degrees_of_freedom,
+        double t_initial,
+        double t_final,
+        out QP world_body_centred_final_degrees_of_freedom);
+    public ExternalFlowFreefallDelegate ExternalFlowFreefall =
+          Loader.LoadFunction<ExternalFlowFreefallDelegate>(
+              "principia__ExternalFlowFreefall");
+  }
+  internal static Status ExternalFlowFreefall(
       this IntPtr plugin,
       int central_body_index,
       QP world_body_centred_initial_degrees_of_freedom,
       double t_initial,
       double t_final,
-      out QP world_body_centred_final_degrees_of_freedom);
+      out QP world_body_centred_final_degrees_of_freedom) {
+    return symbols_.ExternalFlowFreefall(
+          plugin,
+          central_body_index,
+          world_body_centred_initial_degrees_of_freedom,
+          t_initial,
+          t_final,
+          out world_body_centred_final_degrees_of_freedom);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ExternalGeopotentialGetCoefficient",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status ExternalGeopotentialGetCoefficient(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status ExternalGeopotentialGetCoefficientDelegate(
+        IntPtr plugin,
+        int body_index,
+        int degree,
+        int order,
+        out XY coefficient);
+    public ExternalGeopotentialGetCoefficientDelegate ExternalGeopotentialGetCoefficient =
+          Loader.LoadFunction<ExternalGeopotentialGetCoefficientDelegate>(
+              "principia__ExternalGeopotentialGetCoefficient");
+  }
+  internal static Status ExternalGeopotentialGetCoefficient(
       this IntPtr plugin,
       int body_index,
       int degree,
       int order,
-      out XY coefficient);
+      out XY coefficient) {
+    return symbols_.ExternalGeopotentialGetCoefficient(
+          plugin,
+          body_index,
+          degree,
+          order,
+          out coefficient);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ExternalGeopotentialGetReferenceRadius",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status ExternalGeopotentialGetReferenceRadius(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status ExternalGeopotentialGetReferenceRadiusDelegate(
+        IntPtr plugin,
+        int body_index,
+        out double reference_radius);
+    public ExternalGeopotentialGetReferenceRadiusDelegate ExternalGeopotentialGetReferenceRadius =
+          Loader.LoadFunction<ExternalGeopotentialGetReferenceRadiusDelegate>(
+              "principia__ExternalGeopotentialGetReferenceRadius");
+  }
+  internal static Status ExternalGeopotentialGetReferenceRadius(
       this IntPtr plugin,
       int body_index,
-      out double reference_radius);
+      out double reference_radius) {
+    return symbols_.ExternalGeopotentialGetReferenceRadius(
+          plugin,
+          body_index,
+          out reference_radius);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ExternalVesselGetPosition",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status ExternalVesselGetPosition(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status ExternalVesselGetPositionDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        double time,
+        out XYZ position);
+    public ExternalVesselGetPositionDelegate ExternalVesselGetPosition =
+          Loader.LoadFunction<ExternalVesselGetPositionDelegate>(
+              "principia__ExternalVesselGetPosition");
+  }
+  internal static Status ExternalVesselGetPosition(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       double time,
-      out XYZ position);
+      out XYZ position) {
+    return symbols_.ExternalVesselGetPosition(
+          plugin,
+          vessel_guid,
+          time,
+          out position);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ExternalGetNearestPlannedCoastDegreesOfFreedom",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status ExternalGetNearestPlannedCoastDegreesOfFreedom(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status ExternalGetNearestPlannedCoastDegreesOfFreedomDelegate(
+        IntPtr plugin,
+        int central_body_index,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int manoeuvre_index,
+        XYZ world_body_centred_reference_position,
+        out QP world_body_centred_nearest_degrees_of_freedom);
+    public ExternalGetNearestPlannedCoastDegreesOfFreedomDelegate ExternalGetNearestPlannedCoastDegreesOfFreedom =
+          Loader.LoadFunction<ExternalGetNearestPlannedCoastDegreesOfFreedomDelegate>(
+              "principia__ExternalGetNearestPlannedCoastDegreesOfFreedom");
+  }
+  internal static Status ExternalGetNearestPlannedCoastDegreesOfFreedom(
       this IntPtr plugin,
       int central_body_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       int manoeuvre_index,
       XYZ world_body_centred_reference_position,
-      out QP world_body_centred_nearest_degrees_of_freedom);
+      out QP world_body_centred_nearest_degrees_of_freedom) {
+    return symbols_.ExternalGetNearestPlannedCoastDegreesOfFreedom(
+          plugin,
+          central_body_index,
+          vessel_guid,
+          manoeuvre_index,
+          world_body_centred_reference_position,
+          out world_body_centred_nearest_degrees_of_freedom);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanCount",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int FlightPlanCount(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int FlightPlanCountDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanCountDelegate FlightPlanCount =
+          Loader.LoadFunction<FlightPlanCountDelegate>(
+              "principia__FlightPlanCount");
+  }
+  internal static int FlightPlanCount(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanCount(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanCreate",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FlightPlanCreate(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FlightPlanCreateDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        double final_time,
+        double mass_in_tonnes);
+    public FlightPlanCreateDelegate FlightPlanCreate =
+          Loader.LoadFunction<FlightPlanCreateDelegate>(
+              "principia__FlightPlanCreate");
+  }
+  internal static void FlightPlanCreate(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       double final_time,
-      double mass_in_tonnes);
+      double mass_in_tonnes) {
+    symbols_.FlightPlanCreate(
+          plugin,
+          vessel_guid,
+          final_time,
+          mass_in_tonnes);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanDelete",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FlightPlanDelete(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FlightPlanDeleteDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanDeleteDelegate FlightPlanDelete =
+          Loader.LoadFunction<FlightPlanDeleteDelegate>(
+              "principia__FlightPlanDelete");
+  }
+  internal static void FlightPlanDelete(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    symbols_.FlightPlanDelete(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanDuplicate",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FlightPlanDuplicate(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FlightPlanDuplicateDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanDuplicateDelegate FlightPlanDuplicate =
+          Loader.LoadFunction<FlightPlanDuplicateDelegate>(
+              "principia__FlightPlanDuplicate");
+  }
+  internal static void FlightPlanDuplicate(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    symbols_.FlightPlanDuplicate(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanExists",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.I1)]
-  internal static extern bool FlightPlanExists(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.I1)]
+    public delegate bool FlightPlanExistsDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanExistsDelegate FlightPlanExists =
+          Loader.LoadFunction<FlightPlanExistsDelegate>(
+              "principia__FlightPlanExists");
+  }
+  internal static bool FlightPlanExists(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanExists(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetAdaptiveStepParameters",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern FlightPlanAdaptiveStepParameters FlightPlanGetAdaptiveStepParameters(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate FlightPlanAdaptiveStepParameters FlightPlanGetAdaptiveStepParametersDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanGetAdaptiveStepParametersDelegate FlightPlanGetAdaptiveStepParameters =
+          Loader.LoadFunction<FlightPlanGetAdaptiveStepParametersDelegate>(
+              "principia__FlightPlanGetAdaptiveStepParameters");
+  }
+  internal static FlightPlanAdaptiveStepParameters FlightPlanGetAdaptiveStepParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanGetAdaptiveStepParameters(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetActualFinalTime",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double FlightPlanGetActualFinalTime(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate double FlightPlanGetActualFinalTimeDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanGetActualFinalTimeDelegate FlightPlanGetActualFinalTime =
+          Loader.LoadFunction<FlightPlanGetActualFinalTimeDelegate>(
+              "principia__FlightPlanGetActualFinalTime");
+  }
+  internal static double FlightPlanGetActualFinalTime(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanGetActualFinalTime(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetAnomalousStatus",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status FlightPlanGetAnomalousStatus(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status FlightPlanGetAnomalousStatusDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanGetAnomalousStatusDelegate FlightPlanGetAnomalousStatus =
+          Loader.LoadFunction<FlightPlanGetAnomalousStatusDelegate>(
+              "principia__FlightPlanGetAnomalousStatus");
+  }
+  internal static Status FlightPlanGetAnomalousStatus(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanGetAnomalousStatus(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetCoastAnalysis",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<OrbitAnalysis, OrbitAnalysis.Marshaler>))]
-  internal static extern OrbitAnalysis FlightPlanGetCoastAnalysis(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<OrbitAnalysis, OrbitAnalysis.Marshaler>))]
+    public delegate OrbitAnalysis FlightPlanGetCoastAnalysisDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 revolutions_per_cycle,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 days_per_cycle,
+        int ground_track_revolution,
+        int index);
+    public FlightPlanGetCoastAnalysisDelegate FlightPlanGetCoastAnalysis =
+          Loader.LoadFunction<FlightPlanGetCoastAnalysisDelegate>(
+              "principia__FlightPlanGetCoastAnalysis");
+  }
+  internal static OrbitAnalysis FlightPlanGetCoastAnalysis(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 revolutions_per_cycle,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 days_per_cycle,
+      string vessel_guid,
+      BoxedInt32 revolutions_per_cycle,
+      BoxedInt32 days_per_cycle,
       int ground_track_revolution,
-      int index);
+      int index) {
+    return symbols_.FlightPlanGetCoastAnalysis(
+          plugin,
+          vessel_guid,
+          revolutions_per_cycle,
+          days_per_cycle,
+          ground_track_revolution,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetDesiredFinalTime",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double FlightPlanGetDesiredFinalTime(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate double FlightPlanGetDesiredFinalTimeDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanGetDesiredFinalTimeDelegate FlightPlanGetDesiredFinalTime =
+          Loader.LoadFunction<FlightPlanGetDesiredFinalTimeDelegate>(
+              "principia__FlightPlanGetDesiredFinalTime");
+  }
+  internal static double FlightPlanGetDesiredFinalTime(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanGetDesiredFinalTime(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetGuidance",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ FlightPlanGetGuidance(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XYZ FlightPlanGetGuidanceDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int index);
+    public FlightPlanGetGuidanceDelegate FlightPlanGetGuidance =
+          Loader.LoadFunction<FlightPlanGetGuidanceDelegate>(
+              "principia__FlightPlanGetGuidance");
+  }
+  internal static XYZ FlightPlanGetGuidance(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      int index);
+      string vessel_guid,
+      int index) {
+    return symbols_.FlightPlanGetGuidance(
+          plugin,
+          vessel_guid,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetInitialTime",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double FlightPlanGetInitialTime(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate double FlightPlanGetInitialTimeDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanGetInitialTimeDelegate FlightPlanGetInitialTime =
+          Loader.LoadFunction<FlightPlanGetInitialTimeDelegate>(
+              "principia__FlightPlanGetInitialTime");
+  }
+  internal static double FlightPlanGetInitialTime(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanGetInitialTime(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetManoeuvre",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<NavigationManoeuvre, NavigationManoeuvre.Marshaler>))]
-  internal static extern NavigationManoeuvre FlightPlanGetManoeuvre(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<NavigationManoeuvre, NavigationManoeuvre.Marshaler>))]
+    public delegate NavigationManoeuvre FlightPlanGetManoeuvreDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int index);
+    public FlightPlanGetManoeuvreDelegate FlightPlanGetManoeuvre =
+          Loader.LoadFunction<FlightPlanGetManoeuvreDelegate>(
+              "principia__FlightPlanGetManoeuvre");
+  }
+  internal static NavigationManoeuvre FlightPlanGetManoeuvre(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      int index);
+      string vessel_guid,
+      int index) {
+    return symbols_.FlightPlanGetManoeuvre(
+          plugin,
+          vessel_guid,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetManoeuvreFrenetTrihedron",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern NavigationManoeuvreFrenetTrihedron FlightPlanGetManoeuvreFrenetTrihedron(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate NavigationManoeuvreFrenetTrihedron FlightPlanGetManoeuvreFrenetTrihedronDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int index);
+    public FlightPlanGetManoeuvreFrenetTrihedronDelegate FlightPlanGetManoeuvreFrenetTrihedron =
+          Loader.LoadFunction<FlightPlanGetManoeuvreFrenetTrihedronDelegate>(
+              "principia__FlightPlanGetManoeuvreFrenetTrihedron");
+  }
+  internal static NavigationManoeuvreFrenetTrihedron FlightPlanGetManoeuvreFrenetTrihedron(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      int index);
+      string vessel_guid,
+      int index) {
+    return symbols_.FlightPlanGetManoeuvreFrenetTrihedron(
+          plugin,
+          vessel_guid,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanGetManoeuvreInitialPlottedVelocity",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ FlightPlanGetManoeuvreInitialPlottedVelocity(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XYZ FlightPlanGetManoeuvreInitialPlottedVelocityDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int index);
+    public FlightPlanGetManoeuvreInitialPlottedVelocityDelegate FlightPlanGetManoeuvreInitialPlottedVelocity =
+          Loader.LoadFunction<FlightPlanGetManoeuvreInitialPlottedVelocityDelegate>(
+              "principia__FlightPlanGetManoeuvreInitialPlottedVelocity");
+  }
+  internal static XYZ FlightPlanGetManoeuvreInitialPlottedVelocity(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      int index);
+      string vessel_guid,
+      int index) {
+    return symbols_.FlightPlanGetManoeuvreInitialPlottedVelocity(
+          plugin,
+          vessel_guid,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanInsert",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status FlightPlanInsert(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status FlightPlanInsertDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Burn.Marshaler))] Burn burn,
+        int index);
+    public FlightPlanInsertDelegate FlightPlanInsert =
+          Loader.LoadFunction<FlightPlanInsertDelegate>(
+              "principia__FlightPlanInsert");
+  }
+  internal static Status FlightPlanInsert(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Burn.Marshaler))] Burn burn,
-      int index);
+      string vessel_guid,
+      Burn burn,
+      int index) {
+    return symbols_.FlightPlanInsert(
+          plugin,
+          vessel_guid,
+          burn,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanNumberOfAnomalousManoeuvres",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int FlightPlanNumberOfAnomalousManoeuvres(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int FlightPlanNumberOfAnomalousManoeuvresDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanNumberOfAnomalousManoeuvresDelegate FlightPlanNumberOfAnomalousManoeuvres =
+          Loader.LoadFunction<FlightPlanNumberOfAnomalousManoeuvresDelegate>(
+              "principia__FlightPlanNumberOfAnomalousManoeuvres");
+  }
+  internal static int FlightPlanNumberOfAnomalousManoeuvres(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanNumberOfAnomalousManoeuvres(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanNumberOfManoeuvres",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int FlightPlanNumberOfManoeuvres(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int FlightPlanNumberOfManoeuvresDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanNumberOfManoeuvresDelegate FlightPlanNumberOfManoeuvres =
+          Loader.LoadFunction<FlightPlanNumberOfManoeuvresDelegate>(
+              "principia__FlightPlanNumberOfManoeuvres");
+  }
+  internal static int FlightPlanNumberOfManoeuvres(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanNumberOfManoeuvres(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanNumberOfSegments",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int FlightPlanNumberOfSegments(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int FlightPlanNumberOfSegmentsDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanNumberOfSegmentsDelegate FlightPlanNumberOfSegments =
+          Loader.LoadFunction<FlightPlanNumberOfSegmentsDelegate>(
+              "principia__FlightPlanNumberOfSegments");
+  }
+  internal static int FlightPlanNumberOfSegments(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanNumberOfSegments(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanOptimizationDriverInProgress",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int FlightPlanOptimizationDriverInProgress(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int FlightPlanOptimizationDriverInProgressDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanOptimizationDriverInProgressDelegate FlightPlanOptimizationDriverInProgress =
+          Loader.LoadFunction<FlightPlanOptimizationDriverInProgressDelegate>(
+              "principia__FlightPlanOptimizationDriverInProgress");
+  }
+  internal static int FlightPlanOptimizationDriverInProgress(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanOptimizationDriverInProgress(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanOptimizationDriverMake",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FlightPlanOptimizationDriverMake(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FlightPlanOptimizationDriverMakeDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        double distance,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble inclination_in_degrees,
+        int celestial_index,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NavigationFrameParameters.Marshaler))] NavigationFrameParameters navigation_frame_parameters);
+    public FlightPlanOptimizationDriverMakeDelegate FlightPlanOptimizationDriverMake =
+          Loader.LoadFunction<FlightPlanOptimizationDriverMakeDelegate>(
+              "principia__FlightPlanOptimizationDriverMake");
+  }
+  internal static void FlightPlanOptimizationDriverMake(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       double distance,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble inclination_in_degrees,
+      BoxedDouble inclination_in_degrees,
       int celestial_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NavigationFrameParameters.Marshaler))] NavigationFrameParameters navigation_frame_parameters);
+      NavigationFrameParameters navigation_frame_parameters) {
+    symbols_.FlightPlanOptimizationDriverMake(
+          plugin,
+          vessel_guid,
+          distance,
+          inclination_in_degrees,
+          celestial_index,
+          navigation_frame_parameters);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanOptimizationDriverStart",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FlightPlanOptimizationDriverStart(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FlightPlanOptimizationDriverStartDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int manoeuvre_index);
+    public FlightPlanOptimizationDriverStartDelegate FlightPlanOptimizationDriverStart =
+          Loader.LoadFunction<FlightPlanOptimizationDriverStartDelegate>(
+              "principia__FlightPlanOptimizationDriverStart");
+  }
+  internal static void FlightPlanOptimizationDriverStart(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      int manoeuvre_index);
+      string vessel_guid,
+      int manoeuvre_index) {
+    symbols_.FlightPlanOptimizationDriverStart(
+          plugin,
+          vessel_guid,
+          manoeuvre_index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanRebase",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status FlightPlanRebase(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status FlightPlanRebaseDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        double mass_in_tonnes);
+    public FlightPlanRebaseDelegate FlightPlanRebase =
+          Loader.LoadFunction<FlightPlanRebaseDelegate>(
+              "principia__FlightPlanRebase");
+  }
+  internal static Status FlightPlanRebase(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      double mass_in_tonnes);
+      string vessel_guid,
+      double mass_in_tonnes) {
+    return symbols_.FlightPlanRebase(
+          plugin,
+          vessel_guid,
+          mass_in_tonnes);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanRemove",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status FlightPlanRemove(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status FlightPlanRemoveDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int index);
+    public FlightPlanRemoveDelegate FlightPlanRemove =
+          Loader.LoadFunction<FlightPlanRemoveDelegate>(
+              "principia__FlightPlanRemove");
+  }
+  internal static Status FlightPlanRemove(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      int index);
+      string vessel_guid,
+      int index) {
+    return symbols_.FlightPlanRemove(
+          plugin,
+          vessel_guid,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanRenderedApsides",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FlightPlanRenderedApsides(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FlightPlanRenderedApsidesDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+        int celestial_index,
+        XYZ sun_world_position,
+        int max_points,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator apoapsides,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator periapsides);
+    public FlightPlanRenderedApsidesDelegate FlightPlanRenderedApsides =
+          Loader.LoadFunction<FlightPlanRenderedApsidesDelegate>(
+              "principia__FlightPlanRenderedApsides");
+  }
+  internal static void FlightPlanRenderedApsides(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+      string vessel_guid,
+      BoxedDouble t_max,
       int celestial_index,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator apoapsides,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator periapsides);
+      out DisposableIterator apoapsides,
+      out DisposableIterator periapsides) {
+    symbols_.FlightPlanRenderedApsides(
+          plugin,
+          vessel_guid,
+          t_max,
+          celestial_index,
+          sun_world_position,
+          max_points,
+          out apoapsides,
+          out periapsides);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanRenderedClosestApproaches",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FlightPlanRenderedClosestApproaches(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FlightPlanRenderedClosestApproachesDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        XYZ sun_world_position,
+        int max_points,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator closest_approaches);
+    public FlightPlanRenderedClosestApproachesDelegate FlightPlanRenderedClosestApproaches =
+          Loader.LoadFunction<FlightPlanRenderedClosestApproachesDelegate>(
+              "principia__FlightPlanRenderedClosestApproaches");
+  }
+  internal static void FlightPlanRenderedClosestApproaches(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator closest_approaches);
+      out DisposableIterator closest_approaches) {
+    symbols_.FlightPlanRenderedClosestApproaches(
+          plugin,
+          vessel_guid,
+          sun_world_position,
+          max_points,
+          out closest_approaches);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanRenderedNodes",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FlightPlanRenderedNodes(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FlightPlanRenderedNodesDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+        XYZ sun_world_position,
+        int max_points,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator ascending,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator descending);
+    public FlightPlanRenderedNodesDelegate FlightPlanRenderedNodes =
+          Loader.LoadFunction<FlightPlanRenderedNodesDelegate>(
+              "principia__FlightPlanRenderedNodes");
+  }
+  internal static void FlightPlanRenderedNodes(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+      string vessel_guid,
+      BoxedDouble t_max,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator ascending,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator descending);
+      out DisposableIterator ascending,
+      out DisposableIterator descending) {
+    symbols_.FlightPlanRenderedNodes(
+          plugin,
+          vessel_guid,
+          t_max,
+          sun_world_position,
+          max_points,
+          out ascending,
+          out descending);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanRenderedSegment",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
-  internal static extern DisposableIterator FlightPlanRenderedSegment(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
+    public delegate DisposableIterator FlightPlanRenderedSegmentDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        XYZ sun_world_position,
+        int index);
+    public FlightPlanRenderedSegmentDelegate FlightPlanRenderedSegment =
+          Loader.LoadFunction<FlightPlanRenderedSegmentDelegate>(
+              "principia__FlightPlanRenderedSegment");
+  }
+  internal static DisposableIterator FlightPlanRenderedSegment(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       XYZ sun_world_position,
-      int index);
+      int index) {
+    return symbols_.FlightPlanRenderedSegment(
+          plugin,
+          vessel_guid,
+          sun_world_position,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanReplace",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status FlightPlanReplace(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status FlightPlanReplaceDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Burn.Marshaler))] Burn burn,
+        int index);
+    public FlightPlanReplaceDelegate FlightPlanReplace =
+          Loader.LoadFunction<FlightPlanReplaceDelegate>(
+              "principia__FlightPlanReplace");
+  }
+  internal static Status FlightPlanReplace(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Burn.Marshaler))] Burn burn,
-      int index);
+      string vessel_guid,
+      Burn burn,
+      int index) {
+    return symbols_.FlightPlanReplace(
+          plugin,
+          vessel_guid,
+          burn,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanSelect",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FlightPlanSelect(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FlightPlanSelectDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int index);
+    public FlightPlanSelectDelegate FlightPlanSelect =
+          Loader.LoadFunction<FlightPlanSelectDelegate>(
+              "principia__FlightPlanSelect");
+  }
+  internal static void FlightPlanSelect(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      int index);
+      string vessel_guid,
+      int index) {
+    symbols_.FlightPlanSelect(
+          plugin,
+          vessel_guid,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanSelected",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int FlightPlanSelected(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int FlightPlanSelectedDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanSelectedDelegate FlightPlanSelected =
+          Loader.LoadFunction<FlightPlanSelectedDelegate>(
+              "principia__FlightPlanSelected");
+  }
+  internal static int FlightPlanSelected(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanSelected(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanSetAdaptiveStepParameters",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status FlightPlanSetAdaptiveStepParameters(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status FlightPlanSetAdaptiveStepParametersDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        FlightPlanAdaptiveStepParameters flight_plan_adaptive_step_parameters);
+    public FlightPlanSetAdaptiveStepParametersDelegate FlightPlanSetAdaptiveStepParameters =
+          Loader.LoadFunction<FlightPlanSetAdaptiveStepParametersDelegate>(
+              "principia__FlightPlanSetAdaptiveStepParameters");
+  }
+  internal static Status FlightPlanSetAdaptiveStepParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      FlightPlanAdaptiveStepParameters flight_plan_adaptive_step_parameters);
+      string vessel_guid,
+      FlightPlanAdaptiveStepParameters flight_plan_adaptive_step_parameters) {
+    return symbols_.FlightPlanSetAdaptiveStepParameters(
+          plugin,
+          vessel_guid,
+          flight_plan_adaptive_step_parameters);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanSetDesiredFinalTime",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status FlightPlanSetDesiredFinalTime(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status FlightPlanSetDesiredFinalTimeDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        double final_time);
+    public FlightPlanSetDesiredFinalTimeDelegate FlightPlanSetDesiredFinalTime =
+          Loader.LoadFunction<FlightPlanSetDesiredFinalTimeDelegate>(
+              "principia__FlightPlanSetDesiredFinalTime");
+  }
+  internal static Status FlightPlanSetDesiredFinalTime(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      double final_time);
+      string vessel_guid,
+      double final_time) {
+    return symbols_.FlightPlanSetDesiredFinalTime(
+          plugin,
+          vessel_guid,
+          final_time);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FlightPlanUpdateFromOptimization",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.I1)]
-  internal static extern bool FlightPlanUpdateFromOptimization(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.I1)]
+    public delegate bool FlightPlanUpdateFromOptimizationDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FlightPlanUpdateFromOptimizationDelegate FlightPlanUpdateFromOptimization =
+          Loader.LoadFunction<FlightPlanUpdateFromOptimizationDelegate>(
+              "principia__FlightPlanUpdateFromOptimization");
+  }
+  internal static bool FlightPlanUpdateFromOptimization(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FlightPlanUpdateFromOptimization(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FreeVesselsAndPartsAndCollectPileUps",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FreeVesselsAndPartsAndCollectPileUps(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FreeVesselsAndPartsAndCollectPileUpsDelegate(
+        IntPtr plugin,
+        double delta_t);
+    public FreeVesselsAndPartsAndCollectPileUpsDelegate FreeVesselsAndPartsAndCollectPileUps =
+          Loader.LoadFunction<FreeVesselsAndPartsAndCollectPileUpsDelegate>(
+              "principia__FreeVesselsAndPartsAndCollectPileUps");
+  }
+  internal static void FreeVesselsAndPartsAndCollectPileUps(
       this IntPtr plugin,
-      double delta_t);
+      double delta_t) {
+    symbols_.FreeVesselsAndPartsAndCollectPileUps(
+          plugin,
+          delta_t);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FutureCatchUpVessel",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr FutureCatchUpVessel(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate IntPtr FutureCatchUpVesselDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public FutureCatchUpVesselDelegate FutureCatchUpVessel =
+          Loader.LoadFunction<FutureCatchUpVesselDelegate>(
+              "principia__FutureCatchUpVessel");
+  }
+  internal static IntPtr FutureCatchUpVessel(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.FutureCatchUpVessel(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__FutureWaitForVesselToCatchUp",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void FutureWaitForVesselToCatchUp(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void FutureWaitForVesselToCatchUpDelegate(
+        IntPtr plugin,
+        ref IntPtr future,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator collided_vessels);
+    public FutureWaitForVesselToCatchUpDelegate FutureWaitForVesselToCatchUp =
+          Loader.LoadFunction<FutureWaitForVesselToCatchUpDelegate>(
+              "principia__FutureWaitForVesselToCatchUp");
+  }
+  internal static void FutureWaitForVesselToCatchUp(
       this IntPtr plugin,
       ref IntPtr future,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator collided_vessels);
+      out DisposableIterator collided_vessels) {
+    symbols_.FutureWaitForVesselToCatchUp(
+          plugin,
+          ref future,
+          out collided_vessels);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__GetBufferDuration",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetBufferDuration();
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int GetBufferDurationDelegate();
+    public GetBufferDurationDelegate GetBufferDuration =
+          Loader.LoadFunction<GetBufferDurationDelegate>(
+              "principia__GetBufferDuration");
+  }
+  internal static int GetBufferDuration() {
+    return symbols_.GetBufferDuration();
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__GetBufferedLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetBufferedLogging();
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int GetBufferedLoggingDelegate();
+    public GetBufferedLoggingDelegate GetBufferedLogging =
+          Loader.LoadFunction<GetBufferedLoggingDelegate>(
+              "principia__GetBufferedLogging");
+  }
+  internal static int GetBufferedLogging() {
+    return symbols_.GetBufferedLogging();
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__GetStderrLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetStderrLogging();
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int GetStderrLoggingDelegate();
+    public GetStderrLoggingDelegate GetStderrLogging =
+          Loader.LoadFunction<GetStderrLoggingDelegate>(
+              "principia__GetStderrLogging");
+  }
+  internal static int GetStderrLogging() {
+    return symbols_.GetStderrLogging();
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__GetSuppressedLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetSuppressedLogging();
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int GetSuppressedLoggingDelegate();
+    public GetSuppressedLoggingDelegate GetSuppressedLogging =
+          Loader.LoadFunction<GetSuppressedLoggingDelegate>(
+              "principia__GetSuppressedLogging");
+  }
+  internal static int GetSuppressedLogging() {
+    return symbols_.GetSuppressedLogging();
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__GetVerboseLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int GetVerboseLogging();
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int GetVerboseLoggingDelegate();
+    public GetVerboseLoggingDelegate GetVerboseLogging =
+          Loader.LoadFunction<GetVerboseLoggingDelegate>(
+              "principia__GetVerboseLogging");
+  }
+  internal static int GetVerboseLogging() {
+    return symbols_.GetVerboseLogging();
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__GetVersion",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void GetVersion(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] out string build_date,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] out string version);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void GetVersionDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] out string build_date,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] out string version);
+    public GetVersionDelegate GetVersion =
+          Loader.LoadFunction<GetVersionDelegate>(
+              "principia__GetVersion");
+  }
+  internal static void GetVersion(
+      out string build_date,
+      out string version) {
+    symbols_.GetVersion(
+          out build_date,
+          out version);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__HasEncounteredApocalypse",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.I1)]
-  internal static extern bool HasEncounteredApocalypse(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.I1)]
+    public delegate bool HasEncounteredApocalypseDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))] out string details);
+    public HasEncounteredApocalypseDelegate HasEncounteredApocalypse =
+          Loader.LoadFunction<HasEncounteredApocalypseDelegate>(
+              "principia__HasEncounteredApocalypse");
+  }
+  internal static bool HasEncounteredApocalypse(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))] out string details);
+      out string details) {
+    return symbols_.HasEncounteredApocalypse(
+          plugin,
+          out details);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__HasVessel",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.I1)]
-  internal static extern bool HasVessel(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.I1)]
+    public delegate bool HasVesselDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public HasVesselDelegate HasVessel =
+          Loader.LoadFunction<HasVesselDelegate>(
+              "principia__HasVessel");
+  }
+  internal static bool HasVessel(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.HasVessel(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InitializeDownsamplingParameters",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InitializeDownsamplingParameters(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InitializeDownsamplingParametersDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationDownsamplingParameters.Marshaler))] ConfigurationDownsamplingParameters downsampling_parameters);
+    public InitializeDownsamplingParametersDelegate InitializeDownsamplingParameters =
+          Loader.LoadFunction<InitializeDownsamplingParametersDelegate>(
+              "principia__InitializeDownsamplingParameters");
+  }
+  internal static void InitializeDownsamplingParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationDownsamplingParameters.Marshaler))] ConfigurationDownsamplingParameters downsampling_parameters);
+      ConfigurationDownsamplingParameters downsampling_parameters) {
+    symbols_.InitializeDownsamplingParameters(
+          plugin,
+          downsampling_parameters);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InitializeEphemerisParameters",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InitializeEphemerisParameters(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InitializeEphemerisParametersDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAccuracyParameters.Marshaler))] ConfigurationAccuracyParameters accuracy_parameters,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParameters.Marshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
+    public InitializeEphemerisParametersDelegate InitializeEphemerisParameters =
+          Loader.LoadFunction<InitializeEphemerisParametersDelegate>(
+              "principia__InitializeEphemerisParameters");
+  }
+  internal static void InitializeEphemerisParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAccuracyParameters.Marshaler))] ConfigurationAccuracyParameters accuracy_parameters,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParameters.Marshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
+      ConfigurationAccuracyParameters accuracy_parameters,
+      ConfigurationFixedStepParameters fixed_step_parameters) {
+    symbols_.InitializeEphemerisParameters(
+          plugin,
+          accuracy_parameters,
+          fixed_step_parameters);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InitializeHistoryParameters",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InitializeHistoryParameters(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InitializeHistoryParametersDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParameters.Marshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
+    public InitializeHistoryParametersDelegate InitializeHistoryParameters =
+          Loader.LoadFunction<InitializeHistoryParametersDelegate>(
+              "principia__InitializeHistoryParameters");
+  }
+  internal static void InitializeHistoryParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationFixedStepParameters.Marshaler))] ConfigurationFixedStepParameters fixed_step_parameters);
+      ConfigurationFixedStepParameters fixed_step_parameters) {
+    symbols_.InitializeHistoryParameters(
+          plugin,
+          fixed_step_parameters);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InitializePsychohistoryParameters",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InitializePsychohistoryParameters(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InitializePsychohistoryParametersDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAdaptiveStepParameters.Marshaler))] ConfigurationAdaptiveStepParameters parameters);
+    public InitializePsychohistoryParametersDelegate InitializePsychohistoryParameters =
+          Loader.LoadFunction<InitializePsychohistoryParametersDelegate>(
+              "principia__InitializePsychohistoryParameters");
+  }
+  internal static void InitializePsychohistoryParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ConfigurationAdaptiveStepParameters.Marshaler))] ConfigurationAdaptiveStepParameters parameters);
+      ConfigurationAdaptiveStepParameters parameters) {
+    symbols_.InitializePsychohistoryParameters(
+          plugin,
+          parameters);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InsertCelestialAbsoluteCartesian",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InsertCelestialAbsoluteCartesian(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InsertCelestialAbsoluteCartesianDelegate(
+        IntPtr plugin,
+        int celestial_index,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParameters.Marshaler))] BodyParameters body_parameters,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string x,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string y,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string z,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vx,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vy,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vz);
+    public InsertCelestialAbsoluteCartesianDelegate InsertCelestialAbsoluteCartesian =
+          Loader.LoadFunction<InsertCelestialAbsoluteCartesianDelegate>(
+              "principia__InsertCelestialAbsoluteCartesian");
+  }
+  internal static void InsertCelestialAbsoluteCartesian(
       this IntPtr plugin,
       int celestial_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParameters.Marshaler))] BodyParameters body_parameters,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string x,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string y,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string z,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vx,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vy,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vz);
+      BoxedInt32 parent_index,
+      BodyParameters body_parameters,
+      string x,
+      string y,
+      string z,
+      string vx,
+      string vy,
+      string vz) {
+    symbols_.InsertCelestialAbsoluteCartesian(
+          plugin,
+          celestial_index,
+          parent_index,
+          body_parameters,
+          x,
+          y,
+          z,
+          vx,
+          vy,
+          vz);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InsertCelestialJacobiKeplerian",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InsertCelestialJacobiKeplerian(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InsertCelestialJacobiKeplerianDelegate(
+        IntPtr plugin,
+        int celestial_index,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParameters.Marshaler))] BodyParameters body_parameters,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<KeplerianElements>))] BoxedKeplerianElements keplerian_elements);
+    public InsertCelestialJacobiKeplerianDelegate InsertCelestialJacobiKeplerian =
+          Loader.LoadFunction<InsertCelestialJacobiKeplerianDelegate>(
+              "principia__InsertCelestialJacobiKeplerian");
+  }
+  internal static void InsertCelestialJacobiKeplerian(
       this IntPtr plugin,
       int celestial_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(BodyParameters.Marshaler))] BodyParameters body_parameters,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<KeplerianElements>))] BoxedKeplerianElements keplerian_elements);
+      BoxedInt32 parent_index,
+      BodyParameters body_parameters,
+      BoxedKeplerianElements keplerian_elements) {
+    symbols_.InsertCelestialJacobiKeplerian(
+          plugin,
+          celestial_index,
+          parent_index,
+          body_parameters,
+          keplerian_elements);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InsertOrKeepVessel",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InsertOrKeepVessel(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InsertOrKeepVesselDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_name,
+        int parent_index,
+        [MarshalAs(UnmanagedType.I1)] bool loaded,
+        [MarshalAs(UnmanagedType.I1)] out bool inserted);
+    public InsertOrKeepVesselDelegate InsertOrKeepVessel =
+          Loader.LoadFunction<InsertOrKeepVesselDelegate>(
+              "principia__InsertOrKeepVessel");
+  }
+  internal static void InsertOrKeepVessel(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_name,
+      string vessel_guid,
+      string vessel_name,
       int parent_index,
-      [MarshalAs(UnmanagedType.I1)] bool loaded,
-      [MarshalAs(UnmanagedType.I1)] out bool inserted);
+      bool loaded,
+      out bool inserted) {
+    symbols_.InsertOrKeepVessel(
+          plugin,
+          vessel_guid,
+          vessel_name,
+          parent_index,
+          loaded,
+          out inserted);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InsertOrKeepLoadedPart",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InsertOrKeepLoadedPart(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InsertOrKeepLoadedPartDelegate(
+        IntPtr plugin,
+        uint part_id,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name,
+        double mass_in_tonnes,
+        XYZ centre_of_mass,
+        XYZ moments_of_inertia_in_tonnes,
+        WXYZ principal_axes_rotation,
+        [MarshalAs(UnmanagedType.I1)] bool is_solid_rocket_motor,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int main_body_index,
+        QP main_body_world_degrees_of_freedom,
+        QP part_world_degrees_of_freedom,
+        WXYZ part_rotation,
+        XYZ part_angular_velocity,
+        double delta_t);
+    public InsertOrKeepLoadedPartDelegate InsertOrKeepLoadedPart =
+          Loader.LoadFunction<InsertOrKeepLoadedPartDelegate>(
+              "principia__InsertOrKeepLoadedPart");
+  }
+  internal static void InsertOrKeepLoadedPart(
       this IntPtr plugin,
       uint part_id,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name,
+      string name,
       double mass_in_tonnes,
       XYZ centre_of_mass,
       XYZ moments_of_inertia_in_tonnes,
       WXYZ principal_axes_rotation,
-      [MarshalAs(UnmanagedType.I1)] bool is_solid_rocket_motor,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      bool is_solid_rocket_motor,
+      string vessel_guid,
       int main_body_index,
       QP main_body_world_degrees_of_freedom,
       QP part_world_degrees_of_freedom,
       WXYZ part_rotation,
       XYZ part_angular_velocity,
-      double delta_t);
+      double delta_t) {
+    symbols_.InsertOrKeepLoadedPart(
+          plugin,
+          part_id,
+          name,
+          mass_in_tonnes,
+          centre_of_mass,
+          moments_of_inertia_in_tonnes,
+          principal_axes_rotation,
+          is_solid_rocket_motor,
+          vessel_guid,
+          main_body_index,
+          main_body_world_degrees_of_freedom,
+          part_world_degrees_of_freedom,
+          part_rotation,
+          part_angular_velocity,
+          delta_t);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InsertUnloadedPart",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InsertUnloadedPart(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InsertUnloadedPartDelegate(
+        IntPtr plugin,
+        uint part_id,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        QP from_parent);
+    public InsertUnloadedPartDelegate InsertUnloadedPart =
+          Loader.LoadFunction<InsertUnloadedPartDelegate>(
+              "principia__InsertUnloadedPart");
+  }
+  internal static void InsertUnloadedPart(
       this IntPtr plugin,
       uint part_id,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      QP from_parent);
+      string name,
+      string vessel_guid,
+      QP from_parent) {
+    symbols_.InsertUnloadedPart(
+          plugin,
+          part_id,
+          name,
+          vessel_guid,
+          from_parent);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorAtEnd",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.I1)]
-  internal static extern bool IteratorAtEnd(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.I1)]
+    public delegate bool IteratorAtEndDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorAtEndDelegate IteratorAtEnd =
+          Loader.LoadFunction<IteratorAtEndDelegate>(
+              "principia__IteratorAtEnd");
+  }
+  internal static bool IteratorAtEnd(
+      this DisposableIterator iterator) {
+    return symbols_.IteratorAtEnd(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorDelete",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void IteratorDelete(
-      ref IntPtr iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void IteratorDeleteDelegate(
+        ref IntPtr iterator);
+    public IteratorDeleteDelegate IteratorDelete =
+          Loader.LoadFunction<IteratorDeleteDelegate>(
+              "principia__IteratorDelete");
+  }
+  internal static void IteratorDelete(
+      ref IntPtr iterator) {
+    symbols_.IteratorDelete(
+          ref iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorGetDiscreteTrajectoryQP",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern QP IteratorGetDiscreteTrajectoryQP(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate QP IteratorGetDiscreteTrajectoryQPDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorGetDiscreteTrajectoryQPDelegate IteratorGetDiscreteTrajectoryQP =
+          Loader.LoadFunction<IteratorGetDiscreteTrajectoryQPDelegate>(
+              "principia__IteratorGetDiscreteTrajectoryQP");
+  }
+  internal static QP IteratorGetDiscreteTrajectoryQP(
+      this DisposableIterator iterator) {
+    return symbols_.IteratorGetDiscreteTrajectoryQP(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorGetDiscreteTrajectoryTime",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern double IteratorGetDiscreteTrajectoryTime(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate double IteratorGetDiscreteTrajectoryTimeDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorGetDiscreteTrajectoryTimeDelegate IteratorGetDiscreteTrajectoryTime =
+          Loader.LoadFunction<IteratorGetDiscreteTrajectoryTimeDelegate>(
+              "principia__IteratorGetDiscreteTrajectoryTime");
+  }
+  internal static double IteratorGetDiscreteTrajectoryTime(
+      this DisposableIterator iterator) {
+    return symbols_.IteratorGetDiscreteTrajectoryTime(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorGetDiscreteTrajectoryXYZ",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ IteratorGetDiscreteTrajectoryXYZ(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XYZ IteratorGetDiscreteTrajectoryXYZDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorGetDiscreteTrajectoryXYZDelegate IteratorGetDiscreteTrajectoryXYZ =
+          Loader.LoadFunction<IteratorGetDiscreteTrajectoryXYZDelegate>(
+              "principia__IteratorGetDiscreteTrajectoryXYZ");
+  }
+  internal static XYZ IteratorGetDiscreteTrajectoryXYZ(
+      this DisposableIterator iterator) {
+    return symbols_.IteratorGetDiscreteTrajectoryXYZ(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorGetNode",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern Node IteratorGetNode(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate Node IteratorGetNodeDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorGetNodeDelegate IteratorGetNode =
+          Loader.LoadFunction<IteratorGetNodeDelegate>(
+              "principia__IteratorGetNode");
+  }
+  internal static Node IteratorGetNode(
+      this DisposableIterator iterator) {
+    return symbols_.IteratorGetNode(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorGetRP2LinesIterator",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
-  internal static extern DisposableIterator IteratorGetRP2LinesIterator(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))]
+    public delegate DisposableIterator IteratorGetRP2LinesIteratorDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorGetRP2LinesIteratorDelegate IteratorGetRP2LinesIterator =
+          Loader.LoadFunction<IteratorGetRP2LinesIteratorDelegate>(
+              "principia__IteratorGetRP2LinesIterator");
+  }
+  internal static DisposableIterator IteratorGetRP2LinesIterator(
+      this DisposableIterator iterator) {
+    return symbols_.IteratorGetRP2LinesIterator(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorGetRP2LineXY",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XY IteratorGetRP2LineXY(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XY IteratorGetRP2LineXYDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorGetRP2LineXYDelegate IteratorGetRP2LineXY =
+          Loader.LoadFunction<IteratorGetRP2LineXYDelegate>(
+              "principia__IteratorGetRP2LineXY");
+  }
+  internal static XY IteratorGetRP2LineXY(
+      this DisposableIterator iterator) {
+    return symbols_.IteratorGetRP2LineXY(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorGetVesselGuid",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))]
-  internal static extern string IteratorGetVesselGuid(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))]
+    public delegate string IteratorGetVesselGuidDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorGetVesselGuidDelegate IteratorGetVesselGuid =
+          Loader.LoadFunction<IteratorGetVesselGuidDelegate>(
+              "principia__IteratorGetVesselGuid");
+  }
+  internal static string IteratorGetVesselGuid(
+      this DisposableIterator iterator) {
+    return symbols_.IteratorGetVesselGuid(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorIncrement",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void IteratorIncrement(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void IteratorIncrementDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorIncrementDelegate IteratorIncrement =
+          Loader.LoadFunction<IteratorIncrementDelegate>(
+              "principia__IteratorIncrement");
+  }
+  internal static void IteratorIncrement(
+      this DisposableIterator iterator) {
+    symbols_.IteratorIncrement(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorReset",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void IteratorReset(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void IteratorResetDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorResetDelegate IteratorReset =
+          Loader.LoadFunction<IteratorResetDelegate>(
+              "principia__IteratorReset");
+  }
+  internal static void IteratorReset(
+      this DisposableIterator iterator) {
+    symbols_.IteratorReset(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__IteratorSize",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern int IteratorSize(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] this DisposableIterator iterator);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate int IteratorSizeDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] DisposableIterator iterator);
+    public IteratorSizeDelegate IteratorSize =
+          Loader.LoadFunction<IteratorSizeDelegate>(
+              "principia__IteratorSize");
+  }
+  internal static int IteratorSize(
+      this DisposableIterator iterator) {
+    return symbols_.IteratorSize(
+          iterator);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__LogError",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void LogError(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string file,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void LogErrorDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string file,
+        int line,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
+    public LogErrorDelegate LogError =
+          Loader.LoadFunction<LogErrorDelegate>(
+              "principia__LogError");
+  }
+  internal static void LogError(
+      string file,
       int line,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
+      string text) {
+    symbols_.LogError(
+          file,
+          line,
+          text);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__LogFatal",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void LogFatal(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string file,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void LogFatalDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string file,
+        int line,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
+    public LogFatalDelegate LogFatal =
+          Loader.LoadFunction<LogFatalDelegate>(
+              "principia__LogFatal");
+  }
+  internal static void LogFatal(
+      string file,
       int line,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
+      string text) {
+    symbols_.LogFatal(
+          file,
+          line,
+          text);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__LogInfo",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void LogInfo(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string file,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void LogInfoDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string file,
+        int line,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
+    public LogInfoDelegate LogInfo =
+          Loader.LoadFunction<LogInfoDelegate>(
+              "principia__LogInfo");
+  }
+  internal static void LogInfo(
+      string file,
       int line,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
+      string text) {
+    symbols_.LogInfo(
+          file,
+          line,
+          text);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__LogWarning",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void LogWarning(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string file,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void LogWarningDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string file,
+        int line,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
+    public LogWarningDelegate LogWarning =
+          Loader.LoadFunction<LogWarningDelegate>(
+              "principia__LogWarning");
+  }
+  internal static void LogWarning(
+      string file,
       int line,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string text);
+      string text) {
+    symbols_.LogWarning(
+          file,
+          line,
+          text);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__MonitorSetName",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void MonitorSetName(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void MonitorSetNameDelegate(
+        int i,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name);
+    public MonitorSetNameDelegate MonitorSetName =
+          Loader.LoadFunction<MonitorSetNameDelegate>(
+              "principia__MonitorSetName");
+  }
+  internal static void MonitorSetName(
       int i,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name);
+      string name) {
+    symbols_.MonitorSetName(
+          i,
+          name);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__MonitorStart",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void MonitorStart(
-      int i);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void MonitorStartDelegate(
+        int i);
+    public MonitorStartDelegate MonitorStart =
+          Loader.LoadFunction<MonitorStartDelegate>(
+              "principia__MonitorStart");
+  }
+  internal static void MonitorStart(
+      int i) {
+    symbols_.MonitorStart(
+          i);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__MonitorStop",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void MonitorStop(
-      int i);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void MonitorStopDelegate(
+        int i);
+    public MonitorStopDelegate MonitorStop =
+          Loader.LoadFunction<MonitorStopDelegate>(
+              "principia__MonitorStop");
+  }
+  internal static void MonitorStop(
+      int i) {
+    symbols_.MonitorStop(
+          i);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__NavballOrientation",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern WXYZ NavballOrientation(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate WXYZ NavballOrientationDelegate(
+        IntPtr plugin,
+        XYZ sun_world_position,
+        XYZ ship_world_position);
+    public NavballOrientationDelegate NavballOrientation =
+          Loader.LoadFunction<NavballOrientationDelegate>(
+              "principia__NavballOrientation");
+  }
+  internal static WXYZ NavballOrientation(
       this IntPtr plugin,
       XYZ sun_world_position,
-      XYZ ship_world_position);
+      XYZ ship_world_position) {
+    return symbols_.NavballOrientation(
+          plugin,
+          sun_world_position,
+          ship_world_position);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__NewPlugin",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern IntPtr NewPlugin(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string game_epoch,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string solar_system_epoch,
-      double planetarium_rotation_in_degrees);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate IntPtr NewPluginDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string game_epoch,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string solar_system_epoch,
+        double planetarium_rotation_in_degrees);
+    public NewPluginDelegate NewPlugin =
+          Loader.LoadFunction<NewPluginDelegate>(
+              "principia__NewPlugin");
+  }
+  internal static IntPtr NewPlugin(
+      string game_epoch,
+      string solar_system_epoch,
+      double planetarium_rotation_in_degrees) {
+    return symbols_.NewPlugin(
+          game_epoch,
+          solar_system_epoch,
+          planetarium_rotation_in_degrees);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PartApplyIntrinsicForce",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PartApplyIntrinsicForce(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PartApplyIntrinsicForceDelegate(
+        IntPtr plugin,
+        uint part_id,
+        XYZ force_in_kilonewtons);
+    public PartApplyIntrinsicForceDelegate PartApplyIntrinsicForce =
+          Loader.LoadFunction<PartApplyIntrinsicForceDelegate>(
+              "principia__PartApplyIntrinsicForce");
+  }
+  internal static void PartApplyIntrinsicForce(
       this IntPtr plugin,
       uint part_id,
-      XYZ force_in_kilonewtons);
+      XYZ force_in_kilonewtons) {
+    symbols_.PartApplyIntrinsicForce(
+          plugin,
+          part_id,
+          force_in_kilonewtons);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PartApplyIntrinsicForceAtPosition",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PartApplyIntrinsicForceAtPosition(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PartApplyIntrinsicForceAtPositionDelegate(
+        IntPtr plugin,
+        uint part_id,
+        XYZ force_in_kilonewtons,
+        XYZ lever_arm);
+    public PartApplyIntrinsicForceAtPositionDelegate PartApplyIntrinsicForceAtPosition =
+          Loader.LoadFunction<PartApplyIntrinsicForceAtPositionDelegate>(
+              "principia__PartApplyIntrinsicForceAtPosition");
+  }
+  internal static void PartApplyIntrinsicForceAtPosition(
       this IntPtr plugin,
       uint part_id,
       XYZ force_in_kilonewtons,
-      XYZ lever_arm);
+      XYZ lever_arm) {
+    symbols_.PartApplyIntrinsicForceAtPosition(
+          plugin,
+          part_id,
+          force_in_kilonewtons,
+          lever_arm);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PartApplyIntrinsicTorque",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PartApplyIntrinsicTorque(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PartApplyIntrinsicTorqueDelegate(
+        IntPtr plugin,
+        uint part_id,
+        XYZ torque_in_kilonewton_metre);
+    public PartApplyIntrinsicTorqueDelegate PartApplyIntrinsicTorque =
+          Loader.LoadFunction<PartApplyIntrinsicTorqueDelegate>(
+              "principia__PartApplyIntrinsicTorque");
+  }
+  internal static void PartApplyIntrinsicTorque(
       this IntPtr plugin,
       uint part_id,
-      XYZ torque_in_kilonewton_metre);
+      XYZ torque_in_kilonewton_metre) {
+    symbols_.PartApplyIntrinsicTorque(
+          plugin,
+          part_id,
+          torque_in_kilonewton_metre);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PartGetActualRigidMotion",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern QPRW PartGetActualRigidMotion(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate QPRW PartGetActualRigidMotionDelegate(
+        IntPtr plugin,
+        uint part_id,
+        Origin origin);
+    public PartGetActualRigidMotionDelegate PartGetActualRigidMotion =
+          Loader.LoadFunction<PartGetActualRigidMotionDelegate>(
+              "principia__PartGetActualRigidMotion");
+  }
+  internal static QPRW PartGetActualRigidMotion(
       this IntPtr plugin,
       uint part_id,
-      Origin origin);
+      Origin origin) {
+    return symbols_.PartGetActualRigidMotion(
+          plugin,
+          part_id,
+          origin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PartIsTruthful",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.I1)]
-  internal static extern bool PartIsTruthful(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.I1)]
+    public delegate bool PartIsTruthfulDelegate(
+        IntPtr plugin,
+        uint part_id);
+    public PartIsTruthfulDelegate PartIsTruthful =
+          Loader.LoadFunction<PartIsTruthfulDelegate>(
+              "principia__PartIsTruthful");
+  }
+  internal static bool PartIsTruthful(
       this IntPtr plugin,
-      uint part_id);
+      uint part_id) {
+    return symbols_.PartIsTruthful(
+          plugin,
+          part_id);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PartSetApparentRigidMotion",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PartSetApparentRigidMotion(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PartSetApparentRigidMotionDelegate(
+        IntPtr plugin,
+        uint part_id,
+        QP degrees_of_freedom,
+        WXYZ rotation,
+        XYZ angular_velocity);
+    public PartSetApparentRigidMotionDelegate PartSetApparentRigidMotion =
+          Loader.LoadFunction<PartSetApparentRigidMotionDelegate>(
+              "principia__PartSetApparentRigidMotion");
+  }
+  internal static void PartSetApparentRigidMotion(
       this IntPtr plugin,
       uint part_id,
       QP degrees_of_freedom,
       WXYZ rotation,
-      XYZ angular_velocity);
+      XYZ angular_velocity) {
+    symbols_.PartSetApparentRigidMotion(
+          plugin,
+          part_id,
+          degrees_of_freedom,
+          rotation,
+          angular_velocity);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PlanetariumCreate",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))]
-  internal static extern DisposablePlanetarium PlanetariumCreate(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))]
+    public delegate DisposablePlanetarium PlanetariumCreateDelegate(
+        IntPtr plugin,
+        XYZ sun_world_position,
+        XYZ xyz_opengl_camera_x_in_world,
+        XYZ xyz_opengl_camera_y_in_world,
+        XYZ xyz_opengl_camera_z_in_world,
+        XYZ xyz_camera_position_in_world,
+        double focal,
+        double field_of_view,
+        double inverse_scale_factor,
+        double angular_resolution,
+        XYZ scaled_space_origin);
+    public PlanetariumCreateDelegate PlanetariumCreate =
+          Loader.LoadFunction<PlanetariumCreateDelegate>(
+              "principia__PlanetariumCreate");
+  }
+  internal static DisposablePlanetarium PlanetariumCreate(
       this IntPtr plugin,
       XYZ sun_world_position,
       XYZ xyz_opengl_camera_x_in_world,
@@ -1182,325 +2519,814 @@ internal static partial class Interface {
       double field_of_view,
       double inverse_scale_factor,
       double angular_resolution,
-      XYZ scaled_space_origin);
+      XYZ scaled_space_origin) {
+    return symbols_.PlanetariumCreate(
+          plugin,
+          sun_world_position,
+          xyz_opengl_camera_x_in_world,
+          xyz_opengl_camera_y_in_world,
+          xyz_opengl_camera_z_in_world,
+          xyz_camera_position_in_world,
+          focal,
+          field_of_view,
+          inverse_scale_factor,
+          angular_resolution,
+          scaled_space_origin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PlanetariumDelete",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PlanetariumDelete(
-      ref IntPtr planetarium);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PlanetariumDeleteDelegate(
+        ref IntPtr planetarium);
+    public PlanetariumDeleteDelegate PlanetariumDelete =
+          Loader.LoadFunction<PlanetariumDeleteDelegate>(
+              "principia__PlanetariumDelete");
+  }
+  internal static void PlanetariumDelete(
+      ref IntPtr planetarium) {
+    symbols_.PlanetariumDelete(
+          ref planetarium);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PlanetariumPlotCelestialFutureTrajectory",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PlanetariumPlotCelestialFutureTrajectory(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PlanetariumPlotCelestialFutureTrajectoryDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] DisposablePlanetarium planetarium,
+        IntPtr plugin,
+        int celestial_index,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        IntPtr vertices,
+        int vertices_size,
+        out double minimal_distance_from_camera,
+        out int vertex_count);
+    public PlanetariumPlotCelestialFutureTrajectoryDelegate PlanetariumPlotCelestialFutureTrajectory =
+          Loader.LoadFunction<PlanetariumPlotCelestialFutureTrajectoryDelegate>(
+              "principia__PlanetariumPlotCelestialFutureTrajectory");
+  }
+  internal static void PlanetariumPlotCelestialFutureTrajectory(
+      this DisposablePlanetarium planetarium,
       IntPtr plugin,
       int celestial_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       IntPtr vertices,
       int vertices_size,
       out double minimal_distance_from_camera,
-      out int vertex_count);
+      out int vertex_count) {
+    symbols_.PlanetariumPlotCelestialFutureTrajectory(
+          planetarium,
+          plugin,
+          celestial_index,
+          vessel_guid,
+          vertices,
+          vertices_size,
+          out minimal_distance_from_camera,
+          out vertex_count);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PlanetariumPlotCelestialPastTrajectory",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PlanetariumPlotCelestialPastTrajectory(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PlanetariumPlotCelestialPastTrajectoryDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] DisposablePlanetarium planetarium,
+        IntPtr plugin,
+        int celestial_index,
+        double max_history_length,
+        IntPtr vertices,
+        int vertices_size,
+        out double minimal_distance_from_camera,
+        out int vertex_count);
+    public PlanetariumPlotCelestialPastTrajectoryDelegate PlanetariumPlotCelestialPastTrajectory =
+          Loader.LoadFunction<PlanetariumPlotCelestialPastTrajectoryDelegate>(
+              "principia__PlanetariumPlotCelestialPastTrajectory");
+  }
+  internal static void PlanetariumPlotCelestialPastTrajectory(
+      this DisposablePlanetarium planetarium,
       IntPtr plugin,
       int celestial_index,
       double max_history_length,
       IntPtr vertices,
       int vertices_size,
       out double minimal_distance_from_camera,
-      out int vertex_count);
+      out int vertex_count) {
+    symbols_.PlanetariumPlotCelestialPastTrajectory(
+          planetarium,
+          plugin,
+          celestial_index,
+          max_history_length,
+          vertices,
+          vertices_size,
+          out minimal_distance_from_camera,
+          out vertex_count);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PlanetariumPlotEquipotential",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PlanetariumPlotEquipotential(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PlanetariumPlotEquipotentialDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] DisposablePlanetarium planetarium,
+        IntPtr plugin,
+        int index,
+        IntPtr vertices,
+        int vertices_size,
+        out int vertex_count);
+    public PlanetariumPlotEquipotentialDelegate PlanetariumPlotEquipotential =
+          Loader.LoadFunction<PlanetariumPlotEquipotentialDelegate>(
+              "principia__PlanetariumPlotEquipotential");
+  }
+  internal static void PlanetariumPlotEquipotential(
+      this DisposablePlanetarium planetarium,
       IntPtr plugin,
       int index,
       IntPtr vertices,
       int vertices_size,
-      out int vertex_count);
+      out int vertex_count) {
+    symbols_.PlanetariumPlotEquipotential(
+          planetarium,
+          plugin,
+          index,
+          vertices,
+          vertices_size,
+          out vertex_count);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PlanetariumPlotFlightPlanSegment",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PlanetariumPlotFlightPlanSegment(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PlanetariumPlotFlightPlanSegmentDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] DisposablePlanetarium planetarium,
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int index,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+        IntPtr vertices,
+        int vertices_size,
+        out int vertex_count);
+    public PlanetariumPlotFlightPlanSegmentDelegate PlanetariumPlotFlightPlanSegment =
+          Loader.LoadFunction<PlanetariumPlotFlightPlanSegmentDelegate>(
+              "principia__PlanetariumPlotFlightPlanSegment");
+  }
+  internal static void PlanetariumPlotFlightPlanSegment(
+      this DisposablePlanetarium planetarium,
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       int index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+      BoxedDouble t_max,
       IntPtr vertices,
       int vertices_size,
-      out int vertex_count);
+      out int vertex_count) {
+    symbols_.PlanetariumPlotFlightPlanSegment(
+          planetarium,
+          plugin,
+          vessel_guid,
+          index,
+          t_max,
+          vertices,
+          vertices_size,
+          out vertex_count);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PlanetariumPlotPrediction",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PlanetariumPlotPrediction(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PlanetariumPlotPredictionDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] DisposablePlanetarium planetarium,
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+        IntPtr vertices,
+        int vertices_size,
+        out int vertex_count);
+    public PlanetariumPlotPredictionDelegate PlanetariumPlotPrediction =
+          Loader.LoadFunction<PlanetariumPlotPredictionDelegate>(
+              "principia__PlanetariumPlotPrediction");
+  }
+  internal static void PlanetariumPlotPrediction(
+      this DisposablePlanetarium planetarium,
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+      string vessel_guid,
+      BoxedDouble t_max,
       IntPtr vertices,
       int vertices_size,
-      out int vertex_count);
+      out int vertex_count) {
+    symbols_.PlanetariumPlotPrediction(
+          planetarium,
+          plugin,
+          vessel_guid,
+          t_max,
+          vertices,
+          vertices_size,
+          out vertex_count);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PlanetariumPlotPsychohistory",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PlanetariumPlotPsychohistory(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] this DisposablePlanetarium planetarium,
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PlanetariumPlotPsychohistoryDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposablePlanetariumMarshaler))] DisposablePlanetarium planetarium,
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        double max_history_length,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+        IntPtr vertices,
+        int vertices_size,
+        out int vertex_count);
+    public PlanetariumPlotPsychohistoryDelegate PlanetariumPlotPsychohistory =
+          Loader.LoadFunction<PlanetariumPlotPsychohistoryDelegate>(
+              "principia__PlanetariumPlotPsychohistory");
+  }
+  internal static void PlanetariumPlotPsychohistory(
+      this DisposablePlanetarium planetarium,
       IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       double max_history_length,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+      BoxedDouble t_max,
       IntPtr vertices,
       int vertices_size,
-      out int vertex_count);
+      out int vertex_count) {
+    symbols_.PlanetariumPlotPsychohistory(
+          planetarium,
+          plugin,
+          vessel_guid,
+          max_history_length,
+          t_max,
+          vertices,
+          vertices_size,
+          out vertex_count);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__PrepareToReportCollisions",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void PrepareToReportCollisions(
-      this IntPtr plugin);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void PrepareToReportCollisionsDelegate(
+        IntPtr plugin);
+    public PrepareToReportCollisionsDelegate PrepareToReportCollisions =
+          Loader.LoadFunction<PrepareToReportCollisionsDelegate>(
+              "principia__PrepareToReportCollisions");
+  }
+  internal static void PrepareToReportCollisions(
+      this IntPtr plugin) {
+    symbols_.PrepareToReportCollisions(
+          plugin);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__RenderedPredictionApsides",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void RenderedPredictionApsides(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void RenderedPredictionApsidesDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+        int celestial_index,
+        XYZ sun_world_position,
+        int max_points,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator apoapsides,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator periapsides);
+    public RenderedPredictionApsidesDelegate RenderedPredictionApsides =
+          Loader.LoadFunction<RenderedPredictionApsidesDelegate>(
+              "principia__RenderedPredictionApsides");
+  }
+  internal static void RenderedPredictionApsides(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+      string vessel_guid,
+      BoxedDouble t_max,
       int celestial_index,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator apoapsides,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator periapsides);
+      out DisposableIterator apoapsides,
+      out DisposableIterator periapsides) {
+    symbols_.RenderedPredictionApsides(
+          plugin,
+          vessel_guid,
+          t_max,
+          celestial_index,
+          sun_world_position,
+          max_points,
+          out apoapsides,
+          out periapsides);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__RenderedPredictionClosestApproaches",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void RenderedPredictionClosestApproaches(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void RenderedPredictionClosestApproachesDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        XYZ sun_world_position,
+        int max_points,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator closest_approaches);
+    public RenderedPredictionClosestApproachesDelegate RenderedPredictionClosestApproaches =
+          Loader.LoadFunction<RenderedPredictionClosestApproachesDelegate>(
+              "principia__RenderedPredictionClosestApproaches");
+  }
+  internal static void RenderedPredictionClosestApproaches(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+      string vessel_guid,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator closest_approaches);
+      out DisposableIterator closest_approaches) {
+    symbols_.RenderedPredictionClosestApproaches(
+          plugin,
+          vessel_guid,
+          sun_world_position,
+          max_points,
+          out closest_approaches);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__RenderedPredictionNodes",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void RenderedPredictionNodes(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void RenderedPredictionNodesDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+        XYZ sun_world_position,
+        int max_points,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator ascending,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator descending);
+    public RenderedPredictionNodesDelegate RenderedPredictionNodes =
+          Loader.LoadFunction<RenderedPredictionNodesDelegate>(
+              "principia__RenderedPredictionNodes");
+  }
+  internal static void RenderedPredictionNodes(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<double>))] BoxedDouble t_max,
+      string vessel_guid,
+      BoxedDouble t_max,
       XYZ sun_world_position,
       int max_points,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator ascending,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(DisposableIteratorMarshaler))] out DisposableIterator descending);
+      out DisposableIterator ascending,
+      out DisposableIterator descending) {
+    symbols_.RenderedPredictionNodes(
+          plugin,
+          vessel_guid,
+          t_max,
+          sun_world_position,
+          max_points,
+          out ascending,
+          out descending);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ReportGroundCollision",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ReportGroundCollision(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ReportGroundCollisionDelegate(
+        IntPtr plugin,
+        uint part_id);
+    public ReportGroundCollisionDelegate ReportGroundCollision =
+          Loader.LoadFunction<ReportGroundCollisionDelegate>(
+              "principia__ReportGroundCollision");
+  }
+  internal static void ReportGroundCollision(
       this IntPtr plugin,
-      uint part_id);
+      uint part_id) {
+    symbols_.ReportGroundCollision(
+          plugin,
+          part_id);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ReportPartCollision",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ReportPartCollision(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ReportPartCollisionDelegate(
+        IntPtr plugin,
+        uint part1_id,
+        uint part2_id);
+    public ReportPartCollisionDelegate ReportPartCollision =
+          Loader.LoadFunction<ReportPartCollisionDelegate>(
+              "principia__ReportPartCollision");
+  }
+  internal static void ReportPartCollision(
       this IntPtr plugin,
       uint part1_id,
-      uint part2_id);
+      uint part2_id) {
+    symbols_.ReportPartCollision(
+          plugin,
+          part1_id,
+          part2_id);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SayHello",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))]
-  internal static extern string SayHello();
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))]
+    public delegate string SayHelloDelegate();
+    public SayHelloDelegate SayHello =
+          Loader.LoadFunction<SayHelloDelegate>(
+              "principia__SayHello");
+  }
+  internal static string SayHello() {
+    return symbols_.SayHello();
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SayNotFound",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
-  internal static extern Status SayNotFound();
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<Status, Status.Marshaler>))]
+    public delegate Status SayNotFoundDelegate();
+    public SayNotFoundDelegate SayNotFound =
+          Loader.LoadFunction<SayNotFoundDelegate>(
+              "principia__SayNotFound");
+  }
+  internal static Status SayNotFound() {
+    return symbols_.SayNotFound();
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SerializePlugin",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))]
-  internal static extern string SerializePlugin(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferUTF8Marshaler))]
+    public delegate string SerializePluginDelegate(
+        IntPtr plugin,
+        ref IntPtr serializer,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string compressor,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string encoder);
+    public SerializePluginDelegate SerializePlugin =
+          Loader.LoadFunction<SerializePluginDelegate>(
+              "principia__SerializePlugin");
+  }
+  internal static string SerializePlugin(
       this IntPtr plugin,
       ref IntPtr serializer,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string compressor,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string encoder);
+      string compressor,
+      string encoder) {
+    return symbols_.SerializePlugin(
+          plugin,
+          ref serializer,
+          compressor,
+          encoder);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetBufferDuration",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetBufferDuration(
-      int seconds);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetBufferDurationDelegate(
+        int seconds);
+    public SetBufferDurationDelegate SetBufferDuration =
+          Loader.LoadFunction<SetBufferDurationDelegate>(
+              "principia__SetBufferDuration");
+  }
+  internal static void SetBufferDuration(
+      int seconds) {
+    symbols_.SetBufferDuration(
+          seconds);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetBufferedLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetBufferedLogging(
-      int max_severity);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetBufferedLoggingDelegate(
+        int max_severity);
+    public SetBufferedLoggingDelegate SetBufferedLogging =
+          Loader.LoadFunction<SetBufferedLoggingDelegate>(
+              "principia__SetBufferedLogging");
+  }
+  internal static void SetBufferedLogging(
+      int max_severity) {
+    symbols_.SetBufferedLogging(
+          max_severity);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetFlag",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetFlag(
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string value);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetFlagDelegate(
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string name,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string value);
+    public SetFlagDelegate SetFlag =
+          Loader.LoadFunction<SetFlagDelegate>(
+              "principia__SetFlag");
+  }
+  internal static void SetFlag(
+      string name,
+      string value) {
+    symbols_.SetFlag(
+          name,
+          value);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetMainBody",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetMainBody(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetMainBodyDelegate(
+        IntPtr plugin,
+        int index);
+    public SetMainBodyDelegate SetMainBody =
+          Loader.LoadFunction<SetMainBodyDelegate>(
+              "principia__SetMainBody");
+  }
+  internal static void SetMainBody(
       this IntPtr plugin,
-      int index);
+      int index) {
+    symbols_.SetMainBody(
+          plugin,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetPlottingFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetPlottingFrame(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetPlottingFrameDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(PlottingFrameParameters.Marshaler))] PlottingFrameParameters parameters);
+    public SetPlottingFrameDelegate SetPlottingFrame =
+          Loader.LoadFunction<SetPlottingFrameDelegate>(
+              "principia__SetPlottingFrame");
+  }
+  internal static void SetPlottingFrame(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(PlottingFrameParameters.Marshaler))] PlottingFrameParameters parameters);
+      PlottingFrameParameters parameters) {
+    symbols_.SetPlottingFrame(
+          plugin,
+          parameters);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetStderrLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetStderrLogging(
-      int min_severity);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetStderrLoggingDelegate(
+        int min_severity);
+    public SetStderrLoggingDelegate SetStderrLogging =
+          Loader.LoadFunction<SetStderrLoggingDelegate>(
+              "principia__SetStderrLogging");
+  }
+  internal static void SetStderrLogging(
+      int min_severity) {
+    symbols_.SetStderrLogging(
+          min_severity);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetSuppressedLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetSuppressedLogging(
-      int min_severity);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetSuppressedLoggingDelegate(
+        int min_severity);
+    public SetSuppressedLoggingDelegate SetSuppressedLogging =
+          Loader.LoadFunction<SetSuppressedLoggingDelegate>(
+              "principia__SetSuppressedLogging");
+  }
+  internal static void SetSuppressedLogging(
+      int min_severity) {
+    symbols_.SetSuppressedLogging(
+          min_severity);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetTargetVessel",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetTargetVessel(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetTargetVesselDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        int reference_body_index);
+    public SetTargetVesselDelegate SetTargetVessel =
+          Loader.LoadFunction<SetTargetVesselDelegate>(
+              "principia__SetTargetVessel");
+  }
+  internal static void SetTargetVessel(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      int reference_body_index);
+      string vessel_guid,
+      int reference_body_index) {
+    symbols_.SetTargetVessel(
+          plugin,
+          vessel_guid,
+          reference_body_index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetVerboseLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetVerboseLogging(
-      int level);
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetVerboseLoggingDelegate(
+        int level);
+    public SetVerboseLoggingDelegate SetVerboseLogging =
+          Loader.LoadFunction<SetVerboseLoggingDelegate>(
+              "principia__SetVerboseLogging");
+  }
+  internal static void SetVerboseLogging(
+      int level) {
+    symbols_.SetVerboseLogging(
+          level);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SetWorldRotationalReferenceFrame",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void SetWorldRotationalReferenceFrame(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void SetWorldRotationalReferenceFrameDelegate(
+        IntPtr plugin,
+        int index);
+    public SetWorldRotationalReferenceFrameDelegate SetWorldRotationalReferenceFrame =
+          Loader.LoadFunction<SetWorldRotationalReferenceFrameDelegate>(
+              "principia__SetWorldRotationalReferenceFrame");
+  }
+  internal static void SetWorldRotationalReferenceFrame(
       this IntPtr plugin,
-      int index);
+      int index) {
+    symbols_.SetWorldRotationalReferenceFrame(
+          plugin,
+          index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__UnmanageableVesselVelocity",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ UnmanageableVesselVelocity(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XYZ UnmanageableVesselVelocityDelegate(
+        IntPtr plugin,
+        QP degrees_of_freedom,
+        int celestial_index);
+    public UnmanageableVesselVelocityDelegate UnmanageableVesselVelocity =
+          Loader.LoadFunction<UnmanageableVesselVelocityDelegate>(
+              "principia__UnmanageableVesselVelocity");
+  }
+  internal static XYZ UnmanageableVesselVelocity(
       this IntPtr plugin,
       QP degrees_of_freedom,
-      int celestial_index);
+      int celestial_index) {
+    return symbols_.UnmanageableVesselVelocity(
+          plugin,
+          degrees_of_freedom,
+          celestial_index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__UpdateCelestialHierarchy",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void UpdateCelestialHierarchy(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void UpdateCelestialHierarchyDelegate(
+        IntPtr plugin,
+        int celestial_index,
+        int parent_index);
+    public UpdateCelestialHierarchyDelegate UpdateCelestialHierarchy =
+          Loader.LoadFunction<UpdateCelestialHierarchyDelegate>(
+              "principia__UpdateCelestialHierarchy");
+  }
+  internal static void UpdateCelestialHierarchy(
       this IntPtr plugin,
       int celestial_index,
-      int parent_index);
+      int parent_index) {
+    symbols_.UpdateCelestialHierarchy(
+          plugin,
+          celestial_index,
+          parent_index);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__UpdatePrediction",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void UpdatePrediction(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void UpdatePredictionDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(RepeatedMarshaler<String, NoOwnershipTransferUTF8Marshaler>))] string[] vessel_guids);
+    public UpdatePredictionDelegate UpdatePrediction =
+          Loader.LoadFunction<UpdatePredictionDelegate>(
+              "principia__UpdatePrediction");
+  }
+  internal static void UpdatePrediction(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(RepeatedMarshaler<String, NoOwnershipTransferUTF8Marshaler>))] string[] vessel_guids);
+      string[] vessel_guids) {
+    symbols_.UpdatePrediction(
+          plugin,
+          vessel_guids);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__VesselBinormal",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ VesselBinormal(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XYZ VesselBinormalDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public VesselBinormalDelegate VesselBinormal =
+          Loader.LoadFunction<VesselBinormalDelegate>(
+              "principia__VesselBinormal");
+  }
+  internal static XYZ VesselBinormal(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.VesselBinormal(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__VesselFromParent",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern QP VesselFromParent(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate QP VesselFromParentDelegate(
+        IntPtr plugin,
+        int parent_index,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public VesselFromParentDelegate VesselFromParent =
+          Loader.LoadFunction<VesselFromParentDelegate>(
+              "principia__VesselFromParent");
+  }
+  internal static QP VesselFromParent(
       this IntPtr plugin,
       int parent_index,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.VesselFromParent(
+          plugin,
+          parent_index,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__VesselGetAnalysis",
-             CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<OrbitAnalysis, OrbitAnalysis.Marshaler>))]
-  internal static extern OrbitAnalysis VesselGetAnalysis(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OwnershipTransferMarshaler<OrbitAnalysis, OrbitAnalysis.Marshaler>))]
+    public delegate OrbitAnalysis VesselGetAnalysisDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 revolutions_per_cycle,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 days_per_cycle,
+        int ground_track_revolution);
+    public VesselGetAnalysisDelegate VesselGetAnalysis =
+          Loader.LoadFunction<VesselGetAnalysisDelegate>(
+              "principia__VesselGetAnalysis");
+  }
+  internal static OrbitAnalysis VesselGetAnalysis(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 revolutions_per_cycle,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 days_per_cycle,
-      int ground_track_revolution);
+      string vessel_guid,
+      BoxedInt32 revolutions_per_cycle,
+      BoxedInt32 days_per_cycle,
+      int ground_track_revolution) {
+    return symbols_.VesselGetAnalysis(
+          plugin,
+          vessel_guid,
+          revolutions_per_cycle,
+          days_per_cycle,
+          ground_track_revolution);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__VesselGetPredictionAdaptiveStepParameters",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern AdaptiveStepParameters VesselGetPredictionAdaptiveStepParameters(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate AdaptiveStepParameters VesselGetPredictionAdaptiveStepParametersDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public VesselGetPredictionAdaptiveStepParametersDelegate VesselGetPredictionAdaptiveStepParameters =
+          Loader.LoadFunction<VesselGetPredictionAdaptiveStepParametersDelegate>(
+              "principia__VesselGetPredictionAdaptiveStepParameters");
+  }
+  internal static AdaptiveStepParameters VesselGetPredictionAdaptiveStepParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.VesselGetPredictionAdaptiveStepParameters(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__VesselNormal",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ VesselNormal(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XYZ VesselNormalDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public VesselNormalDelegate VesselNormal =
+          Loader.LoadFunction<VesselNormalDelegate>(
+              "principia__VesselNormal");
+  }
+  internal static XYZ VesselNormal(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.VesselNormal(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__VesselRequestAnalysis",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void VesselRequestAnalysis(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void VesselRequestAnalysisDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        double mission_duration);
+    public VesselRequestAnalysisDelegate VesselRequestAnalysis =
+          Loader.LoadFunction<VesselRequestAnalysisDelegate>(
+              "principia__VesselRequestAnalysis");
+  }
+  internal static void VesselRequestAnalysis(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      double mission_duration);
+      string vessel_guid,
+      double mission_duration) {
+    symbols_.VesselRequestAnalysis(
+          plugin,
+          vessel_guid,
+          mission_duration);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__VesselSetPredictionAdaptiveStepParameters",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void VesselSetPredictionAdaptiveStepParameters(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void VesselSetPredictionAdaptiveStepParametersDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
+        AdaptiveStepParameters adaptive_step_parameters);
+    public VesselSetPredictionAdaptiveStepParametersDelegate VesselSetPredictionAdaptiveStepParameters =
+          Loader.LoadFunction<VesselSetPredictionAdaptiveStepParametersDelegate>(
+              "principia__VesselSetPredictionAdaptiveStepParameters");
+  }
+  internal static void VesselSetPredictionAdaptiveStepParameters(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid,
-      AdaptiveStepParameters adaptive_step_parameters);
+      string vessel_guid,
+      AdaptiveStepParameters adaptive_step_parameters) {
+    symbols_.VesselSetPredictionAdaptiveStepParameters(
+          plugin,
+          vessel_guid,
+          adaptive_step_parameters);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__VesselTangent",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ VesselTangent(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XYZ VesselTangentDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public VesselTangentDelegate VesselTangent =
+          Loader.LoadFunction<VesselTangentDelegate>(
+              "principia__VesselTangent");
+  }
+  internal static XYZ VesselTangent(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.VesselTangent(
+          plugin,
+          vessel_guid);
+  }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__VesselVelocity",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern XYZ VesselVelocity(
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate XYZ VesselVelocityDelegate(
+        IntPtr plugin,
+        [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+    public VesselVelocityDelegate VesselVelocity =
+          Loader.LoadFunction<VesselVelocityDelegate>(
+              "principia__VesselVelocity");
+  }
+  internal static XYZ VesselVelocity(
       this IntPtr plugin,
-      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(NoOwnershipTransferUTF8Marshaler))] string vessel_guid);
+      string vessel_guid) {
+    return symbols_.VesselVelocity(
+          plugin,
+          vessel_guid);
+  }
 
 }
 
