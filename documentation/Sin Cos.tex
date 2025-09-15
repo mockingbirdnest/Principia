@@ -3,6 +3,7 @@
 \usepackage{tikz}
 \usetikzlibrary{cd}
 
+\usepackage{algorithm2e}
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 \counterwithout{equation}{section}
@@ -390,6 +391,35 @@ If any of the conditions above is not met, we fall back on the CORE-MATH impleme
 
 \section*{Accurate Tables and Their Generation}
 
+The accurate tables are tables of triples $\pa{x_k, s_k, c_k}$ where $x_k$ is chosen such that $\sin x_k$ and $\cos x_k$ are very close to machine numbers, \idest, have a string of $\gk_4$ zeroes or ones after the last bit of their mantissa.  The tabulated value $s_k$ (respectively, $c_k$) is then obtained by rounding $\sin x_k$ (respectively, $\cos x_k$) to the nearest machine number.  See \nameref{overview} below for the details of how these tables are used for implementing $\sin$ and $\cos$.
+
+The argument range (which is approximately $\intclos{0}{\frac{\Pi}{4}}$) is split into intervals of length $2 \gD$ centered on $2 k \gD$.  The interval\footnote{Obviously the intervals $\mathscr{I}_k$ cannot all contain their bounds.  Because of the way they are computed, the odd multiples of $\gD$ which separate the intervals are rounded to the nearest even $k$.  Therefore, there is an alternation of open-open intervals (for $k$ odd) and closed-closed intervals (for $k$ even).  We do not have a convenient notation for this, and anyway this detail is mostly irrelevant.} containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  We want to select $x_k$ as close as possible to the midpoint of $\mathscr{I}_k$, because we will need to approximate $\sin$ and $\cos$ over the interval $\intclos{-h_{\text{max}}}{h_{\text{max}}}$ with:
+\[
+h_{\text{max}} \DefineAs \max_k \pa{x_k - \pa{2 k - 1} \gD, \pa{2 k + 1} \gD - x_k}
+\]
+and we want this interval to be as small as possible to yield a more precise polynomial.
+
+We choose $\gk_4 = 18$ to minimize the probability of having to fall back to the more expensive CORE-MATH implementation.  The naïve method described in \cite{Gal1986} (random sampling over $\mathscr{I}_k$) has two problems.  First, it doesn't guarantee that $x_k$ is close to the midpoint of $\mathscr{I}_k$ and can in fact, in the worst case, result in $x_k$ being very close to one of the bounds of the interval, and require the construction of a minimax polynomial over an interval which is (nearly) two times too big.  Second, for each triple of the accurate table it has to inspect, on average, around $2^{2 \gk_4} = 2^{36}$ values.  Assuming that testing one value takes $1 \; \gm \text{s}$, this takes about 19 hours for each triple of the table, and therefore 320 days for the 402 triples that we need.
+
+Consequently, we use the method described in \cite{StehléZimmermann2005} to build our accurate tables.  It is much faster than the method in \cite{Gal1986}, but must still be implemented with great care to achieve a satisfactory speed.  In the rest of this section, we describe the optimizations that we used to generate our tables efficiently (on a modern processor, AMD Zen 3, the entire table generation takes about 20 seconds).
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwData{this text}
+\KwResult{how to write algorithm with \LaTeX2e }
+initialization\;
+\While{not at end of this document}{
+read current\;
+\eIf{understand}{
+go to next section\;
+current section becomes this one\;
+}{
+go back to the beginning of current section\;
+}
+}
+\caption{How to write algorithms}
+\end{algorithm}
+
 \marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
 
 \section*{Overview of the Algorithms}\label{overview}
@@ -411,7 +441,7 @@ and we compute:
 
 \subsection*{Sin and Cos Around Table Entries}
 
-Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  $x_k$ is close to $2 k \gD$ and the accurate table interval\footnote{Obviously the intervals $\mathscr{I}_k$ cannot all contain their bounds.  Because of the way they are computed, the odd multiples of $\gD$ which separate the intervals are rounded to the nearest even $k$.  Therefore, there is an alternation of open-open intervals (for $k$ odd) and closed-closed intervals (for $k$ even).  We do not have a convenient notation for this, and anyway this detail is mostly irrelevant.} containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $\red x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $\red x \in \mathscr{I}_k$ and computing $h = \red x - x_k$.  We then use the addition formulæ to separate out the terms in $x_k$:
+Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $\red x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $\red x \in \mathscr{I}_k$ and computing $h = \red x - x_k$.  We then use the addition formulæ to separate out the terms in $x_k$:
 \begin{align*}
 \sin x &\simeq \sin\of{\red x + \gd \red x} \\
 &= \sin\of{x_k + h + \gd \red x} \\
@@ -488,7 +518,7 @@ g\of{t} &\DefineAs \frac{\sin t}{t^3}
 \end{dcases}
 \]
 
-In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{max} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with with a residual smaller than $2^{-85.534}$ and a 1-degree polynomial $p_c$ with a residual smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
+In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{\text{max}} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with with a residual smaller than $2^{-85.534}$ and a 1-degree polynomial $p_c$ with a residual smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
 
 \section*{Error Analysis}
 
