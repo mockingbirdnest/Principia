@@ -20,6 +20,9 @@
 \DeclareMathOperator{\twodifference}{\StandardSymbol{TwoDifference}}
 \DeclareMathOperator{\quicktwodifference}{\StandardSymbol{QuickTwoDifference}}
 \DeclareMathOperator{\longsub}{\StandardSymbol{LongSub}}
+\DeclareMathOperator{\cmod}{\StandardSymbol{cmod}}
+\DeclareMathOperator{\latticereduce}{\StandardSymbol{LatticeReduce}}
+\DeclareMathOperator{\integerroots}{\StandardSymbol{IntegerRoots}}
 
 % Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
 % so we make them grow for readability.
@@ -403,21 +406,38 @@ We choose $\gk_4 = 18$ to minimize the probability of having to fall back to the
 
 Consequently, we use the method described in \cite{StehléZimmermann2005} to build our accurate tables.  It is much faster than the method in \cite{Gal1986}, but must still be implemented with great care to achieve a satisfactory speed.  In the rest of this section, we describe the optimizations that we used to generate our tables efficiently (on a modern processor, AMD Zen 3, the entire table generation takes about 20 seconds).
 
-\begin{algorithm}[H]
+\subsection*{The Stehlé-Zimmermann Algorithm}
+
+For convenience, we repeat here the algorithm described in \cite{StehléZimmermann2005}:
+
+\begin{algorithm}
+\DontPrintSemicolon
 \SetAlgoLined
-\KwData{this text}
-\KwResult{how to write algorithm with \LaTeX2e }
-initialization\;
-\While{not at end of this document}{
-read current\;
-\eIf{understand}{
-go to next section\;
-current section becomes this one\;
-}{
-go back to the beginning of current section\;
+\LinesNumberedHidden
+\SetNlSty{texttt}{}{.}
+\SetAlgoNlRelativeSize{0}
+\KwData{Two functions $F_1$ and $F_2$, and two positive integers $M$, $T$.}
+\KwResult{All $t \in \intclos{-T}{T}$ such that $\abs{F_i\of{t} \cmod 1} < \frac{1}{M}$ for $i \in \set{1, 2}$.}
+\ShowLn Let $P_1\of{t}$, $P_2\of{t}$ be the degree-2 Taylor expansions of $F_1\of{t}$, $F_2\of{t}$.\;
+\ShowLn Compute $\ge$ such that $\abs{P_i\of{t} - F_i\of{t}} < \ge$ for $\abs t \leq T$ and $i \in \set{1, 2}$.\;
+\ShowLn Compute $M' = \floor{\frac{1/2}{1/M + \ge}}$, $C = 3 M'$, and\footnote{The notation $\iround{C · P_i\of{T \gt}}$ means that we round to the nearest each coefficient of $C . P_i\of{T \gt}$.  This gives an element of $\Integers [ \gt ]$} $P^~_i\of{\gt} = \iround{C · P_i\of{T \gt}}$ for $i \in \set{1, 2}$.\;
+\ShowLn Let $e_1 = 1$, $e_2 = \gt$, $e_3 = \gt^2$, $e_4 = \gu$, $e_5 = \gf$.\;
+\ShowLn Let $g_1 = C$, $g_2 = C T · \gt$, $g_3 = P^~_1\of{\gt} + 3 \gu$, $g_4 = P^~_2\of{\gt} + 3 \gf$.\;
+\ShowLn Create the $4 × 5$ integral matrix $L$ where $L_{k, l}$ is the coefficient of the monomial $e_l$ in $g_k$.\;
+\ShowLn V \leftarrow $\latticereduce\of{L}$\;
+\ShowLn Let $\vv_1$, $\vv_2$, $\vv_3$ be the three shortest vectors of $V$, and $Q_i\of{\gt}$ the associated polynomials.\;
+\ShowLn \lIf{there exist $i \in \set{1, 2, 3}$ such that $\Lnorm[1]{\vv_i} \geq C$} {
+  \Return{FAIL}.
 }
+\ShowLn Let $Q\of{\gt}$ be a linear combination of the $Q_i$'s which is independent of $\gu$ and $\gf$.
+We have $\deg Q \leq 1$.\;
+\ShowLn Let $q\of{t} = Q\of{\frac{t}{T}}$.
+\lForEach{$t_0$ in $\integerroots\of{q, \intclos{-T}{T}}$}{
+  \lIf{$\abs{F_i\of{t_0} \cmod 1} < \frac{1}{M}$ for all $i \in \set{1, 2}$}{
+    \Return{$t_0$.}
+  }
 }
-\caption{How to write algorithms}
+\caption{SimultaneousBadCaseSearch.}
 \end{algorithm}
 
 \marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
