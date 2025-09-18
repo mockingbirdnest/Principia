@@ -3,7 +3,7 @@
 \usepackage{tikz}
 \usetikzlibrary{cd}
 
-\usepackage{algorithm2e}
+\usepackage[ruled,vlined]{algorithm2e}
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 \counterwithout{equation}{section}
@@ -414,8 +414,7 @@ Consequently, we use the method described in \cite{StehléZimmermann2005} to bui
 
 \subsection*{The Stehlé-Zimmermann Algorithm}
 
-For convenience, we repeat here the algorithm described in \cite{StehléZimmermann2005}:
-
+For convenience, we copy algorithm \ref{SBCS} from \cite{StehléZimmermann2005}.
 \begin{algorithm}
 \DontPrintSemicolon
 \SetAlgoLined
@@ -430,27 +429,94 @@ For convenience, we repeat here the algorithm described in \cite{StehléZimmerma
 \ShowLn Let $e_1 = 1$, $e_2 = \gt$, $e_3 = \gt^2$, $e_4 = \gu$, $e_5 = \gf$.\;
 \ShowLn Let $g_1 = C$, $g_2 = C T · \gt$, $g_3 = \tilde{P}_1\of{\gt} + 3 \gu$, $g_4 = \tilde{P}_2\of{\gt} + 3 \gf$.\;
 \ShowLn Create the $4 × 5$ integral matrix $L$ where $L_{k, l}$ is the coefficient of the monomial $e_l$ in $g_k$.\;
-\ShowLn V \leftarrow $\latticereduce\of{L}$.\;
+\ShowLn $V$ \leftarrow $\latticereduce\of{L}$.\;
 \ShowLn Let $\vv_1$, $\vv_2$, $\vv_3$ be the three shortest vectors of $V$, and $Q_i\of{\gt}$ the associated polynomials.\;
 \ShowLn \lIf{there exist $i \in \set{1, 2, 3}$ such that $\Lnorm[1]{\vv_i} \geq C$} {
-  \Return{FAIL}.
+  \Return{\texttt{FAIL}}.
 }
 \ShowLn Let $Q\of{\gt}$ be a linear combination of the $Q_i$'s which is independent of $\gu$ and $\gf$.
 We have $\deg Q \leq 1$.\;
-\ShowLn Let $q\of{t} = Q\of{\frac{t}{T}}$.
+\ShowLn Let $q\of{t} = Q\of{\frac{t}{T}}$.\;
 \lForEach{$t_0$ in $\integerroots\of{q, \intclos{-T}{T}}$}{
   \lIf{$\abs{F_i\of{t_0} \cmod 1} < \frac{1}{M}$ for all $i \in \set{1, 2}$}{
     \Return{$t_0$.}
   }
 }
-\caption{SimultaneousBadCaseSearch.}
+\caption{SimultaneousBadCaseSearch\label{SBCS}.}
 \end{algorithm}
 
-where $F_1\of{t} = N \sin\of{\frac{t}{N}}$ and $F_2\of{t} = N \cos\of{\frac{t}{N}}$.
+When algorithm \ref{SBCS} returns a value at step 11, that value can be used to build an accurate table entry.  When it does not return a value at step 11, the interval $\intclos{-T}{T}$ is guaranteed not to contain a point suitable for building an accurate table entry.  When it fails at step 9, the algorithm must be retried over $\intclos{-T / 2}{T / 2}$ until a conclusive answer is found at step 11.  Note that, despite the phrase ``All $t$'' in the description of the result, algorithm \ref{SBCS} returns at most one value (because $\deg Q \leq 1$). 
+
+To look for accurate table values, we need to search around a point different from zero.  Furthermore, if $T$ is small enough, we are better off doing an exhaustive search than going through the fairly expensive lattice reduction.  For an exhaustive search, we let the caller specify whether the search should proceed by increasing or decreasing values to make sure that we find, to the extent possible, the solution closest to the centre of $\mathscr{I}_k$.  Algorithm \ref{ISBCS} spells out the processing of one interval specifically for the $\sin$ and $\cos$ functions.
+
+\begin{algorithm}
+\DontPrintSemicolon
+\SetAlgoLined
+\LinesNumbered
+\SetNlSty{texttt}{}{.}
+\SetAlgoNlRelativeSize{0}
+\KwData{The midpoint of the interval to search, $x_{\text{mid}}$, a search direction $\texttt{UP}$ or $\texttt{DOWN}$, and two positive integers $M$, $T$.}
+\KwResult{A $t \in \intclos{-T}{T}$ such that $x_{\text{mid}} + \frac{t}{N}$ is an accurate $x$-value for $\sin$ and $\cos$; furthermore, if the search direction is $\texttt{UP}$, $t$ is as close as possible to $-T$ and the search direction is $\texttt{DOWN}$, $t$ is as close as possible to $T$.}
+\SetKwFunction{SimultaneousBadCaseSearch}{SimultaneousBadCaseSearch}
+Let $F_1 = \FunctionBody{t}{N \sin\of{x_{\text{mid}} + \frac{t}{N}}}$ and $F_2 = \FunctionBody{t}{N \cos\of{x_{\text{mid}} + \frac{t}{N}}}.$\;
+\uIf{$T$ < some threshold}{
+  \Switch{search direction}{
+    \uCase{$\texttt{UP}$}{
+    	  \ForEach{$t_0 \in \intclos{-T}{T}$ by ascending values}{
+        \If{$\abs{F_i\of{t_0} \cmod 1} < \frac{1}{M}$ for all $i \in \set{1, 2}$}{
+          \Return{$t_0$.}
+        }
+      }
+    }
+    \uCase{$\texttt{DOWN}$}{
+    	  \ForEach{$t_0 \in \intclos{-T}{T}$ by descending values}{
+        \If{$\abs{F_i\of{t_0} \cmod 1} < \frac{1}{M}$ for all $i \in \set{1, 2}$}{
+          \Return{$t_0$.}
+        }
+      }
+    }
+  }
+}
+\Else{
+  \Return \SimultaneousBadCaseSearch{$F_1$, $F_2$, $M$, $T$}.\;
+}
+\caption{IntervalSimultaneousBadCaseSearch\label{ISBCS}.}
+\end{algorithm}
 
 
 
-\footnotetext{The notation $\iround{C · P_i\of{T \gt}}$ means that we round to the nearest each coefficient of $C . P_i\of{T \gt}$.  This gives an element of $\Integers [ \gt ]$} 
+
+\begin{algorithm}
+\DontPrintSemicolon
+\SetAlgoLined
+\LinesNumbered
+\SetNlSty{texttt}{}{.}
+\SetAlgoNlRelativeSize{0}
+\KwData{$\gD$, the half-size of intervals, and $k$, the index of the interval to search.}
+\SetKwFunction{SimultaneousBadCaseSearch}{SimultaneousBadCaseSearch}
+$T_0$ \leftarrow = $\sqrt[3]{M N}$\;
+$x_h$ \leftarrow $2 k \gD + T_0$\;
+$x_l$ \leftarrow $2 k \gD - T_0$\;
+\Repeat{a solution is found}{
+  $T$ \leftarrow $T_0$\;
+  \Repeat{}{
+    \tcc{Search in the interval $\intclos{x_h - T}{x_h + T}$.}
+    Let $F_1 = \FunctionBody{t}{N \sin\of{x_h + \frac{t}{N}}}$ and $F_2 = \FunctionBody{t}{N \cos\of{x_h + \frac{t}{N}}}.$\;
+    $y_h$ \leftarrow \SimultaneousBadCaseSearch{$F_1$, $F_2$, $M$, $T$}.\;
+    \uIf{$y_h$ = \texttt{FAIL}}{
+      $x_h$ \leftarrow $x_h - T / 2$.\;
+      $T$ \leftarrow $T / 2$.\;
+    }
+    \Else{
+    }
+  }
+}
+\caption{IntervalSimultaneousBadCaseSearch2.}
+\end{algorithm}
+
+
+
+\footnotetext{The notation $\iround{C · P_i\of{T \gt}}$ means that we round to the nearest each coefficient of $C · P_i\of{T \gt}$.  This gives an element of $\Integers [ \gt ]$} 
 
 \marginnote{TODO(phl): Document the tables and all the tricks that went into their generation.}
 
