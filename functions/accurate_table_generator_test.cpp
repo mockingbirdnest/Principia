@@ -82,7 +82,7 @@ class AccurateTableGeneratorTest : public ::testing::Test {
         return [x₀ = static_cast<double>(x₀)](cpp_rational const& x) {
           auto const Δx = static_cast<double>(x) - x₀;
           auto const Δx³ = Δx * Δx * Δx;
-          return -Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
+          return Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
         };
       };
       auto const remainder_cos_taylor2 = [](cpp_rational const& x₀) {
@@ -428,7 +428,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannFullSinCos15WithScaling) {
     return [x₀ = static_cast<double>(x₀)](cpp_rational const& x) {
       auto const Δx = static_cast<double>(x) - x₀;
       auto const Δx³ = Δx * Δx * Δx;
-      return -Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
+      return Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
     };
   };
   auto const remainder_cos_taylor2 = [](cpp_rational const& x₀) {
@@ -493,7 +493,7 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
       return [x₀ = static_cast<double>(x₀)](cpp_rational const& x) {
         auto const Δx = static_cast<double>(x) - x₀;
         auto const Δx³ = Δx * Δx * Δx;
-        return -Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
+        return Δx³ * -std::cos(std::min(x₀ + Δx, x₀)) / Factorial(3);
       };
     };
     auto const remainder_cos_taylor2 = [](cpp_rational const& x₀) {
