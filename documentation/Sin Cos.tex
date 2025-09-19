@@ -406,6 +406,8 @@ h_{\text{max}} \DefineAs \max_k \pa{x_k - \pa{2 k - 1} \gD, \pa{2 k + 1} \gD - x
 \]
 and we want this interval to be as small as possible to yield a more precise polynomial.
 
+In practice we choose $\gD = 2^{-10}$ and the accurate tables construction yields $h_{\text{max}} < \gD + 2^{-17.834}$.  \marginnote{TODO(phl): Why $\gD$?  Number of perturbed bits?}
+
 The naïve table construction method described in \cite{Gal1986} (random sampling over $\mathscr{I}_k$) has two problems.  First, it doesn't guarantee that $x_k$ is close to the midpoint of $\mathscr{I}_k$ and can in fact, in the worst case, result in $x_k$ being very close to one of the bounds of the interval, requiring the construction of a minimax polynomial over an interval which is (nearly) two times too big.  Second, for each triple of the accurate table it has to inspect, on average, around $M^2 = 2^{36}$ values.  On a modern processor, testing one value takes approximately $\SI{50}{\micro\second}$, which amounts to about 900 hours for each triple of the table, and therefore 43 years for the 402 triples that we need.
 
 Consequently, we use the method described in \cite{StehléZimmermann2005} to build our accurate tables.  It is much faster than the method in \cite{Gal1986}, but must still be implemented with great care to achieve a satisfactory speed.  In the rest of this section, we describe the optimizations that we used to generate our tables efficiently.  On a modern processor (AMD Ryzen Threadripper PRO 5965WX) the entire table generation takes about 17 seconds.
@@ -654,7 +656,7 @@ g\of{t} &\DefineAs \frac{\sin t}{t^3}
 \end{dcases}
 \]
 
-In practice we chose above $\gD = 2^{-10}$\marginnote{TODO(phl): Cross-reference the accurate tables section.} and the accurate tables construction yielded $h_{\text{max}} < \gD + 2^{-17.834}$.  The minimax computation results in a 1-degree polynomial $p_s$ with with a residual smaller than $2^{-85.534}$ and a 1-degree polynomial $p_c$ with a residual smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
+The minimax computation results in a 1-degree polynomial $p_s$ with with a residual smaller than $2^{-85.534}$ and a 1-degree polynomial $p_c$ with a residual smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
 
 \section*{Error Analysis}
 
@@ -754,7 +756,7 @@ If $\red x \in \mathscr{I}_k$ we first compute $h = \red x - x_k$.  It is essent
 \[
 \frac{2 k + 1}{2} \gD \le x_k \le 2 \pa{2 k - 1} \gD
 \]
-Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_1 \le 2 \; \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \; \gD$.\marginnote{TODO(phl): Cross-reference in the accurate tables section.}
+Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially met for all $k > 0$.  However the second part is only trivially met if $k > 1$.  If $k = 1$ it becomes $x_1 \le 2 \; \gD$.  In other words, when building the accurate tables we must only look for $x_1$ \emph{below} $2 \; \gD$.  This is done by skipping the loop at step 5 of algorithm \ref{FSBCS}.
 
 For $\sin$ we do not use the interval $\mathscr{I}_0$ (see \nameref{secsinnearzero}, above) but for $\cos$ we do.  That interval is special because $x_0 = 0$: the computation of $h$ is therefore trivially correct.
 
