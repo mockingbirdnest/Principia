@@ -398,19 +398,19 @@ If any of the conditions above is not met, we fall back on the CORE-MATH impleme
 
 First, a remark on the notation.  This section (as well is the code in \linebreak\texttt{accurate\_table\_generator*.hpp}) follows the notation of \cite{StehléZimmermann2005}.  In particular, $N$ is related to the number of bits in the mantissa of the floating-point type, and $M$ is related to the number of zeroes or ones after the mantissa of the accurate values.  Specifically, since we use \texttt{binary64} and want 18 zeroes or ones after the mantissa (to minimize the probability of expensive fall backs to the CORE-MATH implementation), we have $N = 2^{53}$ and $M = 2^{18}$. 
 
-The accurate tables are tables of triples $\pa{x_k, s_k, c_k}$ where $x_k$ is chosen such that $\sin x_k$ and $\cos x_k$ are very close to machine numbers, \idest, have a string of zeroes or ones after the last bit of their mantissa.  The tabulated value $s_k$ (respectively, $c_k$) is then obtained by rounding $\sin x_k$ (respectively, $\cos x_k$) to the nearest machine number.  See \nameref{overview} below for the details of how these tables are used for implementing $\sin$ and $\cos$.
+The accurate tables are made of triples $\pa{x_k, s_k, c_k}$ where $x_k$ is chosen such that $\sin x_k$ and $\cos x_k$ are very close to machine numbers, \idest, have a string of zeroes or ones after the last bit of their mantissa.  The tabulated value $s_k$ (respectively, $c_k$) is then obtained by rounding $\sin x_k$ (respectively, $\cos x_k$) to the nearest machine number.  See \nameref{overview} below for the details of how these tables are used for implementing $\sin$ and $\cos$.
 
 The argument range (which is approximately $\intclos{0}{\frac{\Pi}{4}}$) is split into intervals of length $2 \gD$ centered on $2 k \gD$.  The interval\footnote{Obviously the intervals $\mathscr{I}_k$ cannot all contain their bounds.  Because of the way they are computed, the odd multiples of $\gD$ which separate the intervals are rounded to the nearest even $k$.  Therefore, there is an alternation of open-open intervals (for $k$ odd) and closed-closed intervals (for $k$ even).  We do not have a convenient notation for this, and anyway this detail is mostly irrelevant.} containing $x_k$ is $\mathscr{I}_k \DefineAs \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ (for $k = 0$ the interval is $\mathscr{I}_0 \DefineAs \intclos{0}{\gD}$ and $x_0 = 0$).  We want to select $x_k$ as close as possible to the midpoint of $\mathscr{I}_k$, because we will need to approximate $\sin$ and $\cos$ over the interval $\intclos{-h_{\text{max}}}{h_{\text{max}}}$ with:
 \[
 h_{\text{max}} \DefineAs \max_k \pa{x_k - \pa{2 k - 1} \gD, \pa{2 k + 1} \gD - x_k}
 \]
-and we want this interval to be as small as possible to yield a more precise polynomial.
+and we want this interval to be as small as possible to improve the accuracy of the approximation.
 
 In practice we choose $\gD = 2^{-10}$ and the accurate tables construction yields $h_{\text{max}} < \gD + 2^{-17.834}$.  \marginnote{TODO(phl): Why $\gD$?  Number of perturbed bits?}
 
-The naïve table construction method described in \cite{Gal1986} (random sampling over $\mathscr{I}_k$) has two problems.  First, it doesn't guarantee that $x_k$ is close to the midpoint of $\mathscr{I}_k$ and can in fact, in the worst case, result in $x_k$ being very close to one of the bounds of the interval, requiring the construction of a minimax polynomial over an interval which is (nearly) two times too big.  Second, for each triple of the accurate table it has to inspect, on average, around $M^2 = 2^{36}$ values.  On a modern processor, testing one value takes approximately $\SI{50}{\micro\second}$, which amounts to about 900 hours for each triple of the table, and therefore 43 years for the 402 triples that we need.
+The naïve table construction method described in \cite{Gal1986} (random sampling over $\mathscr{I}_k$) has two problems.  First, it doesn't guarantee that $x_k$ is close to the midpoint of $\mathscr{I}_k$ and can in fact, in the worst case, result in $x_k$ being very close to one of the bounds of the interval, requiring the construction of a minimax polynomial over an interval which is (nearly) two times too big.  Second, for each triple of the accurate table it has to inspect, on average, around $M^2 = 2^{36}$ values.  On a modern processor, testing one candidate takes approximately $\SI{50}{\micro\second}$, which amounts to about 900 hours for each triple of the table, and therefore 43 years for the 402 triples that we need.
 
-Consequently, we use the method described in \cite{StehléZimmermann2005} to build our accurate tables.  It is much faster than the method in \cite{Gal1986}, but must still be implemented with great care to achieve a satisfactory speed.  In the rest of this section, we describe the optimizations that we used to generate our tables efficiently.  On a modern processor (AMD Ryzen Threadripper PRO 5965WX) the entire table generation takes about 17 seconds.
+Consequently, we use the method described in \cite{StehléZimmermann2005} to build our accurate tables.  It is much faster than the method in \cite{Gal1986}, but must still be implemented with great care to achieve a satisfactory speed.  In the rest of this section, we describe the algorithms and optimizations that we used to generate our tables efficiently.  On a modern processor (AMD Ryzen Threadripper PRO 5965WX) the entire table generation takes about 17 seconds.
 
 \subsection*{The Stehlé-Zimmermann Algorithm}
 
@@ -453,7 +453,7 @@ When algorithm \ref{SBCS} returns a value at step 11, that value can be used to 
 
 \subsection*{The Complete Search}
 
-In order to construct the accurate we need to build on algorithm \ref{SBCS} to perform a search over a arbitrary interval.  In this context, if $T$ is small enough, we are better off doing an exhaustive search than going through the fairly expensive lattice reduction.  For an exhaustive search, we let the caller specify whether the search should proceed by increasing or decreasing values to make sure that we find, to the extent possible, the solution closest to the centre of $\mathscr{I}_k$.  Algorithm \ref{ISBCS} spells out the processing of one interval specifically for the $\sin$ and $\cos$ functions.
+In order to construct the accurate tables we need to build on algorithm \ref{SBCS} to perform a search over a arbitrary interval.  In this context, if $T$ is small enough, we are better off doing an exhaustive search than going through the fairly expensive lattice reduction.  For an exhaustive search, we let the caller specify whether the search should proceed by increasing or decreasing values to make sure that we find, to the extent possible, the solution closest to the centre of $\mathscr{I}_k$.  Algorithm \ref{ISBCS} spells out the processing of one interval specifically for the $\sin$ and $\cos$ functions.
 
 \begin{algorithm}
 \DontPrintSemicolon
@@ -461,9 +461,9 @@ In order to construct the accurate we need to build on algorithm \ref{SBCS} to p
 \LinesNumbered
 \SetNlSty{texttt}{}{.}
 \SetAlgoNlRelativeSize{0}
-\KwIn{The interval to search $\intclos{x_{\text{mid}} - \frac{t}{N}}{x_{\text{mid}} + \frac{t}{N}}$ defined by its midpoint $x_{\text{mid}}$ and its scaled radius $T$,
+\KwIn{The interval to search $\intclos{x_{\text{mid}} - \frac{T}{N}}{x_{\text{mid}} + \frac{T}{N}}$ defined by its midpoint $x_{\text{mid}}$ and its scaled radius $T$,
 and a positive integer $M$.}
-\KwOut{A $t \in \intclos{-T}{T}$ such that $x_{\text{mid}} + \frac{t}{N}$ is an accurate $x$-value for $\sin$ and $\cos$; furthermore, if the search direction is $\texttt{UP}$, $t$ is as close as possible to $-T$ and the search direction is $\texttt{DOWN}$, $t$ is as close as possible to $T$.}
+\KwOut{A $t \in \intclos{-T}{T}$ such that $x_{\text{mid}} + \frac{t}{N}$ is an accurate value for $\sin$ and $\cos$; furthermore, if the search direction is $\texttt{UP}$, $t$ is as close as possible to $-T$ and the search direction is $\texttt{DOWN}$, $t$ is as close as possible to $T$.}
 \SetKwFunction{SimultaneousBadCaseSearch}{SimultaneousBadCaseSearch}
 Let $F_1 = \FunctionBody{t}{N \sin\of{x_{\text{mid}} + \frac{t}{N}}}$ and $F_2 = \FunctionBody{t}{N \cos\of{x_{\text{mid}} + \frac{t}{N}}}.$\;
 \uIf{$T$ < some threshold}{
@@ -490,7 +490,7 @@ Let $F_1 = \FunctionBody{t}{N \sin\of{x_{\text{mid}} + \frac{t}{N}}}$ and $F_2 =
 \caption{IntervalSimultaneousBadCaseSearch\label{ISBCS}.}
 \end{algorithm}
 
-Algorithm \ref{ISBCS} must be integrated into a retry loop that searches progressively farther above and below $2 k \gD$ until a solution is found.  Algorithm \ref{FSBCS} performs such a complete search.  It first searches an interval of radius $T_0$ above $2 k \gD$, and retries with intervals progressively smaller if algorithm \ref{ISBCS} returns a failure.  When algorithm \ref{ISBCS} returns an empty solution set, the last interval searched is marked as ``covered'' and the algorithm proceeds to perform a similar search below $2 k \gD$.  If that search does not find a solution, a new interval of radius $T_0$ above the covered interval is tried, and so on iteratively.  The algorithm returns when a solution is found.  That solution is nearly optimal in terms of its distance to $2 k \gD$ with the caveat that, since we search above $2 k \gD$ before searching below, we could return a solution above when there is a slightly closer solution below.
+Algorithm \ref{ISBCS} must be integrated into a retry loop that searches progressively farther above and below $2 k \gD$ until a solution is found.  This is what algorithm \ref{FSBCS} is doing: it first searches an interval of radius $T_0$ above $2 k \gD$, and retries with intervals progressively smaller if algorithm \ref{ISBCS} returns a failure.  When algorithm \ref{ISBCS} returns an empty solution set, the last interval searched is marked as ``covered'' and the algorithm proceeds to perform a similar search below $2 k \gD$.  If that search does not find a solution, a new interval of radius $T_0$ above the covered interval is tried, and so on repeatedly.  The algorithm returns when a solution is found.  That solution is nearly optimal in terms of its distance to $2 k \gD$ with the caveat that, since we search above $2 k \gD$ before searching below, we could return a solution above when there is a slightly closer solution below.
 
 The value of $T_0$ is chosen based on the Coppersmith bound established in \cite{StehléZimmermann2005}: $T^3 = \BigO\of{M · N}$.  Evidently this bound does not unambiguously determine $T_0$, but in practice $T_0 = \sqrt[3]{M N}$ yields good results: a value too large would cause too many splits of the search interval before finding a solution or (more likely) rejecting the interval; a value too small would require to process too many small intervals. 
 
@@ -501,7 +501,7 @@ The value of $T_0$ is chosen based on the Coppersmith bound established in \cite
 \SetNlSty{texttt}{}{.}
 \SetAlgoNlRelativeSize{0}
 \KwIn{$\gD$, the half-size of intervals, and $k$, the index of the interval to search.}
-\KwOut{A $t$ sufficently close to zero}
+\KwOut{An accurate value sufficiently close to $2 k \gD$.}
 \SetKw{Break}{break}
 \SetKwFor{Loop}{loop}{}{end}
 \SetKwFunction{IntervalSimultaneousBadCaseSearch}{IntervalSimultaneousBadCaseSearch}
@@ -512,11 +512,11 @@ $\mathscr{I}_{\text{covered}}$ \leftarrow $\intclos{2 k \gD}{2 k \gD}$\;
   $T$ \leftarrow $T_0$\;
   \Loop{}{
     Let $\mathscr{I}_{\text{to\_cover}}$ be the interval of radius $T$ immediately above $\mathscr{I}_{\text{covered}}$.\;
-    $t$ \leftarrow \IntervalSimultaneousBadCaseSearch{$\mathscr{I}_{\text{to\_cover}}$, $M$}.\;
+    $t$ \leftarrow \IntervalSimultaneousBadCaseSearch{$\mathscr{I}_{\text{to\_cover}}$, \texttt{UP}, $M$}.\;
     \uIf{$t$ is a solution}{
       \Return{\Midpoint{$\mathscr{I}_{\text{to\_cover}}$} $+ \frac{t}{N}$}.\;
     }
-    \uElseIf{$y$ = \texttt{FAIL}}{
+    \uElseIf{$t$ = \texttt{FAIL}}{
       $T$ \leftarrow $T / 2$.\;
     }
     \Else{
@@ -524,13 +524,14 @@ $\mathscr{I}_{\text{covered}}$ \leftarrow $\intclos{2 k \gD}{2 k \gD}$\;
       \Break\;
     }
   }
+  $T$ \leftarrow $T_0$\;
   \Loop{}{
     Let $\mathscr{I}_{\text{to\_cover}}$ be the interval of radius $T$ immediately below $\mathscr{I}_{\text{covered}}$.\;
-    $t$ \leftarrow \IntervalSimultaneousBadCaseSearch{$\mathscr{I}_{\text{to\_cover}}$, $M$}.\;
+    $t$ \leftarrow \IntervalSimultaneousBadCaseSearch{$\mathscr{I}_{\text{to\_cover}}$, \texttt{DOWN}, $M$}.\;
     \uIf{$t$ is a solution}{
       \Return{\Midpoint{$\mathscr{I}_{\text{to\_cover}}$} $+ \frac{t}{N}$}.\;
     }
-    \uElseIf{$y$ = \texttt{FAIL}}{
+    \uElseIf{$t$ = \texttt{FAIL}}{
       $T$ \leftarrow $T / 2$.\;
     }
     \Else{
@@ -548,7 +549,7 @@ Our implementation is based on the Boost \texttt{multiprecision} library.  The f
 
 Step 2 of algorithm \ref{SBCS} requires that we compute an upper bound for $\abs{P_i\of{t} - F_i\of{t}}$ over an interval.  To do this efficiently (and in particular, without doing multiple evaluation of the functions and the polynomials), we approximate $P_i\of{t} - F_i\of{t}$ by the degree-3 term of the Taylor expansion of $F_i\of{t}$ and find the extremum of this term.  While ignoring the terms of degree 4 and higher introduces a small error, this error is of no importance as $\ge$ is typically much smaller than $1 / M$ and does not affect the value of $M'$ (see step 3).
 
-It would be possible (and correct) to compute the polynomials $P_i$ using a Taylor approximation around $2 k \gD$ and to translate them just like we translate the functions in algorithm \ref{ISBCS}: $\FunctionBody{t}{N P_i\of{x_{\text{mid}} + \frac{t}{N}}}$.  In practice however this results in polynomial coefficients with very large numerators and denominators, greatly affecting the performance of algorithm \ref{SBCS}.  It is much more efficient to recompute the Taylor expansion around $x_{\text{mid}}$ as this generates coefficients with smaller numerators and denominators for the same accuracy.  (The coefficients of the Taylor expansion involve evaluations of $\sin$ and $\cos$, so the two methods do not generally result in the exact same polynomial.)
+It would be possible (and correct) to compute the polynomials $P_i$ using a Taylor approximation around $2 k \gD$ and to translate them just like we translate the functions in algorithm \ref{ISBCS}: $\FunctionBody{t}{N P_i\of{x_{\text{mid}} + \frac{t}{N}}}$.  In practice however this results in polynomial coefficients with very large numerators and denominators, greatly affecting the performance of algorithm \ref{SBCS}.  It is much more efficient to recompute the Taylor expansion around $x_{\text{mid}}$ as this produces coefficients with smaller numerators and denominators for the same accuracy.  (The coefficients of the Taylor expansion involve evaluations of $\sin$ and $\cos$, so the two methods do not generally result in the exact same polynomial.)
 
 \subsection*{Lattice Reduction}
 
@@ -556,11 +557,11 @@ Even though the matrix $L$ is small, a fair amount of time is spent in the latti
 
 \subsection*{Speculative Execution}
 
-The natural way to parallelize the search on a multicore processor is to perform the searches for different intervals $\mathscr{I}_k$ in their own thread.  Unfortunately this does not work very well because the searches have a ``long tail'': for most intervals, a solution is found relatively quickly, but for some intervals the search has to explore values far from $2 k \gD$.  So after a short while only a few cores are used, effectively doing a sequential search over ``expensive'' intervals, and most of the cores are idle.  This does not properly take advantage of the available paralellism.
+The natural way to parallelize the search on a multicore processor is to run multiple instance of algorithm \ref{FSBCS} for distinct intervals $\mathscr{I}_k$ each in its own thread.  Unfortunately this does not work very well because the searches have a ``long tail'': for most intervals, a solution is found relatively quickly, but for some intervals the search has to explore values far from $2 k \gD$.  So after a short time only a few ``expensive'' intervals are left to process, effectively doing sequential searches while most of the cores are idle.  This does not properly take advantage of the available paralellism.
 
-It is much more effective to parallelize using speculative execution as follows.  Each of the intervals of radius $T_0$ processed in steps 5 and 17 of algorithm \ref{FSBCS} is a \emph{slice} and slices can be searched independently for a given value of $k$.  As soon as a core is available, it picks a slice to process, which is guaranteed not to have been processed already, but which may not be adjacent to the interval $\mathscr{I}_{\texttt{covered}}$ (it is centered at $2 k \gD + \pa{2 j + 1} \frac{T_0}{N}$ where $j$ is the \emph{slice index}).  The execution is speculative in the sense that the search for slice index $j$ may not be necessary if a solution exists, say, for index $j - 1$.  However, most slices do not contain a solution, so the amount of wasted work is minimal.  Note that, for speculative execution to be deterministic, it is important, if a solution is found in slice $j$, to wait for the searches with indices preceding $j$ to complete before returning the solution, as one of these slices may contain a solution closer to $2 k \gD$.
+It is much more effective to parallelize using speculative execution as follows.  Each of the intervals of radius $T_0$ processed in steps 5 and 17 of algorithm \ref{FSBCS} is a \emph{slice} and slices can be searched independently for a given value of $k$.  As soon as a core is available, it picks a slice to process, which is guaranteed not to have been processed already, but which may not be adjacent to the interval $\mathscr{I}_{\texttt{covered}}$ (it is centered at $2 k \gD + \pa{2 j + 1} \frac{T_0}{N}$ where $j$ is the \emph{slice index}).  The execution is speculative in the sense that the search for slice index $j$ may not be necessary if a solution exists, say, for index $j - 1$.  However, most slices do not contain a solution, so the amount of wasted work is minimal.  Note that, for speculative execution to be deterministic, it is important, if a solution is found in slice $j$, to wait for the searches with indices preceding $j$ to complete before returning, as one of these slices may contain a solution closer to $2 k \gD$.
 
-\section*{Overview of the Algorithms}\label{overview}
+\section*{Overview of the Algorithms for Sin and Cos}\label{overview}
 
 This section presents an overview of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether $\round{y + \gd y}$ is the correctly-rounded result (this is the case with high probability) or whether we need to fall back to the CORE-MATH implementation.
 
