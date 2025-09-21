@@ -105,6 +105,42 @@
 
 
 (* ::Text:: *)
+(*Perturbations:*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbations=Table[Representation[accurateTables[i][[1]]]-Representation[i/512],{i,1,accurateTablesMaxIndex}];*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits=Map[N[Log2[Abs[#]]]&,accurateTablesPerturbations];*)
+
+
+(* ::Input:: *)
+(*PositionLargest[accurateTablesPerturbedBits]*)
+
+
+(* ::Input:: *)
+(*PositionLargest[accurateTablesPerturbedBits[[2;;]]]*)
+
+
+(* ::Input:: *)
+(*PositionSmallest[accurateTablesPerturbedBits[[2;;]]]*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits[[1]]*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits[[8]]*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits[[57]]*)
+
+
+(* ::Text:: *)
 (*Check the Sterbenz condition for computing s0+c0 h exactly (the subtraction h' - s0 is exact):*)
 
 
