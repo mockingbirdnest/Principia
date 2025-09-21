@@ -427,9 +427,9 @@ For convenience, we copy algorithm \ref{SBCS} from \cite{StehléZimmermann2005}.
 \KwOut{All $t \in \intclos{-T}{T}$ such that $\abs{F_i\of{t} \cmod 1} < \frac{1}{M}$ for $i \in \set{1, 2}$.}
 \ShowLn Let $P_1\of{t}$, $P_2\of{t}$ be the degree-2 Taylor expansions of $F_1\of{t}$, $F_2\of{t}$.\;
 \ShowLn Compute $\ge$ such that $\abs{P_i\of{t} - F_i\of{t}} < \ge$ for $\abs t \leq T$ and $i \in \set{1, 2}$.\;
-\ShowLn Compute $M' = \floor{\frac{1/2}{1/M + \ge}}$, $C = 3 M'$, and\footnotemark{} $\tilde{P}_i\of{\gt} = \iround{C · P_i\of{T \gt}}$ for $i \in \set{1, 2}$.\;
+\ShowLn Compute $M' = \floor{\frac{1/2}{1/M + \ge}}$, $C = 3 M'$, and\footnotemark{} $\tilde{P}_i\of{\gt} = \iround{C \cdot P_i\of{T \gt}}$ for $i \in \set{1, 2}$.\;
 \ShowLn Let $e_1 = 1$, $e_2 = \gt$, $e_3 = \gt^2$, $e_4 = \gu$, $e_5 = \gf$.\;
-\ShowLn Let $g_1 = C$, $g_2 = C T · \gt$, $g_3 = \tilde{P}_1\of{\gt} + 3 \gu$, $g_4 = \tilde{P}_2\of{\gt} + 3 \gf$.\;
+\ShowLn Let $g_1 = C$, $g_2 = C T \cdot \gt$, $g_3 = \tilde{P}_1\of{\gt} + 3 \gu$, $g_4 = \tilde{P}_2\of{\gt} + 3 \gf$.\;
 \ShowLn Create the $4 × 5$ integral matrix $L$ where $L_{k, l}$ is the coefficient of the monomial $e_l$ in $g_k$.\;
 \ShowLn $V$ \leftarrow $\LatticeReduce\of{L}$.\;
 \ShowLn Let $\vv_1$, $\vv_2$, $\vv_3$ be the three shortest vectors of $V$, and $Q_i\of{\gt}$ the associated polynomials.\;
@@ -447,7 +447,7 @@ We have $\deg Q \leq 1$.\;
 \caption{SimultaneousBadCaseSearch\label{SBCS}.}
 \end{algorithm}
 
-\footnotetext{The notation $\iround{C · P_i\of{T \gt}}$ means that we round to the nearest each coefficient of $C · P_i\of{T \gt}$.  This gives an element of $\Integers [ \gt ]$. (This footnote is missing from \cite{StehléZimmermann2005} but present in the preprint \cite{StehléZimmermann2004}.)} 
+\footnotetext{The notation $\iround{C \cdot P_i\of{T \gt}}$ means that we round to the nearest each coefficient of $C \cdot P_i\of{T \gt}$.  This gives an element of $\Integers [ \gt ]$. (This footnote is missing from \cite{StehléZimmermann2005} but present in the preprint \cite{StehléZimmermann2004}.)} 
 
 When algorithm \ref{SBCS} returns a value at step 11, that value can be used to build an accurate table entry.  When it does not return a value at step 11, the interval $\intclos{-T}{T}$ is guaranteed not to contain a point suitable for building an accurate table entry.  When it fails at step 9, the algorithm must be retried over $\intclos{-T / 2}{T / 2}$ until a conclusive answer is found at step 11.  Note that, despite the phrase ``All $t$'' in the description of the result, algorithm \ref{SBCS} returns at most one value (because $\deg Q \leq 1$).
 
@@ -492,7 +492,7 @@ Let $F_1 = \FunctionBody{t}{N \sin\of{x_{\text{mid}} + \frac{t}{N}}}$ and $F_2 =
 
 Algorithm \ref{ISBCS} must be integrated into a retry loop that searches progressively farther above and below $2 k \gD$ until a solution is found.  This is what algorithm \ref{FSBCS} is doing: it first searches an interval of radius $T_0$ above $2 k \gD$, and retries with intervals progressively smaller if algorithm \ref{ISBCS} returns a failure.  When algorithm \ref{ISBCS} returns an empty solution set, the last interval searched is marked as ``covered'' and the algorithm proceeds to perform a similar search below $2 k \gD$.  If that search does not find a solution, a new interval of radius $T_0$ above the covered interval is tried, and so on repeatedly.  The algorithm returns when a solution is found.  That solution is nearly optimal in terms of its distance to $2 k \gD$ with the caveat that, since we search above $2 k \gD$ before searching below, we could return a solution above when there is a slightly closer solution below.
 
-The value of $T_0$ is chosen based on the Coppersmith bound established in \cite{StehléZimmermann2005}: $T^3 = \BigO\of{M · N}$.  Evidently this bound does not unambiguously determine $T_0$, but in practice $T_0 = \sqrt[3]{M N}$ yields good results: a value too large would cause too many splits of the search interval before finding a solution or (more likely) rejecting the interval; a value too small would require to process too many small intervals. 
+The value of $T_0$ is chosen based on the Coppersmith bound established in \cite{StehléZimmermann2005}: $T^3 = \BigO\of{M \cdot N}$.  Evidently this bound does not unambiguously determine $T_0$, but in practice $T_0 = \sqrt[3]{M N}$ yields good results: a value too large would cause too many splits of the search interval before finding a solution or (more likely) rejecting the interval; a value too small would require to process too many small intervals. 
 
 \begin{algorithm}
 \DontPrintSemicolon
