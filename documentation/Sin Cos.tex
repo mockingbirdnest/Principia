@@ -580,7 +580,7 @@ and we compute:
 
 \subsection*{Sin and Cos Around Table Entries}
 
-Let $\pa{x_k, s_k, c_k}$ be an accurate table entry.  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $\red x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $\red x \in \mathscr{I}_k$ and computing $h = \red x - x_k$.  We then use the addition formulæ to separate out the terms in $x_k$:
+Let $\tuple{x_k, s_k, c_k}$ be an accurate table entry.  The implementation of $\sin$ and $\cos$ starts by choosing, from the argument $\red x$ (which in the case of $\sin$, is not close to zero), a $k$ such that $\red x \in \mathscr{I}_k$ and computing $h = \red x - x_k$.  We then use the addition formulæ to separate out the terms in $x_k$:
 \begin{align*}
 \sin x &\simeq \sin\of{\red x + \gd \red x} \\
 &= \sin\of{x_k + h + \gd \red x} \\
