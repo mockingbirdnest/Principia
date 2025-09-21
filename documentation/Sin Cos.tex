@@ -406,7 +406,7 @@ h_{\text{max}} \DefineAs \max_k \pa{x_k - \pa{2 k - 1} \gD, \pa{2 k + 1} \gD - x
 \]
 and we want this interval to be as small as possible to improve the accuracy of the approximation.
 
-In practice we choose $\gD = 2^{-10}$ and the accurate tables construction yields $h_{\text{max}} < \gD + 2^{-17.834}$.  \marginnote{TODO(phl): Why $\gD$?  Number of perturbed bits?}
+In practice we choose $\gD = 2^{-10}$ and the accurate tables construction yields $h_{\text{max}} < \gD + 2^{-17.834}$.  The largest perturbation for $x_k$ is reached when $k = 1$, with 35.629 bits, but that is because, for $k = 1$, we only search below $2 \gD$ (see \nameref{subssterbenz}).  Other than this special value, the perturbation ranges from 23.755 bits to 35.331 bits.  This is consistent with the random model of \cite{StehléZimmermann2005} but note that some intervals are 3000 times ``harder'' than others.
 
 The naïve table construction method described in \cite{Gal1986} (random sampling over $\mathscr{I}_k$) has two problems.  First, it doesn't guarantee that $x_k$ is close to the midpoint of $\mathscr{I}_k$ and can in fact, in the worst case, result in $x_k$ being very close to one of the bounds of the interval, requiring the construction of a minimax polynomial over an interval which is (nearly) two times too big.  Second, for each triple of the accurate table it has to inspect, on average, around $M^2 = 2^{36}$ values.  On a modern processor, testing one candidate takes approximately $\SI{50}{\micro\second}$, which amounts to about 900 hours for each triple of the table, and therefore 43 years for the 402 triples that we need.
 
@@ -751,7 +751,7 @@ As mentioned above (see \nameref{overview}), in these steps we do not compute th
 \]
 This function reaches its extrema on the corners of the triangular domain and is found to be smaller than $2^{-73.999}$, so its contribution to the overall relative error would be very small.
 
-\subsection*{Sin and Cos Around Table Entries}
+\subsection*{Sin and Cos Around Table Entries}\label{subssterbenz}
 
 If $\red x \in \mathscr{I}_k$ we first compute $h = \red x - x_k$.  It is essential that this subtraction be exact, and therefore that the conditions of Sterbenz's lemma be met: we must have $\red x / 2 \le x_k \le 2 \red x$.  Based on the range of $\red x$, a sufficient condition for this is:
 \[
