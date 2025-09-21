@@ -123,6 +123,7 @@ char const* const Architecture = "x86-64";
 // We assume that the processor is at least a Prescott since we only support
 // 64-bit architectures.
 #define PRINCIPIA_USE_SSE3_INTRINSICS() !_DEBUG
+#define PRINCIPIA_USE_AVX() !_DEBUG
 #define PRINCIPIA_USE_FMA_IF_AVAILABLE() !_DEBUG
 
 // Set this to 1 to test analytical series based on piecewise Poisson series.
