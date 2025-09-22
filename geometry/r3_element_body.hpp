@@ -43,18 +43,16 @@ R3Element<Scalar>::R3Element(Scalar const& x,
                 "R3Element has a nonstandard layout");
 }
 
-#if !PRINCIPIA_USE_AVX()
+template<typename Scalar>
+template<std::same_as<__m256d> T>
+inline R3Element<Scalar>::R3Element(T xyzt) : xyzt(xyzt) {}
+
 template<typename Scalar>
 R3Element<Scalar>::R3Element(__m128d const xy, __m128d const zt)
     : xy(xy), zt(zt) {
   static_assert(std::is_standard_layout<R3Element>::value,
                 "R3Element has a nonstandard layout");
 }
-#endif
-
-template<typename Scalar>
-template<std::same_as<__m256d> T>
-inline R3Element<Scalar>::R3Element(T xyzt) : xyzt(xyzt) {}
 
 template<typename Scalar>
 Scalar& R3Element<Scalar>::operator[](int const index) {
@@ -337,19 +335,15 @@ R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c) {
-  if constexpr (CanEmitFMAInstructions) {
 #if PRINCIPIA_USE_AVX()
-    __m256d const b_256d = ToM256D(b);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm256_fmadd_pd(a.xyzt, b_256d, c.xyzt));
+  __m256d const b_256d = ToM256D(b);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm256_fmadd_pd(a.xyzt, b_256d, c.xyzt));
 #else
-    __m128d const b_128d = ToM128D(b);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm_fmadd_pd(a.xy, b_128d, c.xy), _mm_fmadd_sd(a.zt, b_128d, c.zt));
+  __m128d const b_128d = ToM128D(b);
+  return R3Element<Product<LScalar, RScalar>>(_mm_fmadd_pd(a.xy, b_128d, c.xy),
+                                              _mm_fmadd_sd(a.zt, b_128d, c.zt));
 #endif
-  } else {
-    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
-  }
 }
 
 template<typename LScalar, typename RScalar>
@@ -358,19 +352,15 @@ R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c) {
-  if constexpr (CanEmitFMAInstructions) {
 #if PRINCIPIA_USE_AVX()
-    __m256d const b_256d = ToM256D(b);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm256_fmsub_pd(a.xyzt, b_256d, c.xyzt));
+  __m256d const b_256d = ToM256D(b);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm256_fmsub_pd(a.xyzt, b_256d, c.xyzt));
 #else
-    __m128d const b_128d = ToM128D(b);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm_fmsub_pd(a.xy, b_128d, c.xy), _mm_fmsub_sd(a.zt, b_128d, c.zt));
+  __m128d const b_128d = ToM128D(b);
+  return R3Element<Product<LScalar, RScalar>>(_mm_fmsub_pd(a.xy, b_128d, c.xy),
+                                              _mm_fmsub_sd(a.zt, b_128d, c.zt));
 #endif
-  } else {
-    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
-  }
 }
 
 template<typename LScalar, typename RScalar>
@@ -379,19 +369,15 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c) {
-  if constexpr (CanEmitFMAInstructions) {
 #if PRINCIPIA_USE_AVX()
-    __m256d const b_256d = ToM256D(b);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm256_fnmadd_pd(a.xyzt, b_256d, c.xyzt));
+  __m256d const b_256d = ToM256D(b);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm256_fnmadd_pd(a.xyzt, b_256d, c.xyzt));
 #else
-    __m128d const b_128d = ToM128D(b);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm_fnmadd_pd(a.xy, b_128d, c.xy), _mm_fnmadd_sd(a.zt, b_128d, c.zt));
+  __m128d const b_128d = ToM128D(b);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm_fnmadd_pd(a.xy, b_128d, c.xy), _mm_fnmadd_sd(a.zt, b_128d, c.zt));
 #endif
-  } else {
-    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
-  }
 }
 
 template<typename LScalar, typename RScalar>
@@ -400,19 +386,15 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c) {
-  if constexpr (CanEmitFMAInstructions) {
 #if PRINCIPIA_USE_AVX()
-    __m256d const b_256d = ToM256D(b);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm256_fnmsub_pd(a.xyzt, b_256d, c.xyzt));
+  __m256d const b_256d = ToM256D(b);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm256_fnmsub_pd(a.xyzt, b_256d, c.xyzt));
 #else
-    __m128d const b_128d = ToM128D(b);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm_fnmsub_pd(a.xy, b_128d, c.xy), _mm_fnmsub_sd(a.zt, b_128d, c.zt));
+  __m128d const b_128d = ToM128D(b);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm_fnmsub_pd(a.xy, b_128d, c.xy), _mm_fnmsub_sd(a.zt, b_128d, c.zt));
 #endif
-  } else {
-    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
-  }
 }
 
 template<typename LScalar, typename RScalar>
@@ -421,19 +403,15 @@ R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c) {
-  if constexpr (CanEmitFMAInstructions) {
 #if PRINCIPIA_USE_AVX()
-    __m256d const a_256d = ToM256D(a);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm256_fmadd_pd(a_256d, b.xyzt, c.xyzt));
+  __m256d const a_256d = ToM256D(a);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm256_fmadd_pd(a_256d, b.xyzt, c.xyzt));
 #else
-    __m128d const a_128d = ToM128D(a);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm_fmadd_pd(a_128d, b.xy, c.xy), _mm_fmadd_sd(a_128d, b.zt, c.zt));
+  __m128d const a_128d = ToM128D(a);
+  return R3Element<Product<LScalar, RScalar>>(_mm_fmadd_pd(a_128d, b.xy, c.xy),
+                                              _mm_fmadd_sd(a_128d, b.zt, c.zt));
 #endif
-  } else {
-    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
-  }
 }
 
 template<typename LScalar, typename RScalar>
@@ -442,19 +420,15 @@ R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c) {
-  if constexpr (CanEmitFMAInstructions) {
 #if PRINCIPIA_USE_AVX()
-    __m256d const a_256d = ToM256D(a);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm256_fmsub_pd(a_256d, b.xyzt, c.xyzt));
+  __m256d const a_256d = ToM256D(a);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm256_fmsub_pd(a_256d, b.xyzt, c.xyzt));
 #else
-    __m128d const a_128d = ToM128D(a);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm_fmsub_pd(a_128d, b.xy, c.xy), _mm_fmsub_sd(a_128d, b.zt, c.zt));
+  __m128d const a_128d = ToM128D(a);
+  return R3Element<Product<LScalar, RScalar>>(_mm_fmsub_pd(a_128d, b.xy, c.xy),
+                                              _mm_fmsub_sd(a_128d, b.zt, c.zt));
 #endif
-  } else {
-    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
-  }
 }
 
 template<typename LScalar, typename RScalar>
@@ -463,19 +437,15 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c) {
-  if constexpr (CanEmitFMAInstructions) {
 #if PRINCIPIA_USE_AVX()
-    __m256d const a_256d = ToM256D(a);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm256_fnmadd_pd(a_256d, b.xyzt, c.xyzt));
+  __m256d const a_256d = ToM256D(a);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm256_fnmadd_pd(a_256d, b.xyzt, c.xyzt));
 #else
-    __m128d const a_128d = ToM128D(a);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm_fnmadd_pd(a_128d, b.xy, c.xy), _mm_fnmadd_sd(a_128d, b.zt, c.zt));
+  __m128d const a_128d = ToM128D(a);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm_fnmadd_pd(a_128d, b.xy, c.xy), _mm_fnmadd_sd(a_128d, b.zt, c.zt));
 #endif
-  } else {
-    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
-  }
 }
 
 template<typename LScalar, typename RScalar>
@@ -484,19 +454,15 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c) {
-  if constexpr (CanEmitFMAInstructions) {
 #if PRINCIPIA_USE_AVX()
-    __m256d const a_256d = ToM256D(a);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm256_fnmsub_pd(a_256d, b.xyzt, c.xyzt));
+  __m256d const a_256d = ToM256D(a);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm256_fnmsub_pd(a_256d, b.xyzt, c.xyzt));
 #else
-    __m128d const a_128d = ToM128D(a);
-    return R3Element<Product<LScalar, RScalar>>(
-        _mm_fnmsub_pd(a_128d, b.xy, c.xy), _mm_fnmsub_sd(a_128d, b.zt, c.zt));
+  __m128d const a_128d = ToM128D(a);
+  return R3Element<Product<LScalar, RScalar>>(
+      _mm_fnmsub_pd(a_128d, b.xy, c.xy), _mm_fnmsub_sd(a_128d, b.zt, c.zt));
 #endif
-  } else {
-    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
-  }
 }
 
 template<typename Scalar>

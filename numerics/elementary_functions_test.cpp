@@ -47,7 +47,7 @@ TEST_F(ElementaryFunctionsTest, FMA) {
                              cpp_bin_float_50("3.0"),
                              cpp_bin_float_50("5.0")));
 
-  if (!CanEmitFMAInstructions || !CPUIDFeatureFlag::FMA.IsSet()) {
+  if (!CPUIDFeatureFlag::FMA.IsSet()) {
     GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   EXPECT_EQ(11 * Coulomb,

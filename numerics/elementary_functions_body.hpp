@@ -65,14 +65,16 @@ inline void ConfigureElementaryFunctions(bool const uses_correct_sin_cos) {
     cos = &std::cos;
     sin = &std::sin;
     sin_cos = &StdSinCos;
-  } else if (EarlyCanUseHardwareFMA()) {
+  } else {
+#if PRINCIPIA_USE_FMA()
     cos = &numerics::_sin_cos::Cos<FMAPresence::Present>;
     sin = &numerics::_sin_cos::Sin<FMAPresence::Present>;
     sin_cos = &numerics::_sin_cos::SinCos<FMAPresence::Present>;
-  } else {
+#else
     cos = &numerics::_sin_cos::Cos<FMAPresence::Absent>;
     sin = &numerics::_sin_cos::Sin<FMAPresence::Absent>;
     sin_cos = &numerics::_sin_cos::SinCos<FMAPresence::Absent>;
+#endif
   }
 }
 

@@ -3,7 +3,7 @@
 #include <immintrin.h>
 
 #include "base/cpuid.hpp"
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_FMA_IF_AVAILABLE.
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_FMA.
 
 namespace principia {
 namespace numerics {
@@ -12,21 +12,10 @@ namespace internal {
 
 using namespace principia::base::_cpuid;
 
-// Same as `CanUseHardwareFMA`, but may be used in static contexts where we
-// don't know if `CanUseHardwareFMA` has already been initialized.
-bool EarlyCanUseHardwareFMA();
-
-// With clang, using FMA requires VEX-encoding everything; see #3019.
-#if PRINCIPIA_COMPILER_MSVC
-constexpr bool CanEmitFMAInstructions = true;
+#if PRINCIPIA_USE_FMA()
+constexpr bool CanUseHardwareFMA = true;
 #else
-constexpr bool CanEmitFMAInstructions = false;
-#endif
-
-#if PRINCIPIA_USE_FMA_IF_AVAILABLE()
-inline bool const CanUseHardwareFMA = EarlyCanUseHardwareFMA();
-#else
-inline bool const CanUseHardwareFMA = false;
+constexpr bool CanUseHardwareFMA = false;
 #endif
 
 // Whether FMA support is present.  This type is not used by this file, but is
@@ -70,9 +59,7 @@ inline double FusedNegatedMultiplySubtract(double a, double b, double c);
 
 }  // namespace internal
 
-using internal::CanEmitFMAInstructions;
 using internal::CanUseHardwareFMA;
-using internal::EarlyCanUseHardwareFMA;
 using internal::FMAPolicy;
 using internal::FMAPresence;
 using internal::FusedMultiplyAdd;
