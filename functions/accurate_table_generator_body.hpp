@@ -25,6 +25,8 @@
 #include "numerics/matrix_views.hpp"
 #include "quantities/quantities.hpp"
 
+#define PRINCIPIA_USE_SPECULATIVE_SEARCH 1
+
 namespace principia {
 namespace functions {
 namespace _accurate_table_generator {
@@ -847,7 +849,11 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
               polynomials[i],
               remainders[i],
               starting_argument,
+#if PRINCIPIA_USE_SPECULATIVE_SEARCH
               &search_pool);
+#else
+              /*search_pool=*/nullptr);
+#endif
       if (status_or_final_argument.ok()) {
         LOG(INFO) << "Finished search around " << starting_argument
                   << ", found " << status_or_final_argument.value();
@@ -868,3 +874,5 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
 }  // namespace _accurate_table_generator
 }  // namespace functions
 }  // namespace principia
+
+#undef PRINCIPIA_USE_SPECULATIVE_SEARCH
