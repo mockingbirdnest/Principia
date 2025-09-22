@@ -281,15 +281,37 @@ internal static partial class Interface {
     };
   }
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__ActivateRecorder",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void ActivateRecorder(bool activate);
+  // These two functions are not journalled, so the interface is handwritten on
+  // both sides.
 
-  [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__InitGoogleLogging",
-             CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void InitGoogleLogging();
+  [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+  internal delegate void ActivateRecorderDelegate(bool activate);
+
+  [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+  private delegate void InitGoogleLoggingDelegate();
+
+  private partial class Symbols {
+    public ActivateRecorderDelegate ActivateRecorder =
+        Loader.LoadFunction<ActivateRecorderDelegate>(
+            "principia__ActivateRecorder");
+    public InitGoogleLoggingDelegate InitGoogleLogging =
+        Loader.LoadFunction<InitGoogleLoggingDelegate>(
+            "principia__InitGoogleLogging");
+  }
+
+  internal static void ActivateRecorder(bool activate) {
+    symbols_.ActivateRecorder(activate);
+  }
+
+  internal static void InitGoogleLogging() {
+    symbols_.InitGoogleLogging();
+  }
+
+  private static Symbols symbols_ = null;
+
+  internal static void LoadSymbols() {
+    symbols_ = new Symbols();
+  }
 }
 
 } // namespace ksp_plugin_adapter

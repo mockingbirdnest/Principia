@@ -1,8 +1,8 @@
 # Principia
 
-**&lrm;[‎Lamé](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#lame%CC%81), the August version of Principia, is available.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/g4bri3ll4m3).**
+**&lrm;[‎Lánczos](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#l%C3%A1nczos), the September version of Principia, is available.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/lancz0s).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Lamé for 1.8.1—1.12.5](https://share.weiyun.com/OiVqZFwS).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Lánczos for 1.8.1—1.12.5](https://share.weiyun.com/zzCsJVlX).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +18,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/g4bri3ll4m3).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Lamé](https://github.com/mockingbirdnest/Principia/releases/tag/2025082306-Lam%C3%A9) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/lancz0s).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Lánczos](https://github.com/mockingbirdnest/Principia/releases/tag/2025092120-L%C3%A1nczos) release.
