@@ -351,6 +351,19 @@ struct UnitriangularGramSchmidtGenerator<
       FixedMatrix<cpp_rational, rows, columns> const& m);
 };
 
+template<std::int64_t rows, std::int64_t columns>
+struct UnitriangularGramSchmidtGenerator<
+    FixedMatrix<cpp_int, rows, columns>> {
+  struct Result {
+    FixedMatrix<cpp_rational, rows, columns> Q;
+    FixedUpperTriangularMatrix<cpp_rational, columns> R;
+  };
+  using QVector = FixedVector<cpp_rational, rows>;
+  using RElement = cpp_rational;
+  static Result Uninitialized(
+      FixedMatrix<cpp_int, rows, columns> const& m);
+};
+
 template<typename Scalar>
 struct HessenbergDecompositionGenerator<UnboundedMatrix<Scalar>> {
   struct Result {
@@ -536,6 +549,15 @@ template<std::int64_t rows, std::int64_t columns>
 auto UnitriangularGramSchmidtGenerator<
     FixedMatrix<cpp_rational, rows, columns>>::
 Uninitialized(FixedMatrix<cpp_rational, rows, columns> const& m) -> Result {
+  return Result{
+      .Q = FixedMatrix<cpp_rational, rows, columns>(uninitialized),
+      .R = FixedUpperTriangularMatrix<cpp_rational, columns>(uninitialized)};
+}
+
+template<std::int64_t rows, std::int64_t columns>
+auto UnitriangularGramSchmidtGenerator<
+    FixedMatrix<cpp_int, rows, columns>>::
+Uninitialized(FixedMatrix<cpp_int, rows, columns> const& m) -> Result {
   return Result{
       .Q = FixedMatrix<cpp_rational, rows, columns>(uninitialized),
       .R = FixedUpperTriangularMatrix<cpp_rational, columns>(uninitialized)};
@@ -793,7 +815,13 @@ UnitriangularGramSchmidt(Matrix const& A) {
                          .first_row = 0,
                          .last_row = m - 1,
                          .column = j};
-    qⱼ = aⱼ;
+    if constexpr (std::is_same_v<typename Matrix::Scalar, cpp_int>) {
+      for (std::int64_t i = 0; i < m; ++i) {
+        qⱼ[i] = aⱼ[i];
+      }
+    } else {
+      qⱼ = aⱼ;
+    }
     for (std::int64_t k = 0; k < j; ++k) {
       qⱼ -= R(k, j) * typename G::QVector(ColumnView{.matrix = Q,
                                                      .first_row = 0,

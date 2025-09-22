@@ -561,6 +561,20 @@ The natural way to parallelize the search on a multicore processor is to run mul
 
 It is much more effective to parallelize using speculative execution as follows.  Each of the intervals of radius $T_0$ processed in steps 5 and 17 of algorithm \ref{FSBCS} is a \emph{slice} and slices can be searched independently for a given value of $k$.  As soon as a core is available, it picks a slice to process, which is guaranteed not to have been processed already, but which may not be adjacent to the interval $\mathscr{I}_{\texttt{covered}}$ (it is centered at $2 k \gD + \pa{2 j + 1} \frac{T_0}{N}$ where $j$ is the \emph{slice index}).  The execution is speculative in the sense that the search for slice index $j$ may not be necessary if a solution exists, say, for index $j - 1$.  However, most slices do not contain a solution, so the amount of wasted work is minimal.  Note that, for speculative execution to be deterministic, it is important, if a solution is found in slice $j$, to wait for the searches with indices preceding $j$ to complete before returning, as one of these slices may contain a solution closer to $2 k \gD$.
 
+\subsection*{Summary}
+
+The following table summarizes the impact of each of the optimizations described above.  The ``Baseline'' row is the time with all optimizations enabled.  Each of the other rows gives the timing with exactly one optimization disabled:
+\begin{center}
+\begin{tabular}{lrr}
+Method & Elapsed Time & Ratio \\
+\hline
+Baseline & 16.6 s &  \\
+No speculative execution & 107.2 s & 6.5× \\
+Reduction using Lenstra-Lenstra-Lovász & 237.1 s & 14.3× \\
+Polynomials centred on $2 k \gD$ & around 363\,000 s & 22\,000×
+\end{tabular}
+\end{center}
+
 \section*{Overview of the Algorithms for Sin and Cos}\label{overview}
 
 This section presents an overview of the algorithms used to compute $\sin$ and $\cos$.  They take as input the result of argument reduction, $\pa{\red x, \gd \red x}$ and produce a pair $\pa{y, \gd y}$ which is passed to the rounding test described in \cite[397]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010} to decide whether $\round{y + \gd y}$ is the correctly-rounded result (this is the case with high probability) or whether we need to fall back to the CORE-MATH implementation.
