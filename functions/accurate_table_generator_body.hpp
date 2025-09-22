@@ -25,6 +25,7 @@
 #include "numerics/matrix_views.hpp"
 #include "quantities/quantities.hpp"
 
+#define PRINCIPIA_USE_MIDPOINT_POLYNOMIALS 0
 #define PRINCIPIA_USE_SPECULATIVE_SEARCH 1
 
 namespace principia {
@@ -302,6 +303,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       .max = scaled.argument - cpp_rational(2 * slice_index * T₀, N)};
 
   // Evaluate the factories at the centre of each half of the slice.
+#if PRINCIPIA_USE_MIDPOINT_POLYNOMIALS
   auto const high_polynomials =
       EvaluateFactoriesAt(scaled.polynomials, initial_high_interval.midpoint());
   auto const high_remainders =
@@ -310,6 +312,16 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       EvaluateFactoriesAt(scaled.polynomials, initial_low_interval.midpoint());
   auto const low_remainders =
       EvaluateFactoriesAt(scaled.remainders, initial_low_interval.midpoint());
+#else
+  auto const high_polynomials =
+      EvaluateFactoriesAt(scaled.polynomials, scaled.argument);
+  auto const high_remainders =
+      EvaluateFactoriesAt(scaled.remainders, scaled.argument);
+  auto const low_polynomials =
+      EvaluateFactoriesAt(scaled.polynomials, scaled.argument);
+  auto const low_remainders =
+      EvaluateFactoriesAt(scaled.remainders, scaled.argument);
+#endif
 
   // The radii of the intervals remaining to cover above and below the
   // `scaled.argument`.
