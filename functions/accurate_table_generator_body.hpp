@@ -25,7 +25,8 @@
 #include "numerics/matrix_views.hpp"
 #include "quantities/quantities.hpp"
 
-#define PRINCIPIA_USE_MIDPOINT_POLYNOMIALS 0
+#define PRINCIPIA_USE_MIDPOINT_POLYNOMIALS 1
+#define PRINCIPIA_USE_NGUYỄN_STEHLÉ_REDUCTION 1
 #define PRINCIPIA_USE_SPECULATIVE_SEARCH 1
 
 namespace principia {
@@ -567,7 +568,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // The lattice really has integer coefficients, but this is inconvenient to
   // propagate through the matrix algorithms.  (It would require copies instead
   // of views for all the types, not just the ones we use here.)
+#if PRINCIPIA_USE_NGUYỄN_STEHLÉ_REDUCTION
   Lattice const V = NguyễnStehlé(L);
+#else
+  Lattice const V = LenstraLenstraLovász(L);
+#endif
   VLOG(3) << "V = " << V;
 
   // Step 8: find the three shortest vectors of the reduced lattice.  We sort
@@ -888,3 +893,5 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
 }  // namespace principia
 
 #undef PRINCIPIA_USE_SPECULATIVE_SEARCH
+#undef PRINCIPIA_USE_NGUYỄN_STEHLÉ_REDUCTION
+#undef PRINCIPIA_USE_MIDPOINT_POLYNOMIALS
