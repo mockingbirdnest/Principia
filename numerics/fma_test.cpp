@@ -17,7 +17,7 @@ class FMATest : public testing::Test {
  protected:
   void SetUp() override {
     // Note that we test even if `UseHardwareFMA` is false, i.e., even in debug.
-    if (!CPUIDFeatureFlag::FMA.IsSet()) {
+    if (!CanEmitFMAInstructions || !CPUIDFeatureFlag::FMA.IsSet()) {
       GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
     }
   }

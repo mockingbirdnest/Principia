@@ -86,7 +86,7 @@ class GrassmannTest : public testing::Test {
 using GrassmannDeathTest = GrassmannTest;
 
 TEST_F(GrassmannTest, VectorFMA) {
-  if (!CPUIDFeatureFlag::FMA.IsSet()) {
+  if (!CanEmitFMAInstructions || !CPUIDFeatureFlag::FMA.IsSet()) {
     GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   Length const a = a_.x;
@@ -105,7 +105,7 @@ TEST_F(GrassmannTest, VectorFMA) {
 }
 
 TEST_F(GrassmannTest, BivectorFMA) {
-  if (!CPUIDFeatureFlag::FMA.IsSet()) {
+  if (!CanEmitFMAInstructions || !CPUIDFeatureFlag::FMA.IsSet()) {
     GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   Length const a = a_.x;
@@ -124,7 +124,7 @@ TEST_F(GrassmannTest, BivectorFMA) {
 }
 
 TEST_F(GrassmannTest, TrivectorFMA) {
-  if (!CPUIDFeatureFlag::FMA.IsSet()) {
+  if (!CanEmitFMAInstructions || !CPUIDFeatureFlag::FMA.IsSet()) {
     GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
   Length const a = a_.x;

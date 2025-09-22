@@ -316,17 +316,17 @@ TEST_F(SinCosTest, ReduceIndex) {
     EXPECT_EQ(n, m);
     EXPECT_EQ(m, m_double);
 
-#if PRINCIPIA_HAS_FMA
-    M128D const abs_θ_m128d = Abs(θ_m128d);
-    M128D const sign_m128d = Sign(θ_m128d);
-    M128D p_m128d =
-        FusedMultiplyAdd(
-            abs_θ_m128d, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
-        m128d::mantissa_reduce_shifter;
-    p_m128d = p_m128d ^ sign_m128d;
+    if constexpr (CanEmitFMAInstructions) {
+      M128D const abs_θ_m128d = Abs(θ_m128d);
+      M128D const sign_m128d = Sign(θ_m128d);
+      M128D p_m128d =
+          FusedMultiplyAdd(
+              abs_θ_m128d, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+          m128d::mantissa_reduce_shifter;
+      p_m128d = p_m128d ^ sign_m128d;
 
-    EXPECT_EQ(m_double, static_cast<double>(p_m128d));
-#endif
+      EXPECT_EQ(m_double, static_cast<double>(p_m128d));
+    }
   }
 }
 
