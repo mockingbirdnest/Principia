@@ -2,6 +2,7 @@
 
 \usepackage{tikz}
 \usetikzlibrary{cd}
+\usetikzlibrary{patterns}
 
 \usepackage[ruled,vlined]{algorithm2e}
 \usepackage[Mathematics]{semtex}
@@ -801,7 +802,7 @@ p_c\of{t^2} &= \frac{\cos t - 1}{t^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-
 
 \subsubsection*{Sin}\label{secerroranalysissin}
 
-The first step of the computation is to evaluate $h \; c_k + s_k$ exactly using an FMA:\marginnote{TODO(phl): Prove that this works, and examine what happens when we don't have FMA.}
+The first step of the computation is to evaluate $h \; c_k + s_k$ exactly\footnote{See \nameref{prooffma} for a proof of the correctness of this computation.} using an FMA:\marginnote{TODO(phl): Prove that this works, and examine what happens when we don't have FMA.}
 \[
 \pa{z, \gd z} = t_0 = h \; c_k + s_k
 \]
@@ -917,5 +918,68 @@ As mentioned above (see \nameref{overview}), in these steps we do not compute th
 \frac{1}{2}\frac{h^2 \; \gd \red x \; \sin x_k}{\cos\of{\red x + \gd \red x}}
 \]
 This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-74.348}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.346}$ so it must be computed.)
+
+\section*{Annex: Proof of the FMA computation}\label{prooffma}
+
+\cite{StehléZimmermann2005} presents, in section 2.1 (adjusted to use our notations):
+\[
+\begin{dcases}
+h' &= \round{s_k + c_k h} \\
+t &= h' - s_k \\
+l &= \round{t - c_k h}
+\end{dcases}
+\]
+where the computation of $t$ is exact as long as $h'$ and $s_k$ verify the conditions of Sterbenz's Lemma.  \cite{StehléZimmermann2005} then states without proof that $h' + l = s_k + c_k h$.
+
+The first thing to note is that there is a sign error in that last formula.  Let's make the absolute errors $\gz_i$ of each computation explicit:
+\[
+\begin{dcases}
+h' &= s_k + c_k h + \gz_1 \\
+t &= h' - s_k = c_k h + \gz_1 \\
+l &= \round{t - c_k h} = \round{\gz_1} = \gz_1 + \gz_2
+\end{dcases}
+\]
+It is clear that the sum $h' + l = s_k + c_k h + 2 \; \gz_1 + \gz_2$ doubles the error $\gz_1$ (which is large) while the difference $h' - l = s_k + c_k h - \gz_2$ eliminates it and only retains $\gz_2$ (which is much smaller).
+
+To prove that $h' - l = s_k + c_k h$ we must prove that $\gz_2 = 0$, which is equivalent to $\round{\gz_1} = \gz_1$.  In order words, if $\gz_1$ is a machine number then $\gz_2 = 0$ and the equality holds.
+
+The first thing that we show is that the exact value $s_k + c_k h$ has at most $2 M + 1$ bits in its binary representation.  Note that $h = x - x_k$ where the subtraction is exact, and therefore $\ULP\of{h} = \ULP\of{x_k}$.  Moreover, because $x_k \in \intclos{0}{\frac{\Pi}{4}}$ we have $1/2 < c_k < 1$ and therefore $\ULP\of{c_k} = \ULP\of{1/2} = 2^{-M}$.  Finally, $x_k / 2 < s_k < x_k$, which implies that $\ULP\of{s_k}$ is either $\ULP\of{x_k}$ or $\ULP\of{x_k} / 2$.  We need to distinguish two cases:
+
+\begin{itemize} 
+\item If $\ULP\of{s_k} = \ULP\of{x_k}$ then:
+\begin{align*}
+s_k + c_k h &= \pa{\mant\of{s_k} + \mant\of{c_k} \mant\of{h} 2^{-M}} \ULP\of{x_k} \\
+&= \pa{\mant\of{s_k} 2^M + \mant\of{c_k} \mant\of{h}} \ULP\of{x_k} 2^{-M}
+\end{align*}
+where the quantity in parentheses is an integer strictly less than $2^{2 M + 1}$ by the properties of the significand function $\mant$.
+\item If $\ULP\of{s_k} = \ULP\of{x_k} / 2$ then:
+\begin{align*}
+s_k + c_k h &= \pa{\frac{\mant\of{s_k}}{2} + \mant\of{c_k} \mant\of{h} 2^{-M}} \ULP\of{x_k} \\
+&= \pa{\mant\of{s_k} 2^{M - 1} + \mant\of{c_k} \mant\of{h}} \ULP\of{x_k} 2^{-M}
+\end{align*}
+where the quantity in parentheses is an integer strictly less than $3 \cdot 2^{2 M - 1} < 2^{2 M + 1}$.
+\end{itemize}
+Taken together these inequalities prove that $s_k + c_k h$ can be represented using $2 M + 1$ significand bits with an ULP of $\ULP\of{x_k} 2^{-M}$.
+
+Now the computation of $h'$ is going to round the most significand $M$ bits of that significand and leave a remainder, $\gz_1$, which has potentially $M + 1$ bits.  We are now going to show that in fact $\gz_1$ has only $M$ bits in its significand.
+
+The following picture represents the significand of $s_k + c_k h$, with the least significant bit on the right.  The leftmost $M$ bits are the part that is rounded (either up or down).  The rightmost $M + 1$ bits are the ones that contribute to $\gz_1$.  We are going to consider different cases based on the values of bits $b_1$ and $b_2$.
+\begin{center}
+\begin{tikzpicture}
+  \draw [pattern=north east lines] (0, 0) rectangle node[above=10] {$M$ bits} (4, 0.5);
+  \draw (4, 0) rectangle node {$b_1$} node[above=10] {$1$ bit} (4.5, 0.5);
+  \draw [pattern=north east lines] (4.5, 0) rectangle node[fill=white] {$B$} node[above=10] {$M - 1$ bits} (8, 0.5);
+  \draw (8, 0) rectangle node {$b_2$} node[above=10] {$1$ bit} (8.5, 0.5);
+\end{tikzpicture}
+\end{center}
+
+\begin{itemize}
+\item If $b_2 = 0$, the significand of $s_k + c_k h$ effectively only has $2 M$ bits, and therefore the significand of $\gz_1$ trivially has at most $M$ bits.
+\item If $b_2 = 1$, we have two cases depending on the value of $b_1$:
+\begin{itemize}
+\item If $b_1 = 0$, the leading $M$ bits are rounded \emph{down} and therefore the significand of the positive quantity $s_k + c_k h - h' = -\gz_1$ is exactly made of the bits $\tuple{b_1, B, b_2}$.  Since $b_1 = 0$, this is only the $M$ bits $\tuple{B, b_2}$ and therefore $\gz_1$ is a machine number (with a ``hole'' separating it from the significand of $h'$).
+\item If $b_1 = 1$, the leading $M$ bits were rounded \emph{up}\footnote{Because $b_2 = 1$ the trailing bits are above the midpoint, so the rounding mode is irrelevant.} and therefore the significand of the positive quantity $h' - s_k + c_k h = \gz_1$ is obtained by taking the twos complement of the bits $\tuple{b_1, B, b_2}$.  This is exactly $\tuple{0, \neg B, 1}$ where $\neg$ designates binary negation.  Again, this is only $M$ bits because of the leading zero and $\gz_1$ is a machine number.
+\end{itemize}
+\end{itemize}
 
 \end{document}
