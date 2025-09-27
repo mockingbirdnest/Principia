@@ -2,9 +2,16 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup>
-    <OutDir>$(SolutionDir)$(Configuration)\$(Platform)\</OutDir>
-    <IntDir>$(Configuration)\$(Platform)\</IntDir>
+  <!--Treat _AVX_FMA as if it were part of the platform. -->
+  <PropertyGroup Condition="!$(Configuration.EndsWith('_AVX_FMA'))">
+    <PlatformWithCPUFeatures>$(Platform)</PlatformWithCPUFeatures>
+    <ConfigurationWithoutCPUFeatures>$(Configuration)</ConfigurationWithoutCPUFeatures>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration.EndsWith('_AVX_FMA'))">
+    <PlatformWithCPUFeatures>$(Platform)_AVX_FMA</PlatformWithCPUFeatures>
+    <ConfigurationWithoutCPUFeatures>$(Configuration.Replace('_AVX_FMA',''))</ConfigurationWithoutCPUFeatures>
+    <OutDir>$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\$(PlatformWithCPUFeatures)\</OutDir>
+    <IntDir>$(SolutionDir)$(MSBuildProjectName)\$(ConfigurationWithoutCPUFeatures)\$(PlatformWithCPUFeatures)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

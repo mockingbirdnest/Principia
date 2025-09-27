@@ -130,7 +130,7 @@ char const* const Architecture = "x86-64";
 #if !defined(PRINCIPIA_HAS_FMA)
 #error The build system should define PRINCIPIA_HAS_AVX
 #endif
-#define PRINCIPIA_USE_FMA() PRINCIPIA_HAS_FMA && !_DEBUG
+#define PRINCIPIA_USE_FMA_IF_AVAILABLE() !_DEBUG
 
 // Set this to 1 to test analytical series based on piecewise Poisson series.
 #define PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES 0

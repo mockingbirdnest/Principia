@@ -32,19 +32,6 @@
     </ProjectConfiguration>
   </ItemGroup>
 
-  <!--Treat _AVX_FMA as if it were part of the platform.-->
-  <PropertyGroup Condition="!$(Configuration.EndsWith('_AVX_FMA'))">
-    <PlatformWithCPUFeatures>$(Platform)</PlatformWithCPUFeatures>
-    <ConfigurationWithoutCPUFeatures>$(Configuration)</ConfigurationWithoutCPUFeatures>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(Configuration.EndsWith('_AVX_FMA'))">
-    <PlatformWithCPUFeatures>$(Platform)_AVX_FMA</PlatformWithCPUFeatures>
-    <PlatformWithoutCPUFeatures>$(Configuration.Replace('_AVX_FMA',''))</PlatformWithoutCPUFeatures>
-    <OutDir>$(SolutionDir)\$(PlatformWithCPUFeatures)\$(PlatformWithoutCPUFeatures)\</OutDir>
-    <IntDir>$(SolutionDir)\$(MSBuildProjectName)\$(PlatformWithCPUFeatures)\$(PlatformWithoutCPUFeatures)\</IntDir>
-  </PropertyGroup>
-
-
   <!--Microsoft C++ stuff.-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 

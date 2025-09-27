@@ -9,6 +9,12 @@ namespace numerics {
 namespace _fma {
 namespace internal {
 
+#if !PRINCIPIA_HAS_FMA
+inline bool EarlyCanUseHardwareFMA() {
+  return CanEmitFMAInstructions && CPUIDFeatureFlag::FMA.IsSet();
+}
+#endif
+
 inline double FusedMultiplyAdd(double const a, double const b, double const c) {
   return _mm_cvtsd_f64(
       _mm_fmadd_sd(_mm_set_sd(a), _mm_set_sd(b), _mm_set_sd(c)));
@@ -23,8 +29,8 @@ inline double FusedMultiplySubtract(double const a,
 inline double FusedNegatedMultiplyAdd(double const a,
                                       double const b,
                                       double const c) {
-    return _mm_cvtsd_f64(
-        _mm_fnmadd_sd(_mm_set_sd(a), _mm_set_sd(b), _mm_set_sd(c)));
+  return _mm_cvtsd_f64(
+      _mm_fnmadd_sd(_mm_set_sd(a), _mm_set_sd(b), _mm_set_sd(c)));
 }
 
 inline double FusedNegatedMultiplySubtract(double const a,
