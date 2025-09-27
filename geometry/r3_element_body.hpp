@@ -43,16 +43,18 @@ R3Element<Scalar>::R3Element(Scalar const& x,
                 "R3Element has a nonstandard layout");
 }
 
+#if PRINCIPIA_USE_AVX()
 template<typename Scalar>
 template<std::same_as<__m256d> T>
 inline R3Element<Scalar>::R3Element(T xyzt) : xyzt(xyzt) {}
-
+#else
 template<typename Scalar>
 R3Element<Scalar>::R3Element(__m128d const xy, __m128d const zt)
     : xy(xy), zt(zt) {
   static_assert(std::is_standard_layout<R3Element>::value,
                 "R3Element has a nonstandard layout");
 }
+#endif
 
 template<typename Scalar>
 Scalar& R3Element<Scalar>::operator[](int const index) {

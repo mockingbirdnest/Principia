@@ -35,9 +35,12 @@ struct alignas(32) R3Element final {
   constexpr R3Element();
   constexpr explicit R3Element(uninitialized_t);
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
+#if PRINCIPIA_USE_AVX()
   template<std::same_as<__m256d> T>
   R3Element(T xyzt);
+#else
   R3Element(__m128d xy, __m128d zt);
+#endif
 
   Scalar& operator[](int index);
   Scalar const& operator[](int index) const;
@@ -69,13 +72,16 @@ struct alignas(32) R3Element final {
       Scalar y;
       Scalar z;
     };
+#if PRINCIPIA_USE_AVX()
     struct {
       __m256d xyzt;
     };
+#else
     struct {
       __m128d xy;
       __m128d zt;
     };
+#endif
   };
 };
 
