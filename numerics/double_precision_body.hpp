@@ -280,6 +280,7 @@ FORCE_INLINE(inline)
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   if (fma_presence == FMAPresence::Present ||
       (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
+    // [Mul+10, p. 152], algorithm 2MultFMA.
     using numerics::_elementary_functions::FusedMultiplySubtract;
     DoublePrecision<Product<T, U>> result(uninitialized);
     result.value = a * b;
