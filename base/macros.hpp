@@ -123,12 +123,12 @@ char const* const Architecture = "x86-64";
 // We assume that the processor is at least a Prescott since we only support
 // 64-bit architectures.
 #define PRINCIPIA_USE_SSE3_INTRINSICS() !_DEBUG
-#if !defined(PRINCIPIA_HAS_AVX)
-#error The build system should define PRINCIPIA_HAS_AVX
+#if !defined(PRINCIPIA_REQUIRES_AVX)
+#error The build system should define PRINCIPIA_REQUIRES_AVX
 #endif
-#define PRINCIPIA_USE_AVX() PRINCIPIA_HAS_AVX && !_DEBUG
-#if !defined(PRINCIPIA_HAS_FMA)
-#error The build system should define PRINCIPIA_HAS_AVX
+#define PRINCIPIA_USE_AVX() PRINCIPIA_REQUIRES_AVX && !_DEBUG
+#if !defined(PRINCIPIA_REQUIRES_FMA)
+#error The build system should define PRINCIPIA_REQUIRES_AVX
 #endif
 #define PRINCIPIA_USE_FMA_IF_AVAILABLE() !_DEBUG
 

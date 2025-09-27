@@ -84,10 +84,10 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <EnableEnhancedInstructionSet Condition="$(PlatformWithCPUFeatures.Contains('AVX'))">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <PreprocessorDefinitions Condition="!$(PlatformWithCPUFeatures.Contains('AVX'))">PRINCIPIA_HAS_AVX=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="!$(PlatformWithCPUFeatures.Contains('FMA'))">PRINCIPIA_HAS_FMA=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="$(PlatformWithCPUFeatures.Contains('AVX'))">PRINCIPIA_HAS_AVX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="$(PlatformWithCPUFeatures.Contains('FMA'))">PRINCIPIA_HAS_FMA=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="!$(PlatformWithCPUFeatures.Contains('AVX'))">PRINCIPIA_REQUIRES_AVX=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="!$(PlatformWithCPUFeatures.Contains('FMA'))">PRINCIPIA_REQUIRES_FMA=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(PlatformWithCPUFeatures.Contains('AVX'))">PRINCIPIA_REQUIRES_AVX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(PlatformWithCPUFeatures.Contains('FMA'))">PRINCIPIA_REQUIRES_FMA=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CallingConvention>vectorcall</CallingConvention>
       <AdditionalIncludeDirectories>C:\Program Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /bigobj /w14714 /Zc:char8_t- /Zf</AdditionalOptions>

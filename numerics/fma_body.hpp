@@ -9,7 +9,7 @@ namespace numerics {
 namespace _fma {
 namespace internal {
 
-#if !PRINCIPIA_HAS_FMA
+#if !PRINCIPIA_REQUIRES_FMA
 inline bool EarlyCanUseHardwareFMA() {
   return CanEmitFMAInstructions && CPUIDFeatureFlag::FMA.IsSet();
 }
