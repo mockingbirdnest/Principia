@@ -978,7 +978,7 @@ The following picture represents the significand of $s_k + c_k h$, with the leas
 \item If $b_2 = 1$, we have two cases depending on the value of $b_1$:
 \begin{itemize}
 \item If $b_1 = 0$, the leading $M$ bits are rounded \emph{down} and therefore the significand of the positive quantity $s_k + c_k h - h' = -\gz_1$ is exactly made of the bits $\tuple{b_1, B, b_2}$.  Since $b_1 = 0$, this is only the $M$ bits $\tuple{B, b_2}$ and therefore $\gz_1$ is a machine number (with a ``hole'' separating it from the significand of $h'$).
-\item If $b_1 = 1$, the leading $M$ bits were rounded \emph{up}\footnote{Because $b_2 = 1$ the trailing bits are above the midpoint, so the rounding mode is irrelevant.} and therefore the significand of the positive quantity $h' - s_k + c_k h = \gz_1$ is obtained by taking the twos complement of the bits $\tuple{b_1, B, b_2}$.  This is exactly $\tuple{0, \neg B, 1}$ where $\neg$ designates binary negation.  Again, this is only $M$ bits because of the leading zero and $\gz_1$ is a machine number.
+\item If $b_1 = 1$, the leading $M$ bits were rounded \emph{up}\footnote{Because $b_2 = 1$ the trailing bits are above the midpoint, so the handling of ties is irrelevant.} and therefore the significand of the positive quantity $h' - s_k + c_k h = \gz_1$ is obtained by taking the twos complement of the bits $\tuple{b_1, B, b_2}$.  This is exactly $\tuple{0, \neg B, 1}$ where $\neg$ designates binary negation.  Again, this is only $M$ bits because of the leading zero and $\gz_1$ is a machine number.
 \end{itemize}
 \end{itemize}
 
