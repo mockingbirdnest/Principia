@@ -21,9 +21,9 @@
 \DeclareMathOperator{\truncate}{\StandardSymbol{Tr}}
 \DeclareMathOperator{\twosum}{\StandardSymbol{TwoSum}}
 \DeclareMathOperator{\quicktwosum}{\StandardSymbol{QuickTwoSum}}
-\DeclareMathOperator{\longadd}{\StandardSymbol{LongAdd}}
 \DeclareMathOperator{\twodifference}{\StandardSymbol{TwoDifference}}
 \DeclareMathOperator{\quicktwodifference}{\StandardSymbol{QuickTwoDifference}}
+\DeclareMathOperator{\longadd}{\StandardSymbol{LongAdd}}
 \DeclareMathOperator{\longsub}{\StandardSymbol{LongSub}}
 \DeclareMathOperator{\cmod}{\StandardSymbol{cmod}}
 
@@ -802,7 +802,7 @@ p_c\of{t^2} &= \frac{\cos t - 1}{t^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-
 
 \subsubsection*{Sin}\label{secerroranalysissin}
 
-The first step of the computation is to evaluate $h \; c_k + s_k$ exactly\footnote{See \nameref{prooffma} for a proof of the correctness of this computation.} using an FMA:\marginnote{TODO(phl): Examine what happens when we don't have FMA.}
+The first step of the computation is to evaluate $h \; c_k + s_k$ exactly\footnote{See \nameref{proffmasin} for a proof of the correctness of this computation.} using an FMA:\marginnote{TODO(phl): Examine what happens when we don't have FMA.}
 \[
 \pa{z, \gd z} = t_0 = h \; c_k + s_k
 \]
@@ -919,7 +919,11 @@ As mentioned above (see \nameref{overview}), in these steps we do not compute th
 \]
 This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-74.348}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.346}$ so it must be computed.)
 
-\section*{Annex: Proof of the FMA Computation}\label{prooffma}
+\section*{Annex: The First-Order Term}\label{proffmasin}
+
+\subsection*{Sin}\marginnote{TODO(phl): Move here the Sterbenz proof.}
+
+\subsubsection*{Proof of the FMA Computation}\label{proffmasin}
 
 \cite{StehléZimmermann2005} presents, in section 2.1, the following algorithm to compute $s_k + c_k h$ exactly:
 \[
@@ -943,7 +947,7 @@ It is clear that the sum $h' + l = s_k + c_k h + 2 \; \gz_1 + \gz_2$ doubles the
 
 To prove that $h' - l = s_k + c_k h$ we must prove that $\gz_2 = 0$, which is equivalent to $\round{\gz_1} = \gz_1$.  In other words, if $\gz_1$ is a machine number then $\gz_2 = 0$ and the equality holds.
 
-The first thing that we show is that the exact value $s_k + c_k h$ has at most $2 M + 1$ bits in its binary representation.  Note that $h = x - x_k$, where the subtraction is exact, and therefore there exists $N \in \intclop{0}{2^M} \Intersection \Naturals$ such that $h = N \ULP\of{x_k}$.  Moreover, because $x_k \in \intclos{0}{\frac{\Pi}{4}}$ we have $1/2 < c_k < 1$ and therefore $\ULP\of{c_k} = \ULP\of{1/2} = 2^{-M}$.  Finally, $x_k / 2 < s_k < x_k$, which implies that $\ULP\of{s_k}$ is either $\ULP\of{x_k}$ or $\ULP\of{x_k} / 2$.  We need to distinguish two cases:
+The first thing that we show is that the exact value $s_k + c_k h$ has at most $2 M + 1$ bits in its binary representation.  Note that $h = x - x_k$, where the subtraction is exact, and therefore there exists $N \in \intopen{-2^{M}}{2^M} \Intersection \Naturals$ such that $h = N \ULP\of{x_k}$.  Moreover, because $x_k \in \intclos{0}{\frac{\Pi}{4}}$ we have $1/2 < c_k < 1$ and therefore $\ULP\of{c_k} = \ULP\of{1/2} = 2^{-M}$.  Finally, $x_k / 2 < s_k < x_k$, which implies that $\ULP\of{s_k}$ is either $\ULP\of{x_k}$ or $\ULP\of{x_k} / 2$.  We need to distinguish two cases:
 
 \begin{itemize} 
 \item If $\ULP\of{s_k} = \ULP\of{x_k}$ then:
@@ -981,5 +985,40 @@ The following picture represents the significand of $s_k + c_k h$, with the leas
 \item If $b_1 = 1$, the leading $M$ bits were rounded \emph{up}\footnote{Because $b_2 = 1$ the trailing bits are above the midpoint, so the handling of ties is irrelevant.} and therefore the significand of the positive quantity $h' - s_k + c_k h = \gz_1$ is obtained by taking the twos complement of the bits $\tuple{b_1, B, b_2}$.  This is exactly $\tuple{0, \neg B, 1}$ where $\neg$ designates binary negation.  Again, this is only $M$ bits because of the leading zero and $\gz_1$ is a machine number.
 \end{itemize}
 \end{itemize}
+
+\subsubsection*{Computation Without FMA}
+
+When an FMA instruction is not available, the computation proceeds as follows:
+\[
+\begin{dcases}
+p &= c_k h \\
+\tuple{z, \gd z} &= \longadd\of{s_k, p}
+\end{dcases}
+\]
+
+\subsection*{Cos}
+
+\subsubsection*{FMA Computation}
+
+For the $\cos$ function, the equivalent to the computation described in \nameref{proffmasin} is as follows:
+\[
+\begin{dcases}
+h' &= \round{c_k - s_k h} \\
+t &= h' - c_k \\
+l &= \round{t + s_k h}
+\end{dcases}
+\]
+However, we note that $c_k > 1/2$, $h < 2 \gD$, and $s_k < 1$.  Therefore $\frac{s_k h}{c_k} < 4 \gD$.  While this trivially ensure that the subtraction in the evaluation of $t$ is exact by Sterbenz's Lemma, it also means that the exact value of $c_k - s_k h$ may have, with our choice of $\gD = 2^{-10}$, as many as $2 M + 7$ bits.  Therefore, it cannot be represented exactly using two machine numbers, and we have to tolerate some rounding error.  The error analysis is as follows:
+\[
+\begin{dcases}
+h' &= \pa{c_k - s_k h} \pa{1 + \gd_1} \\
+t &= h' - c_k \\
+l &= \pa{t + s_k h} \pa{1 + \gd_2} = \pa{c_k - s_k h} \gd_1 \pa{1 + \gd_2}
+\end{dcases}
+\]
+and:
+\[
+h' - l = \pa{c_k - s_k h} \pa{1 - \gd_1 \gd_2}
+\]
 
 \end{document}
