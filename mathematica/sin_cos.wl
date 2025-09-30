@@ -527,7 +527,7 @@
 (*End[]*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Argument Reduction Using the Three-Term Approximation*)
 
 
@@ -620,7 +620,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]2=2^(2-2M);*)
+(*\[Zeta]2=2^(1-2M);*)
 
 
 (* ::Text:: *)
@@ -632,15 +632,15 @@
 
 
 (* ::Input:: *)
-(*Assert[Max[reductionInterval]<2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]]*)
+(*Assert[Max[reductionInterval]<2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+5)\[GothicU][\[Pi]/2]+2^(-2M)(\[Pi]/2)]*)
 
 
 (* ::Input:: *)
-(*N[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]},20]*)
+(*N[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+5)\[GothicU][\[Pi]/2]+2^(-2M)(\[Pi]/2)},20]*)
 
 
 (* ::Input:: *)
-(*N[Log2[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]}],20]*)
+(*N[Log2[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+5)\[GothicU][\[Pi]/2]+2^(-2M)(\[Pi]/2)}],20]*)
 
 
 (* ::Text:: *)
@@ -648,7 +648,7 @@
 
 
 (* ::Input:: *)
-(*angleReducedThreshold = 2^(\[Kappa]3-M)(2^(\[Kappa]2+\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-M+2)+4)*)
+(*angleReducedThreshold = 2^(\[Kappa]3-M)(2^(\[Kappa]2+\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-M+2)+2)*)
 
 
 (* ::Input:: *)
