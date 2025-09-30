@@ -527,7 +527,7 @@
 (*End[]*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Argument Reduction Using the Three-Term Approximation*)
 
 
