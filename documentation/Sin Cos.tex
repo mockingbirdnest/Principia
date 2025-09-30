@@ -991,9 +991,27 @@ The following picture represents the significand of $s_k + c_k h$, with the leas
 When an FMA instruction is not available, the computation proceeds as follows:
 \[
 \begin{dcases}
-p &= c_k h \\
-\tuple{z, \gd z} &= \longadd\of{s_k, p}
+\tuple{p, \gd p} &= c_k h \\
+\tuple{q, \gd q} &= \twosum\of{s_k, p} \\
+\tuple{z, \gd z} &= \quicktwosum\of{q, \round{\gd p + \gd q}}
 \end{dcases}
+\]
+where the first step uses the exact Veltkamp-Dekker product and the last two steps are merely the expansion of $\longadd$ from \cite{Linnainmaa1981}.  Because both $\twosum$ and $\quicktwosum$ are exact, the only error comes from the rounding of $\gd p + \gd q$, so the absolute error on the sum is at most $\frac{1}{2} \ULP\of{\gd p + \gd q}$.  From the inequalities derived in the preceding section we have:
+\begin{align*}
+\abs{c_k h} &< 2^M \ULP\of{x_k} &\implies \gd p &< \frac{1}{2} \ULP\of{c_k h} < \ULP\of{x_k} \\
+s_k + c_k h &< 2^{M + 1} \ULP\of{x_k} &\implies \gd q &< \frac{1}{2} \ULP\of{s_k + c_k h} < 2 \ULP\of{x_k}
+\end{align*}
+we deduce that $\gd p + \gd q < 3 \ULP\of{x_k}$ and:
+\[
+\frac{1}{2} \ULP\of{\gd p + \gd q} < 3 \ULP\of{x_k} 2^{-M}
+\]
+Remembering that $s_k + c_k h$ is the first-order term in the computation of the $\sin$ function, and that the second-order term is negative, we have $\sin\of{x_k + h} < s_k + c_k h$.  Furthermore, the smallest possible value for $x_k + h$ is $\gD$.  Therefore:
+\[
+\sin \gD < s_k + c_k h
+\]
+and since $\sin \gD > \gD / 2$ the relative error is bounded by:
+\[
+\frac{6 \ULP\of{x_k} 2^{-M}}{\gD}
 \]
 
 \subsection*{Cos}
