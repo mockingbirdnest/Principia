@@ -10,6 +10,8 @@
   <PropertyGroup Condition="$(Configuration.EndsWith('_AVX_FMA'))">
     <PlatformWithCPUFeatures>$(Platform)_AVX_FMA</PlatformWithCPUFeatures>
     <ConfigurationWithoutCPUFeatures>$(Configuration.Replace('_AVX_FMA',''))</ConfigurationWithoutCPUFeatures>
+  </PropertyGroup>
+  <PropertyGroup>
     <OutDir>$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\$(PlatformWithCPUFeatures)\</OutDir>
     <IntDir>$(SolutionDir)$(MSBuildProjectName)\$(ConfigurationWithoutCPUFeatures)\$(PlatformWithCPUFeatures)\</IntDir>
   </PropertyGroup>
