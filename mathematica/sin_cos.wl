@@ -753,9 +753,13 @@
 (*x0Interval=Interval[{x0Min,x0Max}]*)
 
 
+(* ::Text:: *)
+(*The value of the error function at 0 must be chosen so that we have proper convergence (which we can check by looking for equioscillation in the graph).*)
+
+
 (* ::Input:: *)
 (*sin0ApproximationResult=GeneralMiniMaxApproximation[*)
-(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^10,Sin[t]/t^3]},*)
+(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^6,Sin[t]/t^3]},*)
 (*{t,{0,x0Max},1,0},*)
 (*x,WorkingPrecision->30]*)
 
@@ -835,9 +839,13 @@
 (*hMin=-hMax;*)
 
 
+(* ::Text:: *)
+(*The value of the error function at 0 must be chosen so that we have proper convergence (which we can check by looking for equioscillation in the graph).*)
+
+
 (* ::Input:: *)
 (*sinApproximationResult=GeneralMiniMaxApproximation[*)
-(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^10,Sin[t]/t^3]},*)
+(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^6,Sin[t]/t^3]},*)
 (*{t,{0,hMax},1,0},*)
 (*x,WorkingPrecision->30]*)
 
