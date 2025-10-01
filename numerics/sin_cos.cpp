@@ -94,9 +94,9 @@ constexpr double three_term_x_reduced_threshold =
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
      2);
 
-constexpr double e_sin_near_zero = 0x1.0000'AAD0'391A'Dp0;  // 2^-70.583.
-constexpr double e_sin = 0x1.0002'6752'8572'Dp0;  // 2^-68.734.
-constexpr double e_cos = 0x1.0001'B838'5D8B'6p0;  // 2^-69.217.
+constexpr double e_sin_near_zero = 0x1.0000'B13A'4ECB'0p0;  // 2^-70.530.
+constexpr double e_sin = 0x1.0002'6AF7'99AF'9p0;  // 2^-68.726.
+constexpr double e_cos = 0x1.0001'B839'417F'4p0;  // 2^-69.217.
 
 SlowPathCallback slow_path_sin_callback = nullptr;
 SlowPathCallback slow_path_cos_callback = nullptr;
@@ -128,10 +128,10 @@ M128D const accurate_table_index_addend(static_cast<double>(
     1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1)));
 
 // Polynomials.
-M128D const sin_0(-0x1.5555'5555'5554'Fp-3);
-M128D const sin_1(0x1.1111'1042'2EA4'Ap-7);
-M128D const sin_near_zero_0(-0x1.5555'5555'5554'Fp-3);
-M128D const sin_near_zero_1(0x1.1111'1043'FF07'6p-7);
+M128D const sin_0(-0x1.5555'5555'5555'5p-3);
+M128D const sin_1(0x1.1111'10A8'7D1F'9p-7);
+M128D const sin_near_zero_0(-0x1.5555'5555'5555'5p-3);
+M128D const sin_near_zero_1(0x1.1111'10A9'7A90'3p-7);
 M128D const cos_0(-0x1.FFFF'FFFF'FFFF'Dp-2);
 M128D const cos_1(0x1.5555'549D'B0A9'5p-5);
 

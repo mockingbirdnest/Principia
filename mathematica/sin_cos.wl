@@ -1019,7 +1019,7 @@
 
 
 (* ::Input:: *)
-(*\[Eta]=Abs[sin0ApproximationResult[[2,2]]]*)
+(*\[Xi]=Abs[sin0ApproximationResult[[2,2]]]*)
 
 
 (* ::Text:: *)
@@ -1027,7 +1027,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]1=Interval[{-\[Eta],\[Eta]}];*)
+(*\[Zeta]1=Interval[{-\[Xi],\[Xi]}];*)
 
 
 (* ::Input:: *)
@@ -1175,23 +1175,23 @@
 
 
 (* ::Input:: *)
-(*\[Eta]s=Abs[sinApproximationResult[[2,2]]]*)
+(*\[Xi]s=Abs[sinApproximationResult[[2,2]]]*)
 
 
 (* ::Input:: *)
-(*Log2[\[Eta]s]*)
+(*Log2[\[Xi]s]*)
 
 
 (* ::Input:: *)
-(*\[Eta]c=Abs[cosApproximationResult[[2,2]]]*)
+(*\[Xi]c=Abs[cosApproximationResult[[2,2]]]*)
 
 
 (* ::Input:: *)
-(*Log2[\[Eta]c]*)
+(*Log2[\[Xi]c]*)
 
 
 (* ::Input:: *)
-(*\[Zeta]1=Interval[{-\[Eta]s,\[Eta]s}];*)
+(*\[Zeta]1=Interval[{-\[Xi]s,\[Xi]s}];*)
 
 
 (* ::Input:: *)
@@ -1199,7 +1199,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]2=Interval[{-\[Eta]c,\[Eta]c}];*)
+(*\[Zeta]2=Interval[{-\[Xi]c,\[Xi]c}];*)
 
 
 (* ::Input:: *)
@@ -1232,6 +1232,10 @@
 
 (* ::Input:: *)
 (*binaryBounds[\[Zeta]4]*)
+
+
+(* ::Input:: *)
+(*\[Eta]=2^(-2M+1)*)
 
 
 (* ::Subsubsection::Closed:: *)
@@ -1291,7 +1295,7 @@
 
 
 (* ::Input:: *)
-(*t0[h_,sk_,ck_]:=Hold[CorrectlyRound[ck]]h+Hold[CorrectlyRound[sk]]*)
+(*t0[h_,sk_,ck_]:=(Hold[CorrectlyRound[ck]]h+Hold[CorrectlyRound[sk]])(1+\[Eta])*)
 
 
 (* ::Input:: *)
@@ -1343,7 +1347,7 @@
 
 
 (* ::Input:: *)
-(*Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
+(*Block[{\[Eta]=eta,\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
 
 
 (* ::Input:: *)
@@ -1530,7 +1534,7 @@
 
 
 (* ::Input:: *)
-(*t0[h_,sk_,ck_]:=-Hold[CorrectlyRound[sk]]h+Hold[CorrectlyRound[ck]]*)
+(*t0[h_,sk_,ck_]:=(-Hold[CorrectlyRound[sk]]h+Hold[CorrectlyRound[ck]])(1+\[Eta])*)
 
 
 (* ::Input:: *)
@@ -1582,7 +1586,7 @@
 
 
 (* ::Input:: *)
-(*Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
+(*Block[{\[Eta]=eta,\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
 
 
 (* ::Input:: *)
