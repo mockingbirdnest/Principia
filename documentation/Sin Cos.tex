@@ -1020,7 +1020,7 @@ t &= h' - c_k \\
 l &= \round{t + s_k h}
 \end{dcases}
 \]
-However, we note that $c_k > 1/2$, $h < 2 \gD$, and $s_k < 1$.  Therefore $\frac{s_k h}{c_k} < 4 \gD$.  While this trivially ensure that the subtraction in the evaluation of $t$ is exact by Sterbenz's Lemma, it also means that the exact value of $c_k - s_k h$ may have, with our choice of $\gD = 2^{-10}$, as many as $2 M + 7$ bits.  Therefore, it cannot be represented exactly using two machine numbers, and we have to tolerate some rounding error.  The error analysis is as follows:
+However, we note that $c_k > 1/2$, $h < 2 \gD$, and $s_k < 1$.  Therefore $\frac{s_k h}{c_k} < 4 \gD$.  While this trivially ensures that the subtraction in the evaluation of $t$ is exact by Sterbenz's Lemma, it also means that the exact value of $c_k - s_k h$ may have, with our choice of $\gD = 2^{-10}$, as many as $2 M + 7$ bits.  Therefore, it cannot be represented exactly using two machine numbers, and we have to tolerate some rounding error.  The error analysis is as follows:
 \[
 \begin{dcases}
 h' &= \pa{c_k - s_k h} \pa{1 + \gd_1} \\
