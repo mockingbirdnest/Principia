@@ -92,7 +92,7 @@ constexpr double two_term_x_reduced_threshold =
 constexpr double three_term_x_reduced_threshold =
     (1.0 / (1LL << (-(κ₃ - std::numeric_limits<double>::digits)))) *
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
-     4);
+     2);
 
 constexpr double e_sin_near_zero = 0x1.0000'AAD0'391A'Dp0;  // 2^-70.583.
 constexpr double e_sin = 0x1.0002'6752'8572'Dp0;  // 2^-68.734.
