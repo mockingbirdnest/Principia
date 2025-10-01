@@ -783,9 +783,9 @@ p_c\of{t^2} &= \frac{\cos t - 1}{t^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-
 
 \subsubsection*{Sin}\label{secerroranalysissin}
 
-The first step of the computation is to evaluate $h \; c_k + s_k$ with extra accuracy.  See \nameref{firstorder} for the analysis of this computation:
+The first step of the computation is to evaluate $s_k + h c_k$ with extra accuracy.  See \nameref{firstorder} for the analysis of this computation:
 \[
-\pa{z, \gd z} = t_0 = h \; c_k + s_k
+\pa{z, \gd z} = t_0 = s_k + h c_k
 \]
 where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$, where the two terms are exact.
 
@@ -844,9 +844,9 @@ This function reaches its extrema on the corners of the trapezoidal domain and i
 
 \subsubsection*{Cos}\label{secerroranalysiscos}
 
-The first step of the computation is to evaluate $-h \; s_k + c_k$ with extra accuracy.  See \nameref{firstorder} for the analysis of this computation:
+The first step of the computation is to evaluate $c_k - s_k h$ with extra accuracy.  See \nameref{firstorder} for the analysis of this computation:
 \[
-\pa{z, \gd z} = t_0 = -h \; s_k + c_k
+\pa{z, \gd z} = t_0 = c_k - s_k h
 \]
 where $z$ and $\gd z$ have nonoverlapping significands.  For the purpose of describing the computation and analysing errors we will write $\gd z = t_0 \; \gd_0$ and $z = t_0 \pa{1 - \gd_0}$, where the two terms are exact.
 
