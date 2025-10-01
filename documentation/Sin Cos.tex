@@ -775,24 +775,6 @@ Because $x_k$ is close to $2 k \gD$ the left part of this condition is trivially
 
 For $\sin$ we do not use the interval $\mathscr{I}_0$ (see \nameref{secsinnearzero}, above) but for $\cos$ we do.  That interval is special because $x_0 = 0$: the computation of $h$ is therefore trivially correct.
 
-Interestingly, $x_1 < 2 \gD$ is also the necessary condition to compute $h \; c_k + s_k$ exactly using an FMA as explained in section 2.1 of \cite{StehléZimmermann2005}.  The subtraction in the second step of their algorithm must be exact, therefore the following Sterbenz inequalities must hold\footnote{Note that $\mathscr{I}_0$ is uninteresting because $c_0 = 1$ and $s_0 = 0$ so the computation is trivially exact.}:
-\[
-\frac{s_k}{2} \le h \; c_k + s_k \le 2 \; s_k
-\]
-This may be rewritten as:
-\[
--\frac{1}{2} \tan x_k \le h \le \tan x_k
-\]
-Let $x_k = 2 k \gD + \ge_k$ for some small $\ge_k$.  By the definition of $h$ we have:
-\[
--\gD - \ge_k \le h \le \gD - \ge_k
-\]
-Now we know that $x_k < \tan x_k$ and since $\gD - \ge_k < 2 k \gD + \ge_k$ for all $k > 0$ the right side of the Sterbenz condition is always true.  The left side is more interesting though as:
-\[
--\frac{1}{2} \tan x_k < -\frac{x_k}{2} = -k \gD - \frac{\ge_k}{2}
-\]
-For $k > 1$, this quantity is clearly smaller than $-\gD - \ge_k$, the lower bound of $h$.  However, when $k = 1$, $-\gD - \ge_1 / 2 \le -\gD - \ge_1$ requires that $\ge_1 \le 0$, in other words, that $x_1$ be below $2 \gD$.  Note that we do not need to go through a similar proof for the exactness of $-h \; s_k + c_k$ because $h \; s_k$ is much smaller than $c_k$ for all $k$.
-
 Finally, for the purpose of error analysis, the relative errors of the minimax polynomials may be rewritten as:
 \begin{align*}
 p_s\of{t^2} &= \frac{\sin t \; \pa{1 + \gz_1} - t}{t^3} \qquad & \abs{\gz_1} < 2^{-85.534} \\
@@ -801,7 +783,7 @@ p_c\of{t^2} &= \frac{\cos t - 1}{t^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-
 
 \subsubsection*{Sin}\label{secerroranalysissin}
 
-The first step of the computation is to evaluate $h \; c_k + s_k$ exactly\footnote{See \nameref{proffmasin} for a proof of the correctness of this computation.} using an FMA:\marginnote{TODO(phl): Examine what happens when we don't have FMA.}
+The first step of the computation is to evaluate $h \; c_k + s_k$ with extra accuracy.  See \nameref{firstorder} for the analysis of this computation:
 \[
 \pa{z, \gd z} = t_0 = h \; c_k + s_k
 \]
@@ -862,7 +844,7 @@ This function reaches its extrema on the corners of the trapezoidal domain and i
 
 \subsubsection*{Cos}\label{secerroranalysiscos}
 
-The first step of the computation is to evaluate $-h \; s_k + c_k$ exactly using an FMA:\marginnote{TODO(phl): Prove that this works, and examine what happens when we don't have FMA.}
+The first step of the computation is to evaluate $-h \; s_k + c_k$ with extra accuracy.  See \nameref{firstorder} for the analysis of this computation:
 \[
 \pa{z, \gd z} = t_0 = -h \; s_k + c_k
 \]
@@ -918,13 +900,17 @@ As mentioned above (see \nameref{overview}), in these steps we do not compute th
 \]
 This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-74.348}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.346}$ so it must be computed.)
 
-\section*{Annex: The First-Order Term}\label{proffmasin}
+\section*{Annex: The First-Order Term}\label{firstorder}
 
-\subsection*{Sin}\marginnote{TODO(phl): Move here the Sterbenz proof.}
+This annex presents the algorithms used for precise computation of the first-order term and provides error bounds.
 
-\subsubsection*{Proof of the FMA Computation}\label{proffmasin}
+\subsection*{Sin}
 
-\cite{StehléZimmermann2005} presents, in section 2.1, the following algorithm to compute $s_k + c_k h$ exactly:
+For the $\sin$ function we need to compute $s_k + c_k h$ with extra accuracy.
+
+\subsubsection*{Computation with FMA and Sterbenz Condition}\label{fmasin}
+
+\cite{StehléZimmermann2005} presents, in section 2.1, the following algorithm\footnote{Note that $\mathscr{I}_0$ is uninteresting because $c_0 = 1$ and $s_0 = 0$ so the computation is trivially exact.} to compute $s_k + c_k h$ for $k > 0$:
 \[
 \begin{dcases}
 h' &= \round{s_k + c_k h} \\
@@ -932,9 +918,29 @@ t &= h' - s_k \\
 l &= \round{t - c_k h}
 \end{dcases}
 \]
-where the computation of $t$ is exact if $h'$ and $s_k$ verify the conditions of Sterbenz's Lemma.  \cite{StehléZimmermann2005} then states without proof that $h' + l = s_k + c_k h$.
+where the computation of $t$ must be exact, meaning that $h'$ and $s_k$ must verify the conditions of Sterbenz's Lemma, \idest, the following inequalities must hold:
+\[
+\frac{s_k}{2} \le s_k + c_k h \le 2 \; s_k
+\]
+This may be rewritten as:
+\[
+-\frac{1}{2} \tan x_k \le h \le \tan x_k
+\]
+Let $x_k = 2 k \gD + \ge_k$ for some small $\ge_k$.  By the definition of $h$ we have:
+\[
+-\gD - \ge_k \le h \le \gD - \ge_k
+\]
+Now we know that $x_k < \tan x_k$ and since $\gD - \ge_k < 2 k \gD + \ge_k$ for all $k > 0$ the right side of the Sterbenz condition is always true.  The left side is more interesting though as:
+\[
+-\frac{1}{2} \tan x_k < -\frac{x_k}{2} = -k \gD - \frac{\ge_k}{2}
+\]
+For $k > 1$, this quantity is clearly smaller than $-\gD - \ge_k$, the lower bound of $h$.  However, when $k = 1$, $-\gD - \ge_1 / 2 \le -\gD - \ge_1$ requires that $\ge_1 \le 0$, in other words, that $x_1$ be below $2 \gD$.
 
-The first thing to note is that there is a sign error in that last formula.  Let's make the absolute errors $\gz_i$ of each computation explicit:
+\subsubsection*{Proof of the Computation with FMA}\label{prooffmasin}
+
+\cite{StehléZimmermann2005} states without proof that the above algorithm is an exact computation, \idest, $h' + l = s_k + c_k h$.
+
+The first thing to note is that there is a sign error in that formula.  Let's make the absolute errors $\gz_i$ of each computation explicit:
 \[
 \begin{dcases}
 h' &= s_k + c_k h + \gz_1 \\
@@ -991,16 +997,18 @@ When an FMA instruction is not available, the computation proceeds as follows:
 \[
 \begin{dcases}
 \tuple{p, \gd p} &= c_k h \\
-\tuple{q, \gd q} &= \dwplusfp\of{\tuple{p, \gd p},s_k}
+\tuple{q, \gd q} &= \dwplusfp\of{\tuple{p, \gd p}, s_k}
 \end{dcases}
 \]
 where the first step uses the exact Veltkamp-Dekker product.  The relative error on the result is bounded by $2^{-2 M + 1}$ (see \cite{MullerRideau2022}).
 
 \subsection*{Cos}
 
-\subsubsection*{FMA Computation}
+For the $\cos$ function we need to compute $c_k - s_k h$ with extra accuracy.
 
-For the $\cos$ function, the equivalent to the computation described in \nameref{proffmasin} is as follows:
+\subsubsection*{Computation with FMA}
+
+The computation equivalent to the one described in \nameref{fmasin} is as follows:
 \[
 \begin{dcases}
 h' &= \round{c_k - s_k h} \\
@@ -1020,5 +1028,18 @@ and:
 \[
 h' - l = \pa{c_k - s_k h} \pa{1 - \gd_1 \gd_2}
 \]
+
+Therefore, the relative error is bounded by $2^{-2 M}$.
+
+\subsubsection*{Computation Without FMA}
+
+When an FMA instruction is not available, the computation proceeds as follows:
+\[
+\begin{dcases}
+\tuple{p, \gd p} &= -s_k h \\
+\tuple{q, \gd q} &= \dwplusfp\of{\tuple{p, \gd p}, c_k}
+\end{dcases}
+\]
+where the first step uses the exact Veltkamp-Dekker product.  The relative error on the result is bounded by $2^{-2 M + 1}$ (see \cite{MullerRideau2022}).
 
 \end{document}
