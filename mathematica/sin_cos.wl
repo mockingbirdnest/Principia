@@ -765,7 +765,7 @@
 
 
 (* ::Input:: *)
-(*sin0Polynomial=Function[u, Evaluate[sin0ApproximationResult[[2,1]]/.x->u]]*)
+(*sin0Polynomial=Function[u, Evaluate[HornerForm[sin0ApproximationResult[[2,1]]/.x->u]]]*)
 
 
 (* ::Input:: *)
@@ -1027,27 +1027,19 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]1=Interval[{-\[Xi],\[Xi]}];*)
+(*\[Zeta]01=Interval[{-\[Xi],\[Xi]}];*)
 
 
 (* ::Input:: *)
-(*binaryBounds[\[Zeta]1]*)
+(*binaryBounds[\[Zeta]01]*)
 
 
 (* ::Input:: *)
-(*\[Zeta]2=IEEEEvaluateWithRelativeError[sin0Polynomial[x0Interval^2]][[2]];*)
+(*\[Zeta]02=IEEEEvaluateWithRelativeError[sin0Polynomial[x0Interval^2]][[2]];*)
 
 
 (* ::Input:: *)
-(*binaryBounds[\[Zeta]2]*)
-
-
-(* ::Input:: *)
-(*\[Zeta]3=IEEEEvaluateWithRelativeError[x0Interval^3][[2]];*)
-
-
-(* ::Input:: *)
-(*binaryBounds[\[Zeta]3]*)
+(*binaryBounds[\[Zeta]02]*)
 
 
 (* ::Input:: *)
@@ -1067,7 +1059,7 @@
 
 
 (* ::Input:: *)
-(*t1[x\:0303_]:=(1+\[Zeta]2)((1+\[Zeta]1)Sin[x\:0303]-x\:0303)/x\:0303^3*)
+(*t1[x\:0303_]:=(1+\[Zeta]02)((1+\[Zeta]01)Sin[x\:0303]-x\:0303)/x\:0303^3*)
 
 
 (* ::Input:: *)
@@ -1076,6 +1068,22 @@
 
 (* ::Input:: *)
 (*t3[x\:0303_,\[Delta]x\:0303_]:=(t1[x\:0303]t2[x\:0303](1+\[Delta]3)+\[Delta]x\:0303)(1+\[Delta]4)*)
+
+
+(* ::Text:: *)
+(*Dominant term of the error :*)
+
+
+(* ::Input:: *)
+(*errorExpression=Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Zeta]01=z1,\[Zeta]02=z2},t3[x\:0303,\[Delta]x\:0303]]*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrder=Expand[Normal[Series[errorExpression,{d1,0,1},{d2,0,1},{d3,0,1},{d4,0,1},{z1,0,1},{z2,0,1}]]];*)
+
+
+(* ::Input:: *)
+(*Collect[errorExpression1stOrder/.{Times->times}/.{times[___,d1|d2|d3|d4,d1|d2|d3|d4,__]->0,times[___,d1|d2|d3|d4|z1|z2,___,z1|z2,___]->0}/.{times->Times},{d1,d2,d3,d4,z1,z2}]*)
 
 
 (* ::Input:: *)
