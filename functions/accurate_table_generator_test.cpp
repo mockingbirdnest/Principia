@@ -583,7 +583,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Only1) {
 
   // The first interval must only search below to meet the Sterbenz condition on
   // the computation of s0 + c0 h.
-  Generator<bits, /*above=*/false, /*below=*/true>(
+  Generator<bits, /*above=*/true, /*below=*/true>(
       i_min, i_max, centre, logger);
 }
 

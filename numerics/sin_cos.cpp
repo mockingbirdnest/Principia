@@ -69,7 +69,7 @@ using Value = M128D;
 constexpr std::int64_t table_spacing_bits = 9;
 constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
 constexpr double table_spacing = 1.0 / table_spacing_reciprocal;
-constexpr double sin_near_zero_cutoff = table_spacing / 2.0;
+constexpr double sin_near_zero_cutoff = SinCosAccurateTable[1].x / 2;
 
 constexpr std::int64_t κ₁ = 8;
 constexpr std::int64_t κʹ₁ = 5;
