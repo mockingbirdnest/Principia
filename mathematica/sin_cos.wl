@@ -60,7 +60,7 @@
 (*binaryBounds[bounds_Interval]:=binaryBounds[MinMax[bounds]];*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Accurate Tables Utilities*)
 
 
@@ -742,7 +742,7 @@
 
 
 (* ::Input:: *)
-(*x0Max=1/1024;*)
+(*x0Max=accurateTables[1][[1]]/2;*)
 
 
 (* ::Input:: *)
@@ -926,7 +926,7 @@
 
 
 (* ::Input:: *)
-(*cosPolynomial=Function[u, Evaluate[ cosApproximationResult[[2,1]]/.x->u]]*)
+(*cosPolynomial=Function[u, Evaluate[HornerForm[ cosApproximationResult[[2,1]]/.x->u]]]*)
 
 
 (* ::Input:: *)
@@ -969,10 +969,6 @@
 (*HexLiteral[c4,Quotes->4]*)
 
 
-(* ::Text:: *)
-(*Error on the minimax approximation:*)
-
-
 (* ::Input:: *)
 (*End[]*)
 
@@ -1002,7 +998,7 @@
 (*binaryBounds[\[Zeta]0Interval]*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Sin Near Zero*)
 
 
@@ -1027,19 +1023,19 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]01=Interval[{-\[Xi],\[Xi]}];*)
+(*\[Zeta]1=Interval[{-\[Xi],\[Xi]}];*)
 
 
 (* ::Input:: *)
-(*binaryBounds[\[Zeta]01]*)
+(*binaryBounds[\[Zeta]1]*)
 
 
 (* ::Input:: *)
-(*\[Zeta]02=IEEEEvaluateWithRelativeError[sin0Polynomial[x0Interval^2]][[2]];*)
+(*\[Zeta]2=IEEEEvaluateWithRelativeError[sin0Polynomial[x0Interval^2]][[2]];*)
 
 
 (* ::Input:: *)
-(*binaryBounds[\[Zeta]02]*)
+(*binaryBounds[\[Zeta]2]*)
 
 
 (* ::Input:: *)
@@ -1059,7 +1055,7 @@
 
 
 (* ::Input:: *)
-(*t1[x\:0303_]:=(1+\[Zeta]02)((1+\[Zeta]01)Sin[x\:0303]-x\:0303)/x\:0303^3*)
+(*t1[x\:0303_]:=(1+\[Zeta]2)((1+\[Zeta]1)Sin[x\:0303]-x\:0303)/x\:0303^3*)
 
 
 (* ::Input:: *)
@@ -1068,22 +1064,6 @@
 
 (* ::Input:: *)
 (*t3[x\:0303_,\[Delta]x\:0303_]:=(t1[x\:0303]t2[x\:0303](1+\[Delta]3)+\[Delta]x\:0303)(1+\[Delta]4)*)
-
-
-(* ::Text:: *)
-(*Dominant term of the error :*)
-
-
-(* ::Input:: *)
-(*errorExpression=Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Zeta]01=z1,\[Zeta]02=z2},t3[x\:0303,\[Delta]x\:0303]]*)
-
-
-(* ::Input:: *)
-(*errorExpression1stOrder=Expand[Normal[Series[errorExpression,{d1,0,1},{d2,0,1},{d3,0,1},{d4,0,1},{z1,0,1},{z2,0,1}]]];*)
-
-
-(* ::Input:: *)
-(*Collect[errorExpression1stOrder/.{Times->times}/.{times[___,d1|d2|d3|d4,d1|d2|d3|d4,__]->0,times[___,d1|d2|d3|d4|z1|z2,___,z1|z2,___]->0}/.{times->Times},{d1,d2,d3,d4,z1,z2}]*)
 
 
 (* ::Input:: *)
@@ -1134,8 +1114,24 @@
 (*HexLiteral[CorrectlyRound[e,RoundingMode->TowardPositiveInfinity],Quotes->4]*)
 
 
-(* ::Text:: *)
-(*Proof that the term in \[Delta]x x^2 doesn't matter:*)
+(* ::Subsubsection:: *)
+(*Dominant Term of the Error*)
+
+
+(* ::Input:: *)
+(*errorExpression=Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Zeta]1=z1,\[Zeta]2=z2},t3[x\:0303,\[Delta]x\:0303]]*)
+
+
+(* ::Input:: *)
+(*vars={d1,d2,d3,d4,z1,z2,\[Delta]x\:0303};*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrder=Module[{alt=Alternatives@@vars},Collect[Expand[errorExpression]/.Times->times/.times[___,alt,___,alt,___]->0/.times->Times,vars]]*)
+
+
+(* ::Subsubsection:: *)
+(*Proof That the Term in \[Delta]x x^2 Does Not Matter*)
 
 
 (* ::Input:: *)
@@ -1166,16 +1162,8 @@
 (*End[]*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Around Table Entries*)
-
-
-(* ::Text:: *)
-(*\[Delta]x is less than half a ULP of \[Pi]/4:*)
-
-
-(* ::Input:: *)
-(*\[Delta]xInterval=Interval[{-\[GothicU][\[Pi]/4]/2,\[GothicU][\[Pi]/4]/2}];*)
 
 
 (* ::Text:: *)
@@ -1246,7 +1234,7 @@
 (*\[Eta]=2^(-2M+1)*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Sin*)
 
 
@@ -1432,8 +1420,60 @@
 (*HexLiteral[CorrectlyRound[e,RoundingMode->TowardPositiveInfinity],Quotes->4]*)
 
 
+(* ::Subsubsubsection:: *)
+(*Dominant Term of the Error*)
+
+
+(* ::Input:: *)
+(*errorExpression=Block[{\[Eta]=eta,\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12,\[Zeta]1=z1,\[Zeta]2=z2,\[Zeta]3=z3,\[Zeta]4=z4},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[1]]/.Hold[CorrectlyRound[x_]]->x]*)
+
+
+(* ::Input:: *)
+(*vars={eta,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,z1,z2,z3,z4,\[Delta]0,\[Delta]x\:0303}*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrder=Module[{alt=Alternatives@@vars},Collect[Expand[errorExpression]/.Times->times/.times[___,alt,___,alt,___]->0/.times->Times,vars]]*)
+
+
 (* ::Text:: *)
-(*Proof that the terms in h^2\[Delta]x\:0303 and above can be ignored:*)
+(*This is the main term:*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrder[[{2,9,10}]]*)
+
+
+(* ::Input:: *)
+(*xie=accurateTablesXIntervals[[1]];*)
+
+
+(* ::Input:: *)
+(*ate=accurateTables[1];*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrderInterval=(List@@errorExpression1stOrder)/.h->x\:0303-xk/.{d1->uInterval,d2->uInterval,d3->uInterval,d4->uInterval,d5->uInterval,d6->uInterval,d7->uInterval,d8->uInterval,d9->uInterval,d10->uInterval,d11->uInterval,d12->uInterval,eta->2^(-2M),z1->\[Zeta]1,z2->\[Zeta]2,z3->\[Zeta]3,z4->\[Zeta]4,\[Delta]x\:0303-> Max[xie]\[GothicU][1/2],xk->ate[[1]],sk->ate[[2]],ck->ate[[3]]};*)
+
+
+(* ::Input:: *)
+(*Plot[MinMax[(Plus@@errorExpression1stOrderInterval)/Sin[x\:0303+Max[xie]\[GothicU][1/2]+\[Zeta]0Interval x\:0303]-1],{x\:0303,Min[xie],Max[xie]},PlotRange->Full,WorkingPrecision->30,PlotLegends->Automatic]*)
+
+
+(* ::Input:: *)
+(*Table[Plot[MinMax[errorExpression1stOrderInterval[[i]]/Sin[x\:0303+Max[xie]\[GothicU][1/2]+\[Zeta]0Interval x\:0303]],{x\:0303,Min[xie],Max[xie]},PlotRange->Full,WorkingPrecision->30,PlotLegends->Automatic],{i,1,Length[errorExpression1stOrderInterval]}]*)
+
+
+(* ::Text:: *)
+(*The dominant term of the error is:*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrder[[7]]*)
+
+
+(* ::Subsubsubsection:: *)
+(*Proof That the Terms in h^2 \[Delta]x\:0303 and above Can Be Ignored*)
 
 
 (* ::Input:: *)
@@ -1485,7 +1525,7 @@
 (*End[]*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Cos*)
 
 
