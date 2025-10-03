@@ -77,15 +77,15 @@
 
 
 (* ::Text:: *)
-(*Find the bounds over which we'll have to evaluate the polynomial, based on the excursion away from multiples of 1/512:*)
+(*Find the bounds over which we'll have to evaluate the polynomial, based on the excursion away from multiples of 1/512, except for k=1:*)
 
 
 (* ::Input:: *)
-(*accurateTablesXIntervals=Table[Interval[{(2i-1)accurateTablesStep/2,(2i+1)accurateTablesStep/2}],{i,1,accurateTablesMaxIndex}];*)
+(*accurateTablesXIntervals=Table[Interval[{If[k==1,accurateTables[1][[1]]/2,(2k-1)accurateTablesStep/2],(2k+1)accurateTablesStep/2}],{k,1,accurateTablesMaxIndex}];*)
 
 
 (* ::Input:: *)
-(*accurateTablesHIntervals=Table[accurateTablesXIntervals[[i]]-accurateTables[i][[1]],{i,1,accurateTablesMaxIndex}];*)
+(*accurateTablesHIntervals=Table[accurateTablesXIntervals[[k]]-accurateTables[k][[1]],{k,1,accurateTablesMaxIndex}];*)
 
 
 (* ::Input:: *)
@@ -141,27 +141,21 @@
 
 
 (* ::Text:: *)
-(*Check the Sterbenz condition for computing s0+c0 h exactly (the subtraction h' - s0 is exact):*)
+(*Check the Sterbenz condition for computing sk+ck h exactly (the subtraction h' - sk is exact):*)
 
 
 (* ::Input:: *)
-(*AllTrue[Table[Module[{*)
-(*t=accurateTables[i],s0,c0,h,h\[Prime]},*)
-(*s0=t[[2]];c0=t[[3]];h=accurateTablesHIntervals[[i]];h\[Prime]=(s0+c0 h)(1+uInterval);s0/2<=h\[Prime]<=2s0],{i,1,accurateTablesMaxIndex}],TrueQ]*)
+(*AllTrue[Table[Module[{t=accurateTables[k],sk,ck,h,h\[Prime]},*)
+(*sk=t[[2]];ck=t[[3]];h=accurateTablesHIntervals[[k]];h\[Prime]=(sk+ck h)(1+uInterval);sk/2<=h\[Prime]<=2sk],{k,1,accurateTablesMaxIndex}],TrueQ]*)
 
 
 (* ::Text:: *)
-(*Similarly the Sterbenz condition for computing c0 - h s0 exactly (the subtraction h'- c0 is exact):*)
+(*Similarly the Sterbenz condition for computing ck - h sk exactly (the subtraction h'- ck is exact):*)
 
 
 (* ::Input:: *)
-(*AllTrue[Table[Module[{*)
-(*t=accurateTables[i],s0,c0,h,h\[Prime]},*)
-(*s0=t[[2]];*)
-(*c0=t[[3]];*)
-(*h=accurateTablesHIntervals[[i]];*)
-(*h\[Prime]=(c0-h s0)(1+uInterval);*)
-(*c0/2<=h\[Prime]<=2 c0],{i,1,accurateTablesMaxIndex}],TrueQ]*)
+(*AllTrue[Table[Module[{t=accurateTables[k],sk,ck,h,h\[Prime]},*)
+(*sk=t[[2]];ck=t[[3]];h=accurateTablesHIntervals[[k]];h\[Prime]=(ck-h sk)(1+uInterval);ck/2<=h\[Prime]<=2 ck],{k,1,accurateTablesMaxIndex}],TrueQ]*)
 
 
 (* ::Section:: *)
@@ -742,7 +736,7 @@
 
 
 (* ::Input:: *)
-(*x0Max=accurateTables[1][[1]]/2;*)
+(*x0Max=Min[accurateTablesXIntervals[[1]]];*)
 
 
 (* ::Input:: *)
@@ -998,7 +992,7 @@
 (*binaryBounds[\[Zeta]0Interval]*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Sin Near Zero*)
 
 
@@ -1231,7 +1225,7 @@
 
 
 (* ::Input:: *)
-(*\[Eta]=2^(-2M+1)*)
+(*\[Eta]=Interval[{-2^(-2M+1),2^(-2M+1)}]*)
 
 
 (* ::Subsubsection:: *)
@@ -1355,15 +1349,11 @@
 
 
 (* ::Input:: *)
-(*sinImplementationRelativeError[Min[xi],-Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]*)
+(*Plot[{Min[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},WorkingPrecision->30,PlotRange->Full]*)
 
 
 (* ::Input:: *)
-(*Plot[{Min[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},WorkingPrecision->30]*)
-
-
-(* ::Input:: *)
-(*Plot3D[{Min[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},{\[Delta]x\:0303,-Min[xi]\[GothicU][1/2],Max[xi] \[GothicU][1/2]},RegionFunction->Function[{x\:0303,\[Delta]x\:0303},-x\:0303 \[GothicU][1/2]<\[Delta]x\:0303<x\:0303 \[GothicU][1/2]],WorkingPrecision->30,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
+(*Plot3D[{Min[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},{\[Delta]x\:0303,-Min[xi]\[GothicU][1/2],Max[xi] \[GothicU][1/2]},RegionFunction->Function[{x\:0303,\[Delta]x\:0303},-x\:0303 \[GothicU][1/2]<\[Delta]x\:0303<x\:0303 \[GothicU][1/2]],WorkingPrecision->40,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
 
 
 (* ::Input:: *)
@@ -1643,10 +1633,6 @@
 
 (* ::Input:: *)
 (*at=accurateTables[396];*)
-
-
-(* ::Input:: *)
-(*cosImplementationRelativeError[Min[xi],-Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]*)
 
 
 (* ::Input:: *)
