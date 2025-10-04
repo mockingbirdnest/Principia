@@ -9,7 +9,7 @@
 
 
 (* ::Input:: *)
-(*Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_19_only1.wl"}]];Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_19_not1.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]];*)
+(*Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_20_only1.wl"}]];Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_20_not1.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]];*)
 
 
 (* ::Input:: *)
@@ -60,7 +60,7 @@
 (*binaryBounds[bounds_Interval]:=binaryBounds[MinMax[bounds]];*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Accurate Tables Utilities*)
 
 
@@ -988,7 +988,7 @@
 (*binaryBounds[\[Zeta]0Interval]*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Sin Near Zero*)
 
 
@@ -1152,7 +1152,7 @@
 (*End[]*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Around Table Entries*)
 
 
@@ -1224,7 +1224,7 @@
 (*\[Eta]=Interval[{-2^(-2M+1),2^(-2M+1)}]*)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Sin*)
 
 
@@ -1367,15 +1367,15 @@
 
 
 (* ::Text:: *)
-(*The dispersion of the error is largely due to the bit pattern of sk after the 19th accurate bit:*)
+(*The dispersion of the error is largely due to the bit pattern of sk after the 20th accurate bit:*)
+
+
+(* ::Input:: *)
+(*Bits[accurateTables[2][[2]],30]*)
 
 
 (* ::Input:: *)
 (*Bits[accurateTables[3][[2]],30]*)
-
-
-(* ::Input:: *)
-(*Bits[accurateTables[5][[2]],30]*)
 
 
 (* ::Input:: *)
@@ -1406,7 +1406,7 @@
 (*HexLiteral[CorrectlyRound[e,RoundingMode->TowardPositiveInfinity],Quotes->4]*)
 
 
-(* ::Subsubsubsection:: *)
+(* ::Subsubsubsection::Closed:: *)
 (*Dominant Term of the Error*)
 
 
@@ -1511,7 +1511,7 @@
 (*End[]*)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Cos*)
 
 
@@ -1654,7 +1654,7 @@
 
 
 (* ::Text:: *)
-(*The dispersion of the error is largely due to the bit pattern of ck after the 19th accurate bit:*)
+(*The dispersion of the error is largely due to the bit pattern of ck after the 20th accurate bit:*)
 
 
 (* ::Input:: *)
@@ -1666,7 +1666,7 @@
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[396][[3]],30]*)
+(*Bits[accurateTables[400][[3]],30]*)
 
 
 (* ::Input:: *)

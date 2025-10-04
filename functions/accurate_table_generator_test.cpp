@@ -545,8 +545,8 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos19Not1) {
-  static constexpr std::int64_t bits = 19;
+TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos20Not1) {
+  static constexpr std::int64_t bits = 20;
   Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_not1.wl"),
                 /*make_unique=*/false);
 
@@ -569,8 +569,8 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos19Not1) {
   Generator<bits, /*above=*/true, /*below=*/true>(i_min, i_max, centre, logger);
 }
 
-TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos19Only1) {
-  static constexpr std::int64_t bits = 19;
+TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos20Only1) {
+  static constexpr std::int64_t bits = 20;
   Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_only1.wl"),
                 /*make_unique=*/false);
 
