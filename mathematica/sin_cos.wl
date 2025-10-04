@@ -60,7 +60,7 @@
 (*binaryBounds[bounds_Interval]:=binaryBounds[MinMax[bounds]];*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Accurate Tables Utilities*)
 
 
@@ -81,7 +81,7 @@
 
 
 (* ::Input:: *)
-(*accurateTablesXIntervals=Table[Interval[{If[k==1,accurateTables[1][[1]]/2,(2k-1)accurateTablesStep/2],(2k+1)accurateTablesStep/2}],{k,1,accurateTablesMaxIndex}];*)
+(*accurateTablesXIntervals=Table[Interval[{If[k==1,(1+1/8)accurateTablesStep/2,(2k-1)accurateTablesStep/2],(2k+1)accurateTablesStep/2}],{k,1,accurateTablesMaxIndex}];*)
 
 
 (* ::Input:: *)
@@ -1108,7 +1108,7 @@
 (*HexLiteral[CorrectlyRound[e,RoundingMode->TowardPositiveInfinity],Quotes->4]*)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Dominant Term of the Error*)
 
 
@@ -1124,7 +1124,7 @@
 (*errorExpression1stOrder=Module[{alt=Alternatives@@vars},Collect[Expand[errorExpression]/.Times->times/.times[___,alt,___,alt,___]->0/.times->Times,vars]]*)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Proof That the Term in \[Delta]x x^2 Does Not Matter*)
 
 
@@ -1156,7 +1156,7 @@
 (*End[]*)
 
 
-(* ::Subsection:: *)
+(* ::Subsection::Closed:: *)
 (*Around Table Entries*)
 
 
@@ -1228,7 +1228,7 @@
 (*\[Eta]=Interval[{-2^(-2M+1),2^(-2M+1)}]*)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Sin*)
 
 
@@ -1341,11 +1341,11 @@
 
 
 (* ::Input:: *)
-(*xi=accurateTablesXIntervals[[65]];*)
+(*xi=accurateTablesXIntervals[[1]];*)
 
 
 (* ::Input:: *)
-(*at=accurateTables[65];*)
+(*at=accurateTables[1];*)
 
 
 (* ::Input:: *)
@@ -1371,15 +1371,15 @@
 
 
 (* ::Text:: *)
-(*The error has an outlier for k=1.  Other than that the dispersion of the error is largely due to the bit pattern of sk after the 18th accurate bit:*)
+(*The dispersion of the error is largely due to the bit pattern of sk after the 18th accurate bit:*)
+
+
+(* ::Input:: *)
+(*Bits[accurateTables[17][[2]],30]*)
 
 
 (* ::Input:: *)
 (*Bits[accurateTables[65][[2]],30]*)
-
-
-(* ::Input:: *)
-(*Bits[accurateTables[89][[2]],30]*)
 
 
 (* ::Input:: *)
@@ -1410,7 +1410,7 @@
 (*HexLiteral[CorrectlyRound[e,RoundingMode->TowardPositiveInfinity],Quotes->4]*)
 
 
-(* ::Subsubsubsection:: *)
+(* ::Subsubsubsection::Closed:: *)
 (*Dominant Term of the Error*)
 
 
@@ -1435,11 +1435,11 @@
 
 
 (* ::Input:: *)
-(*xie=accurateTablesXIntervals[[1]];*)
+(*xie=accurateTablesXIntervals[[65]];*)
 
 
 (* ::Input:: *)
-(*ate=accurateTables[1];*)
+(*ate=accurateTables[65];*)
 
 
 (* ::Input:: *)
@@ -1462,7 +1462,7 @@
 (*errorExpression1stOrder[[7]]*)
 
 
-(* ::Subsubsubsection:: *)
+(* ::Subsubsubsection::Closed:: *)
 (*Proof That the Terms in h^2 \[Delta]x\:0303 and above Can Be Ignored*)
 
 
@@ -1515,7 +1515,7 @@
 (*End[]*)
 
 
-(* ::Subsubsection:: *)
+(* ::Subsubsection::Closed:: *)
 (*Cos*)
 
 
@@ -1697,8 +1697,8 @@
 (*HexLiteral[CorrectlyRound[e,RoundingMode->TowardPositiveInfinity],Quotes->4]*)
 
 
-(* ::Text:: *)
-(*Proof that the terms in h^2 \[Delta]x\:0303 and above can be ignored:*)
+(* ::Subsubsubsection::Closed:: *)
+(*Proof That the Terms in h^2 \[Delta]x\:0303 and above Can Be Ignored*)
 
 
 (* ::Input:: *)
