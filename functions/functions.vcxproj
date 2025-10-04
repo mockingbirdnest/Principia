@@ -21,6 +21,8 @@
   <ItemGroup>
     <None Include="sin_cos_18_not1.wl" />
     <None Include="sin_cos_18_only1.wl" />
+    <None Include="sin_cos_19_not1.wl" />
+    <None Include="sin_cos_19_only1.wl" />
   </ItemGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ImportGroup Label="Shared">

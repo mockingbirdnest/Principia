@@ -60,7 +60,7 @@
 (*binaryBounds[bounds_Interval]:=binaryBounds[MinMax[bounds]];*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Accurate Tables Utilities*)
 
 
@@ -81,7 +81,7 @@
 
 
 (* ::Input:: *)
-(*accurateTablesXIntervals=Table[Interval[{If[k==1,(1+1/8)accurateTablesStep/2,(2k-1)accurateTablesStep/2],(2k+1)accurateTablesStep/2}],{k,1,accurateTablesMaxIndex}];*)
+(*accurateTablesXIntervals=Table[Interval[{If[k==1,(1+7/32)accurateTablesStep/2,(2k-1)accurateTablesStep/2],(2k+1)accurateTablesStep/2}],{k,1,accurateTablesMaxIndex}];*)
 
 
 (* ::Input:: *)
@@ -121,11 +121,7 @@
 
 
 (* ::Input:: *)
-(*PositionLargest[accurateTablesPerturbedBits[[2;;]]]*)
-
-
-(* ::Input:: *)
-(*PositionSmallest[accurateTablesPerturbedBits[[2;;]]]*)
+(*PositionSmallest[accurateTablesPerturbedBits]*)
 
 
 (* ::Input:: *)
@@ -133,11 +129,11 @@
 
 
 (* ::Input:: *)
-(*accurateTablesPerturbedBits[[8]]*)
+(*accurateTablesPerturbedBits[[65]]*)
 
 
 (* ::Input:: *)
-(*accurateTablesPerturbedBits[[57]]*)
+(*accurateTablesPerturbedBits[[381]]*)
 
 
 (* ::Text:: *)
@@ -992,7 +988,7 @@
 (*binaryBounds[\[Zeta]0Interval]*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Sin Near Zero*)
 
 
@@ -1025,7 +1021,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]2=IEEEEvaluateWithRelativeError[sin0Polynomial[x0Interval^2]+CorrectlyRound[-1/6]][[2]];*)
+(*\[Zeta]2=IEEEEvaluateWithRelativeError[sin0Polynomial[x0Interval^2]][[2]];*)
 
 
 (* ::Input:: *)
@@ -1156,7 +1152,7 @@
 (*End[]*)
 
 
-(* ::Subsection::Closed:: *)
+(* ::Subsection:: *)
 (*Around Table Entries*)
 
 
@@ -1228,7 +1224,7 @@
 (*\[Eta]=Interval[{-2^(-2M+1),2^(-2M+1)}]*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Sin*)
 
 
@@ -1375,19 +1371,19 @@
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[17][[2]],30]*)
+(*Bits[accurateTables[3][[2]],30]*)
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[65][[2]],30]*)
+(*Bits[accurateTables[5][[2]],30]*)
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[283][[2]],30]*)
+(*Bits[accurateTables[66][[2]],30]*)
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[399][[2]],30]*)
+(*Bits[accurateTables[136][[2]],30]*)
 
 
 (* ::Input:: *)
@@ -1515,7 +1511,7 @@
 (*End[]*)
 
 
-(* ::Subsubsection::Closed:: *)
+(* ::Subsubsection:: *)
 (*Cos*)
 
 
@@ -1662,7 +1658,7 @@
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[387][[3]],30]*)
+(*Bits[accurateTables[394][[3]],30]*)
 
 
 (* ::Input:: *)

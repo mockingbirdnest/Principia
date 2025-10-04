@@ -51,6 +51,9 @@ class AccurateTableGeneratorTest : public ::testing::Test {
                  std::int64_t const i_max,
                  std::function<double(std::int64_t const)> const& centre,
                  Logger& logger) {
+    std::string all_ones(zeroes, '1');
+    std::string all_zeroes(zeroes, '0');
+
     // No need for fancy angle reduction as the angles are small.
     AccurateFunction const accurate_sin = [](cpp_rational const& x) {
       return sin(static_cast<cpp_bin_float_50>(x));
@@ -103,8 +106,9 @@ class AccurateTableGeneratorTest : public ::testing::Test {
         polynomials,
         remainders,
         starting_arguments,
-        [i_min, &logger](std::int64_t const index,
-                         absl::StatusOr<cpp_rational> status_or_x) {
+        [&all_ones, &all_zeroes, i_min, &logger](
+            std::int64_t const index,
+            absl::StatusOr<cpp_rational> status_or_x) {
           auto const& x = status_or_x.value();
           auto const sin_x = Sin(x);
           auto const cos_x = Cos(x);
@@ -116,8 +120,8 @@ class AccurateTableGeneratorTest : public ::testing::Test {
             std::string_view mantissa = mathematica;
             CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
             EXPECT_THAT(mantissa.substr(53, zeroes),
-                        AnyOf(Eq("00000""00000""00000""0000"),
-                              Eq("11111""11111""11111""1111")));
+                        AnyOf(Eq(all_zeroes),
+                              Eq(all_ones)));
           }
           {
             std::string const mathematica =
@@ -127,8 +131,8 @@ class AccurateTableGeneratorTest : public ::testing::Test {
             std::string_view mantissa = mathematica;
             CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
             EXPECT_THAT(mantissa.substr(53, zeroes),
-                        AnyOf(Eq("00000""00000""00000""0000"),
-                              Eq("11111""11111""11111""1111")));
+                        AnyOf(Eq(all_zeroes),
+                              Eq(all_ones)));
           }
           logger.Set(
               absl::StrCat("accurateTables[", index + i_min, "]"),
@@ -581,10 +585,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos19Only1) {
   std::int64_t const i_min = 1;
   std::int64_t const i_max = 1;
 
-  // The first interval must only search below to meet the Sterbenz condition on
-  // the computation of s0 + c0 h.
-  Generator<bits, /*above=*/true, /*below=*/true>(
-      i_min, i_max, centre, logger);
+  Generator<bits, /*above=*/true, /*below=*/true>(i_min, i_max, centre, logger);
 }
 
 #endif

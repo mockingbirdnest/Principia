@@ -49,5 +49,11 @@
     <None Include="sin_cos_18_only1.wl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="sin_cos_19_not1.wl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="sin_cos_19_only1.wl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
