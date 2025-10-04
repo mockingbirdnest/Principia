@@ -105,5 +105,8 @@
     <None Include="accurate_tables.wl">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="sin_cos.wl">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>

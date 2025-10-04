@@ -116,8 +116,8 @@ class AccurateTableGeneratorTest : public ::testing::Test {
             std::string_view mantissa = mathematica;
             CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
             EXPECT_THAT(mantissa.substr(53, zeroes),
-                        AnyOf(Eq("00000""00000""00000""000"),
-                              Eq("11111""11111""11111""111")));
+                        AnyOf(Eq("00000""00000""00000""0000"),
+                              Eq("11111""11111""11111""1111")));
           }
           {
             std::string const mathematica =
@@ -127,8 +127,8 @@ class AccurateTableGeneratorTest : public ::testing::Test {
             std::string_view mantissa = mathematica;
             CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
             EXPECT_THAT(mantissa.substr(53, zeroes),
-                        AnyOf(Eq("00000""00000""00000""000"),
-                              Eq("11111""11111""11111""111")));
+                        AnyOf(Eq("00000""00000""00000""0000"),
+                              Eq("11111""11111""11111""1111")));
           }
           logger.Set(
               absl::StrCat("accurateTables[", index + i_min, "]"),
@@ -541,8 +541,8 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Not1) {
-  static constexpr std::int64_t bits = 18;
+TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos19Not1) {
+  static constexpr std::int64_t bits = 19;
   Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_not1.wl"),
                 /*make_unique=*/false);
 
@@ -565,8 +565,8 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Not1) {
   Generator<bits, /*above=*/true, /*below=*/true>(i_min, i_max, centre, logger);
 }
 
-TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Only1) {
-  static constexpr std::int64_t bits = 18;
+TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos19Only1) {
+  static constexpr std::int64_t bits = 19;
   Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_only1.wl"),
                 /*make_unique=*/false);
 

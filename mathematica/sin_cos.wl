@@ -9,7 +9,7 @@
 
 
 (* ::Input:: *)
-(*Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_18_only1.wl"}]];Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_18_not1.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]];*)
+(*Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_19_only1.wl"}]];Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_19_not1.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]];*)
 
 
 (* ::Input:: *)
@@ -1025,7 +1025,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]2=IEEEEvaluateWithRelativeError[sin0Polynomial[x0Interval^2]][[2]];*)
+(*\[Zeta]2=IEEEEvaluateWithRelativeError[sin0Polynomial[x0Interval^2]+CorrectlyRound[-1/6]][[2]];*)
 
 
 (* ::Input:: *)
@@ -1371,7 +1371,7 @@
 
 
 (* ::Text:: *)
-(*The dispersion of the error is largely due to the bit pattern of sk after the 18th accurate bit:*)
+(*The dispersion of the error is largely due to the bit pattern of sk after the 19th accurate bit:*)
 
 
 (* ::Input:: *)
@@ -1658,7 +1658,7 @@
 
 
 (* ::Text:: *)
-(*The dispersion of the error is largely due to the bit pattern of ck after the 18th accurate bit:*)
+(*The dispersion of the error is largely due to the bit pattern of ck after the 19th accurate bit:*)
 
 
 (* ::Input:: *)
