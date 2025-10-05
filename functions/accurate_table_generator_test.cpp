@@ -545,9 +545,9 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos20Not1) {
+TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos20) {
   static constexpr std::int64_t bits = 20;
-  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_not1.wl"),
+  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, ".wl"),
                 /*make_unique=*/false);
 
   // The radius of each interval.
@@ -556,8 +556,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos20Not1) {
   // The centre of the interval with index `i`.
   auto const centre = [h](std::int64_t const i) { return 2 * i * h; };
 
-  // See the next test for the first interval.
-  std::int64_t const i_min = 2;
+  std::int64_t const i_min = 1;
 
   // The index of the last interval, which goes a bit beyond π / 4.
   std::int64_t i_max = std::ceil(π / (8 * h) - 0.5);
@@ -565,25 +564,6 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos20Not1) {
   // Check that the last interval straddles π / 4.
   CHECK_LT(centre(i_max) - h, π / 4);
   CHECK_LT(π / 4, centre(i_max) + h);
-
-  Generator<bits, /*above=*/true, /*below=*/true>(i_min, i_max, centre, logger);
-}
-
-TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos20Only1) {
-  static constexpr std::int64_t bits = 20;
-  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_only1.wl"),
-                /*make_unique=*/false);
-
-  // The radius of each interval.
-  double const h = 1.0 / (1 << 10);
-
-  // The centre of the interval with index `i`.
-  auto const centre = [h](std::int64_t const i) { return 2 * i * h; };
-
-  // The index of the first interval, which starts at `h` with a centre at
-  // `2 * h`.
-  std::int64_t const i_min = 1;
-  std::int64_t const i_max = 1;
 
   Generator<bits, /*above=*/true, /*below=*/true>(i_min, i_max, centre, logger);
 }

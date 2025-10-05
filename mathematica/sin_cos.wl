@@ -9,7 +9,7 @@
 
 
 (* ::Input:: *)
-(*Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_20_only1.wl"}]];Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_20_not1.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]];*)
+(*Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_20.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]];*)
 
 
 (* ::Input:: *)
@@ -125,15 +125,11 @@
 
 
 (* ::Input:: *)
-(*accurateTablesPerturbedBits[[1]]*)
+(*accurateTablesPerturbedBits[[89]]*)
 
 
 (* ::Input:: *)
-(*accurateTablesPerturbedBits[[65]]*)
-
-
-(* ::Input:: *)
-(*accurateTablesPerturbedBits[[381]]*)
+(*accurateTablesPerturbedBits[[160]]*)
 
 
 (* ::Text:: *)
