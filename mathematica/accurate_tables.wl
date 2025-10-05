@@ -13,11 +13,7 @@
 
 
 (* ::Input:: *)
-(*<< "functions\\sin_cos_18_only1.wl"*)
-
-
-(* ::Input:: *)
-(*<< "functions\\sin_cos_18_not1.wl"*)
+(*<< "functions\\sin_cos_20.wl"*)
 
 
 (* ::Input:: *)

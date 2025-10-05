@@ -51,6 +51,9 @@ class AccurateTableGeneratorTest : public ::testing::Test {
                  std::int64_t const i_max,
                  std::function<double(std::int64_t const)> const& centre,
                  Logger& logger) {
+    std::string all_ones(zeroes, '1');
+    std::string all_zeroes(zeroes, '0');
+
     // No need for fancy angle reduction as the angles are small.
     AccurateFunction const accurate_sin = [](cpp_rational const& x) {
       return sin(static_cast<cpp_bin_float_50>(x));
@@ -103,8 +106,9 @@ class AccurateTableGeneratorTest : public ::testing::Test {
         polynomials,
         remainders,
         starting_arguments,
-        [i_min, &logger](std::int64_t const index,
-                         absl::StatusOr<cpp_rational> status_or_x) {
+        [&all_ones, &all_zeroes, i_min, &logger](
+            std::int64_t const index,
+            absl::StatusOr<cpp_rational> status_or_x) {
           auto const& x = status_or_x.value();
           auto const sin_x = Sin(x);
           auto const cos_x = Cos(x);
@@ -116,8 +120,8 @@ class AccurateTableGeneratorTest : public ::testing::Test {
             std::string_view mantissa = mathematica;
             CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
             EXPECT_THAT(mantissa.substr(53, zeroes),
-                        AnyOf(Eq("00000""00000""00000""000"),
-                              Eq("11111""11111""11111""111")));
+                        AnyOf(Eq(all_zeroes),
+                              Eq(all_ones)));
           }
           {
             std::string const mathematica =
@@ -127,8 +131,8 @@ class AccurateTableGeneratorTest : public ::testing::Test {
             std::string_view mantissa = mathematica;
             CHECK(absl::ConsumePrefix(&mantissa, "Times[2^^"));
             EXPECT_THAT(mantissa.substr(53, zeroes),
-                        AnyOf(Eq("00000""00000""00000""000"),
-                              Eq("11111""11111""11111""111")));
+                        AnyOf(Eq(all_zeroes),
+                              Eq(all_ones)));
           }
           logger.Set(
               absl::StrCat("accurateTables[", index + i_min, "]"),
@@ -541,9 +545,9 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannMultisearchSinCos15) {
   }
 }
 
-TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Not1) {
-  static constexpr std::int64_t bits = 18;
-  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_not1.wl"),
+TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos20) {
+  static constexpr std::int64_t bits = 20;
+  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, ".wl"),
                 /*make_unique=*/false);
 
   // The radius of each interval.
@@ -552,8 +556,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Not1) {
   // The centre of the interval with index `i`.
   auto const centre = [h](std::int64_t const i) { return 2 * i * h; };
 
-  // See the next test for the first interval.
-  std::int64_t const i_min = 2;
+  std::int64_t const i_min = 1;
 
   // The index of the last interval, which goes a bit beyond π / 4.
   std::int64_t i_max = std::ceil(π / (8 * h) - 0.5);
@@ -563,28 +566,6 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Not1) {
   CHECK_LT(π / 4, centre(i_max) + h);
 
   Generator<bits, /*above=*/true, /*below=*/true>(i_min, i_max, centre, logger);
-}
-
-TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos18Only1) {
-  static constexpr std::int64_t bits = 18;
-  Logger logger(TEMP_DIR / absl::StrCat("sin_cos_", bits, "_only1.wl"),
-                /*make_unique=*/false);
-
-  // The radius of each interval.
-  double const h = 1.0 / (1 << 10);
-
-  // The centre of the interval with index `i`.
-  auto const centre = [h](std::int64_t const i) { return 2 * i * h; };
-
-  // The index of the first interval, which starts at `h` with a centre at
-  // `2 * h`.
-  std::int64_t const i_min = 1;
-  std::int64_t const i_max = 1;
-
-  // The first interval must only search below to meet the Sterbenz condition on
-  // the computation of s0 + c0 h.
-  Generator<bits, /*above=*/false, /*below=*/true>(
-      i_min, i_max, centre, logger);
 }
 
 #endif
