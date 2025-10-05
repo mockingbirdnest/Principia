@@ -369,6 +369,17 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
   return result;
 }
 
+template<typename T, typename U>
+void TwoDifference(T const& a,
+                   U const& b,
+                   DoublePrecision<Difference<T, U>>& result) {
+  auto& s = result.value;
+  auto& e = result.error;
+  s = a - b;
+  auto const v = s - a;
+  e = (a - (s - v)) - (b + v);
+}
+
 template<typename T>
 DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left) {
   static_assert(std::is_same<Difference<T>, T>::value,

@@ -100,6 +100,11 @@ template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b);
 
+template<typename T, typename U>
+void TwoDifference(T const& a,
+                   U const& b,
+                   DoublePrecision<Difference<T, U>>& result);
+
 // `T` must be a vector.
 template<typename T>
 DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left);

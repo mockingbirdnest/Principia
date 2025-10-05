@@ -275,7 +275,11 @@ void Reduce(Argument const x,
     }
 
     Argument const δy = n_double * m128d::δC₁;
+#if 0
+    TwoDifference(y, δy, x_reduced);
+#else
     x_reduced = TwoDifference(y, δy);
+#endif
     Argument const abs_x_reduced_value = Abs(x_reduced.value);
     OSACA_IF(abs_x_reduced_value >= two_term_x_reduced_threshold) {
       quadrant = n & 0b11;
