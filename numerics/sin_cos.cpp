@@ -307,7 +307,12 @@ void Reduce(Argument const x,
 
     Argument const yʹ = n_double * m128d::Cʹ₂;
     Argument const δy = n_double * m128d::δC₂;
+#if 0
+    DoublePrecision<Argument> z(uninitialized);
+    QuickTwoSum(yʹ, δy, z);
+#else
     auto const z = QuickTwoSum(yʹ, δy);
+#endif
     x_reduced = y - z;
     Argument const abs_x_reduced_value = Abs(x_reduced.value);
     OSACA_IF(abs_x_reduced_value >= three_term_x_reduced_threshold) {
