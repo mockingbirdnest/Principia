@@ -42,6 +42,7 @@
     <None Include="integration.wl" />
     <None Include="newhall.wl" />
     <None Include="phobos.nb" />
+    <None Include="sin_cos.wl" />
     <None Include="solar_systems_convergence.wl" />
   </ItemGroup>
 </Project>
