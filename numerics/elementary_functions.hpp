@@ -3,6 +3,7 @@
 #include <atomic>
 
 #include "base/concepts.hpp"
+#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/sin_cos.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
@@ -15,6 +16,7 @@ namespace _elementary_functions {
 namespace internal {
 
 using namespace principia::base::_concepts;
+using namespace boost::multiprecision;
 using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
@@ -183,8 +185,10 @@ Angle UnwindFrom(Angle const& previous_angle, Angle const& α);
 
 // Only dimensionless quantities can be rounded.
 template<typename Q>
-  requires boost_cpp_number<Q> || std::floating_point<Q>
+  requires boost_cpp_bin_float<Q> || std::floating_point<Q>
 Q Round(Q const& x);
+
+cpp_int Round(cpp_rational const& x);
 
 }  // namespace internal
 

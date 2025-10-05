@@ -25,6 +25,10 @@
 #include "numerics/matrix_views.hpp"
 #include "quantities/quantities.hpp"
 
+#define PRINCIPIA_USE_MIDPOINT_POLYNOMIALS 1
+#define PRINCIPIA_USE_NGUYỄN_STEHLÉ_REDUCTION 1
+#define PRINCIPIA_USE_SPECULATIVE_SEARCH 1
+
 namespace principia {
 namespace functions {
 namespace _accurate_table_generator {
@@ -300,6 +304,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       .max = scaled.argument - cpp_rational(2 * slice_index * T₀, N)};
 
   // Evaluate the factories at the centre of each half of the slice.
+#if PRINCIPIA_USE_MIDPOINT_POLYNOMIALS
   auto const high_polynomials =
       EvaluateFactoriesAt(scaled.polynomials, initial_high_interval.midpoint());
   auto const high_remainders =
@@ -308,6 +313,16 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSliceSearch(
       EvaluateFactoriesAt(scaled.polynomials, initial_low_interval.midpoint());
   auto const low_remainders =
       EvaluateFactoriesAt(scaled.remainders, initial_low_interval.midpoint());
+#else
+  auto const high_polynomials =
+      EvaluateFactoriesAt(scaled.polynomials, scaled.argument);
+  auto const high_remainders =
+      EvaluateFactoriesAt(scaled.remainders, scaled.argument);
+  auto const low_polynomials =
+      EvaluateFactoriesAt(scaled.polynomials, scaled.argument);
+  auto const low_remainders =
+      EvaluateFactoriesAt(scaled.remainders, scaled.argument);
+#endif
 
   // The radii of the intervals remaining to cover above and below the
   // `scaled.argument`.
@@ -553,7 +568,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // The lattice really has integer coefficients, but this is inconvenient to
   // propagate through the matrix algorithms.  (It would require copies instead
   // of views for all the types, not just the ones we use here.)
+#if PRINCIPIA_USE_NGUYỄN_STEHLÉ_REDUCTION
   Lattice const V = NguyễnStehlé(L);
+#else
+  Lattice const V = LenstraLenstraLovász(L);
+#endif
   VLOG(3) << "V = " << V;
 
   // Step 8: find the three shortest vectors of the reduced lattice.  We sort
@@ -847,7 +866,11 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
               polynomials[i],
               remainders[i],
               starting_argument,
+#if PRINCIPIA_USE_SPECULATIVE_SEARCH
               &search_pool);
+#else
+              /*search_pool=*/nullptr);
+#endif
       if (status_or_final_argument.ok()) {
         LOG(INFO) << "Finished search around " << starting_argument
                   << ", found " << status_or_final_argument.value();
@@ -868,3 +891,7 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
 }  // namespace _accurate_table_generator
 }  // namespace functions
 }  // namespace principia
+
+#undef PRINCIPIA_USE_SPECULATIVE_SEARCH
+#undef PRINCIPIA_USE_NGUYỄN_STEHLÉ_REDUCTION
+#undef PRINCIPIA_USE_MIDPOINT_POLYNOMIALS

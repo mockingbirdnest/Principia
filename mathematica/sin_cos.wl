@@ -105,6 +105,42 @@
 
 
 (* ::Text:: *)
+(*Perturbations:*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbations=Table[Representation[accurateTables[i][[1]]]-Representation[i/512],{i,1,accurateTablesMaxIndex}];*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits=Map[N[Log2[Abs[#]]]&,accurateTablesPerturbations];*)
+
+
+(* ::Input:: *)
+(*PositionLargest[accurateTablesPerturbedBits]*)
+
+
+(* ::Input:: *)
+(*PositionLargest[accurateTablesPerturbedBits[[2;;]]]*)
+
+
+(* ::Input:: *)
+(*PositionSmallest[accurateTablesPerturbedBits[[2;;]]]*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits[[1]]*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits[[8]]*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits[[57]]*)
+
+
+(* ::Text:: *)
 (*Check the Sterbenz condition for computing s0+c0 h exactly (the subtraction h' - s0 is exact):*)
 
 
@@ -584,7 +620,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]2=2^(2-2M);*)
+(*\[Zeta]2=2^(1-2M);*)
 
 
 (* ::Text:: *)
@@ -596,15 +632,15 @@
 
 
 (* ::Input:: *)
-(*Assert[Max[reductionInterval]<2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]]*)
+(*Assert[Max[reductionInterval]<2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+5)\[GothicU][\[Pi]/2]+2^(-2M)(\[Pi]/2)]*)
 
 
 (* ::Input:: *)
-(*N[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]},20]*)
+(*N[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+5)\[GothicU][\[Pi]/2]+2^(-2M)(\[Pi]/2)},20]*)
 
 
 (* ::Input:: *)
-(*N[Log2[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]}],20]*)
+(*N[Log2[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+5)\[GothicU][\[Pi]/2]+2^(-2M)(\[Pi]/2)}],20]*)
 
 
 (* ::Text:: *)
@@ -612,7 +648,7 @@
 
 
 (* ::Input:: *)
-(*angleReducedThreshold = 2^(\[Kappa]3-M)(2^(\[Kappa]2+\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-M+2)+4)*)
+(*angleReducedThreshold = 2^(\[Kappa]3-M)(2^(\[Kappa]2+\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-M+2)+2)*)
 
 
 (* ::Input:: *)
@@ -717,9 +753,13 @@
 (*x0Interval=Interval[{x0Min,x0Max}]*)
 
 
+(* ::Text:: *)
+(*The value of the error function at 0 must be chosen so that we have proper convergence (which we can check by looking for equioscillation in the graph).*)
+
+
 (* ::Input:: *)
 (*sin0ApproximationResult=GeneralMiniMaxApproximation[*)
-(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^10,Sin[t]/t^3]},*)
+(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^6,Sin[t]/t^3]},*)
 (*{t,{0,x0Max},1,0},*)
 (*x,WorkingPrecision->30]*)
 
@@ -799,9 +839,13 @@
 (*hMin=-hMax;*)
 
 
+(* ::Text:: *)
+(*The value of the error function at 0 must be chosen so that we have proper convergence (which we can check by looking for equioscillation in the graph).*)
+
+
 (* ::Input:: *)
 (*sinApproximationResult=GeneralMiniMaxApproximation[*)
-(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^10,Sin[t]/t^3]},*)
+(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^6,Sin[t]/t^3]},*)
 (*{t,{0,hMax},1,0},*)
 (*x,WorkingPrecision->30]*)
 
@@ -975,7 +1019,7 @@
 
 
 (* ::Input:: *)
-(*\[Eta]=Abs[sin0ApproximationResult[[2,2]]]*)
+(*\[Xi]=Abs[sin0ApproximationResult[[2,2]]]*)
 
 
 (* ::Text:: *)
@@ -983,7 +1027,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]1=Interval[{-\[Eta],\[Eta]}];*)
+(*\[Zeta]1=Interval[{-\[Xi],\[Xi]}];*)
 
 
 (* ::Input:: *)
@@ -1131,23 +1175,23 @@
 
 
 (* ::Input:: *)
-(*\[Eta]s=Abs[sinApproximationResult[[2,2]]]*)
+(*\[Xi]s=Abs[sinApproximationResult[[2,2]]]*)
 
 
 (* ::Input:: *)
-(*Log2[\[Eta]s]*)
+(*Log2[\[Xi]s]*)
 
 
 (* ::Input:: *)
-(*\[Eta]c=Abs[cosApproximationResult[[2,2]]]*)
+(*\[Xi]c=Abs[cosApproximationResult[[2,2]]]*)
 
 
 (* ::Input:: *)
-(*Log2[\[Eta]c]*)
+(*Log2[\[Xi]c]*)
 
 
 (* ::Input:: *)
-(*\[Zeta]1=Interval[{-\[Eta]s,\[Eta]s}];*)
+(*\[Zeta]1=Interval[{-\[Xi]s,\[Xi]s}];*)
 
 
 (* ::Input:: *)
@@ -1155,7 +1199,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]2=Interval[{-\[Eta]c,\[Eta]c}];*)
+(*\[Zeta]2=Interval[{-\[Xi]c,\[Xi]c}];*)
 
 
 (* ::Input:: *)
@@ -1188,6 +1232,10 @@
 
 (* ::Input:: *)
 (*binaryBounds[\[Zeta]4]*)
+
+
+(* ::Input:: *)
+(*\[Eta]=2^(-2M+1)*)
 
 
 (* ::Subsubsection::Closed:: *)
@@ -1247,7 +1295,7 @@
 
 
 (* ::Input:: *)
-(*t0[h_,sk_,ck_]:=Hold[CorrectlyRound[ck]]h+Hold[CorrectlyRound[sk]]*)
+(*t0[h_,sk_,ck_]:=(Hold[CorrectlyRound[ck]]h+Hold[CorrectlyRound[sk]])(1+\[Eta])*)
 
 
 (* ::Input:: *)
@@ -1299,7 +1347,7 @@
 
 
 (* ::Input:: *)
-(*Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
+(*Block[{\[Eta]=eta,\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
 
 
 (* ::Input:: *)
@@ -1486,7 +1534,7 @@
 
 
 (* ::Input:: *)
-(*t0[h_,sk_,ck_]:=-Hold[CorrectlyRound[sk]]h+Hold[CorrectlyRound[ck]]*)
+(*t0[h_,sk_,ck_]:=(-Hold[CorrectlyRound[sk]]h+Hold[CorrectlyRound[ck]])(1+\[Eta])*)
 
 
 (* ::Input:: *)
@@ -1538,7 +1586,7 @@
 
 
 (* ::Input:: *)
-(*Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
+(*Block[{\[Eta]=eta,\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
 
 
 (* ::Input:: *)

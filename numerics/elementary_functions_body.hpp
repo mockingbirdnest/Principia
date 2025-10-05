@@ -331,14 +331,18 @@ Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
 }
 
 template<typename Q>
-  requires boost_cpp_number<Q> || std::floating_point<Q>
+  requires boost_cpp_bin_float<Q> || std::floating_point<Q>
 Q Round(Q const& x) {
-  if constexpr (boost_cpp_number<Q>) {
-    // TODO(phl): This is clunky.  Use `divide_qr` or something.
-    return static_cast<Q>(round(static_cast<cpp_bin_float_50>(x)));
+  if constexpr (boost_cpp_bin_float<Q>) {
+    return static_cast<Q>(round(x));
   } else {
     return std::round(x);
   }
+}
+
+inline cpp_int Round(cpp_rational const& x) {
+  // TODO(phl): This is clunky.  Use `divide_qr` or something.
+  return static_cast<cpp_int>(round(static_cast<cpp_bin_float_50>(x)));
 }
 
 inline double Sinh(Angle const& α) {
