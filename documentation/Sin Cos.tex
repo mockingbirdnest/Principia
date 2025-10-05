@@ -40,7 +40,7 @@
 %%%% Title and authors.
 
 \title{An Implementation of Sin and Cos Using Gal's Accurate Tables}
-\date{\printdate{2025-10-04}}
+\date{\printdate{2025-10-05}}
 \author{Pascal~Leroy (phl)}
 \begin{document}
 \maketitle
@@ -396,7 +396,7 @@ If any of the conditions above is not met, we fall back on the CORE-MATH impleme
 
 \section*{Accurate Tables and Their Generation}
 
-First, a remark on the notation.  This section (as well is the code in \linebreak\texttt{accurate\_table\_generator*.hpp}) follows the notation of \cite{StehléZimmermann2005}.  In particular, $N$ is related to the number of bits in the mantissa of the floating-point type, and $M$ is related to the number of zeroes or ones after the mantissa of the accurate values.  Specifically, since we use \texttt{binary64} and want 18 zeroes or ones after the mantissa (to minimize the probability of expensive fall backs to the CORE-MATH implementation), we have $N = 2^{53}$ and $M = 2^{18}$. 
+First, a remark on the notation.  This section (as well is the code in \linebreak\texttt{accurate\_table\_generator*.hpp}) follows the notation of \cite{StehléZimmermann2005}.  In particular, $N$ is related to the number of bits in the mantissa of the floating-point type, and $M$ is related to the number of zeroes or ones after the mantissa of the accurate values.  Specifically, since we use \texttt{binary64} and want 20 zeroes or ones after the mantissa (to minimize the probability of expensive fall backs to the CORE-MATH implementation), we have $N = 2^{53}$ and $M = 2^{20}$. 
 
 The accurate tables are made of triples $\tuple{x_k, s_k, c_k}$ where $x_k$ is chosen such that $\sin x_k$ and $\cos x_k$ are very close to machine numbers, \idest, have a string of zeroes or ones after the last bit of their mantissa.  The tabulated value $s_k$ (respectively, $c_k$) is then obtained by rounding $\sin x_k$ (respectively, $\cos x_k$) to the nearest machine number.  See \nameref{overview} below for the details of how these tables are used for implementing $\sin$ and $\cos$.
 
@@ -406,11 +406,11 @@ h_{\text{max}} \DefineAs \max_k \pa{x_k - \pa{2 k - 1} \gD, \pa{2 k + 1} \gD - x
 \]
 and we want this interval to be as small as possible to improve the accuracy of the approximation.
 
-In practice we choose $\gD = 2^{-10}$ and the accurate tables construction yields $h_{\text{max}} < \gD + 2^{-17.834}$.  The largest perturbation for $x_k$ is reached when $k = 1$, with 35.629 bits, but that is because, for $k = 1$, we only search below $2 \gD$ (see \nameref{interval1}).  Other than this special value, the perturbation ranges from 23.755 bits to 35.331 bits.  This is consistent with the random model of \cite{StehléZimmermann2005} but note that some intervals are 3000 times ``harder'' than others.
+In practice we choose $\gD = 2^{-10}$ and the accurate tables construction yields $h_{\text{max}} < \gD + 2^{-13.764}$.  The largest perturbation for $x_k$ is reached when $k = 160$, with 39.517 bits.  The perturbation ranges from 27.241 bits to 39.517 bits.  This is consistent with the random model of \cite{StehléZimmermann2005} but note that some intervals are 5000 times ``harder'' than others.
 
-The naïve table construction method described in \cite{Gal1986} (random sampling over $\mathscr{I}_k$) has two problems.  First, it doesn't guarantee that $x_k$ is close to the midpoint of $\mathscr{I}_k$ and can in fact, in the worst case, result in $x_k$ being very close to one of the bounds of the interval, requiring the construction of a minimax polynomial over an interval which is (nearly) two times too big.  Second, for each triple of the accurate table it has to inspect, on average, around $M^2 = 2^{36}$ values.  On a modern processor, testing one candidate takes approximately $\SI{50}{\micro\second}$, which amounts to about 900 hours for each triple of the table, and therefore 43 years for the 402 triples that we need.
+The naïve table construction method described in \cite{Gal1986} (random sampling over $\mathscr{I}_k$) has two problems.  First, it doesn't guarantee that $x_k$ is close to the midpoint of $\mathscr{I}_k$ and can in fact, in the worst case, result in $x_k$ being very close to one of the bounds of the interval, requiring the construction of a minimax polynomial over an interval which is (nearly) two times too big.  Second, for each triple of the accurate table it has to inspect, on average, around $M^2 = 2^{40}$ values.  On a modern processor, testing one candidate takes approximately $\SI{50}{\micro\second}$, which amounts to about 15\,000 hours for each triple of the table, and therefore 700 years for the 402 triples that we need.
 
-Consequently, we use the method described in \cite{StehléZimmermann2005} to build our accurate tables.  It is much faster than the method in \cite{Gal1986}, but must still be implemented with great care to achieve a satisfactory speed.  In the rest of this section, we describe the algorithms and optimizations that we used to generate our tables efficiently.  On a modern processor (AMD Ryzen Threadripper PRO 5965WX) the entire table generation takes about 17 seconds.
+Consequently, we use the method described in \cite{StehléZimmermann2005} to build our accurate tables.  It is much faster than the method in \cite{Gal1986}, but must still be implemented with great care to achieve a satisfactory speed.  In the rest of this section, we describe the algorithms and optimizations that we used to generate our tables efficiently.  On a modern processor (AMD Ryzen Threadripper PRO 5965WX) the entire table generation takes about 77 seconds.
 
 \subsection*{The Stehlé-Zimmermann Algorithm}
 
@@ -563,7 +563,7 @@ It is much more effective to parallelize using speculative execution as follows.
 
 \subsection*{Summary}
 
-The following table summarizes the impact of each of the optimizations described above.  The ``Baseline'' row is the time with all optimizations enabled.  Each of the other rows gives the timing with exactly one optimization disabled:
+The following table summarizes the impact of each of the optimizations described above.  They correspond to a search of 18 zeroes or ones after the mantissa.  The ``Baseline'' row is the time with all optimizations enabled.  Each of the other rows gives the timing with exactly one optimization disabled:
 \begin{center}
 \begin{tabular}{lrr}
 Method & Elapsed Time & Ratio \\
@@ -641,7 +641,7 @@ g\of{t} &\DefineAs \frac{\sin t}{t^3}
 \end{dcases}
 \]
 
-In practice we choose $\gD' = 2^{-10} \pa{1 + \frac{1}{8}}$ (see \nameref{cutoffchoice}), and compute a degree-1 polynomial with a residual smaller than $2^{-74.793}$ (before rounding the coefficients to machine numbers).
+In practice we choose $\gD' = 2^{-10} \pa{1 + \frac{7}{32}}$ (see \nameref{cutoffchoice}), and compute a degree-1 polynomial with a residual smaller than $2^{-74.142}$ (before rounding the coefficients to machine numbers).
 
 \subsection*{Sin and Cos Around Table Entries}
 
@@ -671,7 +671,7 @@ g\of{t} &\DefineAs \frac{\sin t}{t^3}
 \end{dcases}
 \]
 
-The minimax computation results in a 1-degree polynomial $p_s$ with with a residual smaller than $2^{-75.724}$ and a 1-degree polynomial $p_c$ with a residual smaller than $2^{-51.466}$ (before rounding the coefficients to machine numbers).
+The minimax computation results in a 1-degree polynomial $p_s$ with with a residual smaller than $2^{-75.065}$ and a 1-degree polynomial $p_c$ with a residual smaller than $2^{-51.004}$ (before rounding the coefficients to machine numbers).
 
 \section*{Error Analysis}
 
@@ -732,8 +732,7 @@ The choice of the cutoff $\gD'$ used to decide whether to us the ``near zero'' a
 \item The relative error of the accurate tables algorithm for $\sin$ on $\mathscr{I}_1$ is fairly large near $\gD$.  This is because any error on the accurate value $s_1$ is amplified by the  division by $\sin \red x$ when $\red x$ is small\footnote{With the notation of \nameref{secerroranalysissin}, the dominant term of the relative error is $\gz_2 \frac{-\round{s_k} + \round{c_k} \cos\of{\red x - x_k}}{\sin \red x}$.}.  A larger value of $\gD'$ minimizes this error.
 \end{itemize}
 
-In practice we find that $\gD' = 2^{-10} \pa{1 + \frac{1}{8}}$ is a good choice to accomodate all these constraints.
-
+In practice we find that $\gD' = 2^{-10} \pa{1 + \frac{7}{32}}$ is a good choice to accomodate all these constraints.
 
 \subsection*{Sin Near Zero}\label{secsinnearzero}
 
@@ -750,7 +749,7 @@ y &\DefineAs \red x \\
 
 We gave above the upper bound of the residual of the minimax approximation.  It may be rewritten as:
 \[
-p_{s0}\of{t^2} = \frac{\pa{1 + \gz_1} \sin t - t}{t^3} \qquad \abs{\gz_1} < 2^{-74.793}
+p_{s0}\of{t^2} = \frac{\pa{1 + \gz_1} \sin t - t}{t^3} \qquad \abs{\gz_1} < 2^{-74.142}
 \]
 for $\abs t \le \gD$.
 
@@ -758,7 +757,7 @@ The errors committed at each step are as follows:
 \[
 \left\{
 \begin{alignedat}{3}
-t_1 &= p_{s0}\of{{\red x}^2} \pa{1 + \gz_2} &\gz_2 &\in \intopen{-2^{-52.567}}{2^{-53.620}} \\
+t_1 &= p_{s0}\of{{\red x}^2} \pa{1 + \gz_2} &\gz_2 &\in \intopen{-2^{-54.292}}{2^{-52.329}} \\
 &= \frac{\pa{1 + \gz_1} \sin {\red x} - x}{{\red x^3}} \pa{1 + \gz_2} \\
 t_2 &= {\red x}^3 \pa{1 + \gd_1} \pa{1 + \gd_2} \\
 t_3 &= \pa{t_1 t_2 \pa{1 + \gd_3} + \gd \red x} \pa{1 + \gd_4}
@@ -769,13 +768,13 @@ The relative error of the entire computation is:
 \[
 r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
 \]
-The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows\marginnote{TODO(phl): See if this can be proven rigourously.} that this function reaches its extrema at the corners of the domain, which is logical because we expect the minimax polynomial to reach its largest errors on the bounds of the optimization interval.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.403}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'C197'A309'9p0}.$\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows\marginnote{TODO(phl): See if this can be proven rigourously.} that this function reaches its extrema at the corners of the domain, which is logical because we expect the minimax polynomial to reach its largest errors on the bounds of the optimization interval.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.281}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'D28F'8E40'4p0}.$\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
 
 As mentioned above (see \nameref{overview}), in these steps we do not compute the terms ${\red x}^n \; \gd \red x$ for $n > 0$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
 -\frac{1}{2} \frac{{\red x}^2 \; \gd \red x}{\sin\of{\red x + \gd \red x}}
 \]
-This function reaches its extrema on the corners of the triangular domain and is found to be smaller than $2^{-73.999}$, so its contribution to the overall relative error would be very small.
+This function reaches its extrema on the corners of the triangular domain and is found to be smaller than $2^{-73.429}$, so its contribution to the overall relative error would be very small.
 
 \subsection*{Sin and Cos Around Table Entries}\label{interval1}
 
@@ -785,8 +784,8 @@ For $\sin$ we do not use the interval $\mathscr{I}_0$ (see \nameref{secsinnearze
 
 Finally, for the purpose of error analysis, the relative errors of the minimax polynomials may be rewritten as:
 \begin{align*}
-p_s\of{t^2} &= \frac{\sin t \; \pa{1 + \gz_1} - t}{t^3} \qquad & \abs{\gz_1} < 2^{-75.724} \\
-p_c\of{t^2} &= \frac{\cos t - 1}{t^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-51.466}
+p_s\of{t^2} &= \frac{\sin t \; \pa{1 + \gz_1} - t}{t^3} \qquad & \abs{\gz_1} < 2^{-75.065} \\
+p_c\of{t^2} &= \frac{\cos t - 1}{t^2} \pa{1 + \gz_2} \qquad & \abs{\gz_2} < 2^{-51.004}
 \end{align*}
 
 \subsubsection*{Sin}\label{secerroranalysissin}
@@ -820,9 +819,9 @@ The errors committed at each step are as follows:
 \[
 \left\{
 \begin{alignedat}{2}
-t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-53.656}}{2^{-52.550}} \\
+t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-52.292}}{2^{-54.446}} \\
 &= \frac{\sin h \; \pa{1 + \gz_1} - h}{h^3} \pa{1 + \gz_3} \\
-t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
+t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.984}}{2^{-53.016}} \\
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
 t_3 &= h \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
 t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
@@ -847,13 +846,13 @@ Great care is required when evaluating this expression using interval arithmetic
 \]
 which is pleasantly small, and even though $\gd_{12}$ and $\gh$ also appear in the term that does not involve $\gd_0$, the effect of replicating them is acceptable.
 
-The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-68.908}$.  The worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0002'2167'CFE8'Cp0}$.\marginnote{TODO(phl): Should we try accurate tables with 19 bits?}
+The function $r$ must be evaluated separately for each interval around $x_k$, with $\red x \in \intclos{\pa{2 k - 1}\gD}{\pa{2 k + 1}\gD}$ and $\abs{\gd \red x} < {\abs{\red x}} / 2^M$.  This defines a trapezoidal domain and $r$ reaches its extrema at the corners of that domain.  In practice we find using \textit{Mathematica} interval arithmetic that $\abs{r\of{\red x, \gd \red x}} < 2^{-69.339}$.  The worst relative errors correspond to table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'94C0'D077'2p0}$.
 
 As mentioned above (see \nameref{overview}), in these steps we do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
 -\frac{1}{2}\frac{h^2 \; \gd \red x \; \cos x_k}{\sin\of{\red x + \gd \red x}}
 \]
-This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-73.999}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.348}$ so it must be computed.)
+This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-73.914}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.348}$ so it must be computed.)
 
 \subsubsection*{Cos}\label{secerroranalysiscos}
 
@@ -884,9 +883,9 @@ The errors committed at each step are as follows:
 \[
 \left\{
 \begin{alignedat}{2}
-t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-53.656}}{2^{-52.550}} \\
+t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-52.292}}{2^{-54.446}} \\
 &= \frac{\sin h \; \pa{1 + \gz_1} - h}{h^3} \pa{1 + \gz_3} \\
-t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.855}}{2^{-53.160}} \\
+t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.984}}{2^{-53.016}} \\
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
 t_3 &= h \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
 t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
@@ -907,13 +906,13 @@ As explained above (see \nameref{secerroranalysissin}) the expression for $r$ mu
 \[
 \pa{h \round{s_k} - \round{c_k}} \pa{1 - \pa{1 + \gd_{11}} \pa{1 + \gd_{12}}} \pa{1 + \gh}
 \]
-and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.217}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'B839'417F'4p0}$.
+and a \textit{Mathematica} computation yields $\abs{r\of{\red x, \gd \red x}} < 2^{-69.570}$.  Again, the largest errors come from table entries that have many ones after their accurate zeroes (or many zeroes after their accurate ones).  The rounding test must be done with $e = \texttt{0x1.0001'58B5'12B3'2p0}$.
 
 As mentioned above (see \nameref{overview}), in these steps we do not compute the terms $h^n \; \gd \red x$ for $n > 1$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
 \frac{1}{2}\frac{h^2 \; \gd \red x \; \sin x_k}{\cos\of{\red x + \gd \red x}}
 \]
-This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-74.348}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.346}$ so it must be computed.)
+This function reaches its extrema on the corners of the trapezoidal domain and is found to be smaller than $2^{-74.121}$ for all $k$, so its contribution to the overall relative error would be very small.  (The term for $n = 1$, on the other hand, induces an error of the order of $2^{-63.346}$ so it must be computed.)
 
 \section*{Annex: The First-Order Term}\label{firstorder}
 
