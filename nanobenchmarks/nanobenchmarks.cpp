@@ -25,7 +25,7 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
-BENCHMARKED_FUNCTION(twice) {
+BENCHMARKED_FUNCTION(twice, double, double) {
   return 2 * x;
 }
 

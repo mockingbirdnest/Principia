@@ -24,7 +24,7 @@
     <ClCompile Include="function_registry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="examples.cpp">
+    <ClCompile Include="nanobenchmarks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="microarchitectures.cpp">
