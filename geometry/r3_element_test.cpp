@@ -134,17 +134,17 @@ TEST_F(R3ElementTest, OrthogonalizeSuccess) {
   R3Element<Length> const v2 = R3Element<Length>(
       {3 * Metre, 4 * Metre, -1 * Metre}).OrthogonalizationAgainst(v1);
   EXPECT_EQ(0 * Metre * Metre, Dot(v1, v2));
-  EXPECT_THAT(v2, AlmostEquals(R3Element<Length>({(10.0 / 3.0) * Metre,
-                                                  (10.0 / 3.0) * Metre,
-                                                  (2.0 / 3.0) * Metre}), 1));
+  EXPECT_THAT(v2, AlmostEquals(R3Element<Length>((10.0 / 3.0) * Metre,
+                                                 (10.0 / 3.0) * Metre,
+                                                 (2.0 / 3.0) * Metre), 1));
 }
 
 TEST_F(R3ElementTest, Normalize) {
   R3Element<Length> const v = {1 * Metre, -2 * Metre, 5 * Metre};
   EXPECT_THAT(Normalize(v),
-              AlmostEquals(R3Element<double>({1.0 / sqrt(30.0),
-                                              -2.0 / sqrt(30.0),
-                                              5.0 / sqrt(30.0)}), 0));
+              AlmostEquals(R3Element<double>(1.0 / sqrt(30.0),
+                                             -2.0 / sqrt(30.0),
+                                             5.0 / sqrt(30.0)), 0));
 }
 
 TEST_F(R3ElementDeathTest, SerializationError) {

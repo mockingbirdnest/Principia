@@ -322,9 +322,9 @@ R3Element<Product<LScalar, RScalar>> operator*(
   constexpr auto X = R3x3Matrix<LScalar>::X;
   constexpr auto Y = R3x3Matrix<LScalar>::Y;
   constexpr auto Z = R3x3Matrix<LScalar>::Z;
-  return R3Element<Product<LScalar, RScalar>>({Dot(left.rows_[X], right),
-                                               Dot(left.rows_[Y], right),
-                                               Dot(left.rows_[Z], right)});
+  return R3Element<Product<LScalar, RScalar>>(Dot(left.rows_[X], right),
+                                              Dot(left.rows_[Y], right),
+                                              Dot(left.rows_[Z], right));
 }
 
 template<typename LScalar, typename RScalar>
@@ -335,9 +335,9 @@ R3Element<Product<LScalar, RScalar>> operator*(
   constexpr auto X = R3x3Matrix<LScalar>::X;
   constexpr auto Y = R3x3Matrix<LScalar>::Y;
   constexpr auto Z = R3x3Matrix<LScalar>::Z;
-  return R3Element<Product<LScalar, RScalar>>({Dot(left, t_right.rows_[X]),
-                                               Dot(left, t_right.rows_[Y]),
-                                               Dot(left, t_right.rows_[Z])});
+  return R3Element<Product<LScalar, RScalar>>(Dot(left, t_right.rows_[X]),
+                                              Dot(left, t_right.rows_[Y]),
+                                              Dot(left, t_right.rows_[Z]));
 }
 
 
