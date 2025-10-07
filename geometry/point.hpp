@@ -35,16 +35,10 @@ class Point final {
  public:
   constexpr Point();
 
-#if PRINCIPIA_COMPILER_MSVC && !__INTELLISENSE__
-  // Explicitly define constexpr default copy and move constructors because
-  // otherwise MSVC fails to initialize constant expressions.  In addition,
-  // Intellisense gets confused by these (because of course MSVC and
-  // Intellisense are different compilers and have bugs in different places).
-  constexpr Point(Point const& other);
-  constexpr Point(Point&& other);
+  constexpr Point(Point const& other) = default;
+  constexpr Point(Point&& other) = default;
   Point& operator=(Point const& other) = default;
   Point& operator=(Point&& other) = default;
-#endif
 
   constexpr friend bool operator==(Point const& left,
                                    Point const& right) = default;

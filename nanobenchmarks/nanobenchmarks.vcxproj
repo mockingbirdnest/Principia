@@ -18,7 +18,7 @@
     <ClCompile Include="function_registry.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="performance_settings_controller.cpp" />
-    <ClCompile Include="examples.cpp" />
+    <ClCompile Include="nanobenchmarks.cpp" />
     <ClCompile Include="microarchitectures.cpp" />
   </ItemGroup>
   <ItemGroup>
