@@ -102,12 +102,26 @@ BENCHMARKED_FUNCTION(principia_sin_cos) {
       _mm_and_pd(_mm_set_sd(values.sin), _mm_set_sd(values.cos)));
 }
 
+auto const c0 = Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre});
+auto const c1 = Velocity<World>(
+    {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second});
+auto const c2 = Vector<Acceleration, World>({1 * Metre / Second / Second,
+                                             0 * Metre / Second / Second,
+                                             0 * Metre / Second / Second});
+auto const c3 = Vector<Jerk, World>({1 * Metre / Second / Second / Second,
+                                     0 * Metre / Second / Second / Second,
+                                     0 * Metre / Second / Second / Second});
+auto const c4 =
+    Vector<Snap, World>({1 * Metre / Second / Second / Second / Second,
+                         0 * Metre / Second / Second / Second / Second,
+                         0 * Metre / Second / Second / Second / Second});
+auto const c5 = Vector<Variation<Snap>, World>(
+    {1 * Metre / Second / Second / Second / Second / Second,
+     0 * Metre / Second / Second / Second / Second / Second,
+     0 * Metre / Second / Second / Second / Second / Second});
+
 BENCHMARKED_FUNCTION(polynomial1) {
   using P1A = PolynomialInMonomialBasis<Displacement<World>, Instant, 1>;
-
-  auto const c0 = Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre});
-  auto const c1 = Velocity<World>(
-      {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second});
 
   P1A::Coefficients const coefficients({c0, c1});
   Instant const t0 = Instant() + 0.3 * Second;
@@ -118,13 +132,6 @@ BENCHMARKED_FUNCTION(polynomial1) {
 BENCHMARKED_FUNCTION(polynomial2) {
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
 
-  auto const c0 = Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre});
-  auto const c1 = Velocity<World>(
-      {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second});
-  auto const c2 = Vector<Acceleration, World>({1 * Metre / Second / Second,
-                                               0 * Metre / Second / Second,
-                                               0 * Metre / Second / Second});
-
   P2A::Coefficients const coefficients({c0, c1, c2});
   Instant const t0 = Instant() + 0.3 * Second;
   P2A const p(coefficients, t0, with_evaluator<Estrin>);
@@ -134,69 +141,27 @@ BENCHMARKED_FUNCTION(polynomial2) {
 BENCHMARKED_FUNCTION(polynomial3) {
   using P3A = PolynomialInMonomialBasis<Displacement<World>, Instant, 3>;
 
-  auto const c0 = Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre});
-  auto const c1 = Velocity<World>(
-      {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second});
-  auto const c2 = Vector<Acceleration, World>({1 * Metre / Second / Second,
-                                               0 * Metre / Second / Second,
-                                               0 * Metre / Second / Second});
-  auto const c3 = Vector<Jerk, World>({1 * Metre / Second / Second / Second,
-                                       0 * Metre / Second / Second / Second,
-                                       0 * Metre / Second / Second / Second});
-
   P3A::Coefficients const coefficients({c0, c1, c2, c3});
   Instant const t0 = Instant() + 0.3 * Second;
   P3A const p(coefficients, t0, with_evaluator<Estrin>);
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
-BENCHMARKED_FUNCTION(polynomial5) {
-  using P5A = PolynomialInMonomialBasis<Displacement<World>, Instant, 5>;
-
-  auto const c0 = Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre});
-  auto const c1 = Velocity<World>(
-      {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second});
-  auto const c2 = Vector<Acceleration, World>({1 * Metre / Second / Second,
-                                               0 * Metre / Second / Second,
-                                               0 * Metre / Second / Second});
-  auto const c3 = Vector<Jerk, World>({1 * Metre / Second / Second / Second,
-                                       0 * Metre / Second / Second / Second,
-                                       0 * Metre / Second / Second / Second});
-  auto const c4 =
-      Vector<Snap, World>({1 * Metre / Second / Second / Second / Second,
-                           0 * Metre / Second / Second / Second / Second,
-                           0 * Metre / Second / Second / Second / Second});
-  auto const c5 = Vector<Variation<Snap>, World>(
-      {1 * Metre / Second / Second / Second / Second / Second,
-       0 * Metre / Second / Second / Second / Second / Second,
-       0 * Metre / Second / Second / Second / Second / Second});
-
-  P5A::Coefficients const coefficients({c0, c1, c2, c3, c4, c5});
-  Instant const t0 = Instant() + 0.3 * Second;
-  P5A const p(coefficients, t0, with_evaluator<Estrin>);
-  return p(t0 + x * Second).Norm²() / Metre / Metre;
-}
-
 BENCHMARKED_FUNCTION(polynomial4) {
   using P4A = PolynomialInMonomialBasis<Displacement<World>, Instant, 4>;
-
-  auto const c0 = Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre});
-  auto const c1 = Velocity<World>(
-      {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second});
-  auto const c2 = Vector<Acceleration, World>({1 * Metre / Second / Second,
-                                               0 * Metre / Second / Second,
-                                               0 * Metre / Second / Second});
-  auto const c3 = Vector<Jerk, World>({1 * Metre / Second / Second / Second,
-                                       0 * Metre / Second / Second / Second,
-                                       0 * Metre / Second / Second / Second});
-  auto const c4 =
-      Vector<Snap, World>({1 * Metre / Second / Second / Second / Second,
-                           0 * Metre / Second / Second / Second / Second,
-                           0 * Metre / Second / Second / Second / Second});
 
   P4A::Coefficients const coefficients({c0, c1, c2, c3, c4});
   Instant const t0 = Instant() + 0.3 * Second;
   P4A const p(coefficients, t0, with_evaluator<Estrin>);
+  return p(t0 + x * Second).Norm²() / Metre / Metre;
+}
+
+BENCHMARKED_FUNCTION(polynomial5) {
+  using P5A = PolynomialInMonomialBasis<Displacement<World>, Instant, 5>;
+
+  P5A::Coefficients const coefficients({c0, c1, c2, c3, c4, c5});
+  Instant const t0 = Instant() + 0.3 * Second;
+  P5A const p(coefficients, t0, with_evaluator<Estrin>);
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
