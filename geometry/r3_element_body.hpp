@@ -40,10 +40,10 @@ constexpr R3Element<Scalar>::R3Element(uninitialized_t) {
 template<typename Scalar>
 R3Element<Scalar>::R3Element(Scalar const& x, Scalar const& y, Scalar const& z)
 #if PRINCIPIA_USE_AVX()
-    : xyzt(_mm256_set_pd(x / si::Unit<Scalar>,
-                         y / si::Unit<Scalar>,
+    : xyzt(_mm256_set_pd(0.0,
                          z / si::Unit<Scalar>,
-                         0.0))
+                         y / si::Unit<Scalar>,
+                         x / si::Unit<Scalar>))
 #else
     : x(x), y(y), z(z)
 #endif
