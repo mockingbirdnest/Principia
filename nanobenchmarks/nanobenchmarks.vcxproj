@@ -13,15 +13,6 @@
     <Link>
       <AdditionalDependencies>powrprof.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <ClCompile>
-      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release_AVX_FMA|x64'">AssemblyCode</AssemblerOutput>
-    </ClCompile>
-    <ClCompile>
-      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AssemblyCode</AssemblerOutput>
-    </ClCompile>
-    <ClCompile>
-      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AssemblyCode</AssemblerOutput>
-    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="function_registry.cpp" />
