@@ -13,7 +13,7 @@ using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
-BENCHMARKED_FUNCTION(twice, double, double) {
+BENCHMARKED_FUNCTION(twice) {
   return 2 * x;
 }
 
