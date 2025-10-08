@@ -126,7 +126,10 @@ BENCHMARKED_FUNCTION(polynomial1) {
   P1A::Coefficients const coefficients({c0, c1});
   Instant const t0 = Instant() + 0.3 * Second;
   P1A const p(coefficients, t0, with_evaluator<Estrin>);
-  return p(t0 + x * Second).Norm²() / Metre / Metre;
+  auto const result = p(t0 + x * Second).coordinates();
+  return _mm_cvtsd_f64(
+      _mm_and_pd(_mm_set_pd(result.x / Metre, result.y / Metre),
+                 _mm_set_sd(result.z / Metre)));
 }
 
 BENCHMARKED_FUNCTION(polynomial2) {
@@ -135,7 +138,10 @@ BENCHMARKED_FUNCTION(polynomial2) {
   P2A::Coefficients const coefficients({c0, c1, c2});
   Instant const t0 = Instant() + 0.3 * Second;
   P2A const p(coefficients, t0, with_evaluator<Estrin>);
-  return p(t0 + x * Second).Norm²() / Metre / Metre;
+  auto const result = p(t0 + x * Second).coordinates();
+  return _mm_cvtsd_f64(
+      _mm_and_pd(_mm_set_pd(result.x / Metre, result.y / Metre),
+                 _mm_set_sd(result.z / Metre)));
 }
 
 BENCHMARKED_FUNCTION(polynomial3) {
@@ -144,7 +150,10 @@ BENCHMARKED_FUNCTION(polynomial3) {
   P3A::Coefficients const coefficients({c0, c1, c2, c3});
   Instant const t0 = Instant() + 0.3 * Second;
   P3A const p(coefficients, t0, with_evaluator<Estrin>);
-  return p(t0 + x * Second).Norm²() / Metre / Metre;
+  auto const result = p(t0 + x * Second).coordinates();
+  return _mm_cvtsd_f64(
+      _mm_and_pd(_mm_set_pd(result.x / Metre, result.y / Metre),
+                 _mm_set_sd(result.z / Metre)));
 }
 
 BENCHMARKED_FUNCTION(polynomial4) {
@@ -153,7 +162,10 @@ BENCHMARKED_FUNCTION(polynomial4) {
   P4A::Coefficients const coefficients({c0, c1, c2, c3, c4});
   Instant const t0 = Instant() + 0.3 * Second;
   P4A const p(coefficients, t0, with_evaluator<Estrin>);
-  return p(t0 + x * Second).Norm²() / Metre / Metre;
+  auto const result = p(t0 + x * Second).coordinates();
+  return _mm_cvtsd_f64(
+      _mm_and_pd(_mm_set_pd(result.x / Metre, result.y / Metre),
+                 _mm_set_sd(result.z / Metre)));
 }
 
 BENCHMARKED_FUNCTION(polynomial5) {
@@ -162,7 +174,10 @@ BENCHMARKED_FUNCTION(polynomial5) {
   P5A::Coefficients const coefficients({c0, c1, c2, c3, c4, c5});
   Instant const t0 = Instant() + 0.3 * Second;
   P5A const p(coefficients, t0, with_evaluator<Estrin>);
-  return p(t0 + x * Second).Norm²() / Metre / Metre;
+  auto const result = p(t0 + x * Second).coordinates();
+  return _mm_cvtsd_f64(
+      _mm_and_pd(_mm_set_pd(result.x / Metre, result.y / Metre),
+                 _mm_set_sd(result.z / Metre)));
 }
 
 }  // namespace _examples
