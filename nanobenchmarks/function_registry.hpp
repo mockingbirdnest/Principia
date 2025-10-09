@@ -9,6 +9,7 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "nanobenchmarks/flag_parsing.hpp"
 #include "nanobenchmarks/latency_distribution_table.hpp"
 
 ABSL_DECLARE_FLAG(std::size_t, loop_iterations);
@@ -33,10 +34,10 @@ class Nanobenchmark {
   virtual ~Nanobenchmark() = default;
   virtual LatencyDistributionTable Run() = 0;
 
+  std::string const& name() const;
+
  protected:
-  void SetName(std::string const& name) {
-    name_ = name;
-  }
+  void SetName(std::string_view name);
 
   std::string name_;
 };
@@ -44,59 +45,21 @@ class Nanobenchmark {
 class Fixture : public Nanobenchmark {
  public:
   Fixture() = default;
-  virtual ~Fixture() = default;
 
-  virtual LatencyDistributionTable Run() override {
-    std::size_t const sample_count = absl::GetFlag(FLAGS_samples);
-    std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
-    static std::vector<double>& samples = *new std::vector<double>(
-        sample_count, std::numeric_limits<double>::quiet_NaN());
-    int registers[4]{};
-    int leaf = 0;
-    for (int j = 0; j < sample_count; ++j) {
-      double const input = absl::GetFlag(FLAGS_input);
-      double x = input;
-// The CPUID barriers prevent out-of-order execution; see [Pao10].
-#if PRINCIPIA_COMPILER_MSVC
-      __cpuid(registers, leaf);
-#else
-      asm volatile("cpuid" ::: "eax", "ebx", "ecx", "edx", "memory");
-#endif
-      auto const tsc_start = __rdtsc();
-      for (int i = 0; i < loop_iterations; ++i) {
-        x = NanobenchmarkCase(x);
-        x += input - x;
-      }
-      unsigned int tsc_aux;
-      // The use of RDTSCP rather than RDTSC here follows [Pao10].  See the
-      // Intel® 64 and IA-32 Architectures Software Developer’s Manual: The
-      // RDTSCP  instruction is not a serializing instruction, but it does wait
-      // until all previous instructions have executed and all previous loads
-      // are globally visible.  But it does not wait for previous stores to be
-      // globally visible, and subsequent instructions may begin execution
-      // before the read operation is performed.
-      auto const tsc_stop = __rdtscp(&tsc_aux);
-#if PRINCIPIA_COMPILER_MSVC
-      __cpuid(registers, leaf);
-#else
-      asm volatile("cpuid" ::: "eax", "ebx", "ecx", "edx", "memory");
-#endif
-      double const δtsc = tsc_stop - tsc_start;
-      samples[j] = δtsc / loop_iterations;
-    }
-    // if (logger != nullptr) {
-    //   logger->Append(
-    //       "samples",
-    //       std::tuple{FunctionRegistry::names_by_function().at(f), samples});
-    // }
-    std::ranges::sort(samples);
-    LatencyDistributionTable result(absl::GetFlag(FLAGS_quantiles));
-    result.SetSamples(samples);
-    return result;
-  }
+  virtual LatencyDistributionTable Run() override;
 
  protected:
   virtual double NanobenchmarkCase(double x) = 0;
+};
+
+class FunctionNanobenchmark : public Fixture {
+ public:
+  FunctionNanobenchmark(std::string_view name, BenchmarkedFunction function);
+
+  virtual LatencyDistributionTable Run() override;
+
+ private:
+  BenchmarkedFunction function_;
 };
 
 class FunctionRegistry {
@@ -111,6 +74,17 @@ class FunctionRegistry {
   static FunctionRegistry& singleton();
   std::map<std::string, BenchmarkedFunction, std::less<>> functions_by_name_;
   std::map<BenchmarkedFunction, std::string> names_by_function_;
+};
+
+class NanobenchmarkRegistry {
+ public:
+  static Nanobenchmark* Register(Nanobenchmark* nanobenchmark);
+  static std::map<std::string, Nanobenchmark*> const& nanobenchmarks_by_name();
+
+ private:
+  NanobenchmarkRegistry() = default;
+  static NanobenchmarkRegistry& singleton();
+  std::map<std::string, Nanobenchmark*> nanobenchmarks_by_name_;
 };
 
 #define NANOBENCHMARK_FUNCTION_WITH_NAME(name, ...) \
@@ -135,7 +109,7 @@ class FunctionRegistry {
   class BaseClass##_##Method##_Nanobenchmark : public BaseClass { \
    public:                                                        \
     BaseClass##_##Method##_Nanobenchmark() : BaseClass() {        \
-      this->SetName(#BaseClass "/" #Method);                      \
+      SetName(#BaseClass "/" #Method);                            \
     }                                                             \
                                                                   \
    protected:                                                     \
@@ -143,18 +117,24 @@ class FunctionRegistry {
   };
 
 #define NANOBENCHMARK_PRIVATE_REGISTER_F(line, TestName) \
-  NANOBENCHMARK_PRIVATE_DECLARE(line, TestName) = nullptr;
-//(RegisterNanobenchmarkInternal(new TestName))
+  NANOBENCHMARK_PRIVATE_DECLARE(line, TestName) =        \
+      (NanobenchmarkRegistry::Register(new TestName))
 
 #define NANOBENCHMARK_REGISTER_F(line, BaseClass, Method) \
   NANOBENCHMARK_PRIVATE_REGISTER_F(                       \
       line, NANOBENCHMARK_PRIVATE_CONCAT_NAME(BaseClass, Method))
+
+#define NANOBENCHMARK(n)                       \
+  NANOBENCHMARK_PRIVATE_DECLARE(__LINE__, n) = \
+      (NanobenchmarkRegistry::Register(new FunctionNanobenchmark(#n, n)))
 
 #define NANOBENCHMARK_F(BaseClass, Method, ...)          \
   NANOBENCHMARK_PRIVATE_DECLARE_F(BaseClass, Method)     \
   NANOBENCHMARK_REGISTER_F(__LINE__, BaseClass, Method); \
   double NANOBENCHMARK_PRIVATE_CONCAT_NAME(              \
       BaseClass, Method)::NanobenchmarkCase(double const x)
+
+////Obsolete
 
 #define NANOBENCHMARK_FUNCTION(...) \
   NANOBENCHMARK_FUNCTION_WITH_NAME(#__VA_ARGS__, __VA_ARGS__)
