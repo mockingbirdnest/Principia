@@ -1,4 +1,4 @@
-#include "nanobenchmarks/flags.hpp"
+#include "nanobenchmarks/flag_parsing.hpp"
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"

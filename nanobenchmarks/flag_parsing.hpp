@@ -8,10 +8,10 @@
 // marshalling.h), so we do this, which is UB.
 namespace std {
 
-bool AbslParseFlag(std::string_view const text,
-                   std::vector<double>* const flag,
-                   std::string* const error);
+extern bool AbslParseFlag(std::string_view text,
+                          std::vector<double>* flag,
+                          std::string* error);
 
-std::string AbslUnparseFlag(std::vector<double> const& flag);
+extern std::string AbslUnparseFlag(std::vector<double> const& flag);
 
 }  // namespace std
