@@ -174,10 +174,13 @@ BENCHMARKED_FUNCTION(polynomial5) {
   P5A::Coefficients const coefficients({c0, c1, c2, c3, c4, c5});
   Instant const t0 = Instant() + 0.3 * Second;
   P5A const p(coefficients, t0, with_evaluator<Estrin>);
-  auto const result = p(t0 + x * Second).coordinates();
-  return _mm_cvtsd_f64(
-      _mm_and_pd(_mm_set_pd(result.x / Metre, result.y / Metre),
-                 _mm_set_sd(result.z / Metre)));
+  auto const position = p(t0 + x * Second).coordinates();
+  auto const velocity = p.EvaluateDerivative(t0 + x * Second).coordinates();
+  return _mm_cvtsd_f64(_mm_and_pd(
+      _mm_and_pd(_mm_set_pd(position.x / Metre, position.y / Metre),
+                 _mm_set_pd(position.z / Metre, velocity.x / (Metre / Second))),
+      _mm_set_pd(velocity.y / (Metre / Second),
+                 velocity.z / (Metre / Second))));
 }
 
 }  // namespace _examples
