@@ -15,13 +15,10 @@
 #include <utility>
 #include <vector>
 
-#include "absl/flags/flag.h"
-#include "absl/flags/parse.h"
-#include "absl/strings/str_join.h"
-#include "absl/strings/str_split.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
+#include "nanobenchmarks/flag_parsing.hpp"
 #include "nanobenchmarks/function_registry.hpp"
 #include "nanobenchmarks/microarchitectures.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
@@ -51,29 +48,6 @@ ABSL_FLAG(std::string,
           "",
           "File to which to log the measurements");
 ABSL_FLAG(double, input, 5, "Input for the benchmarked functions");
-
-// Adding support for flag types only works using ADL (or by being in
-// marshalling.h), so we do this, which is UB.
-namespace std {
-
-bool AbslParseFlag(absl::string_view const text,
-                   std::vector<double>* const flag,
-                   std::string* const error) {
-  flag->clear();
-  for (absl::string_view const element : absl::StrSplit(text, ',')) {
-    if (!absl::ParseFlag(element, &flag->emplace_back(), error)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-std::string AbslUnparseFlag(std::vector<double> const& flag) {
-  return absl::StrJoin(flag, ",");
-}
-
-}  // namespace std
-
 ABSL_FLAG(std::vector<double>,
           quantiles,
           (std::vector<double>{0.001, 0.01, 0.05, 0.1, 0.25, 0.5}),
