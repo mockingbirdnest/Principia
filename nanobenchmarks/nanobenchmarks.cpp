@@ -1,5 +1,9 @@
 #include <emmintrin.h>
 
+#include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "nanobenchmarks/function_registry.hpp"  // 🧙 For BENCHMARK_FUNCTION etc.
 #include "numerics/cbrt.hpp"
 #include "numerics/elementary_functions.hpp"
@@ -12,6 +16,10 @@ namespace principia {
 namespace nanobenchmarks {
 namespace _examples {
 
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_polynomial_evaluators;
