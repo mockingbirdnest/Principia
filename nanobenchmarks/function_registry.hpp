@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <map>
+#include <regex>
 #include <string>
 #include <string_view>
 
@@ -39,6 +40,7 @@ class Nanobenchmark {
  protected:
   void SetName(std::string_view name);
 
+ private:
   std::string name_;
 };
 
@@ -79,7 +81,9 @@ class FunctionRegistry {
 class NanobenchmarkRegistry {
  public:
   static Nanobenchmark* Register(Nanobenchmark* nanobenchmark);
-  static std::map<std::string, Nanobenchmark*> const& nanobenchmarks_by_name();
+
+  static std::vector<Nanobenchmark*> const& NanobenchmarksMatching(
+      std::regex const& filter);
 
  private:
   NanobenchmarkRegistry() = default;

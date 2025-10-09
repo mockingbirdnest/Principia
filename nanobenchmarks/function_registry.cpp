@@ -96,16 +96,23 @@ FunctionRegistry::names_by_function() {
   return singleton().names_by_function_;
 }
 
-std::map<std::string, Nanobenchmark*> const&
-NanobenchmarkRegistry::nanobenchmarks_by_name() {
-  return singleton().nanobenchmarks_by_name_;
-}
-
 Nanobenchmark* NanobenchmarkRegistry::Register(
     Nanobenchmark* const nanobenchmark) {
   singleton().nanobenchmarks_by_name_.emplace(nanobenchmark->name(),
                                               nanobenchmark);
   return nanobenchmark;
+}
+
+std::vector<Nanobenchmark*> const&
+NanobenchmarkRegistry::NanobenchmarksMatching(std::regex const& filter) {
+  std::vector<Nanobenchmark*> matching;
+  for (auto const& [name, nanobenchmark] :
+       singleton().nanobenchmarks_by_name_) {
+    if (std::regex_match(name, filter)) {
+      matching.push_back(nanobenchmark);
+    }
+  }
+  return matching;
 }
 
 }  // namespace internal
