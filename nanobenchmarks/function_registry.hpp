@@ -26,28 +26,27 @@ class FunctionRegistry {
   std::map<BenchmarkedFunction, std::string> names_by_function_;
 };
 
-#define BENCHMARK_FUNCTION_WITH_NAME(name, ...) \
-  BENCHMARK_FUNCTION_WITH_NAME_INTERNAL(__LINE__, name, __VA_ARGS__)
-#define BENCHMARK_FUNCTION_WITH_NAME_INTERNAL(line, name, ...) \
-  BENCHMARK_FUNCTION_WITH_NAME_INTERNAL2(line, name, __VA_ARGS__)
-#define BENCHMARK_FUNCTION_WITH_NAME_INTERNAL2(line, name, ...)             \
+#define NANOBENCHMARK_FUNCTION_WITH_NAME(name, ...) \
+  NANOBENCHMARK_FUNCTION_WITH_NAME_INTERNAL(__LINE__, name, __VA_ARGS__)
+#define NANOBENCHMARK_FUNCTION_WITH_NAME_INTERNAL(line, name, ...) \
+  NANOBENCHMARK_FUNCTION_WITH_NAME_INTERNAL2(line, name, __VA_ARGS__)
+#define NANOBENCHMARK_FUNCTION_WITH_NAME_INTERNAL2(line, name, ...)         \
   namespace {                                                               \
   static bool registered##line = ::principia::nanobenchmarks::              \
       _function_registry::FunctionRegistry::Register(name, &(__VA_ARGS__)); \
   }
 
+#define NANOBENCHMARK_FUNCTION(...) \
+  NANOBENCHMARK_FUNCTION_WITH_NAME(#__VA_ARGS__, __VA_ARGS__)
 
-#define BENCHMARK_FUNCTION(...) \
-  BENCHMARK_FUNCTION_WITH_NAME(#__VA_ARGS__, __VA_ARGS__)
-
-#define BENCHMARKED_FUNCTION(f) \
-  double f(double x);           \
-  BENCHMARK_FUNCTION(f);        \
+#define NANOBENCHMARKED_FUNCTION(f) \
+  double f(double x);               \
+  NANOBENCHMARK_FUNCTION(f);        \
   double f(double x)
 
-#define BENCHMARK_EXTERN_C_FUNCTION(f) \
-  extern "C" double f(double);         \
-  BENCHMARK_FUNCTION(f)
+#define NANOBENCHMARK_EXTERN_C_FUNCTION(f) \
+  extern "C" double f(double);             \
+  NANOBENCHMARK_FUNCTION(f)
 
 }  // namespace internal
 

@@ -4,7 +4,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "nanobenchmarks/function_registry.hpp"  // 🧙 For BENCHMARK_FUNCTION etc.
+#include "nanobenchmarks/function_registry.hpp"  // 🧙 For NANOBENCHMARK_*.
 #include "numerics/cbrt.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -32,69 +32,69 @@ using World = Frame<serialization::Frame::TestTag,
                     Handedness::Right,
                     serialization::Frame::TEST>;
 
-BENCHMARKED_FUNCTION(twice) {
+NANOBENCHMARKED_FUNCTION(twice) {
   return 2 * x;
 }
 
-BENCHMARKED_FUNCTION(thrice) {
+NANOBENCHMARKED_FUNCTION(thrice) {
   return 3 * x;
 }
 
-BENCHMARKED_FUNCTION(inc) {
+NANOBENCHMARKED_FUNCTION(inc) {
   return x + 1;
 }
 
-BENCHMARKED_FUNCTION(multiply_4_times) {
+NANOBENCHMARKED_FUNCTION(multiply_4_times) {
   return x * x * x * x * x;
 }
 
-BENCHMARKED_FUNCTION(add_16_times) {
+NANOBENCHMARKED_FUNCTION(add_16_times) {
   return x + x + x + x + x + x + x + x + x + x + x + x + x + x + x + x + x;
 }
 
-BENCHMARKED_FUNCTION(square_root) {
+NANOBENCHMARKED_FUNCTION(square_root) {
   __m128d x_0 = _mm_set_sd(x);
   return _mm_cvtsd_f64(_mm_sqrt_sd(x_0, x_0));
 }
 
-BENCHMARKED_FUNCTION(sqrt_sqrt) {
+NANOBENCHMARKED_FUNCTION(sqrt_sqrt) {
   __m128d x_0 = _mm_set_sd(x);
   x_0 = _mm_sqrt_sd(x_0, x_0);
   return _mm_cvtsd_f64(_mm_sqrt_sd(x_0, x_0));
 }
 
-BENCHMARKED_FUNCTION(square_root_division) {
+NANOBENCHMARKED_FUNCTION(square_root_division) {
   __m128d x_0 = _mm_set_sd(x);
   return _mm_cvtsd_f64(_mm_div_sd(x_0, _mm_sqrt_sd(x_0, x_0)));
 }
-BENCHMARK_FUNCTION(Cbrt);
+NANOBENCHMARK_FUNCTION(Cbrt);
 
 using namespace principia::numerics::_cbrt::internal;
 
-BENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Faithful>);
-BENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>);
+NANOBENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Faithful>);
+NANOBENCHMARK_FUNCTION(method_3²ᴄZ5¹::Cbrt<Rounding::Correct>);
 #if PRINCIPIA_COMPILER_MSVC
-BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Faithful>);
-BENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Correct>);
+NANOBENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Faithful>);
+NANOBENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Correct>);
 #endif
 
-BENCHMARKED_FUNCTION(std_sin) {
+NANOBENCHMARKED_FUNCTION(std_sin) {
   return std::sin(x);
 }
 
-BENCHMARKED_FUNCTION(principia_sin) {
+NANOBENCHMARKED_FUNCTION(principia_sin) {
   return Sin(x * Radian);
 }
 
-BENCHMARKED_FUNCTION(std_cos) {
+NANOBENCHMARKED_FUNCTION(std_cos) {
   return std::cos(x);
 }
 
-BENCHMARKED_FUNCTION(principia_cos) {
+NANOBENCHMARKED_FUNCTION(principia_cos) {
   return Cos(x * Radian);
 }
 
-BENCHMARKED_FUNCTION(principia_sin_cos) {
+NANOBENCHMARKED_FUNCTION(principia_sin_cos) {
   auto const values = SinCos(x * Radian);
   // The nanobenchmark library wants the result to be a double, so we'll pay the
   // price of an extra `and` (1 cycle).
@@ -120,7 +120,7 @@ auto const c5 = Vector<Variation<Snap>, World>(
      0 * Metre / Second / Second / Second / Second / Second,
      0 * Metre / Second / Second / Second / Second / Second});
 
-BENCHMARKED_FUNCTION(polynomial1) {
+NANOBENCHMARKED_FUNCTION(polynomial1) {
   using P1A = PolynomialInMonomialBasis<Displacement<World>, Instant, 1>;
 
   P1A::Coefficients const coefficients({c0, c1});
@@ -129,7 +129,7 @@ BENCHMARKED_FUNCTION(polynomial1) {
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
-BENCHMARKED_FUNCTION(polynomial2) {
+NANOBENCHMARKED_FUNCTION(polynomial2) {
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
 
   P2A::Coefficients const coefficients({c0, c1, c2});
@@ -138,7 +138,7 @@ BENCHMARKED_FUNCTION(polynomial2) {
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
-BENCHMARKED_FUNCTION(polynomial3) {
+NANOBENCHMARKED_FUNCTION(polynomial3) {
   using P3A = PolynomialInMonomialBasis<Displacement<World>, Instant, 3>;
 
   P3A::Coefficients const coefficients({c0, c1, c2, c3});
@@ -147,7 +147,7 @@ BENCHMARKED_FUNCTION(polynomial3) {
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
-BENCHMARKED_FUNCTION(polynomial4) {
+NANOBENCHMARKED_FUNCTION(polynomial4) {
   using P4A = PolynomialInMonomialBasis<Displacement<World>, Instant, 4>;
 
   P4A::Coefficients const coefficients({c0, c1, c2, c3, c4});
@@ -156,7 +156,7 @@ BENCHMARKED_FUNCTION(polynomial4) {
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
-BENCHMARKED_FUNCTION(polynomial5) {
+NANOBENCHMARKED_FUNCTION(polynomial5) {
   using P5A = PolynomialInMonomialBasis<Displacement<World>, Instant, 5>;
 
   P5A::Coefficients const coefficients({c0, c1, c2, c3, c4, c5});
