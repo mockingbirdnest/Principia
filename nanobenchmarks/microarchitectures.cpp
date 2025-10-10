@@ -8,12 +8,22 @@
 #include "base/cpuid.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "glog/logging.h"
+#include "nanobenchmarks/function_registry.hpp"
+
+namespace principia {
+namespace nanobenchmarks {
+namespace _microarchitectures {
+namespace internal {
+
+using namespace principia::base::_cpuid;
+using namespace principia::nanobenchmarks::_function_registry;
 
 NANOBENCHMARK_EXTERN_C_FUNCTION(identity);
 NANOBENCHMARK_EXTERN_C_FUNCTION(sqrtps_xmm0_xmm0);
 NANOBENCHMARK_EXTERN_C_FUNCTION(sqrtsd_xmm0_xmm0);
 NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
 NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
+
 #if PRINCIPIA_COMPILER_CLANG
 asm(R"(
 .intel_syntax
@@ -36,13 +46,6 @@ _mulsd_xmm0_xmm0_4x:
   ret
 )");
 #endif
-
-namespace principia {
-namespace nanobenchmarks {
-namespace _microarchitectures {
-namespace internal {
-
-using namespace principia::base::_cpuid;
 
 namespace {
 static std::vector<
