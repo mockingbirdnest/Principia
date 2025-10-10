@@ -33,38 +33,38 @@ using World = Frame<serialization::Frame::TestTag,
                     Handedness::Right,
                     serialization::Frame::TEST>;
 
-NANOBENCHMARKED_FUNCTION(twice) {
+NANOBENCHMARK(twice) {
   return 2 * x;
 }
 
-NANOBENCHMARKED_FUNCTION(thrice) {
+NANOBENCHMARK(thrice) {
   return 3 * x;
 }
 
-NANOBENCHMARKED_FUNCTION(inc) {
+NANOBENCHMARK(inc) {
   return x + 1;
 }
 
-NANOBENCHMARKED_FUNCTION(multiply_4_times) {
+NANOBENCHMARK(multiply_4_times) {
   return x * x * x * x * x;
 }
 
-NANOBENCHMARKED_FUNCTION(add_16_times) {
+NANOBENCHMARK(add_16_times) {
   return x + x + x + x + x + x + x + x + x + x + x + x + x + x + x + x + x;
 }
 
-NANOBENCHMARKED_FUNCTION(square_root) {
+NANOBENCHMARK(square_root) {
   __m128d x_0 = _mm_set_sd(x);
   return _mm_cvtsd_f64(_mm_sqrt_sd(x_0, x_0));
 }
 
-NANOBENCHMARKED_FUNCTION(sqrt_sqrt) {
+NANOBENCHMARK(sqrt_sqrt) {
   __m128d x_0 = _mm_set_sd(x);
   x_0 = _mm_sqrt_sd(x_0, x_0);
   return _mm_cvtsd_f64(_mm_sqrt_sd(x_0, x_0));
 }
 
-NANOBENCHMARKED_FUNCTION(square_root_division) {
+NANOBENCHMARK(square_root_division) {
   __m128d x_0 = _mm_set_sd(x);
   return _mm_cvtsd_f64(_mm_div_sd(x_0, _mm_sqrt_sd(x_0, x_0)));
 }
@@ -79,23 +79,23 @@ NANOBENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Faithful>);
 NANOBENCHMARK_FUNCTION(method_5²Z4¹FMA::Cbrt<Rounding::Correct>);
 #endif
 
-NANOBENCHMARKED_FUNCTION(std_sin) {
+NANOBENCHMARK(std_sin) {
   return std::sin(x);
 }
 
-NANOBENCHMARKED_FUNCTION(principia_sin) {
+NANOBENCHMARK(principia_sin) {
   return Sin(x * Radian);
 }
 
-NANOBENCHMARKED_FUNCTION(std_cos) {
+NANOBENCHMARK(std_cos) {
   return std::cos(x);
 }
 
-NANOBENCHMARKED_FUNCTION(principia_cos) {
+NANOBENCHMARK(principia_cos) {
   return Cos(x * Radian);
 }
 
-NANOBENCHMARKED_FUNCTION(principia_sin_cos) {
+NANOBENCHMARK(principia_sin_cos) {
   auto const values = SinCos(x * Radian);
   // The nanobenchmark library wants the result to be a double, so we'll pay the
   // price of an extra `and` (1 cycle).
@@ -129,7 +129,7 @@ class PolynomialNanobenchmark : public Fixture {
   Vector<Variation<Snap>, World> const c5_;
 };
 
-NANOBENCHMARK_F(PolynomialNanobenchmark, Degree1) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree1) {
   using P1A = PolynomialInMonomialBasis<Displacement<World>, Instant, 1>;
 
   P1A::Coefficients const coefficients({c0_, c1_});
@@ -138,7 +138,7 @@ NANOBENCHMARK_F(PolynomialNanobenchmark, Degree1) {
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
-NANOBENCHMARK_F(PolynomialNanobenchmark, Degree2) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree2) {
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
 
   P2A::Coefficients const coefficients({c0_, c1_, c2_});
@@ -147,7 +147,7 @@ NANOBENCHMARK_F(PolynomialNanobenchmark, Degree2) {
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
-NANOBENCHMARK_F(PolynomialNanobenchmark, Degree3) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree3) {
   using P3A = PolynomialInMonomialBasis<Displacement<World>, Instant, 3>;
 
   P3A::Coefficients const coefficients({c0_, c1_, c2_, c3_});
@@ -156,7 +156,7 @@ NANOBENCHMARK_F(PolynomialNanobenchmark, Degree3) {
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
-NANOBENCHMARK_F(PolynomialNanobenchmark, Degree4) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree4) {
   using P4A = PolynomialInMonomialBasis<Displacement<World>, Instant, 4>;
 
   P4A::Coefficients const coefficients({c0_, c1_, c2_, c3_, c4_});
@@ -165,7 +165,7 @@ NANOBENCHMARK_F(PolynomialNanobenchmark, Degree4) {
   return p(t0 + x * Second).Norm²() / Metre / Metre;
 }
 
-NANOBENCHMARK_F(PolynomialNanobenchmark, Degree5) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree5) {
   using P5A = PolynomialInMonomialBasis<Displacement<World>, Instant, 5>;
 
   P5A::Coefficients const coefficients({c0_, c1_, c2_, c3_, c4_, c5_});

@@ -54,35 +54,11 @@ class Fixture : public Nanobenchmark {
   virtual double NanobenchmarkCase(double x) = 0;
 };
 
-class FunctionNanobenchmark : public Fixture {
- public:
-  FunctionNanobenchmark(std::string_view name, BenchmarkedFunction function);
-
-  virtual LatencyDistributionTable Run() override;
-
- private:
-  BenchmarkedFunction function_;
-};
-
-class FunctionRegistry {
- public:
-  static bool Register(std::string_view name, BenchmarkedFunction function);
-  static std::map<std::string, BenchmarkedFunction, std::less<>> const&
-  functions_by_name();
-  static std::map<BenchmarkedFunction, std::string> const& names_by_function();
-
- private:
-  FunctionRegistry() = default;
-  static FunctionRegistry& singleton();
-  std::map<std::string, BenchmarkedFunction, std::less<>> functions_by_name_;
-  std::map<BenchmarkedFunction, std::string> names_by_function_;
-};
-
 class NanobenchmarkRegistry {
  public:
   static Nanobenchmark* Register(Nanobenchmark* nanobenchmark);
 
-  static std::vector<Nanobenchmark*> const& NanobenchmarksMatching(
+  static std::vector<Nanobenchmark*> NanobenchmarksMatching(
       std::regex const& filter);
 
  private:
@@ -91,25 +67,15 @@ class NanobenchmarkRegistry {
   std::map<std::string, Nanobenchmark*> nanobenchmarks_by_name_;
 };
 
-#define NANOBENCHMARK_FUNCTION_WITH_NAME(name, ...) \
-  NANOBENCHMARK_FUNCTION_WITH_NAME_INTERNAL(__LINE__, name, __VA_ARGS__)
-#define NANOBENCHMARK_FUNCTION_WITH_NAME_INTERNAL(line, name, ...) \
-  NANOBENCHMARK_FUNCTION_WITH_NAME_INTERNAL2(line, name, __VA_ARGS__)
-#define NANOBENCHMARK_FUNCTION_WITH_NAME_INTERNAL2(line, name, ...)         \
-  namespace {                                                               \
-  static bool registered##line = ::principia::nanobenchmarks::              \
-      _function_registry::FunctionRegistry::Register(name, &(__VA_ARGS__)); \
-  }
+#define NANOBENCHMARK_REGISTERED_NAME(line, n) registered_##line##_##n
 
-#define NANOBENCHMARK_PRIVATE_NAME(line, n) registered_##line##_##n
-
-#define NANOBENCHMARK_PRIVATE_DECLARE(line, n) \
-  static Nanobenchmark* NANOBENCHMARK_PRIVATE_NAME(line, n)
-
-#define NANOBENCHMARK_PRIVATE_CONCAT_NAME(BaseClass, Method) \
+#define NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method) \
   BaseClass##_##Method##_Nanobenchmark
 
-#define NANOBENCHMARK_PRIVATE_DECLARE_F(BaseClass, Method)        \
+#define NANOBENCHMARK_CONCAT_NAME(Function) \
+  FunctionFixture##_##Function##_Nanobenchmark
+
+#define NANOBENCHMARK_DECLARE_FIXTURE(BaseClass, Method)          \
   class BaseClass##_##Method##_Nanobenchmark : public BaseClass { \
    public:                                                        \
     BaseClass##_##Method##_Nanobenchmark() : BaseClass() {        \
@@ -117,36 +83,63 @@ class NanobenchmarkRegistry {
     }                                                             \
                                                                   \
    protected:                                                     \
-    virtual double NanobenchmarkCase(double x) override;          \
+    double NanobenchmarkCase(double x) override;                  \
   };
 
-#define NANOBENCHMARK_PRIVATE_REGISTER_F(line, TestName) \
-  NANOBENCHMARK_PRIVATE_DECLARE(line, TestName) =        \
+#define NANOBENCHMARK_DECLARE(Function)                                 \
+  class FunctionFixture##_##Function##_Nanobenchmark : public Fixture { \
+   public:                                                              \
+    FunctionFixture##_##Function##_Nanobenchmark() : Fixture() {        \
+      SetName(#Function);                                               \
+    }                                                                   \
+                                                                        \
+   protected:                                                           \
+    double NanobenchmarkCase(double x) override;                        \
+  };
+
+#define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)             \
+  class FunctionFixture##_##line##_Nanobenchmark : public Fixture { \
+   public:                                                          \
+    FunctionFixture##_##line##_Nanobenchmark() : Fixture() {        \
+      SetName(#Function);                                           \
+    }                                                               \
+                                                                    \
+   protected:                                                       \
+    double NanobenchmarkCase(double x) override {                   \
+      return Function(x);                                           \
+    }                                                               \
+  };
+#define NANOBENCHMARK_DECLARE_FUNCTION(line, Function) \
+  NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)
+
+#define NANOBENCHMARK_DECLARE_REGISTERED(line, TestName)                \
+  static Nanobenchmark* NANOBENCHMARK_REGISTERED_NAME(line, TestName) = \
       (NanobenchmarkRegistry::Register(new TestName))
 
-#define NANOBENCHMARK_REGISTER_F(line, BaseClass, Method) \
-  NANOBENCHMARK_PRIVATE_REGISTER_F(                       \
-      line, NANOBENCHMARK_PRIVATE_CONCAT_NAME(BaseClass, Method))
+#define NANOBENCHMARK_REGISTER_FIXTURE(line, BaseClass, Method) \
+  NANOBENCHMARK_DECLARE_REGISTERED(                             \
+      line, NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method))
 
-#define NANOBENCHMARK(n)                       \
-  NANOBENCHMARK_PRIVATE_DECLARE(__LINE__, n) = \
-      (NanobenchmarkRegistry::Register(new FunctionNanobenchmark(#n, n)))
+#define NANOBENCHMARK_REGISTER(line, Function) \
+  NANOBENCHMARK_DECLARE_REGISTERED(line, NANOBENCHMARK_CONCAT_NAME(Function))
 
-#define NANOBENCHMARK_F(BaseClass, Method, ...)          \
-  NANOBENCHMARK_PRIVATE_DECLARE_F(BaseClass, Method)     \
-  NANOBENCHMARK_REGISTER_F(__LINE__, BaseClass, Method); \
-  double NANOBENCHMARK_PRIVATE_CONCAT_NAME(              \
+#define NANOBENCHMARK_REGISTER_FUNCTION(line) \
+  NANOBENCHMARK_DECLARE_REGISTERED(line, NANOBENCHMARK_CONCAT_NAME(line))
+
+#define NANOBENCHMARK_FIXTURE(BaseClass, Method, ...)          \
+  NANOBENCHMARK_DECLARE_FIXTURE(BaseClass, Method)             \
+  NANOBENCHMARK_REGISTER_FIXTURE(__LINE__, BaseClass, Method); \
+  double NANOBENCHMARK_CONCAT_NAME_FIXTURE(                    \
       BaseClass, Method)::NanobenchmarkCase(double const x)
 
-////Obsolete
+#define NANOBENCHMARK(Function)               \
+  NANOBENCHMARK_DECLARE(Function)             \
+  NANOBENCHMARK_REGISTER(__LINE__, Function); \
+  double NANOBENCHMARK_CONCAT_NAME(Function)::NanobenchmarkCase(double const x)
 
-#define NANOBENCHMARK_FUNCTION(...) \
-  NANOBENCHMARK_FUNCTION_WITH_NAME(#__VA_ARGS__, __VA_ARGS__)
-
-#define NANOBENCHMARKED_FUNCTION(f) \
-  double f(double x);               \
-  NANOBENCHMARK_FUNCTION(f);        \
-  double f(double x)
+#define NANOBENCHMARK_FUNCTION(Function)             \
+  NANOBENCHMARK_DECLARE_FUNCTION(__LINE__, Function) \
+  NANOBENCHMARK_REGISTER_FUNCTION(__LINE__);
 
 #define NANOBENCHMARK_EXTERN_C_FUNCTION(f) \
   extern "C" double f(double);             \
@@ -156,8 +149,8 @@ class NanobenchmarkRegistry {
 
 using internal::BenchmarkedFunction;
 using internal::Fixture;
-using internal::FunctionRegistry;
 using internal::Nanobenchmark;
+using internal::NanobenchmarkRegistry;
 
 }  // namespace _function_registry
 }  // namespace nanobenchmarks

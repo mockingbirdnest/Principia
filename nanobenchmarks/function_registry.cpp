@@ -68,6 +68,10 @@ LatencyDistributionTable Fixture::Run() {
   return result;
 }
 
+FunctionNanobenchmark::FunctionNanobenchmark(std::string_view const name) {
+  SetName(name);
+}
+
 bool FunctionRegistry::Register(std::string_view name,
                                 BenchmarkedFunction function) {
   CHECK(singleton().names_by_function_.emplace(function, name).second)
@@ -103,8 +107,8 @@ Nanobenchmark* NanobenchmarkRegistry::Register(
   return nanobenchmark;
 }
 
-std::vector<Nanobenchmark*> const&
-NanobenchmarkRegistry::NanobenchmarksMatching(std::regex const& filter) {
+std::vector<Nanobenchmark*> NanobenchmarkRegistry::NanobenchmarksMatching(
+    std::regex const& filter) {
   std::vector<Nanobenchmark*> matching;
   for (auto const& [name, nanobenchmark] :
        singleton().nanobenchmarks_by_name_) {
