@@ -12,6 +12,7 @@ class LatencyDistributionTable {
  public:
   explicit LatencyDistributionTable(std::vector<double> const& quantiles);
 
+  double min() const;
   std::vector<double> const& quantiles() const;
 
   void SetSamples(std::vector<double> const& samples);

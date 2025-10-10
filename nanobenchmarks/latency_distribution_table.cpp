@@ -14,6 +14,10 @@ LatencyDistributionTable::LatencyDistributionTable(
     std::vector<double> const& quantiles)
     : quantiles_(quantiles) {}
 
+double LatencyDistributionTable::min() const {
+  return min_;
+}
+
 std::vector<double> const& LatencyDistributionTable::quantiles() const {
   return quantiles_;
 }
