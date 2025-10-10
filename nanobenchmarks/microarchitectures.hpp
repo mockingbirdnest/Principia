@@ -11,7 +11,7 @@ namespace internal {
 
 using namespace principia::nanobenchmarks::_function_registry;
 
-std::map<BenchmarkedFunction, int> const& ReferenceCycleCounts();
+std::vector<std::pair<Nanobenchmark const*, int>> const& ReferenceCycleCounts();
 
 }  // namespace internal
 

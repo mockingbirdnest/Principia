@@ -6,6 +6,7 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "glog/logging.h"
 #include "nanobenchmarks/flag_parsing.hpp"
 
 namespace principia {
@@ -13,15 +14,24 @@ namespace nanobenchmarks {
 namespace _function_registry {
 namespace internal {
 
+BenchmarkedFunction Nanobenchmark::function() const {
+  return function_;
+}
+
 std::string const& Nanobenchmark::name() const {
   return name_;
+}
+
+void Nanobenchmark::SetFunction(BenchmarkedFunction function) {
+  CHECK(function != nullptr);
+  function_ = function;
 }
 
 void Nanobenchmark::SetName(std::string_view const name) {
   name_ = name;
 }
 
-LatencyDistributionTable Fixture::Run() {
+__declspec(noinline) LatencyDistributionTable Fixture::Run() {
   std::size_t const sample_count = absl::GetFlag(FLAGS_samples);
   std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
   static std::vector<double>& samples = *new std::vector<double>(
@@ -77,9 +87,9 @@ Nanobenchmark* NanobenchmarkRegistry::Register(
   return nanobenchmark;
 }
 
-std::vector<Nanobenchmark*> NanobenchmarkRegistry::NanobenchmarksMatching(
+std::vector<Nanobenchmark const*> NanobenchmarkRegistry::NanobenchmarksMatching(
     std::regex const& filter) {
-  std::vector<Nanobenchmark*> matching;
+  std::vector<Nanobenchmark const*> matching;
   for (auto const& [name, nanobenchmark] :
        singleton().nanobenchmarks_by_name_) {
     if (std::regex_match(name, filter)) {
@@ -87,6 +97,21 @@ std::vector<Nanobenchmark*> NanobenchmarkRegistry::NanobenchmarksMatching(
     }
   }
   return matching;
+}
+
+Nanobenchmark* NanobenchmarkRegistry::NanobenchmarkFor(
+    BenchmarkedFunction const function) {
+  if (auto const it = singleton().nanobenchmarks_by_name_.find(function);
+      it == singleton().nanobenchmarks_by_name_.end()) {
+    return nullptr;
+  } else {
+    return it->second;
+  }
+}
+
+NanobenchmarkRegistry& NanobenchmarkRegistry::singleton() {
+  static NanobenchmarkRegistry* instance = new NanobenchmarkRegistry;
+  return *instance;
 }
 
 }  // namespace internal

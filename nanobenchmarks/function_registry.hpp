@@ -1,11 +1,12 @@
 #pragma once
 
 #include <functional>
-#include <map>
 #include <regex>
 #include <string>
 #include <string_view>
 
+#include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/flags/declare.h"
 #include "nanobenchmarks/latency_distribution_table.hpp"
 
@@ -29,14 +30,21 @@ class Nanobenchmark {
  public:
   Nanobenchmark() = default;
   virtual ~Nanobenchmark() = default;
-  virtual LatencyDistributionTable Run() = 0;
 
+  // We disable inlining on this function so that the overhead is independent of
+  // the callsite, and so that we actually call the benchmarked function via a
+  // function pointer, instead of inlining it.
+  virtual __declspec(noinline) LatencyDistributionTable Run() = 0;
+
+  BenchmarkedFunction function() const;
   std::string const& name() const;
 
  protected:
+  void SetFunction(BenchmarkedFunction function);
   void SetName(std::string_view name);
 
  private:
+  BenchmarkedFunction function_ = nullptr;
   std::string name_;
 };
 
@@ -54,13 +62,17 @@ class NanobenchmarkRegistry {
  public:
   static Nanobenchmark* Register(Nanobenchmark* nanobenchmark);
 
-  static std::vector<Nanobenchmark*> NanobenchmarksMatching(
+  static std::vector<Nanobenchmark const*> NanobenchmarksMatching(
       std::regex const& filter);
+
+  static Nanobenchmark* NanobenchmarkFor(BenchmarkedFunction function);
 
  private:
   NanobenchmarkRegistry() = default;
   static NanobenchmarkRegistry& singleton();
-  std::map<std::string, Nanobenchmark*> nanobenchmarks_by_name_;
+  absl::flat_hash_map<BenchmarkedFunction, Nanobenchmark>
+      nanobenchmarks_by_function;
+  absl::btree_map<std::string, Nanobenchmark*> nanobenchmarks_by_name_;
 };
 
 #define NANOBENCHMARK_REGISTERED_NAME(line, n) registered_##line##_##n
@@ -97,6 +109,7 @@ class NanobenchmarkRegistry {
   class FunctionFixture##_##line##_Nanobenchmark : public Fixture { \
    public:                                                          \
     FunctionFixture##_##line##_Nanobenchmark() : Fixture() {        \
+      SetFunction(&Function);                                       \
       SetName(#Function);                                           \
     }                                                               \
                                                                     \
