@@ -35,30 +35,20 @@ class Nanobenchmark {
   // We disable inlining on this function so that the overhead is independent of
   // the callsite, and so that we actually call the benchmarked function via a
   // function pointer, instead of inlining it.
-  virtual __declspec(noinline) LatencyDistributionTable
-  Run(Logger* logger) const = 0;
+  __declspec(noinline) LatencyDistributionTable Run(Logger* logger) const;
 
   BenchmarkedFunction function() const;
   std::string const& name() const;
 
  protected:
+  virtual double NanobenchmarkCase(double x) const = 0;
+
   void SetFunction(BenchmarkedFunction function);
   void SetName(std::string_view name);
 
  private:
   BenchmarkedFunction function_ = nullptr;
   std::string name_;
-};
-
-///TODO Why this class? </summary>
-class Fixture : public Nanobenchmark {
- public:
-  Fixture() = default;
-
-  virtual LatencyDistributionTable Run(Logger* logger) const override;
-
- protected:
-  virtual double NanobenchmarkCase(double x) const = 0;
 };
 
 class NanobenchmarkRegistry {
@@ -73,7 +63,7 @@ class NanobenchmarkRegistry {
  private:
   NanobenchmarkRegistry() = default;
   static NanobenchmarkRegistry& singleton();
-  ///TODO Unique ptr?
+  /// TODO Unique ptr?
   absl::flat_hash_map<BenchmarkedFunction, Nanobenchmark const*>
       nanobenchmarks_by_function_;
   absl::btree_map<std::string, Nanobenchmark const*> nanobenchmarks_by_name_;
@@ -98,29 +88,29 @@ class NanobenchmarkRegistry {
     double NanobenchmarkCase(double x) const override;            \
   };
 
-#define NANOBENCHMARK_DECLARE(Function)                                 \
-  class FunctionFixture##_##Function##_Nanobenchmark : public Fixture { \
-   public:                                                              \
-    FunctionFixture##_##Function##_Nanobenchmark() : Fixture() {        \
-      SetName(#Function);                                               \
-    }                                                                   \
-                                                                        \
-   protected:                                                           \
-    double NanobenchmarkCase(double x) const override;                  \
+#define NANOBENCHMARK_DECLARE(Function)                                       \
+  class FunctionFixture##_##Function##_Nanobenchmark : public Nanobenchmark { \
+   public:                                                                    \
+    FunctionFixture##_##Function##_Nanobenchmark() {                          \
+      SetName(#Function);                                                     \
+    }                                                                         \
+                                                                              \
+   protected:                                                                 \
+    double NanobenchmarkCase(double x) const override;                        \
   };
 
-#define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)             \
-  class FunctionFixture##_##line##_Nanobenchmark : public Fixture { \
-   public:                                                          \
-    FunctionFixture##_##line##_Nanobenchmark() : Fixture() {        \
-      SetFunction(&Function);                                       \
-      SetName(#Function);                                           \
-    }                                                               \
-                                                                    \
-   protected:                                                       \
-    double NanobenchmarkCase(double x) const override {             \
-      return Function(x);                                           \
-    }                                                               \
+#define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)                   \
+  class FunctionFixture##_##line##_Nanobenchmark : public Nanobenchmark { \
+   public:                                                                \
+    FunctionFixture##_##line##_Nanobenchmark() {                          \
+      SetFunction(&Function);                                             \
+      SetName(#Function);                                                 \
+    }                                                                     \
+                                                                          \
+   protected:                                                             \
+    double NanobenchmarkCase(double x) const override {                   \
+      return Function(x);                                                 \
+    }                                                                     \
   };
 #define NANOBENCHMARK_DECLARE_FUNCTION(line, Function) \
   NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)
@@ -162,7 +152,6 @@ class NanobenchmarkRegistry {
 }  // namespace internal
 
 using internal::BenchmarkedFunction;
-using internal::Fixture;
 using internal::Nanobenchmark;
 using internal::NanobenchmarkRegistry;
 

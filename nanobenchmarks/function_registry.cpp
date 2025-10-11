@@ -30,7 +30,7 @@ void Nanobenchmark::SetName(std::string_view const name) {
 }
 
 __declspec(noinline) LatencyDistributionTable
-Fixture::Run(Logger* const logger) const {
+Nanobenchmark::Run(Logger* const logger) const {
   std::size_t const sample_count = absl::GetFlag(FLAGS_samples);
   std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
   static std::vector<double>& samples = *new std::vector<double>(

@@ -103,7 +103,7 @@ NANOBENCHMARK(principia_sin_cos) {
       _mm_and_pd(_mm_set_sd(values.sin), _mm_set_sd(values.cos)));
 }
 
-class PolynomialNanobenchmark : public Fixture {
+class PolynomialNanobenchmark : public Nanobenchmark {
  protected:
   PolynomialNanobenchmark()
       : c0_({0 * Metre, 0 * Metre, 1 * Metre}),
