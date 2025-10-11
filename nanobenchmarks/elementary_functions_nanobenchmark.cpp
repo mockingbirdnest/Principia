@@ -1,6 +1,6 @@
 #include <emmintrin.h>
 
-#include "nanobenchmarks/function_registry.hpp"  // 🧙 For NANOBENCHMARK_*.
+#include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
 #include "numerics/cbrt.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -10,7 +10,7 @@ namespace nanobenchmarks {
 namespace _examples {
 
 using namespace principia::numerics::_cbrt;
-using namespace principia::nanobenchmarks::_function_registry;
+using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 

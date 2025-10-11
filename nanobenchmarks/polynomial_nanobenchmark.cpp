@@ -2,7 +2,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "nanobenchmarks/function_registry.hpp"  // 🧙 For NANOBENCHMARK_*.
+#include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "quantities/named_quantities.hpp"
@@ -16,7 +16,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
-using namespace principia::nanobenchmarks::_function_registry;
+using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;

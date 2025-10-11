@@ -1,4 +1,4 @@
-#include "nanobenchmarks/function_registry.hpp"
+#include "nanobenchmarks/nanobenchmark.hpp"
 
 #include <functional>
 #include <string>
@@ -9,7 +9,7 @@
 
 namespace principia {
 namespace nanobenchmarks {
-namespace _function_registry {
+namespace _nanobenchmark {
 namespace internal {
 
 BenchmarkedFunction Nanobenchmark::function() const {
@@ -116,6 +116,6 @@ NanobenchmarkRegistry& NanobenchmarkRegistry::singleton() {
 }
 
 }  // namespace internal
-}  // namespace _function_registry
+}  // namespace _nanobenchmark
 }  // namespace nanobenchmarks
 }  // namespace principia

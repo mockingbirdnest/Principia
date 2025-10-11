@@ -21,7 +21,7 @@
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
 #include "nanobenchmarks/flag_parsing.hpp"
-#include "nanobenchmarks/function_registry.hpp"
+#include "nanobenchmarks/nanobenchmark.hpp"
 #include "nanobenchmarks/latency_distribution_table.hpp"
 #include "nanobenchmarks/microarchitectures.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
@@ -62,7 +62,7 @@ namespace {
 
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
-using namespace principia::nanobenchmarks::_function_registry;
+using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::nanobenchmarks::_latency_distribution_table;
 using namespace principia::nanobenchmarks::_microarchitectures;
 using namespace principia::nanobenchmarks::_performance_settings_controller;

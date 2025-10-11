@@ -1,12 +1,12 @@
 #include <emmintrin.h>
 
-#include "nanobenchmarks/function_registry.hpp"  // 🧙 For NANOBENCHMARK_*.
+#include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
 
 namespace principia {
 namespace nanobenchmarks {
 namespace _examples {
 
-using namespace principia::nanobenchmarks::_function_registry;
+using namespace principia::nanobenchmarks::_nanobenchmark;
 
 NANOBENCHMARK(twice) {
   return 2 * x;

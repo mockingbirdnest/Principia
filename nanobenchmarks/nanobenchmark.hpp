@@ -19,7 +19,7 @@ ABSL_DECLARE_FLAG(double, input);
 
 namespace principia {
 namespace nanobenchmarks {
-namespace _function_registry {
+namespace _nanobenchmark {
 namespace internal {
 
 using namespace principia::mathematica::_logger;
@@ -155,6 +155,6 @@ using internal::BenchmarkedFunction;
 using internal::Nanobenchmark;
 using internal::NanobenchmarkRegistry;
 
-}  // namespace _function_registry
+}  // namespace _nanobenchmark
 }  // namespace nanobenchmarks
 }  // namespace principia

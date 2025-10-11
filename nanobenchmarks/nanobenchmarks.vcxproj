@@ -18,9 +18,9 @@
     <ClCompile Include="elementary_functions_nanobenchmark.cpp" />
     <ClCompile Include="examples_nanobenchmark.cpp" />
     <ClCompile Include="flag_parsing.cpp" />
-    <ClCompile Include="function_registry.cpp" />
     <ClCompile Include="latency_distribution_table.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="nanobenchmark.cpp" />
     <ClCompile Include="performance_settings_controller.cpp" />
     <ClCompile Include="microarchitectures.cpp" />
     <ClCompile Include="polynomial_nanobenchmark.cpp" />
@@ -30,8 +30,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="flag_parsing.hpp" />
-    <ClInclude Include="function_registry.hpp" />
     <ClInclude Include="latency_distribution_table.hpp" />
+    <ClInclude Include="nanobenchmark.hpp" />
     <ClInclude Include="performance_settings_controller.hpp" />
     <ClInclude Include="microarchitectures.hpp" />
   </ItemGroup>

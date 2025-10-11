@@ -11,7 +11,7 @@
 #include "base/cpuid.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "glog/logging.h"
-#include "nanobenchmarks/function_registry.hpp"
+#include "nanobenchmarks/nanobenchmark.hpp"
 
 namespace principia {
 namespace nanobenchmarks {
@@ -19,7 +19,7 @@ namespace _microarchitectures {
 namespace internal {
 
 using namespace principia::base::_cpuid;
-using namespace principia::nanobenchmarks::_function_registry;
+using namespace principia::nanobenchmarks::_nanobenchmark;
 
 NANOBENCHMARK_EXTERN_C_FUNCTION(identity);
 NANOBENCHMARK_EXTERN_C_FUNCTION(sqrtps_xmm0_xmm0);

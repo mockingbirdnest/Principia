@@ -2,14 +2,14 @@
 
 #include <map>
 
-#include "nanobenchmarks/function_registry.hpp"
+#include "nanobenchmarks/nanobenchmark.hpp"
 
 namespace principia {
 namespace nanobenchmarks {
 namespace _microarchitectures {
 namespace internal {
 
-using namespace principia::nanobenchmarks::_function_registry;
+using namespace principia::nanobenchmarks::_nanobenchmark;
 
 using NanobenchmarkAndCycles = std::pair<Nanobenchmark const*, int>;
 
