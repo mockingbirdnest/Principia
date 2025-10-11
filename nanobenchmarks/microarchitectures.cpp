@@ -1,8 +1,8 @@
 #include "nanobenchmarks/microarchitectures.hpp"
 
-#include <map>
 #include <memory>
 #include <regex>
+#include <string>
 #include <utility>
 #include <vector>
 

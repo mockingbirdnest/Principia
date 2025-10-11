@@ -2,9 +2,11 @@
 
 #include <print>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "absl/flags/flag.h"
-#include "nanobenchmarks/flag_parsing.hpp"
+#include "nanobenchmarks/flag_parsing.hpp"  // 🧙 For FLAGS_quantiles.
 
 namespace principia {
 namespace nanobenchmarks {

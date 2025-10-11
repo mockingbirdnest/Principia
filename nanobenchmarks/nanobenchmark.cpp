@@ -1,7 +1,10 @@
 #include "nanobenchmarks/nanobenchmark.hpp"
 
+#include <algorithm>
 #include <functional>
+#include <limits>
 #include <string>
+#include <vector>
 
 #include "absl/flags/flag.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
