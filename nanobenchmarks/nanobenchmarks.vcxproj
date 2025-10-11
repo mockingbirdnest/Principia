@@ -15,13 +15,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="elementary_functions_nanobenchmark.cpp" />
+    <ClCompile Include="examples_nanobenchmark.cpp" />
     <ClCompile Include="flag_parsing.cpp" />
     <ClCompile Include="function_registry.cpp" />
     <ClCompile Include="latency_distribution_table.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="performance_settings_controller.cpp" />
-    <ClCompile Include="nanobenchmarks.cpp" />
     <ClCompile Include="microarchitectures.cpp" />
+    <ClCompile Include="polynomial_nanobenchmark.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="reference_functions.asm" />

@@ -24,9 +24,6 @@
     <ClCompile Include="function_registry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="nanobenchmarks.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="microarchitectures.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -34,6 +31,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="flag_parsing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="polynomial_nanobenchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="elementary_functions_nanobenchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="examples_nanobenchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
