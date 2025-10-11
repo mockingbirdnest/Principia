@@ -1,17 +1,21 @@
 #pragma once
 
-#include <map>
+#include <vector>
+#include <utility>
 
-#include "nanobenchmarks/function_registry.hpp"
+#include "nanobenchmarks/nanobenchmark.hpp"
 
 namespace principia {
 namespace nanobenchmarks {
 namespace _microarchitectures {
 namespace internal {
 
-using namespace principia::nanobenchmarks::_function_registry;
+using namespace principia::nanobenchmarks::_nanobenchmark;
 
-std::map<BenchmarkedFunction, int> const& ReferenceCycleCounts();
+using NanobenchmarkAndCycles = std::pair<Nanobenchmark const*, int>;
+
+// The returned vector is sorted by nanobenchmark name.
+std::vector<NanobenchmarkAndCycles> const& ReferenceCycleCounts();
 
 }  // namespace internal
 

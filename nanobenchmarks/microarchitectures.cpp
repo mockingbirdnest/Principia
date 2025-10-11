@@ -1,19 +1,32 @@
 #include "nanobenchmarks/microarchitectures.hpp"
 
-#include <map>
+#include <memory>
 #include <regex>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/container/btree_map.h"
+#include "absl/container/flat_hash_map.h"
 #include "base/cpuid.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "glog/logging.h"
+#include "nanobenchmarks/nanobenchmark.hpp"
 
-BENCHMARK_EXTERN_C_FUNCTION(identity);
-BENCHMARK_EXTERN_C_FUNCTION(sqrtps_xmm0_xmm0);
-BENCHMARK_EXTERN_C_FUNCTION(sqrtsd_xmm0_xmm0);
-BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
-BENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
+namespace principia {
+namespace nanobenchmarks {
+namespace _microarchitectures {
+namespace internal {
+
+using namespace principia::base::_cpuid;
+using namespace principia::nanobenchmarks::_nanobenchmark;
+
+NANOBENCHMARK_EXTERN_C_FUNCTION(identity);
+NANOBENCHMARK_EXTERN_C_FUNCTION(sqrtps_xmm0_xmm0);
+NANOBENCHMARK_EXTERN_C_FUNCTION(sqrtsd_xmm0_xmm0);
+NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
+NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
+
 #if PRINCIPIA_COMPILER_CLANG
 asm(R"(
 .intel_syntax
@@ -37,52 +50,59 @@ _mulsd_xmm0_xmm0_4x:
 )");
 #endif
 
-namespace principia {
-namespace nanobenchmarks {
-namespace _microarchitectures {
-namespace internal {
-
-using namespace principia::base::_cpuid;
-
 namespace {
 static std::vector<
-    std::pair<std::regex, std::map<BenchmarkedFunction, int>>> const&
+    std::pair<std::regex, absl::flat_hash_map<BenchmarkedFunction, int>>> const&
     microarchitectures = *new std::vector{
         // Skylake, Cascade Lake, Coffee Lake, Cannon Lake, Ice Lake, Tiger
         // Lake, Golden Cove(?).
         std::pair{std::regex(R"(((6|7|9|10|11|12)th Gen Intel\(R\) Core\(TM\))"
                              R"(|Intel\(R\) Xeon\(R\) W-[23]).*)"),
-                  std::map<double (*)(double), int>{
+                  absl::flat_hash_map<BenchmarkedFunction, int>{
                       std::pair{&identity, 0},
                       std::pair{&mulsd_xmm0_xmm0, 4},
                       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
                       std::pair{&sqrtps_xmm0_xmm0, 12}}},
         // Zen3.
         std::pair{std::regex("AMD Ryzen Threadripper PRO 5.*"),
-                  std::map<double (*)(double), int>{
+                  absl::flat_hash_map<BenchmarkedFunction, int>{
                       std::pair{&identity, 0},
                       std::pair{&mulsd_xmm0_xmm0, 3},
                       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 3},
                       std::pair{&sqrtps_xmm0_xmm0, 14}}},
         // Rosetta 2.
         std::pair{std::regex("VirtualApple .*"),
-                  std::map<double (*)(double), int>{
+                  absl::flat_hash_map<BenchmarkedFunction, int>{
                       std::pair{&identity, 0},
                       std::pair{&mulsd_xmm0_xmm0, 4},
                       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4}}}};
 }  // namespace
 
-std::map<BenchmarkedFunction, int> const& ReferenceCycleCounts() {
-  static std::map<BenchmarkedFunction, int> const& result = [] {
-    for (auto const& [regex, architecture] : microarchitectures) {
-      if (std::regex_match(ProcessorBrandString(), regex)) {
-        return architecture;
-      }
-    }
-    LOG(FATAL) << "Unknown architecture " << CPUVendorIdentificationString()
-               << " " << ProcessorBrandString();
-  }();
-  return result;
+std::vector<NanobenchmarkAndCycles> const& ReferenceCycleCounts() {
+  static std::vector<NanobenchmarkAndCycles>* const reference_cycle_counts =
+      [] {
+        for (auto const& [regex, architecture] : microarchitectures) {
+          if (std::regex_match(ProcessorBrandString(), regex)) {
+            absl::btree_map<std::string, NanobenchmarkAndCycles>
+                sorted_reference_cycle_counts;
+            for (auto const& [function, cycles] : architecture) {
+              auto const* const nanobenchmark =
+                  NanobenchmarkRegistry::NanobenchmarkFor(function);
+              CHECK(nanobenchmark != nullptr)
+                  << "No nanobenchmark for function at " << function;
+              sorted_reference_cycle_counts.emplace(
+                  nanobenchmark->name(),
+                  NanobenchmarkAndCycles{nanobenchmark, cycles});
+            }
+            return new std::vector<NanobenchmarkAndCycles>(
+                std::from_range,
+                sorted_reference_cycle_counts | std::views::values);
+          }
+        }
+        LOG(FATAL) << "Unknown architecture " << CPUVendorIdentificationString()
+                   << " " << ProcessorBrandString();
+      }();
+  return *reference_cycle_counts;
 }
 
 }  // namespace internal
