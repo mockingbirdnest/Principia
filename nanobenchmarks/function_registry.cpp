@@ -4,10 +4,8 @@
 #include <string>
 
 #include "absl/flags/flag.h"
-#include "absl/flags/parse.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "glog/logging.h"
-#include "nanobenchmarks/flag_parsing.hpp"
 
 namespace principia {
 namespace nanobenchmarks {
@@ -31,7 +29,8 @@ void Nanobenchmark::SetName(std::string_view const name) {
   name_ = name;
 }
 
-__declspec(noinline) LatencyDistributionTable Fixture::Run() {
+__declspec(noinline) LatencyDistributionTable
+Fixture::Run(Logger* const logger) const {
   std::size_t const sample_count = absl::GetFlag(FLAGS_samples);
   std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
   static std::vector<double>& samples = *new std::vector<double>(
@@ -69,21 +68,23 @@ __declspec(noinline) LatencyDistributionTable Fixture::Run() {
     double const δtsc = tsc_stop - tsc_start;
     samples[j] = δtsc / loop_iterations;
   }
-  // if (logger != nullptr) {
-  //   logger->Append(
-  //       "samples",
-  //       std::tuple{FunctionRegistry::names_by_function().at(f), samples});
-  // }
+  if (logger != nullptr) {
+    logger->Append("samples", std::tuple{name(), samples});
+  }
   std::ranges::sort(samples);
-  LatencyDistributionTable result(absl::GetFlag(FLAGS_quantiles));
+  LatencyDistributionTable result;
   result.SetSamples(samples);
   return result;
 }
 
-Nanobenchmark* NanobenchmarkRegistry::Register(
-    Nanobenchmark* const nanobenchmark) {
+Nanobenchmark const* NanobenchmarkRegistry::Register(
+    Nanobenchmark const* const nanobenchmark) {
   singleton().nanobenchmarks_by_name_.emplace(nanobenchmark->name(),
                                               nanobenchmark);
+  if (nanobenchmark->function() != nullptr) {
+    singleton().nanobenchmarks_by_function_.emplace(nanobenchmark->function(),
+                                                    nanobenchmark);
+  }
   return nanobenchmark;
 }
 
@@ -99,10 +100,10 @@ std::vector<Nanobenchmark const*> NanobenchmarkRegistry::NanobenchmarksMatching(
   return matching;
 }
 
-Nanobenchmark* NanobenchmarkRegistry::NanobenchmarkFor(
+Nanobenchmark const* NanobenchmarkRegistry::NanobenchmarkFor(
     BenchmarkedFunction const function) {
-  if (auto const it = singleton().nanobenchmarks_by_name_.find(function);
-      it == singleton().nanobenchmarks_by_name_.end()) {
+  if (auto const it = singleton().nanobenchmarks_by_function_.find(function);
+      it == singleton().nanobenchmarks_by_function_.end()) {
     return nullptr;
   } else {
     return it->second;

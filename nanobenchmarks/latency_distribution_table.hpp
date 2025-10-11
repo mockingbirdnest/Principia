@@ -3,6 +3,10 @@
 #include <string>
 #include <vector>
 
+#include "absl/flags/declare.h"
+
+ABSL_DECLARE_FLAG(std::vector<double>, quantiles);
+
 namespace principia {
 namespace nanobenchmarks {
 namespace _latency_distribution_table {
@@ -10,20 +14,18 @@ namespace internal {
 
 class LatencyDistributionTable {
  public:
-  explicit LatencyDistributionTable(std::vector<double> const& quantiles);
+  static std::vector<double> const& Quantiles();
+
+  static std::string const& Heading();
 
   double min() const;
-  std::vector<double> const& quantiles() const;
 
   void SetSamples(std::vector<double> const& samples);
-
-  std::string Heading();
 
   std::string Row() const;
 
  private:
-  std::vector<double> const quantiles_;
-  double min_;
+  double min_ = 0.0;
   std::vector<double> measures_;
 
   friend LatencyDistributionTable operator*(double a,

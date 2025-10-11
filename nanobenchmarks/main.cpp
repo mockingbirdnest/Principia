@@ -1,8 +1,8 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <limits>
 #include <map>
 #include <memory>
@@ -15,15 +15,17 @@
 #include <utility>
 #include <vector>
 
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
 #include "nanobenchmarks/flag_parsing.hpp"
 #include "nanobenchmarks/function_registry.hpp"
+#include "nanobenchmarks/latency_distribution_table.hpp"
 #include "nanobenchmarks/microarchitectures.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
 #include "testing_utilities/statistics.hpp"
-
 
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
@@ -61,132 +63,30 @@ namespace {
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::nanobenchmarks::_function_registry;
+using namespace principia::nanobenchmarks::_latency_distribution_table;
 using namespace principia::nanobenchmarks::_microarchitectures;
 using namespace principia::nanobenchmarks::_performance_settings_controller;
 using namespace principia::testing_utilities::_statistics;
-
-struct LatencyDistributionTable {
-  double min;
-  std::vector<double> quantiles;
-
-  static std::string const& Heading() {
-    static std::string const& result = [] {
-      std::stringstream& out = *new std::stringstream();
-      std::print(out, "{:>8}", "min");
-      for (double const q : absl::GetFlag(FLAGS_quantiles)) {
-        if (q < 1e-3) {
-          std::print(out, "{:>7}‱", 10'000 * q);
-        } else if (q < 1e-2) {
-          std::print(out, "{:>7}‰", 1000 * q);
-        } else {
-          std::print(out, "{:>7}%", 100 * q);
-        }
-      }
-      return out.str();
-    }();
-    return result;
-  }
-
-  std::string Row() const {
-    std::stringstream out;
-    std::print(out, "{:8.2f}", min);
-    for (double const quantile : quantiles) {
-      std::print(out, "{:+8.2f}", quantile - min);
-    }
-    return out.str();
-  }
-};
-
-LatencyDistributionTable operator*(double const a,
-                                   LatencyDistributionTable const& x) {
-  LatencyDistributionTable result{a * x.min};
-  for (double const quantile : x.quantiles) {
-      result.quantiles.push_back(a * quantile);
-  }
-  return result;
-}
-
-LatencyDistributionTable operator+(LatencyDistributionTable const& x,
-                                   double const b) {
-  LatencyDistributionTable result{x.min + b};
-  for (double const quantile : x.quantiles) {
-      result.quantiles.push_back(quantile + b);
-  }
-  return result;
-}
-
-// We disable inlining on this function so that the overhead is independent of
-// the callsite, and so that we actually call the benchmarked function via a
-// function pointer, instead of inlining it.
-__declspec(noinline) LatencyDistributionTable
-    Benchmark(BenchmarkedFunction const f, Logger* logger) {
-  std::size_t const sample_count = absl::GetFlag(FLAGS_samples);
-  std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
-  static std::vector<double>& samples = *new std::vector<double>(
-      sample_count, std::numeric_limits<double>::quiet_NaN());
-  int registers[4]{};
-  int leaf = 0;
-  for (int j = 0; j < sample_count; ++j) {
-    double const input = absl::GetFlag(FLAGS_input);
-    double x = input;
-    // The CPUID barriers prevent out-of-order execution; see [Pao10].
-    #if PRINCIPIA_COMPILER_MSVC
-    __cpuid(registers, leaf);
-    #else
-    asm volatile("cpuid" ::: "eax", "ebx", "ecx", "edx", "memory");
-    #endif
-    auto const tsc_start = __rdtsc();
-    for (int i = 0; i < loop_iterations; ++i) {
-      x = f(x);
-      x += input - x;
-    }
-    unsigned int tsc_aux;
-    // The use of RDTSCP rather than RDTSC here follows [Pao10].  See the Intel®
-    // 64 and IA-32 Architectures Software Developer’s Manual:
-    // The RDTSCP  instruction is not a serializing instruction, but it does
-    // wait until all previous instructions have executed and all previous loads
-    // are globally visible.  But it does not wait for previous stores to be
-    // globally visible, and subsequent instructions may begin execution before
-    // the read operation is performed.
-    auto const tsc_stop = __rdtscp(&tsc_aux);
-    #if PRINCIPIA_COMPILER_MSVC
-    __cpuid(registers, leaf);
-    #else
-    asm volatile("cpuid" ::: "eax", "ebx", "ecx", "edx", "memory");
-    #endif
-    double const δtsc = tsc_stop - tsc_start;
-    samples[j] = δtsc / loop_iterations;
-  }
-  if (logger != nullptr) {
-    logger->Append(
-        "samples",
-        std::tuple{FunctionRegistry::names_by_function().at(f),
-                   samples});
-  }
-  std::ranges::sort(samples);
-  LatencyDistributionTable result{samples[0]};
-  for (double const q : absl::GetFlag(FLAGS_quantiles)) {
-    result.quantiles.push_back(samples[(sample_count - 1) * q]);
-  }
-  return result;
-}
 
 std::size_t FormattedWidth(std::string const& s) {
   // Two columns per code unit is wide enough, since field width is at most 2
   // per extended grapheme cluster.
   std::size_t const wide = 2 * s.size();
-    // There is no vformatted_size, so we actually format.
-    std::size_t const formatted_size =
-      std::vformat("{:" + std::to_string(wide) + "}",
-                     std::make_format_args(s))
-            .size();
+  // There is no vformatted_size, so we actually format.
+  std::size_t const formatted_size =
+      std::vformat("{:" + std::to_string(wide) + "}", std::make_format_args(s))
+          .size();
   // The actual width is the field width we allocated, minus the padding spaces
   // added by formatting.
   return wide - (formatted_size - s.size());
 }
 
+std::string NanobenchmarkName(Nanobenchmark const* const n) {
+  return n->name();
+}
+
 void Main() {
-  std::regex const name_matcher(absl::GetFlag(FLAGS_benchmark_filter));
+  std::regex const filter(absl::GetFlag(FLAGS_benchmark_filter));
   auto controller = PerformanceSettingsController::New();
   std::unique_ptr<Logger> logger;
   std::string const& filename = absl::GetFlag(FLAGS_log_to_mathematica);
@@ -197,43 +97,50 @@ void Main() {
                principia::base::_cpuid::CPUVendorIdentificationString(),
                principia::base::_cpuid::ProcessorBrandString());
   std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
-  auto name_widths =
-      FunctionRegistry::functions_by_name() |
-      std::views::filter([&](auto const& pair) {
-        auto const& [name, f] = pair;
-        return std::regex_match(name, name_matcher) ||
-               ReferenceCycleCounts().contains(f);
-      }) |
-      std::views::keys | std::views::transform(&FormattedWidth);
-  std::size_t const name_width = *std::ranges::max_element(name_widths);
-  std::map<BenchmarkedFunction, LatencyDistributionTable>
+
+  auto const nanobenchmarks =
+      NanobenchmarkRegistry::NanobenchmarksMatching(filter);
+  auto const& reference_cycle_counts = ReferenceCycleCounts();
+
+  // Would like to use std::views::concat, but not this year.
+  auto nanobenchmark_widths = nanobenchmarks |
+                              std::views::transform(&NanobenchmarkName) |
+                              std::views::transform(&FormattedWidth);
+  auto reference_cycle_counts_widths =
+      reference_cycle_counts | std::views::keys |
+      std::views::transform(&NanobenchmarkName) |
+      std::views::transform(&FormattedWidth);
+
+  std::size_t const name_width =
+      std::max(*std::ranges::max_element(nanobenchmark_widths),
+               *std::ranges::max_element(reference_cycle_counts_widths));
+
+  std::map<Nanobenchmark const*, LatencyDistributionTable>
       reference_measurements;
-  std::vprint_unicode(
-      stdout,
-      "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
+  std::vprint_unicode(stdout,
+                      "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
                       std::make_format_args(
                           "RAW TSC:", "", LatencyDistributionTable::Heading()));
-  for (auto const& [function, _] : ReferenceCycleCounts()) {
-    auto const result = Benchmark(function, logger.get());
-    reference_measurements.emplace(function, result);
-    std::vprint_unicode(
-        stdout,
-        "{:>" + std::to_string(name_width + 2) + "}{:8}{}\n",
-        std::make_format_args(
-                            FunctionRegistry::names_by_function().at(function),
+  for (auto const& [nanobenchmark, _] : ReferenceCycleCounts()) {
+    auto const result = nanobenchmark->Run(logger.get());
+    reference_measurements.emplace(nanobenchmark, result);
+    std::vprint_unicode(stdout,
+                        "{:>" + std::to_string(name_width + 2) + "}{:8}{}\n",
+                        std::make_format_args(
+                            nanobenchmark->name(),
                             "",
-            static_cast<std::string const&>(result.Row())));
+                            static_cast<std::string const&>(result.Row())));
   }
   std::vector<double> tsc;
   std::vector<double> expected_cycles;
-  for (auto const& [f, cycles] : ReferenceCycleCounts()) {
-    tsc.push_back(reference_measurements[f].min);
+  for (auto const& [nanobenchmark, cycles] : ReferenceCycleCounts()) {
+    tsc.push_back(reference_measurements[nanobenchmark].min());
     expected_cycles.push_back(cycles);
   }
   double const a = Slope(tsc, expected_cycles);
   double const b = Mean(expected_cycles) - a * Mean(tsc);
-  auto benchmark_cycles = [&](BenchmarkedFunction const f) {
-    return a * Benchmark(f, logger.get()) + b;
+  auto benchmark_cycles = [a, b, &logger](Nanobenchmark const* nanobenchmark) {
+    return a * nanobenchmark->Run(logger.get()) + b;
   };
   std::println("Slope: {:0.6f} cycle/TSC", a);
   std::println(
@@ -244,23 +151,25 @@ void Main() {
       "{:<" + std::to_string(name_width + 2) + "}{:>8}{}\n",
       std::make_format_args(
           "Cycles:", "expected", LatencyDistributionTable::Heading()));
-  for (auto const& [name, f] :
-       FunctionRegistry::functions_by_name()) {
-    if (!std::regex_match(name, name_matcher) &&
-        !ReferenceCycleCounts().contains(f)) {
-      continue;
-    }
+
+  for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
     std::vprint_unicode(
         stdout,
-        "{} {:>" + std::to_string(name_width) + "}{:>8}{}\n",
+        "R {:>" + std::to_string(name_width) + "}{:>8}{}\n",
         std::make_format_args(
-            ReferenceCycleCounts().contains(f) ? "R" : " ",
-            name,
+            nanobenchmark->name(),
+            static_cast<std::string const&>(std::to_string(cycles)),
             static_cast<std::string const&>(
-                ReferenceCycleCounts().contains(f)
-                    ? std::to_string(ReferenceCycleCounts().at(f))
-                    : ""),
-            static_cast<std::string const&>(benchmark_cycles(f).Row())));
+                benchmark_cycles(nanobenchmark).Row())));
+  }
+
+  for (auto const* nanobenchmark : nanobenchmarks) {
+    std::vprint_unicode(
+        stdout,
+        "  {:>" + std::to_string(name_width) + "}        {}\n",
+        std::make_format_args(nanobenchmark->name(),
+                              static_cast<std::string const&>(
+                                  benchmark_cycles(nanobenchmark).Row())));
   }
 }
 

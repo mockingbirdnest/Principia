@@ -1,47 +1,49 @@
-#include "latency_distribution_table.hpp"
+#include "nanobenchmarks/latency_distribution_table.hpp"
 
 #include <print>
 #include <sstream>
 
 #include "absl/flags/flag.h"
+#include "nanobenchmarks/flag_parsing.hpp"
 
 namespace principia {
 namespace nanobenchmarks {
 namespace _latency_distribution_table {
 namespace internal {
 
-LatencyDistributionTable::LatencyDistributionTable(
-    std::vector<double> const& quantiles)
-    : quantiles_(quantiles) {}
+std::vector<double> const& LatencyDistributionTable::Quantiles() {
+  std::vector<double>* const quantiles =
+      new std::vector<double>(absl::GetFlag(FLAGS_quantiles));
+  return *quantiles;
+}
+
+std::string const& LatencyDistributionTable::Heading() {
+  static std::string const& result = [] {
+    std::stringstream& out = *new std::stringstream();
+    std::print(out, "{:>8}", "min");
+    for (double const q : Quantiles()) {
+      if (q < 1e-3) {
+        std::print(out, "{:>7}‱", 10'000 * q);
+      } else if (q < 1e-2) {
+        std::print(out, "{:>7}‰", 1000 * q);
+      } else {
+        std::print(out, "{:>7}%", 100 * q);
+      }
+    }
+    return out.str();
+  }();
+  return result;
+}
 
 double LatencyDistributionTable::min() const {
   return min_;
 }
 
-std::vector<double> const& LatencyDistributionTable::quantiles() const {
-  return quantiles_;
-}
-
 void LatencyDistributionTable::SetSamples(std::vector<double> const& samples) {
   min_ = samples[0];
-  for (double const q : quantiles_) {
+  for (double const q : Quantiles()) {
     measures_.push_back(samples[(samples.size() - 1) * q]);
   }
-}
-
-std::string LatencyDistributionTable::Heading() {
-  std::stringstream& out = *new std::stringstream;
-  std::print(out, "{:>8}", "min");
-  for (double const q : quantiles_) {
-    if (q < 1e-3) {
-      std::print(out, "{:>7}‱", 10'000 * q);
-    } else if (q < 1e-2) {
-      std::print(out, "{:>7}‰", 1000 * q);
-    } else {
-      std::print(out, "{:>7}%", 100 * q);
-    }
-  }
-  return out.str();
 }
 
 inline std::string LatencyDistributionTable::Row() const {
@@ -55,7 +57,7 @@ inline std::string LatencyDistributionTable::Row() const {
 
 LatencyDistributionTable operator*(double const a,
                                    LatencyDistributionTable const& x) {
-  LatencyDistributionTable result(x.quantiles());
+  LatencyDistributionTable result;
   result.min_ = a * x.min_;
   for (double const measure : x.measures_) {
     result.measures_.push_back(a * measure);
@@ -65,7 +67,7 @@ LatencyDistributionTable operator*(double const a,
 
 LatencyDistributionTable operator+(LatencyDistributionTable const& x,
                                    double const b) {
-  LatencyDistributionTable result(x.quantiles());
+  LatencyDistributionTable result;
   result.min_ = x.min_ + b;
   for (double const measure : x.measures_) {
     result.measures_.push_back(measure + b);
