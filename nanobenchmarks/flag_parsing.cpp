@@ -1,5 +1,9 @@
 #include "nanobenchmarks/flag_parsing.hpp"
 
+#include <string>
+#include <string_view>
+#include <vector>
+
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/strings/str_join.h"
