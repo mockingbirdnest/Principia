@@ -81,10 +81,6 @@ std::size_t FormattedWidth(std::string const& s) {
   return wide - (formatted_size - s.size());
 }
 
-std::string NanobenchmarkName(Nanobenchmark const* const n) {
-  return n->name();
-}
-
 void Main() {
   std::regex const filter(absl::GetFlag(FLAGS_benchmark_filter));
   auto controller = PerformanceSettingsController::New();
@@ -104,18 +100,16 @@ void Main() {
 
   // Would like to use std::views::concat, but not this year.
   auto const nanobenchmark_widths = nanobenchmarks |
-                                    std::views::transform(&NanobenchmarkName) |
+                                    std::views::transform(&Nanobenchmark::name) |
                                     std::views::transform(&FormattedWidth);
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
-      std::views::transform(&NanobenchmarkName) |
+      std::views::transform(&Nanobenchmark::name) |
       std::views::transform(&FormattedWidth);
 
-  std::size_t name_width =
-      *std::ranges::max_element(reference_cycle_counts_widths);
+  std::size_t name_width = std::ranges::max(reference_cycle_counts_widths);
   if (!std::ranges::empty(nanobenchmark_widths)) {
-    name_width =
-        std::max(name_width, *std::ranges::max_element(nanobenchmark_widths));
+    name_width = std::max(name_width, std::ranges::max(nanobenchmark_widths));
   }
 
   std::map<Nanobenchmark const*, LatencyDistributionTable>
