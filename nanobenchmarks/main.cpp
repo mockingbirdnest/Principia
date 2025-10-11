@@ -99,9 +99,9 @@ void Main() {
   auto const& reference_cycle_counts = ReferenceCycleCounts();
 
   // Would like to use std::views::concat, but not this year.
-  auto const nanobenchmark_widths = nanobenchmarks |
-                                    std::views::transform(&Nanobenchmark::name) |
-                                    std::views::transform(&FormattedWidth);
+  auto const nanobenchmark_widths =
+      nanobenchmarks | std::views::transform(&Nanobenchmark::name) |
+      std::views::transform(&FormattedWidth);
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
       std::views::transform(&Nanobenchmark::name) |
