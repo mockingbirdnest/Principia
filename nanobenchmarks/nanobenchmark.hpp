@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <regex>
 #include <string>
 #include <string_view>
@@ -63,7 +62,6 @@ class NanobenchmarkRegistry {
  private:
   NanobenchmarkRegistry() = default;
   static NanobenchmarkRegistry& singleton();
-  /// TODO Unique ptr?
   absl::flat_hash_map<BenchmarkedFunction, Nanobenchmark const*>
       nanobenchmarks_by_function_;
   absl::btree_map<std::string, Nanobenchmark const*> nanobenchmarks_by_name_;
