@@ -15,7 +15,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="flag_parsing.cpp" />
     <ClCompile Include="function_registry.cpp" />
+    <ClCompile Include="latency_distribution_table.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="performance_settings_controller.cpp" />
     <ClCompile Include="nanobenchmarks.cpp" />
@@ -25,7 +27,9 @@
     <MASM Include="reference_functions.asm" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="flag_parsing.hpp" />
     <ClInclude Include="function_registry.hpp" />
+    <ClInclude Include="latency_distribution_table.hpp" />
     <ClInclude Include="performance_settings_controller.hpp" />
     <ClInclude Include="microarchitectures.hpp" />
   </ItemGroup>

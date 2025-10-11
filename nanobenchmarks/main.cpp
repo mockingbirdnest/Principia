@@ -103,17 +103,20 @@ void Main() {
   auto const& reference_cycle_counts = ReferenceCycleCounts();
 
   // Would like to use std::views::concat, but not this year.
-  auto nanobenchmark_widths = nanobenchmarks |
-                              std::views::transform(&NanobenchmarkName) |
-                              std::views::transform(&FormattedWidth);
-  auto reference_cycle_counts_widths =
+  auto const nanobenchmark_widths = nanobenchmarks |
+                                    std::views::transform(&NanobenchmarkName) |
+                                    std::views::transform(&FormattedWidth);
+  auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
       std::views::transform(&NanobenchmarkName) |
       std::views::transform(&FormattedWidth);
 
-  std::size_t const name_width =
-      std::max(*std::ranges::max_element(nanobenchmark_widths),
-               *std::ranges::max_element(reference_cycle_counts_widths));
+  std::size_t name_width =
+      *std::ranges::max_element(reference_cycle_counts_widths);
+  if (!std::ranges::empty(nanobenchmark_widths)) {
+    name_width =
+        std::max(name_width, *std::ranges::max_element(nanobenchmark_widths));
+  }
 
   std::map<Nanobenchmark const*, LatencyDistributionTable>
       reference_measurements;
@@ -124,12 +127,12 @@ void Main() {
   for (auto const& [nanobenchmark, _] : ReferenceCycleCounts()) {
     auto const result = nanobenchmark->Run(logger.get());
     reference_measurements.emplace(nanobenchmark, result);
-    std::vprint_unicode(stdout,
-                        "{:>" + std::to_string(name_width + 2) + "}{:8}{}\n",
-                        std::make_format_args(
-                            nanobenchmark->name(),
-                            "",
-                            static_cast<std::string const&>(result.Row())));
+    std::vprint_unicode(
+        stdout,
+        "{:>" + std::to_string(name_width + 2) + "}{:8}{}\n",
+        std::make_format_args(nanobenchmark->name(),
+                              "",
+                              static_cast<std::string const&>(result.Row())));
   }
   std::vector<double> tsc;
   std::vector<double> expected_cycles;
@@ -142,7 +145,7 @@ void Main() {
   auto benchmark_cycles = [a, b, &logger](Nanobenchmark const* nanobenchmark) {
     return a * nanobenchmark->Run(logger.get()) + b;
   };
-  std::println("Slope: {:0.6f} cycle/TSC", a);
+  std::println("Slope: {:0.6f} cycle/TSC  Overhead: {:0.6f} TSC", a, -b / a);
   std::println(
       "Correlation coefficient: {:0.6f}",
       PearsonProductMomentCorrelationCoefficient(tsc, expected_cycles));

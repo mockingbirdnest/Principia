@@ -46,7 +46,7 @@ void LatencyDistributionTable::SetSamples(std::vector<double> const& samples) {
   }
 }
 
-inline std::string LatencyDistributionTable::Row() const {
+std::string LatencyDistributionTable::Row() const {
   std::stringstream out;
   std::print(out, "{:8.2f}", min_);
   for (double const measure : measures_) {
