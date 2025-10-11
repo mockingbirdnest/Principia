@@ -145,7 +145,7 @@ void Main() {
   auto benchmark_cycles = [a, b, &logger](Nanobenchmark const* nanobenchmark) {
     return a * nanobenchmark->Run(logger.get()) + b;
   };
-  std::println("Slope: {:0.6f} cycle/TSC  Overhead: {:0.6f} TSC", a, -b / a);
+  std::println("Slope: {:0.6f} cycle/TSC    Overhead: {:0.6f} TSC", a, -b / a);
   std::println(
       "Correlation coefficient: {:0.6f}",
       PearsonProductMomentCorrelationCoefficient(tsc, expected_cycles));

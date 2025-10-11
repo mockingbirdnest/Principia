@@ -1,6 +1,7 @@
 #include "nanobenchmarks/microarchitectures.hpp"
 
 #include <map>
+#include <memory>
 #include <regex>
 #include <utility>
 #include <vector>
@@ -77,22 +78,25 @@ static std::vector<
                       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4}}}};
 }  // namespace
 
-std::vector<std::pair<Nanobenchmark const*, int>> const&
-ReferenceCycleCounts() {
-  static std::vector<std::pair<Nanobenchmark const*, int>>* const
-      reference_cycle_counts = [] {
-        auto* const reference_cycle_counts =
-            new std::vector<std::pair<Nanobenchmark const*, int>>;
+std::vector<NanobenchmarkAndCycles> const& ReferenceCycleCounts() {
+  static std::vector<NanobenchmarkAndCycles>* const reference_cycle_counts =
+      [] {
         for (auto const& [regex, architecture] : microarchitectures) {
           if (std::regex_match(ProcessorBrandString(), regex)) {
+            absl::btree_map<std::string, NanobenchmarkAndCycles>
+                sorted_reference_cycle_counts;
             for (auto const& [function, cycles] : architecture) {
               auto const* const nanobenchmark =
                   NanobenchmarkRegistry::NanobenchmarkFor(function);
               CHECK(nanobenchmark != nullptr)
                   << "No nanobenchmark for function at " << function;
-              reference_cycle_counts->emplace_back(nanobenchmark, cycles);
+              sorted_reference_cycle_counts.emplace(
+                  nanobenchmark->name(),
+                  NanobenchmarkAndCycles{nanobenchmark, cycles});
             }
-            return reference_cycle_counts;
+            return new std::vector<NanobenchmarkAndCycles>(
+                std::from_range,
+                sorted_reference_cycle_counts | std::views::values);
           }
         }
         LOG(FATAL) << "Unknown architecture " << CPUVendorIdentificationString()
