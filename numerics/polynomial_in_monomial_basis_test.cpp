@@ -116,6 +116,11 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2V) {
   EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
                                                1 * Metre / Second,
                                                0 * Metre / Second}), 0));
+  Displacement<World> d2;
+  Velocity<World> v2;
+  p.EvaluateWithDerivative(0.5 * Second, d2, v2);
+  EXPECT_THAT(d2, AlmostEquals(d, 0));
+  EXPECT_THAT(v2, AlmostEquals(v, 0));
 }
 
 // Check that a polynomial can be for an affine argument.
@@ -131,6 +136,11 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2A) {
   EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
                                                1 * Metre / Second,
                                                0 * Metre / Second}), 0));
+  Displacement<World> d2;
+  Velocity<World> v2;
+  p.EvaluateWithDerivative(t0 + 0.5 * Second, d2, v2);
+  EXPECT_THAT(d2, AlmostEquals(d, 0));
+  EXPECT_THAT(v2, AlmostEquals(v, 0));
 
   // This compiles.
   p.Primitive();
@@ -153,6 +163,11 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
   EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
                                                1 * Metre / Second,
                                                0 * Metre / Second}), 0));
+  Position<World> d2;
+  Velocity<World> v2;
+  p.EvaluateWithDerivative(t0 + 0.5 * Second, d2, v2);
+  EXPECT_THAT(d2, AlmostEquals(d, 0));
+  EXPECT_THAT(v2, AlmostEquals(v, 0));
 }
 
 PRINCIPIA_CHECK_WELL_FORMED(
@@ -184,6 +199,11 @@ TEST_F(PolynomialInMonomialBasisTest, Conversion) {
   EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
                                                1 * Metre / Second,
                                                0 * Metre / Second}), 0));
+  Displacement<World> d2;
+  Velocity<World> v2;
+  p17.EvaluateWithDerivative(0.5 * Second, d2, v2);
+  EXPECT_THAT(d2, AlmostEquals(d, 0));
+  EXPECT_THAT(v2, AlmostEquals(v, 0));
 }
 
 TEST_F(PolynomialInMonomialBasisTest, VectorSpace) {
