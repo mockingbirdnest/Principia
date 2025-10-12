@@ -33,8 +33,9 @@ class PolynomialNanobenchmark : public Nanobenchmark {
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
   using P3A = PolynomialInMonomialBasis<Displacement<World>, Instant, 3>;
   using P4A = PolynomialInMonomialBasis<Displacement<World>, Instant, 4>;
-
   using P5A = PolynomialInMonomialBasis<Displacement<World>, Instant, 5>;
+  using P17A = PolynomialInMonomialBasis<Displacement<World>, Instant, 17>;
+
   PolynomialNanobenchmark()
       : t0_(Instant() + 0.3 * Second),
         c0_({0 * Metre, 0 * Metre, 1 * Metre}),
@@ -55,7 +56,8 @@ class PolynomialNanobenchmark : public Nanobenchmark {
         p2_({c0_, c1_, c2_}, t0_, with_evaluator<Estrin>),
         p3_({c0_, c1_, c2_, c3_}, t0_, with_evaluator<Estrin>),
         p4_({c0_, c1_, c2_, c3_, c4_}, t0_, with_evaluator<Estrin>),
-        p5_({c0_, c1_, c2_, c3_, c4_, c5_}, t0_, with_evaluator<Estrin>) {};
+        p5_({c0_, c1_, c2_, c3_, c4_, c5_}, t0_, with_evaluator<Estrin>),
+        p17_(P17A::Coefficients{}, t0_, with_evaluator<Estrin>) {};
 
   static double ToDouble(Displacement<World> const& displacement) {
     auto const& coordinates = displacement.coordinates();
@@ -76,6 +78,7 @@ class PolynomialNanobenchmark : public Nanobenchmark {
   P3A const p3_;
   P4A const p4_;
   P5A const p5_;
+  P17A const p17_;
 };
 
 NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree1) {
@@ -96,6 +99,10 @@ NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree4) {
 
 NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree5) {
   return ToDouble(p5_(t0_ + x * Second));
+}
+
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree17) {
+  return ToDouble(p17_(t0_ + x * Second));
 }
 
 }  // namespace _examples
