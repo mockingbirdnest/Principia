@@ -4,7 +4,6 @@
 
 namespace principia {
 namespace nanobenchmarks {
-namespace _examples {
 
 using namespace principia::nanobenchmarks::_nanobenchmark;
 
@@ -44,6 +43,5 @@ NANOBENCHMARK(square_root_division) {
   return _mm_cvtsd_f64(_mm_div_sd(x_0, _mm_sqrt_sd(x_0, x_0)));
 }
 
-}  // namespace _examples
 }  // namespace nanobenchmarks
 }  // namespace principia

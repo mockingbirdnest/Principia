@@ -10,7 +10,6 @@
 
 namespace principia {
 namespace nanobenchmarks {
-namespace _examples {
 
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -34,6 +33,7 @@ class PolynomialNanobenchmark : public Nanobenchmark {
   using P3A = PolynomialInMonomialBasis<Displacement<World>, Instant, 3>;
   using P4A = PolynomialInMonomialBasis<Displacement<World>, Instant, 4>;
   using P5A = PolynomialInMonomialBasis<Displacement<World>, Instant, 5>;
+  using P10A = PolynomialInMonomialBasis<Displacement<World>, Instant, 10>;
   using P17A = PolynomialInMonomialBasis<Displacement<World>, Instant, 17>;
 
   PolynomialNanobenchmark()
@@ -57,6 +57,7 @@ class PolynomialNanobenchmark : public Nanobenchmark {
         p3_({c0_, c1_, c2_, c3_}, t0_, with_evaluator<Estrin>),
         p4_({c0_, c1_, c2_, c3_, c4_}, t0_, with_evaluator<Estrin>),
         p5_({c0_, c1_, c2_, c3_, c4_, c5_}, t0_, with_evaluator<Estrin>),
+        p10_(P10A::Coefficients{}, t0_, with_evaluator<Estrin>),
         p17_(P17A::Coefficients{}, t0_, with_evaluator<Estrin>) {};
 
   static double ToDouble(Displacement<World> const& displacement) {
@@ -88,35 +89,54 @@ class PolynomialNanobenchmark : public Nanobenchmark {
   P3A const p3_;
   P4A const p4_;
   P5A const p5_;
+  P10A const p10_;
   P17A const p17_;
 };
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree1) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value01) {
   return ToDouble(p1_(t0_ + x * Second));
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree2) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value02) {
   return ToDouble(p2_(t0_ + x * Second));
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree3) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value03) {
   return ToDouble(p3_(t0_ + x * Second));
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree4) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value04) {
   return ToDouble(p4_(t0_ + x * Second));
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree5) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value05) {
   return ToDouble(p5_(t0_ + x * Second));
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, ValueAndDerivativeDegree5) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value10) {
+  return ToDouble(p10_(t0_ + x * Second));
+}
+
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value17) {
+  return ToDouble(p17_(t0_ + x * Second));
+}
+
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, ValueAndDerivative05) {
   Instant const t = t0_ + x * Second;
   return ToDouble(p5_(t), p5_.EvaluateDerivative(t));
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, WithDerivativeDegree5) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, ValueAndDerivative10) {
+  Instant const t = t0_ + x * Second;
+  return ToDouble(p10_(t), p10_.EvaluateDerivative(t));
+}
+
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, ValueAndDerivative17) {
+  Instant const t = t0_ + x * Second;
+  return ToDouble(p17_(t), p17_.EvaluateDerivative(t));
+}
+
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, WithDerivative05) {
   Instant const t = t0_ + x * Second;
   Displacement<World> d;
   Velocity<World> v;
@@ -124,10 +144,21 @@ NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, WithDerivativeDegree5) {
   return ToDouble(d, v);
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree17) {
-  return ToDouble(p17_(t0_ + x * Second));
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, WithDerivative10) {
+  Instant const t = t0_ + x * Second;
+  Displacement<World> d;
+  Velocity<World> v;
+  p10_.EvaluateWithDerivative(t, d, v);
+  return ToDouble(d, v);
 }
 
-}  // namespace _examples
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, WithDerivative17) {
+  Instant const t = t0_ + x * Second;
+  Displacement<World> d;
+  Velocity<World> v;
+  p17_.EvaluateWithDerivative(t, d, v);
+  return ToDouble(d, v);
+}
+
 }  // namespace nanobenchmarks
 }  // namespace principia
