@@ -148,7 +148,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
       Argument argument) const override;
 
-  void PRINCIPIA_VECTORCALL EvaluateBoth(
+  void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
       Argument argument,
       Value& value,
       Derivative<Value, Argument>& derivative) const override;

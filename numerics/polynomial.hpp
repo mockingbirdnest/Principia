@@ -39,7 +39,7 @@ class Polynomial {
   virtual Value PRINCIPIA_VECTORCALL operator()(Argument argument) const = 0;
   virtual Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
       Argument argument) const = 0;
-  virtual void PRINCIPIA_VECTORCALL EvaluateBoth(
+  virtual void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
       Argument argument,
       Value& value,
       Derivative<Value, Argument>& derivative) const = 0;

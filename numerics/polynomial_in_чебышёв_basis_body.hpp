@@ -193,6 +193,17 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateDerivative(
 }
 
 template<typename Value_, typename Argument_, int degree_>
+void
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateWithDerivative(
+    Argument argument,
+    Value& value,
+    Derivative<Value, Argument>& derivative) const {
+  // TODO(phl): Improve by combining the two functions above.
+  value = (*this)(argument);
+  derivative = EvaluateDerivative(argument);
+}
+
+template<typename Value_, typename Argument_, int degree_>
 constexpr
 int PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::degree() const {
   return degree_;
