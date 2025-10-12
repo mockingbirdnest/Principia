@@ -79,6 +79,8 @@ FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::
 Evaluate(Coefficients const& coefficients,
          Argument const& argument) {
+  static_assert(subdegree >= 2,
+                "Unexpected subdegree in InternalEstrinEvaluator::Evaluate");
   constexpr int m = PowerOf2Le(subdegree);
 
   auto const a =
@@ -109,6 +111,9 @@ FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, subdegree>::
 EvaluateDerivative(Coefficients const& coefficients,
                    Argument const& argument) {
+  static_assert(subdegree >= 2,
+                "Unexpected subdegree in InternalEstrinEvaluator::"
+                "EvaluateDerivative");
   constexpr int m = PowerOf2Le(subdegree);
 
   auto const a =
