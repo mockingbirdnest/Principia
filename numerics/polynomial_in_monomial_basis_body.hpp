@@ -435,6 +435,16 @@ EvaluateDerivative(Argument const argument) const {
 }
 
 template<typename Value_, typename Argument_, int degree_>
+void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+EvaluateBoth(Argument const argument,
+             Value& value,
+             quantities::_arithmetic::Derivative<Value, Argument>& derivative)
+    const {
+  Evaluator<Value, Difference<Argument>, degree_>::EvaluateBoth(
+      coefficients_, argument - origin_, evaluator_, value, derivative);
+}
+
+template<typename Value_, typename Argument_, int degree_>
 constexpr int PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 degree() const {
   return degree_;
