@@ -39,6 +39,10 @@ class Polynomial {
   virtual Value PRINCIPIA_VECTORCALL operator()(Argument argument) const = 0;
   virtual Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
       Argument argument) const = 0;
+  virtual void PRINCIPIA_VECTORCALL EvaluateBoth(
+      Argument argument,
+      Value& value,
+      Derivative<Value, Argument>& derivative) const = 0;
 
   // Only useful for benchmarking, analyzing performance or for downcasting.  Do
   // not use in other circumstances.

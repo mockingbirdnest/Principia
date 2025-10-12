@@ -41,6 +41,13 @@ struct Evaluator {
       Coefficients const& coefficients,
       Argument const& argument,
       not_null<Evaluator const*> evaluator);
+  FORCE_INLINE(static)
+  void EvaluateBoth(
+      Coefficients const& coefficients,
+      Argument const& argument,
+      not_null<Evaluator const*> evaluator,
+      Value& value,
+      Derivative<Value, Argument>& derivative);
 
   static void WriteToMessage(
       not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message,
