@@ -370,8 +370,7 @@ void BM_PlanetariumPlotMethod4DiscreteTrajectory(
   Planetarium planetarium = satellites.MakePlanetarium(
       1 * ArcMinute,
       perspective((satellites.gcrs().ToThisFrameAtTimeSimilarly(t) *
-                   plotting.FromThisFrameAtTimeSimilarly(t))
-                      .similarity(),
+                   plotting.FromThisFrameAtTimeSimilarly(t)).similarity(),
                   distance_from_earth),
       &plotting);
   std::vector<ScaledSpacePoint> line;
@@ -417,8 +416,7 @@ void BM_PlanetariumPlotMethod4ContinuousTrajectory(
   Planetarium planetarium = satellites.MakePlanetarium(
       1 * ArcMinute,
       perspective((satellites.gcrs().ToThisFrameAtTimeSimilarly(t) *
-                   plotting.FromThisFrameAtTimeSimilarly(t))
-                      .similarity(),
+                   plotting.FromThisFrameAtTimeSimilarly(t)).similarity(),
                   distance_from_earth),
       &plotting);
   std::vector<ScaledSpacePoint> line;
