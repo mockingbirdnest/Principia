@@ -57,7 +57,6 @@ class PolynomialNanobenchmark : public Nanobenchmark {
         p3_({c0_, c1_, c2_, c3_}, t0_, with_evaluator<Estrin>),
         p4_({c0_, c1_, c2_, c3_, c4_}, t0_, with_evaluator<Estrin>),
         p5_({c0_, c1_, c2_, c3_, c4_, c5_}, t0_, with_evaluator<Estrin>),
-        dp5_(p5_.Derivative()),
         p17_(P17A::Coefficients{}, t0_, with_evaluator<Estrin>) {};
 
   static double ToDouble(Displacement<World> const& displacement) {
@@ -89,7 +88,6 @@ class PolynomialNanobenchmark : public Nanobenchmark {
   P3A const p3_;
   P4A const p4_;
   P5A const p5_;
-  PolynomialInMonomialBasis<Velocity<World>, Instant, 4> const dp5_;
   P17A const p17_;
 };
 
@@ -113,21 +111,16 @@ NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Degree5) {
   return ToDouble(p5_(t0_ + x * Second));
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Both1) {
-  Instant const t = t0_ + x * Second;
-  return ToDouble(p5_(t), dp5_(t));
-}
-
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Both2) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, ValueAndDerivativeDegree5) {
   Instant const t = t0_ + x * Second;
   return ToDouble(p5_(t), p5_.EvaluateDerivative(t));
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Both3) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, WithDerivativeDegree5) {
   Instant const t = t0_ + x * Second;
   Displacement<World> d;
   Velocity<World> v;
-  p5_.EvaluateBoth(t, d, v);
+  p5_.EvaluateWithDerivative(t, d, v);
   return ToDouble(d, v);
 }
 

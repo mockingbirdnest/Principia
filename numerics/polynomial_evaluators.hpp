@@ -42,7 +42,7 @@ struct Evaluator {
       Argument const& argument,
       not_null<Evaluator const*> evaluator);
   FORCE_INLINE(static)
-  void EvaluateBoth(
+  void EvaluateWithDerivative(
       Coefficients const& coefficients,
       Argument const& argument,
       not_null<Evaluator const*> evaluator,
