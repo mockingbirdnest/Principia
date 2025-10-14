@@ -1,6 +1,6 @@
 #include "numerics/cbrt.hpp"
 
-#include <pmmintrin.h>
+#include <immintrin.h>
 
 #include <algorithm>
 #include <array>

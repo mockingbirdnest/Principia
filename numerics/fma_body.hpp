@@ -9,9 +9,11 @@ namespace numerics {
 namespace _fma {
 namespace internal {
 
+#if !PRINCIPIA_REQUIRES_FMA
 inline bool EarlyCanUseHardwareFMA() {
   return CanEmitFMAInstructions && CPUIDFeatureFlag::FMA.IsSet();
 }
+#endif
 
 inline double FusedMultiplyAdd(double const a, double const b, double const c) {
   if constexpr (CanEmitFMAInstructions) {

@@ -14,17 +14,24 @@ using namespace principia::base::_cpuid;
 
 // Same as `CanUseHardwareFMA`, but may be used in static contexts where we
 // don't know if `CanUseHardwareFMA` has already been initialized.
+#if PRINCIPIA_REQUIRES_FMA
+constexpr bool EarlyCanUseHardwareFMA() { return true; }
+#else
 bool EarlyCanUseHardwareFMA();
+#endif
 
-// With clang, using FMA requires VEX-encoding everything; see #3019.
-#if PRINCIPIA_COMPILER_MSVC
+#if PRINCIPIA_REQUIRES_FMA || PRINCIPIA_COMPILER_MSVC
 constexpr bool CanEmitFMAInstructions = true;
 #else
 constexpr bool CanEmitFMAInstructions = false;
 #endif
 
 #if PRINCIPIA_USE_FMA_IF_AVAILABLE()
+#  if PRINCIPIA_REQUIRES_FMA
+constexpr bool CanUseHardwareFMA = true;
+#  else
 inline bool const CanUseHardwareFMA = EarlyCanUseHardwareFMA();
+#  endif
 #else
 inline bool const CanUseHardwareFMA = false;
 #endif

@@ -133,6 +133,8 @@ SHARED_ARGS   := \
 	-Wno-mathematical-notation-identifier-extension               \
 	-Wno-nested-anon-types                                        \
 	-Wno-unknown-pragmas                                          \
+	-DPRINCIPIA_REQUIRES_AVX=0                                    \
+	-DPRINCIPIA_REQUIRES_FMA=0                                    \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \

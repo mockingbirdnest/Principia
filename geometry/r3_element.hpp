@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pmmintrin.h>
+#include <immintrin.h>
 
 #include <iostream>
 #include <string>
@@ -23,6 +23,12 @@ using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 
+#if PRINCIPIA_USE_AVX()
+constexpr std::int64_t R3ElementAlignment = 32;
+#else
+constexpr std::int64_t R3ElementAlignment = 16;
+#endif
+
 template<typename Scalar>
 struct SphericalCoordinates;
 
@@ -30,12 +36,17 @@ struct SphericalCoordinates;
 // space over ℝ, represented by `double`. `R3Element` is the underlying data
 // type for more advanced strongly typed structures suchas `Multivector`.
 template<typename Scalar>
-struct alignas(16) R3Element final {
+struct alignas(R3ElementAlignment) R3Element final {
  public:
   constexpr R3Element();
   constexpr explicit R3Element(uninitialized_t);
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
+#if PRINCIPIA_USE_AVX()
+  template<std::same_as<__m256d> T>
+  R3Element(T xyzt);
+#else
   R3Element(__m128d xy, __m128d zt);
+#endif
 
   Scalar& operator[](int index);
   Scalar const& operator[](int index) const;
@@ -67,10 +78,16 @@ struct alignas(16) R3Element final {
       Scalar y;
       Scalar z;
     };
+#if PRINCIPIA_USE_AVX()
+    struct {
+      __m256d xyzt;
+    };
+#else
     struct {
       __m128d xy;
       __m128d zt;
     };
+#endif
   };
 };
 
