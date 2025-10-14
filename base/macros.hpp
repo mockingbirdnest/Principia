@@ -128,7 +128,7 @@ char const* const Architecture = "x86-64";
 #endif
 #define PRINCIPIA_USE_AVX() PRINCIPIA_REQUIRES_AVX && !_DEBUG
 #if !defined(PRINCIPIA_REQUIRES_FMA)
-#error The build system should define PRINCIPIA_REQUIRES_AVX
+#error The build system should define PRINCIPIA_REQUIRES_FMA
 #endif
 #define PRINCIPIA_USE_FMA_IF_AVAILABLE() !_DEBUG
 

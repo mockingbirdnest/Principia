@@ -1,7 +1,6 @@
 #pragma once
 
 #include <immintrin.h>
-#include <pmmintrin.h>
 
 #include <iostream>
 #include <string>

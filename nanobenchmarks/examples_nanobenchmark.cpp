@@ -1,4 +1,4 @@
-#include <emmintrin.h>
+#include <immintrin.h>
 
 #include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
 

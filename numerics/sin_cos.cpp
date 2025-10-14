@@ -1,6 +1,6 @@
 #include "numerics/sin_cos.hpp"
 
-#include <pmmintrin.h>
+#include <immintrin.h>
 
 #include <limits>
 #include <utility>

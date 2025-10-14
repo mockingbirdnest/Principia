@@ -221,25 +221,41 @@ inline M128D PRINCIPIA_M128D_CC Sign(M128D const a) {
 }
 
 inline M128D PRINCIPIA_M128D_CC FusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
-  return M128D(_mm_fmadd_sd(a.value_, b.value_, c.value_));
+  if constexpr (CanEmitFMAInstructions) {
+    return M128D(_mm_fmadd_sd(a.value_, b.value_, c.value_));
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 inline M128D PRINCIPIA_M128D_CC FusedMultiplySubtract(M128D const a,
                                    M128D const b,
                                    M128D const c) {
-  return M128D(_mm_fmsub_sd(a.value_, b.value_, c.value_));
+  if constexpr (CanEmitFMAInstructions) {
+    return M128D(_mm_fmsub_sd(a.value_, b.value_, c.value_));
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 inline M128D PRINCIPIA_M128D_CC FusedNegatedMultiplyAdd(M128D const a,
                                      M128D const b,
                                      M128D const c) {
-  return M128D(_mm_fnmadd_sd(a.value_, b.value_, c.value_));
+  if constexpr (CanEmitFMAInstructions) {
+    return M128D(_mm_fnmadd_sd(a.value_, b.value_, c.value_));
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 inline M128D PRINCIPIA_M128D_CC FusedNegatedMultiplySubtract(M128D const a,
                                           M128D const b,
                                           M128D const c) {
-  return M128D(_mm_fnmsub_sd(a.value_, b.value_, c.value_));
+  if constexpr (CanEmitFMAInstructions) {
+    return M128D(_mm_fnmsub_sd(a.value_, b.value_, c.value_));
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 inline std::string DebugString(M128D const x) {
