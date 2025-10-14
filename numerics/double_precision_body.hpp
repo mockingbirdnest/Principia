@@ -310,22 +310,6 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 }
 
 template<typename T, typename U>
-constexpr void QuickTwoSum(T const& a,
-                           U const& b,
-                           DoublePrecision<Sum<T, U>>& result) {
-#if _DEBUG
-  using quantities::_quantities::DebugString;
-  using Comparator = ComponentwiseComparator<T, U>;
-  CHECK(Comparator::GreaterThanOrEqualOrZero(a, b))
-      << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
-#endif
-  auto& s = result.value;
-  auto& e = result.error;
-  s = a + b;
-  e = b - (s - a);
-}
-
-template<typename T, typename U>
 FORCE_INLINE(constexpr)
 DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a, U const& b) {
 #if _DEBUG
@@ -344,22 +328,6 @@ DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a, U const& b) {
 }
 
 template<typename T, typename U>
-constexpr void QuickTwoDifference(T const& a,
-                                  U const& b,
-                                  DoublePrecision<Difference<T, U>>& result) {
-#if _DEBUG
-  using quantities::_quantities::DebugString;
-  using Comparator = ComponentwiseComparator<T, U>;
-  CHECK(Comparator::GreaterThanOrEqualOrZero(a, b))
-      << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
-#endif
-  auto& s = result.value;
-  auto& e = result.error;
-  s = a - b;
-  e = (a - s) - b;
-}
-
-template<typename T, typename U>
 constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
   // [HLB07].
   DoublePrecision<Sum<T, U>> result(uninitialized);
@@ -369,17 +337,6 @@ constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
   auto const v = s - a;
   e = (a - (s - v)) + (b - v);
   return result;
-}
-
-template<typename T, typename U>
-constexpr void TwoSum(T const& a,
-                      U const& b,
-                      DoublePrecision<Sum<T, U>>& result) {
-  auto& s = result.value;
-  auto& e = result.error;
-  s = a + b;
-  auto const v = s - a;
-  e = (a - (s - v)) + (b - v);
 }
 
 // Point × Point → Vector.
@@ -413,33 +370,6 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
   return result;
 }
 
-template<typename T, typename U, typename, typename>
-constexpr void TwoDifference(T const& a,
-                             U const& b,
-                             DoublePrecision<Difference<T, U>>& result) {
-  static_assert(std::is_same<T, U>::value,
-                "Template metaprogramming went wrong");
-  using Point = T;
-  using Vector = Difference<T, U>;
-  Vector& s = result.value;
-  Vector& e = result.error;
-  s = a - b;
-  // Corresponds to -v in `TwoSum`.
-  Point const w = a - s;
-  e = (a - (s + w)) + (w - b);
-}
-
-template<typename T, typename U, typename>
-constexpr void TwoDifference(T const& a,
-                             U const& b,
-                             DoublePrecision<Difference<T, U>>& result) {
-  auto& s = result.value;
-  auto& e = result.error;
-  s = a - b;
-  auto const v = s - a;
-  e = (a - (s - v)) - (b + v);
-}
-
 template<typename T>
 DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left) {
   static_assert(std::is_same<Difference<T>, T>::value,
@@ -461,8 +391,7 @@ template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(T const& left,
                                      DoublePrecision<U> const& right) {
   // [MR22], algorithm 5, relative error 2 u^2.
-  DoublePrecision<Sum<T, U>> s(uninitialized);
-  TwoSum(left, right.value, s);
+  auto const s = TwoSum(left, right.value);
   auto const v = s.error + right.error;
   return QuickTwoSum(s.value, v);
 }
@@ -471,8 +400,7 @@ template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      U const& right) {
   // [MR22], algorithm 5, relative error 2 u^2.
-  DoublePrecision<Sum<T, U>> s(uninitialized);
-  TwoSum(left.value, right, s);
+  auto const s = TwoSum(left.value, right);
   auto const v = s.error + left.error;
   return QuickTwoSum(s.value, v);
 }
@@ -481,10 +409,8 @@ template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      DoublePrecision<U> const& right) {
   // [MR22], algorithm 4, relative error 3 u^2 + 13 u^3.
-  DoublePrecision<Sum<T, U>> s(uninitialized);
-  DoublePrecision<Sum<Difference<T>, Difference<U>>> t(uninitialized);
-  TwoSum(left.value, right.value, s);
-  TwoSum(left.error, right.error, t);
+  auto const s = TwoSum(left.value, right.value);
+  auto const t = TwoSum(left.error, right.error);
   auto const c = s.error + t.value;
   DoublePrecision<Sum<T, U>> v(uninitialized);
   QuickTwoSum(s.value, c, v);
@@ -496,8 +422,7 @@ template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(T const& left,
                                             DoublePrecision<U> const& right) {
   // [MR22], algorithm 5, relative error 2 u^2.
-  DoublePrecision<Difference<T, U>> s(uninitialized);
-  TwoDifference(left, right.value, s);
+  auto const s = TwoDifference(left, right.value);
   auto const v = s.error - right.error;
   return QuickTwoSum(s.value, v);
 }
@@ -506,8 +431,7 @@ template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             U const& right) {
   // [MR22], algorithm 5, relative error 2 u^2.
-  DoublePrecision<Difference<T, U>> s(uninitialized);
-  TwoDifference(left.value, right, s);
+  auto const s = TwoDifference(left.value, right);
   auto const v = s.error + left.error;
   return QuickTwoSum(s.value, v);
 }
@@ -516,10 +440,8 @@ template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right) {
   // [MR22], algorithm 4, relative error 3 u^2 + 13 u^3.
-  DoublePrecision<Difference<T, U>> s(uninitialized);
-  DoublePrecision<Difference<Difference<T>, Difference<U>>> t(uninitialized);
-  TwoDifference(left.value, right.value, s);
-  TwoDifference(left.error, right.error, t);
+  auto const s = TwoDifference(left.value, right.value);
+  auto const t = TwoDifference(left.error, right.error);
   auto const c = s.error + t.value;
   DoublePrecision<Difference<T, U>> v(uninitialized);
   QuickTwoSum(s.value, c, v);

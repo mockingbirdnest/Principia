@@ -73,30 +73,15 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
 template<typename T, typename U>
 constexpr DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 
-template<typename T, typename U>
-constexpr void QuickTwoSum(T const& a,
-                           U const& b,
-                           DoublePrecision<Sum<T, U>>& result);
-
 // Computes the exact difference of a and b.  The arguments must be such that
 // |a| >= |b| or a == 0.
 template<typename T, typename U>
 constexpr DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a,
                                                                U const& b);
 
-template<typename T, typename U>
-constexpr void QuickTwoDifference(T const& a,
-                                  U const& b,
-                                  DoublePrecision<Difference<T, U>>& result);
-
 // Computes the exact sum of a and b.
 template<typename T, typename U>
 constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
-
-template<typename T, typename U>
-constexpr void TwoSum(T const& a,
-                      U const& b,
-                      DoublePrecision<Sum<T, U>>& result);
 
 // `TwoDifference` may have any of the following signatures:
 //   1. Point × Point → Vector;
@@ -114,19 +99,6 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
 template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b);
-
-template<typename T,
-         typename U,
-         typename = Difference<T, Difference<T, U>>,
-         typename = std::enable_if_t<!std::is_same<U, Difference<U>>::value>>
-constexpr void TwoDifference(T const& a,
-                             U const& b,
-                             DoublePrecision<Difference<T, U>>& result);
-
-template<typename T, typename U, typename = Difference<Difference<T, U>, T>>
-constexpr void TwoDifference(T const& a,
-                             U const& b,
-                             DoublePrecision<Difference<T, U>>& result);
 
 // `T` must be a vector.
 template<typename T>
