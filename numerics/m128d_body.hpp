@@ -72,27 +72,27 @@ inline M128D const M128D::negated_sign_bit_ =
 inline M128D const M128D::sign_bit_ =
     M128D::MakeFromBits(0x8000'0000'0000'0000ull);
 
-inline M128D operator+(M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator+(M128D const right) {
   return right;
 }
 
-inline M128D operator-(M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator-(M128D const right) {
   return M128D(_mm_xor_pd(right.value_, M128D::sign_bit_.value_));
 }
 
-inline M128D operator+(M128D const left, M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator+(M128D const left, M128D const right) {
   return M128D(_mm_add_sd(left.value_, right.value_));
 }
 
-inline M128D operator-(M128D const left, M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator-(M128D const left, M128D const right) {
   return M128D(_mm_sub_sd(left.value_, right.value_));
 }
 
-inline M128D operator*(M128D const left, M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator*(M128D const left, M128D const right) {
   return M128D(_mm_mul_sd(left.value_, right.value_));
 }
 
-inline M128D operator/(M128D const left, M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator/(M128D const left, M128D const right) {
   return M128D(_mm_div_sd(left.value_, right.value_));
 }
 
@@ -103,28 +103,28 @@ M128D& M128D::operator*=(T const right) {
 }
 
 template<std::integral T>
-M128D operator*(M128D const left, T const right) {
+M128D PRINCIPIA_M128D_CC operator*(M128D const left, T const right) {
   return left * M128D(static_cast<double>(right));
 }
 
 template<std::integral T>
-M128D operator*(T const left, M128D const right) {
+M128D PRINCIPIA_M128D_CC operator*(T const left, M128D const right) {
   return M128D(static_cast<double>(left)) * right;
 }
 
-inline M128D operator~(M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator~(M128D const right) {
   return M128D(_mm_xor_pd(right.value_, M128D::all_ones_.value_));
 }
 
-inline M128D operator&(M128D const left, M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator&(M128D const left, M128D const right) {
   return M128D(_mm_and_pd(left.value_, right.value_));
 }
 
-inline M128D operator|(M128D const left, M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator|(M128D const left, M128D const right) {
   return M128D(_mm_or_pd(left.value_, right.value_));
 }
 
-inline M128D operator^(M128D const left, M128D const right) {
+inline M128D PRINCIPIA_M128D_CC operator^(M128D const left, M128D const right) {
   return M128D(_mm_xor_pd(left.value_, right.value_));
 }
 
@@ -212,31 +212,31 @@ bool operator>(T const left, M128D const right) {
   return left > static_cast<double>(right);
 }
 
-inline M128D Abs(M128D const a) {
+inline M128D PRINCIPIA_M128D_CC Abs(M128D const a) {
   return a & M128D::negated_sign_bit_;
 }
 
-inline M128D Sign(M128D const a) {
+inline M128D PRINCIPIA_M128D_CC Sign(M128D const a) {
   return a & M128D::sign_bit_;
 }
 
-inline M128D FusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
+inline M128D PRINCIPIA_M128D_CC FusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
   return M128D(_mm_fmadd_sd(a.value_, b.value_, c.value_));
 }
 
-inline M128D FusedMultiplySubtract(M128D const a,
+inline M128D PRINCIPIA_M128D_CC FusedMultiplySubtract(M128D const a,
                                    M128D const b,
                                    M128D const c) {
   return M128D(_mm_fmsub_sd(a.value_, b.value_, c.value_));
 }
 
-inline M128D FusedNegatedMultiplyAdd(M128D const a,
+inline M128D PRINCIPIA_M128D_CC FusedNegatedMultiplyAdd(M128D const a,
                                      M128D const b,
                                      M128D const c) {
   return M128D(_mm_fnmadd_sd(a.value_, b.value_, c.value_));
 }
 
-inline M128D FusedNegatedMultiplySubtract(M128D const a,
+inline M128D PRINCIPIA_M128D_CC FusedNegatedMultiplySubtract(M128D const a,
                                           M128D const b,
                                           M128D const c) {
   return M128D(_mm_fnmsub_sd(a.value_, b.value_, c.value_));

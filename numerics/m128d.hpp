@@ -7,6 +7,13 @@
 #include <ostream>
 #include <string>
 
+//TODO(phl)comment
+#if PRINCIPIA_COMPILER_MSVC && PRINCIPIA_USE_AVX()
+#define PRINCIPIA_M128D_CC __cdecl
+#else
+#define PRINCIPIA_M128D_CC
+#endif
+
 namespace principia {
 namespace numerics {
 namespace _m128d {
@@ -43,12 +50,12 @@ class M128D {
   M128D& operator*=(M128D right);
   M128D& operator/=(M128D right);
 
-  friend M128D operator+(M128D right);
-  friend M128D operator-(M128D right);
-  friend M128D operator+(M128D left, M128D right);
-  friend M128D operator-(M128D left, M128D right);
-  friend M128D operator*(M128D left, M128D right);
-  friend M128D operator/(M128D left, M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator+(M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator-(M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator+(M128D left, M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator-(M128D left, M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator*(M128D left, M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator/(M128D left, M128D right);
 
   // The ℤ-module structure.  It is important to use `std::integral` here to
   // make sure that these operations are not callable with an implicitly-
@@ -56,14 +63,14 @@ class M128D {
   template<std::integral T>
   M128D& operator*=(T right);
   template<std::integral T>
-  friend M128D operator*(M128D left, T right);
+  friend M128D PRINCIPIA_M128D_CC operator*(M128D left, T right);
   template<std::integral T>
-  friend M128D operator*(T left, M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator*(T left, M128D right);
 
-  friend M128D operator~(M128D right);
-  friend M128D operator&(M128D left, M128D right);
-  friend M128D operator|(M128D left, M128D right);
-  friend M128D operator^(M128D left, M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator~(M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator&(M128D left, M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator|(M128D left, M128D right);
+  friend M128D PRINCIPIA_M128D_CC operator^(M128D left, M128D right);
 
   // Comparisons should be implemented as vanilla float comparisons, not as
   // calls to intrinsics like `_mm_comieq_sd`.  The former generates an
@@ -104,14 +111,14 @@ class M128D {
   template<std::floating_point T>
   friend bool operator>(T left, M128D right);
 
-  friend M128D Abs(M128D a);
+  friend M128D PRINCIPIA_M128D_CC Abs(M128D a);
   // Returns a zero with the sign of `a`.
-  friend M128D Sign(M128D a);
+  friend M128D PRINCIPIA_M128D_CC Sign(M128D a);
 
-  friend M128D FusedMultiplyAdd(M128D a, M128D b, M128D c);
-  friend M128D FusedMultiplySubtract(M128D a, M128D b, M128D c);
-  friend M128D FusedNegatedMultiplyAdd(M128D a, M128D b, M128D c);
-  friend M128D FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
+  friend M128D PRINCIPIA_M128D_CC FusedMultiplyAdd(M128D a, M128D b, M128D c);
+  friend M128D PRINCIPIA_M128D_CC FusedMultiplySubtract(M128D a, M128D b, M128D c);
+  friend M128D PRINCIPIA_M128D_CC FusedNegatedMultiplyAdd(M128D a, M128D b, M128D c);
+  friend M128D PRINCIPIA_M128D_CC FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
 
  private:
   __m128d value_;
@@ -122,22 +129,22 @@ class M128D {
   static M128D const sign_bit_;
 };
 
-M128D operator+(M128D right);
-M128D operator-(M128D right);
-M128D operator+(M128D left, M128D right);
-M128D operator-(M128D left, M128D right);
-M128D operator*(M128D left, M128D right);
-M128D operator/(M128D left, M128D right);
+M128D PRINCIPIA_M128D_CC operator+(M128D right);
+M128D PRINCIPIA_M128D_CC operator-(M128D right);
+M128D PRINCIPIA_M128D_CC operator+(M128D left, M128D right);
+M128D PRINCIPIA_M128D_CC operator-(M128D left, M128D right);
+M128D PRINCIPIA_M128D_CC operator*(M128D left, M128D right);
+M128D PRINCIPIA_M128D_CC operator/(M128D left, M128D right);
 
 template<std::integral T>
-M128D operator*(M128D left, T right);
+M128D PRINCIPIA_M128D_CC operator*(M128D left, T right);
 template<std::integral T>
-M128D operator*(T left, M128D right);
+M128D PRINCIPIA_M128D_CC operator*(T left, M128D right);
 
-M128D operator~(M128D right);
-M128D operator&(M128D left, M128D right);
-M128D operator|(M128D left, M128D right);
-M128D operator^(M128D left, M128D right);
+M128D PRINCIPIA_M128D_CC operator~(M128D right);
+M128D PRINCIPIA_M128D_CC operator&(M128D left, M128D right);
+M128D PRINCIPIA_M128D_CC operator|(M128D left, M128D right);
+M128D PRINCIPIA_M128D_CC operator^(M128D left, M128D right);
 
 bool operator==(M128D left, M128D right);
 template<std::floating_point T>
@@ -170,20 +177,20 @@ bool operator>(M128D left, T right);
 template<std::floating_point T>
 bool operator>(T left, M128D right);
 
-M128D Abs(M128D a);
-M128D Sign(M128D a);
+M128D PRINCIPIA_M128D_CC Abs(M128D a);
+M128D PRINCIPIA_M128D_CC Sign(M128D a);
 
 // ⟦ab + c⟧.
-M128D FusedMultiplyAdd(M128D a, M128D b, M128D c);
+M128D PRINCIPIA_M128D_CC FusedMultiplyAdd(M128D a, M128D b, M128D c);
 
 // ⟦ab - c⟧.
-M128D FusedMultiplySubtract(M128D a, M128D b, M128D c);
+M128D PRINCIPIA_M128D_CC FusedMultiplySubtract(M128D a, M128D b, M128D c);
 
 // ⟦-ab + c⟧.
-M128D FusedNegatedMultiplyAdd(M128D a, M128D b, M128D c);
+M128D PRINCIPIA_M128D_CC FusedNegatedMultiplyAdd(M128D a, M128D b, M128D c);
 
 // ⟦-ab - c⟧.
-M128D FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
+M128D PRINCIPIA_M128D_CC FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
 
 std::string DebugString(M128D x);
 std::ostream& operator<<(std::ostream& os, M128D x);
@@ -204,3 +211,5 @@ using internal::Sign;
 }  // namespace principia
 
 #include "numerics/m128d_body.hpp"
+
+#undef PRINCIPIA_M128D_CC
