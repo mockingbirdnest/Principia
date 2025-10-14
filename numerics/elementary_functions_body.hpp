@@ -2,7 +2,7 @@
 
 #include "numerics/elementary_functions.hpp"
 
-#include <pmmintrin.h>
+#include <immintrin.h>
 
 #include <cmath>
 

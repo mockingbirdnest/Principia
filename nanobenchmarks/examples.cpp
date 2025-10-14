@@ -1,4 +1,4 @@
-#include <emmintrin.h>
+#include <immintrin.h>
 
 #include "nanobenchmarks/function_registry.hpp"  // 🧙 For BENCHMARK_FUNCTION etc.
 #include "numerics/cbrt.hpp"
