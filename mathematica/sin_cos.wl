@@ -9,7 +9,7 @@
 
 
 (* ::Input:: *)
-(*Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_18_only1.wl"}]];Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_18_not1.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]];*)
+(*Get[FileNameJoin[{ParentDirectory[NotebookDirectory[]],"functions","sin_cos_20.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point.wl"}]];Get[FileNameJoin[{NotebookDirectory[],"ieee754_floating_point_evaluation.wl"}]];*)
 
 
 (* ::Input:: *)
@@ -77,15 +77,15 @@
 
 
 (* ::Text:: *)
-(*Find the bounds over which we'll have to evaluate the polynomial, based on the excursion away from multiples of 1/512:*)
+(*Find the bounds over which we'll have to evaluate the polynomial, based on the excursion away from multiples of 1/512, except for k=1:*)
 
 
 (* ::Input:: *)
-(*accurateTablesXIntervals=Table[Interval[{(2i-1)accurateTablesStep/2,(2i+1)accurateTablesStep/2}],{i,1,accurateTablesMaxIndex}];*)
+(*accurateTablesXIntervals=Table[Interval[{If[k==1,(1+7/32)accurateTablesStep/2,(2k-1)accurateTablesStep/2],(2k+1)accurateTablesStep/2}],{k,1,accurateTablesMaxIndex}];*)
 
 
 (* ::Input:: *)
-(*accurateTablesHIntervals=Table[accurateTablesXIntervals[[i]]-accurateTables[i][[1]],{i,1,accurateTablesMaxIndex}];*)
+(*accurateTablesHIntervals=Table[accurateTablesXIntervals[[k]]-accurateTables[k][[1]],{k,1,accurateTablesMaxIndex}];*)
 
 
 (* ::Input:: *)
@@ -105,27 +105,49 @@
 
 
 (* ::Text:: *)
-(*Check the Sterbenz condition for computing s0+c0 h exactly (the subtraction h' - s0 is exact):*)
+(*Perturbations:*)
 
 
 (* ::Input:: *)
-(*AllTrue[Table[Module[{*)
-(*t=accurateTables[i],s0,c0,h,h\[Prime]},*)
-(*s0=t[[2]];c0=t[[3]];h=accurateTablesHIntervals[[i]];h\[Prime]=(s0+c0 h)(1+uInterval);s0/2<=h\[Prime]<=2s0],{i,1,accurateTablesMaxIndex}],TrueQ]*)
+(*accurateTablesPerturbations=Table[Representation[accurateTables[i][[1]]]-Representation[i/512],{i,1,accurateTablesMaxIndex}];*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits=Map[N[Log2[Abs[#]]]&,accurateTablesPerturbations];*)
+
+
+(* ::Input:: *)
+(*PositionLargest[accurateTablesPerturbedBits]*)
+
+
+(* ::Input:: *)
+(*PositionSmallest[accurateTablesPerturbedBits]*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits[[89]]*)
+
+
+(* ::Input:: *)
+(*accurateTablesPerturbedBits[[160]]*)
 
 
 (* ::Text:: *)
-(*Similarly the Sterbenz condition for computing c0 - h s0 exactly (the subtraction h'- c0 is exact):*)
+(*Check the Sterbenz condition for computing sk+ck h exactly (the subtraction h' - sk is exact):*)
 
 
 (* ::Input:: *)
-(*AllTrue[Table[Module[{*)
-(*t=accurateTables[i],s0,c0,h,h\[Prime]},*)
-(*s0=t[[2]];*)
-(*c0=t[[3]];*)
-(*h=accurateTablesHIntervals[[i]];*)
-(*h\[Prime]=(c0-h s0)(1+uInterval);*)
-(*c0/2<=h\[Prime]<=2 c0],{i,1,accurateTablesMaxIndex}],TrueQ]*)
+(*AllTrue[Table[Module[{t=accurateTables[k],sk,ck,h,h\[Prime]},*)
+(*sk=t[[2]];ck=t[[3]];h=accurateTablesHIntervals[[k]];h\[Prime]=(sk+ck h)(1+uInterval);sk/2<=h\[Prime]<=2sk],{k,1,accurateTablesMaxIndex}],TrueQ]*)
+
+
+(* ::Text:: *)
+(*Similarly the Sterbenz condition for computing ck - h sk exactly (the subtraction h'- ck is exact):*)
+
+
+(* ::Input:: *)
+(*AllTrue[Table[Module[{t=accurateTables[k],sk,ck,h,h\[Prime]},*)
+(*sk=t[[2]];ck=t[[3]];h=accurateTablesHIntervals[[k]];h\[Prime]=(ck-h sk)(1+uInterval);ck/2<=h\[Prime]<=2 ck],{k,1,accurateTablesMaxIndex}],TrueQ]*)
 
 
 (* ::Section:: *)
@@ -584,7 +606,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]2=2^(2-2M);*)
+(*\[Zeta]2=2^(1-2M);*)
 
 
 (* ::Text:: *)
@@ -596,15 +618,15 @@
 
 
 (* ::Input:: *)
-(*Assert[Max[reductionInterval]<2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]]*)
+(*Assert[Max[reductionInterval]<2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+5)\[GothicU][\[Pi]/2]+2^(-2M)(\[Pi]/2)]*)
 
 
 (* ::Input:: *)
-(*N[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]},20]*)
+(*N[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+5)\[GothicU][\[Pi]/2]+2^(-2M)(\[Pi]/2)},20]*)
 
 
 (* ::Input:: *)
-(*N[Log2[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+3)\[GothicU][\[Pi]/2]+2^(-2M)\[Pi]}],20]*)
+(*N[Log2[{Max[reductionInterval],2^(\[Kappa]2-2M)(2^(\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2+1)+5)\[GothicU][\[Pi]/2]+2^(-2M)(\[Pi]/2)}],20]*)
 
 
 (* ::Text:: *)
@@ -612,7 +634,7 @@
 
 
 (* ::Input:: *)
-(*angleReducedThreshold = 2^(\[Kappa]3-M)(2^(\[Kappa]2+\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-M+2)+4)*)
+(*angleReducedThreshold = 2^(\[Kappa]3-M)(2^(\[Kappa]2+\[Kappa]\[Prime]2+\[Kappa]\[DoublePrime]2-M+2)+2)*)
 
 
 (* ::Input:: *)
@@ -706,7 +728,7 @@
 
 
 (* ::Input:: *)
-(*x0Max=1/1024;*)
+(*x0Max=Min[accurateTablesXIntervals[[1]]];*)
 
 
 (* ::Input:: *)
@@ -717,15 +739,19 @@
 (*x0Interval=Interval[{x0Min,x0Max}]*)
 
 
+(* ::Text:: *)
+(*The value of the error function at 0 must be chosen so that we have proper convergence (which we can check by looking for equioscillation in the graph).*)
+
+
 (* ::Input:: *)
 (*sin0ApproximationResult=GeneralMiniMaxApproximation[*)
-(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^10,Sin[t]/t^3]},*)
+(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^6,Sin[t]/t^3]},*)
 (*{t,{0,x0Max},1,0},*)
 (*x,WorkingPrecision->30]*)
 
 
 (* ::Input:: *)
-(*sin0Polynomial=Function[u, Evaluate[sin0ApproximationResult[[2,1]]/.x->u]]*)
+(*sin0Polynomial=Function[u, Evaluate[HornerForm[sin0ApproximationResult[[2,1]]/.x->u]]]*)
 
 
 (* ::Input:: *)
@@ -799,9 +825,13 @@
 (*hMin=-hMax;*)
 
 
+(* ::Text:: *)
+(*The value of the error function at 0 must be chosen so that we have proper convergence (which we can check by looking for equioscillation in the graph).*)
+
+
 (* ::Input:: *)
 (*sinApproximationResult=GeneralMiniMaxApproximation[*)
-(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^10,Sin[t]/t^3]},*)
+(*{t^2,If[t==0,-1/6,sinFn[t]],If[t==0,1*^6,Sin[t]/t^3]},*)
 (*{t,{0,hMax},1,0},*)
 (*x,WorkingPrecision->30]*)
 
@@ -882,7 +912,7 @@
 
 
 (* ::Input:: *)
-(*cosPolynomial=Function[u, Evaluate[ cosApproximationResult[[2,1]]/.x->u]]*)
+(*cosPolynomial=Function[u, Evaluate[HornerForm[ cosApproximationResult[[2,1]]/.x->u]]]*)
 
 
 (* ::Input:: *)
@@ -923,10 +953,6 @@
 
 (* ::Input:: *)
 (*HexLiteral[c4,Quotes->4]*)
-
-
-(* ::Text:: *)
-(*Error on the minimax approximation:*)
 
 
 (* ::Input:: *)
@@ -975,7 +1001,7 @@
 
 
 (* ::Input:: *)
-(*\[Eta]=Abs[sin0ApproximationResult[[2,2]]]*)
+(*\[Xi]=Abs[sin0ApproximationResult[[2,2]]]*)
 
 
 (* ::Text:: *)
@@ -983,7 +1009,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]1=Interval[{-\[Eta],\[Eta]}];*)
+(*\[Zeta]1=Interval[{-\[Xi],\[Xi]}];*)
 
 
 (* ::Input:: *)
@@ -996,14 +1022,6 @@
 
 (* ::Input:: *)
 (*binaryBounds[\[Zeta]2]*)
-
-
-(* ::Input:: *)
-(*\[Zeta]3=IEEEEvaluateWithRelativeError[x0Interval^3][[2]];*)
-
-
-(* ::Input:: *)
-(*binaryBounds[\[Zeta]3]*)
 
 
 (* ::Input:: *)
@@ -1082,8 +1100,24 @@
 (*HexLiteral[CorrectlyRound[e,RoundingMode->TowardPositiveInfinity],Quotes->4]*)
 
 
-(* ::Text:: *)
-(*Proof that the term in \[Delta]x x^2 doesn't matter:*)
+(* ::Subsubsection::Closed:: *)
+(*Dominant Term of the Error*)
+
+
+(* ::Input:: *)
+(*errorExpression=Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Zeta]1=z1,\[Zeta]2=z2},t3[x\:0303,\[Delta]x\:0303]]*)
+
+
+(* ::Input:: *)
+(*vars={d1,d2,d3,d4,z1,z2,\[Delta]x\:0303};*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrder=Module[{alt=Alternatives@@vars},Collect[Expand[errorExpression]/.Times->times/.times[___,alt,___,alt,___]->0/.times->Times,vars]]*)
+
+
+(* ::Subsubsection::Closed:: *)
+(*Proof That the Term in \[Delta]x x^2 Does Not Matter*)
 
 
 (* ::Input:: *)
@@ -1119,35 +1153,27 @@
 
 
 (* ::Text:: *)
-(*\[Delta]x is less than half a ULP of \[Pi]/4:*)
-
-
-(* ::Input:: *)
-(*\[Delta]xInterval=Interval[{-\[GothicU][\[Pi]/4]/2,\[GothicU][\[Pi]/4]/2}];*)
-
-
-(* ::Text:: *)
 (*Error on the minimax approximations:*)
 
 
 (* ::Input:: *)
-(*\[Eta]s=Abs[sinApproximationResult[[2,2]]]*)
+(*\[Xi]s=Abs[sinApproximationResult[[2,2]]]*)
 
 
 (* ::Input:: *)
-(*Log2[\[Eta]s]*)
+(*Log2[\[Xi]s]*)
 
 
 (* ::Input:: *)
-(*\[Eta]c=Abs[cosApproximationResult[[2,2]]]*)
+(*\[Xi]c=Abs[cosApproximationResult[[2,2]]]*)
 
 
 (* ::Input:: *)
-(*Log2[\[Eta]c]*)
+(*Log2[\[Xi]c]*)
 
 
 (* ::Input:: *)
-(*\[Zeta]1=Interval[{-\[Eta]s,\[Eta]s}];*)
+(*\[Zeta]1=Interval[{-\[Xi]s,\[Xi]s}];*)
 
 
 (* ::Input:: *)
@@ -1155,7 +1181,7 @@
 
 
 (* ::Input:: *)
-(*\[Zeta]2=Interval[{-\[Eta]c,\[Eta]c}];*)
+(*\[Zeta]2=Interval[{-\[Xi]c,\[Xi]c}];*)
 
 
 (* ::Input:: *)
@@ -1188,6 +1214,10 @@
 
 (* ::Input:: *)
 (*binaryBounds[\[Zeta]4]*)
+
+
+(* ::Input:: *)
+(*\[Eta]=Interval[{-2^(-2M+1),2^(-2M+1)}]*)
 
 
 (* ::Subsubsection::Closed:: *)
@@ -1247,7 +1277,7 @@
 
 
 (* ::Input:: *)
-(*t0[h_,sk_,ck_]:=Hold[CorrectlyRound[ck]]h+Hold[CorrectlyRound[sk]]*)
+(*t0[h_,sk_,ck_]:=(Hold[CorrectlyRound[ck]]h+Hold[CorrectlyRound[sk]])(1+\[Eta])*)
 
 
 (* ::Input:: *)
@@ -1299,27 +1329,23 @@
 
 
 (* ::Input:: *)
-(*Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
+(*Block[{\[Eta]=eta,\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
 
 
 (* ::Input:: *)
-(*xi=accurateTablesXIntervals[[65]];*)
+(*xi=accurateTablesXIntervals[[1]];*)
 
 
 (* ::Input:: *)
-(*at=accurateTables[65];*)
+(*at=accurateTables[1];*)
 
 
 (* ::Input:: *)
-(*sinImplementationRelativeError[Min[xi],-Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]*)
+(*Plot[{Min[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},WorkingPrecision->30,PlotRange->Full]*)
 
 
 (* ::Input:: *)
-(*Plot[{Min[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},WorkingPrecision->30]*)
-
-
-(* ::Input:: *)
-(*Plot3D[{Min[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},{\[Delta]x\:0303,-Min[xi]\[GothicU][1/2],Max[xi] \[GothicU][1/2]},RegionFunction->Function[{x\:0303,\[Delta]x\:0303},-x\:0303 \[GothicU][1/2]<\[Delta]x\:0303<x\:0303 \[GothicU][1/2]],WorkingPrecision->30,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
+(*Plot3D[{Min[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]],Max[sinImplementationRelativeError[x\:0303,\[Delta]x\:0303,at[[1]],at[[2]],at[[3]]]]},{x\:0303,Min[xi],Max[xi]},{\[Delta]x\:0303,-Min[xi]\[GothicU][1/2],Max[xi] \[GothicU][1/2]},RegionFunction->Function[{x\:0303,\[Delta]x\:0303},-x\:0303 \[GothicU][1/2]<\[Delta]x\:0303<x\:0303 \[GothicU][1/2]],WorkingPrecision->40,MeshShading->{{Automatic,None},{None,Automatic}},PlotStyle->{Red,Blue}]*)
 
 
 (* ::Input:: *)
@@ -1337,23 +1363,23 @@
 
 
 (* ::Text:: *)
-(*The error has an outlier for k=1.  Other than that the dispersion of the error is largely due to the bit pattern of sk after the 18th accurate bit:*)
+(*The dispersion of the error is largely due to the bit pattern of sk after the 20th accurate bit:*)
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[65][[2]],30]*)
+(*Bits[accurateTables[2][[2]],30]*)
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[89][[2]],30]*)
+(*Bits[accurateTables[3][[2]],30]*)
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[283][[2]],30]*)
+(*Bits[accurateTables[66][[2]],30]*)
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[399][[2]],30]*)
+(*Bits[accurateTables[136][[2]],30]*)
 
 
 (* ::Input:: *)
@@ -1376,8 +1402,60 @@
 (*HexLiteral[CorrectlyRound[e,RoundingMode->TowardPositiveInfinity],Quotes->4]*)
 
 
+(* ::Subsubsubsection::Closed:: *)
+(*Dominant Term of the Error*)
+
+
+(* ::Input:: *)
+(*errorExpression=Block[{\[Eta]=eta,\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12,\[Zeta]1=z1,\[Zeta]2=z2,\[Zeta]3=z3,\[Zeta]4=z4},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[1]]/.Hold[CorrectlyRound[x_]]->x]*)
+
+
+(* ::Input:: *)
+(*vars={eta,d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,z1,z2,z3,z4,\[Delta]0,\[Delta]x\:0303}*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrder=Module[{alt=Alternatives@@vars},Collect[Expand[errorExpression]/.Times->times/.times[___,alt,___,alt,___]->0/.times->Times,vars]]*)
+
+
 (* ::Text:: *)
-(*Proof that the terms in h^2\[Delta]x\:0303 and above can be ignored:*)
+(*This is the main term:*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrder[[{2,9,10}]]*)
+
+
+(* ::Input:: *)
+(*xie=accurateTablesXIntervals[[65]];*)
+
+
+(* ::Input:: *)
+(*ate=accurateTables[65];*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrderInterval=(List@@errorExpression1stOrder)/.h->x\:0303-xk/.{d1->uInterval,d2->uInterval,d3->uInterval,d4->uInterval,d5->uInterval,d6->uInterval,d7->uInterval,d8->uInterval,d9->uInterval,d10->uInterval,d11->uInterval,d12->uInterval,eta->2^(-2M),z1->\[Zeta]1,z2->\[Zeta]2,z3->\[Zeta]3,z4->\[Zeta]4,\[Delta]x\:0303-> Max[xie]\[GothicU][1/2],xk->ate[[1]],sk->ate[[2]],ck->ate[[3]]};*)
+
+
+(* ::Input:: *)
+(*Plot[MinMax[(Plus@@errorExpression1stOrderInterval)/Sin[x\:0303+Max[xie]\[GothicU][1/2]+\[Zeta]0Interval x\:0303]-1],{x\:0303,Min[xie],Max[xie]},PlotRange->Full,WorkingPrecision->30,PlotLegends->Automatic]*)
+
+
+(* ::Input:: *)
+(*Table[Plot[MinMax[errorExpression1stOrderInterval[[i]]/Sin[x\:0303+Max[xie]\[GothicU][1/2]+\[Zeta]0Interval x\:0303]],{x\:0303,Min[xie],Max[xie]},PlotRange->Full,WorkingPrecision->30,PlotLegends->Automatic],{i,1,Length[errorExpression1stOrderInterval]}]*)
+
+
+(* ::Text:: *)
+(*The dominant term of the error is:*)
+
+
+(* ::Input:: *)
+(*errorExpression1stOrder[[7]]*)
+
+
+(* ::Subsubsubsection::Closed:: *)
+(*Proof That the Terms in h^2 \[Delta]x\:0303 and above Can Be Ignored*)
 
 
 (* ::Input:: *)
@@ -1486,7 +1564,7 @@
 
 
 (* ::Input:: *)
-(*t0[h_,sk_,ck_]:=-Hold[CorrectlyRound[sk]]h+Hold[CorrectlyRound[ck]]*)
+(*t0[h_,sk_,ck_]:=(-Hold[CorrectlyRound[sk]]h+Hold[CorrectlyRound[ck]])(1+\[Eta])*)
 
 
 (* ::Input:: *)
@@ -1538,7 +1616,7 @@
 
 
 (* ::Input:: *)
-(*Block[{\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
+(*Block[{\[Eta]=eta,\[Delta]1=d1,\[Delta]2=d2,\[Delta]3=d3,\[Delta]4=d4,\[Delta]5=d5,\[Delta]6=d6,\[Delta]7=d7,\[Delta]8=d8,\[Delta]9=d9,\[Delta]10=d10,\[Delta]11=d11,\[Delta]12=d12},CoefficientList[Collect[t9[h,\[Delta]x\:0303,sk,ck,\[Delta]0],\[Delta]0],\[Delta]0][[2]]]*)
 
 
 (* ::Input:: *)
@@ -1547,10 +1625,6 @@
 
 (* ::Input:: *)
 (*at=accurateTables[396];*)
-
-
-(* ::Input:: *)
-(*cosImplementationRelativeError[Min[xi],-Max[xi] \[GothicU][1/2],at[[1]],at[[2]],at[[3]]]*)
 
 
 (* ::Input:: *)
@@ -1576,11 +1650,11 @@
 
 
 (* ::Text:: *)
-(*The dispersion of the error is largely due to the bit pattern of ck after the 18th accurate bit:*)
+(*The dispersion of the error is largely due to the bit pattern of ck after the 20th accurate bit:*)
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[387][[3]],30]*)
+(*Bits[accurateTables[394][[3]],30]*)
 
 
 (* ::Input:: *)
@@ -1588,7 +1662,7 @@
 
 
 (* ::Input:: *)
-(*Bits[accurateTables[396][[3]],30]*)
+(*Bits[accurateTables[400][[3]],30]*)
 
 
 (* ::Input:: *)
@@ -1615,8 +1689,8 @@
 (*HexLiteral[CorrectlyRound[e,RoundingMode->TowardPositiveInfinity],Quotes->4]*)
 
 
-(* ::Text:: *)
-(*Proof that the terms in h^2 \[Delta]x\:0303 and above can be ignored:*)
+(* ::Subsubsubsection::Closed:: *)
+(*Proof That the Terms in h^2 \[Delta]x\:0303 and above Can Be Ignored*)
 
 
 (* ::Input:: *)

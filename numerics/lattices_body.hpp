@@ -458,10 +458,9 @@ void SizeReduce(std::int64_t const κ,
 }
 
 
-// This implements [HPS], theorem 7.71, figure 7.8.  Note that figures 7.9 and
+// This implements [HPS14], theorem 7.71, figure 7.8.  Note that figures 7.9 and
 // 7.10 are supposedly more efficient, but they are significantly more
-// complicated.  If performance is an issue, we should look into recent
-// improvements of LLL.
+// complicated.  See `NguyễnStehlé` for a more efficient reduction algorithm.
 template<typename Matrix>
   requires two_dimensional<Matrix>
 Matrix LenstraLenstraLovász(Matrix const& L) {

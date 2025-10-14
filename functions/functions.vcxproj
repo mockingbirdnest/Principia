@@ -18,6 +18,9 @@
     <ClCompile Include="multiprecision.cpp" />
     <ClCompile Include="std_accuracy_test.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="sin_cos_20.wl" />
+  </ItemGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ImportGroup Label="Shared">
     <Import Project="..\shared\base.vcxitems" Label="Shared" />

@@ -21,13 +21,25 @@
     <ClCompile Include="performance_settings_controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="function_registry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="examples.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="microarchitectures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="latency_distribution_table.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="flag_parsing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="polynomial_nanobenchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="elementary_functions_nanobenchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="examples_nanobenchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="nanobenchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -35,10 +47,16 @@
     <ClInclude Include="performance_settings_controller.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="function_registry.hpp">
+    <ClInclude Include="microarchitectures.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="microarchitectures.hpp">
+    <ClInclude Include="latency_distribution_table.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flag_parsing.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nanobenchmark.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

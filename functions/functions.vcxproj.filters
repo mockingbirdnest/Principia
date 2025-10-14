@@ -42,4 +42,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="sin_cos_20.wl">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

@@ -130,6 +130,10 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
   Value PRINCIPIA_VECTORCALL operator()(Argument argument) const override;
   Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
       Argument argument) const override;
+  void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
+      Argument argument,
+      Value& value,
+      Derivative<Value, Argument>& derivative) const override;
 
   constexpr int degree() const override;
   bool is_zero() const override;

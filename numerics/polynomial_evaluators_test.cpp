@@ -29,11 +29,19 @@ class PolynomialEvaluatorTest : public ::testing::Test {
     auto const binomial_coefficients =
         MakeBinomialTuple<typename E::Coefficients, degree>(
             std::make_index_sequence<degree + 1>());
+    double value;
+    double derivative;
     for (int argument = -degree; argument <= degree; ++argument) {
       EXPECT_EQ(E::Evaluate(binomial_coefficients, argument),
                 std::pow(argument + 1, degree)) << argument << " " << degree;
       EXPECT_EQ(E::EvaluateDerivative(binomial_coefficients, argument),
                 degree * std::pow(argument + 1, degree - 1))
+          << argument << " " << degree;
+      E::EvaluateWithDerivative(
+          binomial_coefficients, argument, value, derivative);
+      EXPECT_EQ(value, std::pow(argument + 1, degree))
+          << argument << " " << degree;
+      EXPECT_EQ(derivative, degree * std::pow(argument + 1, degree - 1))
           << argument << " " << degree;
     }
   }

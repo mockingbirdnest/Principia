@@ -61,6 +61,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
+using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
@@ -219,6 +220,10 @@ class Satellites {
     return goes_8_trajectory_;
   }
 
+  ContinuousTrajectory<Barycentric> const& moon_trajectory() const {
+    return *ephemeris_->trajectory(moon_);
+  }
+
   Planetarium MakePlanetarium(
       Angle const& angular_resolution,
       Perspective<Navigation, Camera> const& perspective,
@@ -352,7 +357,7 @@ void BM_PlanetariumPlotMethod3(
                      .str());
 }
 
-void BM_PlanetariumPlotMethod4(
+void BM_PlanetariumPlotMethod4DiscreteTrajectory(
     benchmark::State& state,
     Perspective<Navigation, Camera> (*const perspective)(
         Similarity<Navigation, GCRS> const& navigation_to_gcrs_at_epoch,
@@ -398,6 +403,51 @@ void BM_PlanetariumPlotMethod4(
                      .str());
 }
 
+void BM_PlanetariumPlotMethod4ContinuousTrajectory(
+    benchmark::State& state,
+    Perspective<Navigation, Camera> (*const perspective)(
+        Similarity<Navigation, GCRS> const& navigation_to_gcrs_at_epoch,
+        Length const distance_from_earth),
+    Length const distance_from_earth,
+    PlottingFrame const& (Satellites::*const plotting_frame)() const) {
+  static Satellites satellites;
+  Instant const t = satellites.goes_8_trajectory().front().time;
+  PlottingFrame const& plotting = (satellites.*plotting_frame)();
+  Planetarium planetarium = satellites.MakePlanetarium(
+      1 * ArcMinute,
+      perspective((satellites.gcrs().ToThisFrameAtTimeSimilarly(t) *
+                   plotting.FromThisFrameAtTimeSimilarly(t)).similarity(),
+                  distance_from_earth),
+      &plotting);
+  std::vector<ScaledSpacePoint> line;
+  int iterations = 0;
+  // This is the time of a lunar eclipse in January 2000.
+  constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
+  for (auto _ : state) {
+    line.clear();
+    planetarium.PlotMethod4(
+        satellites.moon_trajectory(),
+        satellites.goes_8_trajectory().front().time,
+        satellites.goes_8_trajectory().back().time,
+        /*reverse=*/false,
+        /*add_point=*/
+        [&line](ScaledSpacePoint const& point) { line.push_back(point); },
+        /*max_points=*/std::numeric_limits<int>::max());
+    ++iterations;
+  }
+  Interval<double> x;
+  Interval<double> y;
+  Interval<double> z;
+  for (auto const& point : line) {
+    x.Include(point.x);
+    y.Include(point.y);
+    z.Include(point.z);
+  }
+  state.SetLabel((std::stringstream() << line.size() << " points within " << x
+                                      << " × " << y << " × " << z)
+                     .str());
+}
+
 #define PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR( \
     name, perspective, plotting_frame)                             \
   BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod3,                     \
@@ -406,7 +456,13 @@ void BM_PlanetariumPlotMethod4(
                     near,                                          \
                     (plotting_frame))                              \
       ->Unit(benchmark::kMillisecond);                             \
-  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4,                     \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4DiscreteTrajectory,   \
+                    Near##name,                                    \
+                    (perspective),                                 \
+                    near,                                          \
+                    (plotting_frame))                              \
+      ->Unit(benchmark::kMillisecond);                             \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4ContinuousTrajectory, \
                     Near##name,                                    \
                     (perspective),                                 \
                     near,                                          \
@@ -418,7 +474,13 @@ void BM_PlanetariumPlotMethod4(
                     far,                                           \
                     (plotting_frame))                              \
       ->Unit(benchmark::kMillisecond);                             \
-  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4,                     \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4DiscreteTrajectory,   \
+                    Far##name,                                     \
+                    (perspective),                                 \
+                    far,                                           \
+                    (plotting_frame))                              \
+      ->Unit(benchmark::kMillisecond);                             \
+  BENCHMARK_CAPTURE(BM_PlanetariumPlotMethod4ContinuousTrajectory, \
                     Far##name,                                     \
                     (perspective),                                 \
                     far,                                           \
