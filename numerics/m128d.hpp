@@ -7,7 +7,13 @@
 #include <ostream>
 #include <string>
 
-//TODO(phl)comment
+// MSVC 17.14.9 generates suboptimal code for AVX when the calling convention of
+// the methods in this class is __vectorcall.  Various functions in
+// `DoublePrecision<M128D>` (such as `QuickTwoSum`, `TwoDifference`, etc.) end
+// up creating their result object in memory and loading it from there into an
+// ymm register.  Touching memory is exceedingly costly, and anyway
+// `DoublePrecision` is not subject to SIMD vectorization, so we use __cdecl
+// which generates better code.
 #if PRINCIPIA_COMPILER_MSVC && PRINCIPIA_USE_AVX()
 #define PRINCIPIA_M128D_CC __cdecl
 #else
