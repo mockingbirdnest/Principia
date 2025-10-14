@@ -2,7 +2,7 @@
 
 #include <cfenv>
 #include <cmath>
-#include <pmmintrin.h>
+#include <immintrin.h>
 #include <random>
 
 #include <limits>

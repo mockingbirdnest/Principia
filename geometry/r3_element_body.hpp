@@ -2,7 +2,7 @@
 
 #include "geometry/r3_element.hpp"
 
-#include <pmmintrin.h>
+#include <immintrin.h>
 
 #include <string>
 #include <type_traits>
