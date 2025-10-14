@@ -364,9 +364,9 @@ R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
       _mm256_fmsub_pd(a.xyzt, b_256d, c.xyzt));
 #else
   if constexpr (CanEmitFMAInstructions) {
-    __m128d const a_128d = ToM128D(a);
+    __m128d const b_128d = ToM128D(b);
     return R3Element<Product<LScalar, RScalar>>(
-        _mm_fmsub_pd(a_128d, b.xy, c.xy), _mm_fmsub_sd(a_128d, b.zt, c.zt));
+        _mm_fmsub_pd(a.xy, b_128d, c.xy), _mm_fmsub_sd(a.zt, b_128d, c.zt));
   } else {
     LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
   }
@@ -385,9 +385,9 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
       _mm256_fnmadd_pd(a.xyzt, b_256d, c.xyzt));
 #else
   if constexpr (CanEmitFMAInstructions) {
-    __m128d const a_128d = ToM128D(a);
+    __m128d const b_128d = ToM128D(b);
     return R3Element<Product<LScalar, RScalar>>(
-        _mm_fnmadd_pd(a_128d, b.xy, c.xy), _mm_fnmadd_sd(a_128d, b.zt, c.zt));
+        _mm_fnmadd_pd(a.xy, b_128d, c.xy), _mm_fnmadd_sd(a.zt, b_128d, c.zt));
   } else {
     LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
   }
@@ -406,9 +406,9 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
       _mm256_fnmsub_pd(a.xyzt, b_256d, c.xyzt));
 #else
   if constexpr (CanEmitFMAInstructions) {
-    __m128d const a_128d = ToM128D(a);
+    __m128d const b_128d = ToM128D(b);
     return R3Element<Product<LScalar, RScalar>>(
-        _mm_fnmsub_pd(a_128d, b.xy, c.xy), _mm_fnmsub_sd(a_128d, b.zt, c.zt));
+        _mm_fnmsub_pd(a.xy, b_128d, c.xy), _mm_fnmsub_sd(a.zt, b_128d, c.zt));
   } else {
     LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
   }
