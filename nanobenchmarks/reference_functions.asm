@@ -1,14 +1,13 @@
-PUBLIC maxps_xmm0_xmm0@@8
+PUBLIC identity@@8
 PUBLIC sqrtps_xmm0_xmm0@@8
 PUBLIC mulsd_xmm0_xmm0@@8
 PUBLIC mulsd_xmm0_xmm0_4x@@8
 PUBLIC sqrtsd_xmm0_xmm0@@8
 
 .CODE
-maxps_xmm0_xmm0@@8 PROC
-  maxps xmm0, xmm0
+identity@@8 PROC
   ret
-maxps_xmm0_xmm0@@8 ENDP
+identity@@8 ENDP
 
 sqrtps_xmm0_xmm0@@8 PROC
   sqrtps xmm0, xmm0
