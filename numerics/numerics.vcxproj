@@ -26,11 +26,6 @@
       <AssemblerOutput>AssemblyCode</AssemblerOutput>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_AVX_FMA|x64'">
-    <ClCompile>
-      <AssemblerOutput>AssemblyCode</AssemblerOutput>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="accurate_tables.mathematica.h" />
     <ClInclude Include="angle_reduction.hpp" />

@@ -412,8 +412,7 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
   auto const s = TwoSum(left.value, right.value);
   auto const t = TwoSum(left.error, right.error);
   auto const c = s.error + t.value;
-  DoublePrecision<Sum<T, U>> v(uninitialized);
-  QuickTwoSum(s.value, c, v);
+  auto const v = QuickTwoSum(s.value, c);
   auto const w = t.error + v.error;
   return QuickTwoSum(v.value, w);
 }
@@ -443,8 +442,7 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
   auto const s = TwoDifference(left.value, right.value);
   auto const t = TwoDifference(left.error, right.error);
   auto const c = s.error + t.value;
-  DoublePrecision<Difference<T, U>> v(uninitialized);
-  QuickTwoSum(s.value, c, v);
+  auto const v = QuickTwoSum(s.value, c);
   auto const w = t.error + v.error;
   return QuickTwoSum(v.value, w);
 }

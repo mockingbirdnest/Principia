@@ -12,21 +12,6 @@
     <Import Project="..\shared\testing_utilities.vcxitems" Label="Shared" />
     <Import Project="..\shared\astronomy.vcxitems" Label="Shared" />
   </ImportGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <AssemblerOutput>AssemblyCode</AssemblerOutput>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <AssemblerOutput>AssemblyCode</AssemblerOutput>
-    </ClCompile>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_AVX_FMA|x64'">
-    <ClCompile>
-      <AssemblerOutput>AssemblyCode</AssemblerOutput>
-    </ClCompile>
-  </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
     <ClCompile Include="approximation_benchmark.cpp" />
