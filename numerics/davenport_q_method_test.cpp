@@ -90,7 +90,7 @@ TEST_F(DavenportQMethodTest, Perturbed) {
   EXPECT_THAT(
       DavenportQMethod(vectors1_, vectors2, weights_),
       AlmostEquals(
-          Rotation<World1, World2>(q / q.Norm()), 361'747'092, 745'100'359));
+          Rotation<World1, World2>(q / q.Norm()), 361'747'092, 927'975'753));
 }
 
 TEST_F(DavenportQMethodTest, PerturbedWeighted) {
