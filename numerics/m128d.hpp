@@ -7,6 +7,8 @@
 #include <ostream>
 #include <string>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+
 // MSVC 17.14.9 generates suboptimal code for AVX when the calling convention of
 // the methods in this class is __vectorcall.  Various functions in
 // `DoublePrecision<M128D>` (such as `QuickTwoSum`, `TwoDifference`, etc.) end
