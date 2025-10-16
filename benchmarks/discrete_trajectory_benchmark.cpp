@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_filter=DiscreteTrajectory --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_filter=BM_DiscreteTrajectory --benchmark_repetitions=5  // NOLINT(whitespace/line_length)
 
 #include <optional>
 #include <vector>

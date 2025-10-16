@@ -1,4 +1,4 @@
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=Planetarium  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=BM_Planetarium  // NOLINT(whitespace/line_length)
 
 #include <limits>
 #include <memory>
