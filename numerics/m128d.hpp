@@ -121,10 +121,18 @@ class M128D {
   // Returns a zero with the sign of `a`.
   friend M128D PRINCIPIA_M128D_CC Sign(M128D a);
 
-  friend M128D PRINCIPIA_M128D_CC FusedMultiplyAdd(M128D a, M128D b, M128D c);
-  friend M128D PRINCIPIA_M128D_CC FusedMultiplySubtract(M128D a, M128D b, M128D c);
-  friend M128D PRINCIPIA_M128D_CC FusedNegatedMultiplyAdd(M128D a, M128D b, M128D c);
-  friend M128D PRINCIPIA_M128D_CC FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
+  friend M128D PRINCIPIA_M128D_CC FusedMultiplyAdd(M128D a,
+                                                   M128D b,
+                                                   M128D c);
+  friend M128D PRINCIPIA_M128D_CC FusedMultiplySubtract(M128D a,
+                                                        M128D b,
+                                                        M128D c);
+  friend M128D PRINCIPIA_M128D_CC FusedNegatedMultiplyAdd(M128D a,
+                                                          M128D b,
+                                                          M128D c);
+  friend M128D PRINCIPIA_M128D_CC FusedNegatedMultiplySubtract(M128D a,
+                                                               M128D b,
+                                                               M128D c);
 
  private:
   __m128d value_;
@@ -187,16 +195,24 @@ M128D PRINCIPIA_M128D_CC Abs(M128D a);
 M128D PRINCIPIA_M128D_CC Sign(M128D a);
 
 // ⟦ab + c⟧.
-M128D PRINCIPIA_M128D_CC FusedMultiplyAdd(M128D a, M128D b, M128D c);
+M128D PRINCIPIA_M128D_CC FusedMultiplyAdd(M128D a,
+                                          M128D b,
+                                          M128D c);
 
 // ⟦ab - c⟧.
-M128D PRINCIPIA_M128D_CC FusedMultiplySubtract(M128D a, M128D b, M128D c);
+M128D PRINCIPIA_M128D_CC FusedMultiplySubtract(M128D a,
+                                               M128D b,
+                                               M128D c);
 
 // ⟦-ab + c⟧.
-M128D PRINCIPIA_M128D_CC FusedNegatedMultiplyAdd(M128D a, M128D b, M128D c);
+M128D PRINCIPIA_M128D_CC FusedNegatedMultiplyAdd(M128D a,
+                                                 M128D b,
+                                                 M128D c);
 
 // ⟦-ab - c⟧.
-M128D PRINCIPIA_M128D_CC FusedNegatedMultiplySubtract(M128D a, M128D b, M128D c);
+M128D PRINCIPIA_M128D_CC FusedNegatedMultiplySubtract(M128D a,
+                                                      M128D b,
+                                                      M128D c);
 
 std::string DebugString(M128D x);
 std::ostream& operator<<(std::ostream& os, M128D x);
