@@ -13,7 +13,7 @@
 // up creating their result object in memory and loading it from there into an
 // ymm register.  Touching memory is exceedingly costly, and anyway
 // `DoublePrecision` is not subject to SIMD vectorization, so we use __cdecl
-// which generates better code.
+// which generates better code.  See https://godbolt.org/z/5PPK3MWzn.
 #if PRINCIPIA_COMPILER_MSVC && PRINCIPIA_USE_AVX()
 #define PRINCIPIA_M128D_CC __cdecl
 #else
