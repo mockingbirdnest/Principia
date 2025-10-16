@@ -13,7 +13,6 @@ internal class BenchmarkAutomation {
   private static void Main(string[] args) {
     var benchmark_directory = new DirectoryInfo(args[0]);
     var mathematica_directory = new DirectoryInfo(args[1]);
-    var jenkins_directory = new DirectoryInfo(args[2]);
     DateTime date = DateTime.UtcNow;
     string mathematica_date = date.ToString("{yyyy, M, d, H, m, s.fffffff},");
     string mathematica_output_file =
