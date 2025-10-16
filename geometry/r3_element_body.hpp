@@ -12,6 +12,7 @@
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
 #include "quantities/serialization.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
@@ -21,6 +22,7 @@ namespace internal {
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_serialization;
+using namespace principia::quantities::_si;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
@@ -36,17 +38,23 @@ constexpr R3Element<Scalar>::R3Element(uninitialized_t) {
 }
 
 template<typename Scalar>
-R3Element<Scalar>::R3Element(Scalar const& x,
-                             Scalar const& y,
-                             Scalar const& z) : x(x), y(y), z(z) {
+R3Element<Scalar>::R3Element(Scalar const& x, Scalar const& y, Scalar const& z)
+#if PRINCIPIA_USE_AVX()
+    : xyzt(_mm256_set_pd(0.0,
+                         z / si::Unit<Scalar>,
+                         y / si::Unit<Scalar>,
+                         x / si::Unit<Scalar>))
+#else
+    : x(x), y(y), z(z)
+#endif
+{
   static_assert(std::is_standard_layout<R3Element>::value,
                 "R3Element has a nonstandard layout");
 }
 
 #if PRINCIPIA_USE_AVX()
 template<typename Scalar>
-template<std::same_as<__m256d> T>
-inline R3Element<Scalar>::R3Element(T xyzt) : xyzt(xyzt) {}
+inline R3Element<Scalar>::R3Element(__m256d xyzt) : xyzt(xyzt) {}
 #else
 template<typename Scalar>
 R3Element<Scalar>::R3Element(__m128d const xy, __m128d const zt)

@@ -49,7 +49,7 @@ using World = Frame<struct WorldTag>;
 class ComponentwiseTest : public testing::Test {};
 
 TEST_F(ComponentwiseTest, R3Element) {
-  R3Element<double> r({1.0 + 1.0e-12, 1.0e-10, 3.5});
+  R3Element<double> r(1.0 + 1.0e-12, 1.0e-10, 3.5);
   EXPECT_THAT(r, Componentwise(AlmostEquals(1.0, 4504),
                                VanishesBefore(1.0, 450360),
                                Eq(3.5)));

@@ -41,9 +41,9 @@ struct alignas(R3ElementAlignment) R3Element final {
   constexpr R3Element();
   constexpr explicit R3Element(uninitialized_t);
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
+
 #if PRINCIPIA_USE_AVX()
-  template<std::same_as<__m256d> T>
-  R3Element(T xyzt);
+  explicit R3Element(__m256d xyzt);
 #else
   R3Element(__m128d xy, __m128d zt);
 #endif

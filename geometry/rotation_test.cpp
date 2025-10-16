@@ -63,9 +63,9 @@ class RotationTest : public testing::Test {
             R3x3Matrix<Length>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
                                {2.0 * Metre, -5.0 * Metre, 6.0 * Metre},
                                {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))),
-        e1_(Vector<double, World>(R3Element<double>({1, 0, 0}))),
-        e2_(Vector<double, World>(R3Element<double>({0, 1, 0}))),
-        e3_(Vector<double, World>(R3Element<double>({0, 0, 1}))),
+        e1_(Vector<double, World>(R3Element<double>(1, 0, 0))),
+        e2_(Vector<double, World>(R3Element<double>(0, 1, 0))),
+        e3_(Vector<double, World>(R3Element<double>(0, 0, 1))),
         rotation_a_(Rot(120 * Degree, Bivector<double, World>({1, 1, 1}))),
         rotation_b_(Rot(90 * Degree, Bivector<double, World>({1, 0, 0}))),
         rotation_c_(Rot(ToQuaternion(
@@ -211,7 +211,7 @@ TEST_F(RotationTest, Forget) {
 TEST_F(RotationTest, ToQuaternion1) {
   R3Element<double> const v1 = {2, 5, 6};
   R3Element<double> const v2 =
-      R3Element<double>({-3, 4, 1}).OrthogonalizationAgainst(v1);
+      R3Element<double>(-3, 4, 1).OrthogonalizationAgainst(v1);
   R3Element<double> v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
@@ -226,7 +226,7 @@ TEST_F(RotationTest, ToQuaternion1) {
 TEST_F(RotationTest, ToQuaternion2) {
   R3Element<double> const v1 = {-2, -5, -6};
   R3Element<double> const v2 =
-      R3Element<double>({-3, 4, 1}).OrthogonalizationAgainst(v1);
+      R3Element<double>(-3, 4, 1).OrthogonalizationAgainst(v1);
   R3Element<double> v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
@@ -241,7 +241,7 @@ TEST_F(RotationTest, ToQuaternion2) {
 TEST_F(RotationTest, ToQuaternion3) {
   R3Element<double> const v1 = {-2, -5, -6};
   R3Element<double> const v2 =
-      R3Element<double>({-3, 4, 1}).OrthogonalizationAgainst(v1);
+      R3Element<double>(-3, 4, 1).OrthogonalizationAgainst(v1);
   R3Element<double> v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
@@ -256,7 +256,7 @@ TEST_F(RotationTest, ToQuaternion3) {
 TEST_F(RotationTest, ToQuaternion4) {
   R3Element<double> const v1 = {-2, -5, -6};
   R3Element<double> const v2 =
-      R3Element<double>({-3, 4, 1}).OrthogonalizationAgainst(v1);
+      R3Element<double>(-3, 4, 1).OrthogonalizationAgainst(v1);
   R3Element<double> v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
