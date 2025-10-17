@@ -58,7 +58,7 @@ TEST_F(DavenportQMethodTest, Identity) {
 }
 
 TEST_F(DavenportQMethodTest, FarFromIdentity) {
-  Quaternion const q(2, R3Element<double>({1, -3, -2}));
+  Quaternion const q(2, R3Element<double>(1, -3, -2));
   auto const normalized_q = q / q.Norm();
   Rotation<World1, World2> const rotation(normalized_q);
 
@@ -72,16 +72,16 @@ TEST_F(DavenportQMethodTest, FarFromIdentity) {
 }
 
 TEST_F(DavenportQMethodTest, Perturbed) {
-  Quaternion const q(2, R3Element<double>({1, -3, -2}));
+  Quaternion const q(2, R3Element<double>(1, -3, -2));
 
   std::vector<Vector<double, World2>> vectors2;
   std::uniform_real_distribution<double> quaternion_distribution(-1e-6, 1e-6);
   for (auto const& vector1 : vectors1_) {
     auto const perturbed_q =
         q + Quaternion(quaternion_distribution(random_),
-                       R3Element<double>({quaternion_distribution(random_),
-                                          quaternion_distribution(random_),
-                                          quaternion_distribution(random_)}));
+                       R3Element<double>(quaternion_distribution(random_),
+                                         quaternion_distribution(random_),
+                                         quaternion_distribution(random_)));
     Rotation<World1, World2> const perturbed_rotation(perturbed_q /
                                                       perturbed_q.Norm());
     vectors2.push_back(perturbed_rotation(vector1));
@@ -90,11 +90,11 @@ TEST_F(DavenportQMethodTest, Perturbed) {
   EXPECT_THAT(
       DavenportQMethod(vectors1_, vectors2, weights_),
       AlmostEquals(
-          Rotation<World1, World2>(q / q.Norm()), 361'747'092, 745'100'359));
+          Rotation<World1, World2>(q / q.Norm()), 361'747'092, 927'975'753));
 }
 
 TEST_F(DavenportQMethodTest, PerturbedWeighted) {
-  Quaternion const q(2, R3Element<double>({1, -3, -2}));
+  Quaternion const q(2, R3Element<double>(1, -3, -2));
   auto const normalized_q = q / q.Norm();
   Rotation<World1, World2> const rotation(normalized_q);
 
@@ -110,9 +110,9 @@ TEST_F(DavenportQMethodTest, PerturbedWeighted) {
     auto const& vector1 = vectors1_[i];
     auto const perturbed_q =
         q + Quaternion(quaternion_distribution(random_),
-                       R3Element<double>({quaternion_distribution(random_),
-                                          quaternion_distribution(random_),
-                                          quaternion_distribution(random_)}));
+                       R3Element<double>(quaternion_distribution(random_),
+                                         quaternion_distribution(random_),
+                                         quaternion_distribution(random_)));
     Rotation<World1, World2> const perturbed_rotation(perturbed_q /
                                                       perturbed_q.Norm());
     vectors2.push_back(perturbed_rotation(vector1));

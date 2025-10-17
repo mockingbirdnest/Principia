@@ -18,7 +18,29 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_AVX_FMA|x64">
+      <Configuration>Debug_AVX_FMA</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_LLVM_AVX_FMA|x64">
+      <Configuration>Release_LLVM_AVX_FMA</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_AVX_FMA|x64">
+      <Configuration>Release_AVX_FMA</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
+  <!--Treat _AVX_FMA as if it were part of the platform. -->
+  <PropertyGroup Condition="!$(Configuration.EndsWith('_AVX_FMA'))">
+    <PlatformWithCPUFeatures>$(Platform)</PlatformWithCPUFeatures>
+    <ConfigurationWithoutCPUFeatures>$(Configuration)</ConfigurationWithoutCPUFeatures>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(Configuration.EndsWith('_AVX_FMA'))">
+    <PlatformWithCPUFeatures>$(Platform)_AVX_FMA</PlatformWithCPUFeatures>
+    <ConfigurationWithoutCPUFeatures>$(Configuration.Replace('_AVX_FMA',''))</ConfigurationWithoutCPUFeatures>
+  </PropertyGroup>
+
 
   <!--Microsoft C++ stuff.-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -27,7 +49,7 @@
   <PropertyGroup>
     <!--Predicates.-->
     <PrincipiaCompilerClangLLVM>false</PrincipiaCompilerClangLLVM>
-    <PrincipiaCompilerClangLLVM Condition="$(Configuration)==Release_LLVM">true</PrincipiaCompilerClangLLVM>
+    <PrincipiaCompilerClangLLVM Condition="$(ConfigurationWithoutCPUFeatures)==Release_LLVM">true</PrincipiaCompilerClangLLVM>
     <PrincipiaOptimize>false</PrincipiaOptimize>
     <PrincipiaOptimize Condition="$(Configuration.StartsWith('Release'))">true</PrincipiaOptimize>
     <PrincipiaTestProject>true</PrincipiaTestProject>
@@ -68,8 +90,14 @@
     <CharacterSet>Unicode</CharacterSet>
     <!--Can't use <LinkIncremental>true</LinkIncremental> due to profiling.-->
   </PropertyGroup>
+
   <ItemDefinitionGroup>
     <ClCompile>
+      <EnableEnhancedInstructionSet Condition="$(PlatformWithCPUFeatures.Contains('AVX'))">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <PreprocessorDefinitions Condition="!$(PlatformWithCPUFeatures.Contains('AVX'))">PRINCIPIA_REQUIRES_AVX=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="!$(PlatformWithCPUFeatures.Contains('FMA'))">PRINCIPIA_REQUIRES_FMA=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(PlatformWithCPUFeatures.Contains('AVX'))">PRINCIPIA_REQUIRES_AVX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(PlatformWithCPUFeatures.Contains('FMA'))">PRINCIPIA_REQUIRES_FMA=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CallingConvention>vectorcall</CallingConvention>
       <AdditionalIncludeDirectories>C:\Program Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /bigobj /w14714 /wd4180 /Zc:char8_t- /Zf</AdditionalOptions>
@@ -240,11 +268,11 @@
   <ItemDefinitionGroup Condition="$(ConfigurationType) == DynamicLibrary">
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-        if exist "$(OutDir)glog.dll" copy /Y "$(OutDir)glog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-        if exist "$(OutDir)libprotobuf.dll" copy /Y "$(OutDir)libprotobuf.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-        copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-        copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+        if not exist "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)" mkdir "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
+        if exist "$(OutDir)glog.dll" copy /Y "$(OutDir)glog.dll" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
+        if exist "$(OutDir)libprotobuf.dll" copy /Y "$(OutDir)libprotobuf.dll" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
+        copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
+        copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
       </Command>
       <Message>Copying $(TargetName).dll to GameData</Message>
     </PostBuildEvent>

@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
-#include "absl/container/flat_hash_map.h"
 #include "base/cpuid.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "glog/logging.h"
@@ -51,28 +50,30 @@ _mulsd_xmm0_xmm0_4x:
 #endif
 
 namespace {
+// Don't use `absl::flat_hash_map` below, for some reason it introduces noise in
+// the timings.
 static std::vector<
-    std::pair<std::regex, absl::flat_hash_map<BenchmarkedFunction, int>>> const&
+    std::pair<std::regex, absl::btree_map<BenchmarkedFunction, int>>> const&
     microarchitectures = *new std::vector{
         // Skylake, Cascade Lake, Coffee Lake, Cannon Lake, Ice Lake, Tiger
         // Lake, Golden Cove(?).
         std::pair{std::regex(R"(((6|7|9|10|11|12)th Gen Intel\(R\) Core\(TM\))"
                              R"(|Intel\(R\) Xeon\(R\) W-[23]).*)"),
-                  absl::flat_hash_map<BenchmarkedFunction, int>{
+                  absl::btree_map<BenchmarkedFunction, int>{
                       std::pair{&identity, 0},
                       std::pair{&mulsd_xmm0_xmm0, 4},
                       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
                       std::pair{&sqrtps_xmm0_xmm0, 12}}},
         // Zen3.
         std::pair{std::regex("AMD Ryzen Threadripper PRO 5.*"),
-                  absl::flat_hash_map<BenchmarkedFunction, int>{
+                  absl::btree_map<BenchmarkedFunction, int>{
                       std::pair{&identity, 0},
                       std::pair{&mulsd_xmm0_xmm0, 3},
                       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 3},
                       std::pair{&sqrtps_xmm0_xmm0, 14}}},
         // Rosetta 2.
         std::pair{std::regex("VirtualApple .*"),
-                  absl::flat_hash_map<BenchmarkedFunction, int>{
+                  absl::btree_map<BenchmarkedFunction, int>{
                       std::pair{&identity, 0},
                       std::pair{&mulsd_xmm0_xmm0, 4},
                       std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4}}}};

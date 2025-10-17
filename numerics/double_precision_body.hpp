@@ -301,7 +301,7 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
       << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
 #endif
   // [HLB07].
-  DoublePrecision<Sum<T, U>> result{uninitialized};
+  DoublePrecision<Sum<T, U>> result(uninitialized);
   auto& s = result.value;
   auto& e = result.error;
   s = a + b;
@@ -319,7 +319,7 @@ DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a, U const& b) {
       << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
 #endif
   // [HLB07].
-  DoublePrecision<Sum<T, U>> result{uninitialized};
+  DoublePrecision<Sum<T, U>> result(uninitialized);
   auto& s = result.value;
   auto& e = result.error;
   s = a - b;
@@ -330,7 +330,7 @@ DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a, U const& b) {
 template<typename T, typename U>
 constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
   // [HLB07].
-  DoublePrecision<Sum<T, U>> result{uninitialized};
+  DoublePrecision<Sum<T, U>> result(uninitialized);
   auto& s = result.value;
   auto& e = result.error;
   s = a + b;
@@ -347,7 +347,7 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                 "Template metaprogramming went wrong");
   using Point = T;
   using Vector = Difference<T, U>;
-  DoublePrecision<Vector> result{uninitialized};
+  DoublePrecision<Vector> result(uninitialized);
   Vector& s = result.value;
   Vector& e = result.error;
   s = a - b;
@@ -361,7 +361,7 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
 template<typename T, typename U, typename>
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b) {
-  DoublePrecision<Sum<T, U>> result{uninitialized};
+  DoublePrecision<Sum<T, U>> result(uninitialized);
   auto& s = result.value;
   auto& e = result.error;
   s = a - b;
@@ -381,7 +381,7 @@ template<typename T>
 DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left) {
   static_assert(std::is_same<Difference<T>, T>::value,
                 "Unary - must be used on a vector");
-  DoublePrecision<Difference<T>> result;
+  DoublePrecision<Difference<T>> result(uninitialized);
   result.value = -left.value;
   result.error = -left.error;
   return result;
