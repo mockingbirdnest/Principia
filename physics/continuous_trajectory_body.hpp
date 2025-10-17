@@ -405,9 +405,12 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       Instant t = polynomial.lower_bound();
       std::vector<Position<Frame>> q;
       std::vector<Velocity<Frame>> v;
+      Displacement<Frame> displacement;
+      Velocity<Frame> velocity;
       for (int i = 0; i <= divisions; t += step, ++i) {
-        q.push_back(polynomial(t) + Frame::origin);
-        v.push_back(polynomial.EvaluateDerivative(t));
+        polynomial.EvaluateWithDerivative(t, displacement, velocity);
+        q.push_back(Frame::origin + displacement);
+        v.push_back(velocity);
       }
       Displacement<Frame> error_estimate;  // Should we do something with this?
       continuous_trajectory->polynomials_.emplace_back(
@@ -714,8 +717,10 @@ ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedomLocked(
   auto const it = FindPolynomialForInstantLocked(time);
   CHECK(it != polynomials_.end());
   auto const& polynomial = *it->polynomial;
-  return DegreesOfFreedom<Frame>(polynomial(time),
-                                 polynomial.EvaluateDerivative(time));
+  Position<Frame> position;
+  Velocity<Frame> velocity;
+  polynomial.EvaluateWithDerivative(time, position, velocity);
+  return DegreesOfFreedom<Frame>(position, velocity);
 }
 
 template<typename Frame>
