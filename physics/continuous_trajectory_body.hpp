@@ -405,11 +405,11 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       Instant t = polynomial.lower_bound();
       std::vector<Position<Frame>> q;
       std::vector<Velocity<Frame>> v;
-      Position<Frame> position;
+      Displacement<Frame> displacement;
       Velocity<Frame> velocity;
       for (int i = 0; i <= divisions; t += step, ++i) {
-        polynomial.EvaluateWithDerivative(t, position, velocity);
-        q.push_back(position);
+        polynomial.EvaluateWithDerivative(t, displacement, velocity);
+        q.push_back(Frame::origin + displacement);
         v.push_back(velocity);
       }
       Displacement<Frame> error_estimate;  // Should we do something with this?
