@@ -39,6 +39,12 @@ Principia itself, or crashes of KSP or Unity.
 When reporting a crash, please indicate whether the crash is reproducible.
 There is no need to include reproduction steps.
 
+*Do not* append your crash to an existing issue even if it looks similar.  You
+have no way to know if it's the same crash (heck, *we* have no way to know until
+we do the analysis) and having two unrelated bugs in the same issue makes it very
+difficult to track analysis and fixes.  (More likely than not, something will fall
+through the cracks.)
+
 #### Principia Crashes
 
 These crashes may manifest themselves as a Windows dialog box (on Windows) or a 
@@ -91,3 +97,8 @@ not what you think the solution should be (that’s known as the
 a position to evaluate the complexity of implementing a particular solution, so
 if you suggest a change that would be extremely onerous to implement, it’s
 likely to be rejected, even if a cheap change would solve 80% of the problem.
+
+*Do not* append comments to an existing issue unless you are experiencing the
+*exact same* problem.  Having an issue for problem A where you chime in
+to say "and there is also the distantly related problem B" is a sure way to
+ensure that your comment will be ignored.
