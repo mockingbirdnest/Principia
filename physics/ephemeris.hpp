@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
@@ -79,11 +80,12 @@ class Ephemeris {
       std::numeric_limits<std::int64_t>::max();
 
   using BodiesToPositions =
-      std::map<not_null<MassiveBody const*>, Position<Frame>>;
+      absl::flat_hash_map<not_null<MassiveBody const*>, Position<Frame>>;
   using BodiesToVelocities =
-      std::map<not_null<MassiveBody const*>, Velocity<Frame>>;
+      absl::flat_hash_map<not_null<MassiveBody const*>, Velocity<Frame>>;
   using BodiesToDegreesOfFreedom =
-      std::map<not_null<MassiveBody const*>, DegreesOfFreedom<Frame>>;
+      absl::flat_hash_map<not_null<MassiveBody const*>,
+                          DegreesOfFreedom<Frame>>;
 
   // The equations describing the motion of the `bodies_`.
   using NewtonianMotionEquation =
@@ -502,14 +504,15 @@ class Ephemeris {
   std::vector<not_null<MassiveBody const*>> unowned_bodies_;
 
   // The indices of bodies in `unowned_bodies_`.
-  std::map<not_null<MassiveBody const*>, int> unowned_bodies_indices_;
+  absl::flat_hash_map<not_null<MassiveBody const*>,
+                      int> unowned_bodies_indices_;
 
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
 
   // The indices of bodies in `bodies_`.
-  std::map<not_null<MassiveBody const*>, int> bodies_indices_;
+  absl::flat_hash_map<not_null<MassiveBody const*>, int> bodies_indices_;
 
   // Only has entries for the oblate bodies, at the same indices as `bodies_`.
   std::vector<Geopotential<Frame>> geopotentials_;
@@ -517,8 +520,8 @@ class Ephemeris {
   // The indices in `bodies_` correspond to those in `trajectories_`.
   std::vector<not_null<ContinuousTrajectory<Frame>*>> trajectories_;
 
-  std::map<not_null<MassiveBody const*>,
-           not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
+  absl::flat_hash_map<not_null<MassiveBody const*>,
+                      not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       bodies_to_trajectories_;
 
   AccuracyParameters const accuracy_parameters_;

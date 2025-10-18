@@ -298,6 +298,11 @@ class not_null final {
   constexpr bool operator>=(not_null other) const;
   constexpr bool operator>(not_null other) const;
 
+  template<typename H>
+  friend H AbslHashValue(H h, not_null const& ptr) {
+    return H::combine(std::move(h), ptr.storage_.pointer);
+  }
+
  private:
   struct unchecked_tag final {};
 
