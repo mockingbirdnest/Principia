@@ -146,6 +146,11 @@ template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
+  // We need all the positions to compute the accelerations based on the
+  // complete gravitational field.  We do not, however, need all the velocities
+  // since we are not computing jerks here.  Therefore, we don't call
+  // `EvaluateAllDegreesOfFreedom`, we'll let the derivatives evaluate the
+  // velocities that they actually need.
   auto const bodies_to_positions = ephemeris_->EvaluateAllPositions(t);
   auto const r₁ = PrimaryDerivative<0>(&bodies_to_positions, t);
   auto const ṙ₁ = PrimaryDerivative<1>(&bodies_to_positions, t);
@@ -298,6 +303,7 @@ BarycentreDerivative(
     } else if constexpr (degree == 2) {
       BodiesToPositions local_bodies_to_positions;
       if (bodies_to_degrees_of_freedom != nullptr) {
+        local_bodies_to_positions.reserve(bodies_to_degrees_of_freedom->size());
         for (auto const& [body, degrees_of_freedom] :
              *bodies_to_degrees_of_freedom) {
           local_bodies_to_positions.emplace(body,
@@ -361,6 +367,9 @@ template<typename InertialFrame, typename ThisFrame>
 AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
+  // We need all the degrees of freedom, not only those of the primaries and
+  // secondaries, to compute the acceleration and jerk based on the complete
+  // gravitational field.
   auto const bodies_to_degrees_of_freedom =
       ephemeris_->EvaluateAllDegreesOfFreedom(t);
   auto const r₁ = PrimaryDerivative<0>(&bodies_to_degrees_of_freedom, t);

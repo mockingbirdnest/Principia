@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/hash/hash_testing.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -307,6 +308,14 @@ TEST_F(NotNullTest, TypeTraits) {
       !std::is_trivially_move_constructible_v<not_null<std::unique_ptr<int>>>);
   static_assert(
       !std::is_trivially_move_assignable_v<not_null<std::unique_ptr<int>>>);
+}
+
+TEST_F(NotNullTest, Hash) {
+  auto const p = not_null<int*>(new int(42));
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {not_null<int*>(p),
+       not_null<int*>(new int(2)),
+       not_null<int*>(new int(-3))}));
 }
 
 }  // namespace base

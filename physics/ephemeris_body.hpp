@@ -227,6 +227,7 @@ Ephemeris<Frame>::BodiesToPositions Ephemeris<Frame>::EvaluateAllPositions(
     Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
   BodiesToPositions all_positions;
+  all_positions.reserve(bodies_.size());
   for (int i = 0; i < bodies_.size(); ++i) {
     all_positions.emplace(bodies_[i].get(),
                           trajectories_[i]->EvaluatePositionLocked(t));
@@ -239,9 +240,10 @@ Ephemeris<Frame>::BodiesToVelocities Ephemeris<Frame>::EvaluateAllVelocities(
     Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
   BodiesToVelocities all_velocities;
+  all_velocities.reserve(bodies_.size());
   for (int i = 0; i < bodies_.size(); ++i) {
     all_velocities.emplace(bodies_[i].get(),
-                          trajectories_[i]->EvaluateVelocityLocked(t));
+                           trajectories_[i]->EvaluateVelocityLocked(t));
   }
   return all_velocities;
 }
@@ -251,6 +253,7 @@ Ephemeris<Frame>::BodiesToDegreesOfFreedom
 Ephemeris<Frame>::EvaluateAllDegreesOfFreedom(Instant const& t) const {
   absl::ReaderMutexLock l(&lock_);
   BodiesToDegreesOfFreedom all_degrees_of_freedom;
+  all_degrees_of_freedom.reserve(bodies_.size());
   for (int i = 0; i < bodies_.size(); ++i) {
     all_degrees_of_freedom.emplace(
         bodies_[i].get(), trajectories_[i]->EvaluateDegreesOfFreedomLocked(t));
