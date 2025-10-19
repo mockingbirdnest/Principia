@@ -137,9 +137,6 @@
     <ClCompile Include="..\ksp_plugin\interface_external.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="interface_external_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="fake_plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
