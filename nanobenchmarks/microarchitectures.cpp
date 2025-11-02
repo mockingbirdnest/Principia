@@ -27,6 +27,7 @@ NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
 NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
 
 #if PRINCIPIA_COMPILER_CLANG
+#if OS_MACOSX
 asm(R"(
 .intel_syntax
 _identity:
@@ -47,6 +48,28 @@ _mulsd_xmm0_xmm0_4x:
   mulsd xmm0, xmm0
   ret
 )");
+#elif OS_LINUX
+asm(R"(
+.intel_syntax
+identity:
+  ret
+sqrtps_xmm0_xmm0:
+  sqrtps xmm0, xmm0
+  ret
+sqrtsd_xmm0_xmm0:
+  sqrtsd xmm0, xmm0
+  ret
+mulsd_xmm0_xmm0:
+  mulsd xmm0, xmm0
+  ret
+mulsd_xmm0_xmm0_4x:
+  mulsd xmm0, xmm0
+  mulsd xmm0, xmm0
+  mulsd xmm0, xmm0
+  mulsd xmm0, xmm0
+  ret
+)");
+#endif
 #endif
 
 namespace {
