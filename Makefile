@@ -113,6 +113,7 @@ SHARED_ARGS   := \
 	--system-header-prefix=gtest/                                 \
 	--system-header-prefix=gmock/                                 \
 	--system-header-prefix=zfp/                                   \
+	-mfma                                                         \
 	-fPIC                                                         \
 	-fbracket-depth=257                                           \
 	-fdeclspec                                                    \
@@ -134,7 +135,7 @@ SHARED_ARGS   := \
 	-Wno-nested-anon-types                                        \
 	-Wno-unknown-pragmas                                          \
 	-DPRINCIPIA_REQUIRES_AVX=0                                    \
-	-DPRINCIPIA_REQUIRES_FMA=0                                    \
+	-DPRINCIPIA_REQUIRES_FMA=1                                    \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \

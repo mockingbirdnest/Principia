@@ -1,5 +1,6 @@
 #include "nanobenchmarks/latency_distribution_table.hpp"
 
+#include <algorithm>
 #include <print>
 #include <sstream>
 #include <string>
