@@ -52,6 +52,7 @@ for repo in abseil-cpp benchmark config gipfeli glog googletest multiprecision p
   elif [ "${AGENT_OS?}" == "Linux" ]; then
     C_FLAGS="${PRINCIPIA_C_FLAGS?} -m64"
     CXX_FLAGS="${PRINCIPIA_CXX_FLAGS?}"
+    export OSX_DEPLOYMENT_TARGET="UNUSED"
   else
     C_FLAGS="${PRINCIPIA_C_FLAGS?}"
     CXX_FLAGS="${PRINCIPIA_CXX_FLAGS?}"
