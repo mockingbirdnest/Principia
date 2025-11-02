@@ -78,6 +78,8 @@ Before going further, make sure the following are installed on your machine:
   wget https://apt.llvm.org/llvm.sh
   chmod +x llvm.sh
   sudo ./llvm.sh 20 all
+  sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-20 200
+  sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-20 200
   ```
 ### macOS
 * Installation prerequisite: `brew`; to install:
