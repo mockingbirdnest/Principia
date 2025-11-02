@@ -27,12 +27,6 @@
 #include "nanobenchmarks/performance_settings_controller.hpp"
 #include "testing_utilities/statistics.hpp"
 
-#if PRINCIPIA_COMPILER_MSVC
-#include <intrin.h>
-#else
-#include <x86intrin.h>
-#endif
-
 ABSL_FLAG(std::size_t,
           loop_iterations,
           100,

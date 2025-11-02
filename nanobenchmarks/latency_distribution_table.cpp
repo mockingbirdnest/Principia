@@ -1,5 +1,6 @@
 #include "nanobenchmarks/latency_distribution_table.hpp"
 
+#include <algorithm>
 #include <print>
 #include <sstream>
 #include <string>
@@ -14,8 +15,16 @@ namespace _latency_distribution_table {
 namespace internal {
 
 std::vector<double> const& LatencyDistributionTable::Quantiles() {
-  std::vector<double>* const quantiles =
-      new std::vector<double>(absl::GetFlag(FLAGS_quantiles));
+  std::vector<double>* const quantiles = []() {
+      // Convert from `::std::vector`, the type of the flag, to `std::vector`,
+      // our own type which differs on macOS.
+      auto const* const q1 =
+          new ::std::vector<double>(absl::GetFlag(FLAGS_quantiles));
+      auto* const q2 = new std::vector<double>;
+      std::copy(q1->begin(), q1->end(), std::back_inserter(*q2));
+      return q2;
+  }();
+
   return *quantiles;
 }
 

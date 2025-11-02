@@ -10,6 +10,12 @@
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "glog/logging.h"
 
+#if PRINCIPIA_COMPILER_MSVC
+#include <intrin.h>
+#else
+#include <x86intrin.h>
+#endif
+
 namespace principia {
 namespace nanobenchmarks {
 namespace _nanobenchmark {
