@@ -14,6 +14,32 @@ internal static class Style {
   public static UnityEngine.Color MarkerCaptionPinned { get; }
     = new UnityEngine.Color(191f / 255f, 1f, 0f, 0.6f);
 
+  public static UnityEngine.GUIStyle WindowBackground() {
+    // Don't do anything for hover, it causes the title bar to change color and
+    // become unreadable.
+    var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.window){
+        active = {
+            background = dark_grey_texture
+        },
+        focused = {
+            background = dark_grey_texture
+        },
+        normal = {
+            background = dark_grey_texture
+        },
+        onActive = {
+            background = dark_grey_texture
+        },
+        onFocused = {
+            background = dark_grey_texture
+        },
+        onNormal = {
+            background = dark_grey_texture
+        }
+    };
+    return style;
+  }
+
   public static UnityEngine.GUIStyle DarkToggleButton() {
     var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button){
         active = {
@@ -131,6 +157,19 @@ internal static class Style {
     UnityEngine.GUILayout.Label("", line_spacing_style_);
   }
 
+  private static UnityEngine.Texture2D dark_grey_texture {
+    get {
+      var texture = new UnityEngine.Texture2D(width: 4, height: 4);
+      for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+          texture.SetPixel(i, j, XKCDColors.DarkGrey);
+        }
+      }
+      texture.Apply();
+      return texture;
+    }
+  }
+
   private static UnityEngine.Texture2D ultra_cool_grey_texture {
     get {
       var texture = new UnityEngine.Texture2D(width : 4, height : 4);
@@ -139,6 +178,7 @@ internal static class Style {
           texture.SetPixel(i, j, ultra_cool_grey_);
         }
       }
+      texture.Apply();
       return texture;
     }
   }
