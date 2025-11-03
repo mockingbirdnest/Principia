@@ -24,7 +24,7 @@ internal static class Style {
       window_background_style_ =
         new UnityEngine.GUIStyle(UnityEngine.GUI.skin.window){
           active = {
-            background = dark_grey_texture
+              background = dark_grey_texture
           },
           focused = {
               background = dark_grey_texture
