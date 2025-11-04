@@ -155,7 +155,7 @@ internal static class Formatters {
   }
 }
 
-internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
+internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
   protected OrbitAnalyser(PrincipiaPluginAdapter adapter,
                           PredictedVessel predicted_vessel) : base(
       adapter,
@@ -222,6 +222,9 @@ internal abstract class OrbitAnalyser : VesselSupervisedWindowRenderer {
     using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(12))) {
       if (should_request_analysis) {
         mission_duration_.Render(enabled : true);
+        // If the main window is hidden, make sure that the orbit analyser
+        // refreshes (not at a reduced rate).
+        RequestAnalysis();
       }
       var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
       float two_lines = multiline_style.CalcHeight(

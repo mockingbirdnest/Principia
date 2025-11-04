@@ -5,7 +5,7 @@ using System.Linq;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-class FlightPlanner : VesselSupervisedWindowRenderer {
+class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
   public FlightPlanner(PrincipiaPluginAdapter adapter,
                        PredictedVessel predicted_vessel) : base(
       adapter,

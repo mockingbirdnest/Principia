@@ -330,7 +330,7 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
 
   protected abstract void RenderWindowContents(int window_id);
 
-  protected sealed override void RenderWindow(int window_id) {
+  protected override void RenderWindow(int window_id) {
     if (UnityEngine.GUI.Button(new UnityEngine.Rect(
             x: rectangle_.width - Width(1),
             y: 0,
@@ -384,6 +384,31 @@ internal abstract class
   protected Vessel predicted_vessel => predicted_vessel_();
 
   private readonly PredictedVessel predicted_vessel_;
+}
+
+// Same as above, but the window (including its close button) is hidden if there
+// is no predicted vessel.
+internal abstract class
+    RequiredVesselSupervisedWindowRenderer : VesselSupervisedWindowRenderer {
+  protected RequiredVesselSupervisedWindowRenderer(
+      ISupervisor supervisor,
+      PredictedVessel predicted_vessel,
+      params UnityEngine.GUILayoutOption[] options) : base(
+      supervisor,
+      predicted_vessel,
+      options) {
+  }
+
+  protected override void RenderWindow(int window_id) {
+    // Hide this window if there is no selected vessel.  Otherwise we would
+    // display lonely close buttons when switching scene with the main window
+    // hidden.
+    if (predicted_vessel == null) {
+      Hide();
+    } else {
+      base.RenderWindow(window_id);
+    }
+  }
 }
 
 // A window without a supervisor is effectively modal.
