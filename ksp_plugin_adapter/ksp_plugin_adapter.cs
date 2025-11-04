@@ -975,9 +975,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
     if (hide_all_gui_ || !in_principia_scene_) {
       LockClearing();
-    } else if (main_window_.Shown()) {
+    } else if (WindowsRendering.GetInvocationList().Length > 0) {
       WindowsRendering();
     } else {
+      // There are no windows to render.
       LockClearing();
     }
   }
