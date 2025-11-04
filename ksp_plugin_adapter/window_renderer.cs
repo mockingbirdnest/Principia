@@ -131,7 +131,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
       skin_ = MakeSkin(UnityEngine.GUI.skin);
     }
     UnityEngine.GUI.skin = skin_;
-    if (show_) {
+    if (Shown()) {
       // NOTE: Calling `Shrink` here (in a Layout, before drawing the window)
       // satisfies the conditions noted in its doc comment and is safe.
       Shrink();
@@ -253,7 +253,8 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     show_ = true;
   }
 
-  public bool Shown() {
+  // Virtual because subclasses may impose extra conditions to show a window.
+  public virtual bool Shown() {
     return show_;
   }
 
@@ -387,7 +388,8 @@ internal abstract class
 }
 
 // Same as above, but the window (including its close button) is hidden if there
-// is no predicted vessel.
+// is no predicted vessel.  This avoids displaying stray close buttons and
+// ephemeral windows.
 internal abstract class
     RequiredVesselSupervisedWindowRenderer : VesselSupervisedWindowRenderer {
   protected RequiredVesselSupervisedWindowRenderer(
@@ -399,15 +401,8 @@ internal abstract class
       options) {
   }
 
-  protected override void RenderWindow(int window_id) {
-    // Hide this window if there is no selected vessel.  Otherwise we would
-    // display lonely close buttons when switching scene with the main window
-    // hidden.
-    if (predicted_vessel == null) {
-      Hide();
-    } else {
-      base.RenderWindow(window_id);
-    }
+  public override bool Shown() {
+    return predicted_vessel != null && base.Shown();
   }
 }
 

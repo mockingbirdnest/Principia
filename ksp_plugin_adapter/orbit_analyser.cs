@@ -224,6 +224,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
         mission_duration_.Render(enabled : true);
         // If the main window is hidden, make sure that the orbit analyser
         // refreshes (not at a reduced rate).
+        last_background_analysis_time_ = null;
         RequestAnalysis();
       }
       var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
