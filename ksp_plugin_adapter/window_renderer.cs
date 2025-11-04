@@ -331,7 +331,7 @@ internal abstract class SupervisedWindowRenderer : BaseWindowRenderer {
 
   protected abstract void RenderWindowContents(int window_id);
 
-  protected override void RenderWindow(int window_id) {
+  protected sealed override void RenderWindow(int window_id) {
     if (UnityEngine.GUI.Button(new UnityEngine.Rect(
             x: rectangle_.width - Width(1),
             y: 0,
@@ -387,9 +387,8 @@ internal abstract class
   private readonly PredictedVessel predicted_vessel_;
 }
 
-// Same as above, but the window (including its close button) is hidden if there
-// is no predicted vessel.  This avoids displaying stray close buttons and
-// ephemeral windows.
+// Same as above, but the window is hidden if there is no predicted vessel.
+// This avoids displaying stray close buttons and ephemeral windows.
 internal abstract class
     RequiredVesselSupervisedWindowRenderer : VesselSupervisedWindowRenderer {
   protected RequiredVesselSupervisedWindowRenderer(
