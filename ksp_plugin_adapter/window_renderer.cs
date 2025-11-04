@@ -140,6 +140,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
           screenRect : rectangle_,
           func       : RenderWindowAndRecordTooltip,
           text       : Title,
+          style      : Style.WindowBackground(),
           options    : options_);
 
       // The first time a window is shown, we have a moral duty to place it at
@@ -160,6 +161,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
                 height : 0),
             func       : RenderWindowAndRecordTooltip,
             text       : Title,
+            style      : Style.WindowBackground(),
             options    : options_);
         must_centre_ = false;
       }

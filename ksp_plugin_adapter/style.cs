@@ -14,6 +14,38 @@ internal static class Style {
   public static UnityEngine.Color MarkerCaptionPinned { get; }
     = new UnityEngine.Color(191f / 255f, 1f, 0f, 0.6f);
 
+  public static UnityEngine.GUIStyle WindowBackground() {
+    // Apparently the textures disappear on scene changes, so we must check if
+    // they still exist.
+    if (window_background_style_ == null ||
+        !window_background_style_.active.background) {
+      // Don't do anything for hover, it causes the title bar to change color
+      // and become unreadable.
+      window_background_style_ =
+        new UnityEngine.GUIStyle(UnityEngine.GUI.skin.window){
+          active = {
+              background = dark_grey_texture
+          },
+          focused = {
+              background = dark_grey_texture
+          },
+          normal = {
+              background = dark_grey_texture
+          },
+          onActive = {
+              background = dark_grey_texture
+          },
+          onFocused = {
+              background = dark_grey_texture
+          },
+          onNormal = {
+              background = dark_grey_texture
+          }
+      };
+    }
+    return window_background_style_;
+  }
+
   public static UnityEngine.GUIStyle DarkToggleButton() {
     var style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.button){
         active = {
@@ -114,7 +146,8 @@ internal static class Style {
   }
 
   public static void HorizontalLine() {
-    if (horizontal_line_style_ == null) {
+    if (horizontal_line_style_ == null ||
+        !horizontal_line_style_.normal.background) {
       horizontal_line_style_ =
           new UnityEngine.GUIStyle(UnityEngine.GUI.skin.horizontalSlider);
       horizontal_line_style_.fixedHeight /= 5;
@@ -125,10 +158,24 @@ internal static class Style {
 
   public static void LineSpacing() {
     if (line_spacing_style_ == null) {
-      line_spacing_style_ = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
+      line_spacing_style_ = 
+          new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
       line_spacing_style_.fixedHeight /= 5;
     }
     UnityEngine.GUILayout.Label("", line_spacing_style_);
+  }
+
+  private static UnityEngine.Texture2D dark_grey_texture {
+    get {
+      var texture = new UnityEngine.Texture2D(width: 4, height: 4);
+      for (int i = 0; i < 4; ++i) {
+        for (int j = 0; j < 4; ++j) {
+          texture.SetPixel(i, j, XKCDColors.DarkGrey);
+        }
+      }
+      texture.Apply();
+      return texture;
+    }
   }
 
   private static UnityEngine.Texture2D ultra_cool_grey_texture {
@@ -139,6 +186,7 @@ internal static class Style {
           texture.SetPixel(i, j, ultra_cool_grey_);
         }
       }
+      texture.Apply();
       return texture;
     }
   }
@@ -152,6 +200,7 @@ internal static class Style {
   // for each horizontal line we display.  See #3064.
   private static UnityEngine.GUIStyle horizontal_line_style_;
   private static UnityEngine.GUIStyle line_spacing_style_;
+  private static UnityEngine.GUIStyle window_background_style_;
 }
 
 }  // namespace ksp_plugin_adapter
