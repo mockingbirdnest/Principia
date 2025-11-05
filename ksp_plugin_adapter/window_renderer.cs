@@ -131,7 +131,7 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
       skin_ = MakeSkin(UnityEngine.GUI.skin);
     }
     UnityEngine.GUI.skin = skin_;
-    if (show_) {
+    if (Shown()) {
       // NOTE: Calling `Shrink` here (in a Layout, before drawing the window)
       // satisfies the conditions noted in its doc comment and is safe.
       Shrink();
@@ -253,7 +253,8 @@ internal abstract class BaseWindowRenderer : ScalingRenderer, IConfigNode {
     show_ = true;
   }
 
-  public bool Shown() {
+  // Virtual because subclasses may impose extra conditions to show a window.
+  public virtual bool Shown() {
     return show_;
   }
 
@@ -384,6 +385,24 @@ internal abstract class
   protected Vessel predicted_vessel => predicted_vessel_();
 
   private readonly PredictedVessel predicted_vessel_;
+}
+
+// Same as above, but the window is hidden if there is no predicted vessel.
+// This avoids displaying stray close buttons and ephemeral windows.
+internal abstract class
+    RequiredVesselSupervisedWindowRenderer : VesselSupervisedWindowRenderer {
+  protected RequiredVesselSupervisedWindowRenderer(
+      ISupervisor supervisor,
+      PredictedVessel predicted_vessel,
+      params UnityEngine.GUILayoutOption[] options) : base(
+      supervisor,
+      predicted_vessel,
+      options) {
+  }
+
+  public override bool Shown() {
+    return predicted_vessel != null && base.Shown();
+  }
 }
 
 // A window without a supervisor is effectively modal.
