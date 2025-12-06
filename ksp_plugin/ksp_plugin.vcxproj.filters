@@ -148,9 +148,6 @@
     <ClCompile Include="interface_monitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="interface_external.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="equator_relevance_threshold.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
