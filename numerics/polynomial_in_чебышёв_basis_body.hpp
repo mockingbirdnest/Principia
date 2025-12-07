@@ -34,14 +34,14 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_si;
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 bool PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::
     MayHaveRealRoots(Value const error_estimate) const
   requires convertible_to_quantity<Value_> {
   return MayHaveRealRootsOrDie(error_estimate);
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 absl::btree_set<Argument_>
 PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
     double const ε) const
@@ -56,7 +56,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
         PolynomialInЧебышёвBasis<Value, Argument, degree>::ReadFromMessage(  \
             message))
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 std::unique_ptr<PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>>
 PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessage(
     serialization::ЧебышёвSeries const& pre_канторович_message) {

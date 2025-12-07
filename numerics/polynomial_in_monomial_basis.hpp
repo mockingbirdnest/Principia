@@ -241,7 +241,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       PolynomialInMonomialBasis<L, A, l> const& left,
       PolynomialInMonomialBasis<R, A, r> const& right);
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-  template<typename V, typename A, int l>
+  template<affine V, affine A, int l>
   constexpr PolynomialInMonomialBasis<V, A, l>
   friend operator+(
       PolynomialInMonomialBasis<Difference<V>, A, l> const& left,
@@ -335,7 +335,7 @@ operator*(PolynomialInMonomialBasis<LValue, Argument, ldegree_> const& left,
 // Additive operators polynomial ± constant.
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-template<typename Value, typename Argument, int ldegree_>
+template<affine Value, affine Argument, int ldegree_>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_>
 operator+(PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     ldegree_> const& left,

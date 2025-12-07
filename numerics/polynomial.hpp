@@ -21,7 +21,7 @@ using namespace principia::quantities::_arithmetic;
 
 // `Value_` must belong to an affine space.  `Argument_` must belong to a ring
 // or to Point based on a ring.
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
   requires homogeneous_affine_space<Value_, Difference<Argument_>>
 class Polynomial {
  public:
