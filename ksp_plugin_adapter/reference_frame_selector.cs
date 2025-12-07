@@ -614,11 +614,10 @@ internal class
 
   // This code must reflect the one in `RenderSubtree`.
   private float MeasureSubtree(CelestialBody celestial, int depth) {
-    const int offset = 1;
     // Indent.
-    float width = offset * depth;
+    float width = children_offset * depth;
     // +- button.
-    width += offset;
+    width += children_offset;
     // Celestial name.
     width += CalcWidth(celestial.StandaloneName(), UnityEngine.GUI.skin.label);
     // Pin.
@@ -629,9 +628,9 @@ internal class
       if ((expanded_[celestial] || target_pinned_) &&
           target?.orbit.referenceBody == celestial) {
         // Indent.
-        float target_width = offset * (depth + 1);
+        float target_width = children_offset * (depth + 1);
         // Missing +- button.
-        target_width += offset;
+        target_width += children_offset;
         // Target name.
         target_width += CalcWidth(
             L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
@@ -655,17 +654,15 @@ internal class
 
   // If this code changes, `MeasureSubtree` may have to change.
   private void RenderSubtree(CelestialBody celestial, int depth) {
-    // Horizontal offset between a node and its children.
-    const int offset = 1;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Space(Width(offset * depth));
+      UnityEngine.GUILayout.Space(Width(children_offset * depth));
       if (celestial.is_leaf(target)) {
         UnityEngine.GUILayout.Button(
-            "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
+            "", UnityEngine.GUI.skin.label, GUILayoutWidth(children_offset));
       } else {
         string button_text = expanded_[celestial] ? "−" : "+";
         if (UnityEngine.GUILayout.Button(
-                button_text, GUILayoutWidth(offset))) {
+                button_text, GUILayoutWidth(children_offset))) {
           ScheduleShrink();
           expanded_[celestial] = !expanded_[celestial];
         }
@@ -698,9 +695,9 @@ internal class
       if ((expanded_[celestial] || target_pinned_) &&
           target?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Space(Width(offset * (depth + 1)));
+          UnityEngine.GUILayout.Space(Width(children_offset * (depth + 1)));
           UnityEngine.GUILayout.Button(
-              "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
+              "", UnityEngine.GUI.skin.label, GUILayoutWidth(children_offset));
           UnityEngine.GUILayout.Label(
               L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
                                target.vesselName));
@@ -874,6 +871,8 @@ internal class
 
   public readonly Dictionary<CelestialBody, bool> pinned;
 
+  // Horizontal offset between a node and its children.
+  private const int children_offset = 1;
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;
