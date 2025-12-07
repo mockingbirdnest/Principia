@@ -37,6 +37,10 @@ internal class ScalingRenderer {
     return unit_ * units;
   }
 
+  protected float CalcWidth(string text, UnityEngine.GUIStyle style) {
+    return style.CalcSize(new UnityEngine.GUIContent(text)).x / unit_;
+  }
+
   protected UnityEngine.GUISkin MakeSkin(UnityEngine.GUISkin template) {
     UnityEngine.GUISkin skin = UnityEngine.Object.Instantiate(template);
 
