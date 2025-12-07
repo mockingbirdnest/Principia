@@ -811,13 +811,20 @@ internal class
   }
 
   private bool RenderFocusButton() {
-    return UnityEngine.GUILayout.Button(
-        new UnityEngine.GUIContent(focus_,
-                                   L10N.CacheFormat(
-                                       "#Principia_ReferenceFrameSelector_Focus")),
-        Style.Aligned(UnityEngine.TextAnchor.LowerCenter,
-                      UnityEngine.GUI.skin.button),
-        GUILayoutWidth(1));
+    if (MapView.MapIsEnabled) {
+      return UnityEngine.GUILayout.Button(
+          new UnityEngine.GUIContent(focus_,
+                                     L10N.CacheFormat(
+                                         "#Principia_ReferenceFrameSelector_Focus")),
+          Style.Aligned(UnityEngine.TextAnchor.LowerCenter,
+                        UnityEngine.GUI.skin.button),
+          GUILayoutWidth(1));
+    } else {
+      UnityEngine.GUILayout.Button("",
+                                   UnityEngine.GUI.skin.label,
+                                   GUILayoutWidth(1));
+      return false;
+    }
   }
 
   private bool SelectedFrameIs(CelestialBody celestial, FrameType type) {
