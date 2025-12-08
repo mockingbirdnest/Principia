@@ -725,7 +725,7 @@ internal class
   }
 
   private void RenderSubtreeToggleGrid(CelestialBody celestial) {
-    int column_width = 2;
+    const float column_width = 2.25f;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (ToggleButton(
               SelectedFrameIs(celestial, FrameType.BODY_CENTRED_NON_ROTATING),
