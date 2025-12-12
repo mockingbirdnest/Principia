@@ -41,11 +41,11 @@ PROTO_HEADERS                           := $(PROTO_FILES:.proto=.pb.h)
 DEPS_DIRECTORY := deps/
 
 ifeq ($(PRINCIPIA_AVX),true)
-    OBJ_DIRECTORY := obj/avx
-    BIN_DIRECTORY := bin/avx
+    OBJ_DIRECTORY := obj/avx/
+    BIN_DIRECTORY := bin/avx/
 else
-    OBJ_DIRECTORY := obj/sse
-    BIN_DIRECTORY := bin/sse
+    OBJ_DIRECTORY := obj/sse/
+    BIN_DIRECTORY := bin/sse/
 endif
 TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
@@ -145,12 +145,22 @@ SHARED_ARGS   := \
 	-Wno-mathematical-notation-identifier-extension               \
 	-Wno-nested-anon-types                                        \
 	-Wno-unknown-pragmas                                          \
-	-DPRINCIPIA_REQUIRES_AVX=0                                    \
-	-DPRINCIPIA_REQUIRES_FMA=0                                    \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DNDEBUG
+
+ifeq ($(PRINCIPIA_AVX),true)
+    SHARED_ARGS += \
+	-DPRINCIPIA_REQUIRES_AVX=1 \
+	-DPRINCIPIA_REQUIRES_FMA=1 \
+	-mfma \
+	-mavx
+else
+    SHARED_ARGS += \
+	-DPRINCIPIA_REQUIRES_AVX=0 \
+	-DPRINCIPIA_REQUIRES_FMA=0
+endif
 
 ifeq ($(UNAME_S),Linux)
     ifeq ($(UNAME_M),x86_64)
