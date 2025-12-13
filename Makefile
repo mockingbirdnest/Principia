@@ -9,7 +9,12 @@ CXX := clang++
 MSBUILD := msbuild
 PRINCIPIA_CLANG_VERSION ?= 20
 PRINCIPIA_MACOS_VERSION_MIN ?= 13
-PRINCIPIA_AVX ?= true
+PRINCIPIA_TARGET ?= avx
+ifneq ($(PRINCIPIA_TARGET),avx)
+  ifneq ($(PRINCIPIA_TARGET),sse)
+    $(error PRINCIPIA_TARGET must be 'avx' or 'sse')
+	endif
+endif
 
 VERSION_TRANSLATION_UNIT := base/version.generated.cc
 
@@ -40,13 +45,8 @@ PROTO_HEADERS                           := $(PROTO_FILES:.proto=.pb.h)
 
 DEPS_DIRECTORY := deps/
 
-ifeq ($(PRINCIPIA_AVX),true)
-    OBJ_DIRECTORY := obj/avx/
-    BIN_DIRECTORY := bin/avx/
-else
-    OBJ_DIRECTORY := obj/sse/
-    BIN_DIRECTORY := bin/sse/
-endif
+OBJ_DIRECTORY := obj/$(PRINCIPIA_TARGET)/
+BIN_DIRECTORY := bin/$(PRINCIPIA_TARGET)/
 TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
 GMOCK_TRANSLATION_UNITS := \
@@ -150,7 +150,7 @@ SHARED_ARGS   := \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DNDEBUG
 
-ifeq ($(PRINCIPIA_AVX),true)
+ifeq ($(PRINCIPIA_TARGET),avx)
     SHARED_ARGS += \
 	-DPRINCIPIA_REQUIRES_AVX=1 \
 	-DPRINCIPIA_REQUIRES_FMA=1 \
