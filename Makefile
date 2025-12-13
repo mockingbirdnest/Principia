@@ -326,8 +326,8 @@ $(KSP_PLUGIN) : $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE
 
 TEST_BINS                            := $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=))
 PACKAGE_TEST_BINS                    := $(addprefix $(BIN_DIRECTORY), $(addsuffix test, $(sort $(dir $(TEST_TRANSLATION_UNITS)))))
-PLUGIN_DEPENDENT_TEST_BINS           := $(filter bin/ksp_plugin_test/% bin/journal/%, $(TEST_BINS))
-PLUGIN_DEPENDENT_PACKAGE_TEST_BINS   := $(filter bin/ksp_plugin_test/% bin/journal/%, $(PACKAGE_TEST_BINS))
+PLUGIN_DEPENDENT_TEST_BINS           := $(filter $(BIN_DIRECTORY)ksp_plugin_test/% $(BIN_DIRECTORY)journal/%, $(TEST_BINS))
+PLUGIN_DEPENDENT_PACKAGE_TEST_BINS   := $(filter $(BIN_DIRECTORY)ksp_plugin_test/% $(BIN_DIRECTORY)journal/%, $(PACKAGE_TEST_BINS))
 PLUGIN_INDEPENDENT_TEST_BINS         := $(filter-out $(PLUGIN_DEPENDENT_TEST_BINS), $(TEST_BINS))
 PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS := $(filter-out $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS), $(PACKAGE_TEST_BINS))
 PRINCIPIA_TEST_BIN                   := $(BIN_DIRECTORY)test
