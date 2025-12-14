@@ -1327,6 +1327,17 @@ message GetBufferedLogging {
   optional Return return = 3;
 }
 
+message GetCPUIDFeatureFlags {
+  extend Method {
+    optional GetCPUIDFeatureFlags extension = 5198;
+  }
+  message Out {
+    required bool has_avx = 1;
+    required bool has_fma = 2;
+  }
+  optional Out out = 2;
+}
+
 message GetStderrLogging {
   extend Method {
     optional GetStderrLogging extension = 5007;

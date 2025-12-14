@@ -667,6 +667,14 @@ int __cdecl principia__GetStderrLogging() {
   return m.Return(FLAGS_stderrthreshold);
 }
 
+void __cdecl principia__GetCPUIDFeatureFlags(bool* const has_avx,
+                                             bool* const has_fma) {
+  journal::Method<journal::GetCPUIDFeatureFlags> m({has_avx, has_fma});
+  *has_avx = CPUIDFeatureFlag::AVX.IsSet();
+  *has_fma = CPUIDFeatureFlag::FMA.IsSet();
+  return m.Return();
+}
+
 int __cdecl principia__GetSuppressedLogging() {
   journal::Method<journal::GetSuppressedLogging> m;
   return m.Return(FLAGS_minloglevel);
