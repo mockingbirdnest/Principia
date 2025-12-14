@@ -9,10 +9,10 @@ CXX := clang++
 MSBUILD := msbuild
 PRINCIPIA_CLANG_VERSION ?= 20
 PRINCIPIA_MACOS_VERSION_MIN ?= 13
-PRINCIPIA_TARGET ?= sse
-ifneq ($(PRINCIPIA_TARGET),avx)
-  ifneq ($(PRINCIPIA_TARGET),sse)
-    $(error PRINCIPIA_TARGET must be 'avx' or 'sse')
+PRINCIPIA_TARGET ?= x64
+ifneq ($(PRINCIPIA_TARGET),x64_AVX_FMA)
+  ifneq ($(PRINCIPIA_TARGET),x64)
+    $(error PRINCIPIA_TARGET must be 'x64_AVX_FMA' or 'x64')
 	endif
 endif
 
@@ -68,6 +68,7 @@ ADAPTER_CONFIGURATION := Release
 FINAL_PRODUCTS_DIR    := Release/
 ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 
+# TODO(phl): Change the OS names once the loader is ready.
 ifeq ($(UNAME_S),Linux)
     PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
 endif
@@ -150,7 +151,7 @@ SHARED_ARGS   := \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DNDEBUG
 
-ifeq ($(PRINCIPIA_TARGET),avx)
+ifeq ($(PRINCIPIA_TARGET),x64_AVX_FMA)
     SHARED_ARGS += \
 	-DPRINCIPIA_REQUIRES_AVX=1 \
 	-DPRINCIPIA_REQUIRES_FMA=1 \
