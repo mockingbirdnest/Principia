@@ -35,10 +35,12 @@
   <PropertyGroup Condition="!$(Configuration.EndsWith('_AVX_FMA'))">
     <PlatformWithCPUFeatures>$(Platform)</PlatformWithCPUFeatures>
     <ConfigurationWithoutCPUFeatures>$(Configuration)</ConfigurationWithoutCPUFeatures>
+    <CPUFeatures>sse</CPUFeatures>
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration.EndsWith('_AVX_FMA'))">
     <PlatformWithCPUFeatures>$(Platform)_AVX_FMA</PlatformWithCPUFeatures>
     <ConfigurationWithoutCPUFeatures>$(Configuration.Replace('_AVX_FMA',''))</ConfigurationWithoutCPUFeatures>
+    <CPUFeatures>avx</CPUFeatures>
   </PropertyGroup>
 
 
@@ -268,11 +270,10 @@
   <ItemDefinitionGroup Condition="$(ConfigurationType) == DynamicLibrary">
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)" mkdir "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
-        if exist "$(OutDir)glog.dll" copy /Y "$(OutDir)glog.dll" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
-        if exist "$(OutDir)libprotobuf.dll" copy /Y "$(OutDir)libprotobuf.dll" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
-        copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
-        copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(PlatformWithCPUFeatures)"
+        if not exist "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(Platform)"
+        if not exist "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(Platform)\$(CPUFeatures)" mkdir "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(Platform)\$(CPUFeatures)"
+        copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(Platform)\$(CPUFeatures)"
+        copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\$(Platform)\$(CPUFeatures)"
       </Command>
       <Message>Copying $(TargetName).dll to GameData</Message>
     </PostBuildEvent>
