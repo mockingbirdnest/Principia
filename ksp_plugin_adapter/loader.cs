@@ -98,10 +98,10 @@ internal static class Loader {
       Log.InitGoogleLogging();
       Interface.GetCPUIDFeatureFlags(out bool has_avx, out bool has_fma);
       Log.Info("Processor " +
-               (has_fma ? "has" : "does not have") +
-               " FMA support and " +
                (has_avx ? "has" : "does not have") +
-               " AVX support.");
+               " AVX support and " +
+               (has_fma ? "has" : "does not have") +
+               " FMA support.");
       if (has_fma && !has_avx) {
         return "Principia does not run on processors with FMA support but no " +
                "AVX support.";
