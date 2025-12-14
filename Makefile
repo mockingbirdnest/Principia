@@ -68,12 +68,11 @@ ADAPTER_CONFIGURATION := Release
 FINAL_PRODUCTS_DIR    := Release/
 ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 
-# TODO(phl): Change the OS names once the loader is ready.
 ifeq ($(UNAME_S),Linux)
-    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux/
 endif
 ifeq ($(UNAME_S),Darwin)
-    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/MacOS64/
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/macOS/
 endif
 
 TEST_LIBS     := \
