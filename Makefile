@@ -164,11 +164,7 @@ else
 endif
 
 ifeq ($(UNAME_S),Linux)
-    ifeq ($(UNAME_M),x86_64)
-        SHARED_ARGS += -m64 -msse4.1
-    else
-        SHARED_ARGS += -m32
-    endif
+    SHARED_ARGS += -m64 -msse4.1
     LIBS += \
 			-lsupc++ \
 			-lc++
