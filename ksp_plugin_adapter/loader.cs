@@ -103,8 +103,8 @@ internal static class Loader {
                (has_avx ? "has" : "does not have") +
                " AVX support.");
       if (has_fma && !has_avx) {
-        return "Principia does not run on processors with FMA support but " +
-               "no AVX support.";
+        return "Principia does not run on processors with FMA support but no " +
+               "AVX support.";
       } else {
         return null;
       }
