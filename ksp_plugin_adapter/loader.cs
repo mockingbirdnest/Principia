@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -81,21 +83,9 @@ internal static class Loader {
       }
     }
     try {
-      if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
-        principia_dll_ = LoadLibrary(possible_dll_paths[0]);
-      } else {
-        const int RTLD_NOW = 2;
-        const int RTLD_GLOBAL = 8;
-        foreach (string path in possible_dll_paths) {
-          principia_dll_ = dlopen(path, RTLD_NOW|RTLD_GLOBAL);
-          if (principia_dll_ != IntPtr.Zero) {
-            break;
-          }
-        }
-      }
-      Interface.LoadSymbols();
-      loaded_principia_dll = true;
-      Log.InitGoogleLogging();
+      // First try to load the x64 DLL.  This should always work, and it makes
+      // it possible to query the CPU flags.
+      LoadPrincipiaDll(possible_dll_paths, "x64");
       Interface.GetCPUIDFeatureFlags(out bool has_avx, out bool has_fma);
       Log.Info("Processor " +
                (has_avx ? "has" : "does not have") +
@@ -105,9 +95,13 @@ internal static class Loader {
       if (has_fma && !has_avx) {
         return "Principia does not run on processors with FMA support but no " +
                "AVX support.";
-      } else {
-        return null;
+      } else if (has_fma) {
+        // If it turns out that the machine has FMA (and therefore AVX), change
+        // our mind and load the x64_AVX_FMA DLL
+        LoadPrincipiaDll(possible_dll_paths, "x64_AVX_FMA");
       }
+      loaded_principia_dll = true;
+      return null;
     } catch (Exception e) {
       UnityEngine.Debug.LogException(e);
       if (non_ascii_path_error != null) {
@@ -126,6 +120,30 @@ internal static class Loader {
                " are required.";
       }
     }
+  }
+
+  private static void LoadPrincipiaDll(string[] possible_dll_paths,
+                                       string platform) {
+    var interpolated_possible_dll_paths = new List<string>();
+    foreach (string path in possible_dll_paths) {
+      interpolated_possible_dll_paths.Add(
+          string.Format(CultureInfo.InvariantCulture, path, platform));
+    }
+    Log.Info("Loading the " + platform + "DLL.");
+    if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+      principia_dll_ = LoadLibrary(interpolated_possible_dll_paths[0]);
+    } else {
+      const int RTLD_NOW = 2;
+      const int RTLD_GLOBAL = 8;
+      foreach (string path in interpolated_possible_dll_paths) {
+        principia_dll_ = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
+        if (principia_dll_ != IntPtr.Zero) {
+          break;
+        }
+      }
+    }
+    Interface.LoadSymbols();
+    Log.InitGoogleLogging();
   }
 
   private static bool IsVCRedistInstalled() {
