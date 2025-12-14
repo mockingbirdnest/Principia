@@ -96,7 +96,18 @@ internal static class Loader {
       Interface.LoadSymbols();
       loaded_principia_dll = true;
       Log.InitGoogleLogging();
-      return null;
+      Interface.GetCPUIDFeatureFlags(out bool has_avx, out bool has_fma);
+      Log.Info("Processor " +
+               (has_fma ? "has" : "does not have") +
+               " FMA support and " +
+               (has_avx ? "has" : "does not have") +
+               " AVX support.");
+      if (has_fma && !has_avx) {
+        return "Principia does not support processors with FMA support but " +
+               "AVX support.";
+      } else {
+        return null;
+      }
     } catch (Exception e) {
       UnityEngine.Debug.LogException(e);
       if (non_ascii_path_error != null) {
