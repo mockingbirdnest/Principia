@@ -271,7 +271,7 @@
         if not exist "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\Windows" mkdir "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\Windows"
         if not exist "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\Windows\$(PlatformWithCPUFeatures)" mkdir "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\Windows\$(PlatformWithCPUFeatures)"
         copy /Y "$(TargetPath)" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\Windows\$(PlatformWithCPUFeatures)"
-        copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\Windows)\$(PlatformWithCPUFeatures)"
+        copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(ConfigurationWithoutCPUFeatures)\GameData\Principia\Windows\$(PlatformWithCPUFeatures)"
       </Command>
       <Message>Copying $(TargetName).dll to GameData</Message>
     </PostBuildEvent>
