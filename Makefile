@@ -69,10 +69,10 @@ FINAL_PRODUCTS_DIR    := Release/
 ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 
 ifeq ($(UNAME_S),Linux)
-    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux/
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux/$(PRINCIPIA_TARGET)/
 endif
 ifeq ($(UNAME_S),Darwin)
-    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/macOS/
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/macOS/$(PRINCIPIA_TARGET)/
 endif
 
 TEST_LIBS     := \

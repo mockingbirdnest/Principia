@@ -30,7 +30,7 @@ internal static class Loader {
             "14.38.33130";
         dll_filename = "principia.dll";
         possible_dll_paths = new []
-            { @"GameData\Principia\x64\" + dll_filename };
+            { @"GameData\Principia\Windows\x64\" + dll_filename };
         break;
       // Both Mac and Linux report `PlatformID.Unix`, so we treat them together
       // (we probably don't actually encounter `PlatformID.MacOSX`).
@@ -38,11 +38,11 @@ internal static class Loader {
       case PlatformID.MacOSX:
         dll_filename = "principia.so";
         possible_dll_paths = new [] {
-            @"GameData/Principia/Linux64/" + dll_filename,
-            @"GameData/Principia/MacOS64/" + dll_filename,
+            @"GameData/Principia/Linux/x64/" + dll_filename,
+            @"GameData/Principia/macOS/x64/" + dll_filename,
         };
         is_cxx_installed = null;
-        required_cxx_packages = "libc++abi1-17, libc++1-17, and libunwind-17 " +
+        required_cxx_packages = "libc++abi1-20, libc++1-20, and libunwind-20 " +
                                 "or later (Linux) or High Sierra or later " +
                                 "(MacOS)";
         break;
@@ -118,13 +118,13 @@ internal static class Loader {
   }
 
   private static bool IsVCRedistInstalled() {
-    // NOTE(phl): This GUID is specific to:
-    //   Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.38.33130
+    // NOTE(phl): This key is specific to:
+    //   Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.44.x
     // It will need to be updated when new versions of Visual C++
     // Redistributable are released by Microsoft.
     RegistryKey key = Registry.LocalMachine.OpenSubKey(
         @"Software\Classes\Installer\Dependencies\" +
-        @"VC,redist.x64,amd64,14.38,bundle",
+        @"VC,redist.x64,amd64,14.44,bundle",
         writable : false);
     if (key == null) {
       return false;
@@ -132,7 +132,7 @@ internal static class Loader {
       string version = (string)key.GetValue("Version");
       // NOTE(phl): This string needs to be updated when new versions of Visual
       // C++ Redistributable are released by Microsoft.
-      return version != null && version == "14.38.33130.0";
+      return version != null && version == "14.44.35211.0";
     }
   }
 
