@@ -58,24 +58,27 @@ if (test-path .\Release) {
 git checkout "$remote/$branch"
 git tag $tag -m $mathematician
 
-&$msbuild                           `
-    /t:Clean                        `
-    /property:Configuration=Release `
-    /property:Platform=x64          `
-    .\Principia.sln
-
-&$msbuild                                              `
-    "/t:ksp_plugin:Rebuild;ksp_plugin_adapter:Rebuild" `
-    /property:Configuration=Release                    `
-    /property:Platform=x64                             `
-    .\Principia.sln
-
-foreach ($ksp_version in $compatibility_ksp_versions) {
-  &$msbuild                                              `
-      /t:ksp_plugin_adapter:Rebuild                      `
-      "/property:Configuration=Release KSP $ksp_version" `
-      /property:Platform=x64                             `
+$platforms = 'x64','x64_AVX_FMA'
+foreach ($platform in $platforms) {
+  &$msbuild                           `
+      /t:Clean                        `
+      /property:Configuration=Release `
+      /property:Platform=$platform    `
       .\Principia.sln
+
+  &$msbuild                                              `
+      "/t:ksp_plugin:Rebuild;ksp_plugin_adapter:Rebuild" `
+      /property:Configuration=Release                    `
+      /property:Platform=$platform                       `
+      .\Principia.sln
+
+  foreach ($ksp_version in $compatibility_ksp_versions) {
+    &$msbuild                                              `
+        /t:ksp_plugin_adapter:Rebuild                      `
+        "/property:Configuration=Release KSP $ksp_version" `
+        /property:Platform=$platform                             `
+        .\Principia.sln
+  }
 }
 
 # Sanity check: the error message in the adapter should mention all supported
