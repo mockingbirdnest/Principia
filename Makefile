@@ -9,7 +9,7 @@ CXX := clang++
 MSBUILD := msbuild
 PRINCIPIA_CLANG_VERSION ?= 20
 PRINCIPIA_MACOS_VERSION_MIN ?= 13
-PRINCIPIA_TARGET ?= avx
+PRINCIPIA_TARGET ?= sse
 ifneq ($(PRINCIPIA_TARGET),avx)
   ifneq ($(PRINCIPIA_TARGET),sse)
     $(error PRINCIPIA_TARGET must be 'avx' or 'sse')
