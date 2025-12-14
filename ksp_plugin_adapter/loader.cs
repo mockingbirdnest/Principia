@@ -29,10 +29,10 @@ internal static class Loader {
         is_cxx_installed = IsVCRedistInstalled();
         required_cxx_packages =
             "the Microsoft Visual C++ 2015-2022 Redistributable (x64) - " +
-            "14.38.33130";
+            vc_redist_bundle_ + "." + vc_redist_version_;
         dll_filename = "principia.dll";
         possible_dll_paths = new []
-            { @"GameData\Principia\Windows\x64\" + dll_filename };
+            { @"GameData\Principia\Windows\{0}\" + dll_filename };
         break;
       // Both Mac and Linux report `PlatformID.Unix`, so we treat them together
       // (we probably don't actually encounter `PlatformID.MacOSX`).
@@ -40,8 +40,8 @@ internal static class Loader {
       case PlatformID.MacOSX:
         dll_filename = "principia.so";
         possible_dll_paths = new [] {
-            @"GameData/Principia/Linux/x64/" + dll_filename,
-            @"GameData/Principia/macOS/x64/" + dll_filename,
+            @"GameData/Principia/Linux/{0}/" + dll_filename,
+            @"GameData/Principia/macOS/{0}/" + dll_filename,
         };
         is_cxx_installed = null;
         required_cxx_packages = "libc++abi1-20, libc++1-20, and libunwind-20 " +
@@ -85,7 +85,7 @@ internal static class Loader {
     try {
       // First try to load the x64 DLL.  This should always work, and it makes
       // it possible to query the CPU flags.
-      LoadPrincipiaDll(possible_dll_paths, "x64");
+      LoadPrincipiaDllForPlatform(possible_dll_paths, "x64");
       Interface.GetCPUIDFeatureFlags(out bool has_avx, out bool has_fma);
       Log.Info("Processor " +
                (has_avx ? "has" : "does not have") +
@@ -98,7 +98,7 @@ internal static class Loader {
       } else if (has_fma) {
         // If it turns out that the machine has FMA (and therefore AVX), change
         // our mind and load the x64_AVX_FMA DLL
-        LoadPrincipiaDll(possible_dll_paths, "x64_AVX_FMA");
+        LoadPrincipiaDllForPlatform(possible_dll_paths, "x64_AVX_FMA");
       }
       loaded_principia_dll = true;
       return null;
@@ -122,14 +122,17 @@ internal static class Loader {
     }
   }
 
-  private static void LoadPrincipiaDll(string[] possible_dll_paths,
-                                       string platform) {
+  private static void LoadPrincipiaDllForPlatform(string[] possible_dll_paths,
+                                                  string platform) {
     var interpolated_possible_dll_paths = new List<string>();
     foreach (string path in possible_dll_paths) {
       interpolated_possible_dll_paths.Add(
           string.Format(CultureInfo.InvariantCulture, path, platform));
     }
-    Log.Info("Loading the " + platform + "DLL.");
+    UnityEngine.Debug.Log("Loading the " +
+                          platform +
+                          " Principia DLL from paths: " +
+                          string.Join(", ", interpolated_possible_dll_paths));
     if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
       principia_dll_ = LoadLibrary(interpolated_possible_dll_paths[0]);
     } else {
@@ -147,21 +150,18 @@ internal static class Loader {
   }
 
   private static bool IsVCRedistInstalled() {
-    // NOTE(phl): This key is specific to:
-    //   Microsoft Visual C++ 2015-2022 Redistributable (x64) - 14.44.x
-    // It will need to be updated when new versions of Visual C++
-    // Redistributable are released by Microsoft.
     RegistryKey key = Registry.LocalMachine.OpenSubKey(
         @"Software\Classes\Installer\Dependencies\" +
-        @"VC,redist.x64,amd64,14.44,bundle",
+        @"VC,redist.x64,amd64," +
+        vc_redist_bundle_ +
+        ",bundle",
         writable : false);
     if (key == null) {
       return false;
     } else {
       string version = (string)key.GetValue("Version");
-      // NOTE(phl): This string needs to be updated when new versions of Visual
-      // C++ Redistributable are released by Microsoft.
-      return version != null && version == "14.44.35211.0";
+      return version != null &&
+             version == vc_redist_bundle_ + "." + vc_redist_version_ + ".0";
     }
   }
 
@@ -195,6 +195,11 @@ internal static class Loader {
 
   [DllImport("dl")]
   private static extern IntPtr dlsym(IntPtr handle, string symbol);
+
+  // NOTE(phl): These strings need to be updated when new versions of Visual
+  // C++ Redistributable are released by Microsoft.
+  private static readonly string vc_redist_bundle_ = "14.44";
+  private static readonly string vc_redist_version_ = "35211";
 
   internal static bool loaded_principia_dll { get; private set; } = false;
 }
