@@ -953,18 +953,6 @@ struct GetBufferedLogging : not_constructible {
                   Player::PointerMap& pointer_map);
 };
 
-struct GetCPUIDFeatureFlags : not_constructible {
-  struct Out final {
-    bool* const has_avx;
-    bool* const has_fma;
-  };
-
-  using Message = serialization::GetCPUIDFeatureFlags;
-  static void Fill(Out const& out, not_null<Message*> const message);
-  static void Run(Message const& message,
-                  Player::PointerMap& pointer_map);
-};
-
 struct GetStderrLogging : not_constructible {
   using Return = int;
 

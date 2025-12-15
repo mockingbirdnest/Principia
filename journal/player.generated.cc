@@ -136,8 +136,6 @@
              *method_in, *method_out_return);
   ran |= RunIfAppropriate<GetBufferedLogging>(
              *method_in, *method_out_return);
-  ran |= RunIfAppropriate<GetCPUIDFeatureFlags>(
-             *method_in, *method_out_return);
   ran |= RunIfAppropriate<GetStderrLogging>(
              *method_in, *method_out_return);
   ran |= RunIfAppropriate<GetSuppressedLogging>(

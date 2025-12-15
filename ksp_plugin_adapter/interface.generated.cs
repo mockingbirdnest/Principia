@@ -251,6 +251,31 @@ internal static partial class Interface {
 
   private partial class Symbols {
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ActivatePlayerDelegate();
+    public ActivatePlayerDelegate ActivatePlayer =
+        Loader.LoadFunction<ActivatePlayerDelegate>(
+            "principia__ActivatePlayer");
+  }
+  internal static void ActivatePlayer() {
+    symbols_.ActivatePlayer();
+  }
+
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void ActivateRecorderDelegate(
+        [MarshalAs(UnmanagedType.I1)] bool activate);
+    public ActivateRecorderDelegate ActivateRecorder =
+        Loader.LoadFunction<ActivateRecorderDelegate>(
+            "principia__ActivateRecorder");
+  }
+  internal static void ActivateRecorder(
+      bool activate) {
+    symbols_.ActivateRecorder(
+        activate);
+  }
+
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void AdvanceTimeDelegate(
         IntPtr plugin,
         double t,
@@ -1603,6 +1628,17 @@ internal static partial class Interface {
     return symbols_.HasVessel(
         plugin,
         vessel_guid);
+  }
+
+  private partial class Symbols {
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void InitGoogleLoggingDelegate();
+    public InitGoogleLoggingDelegate InitGoogleLogging =
+        Loader.LoadFunction<InitGoogleLoggingDelegate>(
+            "principia__InitGoogleLogging");
+  }
+  internal static void InitGoogleLogging() {
+    symbols_.InitGoogleLogging();
   }
 
   private partial class Symbols {

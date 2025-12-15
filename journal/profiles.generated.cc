@@ -1847,19 +1847,6 @@ void GetBufferedLogging::Run(Message const& message, Player::PointerMap& pointer
   PRINCIPIA_CHECK_EQ(message.return_().result(), result);
 }
 
-void GetCPUIDFeatureFlags::Fill(Out const& out, not_null<Message*> const message) {
-  auto* const m = message->mutable_out();
-  m->set_has_avx(*out.has_avx);
-  m->set_has_fma(*out.has_fma);
-}
-
-void GetCPUIDFeatureFlags::Run(Message const& message, Player::PointerMap& pointer_map) {
-  [[maybe_unused]] auto const& out = message.out();
-  bool has_avx;
-  bool has_fma;
-  interface::principia__GetCPUIDFeatureFlags(&has_avx, &has_fma);
-}
-
 void GetStderrLogging::Fill(Return const& result, not_null<Message*> const message) {
   message->mutable_return_()->set_result(result);
 }

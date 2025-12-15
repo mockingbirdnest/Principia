@@ -420,6 +420,13 @@ static_assert(std::is_pod<OrbitAnalysis>::value,
               "OrbitAnalysis is used for interfacing");
 
 extern "C" PRINCIPIA_DLL
+void __cdecl principia__ActivatePlayer();
+
+extern "C" PRINCIPIA_DLL
+void __cdecl principia__ActivateRecorder(
+    bool const activate);
+
+extern "C" PRINCIPIA_DLL
 void __cdecl principia__AdvanceTime(
     Plugin* const plugin,
     double const t,
@@ -816,6 +823,9 @@ extern "C" PRINCIPIA_DLL
 bool __cdecl principia__HasVessel(
     Plugin* const plugin,
     char const* const vessel_guid);
+
+extern "C" PRINCIPIA_DLL
+void __cdecl principia__InitGoogleLogging();
 
 extern "C" PRINCIPIA_DLL
 void __cdecl principia__InitializeDownsamplingParameters(
