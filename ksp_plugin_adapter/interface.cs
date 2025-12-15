@@ -281,8 +281,6 @@ internal static partial class Interface {
     };
   }
 
-  private partial class Symbols {}
-
   private static Symbols symbols_ = null;
 
   internal static void LoadSymbols() {
