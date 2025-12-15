@@ -250,7 +250,27 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5197.
+  extensions 5000 to 5999;  // Last used: 5200.
+}
+
+message ActivatePlayer {
+  option (omit_journaling) = true;
+  extend Method {
+    optional ActivatePlayer extension = 5200;
+  }
+}
+
+message ActivateRecorder {
+  // NOTE: Do not journal!  You'd end up with half a message in the journal and
+  // that would cause trouble.
+  option (omit_journaling) = true;
+  extend Method {
+    optional ActivateRecorder extension = 5199;
+  }
+  message In {
+    required bool activate = 1;
+  }
+  optional In in = 1;
 }
 
 message AdvanceTime {
@@ -1328,6 +1348,9 @@ message GetBufferedLogging {
 }
 
 message GetCPUIDFeatureFlags {
+  // It makes no sense to journal this method, since it's used to select the DLL
+  // to load.  The journal replayer must just be built for the "right" platform.
+  option (omit_journaling) = true;
   extend Method {
     optional GetCPUIDFeatureFlags extension = 5198;
   }
@@ -1413,6 +1436,13 @@ message HasVessel {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message InitGoogleLogging {
+  option (omit_journaling) = true;
+  extend Method {
+    optional InitGoogleLogging extension = 5002;
+  }
 }
 
 message InitializeDownsamplingParameters {
@@ -2614,4 +2644,8 @@ extend google.protobuf.MessageOptions {
   // If set, the body of the Run method is wrapped into an #ifdef for the given
   // symbol.  Useful for selectively skipping replay of some methods.
   optional string run_conditional_compilation_symbol = 50013;
+  // If set, the struct used for journaling is not generated.  Useful for
+  // methods for which we need interfacing but for which journaling would be
+  // incorrect.
+  optional bool omit_journaling = 50017;
 }
