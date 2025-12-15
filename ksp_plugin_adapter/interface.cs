@@ -281,31 +281,7 @@ internal static partial class Interface {
     };
   }
 
-  // These two functions are not journalled, so the interface is handwritten on
-  // both sides.
-
-  [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-  internal delegate void ActivateRecorderDelegate(bool activate);
-
-  [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-  private delegate void InitGoogleLoggingDelegate();
-
-  private partial class Symbols {
-    public ActivateRecorderDelegate ActivateRecorder =
-        Loader.LoadFunction<ActivateRecorderDelegate>(
-            "principia__ActivateRecorder");
-    public InitGoogleLoggingDelegate InitGoogleLogging =
-        Loader.LoadFunction<InitGoogleLoggingDelegate>(
-            "principia__InitGoogleLogging");
-  }
-
-  internal static void ActivateRecorder(bool activate) {
-    symbols_.ActivateRecorder(activate);
-  }
-
-  internal static void InitGoogleLogging() {
-    symbols_.InitGoogleLogging();
-  }
+  private partial class Symbols {}
 
   private static Symbols symbols_ = null;
 
