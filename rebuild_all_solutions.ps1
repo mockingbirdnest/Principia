@@ -43,9 +43,9 @@ foreach ($directory_and_repositories in @(
   Pop-Location
 }
 
-function build_solutions($solutions) {
+function build_solutions($solutions, $platforms) {
   foreach ($configuration in "Debug", "Release") {
-    foreach ($platform in "x64") {
+    foreach ($platform in $platforms) {
       foreach ($solution in $solutions) {
         &$msbuild /t:"Clean;Build" /m /property:Configuration=$configuration /property:Platform=$platform $solution
         if (!$?) {
@@ -56,5 +56,5 @@ function build_solutions($solutions) {
   }
 }
 
-build_solutions($dependencies)
-build_solutions(".\Principia\Principia.sln")
+build_solutions($dependencies, @("x64"))
+build_solutions(".\Principia\Principia.sln", @("x64", "x64_AVX_FMA"))
