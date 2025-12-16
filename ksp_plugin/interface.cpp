@@ -129,6 +129,8 @@ using namespace principia::quantities::_si;
 
 namespace {
 
+constexpr char platform_with_cpu_features[] = PLATFORM_WITH_CPU_FEATURES;
+
 constexpr char gipfeli_compressor[] = "gipfeli";
 
 constexpr char base64_encoder[] = "base64";
@@ -683,10 +685,12 @@ int __cdecl principia__GetVerboseLogging() {
 
 void __cdecl principia__GetVersion(
     char const** const build_date,
-    char const** const version) {
-  journal::Method<journal::GetVersion> m({build_date, version});
+    char const** const version,
+    char const** const platform) {
+  journal::Method<journal::GetVersion> m({build_date, version, platform});
   *CHECK_NOTNULL(build_date) = BuildDate;
   *CHECK_NOTNULL(version) = Version;
+  *CHECK_NOTNULL(platform) = platform_with_cpu_features;
   return m.Return();
 }
 

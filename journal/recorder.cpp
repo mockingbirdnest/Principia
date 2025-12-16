@@ -7,12 +7,14 @@
 #include "base/serialization.hpp"
 #include "base/version.hpp"
 #include "glog/logging.h"
+#include "ksp_plugin/interface.hpp"
 
 namespace principia {
 namespace journal {
 namespace _recorder {
 namespace internal {
 
+using interface::principia__GetVersion;
 using namespace principia::base::_array;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_serialization;
@@ -40,15 +42,10 @@ void Recorder::Activate(not_null<Recorder*> const recorder) {
   // When the recorder gets activated, pretend that we got a GetVersion call.
   // This will record the version at the beginning of the journal, which is
   // useful for forensics.
-  serialization::Method method;
-  not_null<serialization::GetVersion*> const get_version =
-      method.MutableExtension(serialization::GetVersion::extension);
-  active_recorder_->WriteAtConstruction(method);
-  not_null<serialization::GetVersion::Out*> const out =
-      get_version->mutable_out();
-  out->set_build_date(BuildDate);
-  out->set_version(Version);
-  active_recorder_->WriteAtDestruction(method);
+  char const* build_date;
+  char const* version;
+  char const* platform;
+  principia__GetVersion(&build_date, &version, &platform);
 }
 
 void Recorder::Deactivate() {
