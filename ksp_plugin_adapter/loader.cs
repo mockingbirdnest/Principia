@@ -81,11 +81,11 @@ internal static class Loader {
         return "Principia does not run on processors with FMA support but no " +
                "AVX support.";
       } else if (has_fma) {
-        if (!FreeLibrary(principia_dll_)) {
-          return "Unable to free x64 Principia DLL.";
-        }
         // If it turns out that the machine has FMA (and therefore AVX), change
-        // our mind and load the x64_AVX_FMA DLL
+        // our mind and load the x64_AVX_FMA DLL.  It's necessary to unload the
+        // DLL, otherwise the base address reported by `InitGoogleLogging` might
+        // (incorrectly) be the one of the `x64` DLL.
+        UnloadPrincipiaDll(platform: "x64");
         string error_x64_avx_fma = LoadPrincipiaDllForPlatform(
             possible_dll_path_patterns,
             dll_filename: dll_filename,
@@ -93,8 +93,8 @@ internal static class Loader {
         if (error_x64_avx_fma != null) {
           return error_x64_avx_fma;
         }
-        loaded_principia_dll = true;
       }
+      loaded_principia_dll = true;
       Log.InitGoogleLogging();
       Log.Info("Processor " +
                (has_avx ? "has" : "does not have") +
@@ -176,6 +176,19 @@ internal static class Loader {
     return null;
   }
 
+  private static string UnloadPrincipiaDll(string platform) {
+    if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
+      if (!FreeLibrary(principia_dll_)) {
+        return "Unable to free the " + platform + "  Principia DLL.";
+      }
+    } else {
+      if (dlclose(principia_dll_) != 0) {
+        return "Unable to close the " + platform + " Principia DLL";
+      }
+    }
+    return null;
+  }
+
   private static bool IsVCRedistInstalled() {
     RegistryKey key = Registry.LocalMachine.OpenSubKey(
         @"Software\Classes\Installer\Dependencies\" +
@@ -219,6 +232,9 @@ internal static class Loader {
   [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
   private static extern IntPtr GetProcAddress(
       IntPtr hModule, [MarshalAs(UnmanagedType.LPStr)] string lpProcName);
+
+  [DllImport("dl")]
+  private static extern int dlclose(IntPtr handle);
 
   [DllImport("dl")]
   private static extern IntPtr dlopen(string filename, int flags);
