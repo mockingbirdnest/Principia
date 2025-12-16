@@ -21,7 +21,9 @@ elif [ "${AGENT_OS?}" == "Linux" ]; then
   export LD_LIBRARY_PATH="./deps/protobuf/src/.libs:$LD_LIBRARY_PATH"
 fi
 
-make -j 4 test
+export PRINCIPIA_TARGET=x64; make -j 4 test
+export PRINCIPIA_TARGET=x64_AVX_FMA; make -j 4 test
+
 if [ "${AGENT_OS?}" == "Darwin" ]; then
   # See https://github.com/actions/virtual-environments/issues/2619#issuecomment-788397841
   # for why this is needed.
