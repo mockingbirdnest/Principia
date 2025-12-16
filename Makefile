@@ -9,10 +9,10 @@ CXX := clang++
 MSBUILD := msbuild
 PRINCIPIA_CLANG_VERSION ?= 20
 PRINCIPIA_MACOS_VERSION_MIN ?= 13
-PRINCIPIA_TARGET ?= x64
-ifneq ($(PRINCIPIA_TARGET),x64_AVX_FMA)
-  ifneq ($(PRINCIPIA_TARGET),x64)
-    $(error PRINCIPIA_TARGET must be 'x64_AVX_FMA' or 'x64')
+PRINCIPIA_PLATFORM ?= x64
+ifneq ($(PRINCIPIA_PLATFORM),x64_AVX_FMA)
+  ifneq ($(PRINCIPIA_PLATFORM),x64)
+    $(error PRINCIPIA_PLATFORM must be 'x64_AVX_FMA' or 'x64')
 	endif
 endif
 
@@ -45,8 +45,8 @@ PROTO_HEADERS                           := $(PROTO_FILES:.proto=.pb.h)
 
 DEPS_DIRECTORY := deps/
 
-OBJ_DIRECTORY := obj/$(PRINCIPIA_TARGET)/
-BIN_DIRECTORY := bin/$(PRINCIPIA_TARGET)/
+OBJ_DIRECTORY := obj/$(PRINCIPIA_PLATFORM)/
+BIN_DIRECTORY := bin/$(PRINCIPIA_PLATFORM)/
 TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
 GMOCK_TRANSLATION_UNITS := \
@@ -69,10 +69,10 @@ FINAL_PRODUCTS_DIR    := Release/
 ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 
 ifeq ($(UNAME_S),Linux)
-    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux/$(PRINCIPIA_TARGET)/
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux/$(PRINCIPIA_PLATFORM)/
 endif
 ifeq ($(UNAME_S),Darwin)
-    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/macOS/$(PRINCIPIA_TARGET)/
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/macOS/$(PRINCIPIA_PLATFORM)/
 endif
 
 TEST_LIBS     := \
@@ -148,9 +148,10 @@ SHARED_ARGS   := \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
+	-DPLATFORM_WITH_CPU_FEATURES="$(PRINCIPIA_PLATFORM)"          \
 	-DNDEBUG
 
-ifeq ($(PRINCIPIA_TARGET),x64_AVX_FMA)
+ifeq ($(PRINCIPIA_PLATFORM),x64_AVX_FMA)
     SHARED_ARGS += \
 	-DPRINCIPIA_REQUIRES_AVX=1 \
 	-DPRINCIPIA_REQUIRES_FMA=1 \
