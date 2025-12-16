@@ -27,4 +27,5 @@ if [ "${AGENT_OS?}" == "Darwin" ]; then
   # for why this is needed.
   sudo /usr/sbin/purge
 fi
-make release
+export PRINCIPIA_TARGET=x64; make release
+export PRINCIPIA_TARGET=x64_AVX_FMA; make release
