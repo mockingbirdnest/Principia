@@ -18,11 +18,13 @@ if [[ "${AGENT_OS?}" == "Darwin" ]]; then
           /usr/local/lib/libprotoc.17.dylib \
           ./deps/protobuf/src/.libs/libprotoc.17.dylib \
       deps/protobuf/src/.libs/protoc
+  PARALLELISM=$(sysctl -n hw.ncpu)
 elif [[ "${AGENT_OS?}" == "Linux" ]]; then
   export LD_LIBRARY_PATH="./deps/protobuf/src/.libs:$LD_LIBRARY_PATH"
+  PARALLELISM=$(nproc --all)
 fi
 
-PARALLELISM=48
+echo "Parallelism is ${PARALLELISM}."
 
 export PRINCIPIA_TARGET=x64; make clean
 export PRINCIPIA_TARGET=x64_AVX_FMA; make clean
