@@ -21,6 +21,9 @@ elif [ "${AGENT_OS?}" == "Linux" ]; then
   export LD_LIBRARY_PATH="./deps/protobuf/src/.libs:$LD_LIBRARY_PATH"
 fi
 
+export PRINCIPIA_TARGET=x64; make clean
+export PRINCIPIA_TARGET=x64_AVX_FMA; make clean
+
 export PRINCIPIA_TARGET=x64; make -j 4 test
 export PRINCIPIA_TARGET=x64_AVX_FMA; make -j 4 test
 
