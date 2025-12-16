@@ -1,3 +1,4 @@
+#! /bin/bash
 # It seems that protoc really wants its dependencies to be in /usr/local/lib.
 # In some setups, e.g., Azure pipelines, this does not work, so we need to help
 # it find its dynamic libraries.
