@@ -223,15 +223,15 @@ internal static class Loader {
   }
 
   [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
-  private static extern IntPtr LoadLibrary(
-      [MarshalAs(UnmanagedType.LPStr)] string lpFileName);
-
-  [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
   private static extern bool FreeLibrary(IntPtr hLibModule);
 
   [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
   private static extern IntPtr GetProcAddress(
       IntPtr hModule, [MarshalAs(UnmanagedType.LPStr)] string lpProcName);
+
+  [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
+  private static extern IntPtr LoadLibrary(
+      [MarshalAs(UnmanagedType.LPStr)] string lpFileName);
 
   [DllImport("dl")]
   private static extern int dlclose(IntPtr handle);
