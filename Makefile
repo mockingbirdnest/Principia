@@ -148,7 +148,7 @@ SHARED_ARGS   := \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
-	-DPLATFORM_WITH_CPU_FEATURES="$(PRINCIPIA_PLATFORM)"          \
+	-DPLATFORM_WITH_CPU_FEATURES='"$(PRINCIPIA_PLATFORM)"'        \
 	-DNDEBUG
 
 ifeq ($(PRINCIPIA_PLATFORM),x64_AVX_FMA)
