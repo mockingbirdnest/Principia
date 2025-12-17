@@ -45,7 +45,7 @@ void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
 
 template<typename Value_, typename Argument_>
 BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
-  auto const& coefficients = p_.Derivative().coefficients();
+  auto const& coefficients = d_.coefficients();
   return SolveQuadraticEquation<Argument, Derivative1>(
       p_.origin(),
       std::get<0>(coefficients),
