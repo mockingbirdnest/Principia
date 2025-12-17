@@ -20,7 +20,8 @@ Hermite3<Value_, Argument_>::Hermite3(
     std::pair<Argument, Argument> const& arguments,
     std::pair<Value, Value> const& values,
     std::pair<Derivative1, Derivative1> const& derivatives)
-    : p_(MakePolynomial(arguments, values, derivatives)) {}
+    : p_(MakePolynomial(arguments, values, derivatives)),
+      d_(p_.Derivative()) {}
 
 template<typename Value_, typename Argument_>
 Value_ Hermite3<Value_, Argument_>::Evaluate(Argument const& argument) const {
@@ -31,7 +32,7 @@ template<typename Value_, typename Argument_>
 typename Hermite3<Value_, Argument_>::Derivative1
 Hermite3<Value_, Argument_>::
 EvaluateDerivative(Argument const& argument) const {
-  return p_.EvaluateDerivative(argument);
+  return d_(argument);
 }
 
 template<typename Value_, typename Argument_>
@@ -44,7 +45,7 @@ void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
 
 template<typename Value_, typename Argument_>
 BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
-  auto const& coefficients = p_.Derivative().coefficients();
+  auto const& coefficients = d_.coefficients();
   return SolveQuadraticEquation<Argument, Derivative1>(
       p_.origin(),
       std::get<0>(coefficients),
