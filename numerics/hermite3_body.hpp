@@ -17,7 +17,7 @@ using namespace principia::numerics::_root_finders;
 
 template<typename Value_, typename Argument_>
 Hermite3<Value_, Argument_>::Hermite3(
-    std::pair<Argument, Argument> arguments,
+    std::pair<Argument, Argument> const& arguments,
     std::pair<Value, Value> const& values,
     std::pair<Derivative1, Derivative1> const& derivatives)
     : p_(MakePolynomial(arguments, values, derivatives)) {}
@@ -88,9 +88,10 @@ bool Hermite3<Value_, Argument_>::LInfinityErrorIsWithin(
 }
 
 template<typename Value_, typename Argument_>
+FORCE_INLINE(inline)
 PolynomialInMonomialBasis<Value_, Argument_, 3>
 Hermite3<Value_, Argument_>::MakePolynomial(
-    std::pair<Argument, Argument> arguments,
+    std::pair<Argument, Argument> const& arguments,
     std::pair<Value, Value> const& values,
     std::pair<Derivative1, Derivative1> const& derivatives) {
   using Derivative2 = Derivative<Derivative1, Argument>;
