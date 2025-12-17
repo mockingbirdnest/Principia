@@ -30,7 +30,7 @@ class Hermite3 final {
   using Value = Value_;
   using Derivative1 = Derivative<Value, Argument>;
 
-  Hermite3(std::pair<Argument, Argument> arguments,
+  Hermite3(std::pair<Argument, Argument> const& arguments,
            std::pair<Value, Value> const& values,
            std::pair<Derivative1, Derivative1> const& derivatives);
 
@@ -71,7 +71,7 @@ class Hermite3 final {
 
  private:
   static PolynomialInMonomialBasis<Value, Argument, 3> MakePolynomial(
-      std::pair<Argument, Argument> arguments,
+      std::pair<Argument, Argument> const& arguments,
       std::pair<Value, Value> const& values,
       std::pair<Derivative1, Derivative1> const& derivatives);
 
