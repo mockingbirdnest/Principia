@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "absl/container/btree_set.h"
+#include "base/multiprecision.hpp"
 #include "base/tags.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/elementary_functions.hpp"
@@ -24,7 +25,7 @@ namespace numerics {
 namespace _matrix_computations {
 namespace internal {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_multiprecision;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;

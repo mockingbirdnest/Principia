@@ -390,13 +390,12 @@ std::string ToMathematica(T const real,
       [](T const& x) { return std::int64_t(x); });
 }
 
-template<unsigned digits,
-         typename OptionalExpressIn>
+template<typename OptionalExpressIn>
 std::string ToMathematica(
-    number<backends::cpp_bin_float<digits>> const& cpp_bin_float,
+    cpp_bin_float_50 const& cpp_bin_float,
     OptionalExpressIn /*express_in*/,
     std::int64_t const base) {
-  using Float = number<backends::cpp_bin_float<digits>>;
+  using Float = cpp_bin_float_50;
   using Int = cpp_int;
   return ToMathematica<Float, Int>(
       cpp_bin_float,

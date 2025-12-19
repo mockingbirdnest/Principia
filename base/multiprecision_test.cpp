@@ -1,4 +1,4 @@
-#include "base/concepts.hpp"
+#include "base/multiprecision.hpp"
 
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
@@ -7,8 +7,7 @@
 namespace principia {
 namespace base {
 
-using namespace boost::multiprecision;
-using namespace principia::base::_concepts;
+using namespace principia::base::_multiprecision;
 
 TEST(Concepts, BoostCpp) {
   static_assert(boost_cpp_number<cpp_bin_float_50>);
