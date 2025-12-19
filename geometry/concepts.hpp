@@ -13,23 +13,23 @@ namespace internal {
 using namespace base::_traits;
 
 // TODO(egg): additive_group should subsume affine, but we use it there.
-// We use `convertible_to` here because we want this concept to work with
-// Boost multiprecision types which heavily use implicit conversions.
 template<typename G>
 concept additive_group = requires(G x, G y, int n) {
   G{};
+  // For some reason, unary + on a boost number returns a const number.  The
+  // other operators correctly return a number (with et_off).
   { +x } -> std::convertible_to<G>;
-  { -x } -> std::convertible_to<G>;
-  { x + y } -> std::convertible_to<G>;
-  { x - y } -> std::convertible_to<G>;
-  { x += y } -> std::convertible_to<G&>;
-  { x -= y } -> std::convertible_to<G&>;
+  { -x } -> std::same_as<G>;
+  { x + y } -> std::same_as<G>;
+  { x - y } -> std::same_as<G>;
+  { x += y } -> std::same_as<G&>;
+  { x -= y } -> std::same_as<G&>;
   // An abelian group is a ℤ-module; we require the corresponding operations.
   // Note that `std::integral`, not `int`, should be used when implementing
   // these operations to avoid implicit conversions from `double`.
-  { n * x } -> std::convertible_to<G>;
-  { x * n } -> std::convertible_to<G>;
-  { x *= n } -> std::convertible_to<G&>;
+  { n * x } -> std::same_as<G>;
+  { x * n } -> std::same_as<G>;
+  { x *= n } -> std::same_as<G&>;
 };
 
 // A set acted upon simply transitively by an additive group.
