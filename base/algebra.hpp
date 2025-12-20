@@ -47,7 +47,8 @@ concept affine = requires(A x, A y) {
 
 
 // The result type of + and - on arguments of types `Left` and `Right`.
-// The operators must be arithmetic: Sum<std::string, std::string> is ill-formed.
+// The operators must be arithmetic: Sum<std::string, std::string> is
+// ill-formed.
 template<affine Left, affine Right>
 requires additive_group<Left> || additive_group<Right>
 using Sum = decltype(std::declval<Left>() + std::declval<Right>());
