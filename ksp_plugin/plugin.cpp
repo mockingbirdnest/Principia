@@ -39,7 +39,6 @@
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/part_subsets.hpp"  // 🧙 For Subset<Part>.
-#include "numerics/elementary_functions.hpp"
 #include "physics/apsides.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
@@ -77,7 +76,6 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_part;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
