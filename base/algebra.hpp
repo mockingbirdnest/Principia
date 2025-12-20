@@ -14,6 +14,45 @@ namespace internal {
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_traits;
 
+// The result type of + and - on arguments of types `Left` and `Right`.
+template<typename Left, typename Right>
+using Sum = decltype(std::declval<Left>() + std::declval<Right>());
+template<typename Left, typename Right = Left>
+using Difference = decltype(std::declval<Left>() - std::declval<Right>());
+// The result type of * and / on arguments of types `Left` and `Right`.
+template<typename Left, typename Right>
+using Product = decltype(std::declval<Left>() * std::declval<Right>());
+template<typename Left, typename Right>
+using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
+
+template<typename Q>
+using Inverse = Quotient<double, Q>;
+
+template<typename T, int exponent>
+struct ExponentiationGenerator;
+
+// The type of iterated multiplication or division.
+template<typename T, int exponent>
+using Exponentiation = typename ExponentiationGenerator<T, exponent>::type;
+template<typename Q>
+using Square = Exponentiation<Q, 2>;
+template<typename Q>
+using Cube = Exponentiation<Q, 3>;
+
+// The result type of the N-th derivative of a `Value`-valued function with
+// respect to its `Argument`-valued argument.
+template<typename Value, typename Argument, int order = 1>
+using Derivative = typename std::conditional_t<
+    order == 0,
+    Value,
+    Quotient<Difference<Value>, Exponentiation<Difference<Argument>, order>>>;
+
+// The result type of the primitive of a `Value`-valued function with respect to
+// its `Argument`-valued argument.  The primitive of an affine-valued function
+// does not make much sense, but it must compile, hence the Difference.
+template<typename Value, typename Argument>
+using Primitive = Product<Difference<Value>, Difference<Argument>>;
+
 // TODO(egg): additive_group should subsume affine, but we use it there.
 template<typename G>
 concept additive_group = requires(G x, G y, int n) {
@@ -44,16 +83,6 @@ concept affine = requires(A x, A y) {
   { y - (x - y) } -> std::same_as<A>;
   { y -= (x - y) } -> std::same_as<A&>;
 };
-
-
-// The result type of + and - on arguments of types `Left` and `Right`.
-// The operators must be arithmetic: Sum<std::string, std::string> is
-// ill-formed.
-template<affine Left, affine Right>
-requires additive_group<Left> || additive_group<Right>
-using Sum = decltype(std::declval<Left>() + std::declval<Right>());
-template<affine Left, affine Right = Left>
-using Difference = decltype(std::declval<Left>() - std::declval<Right>());
 
 // A graded ring restricted to its homogeneous elements; multiplication can
 // alter the type, and addition is only defined between homogeneous
@@ -138,44 +167,6 @@ concept real_affine_space = affine_space<V, double>;
 template<typename T1, typename T2>
 concept hilbert =
     requires(T1 const& t1, T2 const& t2) { InnerProduct(t1, t2); };
-
-// The result type of * and / on arguments of types `Left` and `Right`.
-// TODO(egg): What requirements would be appropriate for these?
-template<typename Left, typename Right>
-using Product = decltype(std::declval<Left>() * std::declval<Right>());
-template<typename Left, typename Right>
-using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
-
-template<typename Q>
-using Inverse = Quotient<double, Q>;
-
-template<typename T, int exponent>
-struct ExponentiationGenerator;
-
-// The type of iterated multiplication or division.
-// TODO(egg): What requirements would be appropriate for these? The
-// implementation certainly requires that x / y / z have the same type as
-// x / (y * z).
-template<typename T, int exponent>
-using Exponentiation = typename ExponentiationGenerator<T, exponent>::type;
-template<typename Q>
-using Square = Exponentiation<Q, 2>;
-template<typename Q>
-using Cube = Exponentiation<Q, 3>;
-
-// The result type of the N-th derivative of a `Value`-valued function with
-// respect to its `Argument`-valued argument.
-template<typename Value, typename Argument, int order = 1>
-using Derivative = typename std::conditional_t<
-    order == 0,
-    Value,
-    Quotient<Difference<Value>, Exponentiation<Difference<Argument>, order>>>;
-
-// The result type of the primitive of a `Value`-valued function with respect to
-// its `Argument`-valued argument.  The primitive of an affine-valued function
-// does not make much sense, but it must compile, hence the Difference.
-template<typename Value, typename Argument>
-using Primitive = Product<Difference<Value>, Difference<Argument>>;
 
 }  // namespace internal
 
