@@ -224,6 +224,9 @@
     <ClInclude Include="concepts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="multiprecision.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -304,7 +307,7 @@
     <ClCompile Include="traits_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="concepts_test.cpp">
+    <ClCompile Include="multiprecision_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

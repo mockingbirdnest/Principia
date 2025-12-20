@@ -7,12 +7,11 @@
 #include <string>
 #include <type_traits>
 
-#include "base/concepts.hpp"
 #include "base/macros.hpp"  // 🧙 For CONSTEXPR_NAN.
+#include "base/multiprecision.hpp"
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
-#include "boost/multiprecision/number.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
 #include "serialization/quantities.pb.h"
@@ -22,7 +21,7 @@ namespace quantities {
 namespace _quantities {
 namespace internal {
 
-using namespace principia::base::_concepts;
+using namespace principia::base::_multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;

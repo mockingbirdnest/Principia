@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "astronomy/orbital_elements.hpp"
+#include "base/multiprecision.hpp"
 #include "base/traits.hpp"
-#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
@@ -35,8 +35,8 @@ namespace mathematica {
 namespace _mathematica {
 namespace internal {
 
-using namespace boost::multiprecision;
 using namespace principia::astronomy::_orbital_elements;
+using namespace principia::base::_multiprecision;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
@@ -182,12 +182,10 @@ std::string ToMathematica(T real,
                           OptionalExpressIn express_in = std::nullopt,
                           std::int64_t base = 16);
 
-template<unsigned digits,
-         typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(
-    number<backends::cpp_bin_float<digits>> const& cpp_bin_float,
-    OptionalExpressIn express_in = std::nullopt,
-    std::int64_t base = 16);
+template<unsigned digits, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(cpp_bin_float<digits> const& cpp_bin_float_number,
+                          OptionalExpressIn express_in = std::nullopt,
+                          std::int64_t base = 16);
 
 template<typename T, std::int64_t size,
          typename OptionalExpressIn = std::nullopt_t>

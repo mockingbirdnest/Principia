@@ -1,7 +1,7 @@
 #include "numerics/elementary_functions.hpp"
 
 #include "base/cpuid.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
+#include "base/multiprecision.hpp"
 #include "gtest/gtest.h"
 #include "numerics/fma.hpp"
 #include "quantities/astronomy.hpp"
@@ -20,8 +20,8 @@ namespace numerics {
 
 using ::testing::Eq;
 using ::testing::Lt;
-using namespace boost::multiprecision;
 using namespace principia::base::_cpuid;
+using namespace principia::base::_multiprecision;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_astronomy;
