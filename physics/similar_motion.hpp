@@ -3,6 +3,7 @@
 #include <functional>
 #include <type_traits>
 
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/conformal_map.hpp"
@@ -13,7 +14,6 @@
 #include "geometry/space_transformations.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -24,6 +24,7 @@ namespace physics {
 namespace _similar_motion {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_conformal_map;
@@ -34,7 +35,6 @@ using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rigid_motion;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

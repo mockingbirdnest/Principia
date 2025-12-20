@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -10,7 +11,6 @@
 #include "numerics/polynomial.hpp"
 #include "physics/harmonic_damping.hpp"
 #include "physics/oblate_body.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -19,6 +19,7 @@ namespace physics {
 namespace _geopotential {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -27,7 +28,6 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
 using namespace principia::physics::_harmonic_damping;
 using namespace principia::physics::_oblate_body;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

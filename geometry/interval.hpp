@@ -1,6 +1,6 @@
 #pragma once
 
-#include "quantities/arithmetic.hpp"
+#include "base/algebra.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -8,7 +8,7 @@ namespace geometry {
 namespace _interval {
 namespace internal {
 
-using namespace principia::quantities::_arithmetic;
+using namespace principia::base::_algebra;
 using namespace principia::quantities::_quantities;
 
 // Represents the interval [min, max]; T must be an ordered affine space.

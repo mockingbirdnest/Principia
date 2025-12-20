@@ -10,7 +10,6 @@
 #include <type_traits>
 
 #include "base/not_constructible.hpp"
-#include "geometry/concepts.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
@@ -26,7 +25,6 @@ namespace _double_precision {
 namespace internal {
 
 using namespace principia::base::_not_constructible;
-using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;

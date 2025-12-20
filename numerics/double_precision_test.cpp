@@ -3,6 +3,7 @@
 #include <limits>
 #include <random>
 
+#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
@@ -11,7 +12,6 @@
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -29,6 +29,7 @@ namespace numerics {
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Ne;
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
@@ -36,7 +37,6 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

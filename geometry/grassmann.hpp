@@ -4,10 +4,10 @@
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
 
+#include "base/algebra.hpp"
 #include "base/concepts.hpp"
 #include "base/not_null.hpp"
 #include "geometry/r3_element.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
@@ -17,10 +17,10 @@ namespace geometry {
 namespace _grassmann {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_r3_element;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 

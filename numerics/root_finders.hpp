@@ -5,20 +5,20 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "base/algebra.hpp"
 #include "base/array.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/scale_b.hpp"
-#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _root_finders {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_array;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_scale_b;
-using namespace principia::quantities::_arithmetic;
 
 // Approximates a root of `f` between `lower_bound` and `upper_bound` by
 // bisection.  The result is less than one ULP from a root of any continuous

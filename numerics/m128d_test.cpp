@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "geometry/concepts.hpp"
+#include "base/algebra.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/fma.hpp"
@@ -11,7 +11,7 @@
 namespace principia {
 namespace numerics {
 
-using namespace principia::geometry::_concepts;
+using namespace principia::base::_algebra;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_m128d;
 using namespace principia::testing_utilities::_almost_equals;

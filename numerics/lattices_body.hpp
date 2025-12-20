@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/multiprecision.hpp"
 #include "base/tags.hpp"
 #include "numerics/elementary_functions.hpp"
@@ -15,7 +16,6 @@
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 
 namespace principia {
@@ -23,6 +23,7 @@ namespace numerics {
 namespace _lattices {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_multiprecision;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_elementary_functions;
@@ -31,7 +32,6 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 
 // The largest `int64_t` that can be converted to and from `double` without loss

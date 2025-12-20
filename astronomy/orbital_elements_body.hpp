@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "absl/strings/str_cat.h"
+#include "base/algebra.hpp"
 #include "base/jthread.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
@@ -18,7 +19,6 @@
 #include "numerics/quadrature.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -26,6 +26,7 @@ namespace astronomy {
 namespace _orbital_elements {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_jthread;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_integrators;
@@ -36,7 +37,6 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_quadrature;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_kepler_orbit;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_si;
 
 constexpr int osculating_equinoctial_elements_per_sidereal_period = 256;

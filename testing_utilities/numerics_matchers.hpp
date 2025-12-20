@@ -1,7 +1,7 @@
 #pragma once
 
+#include "base/algebra.hpp"
 #include "gmock/gmock.h"
-#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -9,7 +9,7 @@ namespace _numerics_matchers {
 namespace internal {
 
 using ::testing::Matcher;
-using namespace principia::quantities::_arithmetic;
+using namespace principia::base::_algebra;
 
 template<typename Value>
 Matcher<Value> DifferenceFrom(

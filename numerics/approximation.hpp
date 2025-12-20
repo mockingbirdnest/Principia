@@ -5,18 +5,18 @@
 #include <type_traits>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
-#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _approximation {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
-using namespace principia::quantities::_arithmetic;
 
 template<typename Argument, typename Function>
 using Value = std::invoke_result_t<Function, Argument>;

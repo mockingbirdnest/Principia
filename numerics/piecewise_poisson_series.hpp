@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "geometry/complexification.hpp"
@@ -13,7 +14,6 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "numerics/poisson_series.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -44,13 +44,13 @@ namespace numerics {
 namespace _piecewise_poisson_series {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_poisson_series;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

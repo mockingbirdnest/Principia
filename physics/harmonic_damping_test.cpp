@@ -1,11 +1,11 @@
 #include "physics/harmonic_damping.hpp"
 
+#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -13,11 +13,11 @@ namespace principia {
 namespace physics {
 
 using ::testing::Eq;
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_harmonic_damping;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

@@ -3,16 +3,16 @@
 #include <type_traits>
 #include <ostream>
 
+#include "base/algebra.hpp"
 #include "geometry/hilbert.hpp"
-#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _complexification {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_arithmetic;
 
 template<typename Vector>
 class Complexification {

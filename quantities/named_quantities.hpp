@@ -1,7 +1,7 @@
 #pragma once
 
+#include "base/algebra.hpp"
 #include "base/not_constructible.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -9,8 +9,8 @@ namespace quantities {
 namespace _named_quantities {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_constructible;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 template<typename Q, int n>

@@ -13,14 +13,13 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/algebra.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
-#include "geometry/concepts.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -66,14 +65,13 @@ namespace numerics {
 namespace _polynomial_in_monomial_basis {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
-using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_tuples;
 
 // Used to decide which evaluator to use for a particular polynomial.

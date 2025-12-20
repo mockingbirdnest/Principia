@@ -2,13 +2,14 @@
 
 #include <string>
 
+#include "base/algebra.hpp"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 
-using namespace principia::geometry::_concepts;
+using namespace principia::base::_algebra;
 using namespace principia::quantities::_quantities;
 
 TEST(Concepts, Algebra) {

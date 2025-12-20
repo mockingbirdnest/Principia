@@ -2,14 +2,14 @@
 
 #include <array>
 
-#include "quantities/arithmetic.hpp"
+#include "base/algebra.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _finite_difference {
 namespace internal {
 
-using namespace principia::quantities::_arithmetic;
+using namespace principia::base::_algebra;
 
 // Given n equally-spaced values f(xᵢ) = f(x₀ + i h),
 // approximates the derivative f′(xⱼ) at xⱼ for j = `offset`, where 0 ≤ j < n.
