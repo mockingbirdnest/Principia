@@ -42,16 +42,17 @@ using namespace principia::quantities::_quantities;
 // polynomial of the given degree, with zeros for the unneeded high-degree
 // terms.
 template<typename Value, typename Argument, int degree, int n,
+         template<typename, typename, int> typename Evaluator_,//TODO(phl)???
          typename = std::make_index_sequence<degree + 1>>
 struct MonomialAtOrigin;
 
 template<typename Value, typename Argument, int degree, int n,
+         template<typename, typename, int> typename Evaluator_,
          std::size_t... k>
-struct MonomialAtOrigin<Value, Argument, degree, n,
+struct MonomialAtOrigin<Value, Argument, degree, n, Evaluator_,
                         std::index_sequence<k...>> {
   using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Argument, degree>::
-          Coefficients;
+      Derivatives<Value, Argument, degree + 1>;
 
   // The parameter coefficient is the coefficient of the monomial.  The
   // parameter shift is x₁ - x₂, computed only once by the caller.
@@ -61,8 +62,9 @@ struct MonomialAtOrigin<Value, Argument, degree, n,
 };
 
 template<typename Value, typename Argument, int degree, int n,
+         template<typename, typename, int> typename Evaluator_,
          std::size_t... k>
-auto MonomialAtOrigin<Value, Argument, degree, n,
+auto MonomialAtOrigin<Value, Argument, degree, n, Evaluator_,
                       std::index_sequence<k...>>::MakeCoefficients(
     std::tuple_element_t<n, Coefficients> const& coefficient,
     Difference<Argument> const& shift) -> Coefficients {
@@ -74,15 +76,17 @@ auto MonomialAtOrigin<Value, Argument, degree, n,
 // A helper for changing the origin of an entire polynomial, by repeatedly
 // using MonomialAtOrigin.  We need two helpers because changing the origin is
 // a quadratic operation in terms of the degree.
-template<typename Value, typename Argument, int degree_,
-         typename = std::make_index_sequence<degree_ + 1>>
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> typename Evaluator_,
+         typename = std::make_index_sequence<degree + 1>>
 struct PolynomialAtOrigin;
 
 template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> typename Evaluator_,
          std::size_t... indices>
-struct PolynomialAtOrigin<Value, Argument, degree,
+struct PolynomialAtOrigin<Value, Argument, degree, Evaluator_,
                           std::index_sequence<indices...>> {
-  using Polynomial = PolynomialInMonomialBasis<Value, Argument, degree>;
+  using Polynomial = PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>;
 
   static Polynomial MakePolynomial(
       typename Polynomial::Coefficients const& coefficients,
@@ -91,8 +95,9 @@ struct PolynomialAtOrigin<Value, Argument, degree,
 };
 
 template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> typename Evaluator_,
          std::size_t ...indices>
-auto PolynomialAtOrigin<Value, Argument, degree,
+auto PolynomialAtOrigin<Value, Argument, degree, Evaluator_,
                         std::index_sequence<indices...>>::
 MakePolynomial(typename Polynomial::Coefficients const& coefficients,
                Argument const& from_origin,
@@ -101,7 +106,7 @@ MakePolynomial(typename Polynomial::Coefficients const& coefficients,
   Difference<Argument> const shift = to_origin - from_origin;
   std::array<typename Polynomial::Coefficients, degree + 1> const
       all_coefficients{
-          MonomialAtOrigin<Value, Argument, degree, indices>::
+          MonomialAtOrigin<Value, Argument, degree, indices, Evaluator_>::
               MakeCoefficients(std::get<indices>(coefficients), shift)...};
 
   // It would be nicer to compute the sum using a fold expression, but Clang
@@ -314,9 +319,10 @@ std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
 }
 
 
-template<typename Value, typename Argument, int degree>
-PolynomialInMonomialBasis<Value, Argument, degree>&& Policy::WithEvaluator(
-    PolynomialInMonomialBasis<Value, Argument, degree>&& polynomial) const {
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> typename Evaluator_>
+PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&& Policy::WithEvaluator(
+    PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&& polynomial) const {
   switch (kind_) {
     case serialization::PolynomialInMonomialBasis::Policy::
         ALWAYS_ESTRIN_WITHOUT_FMA:
@@ -353,161 +359,189 @@ inline constexpr Policy::Policy(
     : kind_(kind) {}
 
 
-template<typename Value_, typename Argument_, int degree_>
-constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 PolynomialInMonomialBasis(Coefficients coefficients,
                           Argument const& origin)
     : coefficients_(std::move(coefficients)),
       origin_(origin),
       evaluator_(DefaultEvaluator()) {}
 
-template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator>
-constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+template<template<typename, typename, int> typename SpecificEvaluator>
+constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 PolynomialInMonomialBasis(Coefficients coefficients,
                           Argument const& origin,
-                          with_evaluator_t<Evaluator>)
+                          with_evaluator_t<SpecificEvaluator>)
     : coefficients_(std::move(coefficients)),
       origin_(origin),
       evaluator_(
-          Evaluator<Value, Difference<Argument>, degree_>::Singleton()) {}
+          SpecificEvaluator<Value_, Difference<Argument_>, degree_>::Singleton()) {}
 
-template<typename Value_, typename Argument_, int degree_>
-constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 PolynomialInMonomialBasis(Coefficients coefficients)
   requires additive_group<Argument>
     : coefficients_(std::move(coefficients)),
       origin_(Argument{}),
       evaluator_(DefaultEvaluator()) {}
 
-template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator>
-constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+template<template<typename, typename, int> typename SpecificEvaluator>
+constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 PolynomialInMonomialBasis(Coefficients coefficients,
-                          with_evaluator_t<Evaluator>)
+                          with_evaluator_t<SpecificEvaluator>)
   requires additive_group<Argument>
     : coefficients_(std::move(coefficients)),
       origin_(Argument{}),
       evaluator_(
-          Evaluator<Value, Difference<Argument>, degree_>::Singleton()) {}
+          SpecificEvaluator<Value_, Difference<Argument_>, degree_>::Singleton()) {}
 
-template<typename Value_, typename Argument_, int degree_>
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
 template<int higher_degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::
-operator PolynomialInMonomialBasis<Value_, Argument_, higher_degree_>() const {
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+operator PolynomialInMonomialBasis<Value_, Argument_, higher_degree_, Evaluator_>() const {
   static_assert(degree_ <= higher_degree_);
-  using Result = PolynomialInMonomialBasis<Value, Argument, higher_degree_>;
+  using Result = PolynomialInMonomialBasis<Value, Argument, higher_degree_, Evaluator_>;
   typename Result::Coefficients higher_coefficients;
   TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
       higher_coefficients, coefficients_);
   return Result(higher_coefficients, origin_);
 }
 
-template<typename Value_, typename Argument_, int degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>&
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 operator+=(PolynomialInMonomialBasis const& right) {
   *this = *this + right;
   return *this;
 }
 
-template<typename Value_, typename Argument_, int degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>&
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 operator-=(PolynomialInMonomialBasis const& right) {
   *this = *this - right;
   return *this;
 }
 
-template<typename Value_, typename Argument_, int degree_>
-Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 operator()(Argument const argument) const {
-  return Evaluator<Value, Difference<Argument>, degree_>::Evaluate(
-      coefficients_, argument - origin_, evaluator_);
+  return PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+      template Evaluator<Value_, Difference<Argument_>, degree_>::Evaluate(
+          coefficients_, argument - origin_, evaluator_);
 }
 
-template<typename Value_, typename Argument_, int degree_>
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
 Derivative<Value_, Argument_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 EvaluateDerivative(Argument const argument) const {
-  return Evaluator<Value, Difference<Argument>, degree_>::EvaluateDerivative(
-      coefficients_, argument - origin_, evaluator_);
+  return PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+      template Evaluator<Value_, Difference<Argument_>, degree_>::EvaluateDerivative(
+          coefficients_, argument - origin_, evaluator_);
 }
 
-template<typename Value_, typename Argument_, int degree_>
-void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+void PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 EvaluateWithDerivative(Argument const argument,
                        Value& value,
                        quantities::_arithmetic::Derivative<Value, Argument>&
                            derivative) const {
-  Evaluator<Value, Difference<Argument>, degree_>::EvaluateWithDerivative(
-      coefficients_, argument - origin_, evaluator_, value, derivative);
+  PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+      template Evaluator<Value_, Difference<Argument_>, degree_>::
+          EvaluateWithDerivative(coefficients_, argument - origin_, evaluator_,
+                                 value, derivative);
 }
 
-template<typename Value_, typename Argument_, int degree_>
-constexpr int PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+constexpr
+int PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 degree() const {
   return degree_;
 }
 
-template<typename Value_, typename Argument_, int degree_>
-bool PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+bool PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 is_zero() const {
   return coefficients_ == Coefficients{};
 }
 
-template<typename Value_, typename Argument_, int degree_>
-typename PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+typename PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 Coefficients const&
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::coefficients() const {
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+coefficients() const {
   return coefficients_;
 }
 
-template<typename Value_, typename Argument_, int degree_>
-Argument_ const& PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+Argument_ const&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 origin() const {
   return origin_;
 }
 
-template<typename Value_, typename Argument_, int degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 AtOrigin(Argument const& origin) const {
-  return PolynomialAtOrigin<Value, Argument, degree_>::
+  return PolynomialAtOrigin<Value, Argument, degree_, Evaluator>::
       MakePolynomial(coefficients_,
                      /*from_origin=*/origin_,
                      /*to_origin=*/origin);
 }
 
-template<typename Value_, typename Argument_, int degree_>
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
 template<int order>
 PolynomialInMonomialBasis<
-    Derivative<Value_, Argument_, order>, Argument_, degree_ - order>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+    Derivative<Value_, Argument_, order>, Argument_, degree_ - order,
+    Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 Derivative() const {
   return PolynomialInMonomialBasis<
              quantities::_arithmetic::Derivative<Value, Argument, order>,
              Argument,
-             degree_ - order>(
+             degree_ - order, Evaluator>(
              TupleDerivation<Coefficients, order>::Derive(coefficients_),
              origin_);
 }
 
-template<typename Value_, typename Argument_, int degree_>
-PolynomialInMonomialBasis<Primitive<Value_, Argument_>, Argument_, degree_ + 1>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::Primitive() const
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+PolynomialInMonomialBasis<Primitive<Value_, Argument_>, Argument_, degree_ + 1,
+                          Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+Primitive() const
   requires additive_group<Value> {
   return PolynomialInMonomialBasis<
              quantities::_arithmetic::Primitive<Value, Argument>,
              Argument,
-             degree_ + 1>(
+             degree_ + 1, Evaluator>(
              TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),
              origin_);
 }
 
-template<typename Value_, typename Argument_, int degree_>
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
 Primitive<Value_, Argument_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 Integrate(Argument const& argument1,
           Argument const& argument2) const
   requires additive_group<Value> {
@@ -516,16 +550,18 @@ Integrate(Argument const& argument1,
                                                        argument1, argument2);
 }
 
-template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>&&
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::WithEvaluator() && {
-  evaluator_ = Evaluator<Value, Difference<Argument>, degree_>::Singleton();
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+template<template<typename, typename, int> typename SpecificEvaluator>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>&&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::WithEvaluator() && {
+  evaluator_ = SpecificEvaluator<Value_, Difference<Argument_>, degree_>::Singleton();
   return std::move(*this);
 }
 
-template<typename Value_, typename Argument_, int degree_>
-void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+void PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
     WriteToMessage(not_null<serialization::Polynomial*> message) const {
   // No serialization for Boost types.
   if constexpr (!boost_cpp_number<Value>) {
@@ -537,43 +573,46 @@ void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
         Argument,
         serialization::PolynomialInMonomialBasis>::WriteToMessage(origin_,
                                                                   extension);
-    Evaluator<Value, Difference<Argument>, degree_>::WriteToMessage(
-        extension->mutable_evaluator(), evaluator_);
+    PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+        template Evaluator<Value_, Difference<Argument_>, degree_>::
+            WriteToMessage(extension->mutable_evaluator(), evaluator_);
   }
 }
 
-template<typename Value_, typename Argument_, int degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 ReadFromMessage(serialization::Polynomial const& message) {
   return ReadFromMessage(message, /*evaluator=*/nullptr);
 }
 
-template<typename Value_, typename Argument_, int degree_>
-template<template<typename, typename, int> typename Evaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+template<template<typename, typename, int> typename SpecificEvaluator>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 ReadFromMessage(serialization::Polynomial const& message) {
   return ReadFromMessage(
       message,
-      Evaluator<Value, Difference<Argument>, degree_>::Singleton());
+      SpecificEvaluator<Value, Difference<Argument>, degree_>::Singleton());
 }
 
-template<typename Value_, typename Argument_, int degree_>
-constexpr not_null<Evaluator<Value_, Difference<Argument_>, degree_> const*>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::DefaultEvaluator() {
-  if constexpr (degree_ <= 3) {
-    return Horner<Value_, Difference<Argument_>, degree_>::Singleton();
-  } else {
-    return Estrin<Value_, Difference<Argument_>, degree_>::Singleton();
-  }
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+constexpr not_null<Evaluator_<Value_, Difference<Argument_>, degree_> const*>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::DefaultEvaluator() {
+  return Evaluator<Value, Difference<Argument>, degree_>::Singleton();
 }
 
-template<typename Value_, typename Argument_, int degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_>::ReadFromMessage(
-    serialization::Polynomial const& message,
-    Evaluator<Value, Difference<Argument>, degree_> const* const evaluator) {
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+ReadFromMessage(serialization::Polynomial const& message,
+                typename PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+                    template Evaluator<Value_, Difference<Argument_>, degree_> const* const
+                    evaluator) {
   CHECK_EQ(degree_, message.degree()) << message.DebugString();
   CHECK(message.HasExtension(
            serialization::PolynomialInMonomialBasis::extension))
@@ -595,7 +634,7 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_>::ReadFromMessage(
   TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
 
   auto const origin = is_pre_gröbner
-                          ? Argument{}
+                          ? Argument
                           : DoubleOrQuantityOrPointOrMultivectorSerializer<
                                 Argument,
                                 serialization::PolynomialInMonomialBasis>::
@@ -612,207 +651,225 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_>::ReadFromMessage(
         << "Evaluator should not be specified for post-Καραθεοδωρή "
         << "deserialization" << extension.DebugString();
     polynomial.evaluator_ =
-        Evaluator<Value, Difference<Argument>, degree_>::ReadFromMessage(
-            extension.evaluator());
+        PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+            template Evaluator<Value_, Difference<Argument_>, degree_>::
+                ReadFromMessage(extension.evaluator());
   }
   return polynomial;
 }
 
-template<typename Value, typename Argument, int rdegree_>
-constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_> operator+(
-    PolynomialInMonomialBasis<Value, Argument, rdegree_> const& right) {
+template<typename Value, typename Argument, int rdegree,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>
+operator+(
+    PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
+        right) {
   return right;
 }
 
-template<typename Value, typename Argument, int rdegree_>
-constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_> operator-(
-    PolynomialInMonomialBasis<Value, Argument, rdegree_> const& right) {
+template<typename Value, typename Argument, int rdegree,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> operator-(
+    PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const& right) {
   using vector_space::operator-;
-  return PolynomialInMonomialBasis<Value, Argument, rdegree_>(
+  return PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>(
       -right.coefficients_,
       right.origin_);
 }
 
-template<typename Value, typename Argument, int ldegree_, int rdegree_>
+template<typename Value, typename Argument, int ldegree, int rdegree,
+         template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Value, Argument, std::max(ldegree_, rdegree_)>
-operator+(PolynomialInMonomialBasis<Value, Argument, ldegree_> const& left,
-          PolynomialInMonomialBasis<Value, Argument, rdegree_> const& right) {
+PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree), Evaluator>
+operator+(PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
+          PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const& right) {
   using vector_space::operator+;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<Value, Argument,
-                                   std::max(ldegree_, rdegree_)>(
+                                   std::max(ldegree, rdegree), Evaluator>(
       left.coefficients_ + right.coefficients_,
       left.origin_);
 }
 
-template<typename Value, typename Argument, int ldegree_, int rdegree_>
+template<typename Value, typename Argument, int ldegree, int rdegree,
+         template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Value, Argument, std::max(ldegree_, rdegree_)>
-operator-(PolynomialInMonomialBasis<Value, Argument, ldegree_> const& left,
-          PolynomialInMonomialBasis<Value, Argument, rdegree_> const& right) {
+PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree), Evaluator>
+operator-(PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
+          PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const& right) {
   using vector_space::operator-;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<Value, Argument,
-                                    std::max(ldegree_, rdegree_)>(
+                                    std::max(ldegree, rdegree), Evaluator>(
       left.coefficients_ - right.coefficients_,
       left.origin_);
 }
 
 template<typename Scalar,
-         typename Value, typename Argument, int degree_>
+         typename Value, typename Argument, int degree,
+         template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_>
+PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree, Evaluator>
 operator*(Scalar const& left,
-          PolynomialInMonomialBasis<Value, Argument, degree_> const& right) {
+          PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& right) {
   using vector_space::operator*;
-  return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_>(
+  return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree, Evaluator>(
       left * right.coefficients_, right.origin_);
 }
 
 template<typename Scalar,
-         typename Value, typename Argument, int degree_>
+         typename Value, typename Argument, int degree,
+         template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_>
-operator*(PolynomialInMonomialBasis<Value, Argument, degree_> const& left,
+PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree, Evaluator>
+operator*(PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& left,
           Scalar const& right) {
   using vector_space::operator*;
-  return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_>(
+  return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree, Evaluator>(
       left.coefficients_ * right, left.origin_);
 }
 
 template<typename Scalar,
-         typename Value, typename Argument, int degree_>
+         typename Value, typename Argument, int degree,
+         template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_>
-operator/(PolynomialInMonomialBasis<Value, Argument, degree_> const& left,
+PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree, Evaluator>
+operator/(PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& left,
           Scalar const& right) {
   using vector_space::operator/;
-  return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_>(
+  return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree, Evaluator>(
       left.coefficients_ / right, left.origin_);
 }
 
 template<typename LValue, typename RValue,
-         typename Argument, int ldegree_, int rdegree_>
+         typename Argument, int ldegree, int rdegree,
+         template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
-                          ldegree_ + rdegree_>
-operator*(PolynomialInMonomialBasis<LValue, Argument, ldegree_> const& left,
-          PolynomialInMonomialBasis<RValue, Argument, rdegree_> const& right) {
+                          ldegree + rdegree, Evaluator>
+operator*(PolynomialInMonomialBasis<LValue, Argument, ldegree, Evaluator> const& left,
+          PolynomialInMonomialBasis<RValue, Argument, rdegree, Evaluator> const& right) {
   using polynomial_ring::operator*;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
-                                    ldegree_ + rdegree_>(
+                                    ldegree + rdegree, Evaluator>(
              left.coefficients_ * right.coefficients_,
              left.origin_);
 }
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-template<typename Value, typename Argument, int ldegree_>
-constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_>
+template<typename Value, typename Argument, int ldegree,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>
 operator+(
-    PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree_> const&
+    PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree, Evaluator> const&
         left,
     Value const& right) {
   auto const dropped_left_coefficients =
       TupleDropper<typename PolynomialInMonomialBasis<
-                       Difference<Value>, Argument, ldegree_>::Coefficients,
+                       Difference<Value>, Argument, ldegree, Evaluator>::Coefficients,
                    /*count=*/1>::Drop(left.coefficients_);
-  return PolynomialInMonomialBasis<Value, Argument, ldegree_>(
+  return PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>(
       std::tuple_cat(std::tuple(std::get<0>(left.coefficients_) + right),
                      dropped_left_coefficients),
       left.origin_);
 }
 #endif
 
-template<typename Value, typename Argument, int rdegree_>
-constexpr PolynomialInMonomialBasis<Value, Argument, rdegree_>
+template<typename Value, typename Argument, int rdegree,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>
 operator+(
     Value const& left,
-    PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree_> const&
+    PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree, Evaluator> const&
         right) {
   auto const dropped_right_coefficients =
       TupleDropper<typename PolynomialInMonomialBasis<
-                       Difference<Value>, Argument, rdegree_>::
+                       Difference<Value>, Argument, rdegree, Evaluator>::
                        Coefficients,
                    /*count=*/1>::Drop(right.coefficients_);
-  return PolynomialInMonomialBasis<Value, Argument, rdegree_>(
+  return PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>(
       std::tuple_cat(std::tuple(left + std::get<0>(right.coefficients_)),
                      dropped_right_coefficients),
       right.origin_);
 }
 
-template<typename Value, typename Argument, int ldegree_>
-constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree_>
-operator-(PolynomialInMonomialBasis<Value, Argument, ldegree_> const& left,
+template<typename Value, typename Argument, int ldegree,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree, Evaluator>
+operator-(PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
           Value const& right) {
   auto const dropped_left_coefficients =
       TupleDropper<typename PolynomialInMonomialBasis<
-                       Value, Argument, ldegree_>::Coefficients,
+                       Value, Argument, ldegree, Evaluator>::Coefficients,
                    /*count=*/1>::Drop(left.coefficients_);
-  return PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree_>(
+  return PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree, Evaluator>(
       std::tuple_cat(std::tuple(std::get<0>(left.coefficients_) - right),
                      dropped_left_coefficients),
       left.origin_);
 }
 
-template<typename Value, typename Argument, int rdegree_>
-constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree_>
+template<typename Value, typename Argument, int rdegree,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree, Evaluator>
 operator-(Value const& left,
-          PolynomialInMonomialBasis<Value, Argument, rdegree_> const& right) {
+          PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const& right) {
   auto const dropped_right_coefficients =
       TupleDropper<typename PolynomialInMonomialBasis<
-                       Value, Argument, rdegree_>::Coefficients,
+                       Value, Argument, rdegree, Evaluator>::Coefficients,
                    /*count=*/1>::Drop(right.coefficients_);
-  return PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree_>(
+  return PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree, Evaluator>(
       std::tuple_cat(std::tuple(left - std::get<0>(right.coefficients_)),
                      dropped_right_coefficients),
       right.origin_);
 }
 
 template<typename LValue, typename RValue,
-         typename RArgument, int ldegree_, int rdegree_>
-constexpr PolynomialInMonomialBasis<LValue, RArgument, ldegree_ * rdegree_>
-Compose(PolynomialInMonomialBasis<LValue, RValue, ldegree_> const& left,
-        PolynomialInMonomialBasis<RValue, RArgument, rdegree_> const& right) {
+         typename RArgument, int ldegree, int rdegree,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<LValue, RArgument, ldegree * rdegree, Evaluator>
+Compose(PolynomialInMonomialBasis<LValue, RValue, ldegree, Evaluator> const& left,
+        PolynomialInMonomialBasis<RValue, RArgument, rdegree, Evaluator> const& right) {
   using LArgument = RValue;
   using LCoefficients =
-      typename PolynomialInMonomialBasis<LValue, LArgument, ldegree_>::
+      typename PolynomialInMonomialBasis<LValue, LArgument, ldegree, Evaluator>::
           Coefficients;
   using RCoefficients =
-      typename PolynomialInMonomialBasis<RValue, RArgument, rdegree_>::
+      typename PolynomialInMonomialBasis<RValue, RArgument, rdegree, Evaluator>::
           Coefficients;
   auto const left_at_origin = left.AtOrigin(LArgument{});
-  return PolynomialInMonomialBasis<LValue, RArgument, ldegree_ * rdegree_>(
+  return PolynomialInMonomialBasis<LValue, RArgument, ldegree * rdegree, Evaluator>(
       TupleComposition<LCoefficients, RCoefficients>::Compose(
           left_at_origin.coefficients_, right.coefficients_),
       right.origin_);
 }
 
 template<typename LValue, typename RValue,
-         typename Argument, int ldegree_, int rdegree_>
+         typename Argument, int ldegree, int rdegree,
+         template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<
     typename Hilbert<LValue, RValue>::InnerProductType, Argument,
-    ldegree_ + rdegree_>
+    ldegree + rdegree, Evaluator>
 PointwiseInnerProduct(
-    PolynomialInMonomialBasis<LValue, Argument, ldegree_> const& left,
-    PolynomialInMonomialBasis<RValue, Argument, rdegree_> const& right) {
+    PolynomialInMonomialBasis<LValue, Argument, ldegree, Evaluator> const& left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree, Evaluator> const& right) {
   using pointwise_inner_product::PointwiseInnerProduct;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<
       typename Hilbert<LValue, RValue>::InnerProductType, Argument,
-      ldegree_ + rdegree_>(
+      ldegree + rdegree, Evaluator>(
           PointwiseInnerProduct(left.coefficients_, right.coefficients_),
           left.origin_);
 }
 
-template<typename Value, typename Argument, int degree_>
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> typename Evaluator>
 std::ostream& operator<<(
     std::ostream& out,
-    PolynomialInMonomialBasis<Value, Argument, degree_> const& polynomial) {
+    PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& polynomial) {
   using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Argument, degree_>::
+      typename PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>::
           Coefficients;
   std::vector<std::string> debug_string;
   debug_string = TupleSerializer<Coefficients, 0>::TupleDebugString(
