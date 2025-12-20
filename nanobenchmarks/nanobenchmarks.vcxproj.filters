@@ -42,6 +42,9 @@
     <ClCompile Include="nanobenchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="hermite3_nanobenchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="performance_settings_controller.hpp">
