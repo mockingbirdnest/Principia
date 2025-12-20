@@ -170,7 +170,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   Primitive() const
     requires additive_group<Value>;
 
-  quantities::_arithmetic::Primitive<Value, Argument> Integrate(
+  base::_algebra::Primitive<Value, Argument> Integrate(
       Argument const& argument1,
       Argument const& argument2) const
     requires additive_group<Value>;
