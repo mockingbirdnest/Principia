@@ -1,13 +1,12 @@
-#include "geometry/concepts.hpp"
+#include "base/algebra.hpp"
 
 #include <string>
 
-#include "base/algebra.hpp"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
-namespace geometry {
+namespace base {
 
 using namespace principia::base::_algebra;
 using namespace principia::quantities::_quantities;
@@ -50,5 +49,5 @@ TEST(Concepts, LinearAlgebra) {
   static_assert(!real_vector_space<int>);
 }
 
-}  // namespace geometry
+}  // namespace base
 }  // namespace principia

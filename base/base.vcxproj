@@ -81,6 +81,7 @@
     <ClInclude Include="zfp_compressor_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="algebra_test.cpp" />
     <ClCompile Include="array_test.cpp" />
     <ClCompile Include="base32768_test.cpp" />
     <ClCompile Include="base64_test.cpp" />

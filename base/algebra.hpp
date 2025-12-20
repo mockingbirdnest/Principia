@@ -200,3 +200,5 @@ using internal::Sum;
 
 }  // namespace base
 }  // namespace principia
+
+#include "base/algebra_body.hpp"
