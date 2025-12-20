@@ -138,6 +138,8 @@ template<typename T1, typename T2>
 concept hilbert =
     requires(T1 const& t1, T2 const& t2) { InnerProduct(t1, t2); };
 
+// The result type of * and / on arguments of types `Left` and `Right`.
+// TODO(egg): What requirements would be appropriate for these?
 template<typename Left, typename Right>
 using Product = decltype(std::declval<Left>() * std::declval<Right>());
 template<typename Left, typename Right>
@@ -149,7 +151,10 @@ using Inverse = Quotient<double, Q>;
 template<typename T, int exponent>
 struct ExponentiationGenerator;
 
-// The type of iterated multiplication or iterated
+// The type of iterated multiplication or division.
+// TODO(egg): What requirements would be appropriate for these? The
+// implementation certainly requires that x / y / z have the same type as
+// x / (y * z).
 template<typename T, int exponent>
 using Exponentiation = typename ExponentiationGenerator<T, exponent>::type;
 template<typename Q>
