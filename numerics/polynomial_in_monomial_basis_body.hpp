@@ -11,7 +11,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "base/concepts.hpp"
+#include "base/multiprecision.hpp"
 #include "base/not_constructible.hpp"
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
@@ -25,7 +25,7 @@ namespace numerics {
 namespace _polynomial_in_monomial_basis {
 namespace internal {
 
-using namespace principia::base::_concepts;
+using namespace principia::base::_multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_serialization;

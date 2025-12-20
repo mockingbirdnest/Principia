@@ -1568,7 +1568,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     }
 
     // A field that has an (address_of) attribute is only used for recording the
-    // address for journalling, and has no equivalent field in the C++ and C#
+    // address for journaling, and has no equivalent field in the C++ and C#
     // data structures.
     if (!Contains(field_cxx_address_of_, field_descriptor)) {
       deserialized_expressions.push_back(
@@ -1746,6 +1746,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
 void JournalProtoProcessor::ProcessMethodExtension(
     Descriptor const* descriptor) {
+  MessageOptions const& options = descriptor->options();
   std::string const& name = descriptor->name();
   bool has_in = false;
   bool has_out = false;
@@ -1807,18 +1808,29 @@ void JournalProtoProcessor::ProcessMethodExtension(
   std::string cxx_interface_return_type = "void";
   std::string cxx_run_prolog;
   std::string cxx_run_epilog;
-  cxx_toplevel_type_declaration_[descriptor] =
-      "struct " + name + " : not_constructible {\n";
+
+  bool needs_journaling_support = true;
+  if (options.HasExtension(journal::serialization::omit_journaling)) {
+    CHECK(options.GetExtension(journal::serialization::omit_journaling));
+    needs_journaling_support = false;
+  }
+
+  if (needs_journaling_support) {
+    cxx_toplevel_type_declaration_[descriptor] =
+        "struct " + name + " : not_constructible {\n";
+  }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
     const std::string& nested_name = nested_descriptor->name();
     if (nested_name == in_message_name) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
-      cxx_functions_implementation_[descriptor] +=
-          "void " + name + "::Fill(In const& in, "
-          "not_null<Message*> const message) {\n" +
-          cxx_fill_body_[nested_descriptor] +
-          "}\n\n";
+      if (needs_journaling_support) {
+        cxx_functions_implementation_[descriptor] +=
+            "void " + name +
+            "::Fill(In const& in, "
+            "not_null<Message*> const message) {\n" +
+            cxx_fill_body_[nested_descriptor] + "}\n\n";
+      }
       cxx_run_prolog += cxx_run_body_prolog_[nested_descriptor];
       std::copy(cs_interface_parameters_[nested_descriptor].begin(),
                 cs_interface_parameters_[nested_descriptor].end(),
@@ -1837,11 +1849,13 @@ void JournalProtoProcessor::ProcessMethodExtension(
                 std::back_inserter(cxx_run_arguments));
     } else if (nested_name == out_message_name) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
-      cxx_functions_implementation_[descriptor] +=
-          "void " + name + "::Fill(Out const& out, "
-          "not_null<Message*> const message) {\n" +
-          cxx_fill_body_[nested_descriptor] +
-          "}\n\n";
+      if (needs_journaling_support) {
+        cxx_functions_implementation_[descriptor] +=
+            "void " + name +
+            "::Fill(Out const& out, "
+            "not_null<Message*> const message) {\n" +
+            cxx_fill_body_[nested_descriptor] + "}\n\n";
+      }
       cxx_run_prolog += cxx_run_body_prolog_[nested_descriptor];
       std::copy(cs_interface_parameters_[nested_descriptor].begin(),
                 cs_interface_parameters_[nested_descriptor].end(),
@@ -1860,76 +1874,82 @@ void JournalProtoProcessor::ProcessMethodExtension(
                 std::back_inserter(cxx_run_arguments));
     } else if (nested_name == return_message_name) {
       ProcessReturn(nested_descriptor);
-      cxx_functions_implementation_[descriptor] +=
-          "void " + name + "::Fill("
-          "Return const& result, "
-          "not_null<Message*> const message) {\n" +
-          cxx_fill_body_[nested_descriptor] +
-          "}\n\n";
+      if (needs_journaling_support) {
+        cxx_functions_implementation_[descriptor] +=
+            "void " + name +
+            "::Fill("
+            "Return const& result, "
+            "not_null<Message*> const message) {\n" +
+            cxx_fill_body_[nested_descriptor] + "}\n\n";
+      }
       cs_interface_return_marshal =
           cs_interface_return_marshal_[nested_descriptor];
       cs_interface_return_type = cs_interface_return_type_[nested_descriptor];
       cxx_interface_return_type = cxx_interface_return_type_[nested_descriptor];
     }
     cxx_run_epilog += cxx_run_body_epilog_[nested_descriptor];
+    if (needs_journaling_support) {
+      cxx_toplevel_type_declaration_[descriptor] +=
+          cxx_nested_type_declaration_[nested_descriptor];
+    }
+  }
+  if (needs_journaling_support) {
+    if (has_in || has_out || has_return) {
+      cxx_toplevel_type_declaration_[descriptor] += "\n";
+    }
     cxx_toplevel_type_declaration_[descriptor] +=
-        cxx_nested_type_declaration_[nested_descriptor];
-  }
-  if (has_in || has_out || has_return) {
-    cxx_toplevel_type_declaration_[descriptor] += "\n";
-  }
-  cxx_toplevel_type_declaration_[descriptor] +=
-      "  using Message = serialization::" + name + ";\n";
-  if (has_in) {
+        "  using Message = serialization::" + name + ";\n";
+    if (has_in) {
+      cxx_toplevel_type_declaration_[descriptor] +=
+          "  static void Fill(In const& in, "
+          "not_null<Message*> const message);\n";
+    }
+    if (has_out) {
+      cxx_toplevel_type_declaration_[descriptor] +=
+          "  static void Fill(Out const& out, "
+          "not_null<Message*> const message);\n";
+    }
+    if (has_return) {
+      cxx_toplevel_type_declaration_[descriptor] +=
+          "  static void Fill("
+          "Return const& result, "
+          "not_null<Message*> const message);\n";
+    }
     cxx_toplevel_type_declaration_[descriptor] +=
-        "  static void Fill(In const& in, "
-        "not_null<Message*> const message);\n";
-  }
-  if (has_out) {
-    cxx_toplevel_type_declaration_[descriptor] +=
-        "  static void Fill(Out const& out, "
-        "not_null<Message*> const message);\n";
-  }
-  if (has_return) {
-    cxx_toplevel_type_declaration_[descriptor] +=
-        "  static void Fill("
-        "Return const& result, "
-        "not_null<Message*> const message);\n";
-  }
-  cxx_toplevel_type_declaration_[descriptor] +=
-      "  static void Run(Message const& message,\n"
-      "                  Player::PointerMap& pointer_map);\n";
-  cxx_toplevel_type_declaration_[descriptor] += "};\n\n";
+        "  static void Run(Message const& message,\n"
+        "                  Player::PointerMap& pointer_map);\n";
+    cxx_toplevel_type_declaration_[descriptor] += "};\n\n";
 
-  // The Run method must come after the Fill methods for comparison with manual
-  // code.
-  cxx_functions_implementation_[descriptor] +=
-      "void " + name + "::Run(Message const& message, "
-      "Player::PointerMap& pointer_map) {\n" +
-      cxx_run_prolog;
-  MessageOptions const& options = descriptor->options();
-  std::string const run_conditional_compilation_symbol =
-      options.HasExtension(
-          journal::serialization::run_conditional_compilation_symbol)
-          ? options.GetExtension(
-                journal::serialization::run_conditional_compilation_symbol)
-          : "";
-  if (!run_conditional_compilation_symbol.empty()) {
+    // The Run method must come after the Fill methods for comparison with
+    // manual code.
     cxx_functions_implementation_[descriptor] +=
-        "#if " + run_conditional_compilation_symbol + "\n";
+        "void " + name +
+        "::Run(Message const& message, "
+        "Player::PointerMap& pointer_map) {\n" +
+        cxx_run_prolog;
+    std::string const run_conditional_compilation_symbol =
+        options.HasExtension(
+            journal::serialization::run_conditional_compilation_symbol)
+            ? options.GetExtension(
+                  journal::serialization::run_conditional_compilation_symbol)
+            : "";
+    if (!run_conditional_compilation_symbol.empty()) {
+      cxx_functions_implementation_[descriptor] +=
+          "#if " + run_conditional_compilation_symbol + "\n";
+    }
+    if (has_return) {
+      cxx_functions_implementation_[descriptor] += "  auto const result = ";
+    } else {
+      cxx_functions_implementation_[descriptor] += "  ";
+    }
+    cxx_functions_implementation_[descriptor] +=
+        "interface::principia__" + name + "(" +
+        Join(cxx_run_arguments, /*joiner=*/", ") + ");\n";
+    if (!run_conditional_compilation_symbol.empty()) {
+      cxx_functions_implementation_[descriptor] += "#endif\n";
+    }
+    cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
   }
-  if (has_return) {
-    cxx_functions_implementation_[descriptor] += "  auto const result = ";
-  } else {
-    cxx_functions_implementation_[descriptor] += "  ";
-  }
-  cxx_functions_implementation_[descriptor] +=
-      "interface::principia__" + name + "(" +
-      Join(cxx_run_arguments, /*joiner=*/", ") + ");\n";
-  if (!run_conditional_compilation_symbol.empty()) {
-    cxx_functions_implementation_[descriptor] += "#endif\n";
-  }
-  cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
   cs_interface_symbol_declaration_[descriptor] =
       "  private partial class Symbols {\n";
@@ -1981,9 +2001,11 @@ void JournalProtoProcessor::ProcessMethodExtension(
   }
   cxx_interface_method_declaration_[descriptor] += ");\n\n";
 
-  cxx_play_statement_[descriptor] =
-      "  ran |= RunIfAppropriate<" + name + ">(\n"
-      "             *method_in, *method_out_return);\n";
+  if (needs_journaling_support) {
+    cxx_play_statement_[descriptor] =
+        "  ran |= RunIfAppropriate<" + name + ">(\n"
+        "             *method_in, *method_out_return);\n";
+  }
 }
 
 bool JournalProtoProcessor::HasMarshaler(
@@ -2021,7 +2043,8 @@ std::string JournalProtoProcessor::MarshalAs(
      _MSC_FULL_VER == 194'234'435 || \
      _MSC_FULL_VER == 194'334'809 || \
      _MSC_FULL_VER == 194'435'211 || \
-     _MSC_FULL_VER == 194'435'213)
+     _MSC_FULL_VER == 194'435'213 || \
+     _MSC_FULL_VER == 194'435'221)
   std::abort();
 #endif
 }

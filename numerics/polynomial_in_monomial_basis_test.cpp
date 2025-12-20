@@ -2,6 +2,7 @@
 
 #include <tuple>
 
+#include "base/multiprecision.hpp"
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "geometry/frame.hpp"
@@ -31,7 +32,7 @@ namespace principia {
 namespace numerics {
 
 using ::testing::Eq;
-using namespace boost::multiprecision;
+using namespace principia::base::_multiprecision;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;

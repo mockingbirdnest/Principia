@@ -45,6 +45,7 @@
     <ClInclude Include="mod.hpp" />
     <ClInclude Include="monostable.hpp" />
     <ClInclude Include="monostable_body.hpp" />
+    <ClInclude Include="multiprecision.hpp" />
     <ClInclude Include="not_null.hpp" />
     <ClInclude Include="not_null_body.hpp" />
     <ClInclude Include="optional_logging.hpp" />
@@ -84,7 +85,7 @@
     <ClCompile Include="bits_test.cpp" />
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
-    <ClCompile Include="concepts_test.cpp" />
+    <ClCompile Include="multiprecision_test.cpp" />
     <ClCompile Include="cpuid.cpp" />
     <ClCompile Include="cpuid_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />

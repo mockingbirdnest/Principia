@@ -20,10 +20,10 @@
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
-#include "nanobenchmarks/flag_parsing.hpp"
-#include "nanobenchmarks/nanobenchmark.hpp"
+#include "nanobenchmarks/flag_parsing.hpp"  // 🧙 For std::vector-valued flags.
 #include "nanobenchmarks/latency_distribution_table.hpp"
 #include "nanobenchmarks/microarchitectures.hpp"
+#include "nanobenchmarks/nanobenchmark.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
 #include "testing_utilities/statistics.hpp"
 

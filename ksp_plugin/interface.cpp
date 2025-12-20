@@ -340,8 +340,6 @@ void __cdecl principia__ActivatePlayer() {
 // state.  `verbose` causes methods to be output in the INFO log before being
 // executed.
 void __cdecl principia__ActivateRecorder(bool const activate) {
-  // NOTE: Do not journal!  You'd end up with half a message in the journal and
-  // that would cause trouble.
   if (activate && !Recorder::IsActivated()) {
     // Build a name somewhat similar to that of the log files.
     auto const now = std::chrono::system_clock::now();
@@ -665,6 +663,12 @@ int __cdecl principia__GetBufferedLogging() {
 int __cdecl principia__GetStderrLogging() {
   journal::Method<journal::GetStderrLogging> m;
   return m.Return(FLAGS_stderrthreshold);
+}
+
+void __cdecl principia__GetCPUIDFeatureFlags(bool* const has_avx,
+                                             bool* const has_fma) {
+  *has_avx = CPUIDFeatureFlag::AVX.IsSet();
+  *has_fma = CPUIDFeatureFlag::FMA.IsSet();
 }
 
 int __cdecl principia__GetSuppressedLogging() {

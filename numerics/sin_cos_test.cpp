@@ -8,6 +8,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/mutex.h"
 #include "base/bundle.hpp"
+#include "base/multiprecision.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "functions/multiprecision.hpp"
 #include "glog/logging.h"
@@ -27,8 +28,8 @@
 namespace principia {
 namespace functions_test {
 
-using namespace boost::multiprecision;
 using namespace principia::base::_bundle;
+using namespace principia::base::_multiprecision;
 using namespace principia::functions::_multiprecision;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_m128d;

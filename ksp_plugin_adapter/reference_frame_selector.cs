@@ -532,6 +532,9 @@ internal class
                        NavballName());
 
   protected override void RenderWindowContents(int window_id) {
+    if (focus_ == null) {
+      PrincipiaPluginAdapter.LoadTextureOrDie(out focus_, "focus.png");
+    }
     using (new UnityEngine.GUILayout.VerticalScope()) {
       UnityEngine.GUILayout.Label(
           L10N.CacheFormat(
@@ -543,9 +546,20 @@ internal class
                                 : Description(frame_type, selected_celestial),
           Style.Multiline(UnityEngine.GUI.skin.label),
           GUILayoutHeight(4));
+
+      // If the target vessel changes, the window may need to shrink.
+      float new_tree_width =
+          (float)Math.Ceiling(
+              MeasureSubtree(celestial : Planetarium.fetch.Sun, depth : 0));
+      if (tree_width_ != new_tree_width) {
+        tree_width_ = new_tree_width;
+        ScheduleShrink();
+      }
+
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         // Left-hand side: tree view of celestials.
-        using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(8))) {
+        using (new UnityEngine.GUILayout.VerticalScope(
+                   GUILayoutWidth(tree_width_))) {
           RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
         }
 
@@ -598,18 +612,57 @@ internal class
     return false;
   }
 
+  // This code must reflect the one in `RenderSubtree`.
+  private float MeasureSubtree(CelestialBody celestial, int depth) {
+    // Indent.
+    float width = children_offset * depth;
+    // +- button.
+    width += children_offset;
+    // Celestial name.
+    width += CalcWidth(celestial.StandaloneName(), UnityEngine.GUI.skin.label);
+    // Pin.
+    width += 1;
+    // Focus.
+    width += 1;
+    if (!celestial.is_leaf(target)) {
+      if ((expanded_[celestial] || target_pinned_) &&
+          target?.orbit.referenceBody == celestial) {
+        // Indent.
+        float target_width = children_offset * (depth + 1);
+        // Missing +- button.
+        target_width += children_offset;
+        // Target name.
+        target_width += CalcWidth(
+            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
+                             target.vesselName),
+            UnityEngine.GUI.skin.label);
+        // Pin.
+        target_width += 1;
+        // Focus.
+        target_width += 1;
+        width = Math.Max(width, target_width);
+      }
+      foreach (CelestialBody child in celestial.orbitingBodies) {
+        if (expanded_[celestial] || AnyDescendantPinned(child)) {
+          float child_width = MeasureSubtree(child, depth + 1);
+          width = Math.Max(width, child_width);
+        }
+      }
+    }
+    return width;
+  }
+
+  // If this code changes, `MeasureSubtree` may have to change.
   private void RenderSubtree(CelestialBody celestial, int depth) {
-    // Horizontal offset between a node and its children.
-    const int offset = 1;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      UnityEngine.GUILayout.Space(Width(offset * depth));
+      UnityEngine.GUILayout.Space(Width(children_offset * depth));
       if (celestial.is_leaf(target)) {
         UnityEngine.GUILayout.Button(
-            "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
+            "", UnityEngine.GUI.skin.label, GUILayoutWidth(children_offset));
       } else {
         string button_text = expanded_[celestial] ? "−" : "+";
         if (UnityEngine.GUILayout.Button(
-                button_text, GUILayoutWidth(offset))) {
+                button_text, GUILayoutWidth(children_offset))) {
           ScheduleShrink();
           expanded_[celestial] = !expanded_[celestial];
         }
@@ -628,40 +681,38 @@ internal class
         pinned[celestial] = !pinned[celestial];
         ScheduleShrink();
       }
-      if (focus_ == null) {
-        PrincipiaPluginAdapter.LoadTextureOrDie(out focus_, "focus.png");
-      }
-      if (UnityEngine.GUILayout.Button(
-              new UnityEngine.GUIContent(
-                  focus_,
-                  L10N.CacheFormat(
-                      "#Principia_ReferenceFrameSelector_Focus")),
-              Style.Aligned(UnityEngine.TextAnchor.LowerCenter,
-                            UnityEngine.GUI.skin.button),
-              GUILayoutWidth(1))) {
+      if (RenderFocusButton()) {
         PlanetariumCamera.fetch.SetTarget(celestial);
         const double degree = Math.PI / 180;
         const double apparent_size = 15 * degree;
         PlanetariumCamera.fetch.SetDistance(
-            (float)celestial.Radius * ScaledSpace.InverseScaleFactor /
-                (float)Math.Tan(apparent_size / 2));
+            (float)celestial.Radius *
+            ScaledSpace.InverseScaleFactor /
+            (float)Math.Tan(apparent_size / 2));
       }
     }
     if (!celestial.is_leaf(target)) {
       if ((expanded_[celestial] || target_pinned_) &&
           target?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Space(Width(offset * (depth + 1)));
+          UnityEngine.GUILayout.Space(Width(children_offset * (depth + 1)));
           UnityEngine.GUILayout.Button(
-              "", UnityEngine.GUI.skin.label, GUILayoutWidth(offset));
+              "", UnityEngine.GUI.skin.label, GUILayoutWidth(children_offset));
           UnityEngine.GUILayout.Label(
               L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
                                target.vesselName));
           UnityEngine.GUILayout.FlexibleSpace();
-          if (UnityEngine.GUILayout.Toggle(target_pinned_, "") !=
+          if (UnityEngine.GUILayout.Toggle(target_pinned_,
+                                           "",
+                                           GUILayoutWidth(1)) !=
               target_pinned_) {
             target_pinned_ = !target_pinned_;
             ScheduleShrink();
+          }
+          if (RenderFocusButton()) {
+            PlanetariumCamera.fetch.SetTarget(target.mapObject);
+            PlanetariumCamera.fetch.SetDistance(
+                PlanetariumCamera.fetch.minDistance);
           }
         }
       }
@@ -674,7 +725,7 @@ internal class
   }
 
   private void RenderSubtreeToggleGrid(CelestialBody celestial) {
-    int column_width = 2;
+    const float column_width = 2.25f;
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       if (ToggleButton(
               SelectedFrameIs(celestial, FrameType.BODY_CENTRED_NON_ROTATING),
@@ -756,6 +807,23 @@ internal class
     }
   }
 
+  private bool RenderFocusButton() {
+    if (MapView.MapIsEnabled) {
+      return UnityEngine.GUILayout.Button(
+          new UnityEngine.GUIContent(focus_,
+                                     L10N.CacheFormat(
+                                         "#Principia_ReferenceFrameSelector_Focus")),
+          Style.Aligned(UnityEngine.TextAnchor.LowerCenter,
+                        UnityEngine.GUI.skin.button),
+          GUILayoutWidth(1));
+    } else {
+      UnityEngine.GUILayout.Button("",
+                                   UnityEngine.GUI.skin.label,
+                                   GUILayoutWidth(1));
+      return false;
+    }
+  }
+
   private bool SelectedFrameIs(CelestialBody celestial, FrameType type) {
     return !target_frame_selected &&
         selected_celestial == celestial && frame_type == type;
@@ -803,11 +871,14 @@ internal class
 
   public readonly Dictionary<CelestialBody, bool> pinned;
 
+  // Horizontal offset between a node and its children.
+  private const int children_offset = 1;
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;
   private bool target_pinned_ = true;
   private bool is_freshly_constructed_;
+  private float tree_width_ = 0f;
   private FrameType last_orbital_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
   private static UnityEngine.Texture focus_;
 }

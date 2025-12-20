@@ -16,7 +16,7 @@ namespace internal {
 
 // A helper class for callbacks from unmanaged code (C++) to managed code (C#).
 // While we could support true callbacks in the generator, it is difficult to
-// implement journalling because a journal entry would have to include all the
+// implement journaling because a journal entry would have to include all the
 // parameters passed to callbacks and the returned results.
 // Instead we invert the flow of control (just like we do for serialization) and
 // expect the managed code to pull the arguments and push the result of the

@@ -2,15 +2,15 @@
 
 #include <random>
 
+#include "base/multiprecision.hpp"
 #include "benchmark/benchmark.h"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/lattices.hpp"
 
 namespace principia {
 namespace numerics {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_multiprecision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
 

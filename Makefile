@@ -1,13 +1,20 @@
 .SECONDEXPANSION:
 PERCENT := %
 
-# detect OS
+# Detect OS.
 UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
 
 CXX := clang++
 MSBUILD := msbuild
-OSX_DEPLOYMENT_TARGET ?= 13
+PRINCIPIA_CLANG_VERSION ?= 20
+PRINCIPIA_MACOS_VERSION_MIN ?= 13
+PRINCIPIA_TARGET ?= x64
+ifneq ($(PRINCIPIA_TARGET),x64_AVX_FMA)
+  ifneq ($(PRINCIPIA_TARGET),x64)
+    $(error PRINCIPIA_TARGET must be 'x64_AVX_FMA' or 'x64')
+	endif
+endif
 
 VERSION_TRANSLATION_UNIT := base/version.generated.cc
 
@@ -36,17 +43,16 @@ PROTO_FILES                             := $(wildcard */*.proto)
 PROTO_TRANSLATION_UNITS                 := $(PROTO_FILES:.proto=.pb.cc)
 PROTO_HEADERS                           := $(PROTO_FILES:.proto=.pb.h)
 
-DEP_DIR := deps/
+DEPS_DIRECTORY := deps/
 
-OBJ_DIRECTORY := obj/
-
-BIN_DIRECTORY := bin/
+OBJ_DIRECTORY := obj/$(PRINCIPIA_TARGET)/
+BIN_DIRECTORY := bin/$(PRINCIPIA_TARGET)/
 TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
 GMOCK_TRANSLATION_UNITS := \
-	$(DEP_DIR)googletest/googlemock/src/gmock-all.cc  \
-	$(DEP_DIR)googletest/googletest/src/gtest-all.cc
-GMOCK_MAIN_TRANSLATION_UNIT := $(DEP_DIR)googletest/googlemock/src/gmock_main.cc
+	$(DEPS_DIRECTORY)googletest/googlemock/src/gmock-all.cc  \
+	$(DEPS_DIRECTORY)googletest/googletest/src/gtest-all.cc
+GMOCK_MAIN_TRANSLATION_UNIT := $(DEPS_DIRECTORY)googletest/googlemock/src/gmock_main.cc
 
 GENERATED_PROFILES := \
 	journal/profiles.generated.h     \
@@ -62,6 +68,7 @@ ADAPTER_CONFIGURATION := Release
 FINAL_PRODUCTS_DIR    := Release/
 ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 
+# TODO(phl): Change the OS names once the loader is ready.
 ifeq ($(UNAME_S),Linux)
     PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
 endif
@@ -69,40 +76,46 @@ ifeq ($(UNAME_S),Darwin)
     PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/MacOS64/
 endif
 
-TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)protobuf/src/.libs/libprotobuf.a
+TEST_LIBS     := \
+	$(DEPS_DIRECTORY)benchmark/src/libbenchmark.a \
+	$(DEPS_DIRECTORY)protobuf/src/.libs/libprotobuf.a
 ABSL_LIBS     := \
-	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/container/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/flags/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/hash/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/status/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/strings/libabsl_*.a \
-	$(DEP_DIR)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
-	$(DEP_DIR)abseil-cpp/absl/time/libabsl_*.a
+	$(DEPS_DIRECTORY)abseil-cpp/absl/base/libabsl_*.a \
+	$(DEPS_DIRECTORY)abseil-cpp/absl/container/libabsl_*.a \
+	$(DEPS_DIRECTORY)abseil-cpp/absl/debugging/libabsl_*.a \
+	$(DEPS_DIRECTORY)abseil-cpp/absl/flags/libabsl_*.a \
+	$(DEPS_DIRECTORY)abseil-cpp/absl/hash/libabsl_*.a \
+	$(DEPS_DIRECTORY)abseil-cpp/absl/numeric/libabsl_*.a \
+	$(DEPS_DIRECTORY)abseil-cpp/absl/status/libabsl_*.a \
+	$(DEPS_DIRECTORY)abseil-cpp/absl/strings/libabsl_*.a \
+	$(DEPS_DIRECTORY)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
+	$(DEPS_DIRECTORY)abseil-cpp/absl/time/libabsl_*.a
 ifeq ($(UNAME_S),Linux)
     ABSL_GROUP_LIBS = -Wl,--start-group $(ABSL_LIBS) -Wl,--end-group
 else
     ABSL_GROUP_LIBS = $(ABSL_LIBS)
 endif
-LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
-	$(DEP_DIR)gipfeli/libgipfeli.a \
+LIBS          := $(DEPS_DIRECTORY)protobuf/src/.libs/libprotobuf.a \
+	$(DEPS_DIRECTORY)gipfeli/libgipfeli.a \
 	$(ABSL_GROUP_LIBS) \
-	$(DEP_DIR)core-math/libcore-math.a \
-	$(DEP_DIR)zfp/build/lib/libzfp.a \
-	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++abi
+	$(DEPS_DIRECTORY)core-math/libcore-math.a \
+	$(DEPS_DIRECTORY)zfp/build/lib/libzfp.a \
+	$(DEPS_DIRECTORY)glog/.libs/libglog.a -lpthread -lc++abi
 TEST_INCLUDES := \
-	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
-	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
-INCLUDES      := -I. -I$(DEP_DIR)glog/src \
-	-I$(DEP_DIR)protobuf/src \
-	-I$(DEP_DIR)gipfeli/include \
-	-I$(DEP_DIR)abseil-cpp \
-	-I$(DEP_DIR)core-math/include \
-	-I$(DEP_DIR)zfp/include \
-	-I$(DEP_DIR)config/include \
-	-I$(DEP_DIR)multiprecision/include
+	-I$(DEPS_DIRECTORY)googletest/googlemock/include \
+	-I$(DEPS_DIRECTORY)googletest/googletest/include \
+	-I$(DEPS_DIRECTORY)googletest/googlemock/ \
+	-I$(DEPS_DIRECTORY)googletest/googletest/ \
+	-I$(DEPS_DIRECTORY)benchmark/include
+INCLUDES      := -I. \
+	-I$(DEPS_DIRECTORY)glog/src \
+	-I$(DEPS_DIRECTORY)protobuf/src \
+	-I$(DEPS_DIRECTORY)gipfeli/include \
+	-I$(DEPS_DIRECTORY)abseil-cpp \
+	-I$(DEPS_DIRECTORY)core-math/include \
+	-I$(DEPS_DIRECTORY)zfp/include \
+	-I$(DEPS_DIRECTORY)config/include \
+	-I$(DEPS_DIRECTORY)multiprecision/include
 SHARED_ARGS   := \
 	-std=c++23 -stdlib=libc++ -O3 -g                              \
 	--system-header-prefix=serialization/                         \
@@ -133,19 +146,25 @@ SHARED_ARGS   := \
 	-Wno-mathematical-notation-identifier-extension               \
 	-Wno-nested-anon-types                                        \
 	-Wno-unknown-pragmas                                          \
-	-DPRINCIPIA_REQUIRES_AVX=0                                    \
-	-DPRINCIPIA_REQUIRES_FMA=0                                    \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DNDEBUG
 
+ifeq ($(PRINCIPIA_TARGET),x64_AVX_FMA)
+    SHARED_ARGS += \
+	-DPRINCIPIA_REQUIRES_AVX=1 \
+	-DPRINCIPIA_REQUIRES_FMA=1 \
+	-mfma \
+	-mavx
+else
+    SHARED_ARGS += \
+	-DPRINCIPIA_REQUIRES_AVX=0 \
+	-DPRINCIPIA_REQUIRES_FMA=0
+endif
+
 ifeq ($(UNAME_S),Linux)
-    ifeq ($(UNAME_M),x86_64)
-        SHARED_ARGS += -m64 -msse4.1
-    else
-        SHARED_ARGS += -m32
-    endif
+    SHARED_ARGS += -m64 -msse4.1
     LIBS += \
 			-lsupc++ \
 			-lc++
@@ -153,7 +172,7 @@ ifeq ($(UNAME_S),Linux)
     SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
-    LLVM_PATH = $(shell brew --prefix llvm@20)
+    LLVM_PATH = $(shell brew --prefix llvm@$(PRINCIPIA_CLANG_VERSION))
     INCLUDES += \
 			-include "base/macos_allocator_replacement.hpp" \
 			-I$(LLVM_PATH)/include
@@ -163,7 +182,7 @@ ifeq ($(UNAME_S),Darwin)
 			-L$(LLVM_PATH)/lib/unwind \
 			-lunwind
     SHARED_ARGS += \
-			-mmacosx-version-min=$(OSX_DEPLOYMENT_TARGET) \
+			-mmacosx-version-min=$(PRINCIPIA_MACOS_VERSION_MIN) \
 			-arch x86_64 \
 			-D_LIBCPP_STD_VER=20 \
 			-D_LIBCPP_NO_EXCEPTIONS
@@ -220,7 +239,8 @@ $(VERSION_TRANSLATION_UNIT): .git
 
 # We don't do dependency resolution on the protos; we compile them all at once.
 $(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
-	$(DEP_DIR)/protobuf/src/protoc -I $(DEP_DIR)/protobuf/src/ -I . $^ --cpp_out=.
+	$(DEPS_DIRECTORY)/protobuf/src/protoc \
+	-I $(DEPS_DIRECTORY)/protobuf/src/ -I . $^ --cpp_out=.
 
 $(GENERATED_PROFILES) : $(TOOLS_BIN)
 	$^ generate_profiles
@@ -303,8 +323,8 @@ $(KSP_PLUGIN) : $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE
 
 TEST_BINS                            := $(addprefix $(BIN_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=))
 PACKAGE_TEST_BINS                    := $(addprefix $(BIN_DIRECTORY), $(addsuffix test, $(sort $(dir $(TEST_TRANSLATION_UNITS)))))
-PLUGIN_DEPENDENT_TEST_BINS           := $(filter bin/ksp_plugin_test/% bin/journal/%, $(TEST_BINS))
-PLUGIN_DEPENDENT_PACKAGE_TEST_BINS   := $(filter bin/ksp_plugin_test/% bin/journal/%, $(PACKAGE_TEST_BINS))
+PLUGIN_DEPENDENT_TEST_BINS           := $(filter $(BIN_DIRECTORY)ksp_plugin_test/% $(BIN_DIRECTORY)journal/%, $(TEST_BINS))
+PLUGIN_DEPENDENT_PACKAGE_TEST_BINS   := $(filter $(BIN_DIRECTORY)ksp_plugin_test/% $(BIN_DIRECTORY)journal/%, $(PACKAGE_TEST_BINS))
 PLUGIN_INDEPENDENT_TEST_BINS         := $(filter-out $(PLUGIN_DEPENDENT_TEST_BINS), $(TEST_BINS))
 PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS := $(filter-out $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS), $(PACKAGE_TEST_BINS))
 PRINCIPIA_TEST_BIN                   := $(BIN_DIRECTORY)test
