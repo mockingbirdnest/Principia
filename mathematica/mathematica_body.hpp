@@ -397,7 +397,7 @@ std::string ToMathematica(cpp_bin_float<digits> const& cpp_bin_float_number,
   using Float = cpp_bin_float<digits>;
   using Int = cpp_int;
   return ToMathematica<Float, Int>(
-      cpp_bin_float,
+      cpp_bin_float_number,
       base,
       [](Float const& x) { return abs(x); },
       [](Float const& x) { return ilogb(x); },
