@@ -15,8 +15,8 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
-using namespace principia::base::_concepts;
 using namespace boost::multiprecision;
+using namespace principia::base::_concepts;
 using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;

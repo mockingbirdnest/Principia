@@ -1,4 +1,4 @@
-﻿.\sourcerer\bin\Release\net7.0\sourcerer.exe `
+﻿.\sourcerer\bin\Release\net9.0\sourcerer.exe `
     include_what_you_using `
     --dry_run:false `
     --project:astronomy `
