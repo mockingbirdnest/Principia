@@ -5,6 +5,7 @@
 namespace principia {
 namespace base {
 namespace _multiprecision {
+namespace internal {
 
 // The `boost_cpp_` concepts should be used sparingly, and only in places where
 // the Boost multiprecision API differs from ours or from the standard C++ API.
@@ -48,6 +49,17 @@ using cpp_bin_float_50 = boost::multiprecision::number<
 using cpp_bin_float_100 = boost::multiprecision::number<
     boost::multiprecision::backends::cpp_bin_float<100>,
     boost::multiprecision::et_off>;
+
+}  // namespace internal
+
+using internal::boost_cpp_bin_float;
+using internal::boost_cpp_int;
+using internal::boost_cpp_number;
+using internal::boost_cpp_rational;
+using internal::cpp_bin_float_100;
+using internal::cpp_bin_float_50;
+using internal::cpp_int;
+using internal::cpp_rational;
 
 }  // namespace _multiprecision
 }  // namespace base
