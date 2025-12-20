@@ -16,7 +16,6 @@
 #include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "geometry/barycentre_calculator.hpp"
 
 namespace principia {
@@ -390,12 +389,12 @@ std::string ToMathematica(T const real,
       [](T const& x) { return std::int64_t(x); });
 }
 
-template<typename OptionalExpressIn>
-std::string ToMathematica(
-    cpp_bin_float_50 const& cpp_bin_float,
-    OptionalExpressIn /*express_in*/,
-    std::int64_t const base) {
-  using Float = cpp_bin_float_50;
+template<unsigned digits,
+         typename OptionalExpressIn>
+std::string ToMathematica(cpp_bin_float<digits> const& cpp_bin_float_number,
+                          OptionalExpressIn /*express_in*/,
+                          std::int64_t const base) {
+  using Float = cpp_bin_float<digits>;
   using Int = cpp_int;
   return ToMathematica<Float, Int>(
       cpp_bin_float,

@@ -9,7 +9,6 @@
 #include "astronomy/orbital_elements.hpp"
 #include "base/multiprecision.hpp"
 #include "base/traits.hpp"
-#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
@@ -183,11 +182,10 @@ std::string ToMathematica(T real,
                           OptionalExpressIn express_in = std::nullopt,
                           std::int64_t base = 16);
 
-template<typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(
-    cpp_bin_float_50 const& cpp_bin_float,
-    OptionalExpressIn express_in = std::nullopt,
-    std::int64_t base = 16);
+template<unsigned digits, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(cpp_bin_float<digits> const& cpp_bin_float_number,
+                          OptionalExpressIn express_in = std::nullopt,
+                          std::int64_t base = 16);
 
 template<typename T, std::int64_t size,
          typename OptionalExpressIn = std::nullopt_t>

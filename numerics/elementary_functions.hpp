@@ -3,7 +3,6 @@
 #include <atomic>
 
 #include "base/multiprecision.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/sin_cos.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"

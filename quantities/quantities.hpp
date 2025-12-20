@@ -12,7 +12,6 @@
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
-#include "boost/multiprecision/number.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
 #include "serialization/quantities.pb.h"

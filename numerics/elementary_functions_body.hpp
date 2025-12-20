@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "glog/logging.h"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"

@@ -2,7 +2,6 @@
 
 #include "base/cpuid.hpp"
 #include "base/multiprecision.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "gtest/gtest.h"
 #include "numerics/fma.hpp"
 #include "quantities/astronomy.hpp"

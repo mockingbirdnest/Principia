@@ -9,7 +9,6 @@
 #include "absl/container/btree_set.h"
 #include "base/multiprecision.hpp"
 #include "base/tags.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_views.hpp"

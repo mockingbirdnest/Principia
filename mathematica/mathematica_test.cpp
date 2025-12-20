@@ -8,7 +8,6 @@
 #include "astronomy/orbital_elements.hpp"
 #include "base/macros.hpp"  //  🧙 For CLANG_VERSION_LE.
 #include "base/multiprecision.hpp"
-#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
