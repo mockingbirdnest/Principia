@@ -47,7 +47,7 @@ using cpp_int =
 template<unsigned digits>
 using cpp_bin_float = boost::multiprecision::number<
     boost::multiprecision::backends::cpp_bin_float<digits>,
-    boost::multiprecision::et_off>
+    boost::multiprecision::et_off>;
 
 using cpp_bin_float_50 = cpp_bin_float<50>;
 
