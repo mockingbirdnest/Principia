@@ -59,7 +59,7 @@ class PolynomialInЧебышёвBasis;
 
 // Degree-agnostic base class defining the contract of polynomials in the
 // Чебышёв basis and used for polymorphic storage.
-template<affine Value_, affine Argument_>
+template<typename Value_, typename Argument_>
 class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
     : public Polynomial<Value_, Argument_> {
  public:
