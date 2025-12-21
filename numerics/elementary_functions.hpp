@@ -2,9 +2,9 @@
 
 #include <atomic>
 
+#include "base/algebra.hpp"
 #include "base/multiprecision.hpp"
 #include "numerics/sin_cos.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -14,9 +14,9 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_multiprecision;
 using namespace principia::numerics::_sin_cos;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

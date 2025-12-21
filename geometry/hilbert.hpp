@@ -2,10 +2,9 @@
 
 #include <type_traits>
 
+#include "base/algebra.hpp"
 #include "base/not_constructible.hpp"
-#include "geometry/concepts.hpp"
 #include "geometry/grassmann.hpp"  // 🧙 For _grassmann::internal.
-#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 
 namespace principia {
@@ -13,9 +12,8 @@ namespace geometry {
 namespace _hilbert {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_constructible;
-using namespace principia::geometry::_concepts;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 
 // A trait that represents a Hilbert space, i.e., a space with an inner product

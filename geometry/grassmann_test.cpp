@@ -5,6 +5,7 @@
 #include <iostream>  // NOLINT(readability/streams)
 #include <utility>
 
+#include "base/algebra.hpp"
 #include "base/cpuid.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/r3_element.hpp"
@@ -12,7 +13,6 @@
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
@@ -27,13 +27,13 @@ namespace principia {
 namespace geometry {
 
 using ::testing::Eq;
+using namespace principia::base::_algebra;
 using namespace principia::base::_cpuid;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;

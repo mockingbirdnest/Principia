@@ -1,5 +1,6 @@
 #include "physics/rigid_motion.hpp"
 
+#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -12,7 +13,6 @@
 #include "geometry/space_transformations.hpp"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -27,6 +27,7 @@
 namespace principia {
 namespace physics {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
@@ -39,7 +40,6 @@ using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rigid_motion;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

@@ -5,10 +5,10 @@
 #include <vector>
 
 #include "absl/status/status.h"
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "numerics/double_precision.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/integrators.pb.h"
 
@@ -18,10 +18,10 @@ namespace integrators {
 namespace _ordinary_differential_equations {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 

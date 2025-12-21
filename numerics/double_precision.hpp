@@ -2,10 +2,10 @@
 
 #include <string>
 
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "numerics/fma.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -14,10 +14,10 @@ namespace numerics {
 namespace _double_precision {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 // A simple container for accumulating a value using double precision.  The

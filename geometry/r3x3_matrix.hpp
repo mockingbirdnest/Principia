@@ -6,10 +6,10 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "geometry/r3_element.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -18,10 +18,10 @@ namespace geometry {
 namespace _r3x3_matrix {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_r3_element;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 
 // An `R3x3Matrix` is an element of the associative algebra of 3-by-3 matrices

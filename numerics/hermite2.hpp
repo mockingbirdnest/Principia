@@ -4,16 +4,16 @@
 #include <utility>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "geometry/hilbert.hpp"
-#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _hermite2 {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_arithmetic;
 
 // A 2nd degree Hermite polynomial defined by its values at the bounds of some
 // interval and one of its derivatives.

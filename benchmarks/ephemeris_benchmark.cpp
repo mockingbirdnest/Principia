@@ -11,6 +11,7 @@
 
 #include "astronomy/frames.hpp"
 #include "astronomy/stabilize_ksp.hpp"
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "base/thread_pool.hpp"
@@ -35,7 +36,6 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/bipm.hpp"
 #include "quantities/named_quantities.hpp"
@@ -48,6 +48,7 @@ namespace physics {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_stabilize_ksp;
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_frame;
@@ -70,7 +71,6 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massless_body;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_bipm;
 using namespace principia::quantities::_named_quantities;

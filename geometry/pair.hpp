@@ -2,15 +2,14 @@
 
 #include <string>
 
+#include "base/algebra.hpp"
 #include "base/concepts.hpp"
 #include "base/mappable.hpp"  // 🧙 For base::_mappable::internal.
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/barycentre_calculator.hpp"  // 🧙 For friendship.
-#include "geometry/concepts.hpp"
 #include "geometry/space.hpp"
-#include "quantities/arithmetic.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -25,13 +24,12 @@ namespace geometry {
 namespace _pair {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
-using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_space;
-using namespace principia::quantities::_arithmetic;
 
 template<typename T1, typename T2>
 class Pair;

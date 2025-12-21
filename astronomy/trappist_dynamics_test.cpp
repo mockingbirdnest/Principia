@@ -15,6 +15,7 @@
 #include "absl/synchronization/mutex.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/algebra.hpp"
 #include "base/bundle.hpp"
 #include "base/file.hpp"
 #include "base/graveyard.hpp"
@@ -38,7 +39,6 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -52,6 +52,7 @@ using ::testing::Gt;
 using ::testing::Lt;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_algebra;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
 using namespace principia::base::_graveyard;
@@ -73,7 +74,6 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
