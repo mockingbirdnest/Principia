@@ -16,12 +16,12 @@ namespace internal {
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
-#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)       \
-  case value:                                               \
-    return make_not_null_unique<                            \
-        PolynomialInMonomialBasis<Value, Argument, value>>( \
-        PolynomialInMonomialBasis<Value, Argument, value>:: \
-            template ReadFromMessage<Evaluator>(message))
+#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
+  case value:                                                          \
+    return make_not_null_unique<                                       \
+        PolynomialInMonomialBasis<Value, Argument, value, Evaluator>>( \
+        PolynomialInMonomialBasis<Value, Argument, value, Evaluator>:: \
+            ReadFromMessage(message))
 
 template<typename Value_, typename Argument_>
 not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>

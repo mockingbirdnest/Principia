@@ -472,7 +472,7 @@ template<typename Value_, typename Argument_, int degree_,
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 AtOrigin(Argument const& origin) const {
-  return PolynomialAtOrigin<Value, Argument, degree_, Evaluator>::
+  return PolynomialAtOrigin<Value, Argument, degree_, Evaluator_>::
       MakePolynomial(coefficients_,
                      /*from_origin=*/origin_,
                      /*to_origin=*/origin);
@@ -489,7 +489,7 @@ Derivative() const {
   return PolynomialInMonomialBasis<
              quantities::_arithmetic::Derivative<Value, Argument, order>,
              Argument,
-             degree_ - order, Evaluator>(
+             degree_ - order, Evaluator_>(
              TupleDerivation<Coefficients, order>::Derive(coefficients_),
              origin_);
 }
@@ -504,7 +504,7 @@ Primitive() const
   return PolynomialInMonomialBasis<
              quantities::_arithmetic::Primitive<Value, Argument>,
              Argument,
-             degree_ + 1, Evaluator>(
+             degree_ + 1, Evaluator_>(
              TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),
              origin_);
 }
