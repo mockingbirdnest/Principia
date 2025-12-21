@@ -571,6 +571,13 @@ ReadFromMessage(serialization::Polynomial const& message) {
       << (is_pre_gröbner ? "Gröbner" : "Καραθεοδωρή")
       << " PolynomialInMonomialBasis";
 
+  if (!is_pre_καραθεοδωρή) {
+    serialization::PolynomialInMonomialBasis::Evaluator evaluator_message;
+    Evaluator<Value, Argument, degree_>::WriteToMessage(&evaluator_message);
+    CHECK_EQ(extension.evaluator(), evaluator_message)
+        << "Evaluator mismatch for post-Καραθεοδωρή deserialization"
+        << extension.DebugString();
+  }
 
   Coefficients coefficients;
   TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
@@ -581,23 +588,7 @@ ReadFromMessage(serialization::Polynomial const& message) {
                                 Argument,
                                 serialization::PolynomialInMonomialBasis>::
                                 ReadFromMessage(extension);
-  auto polynomial = PolynomialInMonomialBasis(coefficients, origin);
-
-  if (is_pre_καραθεοδωρή) {
-    CHECK_NE(evaluator, nullptr)
-        << "No evaluator specified for pre-Καραθεοδωρή deserialization "
-        << extension.DebugString();
-    polynomial.evaluator_ = evaluator;
-  } else {
-    CHECK_EQ(evaluator, nullptr)
-        << "Evaluator should not be specified for post-Καραθεοδωρή "
-        << "deserialization" << extension.DebugString();
-    polynomial.evaluator_ =
-        PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-            template Evaluator<Value_, Difference<Argument_>, degree_>::
-                ReadFromMessage(extension.evaluator());
-  }
-  return polynomial;
+  return PolynomialInMonomialBasis(coefficients, origin);
 }
 
 template<typename Value, typename Argument, int rdegree,

@@ -106,7 +106,7 @@ TEST_F(PolynomialInMonomialBasisTest, Coefficients) {
 
 // Check that a polynomial can be constructed and evaluated.
 TEST_F(PolynomialInMonomialBasisTest, Evaluate2V) {
-  P2V const p(coefficients_, with_evaluator<Horner>);
+  P2V const p(coefficients_);
   EXPECT_EQ(2, p.degree());
   Displacement<World> const d = p(0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(0.5 * Second);
@@ -446,10 +446,10 @@ TEST_F(PolynomialInMonomialBasisTest, PrimitiveIntegrate) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, EvaluateConstant) {
-  PolynomialInMonomialBasis<Entropy, Time, 0> const horner_boltzmann(
-      std::make_tuple(BoltzmannConstant), with_evaluator<Horner>);
-  PolynomialInMonomialBasis<Entropy, Time, 0> const estrin_boltzmann(
-      std::make_tuple(BoltzmannConstant), with_evaluator<Estrin>);
+  PolynomialInMonomialBasis<Entropy, Time, 0, Horner> const horner_boltzmann(
+      std::make_tuple(BoltzmannConstant));
+  PolynomialInMonomialBasis<Entropy, Time, 0, Estrin> const estrin_boltzmann(
+      std::make_tuple(BoltzmannConstant));
   EXPECT_THAT(horner_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(estrin_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(horner_boltzmann.EvaluateDerivative(1729 * Second),
@@ -459,10 +459,10 @@ TEST_F(PolynomialInMonomialBasisTest, EvaluateConstant) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, EvaluateLinear) {
-  PolynomialInMonomialBasis<Length, Time, 1> const
-      horner_light({0 * Metre, SpeedOfLight}, with_evaluator<Horner>);
-  PolynomialInMonomialBasis<Length, Time, 1> const
-      estrin_light({0 * Metre, SpeedOfLight}, with_evaluator<Estrin>);
+  PolynomialInMonomialBasis<Length, Time, 1, Horner> const
+      horner_light({0 * Metre, SpeedOfLight});
+  PolynomialInMonomialBasis<Length, Time, 1, Estrin> const
+      estrin_light({0 * Metre, SpeedOfLight});
   constexpr Length light_second = Second * SpeedOfLight;
   EXPECT_THAT(horner_light(1729 * Second), Eq(1729 * light_second));
   EXPECT_THAT(estrin_light(1729 * Second), Eq(1729 * light_second));
