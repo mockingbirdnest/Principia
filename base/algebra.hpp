@@ -65,8 +65,8 @@ concept additive_group = requires(G x, G y, int n) {
   { x - y } -> std::same_as<G>;
   { x += y } -> std::same_as<G&>;
   { x -= y } -> std::same_as<G&>;
-  // An abelian group is a ℤ-module; we require the corresponding
-  // operations. Note that `std::integral`, not `int`, should be used when
+  // An abelian group is a ℤ-module; we require the corresponding operations.
+  // Note that `std::integral`, not `int`, should be used when
   // implementing these operations to avoid implicit conversions from
   // `double`.
   { n * x } -> std::same_as<G>;
@@ -85,8 +85,7 @@ concept affine = requires(A x, A y) {
 };
 
 // A graded ring restricted to its homogeneous elements; multiplication can
-// alter the type, and addition is only defined between homogeneous
-// elements.
+// alter the type, and addition is only defined between homogeneous elements.
 template<typename A>
 concept homogeneous_ring = additive_group<A> && requires(A x, A y, A z) {
   // Really, multiplication should return a homogeneous_ring.
@@ -115,8 +114,8 @@ concept field = ring<K> && !std::integral<K> && requires(K x, K y, K z) {
   { x /= y } -> std::same_as<K&>;
 };
 
-// TODO(egg): vector_space should subsume homogeneous_vector_space, but we
-// use it in homogeneous_vector_space.
+// TODO(egg): vector_space should subsume homogeneous_vector_space, but we use
+// it in homogeneous_vector_space.
 
 template<typename V, typename K>
 concept vector_space = field<K> && requires(K λ, V v) {
@@ -128,8 +127,8 @@ concept vector_space = field<K> && requires(K λ, V v) {
 };
 
 // A graded field restricted to its homogeneous elements; multiplication and
-// division can alter the type, and addition is only defined between
-// homogeneous elements.
+// division can alter the type, and addition is only defined between homogeneous
+// elements.
 template<typename K>
 concept homogeneous_field = homogeneous_ring<K> && requires(K x, K y, K z) {
   { x / y } -> field;
@@ -165,8 +164,9 @@ template<typename V>
 concept real_affine_space = affine_space<V, double>;
 
 template<typename T1, typename T2>
-concept hilbert =
-    requires(T1 const& t1, T2 const& t2) { InnerProduct(t1, t2); };
+concept hilbert = requires(T1 const& t1, T2 const& t2) {
+  InnerProduct(t1, t2);
+};
 
 }  // namespace internal
 
