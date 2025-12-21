@@ -15,10 +15,10 @@
 #include "base/not_constructible.hpp"
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
+#include "google/protobuf/util/message_differencer.h"
 #include "numerics/combinatorics.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/quadrature.hpp"
-#include "protobuf/util/message_differencer.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
