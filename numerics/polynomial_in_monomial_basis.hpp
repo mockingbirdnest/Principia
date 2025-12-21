@@ -83,9 +83,9 @@ class Policy {
  public:
   template<typename Value, typename Argument, int degree,
            template<typename, typename, int> typename Evaluator_>
-  PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&& WithEvaluator(
-      PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&& polynomial)
-      const;
+  not_null<std::unique_ptr<Polynomial<Value, Argument>>>
+  WithEvaluator(PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&&
+                    polynomial) const;
 
   static constexpr Policy AlwaysEstrin();
   static constexpr Policy AlwaysEstrinWithoutFMA();
@@ -406,6 +406,7 @@ std::ostream& operator<<(
 
 }  // namespace internal
 
+using internal::DefaultEvaluator;
 using internal::Policy;
 using internal::PolynomialInMonomialBasis;
 

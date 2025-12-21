@@ -322,15 +322,18 @@ std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
 
 template<typename Value, typename Argument, int degree,
          template<typename, typename, int> typename Evaluator_>
-PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&&
+not_null<std::unique_ptr<Polynomial<Value, Argument>>>
 Policy::WithEvaluator(
-    PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&& polynomial) const {
+    PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&& polynomial)
+    const {
   switch (kind_) {
     case serialization::PolynomialInMonomialBasis::Policy::
         ALWAYS_ESTRIN_WITHOUT_FMA:
-      return std::move(polynomial).template WithEvaluator<EstrinWithoutFMA>();
+      return make_not_null_unique<Polynomial<Value, Argument>>(
+          std::move(polynomial).template WithEvaluator<EstrinWithoutFMA>());
     case serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN:
-      return std::move(polynomial).template WithEvaluator<Estrin>();
+      return make_not_null_unique<Polynomial<Value, Argument>>(
+          std::move(polynomial).template WithEvaluator<Estrin>());
   }
   LOG(FATAL) << "Unexpected policy " << kind_;
 }
