@@ -555,25 +555,6 @@ template<typename Value_, typename Argument_, int degree_,
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 ReadFromMessage(serialization::Polynomial const& message) {
-  return ReadFromMessage(message, /*evaluator=*/nullptr);
-}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator_>
-template<template<typename, typename, int> typename SpecificEvaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-ReadFromMessage(serialization::Polynomial const& message) {
-  return ReadFromMessage(
-      message,
-      SpecificEvaluator<Value, Difference<Argument>, degree_>::Singleton());
-}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-ReadFromMessage(serialization::Polynomial const& message) {
   CHECK_EQ(degree_, message.degree()) << message.DebugString();
   CHECK(message.HasExtension(
            serialization::PolynomialInMonomialBasis::extension))

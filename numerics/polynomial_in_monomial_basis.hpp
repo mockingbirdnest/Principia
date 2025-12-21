@@ -19,7 +19,6 @@
 #include "geometry/concepts.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
-#include "numerics/fma.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/tuples.hpp"
@@ -74,7 +73,6 @@ using namespace principia::base::_traits;
 using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
-using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_arithmetic;
@@ -106,12 +104,9 @@ class Policy {
 };
 
 template<typename Value, typename Argument, int degree>
-using DefaultEvaluator =
-    std::conditional_t<degree <= 3,
-                       HornerEvaluator<Value, Argument, degree,
-                                       FMAPolicy::Auto, FMAPresence::Unknown>,
-                       EstrinEvaluator<Value, Argument, degree,
-                                       FMAPolicy::Auto, FMAPresence::Unknown>>;
+using DefaultEvaluator = std::conditional_t<degree <= 3,
+                                            Horner<Value, Argument, degree>,
+                                            Estrin<Value, Argument, degree>>;
 
 
 template<typename Value_, typename Argument_, int degree_,
@@ -196,11 +191,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
 
-  static PolynomialInMonomialBasis ReadFromMessage(
-      serialization::Polynomial const& message);
-  // Compatibility deserialization, when the evaluator is not present in
-  // `message`.
-  template<template<typename, typename, int> typename SpecificEvaluator>
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
 
