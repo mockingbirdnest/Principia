@@ -408,7 +408,6 @@ std::ostream& operator<<(
 
 using internal::Policy;
 using internal::PolynomialInMonomialBasis;
-using internal::with_evaluator;
 
 }  // namespace _polynomial_in_monomial_basis
 }  // namespace numerics

@@ -18,6 +18,7 @@
 #include "numerics/combinatorics.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/quadrature.hpp"
+#include "protobuf/util/message_differencer.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -574,7 +575,8 @@ ReadFromMessage(serialization::Polynomial const& message) {
   if (!is_pre_καραθεοδωρή) {
     serialization::PolynomialInMonomialBasis::Evaluator evaluator_message;
     Evaluator<Value, Argument, degree_>::WriteToMessage(&evaluator_message);
-    CHECK_EQ(extension.evaluator(), evaluator_message)
+    CHECK(::google::protobuf::util::MessageDifferencer::Equals(
+        extension.evaluator(), evaluator_message))
         << "Evaluator mismatch for post-Καραθεοδωρή deserialization"
         << extension.DebugString();
   }
