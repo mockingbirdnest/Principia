@@ -46,8 +46,7 @@ namespace principia {
 namespace numerics {
 FORWARD_DECLARE(
     TEMPLATE(typename Value, typename Argument, int degree_,
-             template<template<typename, typename, int> typename Evaluator_>
-             class),
+             TEMPLATE(typename, typename, int) typename Evaluator) class,
     PolynomialInMonomialBasis,
     FROM(polynomial_in_monomial_basis));
 }  // namespace numerics
@@ -55,7 +54,7 @@ FORWARD_DECLARE(
 namespace mathematica {
 FORWARD_DECLARE_FUNCTION(
     TEMPLATE(typename Value, typename Argument, int degree_,
-             template<template<typename, typename, int> typename Evaluator_,
+             TEMPLATE(typename, typename, int) typename Evaluator_,
              typename OptionalExpressIn) std::string,
     ToMathematicaBody,
     (numerics::_polynomial_in_monomial_basis::
@@ -125,16 +124,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   constexpr PolynomialInMonomialBasis(Coefficients coefficients,
                                       Argument const& origin);
-  template<template<typename, typename, int> typename SpecificEvaluator>
-  constexpr PolynomialInMonomialBasis(Coefficients coefficients,
-                                      Argument const& origin,
-                                      with_evaluator_t<SpecificEvaluator>);
-
   constexpr explicit PolynomialInMonomialBasis(Coefficients coefficients)
-    requires additive_group<Argument>;
-  template<template<typename, typename, int> typename SpecificEvaluator>
-  constexpr PolynomialInMonomialBasis(Coefficients coefficients,
-                                      with_evaluator_t<SpecificEvaluator>)
     requires additive_group<Argument>;
 
   friend constexpr bool operator==(PolynomialInMonomialBasis const& left,
@@ -188,8 +178,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   // Changes the evaluator of this object.  Useful on the result of an operator
   // or of `ReadFromMessage`, as these functions use the default evaluator.
-  template<template<typename, typename, int> typename SpecificEvaluator>
-  PolynomialInMonomialBasis&& WithEvaluator() &&;
+  template<template<typename, typename, int> typename OtherEvaluator>
+  PolynomialInMonomialBasis<Value, Argument, degree_, OtherEvaluator>&&
+  WithEvaluator() &&;
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
@@ -203,19 +194,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       serialization::Polynomial const& message);
 
  private:
-  static constexpr not_null<
-      Evaluator<Value_, Difference<Argument_>, degree_> const*>
-  DefaultEvaluator();
-
-  // The evaluator is only nonnull on the compatibility path.
-  static PolynomialInMonomialBasis ReadFromMessage(
-      serialization::Polynomial const& message,
-      Evaluator<Value_, Difference<Argument_>, degree_> const* evaluator);
-
   Coefficients coefficients_;
   Argument origin_;
-  // TODO(phl): The `Evaluator` class should be able to take a `Point`.
-  not_null<Evaluator<Value_, Difference<Argument_>, degree_> const*> evaluator_;
 
   template<typename V, typename A, int r,
            template<typename, typename, int> typename E>

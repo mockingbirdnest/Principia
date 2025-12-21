@@ -365,20 +365,7 @@ constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 PolynomialInMonomialBasis(Coefficients coefficients,
                           Argument const& origin)
     : coefficients_(std::move(coefficients)),
-      origin_(origin),
-      evaluator_(DefaultEvaluator()) {}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator_>
-template<template<typename, typename, int> typename SpecificEvaluator>
-constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-PolynomialInMonomialBasis(Coefficients coefficients,
-                          Argument const& origin,
-                          with_evaluator_t<SpecificEvaluator>)
-    : coefficients_(std::move(coefficients)),
-      origin_(origin),
-      evaluator_(
-          SpecificEvaluator<Value_, Difference<Argument_>, degree_>::Singleton()) {}
+      origin_(origin) {}
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
@@ -386,20 +373,7 @@ constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 PolynomialInMonomialBasis(Coefficients coefficients)
   requires additive_group<Argument>
     : coefficients_(std::move(coefficients)),
-      origin_(Argument{}),
-      evaluator_(DefaultEvaluator()) {}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator_>
-template<template<typename, typename, int> typename SpecificEvaluator>
-constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-PolynomialInMonomialBasis(Coefficients coefficients,
-                          with_evaluator_t<SpecificEvaluator>)
-  requires additive_group<Argument>
-    : coefficients_(std::move(coefficients)),
-      origin_(Argument{}),
-      evaluator_(
-          SpecificEvaluator<Value_, Difference<Argument_>, degree_>::Singleton()) {}
+      origin_(Argument{}) {}
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
@@ -436,9 +410,8 @@ template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 operator()(Argument const argument) const {
-  return PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-      template Evaluator<Value_, Difference<Argument_>, degree_>::Evaluate(
-          coefficients_, argument - origin_, evaluator_);
+  return Evaluator<Value_, Difference<Argument_>, degree_>::Evaluate(
+      coefficients_, argument - origin_);
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -446,9 +419,8 @@ template<typename Value_, typename Argument_, int degree_,
 Derivative<Value_, Argument_>
  PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 EvaluateDerivative(Argument const argument) const {
-  return PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-      template Evaluator<Value_, Difference<Argument_>, degree_>::EvaluateDerivative(
-          coefficients_, argument - origin_, evaluator_);
+  return Evaluator<Value_, Difference<Argument_>, degree_>::EvaluateDerivative(
+      coefficients_, argument - origin_);
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -458,10 +430,8 @@ EvaluateWithDerivative(Argument const argument,
                        Value& value,
                        quantities::_arithmetic::Derivative<Value, Argument>&
                            derivative) const {
-  PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-      template Evaluator<Value_, Difference<Argument_>, degree_>::
-          EvaluateWithDerivative(coefficients_, argument - origin_, evaluator_,
-                                 value, derivative);
+  Evaluator<Value_, Difference<Argument_>, degree_>::EvaluateWithDerivative(
+      coefficients_, argument - origin_, value, derivative);
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -552,9 +522,10 @@ Integrate(Argument const& argument1,
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
-template<template<typename, typename, int> typename SpecificEvaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>&&
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::WithEvaluator() && {
+template<template<typename, typename, int> typename OtherEvaluator>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, OtherEvaluator>&&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+WithEvaluator() && {
   evaluator_ = SpecificEvaluator<Value_, Difference<Argument_>, degree_>::Singleton();
   return std::move(*this);
 }
@@ -600,19 +571,9 @@ ReadFromMessage(serialization::Polynomial const& message) {
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
-constexpr not_null<Evaluator_<Value_, Difference<Argument_>, degree_> const*>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::DefaultEvaluator() {
-  return Evaluator<Value, Difference<Argument>, degree_>::Singleton();
-}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-ReadFromMessage(serialization::Polynomial const& message,
-                typename PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-                    template Evaluator<Value_, Difference<Argument_>, degree_> const* const
-                    evaluator) {
+ReadFromMessage(serialization::Polynomial const& message) {
   CHECK_EQ(degree_, message.degree()) << message.DebugString();
   CHECK(message.HasExtension(
            serialization::PolynomialInMonomialBasis::extension))
@@ -634,7 +595,7 @@ ReadFromMessage(serialization::Polynomial const& message,
   TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
 
   auto const origin = is_pre_gröbner
-                          ? Argument
+                          ? Argument{}
                           : DoubleOrQuantityOrPointOrMultivectorSerializer<
                                 Argument,
                                 serialization::PolynomialInMonomialBasis>::
