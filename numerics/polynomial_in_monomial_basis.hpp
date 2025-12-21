@@ -25,6 +25,11 @@
 
 // The presence of an operator+ below causes a bizarre compilation error in
 // seemingly unrelated code in PolynomialTestInMonomialBasis.VectorSpace.
+// In recent versions of Visual Studio, this problem has been resolved; however,
+// adding constraints to Polynomial brings it back unless the relevant operators
+// are constrained.  The use of `affine` on the operator+ declared within
+// #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS below is
+// load-bearing.
 #define PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS \
   !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036 || \
                                 _MSC_FULL_VER == 192'930'037 || \
