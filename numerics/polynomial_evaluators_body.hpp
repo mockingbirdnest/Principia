@@ -23,8 +23,7 @@ using namespace principia::numerics::_elementary_functions;
 template<typename Value, typename Argument,
          int degree, bool fma, int low, int subdegree>
 struct InternalEstrinEvaluator {
-  using Coefficients =
-      typename Evaluator<Value, Argument, degree>::Coefficients;
+  using Coefficients = internal::Coefficients<Value, Argument, degree>;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -36,8 +35,7 @@ struct InternalEstrinEvaluator {
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1> {
-  using Coefficients =
-      typename Evaluator<Value, Argument, degree>::Coefficients;
+  using Coefficients = internal::Coefficients<Value, Argument, degree>;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -49,8 +47,7 @@ struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1> {
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0> {
-  using Coefficients =
-      typename Evaluator<Value, Argument, degree>::Coefficients;
+  using Coefficients = internal::Coefficients<Value, Argument, degree>;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -62,8 +59,7 @@ struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0> {
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, fma, low, -1> {
-  using Coefficients =
-      typename Evaluator<Value, Argument, degree>::Coefficients;
+  using Coefficients = internal::Coefficients<Value, Argument, degree>;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -199,8 +195,7 @@ EvaluateDerivative(Coefficients const& coefficients,
 // the one with a constant term coefficient `std::get<low>(coefficients)`.
 template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalHornerEvaluator {
-  using Coefficients =
-      typename Evaluator<Value, Argument, degree>::Coefficients;
+  using Coefficients = internal::Coefficients<Value, Argument, degree>;
 
   FORCE_INLINE(static) Derivative<Value, Argument, low>
   Evaluate(Coefficients const& coefficients,
@@ -212,8 +207,7 @@ struct InternalHornerEvaluator {
 
 template<typename Value, typename Argument, int degree, bool fma>
 struct InternalHornerEvaluator<Value, Argument, degree, fma, degree> {
-  using Coefficients =
-      typename Evaluator<Value, Argument, degree>::Coefficients;
+  using Coefficients = internal::Coefficients<Value, Argument, degree>;
 
   FORCE_INLINE(static) Derivative<Value, Argument, degree>
   Evaluate(Coefficients const& coefficients,
@@ -279,175 +273,6 @@ InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
 EvaluateDerivative(Coefficients const& coefficients,
                     Argument const& argument) {
   return std::get<degree>(coefficients) * degree;
-}
-
-
-template<typename Value, typename Argument, int degree>
-  requires additive_group<Argument>
-Value Evaluator<Value, Argument, degree>::Evaluate(
-    Coefficients const& coefficients,
-    Argument const& argument,
-    not_null<Evaluator const*> const evaluator) {
-  // We cannot make this function virtual, as that prevents inlining and the
-  // performance evaluation is severe (polynomial evaluation takes nanoseconds).
-  // Instead we dispatch by hand.  We use the singleton as an identity for the
-  // types since the constructors are hidden and there is only ever one object
-  // of each evaluator type.  There are no calls in this code.
-  if constexpr (degree <= 2) {
-    // Horner and Estrin are identical.
-    if (evaluator == Estrin<Value, Argument, degree>::Singleton() ||
-        evaluator == Horner<Value, Argument, degree>::Singleton()) {
-      return Horner<Value, Argument, degree>::Evaluate(coefficients, argument);
-    } else {
-      /*evaluator == EstrinWithoutFMA<Value, Argument, degree>::Singleton() ||
-        evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
-      return HornerWithoutFMA<Value, Argument, degree>::Evaluate(
-          coefficients, argument);
-    }
-  } else {
-    if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
-      return Estrin<Value, Argument, degree>::Evaluate(coefficients, argument);
-    } else if (evaluator == Horner<Value, Argument, degree>::Singleton()) {
-      return Horner<Value, Argument, degree>::Evaluate(coefficients, argument);
-    } else if (evaluator ==
-               EstrinWithoutFMA<Value, Argument, degree>::Singleton()) {
-      return EstrinWithoutFMA<Value, Argument, degree>::Evaluate(
-          coefficients, argument);
-    } else {
-      /*evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
-      return HornerWithoutFMA<Value, Argument, degree>::Evaluate(
-          coefficients, argument);
-    }
-  }
-}
-
-template<typename Value, typename Argument, int degree>
-  requires additive_group<Argument>
-Derivative<Value, Argument>
-Evaluator<Value, Argument, degree>::EvaluateDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument,
-    not_null<Evaluator const*> const evaluator) {
-  // For some reason using a simpler control flow for `degree <= 3`, like we do
-  // above, degrades the performance of `Evaluate`.  So let's not do that.
-  if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
-    return Estrin<Value, Argument, degree>::EvaluateDerivative(
-        coefficients, argument);
-  } else if (evaluator == Horner<Value, Argument, degree>::Singleton()) {
-    return Horner<Value, Argument, degree>::EvaluateDerivative(
-        coefficients, argument);
-  } else if (evaluator ==
-             EstrinWithoutFMA<Value, Argument, degree>::Singleton()) {
-    return EstrinWithoutFMA<Value, Argument, degree>::EvaluateDerivative(
-        coefficients, argument);
-  } else {
-    /*evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
-    return HornerWithoutFMA<Value, Argument, degree>::EvaluateDerivative(
-        coefficients, argument);
-  }
-}
-
-template<typename Value, typename Argument, int degree>
-  requires additive_group<Argument>
-void Evaluator<Value, Argument, degree>::EvaluateWithDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument,
-    not_null<Evaluator const*> const evaluator,
-    Value& value,
-    Derivative<Value, Argument>& derivative) {
-  // For some reason using a simpler control flow for `degree <= 3`, like we do
-  // above, degrades the performance of `Evaluate`.  So let's not do that.
-  if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
-    return Estrin<Value, Argument, degree>::EvaluateWithDerivative(
-        coefficients, argument, value, derivative);
-  } else if (evaluator == Horner<Value, Argument, degree>::Singleton()) {
-    return Horner<Value, Argument, degree>::EvaluateWithDerivative(
-        coefficients, argument, value, derivative);
-  } else if (evaluator ==
-             EstrinWithoutFMA<Value, Argument, degree>::Singleton()) {
-    return EstrinWithoutFMA<Value, Argument, degree>::EvaluateWithDerivative(
-        coefficients, argument, value, derivative);
-  } else {
-    /*evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
-    return HornerWithoutFMA<Value, Argument, degree>::EvaluateWithDerivative(
-        coefficients, argument, value, derivative);
-  }
-}
-
-template<typename Value, typename Argument, int degree>
-  requires additive_group<Argument>
-void Evaluator<Value, Argument, degree>::WriteToMessage(
-    not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message,
-    not_null<Evaluator const*> evaluator) {
-  serialization::PolynomialInMonomialBasis::Evaluator::Kind kind;
-  if (evaluator == Estrin<Value, Argument, degree>::Singleton()) {
-    kind = serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN;
-  } else if (evaluator == Horner<Value, Argument, degree>::Singleton()) {
-    kind = serialization::PolynomialInMonomialBasis::Evaluator::HORNER;
-  } else if (evaluator ==
-             EstrinWithoutFMA<Value, Argument, degree>::Singleton()) {
-    kind =
-        serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN_WITHOUT_FMA;
-  } else {
-    /*evaluator == HornerWithoutFMA<Value, Argument, degree>::Singleton())*/
-    kind =
-        serialization::PolynomialInMonomialBasis::Evaluator::HORNER_WITHOUT_FMA;
-  }
-  message->set_kind(kind);
-}
-
-template<typename Value, typename Argument, int degree>
-  requires additive_group<Argument>
-not_null<Evaluator<Value, Argument, degree> const*>
-Evaluator<Value, Argument, degree>::ReadFromMessage(
-    serialization::PolynomialInMonomialBasis::Evaluator const& message) {
-  switch (message.kind()) {
-    case serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN:
-      return Estrin<Value, Argument, degree>::Singleton();
-    case serialization::PolynomialInMonomialBasis::Evaluator::HORNER:
-      return Horner<Value, Argument, degree>::Singleton();
-    case serialization::PolynomialInMonomialBasis::Evaluator::
-        ESTRIN_WITHOUT_FMA:
-      return EstrinWithoutFMA<Value, Argument, degree>::Singleton();
-    case serialization::PolynomialInMonomialBasis::Evaluator::
-        HORNER_WITHOUT_FMA:
-      return HornerWithoutFMA<Value, Argument, degree>::Singleton();
-  }
-  LOG(FATAL) << "Unexpected evaluator " << message.DebugString();
-}
-
-template<typename Value, typename Argument, int degree,
-         FMAPolicy fma_policy, FMAPresence fma_presence>
-class EstrinEvaluator : public Evaluator<Value, Argument, degree> {
- public:
-  using Coefficients =
-      typename Evaluator<Value, Argument, degree>::Coefficients;
-
-  static constexpr Evaluator<Value, Argument, degree> const* Singleton();
-
-  FORCE_INLINE(static) Value
-  Evaluate(Coefficients const& coefficients,
-           Argument const& argument);
-  FORCE_INLINE(static) Derivative<Value, Argument>
-  EvaluateDerivative(Coefficients const& coefficients,
-                     Argument const& argument);
-  FORCE_INLINE(static) void
-  EvaluateWithDerivative(Coefficients const& coefficients,
-                         Argument const& argument,
-                         Value& value,
-                         Derivative<Value, Argument>& derivative);
-
- private:
-  EstrinEvaluator() = default;
-};
-
-template<typename Value, typename Argument, int degree,
-         FMAPolicy fma_policy, FMAPresence fma_presence>
-constexpr Evaluator<Value, Argument, degree> const*
-EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
-Singleton() {
-  static constexpr EstrinEvaluator singleton;
-  return &singleton;
 }
 
 template<typename Value, typename Argument, int degree,
@@ -551,37 +376,21 @@ EvaluateWithDerivative(Coefficients const& coefficients,
 
 template<typename Value, typename Argument, int degree,
          FMAPolicy fma_policy, FMAPresence fma_presence>
-class HornerEvaluator : public Evaluator<Value, Argument, degree> {
- public:
-  using Coefficients =
-      typename Evaluator<Value, Argument, degree>::Coefficients;
-
-  static constexpr Evaluator<Value, Argument, degree> const* Singleton();
-
-  FORCE_INLINE(static) Value
-  Evaluate(Coefficients const& coefficients,
-           Argument const& argument);
-  FORCE_INLINE(static) Derivative<Value, Argument>
-  EvaluateDerivative(Coefficients const& coefficients,
-                     Argument const& argument);
-  FORCE_INLINE(static) void
-  EvaluateWithDerivative(Coefficients const& coefficients,
-                         Argument const& argument,
-                         Value& value,
-                         Derivative<Value, Argument>& derivative);
-
- private:
-  HornerEvaluator() = default;
-};
-
-template<typename Value, typename Argument, int degree,
-         FMAPolicy fma_policy, FMAPresence fma_presence>
-constexpr Evaluator<Value, Argument, degree> const*
-HornerEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
-Singleton() {
-  static constexpr HornerEvaluator singleton;
-  return &singleton;
+void EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+WriteToMessage(
+    not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message) {
+  switch (fma_policy) {
+    case FMAPolicy::Auto:
+      message->set_kind(
+          serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN);
+      break;
+    case FMAPolicy::Disallow:
+      message->set_kind(serialization::PolynomialInMonomialBasis::Evaluator::
+                            ESTRIN_WITHOUT_FMA);
+      break;
+  }
 }
+
 
 template<typename Value, typename Argument, int degree,
          FMAPolicy fma_policy, FMAPresence fma_presence>
@@ -667,6 +476,23 @@ EvaluateWithDerivative(Coefficients const& coefficients,
                                 /*fma=*/false,
                                 /*low=*/1>::EvaluateDerivative(coefficients,
                                                                argument);
+  }
+}
+
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
+void HornerEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+WriteToMessage(
+    not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message) {
+  switch (fma_policy) {
+    case FMAPolicy::Auto:
+      message->set_kind(
+          serialization::PolynomialInMonomialBasis::Evaluator::HORNER);
+      break;
+    case FMAPolicy::Disallow:
+      message->set_kind(serialization::PolynomialInMonomialBasis::Evaluator::
+                            HORNER_WITHOUT_FMA);
+      break;
   }
 }
 
