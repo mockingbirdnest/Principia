@@ -28,7 +28,8 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
         PolynomialInMonomialBasis<Value, Argument, value>::         \
             template ReadFromMessage<Evaluator>(message))
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>
 Polynomial<Value_, Argument_>::ReadFromMessage(
     serialization::Polynomial const& message) {
@@ -64,7 +65,8 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
   }
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 template<template<typename, typename, int> typename Evaluator>
 not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>
 Polynomial<Value_, Argument_>::ReadFromMessage(

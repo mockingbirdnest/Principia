@@ -156,9 +156,11 @@ template<typename V>
 concept real_vector_space = vector_space<V, double>;
 
 template<typename A, typename K>
-concept affine_space = affine<A> && requires(A x, A y) {
-  { x - y } -> vector_space<K>;
-};
+concept affine_space = affine<A> && field<K> && vector_space<Difference<A>, K>;
+
+template<typename A, typename K>
+concept homogeneous_affine_space = affine<A> && homogeneous_field<K> &&
+                                   homogeneous_vector_space<Difference<A>, K>;
 
 template<typename V>
 concept real_affine_space = affine_space<V, double>;
@@ -175,6 +177,7 @@ using internal::affine;
 using internal::affine_space;
 using internal::field;
 using internal::hilbert;
+using internal::homogeneous_affine_space;
 using internal::homogeneous_field;
 using internal::homogeneous_ring;
 using internal::homogeneous_vector_space;

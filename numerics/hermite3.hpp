@@ -19,7 +19,7 @@ using namespace principia::geometry::_hilbert;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 class Hermite3 final {
   using NormType = typename Hilbert<Difference<Value_>>::NormType;
 

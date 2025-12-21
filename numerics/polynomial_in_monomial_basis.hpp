@@ -25,6 +25,11 @@
 
 // The presence of an operator+ below causes a bizarre compilation error in
 // seemingly unrelated code in PolynomialTestInMonomialBasis.VectorSpace.
+// In recent versions of Visual Studio, this problem has been resolved; however,
+// adding constraints to Polynomial brings it back unless the relevant operators
+// are constrained.  The use of `affine` on the operator+ declared within
+// #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS below is
+// load-bearing.
 #define PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS \
   !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036 || \
                                 _MSC_FULL_VER == 192'930'037 || \
@@ -239,7 +244,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       PolynomialInMonomialBasis<L, A, l> const& left,
       PolynomialInMonomialBasis<R, A, r> const& right);
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-  template<typename V, typename A, int l>
+  template<affine V, affine A, int l>
   constexpr PolynomialInMonomialBasis<V, A, l>
   friend operator+(
       PolynomialInMonomialBasis<Difference<V>, A, l> const& left,
@@ -333,7 +338,7 @@ operator*(PolynomialInMonomialBasis<LValue, Argument, ldegree_> const& left,
 // Additive operators polynomial ± constant.
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-template<typename Value, typename Argument, int ldegree_>
+template<affine Value, affine Argument, int ldegree_>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_>
 operator+(PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     ldegree_> const& left,

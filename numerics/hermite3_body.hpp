@@ -15,7 +15,7 @@ namespace internal {
 
 using namespace principia::numerics::_root_finders;
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 Hermite3<Value_, Argument_>::Hermite3(
     std::pair<Argument, Argument> arguments,
     std::pair<Value, Value> const& values,
@@ -45,13 +45,13 @@ Hermite3<Value_, Argument_>::Hermite3(
             (derivatives.first + derivatives.second) * one_over_Δargument²;
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 Value_ Hermite3<Value_, Argument_>::Evaluate(Argument const& argument) const {
   Difference<Argument> const Δargument = argument - arguments_.first;
   return (((a3_ * Δargument + a2_) * Δargument) + a1_) * Δargument + a0_;
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 typename Hermite3<Value_, Argument_>::Derivative1
 Hermite3<Value_, Argument_>::
 EvaluateDerivative(Argument const& argument) const {
@@ -59,13 +59,13 @@ EvaluateDerivative(Argument const& argument) const {
   return ((3.0 * a3_ * Δargument + 2.0 * a2_) * Δargument) + a1_;
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
   return SolveQuadraticEquation<Argument, Derivative1>(
       arguments_.first, a1_, 2.0 * a2_, 3.0 * a3_);
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 template<typename Samples>
 auto Hermite3<Value_, Argument_>::LInfinityError(
     Samples const& samples,
@@ -82,7 +82,7 @@ auto Hermite3<Value_, Argument_>::LInfinityError(
   return result;
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 template<typename Samples>
 bool Hermite3<Value_, Argument_>::LInfinityErrorIsWithin(
     Samples const& samples,

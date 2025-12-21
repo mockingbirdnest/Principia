@@ -17,9 +17,8 @@ namespace internal {
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 
-// `Value_` must belong to an affine space.  `Argument_` must belong to a ring
-// or to Point based on a ring.
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 class Polynomial {
  public:
   using Argument = Argument_;

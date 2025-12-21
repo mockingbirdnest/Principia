@@ -708,7 +708,7 @@ operator*(PolynomialInMonomialBasis<LValue, Argument, ldegree_> const& left,
 }
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-template<typename Value, typename Argument, int ldegree_>
+template<affine Value, affine Argument, int ldegree_>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_>
 operator+(
     PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree_> const&
