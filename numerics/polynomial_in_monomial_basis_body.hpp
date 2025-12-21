@@ -328,12 +328,15 @@ Policy::WithEvaluator(
     const {
   switch (kind_) {
     case serialization::PolynomialInMonomialBasis::Policy::
-        ALWAYS_ESTRIN_WITHOUT_FMA:
-      return make_not_null_unique<Polynomial<Value, Argument>>(
-          std::move(polynomial).template WithEvaluator<EstrinWithoutFMA>());
-    case serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN:
-      return make_not_null_unique<Polynomial<Value, Argument>>(
-          std::move(polynomial).template WithEvaluator<Estrin>());
+        ALWAYS_ESTRIN_WITHOUT_FMA: {
+      auto result =
+          std::move(polynomial).template WithEvaluator<EstrinWithoutFMA>();
+      return make_not_null_unique<decltype(result)>(std::move(result));
+    }
+    case serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN: {
+      auto result = std::move(polynomial).template WithEvaluator<Estrin>();
+      return make_not_null_unique<decltype(result)>(std::move(result));
+    }
   }
   LOG(FATAL) << "Unexpected policy " << kind_;
 }
@@ -528,7 +531,7 @@ Integrate(Argument const& argument1,
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 template<template<typename, typename, int> typename OtherEvaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, OtherEvaluator>&&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, OtherEvaluator>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 WithEvaluator() && {
   return PolynomialInMonomialBasis<Value, Argument, degree_, OtherEvaluator>(

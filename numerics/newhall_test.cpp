@@ -79,7 +79,7 @@ class MonomialAdapter {
 
  private:
   using P =
-      PolynomialInMonomialBasis<Value, Instant, degree>;
+      PolynomialInMonomialBasis<Value, Instant, degree, Estrin>;
   explicit MonomialAdapter(P const& polynomial);
 
   P polynomial_;
@@ -124,10 +124,9 @@ MonomialAdapter<Value, degree>::NewhallApproximation(
     Instant const& t_max,
     Difference<Value>& error_estimate) {
   return MonomialAdapter(
-      NewhallApproximationInMonomialBasis<Value, degree>(
+      NewhallApproximationInMonomialBasis<Value, degree, Estrin>(
           q, v,
           t_min, t_max,
-          Policy::AlwaysEstrin(),
           error_estimate));
 }
 

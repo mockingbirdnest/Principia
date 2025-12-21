@@ -185,7 +185,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   // Changes the evaluator of this object.  Useful on the result of an operator
   // or of `ReadFromMessage`, as these functions use the default evaluator.
   template<template<typename, typename, int> typename OtherEvaluator>
-  PolynomialInMonomialBasis<Value, Argument, degree_, OtherEvaluator>&&
+  PolynomialInMonomialBasis<Value, Argument, degree_, OtherEvaluator>
   WithEvaluator() &&;
 
   void WriteToMessage(
