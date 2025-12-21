@@ -7,16 +7,15 @@
 #include <utility>
 
 #include "absl/container/btree_set.h"
+#include "base/algebra.hpp"
 #include "base/multiprecision.hpp"
 #include "base/tags.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/root_finders.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -25,6 +24,7 @@ namespace numerics {
 namespace _matrix_computations {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_multiprecision;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_elementary_functions;
@@ -33,7 +33,6 @@ using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_root_finders;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 

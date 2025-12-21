@@ -1,7 +1,5 @@
 #include "base/multiprecision.hpp"
 
-#include "boost/multiprecision/cpp_bin_float.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "gtest/gtest.h"
 
 namespace principia {

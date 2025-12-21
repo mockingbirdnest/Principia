@@ -18,6 +18,7 @@
     <ClCompile Include="elementary_functions_nanobenchmark.cpp" />
     <ClCompile Include="examples_nanobenchmark.cpp" />
     <ClCompile Include="flag_parsing.cpp" />
+    <ClCompile Include="hermite3_nanobenchmark.cpp" />
     <ClCompile Include="latency_distribution_table.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="nanobenchmark.cpp" />

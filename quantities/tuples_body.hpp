@@ -1,6 +1,6 @@
 #pragma once
 
-#include "quantities/arithmetic.hpp"
+#include "base/algebra.hpp"
 #include "quantities/tuples.hpp"
 
 #include <algorithm>
@@ -15,7 +15,7 @@ namespace quantities {
 namespace _tuples {
 namespace internal {
 
-using namespace principia::quantities::_arithmetic;
+using namespace principia::base::_algebra;
 
 // A helper for getting the type of an element even for an index that is not in
 // range.  In that case, the member Type is defined to be void.  Doing this with

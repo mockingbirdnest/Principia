@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/algebra.hpp"
 #include "base/concepts.hpp"
 #include "base/mappable.hpp"
 #include "base/not_null.hpp"
@@ -10,7 +11,6 @@
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
-#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace geometry {
@@ -29,6 +29,7 @@ FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
 namespace _conformal_map {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_concepts;
 using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
@@ -39,7 +40,6 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
-using namespace principia::quantities::_arithmetic;
 
 // This is really a *linear* conformal map, but we don't call it
 // LinearConformalMap because that's a mouthful.

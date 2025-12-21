@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "geometry/complexification.hpp"
@@ -15,7 +16,6 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/numerics.pb.h"
@@ -45,13 +45,13 @@ namespace numerics {
 namespace _poisson_series {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -110,7 +110,7 @@ class PoissonSeries {
                 aperiodic_degree_ + 1, periodic_degree_ + 1>
   Primitive() const;
 
-  quantities::_arithmetic::Primitive<Value, Time> Integrate(
+  base::_algebra::Primitive<Value, Time> Integrate(
       Instant const& t1,
       Instant const& t2) const;
 

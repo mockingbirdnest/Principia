@@ -7,9 +7,9 @@
 #include <vector>
 
 #include "astronomy/orbital_elements.hpp"
+#include "base/algebra.hpp"
 #include "base/multiprecision.hpp"
 #include "base/traits.hpp"
-#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
@@ -26,7 +26,6 @@
 #include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/tuples.hpp"
@@ -37,6 +36,7 @@ namespace _mathematica {
 namespace internal {
 
 using namespace principia::astronomy::_orbital_elements;
+using namespace principia::base::_algebra;
 using namespace principia::base::_multiprecision;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
@@ -55,7 +55,6 @@ using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_tuples;
@@ -183,11 +182,10 @@ std::string ToMathematica(T real,
                           OptionalExpressIn express_in = std::nullopt,
                           std::int64_t base = 16);
 
-template<typename OptionalExpressIn = std::nullopt_t>
-std::string ToMathematica(
-    cpp_bin_float_50 const& cpp_bin_float,
-    OptionalExpressIn express_in = std::nullopt,
-    std::int64_t base = 16);
+template<unsigned digits, typename OptionalExpressIn = std::nullopt_t>
+std::string ToMathematica(cpp_bin_float<digits> const& cpp_bin_float_number,
+                          OptionalExpressIn express_in = std::nullopt,
+                          std::int64_t base = 16);
 
 template<typename T, std::int64_t size,
          typename OptionalExpressIn = std::nullopt_t>

@@ -1,8 +1,6 @@
 #pragma once
 
 #include "base/multiprecision.hpp"
-#include "boost/multiprecision/cpp_bin_float.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 
 namespace principia {
 namespace functions {

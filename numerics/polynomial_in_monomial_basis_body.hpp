@@ -438,7 +438,7 @@ template<typename Value_, typename Argument_, int degree_>
 void PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 EvaluateWithDerivative(Argument const argument,
                        Value& value,
-                       quantities::_arithmetic::Derivative<Value, Argument>&
+                       base::_algebra::Derivative<Value, Argument>&
                            derivative) const {
   Evaluator<Value, Difference<Argument>, degree_>::EvaluateWithDerivative(
       coefficients_, argument - origin_, evaluator_, value, derivative);
@@ -486,7 +486,7 @@ PolynomialInMonomialBasis<
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::
 Derivative() const {
   return PolynomialInMonomialBasis<
-             quantities::_arithmetic::Derivative<Value, Argument, order>,
+             base::_algebra::Derivative<Value, Argument, order>,
              Argument,
              degree_ - order>(
              TupleDerivation<Coefficients, order>::Derive(coefficients_),
@@ -498,7 +498,7 @@ PolynomialInMonomialBasis<Primitive<Value_, Argument_>, Argument_, degree_ + 1>
 PolynomialInMonomialBasis<Value_, Argument_, degree_>::Primitive() const
   requires additive_group<Value> {
   return PolynomialInMonomialBasis<
-             quantities::_arithmetic::Primitive<Value, Argument>,
+             base::_algebra::Primitive<Value, Argument>,
              Argument,
              degree_ + 1>(
              TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),

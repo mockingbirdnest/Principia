@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/algebra.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/sign.hpp"
@@ -11,7 +12,6 @@
 #include "numerics/elementary_functions.hpp"
 #include "numerics/elliptic_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -19,6 +19,7 @@ namespace physics {
 namespace _euler_solver {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_sign;
@@ -26,7 +27,6 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_elliptic_functions;
 using namespace principia::numerics::_elliptic_integrals;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
@@ -393,7 +393,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
      _MSC_FULL_VER == 194'334'809 || \
      _MSC_FULL_VER == 194'435'211 || \
      _MSC_FULL_VER == 194'435'213 || \
-     _MSC_FULL_VER == 194'435'221)
+     _MSC_FULL_VER == 194'435'221 || \
+     _MSC_FULL_VER == 194'435'222)
       std::abort();
 #endif
   }

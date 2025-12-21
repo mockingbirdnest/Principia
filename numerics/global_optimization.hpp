@@ -6,10 +6,10 @@
 #include <random>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/nearest_neighbour.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -17,10 +17,10 @@ namespace numerics {
 namespace _global_optimization {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_nearest_neighbour;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 // In this file `Argument` must be such that its difference belongs to a Hilbert

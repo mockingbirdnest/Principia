@@ -1,8 +1,8 @@
 #pragma once
 
+#include "base/algebra.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -11,9 +11,9 @@ namespace physics {
 namespace _tensors {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_symmetric_bilinear_form;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

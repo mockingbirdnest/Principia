@@ -1,5 +1,6 @@
 #include "physics/similar_motion.hpp"
 
+#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/homothecy.hpp"
@@ -12,7 +13,6 @@
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "physics/rigid_motion.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -21,6 +21,7 @@
 namespace principia {
 namespace physics {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_homothecy;
@@ -33,7 +34,6 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_similar_motion;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

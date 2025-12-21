@@ -8,7 +8,6 @@
 
 #include "absl/strings/strip.h"
 #include "base/multiprecision.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"

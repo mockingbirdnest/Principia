@@ -9,7 +9,6 @@
 #include "absl/synchronization/mutex.h"
 #include "base/bundle.hpp"
 #include "base/multiprecision.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"

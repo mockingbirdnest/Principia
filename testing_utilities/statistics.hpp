@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "quantities/arithmetic.hpp"
+#include "base/algebra.hpp"
 
 // Various statistics on finite populations stored as `std::vector`s of
 // `Quantity` or `Dimensionless`.
@@ -13,7 +13,7 @@ namespace testing_utilities {
 namespace _statistics {
 namespace internal {
 
-using namespace principia::quantities::_arithmetic;
+using namespace principia::base::_algebra;
 
 // The population mean μ(x) = E[x].
 template<typename T>

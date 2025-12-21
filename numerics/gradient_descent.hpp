@@ -3,8 +3,8 @@
 #include <functional>
 
 #include "absl/status/statusor.h"
+#include "base/algebra.hpp"
 #include "geometry/hilbert.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -12,8 +12,8 @@ namespace numerics {
 namespace _gradient_descent {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 // In this file `Argument` must be such that its difference belongs to a Hilbert
