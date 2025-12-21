@@ -321,7 +321,8 @@ std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
 
 template<typename Value, typename Argument, int degree,
          template<typename, typename, int> typename Evaluator_>
-PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&& Policy::WithEvaluator(
+PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&&
+Policy::WithEvaluator(
     PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&& polynomial) const {
   switch (kind_) {
     case serialization::PolynomialInMonomialBasis::Policy::
@@ -526,8 +527,8 @@ template<template<typename, typename, int> typename OtherEvaluator>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, OtherEvaluator>&&
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 WithEvaluator() && {
-  evaluator_ = SpecificEvaluator<Value_, Difference<Argument_>, degree_>::Singleton();
-  return std::move(*this);
+  return PolynomialInMonomialBasis<Value, Argument, degree_, OtherEvaluator>(
+      std::move(coefficients_), std::move(origin_));
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -544,9 +545,8 @@ void PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
         Argument,
         serialization::PolynomialInMonomialBasis>::WriteToMessage(origin_,
                                                                   extension);
-    PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-        template Evaluator<Value_, Difference<Argument_>, degree_>::
-            WriteToMessage(extension->mutable_evaluator(), evaluator_);
+    Evaluator<Value_, Difference<Argument_>, degree_>::WriteToMessage(
+        extension->mutable_evaluator());
   }
 }
 

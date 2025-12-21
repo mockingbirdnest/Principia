@@ -19,6 +19,7 @@
 #include "geometry/concepts.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
+#include "numerics/fma.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/arithmetic.hpp"
 #include "quantities/tuples.hpp"
@@ -73,6 +74,7 @@ using namespace principia::base::_traits;
 using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
+using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_arithmetic;
@@ -103,9 +105,18 @@ class Policy {
   serialization::PolynomialInMonomialBasis::Policy::Kind kind_;
 };
 
+template<typename Value, typename Argument, int degree>
+using DefaultEvaluator =
+    std::conditional_t<degree <= 3,
+                       HornerEvaluator<Value, Argument, degree,
+                                       FMAPolicy::Auto, FMAPresence::Unknown>,
+                       EstrinEvaluator<Value, Argument, degree,
+                                       FMAPolicy::Auto, FMAPresence::Unknown>>;
+
 
 template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator_>
+         template<typename, typename, int> typename Evaluator_ =
+             DefaultEvaluator>
 class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
  public:
   using Argument = Argument_;
