@@ -287,15 +287,17 @@ std::string ToMathematica(DiscreteTrajectoryValueType<F> const& v,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, typename A, int d,
+         template<typename, typename, int> typename E,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematicaBody(
-    PolynomialInMonomialBasis<V, A, d> const& polynomial,
+    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in);
 
 template<typename V, typename A, int d,
+         template<typename, typename, int> typename E,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(
-    PolynomialInMonomialBasis<V, A, d> const& polynomial,
+    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in = std::nullopt);
 
 template<typename V, typename A, int d,

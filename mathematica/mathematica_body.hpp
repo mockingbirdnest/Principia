@@ -85,42 +85,6 @@ struct TupleHelper<0, Tuple, OptionalExpressIn> : not_constructible {
                                    OptionalExpressIn express_in) {}
 };
 
-template<typename V, typename A, int d,
-         typename OptionalExpressIn>
-std::string ToMathematicaBody(
-    PolynomialInMonomialBasis<V, A, d> const& polynomial,
-    OptionalExpressIn express_in) {
-  using Coefficients =
-      typename PolynomialInMonomialBasis<V, A, d>::Coefficients;
-  std::vector<std::string> coefficients;
-  coefficients.reserve(std::tuple_size_v<Coefficients>);
-  TupleHelper<std::tuple_size_v<Coefficients>,
-              Coefficients,
-              OptionalExpressIn>::ToMathematicaStrings(polynomial.coefficients_,
-                                                       coefficients,
-                                                       express_in);
-  std::string argument;
-  if constexpr (is_instance_of_v<Point, A>) {
-    argument = RawApply("Subtract",
-                        {"#", ToMathematica(polynomial.origin_, express_in)});
-  } else {
-    argument = "#";
-  }
-  std::vector<std::string> monomials;
-  for (int i = 0; i < coefficients.size(); ++i) {
-    if (i == 0) {
-      monomials.push_back(coefficients[i]);
-    } else if (i == 1) {
-      monomials.push_back(RawApply("Times", {coefficients[i], argument}));
-    } else {
-      monomials.push_back(RawApply(
-          "Times",
-          {coefficients[i], RawApply("Power", {argument, std::to_string(i)})}));
-    }
-  }
-  return RawApply("Plus", monomials);
-}
-
 template<typename R, typename I>
 std::string ToMathematica(R const real,
                           std::int64_t base,
@@ -197,29 +161,6 @@ std::string ToMathematica(R const real,
                              ToMathematica(exponent_offset)})})});
   }
   return signbit(real) ? RawApply("Minus", {absolute_value}) : absolute_value;
-}
-
-template<typename V, typename A, int d,
-         typename OptionalExpressIn>
-std::string ToMathematicaBody(
-    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
-    OptionalExpressIn express_in) {
-  auto const& a = polynomial.lower_bound();
-  auto const& b = polynomial.upper_bound();
-  auto const midpoint = Barycentre({a, b});
-  std::string const argument = RawApply(
-      "Divide",
-      {RawApply("Subtract", {"#", ToMathematica(midpoint, express_in)}),
-       ToMathematica((b - a) / 2.0, express_in)});
-  std::vector<std::string> terms;
-  auto const& coefficients = polynomial.coefficients_;
-  for (int i = 0; i < coefficients.size(); ++i) {
-    terms.push_back(RawApply(
-        "Times",
-        {ToMathematica(coefficients[i], express_in),
-         RawApply("ChebyshevT", {ToMathematica(i, express_in), argument})}));
-  }
-  return RawApply("Plus", terms);
 }
 
 template<typename V, int ad, int pd,
@@ -639,11 +580,72 @@ std::string ToMathematica(DiscreteTrajectoryValueType<F> const& v,
 }
 
 template<typename V, typename A, int d,
+         template<typename, typename, int> typename E,
+         typename OptionalExpressIn>
+std::string ToMathematicaBody(
+    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
+    OptionalExpressIn express_in) {
+  using Coefficients =
+      typename PolynomialInMonomialBasis<V, A, d>::Coefficients;
+  std::vector<std::string> coefficients;
+  coefficients.reserve(std::tuple_size_v<Coefficients>);
+  TupleHelper<std::tuple_size_v<Coefficients>,
+              Coefficients,
+              OptionalExpressIn>::ToMathematicaStrings(polynomial.coefficients_,
+                                                       coefficients,
+                                                       express_in);
+  std::string argument;
+  if constexpr (is_instance_of_v<Point, A>) {
+    argument = RawApply("Subtract",
+                        {"#", ToMathematica(polynomial.origin_, express_in)});
+  } else {
+    argument = "#";
+  }
+  std::vector<std::string> monomials;
+  for (int i = 0; i < coefficients.size(); ++i) {
+    if (i == 0) {
+      monomials.push_back(coefficients[i]);
+    } else if (i == 1) {
+      monomials.push_back(RawApply("Times", {coefficients[i], argument}));
+    } else {
+      monomials.push_back(RawApply(
+          "Times",
+          {coefficients[i], RawApply("Power", {argument, std::to_string(i)})}));
+    }
+  }
+  return RawApply("Plus", monomials);
+}
+
+template<typename V, typename A, int d,
+         template<typename, typename, int> typename E,
          typename OptionalExpressIn>
 std::string ToMathematica(
-    PolynomialInMonomialBasis<V, A, d> const& polynomial,
+    PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in) {
   return RawApply("Function", {ToMathematicaBody(polynomial, express_in)});
+}
+
+template<typename V, typename A, int d,
+         typename OptionalExpressIn>
+std::string ToMathematicaBody(
+    PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
+    OptionalExpressIn express_in) {
+  auto const& a = polynomial.lower_bound();
+  auto const& b = polynomial.upper_bound();
+  auto const midpoint = Barycentre({a, b});
+  std::string const argument = RawApply(
+      "Divide",
+      {RawApply("Subtract", {"#", ToMathematica(midpoint, express_in)}),
+       ToMathematica((b - a) / 2.0, express_in)});
+  std::vector<std::string> terms;
+  auto const& coefficients = polynomial.coefficients_;
+  for (int i = 0; i < coefficients.size(); ++i) {
+    terms.push_back(RawApply(
+        "Times",
+        {ToMathematica(coefficients[i], express_in),
+         RawApply("ChebyshevT", {ToMathematica(i, express_in), argument})}));
+  }
+  return RawApply("Plus", terms);
 }
 
 template<typename V, typename A, int d,

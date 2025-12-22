@@ -45,7 +45,7 @@
 namespace principia {
 namespace numerics {
 FORWARD_DECLARE(
-    TEMPLATE(typename Value, typename Argument, int degree_,
+    TEMPLATE(typename Value, typename Argument, int degree,
              TEMPLATE(typename, typename, int) typename Evaluator) class,
     PolynomialInMonomialBasis,
     FROM(polynomial_in_monomial_basis));
@@ -53,12 +53,12 @@ FORWARD_DECLARE(
 
 namespace mathematica {
 FORWARD_DECLARE_FUNCTION(
-    TEMPLATE(typename Value, typename Argument, int degree_,
-             TEMPLATE(typename, typename, int) typename Evaluator_,
+    TEMPLATE(typename Value, typename Argument, int degree,
+             TEMPLATE(typename, typename, int) typename Evaluator,
              typename OptionalExpressIn) std::string,
     ToMathematicaBody,
     (numerics::_polynomial_in_monomial_basis::
-        PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator_> const&
+        PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const&
             polynomial,
     OptionalExpressIn express_in),
     FROM(mathematica));
