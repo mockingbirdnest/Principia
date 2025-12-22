@@ -538,12 +538,9 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
         Polynomial<Displacement<World>, Instant>::ReadFromMessage<Horner>(
             compatibility_message);
     EXPECT_EQ(2, polynomial_read->degree());
-    *polynomial_read =
-        std::move(
-            dynamic_cast<
-                PolynomialInMonomialBasis<Displacement<World>, Instant, 2>&>(
-                *polynomial_read))
-            .template WithEvaluator<Horner>();
+    *polynomial_read = dynamic_cast<
+        PolynomialInMonomialBasis<Displacement<World>, Instant, 2, Horner>&>(
+        *polynomial_read);
     EXPECT_THAT(
         (*polynomial_read)(Instant() + 0.5 * Second),
         AlmostEquals(
@@ -567,16 +564,16 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
     EXPECT_TRUE(extension.has_quantity());
+    EXPECT_TRUE(extension.has_evaluator());
+    EXPECT_EQ(serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN,
+              extension.evaluator().kind());
 
     auto const polynomial_read =
         Polynomial<Displacement<World>, Time>::ReadFromMessage(message);
     EXPECT_EQ(17, polynomial_read->degree());
-    *polynomial_read =
-        std::move(
-            dynamic_cast<
-                PolynomialInMonomialBasis<Displacement<World>, Time, 17>&>(
-                *polynomial_read))
-            .template WithEvaluator<Estrin>();
+    *polynomial_read = dynamic_cast<
+        PolynomialInMonomialBasis<Displacement<World>, Time, 17, Estrin>&>(
+        *polynomial_read);
     EXPECT_THAT((*polynomial_read)(0.5 * Second),
                 AlmostEquals(
                     Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}), 0));
