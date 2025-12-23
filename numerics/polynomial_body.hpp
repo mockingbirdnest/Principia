@@ -16,12 +16,25 @@ namespace internal {
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
-#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
-  case value:                                                          \
-    return make_not_null_unique<                                       \
-        PolynomialInMonomialBasis<Value, Argument, value, Evaluator>>( \
-        PolynomialInMonomialBasis<Value, Argument, value, Evaluator>:: \
-            ReadFromMessage(message))
+template<typename Value_, typename Argument_>
+Value_ PRINCIPIA_VECTORCALL
+Polynomial<Value_, Argument_>::operator()(Argument argument) const {
+  return VirtualEvaluate(argument);
+}
+
+template<typename Value_, typename Argument_>
+Derivative<Value_, Argument_> PRINCIPIA_VECTORCALL
+Polynomial<Value_, Argument_>::EvaluateDerivative(Argument argument) const {
+  return VirtualEvaluateDerivative(argument);
+}
+
+template<typename Value_, typename Argument_>
+void PRINCIPIA_VECTORCALL Polynomial<Value_, Argument_>::EvaluateWithDerivative(
+    Argument argument,
+    Value& value,
+    Derivative<Value, Argument>& derivative) const {
+  VirtualEvaluateWithDerivative(argument, value, derivative);
+}
 
 template<typename Value_, typename Argument_>
 not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>
@@ -51,6 +64,13 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
       LOG(FATAL) << "Unexpected evaluator " << message.DebugString();
   }
 }
+
+#define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
+  case value:                                                          \
+    return make_not_null_unique<                                       \
+        PolynomialInMonomialBasis<Value, Argument, value, Evaluator>>( \
+        PolynomialInMonomialBasis<Value, Argument, value, Evaluator>:: \
+            ReadFromMessage(message))
 
 template<typename Value_, typename Argument_>
 template<template<typename, typename, int> typename Evaluator>
@@ -90,7 +110,6 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
 }
 
 #undef PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE
-#undef PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_COMPATIBILITY_CASE
 
 }  // namespace internal
 }  // namespace _polynomial

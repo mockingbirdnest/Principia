@@ -148,14 +148,14 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
 
-  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const final;
+  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const;
   Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
-      Argument argument) const override;
+      Argument argument) const;
 
   void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
       Argument argument,
       Value& value,
-      Derivative<Value, Argument>& derivative) const override;
+      Derivative<Value, Argument>& derivative) const;
 
   constexpr int degree() const override;
   bool is_zero() const override;
@@ -193,6 +193,19 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
+
+ protected:
+  // We redefined the good name `Derivative` above, so here we are...
+  template<typename V, typename A>
+  using D = principia::quantities::_arithmetic::Derivative<V, A>;
+
+  Value PRINCIPIA_VECTORCALL VirtualEvaluate(Argument argument) const override;
+  D<Value, Argument> PRINCIPIA_VECTORCALL
+  VirtualEvaluateDerivative(Argument argument) const override;
+  void PRINCIPIA_VECTORCALL
+  VirtualEvaluateWithDerivative(Argument argument,
+                                Value& value,
+                                D<Value, Argument>& derivative) const override;
 
  private:
   Coefficients coefficients_;

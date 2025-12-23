@@ -599,6 +599,32 @@ ReadFromMessage(serialization::Polynomial const& message) {
   return PolynomialInMonomialBasis(coefficients, origin);
 }
 
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+Value_ PRINCIPIA_VECTORCALL
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+VirtualEvaluate(Argument argument) const {
+  return (*this)(argument);
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+Derivative<Value_, Argument_> PRINCIPIA_VECTORCALL
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+VirtualEvaluateDerivative(Argument argument) const {
+  return EvaluateDerivative(argument);
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+void PRINCIPIA_VECTORCALL
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+VirtualEvaluateWithDerivative(Argument argument,
+                              Value& value,
+                              D<Value, Argument>& derivative) const {
+  return EvaluateWithDerivative(argument, value, derivative);
+}
+
 template<typename Value, typename Argument, int rdegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>
