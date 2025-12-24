@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "base/concepts.hpp"
+#include "base/multiprecision.hpp"
 #include "glog/logging.h"
 
 namespace principia {
@@ -12,7 +12,7 @@ namespace geometry {
 namespace _interval {
 namespace internal {
 
-using namespace principia::base::_concepts;
+using namespace principia::base::_multiprecision;
 
 template<typename T>
 Difference<T> Interval<T>::measure() const {

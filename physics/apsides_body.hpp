@@ -7,6 +7,7 @@
 #include <optional>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/array.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3_element.hpp"
@@ -17,7 +18,6 @@
 #include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -26,6 +26,7 @@ namespace physics {
 namespace _apsides {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_array;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_r3_element;
@@ -36,7 +37,6 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 

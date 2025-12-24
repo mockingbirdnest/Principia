@@ -13,6 +13,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
+#include "base/algebra.hpp"
 #include "base/jthread.hpp"
 #include "base/map_util.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -26,7 +27,6 @@
 #include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/oblate_body.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -38,6 +38,7 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using namespace principia::astronomy::_epoch;
+using namespace principia::base::_algebra;
 using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::geometry::_barycentre_calculator;
@@ -51,7 +52,6 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::physics::_oblate_body;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_si;
 
 using namespace std::chrono_literals;

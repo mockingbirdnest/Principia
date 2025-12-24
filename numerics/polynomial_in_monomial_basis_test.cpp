@@ -2,8 +2,8 @@
 
 #include <tuple>
 
-#include "boost/multiprecision/cpp_bin_float.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
+#include "base/algebra.hpp"
+#include "base/multiprecision.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -11,7 +11,6 @@
 #include "gtest/gtest.h"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -31,7 +30,8 @@ namespace principia {
 namespace numerics {
 
 using ::testing::Eq;
-using namespace boost::multiprecision;
+using namespace principia::base::_algebra;
+using namespace principia::base::_multiprecision;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -39,7 +39,6 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

@@ -3,33 +3,75 @@
 #include <concepts>
 #include <type_traits>
 
+#include "base/not_constructible.hpp"
 #include "base/traits.hpp"
 
 namespace principia {
-namespace geometry {
-namespace _concepts {
+namespace base {
+namespace _algebra {
 namespace internal {
 
-using namespace base::_traits;
+using namespace principia::base::_not_constructible;
+using namespace principia::base::_traits;
+
+// The result type of + and - on arguments of types `Left` and `Right`.
+template<typename Left, typename Right>
+using Sum = decltype(std::declval<Left>() + std::declval<Right>());
+template<typename Left, typename Right = Left>
+using Difference = decltype(std::declval<Left>() - std::declval<Right>());
+// The result type of * and / on arguments of types `Left` and `Right`.
+template<typename Left, typename Right>
+using Product = decltype(std::declval<Left>() * std::declval<Right>());
+template<typename Left, typename Right>
+using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
+
+template<typename Q>
+using Inverse = Quotient<double, Q>;
+
+template<typename T, int exponent>
+struct ExponentiationGenerator;
+
+// The type of iterated multiplication or division.
+template<typename T, int exponent>
+using Exponentiation = typename ExponentiationGenerator<T, exponent>::type;
+template<typename Q>
+using Square = Exponentiation<Q, 2>;
+template<typename Q>
+using Cube = Exponentiation<Q, 3>;
+
+// The result type of the N-th derivative of a `Value`-valued function with
+// respect to its `Argument`-valued argument.
+template<typename Value, typename Argument, int order = 1>
+using Derivative = typename std::conditional_t<
+    order == 0,
+    Value,
+    Quotient<Difference<Value>, Exponentiation<Difference<Argument>, order>>>;
+
+// The result type of the primitive of a `Value`-valued function with respect to
+// its `Argument`-valued argument.  The primitive of an affine-valued function
+// does not make much sense, but it must compile, hence the Difference.
+template<typename Value, typename Argument>
+using Primitive = Product<Difference<Value>, Difference<Argument>>;
 
 // TODO(egg): additive_group should subsume affine, but we use it there.
-// We use `convertible_to` here because we want this concept to work with
-// Boost multiprecision types which heavily use implicit conversions.
 template<typename G>
 concept additive_group = requires(G x, G y, int n) {
   G{};
+  // For some reason, unary + on a boost number returns a const number.  The
+  // other operators correctly return a number (with et_off).
   { +x } -> std::convertible_to<G>;
-  { -x } -> std::convertible_to<G>;
-  { x + y } -> std::convertible_to<G>;
-  { x - y } -> std::convertible_to<G>;
-  { x += y } -> std::convertible_to<G&>;
-  { x -= y } -> std::convertible_to<G&>;
+  { -x } -> std::same_as<G>;
+  { x + y } -> std::same_as<G>;
+  { x - y } -> std::same_as<G>;
+  { x += y } -> std::same_as<G&>;
+  { x -= y } -> std::same_as<G&>;
   // An abelian group is a ℤ-module; we require the corresponding operations.
-  // Note that `std::integral`, not `int`, should be used when implementing
-  // these operations to avoid implicit conversions from `double`.
-  { n * x } -> std::convertible_to<G>;
-  { x * n } -> std::convertible_to<G>;
-  { x *= n } -> std::convertible_to<G&>;
+  // Note that `std::integral`, not `int`, should be used when
+  // implementing these operations to avoid implicit conversions from
+  // `double`.
+  { n * x } -> std::same_as<G>;
+  { x * n } -> std::same_as<G>;
+  { x *= n } -> std::same_as<G&>;
 };
 
 // A set acted upon simply transitively by an additive group.
@@ -77,12 +119,12 @@ concept field = ring<K> && !std::integral<K> && requires(K x, K y, K z) {
 
 template<typename V, typename K>
 concept vector_space = field<K> && requires(K λ, V v) {
-      { λ * v } -> std::same_as<V>;
-      { v * λ } -> std::same_as<V>;
-      { v / λ } -> std::same_as<V>;
-      { v *= λ } -> std::same_as<V&>;
-      { v /= λ } -> std::same_as<V&>;
-    };
+  { λ * v } -> std::same_as<V>;
+  { v * λ } -> std::same_as<V>;
+  { v / λ } -> std::same_as<V>;
+  { v *= λ } -> std::same_as<V&>;
+  { v /= λ } -> std::same_as<V&>;
+};
 
 // A graded field restricted to its homogeneous elements; multiplication and
 // division can alter the type, and addition is only defined between homogeneous
@@ -114,9 +156,11 @@ template<typename V>
 concept real_vector_space = vector_space<V, double>;
 
 template<typename A, typename K>
-concept affine_space = affine<A> && requires(A x, A y) {
-  { x - y } -> vector_space<K>;
-};
+concept affine_space = affine<A> && field<K> && vector_space<Difference<A>, K>;
+
+template<typename A, typename K>
+concept homogeneous_affine_space = affine<A> && homogeneous_field<K> &&
+                                   homogeneous_vector_space<Difference<A>, K>;
 
 template<typename V>
 concept real_affine_space = affine_space<V, double>;
@@ -131,8 +175,9 @@ concept hilbert = requires(T1 const& t1, T2 const& t2) {
 using internal::additive_group;
 using internal::affine;
 using internal::affine_space;
-using internal::hilbert;
 using internal::field;
+using internal::hilbert;
+using internal::homogeneous_affine_space;
 using internal::homogeneous_field;
 using internal::homogeneous_ring;
 using internal::homogeneous_vector_space;
@@ -140,7 +185,20 @@ using internal::real_affine_space;
 using internal::real_vector_space;
 using internal::ring;
 using internal::vector_space;
+using internal::Cube;
+using internal::Derivative;
+using internal::Difference;
+using internal::Exponentiation;
+using internal::Inverse;
+using internal::Primitive;
+using internal::Product;
+using internal::Quotient;
+using internal::Square;
+using internal::Sum;
 
-}  // namespace _concepts
-}  // namespace geometry
+}  // namespace _algebra
+
+}  // namespace base
 }  // namespace principia
+
+#include "base/algebra_body.hpp"

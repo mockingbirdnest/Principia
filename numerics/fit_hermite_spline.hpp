@@ -3,16 +3,16 @@
 #include <list>
 
 #include "absl/status/statusor.h"
+#include "base/algebra.hpp"
 #include "geometry/hilbert.hpp"
-#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _fit_hermite_spline {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_arithmetic;
 
 // Given `samples` for which the arguments, values, and derivatives can be
 // obtained via the given functors, returns a sequence of iterators

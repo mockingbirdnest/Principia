@@ -16,19 +16,22 @@ namespace internal {
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 Value_ PRINCIPIA_VECTORCALL
 Polynomial<Value_, Argument_>::operator()(Argument argument) const {
   return VirtualEvaluate(argument);
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 Derivative<Value_, Argument_> PRINCIPIA_VECTORCALL
 Polynomial<Value_, Argument_>::EvaluateDerivative(Argument argument) const {
   return VirtualEvaluateDerivative(argument);
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 void PRINCIPIA_VECTORCALL Polynomial<Value_, Argument_>::EvaluateWithDerivative(
     Argument argument,
     Value& value,
@@ -36,7 +39,8 @@ void PRINCIPIA_VECTORCALL Polynomial<Value_, Argument_>::EvaluateWithDerivative(
   VirtualEvaluateWithDerivative(argument, value, derivative);
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>
 Polynomial<Value_, Argument_>::ReadFromMessage(
     serialization::Polynomial const& message) {
@@ -72,7 +76,8 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
         PolynomialInMonomialBasis<Value, Argument, value, Evaluator>:: \
             ReadFromMessage(message))
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 template<template<typename, typename, int> typename Evaluator>
 not_null<std::unique_ptr<Polynomial<Value_, Argument_>>>
 Polynomial<Value_, Argument_>::ReadFromMessage(

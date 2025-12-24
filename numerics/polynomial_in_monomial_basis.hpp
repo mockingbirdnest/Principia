@@ -13,19 +13,23 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/algebra.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
-#include "geometry/concepts.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 
 // The presence of an operator+ below causes a bizarre compilation error in
 // seemingly unrelated code in PolynomialTestInMonomialBasis.VectorSpace.
+// In recent versions of Visual Studio, this problem has been resolved; however,
+// adding constraints to Polynomial brings it back unless the relevant operators
+// are constrained.  The use of `affine` on the operator+ declared within
+// #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS below is
+// load-bearing.
 #define PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS \
   !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036 || \
                                 _MSC_FULL_VER == 192'930'037 || \
@@ -68,14 +72,13 @@ namespace numerics {
 namespace _polynomial_in_monomial_basis {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::base::_traits;
-using namespace principia::geometry::_concepts;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_tuples;
 
 // Used to decide which evaluator to use for a particular polynomial.
@@ -183,7 +186,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   Primitive() const
     requires additive_group<Value>;
 
-  quantities::_arithmetic::Primitive<Value, Argument> Integrate(
+  base::_algebra::Primitive<Value, Argument> Integrate(
       Argument const& argument1,
       Argument const& argument2) const
     requires additive_group<Value>;
@@ -197,7 +200,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
  protected:
   // We redefined the good name `Derivative` above, so here we are...
   template<typename V, typename A>
-  using D = principia::quantities::_arithmetic::Derivative<V, A>;
+  using D = base::_algebra::Derivative<V, A>;
 
   Value PRINCIPIA_VECTORCALL VirtualEvaluate(Argument argument) const override;
   D<Value, Argument> PRINCIPIA_VECTORCALL
@@ -251,7 +254,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-  template<typename V, typename A, int l,
+  template<affine V, affine A, int l,
            template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, l, E>
   friend operator+(
@@ -361,7 +364,7 @@ operator*(PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator_> cons
 // Additive operators polynomial ± constant.
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-template<typename Value, typename Argument, int ldegree_,
+template<affine Value, affine Argument, int ldegree_,
          template<typename, typename, int> typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator_>
 operator+(PolynomialInMonomialBasis<Difference<Value>, Argument,

@@ -1,6 +1,6 @@
 #include "numerics/fixed_arrays.hpp"
 
-#include "geometry/concepts.hpp"
+#include "base/algebra.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -10,7 +10,7 @@
 namespace principia {
 namespace numerics {
 
-using namespace principia::geometry::_concepts;
+using namespace principia::base::_algebra;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;

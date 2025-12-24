@@ -1,25 +1,25 @@
 #pragma once
 
+#include "base/algebra.hpp"
 #include "base/concepts.hpp"
 #include "base/mappable.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/space.hpp"
-#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _homothecy {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_concepts;
 using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_space;
-using namespace principia::quantities::_arithmetic;
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
 class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,

@@ -13,6 +13,7 @@
 #include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/algebra.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
@@ -43,7 +44,6 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -81,6 +81,7 @@ using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_algebra;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
@@ -109,7 +110,6 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

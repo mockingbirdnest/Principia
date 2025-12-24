@@ -11,7 +11,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
-#include "base/concepts.hpp"
+#include "base/multiprecision.hpp"
 #include "base/not_constructible.hpp"
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
@@ -26,7 +26,7 @@ namespace numerics {
 namespace _polynomial_in_monomial_basis {
 namespace internal {
 
-using namespace principia::base::_concepts;
+using namespace principia::base::_multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_serialization;
@@ -449,7 +449,7 @@ template<typename Value_, typename Argument_, int degree_,
 void PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 EvaluateWithDerivative(Argument const argument,
                        Value& value,
-                       quantities::_arithmetic::Derivative<Value, Argument>&
+                       base::_algebra::Derivative<Value, Argument>&
                            derivative) const {
   Evaluator<Value_, Difference<Argument_>, degree_>::EvaluateWithDerivative(
       coefficients_, argument - origin_, value, derivative);
@@ -507,7 +507,7 @@ PolynomialInMonomialBasis<
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 Derivative() const {
   return PolynomialInMonomialBasis<
-             quantities::_arithmetic::Derivative<Value, Argument, order>,
+             base::_algebra::Derivative<Value, Argument, order>,
              Argument,
              degree_ - order, Evaluator_>(
              TupleDerivation<Coefficients, order>::Derive(coefficients_),
@@ -522,7 +522,7 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 Primitive() const
   requires additive_group<Value> {
   return PolynomialInMonomialBasis<
-             quantities::_arithmetic::Primitive<Value, Argument>,
+             base::_algebra::Primitive<Value, Argument>,
              Argument,
              degree_ + 1, Evaluator_>(
              TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),
@@ -744,7 +744,7 @@ operator*(
 }
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-template<typename Value, typename Argument, int ldegree,
+template<affine Value, affine Argument, int ldegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>
 operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,

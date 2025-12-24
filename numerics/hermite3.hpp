@@ -4,22 +4,22 @@
 #include <utility>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/array.hpp"
 #include "geometry/hilbert.hpp"
-#include "quantities/arithmetic.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _hermite3 {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_array;
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_arithmetic;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 class Hermite3 final {
   using NormType = typename Hilbert<Difference<Value_>>::NormType;
 

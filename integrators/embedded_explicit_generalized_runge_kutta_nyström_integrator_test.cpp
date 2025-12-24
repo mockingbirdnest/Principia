@@ -4,6 +4,7 @@
 #include <limits>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -13,7 +14,6 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/legendre.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -33,6 +33,7 @@ using ::std::placeholders::_3;
 using ::std::placeholders::_4;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_integrators;
@@ -40,7 +41,6 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_legendre;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

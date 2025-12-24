@@ -1,9 +1,8 @@
 #pragma once
 
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
-#include "geometry/concepts.hpp"
 #include "numerics/fma.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -15,10 +14,9 @@ class PolynomialEvaluatorTest;
 namespace _polynomial_evaluators {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_concepts;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_tuples;
 
 // This definition is replicated from `PolynomialInMonomialBasis` to avoid

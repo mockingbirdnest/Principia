@@ -11,10 +11,10 @@
 #include <string>
 
 #include "absl/container/btree_set.h"
+#include "base/algebra.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "numerics/fixed_arrays.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -48,10 +48,10 @@ namespace numerics {
 namespace _polynomial_in_чебышёв_basis {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_polynomial;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 
 template<typename Value_, typename Argument_, auto _ = std::nullopt>

@@ -5,9 +5,9 @@
 #include <cmath>
 #include <string>
 
+#include "base/algebra.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -15,9 +15,9 @@ namespace geometry {
 namespace _rp2_point {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fma;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 template<typename Scalar, typename Frame>
