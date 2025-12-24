@@ -383,27 +383,30 @@ PolynomialInMonomialBasis(Coefficients coefficients)
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
-template<int higher_degree_>
+template<int higher_degree_, typename Self>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 operator PolynomialInMonomialBasis<Value_, Argument_, higher_degree_,
-                                   Evaluator_>() const {
+                                   Evaluator_>(this Self&& self) {
   static_assert(degree_ <= higher_degree_);
   using Result =
       PolynomialInMonomialBasis<Value, Argument, higher_degree_, Evaluator_>;
   typename Result::Coefficients higher_coefficients;
   TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
-      higher_coefficients, coefficients_);
-  return Result(higher_coefficients, origin_);
+      higher_coefficients, std::move(std::forward<Self>(self).coefficients_));
+  return Result(higher_coefficients,
+                std::move(std::forward<Self>(self).origin_));
 }
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
-template<template<typename, typename, int> typename OtherEvaluator>
+template<template<typename, typename, int> typename OtherEvaluator,
+         typename Self>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 operator PolynomialInMonomialBasis<Value_, Argument_, degree_,
-                                   OtherEvaluator>() && {
+                                   OtherEvaluator>(this Self&& self) {
   return PolynomialInMonomialBasis<Value, Argument, degree_, OtherEvaluator>(
-      std::move(coefficients_), std::move(origin_));
+      std::move(std::forward<Self>(self).coefficients_),
+      std::move(std::forward<Self>(self).origin_));
 }
 
 template<typename Value_, typename Argument_, int degree_,

@@ -141,14 +141,15 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       default;
 
   // A polynomial may be explicitly converted to a higher degree.
-  template<int higher_degree_>
+  template<int higher_degree_, typename Self>
   explicit operator PolynomialInMonomialBasis<Value, Argument, higher_degree_,
-                                              Evaluator_>() const;
+                                              Evaluator_>(this Self&& self);
 
   // A polynomial may be explicitly converted to use a different evaluator.
-  template<template<typename, typename, int> typename OtherEvaluator>
+  template<template<typename, typename, int> typename OtherEvaluator,
+           typename Self>
   explicit operator PolynomialInMonomialBasis<Value, Argument, degree_,
-                                              OtherEvaluator>() &&;
+                                              OtherEvaluator>(this Self&& self);
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
