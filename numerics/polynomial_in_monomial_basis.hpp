@@ -143,7 +143,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   // A polynomial may be explicitly converted to a higher degree.
   template<int higher_degree_>
   explicit operator PolynomialInMonomialBasis<Value, Argument, higher_degree_,
-                                             Evaluator_>() const;
+                                              Evaluator_>() const;
+
+  // A polynomial may be explicitly converted to use a different evaluator.
+  template<template<typename, typename, int> typename OtherEvaluator>
+  explicit operator PolynomialInMonomialBasis<Value, Argument, degree_,
+                                              OtherEvaluator>() &&;
 
   PolynomialInMonomialBasis& operator+=(const PolynomialInMonomialBasis& right);
   PolynomialInMonomialBasis& operator-=(const PolynomialInMonomialBasis& right);
@@ -181,12 +186,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
       Argument const& argument1,
       Argument const& argument2) const
     requires additive_group<Value>;
-
-  // Changes the evaluator of this object.  Useful on the result of an operator
-  // or of `ReadFromMessage`, as these functions use the default evaluator.
-  template<template<typename, typename, int> typename OtherEvaluator>
-  PolynomialInMonomialBasis<Value, Argument, degree_, OtherEvaluator>
-  WithEvaluator() &&;
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;

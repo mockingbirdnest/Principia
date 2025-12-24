@@ -324,12 +324,15 @@ Policy::WithEvaluator(
   switch (kind_) {
     case serialization::PolynomialInMonomialBasis::Policy::
         ALWAYS_ESTRIN_WITHOUT_FMA: {
-      auto result =
-          std::move(polynomial).template WithEvaluator<EstrinWithoutFMA>();
+      auto result = static_cast<
+          PolynomialInMonomialBasis<Value, Argument, degree, EstrinWithoutFMA>>(
+          std::move(polynomial));
       return make_not_null_unique<decltype(result)>(std::move(result));
     }
     case serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN: {
-      auto result = std::move(polynomial).template WithEvaluator<Estrin>();
+      auto result = static_cast<
+          PolynomialInMonomialBasis<Value, Argument, degree, Estrin>>(
+          std::move(polynomial));
       return make_not_null_unique<decltype(result)>(std::move(result));
     }
   }
@@ -391,6 +394,16 @@ operator PolynomialInMonomialBasis<Value_, Argument_, higher_degree_,
   TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
       higher_coefficients, coefficients_);
   return Result(higher_coefficients, origin_);
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+template<template<typename, typename, int> typename OtherEvaluator>
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+operator PolynomialInMonomialBasis<Value_, Argument_, degree_,
+                                   OtherEvaluator>() && {
+  return PolynomialInMonomialBasis<Value, Argument, degree_, OtherEvaluator>(
+      std::move(coefficients_), std::move(origin_));
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -523,16 +536,6 @@ Integrate(Argument const& argument1,
   // + 2 is to take into account the truncation resulting from integer division.
   return _quadrature::GaussLegendre<(degree_ + 2) / 2>(*this,
                                                        argument1, argument2);
-}
-
-template<typename Value_, typename Argument_, int degree_,
-         template<typename, typename, int> typename Evaluator_>
-template<template<typename, typename, int> typename OtherEvaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, OtherEvaluator>
-PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-WithEvaluator() && {
-  return PolynomialInMonomialBasis<Value, Argument, degree_, OtherEvaluator>(
-      std::move(coefficients_), std::move(origin_));
 }
 
 template<typename Value_, typename Argument_, int degree_,
