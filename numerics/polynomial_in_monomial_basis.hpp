@@ -107,7 +107,7 @@ class Policy {
 };
 
 template<typename Value, typename Argument, int degree>
-using DefaultEvaluator = std::conditional_t<degree <= 3,
+using DefaultEvaluator = std::conditional_t<degree <= 3,  // NOLINT
                                             Horner<Value, Argument, degree>,
                                             Estrin<Value, Argument, degree>>;
 

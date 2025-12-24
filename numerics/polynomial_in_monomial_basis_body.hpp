@@ -800,7 +800,8 @@ operator-(
 
 template<typename Value, typename Argument, int rdegree,
          template<typename, typename, int> typename Evaluator>
-constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree, Evaluator>
+constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
+                                    Evaluator>
 operator-(Value const& left,
           PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
               right) {
