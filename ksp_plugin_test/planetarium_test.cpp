@@ -2,7 +2,8 @@
 // celestials causes MSVC to fail with "error C1202: recursive type or function
 // dependency context too complex".
 #define PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY \
-  !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 194'435'222)
+  !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 194'435'213 || \
+                                _MSC_FULL_VER == 194'435'222)
 
 #include "ksp_plugin/planetarium.hpp"
 
