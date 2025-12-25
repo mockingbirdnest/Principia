@@ -7,6 +7,7 @@
 #include "base/algebra.hpp"
 #include "base/array.hpp"
 #include "geometry/hilbert.hpp"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 
 namespace principia {
 namespace numerics {
@@ -16,6 +17,7 @@ namespace internal {
 using namespace principia::base::_algebra;
 using namespace principia::base::_array;
 using namespace principia::geometry::_hilbert;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.
@@ -36,6 +38,9 @@ class Hermite3 final {
   // should?
   Value Evaluate(Argument const& argument) const;
   Derivative1 EvaluateDerivative(Argument const& argument) const;
+  void EvaluateWithDerivative(Argument const& argument,
+                              Value& value,
+                              Derivative1& derivative) const;
 
   // The result is sorted.
   BoundedArray<Argument, 2> FindExtrema() const;
@@ -65,16 +70,12 @@ class Hermite3 final {
       NormType const& tolerance) const;
 
  private:
-  using Derivative2 = Derivative<Derivative1, Argument>;
-  using Derivative3 = Derivative<Derivative2, Argument>;
+  static PolynomialInMonomialBasis<Value, Argument, 3> MakePolynomial(
+      std::pair<Argument, Argument> arguments,
+      std::pair<Value, Value> const& values,
+      std::pair<Derivative1, Derivative1> const& derivatives);
 
-  std::pair<Argument, Argument> const arguments_;
-
-  // The coefficients are relative to `arguments.first`.
-  Value a0_;
-  Derivative1 a1_;
-  Derivative2 a2_;
-  Derivative3 a3_;
+  PolynomialInMonomialBasis<Value, Argument, 3> p_;
 };
 
 }  // namespace internal

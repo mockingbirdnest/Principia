@@ -75,5 +75,13 @@ NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, ValueAndDerivative) {
   return ToDouble(h_.Evaluate(t), h_.EvaluateDerivative(t));
 }
 
+NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, WithDerivative) {
+  Instant const t = t0_ + x * Second;
+  Displacement<World> d;
+  Velocity<World> v;
+  h_.EvaluateWithDerivative(t, d, v);
+  return ToDouble(d, v);
+}
+
 }  // namespace nanobenchmarks
 }  // namespace principia
