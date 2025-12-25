@@ -52,13 +52,13 @@ class PolynomialNanobenchmark : public Nanobenchmark {
         c5_({1 * Metre / Second / Second / Second / Second / Second,
              0 * Metre / Second / Second / Second / Second / Second,
              0 * Metre / Second / Second / Second / Second / Second}),
-        p1_({c0_, c1_}, t0_, with_evaluator<Estrin>),
-        p2_({c0_, c1_, c2_}, t0_, with_evaluator<Estrin>),
-        p3_({c0_, c1_, c2_, c3_}, t0_, with_evaluator<Estrin>),
-        p4_({c0_, c1_, c2_, c3_, c4_}, t0_, with_evaluator<Estrin>),
-        p5_({c0_, c1_, c2_, c3_, c4_, c5_}, t0_, with_evaluator<Estrin>),
-        p10_(P10A::Coefficients{}, t0_, with_evaluator<Estrin>),
-        p17_(P17A::Coefficients{}, t0_, with_evaluator<Estrin>) {};
+        p1_({c0_, c1_}, t0_),
+        p2_({c0_, c1_, c2_}, t0_),
+        p3_({c0_, c1_, c2_, c3_}, t0_),
+        p4_({c0_, c1_, c2_, c3_, c4_}, t0_),
+        p5_({c0_, c1_, c2_, c3_, c4_, c5_}, t0_),
+        p10_(P10A::Coefficients{}, t0_),
+        p17_(P17A::Coefficients{}, t0_) {};
 
   static double ToDouble(Displacement<World> const& displacement) {
     auto const& coordinates = displacement.coordinates();

@@ -175,9 +175,8 @@ class EllipticNomeQMaclaurin {
   };
 
  public:
-  static inline PolynomialInMonomialBasis<double, double, n> const
-      polynomial{Generator<std::make_index_sequence<n + 1>>::series,
-                 with_evaluator<Evaluator>};
+  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
+      polynomial{Generator<std::make_index_sequence<n + 1>>::series};
 };
 
 // A generator for the Maclaurin series for Fukushima's elliptic Fs integral.
@@ -196,9 +195,8 @@ class FukushimaEllipticFsMaclaurin {
   };
 
  public:
-  static inline PolynomialInMonomialBasis<double, double, n> const
-      polynomial{Generator<std::make_index_sequence<n + 1>>::series,
-                 with_evaluator<Evaluator>};
+  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
+      polynomial{Generator<std::make_index_sequence<n + 1>>::series};
 };
 
 using FukushimaEllipticFsMaclaurin1 =
@@ -257,23 +255,21 @@ class FukushimaEllipticDsBsMaclaurin {
 
  public:
   template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1>
+  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator>
   MakeBsPolynomial(Args... args) {
     using Tuple = std::tuple<Args...>;
-    return PolynomialInMonomialBasis<double, double, n - 1>(
+    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
         Generator<Tuple, std::make_index_sequence<n>>::ComputeBsCoefficients(
-            std::make_tuple(args...)),
-        with_evaluator<Evaluator>);
+            std::make_tuple(args...)));
   }
 
   template<typename... Args, int n = sizeof...(Args)>
-  static PolynomialInMonomialBasis<double, double, n - 1>
+  static PolynomialInMonomialBasis<double, double, n - 1, Evaluator>
   MakeDsPolynomial(Args... args) {
     using Tuple = std::tuple<Args...>;
-    return PolynomialInMonomialBasis<double, double, n - 1>(
+    return PolynomialInMonomialBasis<double, double, n - 1, Evaluator>(
         Generator<Tuple, std::make_index_sequence<n>>::ComputeDsCoefficients(
-            std::make_tuple(args...)),
-        with_evaluator<Evaluator>);
+            std::make_tuple(args...)));
   }
 };
 
@@ -578,9 +574,8 @@ class FukushimaTMaclaurin {
   };
 
  public:
-  static inline PolynomialInMonomialBasis<double, double, n> const
-      polynomial{Generator<std::make_index_sequence<n + 1>>::series,
-                 with_evaluator<Evaluator>};
+  static inline PolynomialInMonomialBasis<double, double, n, Evaluator> const
+      polynomial{Generator<std::make_index_sequence<n + 1>>::series};
 };
 
 using FukushimaTMaclaurin1 = FukushimaTMaclaurin<1, Horner>;
@@ -600,7 +595,7 @@ using FukushimaTMaclaurin12 = FukushimaTMaclaurin<12, Estrin>;
 // m around which the approximation is valid.
 // TODO(phl): Some of these polynomials use the Horner scheme because the Estrin
 // scheme introduces inaccuracies.  Investigate why.
-PolynomialInMonomialBasis<double, double, 10> const
+PolynomialInMonomialBasis<double, double, 10, Horner> const
     elliptic_K_taylor_0_05(std::make_tuple(1.591003453790792180,
                                            0.416000743991786912,
                                            0.245791514264103415,
@@ -612,8 +607,7 @@ PolynomialInMonomialBasis<double, double, 10> const
                                            0.091439629201749751,
                                            0.085842591595413900,
                                            0.081541118718303215),
-                           0.05,
-                           with_evaluator<Horner>);
+                           0.05);
 PolynomialInMonomialBasis<double, double, 12> const
     elliptic_K_taylor_0_15(std::make_tuple(1.635256732264579992,
                                            0.471190626148732291,
@@ -674,7 +668,7 @@ PolynomialInMonomialBasis<double, double, 13> const
                                            53.73749198700554656,
                                            90.27388602940998849),
                            0.45);
-PolynomialInMonomialBasis<double, double, 14> const
+PolynomialInMonomialBasis<double, double, 14, Horner> const
     elliptic_K_taylor_0_55(std::make_tuple(1.898924910271553526,
                                            0.950521794618244435,
                                            1.151077589959015808,
@@ -690,8 +684,7 @@ PolynomialInMonomialBasis<double, double, 14> const
                                            598.3851815055010179,
                                            1228.420013075863451,
                                            2536.529755382764488),
-                           0.55,
-                           with_evaluator<Horner>);
+                           0.55);
 PolynomialInMonomialBasis<double, double, 16> const
     elliptic_K_taylor_0_65(std::make_tuple(2.007598398424376302,
                                            1.248457231212347337,

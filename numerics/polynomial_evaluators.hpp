@@ -8,6 +8,9 @@
 
 namespace principia {
 namespace numerics {
+
+class PolynomialEvaluatorTest;
+
 namespace _polynomial_evaluators {
 namespace internal {
 
@@ -16,50 +19,64 @@ using namespace principia::base::_not_null;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_tuples;
 
-template<template<typename, typename, int> typename Evaluator_>
-struct with_evaluator_t {};
-
-template<template<typename, typename, int> typename Evaluator_>
-static constexpr with_evaluator_t<Evaluator_> with_evaluator;
-
+// This definition is replicated from `PolynomialInMonomialBasis` to avoid
+// circular dependencies.  Don't export it from here.
 template<typename Value, typename Argument, int degree>
-  requires additive_group<Argument>
-struct Evaluator {
-  // This definition is replicated from `PolynomialInMonomialBasis` to avoid
-  // circular dependencies.
-  using Coefficients = Derivatives<Value, Argument, degree + 1>;
+using Coefficients = Derivatives<Value, Argument, degree + 1>;
 
-  FORCE_INLINE(static)
-  Value Evaluate(
-      Coefficients const& coefficients,
-      Argument const& argument,
-      not_null<Evaluator const*> evaluator);
-  FORCE_INLINE(static)
-  Derivative<Value, Argument> EvaluateDerivative(
-      Coefficients const& coefficients,
-      Argument const& argument,
-      not_null<Evaluator const*> evaluator);
-  FORCE_INLINE(static)
-  void EvaluateWithDerivative(
-      Coefficients const& coefficients,
-      Argument const& argument,
-      not_null<Evaluator const*> evaluator,
-      Value& value,
-      Derivative<Value, Argument>& derivative);
+template<typename Value, typename Argument, int degree,
+         FMAPolicy fma_policy, FMAPresence fma_presence>
+class EstrinEvaluator {
+  using Coefficients = internal::Coefficients<Value, Argument, degree>;
+
+ public:
+  FORCE_INLINE(static) Value
+  Evaluate(Coefficients const& coefficients,
+           Argument const& argument);
+  FORCE_INLINE(static) Derivative<Value, Argument>
+  EvaluateDerivative(Coefficients const& coefficients,
+                     Argument const& argument);
+  FORCE_INLINE(static) void
+  EvaluateWithDerivative(Coefficients const& coefficients,
+                         Argument const& argument,
+                         Value& value,
+                         Derivative<Value, Argument>& derivative);
 
   static void WriteToMessage(
-      not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message,
-      not_null<Evaluator const*> evaluator);
-  static not_null<Evaluator const*> ReadFromMessage(
-      serialization::PolynomialInMonomialBasis::Evaluator const& message);
+      not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message);
+
+ private:
+  EstrinEvaluator() = default;
+
+  friend class PolynomialEvaluatorTest;
 };
 
 template<typename Value, typename Argument, int degree,
          FMAPolicy fma_policy, FMAPresence fma_presence>
-class EstrinEvaluator;
-template<typename Value, typename Argument, int degree,
-         FMAPolicy fma_policy, FMAPresence fma_presence>
-class HornerEvaluator;
+class HornerEvaluator {
+  using Coefficients = internal::Coefficients<Value, Argument, degree>;
+
+ public:
+  FORCE_INLINE(static) Value
+  Evaluate(Coefficients const& coefficients,
+           Argument const& argument);
+  FORCE_INLINE(static) Derivative<Value, Argument>
+  EvaluateDerivative(Coefficients const& coefficients,
+                     Argument const& argument);
+  FORCE_INLINE(static) void
+  EvaluateWithDerivative(Coefficients const& coefficients,
+                         Argument const& argument,
+                         Value& value,
+                         Derivative<Value, Argument>& derivative);
+
+  static void WriteToMessage(
+      not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message);
+
+ private:
+  HornerEvaluator() = default;
+
+  friend class PolynomialEvaluatorTest;
+};
 
 }  // namespace internal
 
@@ -83,10 +100,7 @@ using HornerWithoutFMA =
                               internal::FMAPresence::Unknown>;
 
 using internal::EstrinEvaluator;
-using internal::Evaluator;
 using internal::HornerEvaluator;
-using internal::with_evaluator;
-using internal::with_evaluator_t;
 
 }  // namespace _polynomial_evaluators
 }  // namespace numerics

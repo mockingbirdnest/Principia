@@ -1,3 +1,10 @@
+// Referencing `SolarSystemFactory` in this code to obtain the names of the
+// celestials causes MSVC to fail with "error C1202: recursive type or function
+// dependency context too complex".
+#define PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY \
+  !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 194'435'213 || \
+                                _MSC_FULL_VER == 194'435'222)
+
 #include "ksp_plugin/planetarium.hpp"
 
 #include <limits>
@@ -5,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
@@ -47,8 +55,10 @@
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
-#include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY
+#include "testing_utilities/solar_system_factory.hpp"
+#endif
 
 namespace principia {
 namespace ksp_plugin {
@@ -98,7 +108,9 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_serialization;
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY
 using namespace principia::testing_utilities::_solar_system_factory;
+#endif
 using namespace principia::testing_utilities::_vanishes_before;
 
 class PlanetariumTest : public ::testing::Test {
@@ -178,10 +190,15 @@ class PlanetariumTest : public ::testing::Test {
   std::vector<std::unique_ptr<
       LagrangeEquipotentials<Barycentric, Navigation>::LinesBySpecificEnergy>>
   ComputeLagrangeEquipotentials() {
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY
     auto const& earth = *solar_system_->massive_body(
         *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
     auto const& moon = *solar_system_->massive_body(
         *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+#else
+    auto const& earth = *solar_system_->massive_body(*ephemeris_, "Earth");
+    auto const& moon = *solar_system_->massive_body(*ephemeris_, "Moon");
+#endif
 
     std::vector<std::unique_ptr<
         LagrangeEquipotentials<Barycentric, Navigation>::LinesBySpecificEnergy>>
@@ -221,10 +238,15 @@ class PlanetariumTest : public ::testing::Test {
       Planetarium::Parameters const& planetarium_parameters,
       std::function<void(Planetarium const&,
                     DiscreteTrajectory<Navigation> const &)> const& plot) {
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY
     auto const& earth = *solar_system_->massive_body(
         *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
     auto const& moon = *solar_system_->massive_body(
         *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+#else
+    auto const& earth = *solar_system_->massive_body(*ephemeris_, "Earth");
+    auto const& moon = *solar_system_->massive_body(*ephemeris_, "Moon");
+#endif
 
     auto const plotting_frame(
         RotatingPulsatingReferenceFrame<Barycentric, Navigation>(
@@ -706,3 +728,5 @@ TEST_F(PlanetariumTest, PlotMethod4_Equipotentials_AngularResolution) {
 
 }  // namespace ksp_plugin
 }  // namespace principia
+
+#undef PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY
