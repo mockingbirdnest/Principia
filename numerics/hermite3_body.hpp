@@ -35,7 +35,7 @@ EvaluateDerivative(Argument const& argument) const {
   return d_(argument);
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
     Argument const& argument,
     Value& value,
@@ -43,7 +43,7 @@ void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
   return p_.EvaluateWithDerivative(argument, value, derivative);
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
   auto const& coefficients = d_.coefficients();
   return SolveQuadraticEquation<Argument, Derivative1>(
@@ -88,7 +88,7 @@ bool Hermite3<Value_, Argument_>::LInfinityErrorIsWithin(
   return true;
 }
 
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
 FORCE_INLINE(inline)
 PolynomialInMonomialBasis<Value_, Argument_, 3>
 Hermite3<Value_, Argument_>::MakePolynomial(
