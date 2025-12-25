@@ -35,7 +35,7 @@ EvaluateDerivative(Argument const& argument) const {
   return d_(argument);
 }
 
-template<affine Value_, affine Argument_>
+template<typename Value_, typename Argument_>
 void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
     Argument const& argument,
     Value& value,
