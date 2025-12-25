@@ -112,16 +112,6 @@ using namespace principia::testing_utilities::_solar_system_factory;
 #endif
 using namespace principia::testing_utilities::_vanishes_before;
 
-#if PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY
-std::string const earth_name =
-    SolarSystemFactory::name(SolarSystemFactory::Earth);
-std::string const moon_name =
-    SolarSystemFactory::name(SolarSystemFactory::Moon);
-#else
-std::string const earth_name = "Earth";
-std::string const moon_name = "Moon";
-#endif
-
 class PlanetariumTest : public ::testing::Test {
  protected:
   using LeftNavigation =
@@ -199,8 +189,15 @@ class PlanetariumTest : public ::testing::Test {
   std::vector<std::unique_ptr<
       LagrangeEquipotentials<Barycentric, Navigation>::LinesBySpecificEnergy>>
   ComputeLagrangeEquipotentials() {
-    auto const& earth = *solar_system_->massive_body(*ephemeris_, earth_name);
-    auto const& moon = *solar_system_->massive_body(*ephemeris_, moon_name);
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY
+    auto const& earth = *solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+    auto const& moon = *solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+#else
+    auto const& earth = *solar_system_->massive_body(*ephemeris_, "Earth");
+    auto const& moon = *solar_system_->massive_body(*ephemeris_, "Moon");
+#endif
 
     std::vector<std::unique_ptr<
         LagrangeEquipotentials<Barycentric, Navigation>::LinesBySpecificEnergy>>
@@ -240,8 +237,15 @@ class PlanetariumTest : public ::testing::Test {
       Planetarium::Parameters const& planetarium_parameters,
       std::function<void(Planetarium const&,
                     DiscreteTrajectory<Navigation> const &)> const& plot) {
-    auto const& earth = *solar_system_->massive_body(*ephemeris_, earth_name);
-    auto const& moon = *solar_system_->massive_body(*ephemeris_, moon_name);
+#if PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY
+    auto const& earth = *solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Earth));
+    auto const& moon = *solar_system_->massive_body(
+        *ephemeris_, SolarSystemFactory::name(SolarSystemFactory::Moon));
+#else
+    auto const& earth = *solar_system_->massive_body(*ephemeris_, "Earth");
+    auto const& moon = *solar_system_->massive_body(*ephemeris_, "Moon");
+#endif
 
     auto const plotting_frame(
         RotatingPulsatingReferenceFrame<Barycentric, Navigation>(
