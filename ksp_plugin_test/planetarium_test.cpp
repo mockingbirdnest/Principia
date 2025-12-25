@@ -54,10 +54,10 @@
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_SOLAR_SYSTEM_FACTORY
 #include "testing_utilities/solar_system_factory.hpp"
 #endif
-#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace ksp_plugin {
