@@ -76,7 +76,7 @@ class Hermite3 final {
       std::pair<Derivative1, Derivative1> const& derivatives);
 
   PolynomialInMonomialBasis<Value, Argument, 3> p_;
-  PolynomialInMonomialBasis<Derivative1, Argument, 2> d_;
+  PolynomialInMonomialBasis<Derivative1, Argument, 2> pʹ_;
 };
 
 }  // namespace internal
