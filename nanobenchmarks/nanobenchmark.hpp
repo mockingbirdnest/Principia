@@ -25,10 +25,11 @@ namespace internal {
 using namespace principia::mathematica::_logger;
 using namespace principia::nanobenchmarks::_latency_distribution_table;
 
-using BenchmarkedFunction = double (*)(double);
-
+template<typename Value_ = double, typename Argument_ = double>
 class Nanobenchmark {
  public:
+  using BenchmarkedFunction = Value_ (*)(Argument_);
+
   Nanobenchmark() = default;
   virtual ~Nanobenchmark() = default;
 
@@ -51,21 +52,29 @@ class Nanobenchmark {
   std::string name_;
 };
 
+template<typename Value_ = double, typename Argument_ = double>
 class NanobenchmarkRegistry {
  public:
-  static Nanobenchmark const* Register(Nanobenchmark const* nanobenchmark);
+  using BenchmarkedFunction =
+      typename Nanobenchmark<Value_, Argument_>::BenchmarkedFunction;
 
-  static std::vector<Nanobenchmark const*> NanobenchmarksMatching(
-      std::regex const& filter);
+  static Nanobenchmark<Value_, Argument_> const*
+  Register(Nanobenchmark<Value_, Argument_> const* nanobenchmark);
 
-  static Nanobenchmark const* NanobenchmarkFor(BenchmarkedFunction function);
+  static std::vector<Nanobenchmark<Value_, Argument_> const*>
+  NanobenchmarksMatching(std::regex const& filter);
+
+  static Nanobenchmark<Value_, Argument_> const*
+  NanobenchmarkFor(BenchmarkedFunction function);
 
  private:
   NanobenchmarkRegistry() = default;
   static NanobenchmarkRegistry& singleton();
-  absl::flat_hash_map<BenchmarkedFunction, Nanobenchmark const*>
+  absl::flat_hash_map<BenchmarkedFunction,
+                      Nanobenchmark<Value_, Argument_> const*>
       nanobenchmarks_by_function_;
-  absl::btree_map<std::string, Nanobenchmark const*> nanobenchmarks_by_name_;
+  absl::btree_map<std::string, Nanobenchmark<Value_, Argument_> const*>
+      nanobenchmarks_by_name_;
 };
 
 #define NANOBENCHMARK_REGISTERED_NAME(line, n) registered_##line##_##n
@@ -150,7 +159,6 @@ class NanobenchmarkRegistry {
 
 }  // namespace internal
 
-using internal::BenchmarkedFunction;
 using internal::Nanobenchmark;
 using internal::NanobenchmarkRegistry;
 
