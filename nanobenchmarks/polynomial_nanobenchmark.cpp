@@ -107,52 +107,31 @@ class PolynomialNanobenchmark
   P17A const p17_;
 };
 
-NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
-                               Displacement<World>,
-                               Instant,
-                               Value01) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value01) {
   return p1_(argument);
 }
 
-NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
-                               Displacement<World>,
-                               Instant,
-                               Value02) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value02) {
   return p2_(argument);
 }
 
-NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
-                               Displacement<World>,
-                               Instant,
-                               Value03) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value03) {
   return p3_(argument);
 }
 
-NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
-                               Displacement<World>,
-                               Instant,
-                               Value04) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value04) {
   return p4_(argument);
 }
 
-NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
-                               Displacement<World>,
-                               Instant,
-                               Value05) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value05) {
   return p5_(argument);
 }
 
-NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
-                               Displacement<World>,
-                               Instant,
-                               Value10) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value10) {
   return p10_(argument);
 }
 
-NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
-                               Displacement<World>,
-                               Instant,
-                               Value17) {
+NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value17) {
   return p17_(argument);
 }
 

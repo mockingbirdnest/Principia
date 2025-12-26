@@ -78,7 +78,7 @@ class Hermite3Nanobenchmark
 };
 
 #if 0
-NANOBENCHMARK_FIXTURE_TEMPLATE(Hermite3Nanobenchmark,
+NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark,
                                Displacement<World>,
                                Instant,
                                ConstructionAndValue) {
@@ -87,10 +87,7 @@ NANOBENCHMARK_FIXTURE_TEMPLATE(Hermite3Nanobenchmark,
 }
 #endif
 
-NANOBENCHMARK_FIXTURE_TEMPLATE(Hermite3Nanobenchmark,
-                               Displacement<World>,
-                               Instant,
-                               Value) {
+NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, Value) {
   return h_.Evaluate(argument);
 }
 

@@ -93,10 +93,10 @@ Nanobenchmark<Value_, Argument_>::Run(Logger* const logger) const {
   return result;
 }
 
-template<typename Value_, typename Argument_>
-Nanobenchmark<Value_, Argument_> const*
-NanobenchmarkRegistry<Value_, Argument_>::Register(
-    Nanobenchmark<Value_, Argument_> const* const nanobenchmark) {
+template<typename Nanobenchmark_>
+Nanobenchmark_ const*
+NanobenchmarkRegistry<Nanobenchmark_>::Register(
+    Nanobenchmark const* const nanobenchmark) {
   singleton().nanobenchmarks_by_name_.emplace(nanobenchmark->name(),
                                               nanobenchmark);
   if (nanobenchmark->function() != nullptr) {
@@ -106,9 +106,9 @@ NanobenchmarkRegistry<Value_, Argument_>::Register(
   return nanobenchmark;
 }
 
-template<typename Value_, typename Argument_>
-std::vector<Nanobenchmark<Value_, Argument_> const*>
-NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarksMatching(
+template<typename Nanobenchmark_>
+std::vector<Nanobenchmark_ const*>
+NanobenchmarkRegistry<Nanobenchmark_>::NanobenchmarksMatching(
     std::regex const& filter) {
   std::vector<Nanobenchmark const*> matching;
   for (auto const& [name, nanobenchmark] :
@@ -120,9 +120,9 @@ NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarksMatching(
   return matching;
 }
 
-template<typename Value_, typename Argument_>
-Nanobenchmark<Value_, Argument_> const*
-NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarkFor(
+template<typename Nanobenchmark_>
+Nanobenchmark_ const*
+NanobenchmarkRegistry<Nanobenchmark_>::NanobenchmarkFor(
     BenchmarkedFunction const function) {
   if (auto const it = singleton().nanobenchmarks_by_function_.find(function);
       it == singleton().nanobenchmarks_by_function_.end()) {
@@ -132,9 +132,9 @@ NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarkFor(
   }
 }
 
-template<typename Value_, typename Argument_>
-NanobenchmarkRegistry<Value_, Argument_>&
-NanobenchmarkRegistry<Value_, Argument_>::singleton() {
+template<typename Nanobenchmark_>
+NanobenchmarkRegistry<Nanobenchmark_>&
+NanobenchmarkRegistry<Nanobenchmark_>::singleton() {
   static NanobenchmarkRegistry* instance = new NanobenchmarkRegistry;
   return *instance;
 }
