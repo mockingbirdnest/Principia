@@ -55,7 +55,7 @@ class Nanobenchmark {
 };
 
 
-//Take `Nanobenchmark` here?
+//TODO(phl)Take `Nanobenchmark` here?
 template<typename Value_ = double, typename Argument_ = double>
 class NanobenchmarkRegistry {
  public:
@@ -186,6 +186,7 @@ class NanobenchmarkRegistry {
   double NANOBENCHMARK_CONCAT_NAME_FIXTURE(                    \
       BaseClass, Method)::NanobenchmarkCase(double const x) const
 
+//TODO(phl)Get the template parameters from the `BaseClass`.
 #define NANOBENCHMARK_FIXTURE_TEMPLATE(                                      \
     BaseClass, Value, Argument, Method, ...)                                 \
   NANOBENCHMARK_DECLARE_FIXTURE_TEMPLATE(BaseClass, Value, Argument, Method) \

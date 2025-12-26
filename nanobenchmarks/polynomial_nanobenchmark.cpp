@@ -26,7 +26,8 @@ using World = Frame<serialization::Frame::TestTag,
                     Handedness::Right,
                     serialization::Frame::TEST>;
 
-class PolynomialNanobenchmark : public Nanobenchmark {
+class PolynomialNanobenchmark
+    : public Nanobenchmark<Displacement<World>, Instant> {
  protected:
   using P1A = PolynomialInMonomialBasis<Displacement<World>, Instant, 1>;
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
@@ -60,6 +61,7 @@ class PolynomialNanobenchmark : public Nanobenchmark {
         p10_(P10A::Coefficients{}, t0_),
         p17_(P17A::Coefficients{}, t0_) {};
 
+#if 0
   static double ToDouble(Displacement<World> const& displacement) {
     auto const& coordinates = displacement.coordinates();
     return _mm_cvtsd_f64(
@@ -75,6 +77,18 @@ class PolynomialNanobenchmark : public Nanobenchmark {
         _mm_and_pd(_mm_and_pd(_mm_set_pd(d.x / Metre, d.y / Metre),
                               _mm_set_pd(d.z / Metre, v.x / (Metre / Second))),
                    _mm_set_pd(v.y / (Metre / Second), v.z / (Metre / Second))));
+  }
+#endif
+
+  Instant PrepareArgument(double x) const override {
+    return t0_ + x * Second;
+  }
+
+  double ConsumeValue(Displacement<World> value) const override {
+    auto const& coordinates = value.coordinates();
+    return _mm_cvtsd_f64(
+        _mm_and_pd(_mm_set_pd(coordinates.x / Metre, coordinates.y / Metre),
+                   _mm_set_sd(coordinates.z / Metre)));
   }
 
   Instant const t0_;
@@ -93,34 +107,56 @@ class PolynomialNanobenchmark : public Nanobenchmark {
   P17A const p17_;
 };
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value01) {
-  return ToDouble(p1_(t0_ + x * Second));
+NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
+                               Displacement<World>,
+                               Instant,
+                               Value01) {
+  return p1_(argument);
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value02) {
-  return ToDouble(p2_(t0_ + x * Second));
+NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
+                               Displacement<World>,
+                               Instant,
+                               Value02) {
+  return p2_(argument);
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value03) {
-  return ToDouble(p3_(t0_ + x * Second));
+NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
+                               Displacement<World>,
+                               Instant,
+                               Value03) {
+  return p3_(argument);
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value04) {
-  return ToDouble(p4_(t0_ + x * Second));
+NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
+                               Displacement<World>,
+                               Instant,
+                               Value04) {
+  return p4_(argument);
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value05) {
-  return ToDouble(p5_(t0_ + x * Second));
+NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
+                               Displacement<World>,
+                               Instant,
+                               Value05) {
+  return p5_(argument);
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value10) {
-  return ToDouble(p10_(t0_ + x * Second));
+NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
+                               Displacement<World>,
+                               Instant,
+                               Value10) {
+  return p10_(argument);
 }
 
-NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, Value17) {
-  return ToDouble(p17_(t0_ + x * Second));
+NANOBENCHMARK_FIXTURE_TEMPLATE(PolynomialNanobenchmark,
+                               Displacement<World>,
+                               Instant,
+                               Value17) {
+  return p17_(argument);
 }
 
+#if 0
 NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, ValueAndDerivative05) {
   Instant const t = t0_ + x * Second;
   return ToDouble(p5_(t), p5_.EvaluateDerivative(t));
@@ -159,6 +195,7 @@ NANOBENCHMARK_FIXTURE(PolynomialNanobenchmark, WithDerivative17) {
   p17_.EvaluateWithDerivative(t, d, v);
   return ToDouble(d, v);
 }
+#endif
 
 }  // namespace nanobenchmarks
 }  // namespace principia

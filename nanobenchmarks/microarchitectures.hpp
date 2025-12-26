@@ -12,7 +12,7 @@ namespace internal {
 
 using namespace principia::nanobenchmarks::_nanobenchmark;
 
-using NanobenchmarkAndCycles = std::pair<Nanobenchmark const*, int>;
+using NanobenchmarkAndCycles = std::pair<Nanobenchmark<> const*, int>;
 
 // The returned vector is sorted by nanobenchmark name.
 std::vector<NanobenchmarkAndCycles> const& ReferenceCycleCounts();
