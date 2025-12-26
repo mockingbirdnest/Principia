@@ -192,7 +192,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         }
       }
       Interface.GetVersion(build_date : out string _,
-                           version    : out string version);
+                           version    : out string version,
+                           platform   : out string _);
       UnityEngine.GUILayout.Label(version,
                                   style : Style.Info(
                                       UnityEngine.GUI.skin.label));

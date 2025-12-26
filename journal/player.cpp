@@ -13,6 +13,7 @@
 #include "glog/logging.h"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 
+#define PRINCIPIA_PLAYER_ALLOW_PLATFORM_MISMATCH 0
 #define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 0
 
 namespace principia {
@@ -85,11 +86,18 @@ bool Player::Process(std::unique_ptr<serialization::Method> method_in,
         method_out_return->GetExtension(serialization::GetVersion::extension)
             .out();
     LOG_IF(FATAL,
-           !absl::StartsWith(Version, get_version_out.version())  &&
-               (PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH == 0))
+           !absl::StartsWith(Version, get_version_out.version()) &&
+               PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH == 0)
         << "Journal version is " << get_version_out.version()
         << ", running with a binary built at version " << Version
         << "; set PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH to 1 in player.cpp "
+        << "if this is intended.";
+    LOG_IF(FATAL,
+           get_version_out.platform() != PLATFORM_WITH_CPU_FEATURES &&
+               PRINCIPIA_PLAYER_ALLOW_PLATFORM_MISMATCH == 0)
+        << "Journal was produced on " << get_version_out.platform()
+        << ", running with a binary built for " << PLATFORM_WITH_CPU_FEATURES
+        << "; set PRINCIPIA_PLAYER_ALLOW_PLATFORM_MISMATCH to 1 in player.cpp "
         << "if this is intended.";
   }
 
