@@ -18,6 +18,9 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
+#include "geometry/frame.hpp"
+#include "geometry/instant.hpp"
+#include "geometry/space.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
 #include "nanobenchmarks/flag_parsing.hpp"  // 🧙 For std::vector-valued flags.
@@ -54,6 +57,9 @@ namespace nanobenchmarks {
 namespace _main {
 namespace {
 
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::nanobenchmarks::_nanobenchmark;
@@ -61,6 +67,11 @@ using namespace principia::nanobenchmarks::_latency_distribution_table;
 using namespace principia::nanobenchmarks::_microarchitectures;
 using namespace principia::nanobenchmarks::_performance_settings_controller;
 using namespace principia::testing_utilities::_statistics;
+
+using World = Frame<serialization::Frame::TestTag,
+                    Inertial,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
 
 std::size_t FormattedWidth(std::string const& s) {
   // Two columns per code unit is wide enough, since field width is at most 2
@@ -88,7 +99,7 @@ void CalibrateAndRun(std::regex const& filter, Logger* const logger) {
       std::views::transform(&FormattedWidth);
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
-      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
+      std::views::transform(&Nanobenchmark<>::name) |
       std::views::transform(&FormattedWidth);
 
   std::size_t name_width = std::ranges::max(reference_cycle_counts_widths);
@@ -96,7 +107,7 @@ void CalibrateAndRun(std::regex const& filter, Logger* const logger) {
     name_width = std::max(name_width, std::ranges::max(nanobenchmark_widths));
   }
 
-  std::map<Nanobenchmark<Value, Argument> const*, LatencyDistributionTable>
+  std::map<Nanobenchmark<> const*, LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(stdout,
                       "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
