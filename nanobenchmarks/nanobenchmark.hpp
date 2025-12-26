@@ -89,9 +89,10 @@ class NanobenchmarkRegistry {
   FunctionFixture##_##Function##_Nanobenchmark
 
 #define NANOBENCHMARK_DECLARE_FIXTURE(BaseClass, Method)                      \
-  class BaseClass##_##Method##_Nanobenchmark : public BaseClass {             \
+  class NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method)                  \
+      : public BaseClass {                                                    \
    public:                                                                    \
-    BaseClass##_##Method##_Nanobenchmark() : BaseClass() {                    \
+    NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method)() : BaseClass() {    \
       SetName(#BaseClass "/" #Method);                                        \
     }                                                                         \
                                                                               \
@@ -99,42 +100,41 @@ class NanobenchmarkRegistry {
     BaseClass::Value NanobenchmarkCase(BaseClass::Argument x) const override; \
   };
 
-#define NANOBENCHMARK_DECLARE(Function)                      \
-  class FunctionFixture##_##Function##_Nanobenchmark         \
-      : public Nanobenchmark<> {                             \
-   public:                                                   \
-    FunctionFixture##_##Function##_Nanobenchmark() {         \
-      SetName(#Function);                                    \
-    }                                                        \
-                                                             \
-   protected:                                                \
-    double PrepareArgument(double const x) const override {  \
-      return x;                                              \
-    }                                                        \
-    double ConsumeValue(double const value) const override { \
-      return value;                                          \
-    }                                                        \
-    double NanobenchmarkCase(double x) const override;       \
+#define NANOBENCHMARK_DECLARE(Function)                                \
+  class NANOBENCHMARK_CONCAT_NAME(Function) : public Nanobenchmark<> { \
+   public:                                                             \
+    NANOBENCHMARK_CONCAT_NAME(Function)() {                            \
+      SetName(#Function);                                              \
+    }                                                                  \
+                                                                       \
+   protected:                                                          \
+    Argument PrepareArgument(double const x) const override {          \
+      return x;                                                        \
+    }                                                                  \
+    double ConsumeValue(Value const value) const override {            \
+      return value;                                                    \
+    }                                                                  \
+    Value NanobenchmarkCase(Argument x) const override;                \
   };
 
-#define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)                     \
-  class FunctionFixture##_##line##_Nanobenchmark : public Nanobenchmark<> { \
-   public:                                                                  \
-    FunctionFixture##_##line##_Nanobenchmark() {                            \
-      SetFunction(&Function);                                               \
-      SetName(#Function);                                                   \
-    }                                                                       \
-                                                                            \
-   protected:                                                               \
-    double PrepareArgument(double const x) const override {                 \
-      return x;                                                             \
-    }                                                                       \
-    double ConsumeValue(double const value) const override {                \
-      return value;                                                         \
-    }                                                                       \
-    double NanobenchmarkCase(double const x) const override {               \
-      return Function(x);                                                   \
-    }                                                                       \
+#define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)            \
+  class NANOBENCHMARK_CONCAT_NAME(line) : public Nanobenchmark<> { \
+   public:                                                         \
+    NANOBENCHMARK_CONCAT_NAME(line)() {                            \
+      SetFunction(&Function);                                      \
+      SetName(#Function);                                          \
+    }                                                              \
+                                                                   \
+   protected:                                                      \
+    Argument PrepareArgument(double const x) const override {      \
+      return x;                                                    \
+    }                                                              \
+    double ConsumeValue(Value const value) const override {        \
+      return value;                                                \
+    }                                                              \
+    Value NanobenchmarkCase(Argument const x) const override {     \
+      return Function(x);                                          \
+    }                                                              \
   };
 #define NANOBENCHMARK_DECLARE_FUNCTION(line, Function) \
   NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)
