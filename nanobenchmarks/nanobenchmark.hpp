@@ -57,27 +57,29 @@ class Nanobenchmark {
 };
 
 
-template<typename Nanobenchmark_>
+template<typename Value_, typename Argument_>
 class NanobenchmarkRegistry {
  public:
-  using Nanobenchmark = Nanobenchmark_;
-  using BenchmarkedFunction = typename Nanobenchmark::BenchmarkedFunction;
+  using BenchmarkedFunction =
+      typename Nanobenchmark<Value_, Argument_>::BenchmarkedFunction;
 
-  static Nanobenchmark const*
-  Register(Nanobenchmark const* nanobenchmark);
+  static Nanobenchmark<Value_, Argument_> const* Register(
+      Nanobenchmark<Value_, Argument_> const* nanobenchmark);
 
-  static std::vector<Nanobenchmark const*>
+  static std::vector<Nanobenchmark<Value_, Argument_> const*>
   NanobenchmarksMatching(std::regex const& filter);
 
-  static Nanobenchmark const*
-  NanobenchmarkFor(BenchmarkedFunction function);
+  static Nanobenchmark<Value_, Argument_> const* NanobenchmarkFor(
+      BenchmarkedFunction function);
 
  private:
   NanobenchmarkRegistry() = default;
   static NanobenchmarkRegistry& singleton();
-  absl::flat_hash_map<BenchmarkedFunction, Nanobenchmark const*>
+  absl::flat_hash_map<BenchmarkedFunction,
+                      Nanobenchmark<Value_, Argument_> const*>
       nanobenchmarks_by_function_;
-  absl::btree_map<std::string, Nanobenchmark const*> nanobenchmarks_by_name_;
+  absl::btree_map<std::string, Nanobenchmark<Value_, Argument_> const*>
+      nanobenchmarks_by_name_;
 };
 
 #define NANOBENCHMARK_REGISTERED_NAME(line, n) registered_##line##_##n
@@ -139,9 +141,10 @@ class NanobenchmarkRegistry {
 #define NANOBENCHMARK_DECLARE_FUNCTION(line, Function) \
   NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)
 
-#define NANOBENCHMARK_DECLARE_REGISTERED(line, TestName, BaseClass)       \
-  static BaseClass const* NANOBENCHMARK_REGISTERED_NAME(line, TestName) = \
-      (NanobenchmarkRegistry<BaseClass>::Register(new TestName))
+#define NANOBENCHMARK_DECLARE_REGISTERED(line, TestName, BaseClass)            \
+  static BaseClass const* NANOBENCHMARK_REGISTERED_NAME(line, TestName) =      \
+      (NanobenchmarkRegistry<BaseClass::Value, BaseClass::Argument>::Register( \
+          new TestName))
 
 #define NANOBENCHMARK_REGISTER_FIXTURE(line, BaseClass, Method) \
   NANOBENCHMARK_DECLARE_REGISTERED(                             \
