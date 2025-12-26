@@ -25,10 +25,11 @@ class PolynomialEvaluatorTest : public ::testing::Test {
            typename Evaluator,
            int degree>
   void Test() {
+    using C =
+        _polynomial_evaluators::internal::Coefficients<double, double, degree>;
     using E = Evaluator<double, double, degree>;
     auto const binomial_coefficients =
-        MakeBinomialTuple<typename E::Coefficients, degree>(
-            std::make_index_sequence<degree + 1>());
+        MakeBinomialTuple<C, degree>(std::make_index_sequence<degree + 1>());
     double value;
     double derivative;
     for (int argument = -degree; argument <= degree; ++argument) {
