@@ -44,8 +44,6 @@ class Nanobenchmark {
   std::string const& name() const;
 
  protected:
-  virtual Argument PrepareArgument(double x) const = 0;
-  virtual double ConsumeValue(Value value) const = 0;
   virtual Value NanobenchmarkCase(Argument argument) const = 0;
 
   void SetFunction(BenchmarkedFunction function);
@@ -110,12 +108,6 @@ class NanobenchmarkRegistry {
     }                                                                  \
                                                                        \
    protected:                                                          \
-    Argument PrepareArgument(double const x) const override {          \
-      return x;                                                        \
-    }                                                                  \
-    double ConsumeValue(Value const value) const override {            \
-      return value;                                                    \
-    }                                                                  \
     Value NanobenchmarkCase(Argument x) const override;                \
   };
 
@@ -128,12 +120,6 @@ class NanobenchmarkRegistry {
     }                                                              \
                                                                    \
    protected:                                                      \
-    Argument PrepareArgument(double const x) const override {      \
-      return x;                                                    \
-    }                                                              \
-    double ConsumeValue(Value const value) const override {        \
-      return value;                                                \
-    }                                                              \
     Value NanobenchmarkCase(Argument const x) const override {     \
       return Function(x);                                          \
     }                                                              \

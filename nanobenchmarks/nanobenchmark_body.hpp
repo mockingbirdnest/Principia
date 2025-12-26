@@ -11,6 +11,7 @@
 #include "absl/flags/flag.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "glog/logging.h"
+#include "nanobenchmarks/dependencies.hpp"
 
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
@@ -22,6 +23,8 @@ namespace principia {
 namespace nanobenchmarks {
 namespace _nanobenchmark {
 namespace internal {
+
+using namespace principia::nanobenchmarks::_dependencies;
 
 template<typename Value_, typename Argument_>
 Nanobenchmark<Value_, Argument_>::BenchmarkedFunction
@@ -66,7 +69,8 @@ Nanobenchmark<Value_, Argument_>::Run(Logger* const logger) const {
 #endif
     auto const tsc_start = __rdtsc();
     for (int i = 0; i < loop_iterations; ++i) {
-      x = NanobenchmarkCase(x);
+      using D = Dependencies<Value, Argument>;
+      x = D::ConsumeValue(NanobenchmarkCase(D::ProduceArgument(x)));
       x += input - x;
     }
     unsigned int tsc_aux;

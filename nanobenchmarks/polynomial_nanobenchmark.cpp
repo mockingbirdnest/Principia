@@ -80,17 +80,6 @@ class PolynomialNanobenchmark
   }
 #endif
 
-  Instant PrepareArgument(double x) const override {
-    return t0_ + x * Second;
-  }
-
-  double ConsumeValue(Displacement<World> value) const override {
-    auto const& coordinates = value.coordinates();
-    return _mm_cvtsd_f64(
-        _mm_and_pd(_mm_set_pd(coordinates.x / Metre, coordinates.y / Metre),
-                   _mm_set_sd(coordinates.z / Metre)));
-  }
-
   Instant const t0_;
   Displacement<World> const c0_;
   Velocity<World> const c1_;

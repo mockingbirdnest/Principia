@@ -29,6 +29,8 @@
     <MASM Include="reference_functions.asm" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dependencies.hpp" />
+    <ClInclude Include="dependencies_body.hpp" />
     <ClInclude Include="flag_parsing.hpp" />
     <ClInclude Include="latency_distribution_table.hpp" />
     <ClInclude Include="nanobenchmark.hpp" />

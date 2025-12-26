@@ -43,20 +43,7 @@ class Hermite3Nanobenchmark
         _mm_and_pd(_mm_set_pd(coordinates.x / Metre, coordinates.y / Metre),
                    _mm_set_sd(coordinates.z / Metre)));
   }
-#endif
 
-  Instant PrepareArgument(double x) const override {
-    return t0_ + x * Second;
-  }
-
-  double ConsumeValue(Displacement<World> value) const override {
-    auto const& coordinates = value.coordinates();
-    return _mm_cvtsd_f64(
-        _mm_and_pd(_mm_set_pd(coordinates.x / Metre, coordinates.y / Metre),
-                   _mm_set_sd(coordinates.z / Metre)));
-  }
-
-#if 0
   static double ToDouble(Displacement<World> const& displacement,
                          Velocity<World> const& velocity) {
     auto const& d = displacement.coordinates();

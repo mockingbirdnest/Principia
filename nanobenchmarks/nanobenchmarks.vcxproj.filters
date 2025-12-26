@@ -62,6 +62,12 @@
     <ClInclude Include="nanobenchmark_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="dependencies.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <MASM Include="reference_functions.asm">
