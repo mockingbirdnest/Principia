@@ -75,30 +75,20 @@ std::size_t FormattedWidth(std::string const& s) {
   return wide - (formatted_size - s.size());
 }
 
-void Main() {
-  std::regex const filter(absl::GetFlag(FLAGS_benchmark_filter));
-  auto controller = PerformanceSettingsController::New();
-  std::unique_ptr<Logger> logger;
-  std::string const& filename = absl::GetFlag(FLAGS_log_to_mathematica);
-  if (!filename.empty()) {
-    logger = std::make_unique<Logger>(filename, /*make_unique=*/false);
-  }
-  std::println("{} {}",
-               principia::base::_cpuid::CPUVendorIdentificationString(),
-               principia::base::_cpuid::ProcessorBrandString());
-  std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
-
+template<typename Value, typename Argument>
+void CalibrateAndRun(std::regex const& filter, Logger* const logger) {
   auto const nanobenchmarks =
-      NanobenchmarkRegistry::NanobenchmarksMatching(filter);
+      NanobenchmarkRegistry<Value, Argument>::NanobenchmarksMatching(filter);
   auto const& reference_cycle_counts = ReferenceCycleCounts();
 
   // Would like to use std::views::concat, but not this year.
   auto const nanobenchmark_widths =
-      nanobenchmarks | std::views::transform(&Nanobenchmark::name) |
+      nanobenchmarks |
+      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
       std::views::transform(&FormattedWidth);
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
-      std::views::transform(&Nanobenchmark::name) |
+      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
       std::views::transform(&FormattedWidth);
 
   std::size_t name_width = std::ranges::max(reference_cycle_counts_widths);
@@ -106,14 +96,14 @@ void Main() {
     name_width = std::max(name_width, std::ranges::max(nanobenchmark_widths));
   }
 
-  std::map<Nanobenchmark const*, LatencyDistributionTable>
+  std::map<Nanobenchmark<Value, Argument> const*, LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(stdout,
                       "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
                       std::make_format_args(
                           "RAW TSC:", "", LatencyDistributionTable::Heading()));
-  for (auto const& [nanobenchmark, _] : ReferenceCycleCounts()) {
-    auto const result = nanobenchmark->Run(logger.get());
+  for (auto const& [nanobenchmark, _] : reference_cycle_counts) {
+    auto const result = nanobenchmark->Run(logger);
     reference_measurements.emplace(nanobenchmark, result);
     std::vprint_unicode(
         stdout,
@@ -124,15 +114,16 @@ void Main() {
   }
   std::vector<double> tsc;
   std::vector<double> expected_cycles;
-  for (auto const& [nanobenchmark, cycles] : ReferenceCycleCounts()) {
+  for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
     tsc.push_back(reference_measurements[nanobenchmark].min());
     expected_cycles.push_back(cycles);
   }
   double const a = Slope(tsc, expected_cycles);
   double const b = Mean(expected_cycles) - a * Mean(tsc);
-  auto benchmark_cycles = [a, b, &logger](Nanobenchmark const* nanobenchmark) {
-    return a * nanobenchmark->Run(logger.get()) + b;
-  };
+  auto benchmark_cycles =
+      [a, b, logger](Nanobenchmark<Value, Argument> const* nanobenchmark) {
+        return a * nanobenchmark->Run(logger) + b;
+      };
   std::println("Slope: {:0.6f} cycle/TSC    Overhead: {:0.6f} TSC", a, -b / a);
   std::println(
       "Correlation coefficient: {:0.6f}",
@@ -162,6 +153,22 @@ void Main() {
                               static_cast<std::string const&>(
                                   benchmark_cycles(nanobenchmark).Row())));
   }
+}
+
+void Main() {
+  std::regex const filter(absl::GetFlag(FLAGS_benchmark_filter));
+  auto controller = PerformanceSettingsController::New();
+  std::unique_ptr<Logger> logger;
+  std::string const& filename = absl::GetFlag(FLAGS_log_to_mathematica);
+  if (!filename.empty()) {
+    logger = std::make_unique<Logger>(filename, /*make_unique=*/false);
+  }
+  std::println("{} {}",
+               principia::base::_cpuid::CPUVendorIdentificationString(),
+               principia::base::_cpuid::ProcessorBrandString());
+  std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
+
+  CalibrateAndRun<double, double>(filter, logger.get());
 }
 
 }  // namespace

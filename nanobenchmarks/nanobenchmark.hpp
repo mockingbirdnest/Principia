@@ -141,22 +141,20 @@ class NanobenchmarkRegistry {
 #define NANOBENCHMARK_DECLARE_FUNCTION(line, Function) \
   NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)
 
-#define NANOBENCHMARK_DECLARE_REGISTERED(line, TestName, BaseClass)            \
-  static BaseClass const* NANOBENCHMARK_REGISTERED_NAME(line, TestName) =      \
-      (NanobenchmarkRegistry<BaseClass::Value, BaseClass::Argument>::Register( \
-          new TestName))
+#define NANOBENCHMARK_DECLARE_REGISTERED(line, FixtureClass)                \
+  static auto const* NANOBENCHMARK_REGISTERED_NAME(line, FixtureClass) =    \
+      (NanobenchmarkRegistry<FixtureClass::Value, FixtureClass::Argument>:: \
+           Register(new FixtureClass))
 
 #define NANOBENCHMARK_REGISTER_FIXTURE(line, BaseClass, Method) \
   NANOBENCHMARK_DECLARE_REGISTERED(                             \
-      line, NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method), BaseClass)
+      line, NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method))
 
 #define NANOBENCHMARK_REGISTER(line, Function) \
-  NANOBENCHMARK_DECLARE_REGISTERED(            \
-      line, NANOBENCHMARK_CONCAT_NAME(Function), Nanobenchmark<>)
+  NANOBENCHMARK_DECLARE_REGISTERED(line, NANOBENCHMARK_CONCAT_NAME(Function))
 
 #define NANOBENCHMARK_REGISTER_FUNCTION(line) \
-  NANOBENCHMARK_DECLARE_REGISTERED(           \
-      line, NANOBENCHMARK_CONCAT_NAME(line), Nanobenchmark<>)
+  NANOBENCHMARK_DECLARE_REGISTERED(line, NANOBENCHMARK_CONCAT_NAME(line))
 
 #define NANOBENCHMARK_FIXTURE(BaseClass, Method, ...)          \
   NANOBENCHMARK_DECLARE_FIXTURE(BaseClass, Method)             \
