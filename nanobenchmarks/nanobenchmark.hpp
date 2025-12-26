@@ -185,3 +185,5 @@ using internal::NanobenchmarkRegistry;
 }  // namespace _nanobenchmark
 }  // namespace nanobenchmarks
 }  // namespace principia
+
+#include "nanobenchmarks/nanobenchmark_body.hpp"

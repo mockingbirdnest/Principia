@@ -21,7 +21,6 @@
     <ClCompile Include="hermite3_nanobenchmark.cpp" />
     <ClCompile Include="latency_distribution_table.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="nanobenchmark.cpp" />
     <ClCompile Include="performance_settings_controller.cpp" />
     <ClCompile Include="microarchitectures.cpp" />
     <ClCompile Include="polynomial_nanobenchmark.cpp" />
@@ -33,6 +32,7 @@
     <ClInclude Include="flag_parsing.hpp" />
     <ClInclude Include="latency_distribution_table.hpp" />
     <ClInclude Include="nanobenchmark.hpp" />
+    <ClInclude Include="nanobenchmark_body.hpp" />
     <ClInclude Include="performance_settings_controller.hpp" />
     <ClInclude Include="microarchitectures.hpp" />
   </ItemGroup>

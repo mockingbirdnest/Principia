@@ -110,7 +110,8 @@ std::vector<NanobenchmarkAndCycles> const& ReferenceCycleCounts() {
                 sorted_reference_cycle_counts;
             for (auto const& [function, cycles] : architecture) {
               auto const* const nanobenchmark =
-                  NanobenchmarkRegistry<>::NanobenchmarkFor(function);
+                  NanobenchmarkRegistry<double, double>::NanobenchmarkFor(
+                      function);
               CHECK(nanobenchmark != nullptr)
                   << "No nanobenchmark for function at " << function;
               sorted_reference_cycle_counts.emplace(

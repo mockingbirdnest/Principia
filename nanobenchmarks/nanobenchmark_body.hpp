@@ -1,3 +1,5 @@
+#pragma once
+
 #include "nanobenchmarks/nanobenchmark.hpp"
 
 #include <algorithm>
@@ -110,7 +112,7 @@ template<typename Value_, typename Argument_>
 std::vector<Nanobenchmark<Value_, Argument_> const*>
 NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarksMatching(
     std::regex const& filter) {
-  std::vector<Nanobenchmark const*> matching;
+  std::vector<Nanobenchmark<Value_, Argument_> const*> matching;
   for (auto const& [name, nanobenchmark] :
        singleton().nanobenchmarks_by_name_) {
     if (std::regex_match(name, filter)) {
