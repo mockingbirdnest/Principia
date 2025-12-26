@@ -42,7 +42,9 @@ class Nanobenchmark {
   std::string const& name() const;
 
  protected:
-  virtual double NanobenchmarkCase(double x) const = 0;
+  virtual Argument_ PrepareArgument(double x) const = 0;
+  virtual double ConsumeValue(Value_ value) const = 0;
+  virtual Value_ NanobenchmarkCase(Argument_ argument) const = 0;
 
   void SetFunction(BenchmarkedFunction function);
   void SetName(std::string_view name);
@@ -96,6 +98,18 @@ class NanobenchmarkRegistry {
     double NanobenchmarkCase(double x) const override;            \
   };
 
+#define NANOBENCHMARK_DECLARE_FIXTURE_TEMPLATE(                   \
+    BaseClass, Value, Argument, Method)                           \
+  class BaseClass##_##Method##_Nanobenchmark : public BaseClass { \
+   public:                                                        \
+    BaseClass##_##Method##_Nanobenchmark() : BaseClass() {        \
+      SetName(#BaseClass "<" #Value ", " #Argument ">/" #Method); \
+    }                                                             \
+                                                                  \
+   protected:                                                     \
+    Value NanobenchmarkCase(Argument x) const override;           \
+  };
+
 #define NANOBENCHMARK_DECLARE(Function)                                       \
   class FunctionFixture##_##Function##_Nanobenchmark : public Nanobenchmark { \
    public:                                                                    \
@@ -127,9 +141,23 @@ class NanobenchmarkRegistry {
   static Nanobenchmark const* NANOBENCHMARK_REGISTERED_NAME(line, TestName) = \
       (NanobenchmarkRegistry::Register(new TestName))
 
+#define NANOBENCHMARK_DECLARE_REGISTERED_TEMPLATE(                            \
+    line, TestName, Value, Argument)                                          \
+  static Nanobenchmark<Value, Argument> const* NANOBENCHMARK_REGISTERED_NAME( \
+      line, TestName) =                                                       \
+      (NanobenchmarkRegistry<Value, Argument>::Register(new TestName))
+
 #define NANOBENCHMARK_REGISTER_FIXTURE(line, BaseClass, Method) \
   NANOBENCHMARK_DECLARE_REGISTERED(                             \
       line, NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method))
+
+#define NANOBENCHMARK_REGISTER_FIXTURE_TEMPLATE(            \
+    line, BaseClass, Value, Argument, Method)               \
+  NANOBENCHMARK_DECLARE_REGISTERED_TEMPLATE(                \
+      line,                                                 \
+      NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method), \
+      Value,                                                \
+      Argument)
 
 #define NANOBENCHMARK_REGISTER(line, Function) \
   NANOBENCHMARK_DECLARE_REGISTERED(line, NANOBENCHMARK_CONCAT_NAME(Function))
@@ -142,6 +170,14 @@ class NanobenchmarkRegistry {
   NANOBENCHMARK_REGISTER_FIXTURE(__LINE__, BaseClass, Method); \
   double NANOBENCHMARK_CONCAT_NAME_FIXTURE(                    \
       BaseClass, Method)::NanobenchmarkCase(double const x) const
+
+#define NANOBENCHMARK_FIXTURE_TEMPLATE(                                      \
+    BaseClass, Value, Argument, Method, ...)                                 \
+  NANOBENCHMARK_DECLARE_FIXTURE_TEMPLATE(BaseClass, Value, Argument, Method) \
+  NANOBENCHMARK_REGISTER_FIXTURE_TEMPLATE(                                   \
+      __LINE__, BaseClass, Value, Argument, Method);                         \
+  Value NANOBENCHMARK_CONCAT_NAME_FIXTURE(                                   \
+      BaseClass, Method)::NanobenchmarkCase(Argument const argument) const
 
 #define NANOBENCHMARK(Function)                                  \
   NANOBENCHMARK_DECLARE(Function)                                \

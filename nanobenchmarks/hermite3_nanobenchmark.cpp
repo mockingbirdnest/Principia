@@ -22,7 +22,8 @@ using World = Frame<serialization::Frame::TestTag,
                     Handedness::Right,
                     serialization::Frame::TEST>;
 
-class Hermite3Nanobenchmark : public Nanobenchmark {
+class Hermite3Nanobenchmark
+    : public Nanobenchmark<Displacement<World>, Instant> {
  protected:
   using H = Hermite3<Displacement<World>, Instant>;
 
@@ -35,13 +36,27 @@ class Hermite3Nanobenchmark : public Nanobenchmark {
         v1_({0 * Metre / Second, 3 * Metre / Second, 3 * Metre / Second}),
         h_({t0_, t1_}, {d0_, d1_}, {v0_, v1_}) {};
 
+#if 0
   static double ToDouble(Displacement<World> const& displacement) {
     auto const& coordinates = displacement.coordinates();
     return _mm_cvtsd_f64(
         _mm_and_pd(_mm_set_pd(coordinates.x / Metre, coordinates.y / Metre),
                    _mm_set_sd(coordinates.z / Metre)));
   }
+#endif
 
+  Instant PrepareArgument(double x) const override {
+    return t0_ + x * Second;
+  }
+
+  double ConsumeValue(Displacement<World> value) const override {
+    auto const& coordinates = value.coordinates();
+    return _mm_cvtsd_f64(
+        _mm_and_pd(_mm_set_pd(coordinates.x / Metre, coordinates.y / Metre),
+                   _mm_set_sd(coordinates.z / Metre)));
+  }
+
+#if 0
   static double ToDouble(Displacement<World> const& displacement,
                          Velocity<World> const& velocity) {
     auto const& d = displacement.coordinates();
@@ -51,6 +66,7 @@ class Hermite3Nanobenchmark : public Nanobenchmark {
                               _mm_set_pd(d.z / Metre, v.x / (Metre / Second))),
                    _mm_set_pd(v.y / (Metre / Second), v.z / (Metre / Second))));
   }
+#endif
 
   Instant const t0_;
   Instant const t1_;
@@ -61,15 +77,24 @@ class Hermite3Nanobenchmark : public Nanobenchmark {
   H const h_;
 };
 
-NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, ConstructionAndValue) {
+#if 0
+NANOBENCHMARK_FIXTURE_TEMPLATE(Hermite3Nanobenchmark,
+                               Displacement<World>,
+                               Instant,
+                               ConstructionAndValue) {
   H const h({t0_, t1_ + x * Second}, {d0_, d1_}, {v0_, v1_});
   return ToDouble(h.Evaluate(t0_));
 }
+#endif
 
-NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, Value) {
-  return ToDouble(h_.Evaluate(t0_ + x * Second));
+NANOBENCHMARK_FIXTURE_TEMPLATE(Hermite3Nanobenchmark,
+                               Displacement<World>,
+                               Instant,
+                               Value) {
+  return h_.Evaluate(argument);
 }
 
+#if 0
 NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, ValueAndDerivative) {
   Instant const t = t0_ + x * Second;
   return ToDouble(h_.Evaluate(t), h_.EvaluateDerivative(t));
@@ -82,6 +107,7 @@ NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, WithDerivative) {
   h_.EvaluateWithDerivative(t, d, v);
   return ToDouble(d, v);
 }
+#endif
 
 }  // namespace nanobenchmarks
 }  // namespace principia
