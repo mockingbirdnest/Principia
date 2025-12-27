@@ -27,14 +27,20 @@ inline double Dependencies<double, double>::ConsumeValue(double const value) {
 }
 
 template<typename Frame>
-static Instant Dependencies<Displacement<Frame>, Instant>::ProduceArgument(
+Instant Dependencies<Displacement<Frame>, Instant>::ProduceArgument(
     double const x) {
-  static Instant const t0;
-  return t0 + x * Second;
+  return t0_ + x * Second;
 }
 
 template<typename Frame>
-static double Dependencies<Displacement<Frame>, Instant>::ConsumeValue(
+Displacement<Frame> Dependencies<Displacement<Frame>, Instant>::Run(
+    Instant const argument) {
+  double const x = (argument - t0_) / Second;
+  return Displacement<Frame>({x * Metre, x * Metre, x * Metre});
+}
+
+template<typename Frame>
+double Dependencies<Displacement<Frame>, Instant>::ConsumeValue(
     Displacement<Frame> const& value) {
   auto const& coordinates = value.coordinates();
   return _mm_cvtsd_f64(

@@ -12,18 +12,25 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 
 template<typename Value_, typename Argument_>
-struct Dependencies;
+class Dependencies;
 
 template<>
-struct Dependencies<double, double> {
+class Dependencies<double, double> {
+ public:
   static double ProduceArgument(double x);
   static double ConsumeValue(double value);
 };
 
 template<typename Frame>
-struct Dependencies<Displacement<Frame>, Instant> {
+class Dependencies<Displacement<Frame>, Instant> {
+ public:
+  static constexpr int expected_cycles = 16;//TODO(phl):Fix
   static Instant ProduceArgument(double x);
+  static Displacement<Frame> Run(Instant argument);
   static double ConsumeValue(Displacement<Frame> const& value);
+
+ private:
+  constexpr static Instant t0_;
 };
 
 }  // namespace internal

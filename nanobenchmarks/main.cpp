@@ -23,6 +23,7 @@
 #include "geometry/space.hpp"
 #include "mathematica/logger.hpp"
 #include "mathematica/mathematica.hpp"
+#include "nanobenchmarks/dependencies.hpp"
 #include "nanobenchmarks/flag_parsing.hpp"  // 🧙 For std::vector-valued flags.
 #include "nanobenchmarks/latency_distribution_table.hpp"
 #include "nanobenchmarks/microarchitectures.hpp"
@@ -62,6 +63,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::nanobenchmarks::_dependencies;
 using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::nanobenchmarks::_latency_distribution_table;
 using namespace principia::nanobenchmarks::_microarchitectures;
@@ -80,6 +82,19 @@ struct TSCCalibration {
   LatencyDistributionTable operator()(
       LatencyDistributionTable const& ldt) const {
     return slope * ldt + offset;
+  }
+};
+
+template<typename Value_, typename Argument_>
+class CalibrationNanobenchmark : public Nanobenchmark<Value_, Argument_> {
+ public:
+  CalibrationNanobenchmark() {
+    this->SetName("Calibration");
+  }
+
+ private:
+  Value_ NanobenchmarkCase(Argument_ const argument) const override {
+    return Dependencies<Value_, Argument_>::Run(argument);
   }
 };
 
@@ -140,42 +155,59 @@ TSCCalibration CalibrateTSC(Logger* const logger) {
   std::println(
       "Correlation coefficient: {:0.6f}",
       PearsonProductMomentCorrelationCoefficient(tsc, expected_cycles));
-  std::vprint_unicode(
-      stdout,
-      "{:<" + std::to_string(name_width + 2) + "}{:>8}{}\n",
-      std::make_format_args(
-          "Cycles:", "expected", LatencyDistributionTable::Heading()));
 
   return calibration;
 }
 
 template<typename Value, typename Argument>
 void RunMatching(std::regex const& filter,
-                     TSCCalibration const& calibration,
-                     Logger* const logger) {
+                 TSCCalibration const& calibration,
+                 Logger* const logger) {
   auto const nanobenchmarks =
       NanobenchmarkRegistry<Value, Argument>::NanobenchmarksMatching(filter);
   if (nanobenchmarks.empty()) {
     return;
   }
 
+  CalibrationNanobenchmark<Value, Argument> const calibration_nanobenchmark;
+
   auto const nanobenchmark_widths =
       nanobenchmarks |
       std::views::transform(&Nanobenchmark<Value, Argument>::name) |
       std::views::transform(&FormattedWidth);
   std::size_t const name_width =
-      std::ranges::max(nanobenchmark_widths);
+      std::max(FormattedWidth(calibration_nanobenchmark.name()),
+               std::ranges::max(nanobenchmark_widths));
+
+  double calibration_overhead_cycles =
+      Dependencies<Value, Argument>::expected_cycles;
 
   auto benchmark_cycles =
-      [&calibration,
-       logger](Nanobenchmark<Value, Argument> const* const nanobenchmark) {
-        return calibration(nanobenchmark->Run(logger));
+      [&calibration, &calibration_overhead_cycles, logger](
+          Nanobenchmark<Value, Argument> const* const nanobenchmark) {
+        return calibration(nanobenchmark->Run(logger)) +
+               (-calibration_overhead_cycles);
       };
 
+  // First run the calibration benchmark with the expected number of cycles
+  // (i.e., the cost of `Run`) as the overhead.  This gives us the cost of
+  // `ProduceArgument` and `ConsumeValue`.
+  calibration_overhead_cycles =
+      benchmark_cycles(&calibration_nanobenchmark).min();
+
+  std::println("Overhead: {:0.6f} cycle", calibration_overhead_cycles);
+  std::vprint_unicode(
+      stdout,
+      "{:<" + std::to_string(name_width + 2) + "}{}\n",
+      std::make_format_args(
+          "Cycles:", LatencyDistributionTable::Heading()));
+
+  // Now run the selected benchmarks using the cost of `ProduceArgument` and
+  // `ConsumeValue` as the overhead.
   for (auto const* nanobenchmark : nanobenchmarks) {
     std::vprint_unicode(
         stdout,
-        "  {:>" + std::to_string(name_width) + "}        {}\n",
+        "  {:>" + std::to_string(name_width) + "}{}\n",
         std::make_format_args(nanobenchmark->name(),
                               static_cast<std::string const&>(
                                   benchmark_cycles(nanobenchmark).Row())));
@@ -211,6 +243,12 @@ void RunMatching<double, double>(std::regex const& filter,
        logger](Nanobenchmark<double, double> const* const nanobenchmark) {
         return calibration(nanobenchmark->Run(logger));
       };
+
+  std::vprint_unicode(
+      stdout,
+      "{:<" + std::to_string(name_width + 2) + "}{:>8}{}\n",
+      std::make_format_args(
+          "Cycles:", "expected", LatencyDistributionTable::Heading()));
 
   for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
     std::vprint_unicode(
@@ -248,7 +286,7 @@ void Main() {
 
   TSCCalibration const calibration = CalibrateTSC(logger.get());
   RunMatching<double, double>(filter, calibration, logger.get());
-  //RunMatching<Displacement<World>, Instant>(filter, logger.get());
+  RunMatching<Displacement<World>, Instant>(filter, calibration, logger.get());
 }
 
 }  // namespace
