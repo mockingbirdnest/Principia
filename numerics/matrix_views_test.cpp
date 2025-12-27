@@ -207,16 +207,15 @@ TEST_F(MatrixViewsTest, ColumnView_Norm) {
 }
 
 TEST_F(MatrixViewsTest, ColumnView_DotProduct) {
-  EXPECT_EQ(
-      -60,
-      (TransposedView{.transpose = ColumnView{.matrix = fm34_,  // NOLINT
-                                              .first_row = 0,
-                                              .last_row = 2,
-                                              .column = 1}} *
-       ColumnView{.matrix = um34_,
-                  .first_row = 0,
-                  .last_row = 2,
-                  .column = 2}));
+  auto const c1 = ColumnView{.matrix = fm34_,
+                             .first_row = 0,
+                             .last_row = 2,
+                             .column = 1};
+  EXPECT_EQ(-60,
+            (TransposedView{.transpose = c1} * ColumnView{.matrix = um34_,
+                                                          .first_row = 0,
+                                                          .last_row = 2,
+                                                          .column = 2}));
 }
 
 }  // namespace numerics
