@@ -98,6 +98,8 @@ std::size_t FormattedWidth(std::string const& s) {
 
 TSCCalibration CalibrateTSC(Logger* const logger) {
   auto const& reference_cycle_counts = ReferenceCycleCounts();
+  CHECK(!reference_cycle_counts.empty())
+      << "No reference cycle counts available for this architecture";
 
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
@@ -148,16 +150,51 @@ TSCCalibration CalibrateTSC(Logger* const logger) {
 }
 
 template<typename Value, typename Argument>
-void CalibrateAndRun(std::regex const& filter,
+void RunMatching(std::regex const& filter,
                      TSCCalibration const& calibration,
                      Logger* const logger) {
   auto const nanobenchmarks =
       NanobenchmarkRegistry<Value, Argument>::NanobenchmarksMatching(filter);
-  auto const& reference_cycle_counts = ReferenceCycleCounts();
+  if (nanobenchmarks.empty()) {
+    return;
+  }
 
   auto const nanobenchmark_widths =
       nanobenchmarks |
       std::views::transform(&Nanobenchmark<Value, Argument>::name) |
+      std::views::transform(&FormattedWidth);
+  std::size_t const name_width =
+      std::ranges::max(nanobenchmark_widths);
+
+  auto benchmark_cycles =
+      [&calibration,
+       logger](Nanobenchmark<Value, Argument> const* const nanobenchmark) {
+        return calibration(nanobenchmark->Run(logger));
+      };
+
+  for (auto const* nanobenchmark : nanobenchmarks) {
+    std::vprint_unicode(
+        stdout,
+        "  {:>" + std::to_string(name_width) + "}        {}\n",
+        std::make_format_args(nanobenchmark->name(),
+                              static_cast<std::string const&>(
+                                  benchmark_cycles(nanobenchmark).Row())));
+  }
+}
+
+// For `Value = double` and `Argument = double`, we also run the reference
+// cycle benchmarks to validate our calibration.
+template<>
+void RunMatching<double, double>(std::regex const& filter,
+                                 TSCCalibration const& calibration,
+                                 Logger* const logger) {
+  auto const nanobenchmarks =
+      NanobenchmarkRegistry<double, double>::NanobenchmarksMatching(filter);
+  auto const& reference_cycle_counts = ReferenceCycleCounts();
+
+  auto const nanobenchmark_widths =
+      nanobenchmarks |
+      std::views::transform(&Nanobenchmark<double, double>::name) |
       std::views::transform(&FormattedWidth);
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
@@ -171,7 +208,7 @@ void CalibrateAndRun(std::regex const& filter,
 
   auto benchmark_cycles =
       [&calibration,
-       logger](Nanobenchmark<Value, Argument> const* const nanobenchmark) {
+       logger](Nanobenchmark<double, double> const* const nanobenchmark) {
         return calibration(nanobenchmark->Run(logger));
       };
 
@@ -210,8 +247,8 @@ void Main() {
   std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
 
   TSCCalibration const calibration = CalibrateTSC(logger.get());
-  CalibrateAndRun<double, double>(filter, calibration, logger.get());
-  //CalibrateAndRun<Displacement<World>, Instant>(filter, logger.get());
+  RunMatching<double, double>(filter, calibration, logger.get());
+  //RunMatching<Displacement<World>, Instant>(filter, logger.get());
 }
 
 }  // namespace
