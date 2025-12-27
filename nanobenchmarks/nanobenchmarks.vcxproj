@@ -26,6 +26,7 @@
     <ClCompile Include="polynomial_nanobenchmark.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <MASM Include="dependencies.asm" />
     <MASM Include="reference_functions.asm" />
   </ItemGroup>
   <ItemGroup>

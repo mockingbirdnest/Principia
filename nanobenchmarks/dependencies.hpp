@@ -24,7 +24,7 @@ class Dependencies<double, double> {
 template<typename Frame>
 class Dependencies<Displacement<Frame>, Instant> {
  public:
-  static constexpr int expected_cycles = 16;//TODO(phl):Fix
+  static constexpr int expected_cycles = 8;//TODO(phl):Fix
   static Instant ProduceArgument(double x);
   static Displacement<Frame> Run(Instant argument);
   static double ConsumeValue(Displacement<Frame> const& value);
