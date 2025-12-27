@@ -244,16 +244,17 @@ typename GramGenerator<Matrix>::G Gram(Matrix const& L) {
   std::int64_t const columns = L.columns();
   auto g = G::Uninitialized(L);
   for (std::int64_t i = 0; i < columns; ++i) {
-    auto const bᵢ = TransposedView{ColumnView{.matrix = L,
-                                              .first_row = 0,
-                                              .last_row = rows - 1,
-                                              .column = i}};
+    auto const bᵢ = ColumnView{.matrix = L,
+                               .first_row = 0,
+                               .last_row = rows - 1,
+                               .column = i};
+    auto const ᵗbᵢ = TransposedView{bᵢ};
     for (std::int64_t j = 0; j <= i; ++j) {
       auto const bⱼ = ColumnView{.matrix = L,
                                  .first_row = 0,
                                  .last_row = rows - 1,
                                  .column = j};
-      auto const bᵢbⱼ = bᵢ * bⱼ;
+      auto const bᵢbⱼ = ᵗbᵢ * bⱼ;
       g(i, j) = bᵢbⱼ;
       g(j, i) = bᵢbⱼ;
     }
@@ -446,12 +447,13 @@ void SizeReduce(std::int64_t const κ,
         }
         G(i, κ) -= ΣⱼXⱼbᵢbⱼ;
         G(κ, i) = G(i, κ);
-        DCHECK_EQ(G(i, κ),
-                  (TransposedView{ColumnView{.matrix = b,              // NOLINT
-                                             .first_row = 0,
-                                             .last_row = n - 1,
-                                             .column = i}} *
-                   b_κ)) << i;
+#if _DEBUG
+        auto const bᵢ = ColumnView{.matrix = b,
+                                   .first_row = 0,
+                                   .last_row = n - 1,
+                                   .column = i};
+        DCHECK_EQ(G(i, κ), (TransposedView{bᵢ} * b_κ)) << i;
+#endif
       }
     }
   }
