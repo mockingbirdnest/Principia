@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "numerics/concepts.hpp"
 
 namespace principia {
@@ -11,6 +13,8 @@ using namespace principia::numerics::_concepts;
 
 template<typename T>
 struct TransposedView {
+  static_assert(!std::is_rvalue_reference_v<T>);
+
   T const& transpose;
 
   constexpr int rows() const requires two_dimensional<T>;
@@ -29,7 +33,11 @@ struct TransposedView {
 };
 
 template<class T>
-TransposedView(T) -> TransposedView<T>;
+TransposedView(T&) -> TransposedView<T>;
+template<class T>
+TransposedView(T const&) -> TransposedView<T>;
+template<class T>
+TransposedView(T&&) -> TransposedView<T&&>;
 
 }  // namespace internal
 
