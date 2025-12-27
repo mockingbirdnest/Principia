@@ -73,6 +73,16 @@ using World = Frame<serialization::Frame::TestTag,
                     Handedness::Right,
                     serialization::Frame::TEST>;
 
+struct TSCCalibration {
+  double slope;
+  double offset;
+
+  LatencyDistributionTable operator()(
+      LatencyDistributionTable const& ldt) const {
+    return slope * ldt + offset;
+  }
+};
+
 std::size_t FormattedWidth(std::string const& s) {
   // Two columns per code unit is wide enough, since field width is at most 2
   // per extended grapheme cluster.
@@ -86,26 +96,16 @@ std::size_t FormattedWidth(std::string const& s) {
   return wide - (formatted_size - s.size());
 }
 
-template<typename Value, typename Argument>
-void CalibrateAndRun(std::regex const& filter, Logger* const logger) {
-  auto const nanobenchmarks =
-      NanobenchmarkRegistry<Value, Argument>::NanobenchmarksMatching(filter);
+TSCCalibration CalibrateTSC(Logger* const logger) {
   auto const& reference_cycle_counts = ReferenceCycleCounts();
 
-  // Would like to use std::views::concat, but not this year.
-  auto const nanobenchmark_widths =
-      nanobenchmarks |
-      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
-      std::views::transform(&FormattedWidth);
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
       std::views::transform(&Nanobenchmark<>::name) |
       std::views::transform(&FormattedWidth);
 
-  std::size_t name_width = std::ranges::max(reference_cycle_counts_widths);
-  if (!std::ranges::empty(nanobenchmark_widths)) {
-    name_width = std::max(name_width, std::ranges::max(nanobenchmark_widths));
-  }
+  std::size_t const name_width =
+      std::ranges::max(reference_cycle_counts_widths);
 
   std::map<Nanobenchmark<> const*, LatencyDistributionTable>
       reference_measurements;
@@ -129,12 +129,11 @@ void CalibrateAndRun(std::regex const& filter, Logger* const logger) {
     tsc.push_back(reference_measurements[nanobenchmark].min());
     expected_cycles.push_back(cycles);
   }
+
   double const a = Slope(tsc, expected_cycles);
   double const b = Mean(expected_cycles) - a * Mean(tsc);
-  auto benchmark_cycles =
-      [a, b, logger](Nanobenchmark<Value, Argument> const* nanobenchmark) {
-        return a * nanobenchmark->Run(logger) + b;
-      };
+  TSCCalibration const calibration{.slope = a, .offset = b};
+
   std::println("Slope: {:0.6f} cycle/TSC    Overhead: {:0.6f} TSC", a, -b / a);
   std::println(
       "Correlation coefficient: {:0.6f}",
@@ -144,6 +143,37 @@ void CalibrateAndRun(std::regex const& filter, Logger* const logger) {
       "{:<" + std::to_string(name_width + 2) + "}{:>8}{}\n",
       std::make_format_args(
           "Cycles:", "expected", LatencyDistributionTable::Heading()));
+
+  return calibration;
+}
+
+template<typename Value, typename Argument>
+void CalibrateAndRun(std::regex const& filter,
+                     TSCCalibration const& calibration,
+                     Logger* const logger) {
+  auto const nanobenchmarks =
+      NanobenchmarkRegistry<Value, Argument>::NanobenchmarksMatching(filter);
+  auto const& reference_cycle_counts = ReferenceCycleCounts();
+
+  auto const nanobenchmark_widths =
+      nanobenchmarks |
+      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
+      std::views::transform(&FormattedWidth);
+  auto const reference_cycle_counts_widths =
+      reference_cycle_counts | std::views::keys |
+      std::views::transform(&Nanobenchmark<>::name) |
+      std::views::transform(&FormattedWidth);
+
+  std::size_t name_width = std::ranges::max(reference_cycle_counts_widths);
+  if (!std::ranges::empty(nanobenchmark_widths)) {
+    name_width = std::max(name_width, std::ranges::max(nanobenchmark_widths));
+  }
+
+  auto benchmark_cycles =
+      [&calibration,
+       logger](Nanobenchmark<Value, Argument> const* const nanobenchmark) {
+        return calibration(nanobenchmark->Run(logger));
+      };
 
   for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
     std::vprint_unicode(
@@ -179,7 +209,9 @@ void Main() {
                principia::base::_cpuid::ProcessorBrandString());
   std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
 
-  CalibrateAndRun<double, double>(filter, logger.get());
+  TSCCalibration const calibration = CalibrateTSC(logger.get());
+  CalibrateAndRun<double, double>(filter, calibration, logger.get());
+  //CalibrateAndRun<Displacement<World>, Instant>(filter, logger.get());
 }
 
 }  // namespace
