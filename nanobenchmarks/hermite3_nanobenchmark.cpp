@@ -1,7 +1,7 @@
-#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "nanobenchmarks/dependencies.hpp"
 #include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
 #include "numerics/hermite3.hpp"
 #include "quantities/si.hpp"
@@ -9,18 +9,13 @@
 namespace principia {
 namespace nanobenchmarks {
 
-using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::nanobenchmarks::_dependencies;
 using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::numerics::_hermite3;
 using namespace principia::quantities::_si;
-
-using World = Frame<serialization::Frame::TestTag,
-                    Inertial,
-                    Handedness::Right,
-                    serialization::Frame::TEST>;
 
 class Hermite3Nanobenchmark
     : public Nanobenchmark<Displacement<World>, Instant> {
@@ -92,20 +87,6 @@ NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, WithDerivative) {
   return ToDouble(d, v);
 }
 #endif
-
-using VideNanobenchmark = Nanobenchmark<Displacement<World>, Instant>;
-
-NANOBENCHMARK_EXTERN_ALTERNATE_NAME_FUNCTION(
-    VideNanobenchmark,
-    googoogoo,
-    "?googoogoo@nanobenchmarks@principia@@YQ?AV?$Multivector@V?$Quantity@U?$"
-    "Dimensions@$00$0A@$0A@$0A@$0A@$0A@$0A@$0A@@internal@_dimensions@"
-    "quantities@principia@@@internal@_quantities@quantities@principia@@U?$"
-    "Frame@W4Frame_TestTag@serialization@principia@@$0A@$00$00@2_frame@"
-    "geometry@5@$00@internal@_grassmann@geometry@2@V?$Point@V?$Quantity@U?$"
-    "Dimensions@$0A@$0A@$00$0A@$0A@$0A@$0A@$0A@@internal@_dimensions@"
-    "quantities@principia@@@internal@_quantities@quantities@principia@@@4_"
-    "point@62@@Z")
 
 }  // namespace nanobenchmarks
 }  // namespace principia

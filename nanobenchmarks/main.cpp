@@ -70,11 +70,6 @@ using namespace principia::nanobenchmarks::_microarchitectures;
 using namespace principia::nanobenchmarks::_performance_settings_controller;
 using namespace principia::testing_utilities::_statistics;
 
-using World = Frame<serialization::Frame::TestTag,
-                    Inertial,
-                    Handedness::Right,
-                    serialization::Frame::TEST>;
-
 struct TSCCalibration {
   double slope;
   double offset;
@@ -82,19 +77,6 @@ struct TSCCalibration {
   LatencyDistributionTable operator()(
       LatencyDistributionTable const& ldt) const {
     return slope * ldt + offset;
-  }
-};
-
-template<typename Value_, typename Argument_>
-class CalibrationNanobenchmark : public Nanobenchmark<Value_, Argument_> {
- public:
-  CalibrationNanobenchmark() {
-    this->SetName("Calibration");
-  }
-
- private:
-  Value_ NanobenchmarkCase(Argument_ const argument) const override {
-    return Dependencies<Value_, Argument_>::Run(argument);
   }
 };
 

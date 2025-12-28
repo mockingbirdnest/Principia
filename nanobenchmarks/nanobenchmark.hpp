@@ -181,11 +181,11 @@ class NanobenchmarkRegistry {
                    "/alternatename:" full_name                                \
                    "=" #f))                                                   \
   extern BaseClass::Value f(BaseClass::Argument);                             \
-  NANOBENCHMARK_DECLARE_FIXTURE3(BaseClass, Method, f)                        \
-  NANOBENCHMARK_REGISTER_FIXTURE(__LINE__, BaseClass, Method);                \
+  NANOBENCHMARK_DECLARE_FIXTURE3(BaseClass, f, f)                             \
+  NANOBENCHMARK_REGISTER_FIXTURE(__LINE__, BaseClass, f);                     \
   BaseClass::Value NANOBENCHMARK_CONCAT_NAME_FIXTURE(                         \
       BaseClass,                                                              \
-      Method)::NanobenchmarkCase(BaseClass::Argument const argument) const {  \
+      f)::NanobenchmarkCase(BaseClass::Argument const argument) const {       \
     return f(argument);                                                       \
   }
 

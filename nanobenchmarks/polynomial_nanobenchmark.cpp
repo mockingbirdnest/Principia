@@ -1,7 +1,7 @@
-#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "nanobenchmarks/dependencies.hpp"
 #include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
@@ -11,20 +11,15 @@
 namespace principia {
 namespace nanobenchmarks {
 
-using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::nanobenchmarks::_dependencies;
 using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
-
-using World = Frame<serialization::Frame::TestTag,
-                    Inertial,
-                    Handedness::Right,
-                    serialization::Frame::TEST>;
 
 class PolynomialNanobenchmark
     : public Nanobenchmark<Displacement<World>, Instant> {

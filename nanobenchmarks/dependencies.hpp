@@ -1,5 +1,6 @@
 #pragma once
 
+#include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 
@@ -8,8 +9,15 @@ namespace nanobenchmarks {
 namespace _dependencies {
 namespace internal {
 
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+
+// A concrete frame useful for declaring actual nanobenchmarks.
+using World = Frame<serialization::Frame::TestTag,
+                    Inertial,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
 
 template<typename Value_, typename Argument_>
 class Dependencies;
@@ -26,7 +34,6 @@ class Dependencies<Displacement<Frame>, Instant> {
  public:
   static constexpr int expected_cycles = 8;//TODO(phl):Fix
   static Instant ProduceArgument(double x);
-  static Displacement<Frame> Run(Instant argument);
   static double ConsumeValue(Displacement<Frame> const& value);
 
  private:
@@ -34,6 +41,10 @@ class Dependencies<Displacement<Frame>, Instant> {
 };
 
 }  // namespace internal
+
+using internal::Dependencies;
+using internal::World;
+
 }  // namespace _dependencies
 }  // namespace nanobenchmarks
 }  // namespace principia
