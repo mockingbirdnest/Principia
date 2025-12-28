@@ -1,4 +1,5 @@
 PUBLIC foofoofoo
+PUBLIC googoogoo
 
 .CODE
 foofoofoo PROC
@@ -11,4 +12,11 @@ foofoofoo PROC
   vzeroupper
   ret
 foofoofoo ENDP
+
+googoogoo PROC
+  vmovupd     YMMWORD PTR [rcx], ymm0
+  mov         rax, rcx
+  vzeroupper
+  ret
+googoogoo ENDP
 END

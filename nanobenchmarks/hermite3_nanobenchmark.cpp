@@ -93,5 +93,19 @@ NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, WithDerivative) {
 }
 #endif
 
+class VideNanobenchmark
+    : public Nanobenchmark<Displacement<World>, Instant> {
+};
+
+extern Displacement<World> googoogoo(Instant);
+
+NANOBENCHMARK_FIXTURE(VideNanobenchmark, Value) {
+  return googoogoo(argument);
+}
+
+#pragma comment( \
+    linker,      \
+    "/alternatename:?googoogoo@nanobenchmarks@principia@@YQ?AV?$Multivector@V?$Quantity@U?$Dimensions@$00$0A@$0A@$0A@$0A@$0A@$0A@$0A@@internal@_dimensions@quantities@principia@@@internal@_quantities@quantities@principia@@U?$Frame@W4Frame_TestTag@serialization@principia@@$0A@$00$00@2_frame@geometry@5@$00@internal@_grassmann@geometry@2@V?$Point@V?$Quantity@U?$Dimensions@$0A@$0A@$00$0A@$0A@$0A@$0A@$0A@@internal@_dimensions@quantities@principia@@@internal@_quantities@quantities@principia@@@4_point@62@@Z=googoogoo")
+
 }  // namespace nanobenchmarks
 }  // namespace principia

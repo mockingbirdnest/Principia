@@ -192,8 +192,16 @@ void RunMatching(std::regex const& filter,
   // First run the calibration benchmark with the expected number of cycles
   // (i.e., the cost of `Run`) as the overhead.  This gives us the cost of
   // `ProduceArgument` and `ConsumeValue`.
+  auto const ldt = benchmark_cycles(&calibration_nanobenchmark);
+    std::vprint_unicode(
+        stdout,
+        "{:>" + std::to_string(name_width + 2) + "}{:8}{}\n",
+        std::make_format_args(calibration_nanobenchmark.name(),
+                              "",
+                              static_cast<std::string const&>(ldt.Row())));
+
   calibration_overhead_cycles =
-      benchmark_cycles(&calibration_nanobenchmark).min();
+      ldt.min();
 
   std::println("Overhead: {:0.6f} cycle", calibration_overhead_cycles);
   std::vprint_unicode(
