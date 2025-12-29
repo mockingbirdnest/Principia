@@ -25,7 +25,7 @@ namespace internal {
 using namespace principia::mathematica::_logger;
 using namespace principia::nanobenchmarks::_latency_distribution_table;
 
-template<typename Value_ = double, typename Argument_ = double>
+template<typename Value_, typename Argument_>
 class Nanobenchmark {
  public:
   using Value = Value_;
@@ -113,29 +113,31 @@ class NanobenchmarkRegistry {
     Value NanobenchmarkCase(Argument x) const override;                    \
   };
 
-#define NANOBENCHMARK_DECLARE(Function)                                \
-  class NANOBENCHMARK_CONCAT_NAME(Function) : public Nanobenchmark<> { \
-   public:                                                             \
-    NANOBENCHMARK_CONCAT_NAME(Function)() {                            \
-      SetName(#Function);                                              \
-    }                                                                  \
-                                                                       \
-   protected:                                                          \
-    Value NanobenchmarkCase(Argument x) const override;                \
+#define NANOBENCHMARK_DECLARE(Function)                 \
+  class NANOBENCHMARK_CONCAT_NAME(Function)             \
+      : public Nanobenchmark<double, double> {          \
+   public:                                              \
+    NANOBENCHMARK_CONCAT_NAME(Function)() {             \
+      SetName(#Function);                               \
+    }                                                   \
+                                                        \
+   protected:                                           \
+    Value NanobenchmarkCase(Argument x) const override; \
   };
 
-#define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)            \
-  class NANOBENCHMARK_CONCAT_NAME(line) : public Nanobenchmark<> { \
-   public:                                                         \
-    NANOBENCHMARK_CONCAT_NAME(line)() {                            \
-      SetFunction(&Function);                                      \
-      SetName(#Function);                                          \
-    }                                                              \
-                                                                   \
-   protected:                                                      \
-    Value NanobenchmarkCase(Argument const x) const override {     \
-      return Function(x);                                          \
-    }                                                              \
+#define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)        \
+  class NANOBENCHMARK_CONCAT_NAME(line)                        \
+      : public Nanobenchmark<double, double> {                 \
+   public:                                                     \
+    NANOBENCHMARK_CONCAT_NAME(line)() {                        \
+      SetFunction(&Function);                                  \
+      SetName(#Function);                                      \
+    }                                                          \
+                                                               \
+   protected:                                                  \
+    Value NanobenchmarkCase(Argument const x) const override { \
+      return Function(x);                                      \
+    }                                                          \
   };
 #define NANOBENCHMARK_DECLARE_FUNCTION(line, Function) \
   NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)

@@ -20,8 +20,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_si;
 
 template<typename Value_>
-class Hermite3Nanobenchmark
-    : public Nanobenchmark<Value_, Instant> {
+class Hermite3Nanobenchmark : public Nanobenchmark<Value_, Instant> {
  protected:
   using H = Hermite3<Displacement<World>, Instant>;
 
@@ -44,9 +43,9 @@ class Hermite3Nanobenchmark
 };
 
 using Hermite3DisplacementNanobenchmark =
-   Hermite3Nanobenchmark<Displacement<World>>;
+    Hermite3Nanobenchmark<Displacement<World>>;
 using Hermite3RelativeDegreesOfFreedomNanobenchmark =
-   Hermite3Nanobenchmark<RelativeDegreesOfFreedom<World>>;
+    Hermite3Nanobenchmark<RelativeDegreesOfFreedom<World>>;
 
 NANOBENCHMARK_FIXTURE(Hermite3DisplacementNanobenchmark, ConstructionAndValue) {
   H const h({t0_, t1_}, {d0_, d1_}, {v0_, v1_});

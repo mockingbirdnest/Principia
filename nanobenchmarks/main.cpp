@@ -98,13 +98,13 @@ TSCCalibration CalibrateTSC(Logger* const logger) {
 
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
-      std::views::transform(&Nanobenchmark<>::name) |
+      std::views::transform(&Nanobenchmark<double, double>::name) |
       std::views::transform(&FormattedWidth);
 
   std::size_t const name_width =
       std::ranges::max(reference_cycle_counts_widths);
 
-  std::map<Nanobenchmark<> const*, LatencyDistributionTable>
+  std::map<Nanobenchmark<double, double> const*, LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(stdout,
                       "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
