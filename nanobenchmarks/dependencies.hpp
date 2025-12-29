@@ -15,6 +15,9 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 
+// NOTE: Add a specialization of `Dependencies` for each pair of `Value,
+// Argument` used in nanobenchmarks.
+
 // A concrete frame useful for declaring actual nanobenchmarks.
 using World = Frame<serialization::Frame::TestTag,
                     Inertial,
