@@ -3,21 +3,17 @@
 #include <cstdio>
 #include <iomanip>
 #include <iostream>
-#include <limits>
 #include <map>
 #include <memory>
 #include <print>
 #include <ranges>
 #include <regex>
-#include <sstream>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -185,11 +181,13 @@ double CalibrateOverhead(TSCCalibration const& calibration,
 
 template<typename Value, typename Argument>
 void RunMatching(std::regex const& filter,
+                 bool const skip_if_empty,
                  TSCCalibration const& calibration,
+                 double const overhead_cycles,
                  Logger* const logger) {
   auto const nanobenchmarks =
       NanobenchmarkRegistry<Value, Argument>::NanobenchmarksMatching(filter);
-  if (nanobenchmarks.empty()) {
+  if (nanobenchmarks.empty() && skip_if_empty) {
     return;
   }
   auto const& reference_cycle_counts = ReferenceCycleCounts<Value, Argument>();
@@ -208,70 +206,10 @@ void RunMatching(std::regex const& filter,
     name_width = std::max(name_width, std::ranges::max(nanobenchmark_widths));
   }
 
-  double const overhead_cycles =
-      CalibrateOverhead<Value, Argument>(calibration, logger);
-
   auto benchmark_cycles =
       [&calibration, logger, overhead_cycles](
           Nanobenchmark<Value, Argument> const* const nanobenchmark) {
         return calibration(nanobenchmark->Run(logger)) - overhead_cycles;
-      };
-
-  std::vprint_unicode(
-      stdout,
-      "{:<" + std::to_string(name_width + 2) + "}{:>8}{}\n",
-      std::make_format_args(
-          "Cycles:", "expected", LatencyDistributionTable::Heading()));
-
-  for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
-    std::vprint_unicode(
-        stdout,
-        "R {:>" + std::to_string(name_width) + "}{:>8}{}\n",
-        std::make_format_args(
-            nanobenchmark->name(),
-            static_cast<std::string const&>(std::to_string(cycles)),
-            static_cast<std::string const&>(
-                benchmark_cycles(nanobenchmark).Row())));
-  }
-
-  for (auto const* nanobenchmark : nanobenchmarks) {
-    std::vprint_unicode(
-        stdout,
-        "  {:>" + std::to_string(name_width) + "}        {}\n",
-        std::make_format_args(nanobenchmark->name(),
-                              static_cast<std::string const&>(
-                                  benchmark_cycles(nanobenchmark).Row())));
-  }
-}
-
-// For `Value = double` and `Argument = double`, we also run the reference
-// cycle benchmarks to validate our calibration.
-template<>
-void RunMatching<double, double>(std::regex const& filter,
-                                 TSCCalibration const& calibration,
-                                 Logger* const logger) {
-  auto const nanobenchmarks =
-      NanobenchmarkRegistry<double, double>::NanobenchmarksMatching(filter);
-  auto const& reference_cycle_counts = ReferenceCycleCounts<double, double>();
-
-  auto const nanobenchmark_widths =
-      nanobenchmarks |
-      std::views::transform(&Nanobenchmark<double, double>::name) |
-      std::views::transform(&FormattedWidth);
-  auto const reference_cycle_counts_widths =
-      reference_cycle_counts | std::views::keys |
-      std::views::transform(&Nanobenchmark<double, double>::name) |
-      std::views::transform(&FormattedWidth);
-
-  std::size_t name_width = std::ranges::max(reference_cycle_counts_widths);
-  if (!std::ranges::empty(nanobenchmark_widths)) {
-    name_width = std::max(name_width, std::ranges::max(nanobenchmark_widths));
-  }
-
-  auto benchmark_cycles =
-      [&calibration,
-       logger](Nanobenchmark<double, double> const* const nanobenchmark) {
-        return calibration(nanobenchmark->Run(logger));
       };
 
   std::vprint_unicode(
@@ -315,8 +253,23 @@ void Main() {
   std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
 
   TSCCalibration const calibration = CalibrateTSC(logger.get());
-  RunMatching<double, double>(filter, calibration, logger.get());
-  RunMatching<Displacement<World>, Instant>(filter, calibration, logger.get());
+  RunMatching<double, double>(filter,
+                              /*skip_if_empty=*/false,
+                              calibration,
+                              /*overhead_cycles=*/0,
+                              logger.get());
+  // NOTE: One block must be added for each pair of `Value, Argument` used in
+  // nanobenchmarks.
+  {
+    double const overhead_cycles =
+        CalibrateOverhead<Displacement<World>, Instant>(calibration,
+                                                        logger.get());
+    RunMatching<Displacement<World>, Instant>(filter,
+                                              /*skip_if_empty=*/true,
+                                              calibration,
+                                              overhead_cycles,
+                                              logger.get());
+  }
 }
 
 }  // namespace
