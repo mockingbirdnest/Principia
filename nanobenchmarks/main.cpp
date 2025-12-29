@@ -181,11 +181,16 @@ double CalibrateOverhead(TSCCalibration const& calibration,
   return overhead_cycles;
 }
 
+template<>
+double CalibrateOverhead<double, double>(TSCCalibration const& calibration,
+                                         Logger* const logger) {
+  return 0;
+}
+
 template<typename Value, typename Argument>
 void RunMatching(std::regex const& filter,
                  bool const skip_if_empty,
                  TSCCalibration const& calibration,
-                 double const overhead_cycles,
                  Logger* const logger) {
   auto const nanobenchmarks =
       NanobenchmarkRegistry<Value, Argument>::NanobenchmarksMatching(filter);
@@ -207,6 +212,9 @@ void RunMatching(std::regex const& filter,
   if (!std::ranges::empty(nanobenchmark_widths)) {
     name_width = std::max(name_width, std::ranges::max(nanobenchmark_widths));
   }
+
+  double const overhead_cycles =
+      CalibrateOverhead<Value, Argument>(calibration, logger);
 
   auto benchmark_cycles =
       [&calibration, logger, overhead_cycles](
@@ -258,31 +266,17 @@ void Main() {
   RunMatching<double, double>(filter,
                               /*skip_if_empty=*/false,
                               calibration,
-                              /*overhead_cycles=*/0,
                               logger.get());
-  // NOTE: One block must be added for each pair of `Value, Argument` used in
+  // NOTE: One call must be added for each pair of `Value, Argument` used in
   // nanobenchmarks.
-  {
-    double const overhead_cycles =
-        CalibrateOverhead<Displacement<World>, Instant>(calibration,
+  RunMatching<Displacement<World>, Instant>(filter,
+                                            /*skip_if_empty=*/true,
+                                            calibration,
+                                            logger.get());
+  RunMatching<RelativeDegreesOfFreedom<World>, Instant>(filter,
+                                                        /*skip_if_empty=*/true,
+                                                        calibration,
                                                         logger.get());
-    RunMatching<Displacement<World>, Instant>(filter,
-                                              /*skip_if_empty=*/true,
-                                              calibration,
-                                              overhead_cycles,
-                                              logger.get());
-  }
-  {
-    double const overhead_cycles =
-        CalibrateOverhead<RelativeDegreesOfFreedom<World>, Instant>(
-            calibration, logger.get());
-    RunMatching<RelativeDegreesOfFreedom<World>, Instant>(
-        filter,
-        /*skip_if_empty=*/true,
-        calibration,
-        overhead_cycles,
-        logger.get());
-  }
 }
 
 }  // namespace
