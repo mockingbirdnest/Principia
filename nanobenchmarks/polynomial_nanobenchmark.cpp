@@ -3,7 +3,6 @@
 #include "geometry/space.hpp"
 #include "nanobenchmarks/dependencies.hpp"
 #include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
@@ -17,7 +16,6 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::nanobenchmarks::_dependencies;
 using namespace principia::nanobenchmarks::_nanobenchmark;
-using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;

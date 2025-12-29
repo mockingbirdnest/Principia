@@ -4,6 +4,7 @@
 #include "nanobenchmarks/dependencies.hpp"
 #include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
 #include "numerics/hermite3.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -15,10 +16,12 @@ using namespace principia::geometry::_space;
 using namespace principia::nanobenchmarks::_dependencies;
 using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::numerics::_hermite3;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_si;
 
+template<typename Value_>
 class Hermite3Nanobenchmark
-    : public Nanobenchmark<Displacement<World>, Instant> {
+    : public Nanobenchmark<Value_, Instant> {
  protected:
   using H = Hermite3<Displacement<World>, Instant>;
 
@@ -31,25 +34,6 @@ class Hermite3Nanobenchmark
         v1_({0 * Metre / Second, 3 * Metre / Second, 3 * Metre / Second}),
         h_({t0_, t1_}, {d0_, d1_}, {v0_, v1_}) {};
 
-#if 0
-  static double ToDouble(Displacement<World> const& displacement) {
-    auto const& coordinates = displacement.coordinates();
-    return _mm_cvtsd_f64(
-        _mm_and_pd(_mm_set_pd(coordinates.x / Metre, coordinates.y / Metre),
-                   _mm_set_sd(coordinates.z / Metre)));
-  }
-
-  static double ToDouble(Displacement<World> const& displacement,
-                         Velocity<World> const& velocity) {
-    auto const& d = displacement.coordinates();
-    auto const& v = velocity.coordinates();
-    return _mm_cvtsd_f64(
-        _mm_and_pd(_mm_and_pd(_mm_set_pd(d.x / Metre, d.y / Metre),
-                              _mm_set_pd(d.z / Metre, v.x / (Metre / Second))),
-                   _mm_set_pd(v.y / (Metre / Second), v.z / (Metre / Second))));
-  }
-#endif
-
   Instant const t0_;
   Instant const t1_;
   Displacement<World> const d0_;
@@ -59,34 +43,33 @@ class Hermite3Nanobenchmark
   H const h_;
 };
 
-#if 0
-NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark,
-                               Displacement<World>,
-                               Instant,
-                               ConstructionAndValue) {
-  H const h({t0_, t1_ + x * Second}, {d0_, d1_}, {v0_, v1_});
-  return ToDouble(h.Evaluate(t0_));
-}
-#endif
+using Hermite3DisplacementNanobenchmark =
+   Hermite3Nanobenchmark<Displacement<World>>;
+using Hermite3RelativeDegreesOfFreedomNanobenchmark =
+   Hermite3Nanobenchmark<RelativeDegreesOfFreedom<World>>;
 
-NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, Value) {
+NANOBENCHMARK_FIXTURE(Hermite3DisplacementNanobenchmark, ConstructionAndValue) {
+  H const h({t0_, t1_}, {d0_, d1_}, {v0_, v1_});
+  return h.Evaluate(argument);
+}
+
+NANOBENCHMARK_FIXTURE(Hermite3DisplacementNanobenchmark, Value) {
   return h_.Evaluate(argument);
 }
 
-#if 0
-NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, ValueAndDerivative) {
-  Instant const t = t0_ + x * Second;
-  return ToDouble(h_.Evaluate(t), h_.EvaluateDerivative(t));
+NANOBENCHMARK_FIXTURE(Hermite3RelativeDegreesOfFreedomNanobenchmark,
+                      ValueAndDerivative) {
+  return RelativeDegreesOfFreedom<World>(h_.Evaluate(argument),
+                                         h_.EvaluateDerivative(argument));
 }
 
-NANOBENCHMARK_FIXTURE(Hermite3Nanobenchmark, WithDerivative) {
-  Instant const t = t0_ + x * Second;
+NANOBENCHMARK_FIXTURE(Hermite3RelativeDegreesOfFreedomNanobenchmark,
+                      WithDerivative) {
   Displacement<World> d;
   Velocity<World> v;
-  h_.EvaluateWithDerivative(t, d, v);
-  return ToDouble(d, v);
+  h_.EvaluateWithDerivative(argument, d, v);
+  return RelativeDegreesOfFreedom<World>(d, v);
 }
-#endif
 
 }  // namespace nanobenchmarks
 }  // namespace principia
