@@ -142,6 +142,48 @@ TSCCalibration CalibrateTSC(Logger* const logger) {
 }
 
 template<typename Value, typename Argument>
+double CalibrateOverhead(TSCCalibration const& calibration,
+                         Logger* const logger) {
+  auto const& reference_cycle_counts = ReferenceCycleCounts<Value, Argument>();
+  CHECK(!reference_cycle_counts.empty())
+      << "No reference cycle counts available for this architecture";
+
+  auto const reference_cycle_counts_widths =
+      reference_cycle_counts | std::views::keys |
+      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
+      std::views::transform(&FormattedWidth);
+
+  std::size_t const name_width =
+      std::ranges::max(reference_cycle_counts_widths);
+
+  std::map<Nanobenchmark<Value, Argument> const*, LatencyDistributionTable>
+      reference_measurements;
+  std::vprint_unicode(stdout,
+                      "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
+                      std::make_format_args(
+                          "Cycles:", "", LatencyDistributionTable::Heading()));
+  for (auto const& [nanobenchmark, _] : reference_cycle_counts) {
+    auto const result = calibration(nanobenchmark->Run(logger));
+    reference_measurements.emplace(nanobenchmark, result);
+    std::vprint_unicode(
+        stdout,
+        "{:>" + std::to_string(name_width + 2) + "}{:8}{}\n",
+        std::make_format_args(nanobenchmark->name(),
+                              "",
+                              static_cast<std::string const&>(result.Row())));
+  }
+  std::vector<double> overheads_cycles;
+  for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
+    overheads_cycles.push_back(reference_measurements[nanobenchmark].min() -
+                              cycles);
+  }
+
+  double const overhead_cycles = Mean(overheads_cycles);
+  std::println("Overhead: {:0.6f} cycle", overhead_cycles);
+  return overhead_cycles;
+}
+
+template<typename Value, typename Argument>
 void RunMatching(std::regex const& filter,
                  TSCCalibration const& calibration,
                  Logger* const logger) {
@@ -150,59 +192,56 @@ void RunMatching(std::regex const& filter,
   if (nanobenchmarks.empty()) {
     return;
   }
-
-  CalibrationNanobenchmark<Value, Argument> const calibration_nanobenchmark;
+  auto const& reference_cycle_counts = ReferenceCycleCounts<Value, Argument>();
 
   auto const nanobenchmark_widths =
       nanobenchmarks |
       std::views::transform(&Nanobenchmark<Value, Argument>::name) |
       std::views::transform(&FormattedWidth);
-  std::size_t const name_width =
-      std::max(FormattedWidth(calibration_nanobenchmark.name()),
-               std::ranges::max(nanobenchmark_widths));
+  auto const reference_cycle_counts_widths =
+      reference_cycle_counts | std::views::keys |
+      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
+      std::views::transform(&FormattedWidth);
 
-  double calibration_overhead_cycles =
-      Dependencies<Value, Argument>::expected_cycles;
+  std::size_t name_width = std::ranges::max(reference_cycle_counts_widths);
+  if (!std::ranges::empty(nanobenchmark_widths)) {
+    name_width = std::max(name_width, std::ranges::max(nanobenchmark_widths));
+  }
+
+  double const overhead_cycles =
+      CalibrateOverhead<Value, Argument>(calibration, logger);
 
   auto benchmark_cycles =
-      [&calibration, &calibration_overhead_cycles, logger](
+      [&calibration, logger, overhead_cycles](
           Nanobenchmark<Value, Argument> const* const nanobenchmark) {
-        return calibration(nanobenchmark->Run(logger)) +
-               (-calibration_overhead_cycles);
+        return calibration(nanobenchmark->Run(logger)) - overhead_cycles;
       };
 
-  // First run the calibration benchmark with the expected number of cycles
-  // (i.e., the cost of `Run`) as the overhead.  This gives us the cost of
-  // `ProduceArgument` and `ConsumeValue`.
-  auto const ldt = benchmark_cycles(&calibration_nanobenchmark);
-    std::vprint_unicode(
-        stdout,
-        "{:>" + std::to_string(name_width + 2) + "}{:8}{}\n",
-        std::make_format_args(calibration_nanobenchmark.name(),
-                              "",
-                              static_cast<std::string const&>(ldt.Row())));
-
-  calibration_overhead_cycles =
-      ldt.min();
-
-  std::println("Overhead: {:0.6f} cycle", calibration_overhead_cycles);
   std::vprint_unicode(
       stdout,
-      "{:<" + std::to_string(name_width + 2) + "}{}\n",
+      "{:<" + std::to_string(name_width + 2) + "}{:>8}{}\n",
       std::make_format_args(
-          "Cycles:", LatencyDistributionTable::Heading()));
+          "Cycles:", "expected", LatencyDistributionTable::Heading()));
 
-  // Now run the selected benchmarks using the cost of `ProduceArgument` and
-  // `ConsumeValue` as the overhead.
+  for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
+    std::vprint_unicode(
+        stdout,
+        "R {:>" + std::to_string(name_width) + "}{:>8}{}\n",
+        std::make_format_args(
+            nanobenchmark->name(),
+            static_cast<std::string const&>(std::to_string(cycles)),
+            static_cast<std::string const&>(
+                benchmark_cycles(nanobenchmark).Row())));
+  }
+
   for (auto const* nanobenchmark : nanobenchmarks) {
     std::vprint_unicode(
         stdout,
-        "  {:>" + std::to_string(name_width) + "}{}\n",
+        "  {:>" + std::to_string(name_width) + "}        {}\n",
         std::make_format_args(nanobenchmark->name(),
                               static_cast<std::string const&>(
                                   benchmark_cycles(nanobenchmark).Row())));
   }
-#endif
 }
 
 // For `Value = double` and `Argument = double`, we also run the reference
@@ -221,7 +260,7 @@ void RunMatching<double, double>(std::regex const& filter,
       std::views::transform(&FormattedWidth);
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
-      std::views::transform(&Nanobenchmark<>::name) |
+      std::views::transform(&Nanobenchmark<double, double>::name) |
       std::views::transform(&FormattedWidth);
 
   std::size_t name_width = std::ranges::max(reference_cycle_counts_widths);
