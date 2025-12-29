@@ -3,6 +3,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace nanobenchmarks {
@@ -12,6 +13,7 @@ namespace internal {
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
 
 // A concrete frame useful for declaring actual nanobenchmarks.
 using World = Frame<serialization::Frame::TestTag,
@@ -32,9 +34,18 @@ class Dependencies<double, double> {
 template<typename Frame>
 class Dependencies<Displacement<Frame>, Instant> {
  public:
-  static constexpr int expected_cycles = 8;//TODO(phl):Fix
   static Instant ProduceArgument(double x);
   static double ConsumeValue(Displacement<Frame> const& value);
+
+ private:
+  constexpr static Instant t0_;
+};
+
+template<typename Frame>
+class Dependencies<RelativeDegreesOfFreedom<Frame>, Instant> {
+ public:
+  static Instant ProduceArgument(double x);
+  static double ConsumeValue(RelativeDegreesOfFreedom<Frame> const& value);
 
  private:
   constexpr static Instant t0_;

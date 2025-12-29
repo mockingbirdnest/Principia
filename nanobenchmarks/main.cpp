@@ -25,6 +25,7 @@
 #include "nanobenchmarks/microarchitectures.hpp"
 #include "nanobenchmarks/nanobenchmark.hpp"
 #include "nanobenchmarks/performance_settings_controller.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "testing_utilities/statistics.hpp"
 
 ABSL_FLAG(std::size_t,
@@ -64,6 +65,7 @@ using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::nanobenchmarks::_latency_distribution_table;
 using namespace principia::nanobenchmarks::_microarchitectures;
 using namespace principia::nanobenchmarks::_performance_settings_controller;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::testing_utilities::_statistics;
 
 struct TSCCalibration {
@@ -269,6 +271,17 @@ void Main() {
                                               calibration,
                                               overhead_cycles,
                                               logger.get());
+  }
+  {
+    double const overhead_cycles =
+        CalibrateOverhead<RelativeDegreesOfFreedom<World>, Instant>(
+            calibration, logger.get());
+    RunMatching<RelativeDegreesOfFreedom<World>, Instant>(
+        filter,
+        /*skip_if_empty=*/true,
+        calibration,
+        overhead_cycles,
+        logger.get());
   }
 }
 
