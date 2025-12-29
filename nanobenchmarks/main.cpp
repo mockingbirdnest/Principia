@@ -94,7 +94,7 @@ std::size_t FormattedWidth(std::string const& s) {
 }
 
 TSCCalibration CalibrateTSC(Logger* const logger) {
-  auto const& reference_cycle_counts = ReferenceCycleCounts();
+  auto const& reference_cycle_counts = ReferenceCycleCounts<double, double>();
   CHECK(!reference_cycle_counts.empty())
       << "No reference cycle counts available for this architecture";
 
@@ -202,6 +202,7 @@ void RunMatching(std::regex const& filter,
                               static_cast<std::string const&>(
                                   benchmark_cycles(nanobenchmark).Row())));
   }
+#endif
 }
 
 // For `Value = double` and `Argument = double`, we also run the reference
@@ -212,7 +213,7 @@ void RunMatching<double, double>(std::regex const& filter,
                                  Logger* const logger) {
   auto const nanobenchmarks =
       NanobenchmarkRegistry<double, double>::NanobenchmarksMatching(filter);
-  auto const& reference_cycle_counts = ReferenceCycleCounts();
+  auto const& reference_cycle_counts = ReferenceCycleCounts<double, double>();
 
   auto const nanobenchmark_widths =
       nanobenchmarks |

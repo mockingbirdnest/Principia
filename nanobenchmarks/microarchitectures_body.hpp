@@ -1,3 +1,5 @@
+#pragma once
+
 #include "nanobenchmarks/microarchitectures.hpp"
 
 #include <memory>
@@ -103,46 +105,63 @@ mulsd_xmm0_xmm0_4x:
 #endif
 
 namespace {
+
+// Skylake, Cascade Lake, Coffee Lake, Cannon Lake, Ice Lake, Tiger Lake, Golden
+// Cove(?).
+std::regex const intel(R"(((6|7|9|10|11|12)th Gen Intel\(R\) Core\(TM\))"
+                       R"(|Intel\(R\) Xeon\(R\) W-[23]).*)");
+std::regex const zen3("AMD Ryzen Threadripper PRO 5.*");
+std::regex const rosetta2("VirtualApple .*");
+
 // Don't use `absl::flat_hash_map` below, for some reason it introduces noise in
 // the timings.
-static std::vector<std::pair<
-    std::regex,
-    absl::btree_map<Nanobenchmark<>::BenchmarkedFunction, int>>> const&
-    microarchitectures = *new std::vector{
-        // Skylake, Cascade Lake, Coffee Lake, Cannon Lake, Ice Lake, Tiger
-        // Lake, Golden Cove(?).
-        std::pair{std::regex(R"(((6|7|9|10|11|12)th Gen Intel\(R\) Core\(TM\))"
-                             R"(|Intel\(R\) Xeon\(R\) W-[23]).*)"),
-                  absl::btree_map<Nanobenchmark<>::BenchmarkedFunction, int>{
-                      std::pair{&identity, 0},
-                      std::pair{&mulsd_xmm0_xmm0, 4},
-                      std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
-                      std::pair{&sqrtps_xmm0_xmm0, 12}}},
-        // Zen3.
-        std::pair{std::regex("AMD Ryzen Threadripper PRO 5.*"),
-                  absl::btree_map<Nanobenchmark<>::BenchmarkedFunction, int>{
-                      std::pair{&identity, 0},
-                      std::pair{&mulsd_xmm0_xmm0, 3},
-                      std::pair{&mulsd_xmm0_xmm0_4x, 4 * 3},
-                      std::pair{&sqrtps_xmm0_xmm0, 14}}},
-        // Rosetta 2.
-        std::pair{std::regex("VirtualApple .*"),
-                  absl::btree_map<Nanobenchmark<>::BenchmarkedFunction, int>{
-                      std::pair{&identity, 0},
-                      std::pair{&mulsd_xmm0_xmm0, 4},
-                      std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4}}}};
+template<typename Value, typename Argument>
+using MicroarchitectureDescription = std::vector<
+    std::pair<std::regex,
+              absl::btree_map<
+                  typename Nanobenchmark<Value, Argument>::BenchmarkedFunction,
+                  int>>>;
+
+template<typename Value, typename Argument>
+MicroarchitectureDescription<Value, Argument> const microarchitectures;
+
+template<>
+MicroarchitectureDescription<double, double> const
+    microarchitectures<double, double>{
+    std::pair{intel,
+              absl::btree_map<Nanobenchmark<>::BenchmarkedFunction, int>{
+                  std::pair{&identity, 0},
+                  std::pair{&mulsd_xmm0_xmm0, 4},
+                  std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
+                  std::pair{&sqrtps_xmm0_xmm0, 12}}},
+    std::pair{zen3,
+              absl::btree_map<Nanobenchmark<>::BenchmarkedFunction, int>{
+                  std::pair{&identity, 0},
+                  std::pair{&mulsd_xmm0_xmm0, 3},
+                  std::pair{&mulsd_xmm0_xmm0_4x, 4 * 3},
+                  std::pair{&sqrtps_xmm0_xmm0, 14}}},
+    std::pair{rosetta2,
+              absl::btree_map<Nanobenchmark<>::BenchmarkedFunction, int>{
+                  std::pair{&identity, 0},
+                  std::pair{&mulsd_xmm0_xmm0, 4},
+                  std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4}}}};
+
 }  // namespace
 
-std::vector<NanobenchmarkAndCycles> const& ReferenceCycleCounts() {
-  static std::vector<NanobenchmarkAndCycles>* const reference_cycle_counts =
-      [] {
-        for (auto const& [regex, architecture] : microarchitectures) {
+template<typename Value, typename Argument>
+std::vector<NanobenchmarkAndCycles<Value, Argument>> const&
+ReferenceCycleCounts<Value, Argument>() {
+  static std::vector<NanobenchmarkAndCycles<Value, Argument>>* const
+      reference_cycle_counts = [] {
+        for (auto const& [regex, architecture] :
+             microarchitectures<Value, Argument>) {
           if (std::regex_match(ProcessorBrandString(), regex)) {
-            absl::btree_map<std::string, NanobenchmarkAndCycles>
+            absl::btree_map<std::string,
+                            NanobenchmarkAndCycles<Value, Argument>>
                 sorted_reference_cycle_counts;
             for (auto const& [function, cycles] : architecture) {
               auto const* const nanobenchmark =
-                  NanobenchmarkRegistry<double, double>::NanobenchmarkFor(
+                  NanobenchmarkRegistry<Value, Argument>::NanobenchmarkFor(
                       function);
               CHECK(nanobenchmark != nullptr)
                   << "No nanobenchmark for function at " << function;
@@ -150,7 +169,7 @@ std::vector<NanobenchmarkAndCycles> const& ReferenceCycleCounts() {
                   nanobenchmark->name(),
                   NanobenchmarkAndCycles{nanobenchmark, cycles});
             }
-            return new std::vector<NanobenchmarkAndCycles>(
+            return new std::vector<NanobenchmarkAndCycles<Value, Argument>>(
                 std::from_range,
                 sorted_reference_cycle_counts | std::views::values);
           }
