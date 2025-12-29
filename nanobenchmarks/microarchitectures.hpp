@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "nanobenchmarks/nanobenchmark.hpp"
 
@@ -12,10 +12,14 @@ namespace internal {
 
 using namespace principia::nanobenchmarks::_nanobenchmark;
 
-using NanobenchmarkAndCycles = std::pair<Nanobenchmark const*, int>;
+template<typename Value, typename Argument>
+using NanobenchmarkAndCycles =
+    std::pair<Nanobenchmark<Value, Argument> const*, int>;
 
 // The returned vector is sorted by nanobenchmark name.
-std::vector<NanobenchmarkAndCycles> const& ReferenceCycleCounts();
+template<typename Value, typename Argument>
+std::vector<NanobenchmarkAndCycles<Value, Argument>> const&
+ReferenceCycleCounts();
 
 }  // namespace internal
 
@@ -24,3 +28,5 @@ using internal::ReferenceCycleCounts;
 }  // namespace _microarchitectures
 }  // namespace nanobenchmarks
 }  // namespace principia
+
+#include "nanobenchmarks/microarchitectures_body.hpp"
