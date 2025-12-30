@@ -422,7 +422,8 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
               nominal_anomalistic_mean_motion,
               AnyOf(IsNear(0.00129_(1)),      // Windows.
                     IsNear(0.00064_(1)),      // Ubuntu AVX.
-                    IsNear(0.00106_(1))))));  // Ubuntu SSE, macOS.
+                    IsNear(0.00106_(1)),      // Ubuntu SSE.
+                    IsNear(0.00075_(1))))));  // macOS.
 
   EXPECT_THAT(elements.mean_semimajor_axis_interval().midpoint(),
               AbsoluteErrorFrom(29'599.8 * Kilo(Metre),
