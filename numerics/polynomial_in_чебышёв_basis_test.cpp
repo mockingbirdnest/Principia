@@ -1,6 +1,7 @@
 #include "numerics/polynomial_in_чебышёв_basis.hpp"
 
 #include "astronomy/frames.hpp"
+#include "base/algebra.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
@@ -8,7 +9,6 @@
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -21,13 +21,13 @@ namespace numerics {
 using ::testing::ElementsAre;
 using ::testing::Lt;
 using namespace principia::astronomy::_frames;
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

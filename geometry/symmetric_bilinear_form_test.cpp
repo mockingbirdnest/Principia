@@ -2,6 +2,7 @@
 
 #include <random>
 
+#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -9,7 +10,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -25,13 +25,13 @@ namespace principia {
 namespace geometry {
 
 using ::testing::Eq;
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

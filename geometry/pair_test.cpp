@@ -1,12 +1,12 @@
 #include "geometry/pair.hpp"
 
+#include "base/algebra.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -18,13 +18,13 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_pair;
 using namespace principia::geometry::_point;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

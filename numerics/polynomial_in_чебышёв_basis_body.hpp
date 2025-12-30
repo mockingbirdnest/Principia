@@ -119,7 +119,9 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessag
      _MSC_FULL_VER == 194'234'435 || \
      _MSC_FULL_VER == 194'334'809 || \
      _MSC_FULL_VER == 194'435'211 || \
-     _MSC_FULL_VER == 194'435'213)
+     _MSC_FULL_VER == 194'435'213 || \
+     _MSC_FULL_VER == 194'435'221 || \
+     _MSC_FULL_VER == 194'435'222)
       std::abort();
 #endif
   }
@@ -371,6 +373,29 @@ RealRootsOrDie(double const ε) const {
   } else {
     LOG(FATAL) << "Real roots only meaningful for scalar-valued polynomials";
   }
+}
+
+template<typename Value_, typename Argument_, int degree_>
+Value_ PRINCIPIA_VECTORCALL
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
+VirtualEvaluate(Argument argument) const {
+  return (*this)(argument);
+}
+
+template<typename Value_, typename Argument_, int degree_>
+Derivative<Value_, Argument_> PRINCIPIA_VECTORCALL
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
+VirtualEvaluateDerivative(Argument argument) const {
+  return EvaluateDerivative(argument);
+}
+
+template<typename Value_, typename Argument_, int degree_>
+void PRINCIPIA_VECTORCALL
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
+VirtualEvaluateWithDerivative(Argument argument,
+                              Value& value,
+                              Derivative<Value, Argument>& derivative) const {
+  return EvaluateWithDerivative(argument, value, derivative);
 }
 
 }  // namespace internal

@@ -4,9 +4,8 @@
 #include <vector>
 
 #include "absl/status/statusor.h"
+#include "base/multiprecision.hpp"
 #include "base/thread_pool.hpp"
-#include "boost/multiprecision/cpp_bin_float.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 
 namespace principia {
@@ -14,7 +13,7 @@ namespace functions {
 namespace _accurate_table_generator {
 namespace internal {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_multiprecision;
 using namespace principia::base::_thread_pool;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 

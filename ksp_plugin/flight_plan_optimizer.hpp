@@ -6,6 +6,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -16,7 +17,6 @@
 #include "numerics/gradient_descent.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/reference_frame.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -25,6 +25,7 @@ namespace ksp_plugin {
 namespace _flight_plan_optimizer {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
@@ -35,7 +36,6 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_gradient_descent;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_reference_frame;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

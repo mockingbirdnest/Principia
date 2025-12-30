@@ -11,10 +11,10 @@
 #include <string>
 
 #include "absl/container/btree_set.h"
+#include "base/algebra.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
 #include "numerics/fixed_arrays.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 #include "serialization/numerics.pb.h"
 
@@ -48,10 +48,10 @@ namespace numerics {
 namespace _polynomial_in_чебышёв_basis {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_polynomial;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 
 template<typename Value_, typename Argument_, auto _ = std::nullopt>
@@ -127,13 +127,13 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
                                    PolynomialInЧебышёвBasis const& right) =
       default;
 
-  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const override;
-  Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
-      Argument argument) const override;
-  void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
-      Argument argument,
-      Value& value,
-      Derivative<Value, Argument>& derivative) const override;
+  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const;
+  Derivative<Value, Argument> PRINCIPIA_VECTORCALL
+  EvaluateDerivative(Argument argument) const;
+  void PRINCIPIA_VECTORCALL
+  EvaluateWithDerivative(Argument argument,
+                         Value& value,
+                         Derivative<Value, Argument>& derivative) const;
 
   constexpr int degree() const override;
   bool is_zero() const override;
@@ -153,6 +153,14 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
  protected:
   bool MayHaveRealRootsOrDie(Value error_estimate) const override;
   absl::btree_set<Argument> RealRootsOrDie(double ε) const override;
+
+  Value PRINCIPIA_VECTORCALL VirtualEvaluate(Argument argument) const override;
+  Derivative<Value, Argument> PRINCIPIA_VECTORCALL
+  VirtualEvaluateDerivative(Argument argument) const override;
+  void PRINCIPIA_VECTORCALL VirtualEvaluateWithDerivative(
+      Argument argument,
+      Value& value,
+      Derivative<Value, Argument>& derivative) const override;
 
  private:
   Coefficients coefficients_;

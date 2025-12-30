@@ -4,10 +4,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/tags.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -15,10 +15,10 @@ namespace numerics {
 namespace _fixed_arrays {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_si;
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>

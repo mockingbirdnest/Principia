@@ -1,10 +1,10 @@
 #pragma once
 
-#include "quantities/arithmetic.hpp"
+#include "base/algebra.hpp"
 
 namespace principia {
-namespace quantities {
-namespace _arithmetic {
+namespace base {
+namespace _algebra {
 namespace internal {
 
 template<typename T, int exponent>
@@ -25,6 +25,6 @@ struct ExponentiationGenerator<T, 1> : not_constructible {
 };
 
 }  // namespace internal
-}  // namespace _arithmetic
-}  // namespace quantities
+}  // namespace _algebra
+}  // namespace base
 }  // namespace principia

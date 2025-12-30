@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
@@ -22,7 +23,6 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_motion.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/tuples.hpp"
@@ -32,6 +32,7 @@ namespace physics {
 namespace _barycentric_rotating_reference_frame {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
@@ -44,7 +45,6 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_tuples;

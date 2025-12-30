@@ -1,9 +1,9 @@
 #pragma once
 
+#include "base/algebra.hpp"
 #include "geometry/grassmann.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -11,10 +11,10 @@ namespace physics {
 namespace _harmonic_damping {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 
 // Specification of the damping of a spherical harmonic, acting as a radial

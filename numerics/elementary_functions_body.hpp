@@ -6,7 +6,6 @@
 
 #include <cmath>
 
-#include "boost/multiprecision/cpp_bin_float.hpp"
 #include "glog/logging.h"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
@@ -18,7 +17,6 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
-using namespace boost::multiprecision;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;

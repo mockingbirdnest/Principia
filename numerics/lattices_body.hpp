@@ -7,15 +7,15 @@
 #include <utility>
 #include <vector>
 
+#include "base/algebra.hpp"
+#include "base/multiprecision.hpp"
 #include "base/tags.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "numerics/unbounded_arrays.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 
 namespace principia {
@@ -23,7 +23,8 @@ namespace numerics {
 namespace _lattices {
 namespace internal {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_algebra;
+using namespace principia::base::_multiprecision;
 using namespace principia::base::_tags;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
@@ -31,7 +32,6 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 
 // The largest `int64_t` that can be converted to and from `double` without loss
@@ -244,16 +244,17 @@ typename GramGenerator<Matrix>::G Gram(Matrix const& L) {
   std::int64_t const columns = L.columns();
   auto g = G::Uninitialized(L);
   for (std::int64_t i = 0; i < columns; ++i) {
-    auto const bᵢ = TransposedView{ColumnView{.matrix = L,
-                                              .first_row = 0,
-                                              .last_row = rows - 1,
-                                              .column = i}};
+    auto const bᵢ = ColumnView{.matrix = L,
+                               .first_row = 0,
+                               .last_row = rows - 1,
+                               .column = i};
+    auto const ᵗbᵢ = TransposedView{bᵢ};
     for (std::int64_t j = 0; j <= i; ++j) {
       auto const bⱼ = ColumnView{.matrix = L,
                                  .first_row = 0,
                                  .last_row = rows - 1,
                                  .column = j};
-      auto const bᵢbⱼ = bᵢ * bⱼ;
+      auto const bᵢbⱼ = ᵗbᵢ * bⱼ;
       g(i, j) = bᵢbⱼ;
       g(j, i) = bᵢbⱼ;
     }
@@ -446,12 +447,13 @@ void SizeReduce(std::int64_t const κ,
         }
         G(i, κ) -= ΣⱼXⱼbᵢbⱼ;
         G(κ, i) = G(i, κ);
-        DCHECK_EQ(G(i, κ),
-                  (TransposedView{ColumnView{.matrix = b,              // NOLINT
-                                             .first_row = 0,
-                                             .last_row = n - 1,
-                                             .column = i}} *
-                   b_κ)) << i;
+#if _DEBUG
+        auto const bᵢ = ColumnView{.matrix = b,
+                                   .first_row = 0,
+                                   .last_row = n - 1,
+                                   .column = i};
+        DCHECK_EQ(G(i, κ), (TransposedView{bᵢ} * b_κ)) << i;
+#endif
       }
     }
   }

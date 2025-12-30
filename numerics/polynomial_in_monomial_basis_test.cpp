@@ -2,8 +2,8 @@
 
 #include <tuple>
 
-#include "boost/multiprecision/cpp_bin_float.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
+#include "base/algebra.hpp"
+#include "base/multiprecision.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -11,7 +11,6 @@
 #include "gtest/gtest.h"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -31,7 +30,8 @@ namespace principia {
 namespace numerics {
 
 using ::testing::Eq;
-using namespace boost::multiprecision;
+using namespace principia::base::_algebra;
+using namespace principia::base::_multiprecision;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -39,7 +39,6 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -106,7 +105,7 @@ TEST_F(PolynomialInMonomialBasisTest, Coefficients) {
 
 // Check that a polynomial can be constructed and evaluated.
 TEST_F(PolynomialInMonomialBasisTest, Evaluate2V) {
-  P2V const p(coefficients_, with_evaluator<Horner>);
+  P2V const p(coefficients_);
   EXPECT_EQ(2, p.degree());
   Displacement<World> const d = p(0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(0.5 * Second);
@@ -446,10 +445,10 @@ TEST_F(PolynomialInMonomialBasisTest, PrimitiveIntegrate) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, EvaluateConstant) {
-  PolynomialInMonomialBasis<Entropy, Time, 0> const horner_boltzmann(
-      std::make_tuple(BoltzmannConstant), with_evaluator<Horner>);
-  PolynomialInMonomialBasis<Entropy, Time, 0> const estrin_boltzmann(
-      std::make_tuple(BoltzmannConstant), with_evaluator<Estrin>);
+  PolynomialInMonomialBasis<Entropy, Time, 0, Horner> const horner_boltzmann(
+      std::make_tuple(BoltzmannConstant));
+  PolynomialInMonomialBasis<Entropy, Time, 0, Estrin> const estrin_boltzmann(
+      std::make_tuple(BoltzmannConstant));
   EXPECT_THAT(horner_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(estrin_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(horner_boltzmann.EvaluateDerivative(1729 * Second),
@@ -459,10 +458,10 @@ TEST_F(PolynomialInMonomialBasisTest, EvaluateConstant) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, EvaluateLinear) {
-  PolynomialInMonomialBasis<Length, Time, 1> const
-      horner_light({0 * Metre, SpeedOfLight}, with_evaluator<Horner>);
-  PolynomialInMonomialBasis<Length, Time, 1> const
-      estrin_light({0 * Metre, SpeedOfLight}, with_evaluator<Estrin>);
+  PolynomialInMonomialBasis<Length, Time, 1, Horner> const
+      horner_light({0 * Metre, SpeedOfLight});
+  PolynomialInMonomialBasis<Length, Time, 1, Estrin> const
+      estrin_light({0 * Metre, SpeedOfLight});
   constexpr Length light_second = Second * SpeedOfLight;
   EXPECT_THAT(horner_light(1729 * Second), Eq(1729 * light_second));
   EXPECT_THAT(estrin_light(1729 * Second), Eq(1729 * light_second));
@@ -538,12 +537,9 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
         Polynomial<Displacement<World>, Instant>::ReadFromMessage<Horner>(
             compatibility_message);
     EXPECT_EQ(2, polynomial_read->degree());
-    *polynomial_read =
-        std::move(
-            dynamic_cast<
-                PolynomialInMonomialBasis<Displacement<World>, Instant, 2>&>(
-                *polynomial_read))
-            .template WithEvaluator<Horner>();
+    *polynomial_read = dynamic_cast<
+        PolynomialInMonomialBasis<Displacement<World>, Instant, 2, Horner>&>(
+        *polynomial_read);
     EXPECT_THAT(
         (*polynomial_read)(Instant() + 0.5 * Second),
         AlmostEquals(
@@ -567,16 +563,16 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
     EXPECT_TRUE(extension.has_quantity());
+    EXPECT_TRUE(extension.has_evaluator());
+    EXPECT_EQ(serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN,
+              extension.evaluator().kind());
 
     auto const polynomial_read =
         Polynomial<Displacement<World>, Time>::ReadFromMessage(message);
     EXPECT_EQ(17, polynomial_read->degree());
-    *polynomial_read =
-        std::move(
-            dynamic_cast<
-                PolynomialInMonomialBasis<Displacement<World>, Time, 17>&>(
-                *polynomial_read))
-            .template WithEvaluator<Estrin>();
+    *polynomial_read = dynamic_cast<
+        PolynomialInMonomialBasis<Displacement<World>, Time, 17, Estrin>&>(
+        *polynomial_read);
     EXPECT_THAT((*polynomial_read)(0.5 * Second),
                 AlmostEquals(
                     Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}), 0));

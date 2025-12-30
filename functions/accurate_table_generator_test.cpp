@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "absl/strings/strip.h"
-#include "boost/multiprecision/cpp_int.hpp"
+#include "base/multiprecision.hpp"
 #include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -29,7 +29,7 @@ using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::SizeIs;
-using namespace boost::multiprecision;
+using namespace principia::base::_multiprecision;
 using namespace principia::functions::_multiprecision;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;

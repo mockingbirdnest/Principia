@@ -143,7 +143,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   }
 
   EXPECT_THAT(mercury_centred_trajectory.size(),
-              AnyOf(Eq(1'534'272),    // Windows.
+              AnyOf(Eq(1'534'471),    // Windows.
                     Eq(1'534'335)));  // Ubuntu, macOS.
   OrbitalElements const elements = OrbitalElements::ForTrajectory(
       mercury_centred_trajectory, mercury_, MasslessBody{}).value();
@@ -189,8 +189,9 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
                     IsNear(14'909.96_(1) * Kilo(Metre)),    // Ubuntu.
                     IsNear(14'909.99_(1) * Kilo(Metre))));  // macOS.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().max,
-              AnyOf(IsNear(14'910.28_(1) * Kilo(Metre)),    // Windows, macOS.
-                    IsNear(14'910.29_(1) * Kilo(Metre))));  // Ubuntu.
+              AnyOf(IsNear(14'910.27_(1) * Kilo(Metre)),    // Windows.
+                    IsNear(14'910.29_(1) * Kilo(Metre)),    // Ubuntu.
+                    IsNear(14'910.28_(1) * Kilo(Metre))));  // macOS.
 
   // The integral c₁ is preserved quite well: we have an exchange between
   // inclination and eccentricity.

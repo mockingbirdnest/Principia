@@ -16,7 +16,6 @@
     <ClInclude Include="cartesian_product_body.hpp" />
     <ClInclude Include="complexification.hpp" />
     <ClInclude Include="complexification_body.hpp" />
-    <ClInclude Include="concepts.hpp" />
     <ClInclude Include="conformal_map.hpp" />
     <ClInclude Include="conformal_map_body.hpp" />
     <ClInclude Include="frame.hpp" />
@@ -72,7 +71,6 @@
   <ItemGroup>
     <ClCompile Include="barycentre_calculator_test.cpp" />
     <ClCompile Include="complexification_test.cpp" />
-    <ClCompile Include="concepts_test.cpp" />
     <ClCompile Include="conformal_map_test.cpp" />
     <ClCompile Include="frame_test.cpp" />
     <ClCompile Include="grassmann_test.cpp" />

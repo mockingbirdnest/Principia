@@ -1,14 +1,13 @@
 #pragma once
 
-#include "boost/multiprecision/cpp_bin_float.hpp"
-#include "boost/multiprecision/cpp_int.hpp"
+#include "base/multiprecision.hpp"
 
 namespace principia {
 namespace functions {
 namespace _multiprecision {
 namespace internal {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_multiprecision;
 
 cpp_bin_float_50 Sin(cpp_rational const& α);
 cpp_bin_float_50 Cos(cpp_rational const& α);

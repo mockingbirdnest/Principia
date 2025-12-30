@@ -18,20 +18,23 @@
     <ClCompile Include="elementary_functions_nanobenchmark.cpp" />
     <ClCompile Include="examples_nanobenchmark.cpp" />
     <ClCompile Include="flag_parsing.cpp" />
+    <ClCompile Include="hermite3_nanobenchmark.cpp" />
     <ClCompile Include="latency_distribution_table.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="nanobenchmark.cpp" />
     <ClCompile Include="performance_settings_controller.cpp" />
-    <ClCompile Include="microarchitectures.cpp" />
     <ClCompile Include="polynomial_nanobenchmark.cpp" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="reference_functions.asm" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dependencies.hpp" />
+    <ClInclude Include="dependencies_body.hpp" />
     <ClInclude Include="flag_parsing.hpp" />
     <ClInclude Include="latency_distribution_table.hpp" />
+    <ClInclude Include="microarchitectures_body.hpp" />
     <ClInclude Include="nanobenchmark.hpp" />
+    <ClInclude Include="nanobenchmark_body.hpp" />
     <ClInclude Include="performance_settings_controller.hpp" />
     <ClInclude Include="microarchitectures.hpp" />
   </ItemGroup>

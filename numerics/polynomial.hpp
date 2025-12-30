@@ -4,9 +4,9 @@
 #include <memory>
 #include <string>
 
+#include "base/algebra.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "base/not_null.hpp"
-#include "quantities/arithmetic.hpp"
 #include "serialization/numerics.pb.h"
 
 namespace principia {
@@ -14,12 +14,11 @@ namespace numerics {
 namespace _polynomial {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
-using namespace principia::quantities::_arithmetic;
 
-// `Value_` must belong to an affine space.  `Argument_` must belong to a ring
-// or to Point based on a ring.
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 class Polynomial {
  public:
   using Argument = Argument_;
@@ -36,13 +35,13 @@ class Polynomial {
   friend constexpr bool operator!=(Polynomial const& left,
                                    Polynomial const& right) = default;
 
-  virtual Value PRINCIPIA_VECTORCALL operator()(Argument argument) const = 0;
-  virtual Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
-      Argument argument) const = 0;
-  virtual void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
+  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const;
+  Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
+      Argument argument) const;
+  void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
       Argument argument,
       Value& value,
-      Derivative<Value, Argument>& derivative) const = 0;
+      Derivative<Value, Argument>& derivative) const;
 
   // Only useful for benchmarking, analyzing performance or for downcasting.  Do
   // not use in other circumstances.
@@ -61,6 +60,16 @@ class Polynomial {
   template<template<typename, typename, int> typename Evaluator>
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
+
+ protected:
+  virtual Value PRINCIPIA_VECTORCALL
+  VirtualEvaluate(Argument argument) const = 0;
+  virtual Derivative<Value, Argument> PRINCIPIA_VECTORCALL
+  VirtualEvaluateDerivative(Argument argument) const = 0;
+  virtual void PRINCIPIA_VECTORCALL VirtualEvaluateWithDerivative(
+      Argument argument,
+      Value& value,
+      Derivative<Value, Argument>& derivative) const = 0;
 };
 
 }  // namespace internal

@@ -2,10 +2,9 @@
 
 #include <type_traits>
 
+#include "base/algebra.hpp"
 #include "base/not_constructible.hpp"
-#include "geometry/concepts.hpp"
 #include "geometry/grassmann.hpp"  // 🧙 For _grassmann::internal.
-#include "quantities/arithmetic.hpp"
 #include "quantities/concepts.hpp"
 
 namespace principia {
@@ -13,9 +12,8 @@ namespace geometry {
 namespace _hilbert {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_constructible;
-using namespace principia::geometry::_concepts;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_concepts;
 
 // A trait that represents a Hilbert space, i.e., a space with an inner product
@@ -77,7 +75,9 @@ struct Hilbert<T1, T2> : not_constructible {
     _MSC_FULL_VER == 194'234'435 || \
     _MSC_FULL_VER == 194'334'809 || \
     _MSC_FULL_VER == 194'435'211 || \
-    _MSC_FULL_VER == 194'435'213
+    _MSC_FULL_VER == 194'435'213 || \
+    _MSC_FULL_VER == 194'435'221 || \
+    _MSC_FULL_VER == 194'435'222
   {  // NOLINT
     return _grassmann::internal::InnerProduct(t1, t2);
   }
@@ -110,7 +110,9 @@ struct Hilbert<T, T> : not_constructible {
     _MSC_FULL_VER == 194'234'435 || \
     _MSC_FULL_VER == 194'334'809 || \
     _MSC_FULL_VER == 194'435'211 || \
-    _MSC_FULL_VER == 194'435'213
+    _MSC_FULL_VER == 194'435'213 || \
+    _MSC_FULL_VER == 194'435'221 || \
+    _MSC_FULL_VER == 194'435'222
   {  // NOLINT
     return _grassmann::internal::InnerProduct(t1, t2);
   }
@@ -136,7 +138,9 @@ struct Hilbert<T, T> : not_constructible {
     _MSC_FULL_VER == 194'234'435 || \
     _MSC_FULL_VER == 194'334'809 || \
     _MSC_FULL_VER == 194'435'211 || \
-    _MSC_FULL_VER == 194'435'213
+    _MSC_FULL_VER == 194'435'213 || \
+    _MSC_FULL_VER == 194'435'221 || \
+    _MSC_FULL_VER == 194'435'222
   {  // NOLINT
     return t.Norm²();
   }
@@ -162,7 +166,9 @@ struct Hilbert<T, T> : not_constructible {
     _MSC_FULL_VER == 194'234'435 || \
     _MSC_FULL_VER == 194'334'809 || \
     _MSC_FULL_VER == 194'435'211 || \
-    _MSC_FULL_VER == 194'435'213
+    _MSC_FULL_VER == 194'435'213 || \
+    _MSC_FULL_VER == 194'435'221 || \
+    _MSC_FULL_VER == 194'435'222
   {  // NOLINT
     return t.Norm();
   }

@@ -5,6 +5,7 @@
 #include <random>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "geometry/complexification.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -12,7 +13,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -25,13 +25,13 @@ using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Pair;
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fast_fourier_transform;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

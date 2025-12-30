@@ -3,7 +3,7 @@
 #include <optional>
 #include <type_traits>
 
-#include "quantities/arithmetic.hpp"
+#include "base/algebra.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -12,7 +12,7 @@ namespace numerics {
 namespace _quadrature {
 namespace internal {
 
-using namespace principia::quantities::_arithmetic;
+using namespace principia::base::_algebra;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 

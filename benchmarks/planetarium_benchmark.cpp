@@ -27,6 +27,7 @@
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_reference_frame.hpp"
+#include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -61,10 +62,10 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
-using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
+using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;

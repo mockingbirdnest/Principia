@@ -39,7 +39,7 @@
     <ClCompile Include="examples_nanobenchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="nanobenchmark.cpp">
+    <ClCompile Include="hermite3_nanobenchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -58,6 +58,15 @@
     </ClInclude>
     <ClInclude Include="nanobenchmark.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nanobenchmark_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

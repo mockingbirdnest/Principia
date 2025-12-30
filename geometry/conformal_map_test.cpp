@@ -1,5 +1,6 @@
 #include "geometry/conformal_map.hpp"
 
+#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/homothecy.hpp"
@@ -12,7 +13,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -22,6 +22,7 @@ namespace principia {
 namespace geometry {
 
 using ::testing::Eq;
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_conformal_map;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -32,7 +33,6 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

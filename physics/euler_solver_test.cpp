@@ -9,6 +9,7 @@
 
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -18,7 +19,6 @@
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
-#include "quantities/arithmetic.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -40,6 +40,7 @@ using ::testing::Lt;
 using ::testing::Matcher;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -49,7 +50,6 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_euler_solver;
-using namespace principia::quantities::_arithmetic;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;

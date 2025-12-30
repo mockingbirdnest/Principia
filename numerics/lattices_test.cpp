@@ -1,6 +1,6 @@
 #include "numerics/lattices.hpp"
 
-#include "boost/multiprecision/cpp_int.hpp"
+#include "base/multiprecision.hpp"
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -9,7 +9,7 @@ namespace principia {
 namespace numerics {
 namespace _lattices {
 
-using namespace boost::multiprecision;
+using namespace principia::base::_multiprecision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_lattices;
 using namespace principia::testing_utilities::_almost_equals;

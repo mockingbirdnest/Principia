@@ -86,6 +86,11 @@ LatencyDistributionTable operator+(LatencyDistributionTable const& x,
   return result;
 }
 
+LatencyDistributionTable operator-(LatencyDistributionTable const& x,
+                                   double const b) {
+  return x + (-b);
+}
+
 }  // namespace internal
 }  // namespace _latency_distribution_table
 }  // namespace nanobenchmarks
