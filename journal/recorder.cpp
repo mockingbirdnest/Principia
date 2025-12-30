@@ -7,7 +7,7 @@
 #include "base/serialization.hpp"
 #include "base/version.hpp"
 #include "glog/logging.h"
-#include "ksp_plugin/interface.hpp"
+#include "ksp_plugin/interface.hpp"  // 🧙 For principia__GetVersion.
 
 namespace principia {
 namespace journal {
