@@ -8,6 +8,7 @@
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/flags/declare.h"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_PRAGMA.
 #include "mathematica/logger.hpp"
 #include "nanobenchmarks/latency_distribution_table.hpp"
 
@@ -179,15 +180,13 @@ class NanobenchmarkRegistry {
   NANOBENCHMARK_FUNCTION(f)
 
 #define NANOBENCHMARK_EXTERN_ALTERNATE_NAME_FUNCTION(BaseClass, f, full_name) \
-  __pragma(comment(linker,                                                    \
-                   "/alternatename:" full_name                                \
-                   "=" #f))                                                   \
+  PRINCIPIA_PRAGMA(comment(linker, "/alternatename:" full_name "=" #f))       \
   extern BaseClass::Value f(BaseClass::Argument);                             \
   NANOBENCHMARK_DECLARE_FIXTURE3(BaseClass, f, f)                             \
   NANOBENCHMARK_REGISTER_FIXTURE(__LINE__, BaseClass, f);                     \
   BaseClass::Value NANOBENCHMARK_CONCAT_NAME_FIXTURE(                         \
-      BaseClass,                                                              \
-      f)::NanobenchmarkCase(BaseClass::Argument const argument) const {       \
+      BaseClass, f)::NanobenchmarkCase(BaseClass::Argument const argument)    \
+      const {                                                                 \
     return f(argument);                                                       \
   }
 

@@ -31,18 +31,21 @@ char const* const CompilerVersion = __VERSION__;
 char const* const CompilerName = "Clang";
 char const* const CompilerVersion = __VERSION__;
 #elif defined(_MSC_VER)
-#define PRINCIPIA_VECTORCALL __vectorcall
 #define PRINCIPIA_COMPILER_MSVC 1
+#define PRINCIPIA_VECTORCALL __vectorcall
+#define PRINCIPIA_PRAGMA(...) __pragma(__VA_ARGS__)
 char const* const CompilerName = "Microsoft Visual C++";
 char const* const CompilerVersion = STRINGIFY_EXPANSION(_MSC_FULL_VER);
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
 #define PRINCIPIA_COMPILER_ICC 1
 #define PRINCIPIA_VECTORCALL
+#define PRINCIPIA_PRAGMA(...)
 char const* const CompilerName = "Intel C++ Compiler";
 char const* const CompilerVersion = __VERSION__;
 #elif defined(__GNUC__)
 #define PRINCIPIA_COMPILER_GCC 1
 #define PRINCIPIA_VECTORCALL
+#define PRINCIPIA_PRAGMA(...)
 char const* const CompilerName = "G++";
 char const* const CompilerVersion = __VERSION__;
 #else
