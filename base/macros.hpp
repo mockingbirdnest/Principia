@@ -23,11 +23,13 @@ namespace base {
 #if defined(_MSC_VER) && defined(__clang__)
 #define PRINCIPIA_COMPILER_CLANG_CL 1
 #define PRINCIPIA_VECTORCALL
+#define PRINCIPIA_PRAGMA(...) __pragma(__VA_ARGS__)
 char const* const CompilerName = "Clang-cl";
 char const* const CompilerVersion = __VERSION__;
 #elif defined(__clang__)
 #define PRINCIPIA_COMPILER_CLANG 1
 #define PRINCIPIA_VECTORCALL
+#define PRINCIPIA_PRAGMA(...) __pragma(__VA_ARGS__)
 char const* const CompilerName = "Clang";
 char const* const CompilerVersion = __VERSION__;
 #elif defined(_MSC_VER)
