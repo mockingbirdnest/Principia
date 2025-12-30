@@ -152,6 +152,36 @@ mulsd_xmm0_xmm0_4x:
   mulsd xmm0, xmm0
   mulsd xmm0, xmm0
   ret
+_ZN9principia14nanobenchmarks19_microarchitectures8internal15fill3_from_xmm0ENS_8geometry6_point8internal5PointINS_10quantities11_quantities8internal8QuantityINS7_11_dimensions8internal10DimensionsILl0ELl0ELl1ELl0ELl0ELl0ELl0ELl0EEEEEEE:
+  vxorpd      xmm1, xmm1, xmm1
+  vunpcklpd   xmm2, xmm0, xmm1
+  vmovddup    xmm1, xmm2
+  vinsertf128 ymm2, ymm1, xmm2, 1
+  vmovupd     YMMWORD PTR [rcx], ymm2
+  mov         rax, rcx
+  vzeroupper
+  ret
+_ZN9principia14nanobenchmarks19_microarchitectures8internal14fill_from_ymm0ENS_8geometry6_point8internal5PointINS_10quantities11_quantities8internal8QuantityINS7_11_dimensions8internal10DimensionsILl0ELl0ELl1ELl0ELl0ELl0ELl0ELl0EEEEEEE:
+  vmovupd     YMMWORD PTR [rcx], ymm0
+  mov         rax, rcx
+  vzeroupper
+  ret
+_ZN9principia14nanobenchmarks19_microarchitectures8internal15fill6_from_xmm0ENS_8geometry6_point8internal5PointINS_10quantities11_quantities8internal8QuantityINS7_11_dimensions8internal10DimensionsILl0ELl0ELl1ELl0ELl0ELl0ELl0ELl0EEEEEEE:
+  vxorpd      xmm1, xmm1, xmm1
+  vunpcklpd   xmm2, xmm0, xmm1
+  vmovddup    xmm1, xmm2
+  vinsertf128 ymm2, ymm1, xmm2, 1
+  vmovupd     YMMWORD PTR [rcx], ymm2
+  vmovupd     YMMWORD PTR [rcx+32], ymm2
+  mov         rax, rcx
+  vzeroupper
+  ret
+_ZN9principia14nanobenchmarks19_microarchitectures8internal19fill_from_ymm0_ymm1ENS_8geometry6_point8internal5PointINS_10quantities11_quantities8internal8QuantityINS7_11_dimensions8internal10DimensionsILl0ELl0ELl1ELl0ELl0ELl0ELl0ELl0EEEEEEE:
+  vmovupd     YMMWORD PTR [rcx], ymm0
+  vmovupd     YMMWORD PTR [rcx+32], ymm1
+  mov         rax, rcx
+  vzeroupper
+  ret
 )");
 #endif
 #endif
