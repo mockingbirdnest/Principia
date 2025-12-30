@@ -85,7 +85,10 @@ internal static class Loader {
         // our mind and load the x64_AVX_FMA DLL.  It's necessary to unload the
         // DLL, otherwise the base address reported by `InitGoogleLogging` might
         // (incorrectly) be the one of the `x64` DLL.
-        UnloadPrincipiaDll(platform: "x64");
+        string error_unload = UnloadPrincipiaDll(platform: "x64");
+        if (error_unload != null) {
+          return error_unload;
+        }
         string error_x64_avx_fma = LoadPrincipiaDllForPlatform(
             possible_dll_path_patterns,
             dll_filename: dll_filename,
