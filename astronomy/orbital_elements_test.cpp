@@ -398,7 +398,8 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
   // expected; the longitude of the ascending node Ω exhibits no obvious
   // precession even if its daily oscillation is filtered out.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
-              IsNear(20_(1) * Metre));
+              AnyOf(IsNear(20_(1) * Metre),    // Windows, Ubuntu SSE, macOS.
+                    IsNear(21_(1) * Metre)));  // Ubuntu AVX.
   EXPECT_THAT(elements.mean_eccentricity_interval().measure(),
               IsNear(1.0e-4_(1)));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
