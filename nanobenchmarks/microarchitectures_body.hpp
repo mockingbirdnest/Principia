@@ -152,6 +152,36 @@ mulsd_xmm0_xmm0_4x:
   mulsd xmm0, xmm0
   mulsd xmm0, xmm0
   ret
+_ZN9principia14nanobenchmarks19_microarchitectures8internal15fill3_from_xmm0ENS_8geometry6_point8internal5PointINS_10quantities11_quantities8internal8QuantityINS7_11_dimensions8internal10DimensionsILl0ELl0ELl1ELl0ELl0ELl0ELl0ELl0EEEEEEE:
+  mov         rax, rdi
+  vxorpd      xmm1, xmm1, xmm1
+  vunpcklpd   xmm2, xmm0, xmm1
+  vmovddup    xmm1, xmm2
+  vinsertf128 ymm2, ymm1, xmm2, 1
+  vmovupd     YMMWORD PTR [rdi], ymm2
+  vzeroupper
+  ret
+_ZN9principia14nanobenchmarks19_microarchitectures8internal14fill_from_ymm0ENS_8geometry6_point8internal5PointINS_10quantities11_quantities8internal8QuantityINS7_11_dimensions8internal10DimensionsILl0ELl0ELl1ELl0ELl0ELl0ELl0ELl0EEEEEEE:
+  mov         rax, rdi
+  vmovupd     YMMWORD PTR [rdi], ymm0
+  vzeroupper
+  ret
+_ZN9principia14nanobenchmarks19_microarchitectures8internal15fill6_from_xmm0ENS_8geometry6_point8internal5PointINS_10quantities11_quantities8internal8QuantityINS7_11_dimensions8internal10DimensionsILl0ELl0ELl1ELl0ELl0ELl0ELl0ELl0EEEEEEE:
+  mov         rax, rdi
+  vxorpd      xmm1, xmm1, xmm1
+  vunpcklpd   xmm2, xmm0, xmm1
+  vmovddup    xmm1, xmm2
+  vinsertf128 ymm2, ymm1, xmm2, 1
+  vmovupd     YMMWORD PTR [rdi], ymm2
+  vmovupd     YMMWORD PTR [rdi+32], ymm2
+  vzeroupper
+  ret
+_ZN9principia14nanobenchmarks19_microarchitectures8internal19fill_from_ymm0_ymm1ENS_8geometry6_point8internal5PointINS_10quantities11_quantities8internal8QuantityINS7_11_dimensions8internal10DimensionsILl0ELl0ELl1ELl0ELl0ELl0ELl0ELl0EEEEEEE:
+  mov         rax, rdi
+  vmovupd     YMMWORD PTR [rdi], ymm0
+  vmovupd     YMMWORD PTR [rdi+32], ymm1
+  vzeroupper
+  ret
 )");
 #endif
 #endif
@@ -247,7 +277,7 @@ MicroarchitectureDescription<RelativeDegreesOfFreedom<World>, Instant> const
 
 template<typename Value, typename Argument>
 std::vector<NanobenchmarkAndCycles<Value, Argument>> const&
-ReferenceCycleCounts<Value, Argument>() {
+ReferenceCycleCounts() {
   static std::vector<NanobenchmarkAndCycles<Value, Argument>>* const
       reference_cycle_counts = [] {
         for (auto const& [regex, architecture] :

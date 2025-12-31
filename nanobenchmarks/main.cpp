@@ -228,7 +228,12 @@ void RunMatching(std::regex const& filter,
       std::make_format_args(
           "Cycles:", "expected", LatencyDistributionTable::Heading()));
 
+  // This set avoids running the reference nanobenchmarks twice.
+  absl::flat_hash_set<
+      Nanobenchmark<Value, Argument> const*>
+      reference_nanobenchmarks;
   for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
+    reference_nanobenchmarks.insert(nanobenchmark);
     std::vprint_unicode(
         stdout,
         "R {:>" + std::to_string(name_width) + "}{:>8}{}\n",
@@ -240,6 +245,9 @@ void RunMatching(std::regex const& filter,
   }
 
   for (auto const* nanobenchmark : nanobenchmarks) {
+    if (reference_nanobenchmarks.contains(nanobenchmark)) {
+      continue;
+    }
     std::vprint_unicode(
         stdout,
         "  {:>" + std::to_string(name_width) + "}        {}\n",

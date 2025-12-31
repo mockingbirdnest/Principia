@@ -21,9 +21,6 @@
     <ClCompile Include="performance_settings_controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="microarchitectures.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="latency_distribution_table.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dependencies_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="microarchitectures_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -190,7 +190,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 COMPILER_OPTIONS := -c $(SHARED_ARGS) $(INCLUDES)
-LDFLAGS := $(SHARED_ARGS)
+LDFLAGS := $(SHARED_ARGS) --for-linker=--no-demangle
 
 ########## Dependency resolution
 
