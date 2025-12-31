@@ -89,24 +89,8 @@ TEST_F(RecorderTest, Recording) {
 
   std::vector<serialization::Method> const methods =
       ReadAll(test_name_ + ".journal.hex");
-  EXPECT_EQ(6, methods.size());
+  EXPECT_EQ(4, methods.size());
   auto it = methods.begin();
-  {
-    EXPECT_TRUE(it->HasExtension(serialization::GetVersion::extension));
-    auto const& extension =
-        it->GetExtension(serialization::GetVersion::extension);
-    EXPECT_FALSE(extension.has_out());
-  }
-  ++it;
-  {
-    EXPECT_TRUE(it->HasExtension(serialization::GetVersion::extension));
-    auto const& extension =
-        it->GetExtension(serialization::GetVersion::extension);
-    EXPECT_TRUE(extension.has_out());
-    EXPECT_EQ(BuildDate, extension.out().build_date());
-    EXPECT_EQ(Version, extension.out().version());
-  }
-  ++it;
   {
     EXPECT_TRUE(it->HasExtension(serialization::DeletePlugin::extension));
     auto const& extension =

@@ -192,9 +192,13 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
         }
       }
       Interface.GetVersion(build_date : out string _,
-                           version    : out string version);
-      UnityEngine.GUILayout.Label(version,
-                                  style : Style.Info(
+                           version    : out string version,
+                           platform   : out string platform);
+      // Only retain the leading 20 characters of the hash to be able to display
+      // the platform.
+      UnityEngine.GUILayout.Label(version.Remove(version.Length - 20) + "-" +
+                                  platform,
+                                  style: Style.Info(
                                       UnityEngine.GUI.skin.label));
       history_length_.Render(enabled : true);
       if (FlightGlobals.ActiveVessel?.orbitTargeter != null &&

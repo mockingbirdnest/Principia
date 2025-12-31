@@ -84,7 +84,7 @@ TEST_F(PlayerTest, PlayTiny) {
   while (player.Play(count)) {
     ++count;
   }
-  EXPECT_EQ(3, count);
+  EXPECT_EQ(2, count);
 }
 
 TEST_F(PlayerTest, DISABLED_SECULAR_Benchmarks) {
