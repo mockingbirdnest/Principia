@@ -29,8 +29,14 @@ echo "Parallelism is ${PARALLELISM}."
 export PRINCIPIA_PLATFORM=x64; make clean
 export PRINCIPIA_PLATFORM=x64_AVX_FMA; make clean
 
-export PRINCIPIA_PLATFORM=x64; make -j ${PARALLELISM} each_package_test
-export PRINCIPIA_PLATFORM=x64_AVX_FMA; make -j ${PARALLELISM} each_package_test
+export PRINCIPIA_PLATFORM=x64; make -j ${PARALLELISM} \
+  bin/${PRINCIPIA_PLATFORM}/benchmark \
+  bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
+  each_package_test
+export PRINCIPIA_PLATFORM=x64_AVX_FMA; make -j ${PARALLELISM} \
+  bin/${PRINCIPIA_PLATFORM}/benchmark \
+  bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
+  each_package_test
 
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   # See https://github.com/actions/virtual-environments/issues/2619#issuecomment-788397841
