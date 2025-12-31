@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "base/version.hpp"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
 #include "journal/player.hpp"
@@ -16,7 +16,6 @@
 namespace principia {
 namespace journal {
 
-using namespace principia::base::_version;
 using namespace principia::journal::_method;
 using namespace principia::journal::_player;
 using namespace principia::journal::_recorder;
@@ -89,8 +88,28 @@ TEST_F(RecorderTest, Recording) {
 
   std::vector<serialization::Method> const methods =
       ReadAll(test_name_ + ".journal.hex");
-  EXPECT_EQ(4, methods.size());
   auto it = methods.begin();
+#if PRINCIPIA_COMPILER_MSVC
+  EXPECT_EQ(4, methods.size());
+#else
+  EXPECT_EQ(6, methods.size());
+    {
+    EXPECT_TRUE(it->HasExtension(serialization::GetVersion::extension));
+    auto const& extension =
+        it->GetExtension(serialization::GetVersion::extension);
+    EXPECT_FALSE(extension.has_out());
+  }
+  ++it;
+  {
+    EXPECT_TRUE(it->HasExtension(serialization::GetVersion::extension));
+    auto const& extension =
+        it->GetExtension(serialization::GetVersion::extension);
+    EXPECT_TRUE(extension.has_out());
+    EXPECT_EQ(BuildDate, extension.out().build_date());
+    EXPECT_EQ(Version, extension.out().version());
+  }
+  ++it;
+#endif
   {
     EXPECT_TRUE(it->HasExtension(serialization::DeletePlugin::extension));
     auto const& extension =

@@ -41,9 +41,10 @@ void Recorder::Activate(not_null<Recorder*> const recorder) {
 
   // When the recorder gets activated, pretend that we got a GetVersion call.
   // This will record the version at the beginning of the journal, which is
-  // useful for forensics.  Note that this call doesn't register in the tests of
-  // the `journal` project, because there we have two `active_recorder`s, the
-  // one from the test and the one from the DLL.
+  // useful for forensics.  Note that on Windows this call doesn't register in
+  // the tests of the `journal` project, because there we have two
+  // `active_recorder`s, the one from the test and the one from the DLL.  On
+  // other platforms we don't use the DLL in tests.
   char const* build_date;
   char const* version;
   char const* platform;
