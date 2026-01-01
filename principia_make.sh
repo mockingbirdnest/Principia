@@ -3,7 +3,7 @@
 # In some setups, e.g., Azure pipelines, this does not work, so we need to help
 # it find its dynamic libraries.
 if [[ "${PRINCIPIA_PLATFORM?}" != "x64" &&
-      "${PRINCIPIA_PLATFORM?}" != "x64_AVX_FMA"]]; then
+      "${PRINCIPIA_PLATFORM?}" != "x64_AVX_FMA" ]]; then
   echo "PRINCIPIA_PLATFORM must be x64 or x64_AVX_FMA."
   exit 1
 fi
