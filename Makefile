@@ -177,7 +177,8 @@ ifeq ($(UNAME_S),Linux)
     SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
-    LLVM_PATH = $(shell brew --prefix llvm@$(PRINCIPIA_CLANG_VERSION))
+# Get LLVM path from Intel brew (as opposed to ARM brew).
+    LLVM_PATH = $(shell /usr/local/bin/brew --prefix llvm@$(PRINCIPIA_CLANG_VERSION))
     INCLUDES += \
 			-include "base/macos_allocator_replacement.hpp" \
 			-I$(LLVM_PATH)/include
