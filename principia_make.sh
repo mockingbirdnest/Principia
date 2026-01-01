@@ -2,6 +2,12 @@
 # It seems that protoc really wants its dependencies to be in /usr/local/lib.
 # In some setups, e.g., Azure pipelines, this does not work, so we need to help
 # it find its dynamic libraries.
+if [[ "${PRINCIPIA_PLATFORM?}" != "x64" &&
+      "${PRINCIPIA_PLATFORM?}" != "x64_AVX_FMA" ]]; then
+  echo "PRINCIPIA_PLATFORM must be x64 or x64_AVX_FMA."
+  exit 1
+fi
+
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   install_name_tool \
       -change \
@@ -26,14 +32,9 @@ fi
 
 echo "Parallelism is ${PARALLELISM}."
 
-export PRINCIPIA_PLATFORM=x64; make clean
-export PRINCIPIA_PLATFORM=x64_AVX_FMA; make clean
+make clean
 
-export PRINCIPIA_PLATFORM=x64; make -j ${PARALLELISM} \
-  bin/${PRINCIPIA_PLATFORM}/benchmark \
-  bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
-  each_package_test
-export PRINCIPIA_PLATFORM=x64_AVX_FMA; make -j ${PARALLELISM} \
+make -j ${PARALLELISM} \
   bin/${PRINCIPIA_PLATFORM}/benchmark \
   bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
   each_package_test
@@ -43,5 +44,4 @@ if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   # for why this is needed.
   sudo /usr/sbin/purge
 fi
-export PRINCIPIA_PLATFORM=x64; make release
-export PRINCIPIA_PLATFORM=x64_AVX_FMA; make release
+make release
