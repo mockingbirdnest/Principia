@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "base/version.hpp"
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
 #include "journal/player.hpp"
@@ -16,6 +17,7 @@
 namespace principia {
 namespace journal {
 
+using namespace principia::base::_version;
 using namespace principia::journal::_method;
 using namespace principia::journal::_player;
 using namespace principia::journal::_recorder;
