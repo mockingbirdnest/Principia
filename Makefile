@@ -149,7 +149,8 @@ SHARED_ARGS   := \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DPLATFORM_WITH_CPU_FEATURES='"$(PRINCIPIA_PLATFORM)"'        \
-	-DNDEBUG
+	-DNDEBUG                                                      \
+	-fsanitize=undefined
 
 ifeq ($(PRINCIPIA_PLATFORM),x64_AVX_FMA)
     SHARED_ARGS += \
