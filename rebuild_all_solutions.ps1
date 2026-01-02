@@ -42,7 +42,6 @@ foreach ($directory_and_repositories in @(
   }
   Pop-Location
 }
-echo "done pulling"
 
 function build_solutions($solutions, $platforms) {
   foreach ($configuration in "Debug", "Release") {
