@@ -42,6 +42,7 @@ foreach ($directory_and_repositories in @(
   }
   Pop-Location
 }
+echo "done pulling"
 
 function build_solutions($solutions, $platforms) {
   foreach ($configuration in "Debug", "Release") {
@@ -56,5 +57,5 @@ function build_solutions($solutions, $platforms) {
   }
 }
 
-build_solutions($dependencies, @("x64"))
-build_solutions(".\Principia\Principia.sln", @("x64", "x64_AVX_FMA"))
+build_solutions -solutions $dependencies -platforms @("x64")
+build_solutions -solutions @(".\Principia\Principia.sln") -platforms @("x64", "x64_AVX_FMA")
