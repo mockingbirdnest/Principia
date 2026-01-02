@@ -379,7 +379,8 @@ TEST_F(OrbitAnalysisTest, 北斗MEO) {
               AnyOf(IsNear(0.8195_(1) * Degree),   // Windows.
                     IsNear(1.349_(1) * Degree),    // Ubuntu SSE.
                     IsNear(1.057_(1) * Degree),    // Ubuntu AVX.
-                    IsNear(1.011_(1) * Degree)));  // macOS.
+                    IsNear(1.011_(1) * Degree),    // macOS SSE.
+                    IsNear(0.996_(1) * Degree)));  // macOS AVX.
 }
 
 // COSPAR ID 2016-030A.
@@ -517,12 +518,14 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
                   AnyOf(IsNear(0.0477_(1) * Kilo(Metre)),     // Windows.
                         IsNear(0.0490_(1) * Kilo(Metre)),     // Ubuntu SSE.
                         IsNear(0.0496_(1) * Kilo(Metre)),     // Ubuntu AVX.
-                        IsNear(0.0503_(1) * Kilo(Metre)))));  // macOS.
+                        IsNear(0.0503_(1) * Kilo(Metre)),     // macOS SSE.
+                        IsNear(0.0493_(1) * Kilo(Metre)))));  // macOS AVX.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().measure(),
               AnyOf(IsNear(00'000.099_(1) * Kilo(Metre)),    // Windows.
                     IsNear(00'000.105_(1) * Kilo(Metre)),    // Ubuntu SSE.
                     IsNear(00'000.100_(1) * Kilo(Metre)),    // Ubuntu AVX.
-                    IsNear(00'000.098_(1) * Kilo(Metre))));  // macOS.
+                    IsNear(00'000.098_(1) * Kilo(Metre)),    // macOS SSE.
+                    IsNear(00'000.101_(1) * Kilo(Metre))));  // macOS AVX.
 
   EXPECT_THAT(elements.mean_eccentricity_interval().midpoint(),
               AbsoluteErrorFrom(0.162, IsNear(0.0041_(1))));
@@ -748,7 +751,8 @@ TEST_F(OrbitAnalysisTest, SPOT5) {
               AnyOf(IsNear(89.43_(1) * Degree),    // Windows.
                     IsNear(89.41_(1) * Degree),    // Ubuntu SSE.
                     IsNear(89.38_(1) * Degree),    // Ubuntu AVX.
-                    IsNear(89.64_(1) * Degree)));  // macOS.
+                    IsNear(89.64_(1) * Degree),    // macOS SSE.
+                    IsNear(89.36_(1) * Degree)));  // macOS AVX.
 
   // The nominal mean solar times of the nodes are 22:30 ascending, 10:30
   // descending.
