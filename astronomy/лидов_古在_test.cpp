@@ -187,7 +187,8 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   EXPECT_THAT(elements.mean_semimajor_axis_interval().min,
               AnyOf(IsNear(14'910.01_(1) * Kilo(Metre)),    // Windows.
                     IsNear(14'909.96_(1) * Kilo(Metre)),    // Ubuntu.
-                    IsNear(14'909.99_(1) * Kilo(Metre))));  // macOS.
+                    IsNear(14'909.99_(1) * Kilo(Metre)),    // macOS SSE.
+                    IsNear(14'910.02_(1) * Kilo(Metre))));  // macOS AVX.
   EXPECT_THAT(elements.mean_semimajor_axis_interval().max,
               AnyOf(IsNear(14'910.27_(1) * Kilo(Metre)),    // Windows.
                     IsNear(14'910.29_(1) * Kilo(Metre)),    // Ubuntu.
