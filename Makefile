@@ -152,6 +152,11 @@ SHARED_ARGS   := \
 	-DNDEBUG                                                      \
 	-fsanitize=undefined
 
+ifdef PRINCIPIA_SANITIZER
+    SHARED_ARGS += \
+	-fsanitize=$(PRINCIPIA_SANITIZER)
+endif
+
 ifeq ($(PRINCIPIA_PLATFORM),x64_AVX_FMA)
     SHARED_ARGS += \
 	-DPRINCIPIA_REQUIRES_AVX=1 \
