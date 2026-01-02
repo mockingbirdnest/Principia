@@ -462,11 +462,12 @@ TEST_P(EphemerisTest, EarthProbe) {
                     Eq(366),    // Ubuntu SSE.
                     Eq(373),    // MSVC all FMA/0
                     Eq(379),    // Ubuntu AVX.
+                    Eq(396),    // macOS AVX.
                     Eq(406),    // MSVC all FMA/1
                     Eq(420),    // MSVC FMA in libm only/1
                     Eq(421)));  // MSVC no FMA/1
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 220, 266));
+              AlmostEquals(1.00 * period * v_probe, 219, 266));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 
