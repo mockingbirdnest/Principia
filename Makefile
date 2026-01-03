@@ -406,7 +406,7 @@ $(ADAPTER): $(GENERATED_PROFILES)
 # on Linux
 # release: $(ADAPTER) $(KSP_PLUGIN)
 release: $(KSP_PLUGIN)
-	cd $(FINAL_PRODUCTS_DIR); tar -c -z -f - GameData/ > principia_$(UNAME_S)-$(shell git describe --tags --always --dirty --abbrev=40 --long).tar.gz
+	cd $(FINAL_PRODUCTS_DIR); tar -c -z -f - GameData/ > principia_$(UNAME_S)-$(shell git describe --tags --always --dirty --abbrev=40 --long)-$(PRINCIPIA_PLATFORM).tar.gz
 ########## Cleaning
 
 clean:
