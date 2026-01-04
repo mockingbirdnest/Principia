@@ -545,7 +545,9 @@ template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 void PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
     WriteToMessage(not_null<serialization::Polynomial*> message) const {
-  if constexpr (serializable<Value>) {
+  if constexpr (serializable<DoubleOrQuantityOrPointOrMultivectorSerializer<
+                    Argument,
+                    serialization::PolynomialInMonomialBasis>>) {
     message->set_degree(degree_);
     auto* const extension = message->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);

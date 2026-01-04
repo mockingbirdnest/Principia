@@ -14,30 +14,35 @@ namespace internal {
 using namespace principia::testing_utilities::_almost_equals;
 
 template<int n>
+  requires(n > 0 && 256 % n == 0)
 inline constexpr IntegerModulo<n>& IntegerModulo<n>::operator+=(
     IntegerModulo b) {
   return *this = *this + b;
 }
 
 template<int n>
+  requires(n > 0 && 256 % n == 0)
 inline constexpr IntegerModulo<n>& IntegerModulo<n>::operator-=(
     IntegerModulo b) {
   return *this = *this - b;
 }
 
 template<int n>
+  requires(n > 0 && 256 % n == 0)
 template<std::integral T>
 inline constexpr IntegerModulo<n>& IntegerModulo<n>::operator*=(T b) {
   return *this = *this * IntegerModulo<n>(b);
 }
 
 template<int n>
+  requires(n > 0 && 256 % n == 0)
 inline constexpr IntegerModulo<n>& IntegerModulo<n>::operator*=(
     IntegerModulo b) {
   return *this = *this * b;
 }
 
 template<int n>
+  requires(n > 0 && 256 % n == 0)
 constexpr IntegerModulo<n>& IntegerModulo<n>::operator/=(IntegerModulo b)
   requires(n == 2) {
   return *this = *this / b;
