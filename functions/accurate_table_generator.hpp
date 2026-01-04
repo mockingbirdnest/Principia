@@ -6,6 +6,7 @@
 #include "absl/status/statusor.h"
 #include "base/multiprecision.hpp"
 #include "base/thread_pool.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 
 namespace principia {

@@ -18,7 +18,6 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
-using namespace principia::base::_algebra;
 using namespace principia::base::_traits;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;

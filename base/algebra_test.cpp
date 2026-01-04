@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "gtest/gtest.h"
 #include "base/multiprecision.hpp"
+#include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 
 namespace principia {
