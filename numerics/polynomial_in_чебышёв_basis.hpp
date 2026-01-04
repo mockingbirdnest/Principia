@@ -105,7 +105,7 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
   virtual absl::btree_set<Argument> RealRootsOrDie(double ε) const = 0;
 };
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
     : public PolynomialInЧебышёвBasis<Value_, Argument_> {

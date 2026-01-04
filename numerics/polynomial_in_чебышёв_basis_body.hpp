@@ -132,10 +132,10 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessag
 
 #undef PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 constexpr PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
-    PolynomialInЧебышёвBasis(Coefficients coefficients,
+PolynomialInЧебышёвBasis(Coefficients coefficients,
                          Argument const& lower_bound,
                          Argument const& upper_bound)
     : coefficients_(std::move(coefficients)),
@@ -144,7 +144,7 @@ constexpr PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
       width_(upper_bound - lower_bound),
       one_over_width_(1 / width_) {}
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
     Argument const argument) const {
@@ -176,7 +176,7 @@ Value_ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::operator()(
   }
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 Derivative<Value_, Argument_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateDerivative(
@@ -200,7 +200,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateDerivative(
          (one_over_width_ + one_over_width_);
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 void
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateWithDerivative(
@@ -212,34 +212,34 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::EvaluateWithDerivat
   derivative = EvaluateDerivative(argument);
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 constexpr
 int PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::degree() const {
   return degree_;
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 bool PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::is_zero() const {
   return coefficients_ == Coefficients{};
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 Argument_ const&
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::lower_bound() const {
   return lower_bound_;
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 Argument_ const&
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::upper_bound() const {
   return upper_bound_;
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 FixedMatrix<double, degree_, degree_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::FrobeniusCompanionMatrix()
@@ -273,7 +273,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::FrobeniusCompanionM
   return A;
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage(
     not_null<serialization::Polynomial*> message) const {
@@ -304,7 +304,7 @@ void PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::WriteToMessage
                                        extension->mutable_upper_bound());}
   }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::ReadFromMessage(
@@ -334,7 +334,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::ReadFromMessage(
       ArgumentSerializer::ReadFromMessage(extension.upper_bound()));
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 bool PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
 MayHaveRealRootsOrDie(Value const error_estimate) const {
@@ -362,7 +362,7 @@ MayHaveRealRootsOrDie(Value const error_estimate) const {
   }
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 absl::btree_set<Argument_>
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
@@ -391,7 +391,7 @@ RealRootsOrDie(double const ε) const {
   }
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 Value_ PRINCIPIA_VECTORCALL
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
@@ -399,7 +399,7 @@ VirtualEvaluate(Argument argument) const {
   return (*this)(argument);
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 Derivative<Value_, Argument_> PRINCIPIA_VECTORCALL
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
@@ -407,7 +407,7 @@ VirtualEvaluateDerivative(Argument argument) const {
   return EvaluateDerivative(argument);
 }
 
-template<affine Value_, affine Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
   requires homogeneous_vector_space<Value_, Difference<Argument_>>
 void PRINCIPIA_VECTORCALL
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
