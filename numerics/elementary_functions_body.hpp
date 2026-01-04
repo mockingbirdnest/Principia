@@ -77,15 +77,6 @@ inline void ConfigureElementaryFunctions(bool const uses_correct_sin_cos) {
   }
 }
 
-template<typename Q1, typename Q2>
-  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
-           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
-Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
-                                 Q2 const& y,
-                                 Product<Q1, Q2> const& z) {
-  return x * y + z;
-}
-
 template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
@@ -101,16 +92,6 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
           numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
                                           y / si::Unit<Q2>,
                                           z / si::Unit<Product<Q1, Q2>>);
-}
-
-
-template<typename Q1, typename Q2>
-  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
-           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
-Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
-                                      Q2 const& y,
-                                      Product<Q1, Q2> const& z) {
-  return x * y - z;
 }
 
 template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
@@ -130,16 +111,6 @@ Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                                 z / si::Unit<Product<Q1, Q2>>);
 }
 
-
-template<typename Q1, typename Q2>
-  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
-           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
-Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
-                                        Q2 const& y,
-                                        Product<Q1, Q2> const& z) {
-  return -x * y + z;
-}
-
 template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
@@ -155,16 +126,6 @@ Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                           x / si::Unit<Q1>,
                                           y / si::Unit<Q2>,
                                           z / si::Unit<Product<Q1, Q2>>);
-}
-
-
-template<typename Q1, typename Q2>
-  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
-           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
-Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
-                                             Q2 const& y,
-                                             Product<Q1, Q2> const& z) {
-  return -x * y - z;
 }
 
 template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
