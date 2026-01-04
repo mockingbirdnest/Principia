@@ -97,17 +97,17 @@ TEST_F(PolynomialInMonomialBasisTest, DISABLED_IACA) {
 }
 #endif
 
-TEST_F(PolynomialInMonomialBasisTest, ℤⳆℤOfX) {
+TEST_F(PolynomialInMonomialBasisTest, ℤⳆ2ℤOfX) {
   using P = PolynomialInMonomialBasis<IntegerModulo<2>,
                                       IntegerModulo<2>,
-                                      2,
+                                      /*degree=*/2,
                                       EstrinWithoutFMA>;
   P p({1, 0, 1});
   EXPECT_THAT(p(0), Eq(IntegerModulo<2>(1)));
   EXPECT_THAT(p(1), Eq(IntegerModulo<2>(0)));
   using Q = PolynomialInMonomialBasis<IntegerModulo<2>,
                                       IntegerModulo<2>,
-                                      2,
+                                      /*degree=*/2,
                                       HornerWithoutFMA>;
   Q q({0, 1, 1});
   EXPECT_THAT(q(0), Eq(IntegerModulo<2>(0)));
