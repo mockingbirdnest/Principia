@@ -76,13 +76,6 @@ inline void ConfigureElementaryFunctions(bool const uses_correct_sin_cos) {
   }
 }
 
-template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
-Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
-                                 Q2 const& y,
-                                 Product<Q1, Q2> const& z) {
-  return fma(x, y, z);
-}
-
 template<convertible_to_quantity Q1, convertible_to_quantity Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
@@ -91,13 +84,6 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
           numerics::_fma::FusedMultiplyAdd(x / si::Unit<Q1>,
                                           y / si::Unit<Q2>,
                                           z / si::Unit<Product<Q1, Q2>>);
-}
-
-template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
-Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
-                                      Q2 const& y,
-                                      Product<Q1, Q2> const& z) {
-  return fma(x, y, -z);
 }
 
 template<convertible_to_quantity Q1, convertible_to_quantity Q2>
@@ -110,13 +96,6 @@ Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                                 z / si::Unit<Product<Q1, Q2>>);
 }
 
-template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
-Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
-                                        Q2 const& y,
-                                        Product<Q1, Q2> const& z) {
-  return fma(-x, y, z);
-}
-
 template<convertible_to_quantity Q1, convertible_to_quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
@@ -125,13 +104,6 @@ Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                           x / si::Unit<Q1>,
                                           y / si::Unit<Q2>,
                                           z / si::Unit<Product<Q1, Q2>>);
-}
-
-template<boost_cpp_bin_float Q1, boost_cpp_bin_float Q2>
-Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
-                                             Q2 const& y,
-                                             Product<Q1, Q2> const& z) {
-  return fma(-x, y, -z);
 }
 
 template<convertible_to_quantity Q1, convertible_to_quantity Q2>
@@ -205,11 +177,15 @@ constexpr Q NextDown(Q const& x) {
 template<int exponent, ring T>
 constexpr T Pow(T x) {
   // Use the Russian peasant algorithm for small exponents.
-  if constexpr (exponent == 0) {
+  if constexpr (exponent < 0) {
+    static_assert(field<T>);
+    return 1 / Pow<-exponent>(x);
+  } else if constexpr (exponent == 0) {
     return 1;
   } else if constexpr (exponent == 1) {
     return x;
-  } else if constexpr (exponent > 0 && exponent < 32) {
+  } else {
+    static_assert(exponent < 32);
     auto const y = Pow<exponent / 2>(x);
     auto const y² = y * y;
     if constexpr (exponent % 2 == 1) {
@@ -217,10 +193,6 @@ constexpr T Pow(T x) {
     } else {
       return y²;
     }
-  } else if constexpr (exponent < 0 && exponent > -32 && field<T>) {
-    return 1 / Pow<-exponent>(x);
-  } else {
-    return std::pow(x, exponent);
   }
 }
 

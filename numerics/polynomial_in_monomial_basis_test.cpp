@@ -97,7 +97,7 @@ TEST_F(PolynomialInMonomialBasisTest, DISABLED_IACA) {
 }
 #endif
 
-TEST_F(PolynomialInMonomialBasisTest, ℤOver2ℤOfX) {
+TEST_F(PolynomialInMonomialBasisTest, ℤⳆℤOfX) {
   using P = PolynomialInMonomialBasis<IntegerModulo<2>,
                                       IntegerModulo<2>,
                                       2,
@@ -494,13 +494,12 @@ TEST_F(PolynomialInMonomialBasisTest, Boost) {
   P2i const p2i({1, 3, -8});
   EXPECT_EQ(p2i(3), -62);
 
-  using P2r = PolynomialInMonomialBasis<cpp_rational, cpp_rational, 2, EstrinWithoutFMA>;
+  using P2r = PolynomialInMonomialBasis<cpp_rational,
+                                        cpp_rational,
+                                        2,
+                                        EstrinWithoutFMA>;
   P2r const p2r({1, 3, -8});
   EXPECT_EQ(p2r(cpp_rational(1, 3)), cpp_rational(10, 9));
-
-  using P2f = PolynomialInMonomialBasis<cpp_bin_float_50, cpp_bin_float_50, 2>;
-  P2f const p2f({1, 3, -8});
-  EXPECT_EQ(p2f(cpp_bin_float_50("1.25")), cpp_bin_float_50("-7.75"));
 }
 
 // Check that polynomials may be serialized.
