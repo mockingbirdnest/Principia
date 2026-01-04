@@ -125,9 +125,8 @@ constexpr Q NextDown(Q const& x);
 
 template<int exponent, ring T>
 constexpr T Pow(T x);
-template<int exponent, typename Q>
-  requires(!ring<Q>)
-constexpr Exponentiation<Q, exponent> Pow(Q const& x);
+template<int exponent, typename D>
+constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
 
 double Sin(Angle const& α);
 double Cos(Angle const& α);

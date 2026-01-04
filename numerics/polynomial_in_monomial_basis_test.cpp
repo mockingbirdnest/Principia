@@ -483,11 +483,11 @@ TEST_F(PolynomialInMonomialBasisTest, EvaluateLinear) {
 
 // Check that polynomials may be used with Boost multiprecision types.
 TEST_F(PolynomialInMonomialBasisTest, Boost) {
-  using P2i = PolynomialInMonomialBasis<cpp_int, cpp_int, 2>;
+  using P2i = PolynomialInMonomialBasis<cpp_int, cpp_int, 2, EstrinWithoutFMA>;
   P2i const p2i({1, 3, -8});
   EXPECT_EQ(p2i(3), -62);
 
-  using P2r = PolynomialInMonomialBasis<cpp_rational, cpp_rational, 2>;
+  using P2r = PolynomialInMonomialBasis<cpp_rational, cpp_rational, 2, EstrinWithoutFMA>;
   P2r const p2r({1, 3, -8});
   EXPECT_EQ(p2r(cpp_rational(1, 3)), cpp_rational(10, 9));
 

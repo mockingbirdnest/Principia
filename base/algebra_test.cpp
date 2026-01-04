@@ -3,12 +3,14 @@
 #include <string>
 
 #include "gtest/gtest.h"
+#include "base/multiprecision.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace base {
 
 using namespace principia::base::_algebra;
+using namespace principia::base::_multiprecision;
 using namespace principia::quantities::_quantities;
 
 TEST(Concepts, Algebra) {
@@ -39,6 +41,9 @@ TEST(Concepts, Algebra) {
   static_assert(!field<Length>);
   static_assert(!field<int>);
   static_assert(field<double>);
+  static_assert(field<cpp_int>);  // TODO(egg): This is wrong.
+  static_assert(field<cpp_rational>);
+  static_assert(field<cpp_bin_float_50>);
 }
 
 TEST(Concepts, LinearAlgebra) {

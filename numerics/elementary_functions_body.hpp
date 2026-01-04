@@ -225,19 +225,10 @@ constexpr T Pow(T x) {
   }
 }
 
-template<int exponent, typename Q>
-  requires (!ring<Q>)
-constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
-  if constexpr (boost_cpp_rational<Q>) {
-    // It seems that Boost does not define `pow` for `cpp_rational`.
-    return cpp_rational(pow(numerator(x), exponent),
-                        pow(denominator(x), exponent));
-  } else if constexpr (boost_cpp_number<Q>) {
-    return pow(x, exponent);
-  } else {
-    return si::Unit<Exponentiation<Q, exponent>> *
-      Pow<exponent>(x / si::Unit<Q>);
-  }
+template<int exponent, typename D>
+constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x) {
+  return si::Unit<Exponentiation<Quantity<D>, exponent>> *
+         Pow<exponent>(x / si::Unit<Quantity<D>>);
 }
 
 inline double Sin(Angle const& α) {
