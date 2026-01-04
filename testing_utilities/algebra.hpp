@@ -10,11 +10,11 @@ namespace _algebra {
 namespace internal {
 
 template<int n>
-  requires (n > 0 && 256 % n == 0)
+  requires(n > 0 && 256 % n == 0)
 struct IntegerModulo {
   constexpr IntegerModulo() : value(0) {}
   template<std::integral T>
-  constexpr IntegerModulo(T a) : value(a) {}
+  constexpr IntegerModulo(T a) : value(a) {}  // NOLINT(runtime/explicit)
   std::uint8_t value;
 
   constexpr IntegerModulo& operator+=(IntegerModulo b);
