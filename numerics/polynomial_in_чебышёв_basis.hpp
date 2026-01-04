@@ -59,7 +59,8 @@ class PolynomialInЧебышёвBasis;
 
 // Degree-agnostic base class defining the contract of polynomials in the
 // Чебышёв basis and used for polymorphic storage.
-template<typename Value_, typename Argument_>
+template<affine Value_, affine Argument_>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
     : public Polynomial<Value_, Argument_> {
  public:
@@ -104,7 +105,8 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
   virtual absl::btree_set<Argument> RealRootsOrDie(double ε) const = 0;
 };
 
-template<typename Value_, typename Argument_, int degree_>
+template<additive_group Value_, affine Argument_, int degree_>
+  requires homogeneous_vector_space<Value_, Difference<Argument_>>
 class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
     : public PolynomialInЧебышёвBasis<Value_, Argument_> {
  public:
@@ -113,6 +115,10 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
   using Value = Value_;
 
   // The elements of the basis are dimensionless, unlike the monomial basis.
+  // We require that `Value` be a vector space rather than an affine space, so
+  // all coefficients are of type `Value`.  For an affine-valued polynomial, the
+  // coefficient of T₀ would be of type `Value` and the others would be of type
+  // `Difference<Value>`.
   using Coefficients = std::array<Value, degree_ + 1>;
 
   // The polynomials are only defined over [lower_bound, upper_bound].
