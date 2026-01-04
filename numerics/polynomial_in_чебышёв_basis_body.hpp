@@ -35,7 +35,7 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_si;
 
 template<affine Value_, affine Argument_>
-  requires homogeneous_vector_space<Value_, Difference<Argument_>>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 bool PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::
     MayHaveRealRoots(Value const error_estimate) const
   requires convertible_to_quantity<Value_> {
@@ -43,7 +43,7 @@ bool PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::
 }
 
 template<affine Value_, affine Argument_>
-  requires homogeneous_vector_space<Value_, Difference<Argument_>>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 absl::btree_set<Argument_>
 PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
     double const ε) const
@@ -59,7 +59,7 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
             message))
 
 template<affine Value_, affine Argument_>
-  requires homogeneous_vector_space<Value_, Difference<Argument_>>
+  requires homogeneous_affine_space<Value_, Difference<Argument_>>
 std::unique_ptr<PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>>
 PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessage(
     serialization::ЧебышёвSeries const& pre_канторович_message) {
@@ -391,21 +391,24 @@ RealRootsOrDie(double const ε) const {
   }
 }
 
-template<typename Value_, typename Argument_, int degree_>
+template<affine Value_, affine Argument_, int degree_>
+  requires homogeneous_vector_space<Value_, Difference<Argument_>>
 Value_ PRINCIPIA_VECTORCALL
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
 VirtualEvaluate(Argument argument) const {
   return (*this)(argument);
 }
 
-template<typename Value_, typename Argument_, int degree_>
+template<affine Value_, affine Argument_, int degree_>
+  requires homogeneous_vector_space<Value_, Difference<Argument_>>
 Derivative<Value_, Argument_> PRINCIPIA_VECTORCALL
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
 VirtualEvaluateDerivative(Argument argument) const {
   return EvaluateDerivative(argument);
 }
 
-template<typename Value_, typename Argument_, int degree_>
+template<affine Value_, affine Argument_, int degree_>
+  requires homogeneous_vector_space<Value_, Difference<Argument_>>
 void PRINCIPIA_VECTORCALL
 PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
 VirtualEvaluateWithDerivative(Argument argument,
