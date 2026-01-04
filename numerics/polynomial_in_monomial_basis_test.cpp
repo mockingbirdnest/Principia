@@ -17,6 +17,7 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/numerics.pb.h"
+#include "testing_utilities/algebra.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/check_well_formedness.hpp"  // 🧙 For PRINCIPIA_CHECK_ILL_FORMED.
 #include "testing_utilities/matchers.hpp"
@@ -43,6 +44,7 @@ using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_algebra;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
 
@@ -94,6 +96,16 @@ TEST_F(PolynomialInMonomialBasisTest, DISABLED_IACA) {
   CHECK_EQ(iaca(coefficients, 2 * Second), iaca(coefficients, 2 * Second));
 }
 #endif
+
+TEST_F(PolynomialInMonomialBasisTest, ℤOver2ℤOfX) {
+  using P = PolynomialInMonomialBasis<IntegerModulo<2>,
+                                      IntegerModulo<2>,
+                                      2,
+                                      EstrinWithoutFMA>;
+  P p({1, 0, 1});
+  EXPECT_THAT(p(0), Eq(IntegerModulo<2>(1)));
+  EXPECT_THAT(p(1), Eq(IntegerModulo<2>(0)));
+}
 
 // Check that coefficients can be accessed and have the right type.
 TEST_F(PolynomialInMonomialBasisTest, Coefficients) {

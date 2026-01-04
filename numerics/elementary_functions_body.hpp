@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/traits.hpp"
 #include "glog/logging.h"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
@@ -17,6 +18,8 @@ namespace numerics {
 namespace _elementary_functions {
 namespace internal {
 
+using namespace principia::base::_algebra;
+using namespace principia::base::_traits;
 using namespace principia::numerics::_cbrt;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_next;
@@ -239,11 +242,14 @@ constexpr Q NextDown(Q const& x) {
   return si::Unit<Q> * numerics::_next::NextDown(x / si::Unit<Q>);
 }
 
-template<int exponent>
-constexpr double Pow(double x) {
+template<int exponent, ring T>
+constexpr T Pow(T x) {
   // Use the Russian peasant algorithm for small exponents.
-  if constexpr (exponent > 0 && exponent < 32) {
-    // The end of the recursion is handled by the specializations below.
+  if constexpr (exponent == 0) {
+    return 1;
+  } else if constexpr (exponent == 1) {
+    return x;
+  } else if constexpr (exponent > 0 && exponent < 32) {
     auto const y = Pow<exponent / 2>(x);
     auto const y² = y * y;
     if constexpr (exponent % 2 == 1) {
@@ -251,37 +257,15 @@ constexpr double Pow(double x) {
     } else {
       return y²;
     }
-  } else if constexpr (exponent < 0 && exponent > -32) {
+  } else if constexpr (exponent < 0 && exponent > -32 && field<T>) {
     return 1 / Pow<-exponent>(x);
   } else {
     return std::pow(x, exponent);
   }
 }
 
-// Static specializations for frequently-used exponents, so that this gets
-// turned into multiplications at compile time.
-
-template<>
-inline constexpr double Pow<0>(double) {
-  return 1;
-}
-
-template<>
-inline constexpr double Pow<1>(double x) {
-  return x;
-}
-
-template<>
-inline constexpr double Pow<2>(double x) {
-  return x * x;
-}
-
-template<>
-inline constexpr double Pow<3>(double x) {
-  return x * x * x;
-}
-
 template<int exponent, typename Q>
+  requires (!ring<Q>)
 constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
   if constexpr (boost_cpp_rational<Q>) {
     // It seems that Boost does not define `pow` for `cpp_rational`.
@@ -291,7 +275,7 @@ constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
     return pow(x, exponent);
   } else {
     return si::Unit<Exponentiation<Q, exponent>> *
-           Pow<exponent>(x / si::Unit<Q>);
+      Pow<exponent>(x / si::Unit<Q>);
   }
 }
 

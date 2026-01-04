@@ -1,11 +1,60 @@
 #pragma once
 
+#include <concepts>
 #include <cstdint>
+#include <ostream>
 
 namespace principia {
 namespace testing_utilities {
 namespace _algebra {
 namespace internal {
+
+template<int n>
+  requires (n > 0 && 256 % n == 0)
+struct IntegerModulo {
+  constexpr IntegerModulo() : value(0) {}
+  template<std::integral T>
+  constexpr IntegerModulo(T a) : value(a) {}
+  std::uint8_t value;
+};
+
+template<int n>
+constexpr bool operator==(IntegerModulo<n> a, IntegerModulo<n> b);
+template<int n>
+constexpr bool operator!=(IntegerModulo<n> a, IntegerModulo<n> b);
+
+template<int n>
+constexpr IntegerModulo<n> operator+(IntegerModulo<n> a);
+template<int n>
+constexpr IntegerModulo<n> operator-(IntegerModulo<n> a);
+template<int n>
+constexpr IntegerModulo<n> operator+(IntegerModulo<n> a, IntegerModulo<n> b);
+template<int n>
+constexpr IntegerModulo<n> operator-(IntegerModulo<n> a, IntegerModulo<n> b);
+template<int n>
+constexpr IntegerModulo<n>& operator+=(IntegerModulo<n>& a, IntegerModulo<n> b);
+template<int n>
+constexpr IntegerModulo<n>& operator-=(IntegerModulo<n>& a, IntegerModulo<n> b);
+
+template<int n, std::integral T>
+constexpr IntegerModulo<n> operator*(T a, IntegerModulo<n> b);
+template<int n, std::integral T>
+constexpr IntegerModulo<n> operator*(IntegerModulo<n> a, T b);
+template<int n, std::integral T>
+constexpr IntegerModulo<n>& operator*=(IntegerModulo<n>& a, T b);
+
+template<int n>
+constexpr IntegerModulo<n> operator*(IntegerModulo<n> a, IntegerModulo<n> b);
+template<int n>
+constexpr IntegerModulo<n>& operator*=(IntegerModulo<n> a, IntegerModulo<n> b);
+
+template<std::integral T>
+constexpr IntegerModulo<2> operator/(T a, IntegerModulo<2> b);
+constexpr IntegerModulo<2> operator/(IntegerModulo<2> a, IntegerModulo<2> b);
+constexpr IntegerModulo<2>& operator/=(IntegerModulo<2>& a, IntegerModulo<2> b);
+
+template<int n>
+std::ostream& operator<<(std::ostream& out, IntegerModulo<n> a);
 
 template<typename T>
 void TestEquality(T const& low, T const& high);
@@ -97,6 +146,7 @@ void TestSkewField(T const& zero, T const& one,
 
 }  // namespace internal
 
+using internal::IntegerModulo;
 using internal::TestAbelianMultiplicativeGroup;
 using internal::TestAdditiveGroup;
 using internal::TestAlternatingBilinearMap;
