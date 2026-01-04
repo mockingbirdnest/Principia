@@ -32,11 +32,15 @@ class LatencyDistributionTable {
                                             LatencyDistributionTable const& x);
   friend LatencyDistributionTable operator+(LatencyDistributionTable const& x,
                                             double b);
+  friend LatencyDistributionTable operator-(LatencyDistributionTable const& x,
+                                            double b);
 };
 
 LatencyDistributionTable operator*(double a, LatencyDistributionTable const& x);
 
 LatencyDistributionTable operator+(LatencyDistributionTable const& x, double b);
+
+LatencyDistributionTable operator-(LatencyDistributionTable const& x, double b);
 
 }  // namespace internal
 

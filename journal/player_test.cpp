@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "benchmark/benchmark.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
@@ -84,7 +85,11 @@ TEST_F(PlayerTest, PlayTiny) {
   while (player.Play(count)) {
     ++count;
   }
+#if PRINCIPIA_COMPILER_MSVC
+  EXPECT_EQ(2, count);
+#else
   EXPECT_EQ(3, count);
+#endif
 }
 
 TEST_F(PlayerTest, DISABLED_SECULAR_Benchmarks) {

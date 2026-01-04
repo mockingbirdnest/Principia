@@ -9,10 +9,10 @@ CXX := clang++
 MSBUILD := msbuild
 PRINCIPIA_CLANG_VERSION ?= 20
 PRINCIPIA_MACOS_VERSION_MIN ?= 13
-PRINCIPIA_TARGET ?= x64
-ifneq ($(PRINCIPIA_TARGET),x64_AVX_FMA)
-  ifneq ($(PRINCIPIA_TARGET),x64)
-    $(error PRINCIPIA_TARGET must be 'x64_AVX_FMA' or 'x64')
+PRINCIPIA_PLATFORM ?= x64
+ifneq ($(PRINCIPIA_PLATFORM),x64_AVX_FMA)
+  ifneq ($(PRINCIPIA_PLATFORM),x64)
+    $(error PRINCIPIA_PLATFORM must be 'x64_AVX_FMA' or 'x64')
 	endif
 endif
 
@@ -45,8 +45,8 @@ PROTO_HEADERS                           := $(PROTO_FILES:.proto=.pb.h)
 
 DEPS_DIRECTORY := deps/
 
-OBJ_DIRECTORY := obj/$(PRINCIPIA_TARGET)/
-BIN_DIRECTORY := bin/$(PRINCIPIA_TARGET)/
+OBJ_DIRECTORY := obj/$(PRINCIPIA_PLATFORM)/
+BIN_DIRECTORY := bin/$(PRINCIPIA_PLATFORM)/
 TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
 GMOCK_TRANSLATION_UNITS := \
@@ -68,12 +68,11 @@ ADAPTER_CONFIGURATION := Release
 FINAL_PRODUCTS_DIR    := Release/
 ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 
-# TODO(phl): Change the OS names once the loader is ready.
 ifeq ($(UNAME_S),Linux)
-    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux/$(PRINCIPIA_PLATFORM)/
 endif
 ifeq ($(UNAME_S),Darwin)
-    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/MacOS64/
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/macOS/$(PRINCIPIA_PLATFORM)/
 endif
 
 TEST_LIBS     := \
@@ -149,9 +148,15 @@ SHARED_ARGS   := \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
+	-DPLATFORM_WITH_CPU_FEATURES='"$(PRINCIPIA_PLATFORM)"'        \
 	-DNDEBUG
 
-ifeq ($(PRINCIPIA_TARGET),x64_AVX_FMA)
+ifdef PRINCIPIA_SANITIZER
+    SHARED_ARGS += \
+	-fsanitize=$(PRINCIPIA_SANITIZER)
+endif
+
+ifeq ($(PRINCIPIA_PLATFORM),x64_AVX_FMA)
     SHARED_ARGS += \
 	-DPRINCIPIA_REQUIRES_AVX=1 \
 	-DPRINCIPIA_REQUIRES_FMA=1 \
@@ -172,7 +177,8 @@ ifeq ($(UNAME_S),Linux)
     SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
-    LLVM_PATH = $(shell brew --prefix llvm@$(PRINCIPIA_CLANG_VERSION))
+# Get LLVM path from Intel brew (as opposed to ARM brew).
+    LLVM_PATH = $(shell /usr/local/bin/brew --prefix llvm@$(PRINCIPIA_CLANG_VERSION))
     INCLUDES += \
 			-include "base/macos_allocator_replacement.hpp" \
 			-I$(LLVM_PATH)/include
@@ -190,7 +196,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 COMPILER_OPTIONS := -c $(SHARED_ARGS) $(INCLUDES)
-LDFLAGS := $(SHARED_ARGS)
+LDFLAGS := $(SHARED_ARGS) --for-linker=--no-demangle
 
 ########## Dependency resolution
 
@@ -401,7 +407,7 @@ $(ADAPTER): $(GENERATED_PROFILES)
 # on Linux
 # release: $(ADAPTER) $(KSP_PLUGIN)
 release: $(KSP_PLUGIN)
-	cd $(FINAL_PRODUCTS_DIR); tar -c -z -f - GameData/ > principia_$(UNAME_S)-$(shell git describe --tags --always --dirty --abbrev=40 --long).tar.gz
+	cd $(FINAL_PRODUCTS_DIR); tar -c -z -f - GameData/ > principia_$(UNAME_S)-$(shell git describe --tags --always --dirty --abbrev=40 --long)-$(PRINCIPIA_PLATFORM).tar.gz
 ########## Cleaning
 
 clean:

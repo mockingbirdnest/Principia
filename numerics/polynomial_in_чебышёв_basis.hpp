@@ -133,13 +133,13 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
                                    PolynomialInЧебышёвBasis const& right) =
       default;
 
-  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const override;
-  Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
-      Argument argument) const override;
-  void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
-      Argument argument,
-      Value& value,
-      Derivative<Value, Argument>& derivative) const override;
+  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const;
+  Derivative<Value, Argument> PRINCIPIA_VECTORCALL
+  EvaluateDerivative(Argument argument) const;
+  void PRINCIPIA_VECTORCALL
+  EvaluateWithDerivative(Argument argument,
+                         Value& value,
+                         Derivative<Value, Argument>& derivative) const;
 
   constexpr int degree() const override;
   bool is_zero() const override;
@@ -159,6 +159,14 @@ class PolynomialInЧебышёвBasis<Value_, Argument_, degree_>
  protected:
   bool MayHaveRealRootsOrDie(Value error_estimate) const override;
   absl::btree_set<Argument> RealRootsOrDie(double ε) const override;
+
+  Value PRINCIPIA_VECTORCALL VirtualEvaluate(Argument argument) const override;
+  Derivative<Value, Argument> PRINCIPIA_VECTORCALL
+  VirtualEvaluateDerivative(Argument argument) const override;
+  void PRINCIPIA_VECTORCALL VirtualEvaluateWithDerivative(
+      Argument argument,
+      Value& value,
+      Derivative<Value, Argument>& derivative) const override;
 
  private:
   Coefficients coefficients_;

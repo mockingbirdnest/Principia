@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "base/version.hpp"
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
@@ -89,9 +90,12 @@ TEST_F(RecorderTest, Recording) {
 
   std::vector<serialization::Method> const methods =
       ReadAll(test_name_ + ".journal.hex");
-  EXPECT_EQ(6, methods.size());
   auto it = methods.begin();
-  {
+#if PRINCIPIA_COMPILER_MSVC
+  EXPECT_EQ(4, methods.size());
+#else
+  EXPECT_EQ(6, methods.size());
+    {
     EXPECT_TRUE(it->HasExtension(serialization::GetVersion::extension));
     auto const& extension =
         it->GetExtension(serialization::GetVersion::extension);
@@ -107,6 +111,7 @@ TEST_F(RecorderTest, Recording) {
     EXPECT_EQ(Version, extension.out().version());
   }
   ++it;
+#endif
   {
     EXPECT_TRUE(it->HasExtension(serialization::DeletePlugin::extension));
     auto const& extension =

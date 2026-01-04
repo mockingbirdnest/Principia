@@ -87,16 +87,16 @@ template<typename Value, typename Argument, int degree,
          template<typename, typename, int> class Evaluator>
 void PickPolynomialAndArgument(
     std::mt19937_64& random,
-    PolynomialInMonomialBasis<Value, Argument, degree>& polynomial,
+    PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>& polynomial,
     Argument& initial_argument) {
-  using P = PolynomialInMonomialBasis<Value, Argument, degree>;
+  using P = PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>;
 
   initial_argument = ValueGenerator<Argument>::Get(random);
   for (;;) {
     typename P::Coefficients coefficients;
     RandomTupleGenerator<typename P::Coefficients, 0>::Fill(coefficients,
                                                             random);
-    polynomial = P(coefficients, with_evaluator<Evaluator>);
+    polynomial = P(coefficients);
     auto argument = initial_argument;
     Value v;
     for (std::int64_t i = 0; i < number_of_iterations; ++i) {
@@ -116,7 +116,7 @@ void PickPolynomialAndArgument(
 template<typename Value, typename Argument, int degree, Metric metric,
          template<typename, typename, int> class Evaluator>
 void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
-  using P = PolynomialInMonomialBasis<Value, Argument, degree>;
+  using P = PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>;
 
   std::mt19937_64 random(42);
   P polynomial(typename P::Coefficients{});

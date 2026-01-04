@@ -35,13 +35,13 @@ class Polynomial {
   friend constexpr bool operator!=(Polynomial const& left,
                                    Polynomial const& right) = default;
 
-  virtual Value PRINCIPIA_VECTORCALL operator()(Argument argument) const = 0;
-  virtual Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
-      Argument argument) const = 0;
-  virtual void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
+  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const;
+  Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
+      Argument argument) const;
+  void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
       Argument argument,
       Value& value,
-      Derivative<Value, Argument>& derivative) const = 0;
+      Derivative<Value, Argument>& derivative) const;
 
   // Only useful for benchmarking, analyzing performance or for downcasting.  Do
   // not use in other circumstances.
@@ -60,6 +60,16 @@ class Polynomial {
   template<template<typename, typename, int> typename Evaluator>
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
+
+ protected:
+  virtual Value PRINCIPIA_VECTORCALL
+  VirtualEvaluate(Argument argument) const = 0;
+  virtual Derivative<Value, Argument> PRINCIPIA_VECTORCALL
+  VirtualEvaluateDerivative(Argument argument) const = 0;
+  virtual void PRINCIPIA_VECTORCALL VirtualEvaluateWithDerivative(
+      Argument argument,
+      Value& value,
+      Derivative<Value, Argument>& derivative) const = 0;
 };
 
 }  // namespace internal

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "nanobenchmarks/nanobenchmark.hpp"
 
 #include <algorithm>
@@ -9,6 +11,7 @@
 #include "absl/flags/flag.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "glog/logging.h"
+#include "nanobenchmarks/dependencies.hpp"
 
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>
@@ -21,25 +24,34 @@ namespace nanobenchmarks {
 namespace _nanobenchmark {
 namespace internal {
 
-BenchmarkedFunction Nanobenchmark::function() const {
+using namespace principia::nanobenchmarks::_dependencies;
+
+template<typename Value_, typename Argument_>
+Nanobenchmark<Value_, Argument_>::BenchmarkedFunction
+Nanobenchmark<Value_, Argument_>::function() const {
   return function_;
 }
 
-std::string const& Nanobenchmark::name() const {
+template<typename Value_, typename Argument_>
+std::string const& Nanobenchmark<Value_, Argument_>::name() const {
   return name_;
 }
 
-void Nanobenchmark::SetFunction(BenchmarkedFunction function) {
+template<typename Value_, typename Argument_>
+void Nanobenchmark<Value_, Argument_>::SetFunction(
+    BenchmarkedFunction function) {
   CHECK(function != nullptr);
   function_ = function;
 }
 
-void Nanobenchmark::SetName(std::string_view const name) {
+template<typename Value_, typename Argument_>
+void Nanobenchmark<Value_, Argument_>::SetName(std::string_view const name) {
   name_ = name;
 }
 
+template<typename Value_, typename Argument_>
 __declspec(noinline) LatencyDistributionTable
-Nanobenchmark::Run(Logger* const logger) const {
+Nanobenchmark<Value_, Argument_>::Run(Logger* const logger) const {
   std::size_t const sample_count = absl::GetFlag(FLAGS_samples);
   std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
   static std::vector<double>& samples = *new std::vector<double>(
@@ -57,7 +69,8 @@ Nanobenchmark::Run(Logger* const logger) const {
 #endif
     auto const tsc_start = __rdtsc();
     for (int i = 0; i < loop_iterations; ++i) {
-      x = NanobenchmarkCase(x);
+      using D = Dependencies<Value, Argument>;
+      x = D::ConsumeValue(NanobenchmarkCase(D::ProduceArgument(x)));
       x += input - x;
     }
     unsigned int tsc_aux;
@@ -86,8 +99,10 @@ Nanobenchmark::Run(Logger* const logger) const {
   return result;
 }
 
-Nanobenchmark const* NanobenchmarkRegistry::Register(
-    Nanobenchmark const* const nanobenchmark) {
+template<typename Value_, typename Argument_>
+Nanobenchmark<Value_, Argument_> const*
+NanobenchmarkRegistry<Value_, Argument_>::Register(
+    Nanobenchmark<Value_, Argument_> const* const nanobenchmark) {
   singleton().nanobenchmarks_by_name_.emplace(nanobenchmark->name(),
                                               nanobenchmark);
   if (nanobenchmark->function() != nullptr) {
@@ -97,9 +112,11 @@ Nanobenchmark const* NanobenchmarkRegistry::Register(
   return nanobenchmark;
 }
 
-std::vector<Nanobenchmark const*> NanobenchmarkRegistry::NanobenchmarksMatching(
+template<typename Value_, typename Argument_>
+std::vector<Nanobenchmark<Value_, Argument_> const*>
+NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarksMatching(
     std::regex const& filter) {
-  std::vector<Nanobenchmark const*> matching;
+  std::vector<Nanobenchmark<Value_, Argument_> const*> matching;
   for (auto const& [name, nanobenchmark] :
        singleton().nanobenchmarks_by_name_) {
     if (std::regex_match(name, filter)) {
@@ -109,7 +126,9 @@ std::vector<Nanobenchmark const*> NanobenchmarkRegistry::NanobenchmarksMatching(
   return matching;
 }
 
-Nanobenchmark const* NanobenchmarkRegistry::NanobenchmarkFor(
+template<typename Value_, typename Argument_>
+Nanobenchmark<Value_, Argument_> const*
+NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarkFor(
     BenchmarkedFunction const function) {
   if (auto const it = singleton().nanobenchmarks_by_function_.find(function);
       it == singleton().nanobenchmarks_by_function_.end()) {
@@ -119,7 +138,9 @@ Nanobenchmark const* NanobenchmarkRegistry::NanobenchmarkFor(
   }
 }
 
-NanobenchmarkRegistry& NanobenchmarkRegistry::singleton() {
+template<typename Value_, typename Argument_>
+NanobenchmarkRegistry<Value_, Argument_>&
+NanobenchmarkRegistry<Value_, Argument_>::singleton() {
   static NanobenchmarkRegistry* instance = new NanobenchmarkRegistry;
   return *instance;
 }

@@ -3,6 +3,8 @@
 #include <cstddef>
 #include <cstdlib>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+
 namespace principia {
 namespace base {
 namespace _malloc_allocator {
@@ -30,12 +32,26 @@ class MallocAllocator {
   template<typename U>
   MallocAllocator(const MallocAllocator<U>& other) {}
 
-  T* allocate(size_t n) {
-    return static_cast<T*>(calloc(n, sizeof(T)));
+  T* allocate(std::size_t n) {
+#if PRINCIPIA_COMPILER_MSVC
+    return static_cast<T*>(_aligned_malloc(n * sizeof(T), alignof(T)));
+#else
+    // On macOS, aligned_alloc returns null for small alignments; use malloc if
+    // that is aligned enough.
+    if constexpr (alignof(T) > alignof(std::max_align_t)) {
+      return static_cast<T*>(std::aligned_alloc(alignof(T), n * sizeof(T)));
+    } else {
+      return static_cast<T*>(std::malloc(n * sizeof(T)));
+    }
+#endif
   }
 
-  void deallocate(T* p, size_t n) {
+  void deallocate(T* p, std::size_t n) {
+#if PRINCIPIA_COMPILER_MSVC
+    _aligned_free(p);
+#else
     free(p);
+#endif
   }
 };
 

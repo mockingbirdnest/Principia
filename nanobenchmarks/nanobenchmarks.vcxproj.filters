@@ -21,9 +21,6 @@
     <ClCompile Include="performance_settings_controller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="microarchitectures.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="latency_distribution_table.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -37,9 +34,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="examples_nanobenchmark.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="nanobenchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="hermite3_nanobenchmark.cpp">
@@ -61,6 +55,18 @@
     </ClInclude>
     <ClInclude Include="nanobenchmark.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nanobenchmark_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dependencies_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="microarchitectures_body.hpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

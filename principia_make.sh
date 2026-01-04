@@ -1,7 +1,14 @@
+#! /bin/bash
 # It seems that protoc really wants its dependencies to be in /usr/local/lib.
 # In some setups, e.g., Azure pipelines, this does not work, so we need to help
 # it find its dynamic libraries.
-if [ "${AGENT_OS?}" == "Darwin" ]; then
+if [[ "${PRINCIPIA_PLATFORM?}" != "x64" &&
+      "${PRINCIPIA_PLATFORM?}" != "x64_AVX_FMA" ]]; then
+  echo "PRINCIPIA_PLATFORM must be x64 or x64_AVX_FMA."
+  exit 1
+fi
+
+if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   install_name_tool \
       -change \
           /usr/local/lib/libprotobuf.17.dylib \
@@ -17,12 +24,22 @@ if [ "${AGENT_OS?}" == "Darwin" ]; then
           /usr/local/lib/libprotoc.17.dylib \
           ./deps/protobuf/src/.libs/libprotoc.17.dylib \
       deps/protobuf/src/.libs/protoc
-elif [ "${AGENT_OS?}" == "Linux" ]; then
+  PARALLELISM=$(sysctl -n hw.ncpu)
+elif [[ "${AGENT_OS?}" == "Linux" ]]; then
   export LD_LIBRARY_PATH="./deps/protobuf/src/.libs:$LD_LIBRARY_PATH"
+  PARALLELISM=$(nproc --all)
 fi
 
-make -j 4 test
-if [ "${AGENT_OS?}" == "Darwin" ]; then
+echo "Parallelism is ${PARALLELISM}."
+
+make clean
+
+make -j ${PARALLELISM} \
+  bin/${PRINCIPIA_PLATFORM}/benchmark \
+  bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
+  each_package_test
+
+if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   # See https://github.com/actions/virtual-environments/issues/2619#issuecomment-788397841
   # for why this is needed.
   sudo /usr/sbin/purge

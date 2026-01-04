@@ -17,6 +17,6 @@ names with the appropriate cases.
 .\make_principia_release "<Mathematician>" "<language>" "yyyyMMddHH" "1.x.y" @("1.u.v"…)
 ```
   This creates `<root>\principia <mathematician> for 1.x.y.zip`, as well as `<root>\principia <mathematician> for 1.u.v.zip` as appropriate. 
-- [ ] The Azure pipelines will start building the Ubuntu and MacOS releases as soon as the new tag is pushed.  This should take about 1 hour.
-- [ ] Download the artifacts produced by each pipeline: go to the run for the tag, click on the published artifact, expand `Principia` and `Release`, then download `principia_Linux-yyyyMMddHH-Mathematician-0-g*.tar.gz` and `MacOS64`, respectively.
-- [ ] Open the `.tar.gz` files and move the `Linux64` and `MacOS64` directories to the `Principia` directory of the `<root>\principia <mathematician> for 1.x.y.zip` archive, and of the `<root>\principia <mathematician> for 1.u.v.zip` as appropriate.
+- [ ] The Azure pipelines will start building the Ubuntu and macOS releases for both `x64` and `x64_AVX_FMA` as soon as the new tag is pushed.  This should take about two hours.
+- [ ] Download the artifacts produced by each pipeline: go to the run for the tag, click on the published artifact, expand `Principia` and `Release`, then download `principia_Linux-yyyyMMddHH-Mathematician-0-g*.tar.gz` and `principia_Darwin-yyyyMMddHH-Mathematician-0-g*.tar.gz`, respectively, for all four pipelines.
+- [ ] Open the `.tar.gz` files and move the `Linux` and `macOS` directories to the `Principia` directory of the `<root>\principia <mathematician> for 1.x.y.zip` archive, and of the `<root>\principia <mathematician> for 1.u.v.zip` as appropriate.

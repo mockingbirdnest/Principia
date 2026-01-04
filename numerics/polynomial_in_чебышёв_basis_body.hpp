@@ -391,6 +391,29 @@ RealRootsOrDie(double const ε) const {
   }
 }
 
+template<typename Value_, typename Argument_, int degree_>
+Value_ PRINCIPIA_VECTORCALL
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
+VirtualEvaluate(Argument argument) const {
+  return (*this)(argument);
+}
+
+template<typename Value_, typename Argument_, int degree_>
+Derivative<Value_, Argument_> PRINCIPIA_VECTORCALL
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
+VirtualEvaluateDerivative(Argument argument) const {
+  return EvaluateDerivative(argument);
+}
+
+template<typename Value_, typename Argument_, int degree_>
+void PRINCIPIA_VECTORCALL
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_>::
+VirtualEvaluateWithDerivative(Argument argument,
+                              Value& value,
+                              Derivative<Value, Argument>& derivative) const {
+  return EvaluateWithDerivative(argument, value, derivative);
+}
+
 }  // namespace internal
 }  // namespace _polynomial_in_чебышёв_basis
 }  // namespace numerics

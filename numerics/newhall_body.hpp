@@ -72,8 +72,9 @@ void Multiply(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
   }
 }
 
-template<typename Value, int degree>
-PolynomialInMonomialBasis<Value, Instant, degree> Dehomogeneize(
+template<typename Value, int degree,
+         template<typename, typename, int> typename Evaluator>
+PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
     std::array<Value, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
     Instant const& origin);
@@ -98,12 +99,13 @@ struct Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, degree> {
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
 };
 
-template<typename Value, int degree>
-PolynomialInMonomialBasis<Value, Instant, degree> Dehomogeneize(
+template<typename Value, int degree,
+         template<typename, typename, int> typename Evaluator>
+PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
     std::array<Value, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
     Instant const& origin) {
-  using P = PolynomialInMonomialBasis<Value, Instant, degree>;
+  using P = PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>;
   typename P::Coefficients dehomogeneized_coefficients;
   Dehomogeneizer<Value, typename P::Coefficients, degree, /*k=*/0>::Convert(
       homogeneous_coefficients,
@@ -294,13 +296,13 @@ NewhallApproximationInЧебышёвBasis(int degree,
 
 #undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE
 
-template<typename Value, int degree>
-PolynomialInMonomialBasis<Value, Instant, degree>
+template<typename Value, int degree,
+         template<typename, typename, int> typename Evaluator>
+PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>
 NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
                                     std::vector<Variation<Value>> const& v,
                                     Instant const& t_min,
                                     Instant const& t_max,
-                                    Policy const& policy,
                                     Difference<Value>& error_estimate) {
   CHECK_EQ(divisions + 1, q.size());
   CHECK_EQ(divisions + 1, v.size());
@@ -319,21 +321,20 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
   }
 
   Instant const t_mid = Barycentre({t_min, t_max});
-  return policy.WithEvaluator(
-      origin +
-      Dehomogeneize<Difference<Value>, degree>(
-          NewhallMonomialApproximator<Difference<Value>, degree>::
-              HomogeneousCoefficients(qv, error_estimate),
-          /*scale=*/1.0 / duration_over_two,
-          t_mid));
+  return origin + Dehomogeneize<Difference<Value>, degree, Evaluator>(
+                      NewhallMonomialApproximator<Difference<Value>, degree>::
+                          HomogeneousCoefficients(qv, error_estimate),
+                      /*scale=*/1.0 / duration_over_two,
+                      t_mid);
 }
 
 #define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree) \
   case (degree):                                                       \
-    return make_not_null_unique<                                       \
-        PolynomialInMonomialBasis<Value, Instant, (degree)>>(          \
-        NewhallApproximationInMonomialBasis<Value, (degree)>(          \
-            q, v, t_min, t_max, policy, error_estimate))
+    return policy.WithEvaluator(                                       \
+        NewhallApproximationInMonomialBasis<Value,                     \
+                                            (degree),                  \
+                                            DefaultEvaluator>(         \
+            q, v, t_min, t_max, error_estimate))
 
 template<typename Value>
 not_null<std::unique_ptr<Polynomial<Value, Instant>>>

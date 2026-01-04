@@ -1400,6 +1400,7 @@ message GetVersion {
   message Out {
     required string build_date = 1;
     required string version = 2;
+    required string platform = 3;  // Added in Lebesgue.
   }
   optional Out out = 2;
 }
