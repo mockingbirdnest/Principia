@@ -105,6 +105,13 @@ TEST_F(PolynomialInMonomialBasisTest, ℤOver2ℤOfX) {
   P p({1, 0, 1});
   EXPECT_THAT(p(0), Eq(IntegerModulo<2>(1)));
   EXPECT_THAT(p(1), Eq(IntegerModulo<2>(0)));
+  using Q = PolynomialInMonomialBasis<IntegerModulo<2>,
+                                      IntegerModulo<2>,
+                                      2,
+                                      HornerWithoutFMA>;
+  Q q({0, 1, 1});
+  EXPECT_THAT(q(0), Eq(IntegerModulo<2>(0)));
+  EXPECT_THAT(q(1), Eq(IntegerModulo<2>(0)));
 }
 
 // Check that coefficients can be accessed and have the right type.
