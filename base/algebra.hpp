@@ -212,6 +212,7 @@ using internal::hilbert;
 using internal::homogeneous_affine_module;
 using internal::homogeneous_affine_space;
 using internal::homogeneous_field;
+using internal::homogeneous_module;
 using internal::homogeneous_ring;
 using internal::homogeneous_vector_space;
 using internal::module;
