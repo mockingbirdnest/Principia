@@ -97,7 +97,7 @@ TEST_F(PolynomialInMonomialBasisTest, DISABLED_IACA) {
 }
 #endif
 
-TEST_F(PolynomialInMonomialBasisTest, ℤⳆ2ℤOfX) {
+TEST_F(PolynomialInMonomialBasisTest, ℤⳆnℤOfX) {
   using P = PolynomialInMonomialBasis<IntegerModulo<2>,
                                       IntegerModulo<2>,
                                       /*degree=*/2,
@@ -112,6 +112,12 @@ TEST_F(PolynomialInMonomialBasisTest, ℤⳆ2ℤOfX) {
   Q q({0, 1, 1});
   EXPECT_THAT(q(0), Eq(IntegerModulo<2>(0)));
   EXPECT_THAT(q(1), Eq(IntegerModulo<2>(0)));
+  using R = PolynomialInMonomialBasis<IntegerModulo<4>,
+                                      IntegerModulo<4>,
+                                      /*degree=*/2,
+                                      EstrinWithoutFMA>;
+  R r({1, 2, 3});
+  EXPECT_THAT(r(1), Eq(IntegerModulo<4>(2)));
 }
 
 // Check that coefficients can be accessed and have the right type.

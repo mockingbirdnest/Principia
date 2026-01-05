@@ -1,6 +1,7 @@
 #pragma once
 
 #include <concepts>
+#include <limits>
 #include <type_traits>
 
 #include "base/not_constructible.hpp"
@@ -39,13 +40,21 @@ using Square = Exponentiation<Q, 2>;
 template<typename Q>
 using Cube = Exponentiation<Q, 3>;
 
+template<typename Value, typename Argument, int order>
+struct DerivativeGenerator;
+
 // The result type of the N-th derivative of a `Value`-valued function with
 // respect to its `Argument`-valued argument.
+// If `Difference<Argument>` is a ring and `Value` an affine module over
+// `Difference<Argument>`, this can be defined without using division by
+// `Difference<Argument>`, using the formal derivative on `Value`[X] and the
+// evaluation at an element of `Difference<Argument>`; it is then
+// `Difference<Value>` for `order` > 0. The definitions are consistent; if
+// `Argument` is also a field and `Value` an affine space over
+// `Difference<Argument>`, for f : `Argument` ↦ `Value`, (f(x+Δx)-f(x)) / Δx is
+// a `Difference<Value>`.
 template<typename Value, typename Argument, int order = 1>
-using Derivative = typename std::conditional_t<
-    order == 0,
-    Value,
-    Quotient<Difference<Value>, Exponentiation<Difference<Argument>, order>>>;
+using Derivative = typename DerivativeGenerator<Value, Argument, order>::type;
 
 // The result type of the primitive of a `Value`-valued function with respect to
 // its `Argument`-valued argument.  The primitive of an affine-valued function
@@ -108,10 +117,18 @@ concept ring = homogeneous_ring<A> && requires(A x, A y) {
 // homogeneous_field.
 
 template<typename K>
-concept field = ring<K> && !std::integral<K> && requires(K x, K y, K z) {
+concept field = ring<K> &&
+    !std::numeric_limits<K>::is_integer && requires(K x, K y, K z) {
   { 1 / y } -> std::same_as<K>;
   { x / y } -> std::same_as<K>;
   { x /= y } -> std::same_as<K&>;
+};
+
+template<typename M, typename R>
+concept module = ring<R> && requires(R λ, M v) {
+  { λ * v } -> std::same_as<M>;
+  { v * λ } -> std::same_as<M>;
+  { v *= λ } -> std::same_as<M&>;
 };
 
 // TODO(egg): vector_space should subsume homogeneous_vector_space, but we use
@@ -139,6 +156,15 @@ concept homogeneous_field = homogeneous_ring<K> && requires(K x, K y, K z) {
   { (x / y) * z } -> std::same_as<K>;
 };
 
+template<typename M, typename R>
+concept homogeneous_module = homogeneous_ring<R> && requires(R λ, R μ, M v) {
+  // Really, these operations should return a homogeneous_module.
+  { λ * v } -> additive_group;
+  { v * λ } -> std::same_as<decltype(λ * v)>;
+  { (λ * μ) * v } -> additive_group;
+  { λ * (μ * v) } -> std::same_as<decltype((λ * μ) * v)>;
+};
+
 template<typename V, typename K>
 concept homogeneous_vector_space =
     additive_group<V> && homogeneous_field<K> && requires(K λ, K μ, V v) {
@@ -158,9 +184,16 @@ concept real_vector_space = vector_space<V, double>;
 template<typename A, typename K>
 concept affine_space = affine<A> && field<K> && vector_space<Difference<A>, K>;
 
+template<typename A, typename R>
+concept affine_module = affine<A> && ring<R> && module<Difference<A>, R>;
+
 template<typename A, typename K>
 concept homogeneous_affine_space = affine<A> && homogeneous_field<K> &&
                                    homogeneous_vector_space<Difference<A>, K>;
+
+template<typename A, typename R>
+concept homogeneous_affine_module = affine<A> && homogeneous_ring<R> &&
+                                   homogeneous_module<Difference<A>, R>;
 
 template<typename V>
 concept real_affine_space = affine_space<V, double>;
@@ -174,13 +207,17 @@ concept hilbert = requires(T1 const& t1, T2 const& t2) {
 
 using internal::additive_group;
 using internal::affine;
+using internal::affine_module;
 using internal::affine_space;
 using internal::field;
 using internal::hilbert;
+using internal::homogeneous_affine_module;
 using internal::homogeneous_affine_space;
 using internal::homogeneous_field;
+using internal::homogeneous_module;
 using internal::homogeneous_ring;
 using internal::homogeneous_vector_space;
+using internal::module;
 using internal::real_affine_space;
 using internal::real_vector_space;
 using internal::ring;
