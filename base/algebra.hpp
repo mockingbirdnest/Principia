@@ -199,7 +199,9 @@ template<typename V>
 concept real_affine_space = affine_space<V, double>;
 
 template<typename T1, typename T2>
-concept hilbert = requires(T1 const& t1, T2 const& t2) { InnerProduct(t1, t2); };
+concept hilbert = requires(T1 const& t1, T2 const& t2) {
+  InnerProduct(t1, t2);
+};
 
 }  // namespace internal
 
