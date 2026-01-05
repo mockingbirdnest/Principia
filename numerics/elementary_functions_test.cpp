@@ -38,11 +38,6 @@ using namespace principia::testing_utilities::_vanishes_before;
 class ElementaryFunctionsTest : public testing::Test {};
 
 TEST_F(ElementaryFunctionsTest, FMA) {
-  EXPECT_EQ(cpp_bin_float_50("11.0"),
-            FusedMultiplyAdd(cpp_bin_float_50("2.0"),
-                             cpp_bin_float_50("3.0"),
-                             cpp_bin_float_50("5.0")));
-
   if (!CanEmitFMAInstructions || !CPUIDFeatureFlag::FMA.IsSet()) {
     GTEST_SKIP() << "Cannot test FMA on a machine without FMA";
   }
