@@ -49,68 +49,23 @@ class ElementaryFunctionsConfigurationSaver {
 void ConfigureElementaryFunctions(bool uses_correct_sin_cos);
 
 // Equivalent to `std::fma(x, y, z)`.
-template<typename Q1, typename Q2>
-  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
-           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
-Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
-                                 Q2 const& y,
-                                 Product<Q1, Q2> const& z);
-template<boost_cpp_bin_float Q1,
-         boost_cpp_bin_float Q2>
-Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
-                                 Q2 const& y,
-                                 Product<Q1, Q2> const& z);
 template<convertible_to_quantity Q1,
          convertible_to_quantity Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z);
 
-template<typename Q1, typename Q2>
-  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
-           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
-Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
-                                      Q2 const& y,
-                                      Product<Q1, Q2> const& z);
-template<boost_cpp_bin_float Q1,
-         boost_cpp_bin_float Q2>
-Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
-                                      Q2 const& y,
-                                      Product<Q1, Q2> const& z);
 template<convertible_to_quantity Q1,
          convertible_to_quantity Q2>
 Product<Q1, Q2> FusedMultiplySubtract(Q1 const& x,
                                       Q2 const& y,
                                       Product<Q1, Q2> const& z);
 
-template<typename Q1, typename Q2>
-  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
-           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
-Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
-                                        Q2 const& y,
-                                        Product<Q1, Q2> const& z);
-template<boost_cpp_bin_float Q1,
-         boost_cpp_bin_float Q2>
-Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
-                                        Q2 const& y,
-                                        Product<Q1, Q2> const& z);
 template<convertible_to_quantity Q1,
          convertible_to_quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplyAdd(Q1 const& x,
                                         Q2 const& y,
                                         Product<Q1, Q2> const& z);
-
-template<typename Q1, typename Q2>
-  requires((boost_cpp_int<Q1> && boost_cpp_int<Q2>) ||
-           (boost_cpp_rational<Q1> && boost_cpp_rational<Q2>))
-Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
-                                             Q2 const& y,
-                                             Product<Q1, Q2> const& z);
-template<boost_cpp_bin_float Q1,
-         boost_cpp_bin_float Q2>
-Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
-                                             Q2 const& y,
-                                             Product<Q1, Q2> const& z);
 template<convertible_to_quantity Q1,
          convertible_to_quantity Q2>
 Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
@@ -148,10 +103,10 @@ constexpr Q NextUp(Q const& x);
 template<typename Q>
 constexpr Q NextDown(Q const& x);
 
-// Equivalent to `std::pow(x, exponent)` unless -3 ≤ x ≤ 3, in which case
-// explicit specialization yields multiplications statically.
-template<int exponent, typename Q>
-constexpr Exponentiation<Q, exponent> Pow(Q const& x);
+template<int exponent, ring T>
+constexpr T Pow(T x);
+template<int exponent, typename D>
+constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
 
 double Sin(Angle const& α);
 double Cos(Angle const& α);

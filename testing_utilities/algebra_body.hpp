@@ -2,6 +2,7 @@
 
 #include "testing_utilities/algebra.hpp"
 
+#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/almost_equals.hpp"
 
@@ -11,6 +12,101 @@ namespace _algebra {
 namespace internal {
 
 using namespace principia::testing_utilities::_almost_equals;
+
+template<int n>
+  requires(n > 0 && 256 % n == 0)
+inline constexpr IntegerModulo<n>& IntegerModulo<n>::operator+=(
+    IntegerModulo b) {
+  return *this = *this + b;
+}
+
+template<int n>
+  requires(n > 0 && 256 % n == 0)
+inline constexpr IntegerModulo<n>& IntegerModulo<n>::operator-=(
+    IntegerModulo b) {
+  return *this = *this - b;
+}
+
+template<int n>
+  requires(n > 0 && 256 % n == 0)
+template<std::integral T>
+inline constexpr IntegerModulo<n>& IntegerModulo<n>::operator*=(T b) {
+  return *this = *this * IntegerModulo<n>(b);
+}
+
+template<int n>
+  requires(n > 0 && 256 % n == 0)
+inline constexpr IntegerModulo<n>& IntegerModulo<n>::operator*=(
+    IntegerModulo b) {
+  return *this = *this * b;
+}
+
+template<int n>
+  requires(n > 0 && 256 % n == 0)
+constexpr IntegerModulo<n>& IntegerModulo<n>::operator/=(IntegerModulo b)
+  requires(n == 2) {
+  return *this = *this / b;
+}
+
+template<int n>
+constexpr bool operator==(IntegerModulo<n> a, IntegerModulo<n> b) {
+  return a.value % n == b.value % n;
+}
+
+template<int n>
+constexpr bool operator!=(IntegerModulo<n> a, IntegerModulo<n> b) {
+  return !(a == b);
+}
+
+template<int n>
+constexpr IntegerModulo<n> operator+(IntegerModulo<n> a) {
+  return a;
+}
+
+template<int n>
+constexpr IntegerModulo<n> operator-(IntegerModulo<n> a) {
+  return {-a.value};
+}
+
+template<int n>
+constexpr IntegerModulo<n> operator+(IntegerModulo<n> a, IntegerModulo<n> b) {
+  return {a.value + b.value};
+}
+
+template<int n>
+constexpr IntegerModulo<n> operator-(IntegerModulo<n> a, IntegerModulo<n> b) {
+  return {a.value - b.value};
+}
+
+template<int n, std::integral T>
+constexpr IntegerModulo<n> operator*(T a, IntegerModulo<n> b) {
+  return IntegerModulo<n>(a) * b;
+}
+
+template<int n, std::integral T>
+constexpr IntegerModulo<n> operator*(IntegerModulo<n> a, T b) {
+  return a * IntegerModulo<n>(b);
+}
+
+template<int n>
+constexpr IntegerModulo<n> operator*(IntegerModulo<n> a, IntegerModulo<n> b) {
+  return {a.value * b.value};
+}
+
+template<std::integral T>
+constexpr IntegerModulo<2> operator/(T a, IntegerModulo<2> b) {
+  return IntegerModulo<2>(a) / b;
+}
+
+constexpr IntegerModulo<2> operator/(IntegerModulo<2> a, IntegerModulo<2> b) {
+  CONSTEXPR_CHECK(b.value % 2 != 0);
+  return a;
+}
+
+template<int n>
+std::ostream& operator<<(std::ostream& out, IntegerModulo<n> a) {
+  return out << "(" << static_cast<int>(a.value) << " mod " << n << ")";
+}
 
 template<typename T>
 void TestEquality(T const& low, T const& high) {

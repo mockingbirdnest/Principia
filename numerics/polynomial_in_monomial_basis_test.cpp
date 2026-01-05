@@ -17,6 +17,7 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/numerics.pb.h"
+#include "testing_utilities/algebra.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/check_well_formedness.hpp"  // 🧙 For PRINCIPIA_CHECK_ILL_FORMED.
 #include "testing_utilities/matchers.hpp"
@@ -43,6 +44,7 @@ using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_algebra;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
 
@@ -94,6 +96,23 @@ TEST_F(PolynomialInMonomialBasisTest, DISABLED_IACA) {
   CHECK_EQ(iaca(coefficients, 2 * Second), iaca(coefficients, 2 * Second));
 }
 #endif
+
+TEST_F(PolynomialInMonomialBasisTest, ℤⳆ2ℤOfX) {
+  using P = PolynomialInMonomialBasis<IntegerModulo<2>,
+                                      IntegerModulo<2>,
+                                      /*degree=*/2,
+                                      EstrinWithoutFMA>;
+  P p({1, 0, 1});
+  EXPECT_THAT(p(0), Eq(IntegerModulo<2>(1)));
+  EXPECT_THAT(p(1), Eq(IntegerModulo<2>(0)));
+  using Q = PolynomialInMonomialBasis<IntegerModulo<2>,
+                                      IntegerModulo<2>,
+                                      /*degree=*/2,
+                                      HornerWithoutFMA>;
+  Q q({0, 1, 1});
+  EXPECT_THAT(q(0), Eq(IntegerModulo<2>(0)));
+  EXPECT_THAT(q(1), Eq(IntegerModulo<2>(0)));
+}
 
 // Check that coefficients can be accessed and have the right type.
 TEST_F(PolynomialInMonomialBasisTest, Coefficients) {
@@ -471,17 +490,16 @@ TEST_F(PolynomialInMonomialBasisTest, EvaluateLinear) {
 
 // Check that polynomials may be used with Boost multiprecision types.
 TEST_F(PolynomialInMonomialBasisTest, Boost) {
-  using P2i = PolynomialInMonomialBasis<cpp_int, cpp_int, 2>;
+  using P2i = PolynomialInMonomialBasis<cpp_int, cpp_int, 2, EstrinWithoutFMA>;
   P2i const p2i({1, 3, -8});
   EXPECT_EQ(p2i(3), -62);
 
-  using P2r = PolynomialInMonomialBasis<cpp_rational, cpp_rational, 2>;
+  using P2r = PolynomialInMonomialBasis<cpp_rational,
+                                        cpp_rational,
+                                        2,
+                                        EstrinWithoutFMA>;
   P2r const p2r({1, 3, -8});
   EXPECT_EQ(p2r(cpp_rational(1, 3)), cpp_rational(10, 9));
-
-  using P2f = PolynomialInMonomialBasis<cpp_bin_float_50, cpp_bin_float_50, 2>;
-  P2f const p2f({1, 3, -8});
-  EXPECT_EQ(p2f(cpp_bin_float_50("1.25")), cpp_bin_float_50("-7.75"));
 }
 
 // Check that polynomials may be serialized.

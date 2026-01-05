@@ -6,6 +6,7 @@
 #include "absl/status/statusor.h"
 #include "base/multiprecision.hpp"
 #include "base/thread_pool.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 
 namespace principia {
@@ -15,6 +16,7 @@ namespace internal {
 
 using namespace principia::base::_multiprecision;
 using namespace principia::base::_thread_pool;
+using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 
 using AccurateFunction = std::function<cpp_bin_float_50(cpp_rational const&)>;
@@ -29,8 +31,10 @@ using AccurateFunction = std::function<cpp_bin_float_50(cpp_rational const&)>;
 // some slices).
 
 template<typename ArgValue, int degree>
-using AccuratePolynomial =
-    PolynomialInMonomialBasis<ArgValue, ArgValue, degree>;
+using AccuratePolynomial = std::conditional_t<
+    std::is_same_v<ArgValue, cpp_rational> || std::is_same_v<ArgValue, cpp_int>,
+    PolynomialInMonomialBasis<ArgValue, ArgValue, degree, EstrinWithoutFMA>,
+    PolynomialInMonomialBasis<ArgValue, ArgValue, degree>>;
 template<typename ArgValue, int degree>
 using AccuratePolynomialFactory =
     std::function<AccuratePolynomial<ArgValue, degree>(cpp_rational const&)>;
