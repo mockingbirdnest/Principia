@@ -122,7 +122,7 @@ concept field = ring<K> &&
   { 1 / y } -> std::same_as<K>;
   { x / y } -> std::same_as<K>;
   { x /= y } -> std::same_as<K&>;
-    };
+};
 
 template<typename M, typename R>
 concept module = ring<R> && requires(R λ, M v) {
