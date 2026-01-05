@@ -117,7 +117,7 @@ TEST_F(PolynomialInMonomialBasisTest, ℤⳆnℤOfX) {
                                       /*degree=*/2,
                                       EstrinWithoutFMA>;
   R r({1, 2, 3});
-  EXPECT_THAT(r(1), Eq(IntegerModulo<4>(0)));
+  EXPECT_THAT(r(1), Eq(IntegerModulo<4>(2)));
 }
 
 // Check that coefficients can be accessed and have the right type.
