@@ -18,7 +18,7 @@ using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 
 template<affine Value_, affine Argument_>
-  requires homogeneous_affine_space<Value_, Difference<Argument_>>
+  requires homogeneous_affine_module<Value_, Difference<Argument_>>
 class Polynomial {
  public:
   using Argument = Argument_;

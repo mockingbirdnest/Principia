@@ -33,6 +33,7 @@ TEST(Concepts, Algebra) {
   static_assert(!ring<Length>);
   static_assert(ring<int>);
   static_assert(ring<double>);
+  static_assert(ring<cpp_int>);
 
   static_assert(homogeneous_field<Length>);
   static_assert(!homogeneous_field<int>);
@@ -41,7 +42,7 @@ TEST(Concepts, Algebra) {
   static_assert(!field<Length>);
   static_assert(!field<int>);
   static_assert(field<double>);
-  static_assert(field<cpp_int>);  // TODO(egg): This is wrong.
+  static_assert(!field<cpp_int>);
   static_assert(field<cpp_rational>);
   static_assert(field<cpp_bin_float_50>);
 }
