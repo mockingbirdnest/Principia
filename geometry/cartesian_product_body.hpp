@@ -293,7 +293,7 @@ constexpr auto PolynomialRing<LTuple, RTuple,
                               lsize_, rsize_>::Multiply(
     LTuple const& left,
     RTuple const& right) -> Result {
-  using vector_space::operator+;
+  using vector_space_operators::operator+;
 
   auto const right_head = std::get<0>(right);
   auto const right_tail = TailGenerator<RTuple>::Tail(right);
@@ -373,7 +373,7 @@ constexpr auto CartesianProductPointwiseMultiplicativeSpace<
 
 }  // namespace internal
 
-namespace vector_space {
+namespace vector_space_operators {
 
 template<typename RTuple>
 FORCE_INLINE(constexpr)
@@ -424,7 +424,7 @@ auto operator/(Tuple const& left, Scalar const& right) {
       Divide(left, right);
 }
 
-}  // namespace vector_space
+}  // namespace vector_space_operators
 
 namespace polynomial_ring {
 

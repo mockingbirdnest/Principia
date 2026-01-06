@@ -23,29 +23,6 @@
 #include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 
-// The presence of an operator+ below causes a bizarre compilation error in
-// seemingly unrelated code in PolynomialTestInMonomialBasis.VectorSpace.
-// In recent versions of Visual Studio, this problem has been resolved; however,
-// adding constraints to Polynomial brings it back unless the relevant operators
-// are constrained.  The use of `affine` on the operator+ declared within
-// #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS below is
-// load-bearing.
-#define PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS \
-  !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 192'930'036 || \
-                                _MSC_FULL_VER == 192'930'037 || \
-                                _MSC_FULL_VER == 192'930'038 || \
-                                _MSC_FULL_VER == 192'930'133 || \
-                                _MSC_FULL_VER == 192'930'139 || \
-                                _MSC_FULL_VER == 192'930'143 || \
-                                _MSC_FULL_VER == 192'930'147 || \
-                                _MSC_FULL_VER == 193'431'937 || \
-                                _MSC_FULL_VER == 193'431'942 || \
-                                _MSC_FULL_VER == 193'431'944 || \
-                                _MSC_FULL_VER == 193'532'216 || \
-                                _MSC_FULL_VER == 193'532'217 || \
-                                _MSC_FULL_VER == 193'632'532 || \
-                                _MSC_FULL_VER == 193'632'535)
-
 namespace principia {
 namespace numerics {
 FORWARD_DECLARE(
@@ -135,6 +112,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
                                       Argument const& origin);
   constexpr explicit PolynomialInMonomialBasis(Coefficients coefficients)
     requires additive_group<Argument>;
+  constexpr PolynomialInMonomialBasis() requires additive_group<Argument>;
 
   friend constexpr bool operator==(PolynomialInMonomialBasis const& left,
                                    PolynomialInMonomialBasis const& right) =
@@ -197,6 +175,14 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
 
+  template<typename S>
+  constexpr PolynomialInMonomialBasis& operator*=(S const& right)
+    requires module<Value, S>;
+
+  template<typename S>
+  constexpr PolynomialInMonomialBasis& operator/=(S const& right)
+    requires vector_space<Value, S>;
+
  protected:
   // We redefined the good name `Derivative` above, so here we are...
   template<typename V, typename A>
@@ -253,14 +239,15 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   friend operator*(
       PolynomialInMonomialBasis<L, A, l, E> const& left,
       PolynomialInMonomialBasis<R, A, r, E> const& right);
-#if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-  template<affine V, affine A, int l,
+  template<typename V,
+           std::same_as<Difference<V>> DV,
+           typename A,
+           int l,
            template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, l, E>
   friend operator+(
       PolynomialInMonomialBasis<Difference<V>, A, l, E> const& left,
       V const& right);
-#endif
   template<typename V, typename A, int r,
            template<typename, typename, int> typename E>
   constexpr PolynomialInMonomialBasis<V, A, r, E>
@@ -378,10 +365,13 @@ operator*(PolynomialInMonomialBasis<LValue, Argument, ldegree_,
 // Additive operators polynomial ± constant.
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-template<affine Value, affine Argument, int ldegree_,
+template<typename Value,
+         std::same_as<Difference<Value>> ValueDifference,
+         typename Argument,
+         int ldegree_,
          template<typename, typename, int> typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator_>
-operator+(PolynomialInMonomialBasis<Difference<Value>, Argument,
+operator+(PolynomialInMonomialBasis<ValueDifference, Argument,
                                     ldegree_, Evaluator_> const& left,
           Value const& right);
 #endif
