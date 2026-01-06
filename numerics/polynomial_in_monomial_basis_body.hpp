@@ -527,7 +527,7 @@ template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 template<typename S>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>&
-    PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::operator*=(
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::operator*=(
     S const& right) requires module<Value, S> {
   return *this = *this * right;
 }
@@ -536,7 +536,7 @@ template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 template<typename S>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>&
-    PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::operator/=(
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::operator/=(
     S const& right) requires vector_space<Value, S> {
   return *this = *this / right;
 }
@@ -777,9 +777,11 @@ template<typename Value,
          int ldegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>
-           operator+(PolynomialInMonomialBasis<ValueDifference, Argument, ldegree,
+operator+(PolynomialInMonomialBasis<ValueDifference,
+                                    Argument,
+                                    ldegree,
                                     Evaluator> const& left,
-          Value const& right){
+          Value const& right) {
   auto const dropped_left_coefficients =
       TupleDropper<typename PolynomialInMonomialBasis<Difference<Value>,
                                                       Argument,
