@@ -36,7 +36,7 @@ struct DerivativeGenerator<Value, Argument, order> : not_constructible {
 };
 
 template<affine Value, affine Argument, int order>
-  requires(order > 0) && !affine_module<Value, Difference<Argument>> &&
+  requires(order > 0) && (!affine_module<Value, Difference<Argument>>) &&
           homogeneous_affine_space<Value, Difference<Argument>>
 struct DerivativeGenerator<Value, Argument, order> : not_constructible {
   using type =
