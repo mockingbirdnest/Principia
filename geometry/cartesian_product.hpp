@@ -12,7 +12,7 @@ namespace geometry {
 // These operators live in a separate (non-internal) namespace to avoid
 // polluting the entire universe in cases where they are not useful.
 namespace _cartesian_product {
-namespace vector_space_operators {
+namespace vector_space {
 
 using namespace principia::quantities::_tuples;
 
@@ -43,7 +43,7 @@ constexpr auto operator*(Tuple const& left, Scalar const& right);
 template<typename Scalar, typename Tuple>
 constexpr auto operator/(Tuple const& left, Scalar const& right);
 
-}  // namespace vector_space_operators
+}  // namespace vector_space
 
 namespace polynomial_ring {
 
