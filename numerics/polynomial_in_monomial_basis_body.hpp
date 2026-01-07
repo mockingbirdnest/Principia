@@ -13,7 +13,7 @@
 #include "absl/strings/str_join.h"
 #include "base/concepts.hpp"
 #include "base/not_constructible.hpp"
-#include "geometry/cartesian_product.hpp"
+#include "geometry/cartesian_product.hpp"  // 🧙 For geometry::_cartesian_product.
 #include "geometry/serialization.hpp"
 #include "google/protobuf/util/message_differencer.h"
 #include "numerics/combinatorics.hpp"
@@ -28,7 +28,6 @@ namespace internal {
 
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
-using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_elementary_functions;
@@ -98,7 +97,7 @@ auto PolynomialAtOrigin<Value, Argument, degree, Evaluator_,
 MakePolynomial(typename Polynomial::Coefficients const& coefficients,
                Argument const& from_origin,
                Argument const& to_origin) -> Polynomial {
-  using vector_space::operator+;
+  using geometry::_cartesian_product::vector_space::operator+;
   Difference<Argument> const shift = to_origin - from_origin;
   std::array<typename Polynomial::Coefficients, degree + 1> const
       all_coefficients{
@@ -152,8 +151,8 @@ constexpr auto
 TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
     LTuple const& left_tuple,
     RTuple const& right_tuple) {
-  using vector_space::operator+;
-  using vector_space::operator*;
+  using geometry::_cartesian_product::vector_space::operator+;
+  using geometry::_cartesian_product::vector_space::operator*;
   auto const degree_0 = std::tuple(std::get<0>(left_tuple));
   if constexpr (sizeof...(left_indices) == 0) {
     return degree_0;
@@ -161,8 +160,8 @@ TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
     // The + 1 in the expressions below match the - 1 in the primary declaration
     // of TupleComposition.
     return degree_0 + ((std::get<left_indices + 1>(left_tuple) *
-                        polynomial_ring::Pow<left_indices + 1>(right_tuple)) +
-                       ...);
+                        geometry::_cartesian_product::polynomial_ring::Pow<
+                            left_indices + 1>(right_tuple)) + ...);
   }
 }
 
@@ -380,6 +379,13 @@ PolynomialInMonomialBasis(Coefficients coefficients)
   requires additive_group<Argument>
     : coefficients_(std::move(coefficients)),
       origin_(Argument{}) {}
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+PolynomialInMonomialBasis()
+  requires additive_group<Argument>
+    : coefficients_(Coefficients{}),
+      origin_(Argument{}) {}
 
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
@@ -425,6 +431,24 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 operator-=(PolynomialInMonomialBasis const& right) {
   *this = *this - right;
   return *this;
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+template<typename S>
+constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::operator*=(
+    S const& right) requires module<Value, S> {
+  return *this = *this * right;
+}
+
+template<typename Value_, typename Argument_, int degree_,
+         template<typename, typename, int> typename Evaluator_>
+template<typename S>
+constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>&
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::operator/=(
+    S const& right) requires vector_space<Value, S> {
+  return *this = *this / right;
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -643,7 +667,7 @@ template<typename Value, typename Argument, int rdegree,
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>
 operator-(PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
               right) {
-  using vector_space::operator-;
+  using geometry::_cartesian_product::vector_space::operator-;
   return PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>(
       -right.coefficients_,
       right.origin_);
@@ -658,7 +682,7 @@ operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
         right) {
-  using vector_space::operator+;
+  using geometry::_cartesian_product::vector_space::operator+;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<Value, Argument,
                                    std::max(ldegree, rdegree), Evaluator>(
@@ -675,7 +699,7 @@ operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
         right) {
-  using vector_space::operator-;
+  using geometry::_cartesian_product::vector_space::operator-;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<Value, Argument,
                                     std::max(ldegree, rdegree), Evaluator>(
@@ -691,7 +715,7 @@ PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const&
               right) {
-  using vector_space::operator*;
+  using geometry::_cartesian_product::vector_space::operator*;
   return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree,
                                    Evaluator>(left * right.coefficients_,
                                               right.origin_);
@@ -705,7 +729,7 @@ PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree, Evaluator>
 operator*(
     PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& left,
     Scalar const& right) {
-  using vector_space::operator*;
+  using geometry::_cartesian_product::vector_space::operator*;
   return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree,
                                    Evaluator>(left.coefficients_ * right,
                                               left.origin_);
@@ -719,7 +743,7 @@ PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree, Evaluator>
 operator/(
     PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& left,
     Scalar const& right) {
-  using vector_space::operator/;
+  using geometry::_cartesian_product::vector_space::operator/;
   return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree,
                                    Evaluator>(left.coefficients_ / right,
                                               left.origin_);
@@ -735,7 +759,7 @@ operator*(
     PolynomialInMonomialBasis<LValue, Argument, ldegree, Evaluator> const& left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree, Evaluator> const&
         right) {
-  using polynomial_ring::operator*;
+  using geometry::_cartesian_product::polynomial_ring::operator*;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<Product<LValue, RValue>,
                                    Argument,
@@ -745,12 +769,27 @@ operator*(
 }
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-template<affine Value, affine Argument, int ldegree,
+template<typename Value, typename Argument, int ldegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>
-operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
+operator+(PolynomialInMonomialBasis<Difference<Value>,
+                                    Argument,
+                                    ldegree,
                                     Evaluator> const& left,
           Value const& right) {
+#else
+template<typename Value,
+         std::same_as<Difference<Value>> ValueDifference,
+         typename Argument,
+         int ldegree,
+         template<typename, typename, int> typename Evaluator>
+constexpr PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>
+operator+(PolynomialInMonomialBasis<ValueDifference,
+                                    Argument,
+                                    ldegree,
+                                    Evaluator> const& left,
+          Value const& right) {
+#endif
   auto const dropped_left_coefficients =
       TupleDropper<typename PolynomialInMonomialBasis<Difference<Value>,
                                                       Argument,
@@ -762,7 +801,6 @@ operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
                      dropped_left_coefficients),
       left.origin_);
 }
-#endif
 
 template<typename Value, typename Argument, int rdegree,
          template<typename, typename, int> typename Evaluator>
@@ -853,7 +891,8 @@ PointwiseInnerProduct(
                               Evaluator> const& left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree,
                               Evaluator> const& right) {
-  using pointwise_inner_product::PointwiseInnerProduct;
+  using geometry::_cartesian_product::pointwise_inner_product::
+      PointwiseInnerProduct;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<
       typename Hilbert<LValue, RValue>::InnerProductType, Argument,

@@ -231,6 +231,17 @@ TEST_F(PolynomialInMonomialBasisTest, Conversion) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, VectorSpace) {
+  static_assert(real_vector_space<P2V>);
+  static_assert(vector_space<PolynomialInMonomialBasis<IntegerModulo<2>,
+                                                       IntegerModulo<2>,
+                                                       /*degree=*/2,
+                                                       EstrinWithoutFMA>,
+                             IntegerModulo<2>>);
+  static_assert(module<PolynomialInMonomialBasis<IntegerModulo<4>,
+                                                 IntegerModulo<4>,
+                                                 /*degree=*/2,
+                                                 EstrinWithoutFMA>,
+                       IntegerModulo<4>>);
   P2V const p2v(coefficients_);
   {
     auto const p = p2v + p2v;
@@ -270,6 +281,25 @@ TEST_F(PolynomialInMonomialBasisTest, VectorSpace) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, Ring) {
+  // Since multiplication changes the degree, the degree-specific type is not
+  // actually a ring.
+  static_assert(!ring<PolynomialInMonomialBasis<double, double, 3>>);
+  static_assert(!ring<PolynomialInMonomialBasis<IntegerModulo<4>,
+                                                IntegerModulo<4>,
+                                                3,
+                                                EstrinWithoutFMA>>);
+  // It is a homogeneous ring (the ring of polynomials is a graded ring).
+  static_assert(homogeneous_ring<PolynomialInMonomialBasis<Current, Time, 3>>);
+  static_assert(homogeneous_ring<PolynomialInMonomialBasis<double, double, 3>>);
+  static_assert(homogeneous_ring<PolynomialInMonomialBasis<IntegerModulo<4>,
+                                                           IntegerModulo<4>,
+                                                           3,
+                                                           EstrinWithoutFMA>>);
+  // See, e.g., [AM69, p. 32] (exercise 6): for an A-module M, M[x] is an A[x]
+  // module.
+  static_assert(homogeneous_module<
+                PolynomialInMonomialBasis<Displacement<World>, double, 2>,
+                PolynomialInMonomialBasis<double, double, 3>>);
   using P2 = PolynomialInMonomialBasis<Temperature, Time, 2>;
   using P3 = PolynomialInMonomialBasis<Current, Time, 3>;
   P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
@@ -306,12 +336,10 @@ TEST_F(PolynomialInMonomialBasisTest, Affine) {
 
   P0A const p0a(std::tuple{Instant() + 1 * Second});
   P0V const p0v(std::tuple{2 * Second});
-#if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
   {
     P0A const p = p0v + Instant();
     EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
   }
-#endif
   {
     P0A const p =  Instant() + p0v;
     EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
