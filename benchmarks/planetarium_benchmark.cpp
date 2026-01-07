@@ -29,6 +29,7 @@
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -67,6 +68,7 @@ using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
@@ -205,6 +207,8 @@ class Satellites {
     CHECK_OK(ephemeris_->Prolong(goes_8_epoch));
     KeplerOrbit<Barycentric> const goes_8_orbit(
         *earth_, MasslessBody{}, goes_8_elements, goes_8_epoch);
+    goes_8_trajectory_.segments().begin()->SetDownsampling(
+        DownsamplingParameters());
     CHECK_OK(goes_8_trajectory_.Append(
         goes_8_epoch,
         ephemeris_->trajectory(earth_)->EvaluateDegreesOfFreedom(goes_8_epoch) +
@@ -292,6 +296,14 @@ class Satellites {
             Quinlan1999Order8A,
             Ephemeris<Barycentric>::NewtonianMotionEquation>(),
         /*step=*/10 * Second);
+  }
+
+  DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
+  DownsamplingParameters() {
+    return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
+        .max_dense_intervals = 10'000,
+        .tolerance = 10 * Metre,
+    };
   }
 
   not_null<std::unique_ptr<SolarSystem<Barycentric>>> const solar_system_;
