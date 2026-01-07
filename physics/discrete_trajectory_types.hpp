@@ -1,10 +1,14 @@
 #pragma once
 
 #include <list>
+#include <optional>
+#include <tuple>
 
 #include "absl/container/btree_set.h"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
 #include "geometry/instant.hpp"
+#include "geometry/space.hpp"
+#include "numerics/hermite3.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 
@@ -22,6 +26,8 @@ namespace _discrete_trajectory_types {
 namespace internal {
 
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_hermite3;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_quantities;
 
@@ -39,6 +45,11 @@ struct value_type {
              DegreesOfFreedom<Frame> const& degrees_of_freedom);
   Instant time;
   DegreesOfFreedom<Frame> degrees_of_freedom;
+  std::optional<Hermite3<Position<Frame>, Instant>> interpolant;
+
+  // Support for structured bindings of `time` and `degrees_of_freedom`.
+  template<std::size_t i, typename Self>
+  constexpr auto&& get(this Self&& self);
 };
 
 struct Earlier {
@@ -70,5 +81,23 @@ using internal::Timeline;
 }  // namespace _discrete_trajectory_types
 }  // namespace physics
 }  // namespace principia
+
+namespace std {
+
+template<typename Frame>
+struct tuple_size<
+    principia::physics::_discrete_trajectory_types::internal::value_type<Frame>>
+    : std::integral_constant<std::size_t, 2> {};
+
+template<std::size_t i, typename Frame>
+struct tuple_element<
+    i,
+    principia::physics::_discrete_trajectory_types::internal::value_type<Frame>>
+    : tuple_element<i,
+                    tuple<principia::geometry::_instant::Instant,
+                          principia::physics::_degrees_of_freedom::
+                              DegreesOfFreedom<Frame>>> {};
+
+}  // namespace std
 
 #include "physics/discrete_trajectory_types_body.hpp"
