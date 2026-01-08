@@ -140,7 +140,7 @@ Position<Frame> DiscreteTrajectorySegment<Frame>::EvaluatePosition(
   }
   CHECK_LT(t_min(), t);
   CHECK_GT(t_max(), t);
-  return GetInterpolation(it).Evaluate(t);
+  return get_interpolation(it).Evaluate(t);
 }
 
 template<typename Frame>
@@ -152,7 +152,7 @@ Velocity<Frame> DiscreteTrajectorySegment<Frame>::EvaluateVelocity(
   }
   CHECK_LT(t_min(), t);
   CHECK_GT(t_max(), t);
-  return GetInterpolation(it).EvaluateDerivative(t);
+  return get_interpolation(it).EvaluateDerivative(t);
 }
 
 template<typename Frame>
@@ -165,7 +165,7 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
   }
   CHECK_LT(t_min(), t);
   CHECK_GT(t_max(), t);
-  auto const interpolation = GetInterpolation(it);
+  auto const& interpolation = get_interpolation(it);
   return {interpolation.Evaluate(t), interpolation.EvaluateDerivative(t)};
 }
 
@@ -373,6 +373,7 @@ void DiscreteTrajectorySegment<Frame>::Prepend(
       << "Prepend out of order at " << t << ", first time is "
       << timeline_.cbegin()->time;
   timeline_.emplace_hint(timeline_.cbegin(), t, degrees_of_freedom);
+//HERE
 }
 
 template<typename Frame>
@@ -408,6 +409,7 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
   number_of_dense_points_ -= number_of_dense_points_to_remove;
 
   timeline_.erase(timeline_.cbegin(), end);
+//HERE
 }
 
 template<typename Frame>
@@ -426,6 +428,19 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
   CHECK(std::next(it) == timeline_.end())
       << "Append out of order at " << t << ", last time is "
       << timeline_.crbegin()->time;
+
+  // Compute the interpolation applicable on the left-open, right-closed
+  // interval ending at `it`.
+  if (it != timeline_.begin()) {
+    auto const& [lower_time, lower_degrees_of_freedom] = *std::prev(it);
+    auto const& [upper_time, upper_degrees_of_freedom] = *it;
+    return Hermite3<Position<Frame>, Instant>{
+        {lower_time, upper_time},
+        {lower_degrees_of_freedom.position(),
+         upper_degrees_of_freedom.position()},
+        {lower_degrees_of_freedom.velocity(),
+         upper_degrees_of_freedom.velocity()}};
+  }
 
   if (downsampling_parameters_.has_value()) {
     return DownsampleIfNeeded();
@@ -469,6 +484,7 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
+//HERE
   } else if (auto const [segment_crbegin, this_cbegin] =
                  std::pair{std::prev(segment.timeline_.cend()),
                            timeline_.cbegin()};
@@ -486,6 +502,7 @@ void DiscreteTrajectorySegment<Frame>::Merge(
         << this_cbegin->degrees_of_freedom << " don't match";
 #endif
     timeline_.merge(segment.timeline_);
+//HERE
   } else {
     LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
                << ", " << std::prev(segment.timeline_.cend())->time
@@ -510,6 +527,7 @@ void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
       timeline_.begin(), point.time, point.degrees_of_freedom);
   CHECK(it == timeline_.begin())
       << "Inconsistent fork point at time " << point.time;
+//HERE
 }
 
 template<typename Frame>
@@ -566,6 +584,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
       auto const right_it = timeline_.find(right);
       left_it = timeline_.erase(left_it, right_it);
     }
+//HERE
     number_of_dense_points_ = std::distance(left_it, timeline_.cend());
     was_downsampled_ = true;
   }
@@ -573,19 +592,12 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
 }
 
 template<typename Frame>
-Hermite3<Position<Frame>, Instant>
-DiscreteTrajectorySegment<Frame>::GetInterpolation(
+Hermite3<Position<Frame>, Instant> const&
+DiscreteTrajectorySegment<Frame>::get_interpolation(
     typename Timeline::const_iterator const upper) const {
   CHECK(upper != timeline_.cbegin());
-  auto const lower = std::prev(upper);
-  auto const& [lower_time, lower_degrees_of_freedom] = *lower;
-  auto const& [upper_time, upper_degrees_of_freedom] = *upper;
-  return Hermite3<Position<Frame>, Instant>{
-      {lower_time, upper_time},
-      {lower_degrees_of_freedom.position(),
-       upper_degrees_of_freedom.position()},
-      {lower_degrees_of_freedom.velocity(),
-       upper_degrees_of_freedom.velocity()}};
+  CHECK(upper->interpolant.has_value());
+  return upper->interpolant.value();
 }
 
 template<typename Frame>

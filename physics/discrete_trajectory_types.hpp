@@ -45,7 +45,8 @@ struct value_type {
              DegreesOfFreedom<Frame> const& degrees_of_freedom);
   Instant time;
   DegreesOfFreedom<Frame> degrees_of_freedom;
-  std::optional<Hermite3<Position<Frame>, Instant>> interpolant;
+  //TODO(phl)Document when this is present.
+  std::optional<Hermite3<Position<Frame>, Instant>> interpolation;
 
   // Support for structured bindings of `time` and `degrees_of_freedom`.
   template<std::size_t i, typename Self>
