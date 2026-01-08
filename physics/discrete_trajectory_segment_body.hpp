@@ -489,9 +489,9 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
-    CHECK(!segment_begin->interpolation.has_value())
-        << "Already has an interpolation at " << segment_begin->time;
-    segment_begin->interpolation = MakeInterpolation(segment_begin);
+    // There may already be an interpolation if the segments have a common time
+    // and merging took the one from `this`.  We overwrite it.
+    segment_begin->interpolation = MakeInterpolation(segment_begin->time);
   } else if (auto const [segment_crbegin, this_begin] =
                  std::pair{std::prev(segment.timeline_.cend()),
                            timeline_.begin()};
@@ -509,9 +509,9 @@ void DiscreteTrajectorySegment<Frame>::Merge(
         << this_cbegin->degrees_of_freedom << " don't match";
 #endif
     timeline_.merge(segment.timeline_);
-    CHECK(!this_begin->interpolation.has_value())
-        << "Already has an interpolation at " << this_begin->time;
-    this_begin->interpolation = MakeInterpolation(this_begin);
+    // There may already be an interpolation if the segments have a common time
+    // and merging took the one from `segment`.  We overwrite it.
+    this_begin->interpolation = MakeInterpolation(this_begin->time);
   } else {
     LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
                << ", " << std::prev(segment.timeline_.cend())->time
