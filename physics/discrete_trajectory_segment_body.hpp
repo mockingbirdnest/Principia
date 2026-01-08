@@ -369,7 +369,7 @@ template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::Prepend(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  if (!timeline.empty()) {
+  if (!timeline_.empty()) {
     CHECK(t < timeline_.cbegin()->time)
         << "Prepend out of order at " << t << ", first time is "
         << timeline_.cbegin()->time;
@@ -380,7 +380,8 @@ void DiscreteTrajectorySegment<Frame>::Prepend(
 
   auto const next = std::next(it);
   if (next != timeline_.end()) {
-    CHECK(!next->interpolation.has_value());
+    CHECK(!next->interpolation.has_value())
+        << "Already has an interpolation at " << t;
     next->interpolation = MakeInterpolation(next);
   }
 }
@@ -419,7 +420,7 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
 
   timeline_.erase(timeline_.cbegin(), end);
   if (!timeline_.empty()) {
-    timeline_.begin()->interpolation.clear();
+    timeline_.begin()->interpolation.reset();
   }
 }
 
@@ -440,17 +441,10 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
       << "Append out of order at " << t << ", last time is "
       << timeline_.crbegin()->time;
 
-  // Compute the interpolation applicable on the left-open, right-closed
-  // interval ending at `it`.
-  if (it != timeline_.begin()) {
-    auto const& [lower_time, lower_degrees_of_freedom] = *std::prev(it);
-    auto const& [upper_time, upper_degrees_of_freedom] = *it;
-    return Hermite3<Position<Frame>, Instant>{
-        {lower_time, upper_time},
-        {lower_degrees_of_freedom.position(),
-         upper_degrees_of_freedom.position()},
-        {lower_degrees_of_freedom.velocity(),
-         upper_degrees_of_freedom.velocity()}};
+  if (it != timeline_.cbegin()) {
+    CHECK(!it->interpolation.has_value())
+        << "Already has an interpolation at " << t;
+    it->interpolation = MakeInterpolation(it);
   }
 
   if (downsampling_parameters_.has_value()) {
@@ -495,11 +489,12 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
-    CHECK(!segment_begin->interpolation.has_value());
+    CHECK(!segment_begin->interpolation.has_value())
+        << "Already has an interpolation at " << segment_begin->time;
     segment_begin->interpolation = MakeInterpolation(segment_begin);
   } else if (auto const [segment_crbegin, this_begin] =
                  std::pair{std::prev(segment.timeline_.cend()),
-                           timeline_.cbegin()};
+                           timeline_.begin()};
              segment_crbegin->time <= this_begin->time) {
 #if PRINCIPIA_MERGE_STRICT_CONSISTENCY
     CHECK(segment_crbegin->time < this_cbegin->time ||
@@ -514,7 +509,8 @@ void DiscreteTrajectorySegment<Frame>::Merge(
         << this_cbegin->degrees_of_freedom << " don't match";
 #endif
     timeline_.merge(segment.timeline_);
-    CHECK(!this_begin->interpolation.has_value());
+    CHECK(!this_begin->interpolation.has_value())
+        << "Already has an interpolation at " << this_begin->time;
     this_begin->interpolation = MakeInterpolation(this_begin);
   } else {
     LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
@@ -543,7 +539,8 @@ void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
 
   auto const next = std::next(it);
   if (next != timeline_.end()) {
-    CHECK(!next->interpolation.has_value());
+    CHECK(!next->interpolation.has_value())
+        << "Already has an interpolation at " << point.time;
     next->interpolation = MakeInterpolation(next);
   }
 }
@@ -630,8 +627,8 @@ Hermite3<Position<Frame>, Instant> const&
 DiscreteTrajectorySegment<Frame>::get_interpolation(
     typename Timeline::const_iterator const upper) const {
   CHECK(upper != timeline_.cbegin());
-  CHECK(upper->interpolant.has_value());
-  return upper->interpolant.value();
+  CHECK(upper->interpolation.has_value());
+  return upper->interpolation.value();
 }
 
 template<typename Frame>
