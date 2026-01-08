@@ -378,8 +378,7 @@ void DiscreteTrajectorySegment<Frame>::Prepend(
                                          t,
                                          degrees_of_freedom);
 
-  auto const next = std::next(it);
-  if (next != timeline_.end()) {
+  if (auto const next = std::next(it); next != timeline_.cend()) {
     CHECK(!next->interpolation.has_value())
         << "Already has an interpolation at " << t;
     next->interpolation = MakeInterpolation(next);
@@ -437,7 +436,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
   auto const it = timeline_.emplace_hint(timeline_.cend(),
                                          t,
                                          degrees_of_freedom);
-  CHECK(std::next(it) == timeline_.end())
+  CHECK(std::next(it) == timeline_.cend())
       << "Append out of order at " << t << ", last time is "
       << timeline_.crbegin()->time;
 
@@ -490,9 +489,9 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     timeline_.merge(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
     // There may not be an interpolation at the time denoted by `segment_begin`
-    // (there may be one if the segments have a common time, though).  Overwrite
-    // it, but remember that we cannot trust that `segment_begin` is in
-    // `timeline_` so we need a lookup.
+    // (there may be one if the segments have a common time, though).
+    // (Re)compute it, but remember that we cannot trust that `segment_begin` is
+    // in `timeline_` so we need a lookup.
     auto const it = timeline_.find(segment_begin->time);
     CHECK(it != timeline_.cend());
     if (it != timeline_.cbegin()) {
@@ -516,9 +515,9 @@ void DiscreteTrajectorySegment<Frame>::Merge(
 #endif
     timeline_.merge(segment.timeline_);
     // There may not be an interpolation at the time denoted by `this_begin`
-    // (there may be one if the segments have a common time, though).  Overwrite
-    // it, but remember that we cannot trust that `this_begin` is in `timeline_`
-    // so we need a lookup.
+    // (there may be one if the segments have a common time, though).
+    // (Re)compute it, but remember that we cannot trust that `this_begin` is in
+    // `timeline_` so we need a lookup.
     auto const it = timeline_.find(this_begin->time);
     CHECK(it != timeline_.cend());
     if (it != timeline_.cbegin()) {
@@ -549,8 +548,7 @@ void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
   CHECK(it == timeline_.begin())
       << "Inconsistent fork point at time " << point.time;
 
-  auto const next = std::next(it);
-  if (next != timeline_.end()) {
+  if (auto const next = std::next(it); next != timeline_.cend()) {
     CHECK(!next->interpolation.has_value())
         << "Already has an interpolation at " << point.time;
     next->interpolation = MakeInterpolation(next);
