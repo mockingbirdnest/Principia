@@ -369,11 +369,20 @@ template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::Prepend(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  CHECK(!timeline_.empty() || t < timeline_.cbegin()->time)
-      << "Prepend out of order at " << t << ", first time is "
-      << timeline_.cbegin()->time;
-  timeline_.emplace_hint(timeline_.cbegin(), t, degrees_of_freedom);
-//HERE
+  if (!timeline.empty()) {
+    CHECK(t < timeline_.cbegin()->time)
+        << "Prepend out of order at " << t << ", first time is "
+        << timeline_.cbegin()->time;
+  }
+  auto const it = timeline_.emplace_hint(timeline_.cbegin(),
+                                         t,
+                                         degrees_of_freedom);
+
+  auto const next = std::next(it);
+  if (next != timeline_.end()) {
+    CHECK(!next->interpolation.has_value());
+    next->interpolation = MakeInterpolation(next);
+  }
 }
 
 template<typename Frame>
@@ -409,7 +418,9 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
   number_of_dense_points_ -= number_of_dense_points_to_remove;
 
   timeline_.erase(timeline_.cbegin(), end);
-//HERE
+  if (!timeline_.empty()) {
+    timeline_.begin()->interpolation.clear();
+  }
 }
 
 template<typename Frame>
@@ -465,10 +476,10 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_ = std::move(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
-  } else if (auto const [this_crbegin, segment_cbegin] =
+  } else if (auto const [this_crbegin, segment_begin] =
                  std::pair{std::prev(timeline_.cend()),
-                           segment.timeline_.cbegin()};
-             this_crbegin->time <= segment_cbegin->time) {
+                           segment.timeline_.begin()};
+             this_crbegin->time <= segment_begin->time) {
 #if PRINCIPIA_MERGE_STRICT_CONSISTENCY
     CHECK(this_crbegin->time < segment_cbegin->time ||
           this_crbegin->degrees_of_freedom ==
@@ -484,11 +495,12 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
-//HERE
-  } else if (auto const [segment_crbegin, this_cbegin] =
+    CHECK(!segment_begin->interpolation.has_value());
+    segment_begin->interpolation = MakeInterpolation(segment_begin);
+  } else if (auto const [segment_crbegin, this_begin] =
                  std::pair{std::prev(segment.timeline_.cend()),
                            timeline_.cbegin()};
-             segment_crbegin->time <= this_cbegin->time) {
+             segment_crbegin->time <= this_begin->time) {
 #if PRINCIPIA_MERGE_STRICT_CONSISTENCY
     CHECK(segment_crbegin->time < this_cbegin->time ||
           segment_crbegin->degrees_of_freedom ==
@@ -502,7 +514,8 @@ void DiscreteTrajectorySegment<Frame>::Merge(
         << this_cbegin->degrees_of_freedom << " don't match";
 #endif
     timeline_.merge(segment.timeline_);
-//HERE
+    CHECK(!this_begin->interpolation.has_value());
+    this_begin->interpolation = MakeInterpolation(this_begin);
   } else {
     LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
                << ", " << std::prev(segment.timeline_.cend())->time
@@ -527,7 +540,12 @@ void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
       timeline_.begin(), point.time, point.degrees_of_freedom);
   CHECK(it == timeline_.begin())
       << "Inconsistent fork point at time " << point.time;
-//HERE
+
+  auto const next = std::next(it);
+  if (next != timeline_.end()) {
+    CHECK(!next->interpolation.has_value());
+    next->interpolation = MakeInterpolation(next);
+  }
 }
 
 template<typename Frame>
@@ -583,12 +601,28 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
       ++left_it;
       auto const right_it = timeline_.find(right);
       left_it = timeline_.erase(left_it, right_it);
+      right_it->interpolation = MakeInterpolation(right_it);
     }
-//HERE
     number_of_dense_points_ = std::distance(left_it, timeline_.cend());
     was_downsampled_ = true;
   }
   return absl::OkStatus();
+}
+
+template<typename Frame>
+Hermite3<Position<Frame>, Instant>
+DiscreteTrajectorySegment<Frame>::MakeInterpolation(
+    typename Timeline::const_iterator const upper) const {
+  CHECK(upper != timeline_.cbegin());
+  auto const lower = std::prev(upper);
+  auto const& [lower_time, lower_degrees_of_freedom] = *lower;
+  auto const& [upper_time, upper_degrees_of_freedom] = *upper;
+  return Hermite3<Position<Frame>, Instant>{
+      {lower_time, upper_time},
+      {lower_degrees_of_freedom.position(),
+       upper_degrees_of_freedom.position()},
+      {lower_degrees_of_freedom.velocity(),
+       upper_degrees_of_freedom.velocity()}};
 }
 
 template<typename Frame>
