@@ -193,8 +193,14 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // segment.
   absl::Status DownsampleIfNeeded();
 
+  // Constructs the Hermite interpolation for the left-open, right-closed
+  // trajectory interval bounded above by `upper`.  `upper` must not be the
+  // first point of the timeline.
+  Hermite3<Position<Frame>, Instant> MakeInterpolation(
+      typename Timeline::const_iterator upper) const;
+
   // Returns the Hermite interpolation for the left-open, right-closed
-  // trajectory segment bounded above by `upper`.
+  // trajectory interval bounded above by `upper`, which must exist.
   Hermite3<Position<Frame>, Instant> const& get_interpolation(
       typename Timeline::const_iterator upper) const;
 
