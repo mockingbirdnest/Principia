@@ -489,9 +489,15 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
-    // There may already be an interpolation if the segments have a common time
-    // and merging took the one from `this`.  We overwrite it.
-    segment_begin->interpolation = MakeInterpolation(segment_begin->time);
+    // There may not be an interpolation at the time denoted by `segment_begin`
+    // (there may be one if the segments have a common time, though).  Overwrite
+    // it, but remember that we cannot trust that `segment_begin` is in
+    // `timeline_` so we need a lookup.
+    auto const it = timeline_.find(segment_begin->time);
+    CHECK(it != timeline_.cend());
+    if (it != timeline_.cbegin()) {
+      it->interpolation = MakeInterpolation(it);
+    }
   } else if (auto const [segment_crbegin, this_begin] =
                  std::pair{std::prev(segment.timeline_.cend()),
                            timeline_.begin()};
@@ -509,9 +515,15 @@ void DiscreteTrajectorySegment<Frame>::Merge(
         << this_cbegin->degrees_of_freedom << " don't match";
 #endif
     timeline_.merge(segment.timeline_);
-    // There may already be an interpolation if the segments have a common time
-    // and merging took the one from `segment`.  We overwrite it.
-    this_begin->interpolation = MakeInterpolation(this_begin->time);
+    // There may not be an interpolation at the time denoted by `this_begin`
+    // (there may be one if the segments have a common time, though).  Overwrite
+    // it, but remember that we cannot trust that `this_begin` is in `timeline_`
+    // so we need a lookup.
+    auto const it = timeline_.find(this_begin->time);
+    CHECK(it != timeline_.cend());
+    if (it != timeline_.cbegin()) {
+      it->interpolation = MakeInterpolation(it);
+    }
   } else {
     LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
                << ", " << std::prev(segment.timeline_.cend())->time
