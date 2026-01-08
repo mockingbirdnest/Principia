@@ -563,17 +563,18 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
   // Points, hence one more than intervals.
   if (number_of_dense_points_ >
       downsampling_parameters_->max_dense_intervals) {
-    // Obtain iterators for all the dense points of the segment.
-    using ConstIterators = std::vector<typename Timeline::const_iterator>;
-    ConstIterators dense_iterators(number_of_dense_points_);
+    // Obtain iterators for all the dense points of the segment.  We need non-
+    // const iterators as we will be modifying the interpolations.
+    using Iterators = std::vector<typename Timeline::iterator>;
+    Iterators dense_iterators(number_of_dense_points_);
     CHECK_LE(dense_iterators.size(), timeline_.size());
-    auto it = timeline_.crbegin();
+    auto it = timeline_.rbegin();
     for (int i = dense_iterators.size() - 1; i >= 0; --i) {
       dense_iterators[i] = std::prev(it.base());
       ++it;
     }
 
-    absl::StatusOr<std::list<typename ConstIterators::const_iterator>>
+    absl::StatusOr<std::list<typename Iterators::const_iterator>>
         right_endpoints = FitHermiteSpline<Position<Frame>, Instant>(
             dense_iterators,
             [](auto&& it) -> auto&& { return it->time; },
@@ -604,15 +605,17 @@ absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
     }
 
     // Poke holes in the timeline at the places given by
-    // `right_endpoints_times`.  This requires one lookup per erasure.
+    // `right_endpoints_times`.  This requires one lookup per erasure because
+    // `erase` invalidates iterators.
     auto left_it = dense_iterators.front();
     for (Instant const& right : right_endpoints_times) {
       ++left_it;
       auto const right_it = timeline_.find(right);
       left_it = timeline_.erase(left_it, right_it);
-      right_it->interpolation = MakeInterpolation(right_it);
+      CHECK_EQ(left_it->time, right);
+      left_it->interpolation = MakeInterpolation(left_it);
     }
-    number_of_dense_points_ = std::distance(left_it, timeline_.cend());
+    number_of_dense_points_ = std::distance(left_it, timeline_.end());
     was_downsampled_ = true;
   }
   return absl::OkStatus();
