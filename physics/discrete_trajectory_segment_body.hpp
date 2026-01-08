@@ -420,10 +420,10 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
                  << timeline_.crbegin()->time << "]";
     return absl::OkStatus();
   }
-  auto it = timeline_.emplace_hint(timeline_.cend(),
-                                   t,
-                                   degrees_of_freedom);
-  CHECK(++it == timeline_.end())
+  auto const it = timeline_.emplace_hint(timeline_.cend(),
+                                         t,
+                                         degrees_of_freedom);
+  CHECK(std::next(it) == timeline_.end())
       << "Append out of order at " << t << ", last time is "
       << timeline_.crbegin()->time;
 
