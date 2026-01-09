@@ -550,7 +550,7 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   }
 }
 
-DiscreteTrajectory<Barycentric>::value_type
+DistinguishedPoints<Barycentric>::value_type
 FlightPlanOptimizer::EvaluateClosestPeriapsis(
     Celestial const& celestial,
     Instant const& begin_time,
@@ -559,7 +559,7 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
   auto const& vessel_trajectory = flight_plan_->GetAllSegments();
 
   Length distance_at_closest_periapsis;
-  std::optional<DiscreteTrajectory<Barycentric>::value_type> closest_periapsis;
+  std::optional<DistinguishedPoints<Barycentric>::value_type> closest_periapsis;
   for (;;) {
     DistinguishedPoints<Barycentric> apoapsides;
     DistinguishedPoints<Barycentric> periapsides;
@@ -579,9 +579,15 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
                                   .Norm();
       if (distance < distance_at_closest_periapsis) {
         distance_at_closest_periapsis = distance;
-        closest_periapsis = periapsis;
+        closest_periapsis.emplace(periapsis);
       }
     }
+
+    auto make_distinguished_point =
+        [](DiscreteTrajectory<Barycentric>::value_type const& v) {
+          return DistinguishedPoints<Barycentric>::value_type{
+              v.time, v.degrees_of_freedom};
+        };
 
     // Evaluate the distance at the end of the trajectory.  If it is smaller
     // than all the periapsides, increase the length of the flight plan until it
@@ -593,7 +599,7 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
     if (distance_at_end >= distance_at_closest_periapsis) {
       break;
     } else if (!extend_if_needed) {
-      return end_point;
+      return make_distinguished_point(end_point);
     }
 
     // Try to nudge the desired final time.  This may not succeed, in which case
@@ -604,14 +610,14 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
         {1 - flight_plan_extension_factor, flight_plan_extension_factor});
     flight_plan_->SetDesiredFinalTime(new_desired_final_time).IgnoreError();
     if (flight_plan_->actual_final_time() <= previous_actual_final_time) {
-      return vessel_trajectory.back();
+      return make_distinguished_point(vessel_trajectory.back());
     }
   }
 
   return closest_periapsis.value();
 }
 
-DiscreteTrajectory<Barycentric>::value_type
+DistinguishedPoints<Barycentric>::value_type
 FlightPlanOptimizer::EvaluatePeriapsisWithReplacement(
     Celestial const& celestial,
     HomogeneousArgument const& homogeneous_argument,
