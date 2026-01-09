@@ -37,7 +37,7 @@ Angle CelestialLongitude(Position<PrimaryCentred> const& q) {
 // The resulting angles are neither normalized nor unwound.
 template<typename PrimaryCentred, typename Inertial>
 std::vector<Angle> PlanetocentricLongitudes(
-    DiscreteTrajectory<PrimaryCentred> const& nodes,
+    DistinguishedPoints<PrimaryCentred> const& nodes,
     RotatingBody<Inertial> const& primary) {
   std::vector<Angle> longitudes;
   longitudes.reserve(nodes.size());
@@ -51,17 +51,18 @@ std::vector<Angle> PlanetocentricLongitudes(
 
 // The resulting angle is not normalized.
 template<typename Iterator>
-Angle MeanSolarTime(Iterator const& it,
+Angle MeanSolarTime(Iterator const it,
                     OrbitGroundTrack::MeanSun const& mean_sun) {
-  Time const t = it->time - mean_sun.epoch;
-  return π * Radian + CelestialLongitude(it->degrees_of_freedom.position()) -
+  auto const& [time, degrees_of_freedom] = *it;
+  Time const t = time - mean_sun.epoch;
+  return π * Radian + CelestialLongitude(degrees_of_freedom.position()) -
          (mean_sun.mean_longitude_at_epoch +
           (2 * π * Radian * t / mean_sun.year));
 }
 
 template<typename PrimaryCentred>
 Interval<Angle> MeanSolarTimesOfNodes(
-    DiscreteTrajectory<PrimaryCentred> const& nodes,
+    DistinguishedPoints<PrimaryCentred> const& nodes,
     OrbitGroundTrack::MeanSun const& mean_sun) {
   Interval<Angle> mean_solar_times;
   std::optional<Angle> mean_solar_time;
@@ -154,9 +155,11 @@ absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
       PlanetocentricLongitudes(ascending_nodes, primary);
   ground_track.longitudes_of_equator_crossings_of_descending_passes_ =
       PlanetocentricLongitudes(descending_nodes, primary);
+  auto const& [first_ascending_node_time, _1] = *ascending_nodes.begin();
+  auto const& [first_descending_node_time, _2] = *descending_nodes.begin();
   ground_track.first_descending_pass_before_first_ascending_pass_ =
       !ascending_nodes.empty() && !descending_nodes.empty() &&
-      descending_nodes.front().time < ascending_nodes.front().time;
+      first_ascending_node_time < first_descending_node_time;
   return ground_track;
 }
 
