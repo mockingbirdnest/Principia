@@ -76,8 +76,8 @@ Vessel const& Renderer::GetTargetVessel() const {
 DiscreteTrajectory<World>
 Renderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end,
+    DiscreteTrajectory<Barycentric>::const_iterator const& begin,
+    DiscreteTrajectory<Barycentric>::const_iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto const trajectory_in_plotting_frame =
@@ -93,8 +93,8 @@ Renderer::RenderBarycentricTrajectoryInWorld(
 
 DiscreteTrajectory<Navigation>
 Renderer::RenderBarycentricTrajectoryInPlotting(
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end) const {
+    DiscreteTrajectory<Barycentric>::const_iterator const& begin,
+    DiscreteTrajectory<Barycentric>::const_iterator const& end) const {
   DiscreteTrajectory<Navigation> trajectory;
   for (auto it = begin; it != end; ++it) {
     auto const& [time, degrees_of_freedom] = *it;
@@ -116,66 +116,51 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
 DiscreteTrajectory<World>
 Renderer::RenderPlottingTrajectoryInWorld(
     Instant const& time,
-    DiscreteTrajectory<Navigation>::iterator const& begin,
-    DiscreteTrajectory<Navigation>::iterator const& end,
+    DiscreteTrajectory<Navigation>::const_iterator const& begin,
+    DiscreteTrajectory<Navigation>::const_iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  DiscreteTrajectory<World> trajectory;
+  return RenderPlottingContainerInWorld<DiscreteTrajectory>(
+      time,
+      begin,
+      end,
+      sun_world_position,
+      planetarium_rotation,
+      [](DiscreteTrajectory<World>& trajectory,
+         Instant const& t,
+         DegreesOfFreedom<World> const& world_degrees_of_freedom) {
+        trajectory.Append(t, world_degrees_of_freedom).IgnoreError();
+      });
+}
 
-  //   Dinanzi a me non fuor cose create
-  //   se non etterne, e io etterno duro.
-  //   Lasciate ogne speranza, voi ch’intrate.
-  //
-  // This function does unnatural things.
-  // - It identifies positions in the plotting frame with those of world using
-  // the rigid transformation at the current time, instead of transforming each
-  // position according to the transformation at its time.  This hides the fact
-  // that we are considering an observer fixed in the plotting frame.
-  // - Instead of applying the full rigid motion and consistently transforming
-  // the velocities, or even just applying the orthogonal map, it simply
-  // identifies the axes of `World` with those of the plotting frame. This is
-  // because we are interested in the magnitude of the velocity (the speed) in
-  // the plotting frame, as well as the coordinates (in frames with a physically
-  // significant plane, the z coordinate becomes the out-of-plane velocity).
-  // We apply the scaling at the time of the velocity, instead of the scaling at
-  // `time` or no scaling, because we want speeds in current metres per second,
-  // not in constant metres (at `time`) per second, nor in constant lunar
-  // distances (masquerading as metres) per second.
-  // The resulting `DegreesOfFreedom` should be seen as no more than a
-  // convenient hack to send a plottable position together with a velocity in
-  // the coordinates we want.  In fact, it needs an articial permutation to
-  // avoid a violation of handedness.
-  // TODO(phl): This will no longer be needed once we have support for
-  // projections; instead of these convenient lies we can simply say that the
-  // camera is fixed in the plotting frame and project there; additional data
-  // can be gathered from the velocities in the plotting frame as needed and
-  // sent directly to be shown in markers.
-  Similarity<Navigation, World> const
-      from_plotting_frame_to_world_at_current_time =
-          PlottingToWorld(time, sun_world_position, planetarium_rotation);
+DistinguishedPoints<World> Renderer::RenderDistinguishedPointsInWorld(
+    Instant const& time,
+    DistinguishedPoints<Barycentric>::const_iterator const begin,
+    DistinguishedPoints<Barycentric>::const_iterator const end,
+    Position<World> const& sun_world_position,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  DistinguishedPoints<Navigation> plotting_points;
   for (auto const& [t, degrees_of_freedom] : Range(begin, end)) {
-    DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
-        degrees_of_freedom;
-    ConformalMap<double, Navigation, World> const
-        from_plotting_frame_to_world_at_t =
-            PlottingToWorld(t, planetarium_rotation);
-    DegreesOfFreedom<World> const world_degrees_of_freedom = {
-        from_plotting_frame_to_world_at_current_time(
-            navigation_degrees_of_freedom.position()),
-        Permutation<Navigation, World>(
-            Permutation<Navigation, World>::CoordinatePermutation::YXZ)(
-            from_plotting_frame_to_world_at_t.scale() *
-            navigation_degrees_of_freedom.velocity())};
-    trajectory.Append(t, world_degrees_of_freedom).IgnoreError();
+    auto const plotting_degrees_of_freedom =
+        BarycentricToPlotting(t)(degrees_of_freedom);
+    plotting_points.emplace(t, plotting_degrees_of_freedom);
   }
-  return trajectory;
+  return RenderPlottingContainerInWorld<DistinguishedPoints>(
+      time,
+      plotting_points.begin(),
+      plotting_points.end(),
+      sun_world_position,
+      planetarium_rotation,
+      [](DistinguishedPoints<World>& world_points,
+         Instant const& t,
+         DegreesOfFreedom<World> const& world_degrees_of_freedom) {});
 }
 
 std::vector<Renderer::Node>
 Renderer::RenderNodes(
     Instant const& time,
-    DiscreteTrajectory<Navigation>::iterator const& begin,
-    DiscreteTrajectory<Navigation>::iterator const& end,
+    DiscreteTrajectory<Navigation>::const_iterator const& begin,
+    DiscreteTrajectory<Navigation>::const_iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   std::vector<Node> nodes;
@@ -362,6 +347,67 @@ Renderer::Target::Target(
               ephemeris,
               [this]() -> auto& { return *this->vessel->prediction(); },
               celestial->body())) {}
+
+template<template<typename Frame> typename Container>
+Container<World> Renderer::RenderPlottingContainerInWorld(
+    Instant const& time,
+    Container<Navigation>::const_iterator const& begin,
+    Container<Navigation>::const_iterator const& end,
+    Position<World> const& sun_world_position,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation,
+    std::function<void(Container<World>&,
+                       Instant const&,
+                       DegreesOfFreedom<World> const&)> const& append) const {
+  Container<World> result;
+
+  //   Dinanzi a me non fuor cose create
+  //   se non etterne, e io etterno duro.
+  //   Lasciate ogne speranza, voi ch’intrate.
+  //
+  // This function does unnatural things.
+  // - It identifies positions in the plotting frame with those of world using
+  // the rigid transformation at the current time, instead of transforming each
+  // position according to the transformation at its time.  This hides the fact
+  // that we are considering an observer fixed in the plotting frame.
+  // - Instead of applying the full rigid motion and consistently transforming
+  // the velocities, or even just applying the orthogonal map, it simply
+  // identifies the axes of `World` with those of the plotting frame. This is
+  // because we are interested in the magnitude of the velocity (the speed) in
+  // the plotting frame, as well as the coordinates (in frames with a physically
+  // significant plane, the z coordinate becomes the out-of-plane velocity).
+  // We apply the scaling at the time of the velocity, instead of the scaling at
+  // `time` or no scaling, because we want speeds in current metres per second,
+  // not in constant metres (at `time`) per second, nor in constant lunar
+  // distances (masquerading as metres) per second.
+  // The resulting `DegreesOfFreedom` should be seen as no more than a
+  // convenient hack to send a plottable position together with a velocity in
+  // the coordinates we want.  In fact, it needs an articial permutation to
+  // avoid a violation of handedness.
+  // TODO(phl): This will no longer be needed once we have support for
+  // projections; instead of these convenient lies we can simply say that the
+  // camera is fixed in the plotting frame and project there; additional data
+  // can be gathered from the velocities in the plotting frame as needed and
+  // sent directly to be shown in markers.
+  Similarity<Navigation, World> const
+      from_plotting_frame_to_world_at_current_time =
+          PlottingToWorld(time, sun_world_position, planetarium_rotation);
+  for (auto const& [t, degrees_of_freedom] : Range(begin, end)) {
+    DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
+        degrees_of_freedom;
+    ConformalMap<double, Navigation, World> const
+        from_plotting_frame_to_world_at_t =
+            PlottingToWorld(t, planetarium_rotation);
+    DegreesOfFreedom<World> const world_degrees_of_freedom = {
+        from_plotting_frame_to_world_at_current_time(
+            navigation_degrees_of_freedom.position()),
+        Permutation<Navigation, World>(
+            Permutation<Navigation, World>::CoordinatePermutation::YXZ)(
+            from_plotting_frame_to_world_at_t.scale() *
+            navigation_degrees_of_freedom.velocity())};
+    append(result, t, world_degrees_of_freedom);
+  }
+  return result;
+}
 
 }  // namespace internal
 }  // namespace _renderer
