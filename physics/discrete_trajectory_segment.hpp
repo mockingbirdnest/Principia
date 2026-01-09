@@ -196,8 +196,8 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // Constructs the Hermite interpolation for the left-open, right-closed
   // trajectory interval bounded above by `upper`.  `upper` must not be the
   // first point of the timeline.
-  Hermite3<Position<Frame>, Instant> MakeInterpolation(
-      typename Timeline::const_iterator upper) const;
+  not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
+  NewInterpolation(typename Timeline::const_iterator upper) const;
 
   // Returns the Hermite interpolation for the left-open, right-closed
   // trajectory interval bounded above by `upper`, which must exist.

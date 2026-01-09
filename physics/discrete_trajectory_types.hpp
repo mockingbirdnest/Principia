@@ -1,7 +1,7 @@
 #pragma once
 
 #include <list>
-#include <optional>
+#include <memory>
 #include <tuple>
 
 #include "absl/container/btree_set.h"
@@ -50,8 +50,9 @@ struct value_type {
   // definitions below) but is exclusively for use by
   // `DiscreteTrajectorySegment`.  It is appropriate for evalutions on the
   // left-open, right-closed trajectory interval that ends at `time`.  It is
-  // missing (set to `nullopt`) for the first point of a segment.
-  std::optional<Hermite3<Position<Frame>, Instant>> interpolation;
+  // missing (set to `nullptr`) for the first point of a segment.
+//TODO(phl)comment
+  std::shared_ptr<Hermite3<Position<Frame>, Instant>> interpolation;
 
   // Support for structured bindings of `time` and `degrees_of_freedom`.
   template<std::size_t i, typename Self>
