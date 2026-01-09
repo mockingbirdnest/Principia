@@ -626,7 +626,7 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
     LOG_IF(WARNING, is_pre_hamilton)
         << "Reading pre-Hamilton DiscreteTrajectory";
     ReadFromPreHamiltonMessage(
-        message, tracked, /*fork_point=*/std::nullopt, trajectory);
+        message, tracked, /*fork_point=*/nullptr, trajectory);
     CHECK_OK(trajectory.ConsistencyStatus());
     return trajectory;
   }
@@ -889,7 +889,7 @@ DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
   // iterator.
   auto sit = --trajectory.segments_->end();
   ReadFromPreHamiltonMessage(
-      message.trajectories(0), tracked, fork_point, trajectory);
+      message.trajectories(0), tracked, &fork_point, trajectory);
   ++sit;
 
   return SegmentIterator(trajectory.segments_.get(), sit);
@@ -899,7 +899,7 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<SegmentIterator*> const& tracked,
-    std::optional<value_type> const& fork_point,
+    value_type const* const fork_point,
     DiscreteTrajectory& trajectory) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
@@ -958,16 +958,17 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
   }
 
   // Create the duplicated point if needed.
-  if (fork_point.has_value()) {
-    sit->SetForkPoint(fork_point.value());
+  if (fork_point != nullptr) {
+    sit->SetForkPoint(*fork_point);
   }
 
   // Restore the (single) child as the next segment.
   if (message.children_size() == 1) {
-    auto const child = ReadFromPreHamiltonMessage(message.children(0),
-                                                  tracked,
-                                                  /*fork_point=*/*sit->rbegin(),
-                                                  trajectory);
+    auto const child =
+        ReadFromPreHamiltonMessage(message.children(0),
+                                   tracked,
+                                   /*fork_point=*/*sit->rbegin(),
+                                   trajectory);
 
     // There were no fork positions prior to Буняковский.
     bool const has_fork_position = message.fork_position_size() > 0;

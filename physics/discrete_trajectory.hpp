@@ -199,11 +199,11 @@ class DiscreteTrajectory : public Trajectory<Frame> {
       DiscreteTrajectory& trajectory);
 
   // Reads a pre-Hamilton trajectory, updating the tracked segments as needed.
-  // If this is not the root of the trajectory, fork_point is set.
+  // If this is the root of the trajectory, fork_point is `nullptr`.
   static void ReadFromPreHamiltonMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<SegmentIterator*> const& tracked,
-      std::optional<value_type> const& fork_point,
+      value_type const* fork_point,
       DiscreteTrajectory& trajectory);
 
   // We need a level of indirection here to make sure that the pointer to

@@ -43,18 +43,19 @@ template<typename Frame>
 struct value_type {
   value_type(Instant const& time,
              DegreesOfFreedom<Frame> const& degrees_of_freedom);
+  // The field ordering is chosen to minimize the size of `value_type`.  This
+  // struct decomposes as `[time, degrees_of_freedom]` through structured
+  // bindings (see `get` below).
   DegreesOfFreedom<Frame> degrees_of_freedom;
   Instant time;
 
-  // This interpolation is not for use by clients (hence the structured bindings
-  // definitions below) but is exclusively for use by
-  // `DiscreteTrajectorySegment`.  It is appropriate for evalutions on the
-  // left-open, right-closed trajectory interval that ends at `time`.  It is
-  // missing (set to `nullptr`) for the first point of a segment.
-//TODO(phl)comment
-  std::shared_ptr<Hermite3<Position<Frame>, Instant>> interpolation;
+  // The interpolation is not for use by clients and is hidden by the structured
+  // bindings.  It is exclusively for use by `DiscreteTrajectorySegment`.  It is
+  // appropriate for evalutions on the left-open, right-closed trajectory
+  // interval that ends at `time`.  It is missing (set to `nullptr`) for the
+  // first point of a segment.
+  std::unique_ptr<Hermite3<Position<Frame>, Instant>> interpolation;
 
-  // Support for structured bindings of `time` and `degrees_of_freedom`.
   template<std::size_t i, typename Self>
   constexpr auto&& get(this Self&& self);
 };
