@@ -138,8 +138,8 @@ DiscreteTrajectory<GCRS>* ApsidesBenchmark::ilrsa_lageos2_trajectory_gcrs_ =
 
 BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
   for (auto _ : state) {
-    DiscreteTrajectory<ICRS> apoapsides;
-    DiscreteTrajectory<ICRS> periapsides;
+    DistinguishedPoints<ICRS> apoapsides;
+    DistinguishedPoints<ICRS> periapsides;
     ComputeApsides(*earth_trajectory_,
                    *ilrsa_lageos2_trajectory_icrs_,
                    ilrsa_lageos2_trajectory_icrs_->begin(),
@@ -155,8 +155,8 @@ BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
 
 BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
   for (auto _ : state) {
-    DiscreteTrajectory<GCRS> ascending;
-    DiscreteTrajectory<GCRS> descending;
+    DistinguishedPoints<GCRS> ascending;
+    DistinguishedPoints<GCRS> descending;
     CHECK_OK(ComputeNodes(*ilrsa_lageos2_trajectory_gcrs_,
                           ilrsa_lageos2_trajectory_gcrs_->begin(),
                           ilrsa_lageos2_trajectory_gcrs_->end(),
