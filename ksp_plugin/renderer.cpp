@@ -159,8 +159,8 @@ DistinguishedPoints<World> Renderer::RenderDistinguishedPointsInWorld(
 std::vector<Renderer::Node>
 Renderer::RenderNodes(
     Instant const& time,
-    DiscreteTrajectory<Navigation>::const_iterator const& begin,
-    DiscreteTrajectory<Navigation>::const_iterator const& end,
+    DistinguishedPoints<Navigation>::const_iterator const& begin,
+    DistinguishedPoints<Navigation>::const_iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   std::vector<Node> nodes;

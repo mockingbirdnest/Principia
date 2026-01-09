@@ -134,8 +134,8 @@ class Renderer {
 
   std::vector<Node> RenderNodes(
       Instant const& time,
-      DiscreteTrajectory<Navigation>::const_iterator const& begin,
-      DiscreteTrajectory<Navigation>::const_iterator const& end,
+      DistinguishedPoints<Navigation>::const_iterator const& begin,
+      DistinguishedPoints<Navigation>::const_iterator const& end,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
