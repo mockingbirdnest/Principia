@@ -452,13 +452,13 @@ message CollisionDeleteExecutor {
                                  (is_subject) = true];
     required fixed64 executor = 2
         [(pointer_to) =
-         "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
+         "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
          (is_consumed) = true];
   }
   message Out {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>"];
+         "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>"];
     // Deleting the executor returns the time and degrees of freedom of the
     // collision, if any.
     required TQP collision = 2;
@@ -479,7 +479,7 @@ message CollisionGetLatitudeLongitude {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
+         "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
          (is_subject) = true];
   }
   message Out {
@@ -509,7 +509,7 @@ message CollisionNewFlightPlanExecutor {
   message Return {
     required fixed64 result = 1
     [(pointer_to) =
-    "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
+    "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
     (is_produced) = true];
   }
   optional In in = 1;
@@ -531,7 +531,7 @@ message CollisionNewPredictionExecutor {
   message Return {
     required fixed64 result = 1
     [(pointer_to) =
-    "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
+    "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
     (is_produced) = true];
   }
   optional In in = 1;
@@ -545,7 +545,7 @@ message CollisionSetRadius {
   message In {
     required fixed64 executor = 1
         [(pointer_to) =
-         "PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>, Length, Angle, Angle>",
+         "PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>, Length, Angle, Angle>",
          (is_subject) = true];
     required double radius = 2;
   }

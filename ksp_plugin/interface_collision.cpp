@@ -7,6 +7,7 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
+#include "physics/apsides.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -17,6 +18,7 @@ namespace interface {
 using namespace principia::base::_push_pull_callback;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::physics::_apsides;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -25,7 +27,7 @@ namespace {
 
 template<typename TrajectoryLike>
 not_null<std::unique_ptr<
-    PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
+    PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>,
                      Length, Angle, Angle>>>
 NewExecutor(Plugin const* const plugin,
             int const celestial_index,
@@ -52,7 +54,7 @@ NewExecutor(Plugin const* const plugin,
   };
 
   return make_not_null_unique<
-      PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
+      PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>,
                        Length, Angle, Angle>>(std::move(task));
 }
 
@@ -61,7 +63,7 @@ NewExecutor(Plugin const* const plugin,
 
 bool __cdecl principia__CollisionDeleteExecutor(
     Plugin const* const plugin,
-    PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
+    PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>,
                      Length, Angle, Angle>** const executor,
     TQP* const collision) {
   journal::Method<journal::CollisionDeleteExecutor> m{{plugin, executor},
@@ -72,8 +74,9 @@ bool __cdecl principia__CollisionDeleteExecutor(
     TakeOwnership(executor);
   }
   if (maybe_collision.has_value()) {
-    *collision = TQP{.t = ToGameTime(*plugin, maybe_collision->time),
-                     .qp = ToQP(maybe_collision->degrees_of_freedom)};
+    auto const& [time, degrees_of_freedom] = *maybe_collision;
+    *collision = TQP{.t = ToGameTime(*plugin, time),
+                     .qp = ToQP(degrees_of_freedom)};
     return m.Return(true);
   } else {
     return m.Return(false);
@@ -81,7 +84,7 @@ bool __cdecl principia__CollisionDeleteExecutor(
 }
 
 bool __cdecl principia__CollisionGetLatitudeLongitude(
-    PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
+    PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>,
                      Length, Angle, Angle>* const executor,
     double* const latitude_in_degrees,
     double* const longitude_in_degrees) {
@@ -101,7 +104,7 @@ bool __cdecl principia__CollisionGetLatitudeLongitude(
 }
 
 PushPullExecutor<
-    std::optional<DiscreteTrajectory<World>::value_type>,
+    std::optional<DistinguishedPoints<World>::value_type>,
     Length, Angle, Angle>* __cdecl principia__CollisionNewFlightPlanExecutor(
     Plugin const* const plugin,
     int const celestial_index,
@@ -125,7 +128,7 @@ PushPullExecutor<
 }
 
 PushPullExecutor<
-    std::optional<DiscreteTrajectory<World>::value_type>,
+    std::optional<DistinguishedPoints<World>::value_type>,
     Length, Angle, Angle>* __cdecl principia__CollisionNewPredictionExecutor(
     Plugin const* const plugin,
     int const celestial_index,
@@ -149,7 +152,7 @@ PushPullExecutor<
 }
 
 void __cdecl principia__CollisionSetRadius(
-    PushPullExecutor<std::optional<DiscreteTrajectory<World>::value_type>,
+    PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>,
                      Length, Angle, Angle>* const executor,
     double const radius) {
   journal::Method<journal::CollisionSetRadius> m{
