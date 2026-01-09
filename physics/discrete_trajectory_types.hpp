@@ -43,8 +43,8 @@ template<typename Frame>
 struct value_type {
   value_type(Instant const& time,
              DegreesOfFreedom<Frame> const& degrees_of_freedom);
-  Instant time;
   DegreesOfFreedom<Frame> degrees_of_freedom;
+  Instant time;
 
   // This interpolation is not for use by clients (hence the structured bindings
   // definitions below) but is exclusively for use by

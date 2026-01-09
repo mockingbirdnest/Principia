@@ -57,6 +57,11 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
 
   using Segments = _discrete_trajectory_types::Segments<World>;
 
+  static_assert(
+      alignof(_discrete_trajectory_types::Timeline<World>::value_type) == 32);
+  static_assert(
+      sizeof(_discrete_trajectory_types::Timeline<World>::value_type) == 96);
+
   DiscreteTrajectorySegmentTest()
       : segments_(MakeSegments(1)) {
     segment_ = &*segments_->begin();
