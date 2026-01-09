@@ -129,8 +129,8 @@ absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
     DiscreteTrajectory<PrimaryCentred> const& trajectory,
     RotatingBody<Inertial> const& primary,
     std::optional<MeanSun> const& mean_sun) {
-  DiscreteTrajectory<PrimaryCentred> ascending_nodes;
-  DiscreteTrajectory<PrimaryCentred> descending_nodes;
+  DistinguishedPoints<PrimaryCentred> ascending_nodes;
+  DistinguishedPoints<PrimaryCentred> descending_nodes;
   OrbitGroundTrack ground_track;
   RETURN_IF_ERROR(ComputeNodes(trajectory,
                                trajectory.begin(),

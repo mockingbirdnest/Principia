@@ -997,8 +997,8 @@ void Plugin::ComputeAndRenderApsides(
     int const max_points,
     DiscreteTrajectory<World>& apoapsides,
     DiscreteTrajectory<World>& periapsides) const {
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  DistinguishedPoints<Barycentric> apoapsides_trajectory;
+  DistinguishedPoints<Barycentric> periapsides_trajectory;
   ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
                  trajectory,
                  begin, end,
@@ -1035,8 +1035,8 @@ Plugin::ComputeAndRenderFirstCollision(
   auto const& celestial_trajectory = celestial->trajectory();
 
   // TODO(phl): We should cache the apsides.
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  DistinguishedPoints<Barycentric> apoapsides_trajectory;
+  DistinguishedPoints<Barycentric> periapsides_trajectory;
   ComputeApsides(celestial_trajectory,
                  trajectory,
                  begin, end,
@@ -1091,8 +1091,8 @@ void Plugin::ComputeAndRenderClosestApproaches(
     DiscreteTrajectory<World>& closest_approaches) const {
   CHECK(renderer_->HasTargetVessel());
 
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  DistinguishedPoints<Barycentric> apoapsides_trajectory;
+  DistinguishedPoints<Barycentric> periapsides_trajectory;
   ComputeApsides(*renderer_->GetTargetVessel().prediction(),
                  trajectory,
                  begin, end,
@@ -1137,8 +1137,8 @@ void Plugin::ComputeAndRenderNodes(
     return (dof.position() - Navigation::origin).Norm() < threshold;
   };
 
-  DiscreteTrajectory<Navigation> ascending_trajectory;
-  DiscreteTrajectory<Navigation> descending_trajectory;
+  DistinguishedPoints<Navigation> ascending_trajectory;
+  DistinguishedPoints<Navigation> descending_trajectory;
   // The so-called North is orthogonal to the plane of the trajectory.
   ComputeNodes(trajectory_in_plotting,
                trajectory_in_plotting.begin(),

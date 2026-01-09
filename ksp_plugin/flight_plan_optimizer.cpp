@@ -561,8 +561,8 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
   Length distance_at_closest_periapsis;
   std::optional<DiscreteTrajectory<Barycentric>::value_type> closest_periapsis;
   for (;;) {
-    DiscreteTrajectory<Barycentric> apoapsides;
-    DiscreteTrajectory<Barycentric> periapsides;
+    DistinguishedPoints<Barycentric> apoapsides;
+    DistinguishedPoints<Barycentric> periapsides;
     ComputeApsides(celestial_trajectory,
                    vessel_trajectory,
                    vessel_trajectory.lower_bound(begin_time),
