@@ -16,6 +16,7 @@
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/apsides.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
@@ -40,6 +41,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_apsides;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
@@ -525,11 +527,11 @@ void __cdecl principia__FlightPlanRenderedApsides(
   CHECK_NOTNULL(plugin);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
-  DiscreteTrajectory<World> rendered_apoapsides;
-  DiscreteTrajectory<World> rendered_periapsides;
+  DistinguishedPoints<World> rendered_apoapsides;
+  DistinguishedPoints<World> rendered_periapsides;
   for (auto const& segment : flight_plan.segments()) {
-    DiscreteTrajectory<World> segment_rendered_apoapsides;
-    DiscreteTrajectory<World> segment_rendered_periapsides;
+    DistinguishedPoints<World> segment_rendered_apoapsides;
+    DistinguishedPoints<World> segment_rendered_periapsides;
     plugin->ComputeAndRenderApsides(
         celestial_index,
         flight_plan,
@@ -539,13 +541,13 @@ void __cdecl principia__FlightPlanRenderedApsides(
         max_points,
         segment_rendered_apoapsides,
         segment_rendered_periapsides);
-    rendered_apoapsides.Merge(std::move(segment_rendered_apoapsides));
-    rendered_periapsides.Merge(std::move(segment_rendered_periapsides));
+    rendered_apoapsides.merge(std::move(segment_rendered_apoapsides));
+    rendered_periapsides.merge(std::move(segment_rendered_periapsides));
   }
-  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
+  *apoapsides = new TypedIterator<DistinguishedPoints<World>>(
       std::move(rendered_apoapsides),
       plugin);
-  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
+  *periapsides = new TypedIterator<DistinguishedPoints<World>>(
       std::move(rendered_periapsides),
       plugin);
   return m.Return();
@@ -563,19 +565,19 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
   CHECK_NOTNULL(plugin);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
-  DiscreteTrajectory<World> rendered_closest_approaches;
+  DistinguishedPoints<World> rendered_closest_approaches;
   for (auto const& segment : flight_plan.segments()) {
-    DiscreteTrajectory<World> segment_rendered_closest_approaches;
+    DistinguishedPoints<World> segment_rendered_closest_approaches;
     plugin->ComputeAndRenderClosestApproaches(
         flight_plan,
         segment.begin(), segment.end(),
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_closest_approaches);
-    rendered_closest_approaches.Merge(
+    rendered_closest_approaches.merge(
         std::move(segment_rendered_closest_approaches));
   }
-  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
+  *closest_approaches = new TypedIterator<DistinguishedPoints<World>>(
       std::move(rendered_closest_approaches),
       plugin);
   return m.Return();

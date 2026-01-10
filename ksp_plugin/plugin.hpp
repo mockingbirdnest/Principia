@@ -35,6 +35,7 @@
 #include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "physics/apsides.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -84,6 +85,7 @@ using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::physics::_apsides;
 using namespace principia::physics::_body;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -368,12 +370,12 @@ class Plugin {
       Instant const& t_max,
       Position<World> const& sun_world_position,
       int max_points,
-      DiscreteTrajectory<World>& apoapsides,
-      DiscreteTrajectory<World>& periapsides) const;
+      DistinguishedPoints<World>& apoapsides,
+      DistinguishedPoints<World>& periapsides) const;
 
   // Computes the first collision between the trajectory defined by `begin` and
   // `end` and the celestial with index `celestial_index`.
-  virtual std::optional<DiscreteTrajectory<World>::value_type>
+  virtual std::optional<DistinguishedPoints<World>::value_type>
   ComputeAndRenderFirstCollision(
       Index celestial_index,
       Trajectory<Barycentric> const& trajectory,
@@ -392,7 +394,7 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::iterator const& end,
       Position<World> const& sun_world_position,
       int max_points,
-      DiscreteTrajectory<World>& closest_approaches) const;
+      DistinguishedPoints<World>& closest_approaches) const;
 
   // Computes the nodes of the trajectory defined by `begin` and `end` with
   // respect to plane of the trajectory of the targetted vessel.

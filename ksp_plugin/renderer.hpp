@@ -16,6 +16,8 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/apsides.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
@@ -41,6 +43,8 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_apsides;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
@@ -120,10 +124,18 @@ class Renderer {
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
+  DistinguishedPoints<World>
+  RenderDistinguishedPointsInWorld(
+      Instant const& time,
+      DistinguishedPoints<Barycentric>::const_iterator begin,
+      DistinguishedPoints<Barycentric>::const_iterator end,
+      Position<World> const& sun_world_position,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
   std::vector<Node> RenderNodes(
       Instant const& time,
-      DiscreteTrajectory<Navigation>::iterator const& begin,
-      DiscreteTrajectory<Navigation>::iterator const& end,
+      DistinguishedPoints<Navigation>::const_iterator const& begin,
+      DistinguishedPoints<Navigation>::const_iterator const& end,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
@@ -210,6 +222,17 @@ class Renderer {
     not_null<Celestial const*> const celestial;
     not_null<std::unique_ptr<PlottingFrame>> const target_frame;
   };
+
+  template<template<typename Frame> typename Container>
+  Container<World> RenderPlottingContainerInWorld(
+      Instant const& time,
+      Container<Navigation>::const_iterator const& begin,
+      Container<Navigation>::const_iterator const& end,
+      Position<World> const& sun_world_position,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation,
+      std::function<void(Container<World>&,
+                         Instant const&,
+                         DegreesOfFreedom<World> const&)> const& append) const;
 
   not_null<Celestial const*> const sun_;
 

@@ -7,6 +7,7 @@
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/renderer.hpp"
+#include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 
 namespace principia {
@@ -15,6 +16,7 @@ namespace interface {
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_renderer;
+using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 
 namespace {
@@ -54,8 +56,8 @@ void __cdecl principia__RenderedPredictionApsides(
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
-  DiscreteTrajectory<World> rendered_apoapsides;
-  DiscreteTrajectory<World> rendered_periapsides;
+  DistinguishedPoints<World> rendered_apoapsides;
+  DistinguishedPoints<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(
       celestial_index,
       *prediction,
@@ -65,10 +67,10 @@ void __cdecl principia__RenderedPredictionApsides(
       max_points,
       rendered_apoapsides,
       rendered_periapsides);
-  *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
+  *apoapsides = new TypedIterator<DistinguishedPoints<World>>(
       std::move(rendered_apoapsides),
       plugin);
-  *periapsides = new TypedIterator<DiscreteTrajectory<World>>(
+  *periapsides = new TypedIterator<DistinguishedPoints<World>>(
       std::move(rendered_periapsides),
       plugin);
   return m.Return();
@@ -85,7 +87,7 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       {closest_approaches});
   CHECK_NOTNULL(plugin);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
-  DiscreteTrajectory<World> rendered_closest_approaches;
+  DistinguishedPoints<World> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
       *prediction,
       prediction->begin(),
@@ -93,7 +95,7 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_closest_approaches);
-  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
+  *closest_approaches = new TypedIterator<DistinguishedPoints<World>>(
       std::move(rendered_closest_approaches),
       plugin);
   return m.Return();

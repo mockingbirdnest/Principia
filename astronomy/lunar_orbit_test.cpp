@@ -393,8 +393,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                   ExpressIn(Metre));
   }
 
-  DiscreteTrajectory<LunarSurface> ascending_nodes;
-  DiscreteTrajectory<LunarSurface> descending_nodes;
+  DistinguishedPoints<LunarSurface> ascending_nodes;
+  DistinguishedPoints<LunarSurface> descending_nodes;
   EXPECT_OK(ComputeNodes(surface_trajectory,
                          surface_trajectory.begin(),
                          surface_trajectory.end(),
@@ -404,8 +404,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                          ascending_nodes,
                          descending_nodes));
 
-  DiscreteTrajectory<ICRS> apoapsides;
-  DiscreteTrajectory<ICRS> periapsides;
+  DistinguishedPoints<ICRS> apoapsides;
+  DistinguishedPoints<ICRS> periapsides;
   ComputeApsides(*ephemeris_->trajectory(moon_),
                  trajectory,
                  trajectory.begin(),
@@ -417,12 +417,12 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   struct Nodes {
     std::string_view const name;
-    DiscreteTrajectory<LunarSurface> const& trajectory;
+    DistinguishedPoints<LunarSurface> const& points;
   };
 
   struct Apsides {
     std::string_view const name;
-    DiscreteTrajectory<ICRS> const& trajectory;
+    DistinguishedPoints<ICRS> const& points;
   };
 
   std::vector<double> descending_node_eccentricities;
@@ -430,7 +430,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   for (auto const& nodes : {Nodes{"ascending", ascending_nodes},
                             Nodes{"descending", descending_nodes}}) {
-    for (auto const& [time, degrees_of_freedom] : nodes.trajectory) {
+    for (auto const& [time, degrees_of_freedom] : nodes.points) {
       auto const elements = KeplerOrbit<Selenocentric>(
           *moon_,
           satellite_,
@@ -459,7 +459,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   for (auto const& apsides : {Apsides{"apoapsis", apoapsides},
                               Apsides{"periapsis", periapsides}}) {
-    for (auto const& [time, degrees_of_freedom] : apsides.trajectory) {
+    for (auto const& [time, degrees_of_freedom] : apsides.points) {
       logger.Append(absl::StrCat(apsides.name, "Times"),
                     time - J2000,
                     ExpressIn(Second));

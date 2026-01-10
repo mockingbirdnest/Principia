@@ -92,7 +92,7 @@ PushPullExecutor<T, Result, Arguments...>::PushPullExecutor(Task task)
         auto const result = task(callback_.ToStdFunction());
         {
           absl::MutexLock l(&lock_);
-          result_ = result;
+          result_.emplace(result);
         }
         callback_.Shutdown();
       }) {}
