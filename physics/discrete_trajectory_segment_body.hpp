@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iterator>
 #include <list>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
