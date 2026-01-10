@@ -486,14 +486,15 @@ void DiscreteTrajectorySegment<Frame>::Merge(
         << this_crbegin->degrees_of_freedom << " and "
         << segment_cbegin->degrees_of_freedom << " don't match";
 #endif
+    Instant const segment_begin_time = segment_begin->time;
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
     number_of_dense_points_ = segment.number_of_dense_points_;
-    // There may not be an interpolation at the time denoted by `segment_begin`
-    // (there may be one if the segments have a common time, though).
-    // (Re)compute it, but remember that we cannot trust that `segment_begin` is
-    // in `timeline_` so we need a lookup.
-    auto const it = timeline_.find(segment_begin->time);
+    // There may not be an interpolation at `segment_begin_time` (there may be
+    // one if the segments have a common time, though). (Re)compute it, but
+    // remember that we cannot trust that `segment_begin` is in `timeline_` (or
+    // even valid) so we need a lookup.
+    auto const it = timeline_.find(segment_begin_time);
     CHECK(it != timeline_.cend());
     if (it != timeline_.cbegin()) {
       it->interpolation = NewInterpolation(it);
@@ -514,12 +515,13 @@ void DiscreteTrajectorySegment<Frame>::Merge(
         << segment_crbegin->degrees_of_freedom << " and "
         << this_cbegin->degrees_of_freedom << " don't match";
 #endif
+    Instant const this_begin_time = this_begin->time;
     timeline_.merge(segment.timeline_);
-    // There may not be an interpolation at the time denoted by `this_begin`
-    // (there may be one if the segments have a common time, though).
-    // (Re)compute it, but remember that we cannot trust that `this_begin` is in
-    // `timeline_` so we need a lookup.
-    auto const it = timeline_.find(this_begin->time);
+    // There may not be an interpolation at `this_begin_time` (there may be one
+    // if the segments have a common time, though). (Re)compute it, but remember
+    // that we cannot trust that `this_begin` is in `timeline_` (or even valid)
+    // so we need a lookup.
+    auto const it = timeline_.find(this_begin_time);
     CHECK(it != timeline_.cend());
     if (it != timeline_.cbegin()) {
       it->interpolation = NewInterpolation(it);
