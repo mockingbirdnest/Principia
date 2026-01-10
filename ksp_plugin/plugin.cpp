@@ -1405,7 +1405,7 @@ Velocity<World> Plugin::UnmanageableVesselVelocity(
 
 Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   Vessel const& vessel = *FindOrDie(vessels_, vessel_guid);
-  auto const back = vessel.psychohistory()->back();
+  auto const& back = vessel.psychohistory()->back();
   return VesselVelocity(back.time, back.degrees_of_freedom);
 }
 
