@@ -230,7 +230,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const back = vessel.psychohistory()->back();
+  auto const& back = vessel.psychohistory()->back();
   DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
       back.degrees_of_freedom;
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
@@ -249,7 +249,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     NavigationFrame const& navigation_frame,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const back = vessel.psychohistory()->back();
+  auto const& back = vessel.psychohistory()->back();
   auto const to_navigation = navigation_frame.ToThisFrameAtTime(back.time);
   auto const from_navigation = to_navigation.orthogonal_map().Inverse();
   auto const frenet_frame =

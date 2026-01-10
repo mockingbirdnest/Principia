@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_AVX.
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -56,6 +57,18 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
                       serialization::Frame::TEST>;
 
   using Segments = _discrete_trajectory_types::Segments<World>;
+
+#if PRINCIPIA_USE_AVX()
+  static_assert(
+      alignof(_discrete_trajectory_types::Timeline<World>::value_type) == 32);
+  static_assert(
+      sizeof(_discrete_trajectory_types::Timeline<World>::value_type) == 96);
+#else
+  static_assert(
+      alignof(_discrete_trajectory_types::Timeline<World>::value_type) == 16);
+  static_assert(
+      sizeof(_discrete_trajectory_types::Timeline<World>::value_type) == 80);
+#endif
 
   DiscreteTrajectorySegmentTest()
       : segments_(MakeSegments(1)) {

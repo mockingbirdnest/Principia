@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <iterator>
+#include <memory>
 #include <optional>
 #include <vector>
 
@@ -193,9 +194,15 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // segment.
   absl::Status DownsampleIfNeeded();
 
+  // Constructs the Hermite interpolation for the left-open, right-closed
+  // trajectory interval bounded above by `upper`.  `upper` must not be the
+  // first point of the timeline.
+  not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
+  NewInterpolation(typename Timeline::const_iterator upper) const;
+
   // Returns the Hermite interpolation for the left-open, right-closed
-  // trajectory segment bounded above by `upper`.
-  Hermite3<Position<Frame>, Instant> GetInterpolation(
+  // trajectory interval bounded above by `upper`, which must exist.
+  Hermite3<Position<Frame>, Instant> const& get_interpolation(
       typename Timeline::const_iterator upper) const;
 
   typename Timeline::const_iterator timeline_begin() const;
