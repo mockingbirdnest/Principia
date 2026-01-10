@@ -76,8 +76,8 @@ Vessel const& Renderer::GetTargetVessel() const {
 DiscreteTrajectory<World>
 Renderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,
-    DiscreteTrajectory<Barycentric>::const_iterator const& begin,
-    DiscreteTrajectory<Barycentric>::const_iterator const& end,
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto const trajectory_in_plotting_frame =
@@ -93,8 +93,8 @@ Renderer::RenderBarycentricTrajectoryInWorld(
 
 DiscreteTrajectory<Navigation>
 Renderer::RenderBarycentricTrajectoryInPlotting(
-    DiscreteTrajectory<Barycentric>::const_iterator const& begin,
-    DiscreteTrajectory<Barycentric>::const_iterator const& end) const {
+    DiscreteTrajectory<Barycentric>::iterator const& begin,
+    DiscreteTrajectory<Barycentric>::iterator const& end) const {
   DiscreteTrajectory<Navigation> trajectory;
   for (auto it = begin; it != end; ++it) {
     auto const& [time, degrees_of_freedom] = *it;
@@ -116,14 +116,13 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
 DiscreteTrajectory<World>
 Renderer::RenderPlottingTrajectoryInWorld(
     Instant const& time,
-    DiscreteTrajectory<Navigation>::const_iterator const& begin,
-    DiscreteTrajectory<Navigation>::const_iterator const& end,
+    DiscreteTrajectory<Navigation>::iterator const& begin,
+    DiscreteTrajectory<Navigation>::iterator const& end,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return RenderPlottingContainerInWorld<DiscreteTrajectory>(
       time,
-      begin,
-      end,
+      begin, end,
       sun_world_position,
       planetarium_rotation,
       [](DiscreteTrajectory<World>& trajectory,
@@ -153,7 +152,9 @@ DistinguishedPoints<World> Renderer::RenderDistinguishedPointsInWorld(
       planetarium_rotation,
       [](DistinguishedPoints<World>& world_points,
          Instant const& t,
-         DegreesOfFreedom<World> const& world_degrees_of_freedom) {});
+         DegreesOfFreedom<World> const& world_degrees_of_freedom) {
+        world_points.emplace(t, world_degrees_of_freedom);
+      });
 }
 
 std::vector<Renderer::Node>

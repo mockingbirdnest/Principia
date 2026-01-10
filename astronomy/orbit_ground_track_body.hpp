@@ -159,7 +159,7 @@ absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
   auto const& [first_descending_node_time, _2] = *descending_nodes.begin();
   ground_track.first_descending_pass_before_first_ascending_pass_ =
       !ascending_nodes.empty() && !descending_nodes.empty() &&
-      first_ascending_node_time < first_descending_node_time;
+      first_descending_node_time < first_ascending_node_time;
   return ground_track;
 }
 
