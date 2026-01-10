@@ -10,7 +10,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/permutation.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
-#include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -21,7 +20,6 @@ using namespace principia::base::_ranges;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_permutation;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
-using namespace principia::physics::_degrees_of_freedom;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,
                    not_null<std::unique_ptr<PlottingFrame>> plotting_frame)
