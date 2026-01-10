@@ -250,7 +250,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5200.
+  extensions 5000 to 5999;  // Last used: 5202.
 }
 
 message ActivatePlayer {
@@ -1654,6 +1654,38 @@ message IteratorGetDiscreteTrajectoryXYZ {
   }
   message Return {
     required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetDistinguishedPointsQP {
+  extend Method {
+    optional IteratorGetDistinguishedPointsQP extension = 5201;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetDistinguishedPointsTime {
+  extend Method {
+    optional IteratorGetDistinguishedPointsTime extension = 5202;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required double result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

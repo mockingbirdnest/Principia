@@ -51,17 +51,6 @@ QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(
       }));
 }
 
-Node __cdecl principia__IteratorGetNode(Iterator const* const iterator) {
-  journal::Method<journal::IteratorGetNode> m({iterator});
-  CHECK_NOTNULL(iterator);
-  auto const typed_iterator = check_not_null(
-      dynamic_cast<TypedIterator<std::vector<Renderer::Node>> const*>(
-          iterator));
-  auto const plugin = typed_iterator->plugin();
-  return m.Return(typed_iterator->Get<Node>(
-      [plugin](Renderer::Node const& node) { return ToNode(*plugin, node); }));
-}
-
 double __cdecl principia__IteratorGetDiscreteTrajectoryTime(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDiscreteTrajectoryTime> m({iterator});
@@ -85,6 +74,44 @@ XYZ __cdecl principia__IteratorGetDiscreteTrajectoryXYZ(
       [](DiscreteTrajectory<World>::iterator const& iterator) -> XYZ {
         return ToXYZ(iterator->degrees_of_freedom.position());
       }));
+}
+
+QP __cdecl principia__IteratorGetDistinguishedPointsQP(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetDistinguishedPointsQP> m({iterator});
+  CHECK_NOTNULL(iterator);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<DistinguishedPoints<World>> const*>(iterator));
+  return m.Return(typed_iterator->Get<QP>(
+      [](DistinguishedPoints<World>::value_type const& v) -> QP {
+        auto const& [_, degrees_of_freedom] = v;
+        return ToQP(degrees_of_freedom);
+      }));
+}
+
+double __cdecl principia__IteratorGetDistinguishedPointsTime(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetDistinguishedPointsTime> m({iterator});
+  CHECK_NOTNULL(iterator);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<DistinguishedPoints<World>> const*>(iterator));
+  auto const plugin = typed_iterator->plugin();
+  return m.Return(typed_iterator->Get<double>(
+      [plugin](DistinguishedPoints<World>::value_type const& v) -> double {
+        auto const& [time, _] = v;
+        return ToGameTime(*plugin, time);
+      }));
+}
+
+Node __cdecl principia__IteratorGetNode(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetNode> m({iterator});
+  CHECK_NOTNULL(iterator);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<std::vector<Renderer::Node>> const*>(
+          iterator));
+  auto const plugin = typed_iterator->plugin();
+  return m.Return(typed_iterator->Get<Node>(
+      [plugin](Renderer::Node const& node) { return ToNode(*plugin, node); }));
 }
 
 Iterator* __cdecl principia__IteratorGetRP2LinesIterator(
