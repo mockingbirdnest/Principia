@@ -53,7 +53,8 @@ struct value_type {
   // bindings.  It is exclusively for use by `DiscreteTrajectorySegment`.  It is
   // appropriate for evalutions on the left-open, right-closed trajectory
   // interval that ends at `time`.  It is missing (set to `nullptr`) for the
-  // first point of a segment.
+  // first point of a segment.  A level of indirection is used to reduce the
+  // size of `value_type` (which is stored in a B-tree).
   std::unique_ptr<Hermite3<Position<Frame>, Instant>> interpolation;
 
   template<std::size_t i, typename Self>
