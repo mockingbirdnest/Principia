@@ -43,6 +43,7 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   using value_type = typename Timeline<Frame>::value_type;
 
   using iterator = DiscreteTrajectoryIterator<Frame>;
+  using const_iterator = DiscreteTrajectoryIterator<Frame>;
   using reference = value_type const&;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using SegmentIterator = DiscreteTrajectorySegmentIterator<Frame>;

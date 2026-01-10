@@ -39,7 +39,6 @@
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/part_subsets.hpp"  // 🧙 For Subset<Part>.
-#include "physics/apsides.hpp"
 #include "physics/barycentric_rotating_reference_frame.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
@@ -76,7 +75,6 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_part;
-using namespace principia::physics::_apsides;
 using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
@@ -995,32 +993,32 @@ void Plugin::ComputeAndRenderApsides(
     Instant const& t_max,
     Position<World> const& sun_world_position,
     int const max_points,
-    DiscreteTrajectory<World>& apoapsides,
-    DiscreteTrajectory<World>& periapsides) const {
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+    DistinguishedPoints<World>& apoapsides,
+    DistinguishedPoints<World>& periapsides) const {
+  DistinguishedPoints<Barycentric> barycentric_apoapsides;
+  DistinguishedPoints<Barycentric> barycentric_periapsides;
   ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
                  trajectory,
                  begin, end,
                  t_max,
                  max_points,
-                 apoapsides_trajectory,
-                 periapsides_trajectory);
-  apoapsides = renderer_->RenderBarycentricTrajectoryInWorld(
+                 barycentric_apoapsides,
+                 barycentric_periapsides);
+  apoapsides = renderer_->RenderDistinguishedPointsInWorld(
                    current_time_,
-                   apoapsides_trajectory.begin(),
-                   apoapsides_trajectory.end(),
+                   barycentric_apoapsides.begin(),
+                   barycentric_apoapsides.end(),
                    sun_world_position,
                    PlanetariumRotation());
-  periapsides = renderer_->RenderBarycentricTrajectoryInWorld(
+  periapsides = renderer_->RenderDistinguishedPointsInWorld(
                     current_time_,
-                    periapsides_trajectory.begin(),
-                    periapsides_trajectory.end(),
+                    barycentric_periapsides.begin(),
+                    barycentric_periapsides.end(),
                     sun_world_position,
                     PlanetariumRotation());
 }
 
-std::optional<DiscreteTrajectory<World>::value_type>
+std::optional<DistinguishedPoints<World>::value_type>
 Plugin::ComputeAndRenderFirstCollision(
     Index const celestial_index,
     Trajectory<Barycentric> const& trajectory,
@@ -1035,21 +1033,21 @@ Plugin::ComputeAndRenderFirstCollision(
   auto const& celestial_trajectory = celestial->trajectory();
 
   // TODO(phl): We should cache the apsides.
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  DistinguishedPoints<Barycentric> apoapsides;
+  DistinguishedPoints<Barycentric> periapsides;
   ComputeApsides(celestial_trajectory,
                  trajectory,
                  begin, end,
                  /*t_max=*/InfiniteFuture,
                  max_points,
-                 apoapsides_trajectory,
-                 periapsides_trajectory);
+                 apoapsides,
+                 periapsides);
 
   const auto intervals = ComputeCollisionIntervals(celestial_body,
                                                    celestial_trajectory,
                                                    trajectory,
-                                                   apoapsides_trajectory,
-                                                   periapsides_trajectory);
+                                                   apoapsides,
+                                                   periapsides);
 
   VLOG(1) << "Found " << intervals.size() << " collision intervals";
   for (auto const& interval : intervals) {
@@ -1063,18 +1061,17 @@ Plugin::ComputeAndRenderFirstCollision(
     if (maybe_collision.has_value()) {
       auto const& collision = maybe_collision.value();
 
-      // We create a trajectory with a single point to simplify rendering.
-      DiscreteTrajectory<Barycentric> trajectory_to_render;
-      CHECK_OK(trajectory_to_render.Append(collision.time,
-                                           collision.degrees_of_freedom));
-      DiscreteTrajectory<World> rendered_trajectory =
-          renderer_->RenderBarycentricTrajectoryInWorld(
+      // We create a `DistinguishedPoints` with a single point to simplify
+      // rendering.
+      DistinguishedPoints<Barycentric> const points_to_render({collision});
+      DistinguishedPoints<World> const rendered_points =
+          renderer_->RenderDistinguishedPointsInWorld(
               current_time_,
-              trajectory_to_render.begin(),
-              trajectory_to_render.end(),
+              points_to_render.begin(),
+              points_to_render.end(),
               sun_world_position,
               PlanetariumRotation());
-      return rendered_trajectory.front();
+      return *rendered_points.begin();
     }
   }
 
@@ -1088,23 +1085,23 @@ void Plugin::ComputeAndRenderClosestApproaches(
     DiscreteTrajectory<Barycentric>::iterator const& end,
     Position<World> const& sun_world_position,
     int const max_points,
-    DiscreteTrajectory<World>& closest_approaches) const {
+    DistinguishedPoints<World>& closest_approaches) const {
   CHECK(renderer_->HasTargetVessel());
 
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  DistinguishedPoints<Barycentric> apoapsides;
+  DistinguishedPoints<Barycentric> periapsides;
   ComputeApsides(*renderer_->GetTargetVessel().prediction(),
                  trajectory,
                  begin, end,
                  /*t_max=*/InfiniteFuture,
                  max_points,
-                 apoapsides_trajectory,
-                 periapsides_trajectory);
+                 apoapsides,
+                 periapsides);
   closest_approaches =
-      renderer_->RenderBarycentricTrajectoryInWorld(
+      renderer_->RenderDistinguishedPointsInWorld(
           current_time_,
-          periapsides_trajectory.begin(),
-          periapsides_trajectory.end(),
+          periapsides.begin(),
+          periapsides.end(),
           sun_world_position,
           PlanetariumRotation());
 }
@@ -1137,8 +1134,8 @@ void Plugin::ComputeAndRenderNodes(
     return (dof.position() - Navigation::origin).Norm() < threshold;
   };
 
-  DiscreteTrajectory<Navigation> ascending_trajectory;
-  DiscreteTrajectory<Navigation> descending_trajectory;
+  DistinguishedPoints<Navigation> plotting_ascending;
+  DistinguishedPoints<Navigation> plotting_descending;
   // The so-called North is orthogonal to the plane of the trajectory.
   ComputeNodes(trajectory_in_plotting,
                trajectory_in_plotting.begin(),
@@ -1146,18 +1143,18 @@ void Plugin::ComputeAndRenderNodes(
                t_max,
                Vector<double, Navigation>({0, 0, 1}),
                max_points,
-               ascending_trajectory,
-               descending_trajectory,
+               plotting_ascending,
+               plotting_descending,
                show_node).IgnoreError();
 
   ascending = renderer_->RenderNodes(current_time_,
-                                     ascending_trajectory.begin(),
-                                     ascending_trajectory.end(),
+                                     plotting_ascending.begin(),
+                                     plotting_ascending.end(),
                                      sun_world_position,
                                      PlanetariumRotation());
   descending = renderer_->RenderNodes(current_time_,
-                                      descending_trajectory.begin(),
-                                      descending_trajectory.end(),
+                                      plotting_descending.begin(),
+                                      plotting_descending.end(),
                                       sun_world_position,
                                       PlanetariumRotation());
 }

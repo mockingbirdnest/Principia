@@ -15,6 +15,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/gradient_descent.hpp"
+#include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
@@ -34,6 +35,7 @@ using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_gradient_descent;
+using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_reference_frame;
 using namespace principia::quantities::_named_quantities;
@@ -142,7 +144,7 @@ class FlightPlanOptimizer {
   // where it's kosher.
   using EvaluationCache =
       absl::flat_hash_map<HomogeneousArgument,
-                          DiscreteTrajectory<Barycentric>::value_type>;
+                          DistinguishedPoints<Barycentric>::value_type>;
 
   using LengthGradient = Gradient<Length, HomogeneousArgument>;
   using AngleGradient = Gradient<Angle, HomogeneousArgument>;
@@ -151,14 +153,14 @@ class FlightPlanOptimizer {
   // `celestial`, occurring after `begin_time`.  If `extend_if_needed` is true,
   // the flight plan is extended until its end is not the point that minimizes
   // the metric.
-  DiscreteTrajectory<Barycentric>::value_type EvaluateClosestPeriapsis(
+  DistinguishedPoints<Barycentric>::value_type EvaluateClosestPeriapsis(
       Celestial const& celestial,
       Instant const& begin_time,
       bool extend_if_needed) const;
 
   // Replaces the manœuvre at the given `index` based on the `argument`, and
   // computes the closest periapis.  Leaves the `flight_plan` unchanged.
-  DiscreteTrajectory<Barycentric>::value_type EvaluatePeriapsisWithReplacement(
+  DistinguishedPoints<Barycentric>::value_type EvaluatePeriapsisWithReplacement(
       Celestial const& celestial,
       HomogeneousArgument const& homogeneous_argument,
       NavigationManœuvre const& manœuvre,

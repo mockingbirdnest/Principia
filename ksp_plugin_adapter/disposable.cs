@@ -14,14 +14,16 @@ static class DisposableIteratorExtensions {
     }
   }
 
-  public static IEnumerable<TQP> DiscreteTrajectoryPoints(
-      this DisposableIterator apsis_iterator) {
+  public static IEnumerable<TQP> DistinguishedPoints(
+      this DisposableIterator distinguished_points_iterator) {
     for (;
-         !apsis_iterator.IteratorAtEnd();
-         apsis_iterator.IteratorIncrement()) {
+         !distinguished_points_iterator.IteratorAtEnd();
+         distinguished_points_iterator.IteratorIncrement()) {
       yield return new TQP {
-          t = apsis_iterator.IteratorGetDiscreteTrajectoryTime(),
-          qp = apsis_iterator.IteratorGetDiscreteTrajectoryQP()
+          t = distinguished_points_iterator.
+              IteratorGetDistinguishedPointsTime(),
+          qp = distinguished_points_iterator.
+               IteratorGetDistinguishedPointsQP()
       };
     }
   }

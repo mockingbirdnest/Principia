@@ -217,8 +217,11 @@ internal static class Loader {
     } else {
       function_pointer = dlsym(principia_dll_, function);
     }
-    T result = Marshal.GetDelegateForFunctionPointer(
-        function_pointer, typeof(T)) as T;
+    if (function_pointer == IntPtr.Zero) {
+      throw new EntryPointNotFoundException(function);
+    }
+    T result =
+        Marshal.GetDelegateForFunctionPointer(function_pointer, typeof(T)) as T;
     if (result == null) {
       throw new EntryPointNotFoundException(function);
     }

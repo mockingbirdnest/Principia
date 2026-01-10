@@ -135,8 +135,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
           1e-3 * Metre / Second),
       Ephemeris<World>::unlimited_max_ephemeris_steps));
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(*ephemeris.trajectory(b),
                  trajectory,
                  trajectory.begin(),
@@ -201,8 +201,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
                                            t2),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(reference_trajectory,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -214,8 +214,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
 
   // This is a "suspicious" apsis, located at the beginning of a time interval,
   // because the circular trajectory leads to ill-conditioning.
-  auto it = apoapsides.begin();
-  EXPECT_THAT(it->time,
+  auto const& [time, _] = *apoapsides.begin();
+  EXPECT_THAT(time,
               AnyOf(AlmostEquals(t1 + 4 * Δt, 0),    // Windows, Ubuntu.
                     AlmostEquals(t1 + 2 * Δt, 0)));  // macOS.
 
@@ -302,8 +302,8 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
 
   // The computations below were verified with Mathematica to the given
   // accuracy.
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(reference_trajectory,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -314,7 +314,8 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                  periapsides);
   EXPECT_THAT(apoapsides, IsEmpty());
   EXPECT_THAT(periapsides, SizeIs(1));
-  EXPECT_THAT(periapsides.begin()->time, AlmostEquals(t0 + 0.5 * Second, 0));
+  auto const& [time, _] = *periapsides.begin();
+  EXPECT_THAT(time, AlmostEquals(t0 + 0.5 * Second, 0));
 
   const auto intervals = ComputeCollisionIntervals(body,
                                                    reference_trajectory,
@@ -333,16 +334,17 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                             intervals[0],
                             /*max_error=*/2e-4 * Metre,
                             radius);
-  auto const& collision = maybe_collision.value();
+  auto const& [collision_time, collision_degrees_of_freedom] =
+      maybe_collision.value();
 
-  EXPECT_THAT(collision.time - t0,
+  EXPECT_THAT(collision_time - t0,
               IsNear(-1.43862_(1) * Second));
-  EXPECT_THAT(collision.degrees_of_freedom.position() - World::origin,
+  EXPECT_THAT(collision_degrees_of_freedom.position() - World::origin,
               Componentwise(1 * Metre,
                             IsNear(0.43862_(1) * Metre),
                             0 * Metre));
   EXPECT_THAT(
-      collision.degrees_of_freedom.velocity(),
+      collision_degrees_of_freedom.velocity(),
       AlmostEquals(Velocity<World>({0 * Metre / Second,
                                     -1 * Metre / Second,
                                     0 * Metre / Second}), 0));
@@ -401,8 +403,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
   Vector<double, World> const north({0, 0, 1});
 
-  DiscreteTrajectory<World> ascending_nodes;
-  DiscreteTrajectory<World> descending_nodes;
+  DistinguishedPoints<World> ascending_nodes;
+  DistinguishedPoints<World> descending_nodes;
   EXPECT_OK(ComputeNodes(trajectory,
                          trajectory.begin(),
                          trajectory.end(),
@@ -442,8 +444,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
   EXPECT_THAT(ascending_nodes, SizeIs(10));
   EXPECT_THAT(descending_nodes, SizeIs(10));
 
-  DiscreteTrajectory<World> south_ascending_nodes;
-  DiscreteTrajectory<World> south_descending_nodes;
+  DistinguishedPoints<World> south_ascending_nodes;
+  DistinguishedPoints<World> south_descending_nodes;
   Vector<double, World> const mostly_south({1, 1, -1});
   EXPECT_OK(ComputeNodes(trajectory,
                          trajectory.begin(),
@@ -465,12 +467,20 @@ TEST_F(ApsidesTest, ComputeNodes) {
        ++ascending_it,
        ++south_descending_it,
        ++descending_it) {
-    EXPECT_THAT(south_ascending_it->degrees_of_freedom,
-                Eq(descending_it->degrees_of_freedom));
-    EXPECT_THAT(south_ascending_it->time, Eq(descending_it->time));
-    EXPECT_THAT(south_descending_it->degrees_of_freedom,
-                Eq(ascending_it->degrees_of_freedom));
-    EXPECT_THAT(south_descending_it->time, Eq(ascending_it->time));
+    auto const& [ascending_time, ascending_degrees_of_freedom] =
+        *ascending_it;
+    auto const& [descending_time, descending_degrees_of_freedom] =
+        *descending_it;
+    auto const& [south_ascending_time, south_ascending_degrees_of_freedom] =
+        *south_ascending_it;
+    auto const& [south_descending_time, south_descending_degrees_of_freedom] =
+        *south_descending_it;
+    EXPECT_THAT(south_ascending_degrees_of_freedom,
+                Eq(descending_degrees_of_freedom));
+    EXPECT_THAT(south_ascending_time, Eq(descending_time));
+    EXPECT_THAT(south_descending_degrees_of_freedom,
+                Eq(ascending_degrees_of_freedom));
+    EXPECT_THAT(south_descending_time, Eq(ascending_time));
   }
 }
 
@@ -527,8 +537,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisBelowMaxRadius) {
           t2_),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -568,8 +578,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisAboveMaxRadius) {
           t2_),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -605,8 +615,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, NoPeriapsis) {
           t2_),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -655,8 +665,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisBelowMaxRadius) {
           t2_),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -708,8 +718,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisAboveMaxRadius) {
           t2_),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -765,8 +775,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
           t2_),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -822,8 +832,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
           t0_ + 8.9 * Second),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -878,8 +888,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisOneApoapsis) {
           t0_ + 8.9 * Second),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -919,8 +929,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, InitialApoapsisOnePeriapsis) {
           t2_),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
@@ -960,8 +970,8 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisFinalApoapsis) {
           t2_),
       vessel_trajectory);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
                  vessel_trajectory,
                  vessel_trajectory.begin(),

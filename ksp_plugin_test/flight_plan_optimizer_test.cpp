@@ -116,8 +116,8 @@ class FlightPlanOptimizerTest : public testing::Test {
       DegreesOfFreedom<Barycentric>& flyby_degrees_of_freedom) {
     auto const& celestial_trajectory = celestial.trajectory();
     auto const& flight_plan_trajectory = flight_plan.GetAllSegments();
-    DiscreteTrajectory<Barycentric> apoapsides;
-    DiscreteTrajectory<Barycentric> periapsides;
+    DistinguishedPoints<Barycentric> apoapsides;
+    DistinguishedPoints<Barycentric> periapsides;
     ComputeApsides(celestial_trajectory,
                    flight_plan_trajectory,
                    flight_plan_trajectory.begin(),
