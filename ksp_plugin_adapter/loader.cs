@@ -211,14 +211,15 @@ internal static class Loader {
   private static IntPtr principia_dll_;
 
   internal static T LoadFunction<T>(string function) where T : Delegate {
-    UnityEngine.Debug.Log("Loading function " + function);
     IntPtr function_pointer;
     if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
       function_pointer = GetProcAddress(principia_dll_, function);
     } else {
       function_pointer = dlsym(principia_dll_, function);
     }
-    UnityEngine.Debug.Log("Loaded function " + function_pointer);
+    if (function_pointer == IntPtr.Zero) {
+      throw new EntryPointNotFoundException(function);
+    }
     T result =
         Marshal.GetDelegateForFunctionPointer(function_pointer, typeof(T)) as T;
     if (result == null) {
