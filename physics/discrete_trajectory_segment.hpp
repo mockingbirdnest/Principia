@@ -6,7 +6,6 @@
 #include <optional>
 #include <vector>
 
-#include "absl/container/btree_map.h"
 #include "absl/status/status.h"
 #include "base/concepts.hpp"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
