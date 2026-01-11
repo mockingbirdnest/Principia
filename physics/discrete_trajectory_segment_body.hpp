@@ -124,35 +124,37 @@ DiscreteTrajectorySegment<Frame>::upper_bound(Instant const& t) const {
 
 template<typename Frame>
 Instant DiscreteTrajectorySegment<Frame>::t_min() const {
-  return empty() ? InfiniteFuture : timeline_.cbegin()->time;
+  return timeline_.empty() ? InfiniteFuture : timeline_.cbegin()->time;
 }
 
 template<typename Frame>
 Instant DiscreteTrajectorySegment<Frame>::t_max() const {
-  return empty() ? InfinitePast : timeline_.crbegin()->time;
+  return timeline_.empty() ? InfinitePast : timeline_.crbegin()->time;
 }
 
 template<typename Frame>
 Position<Frame> DiscreteTrajectorySegment<Frame>::EvaluatePosition(
     Instant const& t) const {
+  // Doing the checks first is slightly more efficient than after the lookup.
+  CHECK_LE(t_min(), t);
+  CHECK_GE(t_max(), t);
   auto const it = timeline_.lower_bound(t);
   if (it->time == t) {
     return it->degrees_of_freedom.position();
   }
-  CHECK_LT(t_min(), t);
-  CHECK_GT(t_max(), t);
   return get_interpolation(it).Evaluate(t);
 }
 
 template<typename Frame>
 Velocity<Frame> DiscreteTrajectorySegment<Frame>::EvaluateVelocity(
     Instant const& t) const {
+  // Doing the checks first is slightly more efficient than after the lookup.
+  CHECK_LE(t_min(), t);
+  CHECK_GE(t_max(), t);
   auto const it = timeline_.lower_bound(t);
   if (it->time == t) {
     return it->degrees_of_freedom.velocity();
   }
-  CHECK_LT(t_min(), t);
-  CHECK_GT(t_max(), t);
   return get_interpolation(it).EvaluateDerivative(t);
 }
 
@@ -160,12 +162,13 @@ template<typename Frame>
 DegreesOfFreedom<Frame>
 DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
     Instant const& t) const {
+  // Doing the checks first is slightly more efficient than after the lookup.
+  CHECK_LE(t_min(), t);
+  CHECK_GE(t_max(), t);
   auto const it = timeline_.lower_bound(t);
   if (it->time == t) {
     return it->degrees_of_freedom;
   }
-  CHECK_LT(t_min(), t);
-  CHECK_GT(t_max(), t);
   auto const& interpolation = get_interpolation(it);
   return {interpolation.Evaluate(t), interpolation.EvaluateDerivative(t)};
 }
