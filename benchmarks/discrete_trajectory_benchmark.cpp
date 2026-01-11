@@ -472,10 +472,6 @@ void BM_DiscreteTrajectoryDownsampling(benchmark::State& state) {
     CHECK_OK(ephemeris->FlowWithFixedStep(goes_8_epoch + 100 * Day,
                                           *goes_8_instance));
 
-    LOG(ERROR) << " Finished propagating GOES-8";
-    Logger logger(TEMP_DIR / "goes8.wl");
-    logger.Set("goes8", *goes_8_trajectory, ExpressInSIUnits);
-    LOG(ERROR) << " Logged GOES-8 trajectory";
     return goes_8_trajectory;
   }();
 
@@ -490,7 +486,6 @@ void BM_DiscreteTrajectoryDownsampling(benchmark::State& state) {
       CHECK_OK(downsampled_trajectory.Append(t, degrees_of_freedom));
     }
   }
-  LOG(ERROR) << " Finished downsampling GOES-8";
   state.SetLabel((std::stringstream()
                   << goes_8_trajectory->size()
                   << " points before downsampling, "
