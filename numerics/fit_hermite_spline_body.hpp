@@ -36,7 +36,7 @@ absl::StatusOr<std::list<typename Samples::const_iterator>> FitHermiteSpline(
                    {get_argument(*begin), get_argument(*last)},
                    {get_value(*begin), get_value(*last)},
                    {get_derivative(*begin), get_derivative(*last)})
-            .LInfinityErrorIsWithin(
+            .LInfinityL₂ErrorIsWithin(
                 Range(begin, last + 1), get_argument, get_value, tolerance);
       };
 

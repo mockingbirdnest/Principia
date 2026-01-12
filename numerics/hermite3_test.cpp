@@ -118,18 +118,18 @@ TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
                                /*values=*/{0, 1},
                                /*derivatives=*/{0, 4});
   // `not_a_quartic` has a root at 1/2, where the error is maximal.
-  EXPECT_THAT(not_a_quartic.LInfinityError(
+  EXPECT_THAT(not_a_quartic.LInfinityL₂Error(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
       Eq(1 / 16.0));
 
-  EXPECT_TRUE(not_a_quartic.LInfinityErrorIsWithin(
+  EXPECT_TRUE(not_a_quartic.LInfinityL₂ErrorIsWithin(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
       /*tolerance=*/0.1));
-  EXPECT_FALSE(not_a_quartic.LInfinityErrorIsWithin(
+  EXPECT_FALSE(not_a_quartic.LInfinityL₂ErrorIsWithin(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
@@ -157,18 +157,18 @@ TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
        Velocity<World>(
            {-1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})});
   EXPECT_THAT(
-      not_a_circle.LInfinityError(
+      not_a_circle.LInfinityL₂Error(
           samples,
           /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
           /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
       IsNear(1.5_(1) * Centi(Metre)));
 
-  EXPECT_TRUE(not_a_circle.LInfinityErrorIsWithin(
+  EXPECT_TRUE(not_a_circle.LInfinityL₂ErrorIsWithin(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
       /*tolerance=*/2 * Centi(Metre)));
-  EXPECT_FALSE(not_a_circle.LInfinityErrorIsWithin(
+  EXPECT_FALSE(not_a_circle.LInfinityL₂ErrorIsWithin(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },

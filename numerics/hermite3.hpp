@@ -45,23 +45,25 @@ class Hermite3 final {
   // The result is sorted.
   BoundedArray<Argument, 2> FindExtrema() const;
 
+  NormType LInfinityL₁Norm() const;
+
   // `samples` must be a container; `get_argument` and `get_value` on the
-  // elements of `samples` must return `Argument` and `Value` respectively
-  // (possibly by reference or const-reference)
-  // Returns the largest error (in the given `norm`) between this polynomial and
-  // the given `samples`.
+  // its elements must return `Argument` and `Value` respectively.  If `h` is
+  // this polynomial, `tᵢ` an argument from `samples` and `xᵢ` the corresponding
+  // value, this function returns `maxᵢ(‖h(tᵢ) - xᵢ‖₂)`.  The complexity is
+  // linear in the size of `samples`.
   template<typename Samples>
-  NormType LInfinityError(
+  NormType LInfinityL₂Error(
       Samples const& samples,
       std::function<Argument const&(typename Samples::value_type const&)> const&
           get_argument,
       std::function<Value const&(typename Samples::value_type const&)> const&
           get_value) const;
 
-  // Returns true if the `LInfinityError` is less than `tolerance`.  More
+  // Returns true if the `LInfinityL₂Error` is less than `tolerance`.  More
   // efficient than the above function in the case where it returns false.
   template<typename Samples>
-  bool LInfinityErrorIsWithin(
+  bool LInfinityL₂ErrorIsWithin(
       Samples const& samples,
       std::function<Argument const&(typename Samples::value_type const&)> const&
           get_argument,

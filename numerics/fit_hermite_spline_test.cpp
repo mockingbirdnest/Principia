@@ -86,7 +86,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
   Hermite3<Length, Instant> first_polynomial({lower_bound->t, upper_bound->t},
                                              {lower_bound->x, upper_bound->x},
                                              {lower_bound->v, upper_bound->v});
-  EXPECT_THAT(first_polynomial.LInfinityError(
+  EXPECT_THAT(first_polynomial.LInfinityL₂Error(
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
@@ -96,7 +96,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
   Hermite3<Length, Instant> second_polynomial({lower_bound->t, upper_bound->t},
                                               {lower_bound->x, upper_bound->x},
                                               {lower_bound->v, upper_bound->v});
-  EXPECT_THAT(second_polynomial.LInfinityError(
+  EXPECT_THAT(second_polynomial.LInfinityL₂Error(
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
@@ -106,7 +106,7 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
   Hermite3<Length, Instant> tail_polynomial({lower_bound->t, upper_bound->t},
                                             {lower_bound->x, upper_bound->x},
                                             {lower_bound->v, upper_bound->v});
-  EXPECT_THAT(tail_polynomial.LInfinityError(
+  EXPECT_THAT(tail_polynomial.LInfinityL₂Error(
                   Range(lower_bound, upper_bound),
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),

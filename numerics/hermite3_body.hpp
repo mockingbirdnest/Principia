@@ -55,7 +55,7 @@ BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
 
 template<affine Value_, affine Argument_>
 template<typename Samples>
-auto Hermite3<Value_, Argument_>::LInfinityError(
+auto Hermite3<Value_, Argument_>::LInfinityL₂Error(
     Samples const& samples,
     std::function<Argument const&(typename Samples::value_type const&)> const&
         get_argument,
@@ -72,7 +72,7 @@ auto Hermite3<Value_, Argument_>::LInfinityError(
 
 template<affine Value_, affine Argument_>
 template<typename Samples>
-bool Hermite3<Value_, Argument_>::LInfinityErrorIsWithin(
+bool Hermite3<Value_, Argument_>::LInfinityL₂ErrorIsWithin(
     Samples const& samples,
     std::function<Argument const&(typename Samples::value_type const&)> const&
         get_argument,
