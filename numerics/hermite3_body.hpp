@@ -29,7 +29,7 @@ struct Splitter<R3Element<Scalar>> {
   using Value = Scalar;
 
   std::vector<Scalar> Split(R3Element<Scalar> const& r3_element) {
-    return {coordinates.x, coordinates.y, coordinates.z};
+    return {r3_element.x, r3_element.y, r3_element.z};
   }
 };
 
@@ -115,8 +115,8 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
   // Build a polynomial for each dimension.
   std::vector<P> split_polynomials;
   for (std::int64_t i = 0; i < split_a0.size(); ++i) {
-    split_polynomial.emplace_back(
-        P::Coefficients{split_a0[i], split_a1[i], split_a2[i], split_a3[i]});
+    split_polynomials.emplace_back(typename P::Coefficients{
+        split_a0[i], split_a1[i], split_a2[i], split_a3[i]});
   }
 
   NormType norm{};
@@ -128,14 +128,14 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
     // function only returns an upper bound).
     for (auto const extremum : extrema) {
       NormType sum{};
-      for (auto const pⱼ : split_polynomial) {
-        sum += Abs(pⱼ(split_extremum));
+      for (auto const pⱼ : split_polynomials) {
+        sum += Abs(pⱼ(extremum));
       }
       norm = std::max(norm, sum);
     }
   }
 
-  return norm
+  return norm;
 }
 
 template<affine Value_, affine Argument_>
