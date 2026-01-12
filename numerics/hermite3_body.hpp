@@ -54,6 +54,20 @@ BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
 }
 
 template<affine Value_, affine Argument_>
+BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema(
+    Argument const& lower,
+    Argument const& upper) const {
+  auto const extrema = FindExtrema();
+}
+
+template<affine Value_, affine Argument_>
+auto Hermite3<Value_, Argument_>::LInfinityL₁Norm(Argument const& lower,
+                                                  Argument const& upper) const
+    -> NormType {
+  CHECK_LE(lower, upper);
+}
+
+template<affine Value_, affine Argument_>
 template<typename Samples>
 auto Hermite3<Value_, Argument_>::LInfinityL₂Error(
     Samples const& samples,

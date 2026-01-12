@@ -44,8 +44,11 @@ class Hermite3 final {
 
   // The result is sorted.
   BoundedArray<Argument, 2> FindExtrema() const;
+  BoundedArray<Argument, 2> FindExtrema(Argument const& lower,
+                                        Argument const& upper) const;
 
-  NormType LInfinityL₁Norm() const;
+  //TODO(phl)Comment
+  NormType LInfinityL₁Norm(Argument const& lower, Argument const& upper) const;
 
   // `samples` must be a container; `get_argument` and `get_value` on the
   // its elements must return `Argument` and `Value` respectively.  If `h` is
