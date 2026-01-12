@@ -48,7 +48,8 @@ class Hermite3 final {
                                         Argument const& upper) const;
 
   //TODO(phl)Comment
-  NormType LInfinityL₁Norm(Argument const& lower, Argument const& upper) const;
+  NormType LInfinityL₁NormUpperBound(Argument const& lower,
+                                     Argument const& upper) const;
 
   // `samples` must be a container; `get_argument` and `get_value` on the
   // its elements must return `Argument` and `Value` respectively.  If `h` is

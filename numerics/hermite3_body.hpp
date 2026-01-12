@@ -6,6 +6,9 @@
 #include <utility>
 #include <vector>
 
+#include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/root_finders.hpp"
 
 namespace principia {
@@ -13,7 +16,33 @@ namespace numerics {
 namespace _hermite3 {
 namespace internal {
 
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_root_finders;
+
+template<typename T>
+struct Splitter;
+
+template<typename Scalar>
+struct Splitter<R3Element<Scalar>> {
+  using Value = Scalar;
+
+  std::vector<Scalar> Split(R3Element<Scalar> const& r3_element) {
+    return {coordinates.x, coordinates.y, coordinates.z};
+  }
+};
+
+template<typename Scalar, typename Frame, int rank>
+  requires(rank == 2 || rank == 3)
+struct Splitter<Multivector<Scalar, Frame, rank>> {
+  using Value = Scalar;
+
+  std::vector<Scalar> Split(
+      Multivector<Scalar, Frame, rank> const& multivector) {
+    return Splitter<R3Element<Scalar>>(multivector.coordinates());
+  }
+};
 
 template<affine Value_, affine Argument_>
 Hermite3<Value_, Argument_>::Hermite3(
@@ -58,13 +87,55 @@ BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema(
     Argument const& lower,
     Argument const& upper) const {
   auto const extrema = FindExtrema();
+  BoundedArray<Argument, 2> result;
+  for (auto const& extremum : extrema) {
+    if (lower <= extremum && extremum <= upper) {
+      result.push_back(extremum);
+    }
+  }
+  return result;
 }
 
 template<affine Value_, affine Argument_>
-auto Hermite3<Value_, Argument_>::LInfinityL₁Norm(Argument const& lower,
-                                                  Argument const& upper) const
-    -> NormType {
+auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
+    Argument const& lower,
+    Argument const& upper) const -> NormType {
   CHECK_LE(lower, upper);
+
+  // First split the coefficients of our polynomial by dimension.  This part is
+  // *not* coordinate-free.
+  auto const& coefficients = p_.coefficients();
+  using S = Splitter<Value>;
+  using P = PolynomialInMonomialBasis<S::Value, Argument, 3>;
+  auto const split_a0 = S::Split(std::get<0>(coefficients));
+  auto const split_a1 = S::Split(std::get<1>(coefficients));
+  auto const split_a2 = S::Split(std::get<2>(coefficients));
+  auto const split_a3 = S::Split(std::get<3>(coefficients));
+
+  // Build a polynomial for each dimension.
+  std::vector<P> split_polynomials;
+  for (std::int64_t i = 0; i < split_a0.size(); ++i) {
+    split_polynomial.emplace_back(
+        P::Coefficients{split_a0[i], split_a1[i], split_a2[i], split_a3[i]});
+  }
+
+  NormType norm{};
+  // Find the extrema of each polynomial.
+  for (auto const& pᵢ : split_polynomials) {
+    auto const extrema = pᵢ.FindExtrema(lower, upper);
+    // For each extremum, evaluate all the polynomials and compute the sum of
+    // their absolute value.  This is pessimistic (and is the reason why this
+    // function only returns an upper bound).
+    for (auto const extremum : extrema) {
+      NormType sum{};
+      for (auto const pⱼ : split_polynomial) {
+        sum += Abs(pⱼ(split_extremum));
+      }
+      norm = std::max(norm, sum);
+    }
+  }
+
+  return norm
 }
 
 template<affine Value_, affine Argument_>
