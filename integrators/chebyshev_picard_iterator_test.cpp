@@ -118,7 +118,7 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double ε, double y₀) {
 
   return SolvedInitialValueProblem{
       .problem = problem,
-      .solution = [ε, y₀, α, β, γ](Instant const& t) -> std::tuple<Length> {
+      .solution = [ε, α, β, γ](Instant const& t) -> std::tuple<Length> {
         const Angle φ = 0.5 * (1 - γ * ε) * (t - Instant()) / Second * Radian;
         const double σ = α * (Sin(φ) + β * Cos(φ));
 
@@ -149,7 +149,7 @@ struct ChebyshevPicardIteratorTestParam {
 class ChebyshevPicardIteratorTest
     : public TestWithParam<ChebyshevPicardIteratorTestParam> {};
 
-TEST_P(ChebyshevPicardIteratorTest, LinearConvergence) {
+TEST_P(ChebyshevPicardIteratorTest, Convergence) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = GetParam().problem;
   Time const step = GetParam().step;
@@ -180,6 +180,51 @@ TEST_P(ChebyshevPicardIteratorTest, LinearConvergence) {
         << "t=" << t;
   }
 }
+
+TEST_F(ChebyshevPicardIteratorTest, MultipleSteps) {
+  // Set up the initial value problem.
+  SolvedInitialValueProblem const& problem = LinearProblem();
+  Time const step = 1 * Second;
+
+  std::vector<ODE::State> states;
+  auto const append_state = [&states](ODE::State const& state) {
+    states.push_back(state);
+  };
+
+  // Build the integrator and solve the problem.
+  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+      .M = 64,
+      .N = 64,
+      .max_iterations = 64,
+      .stopping_criterion = 1e-16,
+  });
+
+  auto const instance =
+      integrator.NewInstance(problem.problem, append_state, step);
+  auto const t_final = problem.t₀() + 2.5 * step;
+  ASSERT_LT(problem.t₀(), t_final);
+
+  EXPECT_OK(instance->Solve(t_final));
+
+  // Verify we have reached the desired final time.
+  EXPECT_GE(states.back().s.value, t_final);
+
+  // Verify the results are close to the known solution.
+  for (const auto& state : states) {
+    auto t = state.s.value;
+    auto y = std::get<0>(state.y).value;
+    EXPECT_THAT(y, AlmostEquals(std::get<0>(problem.solution(t)), 0, 5))
+        << "t=" << t;
+  }
+}
+
+TEST_F(ChebyshevPicardIteratorTest, Backwards) {}
+
+TEST_F(ChebyshevPicardIteratorTest, Divergence) {}
+
+TEST_F(ChebyshevPicardIteratorTest, WriteToMessage) {}
+
+TEST_F(ChebyshevPicardIteratorTest, ReadFromMessage) {}
 
 // Although in theory the iteration for y′ = y should converge for
 // intervals

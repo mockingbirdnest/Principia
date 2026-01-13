@@ -62,73 +62,83 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
   using State = typename ODE::State;
 
   auto& append_state = this->append_state_;
-  auto& current_state = this->current_state_;
   auto const& equation = this->equation_;
   auto const& step = this->step_;
-  auto const& t_initial = current_state.s.value;
   auto const& params = integrator_.params();
+  auto& current_state = this->current_state_;
+  while (current_state.s.value < t_final) {
+    auto const t_initial = current_state.s.value;
+    CHECK_LT(t_initial, t_final);
 
-  // TODO: actually go until t_final.
-
-  // Rescale the nodes for feeding into the compute_derivative function.
-  std::vector<IndependentVariable> t;
-  t.reserve(integrator_.nodes_.size());
-  for (const double node : integrator_.nodes_) {
-    t.push_back(t_initial + (0.5 * node + 0.5) * step);
-  }
-
-  // x is an (N + 1)×n matrix, where n is the dimension of the ODE's
-  // dependent variable.
-  UnboundedMatrix<double> x(integrator_.cx_.columns(),
-                            std::tuple_size<DependentVariables>::value);
-
-  // Set the boundary condition and store it in cₓx₀.
-  int j = 0;
-  for_all_of(current_state.y).loop([&x, &j](auto const& yⱼ) {
-    x(0, j++) = yⱼ.value / Unit<decltype(yⱼ.value)>;
-  });
-
-  const UnboundedMatrix<double> cₓx₀ = integrator_.cx_ * 2 * x;
-
-  // Set the initial value of x (this is x⁰, with superscript 0) to the current
-  // state.
-  for (int i = 1; i < x.rows(); i++) {
-    for (int j = 0; j < x.columns(); j++) {
-      x(i, j) = x(0, j);
-    }
-  }
-
-  // The computed derivative. We will multiply this by 0.5 * step to get g.
-  UnboundedMatrix<double> yʹ(x.rows(), x.columns(), uninitialized);
-
-  double prev_norm = std::numeric_limits<float>::infinity();
-  for (int iteration = 0; iteration < params.max_iterations; iteration++) {
-    // Evaluate the right hand side of the equation.
-    for (int i = 0; i < x.rows(); i++) {
-      auto const y = DependentVariablesFromMatrixRow<ODE>(x, i);
-      DependentVariableDerivatives yʹᵢ;
-      RETURN_IF_ERROR(equation.compute_derivative(t[i], y, yʹᵢ));
-
-      // Store it in yʹ.
-      DependentVariableDerivativesToMatrixRow<ODE>(yʹᵢ, i, yʹ);
+    // Rescale the nodes for feeding into the compute_derivative function.
+    std::vector<IndependentVariable> t;
+    t.reserve(integrator_.nodes_.size());
+    for (const double node : integrator_.nodes_) {
+      t.push_back(t_initial + (0.5 * node + 0.5) * step);
     }
 
-    // Compute new x.
-    const UnboundedMatrix<double> new_x =
-        integrator_.cx_cα_ * (step / Second) * yʹ + cₓx₀;
+    // x is an (N + 1)×n matrix, where n is the dimension of the ODE's
+    // dependent variable.
+    UnboundedMatrix<double> x(integrator_.cx_.columns(),
+                              std::tuple_size<DependentVariables>::value);
 
-    // Check for convergence by computing the ∞-norm.
-    double norm = 0.0;
-    for (int i = 0; i < x.rows(); i++) {
+    // Set the boundary condition and store it in cₓx₀.
+    int j = 0;
+    for_all_of(current_state.y).loop([&x, &j](auto const& yⱼ) {
+      x(0, j++) = yⱼ.value / Unit<decltype(yⱼ.value)>;
+    });
+
+    const UnboundedMatrix<double> cₓx₀ = integrator_.cx_ * 2 * x;
+
+    // Set the initial value of x (this is x⁰, with superscript 0) to the
+    // current state.
+    for (int i = 1; i < x.rows(); i++) {
       for (int j = 0; j < x.columns(); j++) {
-        norm = std::max(norm,
-                        std::abs(new_x(i, j) - x(i, j)) /
-                            std::max(std::abs(new_x(i, j)), std::abs(x(i, j))));
+        x(i, j) = x(0, j);
       }
     }
-    x = new_x;
 
-    if (std::max(norm, prev_norm) < params.stopping_criterion) {
+    // The computed derivative. We will multiply this by 0.5 * step to get g.
+    UnboundedMatrix<double> yʹ(x.rows(), x.columns(), uninitialized);
+
+    double prev_norm = std::numeric_limits<float>::infinity();
+    bool converged = false;
+    for (int iteration = 0; iteration < params.max_iterations; iteration++) {
+      // Evaluate the right hand side of the equation.
+      for (int i = 0; i < x.rows(); i++) {
+        auto const y = DependentVariablesFromMatrixRow<ODE>(x, i);
+        DependentVariableDerivatives yʹᵢ;
+        RETURN_IF_ERROR(equation.compute_derivative(t[i], y, yʹᵢ));
+
+        // Store it in yʹ.
+        DependentVariableDerivativesToMatrixRow<ODE>(yʹᵢ, i, yʹ);
+      }
+
+      // Compute new x.
+      const UnboundedMatrix<double> new_x =
+          integrator_.cx_cα_ * (step / Second) * yʹ + cₓx₀;
+
+      // Check for convergence by computing the ∞-norm.
+      double norm = 0.0;
+      for (int i = 0; i < x.rows(); i++) {
+        for (int j = 0; j < x.columns(); j++) {
+          norm = std::max(
+              norm, std::abs(new_x(i, j) - x(i, j)) /
+                        std::max(std::abs(new_x(i, j)), std::abs(x(i, j))));
+        }
+      }
+      std::cout << "Norm[" << iteration << "]: " << norm << std::endl;
+      x = new_x;
+
+      if (std::max(norm, prev_norm) < params.stopping_criterion) {
+        converged = true;
+        break;
+      }
+
+      prev_norm = norm;
+    }
+
+    if (converged) {
       // We have successfully converged!
       for (int i = 0; i < x.rows(); i++) {
         append_state(State(t[i], DependentVariablesFromMatrixRow<ODE>(x, i)));
@@ -138,16 +148,14 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
       current_state =
           State(t[x.rows() - 1],
                 DependentVariablesFromMatrixRow<ODE>(x, x.rows() - 1));
-
-      return absl::OkStatus();
+    } else {
+      // We failed to converge.
+      return absl::Status(absl::StatusCode::kFailedPrecondition,
+                          "Chebyshev-Picard iteration failed to converge.");
     }
-
-    prev_norm = norm;
   }
 
-  // We failed to converge.
-  return absl::Status(absl::StatusCode::kFailedPrecondition,
-                      "Chebyshev-Picard iteration failed to converge.");
+  return absl::OkStatus();
 }
 
 template <typename ODE_>
@@ -203,7 +211,7 @@ ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
       βT(i, j) = 2 * τᵢ * βT(i, j - 1) - βT(i, j - 2);
 
       // Make sure the zeroes are actually zero.
-      if (std ::abs(βT(i, j)) < 1e-14) βT(i, j) = 0;
+      if (std::abs(βT(i, j)) < 1e-14) βT(i, j) = 0;
     }
   }
 
