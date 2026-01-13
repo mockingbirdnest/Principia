@@ -202,7 +202,6 @@ TEST_F(ChebyshevPicardIteratorTest, MultipleSteps) {
   auto const instance =
       integrator.NewInstance(problem.problem, append_state, step);
   auto const t_final = problem.t₀() + 2.5 * step;
-  ASSERT_LT(problem.t₀(), t_final);
 
   EXPECT_OK(instance->Solve(t_final));
 
@@ -218,7 +217,41 @@ TEST_F(ChebyshevPicardIteratorTest, MultipleSteps) {
   }
 }
 
-TEST_F(ChebyshevPicardIteratorTest, Backwards) {}
+TEST_F(ChebyshevPicardIteratorTest, Backwards) {
+  // Set up the initial value problem.
+  SolvedInitialValueProblem const& problem = LinearProblem();
+  Time const step = -1 * Second;  // Backwards!
+
+  std::vector<ODE::State> states;
+  auto const append_state = [&states](ODE::State const& state) {
+    states.push_back(state);
+  };
+
+  // Build the integrator and solve the problem.
+  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+      .M = 64,
+      .N = 64,
+      .max_iterations = 64,
+      .stopping_criterion = 2e-16,
+  });
+
+  auto const instance =
+      integrator.NewInstance(problem.problem, append_state, step);
+  auto const t_final = problem.t₀() + 2.5 * step;
+
+  EXPECT_OK(instance->Solve(t_final));
+
+  // Verify we have reached the desired final time.
+  EXPECT_LE(states.back().s.value, t_final);  // ≤ because we are backwards.
+
+  // Verify the results are close to the known solution.
+  for (const auto& state : states) {
+    auto t = state.s.value;
+    auto y = std::get<0>(state.y).value;
+    EXPECT_THAT(y, AlmostEquals(std::get<0>(problem.solution(t)), 0, 12))
+        << "t=" << t;
+  }
+}
 
 TEST_F(ChebyshevPicardIteratorTest, Divergence) {}
 

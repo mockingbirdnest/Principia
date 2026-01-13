@@ -3,6 +3,7 @@
 #include "base/for_all_of.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
+#include "geometry/sign.hpp"
 #include "integrators/chebyshev_picard_iterator.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_computations.hpp"  // For eigenvalues.
@@ -14,6 +15,7 @@ namespace integrators {
 
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_tags;
+using namespace principia::geometry::_sign;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
@@ -62,13 +64,25 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
   using State = typename ODE::State;
 
   auto& append_state = this->append_state_;
+  auto& current_state = this->current_state_;
   auto const& equation = this->equation_;
   auto const& step = this->step_;
   auto const& params = integrator_.params();
-  auto& current_state = this->current_state_;
-  while (current_state.s.value < t_final) {
+
+  // Argument checks.
+  Sign const integration_direction = Sign(step);
+  if (integration_direction.is_positive()) {
+    // Integrating forward.
+    CHECK_LT(current_state.s.value, t_final);
+  } else {
+    // Integrating backward.
+    CHECK_GT(current_state.s.value, t_final);
+  }
+
+  while (integration_direction.is_positive()
+             ? current_state.s.value < t_final
+             : current_state.s.value > t_final) {
     auto const t_initial = current_state.s.value;
-    CHECK_LT(t_initial, t_final);
 
     // Rescale the nodes for feeding into the compute_derivative function.
     std::vector<IndependentVariable> t;
