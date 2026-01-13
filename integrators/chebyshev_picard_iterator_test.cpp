@@ -10,7 +10,7 @@
 namespace principia {
 namespace integrators {
 
-using ::testing::DoubleNear;
+using ::testing::Values;
 
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_ordinary_differential_equations;
@@ -23,7 +23,22 @@ using ODE = ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length>;
 
 namespace {
 
-TEST(ChebyshevPicardIteratorTest, LinearConvergence) {
+struct ChebyshevPicardIteratorTestParam {
+  // Parameters defining the iterator used for this test.
+  ChebyshevPicardIterationParams iteration_params;
+
+  // The step size used for this test.
+  ODE::IndependentVariableDifference step;
+
+  // The number of ULPs the integrated solution is allowed to vary from the
+  // analytic solution.
+  int ulps;
+};
+
+class ChebyshevPicardIteratorTest
+    : public testing::TestWithParam<ChebyshevPicardIteratorTestParam> {};
+
+TEST_P(ChebyshevPicardIteratorTest, LinearConvergence) {
   // The first order ODE y′ = y.
   //
   // The solution to this is known; it is y = Ce^t (for y(0) = 1, which we use
@@ -39,7 +54,7 @@ TEST(ChebyshevPicardIteratorTest, LinearConvergence) {
       };
 
   // Set up the initial value problem.
-  Time const step = 1 * Second;
+  Time const step = GetParam().step;
   Instant const t_initial;
   Instant const t_final = t_initial + step;
 
@@ -54,12 +69,7 @@ TEST(ChebyshevPicardIteratorTest, LinearConvergence) {
 
   // Build the integrator and solve the problem.
   const int order = 64;
-  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
-      .M = 64,
-      .N = 64,
-      .max_iterations = 32,
-      .stopping_criterion = 1e-16,
-  });
+  ChebyshevPicardIterator<ODE> const integrator(GetParam().iteration_params);
 
   auto const instance = integrator.NewInstance(problem, append_state, step);
   EXPECT_OK(instance->Solve(t_final));
@@ -68,9 +78,23 @@ TEST(ChebyshevPicardIteratorTest, LinearConvergence) {
   for (const auto& state : states) {
     double t = (state.s.value - Instant()) / Second;
     double y = std::get<0>(state.y).value / Metre;
-    EXPECT_THAT(y, DoubleNear(std::exp(t), 1e-15)) << "t=" << t;
+    EXPECT_THAT(y, AlmostEquals(std::exp(t), 0, GetParam().ulps)) << "t=" << t;
   }
 }
+
+INSTANTIATE_TEST_SUITE_P(AllChebyshevPicardIteratorTests,
+                         ChebyshevPicardIteratorTest,
+                         Values(ChebyshevPicardIteratorTestParam{
+                             .iteration_params =
+                                 ChebyshevPicardIterationParams{
+                                     .M = 64,
+                                     .N = 64,
+                                     .max_iterations = 32,
+                                     .stopping_criterion = 1e-16,
+                                 },
+                             .step = 1 * Second,
+                             .ulps = 2,
+                         }));
 
 }  // namespace
 
