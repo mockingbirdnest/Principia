@@ -5,7 +5,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace integrators {
@@ -19,6 +19,7 @@ using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_matchers;
 
 using ODE = ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length>;
 
@@ -253,7 +254,31 @@ TEST_F(ChebyshevPicardIteratorTest, Backwards) {
   }
 }
 
-TEST_F(ChebyshevPicardIteratorTest, Divergence) {}
+TEST_F(ChebyshevPicardIteratorTest, Divergence) {
+  // Set up the initial value problem.
+  SolvedInitialValueProblem const& problem = LinearProblem();
+  Time const step = 60 * Second;  // Way too big; iteration won't converge.
+
+  std::vector<ODE::State> states;
+  auto const append_state = [&states](ODE::State const& state) {
+    states.push_back(state);
+  };
+
+  // Build the integrator and solve the problem.
+  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+      .M = 64,
+      .N = 64,
+      .max_iterations = 64,
+      .stopping_criterion = 0.1,  // Differences never even get this low!
+  });
+
+  auto const instance =
+      integrator.NewInstance(problem.problem, append_state, step);
+  auto const t_final = problem.t₀() + step;
+
+  EXPECT_THAT(instance->Solve(t_final),
+              StatusIs(absl::StatusCode::kFailedPrecondition));
+}
 
 TEST_F(ChebyshevPicardIteratorTest, WriteToMessage) {}
 
