@@ -121,7 +121,9 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
     double norm = 0.0;
     for (int i = 0; i < x.rows(); i++) {
       for (int j = 0; j < x.columns(); j++) {
-        norm = std::max(norm, std::abs(new_x(i, j) - x(i, j)));
+        norm = std::max(norm,
+                        std::abs(new_x(i, j) - x(i, j)) /
+                            std::max(std::abs(new_x(i, j)), std::abs(x(i, j))));
       }
     }
     x = new_x;

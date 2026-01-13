@@ -24,11 +24,11 @@ using ODE = ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length>;
 namespace {
 
 struct ChebyshevPicardIteratorTestParam {
-  // Parameters defining the iterator used for this test.
-  ChebyshevPicardIterationParams iteration_params;
-
   // The step size used for this test.
   ODE::IndependentVariableDifference step;
+
+  // The stopping criterion used for this test.
+  double stopping_criterion;
 
   // The number of ULPs the integrated solution is allowed to vary from the
   // analytic solution.
@@ -68,8 +68,12 @@ TEST_P(ChebyshevPicardIteratorTest, LinearConvergence) {
   problem.initial_state = {t_initial, {1 * Metre}};
 
   // Build the integrator and solve the problem.
-  const int order = 64;
-  ChebyshevPicardIterator<ODE> const integrator(GetParam().iteration_params);
+  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+      .M = 64,
+      .N = 64,
+      .max_iterations = 64,
+      .stopping_criterion = GetParam().stopping_criterion,
+  });
 
   auto const instance = integrator.NewInstance(problem, append_state, step);
   EXPECT_OK(instance->Solve(t_final));
@@ -82,19 +86,37 @@ TEST_P(ChebyshevPicardIteratorTest, LinearConvergence) {
   }
 }
 
+// Although in theory the iteration for y′ = y should converge for intervals of
+// length < 40 (for sufficiently high N), in practice the convergence degrades
+// far earlier.
 INSTANTIATE_TEST_SUITE_P(AllChebyshevPicardIteratorTests,
                          ChebyshevPicardIteratorTest,
-                         Values(ChebyshevPicardIteratorTestParam{
-                             .iteration_params =
-                                 ChebyshevPicardIterationParams{
-                                     .M = 64,
-                                     .N = 64,
-                                     .max_iterations = 32,
-                                     .stopping_criterion = 1e-16,
-                                 },
-                             .step = 1 * Second,
-                             .ulps = 2,
-                         }));
+                         Values(
+                             ChebyshevPicardIteratorTestParam{
+                                 .stopping_criterion = 1e-16,
+                                 .step = 1 * Second,
+                                 .ulps = 2,
+                             },
+                             ChebyshevPicardIteratorTestParam{
+                                 .stopping_criterion = 1e-16,
+                                 .step = 2 * Second,
+                                 .ulps = 5,
+                             },
+                             ChebyshevPicardIteratorTestParam{
+                                 .stopping_criterion = 1e-16,
+                                 .step = 4 * Second,
+                                 .ulps = 15,
+                             },
+                             ChebyshevPicardIteratorTestParam{
+                                 .stopping_criterion = 1e-15,
+                                 .step = 8 * Second,
+                                 .ulps = (int)1.2e3,
+                             },
+                             ChebyshevPicardIteratorTestParam{
+                                 .stopping_criterion = 1e-11,
+                                 .step = 16 * Second,
+                                 .ulps = (int)4e7,
+                             }));
 
 }  // namespace
 
