@@ -85,6 +85,49 @@ SolvedInitialValueProblem TangentProblem() {
       }};
 }
 
+// The first order ODE y′ = cos(t + εy).
+//
+// The solution (due to Fukushima) is
+// y = -γt + 2/ε tan⁻¹((β + σ cos φ)/(1 + σ sin φ))
+// where
+// σ = α(sin φ + β cos φ)
+// φ = ½ (1 - γε) t
+// α = 2ε/(1 - ε + √(1 - ε²))
+// β = 1/(1 + α) tan(εy₀/2)
+// γ = ε/(1 + √(1 - ε²))
+SolvedInitialValueProblem PerturbedSinusoidProblem(double ε, double y₀) {
+  ODE ode;
+  ode.compute_derivative =
+      [ε](Instant const& t, ODE::DependentVariables const& dependent_variables,
+          ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
+        auto const& [y] = dependent_variables;
+        auto& [yʹ] = dependent_variable_derivatives;
+        yʹ = Cos(((t - Instant()) / Second + ε * y / Metre) * Radian) * Metre /
+             Second;
+        return absl::OkStatus();
+      };
+
+  InitialValueProblem<ODE> problem;
+  problem.equation = ode;
+  problem.initial_state = {Instant(), {y₀ * Metre}};
+
+  const double one_plus_sqrt_one_minus_ε² = 1 + Sqrt(1 - ε * ε);
+  const double α = 2 * ε / (one_plus_sqrt_one_minus_ε² - ε);
+  const double β = 1 / (1 + α) * Tan(ε * y₀ / 2 * Radian);
+  const double γ = ε / one_plus_sqrt_one_minus_ε²;
+
+  return SolvedInitialValueProblem{
+      .problem = problem,
+      .solution = [ε, y₀, α, β, γ](Instant const& t) -> std::tuple<Length> {
+        const Angle φ = 0.5 * (1 - γ * ε) * (t - Instant()) / Second * Radian;
+        const double σ = α * (Sin(φ) + β * Cos(φ));
+
+        return (-γ * (t - Instant()) / Second +
+                2 / ε * ArcTan((β + σ * Cos(φ)) / (1 + σ * Sin(φ))) / Radian) *
+               Metre;
+      }};
+}
+
 struct ChebyshevPicardIteratorTestParam {
   // The ODE (with solution) under test.
   SolvedInitialValueProblem problem;
@@ -200,6 +243,27 @@ INSTANTIATE_TEST_SUITE_P(Tangent, ChebyshevPicardIteratorTest,
                                  .step = 2 * Second,
                                  .ulps = 21,
                              }));
+
+// From Bai's thesis. Figures 9, 10, 12, 13 are slow and omitted for now.
+INSTANTIATE_TEST_SUITE_P(
+    PerturbedSinusoid, ChebyshevPicardIteratorTest,
+    Values(
+        // Bai's thesis, figure 8.
+        ChebyshevPicardIteratorTestParam{
+            .problem = PerturbedSinusoidProblem(/*ε=*/0.01,
+                                                /*y₀=*/1),
+            .N = 500,
+            .stopping_criterion = 1e-16,
+            .step = 64 * π * Second,
+            .ulps = (int)4e7},
+        // Bai's thesis, figure 11.
+        ChebyshevPicardIteratorTestParam{
+            .problem = PerturbedSinusoidProblem(/*ε=*/0.001,
+                                                /*y₀=*/1),
+            .N = 400,
+            .stopping_criterion = 1e-16,
+            .step = 64 * π * Second,
+            .ulps = (int)2.2e7}));
 
 }  // namespace
 
