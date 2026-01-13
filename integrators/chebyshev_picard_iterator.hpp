@@ -23,6 +23,32 @@ using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_quantities;
 
+struct ChebyshevPicardIterationParams {
+  // Controls the number of nodes at which the function will be evaluated.
+  //
+  // Note that this is the highest node _index_ rather than the number of nodes;
+  // the actual number of nodes is M + 1.
+  //
+  // Must be at least 1.
+  int M;
+
+  // The order of the Chebyshev sequence used to approximate the system state.
+  //
+  // Must be at least 1 (if you want to approximate your system with a constant,
+  // use some other method).
+  int N;
+
+  // The maximum allowed number of Picard iterations per step. If iteration has
+  // not stopped (according to the stopping criterion) by the final step, the
+  // iteration will be considered to have diverged.
+  int max_iterations;
+
+  // If the maximum absolute difference between successive state approximations
+  // is less than this for two Picard iterations in a row, iteration will be
+  // considered to have converged.
+  double stopping_criterion;
+};
+
 template <typename ODE_>
 class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
  public:
@@ -48,12 +74,10 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
     friend class ChebyshevPicardIterator;
   };
 
-  // Constructs a ChebyshevPicardIterator the given Chebyshev order and number
-  // of sample points.
-  //
-  // The value of sample_points must be at least order.
-  ChebyshevPicardIterator(int order, int sample_points, int max_iterations,
-                          double stopping_criterion);
+  // Constructs a ChebyshevPicardIterator with the given parameters.
+  ChebyshevPicardIterator(ChebyshevPicardIterationParams const& params);
+
+  ChebyshevPicardIterationParams const& params() const;
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       InitialValueProblem<ODE> const& problem, AppendState const& append_state,
@@ -63,14 +87,7 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
 
  private:
-  // The maximum number of iterations to do per step. If we exceed this an error
-  // is returned.
-  int max_iterations_;
-
-  // If the max relative difference between successive iterations of the
-  // dependent variables are less than this value twice in a row, the sequence
-  // will be considered converged.
-  double stopping_criterion_;
+  ChebyshevPicardIterationParams params_;
 
   // The nodes used for function evaluation.
   //
@@ -85,6 +102,7 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
 
 }  // namespace internal
 
+using internal::ChebyshevPicardIterationParams;
 using internal::ChebyshevPicardIterator;
 
 }  // namespace _chebyshev_picard_iterator

@@ -28,9 +28,6 @@ TEST(ChebyshevPicardIteratorTest, LinearConvergence) {
   //
   // The solution to this is known; it is y = Ce^t (for y(0) = 1, which we use
   // in this test, C = 1).
-  // The convergence interval (of the Picard iteration) is also known: for order
-  // > 40, the convergence interval length is also ~40 (see Bai's dissertation,
-  // equation 3.12).
   ODE linear_ode;
   linear_ode.compute_derivative =
       [](Instant const& t, ODE::DependentVariables const& dependent_variables,
@@ -57,10 +54,12 @@ TEST(ChebyshevPicardIteratorTest, LinearConvergence) {
 
   // Build the integrator and solve the problem.
   const int order = 64;
-  ChebyshevPicardIterator<ODE> const integrator(/*order=*/order,
-                                                /*sample_points=*/order,
-                                                /*max_iterations=*/32,
-                                                /*stopping_criterion=*/1e-16);
+  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+      .M = 64,
+      .N = 64,
+      .max_iterations = 32,
+      .stopping_criterion = 1e-16,
+  });
 
   auto const instance = integrator.NewInstance(problem, append_state, step);
   EXPECT_OK(instance->Solve(t_final));

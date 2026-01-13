@@ -65,8 +65,8 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
   auto& current_state = this->current_state_;
   auto const& equation = this->equation_;
   auto const& step = this->step_;
-
   auto const& t_initial = current_state.s.value;
+  auto const& params = integrator_.params();
 
   // TODO: actually go until t_final.
 
@@ -77,7 +77,7 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
     t.push_back(t_initial + (0.5 * node + 0.5) * step);
   }
 
-  // x is an (n + 1)×d matrix, where d is the dimension of the ODE's
+  // x is an (N + 1)×n matrix, where n is the dimension of the ODE's
   // dependent variable.
   UnboundedMatrix<double> x(integrator_.cx_.columns(),
                             std::tuple_size<DependentVariables>::value);
@@ -102,8 +102,7 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
   UnboundedMatrix<double> yʹ(x.rows(), x.columns(), uninitialized);
 
   double prev_norm = std::numeric_limits<float>::infinity();
-  for (int iteration = 0; iteration < integrator_.max_iterations_;
-       iteration++) {
+  for (int iteration = 0; iteration < params.max_iterations; iteration++) {
     // Evaluate the right hand side of the equation.
     for (int i = 0; i < x.rows(); i++) {
       auto const y = DependentVariablesFromMatrixRow<ODE>(x, i);
@@ -127,7 +126,7 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
     }
     x = new_x;
 
-    if (std::max(norm, prev_norm) < integrator_.stopping_criterion_) {
+    if (std::max(norm, prev_norm) < params.stopping_criterion) {
       // We have successfully converged!
       for (int i = 0; i < x.rows(); i++) {
         append_state(State(t[i], DependentVariablesFromMatrixRow<ODE>(x, i)));
@@ -170,91 +169,96 @@ ChebyshevPicardIterator<ODE_>::Instance::Instance(
 
 template <typename ODE_>
 ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
-    int order, int sample_points, int max_iterations, double stopping_criterion)
-    : max_iterations_(max_iterations),
-      stopping_criterion_(stopping_criterion),
-      nodes_(sample_points + 1),
-      cx_(sample_points + 1, order + 1, uninitialized),
-      cx_cα_(sample_points + 1, order + 1, uninitialized) {
+    const ChebyshevPicardIterationParams& params)
+    : params_(params),
+      nodes_(params.M + 1, uninitialized),
+      cx_(params.M + 1, params.N + 1, uninitialized),
+      cx_cα_(params.M + 1, params.N + 1, uninitialized) {
   // We use the notation from Macomber's thesis, section 1.4.3.
-  const int n = order;
-  const int m = sample_points;
-  CHECK_GE(m, n)
-      << "Number of sample points must be at least the Chebyshev order";
+  const int M = params_.M;
+  const int N = params_.N;
+  CHECK_GE(M, 1);
+  CHECK_GE(N, 1);
 
   // Populate nodes.
-  for (int i = 0; i <= m; i++) {
-    nodes_[i] = -Cos(π / m * i * Radian);
+  for (int i = 0; i <= M; i++) {
+    nodes_[i] = -Cos(π / M * i * Radian);
   }
 
-  // βT is a (m + 1)×(n + 1) matrix of Chebyshev polynomials evaluated at nodes.
+  // βT is a (M + 1)×(N + 1) matrix of Chebyshev polynomials evaluated at nodes.
   // See Macomber's thesis, equation (1.20).
-  UnboundedMatrix<double> βT(m + 1, n + 1);
+  UnboundedMatrix<double> βT(M + 1, N + 1, uninitialized);
 
-  for (int i = 0; i <= m; i++) {
-    const auto τ = nodes_[i];
+  for (int i = 0; i <= M; i++) {
+    const auto τᵢ = nodes_[i];
     // The 0-degree polynomial is uniformly 1.
     βT(i, 0) = 1;
     // The 0-degree polynomial is the identity.
-    βT(i, 1) = τ;
+    βT(i, 1) = τᵢ;
 
     // We populate the rest of βT using the recurrence relation.
-    for (int j = 2; j <= n; j++) {
-      βT(i, j) = 2 * τ * βT(i, j - 1) - βT(i, j - 2);
+    for (int j = 2; j <= N; j++) {
+      βT(i, j) = 2 * τᵢ * βT(i, j - 1) - βT(i, j - 2);
 
       // Make sure the zeroes are actually zero.
       if (std ::abs(βT(i, j)) < 1e-14) βT(i, j) = 0;
     }
   }
 
-  // βW is a diagonal (n + 1)×(n + 1) matrix with diagonal [½, 1, 1, ..., ½].
+  // βW is a diagonal (N + 1)×(N + 1) matrix with diagonal [½, 1, 1, ..., ½].
   // See Macomber's thesis, equation (1.20).
-  UnboundedMatrix<double> βW(n + 1, n + 1);
+  UnboundedMatrix<double> βW(N + 1, N + 1);
   βW(0, 0) = 0.5;
-  βW(n, n) = 0.5;
-  for (int i = 1; i < n; i++) {
+  βW(N, N) = 0.5;
+  for (int i = 1; i < N; i++) {
     βW(i, i) = 1;
   }
 
   cx_ = βT * βW;
 
-  // r is a diagonal (n + 1)×(n + 1) matrix.
+  // r is a diagonal (N + 1)×(N + 1) matrix.
   // See Macomber's thesis, equation (1.25).
-  UnboundedMatrix<double> r(n + 1, n + 1);
+  UnboundedMatrix<double> r(N + 1, N + 1);
   r(0, 0) = 1;
-  r(n, n) = 1.0 / n;
-  for (int i = 1; i < n; i++) {
+  r(N, N) = 1.0 / N;
+  for (int i = 1; i < N; i++) {
     r(i, i) = 1.0 / (2 * i);
   }
 
-  // s is an (n + 1)×n matrix.
+  // s is an (N + 1)×N matrix.
   // See equation 1.26 in Macomber's thesis.
-  UnboundedMatrix<double> s(n + 1, n);
+  UnboundedMatrix<double> s(N + 1, N);
   s(0, 0) = 1;
   s(0, 1) = -0.5;
-  for (int k = 2; k < n; k++) {
+  for (int k = 2; k < N; k++) {
     s(0, k) = (k % 2 == 1 ? 1 : -1) * (1.0 / (k - 1) - 1.0 / (k + 1));
   }
-  for (int i = 0; i < n; i++) {
+  for (int i = 0; i < N; i++) {
     s(i + 1, i) = 1;
   }
-  for (int i = 1; i + 2 < n; i++) {
+  for (int i = 1; i + 2 < N; i++) {
     s(i, i + 1) = -1;
   }
 
   // fT is βTᵀ with the last row removed.
   // See Macomber's thesis, equation (1.22).
-  UnboundedMatrix<double> fT(n, m + 1);
-  for (int i = 0; i < n; i++) {
-    for (int j = 0; j <= m; j++) {
+  UnboundedMatrix<double> fT(N, M + 1, uninitialized);
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j <= M; j++) {
       fT(i, j) = βT(j, i);
     }
   }
 
-  // tV is 1/m * βW (we do not assign it to a variable).
+  // tV is 1/M * βW (we do not assign it to a variable).
   // cα is r * s * fT * tV (we do not assign it to a variable).
 
-  cx_cα_ = 1.0 / m * cx_ * r * s * fT * βW;
+  cx_cα_ = 1.0 / M * cx_ * r * s * fT * βW;
+}
+
+template <typename ODE_>
+ChebyshevPicardIterationParams const& ChebyshevPicardIterator<ODE_>::params()
+    const {
+  return params_;
 }
 
 template <typename ODE_>
