@@ -332,14 +332,14 @@ INSTANTIATE_TEST_SUITE_P(Linear, ChebyshevPicardIteratorTest,
                              ChebyshevPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
-                                 .stopping_criterion = 1e-15,
+                                 .stopping_criterion = 1e-12,
                                  .step = 8 * Second,
                                  .tolerance = 4e-10,
                              },
                              ChebyshevPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
-                                 .stopping_criterion = 1e-11,
+                                 .stopping_criterion = 1e-7,
                                  .step = 16 * Second,
                                  // Absolute error is high due to the
                                  // exponential growth.

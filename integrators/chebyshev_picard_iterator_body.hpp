@@ -54,6 +54,17 @@ void DependentVariableDerivativesToMatrixRow(
   });
 }
 
+// Returns max|aᵢⱼ|.
+inline double MaxNorm(UnboundedMatrix<double> const& A) {
+  double norm = 0.0;
+  for (int i = 0; i < A.rows(); i++) {
+    for (int j = 0; j < A.columns(); j++) {
+      norm = std::max(norm, std::abs(A(i, j)));
+    }
+  }
+  return norm;
+}
+
 template <typename ODE_>
 absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
     ODE::IndependentVariable const& t_final) {
@@ -133,14 +144,7 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
           integrator_.CₓCα_ * (step / Second) * yʹ + Cₓx₀;
 
       // Check for convergence by computing the ∞-norm.
-      double norm = 0.0;
-      for (int i = 0; i < x.rows(); i++) {
-        for (int j = 0; j < x.columns(); j++) {
-          norm = std::max(
-              norm, std::abs(new_x(i, j) - x(i, j)) /
-                        std::max(std::abs(new_x(i, j)), std::abs(x(i, j))));
-        }
-      }
+      double norm = MaxNorm(new_x - x);
       std::cout << "Norm[" << iteration << "]: " << norm << std::endl;
       x = new_x;
 
