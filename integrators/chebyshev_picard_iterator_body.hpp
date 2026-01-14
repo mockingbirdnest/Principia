@@ -68,7 +68,6 @@ inline double MaxNorm(UnboundedMatrix<double> const& A) {
 template <typename ODE_>
 absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
     ODE::IndependentVariable const& t_final) {
-  using IndependentVariable = typename ODE::IndependentVariable;
   using DependentVariables = typename ODE::DependentVariables;
   using DependentVariableDerivatives =
       typename ODE::DependentVariableDerivatives;
@@ -80,6 +79,9 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
   auto const& step = this->step_;
   auto const& params = integrator_.params();
   auto const n = std::tuple_size<DependentVariables>::value;
+
+  // Before:
+  // 2 tests from PerturbedSinusoid/ChebyshevPicardIteratorTest (801 ms total)
 
   // Argument checks.
   Sign const integration_direction = Sign(step);
@@ -97,55 +99,46 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
     auto const t_initial = current_state.s.value;
 
     // Rescale the nodes for feeding into the compute_derivative function.
-    std::vector<IndependentVariable> t;
-    t.reserve(integrator_.nodes_.size());
+    t_.clear();
     for (const double node : integrator_.nodes_) {
-      t.push_back(t_initial + (0.5 * node + 0.5) * step);
+      t_.push_back(t_initial + (0.5 * node + 0.5) * step);
     }
 
-    // Set the boundary condition and store it in CₓX₀.
-    UnboundedMatrix<double> CₓX₀(params.M + 1, n, uninitialized);
+    // Set the boundary condition and store it in CₓX₀_.
     int j = 0;
-    for_all_of(current_state.y).loop([&CₓX₀, &j](auto const& yⱼ) {
-      CₓX₀(0, j++) = yⱼ.value / Unit<decltype(yⱼ.value)>;
+    for_all_of(current_state.y).loop([this, &j](auto const& yⱼ) {
+      CₓX₀_(0, j++) = yⱼ.value / Unit<decltype(yⱼ.value)>;
     });
     for (int i = 1; i <= params.M; i++) {
       for (int j = 0; j < n; j++) {
-        CₓX₀(i, j) = CₓX₀(0, j);
+        CₓX₀_(i, j) = CₓX₀_(0, j);
       }
     }
 
-    // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
-    // variables at each node.
-    //
     // A good starting guess for X⁰ is uniform current_state.y; as it happens
-    // that's what we just set CₓX₀ to.
-    UnboundedMatrix<double> Xⁱ = CₓX₀;
-
-    // The computed derivative. We will multiply this by 0.5 * step to get g.
-    UnboundedMatrix<double> yʹ(Xⁱ.rows(), Xⁱ.columns(), uninitialized);
+    // that's what we just set CₓX₀_ to.
+    Xⁱ_ = CₓX₀_;
 
     double prev_norm = std::numeric_limits<float>::infinity();
     bool converged = false;
     for (int iteration = 0; iteration < params.max_iterations; iteration++) {
       // Evaluate the right hand side of the equation.
-      for (int i = 0; i < Xⁱ.rows(); i++) {
-        auto const y = DependentVariablesFromMatrixRow<ODE>(Xⁱ, i);
+      for (int i = 0; i < Xⁱ_.rows(); i++) {
+        auto const y = DependentVariablesFromMatrixRow<ODE>(Xⁱ_, i);
         DependentVariableDerivatives yʹᵢ;
-        RETURN_IF_ERROR(equation.compute_derivative(t[i], y, yʹᵢ));
+        RETURN_IF_ERROR(equation.compute_derivative(t_[i], y, yʹᵢ));
 
         // Store it in yʹ.
-        DependentVariableDerivativesToMatrixRow<ODE>(yʹᵢ, i, yʹ);
+        DependentVariableDerivativesToMatrixRow<ODE>(yʹᵢ, i, yʹ_);
       }
 
       // Compute new x.
-      const UnboundedMatrix<double> Xⁱ⁺¹ =
-          integrator_.CₓCα_ * (step / Second) * yʹ + CₓX₀;
+      Xⁱ⁺¹_ = integrator_.CₓCα_ * ((step / Second) * yʹ_) + CₓX₀_;
 
       // Check for convergence by computing the ∞-norm.
-      double norm = MaxNorm(Xⁱ⁺¹ - Xⁱ);
+      double norm = MaxNorm(Xⁱ⁺¹_ - Xⁱ_);
       std::cout << "Norm[" << iteration << "]: " << norm << std::endl;
-      Xⁱ = Xⁱ⁺¹;
+      Xⁱ_ = std::move(Xⁱ⁺¹_);
 
       if (std::max(norm, prev_norm) < params.stopping_criterion) {
         converged = true;
@@ -157,14 +150,15 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
 
     if (converged) {
       // We have successfully converged!
-      for (int i = 0; i < Xⁱ.rows(); i++) {
-        append_state(State(t[i], DependentVariablesFromMatrixRow<ODE>(Xⁱ, i)));
+      for (int i = 0; i < Xⁱ_.rows(); i++) {
+        append_state(
+            State(t_[i], DependentVariablesFromMatrixRow<ODE>(Xⁱ_, i)));
       }
 
       // Set the current state to the final state we appended.
       current_state =
-          State(t[Xⁱ.rows() - 1],
-                DependentVariablesFromMatrixRow<ODE>(Xⁱ, Xⁱ.rows() - 1));
+          State(t_[Xⁱ_.rows() - 1],
+                DependentVariablesFromMatrixRow<ODE>(Xⁱ_, Xⁱ_.rows() - 1));
     } else {
       // We failed to converge.
       return absl::Status(absl::StatusCode::kFailedPrecondition,
@@ -192,7 +186,16 @@ ChebyshevPicardIterator<ODE_>::Instance::Instance(
     InitialValueProblem<ODE> const& problem, AppendState const& append_state,
     Time const& step, ChebyshevPicardIterator const& integrator)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
-      integrator_(integrator) {}
+      integrator_(integrator),
+      t_(),
+      CₓX₀_(integrator.params_.M + 1,
+            std::tuple_size<typename ODE::DependentVariables>::value,
+            uninitialized),
+      Xⁱ_(CₓX₀_.rows(), CₓX₀_.columns(), uninitialized),
+      Xⁱ⁺¹_(Xⁱ_.rows(), Xⁱ_.columns(), uninitialized),
+      yʹ_(Xⁱ_.rows(), Xⁱ_.columns(), uninitialized) {
+  t_.reserve(integrator.nodes_.size());
+}
 
 template <typename ODE_>
 ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(

@@ -79,6 +79,20 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
 
     ChebyshevPicardIterator const& integrator_;
 
+    // Stores the nodes rescaled to the current step.
+    std::vector<typename ODE::IndependentVariable> t_;
+
+    // Controls the boundary condition.
+    UnboundedMatrix<double> CₓX₀_;
+
+    // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
+    // variables at each node.
+    UnboundedMatrix<double> Xⁱ_;
+    UnboundedMatrix<double> Xⁱ⁺¹_;
+
+    // The computed derivative (at each node, for the current iteration).
+    UnboundedMatrix<double> yʹ_;
+
     friend class ChebyshevPicardIterator;
   };
 
