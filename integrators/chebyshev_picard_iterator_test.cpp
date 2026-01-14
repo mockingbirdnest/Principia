@@ -1,6 +1,7 @@
 #include "integrators/chebyshev_picard_iterator.hpp"
 
 #include "geometry/instant.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "quantities/quantities.hpp"
@@ -10,6 +11,7 @@
 namespace principia {
 namespace integrators {
 
+using ::testing::DoubleNear;
 using ::testing::TestWithParam;
 using ::testing::Values;
 
@@ -142,9 +144,9 @@ struct ChebyshevPicardIteratorTestParam {
   // The stopping criterion used for this test.
   double stopping_criterion;
 
-  // The number of ULPs the integrated solution is allowed to vary from the
+  // The distance the integrated solution is allowed to vary from the
   // analytic solution.
-  int ulps;
+  double tolerance;
 };
 
 class ChebyshevPicardIteratorTest
@@ -176,8 +178,8 @@ TEST_P(ChebyshevPicardIteratorTest, Convergence) {
   for (const auto& state : states) {
     auto t = state.s.value;
     auto y = std::get<0>(state.y).value;
-    EXPECT_THAT(
-        y, AlmostEquals(std::get<0>(problem.solution(t)), 0, GetParam().ulps))
+    EXPECT_THAT(y / Metre, DoubleNear(std::get<0>(problem.solution(t)) / Metre,
+                                      GetParam().tolerance))
         << "t=" << t;
   }
 }
@@ -312,35 +314,37 @@ INSTANTIATE_TEST_SUITE_P(Linear, ChebyshevPicardIteratorTest,
                                  .N = 64,
                                  .stopping_criterion = 1e-16,
                                  .step = 1 * Second,
-                                 .ulps = 2,
+                                 .tolerance = 9e-16,
                              },
                              ChebyshevPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
                                  .stopping_criterion = 1e-16,
                                  .step = 2 * Second,
-                                 .ulps = 5,
+                                 .tolerance = 4.5e-15,
                              },
                              ChebyshevPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
                                  .stopping_criterion = 1e-16,
                                  .step = 4 * Second,
-                                 .ulps = 15,
+                                 .tolerance = 8e-14,
                              },
                              ChebyshevPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
                                  .stopping_criterion = 1e-15,
                                  .step = 8 * Second,
-                                 .ulps = (int)1.2e3,
+                                 .tolerance = 4e-10,
                              },
                              ChebyshevPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
                                  .stopping_criterion = 1e-11,
                                  .step = 16 * Second,
-                                 .ulps = (int)4e7,
+                                 // Absolute error is high due to the
+                                 // exponential growth.
+                                 .tolerance = 4e-3,
                              }));
 
 // This problem appears in the NASA paper.
@@ -352,7 +356,7 @@ INSTANTIATE_TEST_SUITE_P(Tangent, ChebyshevPicardIteratorTest,
                                  .N = 16,
                                  .stopping_criterion = 0.5e-10,
                                  .step = 2 * Second,
-                                 .ulps = (int)3.4e5,
+                                 .tolerance = 8.7e-10,
                              },
                              // We can achieve better accuracy with higher N and
                              // a more stringent stopping criterion.
@@ -361,7 +365,7 @@ INSTANTIATE_TEST_SUITE_P(Tangent, ChebyshevPicardIteratorTest,
                                  .N = 32,
                                  .stopping_criterion = 1e-16,
                                  .step = 2 * Second,
-                                 .ulps = 21,
+                                 .tolerance = 4e-16,
                              }));
 
 // From Bai's thesis. Figures 9, 10, 12, 13 are slow and omitted for now.
@@ -375,7 +379,8 @@ INSTANTIATE_TEST_SUITE_P(
             .N = 500,
             .stopping_criterion = 1e-16,
             .step = 64 * π * Second,
-            .ulps = (int)4e7},
+            .tolerance = 1e-9,
+        },
         // Bai's thesis, figure 11.
         ChebyshevPicardIteratorTestParam{
             .problem = PerturbedSinusoidProblem(/*ε=*/0.001,
@@ -383,7 +388,8 @@ INSTANTIATE_TEST_SUITE_P(
             .N = 400,
             .stopping_criterion = 1e-16,
             .step = 64 * π * Second,
-            .ulps = (int)2.2e7}));
+            .tolerance = 2.5e-11,
+        }));
 
 }  // namespace
 
