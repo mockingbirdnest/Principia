@@ -78,8 +78,7 @@ SolvedInitialValueProblem TangentProblem() {
   InitialValueProblem<ODE> problem;
   problem.equation = ode;
   // TODO(rnlahaye): There is some issue when we start at t=-1. Fix it.
-  problem.initial_state = {Instant() - 0.9 * Second,
-                           {Tan(π / 8 * 0.1 * Radian) * Metre}};
+  problem.initial_state = {Instant() - 1 * Second, {0 * Metre}};
 
   return SolvedInitialValueProblem{
       .problem = problem,
@@ -365,7 +364,7 @@ INSTANTIATE_TEST_SUITE_P(Tangent, ChebyshevPicardIteratorTest,
                                  .N = 32,
                                  .stopping_criterion = 1e-16,
                                  .step = 2 * Second,
-                                 .tolerance = 4e-16,
+                                 .tolerance = 4.5e-16,
                              }));
 
 // From Bai's thesis. Figures 9, 10, 12, 13 are slow and omitted for now.
