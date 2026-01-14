@@ -102,8 +102,6 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
   // These are Chebyshev nodes of the second kind.
   UnboundedVector<double> nodes_;
 
-  // 1.31b from Macomber's thesis.
-  UnboundedMatrix<double> Cₓ_;
   // The product of 1.31a and 1.31b from Macomber's thesis.
   UnboundedMatrix<double> CₓCα_;
 };

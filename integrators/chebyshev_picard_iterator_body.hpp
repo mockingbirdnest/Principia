@@ -79,6 +79,7 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
   auto const& equation = this->equation_;
   auto const& step = this->step_;
   auto const& params = integrator_.params();
+  auto const n = std::tuple_size<DependentVariables>::value;
 
   // Argument checks.
   Sign const integration_direction = Sign(step);
@@ -102,26 +103,21 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
       t.push_back(t_initial + (0.5 * node + 0.5) * step);
     }
 
-    // x is an (N + 1)×n matrix, where n is the dimension of the ODE's
-    // dependent variable.
-    UnboundedMatrix<double> x(integrator_.Cₓ_.columns(),
-                              std::tuple_size<DependentVariables>::value);
-
-    // Set the boundary condition and store it in Cₓx₀.
+    // Set the boundary condition and store it in CₓX₀.
+    UnboundedMatrix<double> CₓX₀(params.M + 1, n, uninitialized);
     int j = 0;
-    for_all_of(current_state.y).loop([&x, &j](auto const& yⱼ) {
-      x(0, j++) = yⱼ.value / Unit<decltype(yⱼ.value)>;
+    for_all_of(current_state.y).loop([&CₓX₀, &j](auto const& yⱼ) {
+      CₓX₀(0, j++) = yⱼ.value / Unit<decltype(yⱼ.value)>;
     });
-
-    const UnboundedMatrix<double> Cₓx₀ = integrator_.Cₓ_ * 2 * x;
-
-    // Set the initial value of x (this is x⁰, with superscript 0) to the
-    // current state.
-    for (int i = 1; i < x.rows(); i++) {
-      for (int j = 0; j < x.columns(); j++) {
-        x(i, j) = x(0, j);
+    for (int i = 1; i <= params.M; i++) {
+      for (int j = 0; j < n; j++) {
+        CₓX₀(i, j) = CₓX₀(0, j);
       }
     }
+
+    // x is an (N + 1)×n matrix, where n is the dimension of the ODE's
+    // dependent variable.
+    UnboundedMatrix<double> x = CₓX₀;
 
     // The computed derivative. We will multiply this by 0.5 * step to get g.
     UnboundedMatrix<double> yʹ(x.rows(), x.columns(), uninitialized);
@@ -141,7 +137,7 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
 
       // Compute new x.
       const UnboundedMatrix<double> new_x =
-          integrator_.CₓCα_ * (step / Second) * yʹ + Cₓx₀;
+          integrator_.CₓCα_ * (step / Second) * yʹ + CₓX₀;
 
       // Check for convergence by computing the ∞-norm.
       double norm = MaxNorm(new_x - x);
@@ -200,7 +196,6 @@ ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
     const ChebyshevPicardIterationParams& params)
     : params_(params),
       nodes_(params.M + 1, uninitialized),
-      Cₓ_(params.M + 1, params.N + 1, uninitialized),
       CₓCα_(params.M + 1, params.N + 1, uninitialized) {
   // We use the notation from Macomber's thesis, section 1.4.3.
   const int M = params_.M;
@@ -242,7 +237,7 @@ ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
     ᵝW(i, i) = 1;
   }
 
-  Cₓ_ = ᵝT * ᵝW;
+  UnboundedMatrix<double> Cₓ = ᵝT * ᵝW;
 
   // R is a diagonal (N + 1)×(N + 1) matrix.
   // See Macomber's thesis, equation (1.25).
@@ -280,7 +275,7 @@ ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
   // ᵀV is 1/M * ᵝW (we do not assign it to a variable).
   // Cα is r * s * ᶠT * ᵀV (we do not assign it to a variable).
 
-  CₓCα_ = 1.0 / M * Cₓ_ * R * S * ᶠT * ᵝW;
+  CₓCα_ = 1.0 / M * Cₓ * R * S * ᶠT * ᵝW;
 }
 
 template <typename ODE_>
