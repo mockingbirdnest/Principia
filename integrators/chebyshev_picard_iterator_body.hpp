@@ -299,7 +299,12 @@ ChebyshevPicardIterator<ODE_>::NewInstance(
 template <typename ODE_>
 void ChebyshevPicardIterator<ODE_>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> message) const {
-  // TODO(rnlahaye): implement me
+  message->set_kind(serialization::FixedStepSizeIntegrator::CHEBYSHEV_PICARD);
+  auto& message_params = *message->mutable_chebyshev_picard_params();
+  message_params.set_m(params_.M);
+  message_params.set_n(params_.N);
+  message_params.set_max_iterations(params_.max_iterations);
+  message_params.set_stopping_criterion(params_.stopping_criterion);
 }
 
 }  // namespace internal

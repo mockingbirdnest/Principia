@@ -280,7 +280,26 @@ TEST_F(ChebyshevPicardIteratorTest, Divergence) {
               StatusIs(absl::StatusCode::kFailedPrecondition));
 }
 
-TEST_F(ChebyshevPicardIteratorTest, WriteToMessage) {}
+TEST_F(ChebyshevPicardIteratorTest, WriteToMessage) {
+  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+      .M = 9,
+      .N = 7,
+      .max_iterations = 42,
+      .stopping_criterion = 0.125,
+  });
+
+  serialization::FixedStepSizeIntegrator expected;
+  expected.set_kind(serialization::FixedStepSizeIntegrator::CHEBYSHEV_PICARD);
+  expected.mutable_chebyshev_picard_params()->set_m(9);
+  expected.mutable_chebyshev_picard_params()->set_n(7);
+  expected.mutable_chebyshev_picard_params()->set_max_iterations(42);
+  expected.mutable_chebyshev_picard_params()->set_stopping_criterion(0.125);
+
+  serialization::FixedStepSizeIntegrator actual;
+  integrator.WriteToMessage(&actual);
+
+  EXPECT_THAT(actual, EqualsProto(expected));
+}
 
 TEST_F(ChebyshevPicardIteratorTest, ReadFromMessage) {}
 
