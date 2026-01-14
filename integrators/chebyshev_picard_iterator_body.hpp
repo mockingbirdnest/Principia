@@ -115,19 +115,22 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
       }
     }
 
-    // x is an (N + 1)×n matrix, where n is the dimension of the ODE's
-    // dependent variable.
-    UnboundedMatrix<double> x = CₓX₀;
+    // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
+    // variables at each node.
+    //
+    // A good starting guess for X⁰ is uniform current_state.y; as it happens
+    // that's what we just set CₓX₀ to.
+    UnboundedMatrix<double> Xⁱ = CₓX₀;
 
     // The computed derivative. We will multiply this by 0.5 * step to get g.
-    UnboundedMatrix<double> yʹ(x.rows(), x.columns(), uninitialized);
+    UnboundedMatrix<double> yʹ(Xⁱ.rows(), Xⁱ.columns(), uninitialized);
 
     double prev_norm = std::numeric_limits<float>::infinity();
     bool converged = false;
     for (int iteration = 0; iteration < params.max_iterations; iteration++) {
       // Evaluate the right hand side of the equation.
-      for (int i = 0; i < x.rows(); i++) {
-        auto const y = DependentVariablesFromMatrixRow<ODE>(x, i);
+      for (int i = 0; i < Xⁱ.rows(); i++) {
+        auto const y = DependentVariablesFromMatrixRow<ODE>(Xⁱ, i);
         DependentVariableDerivatives yʹᵢ;
         RETURN_IF_ERROR(equation.compute_derivative(t[i], y, yʹᵢ));
 
@@ -136,13 +139,13 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
       }
 
       // Compute new x.
-      const UnboundedMatrix<double> new_x =
+      const UnboundedMatrix<double> Xⁱ⁺¹ =
           integrator_.CₓCα_ * (step / Second) * yʹ + CₓX₀;
 
       // Check for convergence by computing the ∞-norm.
-      double norm = MaxNorm(new_x - x);
+      double norm = MaxNorm(Xⁱ⁺¹ - Xⁱ);
       std::cout << "Norm[" << iteration << "]: " << norm << std::endl;
-      x = new_x;
+      Xⁱ = Xⁱ⁺¹;
 
       if (std::max(norm, prev_norm) < params.stopping_criterion) {
         converged = true;
@@ -154,14 +157,14 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
 
     if (converged) {
       // We have successfully converged!
-      for (int i = 0; i < x.rows(); i++) {
-        append_state(State(t[i], DependentVariablesFromMatrixRow<ODE>(x, i)));
+      for (int i = 0; i < Xⁱ.rows(); i++) {
+        append_state(State(t[i], DependentVariablesFromMatrixRow<ODE>(Xⁱ, i)));
       }
 
       // Set the current state to the final state we appended.
       current_state =
-          State(t[x.rows() - 1],
-                DependentVariablesFromMatrixRow<ODE>(x, x.rows() - 1));
+          State(t[Xⁱ.rows() - 1],
+                DependentVariablesFromMatrixRow<ODE>(Xⁱ, Xⁱ.rows() - 1));
     } else {
       // We failed to converge.
       return absl::Status(absl::StatusCode::kFailedPrecondition,
