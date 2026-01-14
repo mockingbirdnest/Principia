@@ -1,11 +1,10 @@
 #pragma once
 
-#include "integrators/chebyshev_picard_iterator.hpp"
-
 #include "base/for_all_of.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "geometry/sign.hpp"
+#include "integrators/chebyshev_picard_iterator.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_computations.hpp"  // For eigenvalues.
 #include "numerics/matrix_views.hpp"
@@ -94,16 +93,16 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
 
     // x is an (N + 1)×n matrix, where n is the dimension of the ODE's
     // dependent variable.
-    UnboundedMatrix<double> x(integrator_.cx_.columns(),
+    UnboundedMatrix<double> x(integrator_.Cₓ_.columns(),
                               std::tuple_size<DependentVariables>::value);
 
-    // Set the boundary condition and store it in cₓx₀.
+    // Set the boundary condition and store it in Cₓx₀.
     int j = 0;
     for_all_of(current_state.y).loop([&x, &j](auto const& yⱼ) {
       x(0, j++) = yⱼ.value / Unit<decltype(yⱼ.value)>;
     });
 
-    const UnboundedMatrix<double> cₓx₀ = integrator_.cx_ * 2 * x;
+    const UnboundedMatrix<double> Cₓx₀ = integrator_.Cₓ_ * 2 * x;
 
     // Set the initial value of x (this is x⁰, with superscript 0) to the
     // current state.
@@ -131,7 +130,7 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
 
       // Compute new x.
       const UnboundedMatrix<double> new_x =
-          integrator_.cx_cα_ * (step / Second) * yʹ + cₓx₀;
+          integrator_.CₓCα_ * (step / Second) * yʹ + Cₓx₀;
 
       // Check for convergence by computing the ∞-norm.
       double norm = 0.0;
@@ -197,8 +196,8 @@ ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
     const ChebyshevPicardIterationParams& params)
     : params_(params),
       nodes_(params.M + 1, uninitialized),
-      cx_(params.M + 1, params.N + 1, uninitialized),
-      cx_cα_(params.M + 1, params.N + 1, uninitialized) {
+      Cₓ_(params.M + 1, params.N + 1, uninitialized),
+      CₓCα_(params.M + 1, params.N + 1, uninitialized) {
   // We use the notation from Macomber's thesis, section 1.4.3.
   const int M = params_.M;
   const int N = params_.N;
@@ -210,74 +209,74 @@ ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
     nodes_[i] = -Cos(π / M * i * Radian);
   }
 
-  // βT is a (M + 1)×(N + 1) matrix of Chebyshev polynomials evaluated at nodes.
+  // ᵝT is a (M + 1)×(N + 1) matrix of Chebyshev polynomials evaluated at nodes.
   // See Macomber's thesis, equation (1.20).
-  UnboundedMatrix<double> βT(M + 1, N + 1, uninitialized);
+  UnboundedMatrix<double> ᵝT(M + 1, N + 1, uninitialized);
 
   for (int i = 0; i <= M; i++) {
     const auto τᵢ = nodes_[i];
     // The 0-degree polynomial is uniformly 1.
-    βT(i, 0) = 1;
+    ᵝT(i, 0) = 1;
     // The 0-degree polynomial is the identity.
-    βT(i, 1) = τᵢ;
+    ᵝT(i, 1) = τᵢ;
 
-    // We populate the rest of βT using the recurrence relation.
+    // We populate the rest of ᵝT using the recurrence relation.
     for (int j = 2; j <= N; j++) {
-      βT(i, j) = 2 * τᵢ * βT(i, j - 1) - βT(i, j - 2);
+      ᵝT(i, j) = 2 * τᵢ * ᵝT(i, j - 1) - ᵝT(i, j - 2);
 
       // Make sure the zeroes are actually zero.
-      if (std::abs(βT(i, j)) < 1e-14) βT(i, j) = 0;
+      if (std::abs(ᵝT(i, j)) < 1e-14) ᵝT(i, j) = 0;
     }
   }
 
-  // βW is a diagonal (N + 1)×(N + 1) matrix with diagonal [½, 1, 1, ..., ½].
+  // ᵝW is a diagonal (N + 1)×(N + 1) matrix with diagonal [½, 1, 1, ..., ½].
   // See Macomber's thesis, equation (1.20).
-  UnboundedMatrix<double> βW(N + 1, N + 1);
-  βW(0, 0) = 0.5;
-  βW(N, N) = 0.5;
+  UnboundedMatrix<double> ᵝW(N + 1, N + 1);
+  ᵝW(0, 0) = 0.5;
+  ᵝW(N, N) = 0.5;
   for (int i = 1; i < N; i++) {
-    βW(i, i) = 1;
+    ᵝW(i, i) = 1;
   }
 
-  cx_ = βT * βW;
+  Cₓ_ = ᵝT * ᵝW;
 
-  // r is a diagonal (N + 1)×(N + 1) matrix.
+  // R is a diagonal (N + 1)×(N + 1) matrix.
   // See Macomber's thesis, equation (1.25).
-  UnboundedMatrix<double> r(N + 1, N + 1);
-  r(0, 0) = 1;
-  r(N, N) = 1.0 / N;
+  UnboundedMatrix<double> R(N + 1, N + 1);
+  R(0, 0) = 1;
+  R(N, N) = 1.0 / N;
   for (int i = 1; i < N; i++) {
-    r(i, i) = 1.0 / (2 * i);
+    R(i, i) = 1.0 / (2 * i);
   }
 
-  // s is an (N + 1)×N matrix.
+  // S is an (N + 1)×N matrix.
   // See equation 1.26 in Macomber's thesis.
-  UnboundedMatrix<double> s(N + 1, N);
-  s(0, 0) = 1;
-  s(0, 1) = -0.5;
+  UnboundedMatrix<double> S(N + 1, N);
+  S(0, 0) = 1;
+  S(0, 1) = -0.5;
   for (int k = 2; k < N; k++) {
-    s(0, k) = (k % 2 == 1 ? 1 : -1) * (1.0 / (k - 1) - 1.0 / (k + 1));
+    S(0, k) = (k % 2 == 1 ? 1 : -1) * (1.0 / (k - 1) - 1.0 / (k + 1));
   }
   for (int i = 0; i < N; i++) {
-    s(i + 1, i) = 1;
+    S(i + 1, i) = 1;
   }
   for (int i = 1; i + 2 < N; i++) {
-    s(i, i + 1) = -1;
+    S(i, i + 1) = -1;
   }
 
-  // fT is βTᵀ with the last row removed.
+  // ᶠT is ᵝTᵀ with the last row removed.
   // See Macomber's thesis, equation (1.22).
-  UnboundedMatrix<double> fT(N, M + 1, uninitialized);
+  UnboundedMatrix<double> ᶠT(N, M + 1, uninitialized);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j <= M; j++) {
-      fT(i, j) = βT(j, i);
+      ᶠT(i, j) = ᵝT(j, i);
     }
   }
 
-  // tV is 1/M * βW (we do not assign it to a variable).
-  // cα is r * s * fT * tV (we do not assign it to a variable).
+  // ᵀV is 1/M * ᵝW (we do not assign it to a variable).
+  // Cα is r * s * ᶠT * ᵀV (we do not assign it to a variable).
 
-  cx_cα_ = 1.0 / M * cx_ * r * s * fT * βW;
+  CₓCα_ = 1.0 / M * Cₓ_ * R * S * ᶠT * ᵝW;
 }
 
 template <typename ODE_>

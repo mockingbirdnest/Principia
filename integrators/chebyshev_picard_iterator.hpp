@@ -103,9 +103,9 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
   UnboundedVector<double> nodes_;
 
   // 1.31b from Macomber's thesis.
-  UnboundedMatrix<double> cx_;
+  UnboundedMatrix<double> Cₓ_;
   // The product of 1.31a and 1.31b from Macomber's thesis.
-  UnboundedMatrix<double> cx_cα_;
+  UnboundedMatrix<double> CₓCα_;
 };
 
 }  // namespace internal
