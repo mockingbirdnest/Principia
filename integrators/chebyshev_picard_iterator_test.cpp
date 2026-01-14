@@ -301,8 +301,6 @@ TEST_F(ChebyshevPicardIteratorTest, WriteToMessage) {
   EXPECT_THAT(actual, EqualsProto(expected));
 }
 
-TEST_F(ChebyshevPicardIteratorTest, ReadFromMessage) {}
-
 // Although in theory the iteration for y′ = y should converge for
 // intervals
 // of length < 40 for sufficiently high N (see Bai's thesis), in

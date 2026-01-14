@@ -1,4 +1,12 @@
-#pragma once
+// The files containing the tree of of child classes of `Integrator` must be
+// included in the order of inheritance to avoid circular dependencies.  This
+// class will end up being reincluded as part of the implementation of its
+// parent.
+#ifndef PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
+#include "integrators/integrators.hpp"
+#else
+#ifndef PRINCIPIA_INTEGRATORS_CHEBYSHEV_PICARD_ITERATOR_HPP_
+#define PRINCIPIA_INTEGRATORS_CHEBYSHEV_PICARD_ITERATOR_HPP_
 
 #include <memory>
 
@@ -6,11 +14,11 @@
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "geometry/instant.hpp"
-#include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/quantities.hpp"
+#include "serialization/integrators.pb.h"
 
 namespace principia {
 namespace integrators {
@@ -61,7 +69,7 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
 
     ChebyshevPicardIterator const& integrator() const override;
 
-    not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
+    not_null<std::unique_ptr<typename Integrator<ODE>::Instance> > Clone()
         const override;
 
    private:
@@ -79,7 +87,7 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
 
   ChebyshevPicardIterationParams const& params() const;
 
-  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance> > NewInstance(
       InitialValueProblem<ODE> const& problem, AppendState const& append_state,
       Time const& step) const override;
 
@@ -110,3 +118,6 @@ using internal::ChebyshevPicardIterator;
 }  // namespace principia
 
 #include "integrators/chebyshev_picard_iterator_body.hpp"
+
+#endif  // PRINCIPIA_INTEGRATORS_CHEBYSHEV_PICARD_ITERATOR_HPP_
+#endif  // PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_

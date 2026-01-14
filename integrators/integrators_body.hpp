@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/traits.hpp"
+#include "integrators/chebyshev_picard_iterator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
