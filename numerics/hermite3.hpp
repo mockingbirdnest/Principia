@@ -81,8 +81,9 @@ class Hermite3 final {
       std::pair<Value, Value> const& values,
       std::pair<Derivative1, Derivative1> const& derivatives);
 
-  PolynomialInMonomialBasis<Value, Argument, 3> p_;
-  PolynomialInMonomialBasis<Derivative1, Argument, 2> pʹ_;
+  static constexpr std::int64_t degree = 3;
+  PolynomialInMonomialBasis<Value, Argument, degree> p_;
+  PolynomialInMonomialBasis<Derivative1, Argument, degree - 1> pʹ_;
 };
 
 }  // namespace internal

@@ -26,9 +26,10 @@ struct Splitter;
 
 template<typename Scalar>
 struct Splitter<R3Element<Scalar>> {
+  static constexpr std::int64_t dimension = 3;
   using Value = Scalar;
 
-  std::vector<Scalar> Split(R3Element<Scalar> const& r3_element) {
+  std::array<Value, dimension> Split(R3Element<Scalar> const& r3_element) {
     return {r3_element.x, r3_element.y, r3_element.z};
   }
 };
@@ -36,9 +37,10 @@ struct Splitter<R3Element<Scalar>> {
 template<typename Scalar, typename Frame, int rank>
   requires(rank == 2 || rank == 3)
 struct Splitter<Multivector<Scalar, Frame, rank>> {
+  static constexpr std::int64_t dimension = 3;
   using Value = Scalar;
 
-  std::vector<Scalar> Split(
+  std::array<Value, dimension> Split(
       Multivector<Scalar, Frame, rank> const& multivector) {
     return Splitter<R3Element<Scalar>>(multivector.coordinates());
   }
@@ -102,11 +104,12 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
     Argument const& upper) const -> NormType {
   CHECK_LE(lower, upper);
 
-  // First split the coefficients of our polynomial by dimension.  This part is
-  // *not* coordinate-free.
+  // First split the coefficients of `p_` by dimension.  This part is *not*
+  // coordinate-free.
   auto const& coefficients = p_.coefficients();
   using S = Splitter<Value>;
-  using P = PolynomialInMonomialBasis<S::Value, Argument, 3>;
+  using P = PolynomialInMonomialBasis<S::Value, Argument, degree>;
+  // TODO(phl): Is there a more elegant way to do this?
   auto const split_a0 = S::Split(std::get<0>(coefficients));
   auto const split_a1 = S::Split(std::get<1>(coefficients));
   auto const split_a2 = S::Split(std::get<2>(coefficients));
@@ -114,28 +117,27 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
 
   // Build a polynomial for each dimension.
   std::vector<P> split_polynomials;
-  for (std::int64_t i = 0; i < split_a0.size(); ++i) {
+  for (std::int64_t i = 0; i < S::dimension; ++i) {
     split_polynomials.emplace_back(typename P::Coefficients{
         split_a0[i], split_a1[i], split_a2[i], split_a3[i]});
   }
 
-  NormType norm{};
-  // Find the extrema of each polynomial.
-  for (auto const& pᵢ : split_polynomials) {
-    auto const extrema = pᵢ.FindExtrema(lower, upper);
-    // For each extremum, evaluate all the polynomials and compute the sum of
-    // their absolute value.  This is pessimistic (and is the reason why this
-    // function only returns an upper bound).
+  // Find the extrema of each split polynomial.
+  NormType sum{};
+  for (auto const& split_polynomial : split_polynomials) {
+    auto const extrema = split_polynomial.FindExtrema(lower, upper);
+    // Compute the maximum of the absolute value of each split polynomial at its
+    // extrema.  This is the L∞ norm of that polynomial.
+    NormType max{};
     for (auto const extremum : extrema) {
-      NormType sum{};
-      for (auto const pⱼ : split_polynomials) {
-        sum += Abs(pⱼ(extremum));
-      }
-      norm = std::max(norm, sum);
+      max = std::max(max, Abs(split_polynomial(extremum));
     }
+    // The L₁ norm of `p_` is bounded by the sum of the L∞ norms of the split
+    // polynomials.
+    sum += max;
   }
 
-  return norm;
+  return sum;
 }
 
 template<affine Value_, affine Argument_>
