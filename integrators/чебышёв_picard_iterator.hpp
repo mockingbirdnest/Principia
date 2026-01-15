@@ -5,8 +5,8 @@
 #ifndef PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 #include "integrators/integrators.hpp"
 #else
-#ifndef PRINCIPIA_INTEGRATORS_CHEBYSHEV_PICARD_ITERATOR_HPP_
-#define PRINCIPIA_INTEGRATORS_CHEBYSHEV_PICARD_ITERATOR_HPP_
+#ifndef PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_ITERATOR_HPP_
+#define PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_ITERATOR_HPP_
 
 #include <memory>
 
@@ -129,7 +129,7 @@ using internal::ChebyshevPicardIterator;
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/chebyshev_picard_iterator_body.hpp"
+#include "integrators/чебышёв_picard_iterator_body.hpp"
 
-#endif  // PRINCIPIA_INTEGRATORS_CHEBYSHEV_PICARD_ITERATOR_HPP_
+#endif  // PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_ITERATOR_HPP_
 #endif  // PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_

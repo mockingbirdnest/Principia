@@ -1,4 +1,4 @@
-#include "integrators/chebyshev_picard_iterator.hpp"
+#include "integrators/чебышёв_picard_iterator.hpp"
 
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
