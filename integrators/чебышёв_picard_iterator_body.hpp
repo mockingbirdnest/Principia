@@ -6,7 +6,6 @@
 #include "geometry/sign.hpp"
 #include "integrators/чебышёв_picard_iterator.hpp"
 #include "numerics/elementary_functions.hpp"
-#include "numerics/matrix_computations.hpp"  // For eigenvalues.
 #include "numerics/matrix_views.hpp"
 #include "quantities/si.hpp"
 
@@ -17,7 +16,6 @@ using namespace principia::base::_for_all_of;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_sign;
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_si;
 
@@ -133,8 +131,7 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
       Xⁱ⁺¹_ = integrator_.CₓCα_ * ((step / Second) * yʹ_) + CₓX₀_;
 
       // Check for convergence by computing the ∞-norm.
-      double norm = MaxNorm(Xⁱ⁺¹_ - Xⁱ_);
-      std::cout << "Norm[" << iteration << "]: " << norm << std::endl;
+      const double norm = MaxNorm(Xⁱ⁺¹_ - Xⁱ_);
       Xⁱ_ = std::move(Xⁱ⁺¹_);
 
       if (std::max(norm, prev_norm) < params.stopping_criterion) {
