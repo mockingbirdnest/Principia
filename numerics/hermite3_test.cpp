@@ -108,7 +108,7 @@ TEST_F(Hermite3Test, Conditioning) {
             h.EvaluateDerivative(t0_ + 19418861.806896236 * Second));
 }
 
-TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
+TEST_F(Hermite3Test, OneDimensionalLInfinityL₂Error) {
   std::vector<std::pair<double, double>> samples;
   for (double i = 2; i < 10; i += 1) {
     samples.push_back({1 / i, Pow<4>(1 / i)});
@@ -136,7 +136,7 @@ TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
       /*tolerance=*/0.05));
 }
 
-TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
+TEST_F(Hermite3Test, ThreeDimensionalLInfinityL₂Error) {
   std::vector<std::pair<Instant, Position<World>>> samples;
   Instant const tmax = t0_ + π / 2 * Second;
   AngularFrequency const ω = 1 * Radian / Second;
