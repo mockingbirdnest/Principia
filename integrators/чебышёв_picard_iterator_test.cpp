@@ -77,7 +77,6 @@ SolvedInitialValueProblem TangentProblem() {
 
   InitialValueProblem<ODE> problem;
   problem.equation = ode;
-  // TODO(rnlahaye): There is some issue when we start at t=-1. Fix it.
   problem.initial_state = {Instant() - 1 * Second, {0 * Metre}};
 
   return SolvedInitialValueProblem{
@@ -89,7 +88,7 @@ SolvedInitialValueProblem TangentProblem() {
 
 // The first order ODE y′ = cos(t + εy).
 //
-// The solution (due to Fukushima) is
+// The solution ([Fuk97], equations 31 and 32) is
 // y = -γt + 2/ε tan⁻¹((β + σ cos φ)/(1 + σ sin φ))
 // where
 // σ = α(sin φ + β cos φ)
@@ -304,7 +303,7 @@ TEST_F(ЧебышёвPicardIteratorTest, WriteToMessage) {
 
 // Although in theory the iteration for y′ = y should converge for
 // intervals
-// of length < 40 for sufficiently high N (see Bai's thesis), in
+// of length < 40 for sufficiently high N (see [Bai10]), in
 // practice the convergence degrades far earlier.
 INSTANTIATE_TEST_SUITE_P(Linear, ЧебышёвPicardIteratorTest,
                          Values(
@@ -346,10 +345,10 @@ INSTANTIATE_TEST_SUITE_P(Linear, ЧебышёвPicardIteratorTest,
                                  .tolerance = 4e-3,
                              }));
 
-// This problem appears in the NASA paper.
+// This problem appears in [BL69].
 INSTANTIATE_TEST_SUITE_P(Tangent, ЧебышёвPicardIteratorTest,
                          Values(
-                             // These are the parameters from the NASA paper.
+                             // These are the parameters from [BL69].
                              ЧебышёвPicardIteratorTestParam{
                                  .problem = TangentProblem(),
                                  .N = 16,
@@ -367,11 +366,11 @@ INSTANTIATE_TEST_SUITE_P(Tangent, ЧебышёвPicardIteratorTest,
                                  .tolerance = 4.5e-16,
                              }));
 
-// From Bai's thesis. Figures 9, 10, 12, 13 are slow and omitted for now.
+// From [Bai10]. Figures 9, 10, 12, 13 are slow and omitted for now.
 INSTANTIATE_TEST_SUITE_P(
     PerturbedSinusoid, ЧебышёвPicardIteratorTest,
     Values(
-        // Bai's thesis, figure 8.
+        // [Bai10], figure 8.
         ЧебышёвPicardIteratorTestParam{
             .problem = PerturbedSinusoidProblem(/*ε=*/0.01,
                                                 /*y₀=*/1),
@@ -380,7 +379,7 @@ INSTANTIATE_TEST_SUITE_P(
             .step = 64 * π * Second,
             .tolerance = 1e-9,
         },
-        // Bai's thesis, figure 11.
+        // [Bai10], figure 11.
         ЧебышёвPicardIteratorTestParam{
             .problem = PerturbedSinusoidProblem(/*ε=*/0.001,
                                                 /*y₀=*/1),

@@ -57,6 +57,27 @@ struct ЧебышёвPicardIterationParams {
   double stopping_criterion;
 };
 
+// This class solves ordinary differential equations of the form x′ = f(x, t)
+// using Чебышёв-Picard iteration.
+//
+// Чебышёв-Picard iteration combines Чебышёв interpolation with Picard
+// iteration; it was first proposed in [CN63]. It works as follows:
+//
+// * Start with some initial approximation x⁰ (the constant function
+//   x⁰(t) = x(t₀) is typically used).
+// * Repeatedly construct xⁱ⁺¹ from xⁱ by
+//   * Approximating f(t, xⁱ) using Чебышёв interpolation.
+//   * Approximating x₀ + ∫_t₀^t f(t, xⁱ(t)) dt by integrating the above
+//     approximation. This will be xⁱ⁺¹.
+// * The sequence xⁱ should converge to (a Чебышёв approximation of) x within
+//   some interval of t₀.
+//
+// Due to the properties of Чебышёв polynomials, the iteration may peformed
+// simply using linear algeba operations (in addition to the required evaluation
+// of f at Чебышёв nodes) [FN83].
+//
+// This code uses the formulation from [Mac15].
+
 template <typename ODE_>
 class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
  public:
@@ -78,6 +99,9 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
              ЧебышёвPicardIterator const& integrator);
 
     ЧебышёвPicardIterator const& integrator_;
+
+    // Working variables which are stored here so we don't need to reallocate
+    // them on each Solve call.
 
     // Stores the nodes rescaled to the current step.
     std::vector<typename ODE::IndependentVariable> t_;
@@ -116,7 +140,7 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
   // These are Чебышёв nodes of the second kind.
   UnboundedVector<double> nodes_;
 
-  // The product of 1.31a and 1.31b from Macomber's thesis.
+  // The product of 1.31a and 1.31b from [Mac15].
   UnboundedMatrix<double> CₓCα_;
 };
 

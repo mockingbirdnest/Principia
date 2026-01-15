@@ -80,9 +80,6 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
   auto const& params = integrator_.params();
   auto const n = std::tuple_size<DependentVariables>::value;
 
-  // Before:
-  // 2 tests from PerturbedSinusoid/ЧебышёвPicardIteratorTest (801 ms total)
-
   // Argument checks.
   Sign const integration_direction = Sign(step);
   if (integration_direction.is_positive()) {
@@ -203,7 +200,7 @@ template <typename ODE_>
     : params_(params),
       nodes_(params.M + 1, uninitialized),
       CₓCα_(params.M + 1, params.N + 1, uninitialized) {
-  // We use the notation from Macomber's thesis, section 1.4.3.
+  // We use the notation from [Mac15], section 1.4.3.
   const int M = params_.M;
   const int N = params_.N;
   CHECK_GE(M, 1);
@@ -215,7 +212,7 @@ template <typename ODE_>
   }
 
   // ᵝT is a (M + 1)×(N + 1) matrix of Чебышёв polynomials evaluated at nodes.
-  // See Macomber's thesis, equation (1.20).
+  // See [Mac15], equation (1.20).
   UnboundedMatrix<double> ᵝT(M + 1, N + 1, uninitialized);
 
   for (int i = 0; i <= M; i++) {
@@ -235,7 +232,7 @@ template <typename ODE_>
   }
 
   // ᵝW is a diagonal (N + 1)×(N + 1) matrix with diagonal [½, 1, 1, ..., ½].
-  // See Macomber's thesis, equation (1.20).
+  // See [Mac15], equation (1.20).
   UnboundedMatrix<double> ᵝW(N + 1, N + 1);
   ᵝW(0, 0) = 0.5;
   ᵝW(N, N) = 0.5;
@@ -246,7 +243,7 @@ template <typename ODE_>
   UnboundedMatrix<double> Cₓ = ᵝT * ᵝW;
 
   // R is a diagonal (N + 1)×(N + 1) matrix.
-  // See Macomber's thesis, equation (1.25).
+  // See [Mac15], equation (1.25).
   UnboundedMatrix<double> R(N + 1, N + 1);
   R(0, 0) = 1;
   R(N, N) = 1.0 / N;
@@ -255,7 +252,7 @@ template <typename ODE_>
   }
 
   // S is an (N + 1)×N matrix.
-  // See equation 1.26 in Macomber's thesis.
+  // See equation 1.26 in [Mac15].
   UnboundedMatrix<double> S(N + 1, N);
   S(0, 0) = 1;
   S(0, 1) = -0.5;
@@ -270,7 +267,7 @@ template <typename ODE_>
   }
 
   // ᶠT is ᵝTᵀ with the last row removed.
-  // See Macomber's thesis, equation (1.22).
+  // See [Mac15], equation (1.22).
   UnboundedMatrix<double> ᶠT(N, M + 1, uninitialized);
   for (int i = 0; i < N; i++) {
     for (int j = 0; j <= M; j++) {
