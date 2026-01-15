@@ -16,7 +16,7 @@ using ::testing::TestWithParam;
 using ::testing::Values;
 
 using namespace principia::geometry::_instant;
-using namespace principia::integrators::_chebyshev_picard_iterator;
+using namespace principia::integrators::_чебышёв_picard_iterator;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -130,11 +130,11 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double ε, double y₀) {
       }};
 }
 
-struct ChebyshevPicardIteratorTestParam {
+struct ЧебышёвPicardIteratorTestParam {
   // The ODE (with solution) under test.
   SolvedInitialValueProblem problem;
 
-  // The Chebyshev polynomial order.
+  // The Чебышёв polynomial order.
   int N;
 
   // The step size used for this test.
@@ -148,10 +148,10 @@ struct ChebyshevPicardIteratorTestParam {
   double tolerance;
 };
 
-class ChebyshevPicardIteratorTest
-    : public TestWithParam<ChebyshevPicardIteratorTestParam> {};
+class ЧебышёвPicardIteratorTest
+    : public TestWithParam<ЧебышёвPicardIteratorTestParam> {};
 
-TEST_P(ChebyshevPicardIteratorTest, Convergence) {
+TEST_P(ЧебышёвPicardIteratorTest, Convergence) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = GetParam().problem;
   Time const step = GetParam().step;
@@ -162,7 +162,7 @@ TEST_P(ChebyshevPicardIteratorTest, Convergence) {
   };
 
   // Build the integrator and solve the problem.
-  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
       .M = GetParam().N,
       .N = GetParam().N,
       .max_iterations = 64,
@@ -183,7 +183,7 @@ TEST_P(ChebyshevPicardIteratorTest, Convergence) {
   }
 }
 
-TEST_F(ChebyshevPicardIteratorTest, MultipleSteps) {
+TEST_F(ЧебышёвPicardIteratorTest, MultipleSteps) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
   Time const step = 1 * Second;
@@ -194,7 +194,7 @@ TEST_F(ChebyshevPicardIteratorTest, MultipleSteps) {
   };
 
   // Build the integrator and solve the problem.
-  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
       .M = 64,
       .N = 64,
       .max_iterations = 64,
@@ -219,7 +219,7 @@ TEST_F(ChebyshevPicardIteratorTest, MultipleSteps) {
   }
 }
 
-TEST_F(ChebyshevPicardIteratorTest, Backwards) {
+TEST_F(ЧебышёвPicardIteratorTest, Backwards) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
   Time const step = -1 * Second;  // Backwards!
@@ -230,7 +230,7 @@ TEST_F(ChebyshevPicardIteratorTest, Backwards) {
   };
 
   // Build the integrator and solve the problem.
-  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
       .M = 64,
       .N = 64,
       .max_iterations = 64,
@@ -255,7 +255,7 @@ TEST_F(ChebyshevPicardIteratorTest, Backwards) {
   }
 }
 
-TEST_F(ChebyshevPicardIteratorTest, Divergence) {
+TEST_F(ЧебышёвPicardIteratorTest, Divergence) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
   Time const step = 60 * Second;  // Way too big; iteration won't converge.
@@ -266,7 +266,7 @@ TEST_F(ChebyshevPicardIteratorTest, Divergence) {
   };
 
   // Build the integrator and solve the problem.
-  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
       .M = 64,
       .N = 64,
       .max_iterations = 64,
@@ -281,8 +281,8 @@ TEST_F(ChebyshevPicardIteratorTest, Divergence) {
               StatusIs(absl::StatusCode::kFailedPrecondition));
 }
 
-TEST_F(ChebyshevPicardIteratorTest, WriteToMessage) {
-  ChebyshevPicardIterator<ODE> const integrator(ChebyshevPicardIterationParams{
+TEST_F(ЧебышёвPicardIteratorTest, WriteToMessage) {
+  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
       .M = 9,
       .N = 7,
       .max_iterations = 42,
@@ -306,37 +306,37 @@ TEST_F(ChebyshevPicardIteratorTest, WriteToMessage) {
 // intervals
 // of length < 40 for sufficiently high N (see Bai's thesis), in
 // practice the convergence degrades far earlier.
-INSTANTIATE_TEST_SUITE_P(Linear, ChebyshevPicardIteratorTest,
+INSTANTIATE_TEST_SUITE_P(Linear, ЧебышёвPicardIteratorTest,
                          Values(
-                             ChebyshevPicardIteratorTestParam{
+                             ЧебышёвPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
                                  .stopping_criterion = 1e-16,
                                  .step = 1 * Second,
                                  .tolerance = 9e-16,
                              },
-                             ChebyshevPicardIteratorTestParam{
+                             ЧебышёвPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
                                  .stopping_criterion = 1e-16,
                                  .step = 2 * Second,
                                  .tolerance = 4.5e-15,
                              },
-                             ChebyshevPicardIteratorTestParam{
+                             ЧебышёвPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
                                  .stopping_criterion = 1e-16,
                                  .step = 4 * Second,
                                  .tolerance = 8e-14,
                              },
-                             ChebyshevPicardIteratorTestParam{
+                             ЧебышёвPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
                                  .stopping_criterion = 1e-12,
                                  .step = 8 * Second,
                                  .tolerance = 4e-10,
                              },
-                             ChebyshevPicardIteratorTestParam{
+                             ЧебышёвPicardIteratorTestParam{
                                  .problem = LinearProblem(),
                                  .N = 64,
                                  .stopping_criterion = 1e-7,
@@ -347,10 +347,10 @@ INSTANTIATE_TEST_SUITE_P(Linear, ChebyshevPicardIteratorTest,
                              }));
 
 // This problem appears in the NASA paper.
-INSTANTIATE_TEST_SUITE_P(Tangent, ChebyshevPicardIteratorTest,
+INSTANTIATE_TEST_SUITE_P(Tangent, ЧебышёвPicardIteratorTest,
                          Values(
                              // These are the parameters from the NASA paper.
-                             ChebyshevPicardIteratorTestParam{
+                             ЧебышёвPicardIteratorTestParam{
                                  .problem = TangentProblem(),
                                  .N = 16,
                                  .stopping_criterion = 0.5e-10,
@@ -359,7 +359,7 @@ INSTANTIATE_TEST_SUITE_P(Tangent, ChebyshevPicardIteratorTest,
                              },
                              // We can achieve better accuracy with higher N and
                              // a more stringent stopping criterion.
-                             ChebyshevPicardIteratorTestParam{
+                             ЧебышёвPicardIteratorTestParam{
                                  .problem = TangentProblem(),
                                  .N = 32,
                                  .stopping_criterion = 1e-16,
@@ -369,10 +369,10 @@ INSTANTIATE_TEST_SUITE_P(Tangent, ChebyshevPicardIteratorTest,
 
 // From Bai's thesis. Figures 9, 10, 12, 13 are slow and omitted for now.
 INSTANTIATE_TEST_SUITE_P(
-    PerturbedSinusoid, ChebyshevPicardIteratorTest,
+    PerturbedSinusoid, ЧебышёвPicardIteratorTest,
     Values(
         // Bai's thesis, figure 8.
-        ChebyshevPicardIteratorTestParam{
+        ЧебышёвPicardIteratorTestParam{
             .problem = PerturbedSinusoidProblem(/*ε=*/0.01,
                                                 /*y₀=*/1),
             .N = 500,
@@ -381,7 +381,7 @@ INSTANTIATE_TEST_SUITE_P(
             .tolerance = 1e-9,
         },
         // Bai's thesis, figure 11.
-        ChebyshevPicardIteratorTestParam{
+        ЧебышёвPicardIteratorTestParam{
             .problem = PerturbedSinusoidProblem(/*ε=*/0.001,
                                                 /*y₀=*/1),
             .N = 400,

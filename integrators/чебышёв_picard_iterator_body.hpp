@@ -1,11 +1,10 @@
 #pragma once
 
-#include "integrators/чебышёв_picard_iterator.hpp"
-
 #include "base/for_all_of.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "geometry/sign.hpp"
+#include "integrators/чебышёв_picard_iterator.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_computations.hpp"  // For eigenvalues.
 #include "numerics/matrix_views.hpp"
@@ -22,7 +21,7 @@ using namespace principia::numerics::_matrix_computations;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_si;
 
-namespace _chebyshev_picard_iterator {
+namespace _чебышёв_picard_iterator {
 namespace internal {
 
 template <typename ODE_>
@@ -67,7 +66,7 @@ inline double MaxNorm(UnboundedMatrix<double> const& A) {
 }
 
 template <typename ODE_>
-absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
+absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
     ODE::IndependentVariable const& t_final) {
   using DependentVariables = typename ODE::DependentVariables;
   using DependentVariableDerivatives =
@@ -82,7 +81,7 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
   auto const n = std::tuple_size<DependentVariables>::value;
 
   // Before:
-  // 2 tests from PerturbedSinusoid/ChebyshevPicardIteratorTest (801 ms total)
+  // 2 tests from PerturbedSinusoid/ЧебышёвPicardIteratorTest (801 ms total)
 
   // Argument checks.
   Sign const integration_direction = Sign(step);
@@ -163,7 +162,7 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
     } else {
       // We failed to converge.
       return absl::Status(absl::StatusCode::kFailedPrecondition,
-                          "Chebyshev-Picard iteration failed to converge.");
+                          "Чебышёв-Picard iteration failed to converge.");
     }
   }
 
@@ -171,21 +170,21 @@ absl::Status ChebyshevPicardIterator<ODE_>::Instance::Solve(
 }
 
 template <typename ODE_>
-ChebyshevPicardIterator<ODE_> const&
-ChebyshevPicardIterator<ODE_>::Instance::integrator() const {
+ЧебышёвPicardIterator<ODE_> const&
+ЧебышёвPicardIterator<ODE_>::Instance::integrator() const {
   return integrator_;
 }
 
 template <typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
-ChebyshevPicardIterator<ODE_>::Instance::Clone() const {
+ЧебышёвPicardIterator<ODE_>::Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
 template <typename ODE_>
-ChebyshevPicardIterator<ODE_>::Instance::Instance(
+ЧебышёвPicardIterator<ODE_>::Instance::Instance(
     InitialValueProblem<ODE> const& problem, AppendState const& append_state,
-    Time const& step, ChebyshevPicardIterator const& integrator)
+    Time const& step, ЧебышёвPicardIterator const& integrator)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator),
       t_(),
@@ -199,8 +198,8 @@ ChebyshevPicardIterator<ODE_>::Instance::Instance(
 }
 
 template <typename ODE_>
-ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
-    const ChebyshevPicardIterationParams& params)
+ЧебышёвPicardIterator<ODE_>::ЧебышёвPicardIterator(
+    const ЧебышёвPicardIterationParams& params)
     : params_(params),
       nodes_(params.M + 1, uninitialized),
       CₓCα_(params.M + 1, params.N + 1, uninitialized) {
@@ -215,7 +214,7 @@ ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
     nodes_[i] = -Cos(π / M * i * Radian);
   }
 
-  // ᵝT is a (M + 1)×(N + 1) matrix of Chebyshev polynomials evaluated at nodes.
+  // ᵝT is a (M + 1)×(N + 1) matrix of Чебышёв polynomials evaluated at nodes.
   // See Macomber's thesis, equation (1.20).
   UnboundedMatrix<double> ᵝT(M + 1, N + 1, uninitialized);
 
@@ -286,14 +285,14 @@ ChebyshevPicardIterator<ODE_>::ChebyshevPicardIterator(
 }
 
 template <typename ODE_>
-ChebyshevPicardIterationParams const& ChebyshevPicardIterator<ODE_>::params()
+ЧебышёвPicardIterationParams const& ЧебышёвPicardIterator<ODE_>::params()
     const {
   return params_;
 }
 
 template <typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
-ChebyshevPicardIterator<ODE_>::NewInstance(
+ЧебышёвPicardIterator<ODE_>::NewInstance(
     InitialValueProblem<ODE_> const& problem, AppendState const& append_state,
     Time const& step) const {
   // Cannot use `make_not_null_unique` because the constructor of `Instance` is
@@ -303,7 +302,7 @@ ChebyshevPicardIterator<ODE_>::NewInstance(
 }
 
 template <typename ODE_>
-void ChebyshevPicardIterator<ODE_>::WriteToMessage(
+void ЧебышёвPicardIterator<ODE_>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> message) const {
   message->set_kind(serialization::FixedStepSizeIntegrator::CHEBYSHEV_PICARD);
   auto& message_params = *message->mutable_chebyshev_picard_params();
@@ -314,6 +313,6 @@ void ChebyshevPicardIterator<ODE_>::WriteToMessage(
 }
 
 }  // namespace internal
-}  // namespace _chebyshev_picard_iterator
+}  // namespace _чебышёв_picard_iterator
 }  // namespace integrators
 }  // namespace principia

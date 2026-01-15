@@ -22,7 +22,7 @@
 
 namespace principia {
 namespace integrators {
-namespace _chebyshev_picard_iterator {
+namespace _чебышёв_picard_iterator {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -31,7 +31,7 @@ using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_quantities;
 
-struct ChebyshevPicardIterationParams {
+struct ЧебышёвPicardIterationParams {
   // Controls the number of nodes at which the function will be evaluated.
   //
   // Note that this is the highest node _index_ rather than the number of nodes;
@@ -40,7 +40,7 @@ struct ChebyshevPicardIterationParams {
   // Must be at least 1.
   int M;
 
-  // The order of the Chebyshev sequence used to approximate the system state.
+  // The order of the Чебышёв series used to approximate the system state.
   //
   // Must be at least 1 (if you want to approximate your system with a constant,
   // use some other method).
@@ -58,7 +58,7 @@ struct ChebyshevPicardIterationParams {
 };
 
 template <typename ODE_>
-class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
+class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;
   using AppendState = typename Integrator<ODE>::AppendState;
@@ -67,7 +67,7 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
    public:
     absl::Status Solve(ODE::IndependentVariable const& t_final) override;
 
-    ChebyshevPicardIterator const& integrator() const override;
+    ЧебышёвPicardIterator const& integrator() const override;
 
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance> > Clone()
         const override;
@@ -75,9 +75,9 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
    private:
     Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state, Time const& step,
-             ChebyshevPicardIterator const& integrator);
+             ЧебышёвPicardIterator const& integrator);
 
-    ChebyshevPicardIterator const& integrator_;
+    ЧебышёвPicardIterator const& integrator_;
 
     // Stores the nodes rescaled to the current step.
     std::vector<typename ODE::IndependentVariable> t_;
@@ -93,13 +93,13 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
     // The computed derivative (at each node, for the current iteration).
     UnboundedMatrix<double> yʹ_;
 
-    friend class ChebyshevPicardIterator;
+    friend class ЧебышёвPicardIterator;
   };
 
-  // Constructs a ChebyshevPicardIterator with the given parameters.
-  ChebyshevPicardIterator(ChebyshevPicardIterationParams const& params);
+  // Constructs a ЧебышёвPicardIterator with the given parameters.
+  ЧебышёвPicardIterator(ЧебышёвPicardIterationParams const& params);
 
-  ChebyshevPicardIterationParams const& params() const;
+  ЧебышёвPicardIterationParams const& params() const;
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance> > NewInstance(
       InitialValueProblem<ODE> const& problem, AppendState const& append_state,
@@ -109,11 +109,11 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
 
  private:
-  ChebyshevPicardIterationParams params_;
+  ЧебышёвPicardIterationParams params_;
 
   // The nodes used for function evaluation.
   //
-  // These are Chebyshev nodes of the second kind.
+  // These are Чебышёв nodes of the second kind.
   UnboundedVector<double> nodes_;
 
   // The product of 1.31a and 1.31b from Macomber's thesis.
@@ -122,10 +122,10 @@ class ChebyshevPicardIterator : public FixedStepSizeIntegrator<ODE_> {
 
 }  // namespace internal
 
-using internal::ChebyshevPicardIterationParams;
-using internal::ChebyshevPicardIterator;
+using internal::ЧебышёвPicardIterationParams;
+using internal::ЧебышёвPicardIterator;
 
-}  // namespace _chebyshev_picard_iterator
+}  // namespace _чебышёв_picard_iterator
 }  // namespace integrators
 }  // namespace principia
 
