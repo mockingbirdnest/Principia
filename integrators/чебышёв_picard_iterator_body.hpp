@@ -1,5 +1,10 @@
 #pragma once
 
+#include <algorithm>
+#include <limits>
+#include <memory>
+#include <utility>
+
 #include "base/for_all_of.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"

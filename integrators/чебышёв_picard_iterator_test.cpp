@@ -1,5 +1,8 @@
 #include "integrators/чебышёв_picard_iterator.hpp"
 
+#include <tuple>
+#include <vector>
+
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

@@ -9,6 +9,7 @@
 #define PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_ITERATOR_HPP_
 
 #include <memory>
+#include <vector>
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
@@ -121,7 +122,7 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
   };
 
   // Constructs a ЧебышёвPicardIterator with the given parameters.
-  ЧебышёвPicardIterator(ЧебышёвPicardIterationParams const& params);
+  explicit ЧебышёвPicardIterator(ЧебышёвPicardIterationParams const& params);
 
   ЧебышёвPicardIterationParams const& params() const;
 
