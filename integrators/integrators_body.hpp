@@ -231,7 +231,7 @@
                             sprk_action)                                      \
   PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
                             CHEBYSHEV_PICARD,                                 \
-                            ЧебышёвPicardIterator,                                           \
+                            ЧебышёвPicardIterator,                            \
                             чpi_action)
 
 namespace principia {
