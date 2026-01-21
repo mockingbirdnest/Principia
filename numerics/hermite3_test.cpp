@@ -46,11 +46,11 @@ TEST_F(Hermite3Test, Precomputed) {
                               {33 * Metre, 40 * Metre},
                               {-5 * Metre / Second, 6 * Metre / Second});
 
-  EXPECT_EQ(33 * Metre, h.Evaluate(t0_ + 1 * Second));
-  EXPECT_EQ(33.109375 * Metre, h.Evaluate(t0_ + 1.25 * Second));
-  EXPECT_EQ(35.125 * Metre, h.Evaluate(t0_ + 1.5 * Second));
-  EXPECT_EQ(37.828125 * Metre, h.Evaluate(t0_ + 1.75 * Second));
-  EXPECT_EQ(40 * Metre, h.Evaluate(t0_ + 2 * Second));
+  EXPECT_EQ(33 * Metre, h(t0_ + 1 * Second));
+  EXPECT_EQ(33.109375 * Metre, h(t0_ + 1.25 * Second));
+  EXPECT_EQ(35.125 * Metre, h(t0_ + 1.5 * Second));
+  EXPECT_EQ(37.828125 * Metre, h(t0_ + 1.75 * Second));
+  EXPECT_EQ(40 * Metre, h(t0_ + 2 * Second));
 
   EXPECT_EQ(-5 * Metre / Second, h.EvaluateDerivative(t0_ + 1 * Second));
   EXPECT_EQ(5.0625 * Metre / Second, h.EvaluateDerivative(t0_ + 1.25 * Second));
@@ -87,7 +87,7 @@ TEST_F(Hermite3Test, Typed) {
                                        {World::origin, World::origin},
                                        {World::unmoving, World::unmoving});
 
-  EXPECT_EQ(World::origin, h.Evaluate(t0_ + 1.3 * Second));
+  EXPECT_EQ(World::origin, h(t0_ + 1.3 * Second));
   EXPECT_EQ(Velocity<World>(), h.EvaluateDerivative(t0_ + 1.7 * Second));
 }
 
@@ -102,18 +102,18 @@ TEST_F(Hermite3Test, Conditioning) {
        -1.6875631840376598e-12 * Metre / Second});
 
   EXPECT_EQ(-2.1383610158805017e-12 * Metre,
-            h.Evaluate(t0_ + 19418861.806896236 * Second));
-  EXPECT_GT(0 * Metre, h.Evaluate(t0_ + 19418869.842261545 * Second));
+            h(t0_ + 19418861.806896236 * Second));
+  EXPECT_GT(0 * Metre, h(t0_ + 19418869.842261545 * Second));
   EXPECT_EQ(2.3308208035605881e-12 * Metre / Second,
             h.EvaluateDerivative(t0_ + 19418861.806896236 * Second));
 }
 
 TEST_F(Hermite3Test, LInfinityL₁NormUpperBound) {
-  const auto h = Hermite3<Position<World>, Instant>(
+  const auto h = Hermite3<Displacement<World>, Instant>(
       /*arguments=*/{t0_, t0_ + 3 * Second},
       /*values=*/
-      {World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre}),
-       World::origin + Displacement<World>({4 * Metre, -5 * Metre, 6 * Metre})},
+      {Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre}),
+       Displacement<World>({4 * Metre, -5 * Metre, 6 * Metre})},
       /*derivatives=*/
       {Velocity<World>(
            {7 * Metre / Second, -8 * Metre / Second, -9 * Metre / Second}),

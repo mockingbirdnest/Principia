@@ -55,7 +55,7 @@ Hermite3<Value_, Argument_>::Hermite3(
       pʹ_(p_.Derivative()) {}
 
 template<affine Value_, affine Argument_>
-Value_ Hermite3<Value_, Argument_>::Evaluate(Argument const& argument) const {
+Value_ Hermite3<Value_, Argument_>::operator()(Argument const& argument) const {
   return p_(argument);
 }
 

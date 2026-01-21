@@ -36,7 +36,7 @@ class Hermite3 final {
 
   // NOTE(egg): this does not appear to use Casteljau's algorithm; perhaps it
   // should?
-  Value Evaluate(Argument const& argument) const;
+  Value operator()(Argument const& argument) const;
   Derivative1 EvaluateDerivative(Argument const& argument) const;
   void EvaluateWithDerivative(Argument const& argument,
                               Value& value,
