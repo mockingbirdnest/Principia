@@ -127,7 +127,9 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
   using S = Splitter<Value>;
   using H = Hermite3<typename S::Value, Argument>;
   using P = PolynomialInMonomialBasis<typename S::Value, Argument, degree>;
-  // TODO(phl): Is there a more elegant way to do this?
+
+  // NOTE(phl): This could be done for any degree by shaving the tuple using
+  // template metaprogramming, but our degree is 3, so unrolling is simpler.
   auto const split_a0 = S::Split(std::get<0>(coefficients));
   auto const split_a1 = S::Split(std::get<1>(coefficients));
   auto const split_a2 = S::Split(std::get<2>(coefficients));

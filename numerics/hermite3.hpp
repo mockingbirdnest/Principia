@@ -47,7 +47,11 @@ class Hermite3 final {
   BoundedArray<Argument, 2> FindExtrema(Argument const& lower,
                                         Argument const& upper) const;
 
-  //TODO(phl)Comment
+  // If `h` is this object, returns an upper bound on
+  // `max{t ∈ [lower, upper]}(‖h(t)‖₁)`.  The upper bound is because we
+  // note that `‖h(t)‖₁ ≤ Σᵢ(‖hᵢ(t)‖∞)`, where `hᵢ` are the components of
+  // `h` in our coordinate system.  The expression on the right is easier to
+  // evaluate than the one on the left since each `hᵢ` is a cubic polynomial.
   NormType LInfinityL₁NormUpperBound(Argument const& lower,
                                      Argument const& upper) const;
 
