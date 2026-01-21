@@ -29,20 +29,23 @@ struct Splitter<R3Element<Scalar>> {
   static constexpr std::int64_t dimension = 3;
   using Value = Scalar;
 
-  std::array<Value, dimension> Split(R3Element<Scalar> const& r3_element) {
+  template<typename T>
+  static std::array<T, dimension> Split(
+      R3Element<T> const& r3_element) {
     return {r3_element.x, r3_element.y, r3_element.z};
   }
 };
 
 template<typename Scalar, typename Frame, int rank>
-  requires(rank == 2 || rank == 3)
+  requires(rank == 1 || rank == 2)
 struct Splitter<Multivector<Scalar, Frame, rank>> {
   static constexpr std::int64_t dimension = 3;
   using Value = Scalar;
 
-  std::array<Value, dimension> Split(
-      Multivector<Scalar, Frame, rank> const& multivector) {
-    return Splitter<R3Element<Scalar>>(multivector.coordinates());
+  template<typename T>
+  static std::array<T, dimension> Split(
+      Multivector<T, Frame, rank> const& multivector) {
+    return Splitter<R3Element<T>>::Split(multivector.coordinates());
   }
 };
 
@@ -107,7 +110,9 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
   // First split the coefficients of `p_` by dimension.  This part is *not*
   // coordinate-free.
   auto const& coefficients = p_.coefficients();
+  auto const& origin = p_.origin();
   using S = Splitter<Value>;
+  using H = Hermite3<typename S::Value, Argument>;
   using P = PolynomialInMonomialBasis<typename S::Value, Argument, degree>;
   // TODO(phl): Is there a more elegant way to do this?
   auto const split_a0 = S::Split(std::get<0>(coefficients));
@@ -115,22 +120,26 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
   auto const split_a2 = S::Split(std::get<2>(coefficients));
   auto const split_a3 = S::Split(std::get<3>(coefficients));
 
-  // Build a polynomial for each dimension.
-  std::vector<P> split_polynomials;
+  // Build a Hermite polynomial for each dimension.
+  std::vector<H> split_hermites;
   for (std::int64_t i = 0; i < S::dimension; ++i) {
-    split_polynomials.emplace_back(typename P::Coefficients{
-        split_a0[i], split_a1[i], split_a2[i], split_a3[i]});
+    typename P::Coefficients c{
+        split_a0[i], split_a1[i], split_a2[i], split_a3[i]};
+    P p(c, origin);
+    auto const h = H::MakeHermite3(p);
+    //split_hermites.push_back(H(P(typename P::Coefficients{
+    //    split_a0[i], split_a1[i], split_a2[i], split_a3[i]}, origin)));
   }
 
   // Find the extrema of each split polynomial.
   NormType sum{};
-  for (auto const& split_polynomial : split_polynomials) {
-    auto const extrema = split_polynomial.FindExtrema(lower, upper);
+  for (H const& split_hermite : split_hermites) {
+    auto const extrema = split_hermite.FindExtrema(lower, upper);
     // Compute the maximum of the absolute value of each split polynomial at its
     // extrema.  This is the L∞ norm of that polynomial.
     NormType max{};
     for (auto const extremum : extrema) {
-      max = std::max(max, Abs(split_polynomial(extremum)));
+      max = std::max(max, Abs(split_hermite(extremum)));
     }
     // The L₁ norm of `p_` is bounded by the sum of the L∞ norms of the split
     // polynomials.
@@ -152,7 +161,7 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Error(
   for (const auto& sample : samples) {
     result = std::max(result,
                       Hilbert<Difference<Value>>::Norm(
-                          Evaluate(get_argument(sample)) - get_value(sample)));
+                          (*this)(get_argument(sample)) - get_value(sample)));
   }
   return result;
 }
@@ -167,13 +176,19 @@ bool Hermite3<Value_, Argument_>::LInfinityL₂ErrorIsWithin(
         get_value,
     NormType const& tolerance) const {
   for (const auto& sample : samples) {
-    if (Hilbert<Difference<Value>>::Norm(Evaluate(get_argument(sample)) -
+    if (Hilbert<Difference<Value>>::Norm((*this)(get_argument(sample)) -
                                          get_value(sample)) >= tolerance) {
       return false;
     }
   }
   return true;
 }
+
+template<affine Value_, affine Argument_>
+Hermite3<Value_, Argument_>::Hermite3(
+    PolynomialInMonomialBasis<Value, Argument, degree> p)
+    : p_(std::move(p)),
+      pʹ_(p_.Derivative()) {}
 
 template<affine Value_, affine Argument_>
 FORCE_INLINE(inline)

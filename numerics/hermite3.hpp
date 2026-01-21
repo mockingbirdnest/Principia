@@ -76,14 +76,20 @@ class Hermite3 final {
       NormType const& tolerance) const;
 
  private:
+  static constexpr std::int64_t degree = 3;
+
+  explicit Hermite3(PolynomialInMonomialBasis<Value, Argument, degree> p);
+
   static PolynomialInMonomialBasis<Value, Argument, 3> MakePolynomial(
       std::pair<Argument, Argument> const& arguments,
       std::pair<Value, Value> const& values,
       std::pair<Derivative1, Derivative1> const& derivatives);
 
-  static constexpr std::int64_t degree = 3;
   PolynomialInMonomialBasis<Value, Argument, degree> p_;
   PolynomialInMonomialBasis<Derivative1, Argument, degree - 1> pʹ_;
+
+  template<affine V, affine A>
+  class Hermite3;
 };
 
 }  // namespace internal
