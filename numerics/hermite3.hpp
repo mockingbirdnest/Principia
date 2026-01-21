@@ -89,7 +89,7 @@ class Hermite3 final {
   PolynomialInMonomialBasis<Derivative1, Argument, degree - 1> pʹ_;
 
   template<affine V, affine A>
-  class Hermite3;
+  friend class Hermite3;
 };
 
 }  // namespace internal

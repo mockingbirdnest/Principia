@@ -10,6 +10,7 @@
 #include "geometry/r3_element.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/root_finders.hpp"
+#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace numerics {
@@ -20,9 +21,21 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_root_finders;
+using namespace principia::quantities::_concepts;
 
 template<typename T>
 struct Splitter;
+
+template<quantity Q>
+struct Splitter<Q> {
+  static constexpr std::int64_t dimension = 1;
+  using Value = Q;
+
+  template<typename T>
+  static std::array<T, dimension> Split(T const& t) {
+    return {t};
+  }
+};
 
 template<typename Scalar>
 struct Splitter<R3Element<Scalar>> {
@@ -120,15 +133,11 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
   auto const split_a2 = S::Split(std::get<2>(coefficients));
   auto const split_a3 = S::Split(std::get<3>(coefficients));
 
-  // Build a Hermite polynomial for each dimension.
+  // Build a split Hermite polynomial for each dimension.
   std::vector<H> split_hermites;
   for (std::int64_t i = 0; i < S::dimension; ++i) {
-    typename P::Coefficients c{
-        split_a0[i], split_a1[i], split_a2[i], split_a3[i]};
-    P p(c, origin);
-    auto const h = H::MakeHermite3(p);
-    //split_hermites.push_back(H(P(typename P::Coefficients{
-    //    split_a0[i], split_a1[i], split_a2[i], split_a3[i]}, origin)));
+    split_hermites.push_back(H(P({
+        split_a0[i], split_a1[i], split_a2[i], split_a3[i]}, origin)));
   }
 
   // Find the extrema of each split polynomial.

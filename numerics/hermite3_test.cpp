@@ -108,7 +108,20 @@ TEST_F(Hermite3Test, Conditioning) {
             h.EvaluateDerivative(t0_ + 19418861.806896236 * Second));
 }
 
-TEST_F(Hermite3Test, LInfinityL₁NormUpperBound) {
+TEST_F(Hermite3Test, LInfinityL₁NormUpperBoundMass) {
+  const auto h = Hermite3<Mass, Instant>(
+      /*arguments=*/{t0_, t0_ + 3 * Second},
+      /*values=*/
+      {3 * Kilogram, -5 * Kilogram},
+      /*derivatives=*/
+      {2 * Kilogram / Second, -1 * Kilogram / Second});
+  // The expected value was computed with Mathematica.
+  EXPECT_THAT(h.LInfinityL₁NormUpperBound(t0_, t0_ + 3 * Second),
+              AlmostEquals((-325.0 + 166.0 * Sqrt(83.0)) / 361 * Kilogram,
+                           1));
+}
+
+TEST_F(Hermite3Test, LInfinityL₁NormUpperBoundDisplacement) {
   const auto h = Hermite3<Displacement<World>, Instant>(
       /*arguments=*/{t0_, t0_ + 3 * Second},
       /*values=*/
@@ -119,7 +132,12 @@ TEST_F(Hermite3Test, LInfinityL₁NormUpperBound) {
            {7 * Metre / Second, -8 * Metre / Second, -9 * Metre / Second}),
        Velocity<World>(
            {-10 * Metre / Second, 11 * Metre / Second, 12 * Metre / Second})});
-  EXPECT_EQ(0 * Metre, h.LInfinityL₁NormUpperBound(t0_, t0_ + 3 * Second));
+  // The expected value was computed with Mathematica.
+  EXPECT_THAT(h.LInfinityL₁NormUpperBound(t0_, t0_ + 3 * Second),
+              AlmostEquals((4.0 * (209533.0 + 42300.0 * Sqrt(47.0) +
+                                   28037.0 * Sqrt(106.0))) /
+                               119025.0 * Metre,
+                           1));
 }
 
 TEST_F(Hermite3Test, OneDimensionalLInfinityL₂Error) {
