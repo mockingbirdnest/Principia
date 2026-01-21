@@ -108,7 +108,7 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
   // coordinate-free.
   auto const& coefficients = p_.coefficients();
   using S = Splitter<Value>;
-  using P = PolynomialInMonomialBasis<S::Value, Argument, degree>;
+  using P = PolynomialInMonomialBasis<typename S::Value, Argument, degree>;
   // TODO(phl): Is there a more elegant way to do this?
   auto const split_a0 = S::Split(std::get<0>(coefficients));
   auto const split_a1 = S::Split(std::get<1>(coefficients));
@@ -130,7 +130,7 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
     // extrema.  This is the L∞ norm of that polynomial.
     NormType max{};
     for (auto const extremum : extrema) {
-      max = std::max(max, Abs(split_polynomial(extremum));
+      max = std::max(max, Abs(split_polynomial(extremum)));
     }
     // The L₁ norm of `p_` is bounded by the sum of the L∞ norms of the split
     // polynomials.

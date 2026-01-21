@@ -108,6 +108,20 @@ TEST_F(Hermite3Test, Conditioning) {
             h.EvaluateDerivative(t0_ + 19418861.806896236 * Second));
 }
 
+TEST_F(Hermite3Test, LInfinityL₁NormUpperBound) {
+  const auto h = Hermite3<Position<World>, Instant>(
+      /*arguments=*/{t0_, t0_ + 3 * Second},
+      /*values=*/
+      {World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre}),
+       World::origin + Displacement<World>({4 * Metre, -5 * Metre, 6 * Metre})},
+      /*derivatives=*/
+      {Velocity<World>(
+           {7 * Metre / Second, -8 * Metre / Second, -9 * Metre / Second}),
+       Velocity<World>(
+           {-10 * Metre / Second, 11 * Metre / Second, 12 * Metre / Second})});
+  EXPECT_EQ(0 * Metre, h.LInfinityL₁NormUpperBound(t0_, t0_ + 3 * Second));
+}
+
 TEST_F(Hermite3Test, OneDimensionalLInfinityL₂Error) {
   std::vector<std::pair<double, double>> samples;
   for (double i = 2; i < 10; i += 1) {
