@@ -49,16 +49,16 @@ using Hermite3RelativeDegreesOfFreedomNanobenchmark =
 
 NANOBENCHMARK_FIXTURE(Hermite3DisplacementNanobenchmark, ConstructionAndValue) {
   H const h({t0_, argument}, {d0_, d1_}, {v0_, v1_});
-  return h.Evaluate(argument);
+  return h(argument);
 }
 
 NANOBENCHMARK_FIXTURE(Hermite3DisplacementNanobenchmark, Value) {
-  return h_.Evaluate(argument);
+  return h_(argument);
 }
 
 NANOBENCHMARK_FIXTURE(Hermite3RelativeDegreesOfFreedomNanobenchmark,
                       ValueAndDerivative) {
-  return RelativeDegreesOfFreedom<World>(h_.Evaluate(argument),
+  return RelativeDegreesOfFreedom<World>(h_(argument),
                                          h_.EvaluateDerivative(argument));
 }
 

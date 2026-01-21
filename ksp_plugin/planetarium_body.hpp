@@ -248,7 +248,7 @@ void Planetarium::PlotMethod4(
       rms_apparent_distance =
           Sqrt(GaussLegendre<4>(
                    [&error_approximation](Instant const& time) {
-                     return error_approximation.Evaluate(time).Norm²();
+                     return error_approximation(time).Norm²();
                    },
                    previous_time,
                    t) /

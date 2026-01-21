@@ -517,8 +517,8 @@ absl::Status ComputeNodes(
           {*previous_z_speed, z_speed});
 
       Instant node_time;
-      if (Sign(z_approximation.Evaluate(*previous_time)) ==
-          Sign(z_approximation.Evaluate(time))) {
+      if (Sign(z_approximation(*previous_time)) ==
+          Sign(z_approximation(time))) {
         // The Hermite approximation is poorly conditioned, let's use a linear
         // approximation
         node_time = Barycentre({*previous_time, time}, {z, -*previous_z});
@@ -527,7 +527,7 @@ absl::Status ComputeNodes(
         // method.
         node_time = Brent(
             [&z_approximation](Instant const& t) {
-              return z_approximation.Evaluate(t);
+              return z_approximation(t);
             },
             *previous_time,
             time);

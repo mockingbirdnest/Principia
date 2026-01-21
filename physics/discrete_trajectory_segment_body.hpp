@@ -142,7 +142,7 @@ Position<Frame> DiscreteTrajectorySegment<Frame>::EvaluatePosition(
   if (it->time == t) {
     return it->degrees_of_freedom.position();
   }
-  return get_interpolation(it).Evaluate(t);
+  return get_interpolation(it)(t);
 }
 
 template<typename Frame>
@@ -170,7 +170,7 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
     return it->degrees_of_freedom;
   }
   auto const& interpolation = get_interpolation(it);
-  return {interpolation.Evaluate(t), interpolation.EvaluateDerivative(t)};
+  return {interpolation(t), interpolation.EvaluateDerivative(t)};
 }
 
 template<typename Frame>
