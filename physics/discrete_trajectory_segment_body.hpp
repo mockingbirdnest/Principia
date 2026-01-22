@@ -470,15 +470,15 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
       // Compute the new error bound.  If it is below the tolerance, replace the
       // last point with the new one, record the new interpolation, and keep
       // going.
-      downsampling_error_ +=
-          new_interpolation->LInfinityL₁NormUpperBound(start_time, t);
+      downsampling_error_ += (*new_interpolation - *crbegin->interpolation)
+                                 .LInfinityL₁NormUpperBound(start_time, t);
       if (downsampling_error_ < downsampling_parameters_->tolerance) {
         // The error bound is acceptable, replace the last point with the new
         // one and keep going.
         auto back = timeline_.extract(timeline_.crbegin());
-        back.value() = {.time = t,
-                        .degrees_of_freedom = degrees_of_freedom,
-                        .interpolation = std::move(new_interpolation)};
+        back.value().time = t;
+        back.value().degrees_of_freedom = degrees_of_freedom;
+        back.value().interpolation = std::move(new_interpolation);
         timeline_.insert(timeline_.cend(), std::move(back));
         return absl::OkStatus();
       }
@@ -492,7 +492,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     auto const start_time = downsampling_start->time;
     auto const start_degrees_of_freedom =
         downsampling_start->degrees_of_freedom;
-    new_interpolation =
+    auto new_interpolation =
         make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
             std::pair{start_time, t},
             std::pair{start_degrees_of_freedom.position(),
@@ -510,9 +510,6 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     }
     it->interpolation = std::move(new_interpolation);
   }
-}
-
-
 }
 
 // Ideally, the segment constructed by reanimation should end with exactly the
