@@ -450,30 +450,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         << timeline_.crbegin()->time;
 
     auto const crbegin = timeline_.crbegin();
-    if (timeline_.size() == 1) {
-      // The second point of the segment.  Create the first interpolation.
-      auto const downsampling_start = crbegin;
-      auto const start_time = downsampling_start->time;
-      auto const start_degrees_of_freedom =
-          downsampling_start->degrees_of_freedom;
-      auto new_interpolation =
-          make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
-              std::pair{start_time, t},
-              std::pair{start_degrees_of_freedom.position(),
-                        degrees_of_freedom.position()},
-              std::pair{start_degrees_of_freedom.velocity(),
-                        degrees_of_freedom.velocity()});
-      auto const it =
-          timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
-      downsampling_error_ =
-          new_interpolation->LInfinityL₁NormUpperBound(start_time, t);
-      if (downsampling_error_ >= downsampling_parameters_->tolerance) {
-        LOG(WARNING) << "Initial downsampling error at time " << t << " is "
-                     << downsampling_error_ << " which exceeds tolerance "
-                     << downsampling_parameters_->tolerance;
-      }
-      it->interpolation = std::move(new_interpolation);
-    } else {
+    if (timeline_.size() > 1) {
       // The start point of the interpolation is the penultimate point of the
       // segment, since we don't retain the intermediate points that were below
       // the tolerance.  Build an interpolation from that point to the new point
@@ -490,7 +467,9 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
               std::pair{start_degrees_of_freedom.velocity(),
                         degrees_of_freedom.velocity()});
 
-      // Compute the new error bound.
+      // Compute the new error bound.  If it is below the tolerance, replace the
+      // last point with the new one, record the new interpolation, and keep
+      // going.
       downsampling_error_ +=
           new_interpolation->LInfinityL₁NormUpperBound(start_time, t);
       if (downsampling_error_ < downsampling_parameters_->tolerance) {
@@ -501,36 +480,39 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
                         .degrees_of_freedom = degrees_of_freedom,
                         .interpolation = std::move(new_interpolation)};
         timeline_.insert(timeline_.cend(), std::move(back));
-      } else {
-        // The error bound is too large, we need to keep the last point, append
-        // the new one, and start a new interpolation.
-        auto const downsampling_start = crbegin;
-        auto const start_time = downsampling_start->time;
-        auto const start_degrees_of_freedom =
-            downsampling_start->degrees_of_freedom;
-        new_interpolation =
-            make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
-                std::pair{start_time, t},
-                std::pair{start_degrees_of_freedom.position(),
-                          degrees_of_freedom.position()},
-                std::pair{start_degrees_of_freedom.velocity(),
-                          degrees_of_freedom.velocity()});
-        auto const it =
-            timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
-        downsampling_error_ =
-            new_interpolation->LInfinityL₁NormUpperBound(start_time,
-                                                                  t);
-        if (downsampling_error_ >= downsampling_parameters_->tolerance) {
-          LOG(WARNING) << "Initial downsampling error at time " << t << " is "
-                       << downsampling_error_ << " which exceeds tolerance "
-                       << downsampling_parameters_->tolerance;
-        }
-        it->interpolation = std::move(new_interpolation);
+        return absl::OkStatus();
       }
     }
 
-    return absl::OkStatus();
+    // We land here if either (1) the point being appended is the second point
+    // of the segment; or (2) the error bound is above the tolerance.  In both
+    // cases, we need to build an interpolation starting at the last point and
+    // append our new point.
+    auto const downsampling_start = crbegin;
+    auto const start_time = downsampling_start->time;
+    auto const start_degrees_of_freedom =
+        downsampling_start->degrees_of_freedom;
+    new_interpolation =
+        make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
+            std::pair{start_time, t},
+            std::pair{start_degrees_of_freedom.position(),
+                      degrees_of_freedom.position()},
+            std::pair{start_degrees_of_freedom.velocity(),
+                      degrees_of_freedom.velocity()});
+    auto const it =
+        timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
+    downsampling_error_ =
+        new_interpolation->LInfinityL₁NormUpperBound(start_time, t);
+    if (downsampling_error_ >= downsampling_parameters_->tolerance) {
+      LOG(WARNING) << "Initial downsampling error at time " << t << " is "
+                   << downsampling_error_ << " which exceeds tolerance "
+                   << downsampling_parameters_->tolerance;
+    }
+    it->interpolation = std::move(new_interpolation);
   }
+}
+
+
 }
 
 // Ideally, the segment constructed by reanimation should end with exactly the
