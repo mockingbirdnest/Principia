@@ -231,7 +231,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   bool was_downsampled_ = false;
 
   Length downsampling_error_;
-  std::optional<typename Timeline::const_iterator> downsampling_start_;
 
   DiscreteTrajectorySegmentIterator<Frame> self_;
   Timeline timeline_;
