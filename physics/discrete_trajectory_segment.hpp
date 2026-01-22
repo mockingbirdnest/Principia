@@ -18,6 +18,7 @@
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/physics.pb.h"
 
 namespace principia {
@@ -52,6 +53,7 @@ using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 class DiscreteTrajectorySegment : public Trajectory<Frame> {
