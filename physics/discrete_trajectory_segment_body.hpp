@@ -96,8 +96,8 @@ std::int64_t DiscreteTrajectorySegment<Frame>::size() const {
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::clear() {
   downsampling_parameters_.reset();
-  number_of_dense_points_ = 0;
   was_downsampled_ = false;
+  downsampling_error_ = Length{};
   timeline_.clear();
 }
 
@@ -181,7 +181,7 @@ void DiscreteTrajectorySegment<Frame>::SetDownsampling(
   CHECK_LE(timeline_.size(), 1);
   CHECK(!was_downsampled_);
   downsampling_parameters_ = downsampling_parameters;
-  number_of_dense_points_ = timeline_.empty() ? 0 : 1;
+  downsampling_error_ = Length{};
 }
 
 template<typename Frame>
@@ -242,8 +242,8 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   // Note that while is_pre_hardy means that the save is pre-Hardy,
   // !is_pre_hardy does not mean it is Hardy or later; a pre-Hardy segment with
   // downsampling will have both fields present.
-  bool const is_pre_hardy = !message.has_downsampling_parameters() &&
-                            message.has_number_of_dense_points();
+  //TODO(phl)Pre-Hardy detection?!
+  bool const is_pre_hardy = !message.has_downsampling_parameters();
   bool const is_pre_hesse = !message.has_was_downsampled();
   LOG_IF(WARNING, is_pre_hesse)
       << "Reading pre-"
@@ -305,11 +305,6 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   }
 
   // Finally, restore the downsampling information.
-  if (!is_pre_hardy) {
-    CHECK_EQ(message.has_downsampling_parameters(),
-             message.has_number_of_dense_points())
-        << message.DebugString();
-  }
   if (is_pre_hesse) {
     // Assume that the segment was already downsampled, to avoid re-downsampling
     // it.
@@ -323,8 +318,6 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
             message.downsampling_parameters().max_dense_intervals(),
         .tolerance = Length::ReadFromMessage(
             message.downsampling_parameters().tolerance())};
-    CHECK(message.has_number_of_dense_points());
-    segment.number_of_dense_points_ = message.number_of_dense_points();
   }
 
   return segment;
@@ -397,12 +390,6 @@ void DiscreteTrajectorySegment<Frame>::ForgetAfter(Instant const& t) {
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetAfter(
     typename Timeline::const_iterator const begin) {
-  std::int64_t number_of_points_to_remove =
-      std::distance(begin, timeline_.cend());
-  number_of_dense_points_ =
-      std::max<std::int64_t>(
-          0, number_of_dense_points_ - number_of_points_to_remove);
-
   timeline_.erase(begin, timeline_.cend());
 }
 
@@ -416,11 +403,6 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
     typename Timeline::const_iterator const end) {
   std::int64_t const number_of_points_to_remove =
       std::distance(timeline_.cbegin(), end);
-  std::int64_t const number_of_dense_points_to_remove = std::max<std::int64_t>(
-      0,
-      number_of_points_to_remove + number_of_dense_points_ - timeline_.size());
-  number_of_dense_points_ -= number_of_dense_points_to_remove;
-
   timeline_.erase(timeline_.cbegin(), end);
   if (!timeline_.empty()) {
     timeline_.begin()->interpolation = nullptr;
@@ -510,7 +492,6 @@ void DiscreteTrajectorySegment<Frame>::Merge(
   } else if (timeline_.empty()) {
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_ = std::move(segment.timeline_);
-    number_of_dense_points_ = segment.number_of_dense_points_;
   } else if (auto const [this_crbegin, segment_begin] =
                  std::pair{std::prev(timeline_.cend()),
                            segment.timeline_.begin()};
@@ -530,7 +511,6 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     Instant const segment_begin_time = segment_begin->time;
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
-    number_of_dense_points_ = segment.number_of_dense_points_;
     // There may not be an interpolation at `segment_begin_time` (there may be
     // one if the segments have a common time, though). (Re)compute it, but
     // remember that we cannot trust that `segment_begin` is in `timeline_` (or
@@ -582,7 +562,6 @@ void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(
     Instant const& t) {
   auto const it = find(t);
   CHECK(it != end()) << "Cannot find time " << t << " in timeline";
-  number_of_dense_points_ = std::distance(it, end());
 }
 
 template<typename Frame>
@@ -678,10 +657,6 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
         downsampling_parameters_->max_dense_intervals);
     downsampling_parameters_->tolerance.WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
-    message->set_number_of_dense_points(std::min(
-        timeline_size,
-        std::max<std::int64_t>(
-            0, number_of_dense_points_ - number_of_points_to_skip_at_end)));
   }
   message->set_was_downsampled(was_downsampled_);
 

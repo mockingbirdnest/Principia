@@ -229,10 +229,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   std::optional<DownsamplingParameters> downsampling_parameters_;
 
-  // The number of points at the end of the segment that are part of a "dense"
-  // span, i.e., have not been subjected to downsampling yet.
-  std::int64_t number_of_dense_points_ = 0;
-
   bool was_downsampled_ = false;
 
   Length downsampling_error_;

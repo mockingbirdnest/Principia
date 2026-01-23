@@ -537,14 +537,12 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationRange) {
                          /*begin=*/circle1.upper_bound(t0_ + 4.9 * Second),
                          /*end=*/circle1.upper_bound(t0_ + 4.98 * Second),
                          /*exact=*/{});
-  EXPECT_LE(message1.number_of_dense_points(), message1.zfp().timeline_size());
 
   serialization::DiscreteTrajectorySegment message2;
   ForgetBefore(circle2.upper_bound(t0_ + 4.9 * Second)->time, circle2);
   ForgetAfter(circle2.upper_bound(t0_ + 4.98 * Second)->time, circle2);
   circle2.WriteToMessage(&message2,
                          /*exact=*/{});
-  EXPECT_LE(message2.number_of_dense_points(), message2.zfp().timeline_size());
 
   // Writing a range of the segment is equivalent to forgetting and writing the
   // result.
