@@ -438,24 +438,24 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
     return absl::OkStatus();
   } else {
-    if (timeline_.cbegin()->time == t) {
+    auto const first = timeline_.cbegin();
+    auto const last = std::prev(timeline_.end());
+    if (first->time == t) {
       LOG(WARNING) << "Append at existing time " << t << ", time range = ["
-                   << timeline_.cbegin()->time << ", "
-                   << timeline_.crbegin()->time << "]";
+                   << first->time << ", " << last->time << "]";
       return absl::OkStatus();
     }
 
-    CHECK_LT(timeline_.crbegin()->time, t)
+    CHECK_LT(last->time, t)
         << "Append out of order at " << t << ", last time is "
-        << timeline_.crbegin()->time;
+        << last->time;
 
-    auto const crbegin = timeline_.crbegin();
     if (timeline_.size() > 1) {
       // The start point of the interpolation is the penultimate point of the
       // segment, since we don't retain the intermediate points that were below
       // the tolerance.  Build an interpolation from that point to the new point
       // being added.
-      auto const downsampling_start = std::prev(crbegin);
+      auto const downsampling_start = std::prev(last);
       auto const start_time = downsampling_start->time;
       auto const start_degrees_of_freedom =
           downsampling_start->degrees_of_freedom;
@@ -471,13 +471,13 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
       // last point with the new one, record the new interpolation, and keep
       // going.
       auto const interpolation_difference =
-          *new_interpolation - *crbegin->interpolation;
+          *new_interpolation - *last->interpolation;
       downsampling_error_ +=
           interpolation_difference.LInfinityL₁NormUpperBound(start_time, t);
       if (downsampling_error_ < downsampling_parameters_->tolerance) {
         // The error bound is acceptable, replace the last point with the new
         // one and keep going.
-        auto back = timeline_.extract(timeline_.crbegin());
+        auto back = timeline_.extract(last);
         back.value().time = t;
         back.value().degrees_of_freedom = degrees_of_freedom;
         back.value().interpolation = std::move(new_interpolation);
@@ -490,7 +490,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     // of the segment; or (2) the error bound is above the tolerance.  In both
     // cases, we need to build an interpolation starting at the last point and
     // append our new point.
-    auto const downsampling_start = crbegin;
+    auto const downsampling_start = last;
     auto const start_time = downsampling_start->time;
     auto const start_degrees_of_freedom =
         downsampling_start->degrees_of_freedom;
@@ -507,6 +507,8 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     downsampling_error_ = Length{};
     it->interpolation = std::move(new_interpolation);
   }
+
+  return absl::OkStatus();
 }
 
 // Ideally, the segment constructed by reanimation should end with exactly the
