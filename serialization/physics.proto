@@ -144,7 +144,9 @@ message DiscreteTrajectorySegment {
     required int32 timeline_size = 4;
   }
   optional DownsamplingParameters downsampling_parameters = 1;
+  optional bool just_forgot = 7;  // Added in Лефшец.
   optional bool was_downsampled = 5;  // Added in Hesse.
+  optional Quantity downsampling_error = 6;  // Added in Лефшец.
   repeated InstantaneousDegreesOfFreedom exact = 3;
   required Zfp zfp = 4;
 

@@ -229,8 +229,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   std::optional<DownsamplingParameters> downsampling_parameters_;
 
+  //TODO(phl)comment
+  bool just_forgot_ = false;
   bool was_downsampled_ = false;
-
   Length downsampling_error_;
 
   DiscreteTrajectorySegmentIterator<Frame> self_;

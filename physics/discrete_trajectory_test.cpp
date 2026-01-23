@@ -798,17 +798,17 @@ TEST_F(DiscreteTrajectoryTest, SerializationExactEndpoints) {
   EXPECT_THAT(
       (deserialized_degrees_of_freedom1.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom1.position() - World::origin).Norm(),
-                        IsNear(0.022_(1)*Milli(Metre))));
+                        IsNear(0.41_(1)*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom1.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom1.velocity().Norm(),
-                                IsNear(5.8_(1) * Milli(Metre) / Second)));
+                                IsNear(1.0_(1) * Milli(Metre) / Second)));
   EXPECT_THAT(
       (deserialized_degrees_of_freedom2.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom2.position() - World::origin).Norm(),
-                        IsNear(0.47_(1)*Milli(Metre))));
+                        IsNear(0.07_(1)*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom2.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom2.velocity().Norm(),
-                                IsNear(1.5_(1) * Milli(Metre) / Second)));
+                                IsNear(1.0_(1) * Milli(Metre) / Second)));
 }
 
 TEST_F(DiscreteTrajectoryTest, SerializationRange) {

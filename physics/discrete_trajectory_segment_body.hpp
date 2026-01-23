@@ -242,9 +242,10 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   // Note that while is_pre_hardy means that the save is pre-Hardy,
   // !is_pre_hardy does not mean it is Hardy or later; a pre-Hardy segment with
   // downsampling will have both fields present.
-  //TODO(phl)Pre-Hardy detection?!
+  // TODO(phl)Pre-Hardy detection?!  Pre-Лефшец compatibility?!
   bool const is_pre_hardy = !message.has_downsampling_parameters();
   bool const is_pre_hesse = !message.has_was_downsampled();
+  bool const is_pre_лефшец = !message.has_downsampling_error();
   LOG_IF(WARNING, is_pre_hesse)
       << "Reading pre-"
       << (is_pre_hardy ? "Hardy"
@@ -305,6 +306,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   }
 
   // Finally, restore the downsampling information.
+  segment.just_forgot_ = message.just_forgot();
   if (is_pre_hesse) {
     // Assume that the segment was already downsampled, to avoid re-downsampling
     // it.
@@ -318,6 +320,10 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
             message.downsampling_parameters().max_dense_intervals(),
         .tolerance = Length::ReadFromMessage(
             message.downsampling_parameters().tolerance())};
+  }
+  if (message.has_downsampling_error()) {
+    segment.downsampling_error_ =
+        Length::ReadFromMessage(message.downsampling_error());
   }
 
   return segment;
@@ -391,6 +397,7 @@ template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetAfter(
     typename Timeline::const_iterator const begin) {
   timeline_.erase(begin, timeline_.cend());
+  just_forgot_ = true;
 }
 
 template<typename Frame>
@@ -432,7 +439,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         << "Append out of order at " << t << ", last time is "
         << last->time;
 
-    if (timeline_.size() > 1) {
+    if (timeline_.size() > 1 && !just_forgot_) {
       // The lower point of the interpolation is the penultimate point of the
       // segment, since we don't retain the intermediate points that were below
       // the tolerance.  Build an interpolation from that point to the new point
@@ -470,7 +477,8 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
     // There is no error because the points being interpolated are consecutive,
     // so the interpolation exactly matches their positions and velocities.
-    downsampling_error_ = Length{};
+    downsampling_error_ = just_forgot_ ? Infinity<Length> : Length{};
+    just_forgot_ = false;
     it->interpolation = std::move(new_interpolation);
   }
 
@@ -658,7 +666,9 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     downsampling_parameters_->tolerance.WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
   }
+  message->set_just_forgot(just_forgot_);
   message->set_was_downsampled(was_downsampled_);
+  downsampling_error_.WriteToMessage(message->mutable_downsampling_error());
 
   // Convert the `exact` vector into a set, and add the extremities.  This
   // ensures that we don't have redundancies.  The set is sorted by time to

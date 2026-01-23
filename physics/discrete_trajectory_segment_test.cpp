@@ -408,7 +408,7 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
   // Serialization/deserialization preserves the size, the times, and nudges the
   // positions by less than the tolerance.  It also preserve the degrees of
   // freedom at the "exact" iterators.
-  EXPECT_THAT(circle.size(), Eq(39));
+  EXPECT_THAT(circle.size(), Eq(27));
   EXPECT_THAT(deserialized_circle.size(), circle.size());
   for (auto it1 = circle.begin(), it2 = deserialized_circle.begin();
        it1 != circle.end();
@@ -418,7 +418,7 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
     EXPECT_EQ(t1, t2);
     EXPECT_THAT(degrees_of_freedom2.position(),
                 AbsoluteErrorFrom(degrees_of_freedom1.position(),
-                                  Lt(0.22 * Milli(Metre))));
+                                  Lt(0.30 * Milli(Metre))));
     EXPECT_THAT(degrees_of_freedom2.velocity(),
                 AbsoluteErrorFrom(degrees_of_freedom1.velocity(),
                                   Lt(1.1 * Milli(Metre) / Second)));
@@ -448,14 +448,14 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
 
   // Despite the difference in downsampling (and therefore in size) the two
   // trajectories are still within the tolerance.
-  EXPECT_THAT(circle.size(), Eq(77));
-  EXPECT_THAT(deserialized_circle.size(), Eq(78));
+  EXPECT_THAT(circle.size(), Eq(53));
+  EXPECT_THAT(deserialized_circle.size(), Eq(53));
   for (Instant t = t0_;
        t <= std::min(circle.rbegin()->time, deserialized_circle.rbegin()->time);
        t += Δt) {
     EXPECT_THAT(
         deserialized_circle.EvaluatePosition(t),
-        AbsoluteErrorFrom(circle.EvaluatePosition(t), Le(0.23 * Milli(Metre))));
+        AbsoluteErrorFrom(circle.EvaluatePosition(t), Le(0.30 * Milli(Metre))));
     EXPECT_THAT(deserialized_circle.EvaluateVelocity(t),
                 AbsoluteErrorFrom(circle.EvaluateVelocity(t),
                                   Le(5.7 * Milli(Metre) / Second)));
