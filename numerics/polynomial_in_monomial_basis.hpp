@@ -324,7 +324,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   friend std::ostream& operator<<(
       std::ostream& out,
       PolynomialInMonomialBasis<V, A, d, E> const& polynomial);
-  template<typename V, affine A, int d,
+  template<typename V, typename A, int d,
            template<typename, typename, int> typename E,
            typename O>
   friend std::string mathematica::_mathematica::internal::ToMathematicaBody(
