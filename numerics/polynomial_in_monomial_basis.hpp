@@ -234,7 +234,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename V, typename A, int l, int r,
            template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E>
+  constexpr PolynomialInMonomialBasis<Difference<V>, A, std::max(l, r), E>
   friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<typename S,
@@ -323,6 +323,10 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 };
 
 // Vector space of polynomials.
+// TODO(phl): These operators work fine when `Value` is a vector space, but they
+// are bogus when it is merely an affine space.  For instance, adding two
+// polynomials whose `Value` is a `Position` makes no sense.  We need to fix
+// this.
 
 template<typename Value, typename Argument, int rdegree_,
          template<typename, typename, int> typename Evaluator_>
@@ -347,7 +351,7 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree_,
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator_>
-constexpr PolynomialInMonomialBasis<Value, Argument,
+constexpr PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     std::max(ldegree_, rdegree_), Evaluator_>
 operator-(PolynomialInMonomialBasis<Value, Argument, ldegree_,
                                     Evaluator_> const& left,

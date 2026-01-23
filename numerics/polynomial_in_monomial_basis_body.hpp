@@ -693,7 +693,8 @@ operator+(
 template<typename Value, typename Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree),
+PolynomialInMonomialBasis<Difference<Value>, Argument,
+                          std::max(ldegree, rdegree),
                           Evaluator>
 operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
@@ -701,7 +702,7 @@ operator-(
         right) {
   using geometry::_cartesian_product::vector_space::operator-;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  return PolynomialInMonomialBasis<Value, Argument,
+  return PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     std::max(ldegree, rdegree), Evaluator>(
       left.coefficients_ - right.coefficients_,
       left.origin_);
