@@ -269,7 +269,7 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingCircle) {
 
   EXPECT_THAT(circle.size(), Eq(1001));
   EXPECT_FALSE(circle.was_downsampled());
-  EXPECT_THAT(downsampled_circle.size(), Eq(77));
+  EXPECT_THAT(downsampled_circle.size(), Eq(53));
   EXPECT_TRUE(downsampled_circle.was_downsampled());
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;
@@ -282,9 +282,9 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingCircle) {
          degrees_of_freedom.velocity()).Norm());
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
-              IsNear(0.98_(1) * Milli(Metre)));
+              IsNear(0.67_(1) * Milli(Metre)));
   EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
-              IsNear(14_(1) * Milli(Metre / Second)));
+              IsNear(10_(1) * Milli(Metre / Second)));
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, DownsamplingStraightLine) {
@@ -309,7 +309,7 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingStraightLine) {
 
   EXPECT_THAT(line.size(), Eq(1001));
   // In the test3200 release this used to have 1001 points, see #3203.
-  EXPECT_THAT(downsampled_line.size(), Eq(21));
+  EXPECT_THAT(downsampled_line.size(), Eq(2));
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;
   for (auto const& [time, degrees_of_freedom] : line) {
@@ -321,9 +321,9 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingStraightLine) {
          degrees_of_freedom.velocity()).Norm());
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
-              IsNear(3.6e-15_(1) * Metre));
+              IsNear(1.1e-14_(1) * Metre));
   EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
-              IsNear(1.1e-14_(1) * Metre / Second));
+              IsNear(2.2e-15_(1) * Metre / Second));
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
@@ -357,7 +357,7 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
       NewCircularTrajectoryTimeline<World>(ω, r, Δt, restart_time, t3),
       /*to=*/forgotten_circle);
 
-  EXPECT_THAT(circle.size(), Eq(92));
+  EXPECT_THAT(circle.size(), Eq(53));
   EXPECT_THAT(forgotten_circle.size(), Eq(circle.size()));
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;

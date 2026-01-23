@@ -129,6 +129,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // Returns true iff this segment was downsampled at least once since its
   // creation or the last call to `clear`.  Only use for optimization purposes,
   // not to depend on the actual structure of the timeline.
+  // TODO(phl)Remove.
   bool was_downsampled() const;
 
   // The points denoted by `exact` are written and re-read exactly and are not

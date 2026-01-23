@@ -467,6 +467,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
           downsampling_error_ < downsampling_parameters_->tolerance) {
         // The error bound is below the tolerance, replace the last point with
         // the new one, record the new interpolation, and keep going
+        was_downsampled_ = true;
         auto back = timeline_.extract(last);
         back.value().time = t;
         back.value().degrees_of_freedom = degrees_of_freedom;
