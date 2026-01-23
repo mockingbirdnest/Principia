@@ -333,10 +333,6 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
 };
 
 // Vector space of polynomials.
-// TODO(phl): These operators work fine when `Value` is a vector space, but they
-// are bogus when it is merely an affine space.  For instance, adding two
-// polynomials whose `Value` is a `Position` makes no sense.  We need to fix
-// this.
 
 template<additive_group Value, affine Argument, int rdegree_,
          template<typename, typename, int> typename Evaluator_>
@@ -385,6 +381,11 @@ operator-(PolynomialInMonomialBasis<Value, Argument, ldegree_,
                                     Evaluator_> const& left,
           PolynomialInMonomialBasis<Value, Argument, rdegree_,
                                     Evaluator_> const& right);
+
+// TODO(phl): The operators below work fine when `Value` is a vector space, but
+// they are bogus when it is merely an affine space.  For instance, multiplying
+// by a scalar a polynomial whose `Value` is a `Position` makes no sense.  We
+// need to fix this.
 
 template<typename Scalar,
          typename Value, affine Argument, int degree_,
