@@ -190,11 +190,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // compatibility deserialization.
   void SetForkPoint(value_type const& point);
 
-  // Called by `Append` after appending a point to this segment.  If
-  // appropriate, performs downsampling and deletes some of the points of the
-  // segment.
-  absl::Status DownsampleIfNeeded();
-
   // Constructs the Hermite interpolation for the left-open, right-closed
   // trajectory interval bounded above by `upper`.  `upper` must not be the
   // first point of the timeline.
