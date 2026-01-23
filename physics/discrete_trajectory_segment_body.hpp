@@ -462,7 +462,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
       auto const interpolation_difference =
           *new_interpolation - *last->interpolation;
       downsampling_error_ +=
-          interpolation_difference.LInfinityL₁NormUpperBound(start_time, t);
+          interpolation_difference.LInfinityL₁NormUpperBound(last->time, t);
       if (downsampling_error_ < downsampling_parameters_->tolerance) {
         // The error bound is below the tolerance, replace the last point with
         // the new one, record the new interpolation, and keep going
