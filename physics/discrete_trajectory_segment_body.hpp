@@ -455,15 +455,16 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
       // segment, since we don't retain the intermediate points that were below
       // the tolerance.  Build an interpolation from that point to the new point
       // being added.
-      auto new_interpolation =
-          NewInterpolation(/*lower=*/std::prev(last), t, degrees_of_freedom);
+      auto const lower = std::prev(last);
+      auto new_interpolation = NewInterpolation(lower, t, degrees_of_freedom);
 
       // Compute the new error bound.
       auto const interpolation_difference =
           *new_interpolation - *last->interpolation;
       downsampling_error_ +=
-          interpolation_difference.LInfinityL₁NormUpperBound(last->time, t);
-      if (downsampling_error_ < downsampling_parameters_->tolerance) {
+          interpolation_difference.LInfinityL₁NormUpperBound(lower->time, t);
+      if (downsampling_parameters_.has_value() &&
+          downsampling_error_ < downsampling_parameters_->tolerance) {
         // The error bound is below the tolerance, replace the last point with
         // the new one, record the new interpolation, and keep going
         auto back = timeline_.extract(last);
@@ -479,8 +480,9 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     // of the segment; or (2) the error bound is above the tolerance.  In both
     // cases, we need to build an interpolation starting at the last point and
     // append our new point.
+    auto const lower = last;
     auto new_interpolation =
-        NewInterpolation(/*lower=*/last, t, degrees_of_freedom);
+        NewInterpolation(lower, t, degrees_of_freedom);
     auto const it =
         timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
     // There is no error because the points being interpolated are consecutive,
