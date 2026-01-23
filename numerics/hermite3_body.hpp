@@ -137,6 +137,7 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
 
   // Build a split Hermite polynomial for each dimension.
   std::vector<H> split_hermites;
+  split_hermites.reserve(S::dimension);
   for (std::int64_t i = 0; i < S::dimension; ++i) {
     split_hermites.push_back(H(P({
         split_a0[i], split_a1[i], split_a2[i], split_a3[i]}, origin)));

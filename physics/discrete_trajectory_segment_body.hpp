@@ -610,13 +610,12 @@ DiscreteTrajectorySegment<Frame>::NewInterpolation(
     DegreesOfFreedom<Frame> const& degrees_of_freedom) const {
   auto const lower_time = lower->time;
   auto const lower_degrees_of_freedom = lower->degrees_of_freedom;
-  return
-      make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
-          std::pair{lower_time, t},
-          std::pair{lower_degrees_of_freedom.position(),
-                    degrees_of_freedom.position()},
-          std::pair{lower_degrees_of_freedom.velocity(),
-                    degrees_of_freedom.velocity()});
+  return make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
+      std::pair{lower_time, t},
+      std::pair{lower_degrees_of_freedom.position(),
+                degrees_of_freedom.position()},
+      std::pair{lower_degrees_of_freedom.velocity(),
+                degrees_of_freedom.velocity()});
 }
 
 template<typename Frame>
