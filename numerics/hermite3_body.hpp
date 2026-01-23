@@ -236,6 +236,29 @@ Hermite3<Value_, Argument_>::MakePolynomial(
                                                        arguments.first);
 }
 
+template<affine Value, affine Argument>
+Hermite3<Value, Argument> operator+(Hermite3<Value, Argument> const& right) {
+  return right;
+}
+
+template<affine Value, affine Argument>
+Hermite3<Value, Argument> operator+(Hermite3<Value, Argument> const& left,
+                                    Hermite3<Value, Argument> const& right) {
+  return Hermite3<Value, Argument>(left.p_ + right.p_);
+}
+
+template<affine Value, affine Argument>
+Hermite3<Value, Argument> operator-(Hermite3<Value, Argument> const& right) {
+  return Hermite3<Value, Argument>(-right.p_);
+}
+
+template<affine Value, affine Argument>
+Hermite3<Difference<Value>, Argument> operator-(
+    Hermite3<Value, Argument> const& left,
+    Hermite3<Value, Argument> const& right) {
+  return Hermite3<Difference<Value>, Argument>(left.p_ - right.p_);
+}
+
 }  // namespace internal
 }  // namespace _hermite3
 }  // namespace numerics

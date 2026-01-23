@@ -470,8 +470,10 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
       // Compute the new error bound.  If it is below the tolerance, replace the
       // last point with the new one, record the new interpolation, and keep
       // going.
-      downsampling_error_ += (*new_interpolation - *crbegin->interpolation)
-                                 .LInfinityL₁NormUpperBound(start_time, t);
+      auto const interpolation_difference =
+          *new_interpolation - *crbegin->interpolation;
+      downsampling_error_ +=
+          interpolation_difference.LInfinityL₁NormUpperBound(start_time, t);
       if (downsampling_error_ < downsampling_parameters_->tolerance) {
         // The error bound is acceptable, replace the last point with the new
         // one and keep going.
@@ -501,13 +503,8 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
                       degrees_of_freedom.velocity()});
     auto const it =
         timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
-    downsampling_error_ =
-        new_interpolation->LInfinityL₁NormUpperBound(start_time, t);
-    if (downsampling_error_ >= downsampling_parameters_->tolerance) {
-      LOG(WARNING) << "Initial downsampling error at time " << t << " is "
-                   << downsampling_error_ << " which exceeds tolerance "
-                   << downsampling_parameters_->tolerance;
-    }
+    // There is no error because the points being interpolated are consecutive.
+    downsampling_error_ = Length{};
     it->interpolation = std::move(new_interpolation);
   }
 }

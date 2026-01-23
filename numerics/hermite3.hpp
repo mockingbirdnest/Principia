@@ -94,7 +94,37 @@ class Hermite3 final {
 
   template<affine V, affine A>
   friend class Hermite3;
+
+  template<affine V, affine A>
+  friend Hermite3<V, A> operator+(Hermite3<V, A> const& right);
+  template<affine V, affine A>
+  friend Hermite3<V, A> operator+(Hermite3<V, A> const& left,
+                                  Hermite3<V, A> const& right);
+  template<affine V, affine A>
+  friend Hermite3<V, A> operator-(Hermite3<V, A> const& right);
+  template<affine V, affine A>
+  friend Hermite3<Difference<V>, A> operator-(Hermite3<V, A> const& left,
+                                              Hermite3<V, A> const& right);
 };
+
+// Additive group.
+// TODO(phl): Also add vector space and field structures, but only once the
+// handling of non-vector spaces is cleaned up in PolynomialInMonomialBasis.
+
+template<affine Value, affine Argument>
+Hermite3<Value, Argument> operator+(Hermite3<Value, Argument> const& right);
+
+template<affine Value, affine Argument>
+Hermite3<Value, Argument> operator+(Hermite3<Value, Argument> const& left,
+                                    Hermite3<Value, Argument> const& right);
+
+template<affine Value, affine Argument>
+Hermite3<Value, Argument> operator-(Hermite3<Value, Argument> const& right);
+
+template<affine Value, affine Argument>
+Hermite3<Difference<Value>, Argument> operator-(
+    Hermite3<Value, Argument> const& left,
+    Hermite3<Value, Argument> const& right);
 
 }  // namespace internal
 
