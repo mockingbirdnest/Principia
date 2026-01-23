@@ -451,32 +451,21 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         << last->time;
 
     if (timeline_.size() > 1) {
-      // The start point of the interpolation is the penultimate point of the
+      // The lower point of the interpolation is the penultimate point of the
       // segment, since we don't retain the intermediate points that were below
       // the tolerance.  Build an interpolation from that point to the new point
       // being added.
-      auto const downsampling_start = std::prev(last);
-      auto const start_time = downsampling_start->time;
-      auto const start_degrees_of_freedom =
-          downsampling_start->degrees_of_freedom;
       auto new_interpolation =
-          make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
-              std::pair{start_time, t},
-              std::pair{start_degrees_of_freedom.position(),
-                        degrees_of_freedom.position()},
-              std::pair{start_degrees_of_freedom.velocity(),
-                        degrees_of_freedom.velocity()});
+          NewInterpolation(/*lower=*/std::prev(last), t, degrees_of_freedom);
 
-      // Compute the new error bound.  If it is below the tolerance, replace the
-      // last point with the new one, record the new interpolation, and keep
-      // going.
+      // Compute the new error bound.
       auto const interpolation_difference =
           *new_interpolation - *last->interpolation;
       downsampling_error_ +=
           interpolation_difference.LInfinityL₁NormUpperBound(start_time, t);
       if (downsampling_error_ < downsampling_parameters_->tolerance) {
-        // The error bound is acceptable, replace the last point with the new
-        // one and keep going.
+        // The error bound is below the tolerance, replace the last point with
+        // the new one, record the new interpolation, and keep going
         auto back = timeline_.extract(last);
         back.value().time = t;
         back.value().degrees_of_freedom = degrees_of_freedom;
@@ -490,20 +479,12 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     // of the segment; or (2) the error bound is above the tolerance.  In both
     // cases, we need to build an interpolation starting at the last point and
     // append our new point.
-    auto const downsampling_start = last;
-    auto const start_time = downsampling_start->time;
-    auto const start_degrees_of_freedom =
-        downsampling_start->degrees_of_freedom;
     auto new_interpolation =
-        make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
-            std::pair{start_time, t},
-            std::pair{start_degrees_of_freedom.position(),
-                      degrees_of_freedom.position()},
-            std::pair{start_degrees_of_freedom.velocity(),
-                      degrees_of_freedom.velocity()});
+        NewInterpolation(/*lower=*/last, t, degrees_of_freedom);
     auto const it =
         timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
-    // There is no error because the points being interpolated are consecutive.
+    // There is no error because the points being interpolated are consecutive,
+    // so the interpolation exactly matches their positions and velocities.
     downsampling_error_ = Length{};
     it->interpolation = std::move(new_interpolation);
   }
@@ -693,6 +674,23 @@ DiscreteTrajectorySegment<Frame>::NewInterpolation(
                 upper_degrees_of_freedom.position()},
       std::pair{lower_degrees_of_freedom.velocity(),
                 upper_degrees_of_freedom.velocity()});
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
+DiscreteTrajectorySegment<Frame>::NewInterpolation(
+    typename Timeline::const_iterator lower,
+    Instant const& t,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) const {
+  auto const lower_time = lower->time;
+  auto const lower_degrees_of_freedom = lower->degrees_of_freedom;
+  return
+      make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
+          std::pair{lower_time, t},
+          std::pair{lower_degrees_of_freedom.position(),
+                    degrees_of_freedom.position()},
+          std::pair{lower_degrees_of_freedom.velocity(),
+                    degrees_of_freedom.velocity()});
 }
 
 template<typename Frame>

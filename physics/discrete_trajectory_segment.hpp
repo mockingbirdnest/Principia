@@ -201,6 +201,13 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
   NewInterpolation(typename Timeline::const_iterator upper) const;
 
+  // TODO(phl)comment
+  not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
+  NewInterpolation(typename Timeline::const_iterator lower,
+                   Instant const& t,
+                   DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
+
+
   // Returns the Hermite interpolation for the left-open, right-closed
   // trajectory interval bounded above by `upper`, which must exist.
   Hermite3<Position<Frame>, Instant> const& get_interpolation(
