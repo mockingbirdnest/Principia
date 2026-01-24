@@ -107,7 +107,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       // Now look at the extrema and check that exactly one is in the required
       // time interval.  This is normally the case, but it can fail due to
       // ill-conditioning.
-      Instant apsis_time ;
+      Instant apsis_time;
       if (extrema.size() != 1) {
         // Something went wrong when finding the extrema of
         // `squared_distance_approximation`. Use a linear interpolation of
