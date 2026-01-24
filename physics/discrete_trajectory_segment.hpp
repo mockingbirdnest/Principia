@@ -230,7 +230,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   std::optional<DownsamplingParameters> downsampling_parameters_;
 
   //TODO(phl)comment
-  bool just_forgot_ = false;
+  bool just_forgot_ = false;  /// Can we get rid of this?
   bool was_downsampled_ = false;
   Length downsampling_error_;
 

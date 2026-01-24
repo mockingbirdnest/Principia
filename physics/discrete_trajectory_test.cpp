@@ -798,17 +798,17 @@ TEST_F(DiscreteTrajectoryTest, SerializationExactEndpoints) {
   EXPECT_THAT(
       (deserialized_degrees_of_freedom1.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom1.position() - World::origin).Norm(),
-                        IsNear(0.41_(1)*Milli(Metre))));
+                        IsNear(0.06_(1)*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom1.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom1.velocity().Norm(),
-                                IsNear(1.0_(1) * Milli(Metre) / Second)));
+                                IsNear(2.4_(1) * Milli(Metre) / Second)));
   EXPECT_THAT(
       (deserialized_degrees_of_freedom2.position() - World::origin).Norm(),
       AbsoluteErrorFrom((degrees_of_freedom2.position() - World::origin).Norm(),
-                        IsNear(0.07_(1)*Milli(Metre))));
+                        IsNear(0.98_(1)*Milli(Metre))));
   EXPECT_THAT(deserialized_degrees_of_freedom2.velocity().Norm(),
               AbsoluteErrorFrom(degrees_of_freedom2.velocity().Norm(),
-                                IsNear(1.0_(1) * Milli(Metre) / Second)));
+                                IsNear(2.6_(1) * Milli(Metre) / Second)));
 }
 
 TEST_F(DiscreteTrajectoryTest, SerializationRange) {
@@ -831,7 +831,9 @@ TEST_F(DiscreteTrajectoryTest, SerializationRange) {
                              /*exact=*/{});
 
   // Writing a range of the trajectory is equivalent to forgetting and writing
-  // the result.
+  // the result, except for the `just_forgot_` bit.
+  message1.mutable_segment(2)->clear_just_forgot();
+  message2.mutable_segment(2)->clear_just_forgot();
   EXPECT_THAT(message1, EqualsProto(message2));
 }
 

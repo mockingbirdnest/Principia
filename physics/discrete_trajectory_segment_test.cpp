@@ -269,7 +269,7 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingCircle) {
 
   EXPECT_THAT(circle.size(), Eq(1001));
   EXPECT_FALSE(circle.was_downsampled());
-  EXPECT_THAT(downsampled_circle.size(), Eq(53));
+  EXPECT_THAT(downsampled_circle.size(), Eq(49));
   EXPECT_TRUE(downsampled_circle.was_downsampled());
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;
@@ -282,9 +282,9 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingCircle) {
          degrees_of_freedom.velocity()).Norm());
   }
   EXPECT_THAT(*std::max_element(position_errors.begin(), position_errors.end()),
-              IsNear(0.67_(1) * Milli(Metre)));
+              IsNear(0.81_(1) * Milli(Metre)));
   EXPECT_THAT(*std::max_element(velocity_errors.begin(), velocity_errors.end()),
-              IsNear(10_(1) * Milli(Metre / Second)));
+              IsNear(12_(1) * Milli(Metre / Second)));
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, DownsamplingStraightLine) {
@@ -357,7 +357,7 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
       NewCircularTrajectoryTimeline<World>(ω, r, Δt, restart_time, t3),
       /*to=*/forgotten_circle);
 
-  EXPECT_THAT(circle.size(), Eq(53));
+  EXPECT_THAT(circle.size(), Eq(49));
   EXPECT_THAT(forgotten_circle.size(), Eq(circle.size()));
   std::vector<Length> position_errors;
   std::vector<Speed> velocity_errors;
@@ -408,7 +408,7 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
   // Serialization/deserialization preserves the size, the times, and nudges the
   // positions by less than the tolerance.  It also preserve the degrees of
   // freedom at the "exact" iterators.
-  EXPECT_THAT(circle.size(), Eq(27));
+  EXPECT_THAT(circle.size(), Eq(25));
   EXPECT_THAT(deserialized_circle.size(), circle.size());
   for (auto it1 = circle.begin(), it2 = deserialized_circle.begin();
        it1 != circle.end();
@@ -418,10 +418,10 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
     EXPECT_EQ(t1, t2);
     EXPECT_THAT(degrees_of_freedom2.position(),
                 AbsoluteErrorFrom(degrees_of_freedom1.position(),
-                                  Lt(0.30 * Milli(Metre))));
+                                  Lt(0.18 * Milli(Metre))));
     EXPECT_THAT(degrees_of_freedom2.velocity(),
                 AbsoluteErrorFrom(degrees_of_freedom1.velocity(),
-                                  Lt(1.1 * Milli(Metre) / Second)));
+                                  Lt(1.2 * Milli(Metre) / Second)));
   }
   EXPECT_NE(
       deserialized_circle.lower_bound(t0_ + 1 * Second)->degrees_of_freedom,
@@ -448,8 +448,8 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
 
   // Despite the difference in downsampling (and therefore in size) the two
   // trajectories are still within the tolerance.
-  EXPECT_THAT(circle.size(), Eq(53));
-  EXPECT_THAT(deserialized_circle.size(), Eq(53));
+  EXPECT_THAT(circle.size(), Eq(49));
+  EXPECT_THAT(deserialized_circle.size(), Eq(49));
   for (Instant t = t0_;
        t <= std::min(circle.rbegin()->time, deserialized_circle.rbegin()->time);
        t += Δt) {
@@ -548,7 +548,9 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationRange) {
                          /*exact=*/{});
 
   // Writing a range of the segment is equivalent to forgetting and writing the
-  // result.
+  // result, except for the `just_forgot_` bit.
+  message1.clear_just_forgot();
+  message2.clear_just_forgot();
   EXPECT_THAT(message1, EqualsProto(message2));
 }
 

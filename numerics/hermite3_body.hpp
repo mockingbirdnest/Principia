@@ -287,19 +287,23 @@ Hermite3<Value, Argument> operator+(Hermite3<Value, Argument> const& right) {
 template<affine Value, affine Argument>
 Hermite3<Value, Argument> operator+(Hermite3<Value, Argument> const& left,
                                     Hermite3<Value, Argument> const& right) {
-  return Hermite3<Value, Argument>(left.p_ + right.p_);
+  CHECK_EQ(left.lower_, right.lower_);
+  return Hermite3<Value, Argument>(
+      right.lower_, std::min(left.upper_, right.upper_), left.p_ + right.p_);
 }
 
 template<affine Value, affine Argument>
 Hermite3<Value, Argument> operator-(Hermite3<Value, Argument> const& right) {
-  return Hermite3<Value, Argument>(-right.p_);
+  return Hermite3<Value, Argument>(right.lower_, right.upper_, -right.p_);
 }
 
 template<affine Value, affine Argument>
 Hermite3<Difference<Value>, Argument> operator-(
     Hermite3<Value, Argument> const& left,
     Hermite3<Value, Argument> const& right) {
-  return Hermite3<Difference<Value>, Argument>(left.p_ - right.p_);
+  CHECK_EQ(left.lower_, right.lower_);
+  return Hermite3<Difference<Value>, Argument>(
+      right.lower_, std::min(left.upper_, right.upper_), left.p_ - right.p_);
 }
 
 }  // namespace internal

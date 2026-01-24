@@ -425,7 +425,6 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     // the start point for future interpolations).
     auto const it =
         timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
-    return absl::OkStatus();
   } else {
     auto const first = timeline_.cbegin();
     auto const last = std::prev(timeline_.end());
@@ -453,7 +452,11 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
       auto const interpolation_difference =
           *new_interpolation - *last->interpolation;
       downsampling_error_ +=
-          interpolation_difference.LInfinityL₁NormUpperBound(lower->time, t);
+#if 0
+          interpolation_difference.LInfinityL₁NormUpperBound();
+#else
+          interpolation_difference.LInfinityL₂Norm();
+#endif
       if (downsampling_error_ < downsampling_parameters_->tolerance) {
         // The error bound is below the tolerance, replace the last point with
         // the new one, record the new interpolation, and keep going
@@ -482,7 +485,6 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         // After a forget, we have to assume the worst for the downsampling
         // error since we cannot recompute it.
         downsampling_error_ = Infinity<Length>;
-        just_forgot_ = false;
       } else {
         // There is no error because the points being interpolated are
         // consecutive, so the interpolation exactly matches their positions and
@@ -492,6 +494,8 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     }
     it->interpolation = std::move(new_interpolation);
   }
+
+  just_forgot_ = false;
 
   return absl::OkStatus();
 }
