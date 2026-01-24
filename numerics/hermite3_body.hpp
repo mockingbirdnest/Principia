@@ -6,14 +6,61 @@
 #include <utility>
 #include <vector>
 
+#include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/root_finders.hpp"
+#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _hermite3 {
 namespace internal {
 
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3_element;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_root_finders;
+using namespace principia::quantities::_concepts;
+
+template<typename T>
+struct Splitter;
+
+template<quantity Q>
+struct Splitter<Q> {
+  static constexpr std::int64_t dimension = 1;
+  using Value = Q;
+
+  template<typename T>
+  static std::array<T, dimension> Split(T const& t) {
+    return {t};
+  }
+};
+
+template<typename Scalar>
+struct Splitter<R3Element<Scalar>> {
+  static constexpr std::int64_t dimension = 3;
+  using Value = Scalar;
+
+  template<typename T>
+  static std::array<T, dimension> Split(
+      R3Element<T> const& r3_element) {
+    return {r3_element.x, r3_element.y, r3_element.z};
+  }
+};
+
+template<typename Scalar, typename Frame, int rank>
+  requires(rank == 1 || rank == 2)
+struct Splitter<Multivector<Scalar, Frame, rank>> {
+  static constexpr std::int64_t dimension = 3;
+  using Value = Scalar;
+
+  template<typename T>
+  static std::array<T, dimension> Split(
+      Multivector<T, Frame, rank> const& multivector) {
+    return Splitter<R3Element<T>>::Split(multivector.coordinates());
+  }
+};
 
 template<affine Value_, affine Argument_>
 Hermite3<Value_, Argument_>::Hermite3(
@@ -24,7 +71,7 @@ Hermite3<Value_, Argument_>::Hermite3(
       pʹ_(p_.Derivative()) {}
 
 template<affine Value_, affine Argument_>
-Value_ Hermite3<Value_, Argument_>::Evaluate(Argument const& argument) const {
+Value_ Hermite3<Value_, Argument_>::operator()(Argument const& argument) const {
   return p_(argument);
 }
 
@@ -54,8 +101,68 @@ BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
 }
 
 template<affine Value_, affine Argument_>
+BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema(
+    Argument const& lower,
+    Argument const& upper) const {
+  auto const extrema = FindExtrema();
+  BoundedArray<Argument, 2> result;
+  for (auto const& extremum : extrema) {
+    if (lower <= extremum && extremum <= upper) {
+      result.push_back(extremum);
+    }
+  }
+  return result;
+}
+
+template<affine Value_, affine Argument_>
+auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
+    Argument const& lower,
+    Argument const& upper) const -> NormType {
+  CHECK_LE(lower, upper);
+
+  // First split the coefficients of `p_` by dimension.  This part is *not*
+  // coordinate-free.
+  auto const& coefficients = p_.coefficients();
+  auto const& origin = p_.origin();
+  using S = Splitter<Value>;
+  using H = Hermite3<typename S::Value, Argument>;
+  using P = PolynomialInMonomialBasis<typename S::Value, Argument, degree>;
+
+  // NOTE(phl): This could be done for any degree by shaving the tuple using
+  // template metaprogramming, but our degree is 3, so unrolling is simpler.
+  auto const split_a0 = S::Split(std::get<0>(coefficients));
+  auto const split_a1 = S::Split(std::get<1>(coefficients));
+  auto const split_a2 = S::Split(std::get<2>(coefficients));
+  auto const split_a3 = S::Split(std::get<3>(coefficients));
+
+  // Build a split Hermite polynomial for each dimension.
+  std::vector<H> split_hermites;
+  for (std::int64_t i = 0; i < S::dimension; ++i) {
+    split_hermites.push_back(H(P({
+        split_a0[i], split_a1[i], split_a2[i], split_a3[i]}, origin)));
+  }
+
+  // Find the extrema of each split polynomial.
+  NormType sum{};
+  for (H const& split_hermite : split_hermites) {
+    auto const extrema = split_hermite.FindExtrema(lower, upper);
+    // Compute the maximum of the absolute value of each split polynomial at its
+    // extrema.  This is the L∞ norm of that polynomial.
+    NormType max{};
+    for (auto const extremum : extrema) {
+      max = std::max(max, Abs(split_hermite(extremum)));
+    }
+    // The L₁ norm of `p_` is bounded by the sum of the L∞ norms of the split
+    // polynomials.
+    sum += max;
+  }
+
+  return sum;
+}
+
+template<affine Value_, affine Argument_>
 template<typename Samples>
-auto Hermite3<Value_, Argument_>::LInfinityError(
+auto Hermite3<Value_, Argument_>::LInfinityL₂Error(
     Samples const& samples,
     std::function<Argument const&(typename Samples::value_type const&)> const&
         get_argument,
@@ -65,14 +172,14 @@ auto Hermite3<Value_, Argument_>::LInfinityError(
   for (const auto& sample : samples) {
     result = std::max(result,
                       Hilbert<Difference<Value>>::Norm(
-                          Evaluate(get_argument(sample)) - get_value(sample)));
+                          (*this)(get_argument(sample)) - get_value(sample)));
   }
   return result;
 }
 
 template<affine Value_, affine Argument_>
 template<typename Samples>
-bool Hermite3<Value_, Argument_>::LInfinityErrorIsWithin(
+bool Hermite3<Value_, Argument_>::LInfinityL₂ErrorIsWithin(
     Samples const& samples,
     std::function<Argument const&(typename Samples::value_type const&)> const&
         get_argument,
@@ -80,13 +187,19 @@ bool Hermite3<Value_, Argument_>::LInfinityErrorIsWithin(
         get_value,
     NormType const& tolerance) const {
   for (const auto& sample : samples) {
-    if (Hilbert<Difference<Value>>::Norm(Evaluate(get_argument(sample)) -
+    if (Hilbert<Difference<Value>>::Norm((*this)(get_argument(sample)) -
                                          get_value(sample)) >= tolerance) {
       return false;
     }
   }
   return true;
 }
+
+template<affine Value_, affine Argument_>
+Hermite3<Value_, Argument_>::Hermite3(
+    PolynomialInMonomialBasis<Value, Argument, degree> p)
+    : p_(std::move(p)),
+      pʹ_(p_.Derivative()) {}
 
 template<affine Value_, affine Argument_>
 FORCE_INLINE(inline)

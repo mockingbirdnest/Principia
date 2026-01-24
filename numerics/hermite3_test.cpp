@@ -46,11 +46,11 @@ TEST_F(Hermite3Test, Precomputed) {
                               {33 * Metre, 40 * Metre},
                               {-5 * Metre / Second, 6 * Metre / Second});
 
-  EXPECT_EQ(33 * Metre, h.Evaluate(t0_ + 1 * Second));
-  EXPECT_EQ(33.109375 * Metre, h.Evaluate(t0_ + 1.25 * Second));
-  EXPECT_EQ(35.125 * Metre, h.Evaluate(t0_ + 1.5 * Second));
-  EXPECT_EQ(37.828125 * Metre, h.Evaluate(t0_ + 1.75 * Second));
-  EXPECT_EQ(40 * Metre, h.Evaluate(t0_ + 2 * Second));
+  EXPECT_EQ(33 * Metre, h(t0_ + 1 * Second));
+  EXPECT_EQ(33.109375 * Metre, h(t0_ + 1.25 * Second));
+  EXPECT_EQ(35.125 * Metre, h(t0_ + 1.5 * Second));
+  EXPECT_EQ(37.828125 * Metre, h(t0_ + 1.75 * Second));
+  EXPECT_EQ(40 * Metre, h(t0_ + 2 * Second));
 
   EXPECT_EQ(-5 * Metre / Second, h.EvaluateDerivative(t0_ + 1 * Second));
   EXPECT_EQ(5.0625 * Metre / Second, h.EvaluateDerivative(t0_ + 1.25 * Second));
@@ -87,7 +87,7 @@ TEST_F(Hermite3Test, Typed) {
                                        {World::origin, World::origin},
                                        {World::unmoving, World::unmoving});
 
-  EXPECT_EQ(World::origin, h.Evaluate(t0_ + 1.3 * Second));
+  EXPECT_EQ(World::origin, h(t0_ + 1.3 * Second));
   EXPECT_EQ(Velocity<World>(), h.EvaluateDerivative(t0_ + 1.7 * Second));
 }
 
@@ -102,13 +102,45 @@ TEST_F(Hermite3Test, Conditioning) {
        -1.6875631840376598e-12 * Metre / Second});
 
   EXPECT_EQ(-2.1383610158805017e-12 * Metre,
-            h.Evaluate(t0_ + 19418861.806896236 * Second));
-  EXPECT_GT(0 * Metre, h.Evaluate(t0_ + 19418869.842261545 * Second));
+            h(t0_ + 19418861.806896236 * Second));
+  EXPECT_GT(0 * Metre, h(t0_ + 19418869.842261545 * Second));
   EXPECT_EQ(2.3308208035605881e-12 * Metre / Second,
             h.EvaluateDerivative(t0_ + 19418861.806896236 * Second));
 }
 
-TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
+TEST_F(Hermite3Test, LInfinityL₁NormUpperBoundMass) {
+  const auto h = Hermite3<Mass, Instant>(
+      /*arguments=*/{t0_, t0_ + 3 * Second},
+      /*values=*/
+      {3 * Kilogram, -5 * Kilogram},
+      /*derivatives=*/
+      {2 * Kilogram / Second, -1 * Kilogram / Second});
+  // The expected value was computed with Mathematica.
+  EXPECT_THAT(h.LInfinityL₁NormUpperBound(t0_, t0_ + 3 * Second),
+              AlmostEquals((-325.0 + 166.0 * Sqrt(83.0)) / 361 * Kilogram,
+                           1));
+}
+
+TEST_F(Hermite3Test, LInfinityL₁NormUpperBoundDisplacement) {
+  const auto h = Hermite3<Displacement<World>, Instant>(
+      /*arguments=*/{t0_, t0_ + 3 * Second},
+      /*values=*/
+      {Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre}),
+       Displacement<World>({4 * Metre, -5 * Metre, 6 * Metre})},
+      /*derivatives=*/
+      {Velocity<World>(
+           {7 * Metre / Second, -8 * Metre / Second, -9 * Metre / Second}),
+       Velocity<World>(
+           {-10 * Metre / Second, 11 * Metre / Second, 12 * Metre / Second})});
+  // The expected value was computed with Mathematica.
+  EXPECT_THAT(h.LInfinityL₁NormUpperBound(t0_, t0_ + 3 * Second),
+              AlmostEquals((4.0 * (209533.0 + 42300.0 * Sqrt(47.0) +
+                                   28037.0 * Sqrt(106.0))) /
+                               119025.0 * Metre,
+                           1));
+}
+
+TEST_F(Hermite3Test, OneDimensionalLInfinityL₂Error) {
   std::vector<std::pair<double, double>> samples;
   for (double i = 2; i < 10; i += 1) {
     samples.push_back({1 / i, Pow<4>(1 / i)});
@@ -118,25 +150,25 @@ TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
                                /*values=*/{0, 1},
                                /*derivatives=*/{0, 4});
   // `not_a_quartic` has a root at 1/2, where the error is maximal.
-  EXPECT_THAT(not_a_quartic.LInfinityError(
+  EXPECT_THAT(not_a_quartic.LInfinityL₂Error(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
       Eq(1 / 16.0));
 
-  EXPECT_TRUE(not_a_quartic.LInfinityErrorIsWithin(
+  EXPECT_TRUE(not_a_quartic.LInfinityL₂ErrorIsWithin(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
       /*tolerance=*/0.1));
-  EXPECT_FALSE(not_a_quartic.LInfinityErrorIsWithin(
+  EXPECT_FALSE(not_a_quartic.LInfinityL₂ErrorIsWithin(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
       /*tolerance=*/0.05));
 }
 
-TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
+TEST_F(Hermite3Test, ThreeDimensionalLInfinityL₂Error) {
   std::vector<std::pair<Instant, Position<World>>> samples;
   Instant const tmax = t0_ + π / 2 * Second;
   AngularFrequency const ω = 1 * Radian / Second;
@@ -157,18 +189,18 @@ TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
        Velocity<World>(
            {-1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})});
   EXPECT_THAT(
-      not_a_circle.LInfinityError(
+      not_a_circle.LInfinityL₂Error(
           samples,
           /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
           /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
       IsNear(1.5_(1) * Centi(Metre)));
 
-  EXPECT_TRUE(not_a_circle.LInfinityErrorIsWithin(
+  EXPECT_TRUE(not_a_circle.LInfinityL₂ErrorIsWithin(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },
       /*tolerance=*/2 * Centi(Metre)));
-  EXPECT_FALSE(not_a_circle.LInfinityErrorIsWithin(
+  EXPECT_FALSE(not_a_circle.LInfinityL₂ErrorIsWithin(
       samples,
       /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
       /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; },

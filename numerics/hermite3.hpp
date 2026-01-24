@@ -36,7 +36,7 @@ class Hermite3 final {
 
   // NOTE(egg): this does not appear to use Casteljau's algorithm; perhaps it
   // should?
-  Value Evaluate(Argument const& argument) const;
+  Value operator()(Argument const& argument) const;
   Derivative1 EvaluateDerivative(Argument const& argument) const;
   void EvaluateWithDerivative(Argument const& argument,
                               Value& value,
@@ -44,24 +44,34 @@ class Hermite3 final {
 
   // The result is sorted.
   BoundedArray<Argument, 2> FindExtrema() const;
+  BoundedArray<Argument, 2> FindExtrema(Argument const& lower,
+                                        Argument const& upper) const;
+
+  // If `h` is this object, returns an upper bound on
+  // `max{t ∈ [lower, upper]}(‖h(t)‖₁)`.  The upper bound is because we
+  // note that `‖h(t)‖₁ ≤ Σᵢ(‖hᵢ(t)‖∞)`, where `hᵢ` are the components of
+  // `h` in our coordinate system.  The expression on the right is easier to
+  // evaluate than the one on the left since each `hᵢ` is a cubic polynomial.
+  NormType LInfinityL₁NormUpperBound(Argument const& lower,
+                                     Argument const& upper) const;
 
   // `samples` must be a container; `get_argument` and `get_value` on the
-  // elements of `samples` must return `Argument` and `Value` respectively
-  // (possibly by reference or const-reference)
-  // Returns the largest error (in the given `norm`) between this polynomial and
-  // the given `samples`.
+  // its elements must return `Argument` and `Value` respectively.  If `h` is
+  // this polynomial, `tᵢ` an argument from `samples` and `xᵢ` the corresponding
+  // value, this function returns `maxᵢ(‖h(tᵢ) - xᵢ‖₂)`.  The complexity is
+  // linear in the size of `samples`.
   template<typename Samples>
-  NormType LInfinityError(
+  NormType LInfinityL₂Error(
       Samples const& samples,
       std::function<Argument const&(typename Samples::value_type const&)> const&
           get_argument,
       std::function<Value const&(typename Samples::value_type const&)> const&
           get_value) const;
 
-  // Returns true if the `LInfinityError` is less than `tolerance`.  More
+  // Returns true if the `LInfinityL₂Error` is less than `tolerance`.  More
   // efficient than the above function in the case where it returns false.
   template<typename Samples>
-  bool LInfinityErrorIsWithin(
+  bool LInfinityL₂ErrorIsWithin(
       Samples const& samples,
       std::function<Argument const&(typename Samples::value_type const&)> const&
           get_argument,
@@ -70,13 +80,20 @@ class Hermite3 final {
       NormType const& tolerance) const;
 
  private:
+  static constexpr std::int64_t degree = 3;
+
+  explicit Hermite3(PolynomialInMonomialBasis<Value, Argument, degree> p);
+
   static PolynomialInMonomialBasis<Value, Argument, 3> MakePolynomial(
       std::pair<Argument, Argument> const& arguments,
       std::pair<Value, Value> const& values,
       std::pair<Derivative1, Derivative1> const& derivatives);
 
-  PolynomialInMonomialBasis<Value, Argument, 3> p_;
-  PolynomialInMonomialBasis<Derivative1, Argument, 2> pʹ_;
+  PolynomialInMonomialBasis<Value, Argument, degree> p_;
+  PolynomialInMonomialBasis<Derivative1, Argument, degree - 1> pʹ_;
+
+  template<affine V, affine A>
+  friend class Hermite3;
 };
 
 }  // namespace internal
