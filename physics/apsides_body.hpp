@@ -108,14 +108,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       // time interval.  This is normally the case, but it can fail due to
       // ill-conditioning.
       Instant apsis_time;
-      int valid_extrema = 0;
-      for (auto const& extremum : extrema) {
-        if (extremum > *previous_time && extremum <= time) {
-          apsis_time = extremum;
-          ++valid_extrema;
-        }
-      }
-      if (valid_extrema != 1) {
+      if (extrema.size() != 1) {
         // Something went wrong when finding the extrema of
         // `squared_distance_approximation`. Use a linear interpolation of
         // `squared_distance_derivative` instead.
@@ -128,6 +121,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
             << "Suspicious apsis at the beginning of a time interval: "
             << apsis_time;
       }
+      apsis_time = extrema.back();
 
       // This can happen for instance if the square distance is stationary.
       // Safer to give up.

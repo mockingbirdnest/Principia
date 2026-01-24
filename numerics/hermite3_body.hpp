@@ -67,7 +67,9 @@ Hermite3<Value_, Argument_>::Hermite3(
     std::pair<Argument, Argument> const& arguments,
     std::pair<Value, Value> const& values,
     std::pair<Derivative1, Derivative1> const& derivatives)
-    : p_(MakePolynomial(arguments, values, derivatives)),
+    : lower_(arguments.first),
+      upper_(arguments.second),
+      p_(MakePolynomial(arguments, values, derivatives)),
       pʹ_(p_.Derivative()) {}
 
 template<affine Value_, affine Argument_>
@@ -93,33 +95,23 @@ void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
 template<affine Value_, affine Argument_>
 BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
   auto const& coefficients = pʹ_.coefficients();
-  return SolveQuadraticEquation<Argument, Derivative1>(
-      p_.origin(),
-      std::get<0>(coefficients),
-      std::get<1>(coefficients),
-      std::get<2>(coefficients));
-}
-
-template<affine Value_, affine Argument_>
-BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema(
-    Argument const& lower,
-    Argument const& upper) const {
-  auto const extrema = FindExtrema();
-  BoundedArray<Argument, 2> result;
-  for (auto const& extremum : extrema) {
-    if (lower <= extremum && extremum <= upper) {
-      result.push_back(extremum);
+  auto const roots =
+      SolveQuadraticEquation<Argument, Derivative1>(p_.origin(),
+                                                    std::get<0>(coefficients),
+                                                    std::get<1>(coefficients),
+                                                    std::get<2>(coefficients));
+  BoundedArray<Argument, 2> valid_roots;
+  for (auto const& root : roots) {
+    if (lower_ <= root && root <= upper_) {
+      valid_roots.push_back(root);
     }
   }
-  return result;
+  return valid_roots;
 }
 
 template<affine Value_, affine Argument_>
-auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
-    Argument const& lower,
-    Argument const& upper) const -> NormType {
-  CHECK_LE(lower, upper);
-
+auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound() const
+    -> NormType {
   // First split the coefficients of `p_` by dimension.  This part is *not*
   // coordinate-free.
   auto const& coefficients = p_.coefficients();
@@ -139,14 +131,16 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
   std::vector<H> split_hermites;
   split_hermites.reserve(S::dimension);
   for (std::int64_t i = 0; i < S::dimension; ++i) {
-    split_hermites.push_back(H(P({
-        split_a0[i], split_a1[i], split_a2[i], split_a3[i]}, origin)));
+    split_hermites.push_back(
+        H(lower_,
+          upper_,
+          P({split_a0[i], split_a1[i], split_a2[i], split_a3[i]}, origin)));
   }
 
   // Find the extrema of each split polynomial.
   NormType sum{};
   for (H const& split_hermite : split_hermites) {
-    auto const extrema = split_hermite.FindExtrema(lower, upper);
+    auto const extrema = split_hermite.FindExtrema();
     // Compute the maximum of the absolute value of each split polynomial at its
     // extrema.  This is the L∞ norm of that polynomial.
     NormType max{};
@@ -159,6 +153,48 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound(
   }
 
   return sum;
+}
+
+template<affine Value_, affine Argument_>
+auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
+  CHECK_EQ((*this)(lower_), Value{});
+  CHECK_EQ(this->EvaluateDerivative(lower_), Derivative1{});
+
+  // The value type of the polynomial `q(t) = p_(t) / (t - lower_)²`.
+  using QValue = Quotient<Value, Square<Difference<Argument>>>;
+
+  auto const& coefficients = p_.coefficients();
+  PolynomialInMonomialBasis<QValue, Argument, 1> const q(
+      {std::get<2>(coefficients), std::get<3>(coefficients)},
+      lower_);
+  // The monomial `(t - lower_)`.
+  PolynomialInMonomialBasis<Difference<Argument>, Argument, 1> const monomial(
+      {Difference<Argument>{}, 1.0}, lower_);
+
+  // This is not quite `d/dt(‖p_(t)‖₂²)`, but it differs from it by a factor
+  // `(t - lower)³`, which is irrelevant to find its zeroes.
+  using DValue =
+      Quotient<Square<NormType>, Exponentiation<Difference<Argument>, 4>>;
+  PolynomialInMonomialBasis<DValue, Argument, 2> const norm₂²_derivative =
+      PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));
+  auto const& norm₂²_derivative_coefficients = norm₂²_derivative.coefficients();
+  auto const norm₂²_derivative_roots =
+      SolveQuadraticEquation<Argument, DValue>(
+          q.origin(),
+          std::get<0>(norm₂²_derivative_coefficients),
+          std::get<1>(norm₂²_derivative_coefficients),
+          std::get<2>(norm₂²_derivative_coefficients));
+
+  // The extrema of `‖p_(t)‖₂` are either at the roots of its derivative or at
+  // the upper bound of the interval.
+  Square<NormType> max = Hilbert<Difference<Value>>::Norm²((*this)(upper_));
+  for (auto const& root : norm₂²_derivative_roots) {
+    if (lower_ < root && root < upper_) {
+      max = std::max(max, Hilbert<Difference<Value>>::Norm²((*this)(root)));
+    }
+  }
+
+  return Sqrt(max);
 }
 
 template<affine Value_, affine Argument_>
@@ -198,9 +234,15 @@ bool Hermite3<Value_, Argument_>::LInfinityL₂ErrorIsWithin(
 
 template<affine Value_, affine Argument_>
 Hermite3<Value_, Argument_>::Hermite3(
+    Argument const& lower,
+    Argument const& upper,
     PolynomialInMonomialBasis<Value, Argument, degree> p)
-    : p_(std::move(p)),
-      pʹ_(p_.Derivative()) {}
+    : lower_(lower),
+      upper_(upper),
+      p_(std::move(p)),
+      pʹ_(p_.Derivative()) {
+  CHECK_EQ(p_.origin(), lower_);
+}
 
 template<affine Value_, affine Argument_>
 FORCE_INLINE(inline)
