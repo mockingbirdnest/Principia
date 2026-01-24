@@ -52,7 +52,8 @@ class Hermite3 final {
   // evaluate than the one on the left since each `hᵢ` is a cubic polynomial.
   NormType LInfinityL₁NormUpperBound() const;
 
-  //TODO(phl)comment
+  // If `h` is this object, and `h(lower_) = 0` and `h'(lower_) = 0`, returns
+  // `max{t ∈ [lower_, upper_]}(‖h(t)‖₂)`.
   NormType LInfinityL₂Norm() const;
 
   // `samples` must be a container; `get_argument` and `get_value` on the

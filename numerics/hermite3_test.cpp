@@ -115,9 +115,7 @@ TEST_F(Hermite3Test, LInfinityL₂NormMass) {
       /*derivatives=*/
       {0 * Kilogram / Second, -1 * Kilogram / Second});
   // The expected value was computed with Mathematica.
-  EXPECT_THAT(h.LInfinityL₂Norm(),
-              AlmostEquals((-325.0 + 166.0 * Sqrt(83.0)) / 361 * Kilogram,
-                           1));
+  EXPECT_THAT(h.LInfinityL₂Norm(), AlmostEquals(5.0 * Kilogram, 0));
 }
 
 TEST_F(Hermite3Test, LInfinityL₂NormDisplacement) {
@@ -133,10 +131,11 @@ TEST_F(Hermite3Test, LInfinityL₂NormDisplacement) {
            {-10 * Metre / Second, 11 * Metre / Second, 12 * Metre / Second})});
   // The expected value was computed with Mathematica.
   EXPECT_THAT(h.LInfinityL₂Norm(),
-              AlmostEquals((4.0 * (209533.0 + 42300.0 * Sqrt(47.0) +
-                                   28037.0 * Sqrt(106.0))) /
-                               119025.0 * Metre,
-                           1));
+              AlmostEquals((32.0 * Sqrt((89585829490348391.0 +
+                                         94266519982393.0 * Sqrt(74917.0)) /
+                                        3869.0)) /
+                               14969161.0 * Metre,
+                           2));
 }
 
 TEST_F(Hermite3Test, LInfinityL₁NormUpperBoundMass) {
