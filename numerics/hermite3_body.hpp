@@ -159,22 +159,22 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
   CHECK_EQ((*this)(lower_), Value{});
   CHECK_EQ(this->EvaluateDerivative(lower_), Derivative1{});
 
-  // The value type of the polynomial `q(t) = p_(t) / (t - lower)²`.
+  // The value type of the polynomial `q(t) = p_(t) / (t - lower_)²`.
   using QValue = Quotient<Value, Square<Difference<Argument>>>;
 
   auto const& coefficients = p_.coefficients();
-  auto const& origin = p_.origin();
-  // TODO(phl)weird division.
   PolynomialInMonomialBasis<QValue, Argument, 1> const q(
-      {std::get<0>(coefficients) / Pow<2>(lower_), std::get<3>(coefficients)},
-      origin);
-  // The monomial `(t - lower)`.
-  PolynomialInMonomialBasis<Argument, Argument, 1> const monomial(
-      {-lower_, 1.0}, origin);
+      {std::get<2>(coefficients), std::get<3>(coefficients)},
+      lower_);
+  // The monomial `(t - lower_)`.
+  PolynomialInMonomialBasis<Difference<Argument>, Argument, 1> const monomial(
+      {Difference<Argument>{}, 1.0}, lower_);
 
   // This is not quite `d/dt(‖p_(t)‖₂²)`, but it differs from it by a factor
   // `(t - lower)³`, which is irrelevant to find the zeroes of the derivative.
-  using DValue = Quotient<Square<NormType>, Cube<Difference<Argument>>>;
+  using DValue =
+      Quotient<Square<NormType>, Exponentiation<Difference<Argument>, 4>>;
+  auto a = PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));
   PolynomialInMonomialBasis<DValue, Argument, 2> const norm₂²_derivative =
       PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));
   auto const& norm₂²_derivative_coefficients = norm₂²_derivative.coefficients();
@@ -240,7 +240,9 @@ Hermite3<Value_, Argument_>::Hermite3(
     : lower_(lower),
       upper_(upper),
       p_(std::move(p)),
-      pʹ_(p_.Derivative()) {}
+      pʹ_(p_.Derivative()) {
+  CHECK_EQ(p_.origin(), lower_);
+}
 
 template<affine Value_, affine Argument_>
 FORCE_INLINE(inline)
