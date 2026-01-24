@@ -385,7 +385,7 @@ operator-(PolynomialInMonomialBasis<Value, Argument, ldegree_,
 // TODO(phl): The operators below work fine when `Value` is a vector space, but
 // they are bogus when it is merely an affine space.  For instance, multiplying
 // by a scalar a polynomial whose `Value` is a `Position` makes no sense.  They
-// do not compile in that case, but the compilation error is inscrutable.  We 
+// do not compile in that case, but the compilation error is inscrutable.  We
 // need to fix this.
 
 template<typename Scalar,
