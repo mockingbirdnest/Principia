@@ -158,6 +158,40 @@ template<affine Value_, affine Argument_>
 auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
   CHECK_EQ((*this)(lower_), Value{});
   CHECK_EQ(this->EvaluateDerivative(lower_), Derivative1{});
+
+  // The value type of the polynomial `q(t) = p_(t) / (t - lower)²`.
+  using QValue = Quotient<Value, Square<Difference<Argument>>>;
+
+  auto const& coefficients = p_.coefficients();
+  auto const& origin = p_.origin();
+  // TODO(phl)weird division.
+  PolynomialInMonomialBasis<QValue, Argument, 1> const q(
+      {std::get<0>(coefficients) / Pow<2>(lower_), std::get<3>(coefficients)},
+      origin);
+  // The monomial `(t - lower)`.
+  PolynomialInMonomialBasis<Argument, Argument, 1> const monomial(
+      {-lower_, 1.0}, origin);
+
+  // This is not quite `d/dt(‖p_(t)‖₂²)`, but it differs from it by a factor
+  // `(t - lower)³`, which is irrelevant to find the zeroes of the derivative.
+  auto const norm₂²_derivative =
+      PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));
+  auto const& norm₂²_derivative_coefficients = norm₂²_derivative.coefficients();
+  auto const norm₂²_derivative_roots =
+      SolveQuadraticEquation<Argument, Derivative1>(
+          q.origin(),
+          std::get<0>(norm₂²_derivative_coefficients),
+          std::get<1>(norm₂²_derivative_coefficients),
+          std::get<2>(norm₂²_derivative_coefficients));
+
+  Square<NormType> max = (*this)(upper_).Norm²();
+  for (auto const& root : norm₂²_derivative_roots) {
+    if (lower_ < root && root < upper_) {
+      max = std::max(max, (*this)(root).Norm²());
+    }
+  }
+
+  return Sqrt(max);
 }
 
 template<affine Value_, affine Argument_>
