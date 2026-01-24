@@ -42,18 +42,19 @@ class Hermite3 final {
                               Value& value,
                               Derivative1& derivative) const;
 
-  // The result is sorted.
+  // The result is sorted and the roots are within the `arguments` range given
+  // at construction.
   BoundedArray<Argument, 2> FindExtrema() const;
-  BoundedArray<Argument, 2> FindExtrema(Argument const& lower,
-                                        Argument const& upper) const;
 
   // If `h` is this object, returns an upper bound on
-  // `max{t ∈ [lower, upper]}(‖h(t)‖₁)`.  The upper bound is because we
+  // `max{t ∈ [lower_, upper_]}(‖h(t)‖₁)`.  The upper bound is because we
   // note that `‖h(t)‖₁ ≤ Σᵢ(‖hᵢ(t)‖∞)`, where `hᵢ` are the components of
   // `h` in our coordinate system.  The expression on the right is easier to
   // evaluate than the one on the left since each `hᵢ` is a cubic polynomial.
-  NormType LInfinityL₁NormUpperBound(Argument const& lower,
-                                     Argument const& upper) const;
+  NormType LInfinityL₁NormUpperBound() const;
+
+  //TODO(phl)comment
+  NormType LInfinityL₂Norm() const;
 
   // `samples` must be a container; `get_argument` and `get_value` on the
   // its elements must return `Argument` and `Value` respectively.  If `h` is
@@ -82,13 +83,17 @@ class Hermite3 final {
  private:
   static constexpr std::int64_t degree = 3;
 
-  explicit Hermite3(PolynomialInMonomialBasis<Value, Argument, degree> p);
+  Hermite3(Argument const& lower,
+           Argument const& upper,
+           PolynomialInMonomialBasis<Value, Argument, degree> p);
 
   static PolynomialInMonomialBasis<Value, Argument, 3> MakePolynomial(
       std::pair<Argument, Argument> const& arguments,
       std::pair<Value, Value> const& values,
       std::pair<Derivative1, Derivative1> const& derivatives);
 
+  Argument const lower_;
+  Argument const upper_;
   PolynomialInMonomialBasis<Value, Argument, degree> p_;
   PolynomialInMonomialBasis<Derivative1, Argument, degree - 1> pʹ_;
 

@@ -60,8 +60,7 @@ TEST_F(Hermite3Test, Precomputed) {
   EXPECT_EQ(6 * Metre / Second, h.EvaluateDerivative(t0_ + 2 * Second));
 
   EXPECT_THAT(h.FindExtrema(),
-              ElementsAre(t0_ + ((64.0 - sqrt(430.0)) / 39.0) * Second,
-                          t0_ + ((64.0 + sqrt(430.0)) / 39.0) * Second));
+              ElementsAre(t0_ + ((64.0 - sqrt(430.0)) / 39.0) * Second));
 }
 
 TEST_F(Hermite3Test, Quadratic) {
@@ -72,13 +71,13 @@ TEST_F(Hermite3Test, Quadratic) {
   // These are the correctly-rounded extrema.
   EXPECT_THAT(
       near_quadratic.FindExtrema(),
-      ElementsAre(t0_ - 0x1.5555555555552p51 * Second, t0_ + 1.5 * Second));
+      ElementsAre(t0_ + 1.5 * Second));
   Hermite3<Length, Instant> quadratic(
       {t0_ + 1 * Second, t0_ + 2 * Second},
       {0 * Metre, 0 * Metre},
       {-1 * Metre / Second, 1 * Metre / Second});
   EXPECT_THAT(quadratic.FindExtrema(),
-              ElementsAre(InfinitePast, t0_ + 1.5 * Second));
+              ElementsAre(t0_ + 1.5 * Second));
 }
 
 TEST_F(Hermite3Test, Typed) {
@@ -116,7 +115,7 @@ TEST_F(Hermite3Test, LInfinityL₁NormUpperBoundMass) {
       /*derivatives=*/
       {2 * Kilogram / Second, -1 * Kilogram / Second});
   // The expected value was computed with Mathematica.
-  EXPECT_THAT(h.LInfinityL₁NormUpperBound(t0_, t0_ + 3 * Second),
+  EXPECT_THAT(h.LInfinityL₁NormUpperBound(),
               AlmostEquals((-325.0 + 166.0 * Sqrt(83.0)) / 361 * Kilogram,
                            1));
 }
@@ -133,7 +132,7 @@ TEST_F(Hermite3Test, LInfinityL₁NormUpperBoundDisplacement) {
        Velocity<World>(
            {-10 * Metre / Second, 11 * Metre / Second, 12 * Metre / Second})});
   // The expected value was computed with Mathematica.
-  EXPECT_THAT(h.LInfinityL₁NormUpperBound(t0_, t0_ + 3 * Second),
+  EXPECT_THAT(h.LInfinityL₁NormUpperBound(),
               AlmostEquals((4.0 * (209533.0 + 42300.0 * Sqrt(47.0) +
                                    28037.0 * Sqrt(106.0))) /
                                119025.0 * Metre,
