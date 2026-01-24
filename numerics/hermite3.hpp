@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <utility>
-#include <vector>
 
 #include "base/algebra.hpp"
 #include "base/array.hpp"

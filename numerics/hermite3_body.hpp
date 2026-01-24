@@ -171,7 +171,7 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
       {Difference<Argument>{}, 1.0}, lower_);
 
   // This is not quite `d/dt(‖p_(t)‖₂²)`, but it differs from it by a factor
-  // `(t - lower)³`, which is irrelevant to find the zeroes of the derivative.
+  // `(t - lower)³`, which is irrelevant to find its zeroes.
   using DValue =
       Quotient<Square<NormType>, Exponentiation<Difference<Argument>, 4>>;
   auto a = PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));

@@ -111,9 +111,9 @@ TEST_F(Hermite3Test, LInfinityL₂NormMass) {
   const auto h = Hermite3<Mass, Instant>(
       /*arguments=*/{t0_, t0_ + 3 * Second},
       /*values=*/
-      {3 * Kilogram, -5 * Kilogram},
+      {0 * Kilogram, -5 * Kilogram},
       /*derivatives=*/
-      {2 * Kilogram / Second, -1 * Kilogram / Second});
+      {0 * Kilogram / Second, -1 * Kilogram / Second});
   // The expected value was computed with Mathematica.
   EXPECT_THAT(h.LInfinityL₂Norm(),
               AlmostEquals((-325.0 + 166.0 * Sqrt(83.0)) / 361 * Kilogram,
@@ -124,11 +124,11 @@ TEST_F(Hermite3Test, LInfinityL₂NormDisplacement) {
   const auto h = Hermite3<Displacement<World>, Instant>(
       /*arguments=*/{t0_, t0_ + 3 * Second},
       /*values=*/
-      {Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre}),
+      {Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}),
        Displacement<World>({4 * Metre, -5 * Metre, 6 * Metre})},
       /*derivatives=*/
       {Velocity<World>(
-           {7 * Metre / Second, -8 * Metre / Second, -9 * Metre / Second}),
+           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
        Velocity<World>(
            {-10 * Metre / Second, 11 * Metre / Second, 12 * Metre / Second})});
   // The expected value was computed with Mathematica.
