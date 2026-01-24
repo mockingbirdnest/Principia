@@ -465,8 +465,6 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
 TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
   auto const circle_segments = MakeSegments(1);
   auto& circle = *circle_segments->begin();
-  circle.SetDownsampling(
-      {.max_dense_intervals = 50, .tolerance = 1 * Milli(Metre)});
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Time const Δt = 10 * Milli(Second);
@@ -496,6 +494,11 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
       /*exact=*/{circle.lower_bound(t0_ + 2 * Second),
                  circle.lower_bound(t0_ + 3 * Second)});
 
+  // In the absence of downsampling, serialization/deserialization is
+  // idempotent.  It would not be if downsampling were used, because the read
+  // would restore the exact points to a value different from the one found in
+  // the compressed zfp timeline, so that the second write would not feed the
+  // compressor with the same data that was decompressed.
   EXPECT_THAT(message2, EqualsProto(message1));
 }
 
