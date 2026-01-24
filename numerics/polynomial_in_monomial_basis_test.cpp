@@ -194,6 +194,20 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
   EXPECT_THAT(v2, AlmostEquals(v, 0));
 }
 
+// Check that addition and subtraction are available for affine-valued
+// polynomials.
+TEST_F(PolynomialInMonomialBasisTest, Addition2P) {
+  Instant const t0 = Instant() + 0.3 * Second;
+  P2P const p1({World::origin + std::get<0>(coefficients_),
+               std::get<1>(coefficients_),
+               std::get<2>(coefficients_)},
+              t0);
+  P2P const p2 = p1;
+  P2A const p3 = p2 - p1;
+  P2P const p4 = p1 + p3;
+  P2P const p5 = p3 + p1;
+}
+
 PRINCIPIA_CHECK_WELL_FORMED(
     p.Primitive(),
     with_variable<PolynomialInMonomialBasisTest::P2A> p);

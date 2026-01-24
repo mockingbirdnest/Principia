@@ -653,7 +653,7 @@ VirtualEvaluateWithDerivative(Argument argument,
   return EvaluateWithDerivative(argument, value, derivative);
 }
 
-template<typename Value, typename Argument, int rdegree,
+template<additive_group Value, affine Argument, int rdegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>
 operator+(
@@ -662,7 +662,7 @@ operator+(
   return right;
 }
 
-template<typename Value, typename Argument, int rdegree,
+template<additive_group Value, affine Argument, int rdegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>
 operator-(PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
@@ -673,7 +673,7 @@ operator-(PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
       right.origin_);
 }
 
-template<typename Value, typename Argument, int ldegree, int rdegree,
+template<additive_group Value, affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree),
@@ -690,10 +690,45 @@ operator+(
       left.origin_);
 }
 
-template<typename Value, typename Argument, int ldegree, int rdegree,
+template<affine Value, affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree),
+                          Evaluator>
+operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
+                                    Evaluator> const& left,
+          PolynomialInMonomialBasis<Value, Argument, rdegree,
+                                    Evaluator> const& right) {
+  using geometry::_cartesian_product::vector_space::operator+;
+  CONSTEXPR_CHECK(left.origin_ == right.origin_);
+  return PolynomialInMonomialBasis<Value, Argument,
+                                   std::max(ldegree, rdegree), Evaluator>(
+      left.coefficients_ + right.coefficients_,
+      left.origin_);
+}
+
+template<affine Value, affine Argument, int ldegree, int rdegree,
+         template<typename, typename, int> typename Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree),
+                          Evaluator>
+operator+(PolynomialInMonomialBasis<Value, Argument, ldegree,
+                                    Evaluator> const& left,
+          PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
+                                    Evaluator> const& right) {
+  using geometry::_cartesian_product::vector_space::operator+;
+  CONSTEXPR_CHECK(left.origin_ == right.origin_);
+  return PolynomialInMonomialBasis<Value, Argument,
+                                   std::max(ldegree, rdegree), Evaluator>(
+      left.coefficients_ + right.coefficients_,
+      left.origin_);
+}
+
+template<affine Value, affine Argument, int ldegree, int rdegree,
+         template<typename, typename, int> typename Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Difference<Value>, Argument,
+                          std::max(ldegree, rdegree),
                           Evaluator>
 operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
@@ -701,14 +736,14 @@ operator-(
         right) {
   using geometry::_cartesian_product::vector_space::operator-;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  return PolynomialInMonomialBasis<Value, Argument,
+  return PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     std::max(ldegree, rdegree), Evaluator>(
       left.coefficients_ - right.coefficients_,
       left.origin_);
 }
 
 template<typename Scalar,
-         typename Value, typename Argument, int degree,
+         typename Value, affine Argument, int degree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree, Evaluator>
@@ -722,7 +757,7 @@ operator*(Scalar const& left,
 }
 
 template<typename Scalar,
-         typename Value, typename Argument, int degree,
+         typename Value, affine Argument, int degree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree, Evaluator>
@@ -736,7 +771,7 @@ operator*(
 }
 
 template<typename Scalar,
-         typename Value, typename Argument, int degree,
+         typename Value, affine Argument, int degree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree, Evaluator>
@@ -750,7 +785,7 @@ operator/(
 }
 
 template<typename LValue, typename RValue,
-         typename Argument, int ldegree, int rdegree,
+         affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Product<LValue, RValue>, Argument, ldegree + rdegree,
@@ -769,7 +804,7 @@ operator*(
 }
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
-template<typename Value, typename Argument, int ldegree,
+template<typename Value, affine Argument, int ldegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>
 operator+(PolynomialInMonomialBasis<Difference<Value>,
@@ -780,7 +815,7 @@ operator+(PolynomialInMonomialBasis<Difference<Value>,
 #else
 template<typename Value,
          std::same_as<Difference<Value>> ValueDifference,
-         typename Argument,
+         affine Argument,
          int ldegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>
@@ -802,7 +837,7 @@ operator+(PolynomialInMonomialBasis<ValueDifference,
       left.origin_);
 }
 
-template<typename Value, typename Argument, int rdegree,
+template<typename Value, affine Argument, int rdegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>
 operator+(Value const& left,
@@ -819,7 +854,7 @@ operator+(Value const& left,
       right.origin_);
 }
 
-template<typename Value, typename Argument, int ldegree,
+template<typename Value, affine Argument, int ldegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
                                     Evaluator>
@@ -837,7 +872,7 @@ operator-(
       left.origin_);
 }
 
-template<typename Value, typename Argument, int rdegree,
+template<typename Value, affine Argument, int rdegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
                                     Evaluator>
@@ -880,7 +915,7 @@ Compose(
 }
 
 template<typename LValue, typename RValue,
-         typename Argument, int ldegree, int rdegree,
+         affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<
@@ -901,7 +936,7 @@ PointwiseInnerProduct(
           left.origin_);
 }
 
-template<typename Value, typename Argument, int degree,
+template<typename Value, affine Argument, int degree,
          template<typename, typename, int> typename Evaluator>
 std::ostream& operator<<(
     std::ostream& out,
