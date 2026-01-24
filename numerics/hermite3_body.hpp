@@ -174,7 +174,6 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
   // `(t - lower)³`, which is irrelevant to find its zeroes.
   using DValue =
       Quotient<Square<NormType>, Exponentiation<Difference<Argument>, 4>>;
-  auto a = PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));
   PolynomialInMonomialBasis<DValue, Argument, 2> const norm₂²_derivative =
       PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));
   auto const& norm₂²_derivative_coefficients = norm₂²_derivative.coefficients();
