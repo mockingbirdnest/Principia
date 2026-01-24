@@ -174,20 +174,23 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
 
   // This is not quite `d/dt(‖p_(t)‖₂²)`, but it differs from it by a factor
   // `(t - lower)³`, which is irrelevant to find the zeroes of the derivative.
-  auto const norm₂²_derivative =
+  using DValue = Quotient<Square<NormType>, Cube<Difference<Argument>>>;
+  PolynomialInMonomialBasis<DValue, Argument, 2> const norm₂²_derivative =
       PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));
   auto const& norm₂²_derivative_coefficients = norm₂²_derivative.coefficients();
   auto const norm₂²_derivative_roots =
-      SolveQuadraticEquation<Argument, Derivative1>(
+      SolveQuadraticEquation<Argument, DValue>(
           q.origin(),
           std::get<0>(norm₂²_derivative_coefficients),
           std::get<1>(norm₂²_derivative_coefficients),
           std::get<2>(norm₂²_derivative_coefficients));
 
-  Square<NormType> max = (*this)(upper_).Norm²();
+  // The extrema of `‖p_(t)‖₂` are either at the roots of its derivative or at
+  // the upper bound of the interval.
+  Square<NormType> max = Hilbert<Difference<Value>>::Norm²((*this)(upper_));
   for (auto const& root : norm₂²_derivative_roots) {
     if (lower_ < root && root < upper_) {
-      max = std::max(max, (*this)(root).Norm²());
+      max = std::max(max, Hilbert<Difference<Value>>::Norm²((*this)(root)));
     }
   }
 
