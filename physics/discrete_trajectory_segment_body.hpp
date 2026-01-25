@@ -385,10 +385,10 @@ void DiscreteTrajectorySegment<Frame>::ForgetAfter(
     auto const& last_interpolation = timeline_.crbegin()->interpolation;
     if (last_interpolation != nullptr) {
       downsampling_error_ = last_interpolation->error;
-    } else {
-      downsampling_error_ = Length{};
+      return;
     }
   }
+  downsampling_error_ = Length{};
 }
 
 template<typename Frame>

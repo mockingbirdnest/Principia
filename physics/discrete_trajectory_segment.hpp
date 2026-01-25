@@ -185,26 +185,30 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // compatibility deserialization.
   void SetForkPoint(value_type const& point);
 
-  // TODO(phl)comment
+  // Stores the Hermite interpolation for the open trajectory interval bounded
+  // above by `upper`.  `upper` must not be the first point of the timeline.
+  // Because the interpolation covers consecutive points without any
+  // intermediate points dropped, it is exact and its error is set to zero.
+  // The first function requires that there is no existing interpolation for the
+  // `upper` point, while the second one updates an existing interpolation.
   void CreateInterpolation(typename Timeline::iterator upper);
   void UpdateInterpolation(typename Timeline::iterator upper);
 
-  // Constructs the Hermite interpolation for the left-open, right-closed
-  // trajectory interval bounded above by `upper`.  `upper` must not be the
-  // first point of the timeline.
-  // TODO(phl)comment
+  // Constructs the Hermite interpolation for the trajectory interval
+  // `]lower, t[` with the specified `degrees_of_freedom` for time `t`.
   static Hermite3<Position<Frame>, Instant>
   MakeHermite3(typename Timeline::const_iterator lower,
                Instant const& t,
                DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
-  // TODO(phl)comment
+  // Allocates an `Interpolation` struct holding the given `hermite3` and
+  // `error`.
   static not_null<std::unique_ptr<Interpolation<Frame>>> NewInterpolation(
       Hermite3<Position<Frame>, Instant> hermite3,
       Length const& error);
 
-  // Returns the Hermite interpolation for the left-open, right-closed
-  // trajectory interval bounded above by `upper`, which must exist.
+  // Returns the Hermite interpolation for the open trajectory interval bounded
+  // above by `upper`.  The interpolation must exist.
   Hermite3<Position<Frame>, Instant> const& get_hermite3(
       typename Timeline::const_iterator upper) const;
 
@@ -228,7 +232,8 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   std::optional<DownsamplingParameters> downsampling_parameters_;
 
-  //TODO(phl)comment
+  // The current upper bound on the error introduced by downsampling, as
+  // computed using `LInfinityL₂Norm`.
   Length downsampling_error_;
 
   DiscreteTrajectorySegmentIterator<Frame> self_;
