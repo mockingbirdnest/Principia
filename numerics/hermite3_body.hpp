@@ -69,8 +69,7 @@ Hermite3<Value_, Argument_>::Hermite3(
     std::pair<Derivative1, Derivative1> const& derivatives)
     : lower_(arguments.first),
       upper_(arguments.second),
-      p_(MakePolynomial(arguments, values, derivatives)),
-      pʹ_(p_.Derivative()) {}
+      p_(MakePolynomial(arguments, values, derivatives)) {}
 
 template<affine Value_, affine Argument_>
 Value_ Hermite3<Value_, Argument_>::operator()(Argument const& argument) const {
@@ -81,7 +80,7 @@ template<affine Value_, affine Argument_>
 typename Hermite3<Value_, Argument_>::Derivative1
 Hermite3<Value_, Argument_>::
 EvaluateDerivative(Argument const& argument) const {
-  return pʹ_(argument);
+  return p_.EvaluateDerivative(argument);
 }
 
 template<affine Value_, affine Argument_>
@@ -94,7 +93,7 @@ void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
 
 template<affine Value_, affine Argument_>
 BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
-  auto const& coefficients = pʹ_.coefficients();
+  auto const& coefficients = p_.Derivative().coefficients();
   auto const roots =
       SolveQuadraticEquation<Argument, Derivative1>(p_.origin(),
                                                     std::get<0>(coefficients),
@@ -157,8 +156,8 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound() const
 
 template<affine Value_, affine Argument_>
 auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
-  CHECK_EQ((*this)(lower_), Value{});
-  CHECK_EQ(this->EvaluateDerivative(lower_), Derivative1{});
+  DCHECK_EQ((*this)(lower_), Value{});
+  DCHECK_EQ(this->EvaluateDerivative(lower_), Derivative1{});
 
   // The value type of the polynomial `q(t) = p_(t) / (t - lower_)²`.
   using QValue = Quotient<Value, Square<Difference<Argument>>>;
@@ -239,8 +238,7 @@ Hermite3<Value_, Argument_>::Hermite3(
     PolynomialInMonomialBasis<Value, Argument, degree> p)
     : lower_(lower),
       upper_(upper),
-      p_(std::move(p)),
-      pʹ_(p_.Derivative()) {
+      p_(std::move(p)) {
   CHECK_EQ(p_.origin(), lower_);
 }
 

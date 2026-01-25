@@ -95,7 +95,6 @@ class Hermite3 final {
   Argument const lower_;
   Argument const upper_;
   PolynomialInMonomialBasis<Value, Argument, degree> p_;
-  PolynomialInMonomialBasis<Derivative1, Argument, degree - 1> pʹ_;
 
   template<affine V, affine A>
   friend class Hermite3;

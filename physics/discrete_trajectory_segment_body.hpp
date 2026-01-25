@@ -427,7 +427,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
   } else {
     auto const first = timeline_.cbegin();
-    auto const last = std::prev(timeline_.end());
+    auto const last = std::prev(timeline_.cend());
     if (first->time == t) {
       LOG(WARNING) << "Append at existing time " << t << ", time range = ["
                    << first->time << ", " << last->time << "]";
@@ -451,21 +451,18 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
       // Compute the new error bound.
       auto const interpolation_difference =
           *new_interpolation - *last->interpolation;
-      downsampling_error_ +=
-#if 0
-          interpolation_difference.LInfinityL₁NormUpperBound();
-#else
-          interpolation_difference.LInfinityL₂Norm();
-#endif
+      downsampling_error_ += interpolation_difference.LInfinityL₂Norm();
       if (downsampling_error_ < downsampling_parameters_->tolerance) {
         // The error bound is below the tolerance, replace the last point with
-        // the new one, record the new interpolation, and keep going
+        // the new one, record the new interpolation, and keep going.  This is
+        // faster than `erase` followed by `emplace_hint`.
         was_downsampled_ = true;
-        auto back = timeline_.extract(last);
-        back.value().time = t;
-        back.value().degrees_of_freedom = degrees_of_freedom;
-        back.value().interpolation = std::move(new_interpolation);
-        timeline_.insert(timeline_.cend(), std::move(back));
+        auto extracted = timeline_.extract(last);
+        auto& value = extracted.value();
+        value.time = t;
+        value.degrees_of_freedom = degrees_of_freedom;
+        value.interpolation = std::move(new_interpolation);
+        timeline_.insert(timeline_.cend(), std::move(extracted));
         return absl::OkStatus();
       }
     }
@@ -480,17 +477,15 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         NewInterpolation(lower, t, degrees_of_freedom);
     auto const it =
         timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
-    if (downsampling_parameters_.has_value()) {
-      if (just_forgot_) {
-        // After a forget, we have to assume the worst for the downsampling
-        // error since we cannot recompute it.
-        downsampling_error_ = Infinity<Length>;
-      } else {
-        // There is no error because the points being interpolated are
-        // consecutive, so the interpolation exactly matches their positions and
-        // velocities.
-        downsampling_error_ = Length{};
-      }
+    if (just_forgot_) {
+      // After a forget, we have to assume the worst for the downsampling error
+      // since we cannot recompute it.
+      downsampling_error_ = Infinity<Length>;
+    } else {
+      // There is no error because the points being interpolated are
+      // consecutive, so the interpolation exactly matches their positions and
+      // velocities.
+      downsampling_error_ = Length{};
     }
     it->interpolation = std::move(new_interpolation);
   }
