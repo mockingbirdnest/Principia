@@ -349,7 +349,8 @@ TEST_F(DiscreteTrajectorySegmentTest, DownsamplingForgetAfter) {
       /*to=*/forgotten_circle);
 
   // Forget one of the trajectories in the middle, and append new points.
-  Instant const restart_time = forgotten_circle.lower_bound(t2)->time;
+  Instant const restart_time =
+      std::prev(forgotten_circle.lower_bound(t2))->time + Δt;
   ForgetAfter(t2, forgotten_circle);
   AppendTrajectoryTimeline(
       NewCircularTrajectoryTimeline<World>(ω, r, Δt, restart_time, t3),
@@ -546,9 +547,7 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationRange) {
                          /*exact=*/{});
 
   // Writing a range of the segment is equivalent to forgetting and writing the
-  // result, except for the `just_forgot_` bit.
-  message1.clear_just_forgot();
-  message2.clear_just_forgot();
+  // result.
   EXPECT_THAT(message1, EqualsProto(message2));
 }
 

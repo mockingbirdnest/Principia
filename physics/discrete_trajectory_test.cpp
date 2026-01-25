@@ -831,9 +831,7 @@ TEST_F(DiscreteTrajectoryTest, SerializationRange) {
                              /*exact=*/{});
 
   // Writing a range of the trajectory is equivalent to forgetting and writing
-  // the result, except for the `just_forgot_` bit.
-  message1.mutable_segment(2)->clear_just_forgot();
-  message2.mutable_segment(2)->clear_just_forgot();
+  // the result.
   EXPECT_THAT(message1, EqualsProto(message2));
 }
 

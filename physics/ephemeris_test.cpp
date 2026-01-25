@@ -1373,13 +1373,13 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
               Ephemeris<ICRS>::NewtonianMotionEquation>(),
           10 * Second));
   EXPECT_OK(ephemeris->FlowWithFixedStep(t1, *instance));
-  EXPECT_EQ(1162, trajectory1.size());
+  EXPECT_EQ(843, trajectory1.size());
 
   serialization::DiscreteTrajectory message;
   trajectory1.WriteToMessage(&message, /*tracked=*/{}, /*exact=*/{});
   std::string uncompressed;
   message.SerializePartialToString(&uncompressed);
-  EXPECT_EQ(18'698, uncompressed.size());
+  EXPECT_EQ(15'895, uncompressed.size());
 
   std::string compressed;
   auto compressor = google::compression::NewGipfeliCompressor();
@@ -1387,8 +1387,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
 
   // We want a change detector, but the actual compressed size varies depending
   // on the exact numerical values, and therefore on the mathematical library.
-  EXPECT_LE(17'151, compressed.size());
-  EXPECT_GE(17'151, compressed.size());
+  EXPECT_LE(14'636, compressed.size());
+  EXPECT_GE(14'636, compressed.size());
 
   auto const trajectory2 =
       DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*tracked=*/{});
@@ -1400,7 +1400,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
         (trajectory1.EvaluatePosition(t) - trajectory2.EvaluatePosition(t))
             .Norm());
   }
-  EXPECT_THAT(error, IsNear(3.3_(1) * Metre));
+  EXPECT_THAT(error, IsNear(3.7_(1) * Metre));
 
   Logger logger(TEMP_DIR / "discrete_trajectory_compression.generated.wl",
                 /*make_unique=*/false);

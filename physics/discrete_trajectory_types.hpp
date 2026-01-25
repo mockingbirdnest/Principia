@@ -39,6 +39,14 @@ struct DownsamplingParameters {
   Length tolerance;
 };
 
+// The `error` is an upper bound on the interpolation error after `hermite3` has
+// been appended to the timeline.
+template<typename Frame>
+struct Interpolation {
+  Hermite3<Position<Frame>, Instant> hermite3;
+  Length error;
+};
+
 template<typename Frame>
 struct value_type {
   value_type(Instant const& time,
@@ -55,7 +63,7 @@ struct value_type {
   // interval that ends at `time`.  It is missing (set to `nullptr`) for the
   // first point of a segment.  A level of indirection is used to reduce the
   // size of `value_type` (which is stored in a B-tree).
-  std::unique_ptr<Hermite3<Position<Frame>, Instant>> interpolation;
+  std::unique_ptr<Interpolation<Frame>> interpolation;
 
   template<std::size_t i, typename Self>
   constexpr auto&& get(this Self&& self);
@@ -84,6 +92,7 @@ using Timeline = absl::btree_set<value_type<Frame>, Earlier>;
 }  // namespace internal
 
 using internal::DownsamplingParameters;
+using internal::Interpolation;
 using internal::Segments;
 using internal::Timeline;
 

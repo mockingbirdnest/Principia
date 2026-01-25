@@ -141,7 +141,7 @@ Position<Frame> DiscreteTrajectorySegment<Frame>::EvaluatePosition(
   if (it->time == t) {
     return it->degrees_of_freedom.position();
   }
-  return get_interpolation(it)(t);
+  return get_hermite3(it)(t);
 }
 
 template<typename Frame>
@@ -154,7 +154,7 @@ Velocity<Frame> DiscreteTrajectorySegment<Frame>::EvaluateVelocity(
   if (it->time == t) {
     return it->degrees_of_freedom.velocity();
   }
-  return get_interpolation(it).EvaluateDerivative(t);
+  return get_hermite3(it).EvaluateDerivative(t);
 }
 
 template<typename Frame>
@@ -168,7 +168,7 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
   if (it->time == t) {
     return it->degrees_of_freedom;
   }
-  auto const& interpolation = get_interpolation(it);
+  auto const& interpolation = get_hermite3(it);
   return {interpolation(t), interpolation.EvaluateDerivative(t)};
 }
 
@@ -298,7 +298,6 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   }
 
   // Finally, restore the downsampling information.
-  segment.just_forgot_ = message.just_forgot();
   if (message.has_downsampling_parameters()) {
     segment.downsampling_parameters_ = DownsamplingParameters{
         .max_dense_intervals =
@@ -367,9 +366,7 @@ void DiscreteTrajectorySegment<Frame>::Prepend(
                                          degrees_of_freedom);
 
   if (auto const next = std::next(it); next != timeline_.cend()) {
-    CHECK_EQ(nullptr, next->interpolation)
-        << "Already has an interpolation at " << t;
-    next->interpolation = NewInterpolation(next);
+    CreateInterpolation(next);
   }
 }
 
@@ -382,7 +379,16 @@ template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetAfter(
     typename Timeline::const_iterator const begin) {
   timeline_.erase(begin, timeline_.cend());
-  just_forgot_ = true;
+  if (!timeline_.empty()) {
+    // Restore the downsampling error resulting from the last interpolation, if
+    // there is one.
+    auto const& last_interpolation = timeline_.crbegin()->interpolation;
+    if (last_interpolation != nullptr) {
+      downsampling_error_ = last_interpolation->error;
+    } else {
+      downsampling_error_ = Length{};
+    }
+  }
 }
 
 template<typename Frame>
@@ -423,20 +429,18 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         << "Append out of order at " << t << ", last time is "
         << last->time;
 
-    if (timeline_.size() > 1 &&
-        downsampling_parameters_.has_value() &&
-        !just_forgot_) {
+    if (timeline_.size() > 1 && downsampling_parameters_.has_value()) {
       // The lower point of the interpolation is the penultimate point of the
       // segment, since we don't retain the intermediate points that were below
       // the tolerance.  Build an interpolation from that point to the new point
       // being added.
       auto const lower = std::prev(last);
-      auto new_interpolation = NewInterpolation(lower, t, degrees_of_freedom);
+      auto hermite3 = MakeHermite3(lower, t, degrees_of_freedom);
 
       // Compute the new error bound.
-      auto const interpolation_difference =
-          *new_interpolation - *last->interpolation;
-      downsampling_error_ += interpolation_difference.LInfinityL₂Norm();
+      auto const hermite3_difference =
+          hermite3 - last->interpolation->hermite3;
+      downsampling_error_ += hermite3_difference.LInfinityL₂Norm();
       if (downsampling_error_ < downsampling_parameters_->tolerance) {
         // The error bound is below the tolerance, replace the last point with
         // the new one, record the new interpolation, and keep going.  This is
@@ -445,7 +449,8 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         auto& value = extracted.value();
         value.time = t;
         value.degrees_of_freedom = degrees_of_freedom;
-        value.interpolation = std::move(new_interpolation);
+        value.interpolation =
+            NewInterpolation(std::move(hermite3), downsampling_error_);
         timeline_.insert(timeline_.cend(), std::move(extracted));
         return absl::OkStatus();
       }
@@ -453,28 +458,19 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
 
     // We land here if (1) the point being appended is the second point of the
     // segment; or (2) the error bound is above the tolerance; or (3)
-    // downsampling is disabled; or (4) forgetting just happened.  In all cases,
-    // we need to build an interpolation starting at the last point and append
+    // downsampling is disabled.  In all cases, we need to build an
+    // interpolation starting at the last point and append
     // our new point.
     auto const lower = last;
-    auto new_interpolation =
-        NewInterpolation(lower, t, degrees_of_freedom);
+    auto hermite3 = MakeHermite3(lower, t, degrees_of_freedom);
     auto const it =
         timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
-    if (just_forgot_) {
-      // After a forget, we have to assume the worst for the downsampling error
-      // since we cannot recompute it.
-      downsampling_error_ = Infinity<Length>;
-    } else {
-      // There is no error because the points being interpolated are
-      // consecutive, so the interpolation exactly matches their positions and
-      // velocities.
-      downsampling_error_ = Length{};
-    }
-    it->interpolation = std::move(new_interpolation);
+    // There is no error because the points being interpolated are consecutive,
+    // so the interpolation exactly matches their positions and velocities.
+    downsampling_error_ = Length{};
+    it->interpolation =
+        NewInterpolation(std::move(hermite3), downsampling_error_);
   }
-
-  just_forgot_ = false;
 
   return absl::OkStatus();
 }
@@ -520,7 +516,7 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     auto const it = timeline_.find(segment_begin_time);
     CHECK(it != timeline_.cend());
     if (it != timeline_.cbegin()) {
-      it->interpolation = NewInterpolation(it);
+      UpdateInterpolation(it);
     }
   } else if (auto const [segment_crbegin, this_begin] =
                  std::pair{std::prev(segment.timeline_.cend()),
@@ -547,7 +543,7 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     auto const it = timeline_.find(this_begin_time);
     CHECK(it != timeline_.cend());
     if (it != timeline_.cbegin()) {
-      it->interpolation = NewInterpolation(it);
+      UpdateInterpolation(it);
     }
   } else {
     LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
@@ -574,37 +570,45 @@ void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
       << "Inconsistent fork point at time " << point.time;
 
   if (auto const next = std::next(it); next != timeline_.cend()) {
-    CHECK_EQ(nullptr, next->interpolation)
-        << "Already has an interpolation at " << point.time;
-    next->interpolation = NewInterpolation(next);
+    CreateInterpolation(next);
   }
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
-DiscreteTrajectorySegment<Frame>::NewInterpolation(
-    typename Timeline::const_iterator const upper) const {
+void DiscreteTrajectorySegment<Frame>::CreateInterpolation(
+    typename Timeline::iterator const upper) {
+  CHECK(upper != timeline_.cbegin());
+  CHECK_EQ(nullptr, upper->interpolation)
+      << "Already has an interpolation at " << upper->time;
+  UpdateInterpolation(upper);
+}
+
+template<typename Frame>
+void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
+    typename Timeline::iterator const upper) {
   CHECK(upper != timeline_.cbegin());
   auto const lower = std::prev(upper);
   auto const& [lower_time, lower_degrees_of_freedom] = *lower;
   auto const& [upper_time, upper_degrees_of_freedom] = *upper;
-  return make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
-      std::pair{lower_time, upper_time},
-      std::pair{lower_degrees_of_freedom.position(),
-                upper_degrees_of_freedom.position()},
-      std::pair{lower_degrees_of_freedom.velocity(),
-                upper_degrees_of_freedom.velocity()});
+  upper->interpolation =
+      NewInterpolation(Hermite3<Position<Frame>, Instant>(
+                           std::pair{lower_time, upper_time},
+                           std::pair{lower_degrees_of_freedom.position(),
+                                     upper_degrees_of_freedom.position()},
+                           std::pair{lower_degrees_of_freedom.velocity(),
+                                     upper_degrees_of_freedom.velocity()}),
+                       /*error=*/Length{});
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
-DiscreteTrajectorySegment<Frame>::NewInterpolation(
+Hermite3<Position<Frame>, Instant>
+DiscreteTrajectorySegment<Frame>::MakeHermite3(
     typename Timeline::const_iterator lower,
     Instant const& t,
-    DegreesOfFreedom<Frame> const& degrees_of_freedom) const {
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) {
   auto const lower_time = lower->time;
   auto const lower_degrees_of_freedom = lower->degrees_of_freedom;
-  return make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
+  return Hermite3<Position<Frame>, Instant>(
       std::pair{lower_time, t},
       std::pair{lower_degrees_of_freedom.position(),
                 degrees_of_freedom.position()},
@@ -613,12 +617,20 @@ DiscreteTrajectorySegment<Frame>::NewInterpolation(
 }
 
 template<typename Frame>
+not_null<std::unique_ptr<Interpolation<Frame>>>
+DiscreteTrajectorySegment<Frame>::NewInterpolation(
+    Hermite3<Position<Frame>, Instant> hermite3,
+    Length const& error) {
+  return make_not_null_unique<Interpolation<Frame>>(std::move(hermite3), error);
+}
+
+template<typename Frame>
 Hermite3<Position<Frame>, Instant> const&
-DiscreteTrajectorySegment<Frame>::get_interpolation(
+DiscreteTrajectorySegment<Frame>::get_hermite3(
     typename Timeline::const_iterator const upper) const {
   CHECK(upper != timeline_.cbegin());
   CHECK_NOTNULL(upper->interpolation);
-  return *upper->interpolation;
+  return upper->interpolation->hermite3;
 }
 
 template<typename Frame>
@@ -659,7 +671,6 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     downsampling_parameters_->tolerance.WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
   }
-  message->set_just_forgot(just_forgot_);
   downsampling_error_.WriteToMessage(message->mutable_downsampling_error());
 
   // Convert the `exact` vector into a set, and add the extremities.  This

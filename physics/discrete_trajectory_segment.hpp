@@ -185,22 +185,27 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // compatibility deserialization.
   void SetForkPoint(value_type const& point);
 
+  // TODO(phl)comment
+  void CreateInterpolation(typename Timeline::iterator upper);
+  void UpdateInterpolation(typename Timeline::iterator upper);
+
   // Constructs the Hermite interpolation for the left-open, right-closed
   // trajectory interval bounded above by `upper`.  `upper` must not be the
   // first point of the timeline.
-  not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
-  NewInterpolation(typename Timeline::const_iterator upper) const;
+  // TODO(phl)comment
+  static Hermite3<Position<Frame>, Instant>
+  MakeHermite3(typename Timeline::const_iterator lower,
+               Instant const& t,
+               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
   // TODO(phl)comment
-  not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
-  NewInterpolation(typename Timeline::const_iterator lower,
-                   Instant const& t,
-                   DegreesOfFreedom<Frame> const& degrees_of_freedom) const;
-
+  static not_null<std::unique_ptr<Interpolation<Frame>>> NewInterpolation(
+      Hermite3<Position<Frame>, Instant> hermite3,
+      Length const& error);
 
   // Returns the Hermite interpolation for the left-open, right-closed
   // trajectory interval bounded above by `upper`, which must exist.
-  Hermite3<Position<Frame>, Instant> const& get_interpolation(
+  Hermite3<Position<Frame>, Instant> const& get_hermite3(
       typename Timeline::const_iterator upper) const;
 
   typename Timeline::const_iterator timeline_begin() const;
@@ -224,7 +229,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   std::optional<DownsamplingParameters> downsampling_parameters_;
 
   //TODO(phl)comment
-  bool just_forgot_ = false;  /// Can we get rid of this?
   Length downsampling_error_;
 
   DiscreteTrajectorySegmentIterator<Frame> self_;
