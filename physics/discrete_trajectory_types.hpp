@@ -31,11 +31,7 @@ using namespace principia::numerics::_hermite3;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_quantities;
 
-// `max_dense_intervals` is the maximal number of dense intervals before
-// downsampling occurs.  `tolerance` is the tolerance for downsampling with
-// `FitHermiteSpline`.
 struct DownsamplingParameters {
-  std::int64_t max_dense_intervals;
   Length tolerance;
 };
 

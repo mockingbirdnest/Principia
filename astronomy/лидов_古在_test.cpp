@@ -103,8 +103,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
       MercuryOrbiterInitialTime, MercuryOrbiterInitialDegreesOfFreedom<ICRS>));
   auto& icrs_segment = icrs_trajectory.segments().front();
   // Carefully tuned.
-  icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
-                                .tolerance = 1 * Milli(Metre)});
+  icrs_segment.SetDownsampling({.tolerance = 1 * Milli(Metre)});
   auto const instance =
       ephemeris_->NewInstance({&icrs_trajectory},
                               Ephemeris<ICRS>::NoIntrinsicAccelerations,

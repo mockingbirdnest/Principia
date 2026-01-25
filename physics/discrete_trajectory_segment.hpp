@@ -177,10 +177,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // result is that of the latest segment (with the largest times).
   void Merge(DiscreteTrajectorySegment<Frame> segment);
 
-  // Computes `number_of_dense_points_` based on the start of the dense
-  // timeline.  Used for compatibility deserialization.
-  void SetStartOfDenseTimeline(Instant const& t);
-
   // Inserts the given point at the beggining of the timeline.  Used for
   // compatibility deserialization.
   void SetForkPoint(value_type const& point);

@@ -51,7 +51,6 @@ internal static class ConfigNodeParsers {
   public static ConfigurationDownsamplingParameters
       NewConfigurationDownsamplingParameters(ConfigNode node) {
     return new ConfigurationDownsamplingParameters{
-        max_dense_intervals = node.GetUniqueValue("max_dense_intervals"),
         tolerance = node.GetUniqueValue("tolerance")
     };
   }

@@ -688,8 +688,6 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   if (downsampling_parameters_.has_value()) {
     auto* const serialized_downsampling_parameters =
         message->mutable_downsampling_parameters();
-    serialized_downsampling_parameters->set_max_dense_intervals(
-        downsampling_parameters_->max_dense_intervals);
     downsampling_parameters_->tolerance.WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
   }
@@ -850,8 +848,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     if (message.has_downsampling_parameters()) {
       vessel->downsampling_parameters_ =
           DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
-              .max_dense_intervals =
-                  message.downsampling_parameters().max_dense_intervals(),
               .tolerance = Length::ReadFromMessage(
                   message.downsampling_parameters().tolerance())};
     } else {

@@ -1360,8 +1360,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   MasslessBody probe;
   DiscreteTrajectory<ICRS> trajectory1;
   auto& segment1 = trajectory1.segments().front();
-  segment1.SetDownsampling({.max_dense_intervals = 10'000,
-                            .tolerance = 10 * Metre});
+  segment1.SetDownsampling({.tolerance = 10 * Metre});
   EXPECT_OK(trajectory1.Append(t0, DegreesOfFreedom<ICRS>(q0, p0)));
 
   auto instance = ephemeris->NewInstance(
@@ -1379,7 +1378,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   trajectory1.WriteToMessage(&message, /*tracked=*/{}, /*exact=*/{});
   std::string uncompressed;
   message.SerializePartialToString(&uncompressed);
-  EXPECT_EQ(15'895, uncompressed.size());
+  EXPECT_EQ(15'892, uncompressed.size());
 
   std::string compressed;
   auto compressor = google::compression::NewGipfeliCompressor();
@@ -1387,8 +1386,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
 
   // We want a change detector, but the actual compressed size varies depending
   // on the exact numerical values, and therefore on the mathematical library.
-  EXPECT_LE(14'636, compressed.size());
-  EXPECT_GE(14'636, compressed.size());
+  EXPECT_LE(14'630, compressed.size());
+  EXPECT_GE(14'630, compressed.size());
 
   auto const trajectory2 =
       DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*tracked=*/{});

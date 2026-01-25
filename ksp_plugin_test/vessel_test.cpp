@@ -783,19 +783,16 @@ TEST_F(VesselTest, SingleSegment) {
   {
     // Non-collapsible segment for the history.
     auto const& segment0 = message.history().segment(0);
-    EXPECT_EQ(31, segment0.number_of_dense_points());
     EXPECT_EQ(31, segment0.zfp().timeline_size());
   }
   {
     // Psychohistory, only one point.
     auto const& segment1 = message.history().segment(1);
-    EXPECT_EQ(0, segment1.number_of_dense_points());
     EXPECT_EQ(1, segment1.zfp().timeline_size());
   }
   {
     // Prediction, excluded except for its first point.
     auto const& segment2 = message.history().segment(2);
-    EXPECT_EQ(0, segment2.number_of_dense_points());
     EXPECT_EQ(1, segment2.zfp().timeline_size());
   }
 }
@@ -921,13 +918,11 @@ TEST_F(VesselTest, TailSerialization) {
   {
     // Non-collapsible segment of the history, entirely excluded.
     auto const& segment0 = message.history().segment(0);
-    EXPECT_EQ(0, segment0.number_of_dense_points());
     EXPECT_EQ(0, segment0.zfp().timeline_size());
   }
   {
     // Collapsible segment of the history (backstory), truncated to the left.
     auto const& segment1 = message.history().segment(1);
-    EXPECT_EQ(152, segment1.number_of_dense_points());
     EXPECT_EQ("2000-01-01T23:24:24"_TT,
               Instant::ReadFromMessage(segment1.exact(0).instant()));
     EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
@@ -937,13 +932,11 @@ TEST_F(VesselTest, TailSerialization) {
   {
     // Psychohistory, only one point.
     auto const& segment2 = message.history().segment(2);
-    EXPECT_EQ(0, segment2.number_of_dense_points());
     EXPECT_EQ(1, segment2.zfp().timeline_size());
   }
   {
     // Prediction, excluded except for its first point.
     auto const& segment3 = message.history().segment(3);
-    EXPECT_EQ(0, segment3.number_of_dense_points());
     EXPECT_EQ(1, segment3.zfp().timeline_size());
   }
 

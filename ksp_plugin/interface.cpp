@@ -170,7 +170,6 @@ DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 MakeDownsamplingParameters(
     ConfigurationDownsamplingParameters const& parameters) {
   return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
-      std::stoi(parameters.max_dense_intervals),
       ParseQuantity<Length>(parameters.tolerance)};
 }
 

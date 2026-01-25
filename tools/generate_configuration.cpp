@@ -264,8 +264,6 @@ void GenerateConfiguration(std::string const& game_epoch,
     auto const& downsampling =
         numerics_blueprint.numerics_blueprint().downsampling();
     numerics_blueprint_cfg << "  downsampling {\n";
-    numerics_blueprint_cfg << "    max_dense_intervals = "
-                           << downsampling.max_dense_intervals() << "\n";
     numerics_blueprint_cfg << "    tolerance = "
                            << downsampling.tolerance() << "\n";
     numerics_blueprint_cfg << "  }\n";

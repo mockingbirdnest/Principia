@@ -762,8 +762,7 @@ TEST_F(DiscreteTrajectoryTest, SerializationExactEndpoints) {
   Instant const t3 = t0_ + 200.0 / 11.0 * Second;
   // Downsampling is required for ZFP compression.
   DiscreteTrajectorySegment<World>::DownsamplingParameters const
-      downsampling_parameters{.max_dense_intervals = 100,
-                              .tolerance = 5 * Milli(Metre)};
+      downsampling_parameters{.tolerance = 5 * Milli(Metre)};
 
   auto sit = trajectory.segments().begin();
   sit->SetDownsampling(downsampling_parameters);

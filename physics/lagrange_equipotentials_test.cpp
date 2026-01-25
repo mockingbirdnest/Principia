@@ -161,7 +161,7 @@ TEST_F(LagrangeEquipotentialsTest,
     instance_trajectories.push_back(trajectories.back().get());
     CHECK_OK(trajectories.back()->Append(t0_, s));
     trajectories.back()->segments().front().SetDownsampling(
-        {.max_dense_intervals = 10'000, .tolerance = 10 * Metre});
+        {.tolerance = 10 * Metre});
   }
   auto const instance = ephemeris_->NewInstance(
       instance_trajectories,

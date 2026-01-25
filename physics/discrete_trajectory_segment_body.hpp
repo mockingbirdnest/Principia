@@ -232,17 +232,6 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectorySegment const& message,
     DiscreteTrajectorySegmentIterator<Frame> const self)
   requires serializable<Frame> {
-  // Note that while is_pre_hardy means that the save is pre-Hardy,
-  // !is_pre_hardy does not mean it is Hardy or later; a pre-Hardy segment with
-  // downsampling will have both fields present.
-  // TODO(phl)Pre-Hardy detection?!  Pre-Лефшец compatibility?!
-  bool const is_pre_hardy = !message.has_downsampling_parameters();
-  bool const is_pre_лефшец = !message.has_downsampling_error();
-  LOG_IF(WARNING, is_pre_лефшец)
-      << "Reading pre-"
-      << (is_pre_hardy ? "Hardy"
-                       : "Лефшец") << " DiscreteTrajectorySegment";
-
   DiscreteTrajectorySegment<Frame> segment(self);
 
   // Construct a map for efficient lookup of the exact points.
@@ -300,8 +289,6 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   // Finally, restore the downsampling information.
   if (message.has_downsampling_parameters()) {
     segment.downsampling_parameters_ = DownsamplingParameters{
-        .max_dense_intervals =
-            message.downsampling_parameters().max_dense_intervals(),
         .tolerance = Length::ReadFromMessage(
             message.downsampling_parameters().tolerance())};
   }
@@ -556,13 +543,6 @@ void DiscreteTrajectorySegment<Frame>::Merge(
 #undef PRINCIPIA_MERGE_STRICT_CONSISTENCY
 
 template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(
-    Instant const& t) {
-  auto const it = find(t);
-  CHECK(it != end()) << "Cannot find time " << t << " in timeline";
-}
-
-template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
   auto const it = timeline_.emplace_hint(
       timeline_.begin(), point.time, point.degrees_of_freedom);
@@ -666,12 +646,19 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   if (downsampling_parameters_.has_value()) {
     auto* const serialized_downsampling_parameters =
         message->mutable_downsampling_parameters();
-    serialized_downsampling_parameters->set_max_dense_intervals(
-        downsampling_parameters_->max_dense_intervals);
     downsampling_parameters_->tolerance.WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
   }
-  downsampling_error_.WriteToMessage(message->mutable_downsampling_error());
+
+  // Record the downsampling error at the end of the serialized timeline, to be
+  // able to restart appending.
+  if (timeline_size > 0) {
+    auto const& last_interpolation = std::prev(timeline_end)->interpolation;
+    if (last_interpolation != nullptr) {
+      last_interpolation->error.WriteToMessage(
+          message->mutable_downsampling_error());
+    }
+  }
 
   // Convert the `exact` vector into a set, and add the extremities.  This
   // ensures that we don't have redundancies.  The set is sorted by time to

@@ -88,13 +88,15 @@ message ContinuousTrajectory {
 
 message DiscreteTrajectory {
   message Downsampling {
-    required int64 max_dense_intervals = 2;
     required Quantity tolerance = 3;
-    // The instant of the iterator; absent if it is the end of the timeline.
-    // Pre Haar.
-    optional Point start_of_dense_timeline = 1;
-    // Added in Haar.
-    repeated Point dense_timeline = 4;
+
+    // Pre-Лефшец.
+    reserved 1;
+    reserved "start_of_dense_timeline";  // Pre-Haar.
+    reserved 2;
+    reserved "max_dense_intervals";
+    reserved 4;
+    reserved "dense_timeline";  // Added in Haar.
   }
   message Brood {
     required Point fork_time = 1;
@@ -130,8 +132,11 @@ message DiscreteTrajectory {
 // pre-Hamilton DiscreteTrajectory and must therefore remain compatible.
 message DiscreteTrajectorySegment {
   message DownsamplingParameters {
-    required int64 max_dense_intervals = 1;
     required Quantity tolerance = 2;
+
+    // Pre-Лефшец.
+    reserved 1;
+    reserved "max_dense_intervals";
   }
   message InstantaneousDegreesOfFreedom {
     required Point instant = 1;
