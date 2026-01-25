@@ -47,12 +47,6 @@
     <ClInclude Include="ulp_distance_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="fit_hermite_spline.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="fit_hermite_spline_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="polynomial_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -302,9 +296,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="double_precision_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="fit_hermite_spline_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="polynomial_evaluators_test.cpp">
