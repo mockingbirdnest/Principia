@@ -14,7 +14,6 @@
 #include "base/zfp_compressor.hpp"
 #include "glog/logging.h"
 #include "numerics/fit_hermite_spline.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -24,7 +23,6 @@ namespace internal {
 
 using namespace principia::base::_zfp_compressor;
 using namespace principia::numerics::_fit_hermite_spline;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 template<typename Frame>
