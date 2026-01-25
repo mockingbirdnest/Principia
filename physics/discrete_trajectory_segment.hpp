@@ -126,12 +126,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // segment are going to be retained.
   void ClearDownsampling();
 
-  // Returns true iff this segment was downsampled at least once since its
-  // creation or the last call to `clear`.  Only use for optimization purposes,
-  // not to depend on the actual structure of the timeline.
-  // TODO(phl)Remove.
-  bool was_downsampled() const;
-
   // The points denoted by `exact` are written and re-read exactly and are not
   // affected by any errors introduced by zfp compression.  The endpoints of a
   // segment are always exact.
@@ -231,7 +225,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   //TODO(phl)comment
   bool just_forgot_ = false;  /// Can we get rid of this?
-  bool was_downsampled_ = false;
   Length downsampling_error_;
 
   DiscreteTrajectorySegmentIterator<Frame> self_;

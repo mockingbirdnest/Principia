@@ -96,7 +96,6 @@ std::int64_t DiscreteTrajectorySegment<Frame>::size() const {
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::clear() {
   downsampling_parameters_.reset();
-  was_downsampled_ = false;
   downsampling_error_ = Length{};
   timeline_.clear();
 }
@@ -179,7 +178,6 @@ void DiscreteTrajectorySegment<Frame>::SetDownsampling(
   // The semantics of changing downsampling on a segment that has 2 points or
   // more are unclear.  Let's not do that.
   CHECK_LE(timeline_.size(), 1);
-  CHECK(!was_downsampled_);
   downsampling_parameters_ = downsampling_parameters;
   downsampling_error_ = Length{};
 }
@@ -187,11 +185,6 @@ void DiscreteTrajectorySegment<Frame>::SetDownsampling(
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ClearDownsampling() {
   downsampling_parameters_ = std::nullopt;
-}
-
-template<typename Frame>
-bool DiscreteTrajectorySegment<Frame>::was_downsampled() const {
-  return was_downsampled_;
 }
 
 template<typename Frame>
@@ -244,12 +237,11 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   // downsampling will have both fields present.
   // TODO(phl)Pre-Hardy detection?!  Pre-Лефшец compatibility?!
   bool const is_pre_hardy = !message.has_downsampling_parameters();
-  bool const is_pre_hesse = !message.has_was_downsampled();
   bool const is_pre_лефшец = !message.has_downsampling_error();
-  LOG_IF(WARNING, is_pre_hesse)
+  LOG_IF(WARNING, is_pre_лефшец)
       << "Reading pre-"
       << (is_pre_hardy ? "Hardy"
-                       : "Hesse") << " DiscreteTrajectorySegment";
+                       : "Лефшец") << " DiscreteTrajectorySegment";
 
   DiscreteTrajectorySegment<Frame> segment(self);
 
@@ -307,13 +299,6 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
 
   // Finally, restore the downsampling information.
   segment.just_forgot_ = message.just_forgot();
-  if (is_pre_hesse) {
-    // Assume that the segment was already downsampled, to avoid re-downsampling
-    // it.
-    segment.was_downsampled_ = true;
-  } else {
-    segment.was_downsampled_ = message.was_downsampled();
-  }
   if (message.has_downsampling_parameters()) {
     segment.downsampling_parameters_ = DownsamplingParameters{
         .max_dense_intervals =
@@ -456,7 +441,6 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         // The error bound is below the tolerance, replace the last point with
         // the new one, record the new interpolation, and keep going.  This is
         // faster than `erase` followed by `emplace_hint`.
-        was_downsampled_ = true;
         auto extracted = timeline_.extract(last);
         auto& value = extracted.value();
         value.time = t;
@@ -676,7 +660,6 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
   }
   message->set_just_forgot(just_forgot_);
-  message->set_was_downsampled(was_downsampled_);
   downsampling_error_.WriteToMessage(message->mutable_downsampling_error());
 
   // Convert the `exact` vector into a set, and add the extremities.  This
