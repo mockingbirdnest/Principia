@@ -176,10 +176,8 @@ void Vessel::DetectCollapsibilityChange() {
   // append collapsible points to a non-collapsible segment (but not
   // vice-versa).
   bool const collapsibility_changes = is_collapsible_ != will_be_collapsible;
-  bool const becomes_non_collapsible = collapsibility_changes &&
-                                       !will_be_collapsible;
 
-  if (collapsibility_changes && becomes_non_collapsible) {
+  if (collapsibility_changes) {
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
 

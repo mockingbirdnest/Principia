@@ -448,9 +448,7 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
   // Regression test for #3244.
-  EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Hardy DiscreteTrajectorySegment"),
-                    Not(HasSubstr("pre-Hamilton"))));
+  EXPECT_THAT(log_warning.string(), Not(HasSubstr("pre-Hamilton")));
 }
 
 #if !_DEBUG

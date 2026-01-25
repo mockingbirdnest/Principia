@@ -288,6 +288,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
         .tolerance = Length::ReadFromMessage(
             message.downsampling_parameters().tolerance())};
   }
+  //TODO(phl)Compatibility when missing?
   if (message.has_downsampling_error()) {
     segment.downsampling_error_ =
         Length::ReadFromMessage(message.downsampling_error());

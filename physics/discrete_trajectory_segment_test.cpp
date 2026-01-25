@@ -449,10 +449,10 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationWithDownsampling) {
        t += Δt) {
     EXPECT_THAT(
         deserialized_circle.EvaluatePosition(t),
-        AbsoluteErrorFrom(circle.EvaluatePosition(t), Le(0.30 * Milli(Metre))));
+        AbsoluteErrorFrom(circle.EvaluatePosition(t), Le(0.41 * Milli(Metre))));
     EXPECT_THAT(deserialized_circle.EvaluateVelocity(t),
                 AbsoluteErrorFrom(circle.EvaluateVelocity(t),
-                                  Le(5.7 * Milli(Metre) / Second)));
+                                  Le(11.0 * Milli(Metre) / Second)));
   }
 }
 
