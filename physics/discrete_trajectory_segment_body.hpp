@@ -228,6 +228,17 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectorySegment const& message,
     DiscreteTrajectorySegmentIterator<Frame> const self)
   requires serializable<Frame> {
+  // Note that while is_pre_hardy means that the save is pre-Hardy,
+  // !is_pre_hardy does not mean it is Hardy or later; a pre-Hardy segment with
+  // downsampling will have both fields present.
+  bool const is_pre_hardy = !message.has_downsampling_parameters() &&
+                            message.has_number_of_dense_points();
+  bool const is_pre_лефшец = !message.zfp().has_is_lefschetz_timeline();
+  LOG_IF(WARNING, is_pre_лефшец)
+      << "Reading pre-"
+      << (is_pre_hardy ? "Hardy"
+                       : "Лефшец") << " DiscreteTrajectorySegment";
+
   DiscreteTrajectorySegment<Frame> segment(self);
 
   // Construct a map for efficient lookup of the exact points.
@@ -253,6 +264,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   std::vector<double> px(timeline_size);
   std::vector<double> py(timeline_size);
   std::vector<double> pz(timeline_size);
+  std::vector<double> err(timeline_size);
   std::string_view zfp_timeline(message.zfp().timeline().data(),
                                 message.zfp().timeline().size());
 
@@ -263,6 +275,22 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   decompressor.ReadFromMessageMultidimensional<2>(px, zfp_timeline);
   decompressor.ReadFromMessageMultidimensional<2>(py, zfp_timeline);
   decompressor.ReadFromMessageMultidimensional<2>(pz, zfp_timeline);
+  if (is_pre_лефшец) {
+    // Pre-Лефшец saves didn't store the downsampling error; we have to assume
+    // the worst for the points that were downsampled, and no error for the
+    // dense points.
+    std::int64_t downsampled_size =
+        is_pre_hardy ? timeline_size
+                     : timeline_size - message.number_of_dense_points();
+    for (std::int64_t i = 0; i < downsampled_size; ++i) {
+      err[i] = Infinity<double>;
+    }
+    for (std::int64_t i = downsampled_size; i < timeline_size; ++i) {
+      err[i] = 0;
+    }
+  } else {
+    decompressor.ReadFromMessageMultidimensional<2>(err, zfp_timeline);
+  }
 
   for (int i = 0; i < timeline_size; ++i) {
     Position<Frame> const q =
@@ -271,14 +299,22 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     Velocity<Frame> const p({px[i] * (Metre / Second),
                              py[i] * (Metre / Second),
                              pz[i] * (Metre / Second)});
+    Length const downsampling_error = err[i] * Metre;
 
     // See if this is a point whose degrees of freedom must be restored
-    // exactly.
+    // exactly.  Note that the calls to `Append` recompute the interpolation as
+    // being exact since we didn't set the downsampling parameters yet.
     Instant const time = Instant() + t[i] * Second;
     if (auto it = exact.find(time); it == exact.cend()) {
       segment.Append(time, DegreesOfFreedom<Frame>(q, p)).IgnoreError();
     } else {
       segment.Append(time, it->degrees_of_freedom).IgnoreError();
+    }
+
+    // Restore the downsampling error for the interpolation ending at this
+    // point.  Remember that there is no interpolation for the first point.
+    if (i > 0) {
+      segment.timeline_.rbegin()->interpolation->error = downsampling_error;
     }
   }
 
@@ -287,11 +323,6 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     segment.downsampling_parameters_ = DownsamplingParameters{
         .tolerance = Length::ReadFromMessage(
             message.downsampling_parameters().tolerance())};
-  }
-  //TODO(phl)Compatibility when missing?
-  if (message.has_downsampling_error()) {
-    segment.downsampling_error_ =
-        Length::ReadFromMessage(message.downsampling_error());
   }
 
   return segment;
@@ -647,16 +678,6 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
   }
 
-  // Record the downsampling error at the end of the serialized timeline, to be
-  // able to restart appending.
-  if (timeline_size > 0) {
-    auto const& last_interpolation = std::prev(timeline_end)->interpolation;
-    if (last_interpolation != nullptr) {
-      last_interpolation->error.WriteToMessage(
-          message->mutable_downsampling_error());
-    }
-  }
-
   // Convert the `exact` vector into a set, and add the extremities.  This
   // ensures that we don't have redundancies.  The set is sorted by time to
   // guarantee that serialization is reproducible.
@@ -685,6 +706,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
 
   auto* const zfp = message->mutable_zfp();
   zfp->set_timeline_size(timeline_size);
+  zfp->set_is_lefschetz_timeline(true);
 
   // The timeline data is made dimensionless and stored in separate arrays per
   // coordinate.  We expect strong correlations within a coordinate over time,
@@ -696,6 +718,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   std::vector<double> px;
   std::vector<double> py;
   std::vector<double> pz;
+  std::vector<double> err;
   t.reserve(timeline_size);
   qx.reserve(timeline_size);
   qy.reserve(timeline_size);
@@ -703,6 +726,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   px.reserve(timeline_size);
   py.reserve(timeline_size);
   pz.reserve(timeline_size);
+  err.reserve(timeline_size);
   std::optional<Instant> previous_instant;
   Time max_Δt;
   std::string* const zfp_timeline = zfp->mutable_timeline();
@@ -717,14 +741,17 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     px.push_back(p.coordinates().x / (Metre / Second));
     py.push_back(p.coordinates().y / (Metre / Second));
     pz.push_back(p.coordinates().z / (Metre / Second));
+    err.push_back(it->interpolation != nullptr
+                      ? it->interpolation->error / Metre : 0.0);
     if (previous_instant.has_value()) {
       max_Δt = std::max(max_Δt, instant - *previous_instant);
     }
     previous_instant = instant;
   }
 
-  // Times are exact.
+  // Times and errors are exact.
   ZfpCompressor time_compressor(0);
+  ZfpCompressor error_compressor(0);
   // Lengths are approximated to the downsampling tolerance if downsampling is
   // enabled, otherwise they are exact.
   Length const length_tolerance = downsampling_parameters_.has_value()
@@ -744,6 +771,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
   speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
   speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
+  error_compressor.WriteToMessageMultidimensional<2>(err, zfp_timeline);
 }
 
 }  // namespace internal
