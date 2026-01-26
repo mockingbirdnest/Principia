@@ -228,16 +228,9 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectorySegment const& message,
     DiscreteTrajectorySegmentIterator<Frame> const self)
   requires serializable<Frame> {
-  // Note that while is_pre_hardy means that the save is pre-Hardy,
-  // !is_pre_hardy does not mean it is Hardy or later; a pre-Hardy segment with
-  // downsampling will have both fields present.
-  bool const is_pre_hardy = !message.has_downsampling_parameters() &&
-                            message.has_number_of_dense_points();
   bool const is_pre_лефшец = !message.zfp().has_is_lefschetz_timeline();
   LOG_IF(WARNING, is_pre_лефшец)
-      << "Reading pre-"
-      << (is_pre_hardy ? "Hardy"
-                       : "Лефшец") << " DiscreteTrajectorySegment";
+      << "Reading pre-Лефшец DiscreteTrajectorySegment";
 
   DiscreteTrajectorySegment<Frame> segment(self);
 
@@ -279,9 +272,8 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     // Pre-Лефшец saves didn't store the downsampling error; we have to assume
     // the worst for the points that were downsampled, and no error for the
     // dense points.
-    std::int64_t downsampled_size =
-        is_pre_hardy ? timeline_size
-                     : timeline_size - message.number_of_dense_points();
+    std::int64_t const downsampled_size =
+        timeline_size - message.number_of_dense_points();
     for (std::int64_t i = 0; i < downsampled_size; ++i) {
       err[i] = Infinity<double>;
     }

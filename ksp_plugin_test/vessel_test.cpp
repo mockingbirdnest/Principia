@@ -946,9 +946,6 @@ TEST_F(VesselTest, TailSerialization) {
   EXPECT_EQ(28'573,
             std::distance(vessel_.trajectory().begin(),
                           vessel_.psychohistory()->begin()));
-  for (auto const& s:  vessel_.trajectory().segments()) {
-    LOG(ERROR) << s.begin()->time << ".." << s.rbegin()->time;
-  }
 
   serialization::Vessel message;
   vessel_.WriteToMessage(&message,
