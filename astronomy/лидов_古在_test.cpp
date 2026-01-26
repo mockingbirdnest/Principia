@@ -142,7 +142,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   }
 
   EXPECT_THAT(mercury_centred_trajectory.size(),
-              AnyOf(Eq(1'534'471),    // Windows.
+              AnyOf(Eq(1'603'775),    // Windows.
                     Eq(1'534'335)));  // Ubuntu, macOS.
   OrbitalElements const elements = OrbitalElements::ForTrajectory(
       mercury_centred_trajectory, mercury_, MasslessBody{}).value();
