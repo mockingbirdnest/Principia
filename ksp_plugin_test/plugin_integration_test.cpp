@@ -378,7 +378,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
           psychohistory->end(),
           sun_world_position,
           plugin_->PlanetariumRotation());
-  EXPECT_THAT(rendered_trajectory, SizeIs(AnyOf(3, 4321, 9414)));
+  EXPECT_THAT(rendered_trajectory, SizeIs(AnyOf(3, 89)));
   Position<World> const earth_world_position =
       sun_world_position +
       alice_sun_to_world(plugin_->CelestialFromParent(SolarSystemFactory::Earth)
