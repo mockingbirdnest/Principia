@@ -306,7 +306,7 @@ TEST_F(ЧебышёвPicardIteratorTest, WriteToMessage) {
 
 // Although in theory the iteration for y′ = y should converge for
 // intervals
-// of length < 40 for sufficiently high N (see [Bai10]), in
+// of length < 40 for sufficiently high N (see [BJ12]), in
 // practice the convergence degrades far earlier.
 INSTANTIATE_TEST_SUITE_P(Linear, ЧебышёвPicardIteratorTest,
                          Values(
@@ -369,11 +369,11 @@ INSTANTIATE_TEST_SUITE_P(Tangent, ЧебышёвPicardIteratorTest,
                                  .tolerance = 4.5e-16,
                              }));
 
-// From [Bai10]. Figures 9, 10, 12, 13 are slow and omitted for now.
+// From [BJ10]. Figures 4, 5, 7, 8 are slow and omitted for now.
 INSTANTIATE_TEST_SUITE_P(
     PerturbedSinusoid, ЧебышёвPicardIteratorTest,
     Values(
-        // [Bai10], figure 8.
+        // [BJ10], figure 3.
         ЧебышёвPicardIteratorTestParam{
             .problem = PerturbedSinusoidProblem(/*ε=*/0.01,
                                                 /*y₀=*/1),
@@ -382,7 +382,7 @@ INSTANTIATE_TEST_SUITE_P(
             .step = 64 * π * Second,
             .tolerance = 1e-9,
         },
-        // [Bai10], figure 11.
+        // [BJ10], figure 6.
         ЧебышёвPicardIteratorTestParam{
             .problem = PerturbedSinusoidProblem(/*ε=*/0.001,
                                                 /*y₀=*/1),
