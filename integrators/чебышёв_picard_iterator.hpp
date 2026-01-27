@@ -14,9 +14,7 @@
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
-#include "geometry/instant.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
-#include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/integrators.pb.h"
@@ -39,18 +37,18 @@ struct ЧебышёвPicardIterationParams {
   // the actual number of nodes is M + 1.
   //
   // Must be at least 1.
-  int M;
+  std::int64_t M;
 
   // The order of the Чебышёв series used to approximate the system state.
   //
   // Must be at least 1 (if you want to approximate your system with a constant,
   // use some other method).
-  int N;
+  std::int64_t N;
 
   // The maximum allowed number of Picard iterations per step. If iteration has
   // not stopped (according to the stopping criterion) by the final step, the
   // iteration will be considered to have diverged.
-  int max_iterations;
+  std::int64_t max_iterations;
 
   // If the maximum absolute difference between successive state approximations
   // is less than this for two Picard iterations in a row, iteration will be
@@ -68,18 +66,18 @@ struct ЧебышёвPicardIterationParams {
 //   x⁰(t) = x(t₀) is typically used).
 // * Repeatedly construct xⁱ⁺¹ from xⁱ by
 //   * Approximating f(t, xⁱ) using Чебышёв interpolation.
-//   * Approximating x₀ + ∫_t₀^t f(t, xⁱ(t)) dt by integrating the above
+//   * Approximating x₀ + ∫ₜ₀ᵗ f(t, xⁱ(t)) dt by integrating the above
 //     approximation. This will be xⁱ⁺¹.
 // * The sequence xⁱ should converge to (a Чебышёв approximation of) x within
 //   some interval of t₀.
 //
-// Due to the properties of Чебышёв polynomials, the iteration may peformed
-// simply using linear algeba operations (in addition to the required evaluation
-// of f at Чебышёв nodes) [FN83].
+// Due to the properties of Чебышёв polynomials, the iteration may be peformed
+// simply using linear algebra operations (in addition to the required
+// evaluation of f at Чебышёв nodes) [FN83].
 //
 // This code uses the formulation from [Mac15].
 
-template <typename ODE_>
+template<typename ODE_>
 class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;
@@ -91,12 +89,13 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
 
     ЧебышёвPicardIterator const& integrator() const override;
 
-    not_null<std::unique_ptr<typename Integrator<ODE>::Instance> > Clone()
+    not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
         const override;
 
    private:
     Instance(InitialValueProblem<ODE> const& problem,
-             AppendState const& append_state, Time const& step,
+             AppendState const& append_state,
+             Time const& step,
              ЧебышёвPicardIterator const& integrator);
 
     ЧебышёвPicardIterator const& integrator_;
@@ -126,8 +125,9 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
 
   ЧебышёвPicardIterationParams const& params() const;
 
-  not_null<std::unique_ptr<typename Integrator<ODE>::Instance> > NewInstance(
-      InitialValueProblem<ODE> const& problem, AppendState const& append_state,
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
+      InitialValueProblem<ODE> const& problem,
+      AppendState const& append_state,
       Time const& step) const override;
 
   void WriteToMessage(

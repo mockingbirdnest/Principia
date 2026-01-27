@@ -7,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -19,8 +20,9 @@ using ::testing::TestWithParam;
 using ::testing::Values;
 
 using namespace principia::geometry::_instant;
-using namespace principia::integrators::_чебышёв_picard_iterator;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::integrators::_чебышёв_picard_iterator;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -32,7 +34,9 @@ namespace {
 
 // An initial value problem with a known solution.
 struct SolvedInitialValueProblem {
-  ODE::IndependentVariable t₀() const { return problem.initial_state.s.value; }
+  ODE::IndependentVariable t₀() const {
+    return problem.initial_state.s.value;
+  }
 
   InitialValueProblem<ODE> problem;
   std::function<ODE::DependentVariables(ODE::IndependentVariable const&)>
@@ -45,7 +49,8 @@ struct SolvedInitialValueProblem {
 SolvedInitialValueProblem LinearProblem() {
   ODE linear_ode;
   linear_ode.compute_derivative =
-      [](Instant const& t, ODE::DependentVariables const& dependent_variables,
+      [](Instant const& t,
+         ODE::DependentVariables const& dependent_variables,
          ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
         auto& [yʹ] = dependent_variable_derivatives;
@@ -70,7 +75,8 @@ SolvedInitialValueProblem LinearProblem() {
 SolvedInitialValueProblem TangentProblem() {
   ODE ode;
   ode.compute_derivative =
-      [](Instant const& t, ODE::DependentVariables const& dependent_variables,
+      [](Instant const& t,
+         ODE::DependentVariables const& dependent_variables,
          ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
         auto& [yʹ] = dependent_variable_derivatives;
@@ -99,10 +105,12 @@ SolvedInitialValueProblem TangentProblem() {
 // α = 2ε/(1 - ε + √(1 - ε²))
 // β = 1/(1 + α) tan(εy₀/2)
 // γ = ε/(1 + √(1 - ε²))
-SolvedInitialValueProblem PerturbedSinusoidProblem(double ε, double y₀) {
+SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
+                                                   double const y₀) {
   ODE ode;
   ode.compute_derivative =
-      [ε](Instant const& t, ODE::DependentVariables const& dependent_variables,
+      [ε](Instant const& t,
+          ODE::DependentVariables const& dependent_variables,
           ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
         auto& [yʹ] = dependent_variable_derivatives;
@@ -179,8 +187,9 @@ TEST_P(ЧебышёвPicardIteratorTest, Convergence) {
   for (const auto& state : states) {
     auto t = state.s.value;
     auto y = std::get<0>(state.y).value;
-    EXPECT_THAT(y / Metre, DoubleNear(std::get<0>(problem.solution(t)) / Metre,
-                                      GetParam().tolerance))
+    EXPECT_THAT(y / Metre,
+                DoubleNear(std::get<0>(problem.solution(t)) / Metre,
+                           GetParam().tolerance))
         << "t=" << t;
   }
 }
@@ -308,7 +317,8 @@ TEST_F(ЧебышёвPicardIteratorTest, WriteToMessage) {
 // intervals
 // of length < 40 for sufficiently high N (see [BJ12]), in
 // practice the convergence degrades far earlier.
-INSTANTIATE_TEST_SUITE_P(Linear, ЧебышёвPicardIteratorTest,
+INSTANTIATE_TEST_SUITE_P(Linear,
+                         ЧебышёвPicardIteratorTest,
                          Values(
                              ЧебышёвPicardIteratorTestParam{
                                  .problem = LinearProblem(),
@@ -349,7 +359,8 @@ INSTANTIATE_TEST_SUITE_P(Linear, ЧебышёвPicardIteratorTest,
                              }));
 
 // This problem appears in [BL69].
-INSTANTIATE_TEST_SUITE_P(Tangent, ЧебышёвPicardIteratorTest,
+INSTANTIATE_TEST_SUITE_P(Tangent,
+                         ЧебышёвPicardIteratorTest,
                          Values(
                              // These are the parameters from [BL69].
                              ЧебышёвPicardIteratorTestParam{
@@ -371,7 +382,8 @@ INSTANTIATE_TEST_SUITE_P(Tangent, ЧебышёвPicardIteratorTest,
 
 // From [BJ10]. Figures 4, 5, 7, 8 are slow and omitted for now.
 INSTANTIATE_TEST_SUITE_P(
-    PerturbedSinusoid, ЧебышёвPicardIteratorTest,
+    PerturbedSinusoid,
+    ЧебышёвPicardIteratorTest,
     Values(
         // [BJ10], figure 3.
         ЧебышёвPicardIteratorTestParam{
