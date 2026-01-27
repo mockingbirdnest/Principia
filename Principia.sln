@@ -154,6 +154,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		documentation\cbrt.tex = documentation\cbrt.tex
 		documentation\Celledoni.tex = documentation\Celledoni.tex
 		documentation\Composition methods.tex = documentation\Composition methods.tex
+		documentation\Downsampling.tex = documentation\Downsampling.tex
 		documentation\Fukushima.tex = documentation\Fukushima.tex
 		documentation\Geopotential.tex = documentation\Geopotential.tex
 		documentation\Hamiltonian Mechanics.tex = documentation\Hamiltonian Mechanics.tex
