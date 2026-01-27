@@ -63,7 +63,7 @@ void DependentVariableDerivativesToMatrixRow(
 }
 
 // Returns max|aᵢⱼ|.
-inline double L∞Norm(UnboundedMatrix<double> const& A) {
+inline double LInfinityNorm(UnboundedMatrix<double> const& A) {
   double norm = 0.0;
   for (std::int64_t i = 0; i < A.rows(); ++i) {
     for (std::int64_t j = 0; j < A.columns(); ++j) {
@@ -142,7 +142,7 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
       Xⁱ⁺¹_ = integrator_.CₓCα_ * ((step / Second) * yʹ_) + CₓX₀_;
 
       // Check for convergence by computing the ∞-norm.
-      const double norm = L∞Norm(Xⁱ⁺¹_ - Xⁱ_);
+      const double norm = LInfinityNorm(Xⁱ⁺¹_ - Xⁱ_);
       Xⁱ_ = std::move(Xⁱ⁺¹_);
 
       // We require that ||Xⁱ⁺¹ - Xⁱ|| and ||Xⁱ - Xⁱ⁻¹|| are _both_ less than
