@@ -421,8 +421,7 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
   if (timeline_.empty()) {
     // The first point of the segment, no interpolation yet (but this will be
     // the start point for future interpolations).
-    auto const it =
-        timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
+    timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
   } else {
     auto const first = timeline_.cbegin();
     auto const last = std::prev(timeline_.cend());
@@ -456,8 +455,8 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
         auto& value = extracted.value();
         value.time = t;
         value.degrees_of_freedom = degrees_of_freedom;
-        value.interpolation =
-            NewInterpolation(std::move(hermite3), downsampling_error_);
+        *value.interpolation = {.hermite3 = std::move(hermite3),
+                                .error = downsampling_error_};
         timeline_.insert(timeline_.cend(), std::move(extracted));
         return absl::OkStatus();
       }

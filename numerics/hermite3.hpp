@@ -92,8 +92,8 @@ class Hermite3 final {
       std::pair<Value, Value> const& values,
       std::pair<Derivative1, Derivative1> const& derivatives);
 
-  Argument const lower_;
-  Argument const upper_;
+  Argument lower_;
+  Argument upper_;
   PolynomialInMonomialBasis<Value, Argument, degree> p_;
 
   template<affine V, affine A>
