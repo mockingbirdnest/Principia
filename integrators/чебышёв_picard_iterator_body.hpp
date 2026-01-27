@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/for_all_of.hpp"
+#include "base/jthread.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "geometry/sign.hpp"
@@ -34,8 +35,8 @@ ODE_::DependentVariables DependentVariablesFromMatrixRow(
     std::int64_t const row) {
   std::int64_t j = 0;
   typename ODE_::DependentVariables y;
-  for_all_of(y).loop([&matrix, &j, row](auto& yⱼ) {
-    yⱼ = matrix(row, j++) * Unit<std::remove_reference_t<decltype(yⱼ)>>;
+  for_all_of(y).loop([&j, &matrix, row](auto& yⱼ) {
+    yⱼ = matrix(row, j++) * si::Unit<std::remove_reference_t<decltype(yⱼ)>>;
   });
   return y;
 }
@@ -46,7 +47,7 @@ void DependentVariablesToMatrixRow(typename ODE_::DependentVariables const& y,
                                    UnboundedMatrix<double>& matrix) {
   std::int64_t j = 0;
   for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
-    matrix(row, j++) = yⱼ / Unit<std::remove_reference_t<decltype(yⱼ)>>;
+    matrix(row, j++) = yⱼ / si::Unit<std::remove_reference_t<decltype(yⱼ)>>;
   });
 }
 
@@ -57,15 +58,15 @@ void DependentVariableDerivativesToMatrixRow(
     UnboundedMatrix<double>& matrix) {
   std::int64_t j = 0;
   for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
-    matrix(row, j++) = yⱼ / Unit<std::remove_reference_t<decltype(yⱼ)>>;
+    matrix(row, j++) = yⱼ / si::Unit<std::remove_reference_t<decltype(yⱼ)>>;
   });
 }
 
 // Returns max|aᵢⱼ|.
-inline double MaxNorm(UnboundedMatrix<double> const& A) {
+inline double L∞Norm(UnboundedMatrix<double> const& A) {
   double norm = 0.0;
-  for (std::int64_t i = 0; i < A.rows(); i++) {
-    for (std::int64_t j = 0; j < A.columns(); j++) {
+  for (std::int64_t i = 0; i < A.rows(); ++i) {
+    for (std::int64_t j = 0; j < A.columns(); ++j) {
       norm = std::max(norm, std::abs(A(i, j)));
     }
   }
@@ -85,7 +86,7 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
   auto const& equation = this->equation_;
   auto const& step = this->step_;
   auto const& params = integrator_.params();
-  auto const n = std::tuple_size<DependentVariables>::value;
+  auto const n = std::tuple_size_v<DependentVariables>;
 
   // Argument checks.
   Sign const integration_direction = Sign(step);
@@ -111,10 +112,10 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
     // Set the boundary condition and store it in CₓX₀_.
     std::int64_t j = 0;
     for_all_of(current_state.y).loop([this, &j](auto const& yⱼ) {
-      CₓX₀_(0, j++) = yⱼ.value / Unit<decltype(yⱼ.value)>;
+      CₓX₀_(0, j++) = yⱼ.value / si::Unit<decltype(yⱼ.value)>;
     });
-    for (std::int64_t i = 1; i <= params.M; i++) {
-      for (std::int64_t j = 0; j < n; j++) {
+    for (std::int64_t i = 1; i <= params.M; ++i) {
+      for (std::int64_t j = 0; j < n; ++j) {
         CₓX₀_(i, j) = CₓX₀_(0, j);
       }
     }
@@ -123,12 +124,12 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
     // that's what we just set CₓX₀_ to.
     Xⁱ_ = CₓX₀_;
 
-    double prev_norm = std::numeric_limits<float>::infinity();
+    double previous_norm = std::numeric_limits<float>::infinity();
     bool converged = false;
     for (int64_t iteration = 0; iteration < params.max_iterations;
-         iteration++) {
+         ++iteration) {
       // Evaluate the right hand side of the equation.
-      for (int64_t i = 0; i < Xⁱ_.rows(); i++) {
+      for (int64_t i = 0; i < Xⁱ_.rows(); ++i) {
         auto const y = DependentVariablesFromMatrixRow<ODE>(Xⁱ_, i);
         DependentVariableDerivatives yʹᵢ;
         RETURN_IF_ERROR(equation.compute_derivative(t_[i], y, yʹᵢ));
@@ -141,20 +142,24 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
       Xⁱ⁺¹_ = integrator_.CₓCα_ * ((step / Second) * yʹ_) + CₓX₀_;
 
       // Check for convergence by computing the ∞-norm.
-      const double norm = MaxNorm(Xⁱ⁺¹_ - Xⁱ_);
+      const double norm = L∞Norm(Xⁱ⁺¹_ - Xⁱ_);
       Xⁱ_ = std::move(Xⁱ⁺¹_);
 
-      if (std::max(norm, prev_norm) < params.stopping_criterion) {
+      // We require that ||Xⁱ⁺¹ - Xⁱ|| and ||Xⁱ - Xⁱ⁻¹|| are _both_ less than
+      // the given tolerance to account for nonlinearity issues (as suggested in
+      // [BJ12]).
+      if (std::max(norm, previous_norm) < params.stopping_criterion) {
         converged = true;
         break;
       }
 
-      prev_norm = norm;
+      previous_norm = norm;
+      RETURN_IF_STOPPED;
     }
 
     if (converged) {
       // We have successfully converged!
-      for (std::int64_t i = 0; i < Xⁱ_.rows(); i++) {
+      for (std::int64_t i = 0; i < Xⁱ_.rows(); ++i) {
         append_state(
             State(t_[i], DependentVariablesFromMatrixRow<ODE>(Xⁱ_, i)));
       }
@@ -163,6 +168,7 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
       current_state =
           State(t_[Xⁱ_.rows() - 1],
                 DependentVariablesFromMatrixRow<ODE>(Xⁱ_, Xⁱ_.rows() - 1));
+      RETURN_IF_STOPPED;
     } else {
       // We failed to converge.
       return absl::Status(absl::StatusCode::kFailedPrecondition,
@@ -193,7 +199,6 @@ template<typename ODE_>
     ЧебышёвPicardIterator const& integrator)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator),
-      t_(),
       CₓX₀_(integrator.params_.M + 1,
             std::tuple_size<typename ODE::DependentVariables>::value,
             uninitialized),
@@ -234,10 +239,6 @@ template<typename ODE_>
     // We populate the rest of ᵝT using the recurrence relation.
     for (std::int64_t j = 2; j <= N; j++) {
       ᵝT(i, j) = 2 * τᵢ * ᵝT(i, j - 1) - ᵝT(i, j - 2);
-
-      // Make sure the zeroes are actually zero.
-      if (std::abs(ᵝT(i, j)) < 1e-14)
-        ᵝT(i, j) = 0;
     }
   }
 
