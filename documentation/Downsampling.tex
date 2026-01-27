@@ -176,10 +176,10 @@ Taking the norm we obtain:
 \]
 To find the extrema we need to compute the roots of the derivative:
 \begin{align*}
-\derivop t {\Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2} &= 4 \pa{t - t_1}^3 \Lnorm[2]{q_i\of{t}}^2 + \pa{t - t_1}^4 \pa{\scal{q_i\of{t}}{q'_i\of{t}}} \\
-&= 2 \pa{t - t_1}^3 \pa{\scal{q_i\of{t}}\pa{2 q_i\of{t} + \pa{t - t_1} q'_i\of{t}}}
+\derivop t {\Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2} &= 4 \pa{t - t_1}^3 \Lnorm[2]{q_i\of{t}}^2 + 2 \pa{t - t_1}^4 \pa{\scal{q_i\of{t}}{q'_i\of{t}}} \\
+&= 4 \pa{t - t_1}^3 \pa{\scal{q_i\of{t}}\pa{q_i\of{t} + \frac{1}{2} \pa{t - t_1} q'_i\of{t}}}
 \end{align*}
-Now the polynomial $\scal{q_i\of{t}}\pa{2 q_i\of{t} + \pa{t - t_1} q'_i\of{t}}$ is a \nth{2} degree polynomial and its roots may be computed efficiently.  In order to compute the extrema of $h_{i}\of{t} - h_{i - 1}\of{t}$, we must evaluate it at the roots of its derivative, and at $t_{i - 1}$, since it could have an extremum there that does not correspond to a zero of the derivative.
+Now the polynomial $\scal{q_i\of{t}}\pa{q_i\of{t} + \frac{1}{2} \pa{t - t_1} q'_i\of{t}}$ is a \nth{2} degree polynomial and its roots may be computed efficiently.  In order to compute the extrema of $h_{i}\of{t} - h_{i - 1}\of{t}$, we must evaluate it at the roots of its derivative, and at $t_{i - 1}$, since it could have an extremum there that does not correspond to a zero of the derivative.
 
 Having computed the extrema of $h_{i}\of{t} - h_{i - 1}\of{t}$, we set:
 \[
