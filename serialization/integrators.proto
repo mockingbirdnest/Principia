@@ -29,6 +29,7 @@ message FixedStepSizeIntegrator {
   extend Integrator {
     optional FixedStepSizeIntegrator extension = 3001;
   }
+  // Next ID: 45
   enum Kind {
     ADAMS_BASHFORTH_ORDER_2 = 39;
     ADAMS_BASHFORTH_ORDER_3 = 40;
@@ -41,6 +42,7 @@ message FixedStepSizeIntegrator {
     BLANES_MOAN_2002_SRKN_11B = 2;
     BLANES_MOAN_2002_SRKN_14A = 3;
     CANDY_ROZMUS_1991_FOREST_RUTH_1990 = 26;
+    CHEBYSHEV_PICARD = 44;
     KUTTA_1901_V_SIGMA1 = 38;
     MCLACHLAN_1995_S2 = 29;
     MCLACHLAN_1995_S4 = 31;
@@ -81,6 +83,9 @@ message FixedStepSizeIntegrator {
   }
   required Kind kind = 1;
   optional CompositionMethod composition_method = 2;  // Only for SRKN.
+
+  // Only for CHEBYSHEV_PICARD.
+  optional ChebyshevPicardIterationParams chebyshev_picard_params = 3;
 }
 
 message IntegratorInstance {
@@ -167,4 +172,12 @@ message State {
   repeated DoublePrecision position = 1;
   repeated DoublePrecision velocity = 2;
   required DoublePrecision time = 3;
+}
+
+// This corresponds to the ChebyshevPicardIterationParams struct.
+message ChebyshevPicardIterationParams {
+  optional int32 m = 1;
+  optional int32 n = 2;
+  optional int32 max_iterations = 3;
+  optional double stopping_criterion = 4;
 }
