@@ -855,22 +855,9 @@ void DiscreteTrajectory<Frame>::AdjustAfterSplicing(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
-    DownsamplingParameters& downsampling_parameters,
-    Instant& start_of_dense_timeline) {
-  bool const is_pre_haar = message.has_start_of_dense_timeline();
-  LOG_IF(WARNING, is_pre_haar)
-      << "Reading pre-Haar DiscreteTrajectory.Downsampling";
-
+    DownsamplingParameters& downsampling_parameters) {
   downsampling_parameters = {
-      .max_dense_intervals = message.max_dense_intervals(),
       .tolerance = Length::ReadFromMessage(message.tolerance())};
-  if (is_pre_haar) {
-    start_of_dense_timeline =
-        Instant::ReadFromMessage(message.start_of_dense_timeline());
-  } else {
-    start_of_dense_timeline =
-        Instant::ReadFromMessage(message.dense_timeline(0));
-  }
 }
 
 template<typename Frame>
@@ -920,12 +907,9 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     }
     if (message.has_downsampling()) {
       DownsamplingParameters downsampling_parameters;
-      Instant start_of_dense_timeline;
       ReadFromPreHamiltonMessage(message.downsampling(),
-                                 downsampling_parameters,
-                                 start_of_dense_timeline);
+                                 downsampling_parameters);
       sit->SetDownsamplingUnconditionally(downsampling_parameters);
-      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
     }
   } else {
     // Starting with Frobenius we use ZFP so the easiest is to build a
@@ -937,24 +921,16 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     *serialized_segment.mutable_exact() = message.exact();
 
     DownsamplingParameters downsampling_parameters;
-    Instant start_of_dense_timeline;
     if (message.has_downsampling()) {
       ReadFromPreHamiltonMessage(message.downsampling(),
-                                 downsampling_parameters,
-                                 start_of_dense_timeline);
+                                 downsampling_parameters);
       auto* const serialized_downsampling_parameters =
           serialized_segment.mutable_downsampling_parameters();
-      serialized_downsampling_parameters->set_max_dense_intervals(
-          downsampling_parameters.max_dense_intervals);
       downsampling_parameters.tolerance.WriteToMessage(
           serialized_downsampling_parameters->mutable_tolerance());
-      serialized_segment.set_number_of_dense_points(0);  // Overridden later.
     }
     *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
                                                              self);
-    if (message.has_downsampling()) {
-      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
-    }
   }
 
   // Create the duplicated point if needed.

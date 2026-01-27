@@ -301,7 +301,6 @@ class Satellites {
   DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
   DownsamplingParameters() {
     return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
-        .max_dense_intervals = 10'000,
         .tolerance = 10 * Metre};
   }
 

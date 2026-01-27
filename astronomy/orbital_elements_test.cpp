@@ -82,8 +82,7 @@ class OrbitalElementsTest : public ::testing::Test {
                                                initial_time};
     initial_osculating_elements = initial_osculating_orbit.elements_at_epoch();
     icrs_trajectory.segments().front().SetDownsampling(
-        {.max_dense_intervals = 10'000,
-         .tolerance = 1 * Milli(Metre)});
+        {.tolerance = 1 * Milli(Metre)});
     EXPECT_OK(icrs_trajectory.Append(
         initial_time,
         gcrs.FromThisFrameAtTime(initial_time)(

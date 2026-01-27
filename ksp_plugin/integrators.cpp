@@ -22,7 +22,6 @@ using namespace principia::integrators::_symplectic_runge_kutta_nyström_integra
 DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 DefaultDownsamplingParameters() {
   return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
-      .max_dense_intervals = 10'000,
       .tolerance = 10 * Metre,
   };
 }
@@ -31,7 +30,6 @@ DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
 OrbitAnalyserDownsamplingParameters() {
   // Carefully tuned based on MercuryOrbiter test.
   return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
-      .max_dense_intervals = 10'000,
       .tolerance = 1 * Milli(Metre),
   };
 }

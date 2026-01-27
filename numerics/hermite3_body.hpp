@@ -69,8 +69,7 @@ Hermite3<Value_, Argument_>::Hermite3(
     std::pair<Derivative1, Derivative1> const& derivatives)
     : lower_(arguments.first),
       upper_(arguments.second),
-      p_(MakePolynomial(arguments, values, derivatives)),
-      pʹ_(p_.Derivative()) {}
+      p_(MakePolynomial(arguments, values, derivatives)) {}
 
 template<affine Value_, affine Argument_>
 Value_ Hermite3<Value_, Argument_>::operator()(Argument const& argument) const {
@@ -81,7 +80,7 @@ template<affine Value_, affine Argument_>
 typename Hermite3<Value_, Argument_>::Derivative1
 Hermite3<Value_, Argument_>::
 EvaluateDerivative(Argument const& argument) const {
-  return pʹ_(argument);
+  return p_.EvaluateDerivative(argument);
 }
 
 template<affine Value_, affine Argument_>
@@ -94,7 +93,7 @@ void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
 
 template<affine Value_, affine Argument_>
 BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
-  auto const& coefficients = pʹ_.coefficients();
+  auto const& coefficients = p_.Derivative().coefficients();
   auto const roots =
       SolveQuadraticEquation<Argument, Derivative1>(p_.origin(),
                                                     std::get<0>(coefficients),
@@ -129,6 +128,7 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound() const
 
   // Build a split Hermite polynomial for each dimension.
   std::vector<H> split_hermites;
+  split_hermites.reserve(S::dimension);
   for (std::int64_t i = 0; i < S::dimension; ++i) {
     split_hermites.push_back(
         H(lower_,
@@ -156,8 +156,8 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound() const
 
 template<affine Value_, affine Argument_>
 auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
-  CHECK_EQ((*this)(lower_), Value{});
-  CHECK_EQ(this->EvaluateDerivative(lower_), Derivative1{});
+  DCHECK_EQ((*this)(lower_), Value{});
+  DCHECK_EQ(this->EvaluateDerivative(lower_), Derivative1{});
 
   // The value type of the polynomial `q(t) = p_(t) / (t - lower_)²`.
   using QValue = Quotient<Value, Square<Difference<Argument>>>;
@@ -168,14 +168,14 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
       lower_);
   // The monomial `(t - lower_)`.
   PolynomialInMonomialBasis<Difference<Argument>, Argument, 1> const monomial(
-      {Difference<Argument>{}, 1.0}, lower_);
+      {Difference<Argument>{}, 0.5}, lower_);
 
   // This is not quite `d/dt(‖p_(t)‖₂²)`, but it differs from it by a factor
   // `(t - lower)³`, which is irrelevant to find its zeroes.
   using DValue =
       Quotient<Square<NormType>, Exponentiation<Difference<Argument>, 4>>;
   PolynomialInMonomialBasis<DValue, Argument, 2> const norm₂²_derivative =
-      PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));
+      PointwiseInnerProduct(q, (q + monomial * q.Derivative()));
   auto const& norm₂²_derivative_coefficients = norm₂²_derivative.coefficients();
   auto const norm₂²_derivative_roots =
       SolveQuadraticEquation<Argument, DValue>(
@@ -238,8 +238,7 @@ Hermite3<Value_, Argument_>::Hermite3(
     PolynomialInMonomialBasis<Value, Argument, degree> p)
     : lower_(lower),
       upper_(upper),
-      p_(std::move(p)),
-      pʹ_(p_.Derivative()) {
+      p_(std::move(p)) {
   CHECK_EQ(p_.origin(), lower_);
 }
 
@@ -276,6 +275,33 @@ Hermite3<Value_, Argument_>::MakePolynomial(
   }
   return PolynomialInMonomialBasis<Value, Argument, 3>({a0, a1, a2, a3},
                                                        arguments.first);
+}
+
+template<affine Value, affine Argument>
+Hermite3<Value, Argument> operator+(Hermite3<Value, Argument> const& right) {
+  return right;
+}
+
+template<affine Value, affine Argument>
+Hermite3<Value, Argument> operator+(Hermite3<Value, Argument> const& left,
+                                    Hermite3<Value, Argument> const& right) {
+  CHECK_EQ(left.lower_, right.lower_);
+  return Hermite3<Value, Argument>(
+      right.lower_, std::min(left.upper_, right.upper_), left.p_ + right.p_);
+}
+
+template<affine Value, affine Argument>
+Hermite3<Value, Argument> operator-(Hermite3<Value, Argument> const& right) {
+  return Hermite3<Value, Argument>(right.lower_, right.upper_, -right.p_);
+}
+
+template<affine Value, affine Argument>
+Hermite3<Difference<Value>, Argument> operator-(
+    Hermite3<Value, Argument> const& left,
+    Hermite3<Value, Argument> const& right) {
+  CHECK_EQ(left.lower_, right.lower_);
+  return Hermite3<Difference<Value>, Argument>(
+      right.lower_, std::min(left.upper_, right.upper_), left.p_ - right.p_);
 }
 
 }  // namespace internal

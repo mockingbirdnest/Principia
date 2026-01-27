@@ -103,8 +103,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
       MercuryOrbiterInitialTime, MercuryOrbiterInitialDegreesOfFreedom<ICRS>));
   auto& icrs_segment = icrs_trajectory.segments().front();
   // Carefully tuned.
-  icrs_segment.SetDownsampling({.max_dense_intervals = 10'000,
-                                .tolerance = 1 * Milli(Metre)});
+  icrs_segment.SetDownsampling({.tolerance = 1 * Milli(Metre)});
   auto const instance =
       ephemeris_->NewInstance({&icrs_trajectory},
                               Ephemeris<ICRS>::NoIntrinsicAccelerations,
@@ -143,7 +142,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   }
 
   EXPECT_THAT(mercury_centred_trajectory.size(),
-              AnyOf(Eq(1'534'471),    // Windows.
+              AnyOf(Eq(1'603'775),    // Windows.
                     Eq(1'534'335)));  // Ubuntu, macOS.
   OrbitalElements const elements = OrbitalElements::ForTrajectory(
       mercury_centred_trajectory, mercury_, MasslessBody{}).value();

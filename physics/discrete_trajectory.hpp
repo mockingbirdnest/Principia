@@ -183,12 +183,10 @@ class DiscreteTrajectory : public Trajectory<Frame> {
       typename Segments::iterator to_segments_begin);
 
   // Reads a pre-Hamilton downsampling message and return the downsampling
-  // parameters and the start of the dense timeline.  The latter will have to be
-  // converted to a number of points based on the deserialized timeline.
+  // parameters.
   static void ReadFromPreHamiltonMessage(
       serialization::DiscreteTrajectory::Downsampling const& message,
-      DownsamplingParameters& downsampling_parameters,
-      Instant& start_of_dense_timeline);
+      DownsamplingParameters& downsampling_parameters);
 
   // Reads a set of pre-Hamilton children.  Checks that there is only one child,
   // and that it is at the end of the preceding segment.  Append a segment to

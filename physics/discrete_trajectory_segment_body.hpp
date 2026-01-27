@@ -13,8 +13,6 @@
 #include "absl/container/btree_set.h"
 #include "base/zfp_compressor.hpp"
 #include "glog/logging.h"
-#include "numerics/fit_hermite_spline.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -23,8 +21,6 @@ namespace _discrete_trajectory_segment {
 namespace internal {
 
 using namespace principia::base::_zfp_compressor;
-using namespace principia::numerics::_fit_hermite_spline;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 template<typename Frame>
@@ -96,8 +92,7 @@ std::int64_t DiscreteTrajectorySegment<Frame>::size() const {
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::clear() {
   downsampling_parameters_.reset();
-  number_of_dense_points_ = 0;
-  was_downsampled_ = false;
+  downsampling_error_ = Length{};
   timeline_.clear();
 }
 
@@ -142,7 +137,7 @@ Position<Frame> DiscreteTrajectorySegment<Frame>::EvaluatePosition(
   if (it->time == t) {
     return it->degrees_of_freedom.position();
   }
-  return get_interpolation(it)(t);
+  return get_hermite3(it)(t);
 }
 
 template<typename Frame>
@@ -155,7 +150,7 @@ Velocity<Frame> DiscreteTrajectorySegment<Frame>::EvaluateVelocity(
   if (it->time == t) {
     return it->degrees_of_freedom.velocity();
   }
-  return get_interpolation(it).EvaluateDerivative(t);
+  return get_hermite3(it).EvaluateDerivative(t);
 }
 
 template<typename Frame>
@@ -169,7 +164,7 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
   if (it->time == t) {
     return it->degrees_of_freedom;
   }
-  auto const& interpolation = get_interpolation(it);
+  auto const& interpolation = get_hermite3(it);
   return {interpolation(t), interpolation.EvaluateDerivative(t)};
 }
 
@@ -179,19 +174,13 @@ void DiscreteTrajectorySegment<Frame>::SetDownsampling(
   // The semantics of changing downsampling on a segment that has 2 points or
   // more are unclear.  Let's not do that.
   CHECK_LE(timeline_.size(), 1);
-  CHECK(!was_downsampled_);
   downsampling_parameters_ = downsampling_parameters;
-  number_of_dense_points_ = timeline_.empty() ? 0 : 1;
+  downsampling_error_ = Length{};
 }
 
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ClearDownsampling() {
   downsampling_parameters_ = std::nullopt;
-}
-
-template<typename Frame>
-bool DiscreteTrajectorySegment<Frame>::was_downsampled() const {
-  return was_downsampled_;
 }
 
 template<typename Frame>
@@ -239,16 +228,9 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     serialization::DiscreteTrajectorySegment const& message,
     DiscreteTrajectorySegmentIterator<Frame> const self)
   requires serializable<Frame> {
-  // Note that while is_pre_hardy means that the save is pre-Hardy,
-  // !is_pre_hardy does not mean it is Hardy or later; a pre-Hardy segment with
-  // downsampling will have both fields present.
-  bool const is_pre_hardy = !message.has_downsampling_parameters() &&
-                            message.has_number_of_dense_points();
-  bool const is_pre_hesse = !message.has_was_downsampled();
-  LOG_IF(WARNING, is_pre_hesse)
-      << "Reading pre-"
-      << (is_pre_hardy ? "Hardy"
-                       : "Hesse") << " DiscreteTrajectorySegment";
+  bool const is_pre_лефшец = !message.zfp().has_is_lefschetz_timeline();
+  LOG_IF(WARNING, is_pre_лефшец)
+      << "Reading pre-Лефшец DiscreteTrajectorySegment";
 
   DiscreteTrajectorySegment<Frame> segment(self);
 
@@ -275,6 +257,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   std::vector<double> px(timeline_size);
   std::vector<double> py(timeline_size);
   std::vector<double> pz(timeline_size);
+  std::vector<double> err(timeline_size);
   std::string_view zfp_timeline(message.zfp().timeline().data(),
                                 message.zfp().timeline().size());
 
@@ -285,6 +268,21 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
   decompressor.ReadFromMessageMultidimensional<2>(px, zfp_timeline);
   decompressor.ReadFromMessageMultidimensional<2>(py, zfp_timeline);
   decompressor.ReadFromMessageMultidimensional<2>(pz, zfp_timeline);
+  if (is_pre_лефшец) {
+    // Pre-Лефшец saves didn't store the downsampling error; we have to assume
+    // the worst for the points that were downsampled, and no error for the
+    // dense points.
+    std::int64_t const downsampled_size =
+        timeline_size - message.number_of_dense_points();
+    for (std::int64_t i = 0; i < downsampled_size; ++i) {
+      err[i] = Infinity<double>;
+    }
+    for (std::int64_t i = downsampled_size; i < timeline_size; ++i) {
+      err[i] = 0;
+    }
+  } else {
+    decompressor.ReadFromMessageMultidimensional<2>(err, zfp_timeline);
+  }
 
   for (int i = 0; i < timeline_size; ++i) {
     Position<Frame> const q =
@@ -293,38 +291,30 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
     Velocity<Frame> const p({px[i] * (Metre / Second),
                              py[i] * (Metre / Second),
                              pz[i] * (Metre / Second)});
+    Length const downsampling_error = err[i] * Metre;
 
     // See if this is a point whose degrees of freedom must be restored
-    // exactly.
+    // exactly.  Note that the calls to `Append` recompute the interpolation as
+    // being exact since we didn't set the downsampling parameters yet.
     Instant const time = Instant() + t[i] * Second;
     if (auto it = exact.find(time); it == exact.cend()) {
       segment.Append(time, DegreesOfFreedom<Frame>(q, p)).IgnoreError();
     } else {
       segment.Append(time, it->degrees_of_freedom).IgnoreError();
     }
+
+    // Restore the downsampling error for the interpolation ending at this
+    // point.  Remember that there is no interpolation for the first point.
+    if (i > 0) {
+      segment.timeline_.rbegin()->interpolation->error = downsampling_error;
+    }
   }
 
   // Finally, restore the downsampling information.
-  if (!is_pre_hardy) {
-    CHECK_EQ(message.has_downsampling_parameters(),
-             message.has_number_of_dense_points())
-        << message.DebugString();
-  }
-  if (is_pre_hesse) {
-    // Assume that the segment was already downsampled, to avoid re-downsampling
-    // it.
-    segment.was_downsampled_ = true;
-  } else {
-    segment.was_downsampled_ = message.was_downsampled();
-  }
   if (message.has_downsampling_parameters()) {
     segment.downsampling_parameters_ = DownsamplingParameters{
-        .max_dense_intervals =
-            message.downsampling_parameters().max_dense_intervals(),
         .tolerance = Length::ReadFromMessage(
             message.downsampling_parameters().tolerance())};
-    CHECK(message.has_number_of_dense_points());
-    segment.number_of_dense_points_ = message.number_of_dense_points();
   }
 
   return segment;
@@ -383,9 +373,7 @@ void DiscreteTrajectorySegment<Frame>::Prepend(
                                          degrees_of_freedom);
 
   if (auto const next = std::next(it); next != timeline_.cend()) {
-    CHECK_EQ(nullptr, next->interpolation)
-        << "Already has an interpolation at " << t;
-    next->interpolation = NewInterpolation(next);
+    CreateInterpolation(next);
   }
 }
 
@@ -397,13 +385,17 @@ void DiscreteTrajectorySegment<Frame>::ForgetAfter(Instant const& t) {
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetAfter(
     typename Timeline::const_iterator const begin) {
-  std::int64_t number_of_points_to_remove =
-      std::distance(begin, timeline_.cend());
-  number_of_dense_points_ =
-      std::max<std::int64_t>(
-          0, number_of_dense_points_ - number_of_points_to_remove);
-
   timeline_.erase(begin, timeline_.cend());
+  if (!timeline_.empty()) {
+    // Restore the downsampling error resulting from the last interpolation, if
+    // there is one.
+    auto const& last_interpolation = timeline_.crbegin()->interpolation;
+    if (last_interpolation != nullptr) {
+      downsampling_error_ = last_interpolation->error;
+      return;
+    }
+  }
+  downsampling_error_ = Length{};
 }
 
 template<typename Frame>
@@ -416,11 +408,6 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
     typename Timeline::const_iterator const end) {
   std::int64_t const number_of_points_to_remove =
       std::distance(timeline_.cbegin(), end);
-  std::int64_t const number_of_dense_points_to_remove = std::max<std::int64_t>(
-      0,
-      number_of_points_to_remove + number_of_dense_points_ - timeline_.size());
-  number_of_dense_points_ -= number_of_dense_points_to_remove;
-
   timeline_.erase(timeline_.cbegin(), end);
   if (!timeline_.empty()) {
     timeline_.begin()->interpolation = nullptr;
@@ -431,30 +418,67 @@ template<typename Frame>
 absl::Status DiscreteTrajectorySegment<Frame>::Append(
     Instant const& t,
     DegreesOfFreedom<Frame> const& degrees_of_freedom) {
-  if (!timeline_.empty() && timeline_.cbegin()->time == t) {
-    LOG(WARNING) << "Append at existing time " << t << ", time range = ["
-                 << timeline_.cbegin()->time << ", "
-                 << timeline_.crbegin()->time << "]";
-    return absl::OkStatus();
-  }
-  auto const it = timeline_.emplace_hint(timeline_.cend(),
-                                         t,
-                                         degrees_of_freedom);
-  CHECK(std::next(it) == timeline_.cend())
-      << "Append out of order at " << t << ", last time is "
-      << timeline_.crbegin()->time;
-
-  if (it != timeline_.cbegin()) {
-    CHECK_EQ(nullptr, it->interpolation)
-        << "Already has an interpolation at " << t;
-    it->interpolation = NewInterpolation(it);
-  }
-
-  if (downsampling_parameters_.has_value()) {
-    return DownsampleIfNeeded();
+  if (timeline_.empty()) {
+    // The first point of the segment, no interpolation yet (but this will be
+    // the start point for future interpolations).
+    timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
   } else {
-    return absl::OkStatus();
+    auto const first = timeline_.cbegin();
+    auto const last = std::prev(timeline_.cend());
+    if (first->time == t) {
+      LOG(WARNING) << "Append at existing time " << t << ", time range = ["
+                   << first->time << ", " << last->time << "]";
+      return absl::OkStatus();
+    }
+
+    CHECK_LT(last->time, t)
+        << "Append out of order at " << t << ", last time is "
+        << last->time;
+
+    if (timeline_.size() > 1 && downsampling_parameters_.has_value()) {
+      // The lower point of the interpolation is the penultimate point of the
+      // segment, since we don't retain the intermediate points that were below
+      // the tolerance.  Build an interpolation from that point to the new point
+      // being added.
+      auto const lower = std::prev(last);
+      auto hermite3 = MakeHermite3(lower, t, degrees_of_freedom);
+
+      // Compute the new error bound.
+      auto const hermite3_difference =
+          hermite3 - last->interpolation->hermite3;
+      downsampling_error_ += hermite3_difference.LInfinityL₂Norm();
+      if (downsampling_error_ < downsampling_parameters_->tolerance) {
+        // The error bound is below the tolerance, replace the last point with
+        // the new one, record the new interpolation, and keep going.  This is
+        // faster than `erase` followed by `emplace_hint`.
+        auto extracted = timeline_.extract(last);
+        auto& value = extracted.value();
+        value.time = t;
+        value.degrees_of_freedom = degrees_of_freedom;
+        *value.interpolation = {.hermite3 = std::move(hermite3),
+                                .error = downsampling_error_};
+        timeline_.insert(timeline_.cend(), std::move(extracted));
+        return absl::OkStatus();
+      }
+    }
+
+    // We land here if (1) the point being appended is the second point of the
+    // segment; or (2) the error bound is above the tolerance; or (3)
+    // downsampling is disabled.  In all cases, we need to build an
+    // interpolation starting at the last point and append
+    // our new point.
+    auto const lower = last;
+    auto hermite3 = MakeHermite3(lower, t, degrees_of_freedom);
+    auto const it =
+        timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
+    // There is no error because the points being interpolated are consecutive,
+    // so the interpolation exactly matches their positions and velocities.
+    downsampling_error_ = Length{};
+    it->interpolation =
+        NewInterpolation(std::move(hermite3), downsampling_error_);
   }
+
+  return absl::OkStatus();
 }
 
 // Ideally, the segment constructed by reanimation should end with exactly the
@@ -472,7 +496,6 @@ void DiscreteTrajectorySegment<Frame>::Merge(
   } else if (timeline_.empty()) {
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_ = std::move(segment.timeline_);
-    number_of_dense_points_ = segment.number_of_dense_points_;
   } else if (auto const [this_crbegin, segment_begin] =
                  std::pair{std::prev(timeline_.cend()),
                            segment.timeline_.begin()};
@@ -492,7 +515,6 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     Instant const segment_begin_time = segment_begin->time;
     downsampling_parameters_ = segment.downsampling_parameters_;
     timeline_.merge(segment.timeline_);
-    number_of_dense_points_ = segment.number_of_dense_points_;
     // There may not be an interpolation at `segment_begin_time` (there may be
     // one if the segments have a common time, though). (Re)compute it, but
     // remember that we cannot trust that `segment_begin` is in `timeline_` (or
@@ -500,7 +522,7 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     auto const it = timeline_.find(segment_begin_time);
     CHECK(it != timeline_.cend());
     if (it != timeline_.cbegin()) {
-      it->interpolation = NewInterpolation(it);
+      UpdateInterpolation(it);
     }
   } else if (auto const [segment_crbegin, this_begin] =
                  std::pair{std::prev(segment.timeline_.cend()),
@@ -527,7 +549,7 @@ void DiscreteTrajectorySegment<Frame>::Merge(
     auto const it = timeline_.find(this_begin_time);
     CHECK(it != timeline_.cend());
     if (it != timeline_.cbegin()) {
-      it->interpolation = NewInterpolation(it);
+      UpdateInterpolation(it);
     }
   } else {
     LOG(FATAL) << "Overlapping merge: [" << segment.timeline_.cbegin()->time
@@ -540,14 +562,6 @@ void DiscreteTrajectorySegment<Frame>::Merge(
 #undef PRINCIPIA_MERGE_STRICT_CONSISTENCY
 
 template<typename Frame>
-void DiscreteTrajectorySegment<Frame>::SetStartOfDenseTimeline(
-    Instant const& t) {
-  auto const it = find(t);
-  CHECK(it != end()) << "Cannot find time " << t << " in timeline";
-  number_of_dense_points_ = std::distance(it, end());
-}
-
-template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
   auto const it = timeline_.emplace_hint(
       timeline_.begin(), point.time, point.degrees_of_freedom);
@@ -555,99 +569,67 @@ void DiscreteTrajectorySegment<Frame>::SetForkPoint(value_type const& point) {
       << "Inconsistent fork point at time " << point.time;
 
   if (auto const next = std::next(it); next != timeline_.cend()) {
-    CHECK_EQ(nullptr, next->interpolation)
-        << "Already has an interpolation at " << point.time;
-    next->interpolation = NewInterpolation(next);
+    CreateInterpolation(next);
   }
 }
 
 template<typename Frame>
-absl::Status DiscreteTrajectorySegment<Frame>::DownsampleIfNeeded() {
-  ++number_of_dense_points_;
-  // Points, hence one more than intervals.
-  if (number_of_dense_points_ >
-      downsampling_parameters_->max_dense_intervals) {
-    // Obtain iterators for all the dense points of the segment.  We need non-
-    // const iterators as we will be modifying the interpolations.
-    using Iterators = std::vector<typename Timeline::iterator>;
-    Iterators dense_iterators(number_of_dense_points_);
-    CHECK_LE(dense_iterators.size(), timeline_.size());
-    auto it = timeline_.rbegin();
-    for (int i = dense_iterators.size() - 1; i >= 0; --i) {
-      dense_iterators[i] = std::prev(it.base());
-      ++it;
-    }
-
-    absl::StatusOr<std::list<typename Iterators::const_iterator>>
-        right_endpoints = FitHermiteSpline<Position<Frame>, Instant>(
-            dense_iterators,
-            [](auto&& it) -> auto&& { return it->time; },
-            [](auto&& it) -> auto&& {
-              return it->degrees_of_freedom.position();
-            },
-            [](auto&& it) -> auto&& {
-              return it->degrees_of_freedom.velocity();
-            },
-            downsampling_parameters_->tolerance);
-    if (!right_endpoints.ok()) {
-      // Note that the actual appending took place; the propagated status only
-      // reflects a lack of downsampling.
-      return right_endpoints.status();
-    }
-
-    if (right_endpoints->empty()) {
-      right_endpoints->push_back(std::prev(dense_iterators.end()));
-    }
-
-    // Obtain the times for the right endpoints.  This is necessary because we
-    // cannot use iterators for erasing points, as they would get invalidated
-    // after the first erasure.
-    std::vector<Instant> right_endpoints_times;
-    right_endpoints_times.reserve(right_endpoints.value().size());
-    for (auto const& it_in_dense_iterators : right_endpoints.value()) {
-      right_endpoints_times.push_back((*it_in_dense_iterators)->time);
-    }
-
-    // Poke holes in the timeline at the places given by
-    // `right_endpoints_times`.  This requires one lookup per erasure because
-    // `erase` invalidates iterators.
-    auto left_it = dense_iterators.front();
-    for (Instant const& right : right_endpoints_times) {
-      ++left_it;
-      auto const right_it = timeline_.find(right);
-      left_it = timeline_.erase(left_it, right_it);
-      CHECK_EQ(left_it->time, right);
-      left_it->interpolation = NewInterpolation(left_it);
-    }
-    number_of_dense_points_ = std::distance(left_it, timeline_.end());
-    was_downsampled_ = true;
-  }
-  return absl::OkStatus();
+void DiscreteTrajectorySegment<Frame>::CreateInterpolation(
+    typename Timeline::iterator const upper) {
+  CHECK(upper != timeline_.cbegin());
+  CHECK_EQ(nullptr, upper->interpolation)
+      << "Already has an interpolation at " << upper->time;
+  UpdateInterpolation(upper);
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
-DiscreteTrajectorySegment<Frame>::NewInterpolation(
-    typename Timeline::const_iterator const upper) const {
+void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
+    typename Timeline::iterator const upper) {
   CHECK(upper != timeline_.cbegin());
   auto const lower = std::prev(upper);
   auto const& [lower_time, lower_degrees_of_freedom] = *lower;
   auto const& [upper_time, upper_degrees_of_freedom] = *upper;
-  return make_not_null_unique<Hermite3<Position<Frame>, Instant>>(
-      std::pair{lower_time, upper_time},
+  upper->interpolation =
+      NewInterpolation(Hermite3<Position<Frame>, Instant>(
+                           std::pair{lower_time, upper_time},
+                           std::pair{lower_degrees_of_freedom.position(),
+                                     upper_degrees_of_freedom.position()},
+                           std::pair{lower_degrees_of_freedom.velocity(),
+                                     upper_degrees_of_freedom.velocity()}),
+                       /*error=*/Length{});
+}
+
+template<typename Frame>
+Hermite3<Position<Frame>, Instant>
+DiscreteTrajectorySegment<Frame>::MakeHermite3(
+    typename Timeline::const_iterator lower,
+    Instant const& t,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom) {
+  auto const lower_time = lower->time;
+  auto const lower_degrees_of_freedom = lower->degrees_of_freedom;
+  return Hermite3<Position<Frame>, Instant>(
+      std::pair{lower_time, t},
       std::pair{lower_degrees_of_freedom.position(),
-                upper_degrees_of_freedom.position()},
+                degrees_of_freedom.position()},
       std::pair{lower_degrees_of_freedom.velocity(),
-                upper_degrees_of_freedom.velocity()});
+                degrees_of_freedom.velocity()});
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<Interpolation<Frame>>>
+DiscreteTrajectorySegment<Frame>::NewInterpolation(
+    Hermite3<Position<Frame>, Instant> hermite3,
+    Length const& error) {
+  return make_not_null_unique<Interpolation<Frame>>(std::move(hermite3), error);
 }
 
 template<typename Frame>
 Hermite3<Position<Frame>, Instant> const&
-DiscreteTrajectorySegment<Frame>::get_interpolation(
+DiscreteTrajectorySegment<Frame>::get_hermite3(
     typename Timeline::const_iterator const upper) const {
   CHECK(upper != timeline_.cbegin());
   CHECK_NOTNULL(upper->interpolation);
-  return *upper->interpolation;
+  return upper->interpolation->hermite3;
 }
 
 template<typename Frame>
@@ -683,16 +665,9 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   if (downsampling_parameters_.has_value()) {
     auto* const serialized_downsampling_parameters =
         message->mutable_downsampling_parameters();
-    serialized_downsampling_parameters->set_max_dense_intervals(
-        downsampling_parameters_->max_dense_intervals);
     downsampling_parameters_->tolerance.WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
-    message->set_number_of_dense_points(std::min(
-        timeline_size,
-        std::max<std::int64_t>(
-            0, number_of_dense_points_ - number_of_points_to_skip_at_end)));
   }
-  message->set_was_downsampled(was_downsampled_);
 
   // Convert the `exact` vector into a set, and add the extremities.  This
   // ensures that we don't have redundancies.  The set is sorted by time to
@@ -722,6 +697,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
 
   auto* const zfp = message->mutable_zfp();
   zfp->set_timeline_size(timeline_size);
+  zfp->set_is_lefschetz_timeline(true);
 
   // The timeline data is made dimensionless and stored in separate arrays per
   // coordinate.  We expect strong correlations within a coordinate over time,
@@ -733,6 +709,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   std::vector<double> px;
   std::vector<double> py;
   std::vector<double> pz;
+  std::vector<double> err;
   t.reserve(timeline_size);
   qx.reserve(timeline_size);
   qy.reserve(timeline_size);
@@ -740,6 +717,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   px.reserve(timeline_size);
   py.reserve(timeline_size);
   pz.reserve(timeline_size);
+  err.reserve(timeline_size);
   std::optional<Instant> previous_instant;
   Time max_Δt;
   std::string* const zfp_timeline = zfp->mutable_timeline();
@@ -754,14 +732,17 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     px.push_back(p.coordinates().x / (Metre / Second));
     py.push_back(p.coordinates().y / (Metre / Second));
     pz.push_back(p.coordinates().z / (Metre / Second));
+    err.push_back(it->interpolation != nullptr
+                      ? it->interpolation->error / Metre : 0.0);
     if (previous_instant.has_value()) {
       max_Δt = std::max(max_Δt, instant - *previous_instant);
     }
     previous_instant = instant;
   }
 
-  // Times are exact.
+  // Times and errors are exact.
   ZfpCompressor time_compressor(0);
+  ZfpCompressor error_compressor(0);
   // Lengths are approximated to the downsampling tolerance if downsampling is
   // enabled, otherwise they are exact.
   Length const length_tolerance = downsampling_parameters_.has_value()
@@ -781,6 +762,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   speed_compressor.WriteToMessageMultidimensional<2>(px, zfp_timeline);
   speed_compressor.WriteToMessageMultidimensional<2>(py, zfp_timeline);
   speed_compressor.WriteToMessageMultidimensional<2>(pz, zfp_timeline);
+  error_compressor.WriteToMessageMultidimensional<2>(err, zfp_timeline);
 }
 
 }  // namespace internal

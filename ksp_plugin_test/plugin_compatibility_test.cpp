@@ -449,7 +449,7 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
       /*decoder=*/"base64");
   // Regression test for #3244.
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Hardy DiscreteTrajectorySegment"),
+              AllOf(HasSubstr("pre-Лефшец DiscreteTrajectorySegment"),
                     Not(HasSubstr("pre-Hamilton"))));
 }
 

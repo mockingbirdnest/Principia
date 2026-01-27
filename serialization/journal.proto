@@ -75,8 +75,11 @@ message ConfigurationAccuracyParameters {
 }
 
 message ConfigurationDownsamplingParameters {
-  required string max_dense_intervals = 1;
   required string tolerance = 2;
+
+  // Pre-Лефшец.
+  reserved 1;
+  reserved "max_dense_intervals";
 }
 
 message ConfigurationFixedStepParameters {

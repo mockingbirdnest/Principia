@@ -481,7 +481,7 @@ void BM_DiscreteTrajectoryDownsampling(benchmark::State& state) {
     downsampled_trajectory.clear();
     downsampled_trajectory.segments().begin()->SetDownsampling(
         DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
-            .max_dense_intervals = 10'000, .tolerance = 10 * Metre});
+            .tolerance = 10 * Metre});
     for (auto const& [t, degrees_of_freedom] : *goes_8_trajectory) {
       CHECK_OK(downsampled_trajectory.Append(t, degrees_of_freedom));
     }
