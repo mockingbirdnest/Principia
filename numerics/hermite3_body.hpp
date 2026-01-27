@@ -168,14 +168,14 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
       lower_);
   // The monomial `(t - lower_)`.
   PolynomialInMonomialBasis<Difference<Argument>, Argument, 1> const monomial(
-      {Difference<Argument>{}, 1.0}, lower_);
+      {Difference<Argument>{}, 0.5}, lower_);
 
   // This is not quite `d/dt(‖p_(t)‖₂²)`, but it differs from it by a factor
   // `(t - lower)³`, which is irrelevant to find its zeroes.
   using DValue =
       Quotient<Square<NormType>, Exponentiation<Difference<Argument>, 4>>;
   PolynomialInMonomialBasis<DValue, Argument, 2> const norm₂²_derivative =
-      PointwiseInnerProduct(q, (2.0 * q + monomial * q.Derivative()));
+      PointwiseInnerProduct(q, (q + monomial * q.Derivative()));
   auto const& norm₂²_derivative_coefficients = norm₂²_derivative.coefficients();
   auto const norm₂²_derivative_roots =
       SolveQuadraticEquation<Argument, DValue>(
