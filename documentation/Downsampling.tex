@@ -1,0 +1,93 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage{tikz}
+\usetikzlibrary{cd}
+\usetikzlibrary{patterns}
+
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
+
+% Must come last.
+\usepackage{siunitx}
+\sisetup{math-micro=\text{µ},text-micro=µ}
+
+%%%% Shorthands.
+\DeclareMathOperator{\bias}{\mathit{bias}}
+\DeclareMathOperator{\ULP}{\mathfrak u}
+\DeclareMathOperator{\mant}{\mathfrak m}
+\DeclareMathOperator{\expn}{\mathfrak e}
+\DeclareMathOperator{\truncate}{\StandardSymbol{Tr}}
+\DeclareMathOperator{\twosum}{\StandardSymbol{TwoSum}}
+\DeclareMathOperator{\quicktwosum}{\StandardSymbol{QuickTwoSum}}
+\DeclareMathOperator{\dwplusfp}{\StandardSymbol{DWPlusFP}}
+\DeclareMathOperator{\twodifference}{\StandardSymbol{TwoDifference}}
+\DeclareMathOperator{\quicktwodifference}{\StandardSymbol{QuickTwoDifference}}
+\DeclareMathOperator{\cmod}{\StandardSymbol{cmod}}
+
+% Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
+% so we make them grow for readability.
+\newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
+\newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
+\newcommand{\roundTowardPositive}[1]{\doubleSquareBrackets{#1}_+}
+\newcommand{\roundTowardNegative}[1]{\doubleSquareBrackets{#1}_-}
+\newcommand{\roundAll}[1]{\doubleSquareBrackets{#1}_⋯}
+\newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
+\newcommand{\bin}[1]{{_{2}}\mathrm{#1}}
+\newcommand{\red}[1]{\tilde{#1}}
+
+%%%% Title and authors.
+
+\title{Downsampling Discrete Trajectories}
+\date{\printdate{2026-01-26}}
+\author{Pascal~Leroy (phl)}
+\begin{document}
+\maketitle
+\begin{sloppypar}
+\noindent
+This document describes the computations that are performed by the method \texttt{Append} of class \texttt{DiscreteTrajectorySegment} to downsample the points produced by an integrator and produce a compact yet accurate representation of discrete trajectories.
+\end{sloppypar}
+
+\section*{Overview}
+
+An integrator produces a stream of tuples $\tuple{t_i, q_i, p_i}$ giving the degrees of freedom of a massless body at discrete times $t_i$.  The purpose of downsampling is twofold:
+\begin{itemize}[nosep]
+\item Construct cubic Hermite splines that interpolate between consecutive $t_i$ to make it possible to evaluate the degrees of freedom at any time with sufficient accuracy.
+\item Make the representation more compact by dropping the tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intopen{1}{n}$ if the Hermite spline constructed based on $\tuple{t_1, q_1, p_1}$ and $\tuple{t_n, q_n, p_n}$ approximates these tuples with sufficient accuracy.
+\end{itemize}
+
+\section*{A Brute Force Algorithm}
+
+The best way to describe the problem we want to solve is to present a brute-force algorithm that provides an exact solution:
+
+\begin{algorithm}
+\DontPrintSemicolon
+\SetAlgoLined
+\LinesNumbered
+\SetNlSty{texttt}{}{.}
+\SetAlgoNlRelativeSize{0}
+\KwIn{A tolerance $\gh$ and a stream of tuples $\tuple{t_i, q_i, p_i}$.}
+\KwOut{A stream of intervals $\intclos{j_1}{j_2}$ such that the Hermite spline based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$ approximates the input tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intclos{j_1}{j_2}$ with a tolerance better that $\gh$.}
+\SetKwFunction{BruteForceDownsampling}{BruteForceDownsampling}
+Let $j = 1$.\;
+\While{not at end of input stream} {
+  Compute the Hermite spline $h$ based on the tuples $\tuple{t_{j}, q_{j}, p_{j}}$ and $\tuple{t_i, q_i, p_i}$.\;
+  \uIf{$\summationSign_{k = j}^i \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
+    Emit the interval $\intclos{j}{i - 1}$.\;
+    Let $j = i - 1$.
+  }
+}
+Emit the interval $\intclos{j}{n}$ where $n$ is the index of the last element in the stream.\;
+\caption{BruteForceDownsampling.}
+\end{algorithm}
+
+A few things are worth noting here:
+\begin{itemize}[nosep]
+\item Only the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$ corresponding to the bounds of the intervals $\intclos{j_1}{j_2}$ need to be stored permanently.  The other tuples can be interpolated with an accuracy better than $\gh$.
+\item The Hermite splines do not need to be stored permanently; they can be reconstructed based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$.
+\item The algorithm is optimal in the sense that it produces the longest possible intervals $\intclos{j_1}{j_2}$ that satisfy the tolerance $\gh$.
+\item For each input tuple, the algorithm needs to scan all past tuples since the upper bound $j$ of the last emitted interval.  Therefore, the algorithm is quadratic in the number of tuples in the input stream.
+\end{itemize}
+
+\end{document}
