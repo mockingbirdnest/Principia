@@ -70,12 +70,12 @@ The best way to describe the problem we want to solve is to present a brute-forc
 \KwIn{A tolerance $\gh$ and a stream of tuples $\tuple{t_i, q_i, p_i}$.}
 \KwOut{A stream of intervals $\intclos{j_1}{j_2}$ such that the Hermite spline based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$ approximates the input tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intclos{j_1}{j_2}$ with a tolerance better that $\gh$.}
 \SetKwFunction{BruteForceDownsampling}{BruteForceDownsampling}
-Let $j = 1$.\;
+Let $j \leftarrow 1$.\;
 \While{not at end of input stream} {
   Compute the Hermite spline $h$ based on the tuples $\tuple{t_{j}, q_{j}, p_{j}}$ and $\tuple{t_i, q_i, p_i}$.\;
   \uIf{$\summationSign_{k = j}^i \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
     Emit the interval $\intclos{j}{i - 1}$.\;
-    Let $j = i - 1$.
+    Let $j \leftarrow i - 1$.
   }
 }
 Emit the interval $\intclos{j}{n}$ where $n$ is the index of the last element in the stream.\;
@@ -88,6 +88,55 @@ A few things are worth noting here:
 \item The Hermite splines do not need to be stored permanently; they can be reconstructed based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$.
 \item The algorithm is optimal in the sense that it produces the longest possible intervals $\intclos{j_1}{j_2}$ that satisfy the tolerance $\gh$.
 \item For each input tuple, the algorithm needs to scan all past tuples since the upper bound $j$ of the last emitted interval.  Therefore, the algorithm is quadratic in the number of tuples in the input stream.
+\end{itemize}
+
+\section*{A Binary Search Algorithm}
+
+In order to avoid the quadratic complexity, we used to use a binary search algorithm as follows:
+
+\begin{algorithm}
+\DontPrintSemicolon
+\SetAlgoLined
+\LinesNumbered
+\SetNlSty{texttt}{}{.}
+\SetAlgoNlRelativeSize{0}
+\SetKwFunction{SearchInterval}{SearchInterval}
+\KwIn{A tolerance $\gh$, an integer $N$, and a stream of tuples $\tuple{t_i, q_i, p_i}$.}
+\KwOut{A stream of intervals $\intclos{j_1}{j_2}$ such that the Hermite spline based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$ approximates the input tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intclos{j_1}{j_2}$ with a tolerance better that $\gh$.}
+\SetKwData{A}{A}
+\SetKwFunction{BinarySearchDownsampling}{BinarySearchDownsampling}
+\SetKwProg{Fn}{Function}{ is}{end}
+Let $A$ be an array of size $N$ used to store tuples.\;
+\While{not at end of input stream} {
+  \uIf{\A is full}{
+    Let $k \leftarrow \Floor{N/2}$.\;
+    Emit \SearchInterval{\A, $1$, $k$}.\;
+    Emit \SearchInterval{\A, $k + 1$, $N$}.\;
+    Clear \A.
+  }
+  Append $\tuple{t_i, q_i, p_i}$ to \A.\;
+}
+\BlankLine
+\Fn{\SearchInterval{A, $i_1$, $i_2$}} {
+  Compute the Hermite spline $h$ based on the tuples $\tuple{t_{i_1}, q_{i_1}, p_{i_1}}$ and $\tuple{t_{i_2}, q_{i_2}, p_{i_2}}$.\;
+  \uIf{$\summationSign_{k = {i_1}}^{i_2} \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
+    Let $k \leftarrow \Floor{i_2/2}$.\;
+    Emit \SearchInterval{\A, $i_1$, $k$}.\;
+    Emit \SearchInterval{\A, $k + 1$, $i_2$}.
+  }
+  \Else {
+    Emit $\intclos{i_1}{i_2}$.
+  }
+}
+\caption{BinarySearchDownsampling.}
+\end{algorithm}
+
+This algorithm has the following properties:
+\begin{itemize}[nosep]
+\item The array $A$ must be stored permanently since it contains tuples that have not been downsampled yet and that will be needed to make a future decision about the intervals to emit.
+\item The choice of $N$ involves a trade-off: $N$ must be large enough that the downsampling is effective and produces long intervals $\intclos{j_1}{j_2}$; but it must not be so large that the size of $A$ affects performance.
+\item The algorithm has a complexity of $\BigO\of{N \log N}$ on average and $\BigO\of{N^2}$ in the worst case.
+\item The algorithm does not produce the longest possible intervals: in the worst case, all the emitted intervals may be too small by a factor of 2.
 \end{itemize}
 
 \end{document}
