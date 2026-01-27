@@ -7,6 +7,7 @@
 \usepackage[ruled,vlined]{algorithm2e}
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
+\usepackage[super]{nth}
 \counterwithout{equation}{section}
 
 % Must come last.
@@ -72,8 +73,8 @@ The best way to describe the problem we want to solve is to present a brute-forc
 \SetKwFunction{BruteForceDownsampling}{BruteForceDownsampling}
 Let $j \leftarrow 1$.\;
 \While{not at end of input stream} {
-  Compute the Hermite spline $h$ based on the tuples $\tuple{t_{j}, q_{j}, p_{j}}$ and $\tuple{t_i, q_i, p_i}$.\;
-  \uIf{$\summationSign_{k = j}^i \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
+  Construct the Hermite spline $h$ based on the tuples $\tuple{t_{j}, q_{j}, p_{j}}$ and $\tuple{t_i, q_i, p_i}$.\;
+  \uIf{$\max_{k = j \cdots i} \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
     Emit the interval $\intclos{j}{i - 1}$.\;
     Let $j \leftarrow i - 1$.
   }
@@ -118,8 +119,8 @@ Let $A$ be an array of size $N$ used to store tuples.\;
 }
 \BlankLine
 \Fn{\SearchInterval{A, $i_1$, $i_2$}} {
-  Compute the Hermite spline $h$ based on the tuples $\tuple{t_{i_1}, q_{i_1}, p_{i_1}}$ and $\tuple{t_{i_2}, q_{i_2}, p_{i_2}}$.\;
-  \uIf{$\summationSign_{k = {i_1}}^{i_2} \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
+  Construct the Hermite spline $h$ based on the tuples $\tuple{t_{i_1}, q_{i_1}, p_{i_1}}$ and $\tuple{t_{i_2}, q_{i_2}, p_{i_2}}$.\;
+  \uIf{$\max_{k = {i_1} \cdots {i_2}} \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
     Let $k \leftarrow \Floor{i_2/2}$.\;
     Emit \SearchInterval{\A, $i_1$, $k$}.\;
     Emit \SearchInterval{\A, $k + 1$, $i_2$}.
@@ -138,5 +139,46 @@ This algorithm has the following properties:
 \item The algorithm has a complexity of $\BigO\of{N \log N}$ on average and $\BigO\of{N^2}$ in the worst case.
 \item The algorithm does not produce the longest possible intervals: in the worst case, all the emitted intervals may be too small by a factor of 2.
 \end{itemize}
+
+\section*{An Efficient Streaming Algorithm}
+
+In this section we present an algorithm that, like the brute-force algorithm, is streaming (so a decision is made on each input tuple without having to resort to intermediate storage), whose complexity is linear in the size of the stream, and which generally produces a much more compact output than the binary search algorithm.  Without loss of generality we assume that, when the tuple of index $i$ is received, no interval was ever emitted (so the first interval to emit will necessarily have the lower bound $1$).
+
+The algorithm is incremental, so let's assume that we have already constructed a Hermite spline $h_{i - 1}$ with an error bound $\gce_{i - 1}$ such that:
+\[
+\max_{k = 1 \cdots i - 1} \Lnorm[2]{h_{i - 1}\of{t_k} - q_k} \le \gce_{i - i} \le \gh
+\]
+It is obviously possible to build such a spline, because the error on a spline build based on two consecutive points in the stream is $0$.  In other words, $\gce_2 = 0$ ($\gce_1$ is not defined because a spline cannot be constructed using a single point).
+
+When the point with index $i$ is received, we construct the Hermite spline $h_i$ based on the tuples $\tuple{t_{1}, q_{1}, p_{1}}$ and $\tuple{t_{i}, q_{i}, p_{i}}$.  Noting that $h_i\of{t_i} = q_i$ we have:
+\[
+\max_{k = 1 \cdots i} \Lnorm[2]{h_i\of{t_k} - q_k} = \max_{k = 1 \cdots {i - 1}} \Lnorm[2]{h_i\of{t_k} - q_k}
+\] 
+And, by the triangular inequality:
+\[
+\max_{k = 1 \cdots {i - 1}} \Lnorm[2]{h_i\of{t_k} - q_k} \le \max_{k = 1 \cdots {i - 1}} \Lnorm[2]{h_i\of{t_k} - h_{i - 1}\of{t_k}} + \max_{k = 1 \cdots {i - 1}} \Lnorm[2]{h_{i - 1}\of{t_k} - q_k}
+\]
+The first term is bounded by the $\Lspace$ norm of $h_i - h_{i - 1}$ and the second term is bounded, because of our recurrence hypothesis, by $\gce_{i - 1}$.  Thus:
+\[
+\max_{k = 1 \cdots i} \Lnorm[2]{h_i\of{t_k} - q_k} \le \Lnorm{h_i - h_{i - 1}} + \gce_{i - 1}
+\]
+Therefore, if we can compute $\Lnorm{h_i - h_{i - 1}}$ we can find an upper bound $\gce_i$ on the left-hand of this inequality and use it to determine if $h_i$ is still within the tolerance $\gh$ or if the interval must be split.
+
+Unfortunately $h_{i - 1}\of{t}$ and $h_i\of{t}$ are \nth{3} degree polynomials, so $\Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2$ is a \nth{6} degree polynomial, and finding its extrema requires the resolution of a \nth{5} degree equation, which would probably be overly expensive.
+
+We can note however that, by construction, the $h_i$ are exact for $t = t_i$.  Therefore, $h_{i - 1}\of{t_1} = h_{i}\of{t_1}$ and $h'_{i - 1}\of{t_1} = h'_{i}\of{t_1}$.  This implies that $\pa{t - t_1}^2$ divides the polynomial $h_{i}\of{t} - h_{i - 1}\of{t}$.  There exist a \nth{1} degree polynomial $q_i\of{t}$ such that:
+\[
+h_{i}\of{t} - h_{i - 1}\of{t} = \pa{t - t_1}^2 q_i\of{t}
+\]
+Switching to norms we find:
+\[
+\Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2 = \pa{t - t_1}^4 \Lnorm[2]{q_i\of{t}}^2
+\]
+To find the extrema we need to compute the roots of the derivative:
+\begin{align*}
+\derivop t {\Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2} &= 4 \pa{t - t_1}^3 \Lnorm[2]{q_i\of{t}}^2 + \pa{t - t_1}^4 \pa{\scal{q_i\of{t}}{q'_i\of{t}}} \\
+&= 2 \pa{t - t_1}^3 \pa{\scal{q_i\of{t}}\pa{2 q_i\of{t} + \pa{t - t_1} q'_i\of{t}}}
+\end{align*}
+Now the polynomial $\scal{q_i\of{t}}\pa{2 q_i\of{t} + \pa{t - t_1} q'_i\of{t}}$ is a \nth{2} degree polynomial and its roots may be computed efficiently.  In order to compute the extrema of $h_{i}\of{t} - h_{i - 1}\of{t}$, we must evaluate it at the roots of its derivative, and at $t_{i - 1}$, since it could have an extremum there that does not correspond to a zero of the derivative.
 
 \end{document}
