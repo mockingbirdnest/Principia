@@ -47,7 +47,7 @@
 \maketitle
 \begin{sloppypar}
 \noindent
-This document describes the computations that are performed by the method \texttt{Append} of class \texttt{DiscreteTrajectorySegment} to downsample the points produced by an integrator and produce a compact yet accurate representation of discrete trajectories.
+This document describes the computations that are performed by the method \texttt{Append} of class \texttt{DiscreteTrajectorySegment} to downsample the points produced by an integrator and build a compact yet accurate representation of discrete trajectories.
 \end{sloppypar}
 
 \section*{Overview}
@@ -55,7 +55,7 @@ This document describes the computations that are performed by the method \textt
 An integrator produces a stream of tuples $\tuple{t_i, q_i, p_i}$ giving the degrees of freedom of a massless body at discrete times $t_i$.  The purpose of downsampling is twofold:
 \begin{itemize}[nosep]
 \item Construct cubic Hermite splines that interpolate between consecutive $t_i$ to make it possible to evaluate the degrees of freedom at any time with sufficient accuracy.
-\item Make the representation more compact by dropping the tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intopen{1}{n}$ if the Hermite spline constructed based on $\tuple{t_1, q_1, p_1}$ and $\tuple{t_n, q_n, p_n}$ approximates these tuples with sufficient accuracy.
+\item Make the representation more compact by dropping the tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intopen{1}{n}$ if the Hermite spline based on $\tuple{t_1, q_1, p_1}$ and $\tuple{t_n, q_n, p_n}$ approximates these tuples with sufficient accuracy.
 \end{itemize}
 
 \section*{A Brute Force Algorithm}
@@ -74,7 +74,7 @@ The best way to describe the problem we want to solve is to present a brute-forc
 Let $j \leftarrow 1$.\;
 \While{not at end of input stream} {
   Construct the Hermite spline $h$ based on the tuples $\tuple{t_{j}, q_{j}, p_{j}}$ and $\tuple{t_i, q_i, p_i}$.\;
-  \uIf{$\max_{k = j \cdots i} \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
+  \If{$\max_{k = j \cdots i} \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
     Emit the interval $\intclos{j}{i - 1}$.\;
     Let $j \leftarrow i - 1$.
   }
@@ -109,7 +109,7 @@ In order to avoid the quadratic complexity, we used to use a binary search algor
 \SetKwProg{Fn}{Function}{ is}{end}
 Let $A$ be an array of size $N$ used to store tuples.\;
 \While{not at end of input stream} {
-  \uIf{\A is full}{
+  \If{\A is full}{
     Let $k \leftarrow \Floor{N/2}$.\;
     Emit \SearchInterval{\A, $1$, $k$}.\;
     Emit \SearchInterval{\A, $k + 1$, $N$}.\;
@@ -166,11 +166,11 @@ Therefore, if we can compute $\Lnorm{h_i - h_{i - 1}}$ we can find an upper boun
 
 Unfortunately $h_{i - 1}\of{t}$ and $h_i\of{t}$ are \nth{3} degree polynomials, so $\Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2$ is a \nth{6} degree polynomial, and finding its extrema requires the resolution of a \nth{5} degree equation, which would probably be overly expensive.
 
-We can note however that, by construction, the $h_i$ are exact for $t = t_i$.  Therefore, $h_{i - 1}\of{t_1} = h_{i}\of{t_1}$ and $h'_{i - 1}\of{t_1} = h'_{i}\of{t_1}$.  This implies that $\pa{t - t_1}^2$ divides the polynomial $h_{i}\of{t} - h_{i - 1}\of{t}$.  There exist a \nth{1} degree polynomial $q_i\of{t}$ such that:
+We can note however that, by construction, the $h_i$ are all exact for $t = t_1$.  Therefore, $h_{i - 1}\of{t_1} = h_{i}\of{t_1}$ and $h'_{i - 1}\of{t_1} = h'_{i}\of{t_1}$.  This implies that $\pa{t - t_1}^2$ divides the polynomial $h_{i}\of{t} - h_{i - 1}\of{t}$: there exist a \nth{1} degree polynomial $q_i\of{t}$ such that:
 \[
 h_{i}\of{t} - h_{i - 1}\of{t} = \pa{t - t_1}^2 q_i\of{t}
 \]
-Switching to norms we find:
+Taking the norm we obtain:
 \[
 \Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2 = \pa{t - t_1}^4 \Lnorm[2]{q_i\of{t}}^2
 \]
@@ -180,5 +180,39 @@ To find the extrema we need to compute the roots of the derivative:
 &= 2 \pa{t - t_1}^3 \pa{\scal{q_i\of{t}}\pa{2 q_i\of{t} + \pa{t - t_1} q'_i\of{t}}}
 \end{align*}
 Now the polynomial $\scal{q_i\of{t}}\pa{2 q_i\of{t} + \pa{t - t_1} q'_i\of{t}}$ is a \nth{2} degree polynomial and its roots may be computed efficiently.  In order to compute the extrema of $h_{i}\of{t} - h_{i - 1}\of{t}$, we must evaluate it at the roots of its derivative, and at $t_{i - 1}$, since it could have an extremum there that does not correspond to a zero of the derivative.
+
+Having computed the extrema of $h_{i}\of{t} - h_{i - 1}\of{t}$, we set:
+\[
+\gce_i = \Lnorm{h_i - h_{i - 1}} + \gce_{i - 1}
+\]
+If $\gce_i < \gh$, we are sure that the polynomial $h_i\of{t}$ is within the tolerance.  If on the other hand $\gce_i \geq \gh$ we have to assume that it is not, and we must emit an interval.  Note that this decision is somewhat pessimistic because of the use of the triangular inequality above, but in practice the polynomials $h_i\of{t}$ change slowly with $i$, so that $h_{i - 1}\of{t_k} - q_k$ and $h_i\of{t_k} - q_k$ are nearly colinear and the triangular inequality is close to an equality.  This means that this technique tends to yield a solution relatively close to the optimal obtained by the brute-force algorithm, and significantly better than the one obtained by binary search.
+
+\pagebreak
+This analysis leads to the following algorithm:
+\begin{algorithm}
+\DontPrintSemicolon
+\SetAlgoLined
+\LinesNumbered
+\SetNlSty{texttt}{}{.}
+\SetAlgoNlRelativeSize{0}
+\KwIn{A tolerance $\gh$ and a stream of tuples $\tuple{t_i, q_i, p_i}$.}
+\KwOut{A stream of intervals $\intclos{j_1}{j_2}$ such that the Hermite spline based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$ approximates the input tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intclos{j_1}{j_2}$ with a tolerance better that $\gh$.}
+\SetKwFunction{EfficientDownsampling}{EfficientDownsampling}
+Let $j \leftarrow 1$.\;
+Let $\gce \leftarrow 0$.\;
+\While{not at end of input stream} {
+  Construct the Hermite spline $h_{j, i}$ based on the tuples $\tuple{t_{j}, q_{j}, p_{j}}$ and $\tuple{t_i, q_i, p_i}$.\;
+  Let $\gce \leftarrow \gce + \Lnorm{h_{j, i} - h_{j, i - 1}}$.\;
+  \If{$\gce > \gh$} {
+    Emit the interval $\intclos{j}{i - 1}$.\;
+    Let $j \leftarrow i - 1$.\;
+    Let $\gce \leftarrow 0$.
+  }
+}
+Emit the interval $\intclos{j}{n}$ where $n$ is the index of the last element in the stream.\;
+\caption{EfficientDownsampling.}
+\end{algorithm}
+
+It is worth noting that the state of the algorithm now includes $\gce$, a quantity that cannot be reconstructed once tuples have been dropped.  In order for the downsampling to be restartable (\exempligratia, after a call to \texttt{ForgetAfter}) the $\gce_i$ must be stored permanently.
 
 \end{document}
