@@ -153,8 +153,11 @@ absl::Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
                                 int const index) {
   CHECK_GE(index, 0);
   CHECK_LE(index, number_of_manœuvres());
+
+  Mass initial_mass = index == 0 ? initial_mass_ : burn.override_initial_mass.value_or(manœuvres_[index - 1].final_mass());
+  
   NavigationManœuvre const manœuvre(
-      index == 0 ? initial_mass_ : manœuvres_[index - 1].final_mass(),
+      initial_mass,
       burn);
   if (manœuvre.IsSingular()) {
     return Singular(manœuvre.Δv().Norm²());
@@ -190,7 +193,7 @@ absl::Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
                                  int const index) {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
-  NavigationManœuvre const manœuvre(manœuvres_[index].initial_mass(),
+  NavigationManœuvre const manœuvre(burn.override_initial_mass.value_or(manœuvres_[index].initial_mass()),
                                     burn);
   if (manœuvre.IsSingular()) {
     return Singular(manœuvre.Δv().Norm²());
@@ -634,6 +637,7 @@ void FlightPlan::UpdateInitialMassOfManœuvresAfter(int const index) {
   }
   Mass initial_mass = manœuvres_[index].final_mass();
   for (int i = index + 1; i < manœuvres_.size(); ++i) {
+    initial_mass = manœuvres_[i].burn().override_initial_mass.value_or(initial_mass);
     manœuvres_[i] = NavigationManœuvre(initial_mass, manœuvres_[i].burn());
     initial_mass = manœuvres_[i].final_mass();
   }

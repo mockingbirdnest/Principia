@@ -60,12 +60,19 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
   intensity.Δv = FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v);
   NavigationManœuvre::Timing timing;
   timing.initial_time = FromGameTime(plugin, burn.initial_time);
+
+  bool mass_overriden = !std::isnan(burn.override_initial_mass_in_tonnes);
+  const auto override_mass = mass_overriden 
+                       ? std::make_optional(burn.override_initial_mass_in_tonnes * Tonne)
+                       : std::nullopt;
+
   return {intensity,
           timing,
           burn.thrust_in_kilonewtons * Kilo(Newton),
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           NewNavigationFrame(plugin, burn.frame),
-          burn.is_inertially_fixed};
+          burn.is_inertially_fixed,
+          override_mass};
 }
 
 Burn GetBurn(Plugin const& plugin,
@@ -143,12 +150,16 @@ Burn GetBurn(Plugin const& plugin,
 
   CHECK_EQ(number_of_subclasses, 1) << "Could not construct frame parameters";
 
+  auto override_initial_mass = manœuvre.burn().override_initial_mass;
+  const double override_mass_in_tonnes = override_initial_mass.value_or(NaN<Mass>) / Tonne;
+
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
           ToGameTime(plugin, manœuvre.initial_time()),
           ToXYZ(manœuvre.Δv()),
-          manœuvre.is_inertially_fixed()};
+          manœuvre.is_inertially_fixed(),
+          override_mass_in_tonnes};
 }
 
 NavigationManoeuvre* ToNewInterfaceNavigationManoeuvre(

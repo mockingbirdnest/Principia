@@ -246,7 +246,9 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
                   SpecificImpulse::ReadFromMessage(message.specific_impulse()),
                   RigidReferenceFrame<InertialFrame, Frame>::ReadFromMessage(
                       message.frame(), ephemeris),
-                  message.is_inertially_fixed()};
+                  message.is_inertially_fixed(),
+                  std::nullopt};
+
   return Manœuvre(Mass::ReadFromMessage(message.initial_mass()), burn);
 }
 

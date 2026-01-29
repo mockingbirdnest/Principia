@@ -1,4 +1,4 @@
-.\sourcerer\bin\debug\net7.0\sourcerer.exe `
+.\sourcerer\bin\debug\net9.0\sourcerer.exe `
     make_editorconfig `
     --dry_run:false `
     --project:astronomy `

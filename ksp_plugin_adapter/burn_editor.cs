@@ -173,6 +173,20 @@ class BurnEditor : ScalingRenderer {
         }
         reference_frame_selector_.RenderButton();
       }
+      using (new UnityEngine.GUILayout.VerticalScope()){
+        UnityEngine.GUILayout.Label("initial mass: " + initial_mass_in_tonnes_.ToString());
+        using(new UnityEngine.GUILayout.HorizontalScope()){
+          string new_value = UnityEngine.GUILayout.TextArea(override_mass_);
+          if(new_value != override_mass_) {
+            changed = true;
+            override_mass_ = new_value;
+          }
+          if(UnityEngine.GUILayout.Button("override mass")){
+            double.TryParse(override_mass_, out initial_mass_in_tonnes_);
+            changed = true;
+          }
+        }
+      }
       if (is_inertially_fixed_ !=
           UnityEngine.GUILayout.Toggle(
               is_inertially_fixed_,
@@ -507,6 +521,8 @@ class BurnEditor : ScalingRenderer {
   public int index { private get; set; }
   public bool minimized { private get; set; } = true;
   private BurnEditor previous_burn => get_burn_at_index_(index - 1);
+
+  private string override_mass_;
 
   private bool is_inertially_fixed_;
   private readonly DifferentialSlider Δv_tangent_;

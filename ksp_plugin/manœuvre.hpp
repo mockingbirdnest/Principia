@@ -80,6 +80,11 @@ class Manœuvre {
     // Otherwise, the direction of the burn remains fixed in the Frenet frame of
     // the trajectory.
     bool is_inertially_fixed;
+
+    // An option to override the initial mass, used for predicting the burn of 
+    // upper stages whose engines are not activated yet.
+    // If set, the initial mass of this manœuvre will be overriden
+    std::optional<Mass> override_initial_mass;
   };
 
   // A manœuvre is a burn applied to a vessel specified by its initial mass and
