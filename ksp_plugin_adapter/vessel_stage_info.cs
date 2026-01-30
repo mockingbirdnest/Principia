@@ -6,72 +6,67 @@ using System.Threading.Tasks;
 
 namespace principia { 
 namespace ksp_plugin_adapter {
-  public struct VesselStageInfo {
+  public class VesselStageInfo {
     public double start_mass;   // Tonnes
     public double end_mass;     // Tonnes
     public double thrust_vac;   // kN
     public double isp_vac;      // Seconds (g0)
     public double stage_deltav; // m/s
 
-    public override string ToString()
-    {
+    public override string ToString() {
       return string.Format("start mass: {0} end mass: {1} thrust: {2} isp: {3} dv: {4}", start_mass, end_mass, thrust_vac, isp_vac, stage_deltav);
     }
   }  
 
-  public interface IStageInfoProvider
-  {
+  public interface IStageInfoProvider {
     string ProviderName();
-    VesselStageInfo GetStageInfo(int stage_index);
+    public VesselStageInfo GetStageInfo(Vessel vessel, int stage_index);
   }
 
-  public class StageInfoFactory
-  {
-    // Not implemented yet.
-    static bool mj_installed_ = false;
-    public static IStageInfoProvider Create(Vessel vessel) {
-      if (mj_installed_){
-        return new MechJebStageInfo(vessel);
+  public class StageInfoFactory {
+    public static IStageInfoProvider Create() {
+      // Prioritize stage info provided by MechJeb
+      if (mechjeb_installed()) {
+        return new MechJebStageInfo();
       }
 
-      //Mechjeb is not installed
-      return new StockDeltaVAppStageInfo(vessel);
+      // Mechjeb is not installed
+      return new StockDeltaVAppStageInfo();
+    }
+
+    // Not implemented yet.
+    private static bool mechjeb_installed() {
+      return false;
     }
   }
 
   // Not implemented yet.
-  public class MechJebStageInfo : IStageInfoProvider
-  {
-    Vessel vessel_;
-    public MechJebStageInfo(Vessel vessel){
-      vessel_ = vessel;
+  public class MechJebStageInfo : IStageInfoProvider {
+    public MechJebStageInfo(){
     }
 
-    public VesselStageInfo GetStageInfo(int stage_index)
-    {
+    public VesselStageInfo GetStageInfo(Vessel vessel, int stage_index) {
       throw new NotImplementedException();
     }
 
-    public string ProviderName()
-    {
+    public string ProviderName() {
       return "MechJeb 2";
     }
   }
 
-  public class StockDeltaVAppStageInfo : IStageInfoProvider
-  {
-    private readonly Vessel vessel_;
+  public class StockDeltaVAppStageInfo : IStageInfoProvider {
+    
+    public VesselStageInfo GetStageInfo(Vessel vessel, int stage_index) {
+      // Sadly, Stock Δv app won't update on RCS fuel being consumed,
+      // and the update is asynchronous, so the user may need to
+      // press the button twice. It's recommended to use MechJeb2 instead.
+      vessel.VesselDeltaV.SetCalcsDirty(resetPartCaches: false);
+      DeltaVStageInfo stageInfo = vessel.VesselDeltaV.GetStage(stage_index);
 
-    public StockDeltaVAppStageInfo(Vessel vessel){
-      vessel_ = vessel;
-    }
-
-    public VesselStageInfo GetStageInfo(int stage_index) {
-      if (stage_index < 0 || stage_index > vessel_.currentStage) {
-        throw new ArgumentException("Invalid stage index");
+      if (stageInfo == null) {
+        return null;
       }
 
-      DeltaVStageInfo stageInfo = vessel_.VesselDeltaV.GetStage(stage_index);
       return new VesselStageInfo{
         start_mass = stageInfo.startMass,
         end_mass = stageInfo.endMass,
@@ -84,7 +79,6 @@ namespace ksp_plugin_adapter {
     public string ProviderName() {
       return "Stock DeltaV App";
     }
-
   }
 } // namespace ksp_plugin_adapter
 } // namespace principia

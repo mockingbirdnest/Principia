@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -26,6 +27,8 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
         display_zero_button: false);
     final_trajectory_analyser_ =
         new PlannedOrbitAnalyser(adapter, predicted_vessel);
+
+    stage_info_provider_ = StageInfoFactory.Create();
   }
 
   public void RenderButton() {
@@ -189,7 +192,9 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
                                            predicted_vessel,
                                            initial_time      : 0,
                                            get_burn_at_index : burn_editors_.
-                                               ElementAtOrDefault));
+                                               ElementAtOrDefault,
+                                           stage_info_provider: 
+                                               stage_info_provider_));
           burn_editors_.Last().Reset(
               plugin.FlightPlanGetManoeuvre(vessel_guid, i));
         }
@@ -685,7 +690,9 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
                                     predicted_vessel,
                                     initial_time,
                                     get_burn_at_index : burn_editors_.
-                                        ElementAtOrDefault){
+                                        ElementAtOrDefault,
+                                    stage_info_provider:
+                                        stage_info_provider_){
             minimized = false
         };
         Burn candidate_burn = editor.Burn();
@@ -971,6 +978,9 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
   private double? optimization_inclination_in_degrees_ =
       default_optimization_inclination_in_degrees;
   private NavigationFrameParameters optimization_reference_frame_parameters_;
+
+  private IStageInfoProvider stage_info_provider_;
+  
 }
 
 }  // namespace ksp_plugin_adapter

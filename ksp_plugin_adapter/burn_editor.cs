@@ -10,11 +10,13 @@ class BurnEditor : ScalingRenderer {
   public BurnEditor(PrincipiaPluginAdapter adapter,
                     Vessel vessel,
                     double initial_time,
-                    Func<int, BurnEditor> get_burn_at_index) {
+                    Func<int, BurnEditor> get_burn_at_index,
+                    IStageInfoProvider stage_info_provider) {
     adapter_ = adapter;
     vessel_ = vessel;
     initial_time_ = initial_time;
     get_burn_at_index_ = get_burn_at_index;
+    stage_info_provider_ = stage_info_provider;
     Δv_tangent_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvTangent"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
@@ -86,8 +88,7 @@ class BurnEditor : ScalingRenderer {
       });
     }
     ComputeEngineCharacteristics();
-    stageInfoProvider = StageInfoFactory.Create(vessel_);
-    execution_stage_ = vessel_.currentStage;
+    execution_stage_ = vessel_.currentStage - 1;
   }
 
   public enum Event {
@@ -171,36 +172,40 @@ class BurnEditor : ScalingRenderer {
             UseTheForceLuke();
             ReformatΔv();
             changed = true;
-          } else if (UnityEngine.GUILayout.Button(
-            "Inherit from last manœuvre"
-          )) {
-            InheritCharacteristics();
-            ReformatΔv();
-            changed = true;
           }
         }
         reference_frame_selector_.RenderButton();
       }
-      using (new UnityEngine.GUILayout.VerticalScope()){
-        UnityEngine.GUILayout.Label("initial mass: " + initial_mass_in_tonnes_.ToString());
-        using(new UnityEngine.GUILayout.HorizontalScope()){
-          if(is_stage_info_overriden_ != UnityEngine.GUILayout.Toggle(is_stage_info_overriden_, "Override initial mass")){
-            is_stage_info_overriden_ = !is_stage_info_overriden_;
+
+      UnityEngine.GUILayout.Label("initial mass: " + initial_mass_in_tonnes_.ToString());
+      UnityEngine.GUILayout.Label(s);
+      using(new UnityEngine.GUILayout.HorizontalScope()){
+        if(is_execution_stage_set_ != UnityEngine.GUILayout.Toggle(
+            is_execution_stage_set_, "Set execution stage:")){
+          is_execution_stage_set_ = !is_execution_stage_set_;
+          changed = true;
+        }
+        if (is_execution_stage_set_) {
+          string input_stage = UnityEngine.GUILayout.TextField(
+            execution_stage_.ToString()
+          );
+          bool input_valid = int.TryParse(input_stage, out int new_stage);
+          input_valid &= new_stage >= 0
+                          && new_stage < vessel_.currentStage;
+          if (input_valid && new_stage != execution_stage_) {
             changed = true;
+            execution_stage_ = new_stage;
           }
-          if(is_stage_info_overriden_){
-            string input = UnityEngine.GUILayout.TextField(initial_mass_in_tonnes_.ToString());
-            double new_override_mass;
-            if(double.TryParse(input, out new_override_mass)){
-              if(initial_mass_in_tonnes_ != new_override_mass && new_override_mass > 0){
-                changed = true;
-                initial_mass_in_tonnes_ = new_override_mass;
-              }
-            }
+          if (is_first_manœvre_of_stage_ !=
+            UnityEngine.GUILayout.Toggle(
+                is_first_manœvre_of_stage_,
+                "First manœuvre of the stage")) {
+            changed = true;
+            is_first_manœvre_of_stage_ = !is_first_manœvre_of_stage_;
           }
         }
-        
       }
+
       if (is_inertially_fixed_ !=
           UnityEngine.GUILayout.Toggle(
               is_inertially_fixed_,
@@ -377,7 +382,9 @@ class BurnEditor : ScalingRenderer {
             z = Δv_binormal_.value
         },
         is_inertially_fixed = is_inertially_fixed_,
-        override_initial_mass_in_tonnes = is_stage_info_overriden_ ? initial_mass_in_tonnes_ : double.NaN
+        override_initial_mass_in_tonnes = is_initial_mass_overriden_ 
+                                        ? initial_mass_in_tonnes_ 
+                                        : double.NaN 
     };
   }
 
@@ -393,9 +400,27 @@ class BurnEditor : ScalingRenderer {
   private void ComputeEngineCharacteristics() {
     bool active_engine_present_ = true;
     
-    if(is_stage_info_overriden_){
-      
-    } else{
+    if (is_execution_stage_set_) {
+      VesselStageInfo stage_info = stage_info_provider_.GetStageInfo(
+        vessel_,
+        execution_stage_
+      );
+      s = stage_info.ToString();
+      // If the stage is invalid, the stage info will be null.
+      active_engine_present_ &= stage_info?.stage_deltav != null;
+      active_engine_present_ &= stage_info?.stage_deltav != 0;
+      if (active_engine_present_) {
+        // If this is the first manœvre of the specified stage,
+        // it means there're dead weight decoupled before the manœvre.
+        // So the initial mass should be overriden to the current stage mass
+        // instead of last manœvre's final mass.
+        if (is_first_manœvre_of_stage_) {
+          initial_mass_in_tonnes_ = (double) stage_info?.start_mass;
+        }
+        thrust_in_kilonewtons_ = (double) stage_info?.thrust_vac;
+        specific_impulse_in_seconds_g0_ = (double) stage_info?.isp_vac;
+      }
+    } else {
       ModuleEngines[] active_engines =
         (from part in vessel_.parts
          select (from PartModule module in part.Modules
@@ -434,7 +459,11 @@ class BurnEditor : ScalingRenderer {
     }
   }
 
+  
   private void ComputeRCSCharacteristics() {
+    // TODO: Compute RCS of upper stages.
+    is_execution_stage_set_ = false;  
+
     ModuleRCS[] active_rcs = (from part in vessel_.parts
                               select (from PartModule module in part.Modules
                                       where module is ModuleRCS module_rcs &&
@@ -471,16 +500,6 @@ class BurnEditor : ScalingRenderer {
       UseTheForceLuke();
     }
   }
-
-  private void InheritCharacteristics(){
-    if (index == 0) {
-      engine_warning_ += "This is the first manœuvre!";
-      return;
-    }
-    thrust_in_kilonewtons_ = previous_burn.thrust_in_kilonewtons_;
-    specific_impulse_in_seconds_g0_ = previous_burn.specific_impulse_in_seconds_g0_;
-  }
-
   private string FormatΔvComponent(double metres_per_second) {
     // The granularity of Instant in 1950.
     const double dt = 2.3841857910156250e-7; // 2⁻²² s.
@@ -510,6 +529,7 @@ class BurnEditor : ScalingRenderer {
   }
 
   private void UseTheForceLuke() {
+    is_execution_stage_set_ = false; 
     // The burn can last at most (9.80665 / scale) s.
     const double scale = 1;
     // This, together with `scale = 1`, ensures that, when `initial_time` is
@@ -542,9 +562,7 @@ class BurnEditor : ScalingRenderer {
     value = ts.total_seconds;
     return true;
   }
-
-  private IStageInfoProvider stageInfoProvider;
-
+  
   private double time_base => time_base_is_start_of_flight_plan_
                                   ? plugin.FlightPlanGetInitialTime(
                                       vessel_.id.ToString())
@@ -573,8 +591,18 @@ class BurnEditor : ScalingRenderer {
   private double initial_mass_in_tonnes_;
   private double initial_time_;
 
-  private bool is_stage_info_overriden_;
+  private string s;
+  
   private int execution_stage_;
+  private bool is_first_manœvre_of_stage_ = false;
+  private bool is_execution_stage_set_ = false;
+
+  private bool total_Δv_locked_ = false;
+  private double stage_total_Δv_ = 0;
+
+  private bool is_initial_mass_overriden_ 
+            => is_execution_stage_set_ 
+            && is_first_manœvre_of_stage_;
 
   private bool first_time_rendering_ = true;
 
@@ -590,6 +618,7 @@ class BurnEditor : ScalingRenderer {
   private readonly Vessel vessel_;
   private readonly Func<int, BurnEditor> get_burn_at_index_;
   private readonly PrincipiaPluginAdapter adapter_;
+  private readonly IStageInfoProvider stage_info_provider_;
 
   private bool changed_reference_frame_ = false;
   private string engine_warning_ = "";
