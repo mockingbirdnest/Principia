@@ -193,7 +193,13 @@ absl::Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
                                  int const index) {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
-  NavigationManœuvre const manœuvre(burn.override_initial_mass.value_or(manœuvres_[index].initial_mass()),
+
+  // The initial mass of this manœuvre might be overriden, so it's required  
+  // to recalculate initial mass. If the new burn overrides the mass, it will 
+  // be the overriden value. Otherwise, it's either the previous manœuvre's 
+  // final mass or the initial mass of the flight plan (if index==0)
+  Mass default_initial_mass = index == 0 ? initial_mass_ : manœuvres_[index - 1].final_mass();
+  NavigationManœuvre const manœuvre(burn.override_initial_mass.value_or(default_initial_mass),
                                     burn);
   if (manœuvre.IsSingular()) {
     return Singular(manœuvre.Δv().Norm²());

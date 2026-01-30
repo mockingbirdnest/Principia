@@ -158,6 +158,7 @@
     <Compile Include="time_span.cs" />
     <Compile Include="utf8_marshaler.cs" />
     <Compile Include="utf16_marshaler.cs" />
+    <Compile Include="vessel_stage_info.cs" />
     <Compile Include="window_renderer.cs" />
   </ItemGroup>
   <ItemGroup>
