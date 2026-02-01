@@ -154,8 +154,11 @@ absl::Status FlightPlan::Insert(NavigationManœuvre::Burn const& burn,
   CHECK_GE(index, 0);
   CHECK_LE(index, number_of_manœuvres());
 
-  Mass initial_mass = index == 0 ? initial_mass_ : burn.override_initial_mass.value_or(manœuvres_[index - 1].final_mass());
-  
+  Mass initial_mass =
+      index == 0 ? initial_mass_
+                 : burn.override_initial_mass
+                       .value_or(manœuvres_[index - 1].final_mass());
+
   NavigationManœuvre const manœuvre(
       initial_mass,
       burn);
@@ -194,13 +197,17 @@ absl::Status FlightPlan::Replace(NavigationManœuvre::Burn const& burn,
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
 
-  // The initial mass of this manœuvre might be overriden, so it's required  
-  // to recalculate initial mass. If the new burn overrides the mass, it will 
-  // be the overriden value. Otherwise, it's either the previous manœuvre's 
+  // The initial mass of this manœuvre might be overriden, so it's required
+  // to recalculate initial mass. If the new burn overrides the mass, it will
+  // be the overriden value. Otherwise, it's either the previous manœuvre's
   // final mass or the initial mass of the flight plan (if index==0)
-  Mass default_initial_mass = index == 0 ? initial_mass_ : manœuvres_[index - 1].final_mass();
-  NavigationManœuvre const manœuvre(burn.override_initial_mass.value_or(default_initial_mass),
+  Mass default_initial_mass = index == 0 ? initial_mass_
+                                         : manœuvres_[index - 1].final_mass();
+
+  NavigationManœuvre const manœuvre(burn.override_initial_mass
+                                        .value_or(default_initial_mass),
                                     burn);
+
   if (manœuvre.IsSingular()) {
     return Singular(manœuvre.Δv().Norm²());
   }
@@ -643,7 +650,8 @@ void FlightPlan::UpdateInitialMassOfManœuvresAfter(int const index) {
   }
   Mass initial_mass = manœuvres_[index].final_mass();
   for (int i = index + 1; i < manœuvres_.size(); ++i) {
-    initial_mass = manœuvres_[i].burn().override_initial_mass.value_or(initial_mass);
+    initial_mass = manœuvres_[i].burn().override_initial_mass
+                                       .value_or(initial_mass);
     manœuvres_[i] = NavigationManœuvre(initial_mass, manœuvres_[i].burn());
     initial_mass = manœuvres_[i].final_mass();
   }

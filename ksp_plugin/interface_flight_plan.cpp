@@ -62,8 +62,9 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
   timing.initial_time = FromGameTime(plugin, burn.initial_time);
 
   bool mass_overriden = !std::isnan(burn.override_initial_mass_in_tonnes);
-  const auto override_mass = mass_overriden 
-                       ? std::make_optional(burn.override_initial_mass_in_tonnes * Tonne)
+  const auto override_mass = mass_overriden
+                       ? std::make_optional(
+                            burn.override_initial_mass_in_tonnes * Tonne)
                        : std::nullopt;
 
   return {intensity,
@@ -151,7 +152,8 @@ Burn GetBurn(Plugin const& plugin,
   CHECK_EQ(number_of_subclasses, 1) << "Could not construct frame parameters";
 
   auto override_initial_mass = manœuvre.burn().override_initial_mass;
-  const double override_mass_in_tonnes = override_initial_mass.value_or(NaN<Mass>) / Tonne;
+  const double override_mass_in_tonnes =
+                   override_initial_mass.value_or(NaN<Mass>) / Tonne;
 
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),
