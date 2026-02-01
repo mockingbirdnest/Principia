@@ -11,7 +11,7 @@ class BurnEditor : ScalingRenderer {
                     Vessel vessel,
                     double initial_time,
                     Func<int, BurnEditor> get_burn_at_index,
-                    IStageInfoProvider stage_info_provider) {
+                    StageInfoProviderBase stage_info_provider) {
     adapter_ = adapter;
     vessel_ = vessel;
     initial_time_ = initial_time;
@@ -182,12 +182,12 @@ class BurnEditor : ScalingRenderer {
       using(new UnityEngine.GUILayout.HorizontalScope()){
         if(is_execution_stage_set_ != UnityEngine.GUILayout.Toggle(
             is_execution_stage_set_, "Set execution stage:")){
-          is_execution_stage_set_ = !is_execution_stage_set_;
+            is_execution_stage_set_ = !is_execution_stage_set_;
           changed = true;
         }
         if (is_execution_stage_set_) {
           string input_stage = UnityEngine.GUILayout.TextField(
-            execution_stage_.ToString()
+            execution_stage_.ToString(), GUILayoutWidth(3)
           );
           bool input_valid = int.TryParse(input_stage, out int new_stage);
           input_valid &= new_stage >= 0
@@ -196,12 +196,19 @@ class BurnEditor : ScalingRenderer {
             changed = true;
             execution_stage_ = new_stage;
           }
-          if (is_first_manœvre_of_stage_ !=
-            UnityEngine.GUILayout.Toggle(
+
+          if (is_first_manœvre_of_stage_ != UnityEngine.GUILayout.Toggle(
                 is_first_manœvre_of_stage_,
                 "First manœuvre of the stage")) {
             changed = true;
             is_first_manœvre_of_stage_ = !is_first_manœvre_of_stage_;
+          }
+
+          if (total_Δv_locked_ != UnityEngine.GUILayout.Toggle(
+              total_Δv_locked_, 
+              "Lock total Δv")) {
+            changed = true;
+            total_Δv_locked_ = !total_Δv_locked_;
           }
         }
       }
@@ -217,9 +224,22 @@ class BurnEditor : ScalingRenderer {
 
       // The Δv controls are disabled for an anomalous manœuvre as they have no
       // effect.
-      changed |= Δv_tangent_.Render(enabled : !anomalous);
-      changed |= Δv_normal_.Render(enabled : !anomalous);
-      changed |= Δv_binormal_.Render(enabled : !anomalous);
+      bool tangent_changed = Δv_tangent_.Render(enabled : !anomalous);
+      bool normal_changed = Δv_normal_.Render(enabled : !anomalous);
+      bool binormal_changed = Δv_binormal_.Render(enabled : !anomalous);
+
+      changed |= tangent_changed | normal_changed | binormal_changed;
+
+      if (total_Δv_locked_) {
+        if (tangent_changed){
+          
+        } else if (normal_changed) {
+          
+        } else if (binormal_changed) {
+          
+        }
+      }
+
       {
         var render_time_base = time_base;
         previous_coast_duration_.value_if_different =
@@ -364,9 +384,10 @@ class BurnEditor : ScalingRenderer {
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manœuvre.duration;
-    initial_mass_in_tonnes_ = double.IsNaN(burn.override_initial_mass_in_tonnes) 
-                              ? manœuvre.initial_mass_in_tonnes
-                              : burn.override_initial_mass_in_tonnes;
+    initial_mass_in_tonnes_ = 
+        double.IsNaN(burn.override_initial_mass_in_tonnes)
+        ? manœuvre.initial_mass_in_tonnes
+        : burn.override_initial_mass_in_tonnes;
     ReformatΔv();
   }
 
@@ -405,46 +426,28 @@ class BurnEditor : ScalingRenderer {
         vessel_,
         execution_stage_
       );
-      s = stage_info.ToString();
+      s = stage_info.ToString(); // For debug purposes
+
       // If the stage is invalid, the stage info will be null.
-      active_engine_present_ &= stage_info?.stage_deltav != null;
-      active_engine_present_ &= stage_info?.stage_deltav != 0;
+      active_engine_present_ &= stage_info != null;
+      active_engine_present_ &= stage_info?.thrust_vac > 0;
       if (active_engine_present_) {
         // If this is the first manœvre of the specified stage,
         // it means there're dead weight decoupled before the manœvre.
-        // So the initial mass should be overriden to the current stage mass
+        // So the initial mass should be overriden to the stage's start mass
         // instead of last manœvre's final mass.
         if (is_first_manœvre_of_stage_) {
-          initial_mass_in_tonnes_ = (double) stage_info?.start_mass;
+          initial_mass_in_tonnes_ = stage_info!.start_mass;
         }
-        thrust_in_kilonewtons_ = (double) stage_info?.thrust_vac;
-        specific_impulse_in_seconds_g0_ = (double) stage_info?.isp_vac;
+        thrust_in_kilonewtons_ = stage_info!.thrust_vac;
+        specific_impulse_in_seconds_g0_ = stage_info!.isp_vac;
       }
     } else {
-      ModuleEngines[] active_engines =
-        (from part in vessel_.parts
-         select (from PartModule module in part.Modules
-                 where (module as ModuleEngines)?.EngineIgnited == true
-                 select module as ModuleEngines)).SelectMany(x => x).ToArray();
-      Vector3d reference_direction = vessel_.ReferenceTransform.up;
-      double[] thrusts =
-          (from engine in active_engines
-           select
-               engine.MaxThrustOutputVac(useThrustLimiter: true) *
-               (from transform in engine.thrustTransforms
-                select Math.Max(0,
-                                Vector3d.Dot(reference_direction,
-                                             -transform.forward))).Average()).
-          ToArray();
-      thrust_in_kilonewtons_ = thrusts.Sum();
+      VesselStageInfo stage_info = 
+          stage_info_provider_.GetActiveEngines(vessel_);
 
-      // This would use zip if we had 4.0 or later.  We loop for now.
-      double Σ_f_over_i_sp = 0;
-      for (int i = 0; i < active_engines.Length; ++i) {
-        Σ_f_over_i_sp +=
-            thrusts[i] / active_engines[i].atmosphereCurve.Evaluate(0);
-      }
-      specific_impulse_in_seconds_g0_ = thrust_in_kilonewtons_ / Σ_f_over_i_sp;
+      specific_impulse_in_seconds_g0_ = stage_info.isp_vac;
+      thrust_in_kilonewtons_ = stage_info.thrust_vac;
 
       if (thrust_in_kilonewtons_ == 0){
         active_engine_present_ = false;
@@ -458,40 +461,14 @@ class BurnEditor : ScalingRenderer {
       ComputeRCSCharacteristics();
     }
   }
-
   
   private void ComputeRCSCharacteristics() {
     // TODO: Compute RCS of upper stages.
     is_execution_stage_set_ = false;  
 
-    ModuleRCS[] active_rcs = (from part in vessel_.parts
-                              select (from PartModule module in part.Modules
-                                      where module is ModuleRCS module_rcs &&
-                                            module_rcs.rcsEnabled
-                                      select module as ModuleRCS)).
-        SelectMany(x => x).ToArray();
-    Vector3d reference_direction = vessel_.ReferenceTransform.up;
-    // NOTE(egg): NathanKell informs me that in >= 1.0.5, RCS has a useZaxis
-    // property, that controls whether they thrust -up or -forward.  The madness
-    // keeps piling up.
-    double[] thrusts = (from engine in active_rcs
-                        select engine.thrusterPower *
-                               (from transform in engine.thrusterTransforms
-                                where transform.gameObject.activeInHierarchy
-                                select Math.Max(0,
-                                                Vector3d.Dot(
-                                                    reference_direction,
-                                                    -transform.up))).Sum()).
-        ToArray();
-    thrust_in_kilonewtons_ = thrusts.Sum();
-
-    // This would use zip if we had 4.0 or later.  We loop for now.
-    double Σ_f_over_i_sp = 0;
-    for (int i = 0; i < active_rcs.Length; ++i) {
-      Σ_f_over_i_sp +=
-          thrusts[i] / active_rcs[i].atmosphereCurve.Evaluate(0);
-    }
-    specific_impulse_in_seconds_g0_ = thrust_in_kilonewtons_ / Σ_f_over_i_sp;
+    VesselStageInfo stage_info = stage_info_provider_.GetActiveRCS(vessel_);
+    specific_impulse_in_seconds_g0_ = stage_info.isp_vac;
+    thrust_in_kilonewtons_ = stage_info.thrust_vac;
 
     // If RCS provides no thrust, model a virtually instant burn.
     if (thrust_in_kilonewtons_ == 0) {
@@ -500,6 +477,7 @@ class BurnEditor : ScalingRenderer {
       UseTheForceLuke();
     }
   }
+
   private string FormatΔvComponent(double metres_per_second) {
     // The granularity of Instant in 1950.
     const double dt = 2.3841857910156250e-7; // 2⁻²² s.
@@ -618,7 +596,7 @@ class BurnEditor : ScalingRenderer {
   private readonly Vessel vessel_;
   private readonly Func<int, BurnEditor> get_burn_at_index_;
   private readonly PrincipiaPluginAdapter adapter_;
-  private readonly IStageInfoProvider stage_info_provider_;
+  private readonly StageInfoProviderBase stage_info_provider_;
 
   private bool changed_reference_frame_ = false;
   private string engine_warning_ = "";

@@ -979,7 +979,7 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
       default_optimization_inclination_in_degrees;
   private NavigationFrameParameters optimization_reference_frame_parameters_;
 
-  private IStageInfoProvider stage_info_provider_;
+  private StageInfoProviderBase stage_info_provider_;
   
 }
 
