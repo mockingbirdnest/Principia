@@ -110,9 +110,7 @@ In order to avoid the quadratic complexity, we used to use a binary search algor
 Let $A$ be an array of size $N$ used to store tuples.\;
 \While{not at end of input stream} {
   \If{\A is full}{
-    Let $k \leftarrow \Floor{N/2}$.\;
-    Emit \SearchInterval{\A, $1$, $k$}.\;
-    Emit \SearchInterval{\A, $k + 1$, $N$}.\;
+    Emit \SearchInterval{\A, $1$, $N$}.\;
     Clear \A.
   }
   Append $\tuple{t_i, q_i, p_i}$ to \A.\;
