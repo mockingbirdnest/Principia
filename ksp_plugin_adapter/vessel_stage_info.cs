@@ -122,7 +122,6 @@ namespace ksp_plugin_adapter {
     }
   }
 
-  // Not implemented yet.
   public class MechJebStageInfo : StageInfoProviderBase {
     public override bool IsAvailable => is_available_;
     public override string ProviderName => "MechJeb 2";
