@@ -1,8 +1,8 @@
 # Instructions for building Principia on Windows
 
 Before starting, make sure the following are installed on your machine:
-* Visual Studio 2022 version 17.14.9 with C# and C++ support;
-* Windows SDK 10.0.26100;
+* Visual Studio 2022 version 17.14.23 or later with C# and C++ support (Visual Studio 2026 won't work);
+* Windows SDK 10.0.22621 (more recent SDKs won't work);
 * .NET Framework 4.7.2 SDK (and Targeting Pack).
 
 The solution contains a C# project named `coverage_analyser` which requires
