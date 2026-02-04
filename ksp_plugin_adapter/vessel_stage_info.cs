@@ -1,6 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
+using System.Reflection;
+using UnityEngine;
 
 namespace principia { 
 namespace ksp_plugin_adapter {
@@ -17,10 +19,11 @@ namespace ksp_plugin_adapter {
   }
 
   public abstract class StageInfoProviderBase {
+    public abstract bool IsAvailable { get; }
     public abstract string ProviderName { get; }
     public abstract VesselStageInfo GetStageInfo(Vessel vessel, int stage_index);
 
-    public VesselStageInfo GetActiveEngines(Vessel vessel) {
+    public virtual VesselStageInfo GetActiveEngines(Vessel vessel) {
       ModuleEngines[] active_engines =
         (from part in vessel.parts
          select (from PartModule module in part.Modules
@@ -61,7 +64,7 @@ namespace ksp_plugin_adapter {
       };
     }
 
-    public VesselStageInfo GetActiveRCS(Vessel vessel) {
+    public virtual VesselStageInfo GetActiveRCS(Vessel vessel) {
       ModuleRCS[] active_rcs = (from part in vessel.parts
                               select (from PartModule module in part.Modules
                                       where module is ModuleRCS module_rcs &&
@@ -109,33 +112,112 @@ namespace ksp_plugin_adapter {
   public class StageInfoFactory {
     public static StageInfoProviderBase Create() {
       // Prioritize stage info provided by MechJeb
-      if (mechjeb_installed()) {
-        return new MechJebStageInfo();
+      var mechjeb_provider = new MechJebStageInfo();
+      if (mechjeb_provider.IsAvailable) {
+        return mechjeb_provider;
       }
 
-      // Mechjeb is not installed
+      // Mechjeb is not installed, fallback to StockDeltaVApp
       return new StockDeltaVAppStageInfo();
-    }
-
-    // Not implemented yet.
-    private static bool mechjeb_installed() {
-      return false;
     }
   }
 
   // Not implemented yet.
   public class MechJebStageInfo : StageInfoProviderBase {
+    public override bool IsAvailable => is_available_;
+    public override string ProviderName => "MechJeb 2";
+
+    private bool is_available_;
+
+    private readonly Type MechJebCore_;
+    private readonly Type ModuleStageStats_;
+    private readonly Type FuelStats_;
+    private readonly Type VesselExtensions_;
+
+    private readonly MethodInfo GetMasterMechJeb_;
+    private readonly MethodInfo GetComputerModule_;
+
+    private readonly FieldInfo VacStats_;
+    private readonly FieldInfo StartMass_;
+    private readonly FieldInfo EndMass_;
+    private readonly FieldInfo Thrust_;
+    private readonly FieldInfo Isp_;
+    private readonly FieldInfo DeltaV_;
+
     public MechJebStageInfo(){
+      try {
+        MechJebCore_ = Type.GetType("MuMech.MechJebCore, MechJeb2", true);
+        VesselExtensions_ = Type.GetType("MuMech.VesselExtensions, MechJeb2", true);
+        ModuleStageStats_ = Type.GetType("MuMech.MechJebModuleStageStats, MechJeb2", true);
+        FuelStats_ = Type.GetType("MechJebLib.FuelFlowSimulation.FuelStats, MechJebLib", true);
+
+        GetMasterMechJeb_ = GetMethod_(VesselExtensions_, "GetMasterMechJeb", [typeof(Vessel)]);
+        GetComputerModule_ = GetMethod_(MechJebCore_, "GetComputerModule", [])
+                            .MakeGenericMethod(ModuleStageStats_);
+
+        VacStats_  = GetField_(ModuleStageStats_, "VacStats");
+
+        StartMass_ = GetField_(FuelStats_, "StartMass");
+        EndMass_   = GetField_(FuelStats_, "EndMass");
+        Thrust_    = GetField_(FuelStats_, "Thrust");
+        Isp_       = GetField_(FuelStats_, "Isp");
+        DeltaV_    = GetField_(FuelStats_, "DeltaV");
+
+        is_available_ = true;
+      } catch (Exception e) {
+        is_available_ = false;
+        Debug.LogWarning("[Principia] Failed to load MechJeb2 Methods");
+        Debug.LogException(e);
+      }
     }
 
     public override VesselStageInfo GetStageInfo(Vessel vessel, int stage_index) {
-      throw new NotImplementedException();
+      if (!IsAvailable) {
+        return null;
+      }
+
+      var mechjeb_ = GetMasterMechJeb_.Invoke(null, [vessel]);
+      if (mechjeb_ == null) {
+        Debug.LogWarning("[Principia] Cannot get MechJeb Core");
+        return null;
+      }
+
+      var stage_stats_module = GetComputerModule_.Invoke(mechjeb_, []);
+      if (stage_stats_module == null) {
+        Debug.LogWarning("[Principia] Cannot get MechJeb StageStats module");
+        return null;
+      }
+
+      var stages = (IList) VacStats_.GetValue(stage_stats_module);
+
+      if (stage_index < 0 || stage_index >= stages.Count) {
+        Debug.LogWarning("[Principia] Invalid stage: " + stage_index.ToString());
+        return null;
+      }
+
+      var stage_info = stages[stage_index];
+
+      return new VesselStageInfo {
+        start_mass   = (double) StartMass_.GetValue(stage_info),
+        end_mass     = (double) EndMass_.GetValue(stage_info),
+        thrust_vac   = (double) Thrust_.GetValue(stage_info),
+        isp_vac      = (double) Isp_.GetValue(stage_info),
+        stage_deltav = (double) DeltaV_.GetValue(stage_info)
+      };
     }
 
-    public override string ProviderName => "MechJeb 2";
+    private MethodInfo GetMethod_(Type type, string name, Type[] types) {
+      return type.GetMethod(name, types) ?? throw new MissingMethodException(type.Name, name);
+    }
+
+    private FieldInfo GetField_(Type type, string name) {
+      return type.GetField(name) ?? throw new MissingFieldException(type.Name, name);
+    }
   }
 
   public class StockDeltaVAppStageInfo : StageInfoProviderBase {
+    public override bool IsAvailable => true;
+    public override string ProviderName => "Stock DeltaV App";
     
     public override VesselStageInfo GetStageInfo(Vessel vessel, int stage_index) {
       // Sadly, Stock Δv app won't update on RCS fuel being consumed,
@@ -143,22 +225,21 @@ namespace ksp_plugin_adapter {
       // press the button twice to get the correct stage mass.
       // It's recommended to use MechJeb2 instead.
       vessel.VesselDeltaV.SetCalcsDirty(resetPartCaches: false);
-      DeltaVStageInfo stageInfo = vessel.VesselDeltaV.GetStage(stage_index);
+      var stage_info = vessel.VesselDeltaV.GetStage(stage_index);
 
-      if (stageInfo == null) {
+      if (stage_info == null) {
+        Debug.LogWarning("[Principia] Invalid stage: " + stage_index.ToString());
         return null;
       }
 
       return new VesselStageInfo{
-        start_mass = stageInfo.startMass,
-        end_mass = stageInfo.endMass,
-        thrust_vac = stageInfo.thrustVac,
-        isp_vac = stageInfo.ispVac,
-        stage_deltav = stageInfo.deltaVinVac
+        start_mass = stage_info.startMass,
+        end_mass = stage_info.endMass,
+        thrust_vac = stage_info.thrustVac,
+        isp_vac = stage_info.ispVac,
+        stage_deltav = stage_info.deltaVinVac
       };
     }
-
-    public override string ProviderName => "Stock DeltaV App";
   }
 } // namespace ksp_plugin_adapter
 } // namespace principia

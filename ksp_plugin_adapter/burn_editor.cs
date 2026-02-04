@@ -177,10 +177,26 @@ class BurnEditor : ScalingRenderer {
         reference_frame_selector_.RenderButton();
       }
 
-      UnityEngine.GUILayout.Label("initial mass: " + initial_mass_in_tonnes_.ToString());
-      UnityEngine.GUILayout.Label(s);
+      using(new UnityEngine.GUILayout.HorizontalScope()) {
+        if (UnityEngine.GUILayout.Button(
+            show_details_ ? "-" : "+",
+            GUILayoutWidth(1)
+        )) {
+          changed = true;
+          show_details_ = !show_details_;
+        }
+        UnityEngine.GUILayout.Label("Show manœuvre details:");
+      }
+
+      if (show_details_) {
+        UnityEngine.GUILayout.Label($"Initial mass: {initial_mass_in_tonnes_:0.##}t Thrust: {thrust_in_kilonewtons_:0.##}kN Isp: {specific_impulse_in_seconds_g0_:0}s");
+        if (is_execution_stage_set_) {
+          UnityEngine.GUILayout.Label($"Stage Δv: {stage_total_Δv_: 0}m/s");
+        }
+      }
+
       using(new UnityEngine.GUILayout.HorizontalScope()){
-        if(is_execution_stage_set_ != UnityEngine.GUILayout.Toggle(
+        if (is_execution_stage_set_ != UnityEngine.GUILayout.Toggle(
             is_execution_stage_set_, "Set execution stage:")){
             is_execution_stage_set_ = !is_execution_stage_set_;
           changed = true;
@@ -190,8 +206,9 @@ class BurnEditor : ScalingRenderer {
             execution_stage_.ToString(), GUILayoutWidth(3)
           );
           bool input_valid = int.TryParse(input_stage, out int new_stage);
-          input_valid &= new_stage >= 0
-                          && new_stage < vessel_.currentStage;
+          new_stage = Math.Min(new_stage, vessel_.currentStage - 1); // It seems that `currentStage` is actually currentStage - 1
+          new_stage = Math.Max(new_stage, 0);
+
           if (input_valid && new_stage != execution_stage_) {
             changed = true;
             execution_stage_ = new_stage;
@@ -209,7 +226,14 @@ class BurnEditor : ScalingRenderer {
               "Lock total Δv")) {
             changed = true;
             total_Δv_locked_ = !total_Δv_locked_;
+
+            if (stage_total_Δv_ == 0) {
+              total_Δv_locked_ = false; // Do not allow locking if the stage has no Δv.
+            }
           }
+        } else {
+          stage_total_Δv_ = 0;
+          total_Δv_locked_ = false;
         }
       }
 
@@ -224,20 +248,31 @@ class BurnEditor : ScalingRenderer {
 
       // The Δv controls are disabled for an anomalous manœuvre as they have no
       // effect.
-      bool tangent_changed = Δv_tangent_.Render(enabled : !anomalous);
-      bool normal_changed = Δv_normal_.Render(enabled : !anomalous);
-      bool binormal_changed = Δv_binormal_.Render(enabled : !anomalous);
-
-      changed |= tangent_changed | normal_changed | binormal_changed;
+      changed |= Δv_tangent_.Render(enabled : !anomalous);
+      changed |= Δv_normal_.Render(enabled : !anomalous);
+      changed |= Δv_binormal_.Render(enabled : !anomalous);
 
       if (total_Δv_locked_) {
-        if (tangent_changed){
-          
-        } else if (normal_changed) {
-          
-        } else if (binormal_changed) {
-          
-        }
+        Δv_tangent_.max_value = stage_total_Δv_;
+        Δv_normal_.max_value = stage_total_Δv_;
+        Δv_binormal_.max_value = stage_total_Δv_;
+
+        Vector3d Δv_components;
+
+        Δv_components = new Vector3d {
+            x = Δv_tangent_.value,
+            y = Δv_normal_.value,
+            z = Δv_binormal_.value
+        }.normalized * stage_total_Δv_;
+
+        Δv_tangent_.value = Δv_components.x;
+        Δv_normal_.value = Δv_components.y;
+        Δv_binormal_.value = Δv_components.z;
+
+      } else {
+        Δv_tangent_.max_value = max_Δv_component;
+        Δv_normal_.max_value = max_Δv_component;
+        Δv_binormal_.max_value = max_Δv_component;
       }
 
       {
@@ -251,6 +286,7 @@ class BurnEditor : ScalingRenderer {
           initial_time_ = previous_coast_duration_.value + render_time_base;
         }
       }
+
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label("", GUILayoutWidth(3));
         if (decrement_revolution_ == null) {
@@ -420,17 +456,20 @@ class BurnEditor : ScalingRenderer {
 
   private void ComputeEngineCharacteristics() {
     bool active_engine_present_ = true;
-    
     if (is_execution_stage_set_) {
       VesselStageInfo stage_info = stage_info_provider_.GetStageInfo(
         vessel_,
         execution_stage_
       );
-      s = stage_info.ToString(); // For debug purposes
 
       // If the stage is invalid, the stage info will be null.
       active_engine_present_ &= stage_info != null;
       active_engine_present_ &= stage_info?.thrust_vac > 0;
+
+      if(stage_info == null) {
+        engine_warning_ += "Failed to get stage info.\t";
+      }
+
       if (active_engine_present_) {
         // If this is the first manœvre of the specified stage,
         // it means there're dead weight decoupled before the manœvre.
@@ -441,6 +480,7 @@ class BurnEditor : ScalingRenderer {
         }
         thrust_in_kilonewtons_ = stage_info!.thrust_vac;
         specific_impulse_in_seconds_g0_ = stage_info!.isp_vac;
+        stage_total_Δv_ = stage_info!.stage_deltav;
       }
     } else {
       VesselStageInfo stage_info = 
@@ -448,6 +488,7 @@ class BurnEditor : ScalingRenderer {
 
       specific_impulse_in_seconds_g0_ = stage_info.isp_vac;
       thrust_in_kilonewtons_ = stage_info.thrust_vac;
+      total_Δv_locked_ = false;
 
       if (thrust_in_kilonewtons_ == 0){
         active_engine_present_ = false;
@@ -568,12 +609,11 @@ class BurnEditor : ScalingRenderer {
   private double duration_;
   private double initial_mass_in_tonnes_;
   private double initial_time_;
-
-  private string s;
   
   private int execution_stage_;
   private bool is_first_manœvre_of_stage_ = false;
   private bool is_execution_stage_set_ = false;
+  private bool show_details_ = false;
 
   private bool total_Δv_locked_ = false;
   private double stage_total_Δv_ = 0;
