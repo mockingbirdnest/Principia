@@ -1,0 +1,216 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage{tikz}
+\usetikzlibrary{cd}
+\usetikzlibrary{patterns}
+
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\usepackage[super]{nth}
+\counterwithout{equation}{section}
+
+% Must come last.
+\usepackage{siunitx}
+\sisetup{math-micro=\text{µ},text-micro=µ}
+
+%%%% Shorthands.
+\DeclareMathOperator{\bias}{\mathit{bias}}
+\DeclareMathOperator{\ULP}{\mathfrak u}
+\DeclareMathOperator{\mant}{\mathfrak m}
+\DeclareMathOperator{\expn}{\mathfrak e}
+\DeclareMathOperator{\truncate}{\StandardSymbol{Tr}}
+\DeclareMathOperator{\twosum}{\StandardSymbol{TwoSum}}
+\DeclareMathOperator{\quicktwosum}{\StandardSymbol{QuickTwoSum}}
+\DeclareMathOperator{\dwplusfp}{\StandardSymbol{DWPlusFP}}
+\DeclareMathOperator{\twodifference}{\StandardSymbol{TwoDifference}}
+\DeclareMathOperator{\quicktwodifference}{\StandardSymbol{QuickTwoDifference}}
+\DeclareMathOperator{\cmod}{\StandardSymbol{cmod}}
+
+% Rounding brackets will be heavily nested, and reading the nesting depth is critically important,
+% so we make them grow for readability.
+\newcommand{\round}[1]{\doubleSquareBrackets*{#1}}
+\newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
+\newcommand{\roundTowardPositive}[1]{\doubleSquareBrackets{#1}_+}
+\newcommand{\roundTowardNegative}[1]{\doubleSquareBrackets{#1}_-}
+\newcommand{\roundAll}[1]{\doubleSquareBrackets{#1}_⋯}
+\newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
+\newcommand{\bin}[1]{{_{2}}\mathrm{#1}}
+\newcommand{\red}[1]{\tilde{#1}}
+
+%%%% Title and authors.
+
+\title{Downsampling Discrete Trajectories}
+\date{\printdate{2026-01-26}}
+\author{Pascal~Leroy (phl)}
+\begin{document}
+\maketitle
+\begin{sloppypar}
+\noindent
+This document describes the computations that are performed by the method \texttt{Append} of class \texttt{DiscreteTrajectorySegment} to downsample the points produced by an integrator and build a compact yet accurate representation of discrete trajectories.
+\end{sloppypar}
+
+\section*{Overview}
+
+An integrator produces a stream of tuples $\tuple{t_i, q_i, p_i}$ giving the degrees of freedom of a massless body at discrete times $t_i$.  The purpose of downsampling is twofold:
+\begin{itemize}[nosep]
+\item Construct cubic Hermite splines that interpolate between consecutive $t_i$ to make it possible to evaluate the degrees of freedom at any time with sufficient accuracy.
+\item Make the representation more compact by dropping the tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intopen{1}{n}$ if the Hermite spline based on $\tuple{t_1, q_1, p_1}$ and $\tuple{t_n, q_n, p_n}$ approximates these tuples with sufficient accuracy.
+\end{itemize}
+
+\section*{A Brute Force Algorithm}
+
+The best way to describe the problem we want to solve is to present a brute-force algorithm that provides an exact solution:
+
+\begin{algorithm}
+\DontPrintSemicolon
+\SetAlgoLined
+\LinesNumbered
+\SetNlSty{texttt}{}{.}
+\SetAlgoNlRelativeSize{0}
+\KwIn{A tolerance $\gh$ and a stream of tuples $\tuple{t_i, q_i, p_i}$.}
+\KwOut{A stream of intervals $\intclos{j_1}{j_2}$ such that the Hermite spline based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$ approximates the input tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intclos{j_1}{j_2}$ with a tolerance better that $\gh$.}
+\SetKwFunction{BruteForceDownsampling}{BruteForceDownsampling}
+Let $j \leftarrow 1$.\;
+\While{not at end of input stream} {
+  Construct the Hermite spline $h$ based on the tuples $\tuple{t_{j}, q_{j}, p_{j}}$ and $\tuple{t_i, q_i, p_i}$.\;
+  \If{$\max_{k = j \cdots i} \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
+    Emit the interval $\intclos{j}{i - 1}$.\;
+    Let $j \leftarrow i - 1$.
+  }
+}
+Emit the interval $\intclos{j}{n}$ where $n$ is the index of the last element in the stream.\;
+\caption{BruteForceDownsampling.}
+\end{algorithm}
+
+A few things are worth noting here:
+\begin{itemize}[nosep]
+\item Only the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$ corresponding to the bounds of the intervals $\intclos{j_1}{j_2}$ need to be stored permanently.  The other tuples can be interpolated with an accuracy better than $\gh$.
+\item The Hermite splines do not need to be stored permanently; they can be reconstructed based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$.
+\item The algorithm is optimal in the sense that it produces the longest possible intervals $\intclos{j_1}{j_2}$ that satisfy the tolerance $\gh$.
+\item For each input tuple, the algorithm needs to scan all past tuples since the upper bound $j$ of the last emitted interval.  Therefore, the algorithm is quadratic in the number of tuples in the input stream.
+\end{itemize}
+
+\section*{A Binary Search Algorithm}
+
+In order to avoid the quadratic complexity, we used to use a binary search algorithm as follows:
+
+\begin{algorithm}
+\DontPrintSemicolon
+\SetAlgoLined
+\LinesNumbered
+\SetNlSty{texttt}{}{.}
+\SetAlgoNlRelativeSize{0}
+\SetKwFunction{SearchInterval}{SearchInterval}
+\KwIn{A tolerance $\gh$, an integer $N$, and a stream of tuples $\tuple{t_i, q_i, p_i}$.}
+\KwOut{A stream of intervals $\intclos{j_1}{j_2}$ such that the Hermite spline based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$ approximates the input tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intclos{j_1}{j_2}$ with a tolerance better that $\gh$.}
+\SetKwData{A}{A}
+\SetKwFunction{BinarySearchDownsampling}{BinarySearchDownsampling}
+\SetKwProg{Fn}{Function}{ is}{end}
+Let $A$ be an array of size $N$ used to store tuples.\;
+\While{not at end of input stream} {
+  \If{\A is full}{
+    Emit \SearchInterval{\A, $1$, $N$}.\;
+    Clear \A.
+  }
+  Append $\tuple{t_i, q_i, p_i}$ to \A.\;
+}
+\BlankLine
+\Fn{\SearchInterval{A, $i_1$, $i_2$}} {
+  Construct the Hermite spline $h$ based on the tuples $\tuple{t_{i_1}, q_{i_1}, p_{i_1}}$ and $\tuple{t_{i_2}, q_{i_2}, p_{i_2}}$.\;
+  \uIf{$\max_{k = {i_1} \cdots {i_2}} \Lnorm[2]{h\of{t_k} - q_k} > \gh$} {
+    Let $k \leftarrow \Floor{i_2/2}$.\;
+    Emit \SearchInterval{\A, $i_1$, $k$}.\;
+    Emit \SearchInterval{\A, $k + 1$, $i_2$}.
+  }
+  \Else {
+    Emit $\intclos{i_1}{i_2}$.
+  }
+}
+\caption{BinarySearchDownsampling.}
+\end{algorithm}
+
+This algorithm has the following properties:
+\begin{itemize}[nosep]
+\item The array $A$ must be stored permanently since it contains tuples that have not been downsampled yet and that will be needed to make a future decision about the intervals to emit.
+\item The choice of $N$ involves a trade-off: $N$ must be large enough that the downsampling is effective and produces long intervals $\intclos{j_1}{j_2}$; but it must not be so large that the size of $A$ affects performance.
+\item The algorithm has a complexity of $\BigO\of{N \log N}$ on average and $\BigO\of{N^2}$ in the worst case.
+\item The algorithm does not produce the longest possible intervals: in the worst case, all the emitted intervals may be too small by a factor of 2.
+\end{itemize}
+
+\section*{An Efficient Streaming Algorithm}
+
+In this section we present an algorithm that, like the brute-force algorithm, is streaming (so a decision is made on each input tuple without having to resort to intermediate storage), whose complexity is linear in the size of the stream, and which generally produces a much more compact output than the binary search algorithm.  Without loss of generality we assume that, when the tuple of index $i$ is received, no interval was ever emitted (so the first interval to emit will necessarily have the lower bound $1$).
+
+The algorithm is incremental, so let's assume that we have already constructed a Hermite spline $h_{i - 1}$ with an error bound $\gce_{i - 1}$ such that:
+\[
+\max_{k = 1 \cdots i - 1} \Lnorm[2]{h_{i - 1}\of{t_k} - q_k} \le \gce_{i - i} \le \gh
+\]
+It is obviously possible to build such a spline, because the error on a spline build based on two consecutive points in the stream is $0$.  In other words, $\gce_2 = 0$ ($\gce_1$ is not defined because a spline cannot be constructed using a single point).
+
+When the point with index $i$ is received, we construct the Hermite spline $h_i$ based on the tuples $\tuple{t_{1}, q_{1}, p_{1}}$ and $\tuple{t_{i}, q_{i}, p_{i}}$.  Noting that $h_i\of{t_i} = q_i$ we have:
+\[
+\max_{k = 1 \cdots i} \Lnorm[2]{h_i\of{t_k} - q_k} = \max_{k = 1 \cdots {i - 1}} \Lnorm[2]{h_i\of{t_k} - q_k}
+\] 
+And, by the triangular inequality:
+\[
+\max_{k = 1 \cdots {i - 1}} \Lnorm[2]{h_i\of{t_k} - q_k} \le \max_{k = 1 \cdots {i - 1}} \Lnorm[2]{h_i\of{t_k} - h_{i - 1}\of{t_k}} + \max_{k = 1 \cdots {i - 1}} \Lnorm[2]{h_{i - 1}\of{t_k} - q_k}
+\]
+The first term is bounded by the $\Lspace$ norm of $h_i - h_{i - 1}$ and the second term is bounded, because of our recurrence hypothesis, by $\gce_{i - 1}$.  Thus:
+\[
+\max_{k = 1 \cdots i} \Lnorm[2]{h_i\of{t_k} - q_k} \le \Lnorm{h_i - h_{i - 1}} + \gce_{i - 1}
+\]
+Therefore, if we can compute $\Lnorm{h_i - h_{i - 1}}$ we can find an upper bound $\gce_i$ on the left-hand of this inequality and use it to determine if $h_i$ is still within the tolerance $\gh$ or if the interval must be split.
+
+Unfortunately $h_{i - 1}\of{t}$ and $h_i\of{t}$ are \nth{3} degree polynomials, so $\Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2$ is a \nth{6} degree polynomial, and finding its extrema requires the resolution of a \nth{5} degree equation, which would probably be overly expensive.
+
+We can note however that, by construction, the $h_i$ are all exact for $t = t_1$.  Therefore, $h_{i - 1}\of{t_1} = h_{i}\of{t_1}$ and $h'_{i - 1}\of{t_1} = h'_{i}\of{t_1}$.  This implies that $\pa{t - t_1}^2$ divides the polynomial $h_{i}\of{t} - h_{i - 1}\of{t}$: there exist a \nth{1} degree polynomial $q_i\of{t}$ such that:
+\[
+h_{i}\of{t} - h_{i - 1}\of{t} = \pa{t - t_1}^2 q_i\of{t}
+\]
+Taking the norm we obtain:
+\[
+\Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2 = \pa{t - t_1}^4 \Lnorm[2]{q_i\of{t}}^2
+\]
+To find the extrema we need to compute the roots of the derivative:
+\begin{align*}
+\derivop t {\Lnorm[2]{h_i\of{t} - h_{i - 1}\of{t}}^2} &= 4 \pa{t - t_1}^3 \Lnorm[2]{q_i\of{t}}^2 + 2 \pa{t - t_1}^4 \pa{\scal{q_i\of{t}}{q'_i\of{t}}} \\
+&= 4 \pa{t - t_1}^3 \pa{\scal{q_i\of{t}}\pa{q_i\of{t} + \frac{1}{2} \pa{t - t_1} q'_i\of{t}}}
+\end{align*}
+Now the polynomial $\scal{q_i\of{t}}\pa{q_i\of{t} + \frac{1}{2} \pa{t - t_1} q'_i\of{t}}$ is a \nth{2} degree polynomial and its roots may be computed efficiently.  In order to compute the extrema of $h_{i}\of{t} - h_{i - 1}\of{t}$, we must evaluate it at the roots of its derivative, and at $t_{i - 1}$, since it could have an extremum there that does not correspond to a zero of the derivative.
+
+Having computed the extrema of $h_{i}\of{t} - h_{i - 1}\of{t}$, we set:
+\[
+\gce_i = \Lnorm{h_i - h_{i - 1}} + \gce_{i - 1}
+\]
+If $\gce_i < \gh$, we are sure that the polynomial $h_i\of{t}$ is within the tolerance.  If on the other hand $\gce_i \geq \gh$ we have to assume that it is not, and we must emit an interval.  Note that this decision is somewhat pessimistic because of the use of the triangular inequality above, but in practice the polynomials $h_i\of{t}$ change slowly with $i$, so that $h_{i - 1}\of{t_k} - q_k$ and $h_i\of{t_k} - q_k$ are nearly colinear and the triangular inequality is close to an equality.  This means that this technique tends to yield a solution relatively close to the optimal obtained by the brute-force algorithm, and significantly better than the one obtained by binary search.
+
+\pagebreak
+This analysis leads to the following algorithm:
+\begin{algorithm}
+\DontPrintSemicolon
+\SetAlgoLined
+\LinesNumbered
+\SetNlSty{texttt}{}{.}
+\SetAlgoNlRelativeSize{0}
+\KwIn{A tolerance $\gh$ and a stream of tuples $\tuple{t_i, q_i, p_i}$.}
+\KwOut{A stream of intervals $\intclos{j_1}{j_2}$ such that the Hermite spline based on the tuples $\tuple{t_{j_1}, q_{j_1}, p_{j_1}}$ and $\tuple{t_{j_2}, q_{j_2}, p_{j_2}}$ approximates the input tuples $\tuple{t_i, q_i, p_i}$ for $i \in \intclos{j_1}{j_2}$ with a tolerance better that $\gh$.}
+\SetKwFunction{EfficientDownsampling}{EfficientDownsampling}
+Let $j \leftarrow 1$.\;
+Let $\gce \leftarrow 0$.\;
+\While{not at end of input stream} {
+  Construct the Hermite spline $h_{j, i}$ based on the tuples $\tuple{t_{j}, q_{j}, p_{j}}$ and $\tuple{t_i, q_i, p_i}$.\;
+  Let $\gce \leftarrow \gce + \Lnorm{h_{j, i} - h_{j, i - 1}}$.\;
+  \If{$\gce > \gh$} {
+    Emit the interval $\intclos{j}{i - 1}$.\;
+    Let $j \leftarrow i - 1$.\;
+    Let $\gce \leftarrow 0$.
+  }
+}
+Emit the interval $\intclos{j}{n}$ where $n$ is the index of the last element in the stream.\;
+\caption{EfficientDownsampling.}
+\end{algorithm}
+
+It is worth noting that the state of the algorithm now includes $\gce$, a quantity that cannot be reconstructed once tuples have been dropped.  In order for the downsampling to be restartable (\exempligratia, after a call to \texttt{ForgetAfter}) the $\gce_i$ must be stored permanently.
+
+\end{document}
