@@ -226,7 +226,7 @@ template<typename Method, typename ODE_>
   // See [Mac15], equation (1.20).
   UnboundedMatrix<double> ᵝT(M + 1, N + 1, uninitialized);
 
-  for (std::int64_t i = 0; i <= M; i++) {
+  for (std::int64_t i = 0; i <= M; ++i) {
     const auto τᵢ = nodes_[i];
     // The 0-degree polynomial is uniformly 1.
     ᵝT(i, 0) = 1;
@@ -234,7 +234,7 @@ template<typename Method, typename ODE_>
     ᵝT(i, 1) = τᵢ;
 
     // We populate the rest of ᵝT using the recurrence relation.
-    for (std::int64_t j = 2; j <= N; j++) {
+    for (std::int64_t j = 2; j <= N; ++j) {
       ᵝT(i, j) = 2 * τᵢ * ᵝT(i, j - 1) - ᵝT(i, j - 2);
     }
   }
@@ -244,7 +244,7 @@ template<typename Method, typename ODE_>
   UnboundedMatrix<double> ᵝW(N + 1, N + 1);
   ᵝW(0, 0) = 0.5;
   ᵝW(N, N) = 0.5;
-  for (std::int64_t i = 1; i < N; i++) {
+  for (std::int64_t i = 1; i < N; ++i) {
     ᵝW(i, i) = 1;
   }
 
@@ -255,7 +255,7 @@ template<typename Method, typename ODE_>
   UnboundedMatrix<double> R(N + 1, N + 1);
   R(0, 0) = 1;
   R(N, N) = 1.0 / N;
-  for (std::int64_t i = 1; i < N; i++) {
+  for (std::int64_t i = 1; i < N; ++i) {
     R(i, i) = 1.0 / (2 * i);
   }
 
@@ -264,21 +264,21 @@ template<typename Method, typename ODE_>
   UnboundedMatrix<double> S(N + 1, N);
   S(0, 0) = 1;
   S(0, 1) = -0.5;
-  for (std::int64_t k = 2; k < N; k++) {
+  for (std::int64_t k = 2; k < N; ++k) {
     S(0, k) = (k % 2 == 1 ? 1 : -1) * (1.0 / (k - 1) - 1.0 / (k + 1));
   }
-  for (std::int64_t i = 0; i < N; i++) {
+  for (std::int64_t i = 0; i < N; ++i) {
     S(i + 1, i) = 1;
   }
-  for (std::int64_t i = 1; i + 2 < N; i++) {
+  for (std::int64_t i = 1; i + 2 < N; ++i) {
     S(i, i + 1) = -1;
   }
 
   // ᶠT is ᵝTᵀ with the last row removed.
   // See [Mac15], equation (1.22).
   UnboundedMatrix<double> ᶠT(N, M + 1, uninitialized);
-  for (std::int64_t i = 0; i < N; i++) {
-    for (std::int64_t j = 0; j <= M; j++) {
+  for (std::int64_t i = 0; i < N; ++i) {
+    for (std::int64_t j = 0; j <= M; ++j) {
       ᶠT(i, j) = ᵝT(j, i);
     }
   }
