@@ -144,25 +144,6 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
       }};
 }
 
-template<typename T>
-concept ЧебышёвPicardIteratorTestParameters = requires {
-  // The ODE (with solution) under test.
-  { T::problem() } -> std::convertible_to<SolvedInitialValueProblem>;
-
-  // The Чебышёв polynomial order.
-  { T::N } -> std::convertible_to<std::int64_t>;
-
-  // The step size used for this test.
-  { T::step } -> std::convertible_to<ODE::IndependentVariableDifference>;
-
-  // The stopping criterion used for this test.
-  { T::stopping_criterion } -> std::convertible_to<double>;
-
-  // The distance the integrated solution is allowed to vary from the analytic
-  // solution.
-  { T::tolerance } -> std::convertible_to<double>;
-};
-
 TEST(ЧебышёвPicardIteratorTest, MultipleSteps) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
@@ -278,6 +259,25 @@ TEST(ЧебышёвPicardIteratorTest, WriteToMessage) {
   EXPECT_THAT(actual, EqualsProto(expected));
 }
 
+template<typename T>
+concept ЧебышёвPicardIteratorTestParameters = requires {
+  // The ODE (with solution) under test.
+  { T::problem() } -> std::convertible_to<SolvedInitialValueProblem>;
+
+  // The ЧебышёвPicard method.
+  typename T::Method;
+
+  // The step size used for this test.
+  { T::step } -> std::convertible_to<ODE::IndependentVariableDifference>;
+
+  // The stopping criterion used for this test.
+  { T::stopping_criterion } -> std::convertible_to<double>;
+
+  // The distance the integrated solution is allowed to vary from the analytic
+  // solution.
+  { T::tolerance } -> std::convertible_to<double>;
+};
+
 template<ЧебышёвPicardIteratorTestParameters T>
 class ЧебышёвPicardIteratorParameterizedTest : public Test {};
 
@@ -294,8 +294,8 @@ TYPED_TEST_P(ЧебышёвPicardIteratorParameterizedTest, Convergence) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ЧебышёвPicard<TypeParam::N, TypeParam::N>, ODE> const
-      integrator(ЧебышёвPicardIterationParams{
+  ЧебышёвPicardIterator<typename TypeParam::Method, ODE> const integrator(
+      ЧебышёвPicardIterationParams{
           .max_iterations = 64,
           .stopping_criterion = TypeParam::stopping_criterion,
       });
@@ -327,7 +327,7 @@ struct Linear1Second : not_constructible {
     return LinearProblem();
   }
 
-  static constexpr std::int64_t N = 64;
+  using Method = ЧебышёвPicard<64>;
   static constexpr Time step = 1 * Second;
   static constexpr double stopping_criterion = 1e-16;
   static constexpr double tolerance = 9e-16;
@@ -337,7 +337,7 @@ struct Linear2Seconds : not_constructible {
     return LinearProblem();
   }
 
-  static constexpr std::int64_t N = 64;
+  using Method = ЧебышёвPicard<64>;
   static constexpr Time step = 2 * Second;
   static constexpr double stopping_criterion = 1e-16;
   static constexpr double tolerance = 4.5e-15;
@@ -347,7 +347,7 @@ struct Linear4Seconds : not_constructible {
     return LinearProblem();
   }
 
-  static constexpr std::int64_t N = 64;
+  using Method = ЧебышёвPicard<64>;
   static constexpr Time step = 4 * Second;
   static constexpr double stopping_criterion = 1e-16;
   static constexpr double tolerance = 8e-14;
@@ -357,7 +357,7 @@ struct Linear8Seconds : not_constructible {
     return LinearProblem();
   }
 
-  static constexpr std::int64_t N = 64;
+  using Method = ЧебышёвPicard<64>;
   static constexpr Time step = 8 * Second;
   static constexpr double stopping_criterion = 1e-12;
   static constexpr double tolerance = 4e-10;
@@ -367,7 +367,7 @@ struct Linear16Seconds : not_constructible {
     return LinearProblem();
   }
 
-  static constexpr std::int64_t N = 64;
+  using Method = ЧебышёвPicard<64>;
   static constexpr Time step = 16 * Second;
   static constexpr double stopping_criterion = 1e-7;
   // Absolute error is high due to the
@@ -391,7 +391,7 @@ struct TangentA : not_constructible {
   }
 
   // These are the parameters from [BL69].
-  static constexpr std::int64_t N = 16;
+  using Method = ЧебышёвPicard<16>;
   static constexpr Time step = 2 * Second;
   static constexpr double stopping_criterion = 0.5e-10;
   static constexpr double tolerance = 8.7e-10;
@@ -403,7 +403,7 @@ struct TangentB : not_constructible {
 
   // We can achieve better accuracy with higher N and
   // a more stringent stopping criterion.
-  static constexpr std::int64_t N = 32;
+  using Method = ЧебышёвPicard<32>;
   static constexpr Time step = 2 * Second;
   static constexpr double stopping_criterion = 1e-16;
   static constexpr double tolerance = 4.5e-16;
@@ -421,7 +421,7 @@ struct PerturbedSinusoidFigure3 : not_constructible {
                                     /*y₀=*/1);
   }
 
-  static constexpr std::int64_t N = 500;
+  using Method = ЧебышёвPicard<500>;
   static constexpr Time step = 64 * π * Second;
   static constexpr double stopping_criterion = 1e-16;
   static constexpr double tolerance = 1e-9;
@@ -432,7 +432,7 @@ struct PerturbedSinusoidFigure6 : not_constructible {
                                     /*y₀=*/1);
   }
 
-  static constexpr std::int64_t N = 400;
+  using Method = ЧебышёвPicard<400>;
   static constexpr Time step = 64 * π * Second;
   static constexpr double stopping_criterion = 1e-16;
   static constexpr double tolerance = 2.5e-11;
