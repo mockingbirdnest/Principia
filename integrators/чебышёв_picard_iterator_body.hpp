@@ -1,7 +1,5 @@
 #pragma once
 
-#include "integrators/чебышёв_picard_iterator.hpp"
-
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -12,6 +10,7 @@
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "geometry/sign.hpp"
+#include "integrators/чебышёв_picard_iterator.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_views.hpp"
 #include "quantities/si.hpp"
@@ -73,8 +72,8 @@ inline double LInfinityNorm(UnboundedMatrix<double> const& A) {
   return norm;
 }
 
-template<typename ODE_>
-absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
+template<typename Method, typename ODE_>
+absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
     ODE::IndependentVariable const& t_final) {
   using DependentVariables = typename ODE::DependentVariables;
   using DependentVariableDerivatives =
@@ -114,7 +113,7 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
     for_all_of(current_state.y).loop([this, &j](auto const& yⱼ) {
       CₓX₀_(0, j++) = yⱼ.value / si::Unit<decltype(yⱼ.value)>;
     });
-    for (std::int64_t i = 1; i <= params.M; ++i) {
+    for (std::int64_t i = 1; i <= Method::M; ++i) {
       for (std::int64_t j = 0; j < n; ++j) {
         CₓX₀_(i, j) = CₓX₀_(0, j);
       }
@@ -179,27 +178,27 @@ absl::Status ЧебышёвPicardIterator<ODE_>::Instance::Solve(
   return absl::OkStatus();
 }
 
-template<typename ODE_>
-ЧебышёвPicardIterator<ODE_> const&
-ЧебышёвPicardIterator<ODE_>::Instance::integrator() const {
+template<typename Method, typename ODE_>
+ЧебышёвPicardIterator<Method, ODE_> const&
+ЧебышёвPicardIterator<Method, ODE_>::Instance::integrator() const {
   return integrator_;
 }
 
-template<typename ODE_>
+template<typename Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
-ЧебышёвPicardIterator<ODE_>::Instance::Clone() const {
+ЧебышёвPicardIterator<Method, ODE_>::Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
-template<typename ODE_>
-ЧебышёвPicardIterator<ODE_>::Instance::Instance(
+template<typename Method, typename ODE_>
+ЧебышёвPicardIterator<Method, ODE_>::Instance::Instance(
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
     ЧебышёвPicardIterator const& integrator)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator),
-      CₓX₀_(integrator.params_.M + 1,
+      CₓX₀_(Method::M + 1,
             std::tuple_size<typename ODE::DependentVariables>::value,
             uninitialized),
       Xⁱ_(CₓX₀_.rows(), CₓX₀_.columns(), uninitialized),
@@ -208,17 +207,15 @@ template<typename ODE_>
   t_.reserve(integrator.nodes_.size());
 }
 
-template<typename ODE_>
-ЧебышёвPicardIterator<ODE_>::ЧебышёвPicardIterator(
+template<typename Method, typename ODE_>
+ЧебышёвPicardIterator<Method, ODE_>::ЧебышёвPicardIterator(
     ЧебышёвPicardIterationParams const& params)
     : params_(params),
-      nodes_(params.M + 1, uninitialized),
-      CₓCα_(params.M + 1, params.N + 1, uninitialized) {
+      nodes_(Method::M + 1, uninitialized),
+      CₓCα_(Method::M + 1, Method::N + 1, uninitialized) {
   // We use the notation from [Mac15], section 1.4.3.
-  const std::int64_t M = params_.M;
-  const std::int64_t N = params_.N;
-  CHECK_GE(M, 1);
-  CHECK_GE(N, 1);
+  const std::int64_t M = Method::M;
+  const std::int64_t N = Method::N;
 
   // Populate nodes.
   for (std::int64_t i = 0; i <= M; i++) {
@@ -292,15 +289,15 @@ template<typename ODE_>
   CₓCα_ = 1.0 / M * Cₓ * R * S * ᶠT * ᵝW;
 }
 
-template<typename ODE_>
-ЧебышёвPicardIterationParams const& ЧебышёвPicardIterator<ODE_>::params()
-    const {
+template<typename Method, typename ODE_>
+ЧебышёвPicardIterationParams const&
+ЧебышёвPicardIterator<Method, ODE_>::params() const {
   return params_;
 }
 
-template<typename ODE_>
+template<typename Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
-ЧебышёвPicardIterator<ODE_>::NewInstance(
+ЧебышёвPicardIterator<Method, ODE_>::NewInstance(
     InitialValueProblem<ODE_> const& problem,
     AppendState const& append_state,
     Time const& step) const {
@@ -310,13 +307,13 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
       new Instance(problem, append_state, step, *this));
 }
 
-template<typename ODE_>
-void ЧебышёвPicardIterator<ODE_>::WriteToMessage(
+template<typename Method, typename ODE_>
+void ЧебышёвPicardIterator<Method, ODE_>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> message) const {
   message->set_kind(serialization::FixedStepSizeIntegrator::CHEBYSHEV_PICARD);
   auto& message_params = *message->mutable_chebyshev_picard_params();
-  message_params.set_m(params_.M);
-  message_params.set_n(params_.N);
+  message_params.set_m(Method::M);
+  message_params.set_n(Method::N);
   message_params.set_max_iterations(params_.max_iterations);
   message_params.set_stopping_criterion(params_.stopping_criterion);
 }

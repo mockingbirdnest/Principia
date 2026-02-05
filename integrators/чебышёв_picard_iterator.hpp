@@ -31,20 +31,6 @@ using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_quantities;
 
 struct ЧебышёвPicardIterationParams {
-  // Controls the number of nodes at which the function will be evaluated.
-  //
-  // Note that this is the highest node _index_ rather than the number of nodes;
-  // the actual number of nodes is M + 1.
-  //
-  // Must be at least 1.
-  std::int64_t M;
-
-  // The order of the Чебышёв series used to approximate the system state.
-  //
-  // Must be at least 1 (if you want to approximate your system with a constant,
-  // use some other method).
-  std::int64_t N;
-
   // The maximum allowed number of Picard iterations per step. If iteration has
   // not stopped (according to the stopping criterion) by the final step, the
   // iteration will be considered to have diverged.
@@ -77,7 +63,7 @@ struct ЧебышёвPicardIterationParams {
 //
 // This code uses the formulation from [Mac15].
 
-template<typename ODE_>
+template<typename Method, typename ODE_>
 class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;

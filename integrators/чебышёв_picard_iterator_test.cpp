@@ -1,11 +1,13 @@
 #include "integrators/чебышёв_picard_iterator.hpp"
 
+#include <concepts>
 #include <tuple>
 #include <vector>
 
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
@@ -16,12 +18,14 @@ namespace principia {
 namespace integrators {
 
 using ::testing::DoubleNear;
-using ::testing::TestWithParam;
+using ::testing::Test;
+using ::testing::Types;
 using ::testing::Values;
 
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_чебышёв_picard_iterator;
+using namespace principia::integrators::_methods;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -140,61 +144,26 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
       }};
 }
 
-struct ЧебышёвPicardIteratorTestParam {
+template<typename T>
+concept ЧебышёвPicardIteratorTestParameters = requires {
   // The ODE (with solution) under test.
-  SolvedInitialValueProblem problem;
+  { T::problem() } -> std::convertible_to<SolvedInitialValueProblem>;
 
   // The Чебышёв polynomial order.
-  int N;
+  { T::N } -> std::convertible_to<std::int64_t>;
 
   // The step size used for this test.
-  ODE::IndependentVariableDifference step;
+  { T::step } -> std::convertible_to<ODE::IndependentVariableDifference>;
 
   // The stopping criterion used for this test.
-  double stopping_criterion;
+  { T::stopping_criterion } -> std::convertible_to<double>;
 
-  // The distance the integrated solution is allowed to vary from the
-  // analytic solution.
-  double tolerance;
+  // The distance the integrated solution is allowed to vary from the analytic
+  // solution.
+  { T::tolerance } -> std::convertible_to<double>;
 };
 
-class ЧебышёвPicardIteratorTest
-    : public TestWithParam<ЧебышёвPicardIteratorTestParam> {};
-
-TEST_P(ЧебышёвPicardIteratorTest, Convergence) {
-  // Set up the initial value problem.
-  SolvedInitialValueProblem const& problem = GetParam().problem;
-  Time const step = GetParam().step;
-
-  std::vector<ODE::State> states;
-  auto const append_state = [&states](ODE::State const& state) {
-    states.push_back(state);
-  };
-
-  // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
-      .M = GetParam().N,
-      .N = GetParam().N,
-      .max_iterations = 64,
-      .stopping_criterion = GetParam().stopping_criterion,
-  });
-
-  auto const instance =
-      integrator.NewInstance(problem.problem, append_state, step);
-  EXPECT_OK(instance->Solve(problem.t₀() + step));
-
-  // Verify the results are close to the known solution.
-  for (const auto& state : states) {
-    auto t = state.s.value;
-    auto y = std::get<0>(state.y).value;
-    EXPECT_THAT(y / Metre,
-                DoubleNear(std::get<0>(problem.solution(t)) / Metre,
-                           GetParam().tolerance))
-        << "t=" << t;
-  }
-}
-
-TEST_F(ЧебышёвPicardIteratorTest, MultipleSteps) {
+TEST(ЧебышёвPicardIteratorTest, MultipleSteps) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
   Time const step = 1 * Second;
@@ -205,12 +174,11 @@ TEST_F(ЧебышёвPicardIteratorTest, MultipleSteps) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
-      .M = 64,
-      .N = 64,
-      .max_iterations = 64,
-      .stopping_criterion = 1e-16,
-  });
+  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator(
+      ЧебышёвPicardIterationParams{
+          .max_iterations = 64,
+          .stopping_criterion = 1e-16,
+      });
 
   auto const instance =
       integrator.NewInstance(problem.problem, append_state, step);
@@ -230,7 +198,7 @@ TEST_F(ЧебышёвPicardIteratorTest, MultipleSteps) {
   }
 }
 
-TEST_F(ЧебышёвPicardIteratorTest, Backwards) {
+TEST(ЧебышёвPicardIteratorTest, Backwards) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
   Time const step = -1 * Second;  // Backwards!
@@ -241,12 +209,11 @@ TEST_F(ЧебышёвPicardIteratorTest, Backwards) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
-      .M = 64,
-      .N = 64,
-      .max_iterations = 64,
-      .stopping_criterion = 2e-16,
-  });
+  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator(
+      ЧебышёвPicardIterationParams{
+          .max_iterations = 64,
+          .stopping_criterion = 2e-16,
+      });
 
   auto const instance =
       integrator.NewInstance(problem.problem, append_state, step);
@@ -266,7 +233,7 @@ TEST_F(ЧебышёвPicardIteratorTest, Backwards) {
   }
 }
 
-TEST_F(ЧебышёвPicardIteratorTest, Divergence) {
+TEST(ЧебышёвPicardIteratorTest, Divergence) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
   Time const step = 60 * Second;  // Way too big; iteration won't converge.
@@ -277,12 +244,11 @@ TEST_F(ЧебышёвPicardIteratorTest, Divergence) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
-      .M = 64,
-      .N = 64,
-      .max_iterations = 64,
-      .stopping_criterion = 0.1,  // Differences never even get this low!
-  });
+  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator(
+      ЧебышёвPicardIterationParams{
+          .max_iterations = 64,
+          .stopping_criterion = 0.1,  // Differences never even get this low!
+      });
 
   auto const instance =
       integrator.NewInstance(problem.problem, append_state, step);
@@ -292,13 +258,12 @@ TEST_F(ЧебышёвPicardIteratorTest, Divergence) {
               StatusIs(absl::StatusCode::kFailedPrecondition));
 }
 
-TEST_F(ЧебышёвPicardIteratorTest, WriteToMessage) {
-  ЧебышёвPicardIterator<ODE> const integrator(ЧебышёвPicardIterationParams{
-      .M = 9,
-      .N = 7,
-      .max_iterations = 42,
-      .stopping_criterion = 0.125,
-  });
+TEST(ЧебышёвPicardIteratorTest, WriteToMessage) {
+  ЧебышёвPicardIterator<ЧебышёвPicard<9, 7>, ODE> const integrator(
+      ЧебышёвPicardIterationParams{
+          .max_iterations = 42,
+          .stopping_criterion = 0.125,
+      });
 
   serialization::FixedStepSizeIntegrator expected;
   expected.set_kind(serialization::FixedStepSizeIntegrator::CHEBYSHEV_PICARD);
@@ -313,96 +278,171 @@ TEST_F(ЧебышёвPicardIteratorTest, WriteToMessage) {
   EXPECT_THAT(actual, EqualsProto(expected));
 }
 
+template<ЧебышёвPicardIteratorTestParameters T>
+class ЧебышёвPicardIteratorParameterizedTest : public Test {};
+
+TYPED_TEST_SUITE_P(ЧебышёвPicardIteratorParameterizedTest);
+
+TYPED_TEST_P(ЧебышёвPicardIteratorParameterizedTest, Convergence) {
+  // Set up the initial value problem.
+  SolvedInitialValueProblem const problem = TypeParam::problem();
+  Time const step = TypeParam::step;
+
+  std::vector<ODE::State> states;
+  auto const append_state = [&states](ODE::State const& state) {
+    states.push_back(state);
+  };
+
+  // Build the integrator and solve the problem.
+  ЧебышёвPicardIterator<ЧебышёвPicard<TypeParam::N, TypeParam::N>, ODE> const
+      integrator(ЧебышёвPicardIterationParams{
+          .max_iterations = 64,
+          .stopping_criterion = TypeParam::stopping_criterion,
+      });
+
+  auto const instance =
+      integrator.NewInstance(problem.problem, append_state, step);
+  EXPECT_OK(instance->Solve(problem.t₀() + step));
+
+  // Verify the results are close to the known solution.
+  for (const auto& state : states) {
+    auto t = state.s.value;
+    auto y = std::get<0>(state.y).value;
+    EXPECT_THAT(y / Metre,
+                DoubleNear(std::get<0>(problem.solution(t)) / Metre,
+                           TypeParam::tolerance))
+        << "t=" << t;
+  }
+}
+
+REGISTER_TYPED_TEST_SUITE_P(ЧебышёвPicardIteratorParameterizedTest,
+                            Convergence);
+
 // Although in theory the iteration for y′ = y should converge for
 // intervals
 // of length < 40 for sufficiently high N (see [BJ12]), in
 // practice the convergence degrades far earlier.
-INSTANTIATE_TEST_SUITE_P(Linear,
-                         ЧебышёвPicardIteratorTest,
-                         Values(
-                             ЧебышёвPicardIteratorTestParam{
-                                 .problem = LinearProblem(),
-                                 .N = 64,
-                                 .stopping_criterion = 1e-16,
-                                 .step = 1 * Second,
-                                 .tolerance = 9e-16,
-                             },
-                             ЧебышёвPicardIteratorTestParam{
-                                 .problem = LinearProblem(),
-                                 .N = 64,
-                                 .stopping_criterion = 1e-16,
-                                 .step = 2 * Second,
-                                 .tolerance = 4.5e-15,
-                             },
-                             ЧебышёвPicardIteratorTestParam{
-                                 .problem = LinearProblem(),
-                                 .N = 64,
-                                 .stopping_criterion = 1e-16,
-                                 .step = 4 * Second,
-                                 .tolerance = 8e-14,
-                             },
-                             ЧебышёвPicardIteratorTestParam{
-                                 .problem = LinearProblem(),
-                                 .N = 64,
-                                 .stopping_criterion = 1e-12,
-                                 .step = 8 * Second,
-                                 .tolerance = 4e-10,
-                             },
-                             ЧебышёвPicardIteratorTestParam{
-                                 .problem = LinearProblem(),
-                                 .N = 64,
-                                 .stopping_criterion = 1e-7,
-                                 .step = 16 * Second,
-                                 // Absolute error is high due to the
-                                 // exponential growth.
-                                 .tolerance = 4e-3,
-                             }));
+struct Linear1Second : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return LinearProblem();
+  }
+
+  static constexpr std::int64_t N = 64;
+  static constexpr Time step = 1 * Second;
+  static constexpr double stopping_criterion = 1e-16;
+  static constexpr double tolerance = 9e-16;
+};
+struct Linear2Seconds : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return LinearProblem();
+  }
+
+  static constexpr std::int64_t N = 64;
+  static constexpr Time step = 2 * Second;
+  static constexpr double stopping_criterion = 1e-16;
+  static constexpr double tolerance = 4.5e-15;
+};
+struct Linear4Seconds : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return LinearProblem();
+  }
+
+  static constexpr std::int64_t N = 64;
+  static constexpr Time step = 4 * Second;
+  static constexpr double stopping_criterion = 1e-16;
+  static constexpr double tolerance = 8e-14;
+};
+struct Linear8Seconds : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return LinearProblem();
+  }
+
+  static constexpr std::int64_t N = 64;
+  static constexpr Time step = 8 * Second;
+  static constexpr double stopping_criterion = 1e-12;
+  static constexpr double tolerance = 4e-10;
+};
+struct Linear16Seconds : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return LinearProblem();
+  }
+
+  static constexpr std::int64_t N = 64;
+  static constexpr Time step = 16 * Second;
+  static constexpr double stopping_criterion = 1e-7;
+  // Absolute error is high due to the
+  // exponential growth.
+  static constexpr double tolerance = 4e-3;
+};
+
+using Linear = Types<Linear1Second,
+                     Linear2Seconds,
+                     Linear4Seconds,
+                     Linear8Seconds,
+                     Linear16Seconds>;
+INSTANTIATE_TYPED_TEST_SUITE_P(Linear,
+                               ЧебышёвPicardIteratorParameterizedTest,
+                               Linear);
 
 // This problem appears in [BL69].
-INSTANTIATE_TEST_SUITE_P(Tangent,
-                         ЧебышёвPicardIteratorTest,
-                         Values(
-                             // These are the parameters from [BL69].
-                             ЧебышёвPicardIteratorTestParam{
-                                 .problem = TangentProblem(),
-                                 .N = 16,
-                                 .stopping_criterion = 0.5e-10,
-                                 .step = 2 * Second,
-                                 .tolerance = 8.7e-10,
-                             },
-                             // We can achieve better accuracy with higher N and
-                             // a more stringent stopping criterion.
-                             ЧебышёвPicardIteratorTestParam{
-                                 .problem = TangentProblem(),
-                                 .N = 32,
-                                 .stopping_criterion = 1e-16,
-                                 .step = 2 * Second,
-                                 .tolerance = 4.5e-16,
-                             }));
+struct TangentA : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return TangentProblem();
+  }
+
+  // These are the parameters from [BL69].
+  static constexpr std::int64_t N = 16;
+  static constexpr Time step = 2 * Second;
+  static constexpr double stopping_criterion = 0.5e-10;
+  static constexpr double tolerance = 8.7e-10;
+};
+struct TangentB : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return TangentProblem();
+  }
+
+  // We can achieve better accuracy with higher N and
+  // a more stringent stopping criterion.
+  static constexpr std::int64_t N = 32;
+  static constexpr Time step = 2 * Second;
+  static constexpr double stopping_criterion = 1e-16;
+  static constexpr double tolerance = 4.5e-16;
+};
+
+using Tangent = Types<TangentA, TangentB>;
+INSTANTIATE_TYPED_TEST_SUITE_P(Tangent,
+                               ЧебышёвPicardIteratorParameterizedTest,
+                               Tangent);
 
 // From [BJ10]. Figures 4, 5, 7, 8 are slow and omitted for now.
-INSTANTIATE_TEST_SUITE_P(
-    PerturbedSinusoid,
-    ЧебышёвPicardIteratorTest,
-    Values(
-        // [BJ10], figure 3.
-        ЧебышёвPicardIteratorTestParam{
-            .problem = PerturbedSinusoidProblem(/*ε=*/0.01,
-                                                /*y₀=*/1),
-            .N = 500,
-            .stopping_criterion = 1e-16,
-            .step = 64 * π * Second,
-            .tolerance = 1e-9,
-        },
-        // [BJ10], figure 6.
-        ЧебышёвPicardIteratorTestParam{
-            .problem = PerturbedSinusoidProblem(/*ε=*/0.001,
-                                                /*y₀=*/1),
-            .N = 400,
-            .stopping_criterion = 1e-16,
-            .step = 64 * π * Second,
-            .tolerance = 2.5e-11,
-        }));
+struct PerturbedSinusoidFigure3 : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return PerturbedSinusoidProblem(/*ε=*/0.01,
+                                    /*y₀=*/1);
+  }
+
+  static constexpr std::int64_t N = 500;
+  static constexpr Time step = 64 * π * Second;
+  static constexpr double stopping_criterion = 1e-16;
+  static constexpr double tolerance = 1e-9;
+};
+struct PerturbedSinusoidFigure6 : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return PerturbedSinusoidProblem(/*ε=*/0.001,
+                                    /*y₀=*/1);
+  }
+
+  static constexpr std::int64_t N = 400;
+  static constexpr Time step = 64 * π * Second;
+  static constexpr double stopping_criterion = 1e-16;
+  static constexpr double tolerance = 2.5e-11;
+};
+
+using PerturbedSinusoid =
+    Types<PerturbedSinusoidFigure3, PerturbedSinusoidFigure6>;
+INSTANTIATE_TYPED_TEST_SUITE_P(PerturbedSinusoid,
+                               ЧебышёвPicardIteratorParameterizedTest,
+                               PerturbedSinusoid);
 
 }  // namespace
 
