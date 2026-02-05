@@ -383,7 +383,7 @@ template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 PolynomialInMonomialBasis()
-  requires additive_group<Argument>
+  requires additive_group<Value>
     : coefficients_(Coefficients{}),
       origin_(Argument{}) {}
 

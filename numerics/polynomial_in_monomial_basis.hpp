@@ -135,7 +135,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
                                       Argument const& origin);
   constexpr explicit PolynomialInMonomialBasis(Coefficients coefficients)
     requires additive_group<Argument>;
-  constexpr PolynomialInMonomialBasis() requires additive_group<Argument>;
+  constexpr PolynomialInMonomialBasis() requires additive_group<Value>;
 
   friend constexpr bool operator==(PolynomialInMonomialBasis const& left,
                                    PolynomialInMonomialBasis const& right) =
