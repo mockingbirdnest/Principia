@@ -15,7 +15,7 @@
 #include "base/not_null.hpp"
 #include "base/traits.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
-#include "numerics/unbounded_arrays.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/integrators.pb.h"
 
@@ -27,7 +27,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
-using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_quantities;
 
 struct ЧебышёвPicardIterationParams {
@@ -84,6 +84,10 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
              Time const& step,
              ЧебышёвPicardIterator const& integrator);
 
+    // The dimension of the ODE.
+    static constexpr std::int64_t n =
+        std::tuple_size_v<typename ODE::DependentVariables>;
+
     ЧебышёвPicardIterator const& integrator_;
 
     // Working variables which are stored here so we don't need to reallocate
@@ -93,15 +97,15 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
     std::vector<typename ODE::IndependentVariable> t_;
 
     // Controls the boundary condition.
-    UnboundedMatrix<double> CₓX₀_;
+    FixedMatrix<double, Method::M + 1, n> CₓX₀_;
 
     // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
     // variables at each node.
-    UnboundedMatrix<double> Xⁱ_;
-    UnboundedMatrix<double> Xⁱ⁺¹_;
+    FixedMatrix<double, Method::M + 1, n> Xⁱ_;
+    FixedMatrix<double, Method::M + 1, n> Xⁱ⁺¹_;
 
     // The computed derivative (at each node, for the current iteration).
-    UnboundedMatrix<double> yʹ_;
+    FixedMatrix<double, Method::M + 1, n> yʹ_;
 
     friend class ЧебышёвPicardIterator;
   };
@@ -125,10 +129,10 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
   // The nodes used for function evaluation.
   //
   // These are Чебышёв nodes of the second kind.
-  UnboundedVector<double> nodes_;
+  FixedVector<double, Method::M + 1> nodes_;
 
   // The product of 1.31a and 1.31b from [Mac15].
-  UnboundedMatrix<double> CₓCα_;
+  FixedMatrix<double, Method::M + 1, Method::M + 1> CₓCα_;
 };
 
 }  // namespace internal
