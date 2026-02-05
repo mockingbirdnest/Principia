@@ -374,12 +374,23 @@ struct Linear16Seconds : not_constructible {
   // exponential growth.
   static constexpr double tolerance = 4e-3;
 };
+struct LinearMGreaterThanN : not_constructible {
+  static SolvedInitialValueProblem problem() {
+    return LinearProblem();
+  }
+
+  using Method = ЧебышёвPicard<128, 64>;
+  static constexpr Time step = 1 * Second;
+  static constexpr double stopping_criterion = 1e-16;
+  static constexpr double tolerance = 2e-15;
+};
 
 using Linear = Types<Linear1Second,
                      Linear2Seconds,
                      Linear4Seconds,
                      Linear8Seconds,
-                     Linear16Seconds>;
+                     Linear16Seconds,
+                     LinearMGreaterThanN>;
 INSTANTIATE_TYPED_TEST_SUITE_P(Linear,
                                ЧебышёвPicardIteratorParameterizedTest,
                                Linear);

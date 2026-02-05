@@ -138,7 +138,7 @@ absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
       }
 
       // Compute new x.
-      Xⁱ⁺¹_ = integrator_.CₓCα_ * ((step / Second) * yʹ_) + CₓX₀_;
+      Xⁱ⁺¹_ = integrator_.CₓCα_ * (0.5 * step / Second * yʹ_) + CₓX₀_;
 
       // Check for convergence by computing the ∞-norm.
       const double norm = LInfinityNorm(Xⁱ⁺¹_ - Xⁱ_);
@@ -212,7 +212,7 @@ template<typename Method, typename ODE_>
     ЧебышёвPicardIterationParams const& params)
     : params_(params),
       nodes_(Method::M + 1, uninitialized),
-      CₓCα_(Method::M + 1, Method::N + 1, uninitialized) {
+      CₓCα_(Method::M + 1, Method::M + 1, uninitialized) {
   // We use the notation from [Mac15], section 1.4.3.
   const std::int64_t M = Method::M;
   const std::int64_t N = Method::N;
@@ -274,19 +274,26 @@ template<typename Method, typename ODE_>
     S(i, i + 1) = -1;
   }
 
-  // ᶠT is ᵝTᵀ with the last row removed.
+  // ᶠTᵀ is ᵝTᵀ with the last row removed.
   // See [Mac15], equation (1.22).
-  UnboundedMatrix<double> ᶠT(N, M + 1, uninitialized);
+  UnboundedMatrix<double> ᶠTᵀ(N, M + 1, uninitialized);
   for (std::int64_t i = 0; i < N; ++i) {
     for (std::int64_t j = 0; j <= M; ++j) {
-      ᶠT(i, j) = ᵝT(j, i);
+      ᶠTᵀ(i, j) = ᵝT(j, i);
     }
   }
 
-  // ᵀV is 1/M * ᵝW (we do not assign it to a variable).
-  // Cα is r * s * ᶠT * ᵀV (we do not assign it to a variable).
+  // V is is a diagonal (M + 1)×(M + 1) matrix with diagonal [1/M, 2/M, 2/M,
+  // ..., 1/M].
+  UnboundedMatrix<double> V(M + 1, M + 1);
+  V(0, 0) = V(M, M) = 1.0 / M;
+  for (std::int64_t i = 1; i < M; ++i) {
+    V(i, i) = 2.0 / M;
+  }
 
-  CₓCα_ = 1.0 / M * Cₓ * R * S * ᶠT * ᵝW;
+  // Cα is R * R * ᶠTᵀ * V (we do not assign it to a variable).
+
+  CₓCα_ = Cₓ * R * S * ᶠTᵀ * V;
 }
 
 template<typename Method, typename ODE_>
