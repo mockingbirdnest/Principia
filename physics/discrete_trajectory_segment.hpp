@@ -18,6 +18,7 @@
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/physics.pb.h"
 
 namespace principia {
@@ -52,6 +53,7 @@ using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory;
+using namespace principia::quantities::_quantities;
 
 template<typename Frame>
 class DiscreteTrajectorySegment : public Trajectory<Frame> {
@@ -124,11 +126,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // segment are going to be retained.
   void ClearDownsampling();
 
-  // Returns true iff this segment was downsampled at least once since its
-  // creation or the last call to `clear`.  Only use for optimization purposes,
-  // not to depend on the actual structure of the timeline.
-  bool was_downsampled() const;
-
   // The points denoted by `exact` are written and re-read exactly and are not
   // affected by any errors introduced by zfp compression.  The endpoints of a
   // segment are always exact.
@@ -180,28 +177,35 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // result is that of the latest segment (with the largest times).
   void Merge(DiscreteTrajectorySegment<Frame> segment);
 
-  // Computes `number_of_dense_points_` based on the start of the dense
-  // timeline.  Used for compatibility deserialization.
-  void SetStartOfDenseTimeline(Instant const& t);
-
   // Inserts the given point at the beggining of the timeline.  Used for
   // compatibility deserialization.
   void SetForkPoint(value_type const& point);
 
-  // Called by `Append` after appending a point to this segment.  If
-  // appropriate, performs downsampling and deletes some of the points of the
-  // segment.
-  absl::Status DownsampleIfNeeded();
+  // Stores the Hermite interpolation for the open trajectory interval bounded
+  // above by `upper`.  `upper` must not be the first point of the timeline.
+  // Because the interpolation covers consecutive points without any
+  // intermediate points dropped, it is exact and its error is set to zero.
+  // The first function requires that there is no existing interpolation for the
+  // `upper` point, while the second one updates an existing interpolation.
+  void CreateInterpolation(typename Timeline::iterator upper);
+  void UpdateInterpolation(typename Timeline::iterator upper);
 
-  // Constructs the Hermite interpolation for the left-open, right-closed
-  // trajectory interval bounded above by `upper`.  `upper` must not be the
-  // first point of the timeline.
-  not_null<std::unique_ptr<Hermite3<Position<Frame>, Instant>>>
-  NewInterpolation(typename Timeline::const_iterator upper) const;
+  // Constructs the Hermite interpolation for the trajectory interval
+  // `]lower, t[` with the specified `degrees_of_freedom` for time `t`.
+  static Hermite3<Position<Frame>, Instant>
+  MakeHermite3(typename Timeline::const_iterator lower,
+               Instant const& t,
+               DegreesOfFreedom<Frame> const& degrees_of_freedom);
 
-  // Returns the Hermite interpolation for the left-open, right-closed
-  // trajectory interval bounded above by `upper`, which must exist.
-  Hermite3<Position<Frame>, Instant> const& get_interpolation(
+  // Allocates an `Interpolation` struct holding the given `hermite3` and
+  // `error`.
+  static not_null<std::unique_ptr<Interpolation<Frame>>> NewInterpolation(
+      Hermite3<Position<Frame>, Instant> hermite3,
+      Length const& error);
+
+  // Returns the Hermite interpolation for the open trajectory interval bounded
+  // above by `upper`.  The interpolation must exist.
+  Hermite3<Position<Frame>, Instant> const& get_hermite3(
       typename Timeline::const_iterator upper) const;
 
   typename Timeline::const_iterator timeline_begin() const;
@@ -224,11 +228,9 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
 
   std::optional<DownsamplingParameters> downsampling_parameters_;
 
-  // The number of points at the end of the segment that are part of a "dense"
-  // span, i.e., have not been subjected to downsampling yet.
-  std::int64_t number_of_dense_points_ = 0;
-
-  bool was_downsampled_ = false;
+  // The current upper bound on the error introduced by downsampling, as
+  // computed using `LInfinityL₂Norm`.
+  Length downsampling_error_;
 
   DiscreteTrajectorySegmentIterator<Frame> self_;
   Timeline timeline_;

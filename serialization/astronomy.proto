@@ -88,8 +88,11 @@ message InitialState {
 
 message NumericsBlueprint {
   message Downsampling {
-    required int64 max_dense_intervals = 1;
     required string tolerance = 2;
+
+    // Pre-Лефшец.
+    reserved 1;
+    reserved "max_dense_intervals";
   }
   message Ephemeris {
     required FixedStepSizeIntegrator.Kind integrator = 1;
