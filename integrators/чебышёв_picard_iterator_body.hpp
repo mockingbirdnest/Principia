@@ -1,16 +1,16 @@
 #pragma once
 
+#include "integrators/чебышёв_picard_iterator.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <memory>
 #include <utility>
 
 #include "base/for_all_of.hpp"
-#include "base/jthread.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "geometry/sign.hpp"
-#include "integrators/чебышёв_picard_iterator.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_views.hpp"
 #include "quantities/si.hpp"

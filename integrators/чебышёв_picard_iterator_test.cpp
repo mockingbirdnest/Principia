@@ -11,6 +11,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
 
@@ -23,9 +24,9 @@ using ::testing::Types;
 using ::testing::Values;
 
 using namespace principia::geometry::_instant;
+using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_чебышёв_picard_iterator;
-using namespace principia::integrators::_methods;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
