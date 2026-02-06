@@ -153,7 +153,7 @@ absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
       const double norm = LInfinityNorm(Xⁱ⁺¹_ - Xⁱ_);
       Xⁱ_ = std::move(Xⁱ⁺¹_);
 
-      // We require that ||Xⁱ⁺¹ - Xⁱ|| and ||Xⁱ - Xⁱ⁻¹|| are _both_ less than
+      // We require that ‖Xⁱ⁺¹ - Xⁱ‖ and ‖Xⁱ - Xⁱ⁻¹‖ are _both_ less than
       // the given tolerance to account for nonlinearity issues (as suggested in
       // [BJ12]).
       if (std::max(norm, previous_norm) < params.stopping_criterion) {
