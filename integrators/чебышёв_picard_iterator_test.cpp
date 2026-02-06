@@ -240,26 +240,6 @@ TEST(ЧебышёвPicardIteratorTest, Divergence) {
               StatusIs(absl::StatusCode::kFailedPrecondition));
 }
 
-TEST(ЧебышёвPicardIteratorTest, WriteToMessage) {
-  ЧебышёвPicardIterator<ЧебышёвPicard<9, 7>, ODE> const integrator(
-      ЧебышёвPicardIterationParams{
-          .max_iterations = 42,
-          .stopping_criterion = 0.125,
-      });
-
-  serialization::FixedStepSizeIntegrator expected;
-  expected.set_kind(serialization::FixedStepSizeIntegrator::CHEBYSHEV_PICARD);
-  expected.mutable_chebyshev_picard_params()->set_m(9);
-  expected.mutable_chebyshev_picard_params()->set_n(7);
-  expected.mutable_chebyshev_picard_params()->set_max_iterations(42);
-  expected.mutable_chebyshev_picard_params()->set_stopping_criterion(0.125);
-
-  serialization::FixedStepSizeIntegrator actual;
-  integrator.WriteToMessage(&actual);
-
-  EXPECT_THAT(actual, EqualsProto(expected));
-}
-
 template<typename T>
 concept ЧебышёвPicardIteratorTestParameters = requires {
   // The ODE (with solution) under test.

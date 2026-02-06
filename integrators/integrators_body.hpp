@@ -55,8 +55,7 @@
 // integrator kind.  Depending on the nature of the integrator, each case branch
 // calls one of the given actions, which must be 1-argument macros.
 #define PRINCIPIA_FSS_INTEGRATOR_CASES(                                       \
-    elms_action, erk_action, slms_action, sprk_action, srkn_action,           \
-    чpi_action)                                                               \
+    elms_action, erk_action, slms_action, sprk_action, srkn_action)           \
   PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
                             ADAMS_BASHFORTH_ORDER_2,                          \
                             AdamsBashforthOrder2,                             \
@@ -229,10 +228,6 @@
                             YOSHIDA_1990_ORDER_8E,                            \
                             吉田1990Order8E,                                  \
                             sprk_action)                                      \
-  PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
-                            CHEBYSHEV_PICARD,                                 \
-                            ЧебышёвPicardIterator,                            \
-                            чpi_action)
 
 namespace principia {
 namespace integrators {
@@ -525,9 +520,6 @@ void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
     LOG(FATAL) << "Incorrect ODE for an SRKN: " << extension.DebugString(); \
   }
 
-#define PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ЧPI(method)                  \
-  LOG(FATAL) << "Reading a ЧебышёвPicardIterator is currently unsupported";
-
 template<typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
@@ -553,8 +545,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ERK,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK,
-        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SRKN,
-        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ЧPI
+        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SRKN
       )
     default:
       LOG(FATAL) << message.DebugString();
@@ -566,7 +557,6 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SRKN
-#undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ЧPI
 
 template<typename ODE_>
 FixedStepSizeIntegrator<ODE_>::Instance::Instance(
@@ -625,9 +615,6 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
     std::abort();                                                     \
   }
 
-#define PRINCIPIA_READ_FSS_INTEGRATOR_ЧPI(method)                             \
-  LOG(FATAL) << "Reading a ЧебышёвPicardIterator is currently unsupported";
-
 
 template<typename ODE_>
 FixedStepSizeIntegrator<ODE_> const&
@@ -638,8 +625,7 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
                                    PRINCIPIA_READ_FSS_INTEGRATOR_ERK,
                                    PRINCIPIA_READ_FSS_INTEGRATOR_SLMS,
                                    PRINCIPIA_READ_FSS_INTEGRATOR_SPRK,
-                                   PRINCIPIA_READ_FSS_INTEGRATOR_SRKN,
-                                   PRINCIPIA_READ_FSS_INTEGRATOR_ЧPI
+                                   PRINCIPIA_READ_FSS_INTEGRATOR_SRKN
                                   )
     default:
       LOG(FATAL) << message.kind();
@@ -652,7 +638,6 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_SLMS
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_SPRK
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_SRKN
-#undef PRINCIPIA_READ_FSS_INTEGRATOR_ЧPI
 
 template<typename Equation>
 FixedStepSizeIntegrator<Equation> const&

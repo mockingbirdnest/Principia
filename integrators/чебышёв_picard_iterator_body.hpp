@@ -322,12 +322,8 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 template<typename Method, typename ODE_>
 void ЧебышёвPicardIterator<Method, ODE_>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> message) const {
-  message->set_kind(serialization::FixedStepSizeIntegrator::CHEBYSHEV_PICARD);
-  auto& message_params = *message->mutable_chebyshev_picard_params();
-  message_params.set_m(Method::M);
-  message_params.set_n(Method::N);
-  message_params.set_max_iterations(params_.max_iterations);
-  message_params.set_stopping_criterion(params_.stopping_criterion);
+  LOG(FATAL) << "Body is neither massive nor massless";
+  std::abort();
 }
 
 }  // namespace internal
