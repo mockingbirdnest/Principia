@@ -137,6 +137,7 @@
         -Wno-shadow-uncaptured-local
         -Wno-sign-compare
         -Wno-sign-conversion
+        -Wno-switch-default
         -Wno-undef
         -Wno-unknown-pragmas
         -Wno-unsafe-buffer-usage
@@ -146,6 +147,7 @@
         <!--Same for warnings in dependencies.-->
         -Xclang --system-header-prefix=absl/
         -Xclang --system-header-prefix=benchmark/
+        -Xclang --system-header-prefix=boost/
         -Xclang --system-header-prefix=google/
         -Xclang --system-header-prefix=glog/
         -Xclang --system-header-prefix=gtest/

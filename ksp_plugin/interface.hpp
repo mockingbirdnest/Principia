@@ -26,6 +26,7 @@
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/apsides.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -61,6 +62,7 @@ using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
+using namespace principia::physics::_apsides;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;

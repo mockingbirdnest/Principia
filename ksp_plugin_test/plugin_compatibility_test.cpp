@@ -221,8 +221,8 @@ TEST_F(PluginCompatibilityTest, Reach) {
     Celestial const& celestial = plugin->GetCelestial(index);
     auto const& celestial_trajectory = celestial.trajectory();
     auto const& flight_plan_trajectory = flight_plan.GetAllSegments();
-    DiscreteTrajectory<Barycentric> apoapsides;
-    DiscreteTrajectory<Barycentric> periapsides;
+    DistinguishedPoints<Barycentric> apoapsides;
+    DistinguishedPoints<Barycentric> periapsides;
 
     // The begin time avoid spurious periapsides right after the launch.
     ComputeApsides(celestial_trajectory,
@@ -449,7 +449,7 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
       /*decoder=*/"base64");
   // Regression test for #3244.
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Hardy DiscreteTrajectorySegment"),
+              AllOf(HasSubstr("pre-Лефшец DiscreteTrajectorySegment"),
                     Not(HasSubstr("pre-Hamilton"))));
 }
 

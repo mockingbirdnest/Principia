@@ -2389,7 +2389,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 continue;
               }
               Vector3d position_at_start = (Vector3d)rendered_segments.
-                IteratorGetDiscreteTrajectoryXYZ();
+                  IteratorGetDiscreteTrajectoryXYZ();
               double time_at_start =
                   rendered_segments.IteratorGetDiscreteTrajectoryTime();
               if (is_burn &&
@@ -2521,7 +2521,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                      MapObject.ObjectType.DescendingNode),
           plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
-          approaches_iterator.DiscreteTrajectoryPoints(),
+          approaches_iterator.DistinguishedPoints(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.Prediction,
                                      MapObject.ObjectType.ApproachIntersect),
@@ -2540,13 +2540,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                           out DisposableIterator
                                                   periapsis_iterator);
         map_node_pool_.RenderMarkers(
-            apoapsis_iterator.DiscreteTrajectoryPoints(),
+            apoapsis_iterator.DistinguishedPoints(),
             new MapNodePool.Provenance(vessel_guid,
                                        MapNodePool.NodeSource.Prediction,
                                        MapObject.ObjectType.Apoapsis),
             plotting_frame_selector_);
         map_node_pool_.RenderMarkers(
-            periapsis_iterator.DiscreteTrajectoryPoints(),
+            periapsis_iterator.DistinguishedPoints(),
             new MapNodePool.Provenance(vessel_guid,
                                        MapNodePool.NodeSource.Prediction,
                                        MapObject.ObjectType.Periapsis),
@@ -2606,7 +2606,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                      MapObject.ObjectType.DescendingNode),
           plotting_frame_selector_);
       map_node_pool_.RenderMarkers(
-          approaches_iterator.DiscreteTrajectoryPoints(),
+          approaches_iterator.DistinguishedPoints(),
           new MapNodePool.Provenance(vessel_guid,
                                      MapNodePool.NodeSource.FlightPlan,
                                      MapObject.ObjectType.ApproachIntersect),
@@ -2625,13 +2625,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                           out DisposableIterator
                                                   periapsis_iterator);
         map_node_pool_.RenderMarkers(
-            apoapsis_iterator.DiscreteTrajectoryPoints(),
+            apoapsis_iterator.DistinguishedPoints(),
             new MapNodePool.Provenance(vessel_guid,
                                        MapNodePool.NodeSource.FlightPlan,
                                        MapObject.ObjectType.Apoapsis),
             plotting_frame_selector_);
         map_node_pool_.RenderMarkers(
-            periapsis_iterator.DiscreteTrajectoryPoints(),
+            periapsis_iterator.DistinguishedPoints(),
             new MapNodePool.Provenance(vessel_guid,
                                        MapNodePool.NodeSource.FlightPlan,
                                        MapObject.ObjectType.Periapsis),

@@ -9,6 +9,7 @@
 
 #include "base/algebra.hpp"
 #include "base/array.hpp"
+#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
@@ -17,7 +18,6 @@
 #include "numerics/elementary_functions.hpp"
 #include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
-#include "physics/degrees_of_freedom.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -36,7 +36,6 @@ using namespace principia::numerics::_approximation;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
-using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
@@ -61,8 +60,8 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     typename DiscreteTrajectory<Frame>::iterator const end,
                     Instant const& t_max,
                     int const max_points,
-                    DiscreteTrajectory<Frame>& apoapsides,
-                    DiscreteTrajectory<Frame>& periapsides) {
+                    DistinguishedPoints<Frame>& apoapsides,
+                    DistinguishedPoints<Frame>& periapsides) {
   std::optional<Instant> previous_time;
   std::optional<DegreesOfFreedom<Frame>> previous_degrees_of_freedom;
   std::optional<Square<Length>> previous_squared_distance;
@@ -110,14 +109,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       // time interval.  This is normally the case, but it can fail due to
       // ill-conditioning.
       Instant apsis_time;
-      int valid_extrema = 0;
-      for (auto const& extremum : extrema) {
-        if (extremum > *previous_time && extremum <= time) {
-          apsis_time = extremum;
-          ++valid_extrema;
-        }
-      }
-      if (valid_extrema != 1) {
+      if (extrema.size() != 1) {
         // Something went wrong when finding the extrema of
         // `squared_distance_approximation`. Use a linear interpolation of
         // `squared_distance_derivative` instead.
@@ -130,6 +122,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
             << "Suspicious apsis at the beginning of a time interval: "
             << apsis_time;
       }
+      apsis_time = extrema.back();
 
       // This can happen for instance if the square distance is stationary.
       // Safer to give up.
@@ -147,9 +140,9 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       DegreesOfFreedom<Frame> const apsis_degrees_of_freedom =
           trajectory.EvaluateDegreesOfFreedom(apsis_time);
       if (Sign(squared_distance_derivative).is_negative()) {
-        apoapsides.Append(apsis_time, apsis_degrees_of_freedom).IgnoreError();
+        apoapsides.emplace(apsis_time, apsis_degrees_of_freedom);
       } else {
-        periapsides.Append(apsis_time, apsis_degrees_of_freedom).IgnoreError();
+        periapsides.emplace(apsis_time, apsis_degrees_of_freedom);
       }
       if (apoapsides.size() >= max_points && periapsides.size() >= max_points) {
         break;
@@ -168,8 +161,8 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
     RotatingBody<Frame> const& reference_body,
     Trajectory<Frame> const& reference,
     Trajectory<Frame> const& trajectory,
-    DiscreteTrajectory<Frame> const& apoapsides,
-    DiscreteTrajectory<Frame> const& periapsides) {
+    DistinguishedPoints<Frame> const& apoapsides,
+    DistinguishedPoints<Frame> const& periapsides) {
   auto squared_distance_from_centre = [&reference,
                                        &trajectory](Instant const& time) {
     Position<Frame> const body_position =
@@ -379,7 +372,7 @@ std::vector<Interval<Instant>> ComputeCollisionIntervals(
 }
 
 template<typename Frame>
-std::optional<typename DiscreteTrajectory<Frame>::value_type>
+std::optional<typename DistinguishedPoints<Frame>::value_type>
 ComputeFirstCollision(
     RotatingBody<Frame> const& reference_body,
     Trajectory<Frame> const& reference,
@@ -468,7 +461,7 @@ ComputeFirstCollision(
       stop);
   if (first_collision_time.has_value()) {
     // The first collision.
-    return typename DiscreteTrajectory<Frame>::value_type(
+    return typename DistinguishedPoints<Frame>::value_type(
         *first_collision_time,
         trajectory.EvaluateDegreesOfFreedom(*first_collision_time));
   } else {
@@ -485,8 +478,8 @@ absl::Status ComputeNodes(
     Instant const& t_max,
     Vector<double, Frame> const& north,
     int const max_points,
-    DiscreteTrajectory<Frame>& ascending,
-    DiscreteTrajectory<Frame>& descending,
+    DistinguishedPoints<Frame>& ascending,
+    DistinguishedPoints<Frame>& descending,
     Predicate predicate) {
   static_assert(
       std::is_convertible<decltype(predicate(
@@ -519,8 +512,8 @@ absl::Status ComputeNodes(
           {*previous_z_speed, z_speed});
 
       Instant node_time;
-      if (Sign(z_approximation.Evaluate(*previous_time)) ==
-          Sign(z_approximation.Evaluate(time))) {
+      if (Sign(z_approximation(*previous_time)) ==
+          Sign(z_approximation(time))) {
         // The Hermite approximation is poorly conditioned, let's use a linear
         // approximation
         node_time = Barycentre({*previous_time, time}, {z, -*previous_z});
@@ -529,7 +522,7 @@ absl::Status ComputeNodes(
         // method.
         node_time = Brent(
             [&z_approximation](Instant const& t) {
-              return z_approximation.Evaluate(t);
+              return z_approximation(t);
             },
             *previous_time,
             time);
@@ -542,9 +535,9 @@ absl::Status ComputeNodes(
             Sign(z_speed)) {
           // `north` is up and we are going up, or `north` is down and we are
           // going down.
-          ascending.Append(node_time, node_degrees_of_freedom).IgnoreError();
+          ascending.emplace(node_time, node_degrees_of_freedom);
         } else {
-          descending.Append(node_time, node_degrees_of_freedom).IgnoreError();
+          descending.emplace(node_time, node_degrees_of_freedom);
         }
         if (ascending.size() >= max_points && descending.size() >= max_points) {
           break;

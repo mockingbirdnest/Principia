@@ -21,48 +21,76 @@ using namespace principia::quantities::_tuples;
 template<typename LTuple, typename RTuple,
          typename = std::make_index_sequence<
              std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
-class CartesianProductAdditiveGroup;
+class CartesianProductAddition;
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
-class CartesianProductAdditiveGroup<LTuple, RTuple,
-                                    std::index_sequence<indices...>> {
-  // The types of the result of addition and subtraction, with suitable
-  // specializations for the void case of Apply.
+class CartesianProductAddition<LTuple, RTuple,
+                               std::index_sequence<indices...>> {
+  // The type of the result of addition, with suitable specializations for the
+  // void case of Apply.
   template<typename L, typename R>
   struct TypesGenerator {
     using Sum = base::_algebra::Sum<L, R>;
-    using Difference = base::_algebra::Difference<L, R>;
   };
   template<typename L>
   struct TypesGenerator<L, void> {
     using Sum = L;
-    using Difference = L;
   };
   template<typename R>
   struct TypesGenerator<void, R> {
     using Sum = R;
-    using Difference = R;
   };
 
-  // Aliases for use as the transform in Apply2.
+  // Alias for use as the transform in Apply2.
   template<typename L, typename R>
   using Sum = typename TypesGenerator<L, R>::Sum;
-  template<typename L, typename R>
-  using Difference = typename TypesGenerator<L, R>::Difference;
 
  public:
   FORCE_INLINE(static constexpr) Apply<Sum, LTuple, RTuple> Add(
       LTuple const& left,
       RTuple const& right);
+
+ private:
+  // Utility for adding elements at the given index.
+  template<std::size_t index>
+  static constexpr std::tuple_element_t<index, Apply<Sum, LTuple, RTuple>>
+  AddElement(LTuple const& left, RTuple const& right);
+};
+
+template<typename LTuple, typename RTuple,
+         typename = std::make_index_sequence<
+             std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
+class CartesianProductSubtraction;
+
+template<typename LTuple, typename RTuple, std::size_t... indices>
+class CartesianProductSubtraction<LTuple, RTuple,
+                                  std::index_sequence<indices...>> {
+  // The type of the result of subtraction, with suitable specializations for
+  // the void case of Apply.
+  template<typename L, typename R>
+  struct TypesGenerator {
+    using Difference = base::_algebra::Difference<L, R>;
+  };
+  template<typename L>
+  struct TypesGenerator<L, void> {
+    using Difference = L;
+  };
+  template<typename R>
+  struct TypesGenerator<void, R> {
+    using Difference = R;
+  };
+
+  // Alias for use as the transform in Apply2.
+  template<typename L, typename R>
+  using Difference = typename TypesGenerator<L, R>::Difference;
+
+ public:
   FORCE_INLINE(static constexpr) Apply<Difference, LTuple, RTuple> Subtract(
       LTuple const& left,
       RTuple const& right);
 
  private:
-  // Utilities for adding/subtracting elements at the given index.
-  template<std::size_t index>
-  static constexpr std::tuple_element_t<index, Apply<Sum, LTuple, RTuple>>
-  AddElement(LTuple const& left, RTuple const& right);
+  // Utility for subtracting elements at the given index.
   template<std::size_t index>
   static constexpr std::tuple_element_t<index,
                                         Apply<Difference, LTuple, RTuple>>
@@ -70,7 +98,7 @@ class CartesianProductAdditiveGroup<LTuple, RTuple,
 };
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
-constexpr auto CartesianProductAdditiveGroup<
+constexpr auto CartesianProductAddition<
     LTuple, RTuple,
     std::index_sequence<indices...>>::Add(LTuple const& left,
                                           RTuple const& right)
@@ -79,17 +107,8 @@ constexpr auto CartesianProductAdditiveGroup<
 }
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
-constexpr auto CartesianProductAdditiveGroup<
-    LTuple, RTuple,
-    std::index_sequence<indices...>>::Subtract(LTuple const& left,
-                                               RTuple const& right)
-    -> Apply<Difference, LTuple, RTuple> {
-  return {SubtractElement<indices>(left, right)...};
-}
-
-template<typename LTuple, typename RTuple, std::size_t... indices>
 template<std::size_t index>
-constexpr auto CartesianProductAdditiveGroup<
+constexpr auto CartesianProductAddition<
     LTuple, RTuple,
     std::index_sequence<indices...>>::AddElement(LTuple const& left,
                                                  RTuple const& right)
@@ -105,8 +124,17 @@ constexpr auto CartesianProductAdditiveGroup<
 }
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
+constexpr auto CartesianProductSubtraction<
+    LTuple, RTuple,
+    std::index_sequence<indices...>>::Subtract(LTuple const& left,
+                                               RTuple const& right)
+    -> Apply<Difference, LTuple, RTuple> {
+  return {SubtractElement<indices>(left, right)...};
+}
+
+template<typename LTuple, typename RTuple, std::size_t... indices>
 template<std::size_t index>
-constexpr auto CartesianProductAdditiveGroup<
+constexpr auto CartesianProductSubtraction<
     LTuple, RTuple,
     std::index_sequence<indices...>>::SubtractElement(LTuple const& left,
                                                       RTuple const& right)
@@ -255,8 +283,8 @@ class PolynomialRing {
       typename ConsGenerator<Zero, LTupleRTailProduct>::Type;
 
   using Result =
-      decltype(CartesianProductAdditiveGroup<LTupleRHeadProduct,
-                                             ZeroLTupleRTailProduct>::
+      decltype(CartesianProductAddition<LTupleRHeadProduct,
+                                        ZeroLTupleRTailProduct>::
                    Add(std::declval<LTupleRHeadProduct>(),
                        std::declval<ZeroLTupleRTailProduct>()));
 
@@ -385,21 +413,21 @@ template<typename RTuple>
 FORCE_INLINE(constexpr)
 auto operator-(RTuple const& right) {
   std::tuple<> zero;
-  return internal::CartesianProductAdditiveGroup<decltype(zero), RTuple>::
+  return internal::CartesianProductSubtraction<decltype(zero), RTuple>::
       Subtract(zero, right);
 }
 
 template<typename LTuple, typename RTuple>
 FORCE_INLINE(constexpr)
 auto operator+(LTuple const& left, RTuple const& right) {
-  return internal::CartesianProductAdditiveGroup<LTuple, RTuple>::
+  return internal::CartesianProductAddition<LTuple, RTuple>::
       Add(left, right);
 }
 
 template<typename LTuple, typename RTuple>
 FORCE_INLINE(constexpr)
 auto operator-(LTuple const& left, RTuple const& right) {
-  return internal::CartesianProductAdditiveGroup<LTuple, RTuple>::
+  return internal::CartesianProductSubtraction<LTuple, RTuple>::
       Subtract(left, right);
 }
 

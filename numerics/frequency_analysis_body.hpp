@@ -284,7 +284,7 @@ IncrementalProjection(
   // This is logically R in the QR decomposition of basis.
   UnboundedUpperTriangularMatrix<double> r(basis_size, uninitialized);
 
-  ResultSeries F(result_zero, {{}});
+  ResultSeries F(result_zero, {});
 
   // The input function with a degree suitable for the augmented Gram-Schmidt
   // step.  Updated by the augmented Gram-Schmidt step.
@@ -294,7 +294,7 @@ IncrementalProjection(
   int m_begin = 0;
   for (;;) {
     for (int m = m_begin; m < basis_size; ++m) {
-      BasisSeries qₘ(basis_zero, {{}});
+      BasisSeries qₘ(basis_zero, {});
       UnboundedVector<double> rₘ(m + 1);
 
       auto const status = NormalGramSchmidtStep(/*aₘ=*/basis[m],
@@ -330,7 +330,7 @@ IncrementalProjection(
     // conditioned (note that we don't use R on that path).
 #if PRINCIPIA_USE_R
     auto const x = BackSubstitution(r, z);
-    F = ResultSeries(result_zero, {{}});
+    F = ResultSeries(result_zero, {});
     auto f = function - F;
     for (int i = 0; i < x.size(); ++i) {
       auto const x_basis = x[i] * basis[i];
@@ -338,7 +338,7 @@ IncrementalProjection(
       f -= x_basis;
     }
 #else
-    F = ResultSeries(result_zero, {{}});
+    F = ResultSeries(result_zero, {});
     auto const f = b;
     for (int i = 0; i < z.size(); ++i) {
       F += z[i] * q[i];

@@ -83,7 +83,6 @@ class OrbitalElementsBenchmark : public benchmark::Fixture {
     DiscreteTrajectory<ICRS> icrs_trajectory;
     icrs_trajectory.segments().front().SetDownsampling(
         DiscreteTrajectorySegment<ICRS>::DownsamplingParameters{
-            .max_dense_intervals = 10'000,
             .tolerance = 1 * Milli(Metre),
         });
     KeplerOrbit<GCRS> const initial_osculating_orbit{

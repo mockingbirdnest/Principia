@@ -626,7 +626,7 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
     LOG_IF(WARNING, is_pre_hamilton)
         << "Reading pre-Hamilton DiscreteTrajectory";
     ReadFromPreHamiltonMessage(
-        message, tracked, /*fork_point=*/std::nullopt, trajectory);
+        message, tracked, /*fork_point=*/nullptr, trajectory);
     CHECK_OK(trajectory.ConsistencyStatus());
     return trajectory;
   }
@@ -855,22 +855,9 @@ void DiscreteTrajectory<Frame>::AdjustAfterSplicing(
 template<typename Frame>
 void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
-    DownsamplingParameters& downsampling_parameters,
-    Instant& start_of_dense_timeline) {
-  bool const is_pre_haar = message.has_start_of_dense_timeline();
-  LOG_IF(WARNING, is_pre_haar)
-      << "Reading pre-Haar DiscreteTrajectory.Downsampling";
-
+    DownsamplingParameters& downsampling_parameters) {
   downsampling_parameters = {
-      .max_dense_intervals = message.max_dense_intervals(),
       .tolerance = Length::ReadFromMessage(message.tolerance())};
-  if (is_pre_haar) {
-    start_of_dense_timeline =
-        Instant::ReadFromMessage(message.start_of_dense_timeline());
-  } else {
-    start_of_dense_timeline =
-        Instant::ReadFromMessage(message.dense_timeline(0));
-  }
 }
 
 template<typename Frame>
@@ -889,7 +876,7 @@ DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
   // iterator.
   auto sit = --trajectory.segments_->end();
   ReadFromPreHamiltonMessage(
-      message.trajectories(0), tracked, fork_point, trajectory);
+      message.trajectories(0), tracked, &fork_point, trajectory);
   ++sit;
 
   return SegmentIterator(trajectory.segments_.get(), sit);
@@ -899,7 +886,7 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory const& message,
     std::vector<SegmentIterator*> const& tracked,
-    std::optional<value_type> const& fork_point,
+    value_type const* const fork_point,
     DiscreteTrajectory& trajectory) {
   bool const is_pre_frobenius = !message.has_zfp();
   LOG_IF(WARNING, is_pre_frobenius)
@@ -920,12 +907,9 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     }
     if (message.has_downsampling()) {
       DownsamplingParameters downsampling_parameters;
-      Instant start_of_dense_timeline;
       ReadFromPreHamiltonMessage(message.downsampling(),
-                                 downsampling_parameters,
-                                 start_of_dense_timeline);
+                                 downsampling_parameters);
       sit->SetDownsamplingUnconditionally(downsampling_parameters);
-      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
     }
   } else {
     // Starting with Frobenius we use ZFP so the easiest is to build a
@@ -937,37 +921,30 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     *serialized_segment.mutable_exact() = message.exact();
 
     DownsamplingParameters downsampling_parameters;
-    Instant start_of_dense_timeline;
     if (message.has_downsampling()) {
       ReadFromPreHamiltonMessage(message.downsampling(),
-                                 downsampling_parameters,
-                                 start_of_dense_timeline);
+                                 downsampling_parameters);
       auto* const serialized_downsampling_parameters =
           serialized_segment.mutable_downsampling_parameters();
-      serialized_downsampling_parameters->set_max_dense_intervals(
-          downsampling_parameters.max_dense_intervals);
       downsampling_parameters.tolerance.WriteToMessage(
           serialized_downsampling_parameters->mutable_tolerance());
-      serialized_segment.set_number_of_dense_points(0);  // Overridden later.
     }
     *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
                                                              self);
-    if (message.has_downsampling()) {
-      sit->SetStartOfDenseTimeline(start_of_dense_timeline);
-    }
   }
 
   // Create the duplicated point if needed.
-  if (fork_point.has_value()) {
-    sit->SetForkPoint(fork_point.value());
+  if (fork_point != nullptr) {
+    sit->SetForkPoint(*fork_point);
   }
 
   // Restore the (single) child as the next segment.
   if (message.children_size() == 1) {
-    auto const child = ReadFromPreHamiltonMessage(message.children(0),
-                                                  tracked,
-                                                  /*fork_point=*/*sit->rbegin(),
-                                                  trajectory);
+    auto const child =
+        ReadFromPreHamiltonMessage(message.children(0),
+                                   tracked,
+                                   /*fork_point=*/*sit->rbegin(),
+                                   trajectory);
 
     // There were no fork positions prior to Буняковский.
     bool const has_fork_position = message.fork_position_size() > 0;

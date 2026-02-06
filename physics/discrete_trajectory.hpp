@@ -43,6 +43,7 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   using value_type = typename Timeline<Frame>::value_type;
 
   using iterator = DiscreteTrajectoryIterator<Frame>;
+  using const_iterator = DiscreteTrajectoryIterator<Frame>;
   using reference = value_type const&;
   using reverse_iterator = std::reverse_iterator<iterator>;
   using SegmentIterator = DiscreteTrajectorySegmentIterator<Frame>;
@@ -182,12 +183,10 @@ class DiscreteTrajectory : public Trajectory<Frame> {
       typename Segments::iterator to_segments_begin);
 
   // Reads a pre-Hamilton downsampling message and return the downsampling
-  // parameters and the start of the dense timeline.  The latter will have to be
-  // converted to a number of points based on the deserialized timeline.
+  // parameters.
   static void ReadFromPreHamiltonMessage(
       serialization::DiscreteTrajectory::Downsampling const& message,
-      DownsamplingParameters& downsampling_parameters,
-      Instant& start_of_dense_timeline);
+      DownsamplingParameters& downsampling_parameters);
 
   // Reads a set of pre-Hamilton children.  Checks that there is only one child,
   // and that it is at the end of the preceding segment.  Append a segment to
@@ -199,11 +198,11 @@ class DiscreteTrajectory : public Trajectory<Frame> {
       DiscreteTrajectory& trajectory);
 
   // Reads a pre-Hamilton trajectory, updating the tracked segments as needed.
-  // If this is not the root of the trajectory, fork_point is set.
+  // If this is the root of the trajectory, fork_point is `nullptr`.
   static void ReadFromPreHamiltonMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<SegmentIterator*> const& tracked,
-      std::optional<value_type> const& fork_point,
+      value_type const* fork_point,
       DiscreteTrajectory& trajectory);
 
   // We need a level of indirection here to make sure that the pointer to

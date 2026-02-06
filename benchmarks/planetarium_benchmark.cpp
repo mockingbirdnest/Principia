@@ -301,9 +301,7 @@ class Satellites {
   DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
   DownsamplingParameters() {
     return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
-        .max_dense_intervals = 10'000,
-        .tolerance = 10 * Metre,
-    };
+        .tolerance = 10 * Metre};
   }
 
   not_null<std::unique_ptr<SolarSystem<Barycentric>>> const solar_system_;
