@@ -91,6 +91,12 @@ TEST_F(QuantitiesTest, IsFinite) {
   EXPECT_FALSE(IsFinite((0 * Gallon) / l));
 }
 
+TEST_F(QuantitiesTest, SIUnitReference) {
+  Length l1 = 1 * Foot;
+  Length const& l2 = l1;
+  EXPECT_EQ(1 * Metre, si::Unit<decltype(l2)>);
+}
+
 TEST_F(QuantitiesDeathTest, SerializationError) {
   EXPECT_DEATH({
     serialization::Quantity message;
