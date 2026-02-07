@@ -100,7 +100,7 @@ class Quantity final {
       Quantity<RDimensions> const& right);
 
   template<typename Q>
-  friend constexpr Q SIUnit();
+  friend constexpr std::remove_reference_t<Q> SIUnit();
 
   template<typename Dimensions>
   friend __m128d ToM128D(Quantity<Dimensions> x);
@@ -125,7 +125,9 @@ operator/(double, Quantity<RDimensions> const&);
 // Used for implementing `si::Unit`.  Don't call directly, don't export from
 // this namespace.  Defined here to break circular dependencies.
 template<typename Q>
-constexpr Q SIUnit() { return Q(1); };
+constexpr std::remove_reference_t<Q> SIUnit() {
+  return std::remove_reference_t<Q>(1);
+};
 
 inline __m128d ToM128D(double x);
 
