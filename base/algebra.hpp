@@ -117,6 +117,8 @@ concept ring = homogeneous_ring<A> && requires(A x, A y) {
   { A::Identity() } -> std::same_as<A>;
 });
 
+// `field_axioms` implies `homogeneous_field`; `field` requires both so that it
+// subsumes `homogeneous_field`.
 template<typename K>
 concept field_axioms = ring<K> &&
     !std::numeric_limits<K>::is_integer && requires(K x, K y, K z) {
