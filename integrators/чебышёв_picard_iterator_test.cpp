@@ -102,7 +102,8 @@ SolvedInitialValueProblem TangentProblem() {
   return SolvedInitialValueProblem{
       .problem = problem,
       .solution = [](Instant const& t) -> std::tuple<Point<Length>> {
-        return Tan(π / 8 * ((t - Instant()) / Second + 1) * Radian) * Metre + Point<Length>();
+        return Tan(π / 8 * ((t - Instant()) / Second + 1) * Radian) * Metre +
+               Point<Length>();
       }};
 }
 
@@ -148,7 +149,8 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
 
         return (-γ * (t - Instant()) / Second +
                 2 / ε * ArcTan((β + σ * Cos(φ)) / (1 + σ * Sin(φ))) / Radian) *
-               Metre + Point<Length>();
+                   Metre +
+               Point<Length>();
       }};
 }
 
