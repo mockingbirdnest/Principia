@@ -1,7 +1,5 @@
 #pragma once
 
-#include "integrators/чебышёв_picard_iterator.hpp"
-
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -11,6 +9,7 @@
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "geometry/sign.hpp"
+#include "integrators/чебышёв_picard_iterator.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_views.hpp"
 #include "quantities/si.hpp"
@@ -37,7 +36,9 @@ ODE::DependentVariables DependentVariablesFromMatrixRow(
   std::int64_t j = 0;
   typename ODE::DependentVariables y;
   for_all_of(y).loop([&j, &matrix, row](auto& yⱼ) {
-    yⱼ = matrix(row, j++) * si::Unit<std::remove_reference_t<decltype(yⱼ)>>;
+    yⱼ = matrix(row, j++) *
+             si::Unit<std::remove_reference_t<decltype(yⱼ - yⱼ)>> +
+         std::remove_reference_t<decltype(yⱼ)>();
   });
   return y;
 }
@@ -114,7 +115,8 @@ absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
     // Set the boundary condition and store it in CₓX₀_.
     std::int64_t j = 0;
     for_all_of(current_state.y).loop([this, &j](auto const& yⱼ) {
-      CₓX₀_(0, j++) = yⱼ.value / si::Unit<decltype(yⱼ.value)>;
+      CₓX₀_(0, j++) = (yⱼ.value - decltype(yⱼ.value)()) /
+                      si::Unit<decltype(yⱼ.value - yⱼ.value)>;
     });
     for (std::int64_t i = 1; i <= M; ++i) {
       for (std::int64_t j = 0; j < n; ++j) {

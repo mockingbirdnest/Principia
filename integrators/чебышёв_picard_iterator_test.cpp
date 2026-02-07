@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "geometry/instant.hpp"
+#include "geometry/point.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -25,6 +26,7 @@ using ::testing::Types;
 using ::testing::Values;
 
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_point;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_чебышёв_picard_iterator;
@@ -35,7 +37,8 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 
-using ODE = ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length>;
+using ODE =
+    ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Point<Length>>;
 
 namespace {
 
@@ -61,18 +64,18 @@ SolvedInitialValueProblem LinearProblem() {
          ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
         auto& [yʹ] = dependent_variable_derivatives;
-        yʹ = y / Second;
+        yʹ = (y - Point<Length>()) / Second;
         return absl::OkStatus();
       };
 
   InitialValueProblem<ODE> problem;
   problem.equation = linear_ode;
-  problem.initial_state = {Instant(), {1 * Metre}};
+  problem.initial_state = {Instant(), {Point<Length>() + 1 * Metre}};
 
   return SolvedInitialValueProblem{
       .problem = problem,
-      .solution = [](Instant const& t) -> std::tuple<Length> {
-        return std::exp((t - Instant()) / Second) * Metre;
+      .solution = [](Instant const& t) -> std::tuple<Point<Length>> {
+        return std::exp((t - Instant()) / Second) * Metre + Point<Length>();
       }};
 }
 
@@ -86,19 +89,20 @@ SolvedInitialValueProblem TangentProblem() {
          ODE::DependentVariables const& dependent_variables,
          ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
+        double const y_unitless = (y - Point<Length>()) / Metre;
         auto& [yʹ] = dependent_variable_derivatives;
-        yʹ = π / 8 * (1 + y * y / (Metre * Metre)) * Metre / Second;
+        yʹ = π / 8 * (1 + y_unitless * y_unitless) * Metre / Second;
         return absl::OkStatus();
       };
 
   InitialValueProblem<ODE> problem;
   problem.equation = ode;
-  problem.initial_state = {Instant() - 1 * Second, {0 * Metre}};
+  problem.initial_state = {Instant() - 1 * Second, {Point<Length>()}};
 
   return SolvedInitialValueProblem{
       .problem = problem,
-      .solution = [](Instant const& t) -> std::tuple<Length> {
-        return Tan(π / 8 * ((t - Instant()) / Second + 1) * Radian) * Metre;
+      .solution = [](Instant const& t) -> std::tuple<Point<Length>> {
+        return Tan(π / 8 * ((t - Instant()) / Second + 1) * Radian) * Metre + Point<Length>();
       }};
 }
 
@@ -120,15 +124,16 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
           ODE::DependentVariables const& dependent_variables,
           ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
+        double const y_unitless = (y - Point<Length>()) / Metre;
         auto& [yʹ] = dependent_variable_derivatives;
-        yʹ = Cos(((t - Instant()) / Second + ε * y / Metre) * Radian) * Metre /
+        yʹ = Cos(((t - Instant()) / Second + ε * y_unitless) * Radian) * Metre /
              Second;
         return absl::OkStatus();
       };
 
   InitialValueProblem<ODE> problem;
   problem.equation = ode;
-  problem.initial_state = {Instant(), {y₀ * Metre}};
+  problem.initial_state = {Instant(), {y₀ * Metre + Point<Length>()}};
 
   const double one_plus_sqrt_one_minus_ε² = 1 + Sqrt(1 - ε * ε);
   const double α = 2 * ε / (one_plus_sqrt_one_minus_ε² - ε);
@@ -137,13 +142,13 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
 
   return SolvedInitialValueProblem{
       .problem = problem,
-      .solution = [ε, α, β, γ](Instant const& t) -> std::tuple<Length> {
+      .solution = [ε, α, β, γ](Instant const& t) -> std::tuple<Point<Length>> {
         const Angle φ = 0.5 * (1 - γ * ε) * (t - Instant()) / Second * Radian;
         const double σ = α * (Sin(φ) + β * Cos(φ));
 
         return (-γ * (t - Instant()) / Second +
                 2 / ε * ArcTan((β + σ * Cos(φ)) / (1 + σ * Sin(φ))) / Radian) *
-               Metre;
+               Metre + Point<Length>();
       }};
 }
 
