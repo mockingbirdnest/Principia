@@ -83,6 +83,8 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
              Time const& step,
              ЧебышёвPicardIterator const& integrator);
 
+    static constexpr std::int64_t M = Method::M;
+
     // The dimension of the ODE.
     static constexpr std::int64_t n =
         std::tuple_size_v<typename ODE::DependentVariables>;
@@ -96,15 +98,15 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
     std::vector<typename ODE::IndependentVariable> t_;
 
     // Controls the boundary condition.
-    FixedMatrix<double, Method::M + 1, n> CₓX₀_;
+    FixedMatrix<double, M + 1, n> CₓX₀_;
 
     // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
     // variables at each node.
-    FixedMatrix<double, Method::M + 1, n> Xⁱ_;
-    FixedMatrix<double, Method::M + 1, n> Xⁱ⁺¹_;
+    FixedMatrix<double, M + 1, n> Xⁱ_;
+    FixedMatrix<double, M + 1, n> Xⁱ⁺¹_;
 
     // The computed derivative (at each node, for the current iteration).
-    FixedMatrix<double, Method::M + 1, n> yʹ_;
+    FixedMatrix<double, M + 1, n> yʹ_;
 
     friend class ЧебышёвPicardIterator;
   };
@@ -123,15 +125,18 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
 
  private:
+  static constexpr std::int64_t M = Method::M;
+  static constexpr std::int64_t N = Method::N;
+
   ЧебышёвPicardIterationParams params_;
 
   // The nodes used for function evaluation.
   //
   // These are Чебышёв nodes of the second kind.
-  FixedVector<double, Method::M + 1> nodes_;
+  FixedVector<double, M + 1> nodes_;
 
   // The product of 1.31a and 1.31b from [Mac15].
-  FixedMatrix<double, Method::M + 1, Method::M + 1> CₓCα_;
+  FixedMatrix<double, M + 1, M + 1> CₓCα_;
 };
 
 }  // namespace internal

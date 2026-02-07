@@ -192,10 +192,10 @@ struct AsSymplecticRungeKuttaNyström {
 // the actual number of nodes is M + 1.
 //
 // N is the order of the Чебышёв series used to approximate the system state.
-template<std::int64_t _M, std::int64_t _N = _M>
+template<std::int64_t M_, std::int64_t N_ = M_>
 struct ЧебышёвPicard : not_constructible {
-  static constexpr std::int64_t M = _M;
-  static constexpr std::int64_t N = _N;
+  static constexpr std::int64_t M = M_;
+  static constexpr std::int64_t N = N_;
 
   static_assert(M >= 1);
   static_assert(N >= 1);
