@@ -1,12 +1,13 @@
 #include "base/algebra.hpp"
 
+#include <chrono>
 #include <string>
 
 #include "base/multiprecision.hpp"
 #include "geometry/instant.hpp"
 #include "gtest/gtest.h"
+#include "numerics/polynomial_in_monomial_basis.hpp"
 #include "quantities/quantities.hpp"
-#include "testing_utilities/check_well_formedness.hpp"
 
 namespace principia {
 namespace base {
@@ -14,6 +15,7 @@ namespace base {
 using namespace principia::base::_algebra;
 using namespace principia::base::_multiprecision;
 using namespace principia::geometry::_instant;
+using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_quantities;
 
 TEST(Concepts, Algebra) {
@@ -25,10 +27,12 @@ TEST(Concepts, Algebra) {
 
   static_assert(!additive_group<std::string>);
   static_assert(!additive_group<std::byte*>);
+  static_assert(additive_group<std::chrono::seconds>);
   static_assert(additive_group<Length>);
   static_assert(additive_group<int>);
   static_assert(additive_group<double>);
 
+  static_assert(!homogeneous_ring<std::chrono::seconds>);
   static_assert(homogeneous_ring<Length>);
   static_assert(homogeneous_ring<int>);
   static_assert(homogeneous_ring<double>);
@@ -87,6 +91,10 @@ constexpr std::string_view description(T) {
 
 TEST(Concepts, Subsumption) {
   static_assert(description(Instant{}) == "affine");
+  static_assert(description(std::chrono::seconds{}) ==
+                "additive group");
+  static_assert(description(PolynomialInMonomialBasis<double, double, 3>{}) ==
+                "homogeneous ring");
   static_assert(description(int{}) == "ring");
   static_assert(description(Length{}) == "homogeneous field");
   static_assert(description(double{}) == "field");
