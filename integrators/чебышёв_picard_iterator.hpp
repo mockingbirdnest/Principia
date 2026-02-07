@@ -81,7 +81,8 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
     Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
-             ЧебышёвPicardIterator const& integrator);
+             ЧебышёвPicardIterator const& integrator,
+             ЧебышёвPicardIterationParams const& params);
 
     static constexpr std::int64_t M = Method::M;
 
@@ -90,6 +91,7 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
         std::tuple_size_v<typename ODE::DependentVariables>;
 
     ЧебышёвPicardIterator const& integrator_;
+    ЧебышёвPicardIterationParams params_;
 
     // Working variables which are stored here so we don't need to reallocate
     // them on each Solve call.
@@ -111,15 +113,21 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
     friend class ЧебышёвPicardIterator;
   };
 
-  // Constructs a ЧебышёвPicardIterator with the given parameters.
-  explicit ЧебышёвPicardIterator(ЧебышёвPicardIterationParams const& params);
-
-  ЧебышёвPicardIterationParams const& params() const;
+  // Constructs a ЧебышёвPicardIterator.
+  ЧебышёвPicardIterator();
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
+
+  // Temporary NewInstance overload taking parameters. This will be removed once
+  // instance parameters are added to FixedStepSizeIntegrator.
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
+      InitialValueProblem<ODE> const& problem,
+      AppendState const& append_state,
+      Time const& step,
+      ЧебышёвPicardIterationParams const& params) const;
 
   void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
@@ -127,8 +135,6 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
  private:
   static constexpr std::int64_t M = Method::M;
   static constexpr std::int64_t N = Method::N;
-
-  ЧебышёвPicardIterationParams params_;
 
   // The nodes used for function evaluation.
   //

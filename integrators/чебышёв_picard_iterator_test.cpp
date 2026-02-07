@@ -156,14 +156,15 @@ TEST(ЧебышёвPicardIteratorTest, MultipleSteps) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator(
-      ЧебышёвPicardIterationParams{
-          .max_iterations = 64,
-          .stopping_criterion = 1e-16,
-      });
+  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator;
 
-  auto const instance =
-      integrator.NewInstance(problem.problem, append_state, step);
+  auto instance = integrator.NewInstance(problem.problem,
+                                         append_state,
+                                         step,
+                                         ЧебышёвPicardIterationParams{
+                                             .max_iterations = 64,
+                                             .stopping_criterion = 1e-16,
+                                         });
   auto const t_final = problem.t₀() + 2.5 * step;
 
   EXPECT_OK(instance->Solve(t_final));
@@ -191,14 +192,15 @@ TEST(ЧебышёвPicardIteratorTest, Backwards) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator(
-      ЧебышёвPicardIterationParams{
-          .max_iterations = 64,
-          .stopping_criterion = 2e-16,
-      });
+  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator;
 
-  auto const instance =
-      integrator.NewInstance(problem.problem, append_state, step);
+  auto instance = integrator.NewInstance(problem.problem,
+                                         append_state,
+                                         step,
+                                         ЧебышёвPicardIterationParams{
+                                             .max_iterations = 64,
+                                             .stopping_criterion = 2e-16,
+                                         });
   auto const t_final = problem.t₀() + 2.5 * step;
 
   EXPECT_OK(instance->Solve(t_final));
@@ -226,14 +228,16 @@ TEST(ЧебышёвPicardIteratorTest, Divergence) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator(
+  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator;
+
+  auto instance = integrator.NewInstance(
+      problem.problem,
+      append_state,
+      step,
       ЧебышёвPicardIterationParams{
           .max_iterations = 64,
           .stopping_criterion = 0.1,  // Differences never even get this low!
       });
-
-  auto const instance =
-      integrator.NewInstance(problem.problem, append_state, step);
   auto const t_final = problem.t₀() + step;
 
   EXPECT_THAT(instance->Solve(t_final),
@@ -275,14 +279,16 @@ TYPED_TEST_P(ЧебышёвPicardIteratorParameterizedTest, Convergence) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<typename TypeParam::Method, ODE> const integrator(
+  ЧебышёвPicardIterator<typename TypeParam::Method, ODE> const integrator;
+
+  auto instance = integrator.NewInstance(
+      problem.problem,
+      append_state,
+      step,
       ЧебышёвPicardIterationParams{
           .max_iterations = 64,
           .stopping_criterion = TypeParam::stopping_criterion,
       });
-
-  auto const instance =
-      integrator.NewInstance(problem.problem, append_state, step);
   EXPECT_OK(instance->Solve(problem.t₀() + step));
 
   // Verify the results are close to the known solution.

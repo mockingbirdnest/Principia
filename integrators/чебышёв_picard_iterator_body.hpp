@@ -89,7 +89,6 @@ absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
   auto& current_state = this->current_state_;
   auto const& equation = this->equation_;
   auto const& step = this->step_;
-  auto const& params = integrator_.params();
 
   // Argument checks.
   Sign const integration_direction = Sign(step);
@@ -129,7 +128,7 @@ absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
 
     double previous_norm = std::numeric_limits<float>::infinity();
     bool converged = false;
-    for (int64_t iteration = 0; iteration < params.max_iterations;
+    for (int64_t iteration = 0; iteration < params_.max_iterations;
          ++iteration) {
       // Evaluate the right hand side of the equation.
       for (int64_t i = 0; i < Xⁱ_.rows(); ++i) {
@@ -151,7 +150,7 @@ absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
       // We require that ‖Xⁱ⁺¹ - Xⁱ‖ and ‖Xⁱ - Xⁱ⁻¹‖ are _both_ less than
       // the given tolerance to account for nonlinearity issues (as suggested in
       // [BJ12]).
-      if (std::max(norm, previous_norm) < params.stopping_criterion) {
+      if (std::max(norm, previous_norm) < params_.stopping_criterion) {
         converged = true;
         break;
       }
@@ -199,8 +198,10 @@ template<typename Method, typename ODE_>
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
-    ЧебышёвPicardIterator const& integrator)
+    ЧебышёвPicardIterator const& integrator,
+    ЧебышёвPicardIterationParams const& params)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
+      params_(params),
       integrator_(integrator),
       CₓX₀_(uninitialized),
       Xⁱ_(uninitialized),
@@ -210,9 +211,8 @@ template<typename Method, typename ODE_>
 }
 
 template<typename Method, typename ODE_>
-ЧебышёвPicardIterator<Method, ODE_>::ЧебышёвPicardIterator(
-    ЧебышёвPicardIterationParams const& params)
-    : params_(params), nodes_(uninitialized), CₓCα_(uninitialized) {
+ЧебышёвPicardIterator<Method, ODE_>::ЧебышёвPicardIterator()
+    : nodes_(uninitialized), CₓCα_(uninitialized) {
   // We use the notation from [Mac15], section 1.4.3.
 
   // Populate nodes.
@@ -297,9 +297,13 @@ template<typename Method, typename ODE_>
 }
 
 template<typename Method, typename ODE_>
-ЧебышёвPicardIterationParams const&
-ЧебышёвPicardIterator<Method, ODE_>::params() const {
-  return params_;
+not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
+ЧебышёвPicardIterator<Method, ODE_>::NewInstance(
+    InitialValueProblem<ODE_> const& problem,
+    AppendState const& append_state,
+    Time const& step) const {
+  return NewInstance(
+      problem, append_state, step, ЧебышёвPicardIterationParams());
 }
 
 template<typename Method, typename ODE_>
@@ -307,11 +311,12 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 ЧебышёвPicardIterator<Method, ODE_>::NewInstance(
     InitialValueProblem<ODE_> const& problem,
     AppendState const& append_state,
-    Time const& step) const {
+    Time const& step,
+    ЧебышёвPicardIterationParams const& params) const {
   // Cannot use `make_not_null_unique` because the constructor of `Instance` is
   // private.
   return std::unique_ptr<Instance>(
-      new Instance(problem, append_state, step, *this));
+      new Instance(problem, append_state, step, *this, params));
 }
 
 template<typename Method, typename ODE_>
