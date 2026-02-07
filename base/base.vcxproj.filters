@@ -317,7 +317,7 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="algebra_test.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
