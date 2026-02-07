@@ -1378,13 +1378,17 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   trajectory1.WriteToMessage(&message, /*tracked=*/{}, /*exact=*/{});
   std::string uncompressed;
   message.SerializePartialToString(&uncompressed);
-  EXPECT_EQ(21'596, uncompressed.size());
+  EXPECT_THAT(uncompressed.size(),
+              AnyOf(21'596,    // Windows, Ubuntu, macOS AVX.
+                    21'588));  // macOS SSE.
 
   std::string compressed;
   auto compressor = google::compression::NewGipfeliCompressor();
   compressor->Compress(uncompressed, &compressed);
 
-  EXPECT_EQ(20'331, compressed.size());
+  EXPECT_THAT(compressed.size(),
+              AnyOf(20'331,    // Windows, Ubuntu, macOS AVX.
+                    20'323));  // macOS SSE.
 
   auto const trajectory2 =
       DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*tracked=*/{});
