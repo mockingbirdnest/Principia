@@ -174,18 +174,10 @@ void Vessel::DetectCollapsibilityChange() {
 
   // It is always correct to mark as non-collapsible a collapsible segment or to
   // append collapsible points to a non-collapsible segment (but not
-  // vice-versa).  If a non-collapsible segment is being closed but is very
-  // short, we don't actually close it but keep appending points to it until it
-  // is long enough to have been downsampled.  If downsampling is disabled,
-  // surely this is not going to happen so no point in waiting for Godot.
+  // vice-versa).
   bool const collapsibility_changes = is_collapsible_ != will_be_collapsible;
-  bool const becomes_non_collapsible = collapsibility_changes &&
-                                       !will_be_collapsible;
-  bool const awaits_first_downsampling = downsampling_parameters_.has_value() &&
-                                         !backstory_->was_downsampled();
 
-  if (collapsibility_changes &&
-      (becomes_non_collapsible || !awaits_first_downsampling)) {
+  if (collapsibility_changes) {
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
 
@@ -694,8 +686,6 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   if (downsampling_parameters_.has_value()) {
     auto* const serialized_downsampling_parameters =
         message->mutable_downsampling_parameters();
-    serialized_downsampling_parameters->set_max_dense_intervals(
-        downsampling_parameters_->max_dense_intervals);
     downsampling_parameters_->tolerance.WriteToMessage(
         serialized_downsampling_parameters->mutable_tolerance());
   }
@@ -856,8 +846,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     if (message.has_downsampling_parameters()) {
       vessel->downsampling_parameters_ =
           DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
-              .max_dense_intervals =
-                  message.downsampling_parameters().max_dense_intervals(),
               .tolerance = Length::ReadFromMessage(
                   message.downsampling_parameters().tolerance())};
     } else {

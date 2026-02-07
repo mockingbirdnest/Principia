@@ -1,6 +1,5 @@
 numerics_blueprint {
   downsampling {
-    max_dense_intervals : 10000
     tolerance           : "10 m"
   }
   ephemeris {

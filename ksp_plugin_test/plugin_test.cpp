@@ -437,10 +437,49 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   EXPECT_FALSE(message.vessel(0).vessel().flight_plans().empty());
   EXPECT_TRUE(message.vessel(0).vessel().has_history());
   auto const& vessel_0_history = message.vessel(0).vessel().history();
-  EXPECT_EQ(3, vessel_0_history.segment_size());
-  EXPECT_EQ(7, vessel_0_history.segment(0).zfp().timeline_size());
+  EXPECT_EQ(4, vessel_0_history.segment_size());
+  EXPECT_EQ(1, vessel_0_history.segment(0).zfp().timeline_size());
+  EXPECT_EQ(1, vessel_0_history.segment(0).exact_size());
+  EXPECT_EQ(
+      5400,
+      vessel_0_history.segment(0).exact(0).instant().scalar().magnitude());
   EXPECT_EQ(2, vessel_0_history.segment(1).zfp().timeline_size());
-  EXPECT_EQ(1, vessel_0_history.segment(2).zfp().timeline_size());
+  EXPECT_EQ(2, vessel_0_history.segment(1).exact_size());
+  EXPECT_EQ(
+      5400,
+      vessel_0_history.segment(1).exact(0).instant().scalar().magnitude());
+  EXPECT_EQ(
+      5460,
+      vessel_0_history.segment(1).exact(1).instant().scalar().magnitude());
+  EXPECT_EQ(2, vessel_0_history.segment(2).zfp().timeline_size());
+  EXPECT_EQ(2, vessel_0_history.segment(2).exact_size());
+  EXPECT_EQ(
+      5460,
+      vessel_0_history.segment(2).exact(0).instant().scalar().magnitude());
+  EXPECT_EQ(
+      5461,
+      vessel_0_history.segment(2).exact(1).instant().scalar().magnitude());
+  EXPECT_EQ(1, vessel_0_history.segment(3).zfp().timeline_size());
+  EXPECT_EQ(1, vessel_0_history.segment(3).exact_size());
+  EXPECT_EQ(
+      5461,
+      vessel_0_history.segment(3).exact(0).instant().scalar().magnitude());
+  EXPECT_EQ(1, message.vessel(0).vessel().checkpoint_size());
+  auto const& checkpoint_0 = message.vessel(0).vessel().checkpoint(0);
+  EXPECT_EQ(5400, checkpoint_0.time().scalar().magnitude());
+  EXPECT_EQ(3, checkpoint_0.non_collapsible_segment().segment_size());
+  auto const& ncs_0 = checkpoint_0.non_collapsible_segment().segment(0);
+  auto const& ncs_1 = checkpoint_0.non_collapsible_segment().segment(1);
+  auto const& ncs_2 = checkpoint_0.non_collapsible_segment().segment(2);
+  EXPECT_EQ(1, ncs_0.zfp().timeline_size());
+  EXPECT_EQ(1, ncs_0.exact_size());
+  EXPECT_EQ(5400, ncs_0.exact(0).instant().scalar().magnitude());
+  EXPECT_EQ(1, ncs_1.zfp().timeline_size());
+  EXPECT_EQ(1, ncs_1.exact_size());
+  EXPECT_EQ(5400, ncs_1.exact(0).instant().scalar().magnitude());
+  EXPECT_EQ(1, ncs_2.zfp().timeline_size());
+  EXPECT_EQ(1, ncs_2.exact_size());
+  EXPECT_EQ(5400, ncs_2.exact(0).instant().scalar().magnitude());
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
   EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(
