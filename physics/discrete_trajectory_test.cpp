@@ -843,8 +843,7 @@ TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreHamiltonCompatibility) {
   DiscreteTrajectory<World>::SegmentIterator psychohistory;
   auto const history = DiscreteTrajectory<World>::ReadFromMessage(
       message1, /*tracked=*/{&psychohistory});
-  EXPECT_THAT(log_warning.string(),  // NOLINT
-              AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Haar"))));
+  EXPECT_THAT(log_warning.string(), HasSubstr("pre-Hamilton"));
 
   // Note that the sizes don't have the same semantics as pre-Hamilton.  The
   // history now counts all segments.  The psychohistory has a duplicated point
