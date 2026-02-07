@@ -235,13 +235,13 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
                    PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<affine V, affine A, int l, int r,
            template<typename, typename, int> typename E>
-  requires (!additive_group<V>)
+    requires (!additive_group<V>)  // NOLINT
   constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E> friend operator+(
       PolynomialInMonomialBasis<Difference<V>, A, l, E> const& left,
       PolynomialInMonomialBasis<V, A, r, E> const& right);
   template<affine V, affine A, int l, int r,
            template<typename, typename, int> typename E>
-  requires (!additive_group<V>)
+    requires (!additive_group<V>)  // NOLINT
   constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E> friend operator+(
       PolynomialInMonomialBasis<V, A, l, E> const& left,
       PolynomialInMonomialBasis<Difference<V>, A, r, E> const& right);
@@ -360,7 +360,7 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree_,
 
 template<affine Value, affine Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator_>
-requires (!additive_group<Value>)
+  requires (!additive_group<Value>)  // NOLINT
 constexpr PolynomialInMonomialBasis<Value, Argument,
                                     std::max(ldegree_, rdegree_), Evaluator_>
 operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree_,
@@ -370,7 +370,7 @@ operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree_,
 
 template<affine Value, affine Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator_>
-requires (!additive_group<Value>)
+  requires (!additive_group<Value>)  // NOLINT
 constexpr PolynomialInMonomialBasis<Value, Argument,
                                     std::max(ldegree_, rdegree_), Evaluator_>
 operator+(PolynomialInMonomialBasis<Value, Argument, ldegree_,
