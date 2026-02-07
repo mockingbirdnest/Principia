@@ -50,7 +50,7 @@ void DependentVariablesToMatrixRow(
         matrix) {
   std::int64_t j = 0;
   for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
-    matrix(row, j++) = yⱼ / si::Unit<std::remove_reference_t<decltype(yⱼ)>>;
+    matrix(row, j++) = yⱼ / si::Unit<decltype(yⱼ)>;
   });
 }
 
@@ -62,7 +62,7 @@ void DependentVariableDerivativesToMatrixRow(
         matrix) {
   std::int64_t j = 0;
   for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
-    matrix(row, j++) = yⱼ / si::Unit<std::remove_reference_t<decltype(yⱼ)>>;
+    matrix(row, j++) = yⱼ / si::Unit<decltype(yⱼ)>;
   });
 }
 
@@ -201,8 +201,8 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
     ЧебышёвPicardIterator const& integrator,
     ЧебышёвPicardIterationParams const& params)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
-      params_(params),
       integrator_(integrator),
+      params_(params),
       CₓX₀_(uninitialized),
       Xⁱ_(uninitialized),
       Xⁱ⁺¹_(uninitialized),
