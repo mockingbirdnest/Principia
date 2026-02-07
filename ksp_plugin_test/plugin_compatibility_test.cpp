@@ -424,8 +424,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136b.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
-  EXPECT_THAT(log_warning.string(),  // NOLINT(build/include_what_you_use)
-              HasSubstr("pre-Hamilton"));
+  EXPECT_THAT(log_warning.string(), HasSubstr("pre-Hamilton"));
 
   auto& mutable_plugin = const_cast<Plugin&>(*plugin);
 
