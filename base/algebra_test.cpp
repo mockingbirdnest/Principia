@@ -87,8 +87,6 @@ constexpr std::string_view description(T) {
   return "field";
 }
 
-//constexpr std::string_view meow = AnAbelianGroupByAnyOtherName<int>();
-
 TEST(Concepts, Subsumption) {
   static_assert(description(Instant{}) == "affine");
   static_assert(description(std::chrono::seconds{}) ==
