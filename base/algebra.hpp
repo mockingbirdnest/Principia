@@ -136,9 +136,9 @@ concept module = ring<R> && additive_group<M> && requires(R λ, M v) {
 // it in homogeneous_vector_space.
 
 template<typename V, typename K>
-concept vector_space_axioms = field_axioms<K> && requires(K λ, V v) {
-  { λ * v } -> std::same_as<V>;
-  { v * λ } -> std::same_as<V>;
+concept vector_space = field_axioms<K> && requires(K λ, V v) {
+  { λ* v } -> std::same_as<V>;
+  { v* λ } -> std::same_as<V>;
   { v / λ } -> std::same_as<V>;
   { v *= λ } -> std::same_as<V&>;
   { v /= λ } -> std::same_as<V&>;
@@ -150,7 +150,7 @@ concept vector_space_axioms = field_axioms<K> && requires(K λ, V v) {
 template<typename K>
 concept homogeneous_field = homogeneous_ring<K> && requires(K x, K y, K z) {
   { x / y } -> field_axioms;
-  requires vector_space_axioms<K, decltype(x / y)>;
+  requires vector_space<K, decltype(x / y)>;
   { (1 / x) } -> homogeneous_ring;
   { 1 / (x * y) } -> std::same_as<decltype((1 / x) * (1 / y))>;
   { (x * y) / z } -> std::same_as<K>;
@@ -161,20 +161,19 @@ template<typename K>
 concept field = homogeneous_field<K> && field_axioms<K>;
 
 template<typename M, typename R>
-concept homogeneous_module =
-    homogeneous_ring<R> && additive_group<M> && requires(R λ, R μ, M v) {
-      // Really, these operations should return a homogeneous_module.
-      { λ* v } -> additive_group;
-      { v* λ } -> std::same_as<decltype(λ * v)>;
-      { (λ * μ) * v } -> additive_group;
-      { λ*(μ * v) } -> std::same_as<decltype((λ * μ) * v)>;
-    };
+concept homogeneous_module = homogeneous_ring<R> && requires(R λ, R μ, M v) {
+  // Really, these operations should return a homogeneous_module.
+  { λ * v } -> additive_group;
+  { v * λ } -> std::same_as<decltype(λ * v)>;
+  { (λ * μ) * v } -> additive_group;
+  { λ * (μ * v) } -> std::same_as<decltype((λ * μ) * v)>;
+};
 
 template<typename V, typename K>
 concept homogeneous_vector_space =
     additive_group<V> && homogeneous_field<K> && requires(K λ, K μ, V v) {
       // Really, these operations should return a homogeneous_vector_space.
-      requires vector_space_axioms<V, decltype(λ / μ)>;
+      requires vector_space<V, decltype(λ / μ)>;
       { λ * v } -> additive_group;
       { v * λ } -> std::same_as<decltype(λ * v)>;
       { v / λ } -> additive_group;
@@ -183,15 +182,11 @@ concept homogeneous_vector_space =
       { λ * (μ * v) } -> std::same_as<decltype((λ * μ) * v)>;
     };
 
-template<typename V, typename K>
-concept vector_space =
-    homogeneous_vector_space<V, K> && vector_space_axioms<V, K>;
-
 template<typename V>
 concept real_vector_space = vector_space<V, double>;
 
 template<typename A, typename K>
-concept affine_space = affine<A> && vector_space<Difference<A>, K>;
+concept affine_space = affine<A> && field<K> && vector_space<Difference<A>, K>;
 
 template<typename A, typename R>
 concept affine_module = affine<A> && ring<R> && module<Difference<A>, R>;
@@ -205,7 +200,7 @@ concept homogeneous_affine_module = affine<A> && homogeneous_ring<R> &&
                                    homogeneous_module<Difference<A>, R>;
 
 template<typename V>
-concept real_affine_space = affine<V> && affine_space<V, double>;
+concept real_affine_space = affine_space<V, double>;
 
 template<typename T1, typename T2>
 concept hilbert = requires(T1 const& t1, T2 const& t2) {

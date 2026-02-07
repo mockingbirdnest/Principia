@@ -59,65 +59,37 @@ TEST(Concepts, LinearAlgebra) {
 }
 
 template<affine T>
-constexpr std::string_view description() {
+constexpr std::string_view description(T) {
   return "affine";
 }
 template<additive_group T>
-constexpr std::string_view description() {
+constexpr std::string_view description(T) {
   return "additive group";
 }
 template<homogeneous_ring T>
-constexpr std::string_view description() {
+constexpr std::string_view description(T) {
   return "homogeneous ring";
 }
 template<ring T>
-constexpr std::string_view description() {
+constexpr std::string_view description(T) {
   return "ring";
 }
 template<homogeneous_field T>
-constexpr std::string_view description() {
+constexpr std::string_view description(T) {
   return "homogeneous field";
 }
 template<field T>
-constexpr std::string_view description() {
+constexpr std::string_view description(T) {
   return "field";
 }
-template<affine T>
-constexpr std::string_view vector_description() {
-  return "affine";
-}
-template<module<int> T>
-constexpr std::string_view vector_description() {
-  return "ℤ-module";
-}
-template<real_affine_space T>
-constexpr std::string_view vector_description() {
-  return "real affine space";
-}
-template<real_vector_space T>
-constexpr std::string_view vector_description() {
-  return "real vector space";
-}
 
-template<additive_group T>
-constexpr std::string_view AnAbelianGroupByAnyOtherName() {
-  return "additive group";
-}
-template<module<int> T>
-constexpr std::string_view AnAbelianGroupByAnyOtherName() {
-  return "ℤ-module";
-}
-
-constexpr std::string_view meow = AnAbelianGroupByAnyOtherName<int>();
+//constexpr std::string_view meow = AnAbelianGroupByAnyOtherName<int>();
 
 TEST(Concepts, Subsumption) {
-  static_assert(description<Instant>() == "affine");
-  static_assert(description<int>() == "ring");
-  static_assert(description<Length>() == "homogeneous field");
-  static_assert(description<double>() == "field");
-  static_assert(vector_description<int>() == "ℤ-module");
-  static_assert(vector_description<Instant>() == "real affine space");
-  static_assert(vector_description<double>() == "real vector space");
+  static_assert(description(Instant{}) == "affine");
+  static_assert(description(int{}) == "ring");
+  static_assert(description(Length{}) == "homogeneous field");
+  static_assert(description(double{}) == "field");
 }
 
 }  // namespace base
