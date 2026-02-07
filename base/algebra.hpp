@@ -62,9 +62,10 @@ using Derivative = typename DerivativeGenerator<Value, Argument, order>::type;
 template<typename Value, typename Argument>
 using Primitive = Product<Difference<Value>, Difference<Argument>>;
 
-// TODO(egg): additive_group should subsume affine, but we use it there.
+// `additive_group_axioms` implies `affine`; `additive_group` requires both so
+// that it subsumes `affine`.
 template<typename G>
-concept additive_group = requires(G x, G y, int n) {
+concept additive_group_axioms = requires(G x, G y, int n) {
   G{};
   // For some reason, unary + on a boost number returns a const number.  The
   // other operators correctly return a number (with et_off).
@@ -86,12 +87,15 @@ concept additive_group = requires(G x, G y, int n) {
 // A set acted upon simply transitively by an additive group.
 template<typename A>
 concept affine = requires(A x, A y) {
-  { x - y } -> additive_group;
+  { x - y } -> additive_group_axioms;
   { y + (x - y) } -> std::same_as<A>;
   { y += (x - y) } -> std::same_as<A&>;
   { y - (x - y) } -> std::same_as<A>;
   { y -= (x - y) } -> std::same_as<A&>;
 };
+
+template<typename G>
+concept additive_group = affine<G> && additive_group_axioms<G>;
 
 // A graded ring restricted to its homogeneous elements; multiplication can
 // alter the type, and addition is only defined between homogeneous elements.
@@ -113,11 +117,10 @@ concept ring = homogeneous_ring<A> && requires(A x, A y) {
   { A::Identity() } -> std::same_as<A>;
 });
 
-// TODO(egg): field should subsume homogeneous_field, but we use it in
-// homogeneous_field.
-
+// `field_axioms` implies `homogeneous_field`; `field` requires both so that it
+// subsumes `homogeneous_field`.
 template<typename K>
-concept field = ring<K> &&
+concept field_axioms = ring<K> &&
     !std::numeric_limits<K>::is_integer && requires(K x, K y, K z) {
   { 1 / y } -> std::same_as<K>;
   { x / y } -> std::same_as<K>;
@@ -125,7 +128,7 @@ concept field = ring<K> &&
 };
 
 template<typename M, typename R>
-concept module = ring<R> && requires(R λ, M v) {
+concept module = ring<R> && additive_group<M> && requires(R λ, M v) {
   { λ * v } -> std::same_as<M>;
   { v * λ } -> std::same_as<M>;
   { v *= λ } -> std::same_as<M&>;
@@ -135,9 +138,9 @@ concept module = ring<R> && requires(R λ, M v) {
 // it in homogeneous_vector_space.
 
 template<typename V, typename K>
-concept vector_space = field<K> && requires(K λ, V v) {
-  { λ * v } -> std::same_as<V>;
-  { v * λ } -> std::same_as<V>;
+concept vector_space = field_axioms<K> && requires(K λ, V v) {
+  { λ* v } -> std::same_as<V>;
+  { v* λ } -> std::same_as<V>;
   { v / λ } -> std::same_as<V>;
   { v *= λ } -> std::same_as<V&>;
   { v /= λ } -> std::same_as<V&>;
@@ -148,13 +151,16 @@ concept vector_space = field<K> && requires(K λ, V v) {
 // elements.
 template<typename K>
 concept homogeneous_field = homogeneous_ring<K> && requires(K x, K y, K z) {
-  { x / y } -> field;
+  { x / y } -> field_axioms;
   requires vector_space<K, decltype(x / y)>;
   { (1 / x) } -> homogeneous_ring;
   { 1 / (x * y) } -> std::same_as<decltype((1 / x) * (1 / y))>;
   { (x * y) / z } -> std::same_as<K>;
   { (x / y) * z } -> std::same_as<K>;
 };
+
+template<typename K>
+concept field = homogeneous_field<K> && field_axioms<K>;
 
 template<typename M, typename R>
 concept homogeneous_module = homogeneous_ring<R> && requires(R λ, R μ, M v) {

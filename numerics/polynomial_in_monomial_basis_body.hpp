@@ -692,6 +692,7 @@ operator+(
 
 template<affine Value, affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
+  requires (!additive_group<Value>)  // NOLINT
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree),
                           Evaluator>
@@ -709,6 +710,7 @@ operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
 
 template<affine Value, affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
+  requires (!additive_group<Value>)  // NOLINT
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree),
                           Evaluator>

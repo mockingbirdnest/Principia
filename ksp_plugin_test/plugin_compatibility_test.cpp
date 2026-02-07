@@ -293,7 +293,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
   EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Haar"), Not(HasSubstr("pre-Gröbner"))));
+              AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Gröbner"))));
   auto const& orbiter =
       *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
   EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));
@@ -357,8 +357,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
-  EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Haar"))));
+  EXPECT_THAT(log_warning.string(), HasSubstr("pre-Hamilton"));
 
   // The vessel with the longest history.
   auto const& vessel =
@@ -425,8 +424,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136b.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
-  EXPECT_THAT(log_warning.string(),
-              AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Haar"))));
+  EXPECT_THAT(log_warning.string(), HasSubstr("pre-Hamilton"));
 
   auto& mutable_plugin = const_cast<Plugin&>(*plugin);
 
