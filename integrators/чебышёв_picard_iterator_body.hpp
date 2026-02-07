@@ -78,7 +78,7 @@ double LInfinityNorm(FixedMatrix<double, M, N> const& A) {
   return norm;
 }
 
-template<typename Method, typename ODE_>
+template<ЧебышёвPicardMethod Method, typename ODE_>
 absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
     ODE::IndependentVariable const& t_final) {
   using DependentVariableDerivatives =
@@ -181,19 +181,19 @@ absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
   return absl::OkStatus();
 }
 
-template<typename Method, typename ODE_>
+template<ЧебышёвPicardMethod Method, typename ODE_>
 ЧебышёвPicardIterator<Method, ODE_> const&
 ЧебышёвPicardIterator<Method, ODE_>::Instance::integrator() const {
   return integrator_;
 }
 
-template<typename Method, typename ODE_>
+template<ЧебышёвPicardMethod Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 ЧебышёвPicardIterator<Method, ODE_>::Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
-template<typename Method, typename ODE_>
+template<ЧебышёвPicardMethod Method, typename ODE_>
 ЧебышёвPicardIterator<Method, ODE_>::Instance::Instance(
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
@@ -210,7 +210,7 @@ template<typename Method, typename ODE_>
   t_.reserve(M + 1);
 }
 
-template<typename Method, typename ODE_>
+template<ЧебышёвPicardMethod Method, typename ODE_>
 ЧебышёвPicardIterator<Method, ODE_>::ЧебышёвPicardIterator()
     : nodes_(uninitialized), CₓCα_(uninitialized) {
   // We use the notation from [Mac15], section 1.4.3.
@@ -296,7 +296,7 @@ template<typename Method, typename ODE_>
   CₓCα_ = Cₓ * R * S * ᶠTᵀ * V;
 }
 
-template<typename Method, typename ODE_>
+template<ЧебышёвPicardMethod Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 ЧебышёвPicardIterator<Method, ODE_>::NewInstance(
     InitialValueProblem<ODE_> const& problem,
@@ -306,7 +306,7 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
       problem, append_state, step, ЧебышёвPicardIterationParams());
 }
 
-template<typename Method, typename ODE_>
+template<ЧебышёвPicardMethod Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 ЧебышёвPicardIterator<Method, ODE_>::NewInstance(
     InitialValueProblem<ODE_> const& problem,
@@ -319,7 +319,7 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
       new Instance(problem, append_state, step, *this, params));
 }
 
-template<typename Method, typename ODE_>
+template<ЧебышёвPicardMethod Method, typename ODE_>
 void ЧебышёвPicardIterator<Method, ODE_>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> message) const {
   LOG(FATAL) << "Serialization of ЧебышёвPicardIntegrator is not yet supported";

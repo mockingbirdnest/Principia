@@ -1,5 +1,7 @@
 #pragma once
 
+#include <concepts>
+
 #include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -182,6 +184,12 @@ struct AsSymplecticRungeKuttaNyström {
             ? Shift(SymplecticPartitionedRungeKuttaMethod::a)
             : SymplecticPartitionedRungeKuttaMethod::b};
   };
+};
+
+template<typename T>
+concept ЧебышёвPicardMethod = requires {
+  { T::M } -> std::convertible_to<std::int64_t>;
+  { T::N } -> std::convertible_to<std::int64_t>;
 };
 
 // A ЧебышёвPicard integration method.
@@ -1440,6 +1448,7 @@ using internal::Ruth1983;
 using internal::SymmetricLinearMultistep;
 using internal::SymplecticPartitionedRungeKutta;
 using internal::SymplecticRungeKuttaNyström;
+using internal::ЧебышёвPicardMethod;
 using internal::ЧебышёвPicard;
 using internal::吉田1990Order6A;
 using internal::吉田1990Order6B;
