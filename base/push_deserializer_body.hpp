@@ -203,8 +203,10 @@ inline void PushDeserializer::Push(Array<std::uint8_t> const bytes,
                               static_cast<std::int64_t>(queued_chunk_size)));
       done_.emplace(is_last ? std::move(done) : nullptr);
     }
-    current.data = &current.data[queued_chunk_size];
-    current.size -= queued_chunk_size;
+    if (current.data != nullptr) {
+      current.data = &current.data[queued_chunk_size];
+      current.size -= queued_chunk_size;
+    }
   } while (!is_last);
 }
 
