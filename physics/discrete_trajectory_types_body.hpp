@@ -9,7 +9,7 @@ namespace internal {
 template<typename Frame>
 value_type<Frame>::value_type(Instant const& time,
                               DegreesOfFreedom<Frame> const& degrees_of_freedom)
-    : time(time), degrees_of_freedom(degrees_of_freedom) {}
+    : degrees_of_freedom(degrees_of_freedom), time(time) {}
 
 template<typename Frame>
 template<std::size_t i, typename Self>

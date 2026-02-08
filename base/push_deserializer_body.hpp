@@ -174,6 +174,7 @@ inline void PushDeserializer::Push(Array<std::uint8_t> const bytes,
   // circumstances.  The `done` callback is attached to the last chunk.
   Array<std::uint8_t> current = bytes;
   CHECK_LE(0, bytes.size);
+  CHECK(bytes.data != nullptr || bytes.size == 0);
 
   // Decide how much data we are going to push on the queue.  In the presence of
   // compression we have to respect the boundary of the incoming block.  In the
@@ -203,8 +204,10 @@ inline void PushDeserializer::Push(Array<std::uint8_t> const bytes,
                               static_cast<std::int64_t>(queued_chunk_size)));
       done_.emplace(is_last ? std::move(done) : nullptr);
     }
-    current.data = &current.data[queued_chunk_size];
-    current.size -= queued_chunk_size;
+    if (current.data != nullptr) {
+      current.data = &current.data[queued_chunk_size];
+      current.size -= queued_chunk_size;
+    }
   } while (!is_last);
 }
 

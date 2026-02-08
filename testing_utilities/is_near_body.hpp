@@ -38,6 +38,8 @@ bool IsNearMatcher<T>::MatchAndExplain(
   if (expected_.has_trivial_unit()) {
     *listener << "which ";
   } else {
+    CHECK_NE(T{}, expected_.min());
+    CHECK_NE(expected_.min(), expected_.max());
     *listener << "which is "
               << std::setprecision(1 +
                                    std::floor(std::log10(std::abs(

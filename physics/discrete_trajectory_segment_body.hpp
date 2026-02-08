@@ -406,8 +406,6 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(Instant const& t) {
 template<typename Frame>
 void DiscreteTrajectorySegment<Frame>::ForgetBefore(
     typename Timeline::const_iterator const end) {
-  std::int64_t const number_of_points_to_remove =
-      std::distance(timeline_.cbegin(), end);
   timeline_.erase(timeline_.cbegin(), end);
   if (!timeline_.empty()) {
     timeline_.begin()->interpolation = nullptr;

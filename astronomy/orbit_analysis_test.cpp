@@ -447,7 +447,7 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   EXPECT_THAT(elements.mean_inclination_interval().midpoint(),
               AbsoluteErrorFrom(56.0 * Degree, IsNear(0.61_(1) * Degree)));
   EXPECT_THAT(elements.mean_inclination_interval().measure(),
-              IsNear(00.01_(1) * Degree));
+              IsNear(00.010_(1) * Degree));
 
   EXPECT_THAT(
       (ReduceAngle<0.0, 2 * π>(
