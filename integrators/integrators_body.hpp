@@ -15,7 +15,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "integrators/чебышёв_picard_iterator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
+#include "integrators/чебышёв_picard_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "quantities/serialization.hpp"
 
 // A case branch in a switch on the serialized integrator `kind`.  It determines

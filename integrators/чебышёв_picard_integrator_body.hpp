@@ -1,6 +1,6 @@
 #pragma once
 
-#include "integrators/чебышёв_picard_iterator.hpp"
+#include "integrators/чебышёв_picard_integrator.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -17,7 +17,7 @@
 
 namespace principia {
 namespace integrators {
-namespace _чебышёв_picard_iterator {
+namespace _чебышёв_picard_integrator {
 namespace internal {
 
 using namespace principia::base::_for_all_of;
@@ -81,7 +81,7 @@ double LInfinityNorm(FixedMatrix<double, M, N> const& A) {
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
-absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
+absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     ODE::IndependentVariable const& t_final) {
   using DependentVariableDerivatives =
       typename ODE::DependentVariableDerivatives;
@@ -185,23 +185,23 @@ absl::Status ЧебышёвPicardIterator<Method, ODE_>::Instance::Solve(
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
-ЧебышёвPicardIterator<Method, ODE_> const&
-ЧебышёвPicardIterator<Method, ODE_>::Instance::integrator() const {
+ЧебышёвPicardIntegrator<Method, ODE_> const&
+ЧебышёвPicardIntegrator<Method, ODE_>::Instance::integrator() const {
   return integrator_;
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
-ЧебышёвPicardIterator<Method, ODE_>::Instance::Clone() const {
+ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
-ЧебышёвPicardIterator<Method, ODE_>::Instance::Instance(
+ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Instance(
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
-    ЧебышёвPicardIterator const& integrator,
+    ЧебышёвPicardIntegrator const& integrator,
     ЧебышёвPicardIterationParams const& params)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator),
@@ -214,7 +214,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
-ЧебышёвPicardIterator<Method, ODE_>::ЧебышёвPicardIterator()
+ЧебышёвPicardIntegrator<Method, ODE_>::ЧебышёвPicardIntegrator()
     : nodes_(uninitialized), CₓCα_(uninitialized) {
   // We use the notation from [Mac15], section 1.4.3.
 
@@ -301,7 +301,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
-ЧебышёвPicardIterator<Method, ODE_>::NewInstance(
+ЧебышёвPicardIntegrator<Method, ODE_>::NewInstance(
     InitialValueProblem<ODE_> const& problem,
     AppendState const& append_state,
     Time const& step) const {
@@ -311,7 +311,7 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
-ЧебышёвPicardIterator<Method, ODE_>::NewInstance(
+ЧебышёвPicardIntegrator<Method, ODE_>::NewInstance(
     InitialValueProblem<ODE_> const& problem,
     AppendState const& append_state,
     Time const& step,
@@ -323,13 +323,13 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
-void ЧебышёвPicardIterator<Method, ODE_>::WriteToMessage(
+void ЧебышёвPicardIntegrator<Method, ODE_>::WriteToMessage(
     not_null<serialization::FixedStepSizeIntegrator*> message) const {
   LOG(FATAL) << "Serialization of ЧебышёвPicardIntegrator is not yet supported";
   std::abort();
 }
 
 }  // namespace internal
-}  // namespace _чебышёв_picard_iterator
+}  // namespace _чебышёв_picard_integrator
 }  // namespace integrators
 }  // namespace principia

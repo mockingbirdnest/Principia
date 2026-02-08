@@ -5,8 +5,8 @@
 #ifndef PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 #include "integrators/integrators.hpp"
 #else
-#ifndef PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_ITERATOR_HPP_
-#define PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_ITERATOR_HPP_
+#ifndef PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_INTEGRATOR_HPP_
+#define PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_INTEGRATOR_HPP_
 
 #include <memory>
 #include <vector>
@@ -21,7 +21,7 @@
 
 namespace principia {
 namespace integrators {
-namespace _чебышёв_picard_iterator {
+namespace _чебышёв_picard_integrator {
 namespace internal {
 
 using namespace principia::base::_not_null;
@@ -65,7 +65,7 @@ struct ЧебышёвPicardIterationParams {
 // This code uses the formulation from [Mac15].
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
-class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
+class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
  public:
   using ODE = ODE_;
   using AppendState = typename Integrator<ODE>::AppendState;
@@ -74,7 +74,7 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
    public:
     absl::Status Solve(ODE::IndependentVariable const& t_final) override;
 
-    ЧебышёвPicardIterator const& integrator() const override;
+    ЧебышёвPicardIntegrator const& integrator() const override;
 
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
         const override;
@@ -83,7 +83,7 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
     Instance(InitialValueProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
-             ЧебышёвPicardIterator const& integrator,
+             ЧебышёвPicardIntegrator const& integrator,
              ЧебышёвPicardIterationParams const& params);
 
     static constexpr std::int64_t M = Method::M;
@@ -92,7 +92,7 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
     static constexpr std::int64_t n =
         std::tuple_size_v<typename ODE::DependentVariables>;
 
-    ЧебышёвPicardIterator const& integrator_;
+    ЧебышёвPicardIntegrator const& integrator_;
     ЧебышёвPicardIterationParams params_;
 
     // Working variables which are stored here so we don't need to reallocate
@@ -112,11 +112,11 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
     // The computed derivative (at each node, for the current iteration).
     FixedMatrix<double, M + 1, n> yʹ_;
 
-    friend class ЧебышёвPicardIterator;
+    friend class ЧебышёвPicardIntegrator;
   };
 
-  // Constructs a ЧебышёвPicardIterator.
-  ЧебышёвPicardIterator();
+  // Constructs a ЧебышёвPicardIntegrator.
+  ЧебышёвPicardIntegrator();
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       InitialValueProblem<ODE> const& problem,
@@ -149,14 +149,14 @@ class ЧебышёвPicardIterator : public FixedStepSizeIntegrator<ODE_> {
 
 }  // namespace internal
 
+using internal::ЧебышёвPicardIntegrator;
 using internal::ЧебышёвPicardIterationParams;
-using internal::ЧебышёвPicardIterator;
 
-}  // namespace _чебышёв_picard_iterator
+}  // namespace _чебышёв_picard_integrator
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/чебышёв_picard_iterator_body.hpp"
+#include "integrators/чебышёв_picard_integrator_body.hpp"
 
-#endif  // PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_ITERATOR_HPP_
+#endif  // PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_INTEGRATOR_HPP_
 #endif  // PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_

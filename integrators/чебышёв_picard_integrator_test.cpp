@@ -1,4 +1,4 @@
-#include "integrators/чебышёв_picard_iterator.hpp"
+#include "integrators/чебышёв_picard_integrator.hpp"
 
 #include <concepts>
 #include <tuple>
@@ -29,7 +29,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_point;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
-using namespace principia::integrators::_чебышёв_picard_iterator;
+using namespace principia::integrators::_чебышёв_picard_integrator;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -154,7 +154,7 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
       }};
 }
 
-TEST(ЧебышёвPicardIteratorTest, MultipleSteps) {
+TEST(ЧебышёвPicardIntegratorTest, MultipleSteps) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
   Time const step = 1 * Second;
@@ -165,7 +165,7 @@ TEST(ЧебышёвPicardIteratorTest, MultipleSteps) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator;
+  ЧебышёвPicardIntegrator<ЧебышёвPicard<64, 64>, ODE> const integrator;
 
   auto const instance = integrator.NewInstance(problem.problem,
                                                append_state,
@@ -190,7 +190,7 @@ TEST(ЧебышёвPicardIteratorTest, MultipleSteps) {
   }
 }
 
-TEST(ЧебышёвPicardIteratorTest, Backwards) {
+TEST(ЧебышёвPicardIntegratorTest, Backwards) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
   Time const step = -1 * Second;  // Backwards!
@@ -201,7 +201,7 @@ TEST(ЧебышёвPicardIteratorTest, Backwards) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator;
+  ЧебышёвPicardIntegrator<ЧебышёвPicard<64, 64>, ODE> const integrator;
 
   auto const instance = integrator.NewInstance(problem.problem,
                                                append_state,
@@ -226,7 +226,7 @@ TEST(ЧебышёвPicardIteratorTest, Backwards) {
   }
 }
 
-TEST(ЧебышёвPicardIteratorTest, Divergence) {
+TEST(ЧебышёвPicardIntegratorTest, Divergence) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const& problem = LinearProblem();
   Time const step = 60 * Second;  // Way too big; iteration won't converge.
@@ -237,7 +237,7 @@ TEST(ЧебышёвPicardIteratorTest, Divergence) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<ЧебышёвPicard<64, 64>, ODE> const integrator;
+  ЧебышёвPicardIntegrator<ЧебышёвPicard<64, 64>, ODE> const integrator;
 
   auto const instance = integrator.NewInstance(
       problem.problem,
@@ -254,7 +254,7 @@ TEST(ЧебышёвPicardIteratorTest, Divergence) {
 }
 
 template<typename T>
-concept ЧебышёвPicardIteratorTestParameters = requires {
+concept ЧебышёвPicardIntegratorTestParameters = requires {
   // The ODE (with solution) under test.
   { T::problem() } -> std::convertible_to<SolvedInitialValueProblem>;
 
@@ -272,12 +272,12 @@ concept ЧебышёвPicardIteratorTestParameters = requires {
   { T::tolerance } -> std::convertible_to<Length>;
 };
 
-template<ЧебышёвPicardIteratorTestParameters T>
-class ЧебышёвPicardIteratorParameterizedTest : public Test {};
+template<ЧебышёвPicardIntegratorTestParameters T>
+class ЧебышёвPicardIntegratorParameterizedTest : public Test {};
 
-TYPED_TEST_SUITE_P(ЧебышёвPicardIteratorParameterizedTest);
+TYPED_TEST_SUITE_P(ЧебышёвPicardIntegratorParameterizedTest);
 
-TYPED_TEST_P(ЧебышёвPicardIteratorParameterizedTest, Convergence) {
+TYPED_TEST_P(ЧебышёвPicardIntegratorParameterizedTest, Convergence) {
   // Set up the initial value problem.
   SolvedInitialValueProblem const problem = TypeParam::problem();
   Time const step = TypeParam::step;
@@ -288,7 +288,7 @@ TYPED_TEST_P(ЧебышёвPicardIteratorParameterizedTest, Convergence) {
   };
 
   // Build the integrator and solve the problem.
-  ЧебышёвPicardIterator<typename TypeParam::Method, ODE> const integrator;
+  ЧебышёвPicardIntegrator<typename TypeParam::Method, ODE> const integrator;
 
   auto const instance = integrator.NewInstance(
       problem.problem,
@@ -311,7 +311,7 @@ TYPED_TEST_P(ЧебышёвPicardIteratorParameterizedTest, Convergence) {
   }
 }
 
-REGISTER_TYPED_TEST_SUITE_P(ЧебышёвPicardIteratorParameterizedTest,
+REGISTER_TYPED_TEST_SUITE_P(ЧебышёвPicardIntegratorParameterizedTest,
                             Convergence);
 
 // Although in theory the iteration for y′ = y should converge for
@@ -388,7 +388,7 @@ using Linear = Types<Linear1Second,
                      Linear16Seconds,
                      LinearMGreaterThanN>;
 INSTANTIATE_TYPED_TEST_SUITE_P(Linear,
-                               ЧебышёвPicardIteratorParameterizedTest,
+                               ЧебышёвPicardIntegratorParameterizedTest,
                                Linear);
 
 // This problem appears in [BL69].
@@ -418,7 +418,7 @@ struct TangentB : not_constructible {
 
 using Tangent = Types<TangentA, TangentB>;
 INSTANTIATE_TYPED_TEST_SUITE_P(Tangent,
-                               ЧебышёвPicardIteratorParameterizedTest,
+                               ЧебышёвPicardIntegratorParameterizedTest,
                                Tangent);
 
 // From [BJ10]. Figures 4, 5, 7, 8 are slow and omitted for now.
@@ -448,7 +448,7 @@ struct PerturbedSinusoidFigure6 : not_constructible {
 using PerturbedSinusoid =
     Types<PerturbedSinusoidFigure3, PerturbedSinusoidFigure6>;
 INSTANTIATE_TYPED_TEST_SUITE_P(PerturbedSinusoid,
-                               ЧебышёвPicardIteratorParameterizedTest,
+                               ЧебышёвPicardIntegratorParameterizedTest,
                                PerturbedSinusoid);
 
 }  // namespace
