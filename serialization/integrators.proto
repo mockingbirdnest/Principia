@@ -29,6 +29,7 @@ message FixedStepSizeIntegrator {
   extend Integrator {
     optional FixedStepSizeIntegrator extension = 3001;
   }
+  // Next ID: 44
   enum Kind {
     ADAMS_BASHFORTH_ORDER_2 = 39;
     ADAMS_BASHFORTH_ORDER_3 = 40;
@@ -167,4 +168,12 @@ message State {
   repeated DoublePrecision position = 1;
   repeated DoublePrecision velocity = 2;
   required DoublePrecision time = 3;
+}
+
+// This corresponds to the ChebyshevPicardIterationParams struct.
+message ChebyshevPicardIterationParams {
+  optional int32 m = 1;
+  optional int32 n = 2;
+  optional int32 max_iterations = 3;
+  optional double stopping_criterion = 4;
 }
