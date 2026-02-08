@@ -105,7 +105,7 @@ using remove_not_null_t = typename remove_not_null<T>::type;
 template <typename Pointer, typename = void>
 struct NotNullStorage;
 
-// Case: move assignment is equvalent to copy (raw pointer).
+// Case: move assignment is equivalent to copy (raw pointer).
 template <typename P>
 struct NotNullStorage<
     P, std::enable_if_t<std::is_trivially_move_assignable_v<P>>> {
@@ -118,7 +118,7 @@ struct NotNullStorage<
   P pointer;
 };
 
-// Case: move assignent is nontrivial (unique_ptr).
+// Case: move assignment is nontrivial (unique_ptr).
 template <typename P>
 struct NotNullStorage<
     P, std::enable_if_t<!std::is_trivially_move_assignable_v<P>>> {
