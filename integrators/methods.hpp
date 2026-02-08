@@ -1,5 +1,7 @@
 #pragma once
 
+#include <concepts>
+
 #include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -184,6 +186,29 @@ struct AsSymplecticRungeKuttaNyström {
   };
 };
 
+template<typename T>
+concept ЧебышёвPicardMethod = requires {
+  { T::M } -> std::convertible_to<std::int64_t>;
+  { T::N } -> std::convertible_to<std::int64_t>;
+};
+
+// A ЧебышёвPicard integration method.
+//
+// M controls the number of nodes at which the function will be evaluated.
+//
+// Note that this is the highest node _index_ rather than the number of nodes;
+// the actual number of nodes is M + 1.
+//
+// N is the order of the Чебышёв series used to approximate the system state.
+template<std::int64_t M_, std::int64_t N_ = M_>
+struct ЧебышёвPicard : not_constructible {
+  static constexpr std::int64_t M = M_;
+  static constexpr std::int64_t N = N_;
+
+  static_assert(M >= 1);
+  static_assert(N >= 1);
+  static_assert(M >= N);
+};
 
 struct AdamsBashforthOrder2 : ExplicitLinearMultistep {
   static constexpr int order = 2;
@@ -1423,6 +1448,8 @@ using internal::Ruth1983;
 using internal::SymmetricLinearMultistep;
 using internal::SymplecticPartitionedRungeKutta;
 using internal::SymplecticRungeKuttaNyström;
+using internal::ЧебышёвPicard;
+using internal::ЧебышёвPicardMethod;
 using internal::吉田1990Order6A;
 using internal::吉田1990Order6B;
 using internal::吉田1990Order6C;

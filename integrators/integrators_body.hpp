@@ -15,6 +15,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "integrators/чебышёв_picard_integrator.hpp"  // 🧙 For the integrator subclass.  // NOLINT
 #include "quantities/serialization.hpp"
 
 // A case branch in a switch on the serialized integrator `kind`.  It determines
@@ -226,7 +227,7 @@
   PRINCIPIA_INTEGRATOR_CASE(FixedStepSizeIntegrator,                          \
                             YOSHIDA_1990_ORDER_8E,                            \
                             吉田1990Order8E,                                  \
-                            sprk_action)
+                            sprk_action)                                      \
 
 namespace principia {
 namespace integrators {
@@ -544,7 +545,8 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ERK,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SLMS,
         PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SPRK,
-        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SRKN)
+        PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_SRKN
+      )
     default:
       LOG(FATAL) << message.DebugString();
   }
@@ -613,6 +615,7 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
     std::abort();                                                     \
   }
 
+
 template<typename ODE_>
 FixedStepSizeIntegrator<ODE_> const&
 FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
@@ -622,7 +625,8 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
                                    PRINCIPIA_READ_FSS_INTEGRATOR_ERK,
                                    PRINCIPIA_READ_FSS_INTEGRATOR_SLMS,
                                    PRINCIPIA_READ_FSS_INTEGRATOR_SPRK,
-                                   PRINCIPIA_READ_FSS_INTEGRATOR_SRKN)
+                                   PRINCIPIA_READ_FSS_INTEGRATOR_SRKN
+                                  )
     default:
       LOG(FATAL) << message.kind();
       std::abort();
