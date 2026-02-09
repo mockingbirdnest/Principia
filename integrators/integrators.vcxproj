@@ -39,6 +39,8 @@
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp" />
     <ClInclude Include="symplectic_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="symplectic_runge_kutta_nyström_integrator.hpp" />
+    <ClInclude Include="чебышёв_picard_integrator.hpp" />
+    <ClInclude Include="чебышёв_picard_integrator_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_test.cpp" />
@@ -48,5 +50,6 @@
     <ClCompile Include="explicit_runge_kutta_integrator_test.cpp" />
     <ClCompile Include="symmetric_linear_multistep_integrator_test.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp" />
+    <ClCompile Include="чебышёв_picard_integrator_test.cpp" />
   </ItemGroup>
 </Project>
