@@ -230,8 +230,9 @@ constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
+template<bool uh>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(
-    TransposedView<FixedMatrix<Scalar, columns_, rows_, use_heap>> const& view)
+    TransposedView<FixedMatrix<Scalar, columns_, rows_, uh>> const& view)
     : FixedMatrix(uninitialized) {
   for (std::int64_t i = 0; i < rows_; ++i) {
     for (std::int64_t j = 0; j < columns_; ++j) {
@@ -342,11 +343,11 @@ Scalar_ FixedMatrix<Scalar_, rows_, columns_, use_heap>::FrobeniusNorm() const {
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
-template<typename LScalar, typename RScalar>
+template<typename LScalar, typename RScalar, bool luh, bool ruh>
 Product<Scalar_, Product<LScalar, RScalar>>
 FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator()(
-    FixedVector<LScalar, columns_, use_heap> const& left,
-    FixedVector<RScalar, rows_, use_heap> const& right) const {
+    FixedVector<LScalar, columns_, luh> const& left,
+    FixedVector<RScalar, rows_, ruh> const& right) const {
   return TransposedView{left} * (*this * right);  // NOLINT
 }
 
@@ -377,9 +378,10 @@ FixedStrictlyLowerTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(data) {}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
-operator FixedMatrix<Scalar_, rows_, rows_, use_heap>() const {
-  FixedMatrix<Scalar, rows_, rows_, use_heap> result;  // Initialized.
+operator FixedMatrix<Scalar_, rows_, rows_, uh>() const {
+  FixedMatrix<Scalar, rows_, rows_, uh> result;  // Initialized.
   for (std::int64_t i = 0; i < rows_; ++i) {
     for (std::int64_t j = 0; j < i; ++j) {
       result(i, j) = (*this)(i, j);
@@ -439,10 +441,11 @@ FixedLowerTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(data) {}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
 FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
 FixedLowerTriangularMatrix(
     TransposedView<
-        FixedUpperTriangularMatrix<Scalar, rows_, use_heap>> const& view)
+        FixedUpperTriangularMatrix<Scalar, rows_, uh>> const& view)
     : FixedLowerTriangularMatrix(uninitialized) {
   for (std::int64_t i = 0; i < rows(); ++i) {
     for (std::int64_t j = 0; j <= i; ++j) {
@@ -452,9 +455,10 @@ FixedLowerTriangularMatrix(
 }
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
-operator FixedMatrix<Scalar_, rows_, rows_, use_heap>() const {
-  FixedMatrix<Scalar, rows_, rows_, use_heap> result;  // Initialized.
+operator FixedMatrix<Scalar_, rows_, rows_, uh>() const {
+  FixedMatrix<Scalar, rows_, rows_, uh> result;  // Initialized.
   for (std::int64_t i = 0; i < rows_; ++i) {
     for (std::int64_t j = 0; j <= i; ++j) {
       result(i, j) = (*this)(i, j);
@@ -504,12 +508,11 @@ FixedStrictlyUpperTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(Transpose(data)) {}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
 FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedStrictlyUpperTriangularMatrix(
-    TransposedView<FixedStrictlyLowerTriangularMatrix<Scalar,
-                                                      columns_,
-                                                      use_heap>> const&
-        view)
+    TransposedView<
+        FixedStrictlyLowerTriangularMatrix<Scalar, columns_, uh>> const& view)
     : FixedStrictlyUpperTriangularMatrix(uninitialized) {
   for (std::int64_t i = 0; i < rows(); ++i) {
     for (std::int64_t j = i; j < columns(); ++j) {
@@ -519,9 +522,10 @@ FixedStrictlyUpperTriangularMatrix(
 }
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
 constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
-operator FixedMatrix<Scalar_, columns_, columns_, use_heap>() const {
-  FixedMatrix<Scalar, columns_, columns_, use_heap> result;  // Initialized.
+operator FixedMatrix<Scalar_, columns_, columns_, uh>() const {
+  FixedMatrix<Scalar, columns_, columns_, uh> result;  // Initialized.
   for (std::int64_t j = 0; j < columns_; ++j) {
     for (std::int64_t i = 0; i < j; ++i) {
       result(i, j) = (*this)(i, j);
@@ -598,10 +602,11 @@ FixedUpperTriangularMatrix(std::array<Scalar, size_> const& data)
     : data_(Transpose(data)) {}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
 FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedUpperTriangularMatrix(
     TransposedView<
-        FixedLowerTriangularMatrix<Scalar, columns_, use_heap>> const& view)
+        FixedLowerTriangularMatrix<Scalar, columns_, uh>> const& view)
     : FixedUpperTriangularMatrix(uninitialized) {
   for (std::int64_t i = 0; i < rows(); ++i) {
     for (std::int64_t j = i; j < columns(); ++j) {
@@ -611,9 +616,10 @@ FixedUpperTriangularMatrix(
 }
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
-operator FixedMatrix<Scalar_, columns_, columns_, use_heap>() const {
-  FixedMatrix<Scalar, columns_, columns_, use_heap> result;  // Initialized.
+operator FixedMatrix<Scalar_, columns_, columns_, uh>() const {
+  FixedMatrix<Scalar, columns_, columns_, uh> result;  // Initialized.
   for (std::int64_t j = 0; j < columns_; ++j) {
     for (std::int64_t i = 0; i <= j; ++i) {
       result(i, j) = (*this)(i, j);
