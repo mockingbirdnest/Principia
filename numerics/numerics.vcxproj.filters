@@ -367,9 +367,6 @@
     <ClCompile Include="next_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="matrix_computations_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="davenport_q_method.hpp">
       <Filter>Header Files</Filter>
     </ClCompile>

@@ -21,12 +21,14 @@ using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_si;
 
-template<typename Scalar_, std::int64_t rows_, std::int64_t columns_, bool use_heap_ = false>
+//TODO(phl)Conversions across use_heap?
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap = false>
 class FixedMatrix;
-template<typename Scalar_, std::int64_t rows_, bool use_heap_ = false>
+template<typename Scalar_, std::int64_t rows_, bool use_heap = false>
 class FixedUpperTriangularMatrix;
 
-template<typename Scalar_, std::int64_t size_, bool use_heap_ = false>
+template<typename Scalar_, std::int64_t size_, bool use_heap = false>
 class FixedVector final {
  public:
   using Scalar = Scalar_;
@@ -67,7 +69,7 @@ class FixedVector final {
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
-  FixedVector<double, size_> Normalize() const;
+  FixedVector<double, size_, use_heap> Normalize() const;
 
   static constexpr std::int64_t size() { return size_; }
 
@@ -83,7 +85,16 @@ class FixedVector final {
   }
 
  private:
-  std::array<Scalar, size_> data_;
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
+  std::array<Scalar, size_> const& data() const;
+  std::array<Scalar, size_>& data();
+
+  constexpr Data MakeData(auto&&... args);
+
+  Data data_;
 
   template<typename L, typename R, std::int64_t s, bool uh>
   friend constexpr Product<L, R> operator*(
@@ -99,7 +110,8 @@ class FixedVector final {
       FixedVector<R, c, uh> const& right);
 };
 
-template<typename Scalar_, std::int64_t rows_, std::int64_t columns_, bool use_heap_ = false>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
 class FixedMatrix final {
   static constexpr std::int64_t size_ = rows_ * columns_;
 
@@ -118,7 +130,8 @@ class FixedMatrix final {
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
   constexpr explicit FixedMatrix(
-      TransposedView<FixedMatrix<Scalar, columns_, rows_, use_heap_>> const& view);
+      TransposedView<FixedMatrix<Scalar, columns_, rows_, use_heap>> const&
+          view);
 
   friend bool operator==(FixedMatrix const& left,
                          FixedMatrix const& right) = default;
@@ -140,7 +153,7 @@ class FixedMatrix final {
   constexpr FixedMatrix& operator/=(double right);
 
   constexpr FixedMatrix& operator*=(
-      FixedMatrix<double, rows_, columns_, use_heap_> const& right)
+      FixedMatrix<double, rows_, columns_, use_heap> const& right)
     requires(rows_ == columns_);
 
   template<std::int64_t r>
@@ -152,8 +165,8 @@ class FixedMatrix final {
   // `SymmetricBilinearForm`.  Prefer to use `TransposedView` and `operator*`.
   template<typename LScalar, typename RScalar>
   Product<Scalar, Product<LScalar, RScalar>>
-      operator()(FixedVector<LScalar, columns_, use_heap_> const& left,
-                 FixedVector<RScalar, rows_, use_heap_> const& right) const;
+      operator()(FixedVector<LScalar, columns_, use_heap> const& left,
+                 FixedVector<RScalar, rows_, use_heap> const& right) const;
 
   static FixedMatrix Identity()
     requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_);
@@ -167,7 +180,7 @@ class FixedMatrix final {
       FixedVector<R, c, uh> const& right);
 };
 
-template<typename Scalar_, std::int64_t rows_, bool use_heap_ = false>
+template<typename Scalar_, std::int64_t rows_, bool use_heap = false>
 class FixedStrictlyLowerTriangularMatrix final {
   static constexpr std::int64_t size_ = rows_ * (rows_ - 1) / 2;
 
@@ -183,7 +196,8 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
-  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, use_heap_>() const;
+  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, use_heap>()
+      const;
 
   friend bool operator==(FixedStrictlyLowerTriangularMatrix const& left,
                          FixedStrictlyLowerTriangularMatrix const& right) =
@@ -209,7 +223,7 @@ class FixedStrictlyLowerTriangularMatrix final {
   std::array<Scalar, size_> data_;
 };
 
-template<typename Scalar_, std::int64_t rows_, bool use_heap_ = false>
+template<typename Scalar_, std::int64_t rows_, bool use_heap = false>
 class FixedLowerTriangularMatrix final {
   static constexpr std::int64_t size_ = rows_ * (rows_ + 1) / 2;
 
@@ -226,9 +240,11 @@ class FixedLowerTriangularMatrix final {
       std::array<Scalar, size_> const& data);
 
   explicit FixedLowerTriangularMatrix(
-      TransposedView<FixedUpperTriangularMatrix<Scalar, rows_, use_heap_>> const& view);
+      TransposedView<FixedUpperTriangularMatrix<Scalar, rows_, use_heap>> const&
+          view);
 
-  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, use_heap_>() const;
+  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, use_heap>()
+      const;
 
   friend bool operator==(FixedLowerTriangularMatrix const& left,
                          FixedLowerTriangularMatrix const& right) = default;
@@ -249,7 +265,7 @@ class FixedLowerTriangularMatrix final {
   std::array<Scalar, size_> data_;
 };
 
-template<typename Scalar_, std::int64_t columns_, bool use_heap_ = false>
+template<typename Scalar_, std::int64_t columns_, bool use_heap = false>
 class FixedStrictlyUpperTriangularMatrix final {
   static constexpr std::int64_t size_ = columns_ * (columns_ - 1) / 2;
 
@@ -267,9 +283,11 @@ class FixedStrictlyUpperTriangularMatrix final {
 
   explicit FixedStrictlyUpperTriangularMatrix(
       TransposedView<
-          FixedStrictlyLowerTriangularMatrix<Scalar, columns_, use_heap_>> const& view);
+          FixedStrictlyLowerTriangularMatrix<Scalar, columns_, use_heap>> const&
+          view);
 
-  explicit constexpr operator FixedMatrix<Scalar, columns_, columns_, use_heap_>() const;
+  explicit constexpr
+  operator FixedMatrix<Scalar, columns_, columns_, use_heap>() const;
 
   friend bool operator==(
       FixedStrictlyUpperTriangularMatrix const& left,
@@ -297,7 +315,7 @@ class FixedStrictlyUpperTriangularMatrix final {
   std::array<Scalar, size_> data_;
 };
 
-template<typename Scalar_, std::int64_t columns_, bool use_heap_ = false>
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
 class FixedUpperTriangularMatrix final {
   static constexpr std::int64_t size_ = columns_ * (columns_ + 1) / 2;
 
@@ -314,9 +332,11 @@ class FixedUpperTriangularMatrix final {
       std::array<Scalar, size_> const& data);
 
   explicit FixedUpperTriangularMatrix(
-      TransposedView<FixedLowerTriangularMatrix<Scalar, columns_, use_heap_>> const& view);
+      TransposedView<
+          FixedLowerTriangularMatrix<Scalar, columns_, use_heap>> const& view);
 
-  explicit constexpr operator FixedMatrix<Scalar, columns_, columns_, use_heap_>() const;
+  explicit constexpr
+  operator FixedMatrix<Scalar, columns_, columns_, use_heap>() const;
 
   friend bool operator==(FixedUpperTriangularMatrix const& left,
                          FixedUpperTriangularMatrix const& right) = default;
