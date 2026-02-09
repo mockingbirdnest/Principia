@@ -16,6 +16,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/unbounded_arrays.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/integrators.pb.h"
 
@@ -29,6 +30,7 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_quantities;
 
 struct ЧебышёвPicardIterationParams {
@@ -102,15 +104,15 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
     std::vector<typename ODE::IndependentVariable> t_;
 
     // Controls the boundary condition.
-    FixedMatrix<double, M + 1, n> CₓX₀_;
+    UnboundedMatrix<double> CₓX₀_;
 
     // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
     // variables at each node.
-    FixedMatrix<double, M + 1, n> Xⁱ_;
-    FixedMatrix<double, M + 1, n> Xⁱ⁺¹_;
+    UnboundedMatrix<double> Xⁱ_;
+    UnboundedMatrix<double> Xⁱ⁺¹_;
 
     // The computed derivative (at each node, for the current iteration).
-    FixedMatrix<double, M + 1, n> yʹ_;
+    UnboundedMatrix<double> yʹ_;
 
     friend class ЧебышёвPicardIntegrator;
   };
@@ -144,7 +146,7 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
   FixedVector<double, M + 1> nodes_;
 
   // The product of 1.31a and 1.31b from [Mac15].
-  FixedMatrix<double, M + 1, M + 1> CₓCα_;
+  UnboundedMatrix<double> CₓCα_;
 };
 
 }  // namespace internal

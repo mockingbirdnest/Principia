@@ -1,7 +1,5 @@
 #pragma once
 
-#include "integrators/чебышёв_picard_integrator.hpp"
-
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -11,6 +9,7 @@
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "geometry/sign.hpp"
+#include "integrators/чебышёв_picard_integrator.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_views.hpp"
 #include "quantities/si.hpp"
@@ -27,12 +26,9 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_si;
 
-template<typename ODE, std::int64_t M>
+template<typename ODE>
 ODE::DependentVariables DependentVariablesFromMatrixRow(
-    FixedMatrix<double,
-                M,
-                std::tuple_size_v<typename ODE::DependentVariables>> const&
-        matrix,
+    UnboundedMatrix<double> const& matrix,
     std::int64_t const row) {
   std::int64_t j = 0;
   typename ODE::DependentVariables y;
@@ -44,24 +40,21 @@ ODE::DependentVariables DependentVariablesFromMatrixRow(
   return y;
 }
 
-template<typename ODE, std::int64_t M>
-void DependentVariablesToMatrixRow(
-    typename ODE::DependentVariables const& y,
-    std::int64_t const row,
-    FixedMatrix<double, M, std::tuple_size_v<typename ODE::DependentVariables>>&
-        matrix) {
+template<typename ODE>
+void DependentVariablesToMatrixRow(typename ODE::DependentVariables const& y,
+                                   std::int64_t const row,
+                                   UnboundedMatrix<double>& matrix) {
   std::int64_t j = 0;
   for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
     matrix(row, j++) = yⱼ / si::Unit<decltype(yⱼ)>;
   });
 }
 
-template<typename ODE, std::int64_t M>
+template<typename ODE>
 void DependentVariableDerivativesToMatrixRow(
     typename ODE::DependentVariableDerivatives const& y,
     std::int64_t const row,
-    FixedMatrix<double, M, std::tuple_size_v<typename ODE::DependentVariables>>&
-        matrix) {
+    UnboundedMatrix<double>& matrix) {
   std::int64_t j = 0;
   for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
     matrix(row, j++) = yⱼ / si::Unit<decltype(yⱼ)>;
@@ -69,11 +62,10 @@ void DependentVariableDerivativesToMatrixRow(
 }
 
 // Returns max|aᵢⱼ|.
-template<std::int64_t M, std::int64_t N>
-double LInfinityNorm(FixedMatrix<double, M, N> const& A) {
+inline double LInfinityNorm(UnboundedMatrix<double> const& A) {
   double norm = 0.0;
-  for (std::int64_t i = 0; i < M; ++i) {
-    for (std::int64_t j = 0; j < N; ++j) {
+  for (std::int64_t i = 0; i < A.rows(); ++i) {
+    for (std::int64_t j = 0; j < A.columns(); ++j) {
       norm = std::max(norm, std::abs(A(i, j)));
     }
   }
@@ -135,12 +127,12 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
          ++iteration) {
       // Evaluate the right hand side of the equation.
       for (int64_t i = 0; i < Xⁱ_.rows(); ++i) {
-        auto const y = DependentVariablesFromMatrixRow<ODE, M + 1>(Xⁱ_, i);
+        auto const y = DependentVariablesFromMatrixRow<ODE>(Xⁱ_, i);
         DependentVariableDerivatives yʹᵢ;
         RETURN_IF_ERROR(equation.compute_derivative(t_[i], y, yʹᵢ));
 
         // Store it in yʹ.
-        DependentVariableDerivativesToMatrixRow<ODE, M + 1>(yʹᵢ, i, yʹ_);
+        DependentVariableDerivativesToMatrixRow<ODE>(yʹᵢ, i, yʹ_);
       }
 
       // Compute new x.
@@ -206,16 +198,16 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator),
       params_(params),
-      CₓX₀_(uninitialized),
-      Xⁱ_(uninitialized),
-      Xⁱ⁺¹_(uninitialized),
-      yʹ_(uninitialized) {
+      CₓX₀_(M + 1, n, uninitialized),
+      Xⁱ_(M + 1, n, uninitialized),
+      Xⁱ⁺¹_(M + 1, n, uninitialized),
+      yʹ_(M + 1, n, uninitialized) {
   t_.reserve(M + 1);
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
 ЧебышёвPicardIntegrator<Method, ODE_>::ЧебышёвPicardIntegrator()
-    : nodes_(uninitialized), CₓCα_(uninitialized) {
+    : nodes_(uninitialized), CₓCα_(M + 1, M + 1, uninitialized) {
   // We use the notation from [Mac15], section 1.4.3.
 
   // Populate nodes.
@@ -225,7 +217,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // ᵝT is a (M + 1)×(N + 1) matrix of Чебышёв polynomials evaluated at nodes.
   // See [Mac15], equation (1.20).
-  FixedMatrix<double, M + 1, N + 1> ᵝT(uninitialized);
+  UnboundedMatrix<double> ᵝT(M + 1, N + 1, uninitialized);
 
   for (std::int64_t i = 0; i <= M; ++i) {
     const auto τᵢ = nodes_[i];
@@ -242,18 +234,18 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // ᵝW is a diagonal (N + 1)×(N + 1) matrix with diagonal [½, 1, 1, ..., ½].
   // See [Mac15], equation (1.20).
-  FixedMatrix<double, N + 1, N + 1> ᵝW;
+  UnboundedMatrix<double> ᵝW(N + 1, N + 1);
   ᵝW(0, 0) = 0.5;
   ᵝW(N, N) = 0.5;
   for (std::int64_t i = 1; i < N; ++i) {
     ᵝW(i, i) = 1;
   }
 
-  FixedMatrix<double, M + 1, N + 1> Cₓ = ᵝT * ᵝW;
+  UnboundedMatrix<double> Cₓ = ᵝT * ᵝW;
 
   // R is a diagonal (N + 1)×(N + 1) matrix.
   // See [Mac15], equation (1.25).
-  FixedMatrix<double, N + 1, N + 1> R;
+  UnboundedMatrix<double> R(N + 1, N + 1);
   R(0, 0) = 1;
   R(N, N) = 1.0 / N;
   for (std::int64_t i = 1; i < N; ++i) {
@@ -262,7 +254,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // S is an (N + 1)×N matrix.
   // See equation 1.26 in [Mac15].
-  FixedMatrix<double, N + 1, N> S;
+  UnboundedMatrix<double> S(N + 1, N);
   S(0, 0) = 1;
   S(0, 1) = -0.5;
   for (std::int64_t k = 2; k < N; ++k) {
@@ -277,7 +269,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // ᶠTᵀ is ᵝTᵀ with the last row removed.
   // See [Mac15], equation (1.22).
-  FixedMatrix<double, N, M + 1> ᶠTᵀ(uninitialized);
+  UnboundedMatrix<double> ᶠTᵀ(N, M + 1, uninitialized);
   for (std::int64_t i = 0; i < N; ++i) {
     for (std::int64_t j = 0; j <= M; ++j) {
       ᶠTᵀ(i, j) = ᵝT(j, i);
@@ -286,7 +278,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // V is is a diagonal (M + 1)×(M + 1) matrix with diagonal [1/M, 2/M, 2/M,
   // ..., 1/M].
-  FixedMatrix<double, M + 1, M + 1> V;
+  UnboundedMatrix<double> V(M + 1, M + 1);
   constexpr double one_over_M = 1.0 / M;
   V(0, 0) = one_over_M;
   V(M, M) = one_over_M;
