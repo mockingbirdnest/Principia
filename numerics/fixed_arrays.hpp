@@ -199,6 +199,9 @@ class FixedMatrix final {
 
   Data data_;
 
+  template<typename S, std::int64_t r, std::int64_t c, bool luh, bool ruh>
+  friend bool operator==(FixedMatrix<S, r, c, luh> const& left,
+                         FixedMatrix<S, r, c, ruh> const& right);
   template<typename L, typename R, std::int64_t r, std::int64_t c,
            bool uh, bool luh, bool ruh>
   friend constexpr FixedVector<Product<L, R>, r, uh> operator*(
@@ -265,6 +268,11 @@ class FixedStrictlyLowerTriangularMatrix final {
 
   Data data_;
 
+  template<typename S, std::int64_t r,  bool luh, bool ruh>
+  friend bool operator==(
+      FixedStrictlyLowerTriangularMatrix<S, r, luh> const& left,
+      FixedStrictlyLowerTriangularMatrix<S, r, ruh> const& right);
+
   template<typename S, std::int64_t r, bool uh>
   friend class FixedStrictlyLowerTriangularMatrix;
 };
@@ -326,6 +334,10 @@ class FixedLowerTriangularMatrix final {
   std::array<Scalar, size_>& data();
 
   Data data_;
+
+  template<typename S, std::int64_t r,  bool luh, bool ruh>
+  friend bool operator==(FixedLowerTriangularMatrix<S, r, luh> const& left,
+                         FixedLowerTriangularMatrix<S, r, ruh> const& right);
 
   template<typename S, std::int64_t r, bool uh>
   friend class FixedLowerTriangularMatrix;
@@ -396,6 +408,11 @@ class FixedStrictlyUpperTriangularMatrix final {
 
   Data data_;
 
+  template<typename S, std::int64_t c,  bool luh, bool ruh>
+  friend bool operator==(
+      FixedStrictlyUpperTriangularMatrix<S, c, luh> const& left,
+      FixedStrictlyUpperTriangularMatrix<S, c, ruh> const& right);
+
   template<typename S, std::int64_t c, bool uh>
   friend class FixedStrictlyUpperTriangularMatrix;
 };
@@ -463,6 +480,10 @@ class FixedUpperTriangularMatrix final {
   std::array<Scalar, size_>& data();
 
   Data data_;
+
+  template<typename S, std::int64_t c,  bool luh, bool ruh>
+  friend bool operator==(FixedUpperTriangularMatrix<S, c, luh> const& left,
+                         FixedUpperTriangularMatrix<S, c, ruh> const& right);
 
   template<typename S, std::int64_t c, bool uh>
   friend class FixedUpperTriangularMatrix;

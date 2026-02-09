@@ -238,8 +238,8 @@ FixedVector<Scalar_, size_, use_heap>::end() const {
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
-std::array<Scalar_, size_> const&
-FixedVector<Scalar_, size_, use_heap>::data() const {
+auto FixedVector<Scalar_, size_, use_heap>::data() const
+    -> std::array<Scalar_, size_> const& {
   if constexpr (use_heap) {
     return *data_;
   } else {
@@ -248,8 +248,8 @@ FixedVector<Scalar_, size_, use_heap>::data() const {
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
-std::array<Scalar_, size_>&
-FixedVector<Scalar_, size_, use_heap>::data() {
+auto FixedVector<Scalar_, size_, use_heap>::data()
+    -> std::array<Scalar_, size_>& {
   if constexpr (use_heap) {
     return *data_;
   } else {
@@ -456,6 +456,28 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::Identity()
   return m;
 }
 
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
+auto FixedMatrix<Scalar_, rows_, columns_, use_heap>::data() const
+    -> std::array<Scalar_, size_> const& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
+}
+
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
+auto FixedMatrix<Scalar_, rows_, columns_, use_heap>::data()
+    -> std::array<Scalar_, size_>& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
+}
+
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
     FixedStrictlyLowerTriangularMatrix()
@@ -553,6 +575,28 @@ Scalar_ const*
 FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::row() const {
   static_assert(r < rows_);
   return &data()[r * (r - 1) / 2];
+}
+
+template<typename Scalar_, std::int64_t rows_,
+         bool use_heap>
+auto FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::data() const
+    -> std::array<Scalar_, size_> const& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
+}
+
+template<typename Scalar_, std::int64_t rows_,
+         bool use_heap>
+auto FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::data()
+    -> std::array<Scalar_, size_>& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
 }
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
@@ -656,6 +700,28 @@ FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
     Scalar const (&right)[size_]) {
   std::copy(right, right + size_, data().data());
   return *this;
+}
+
+template<typename Scalar_, std::int64_t rows_,
+         bool use_heap>
+auto FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::data() const
+    -> std::array<Scalar_, size_> const& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
+}
+
+template<typename Scalar_, std::int64_t rows_,
+         bool use_heap>
+auto FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::data()
+    -> std::array<Scalar_, size_>& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
 }
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
@@ -788,6 +854,28 @@ auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::Transpose(
   return result;
 }
 
+template<typename Scalar_, std::int64_t columns_,
+         bool use_heap>
+auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
+    const -> std::array<Scalar_, size_> const& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
+}
+
+template<typename Scalar_, std::int64_t columns_,
+         bool use_heap>
+auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
+    -> std::array<Scalar_, size_>& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
+}
+
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedUpperTriangularMatrix()
@@ -917,6 +1005,28 @@ auto FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::Transpose(
   return result;
 }
 
+template<typename Scalar_, std::int64_t columns_,
+         bool use_heap>
+auto FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
+    const -> std::array<Scalar_, size_> const& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
+}
+
+template<typename Scalar_, std::int64_t columns_,
+         bool use_heap>
+auto FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
+    -> std::array<Scalar_, size_>& {
+  if constexpr (use_heap) {
+    return *data_;
+  } else {
+    return data_;
+  }
+}
+
 template<typename LScalar, typename RScalar, std::int64_t size,
          bool luh, bool ruh>
 constexpr Product<LScalar, RScalar> InnerProduct(
@@ -976,29 +1086,37 @@ bool operator==(FixedVector<Scalar, size, luh> const& left,
 template<typename Scalar, std::int64_t rows, std::int64_t columns,
          bool luh, bool ruh>
 bool operator==(FixedMatrix<Scalar, rows, columns, luh> const& left,
-                FixedMatrix<Scalar, rows, columns, ruh> const& right) {}
+                FixedMatrix<Scalar, rows, columns, ruh> const& right) {
+  return left.data() == right.data();
+}
 
 template<typename Scalar, std::int64_t rows,
          bool luh, bool ruh>
 bool operator==(
     FixedStrictlyLowerTriangularMatrix<Scalar, rows, luh> const& left,
-    FixedStrictlyLowerTriangularMatrix<Scalar, rows, ruh> const& right) {}
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, ruh> const& right) {
+  return left.data() == right.data();
+}
 
 template<typename Scalar, std::int64_t rows, bool luh, bool ruh>
-bool operator==(FixedLowerTriangularMatrix<Scalar, rows, luh> const& left, FixedLowerTriangularMatrix<Scalar, rows, ruh> const& right) {
-  return false;
+bool operator==(FixedLowerTriangularMatrix<Scalar, rows, luh> const& left,
+                FixedLowerTriangularMatrix<Scalar, rows, ruh> const& right) {
+  return left.data() == right.data();
 }
 
 template<typename Scalar, std::int64_t columns,
          bool luh, bool ruh>
 bool operator==(
     FixedStrictlyUpperTriangularMatrix<Scalar, columns, luh> const& left,
-    FixedStrictlyUpperTriangularMatrix<Scalar, columns, ruh> const& right) {}
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, ruh> const& right) {
+  return left.data() == right.data();
+}
 
 template<typename Scalar, std::int64_t columns,
          bool luh, bool ruh>
 bool operator==(FixedUpperTriangularMatrix<Scalar, columns, luh> const& left,
                 FixedUpperTriangularMatrix<Scalar, columns, ruh> const& right) {
+  return left.data() == right.data();
 }
 
 template<typename Scalar, std::int64_t size,
