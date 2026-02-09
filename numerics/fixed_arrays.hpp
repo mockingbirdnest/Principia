@@ -42,6 +42,11 @@ class FixedVector final {
   constexpr FixedVector(
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
+  template<bool uh>
+  constexpr FixedVector(FixedVector<Scalar, size_, uh> const& other);
+  template<bool uh>
+  constexpr FixedVector(FixedVector<Scalar, size_, uh>&& other);
+
   // Constructs a fixed vector by copying data from the view.  Note that the
   // result is fixed even if the matrix being viewed is an UnboundedMatrix.
   template<typename T>
@@ -53,6 +58,11 @@ class FixedVector final {
 
   constexpr Scalar& operator[](std::int64_t index);
   constexpr Scalar const& operator[](std::int64_t index) const;
+
+  template<bool uh>
+  constexpr FixedVector& operator=(FixedVector<Scalar, size_, uh> const& other);
+  template<bool uh>
+  constexpr FixedVector& operator=(FixedVector<Scalar, size_, uh>&& other);
 
   constexpr FixedVector& operator=(Scalar const (&right)[size_]);
 
@@ -88,10 +98,11 @@ class FixedVector final {
   std::array<Scalar, size_> const& data() const;
   std::array<Scalar, size_>& data();
 
-  constexpr Data MakeData(auto&&... args);
-
   Data data_;
 
+  template<typename S, std::int64_t s, bool luh, bool ruh>
+  friend bool operator==(FixedVector<S, s, luh> const& left,
+                         FixedVector<S, s, ruh> const& right);
   template<typename L, typename R, std::int64_t s, bool ruh>
   friend constexpr Product<L, R> operator*(
       L* const left,
@@ -105,6 +116,9 @@ class FixedVector final {
   friend constexpr FixedVector<Product<L, R>, r, uh> operator*(
       FixedMatrix<L, r, c, luh> const& left,
       FixedVector<R, c, ruh> const& right);
+
+  template<typename S, std::int64_t s, bool uh>
+  friend class FixedVector;
 };
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
@@ -127,6 +141,11 @@ class FixedMatrix final {
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
   template<bool uh>
+  constexpr FixedMatrix(FixedMatrix<Scalar, rows_, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedMatrix(FixedMatrix<Scalar, rows_, columns_, uh>&& other);
+
+  template<bool uh>
   constexpr explicit FixedMatrix(
       TransposedView<FixedMatrix<Scalar, columns_, rows_, uh>> const& view);
 
@@ -136,6 +155,13 @@ class FixedMatrix final {
   constexpr Scalar& operator()(std::int64_t row, std::int64_t column);
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
+
+  template<bool uh>
+  constexpr FixedMatrix& operator=(
+      FixedMatrix<Scalar, rows_, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedMatrix& operator=(
+      FixedMatrix<Scalar, rows_, columns_, uh>&& other);
 
   constexpr FixedMatrix& operator=(Scalar const (&right)[size_]);
 
@@ -164,13 +190,23 @@ class FixedMatrix final {
     requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_);
 
  private:
-  std::array<Scalar, size_> data_;
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
+  std::array<Scalar, size_> const& data() const;
+  std::array<Scalar, size_>& data();
+
+  Data data_;
 
   template<typename L, typename R, std::int64_t r, std::int64_t c,
            bool uh, bool luh, bool ruh>
   friend constexpr FixedVector<Product<L, R>, r, uh> operator*(
       FixedMatrix<L, r, c, luh> const& left,
       FixedVector<R, c, ruh> const& right);
+
+  template<typename S, std::int64_t r, std::int64_t c, bool uh>
+  friend class FixedMatrix;
 };
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap = false>
@@ -189,6 +225,13 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
+  template<bool uh>
+  constexpr FixedStrictlyLowerTriangularMatrix(
+      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh> const& other);
+  template<bool uh>
+  constexpr FixedStrictlyLowerTriangularMatrix(
+      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+
   template<bool uh = use_heap>
   explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, uh>() const;
 
@@ -199,6 +242,13 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
+  template<bool uh>
+  constexpr FixedStrictlyLowerTriangularMatrix& operator=(
+      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh> const& other);
+  template<bool uh>
+  constexpr FixedStrictlyLowerTriangularMatrix& operator=(
+      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+
   constexpr FixedStrictlyLowerTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
 
@@ -206,7 +256,17 @@ class FixedStrictlyLowerTriangularMatrix final {
   Scalar const* row() const;
 
  private:
-  std::array<Scalar, size_> data_;
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
+  std::array<Scalar, size_> const& data() const;
+  std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t r, bool uh>
+  friend class FixedStrictlyLowerTriangularMatrix;
 };
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap = false>
@@ -226,6 +286,13 @@ class FixedLowerTriangularMatrix final {
       std::array<Scalar, size_> const& data);
 
   template<bool uh>
+  constexpr FixedLowerTriangularMatrix(
+      FixedLowerTriangularMatrix<Scalar, rows_, uh> const& other);
+  template<bool uh>
+  constexpr FixedLowerTriangularMatrix(
+      FixedLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+
+  template<bool uh>
   explicit FixedLowerTriangularMatrix(
       TransposedView<FixedUpperTriangularMatrix<Scalar, rows_, uh>> const&
           view);
@@ -240,11 +307,28 @@ class FixedLowerTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
+  template<bool uh>
+  constexpr FixedLowerTriangularMatrix& operator=(
+      FixedLowerTriangularMatrix<Scalar, rows_, uh> const& other);
+  template<bool uh>
+  constexpr FixedLowerTriangularMatrix& operator=(
+      FixedLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+
   constexpr FixedLowerTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
 
  private:
-  std::array<Scalar, size_> data_;
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
+  std::array<Scalar, size_> const& data() const;
+  std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t r, bool uh>
+  friend class FixedLowerTriangularMatrix;
 };
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap = false>
@@ -264,6 +348,13 @@ class FixedStrictlyUpperTriangularMatrix final {
       std::array<Scalar, size_> const& data);
 
   template<bool uh>
+  constexpr FixedStrictlyUpperTriangularMatrix(
+      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedStrictlyUpperTriangularMatrix(
+      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+
+  template<bool uh>
   explicit FixedStrictlyUpperTriangularMatrix(
       TransposedView<
           FixedStrictlyLowerTriangularMatrix<Scalar, columns_, uh>> const&
@@ -280,16 +371,33 @@ class FixedStrictlyUpperTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
+  template<bool uh>
+  constexpr FixedStrictlyUpperTriangularMatrix& operator=(
+      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedStrictlyUpperTriangularMatrix& operator=(
+      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+
   constexpr FixedStrictlyUpperTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
 
  private:
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
   // For ease of writing matrices in tests, the input data is received in row-
   // major format.  This transposes a trapezoidal slice to make it column-major.
   static std::array<Scalar, size_> Transpose(
       std::array<Scalar, size_> const& data);
 
-  std::array<Scalar, size_> data_;
+  std::array<Scalar, size_> const& data() const;
+  std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t c, bool uh>
+  friend class FixedStrictlyUpperTriangularMatrix;
 };
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
@@ -309,6 +417,13 @@ class FixedUpperTriangularMatrix final {
       std::array<Scalar, size_> const& data);
 
   template<bool uh>
+  constexpr FixedUpperTriangularMatrix(
+      FixedUpperTriangularMatrix<Scalar, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedUpperTriangularMatrix(
+      FixedUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+
+  template<bool uh>
   explicit FixedUpperTriangularMatrix(
       TransposedView<
           FixedLowerTriangularMatrix<Scalar, columns_, uh>> const& view);
@@ -324,16 +439,33 @@ class FixedUpperTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
+  template<bool uh>
+  constexpr FixedUpperTriangularMatrix& operator=(
+      FixedUpperTriangularMatrix<Scalar, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedUpperTriangularMatrix& operator=(
+      FixedUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+
   constexpr FixedUpperTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
 
  private:
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
   // For ease of writing matrices in tests, the input data is received in row-
   // major format.  This transposes a trapezoidal slice to make it column-major.
   static std::array<Scalar, size_> Transpose(
       std::array<Scalar, size_> const& data);
 
-  std::array<Scalar, size_> data_;
+  std::array<Scalar, size_> const& data() const;
+  std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t c, bool uh>
+  friend class FixedUpperTriangularMatrix;
 };
 
 // Prefer using the operator* that takes a TransposedView.

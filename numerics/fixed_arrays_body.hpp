@@ -17,6 +17,45 @@ namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
 
+template<typename T>
+struct Construction;
+
+template<typename Scalar, std::int64_t size>
+struct Construction<std::array<Scalar, size>> {
+  static constexpr std::array<Scalar, size> Make(auto&&... args) {
+    return std::array<Scalar, size>{std::forward<decltype(args)>(args)...};
+  }
+
+  static constexpr void MakeUninitialized(std::array<Scalar, size>& data) {};
+
+  static constexpr std::array<Scalar, size> MakeValueInitialized() {
+    // The `data_` member is aggregate-initialized with an empty list
+    // initializer, which performs value initialization on the components.  For
+    // quantities this calls the default constructor, for non-class types this
+    // does zero-initialization.
+    return std::array<Scalar, size>{};
+  }
+};
+
+template<typename Scalar, std::int64_t size>
+struct Construction<std::unique_ptr<std::array<Scalar, size>>> {
+  static constexpr std::unique_ptr<std::array<Scalar, size>>
+  Make(auto&&... args) {
+    return std::make_unique<std::array<Scalar, size>>(
+        std::forward<decltype(args)>(args)...);
+  }
+
+  static constexpr void MakeUninitialized(
+      std::unique_ptr<std::array<Scalar, size>>& data) {
+    data = std::make_unique<std::array<Scalar, size>>();
+  }
+
+  static constexpr std::unique_ptr<std::array<Scalar, size>>
+  MakeValueInitialized() {
+    return std::make_unique<std::array<Scalar, size>>({});
+  }
+};
+
 // A helper class to compute the dot product of two arrays.  `LScalar` and
 // `RScalar` are the types of the elements of the arrays.  `Left` and `Right`
 // are the (deduced) types of the arrays.  They must both have an operator[].
@@ -41,34 +80,38 @@ DotProduct<LScalar, RScalar, std::index_sequence<i...>>::Compute(
   return ((left[i] * right[i]) + ...);
 }
 
-// The `data_` member is aggregate-initialized with an empty list initializer,
-// which performs value initialization on the components.  For quantities this
-// calls the default constructor, for non-class types this does
-// zero-initialization.
 template<typename Scalar_, std::int64_t size_, bool use_heap>
 constexpr FixedVector<Scalar_, size_, use_heap>::FixedVector()
-    : data_{} {
-  if constexpr (use_heap) {
-    data_ = std::make_unique<std::array<Scalar, size_>>({});
-  }
-}
+    : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
 FixedVector<Scalar_, size_, use_heap>::FixedVector(uninitialized_t) {
-  if constexpr (use_heap) {
-    data_ = std::make_unique<std::array<Scalar, size_>>();
-  }
+  Construction<Data>::MakeUninitialized(data_);
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
 constexpr FixedVector<Scalar_, size_, use_heap>::FixedVector(
     std::array<Scalar, size_> const& data)
-    : data_(MakeData(data)) {}
+    : data_(Construction<Data>::Make(data)) {}
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
 constexpr FixedVector<Scalar_, size_, use_heap>::FixedVector(
     std::array<Scalar, size_>&& data)
-    : data_(MakeData(std::move(data))) {}
+    : data_(Construction<Data>::Make(std::move(data))) {}
+
+template<typename Scalar_, std::int64_t size_, bool use_heap>
+template<bool uh>
+constexpr FixedVector<Scalar_, size_, use_heap>::FixedVector(
+    FixedVector<Scalar, size_, uh> const& other)
+    : FixedVector(uninitialized) {
+  data() = other.data();
+}
+
+template<typename Scalar_, std::int64_t size_, bool use_heap>
+template<bool uh>
+constexpr FixedVector<Scalar_, size_, use_heap>::FixedVector(
+    FixedVector<Scalar, size_, uh>&& other)
+    : data_(std::move(other.data_)) {}
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
 template<typename T>
@@ -101,6 +144,24 @@ constexpr Scalar_ const& FixedVector<Scalar_, size_, use_heap>::operator[](
   CONSTEXPR_DCHECK(0 <= index);
   CONSTEXPR_DCHECK(index < size());
   return data()[index];
+}
+
+template<typename Scalar_, std::int64_t size_, bool use_heap>
+template<bool uh>
+constexpr FixedVector<Scalar_, size_, use_heap>&
+FixedVector<Scalar_, size_, use_heap>::operator=(
+    FixedVector<Scalar, size_, uh> const& other) {
+  data() = other.data();
+  return *this;
+}
+
+template<typename Scalar_, std::int64_t size_, bool use_heap>
+template<bool uh>
+constexpr FixedVector<Scalar_, size_, use_heap>&
+FixedVector<Scalar_, size_, use_heap>::operator=(
+    FixedVector<Scalar, size_, uh>&& other) {
+  data_ = std::move(other.data_);
+  return *this;
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
@@ -196,37 +257,44 @@ FixedVector<Scalar_, size_, use_heap>::data() {
   }
 }
 
-template<typename Scalar_, std::int64_t size_, bool use_heap>
-constexpr typename FixedVector<Scalar_, size_, use_heap>::Data
-FixedVector<Scalar_, size_, use_heap>::MakeData(auto&&... args) {
-  if constexpr (use_heap) {
-    return std::make_unique<std::array<Scalar_, size_>>(
-        std::forward<decltype(args)>(args)...);
-  } else {
-    return std::array<Scalar, size_>{std::forward<decltype(args)>(args)...};
-  }
-}
-
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix()
-    : data_{} {}
+    : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
-FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(uninitialized_t) {}
+FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(uninitialized_t) {
+  Construction<Data>::MakeUninitialized(data_);
+}
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(
     std::array<Scalar, size_> const& data)
-    : data_(data) {}
+    : data_(Construction<Data>::Make(data)) {}
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(
     std::array<Scalar, size_>&& data)
-    : data_(std::move(data)) {}
+    : data_(Construction<Data>::Make(std::move(data))) {}
+
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
+template<bool uh>
+constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(
+    FixedMatrix<Scalar, rows_, columns_, uh> const& other)
+    : FixedMatrix(uninitialized) {
+  data() = other.data();
+}
+
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
+template<bool uh>
+constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(
+    FixedMatrix<Scalar, rows_, columns_, uh>&& other)
+    : data_(std::move(other.data_)) {}
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
@@ -249,18 +317,38 @@ constexpr Scalar_& FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator()(
   CONSTEXPR_DCHECK(row < rows());
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column < columns());
-  return data_[row * columns() + column];
+  return data()[row * columns() + column];
 }
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
-constexpr Scalar_ const& FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator()(
-    std::int64_t const row, std::int64_t const column) const {
+constexpr Scalar_ const& FixedMatrix<Scalar_, rows_, columns_, use_heap>::
+operator()(std::int64_t const row, std::int64_t const column) const {
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row < rows());
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column < columns());
-  return data_[row * columns() + column];
+  return data()[row * columns() + column];
+}
+
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
+template<bool uh>
+constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
+FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator=(
+    FixedMatrix<Scalar_, rows_, columns_, uh> const& other) {
+  data() = other.data();
+  return *this;
+}
+
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
+template<bool uh>
+constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
+FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator=(
+    FixedMatrix<Scalar_, rows_, columns_, uh>&& other) {
+  data_ = std::move(other.data_);
+  return *this;
 }
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
@@ -272,11 +360,13 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator=(
   return *this;
 }
 
-template<typename Scalar_, std::int64_t rows_, std::int64_t columns_, bool use_heap>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
-FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator+=(FixedMatrix const& right) {
+FixedMatrix<Scalar_, rows_, columns_, use_heap>::
+operator+=(FixedMatrix const& right) {
   for (std::int64_t i = 0; i < size_; ++i) {
-    data_[i] += right.data_[i];
+    data()[i] += right.data()[i];
   }
   return *this;
 }
@@ -284,9 +374,10 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator+=(FixedMatrix const& r
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
-FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator-=(FixedMatrix const& right) {
+FixedMatrix<Scalar_, rows_, columns_, use_heap>::
+operator-=(FixedMatrix const& right) {
   for (std::int64_t i = 0; i < size_; ++i) {
-    data_[i] -= right.data_[i];
+    data()[i] -= right.data()[i];
   }
   return *this;
 }
@@ -294,8 +385,9 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator-=(FixedMatrix const& r
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
-FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator*=(double const right) {
-  for (auto& d : data_) {
+FixedMatrix<Scalar_, rows_, columns_, use_heap>::
+operator*=(double const right) {
+  for (auto& d : data()) {
     d *= right;
   }
   return *this;
@@ -304,8 +396,9 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator*=(double const right) 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
-FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator/=(double const right) {
-  for (auto& d : data_) {
+FixedMatrix<Scalar_, rows_, columns_, use_heap>::
+operator/=(double const right) {
+  for (auto& d : data()) {
     d /= right;
   }
   return *this;
@@ -326,7 +419,7 @@ template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
 template<std::int64_t r>
 Scalar_ const* FixedMatrix<Scalar_, rows_, columns_, use_heap>::row() const {
   static_assert(r < rows_);
-  return &data_[r * columns()];
+  return &data()[r * columns()];
 }
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
@@ -366,16 +459,34 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::Identity()
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
     FixedStrictlyLowerTriangularMatrix()
-    : data_{} {}
+    : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
-    FixedStrictlyLowerTriangularMatrix(uninitialized_t) {}
+    FixedStrictlyLowerTriangularMatrix(uninitialized_t) {
+  Construction<Data>::MakeUninitialized(data_);
+}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
 FixedStrictlyLowerTriangularMatrix(std::array<Scalar, size_> const& data)
-    : data_(data) {}
+    : data_(Construction<Data>::Make(data)) {}
+
+template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
+FixedStrictlyLowerTriangularMatrix(
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh> const& other)
+    : FixedStrictlyLowerTriangularMatrix(uninitialized) {
+  data() = other.data();
+}
+
+template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
+FixedStrictlyLowerTriangularMatrix(
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh>&& other)
+    : data_(std::move(data_)) {}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 template<bool uh>
@@ -397,7 +508,7 @@ operator()(std::int64_t const row, std::int64_t const column) {
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column < row);
   CONSTEXPR_DCHECK(row < rows());
-  return data_[row * (row - 1) / 2 + column];
+  return data()[row * (row - 1) / 2 + column];
 }
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
@@ -407,14 +518,32 @@ operator()(std::int64_t const row, std::int64_t const column) const {
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column < row);
   CONSTEXPR_DCHECK(row < rows());
-  return data_[row * (row - 1) / 2 + column];
+  return data()[row * (row - 1) / 2 + column];
+}
+
+template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>&
+FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh> const& other) {
+  data() = other.data();
+  return *this;
+}
+
+template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>&
+FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh>&& other) {
+  data_ = std::move(other.data_);
+  return *this;
 }
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>&
 FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
     Scalar const (&right)[size_]) {
-  std::copy(right, right + size_, data_.data());
+  std::copy(right, right + size_, data().data());
   return *this;
 }
 
@@ -423,22 +552,24 @@ template<std::int64_t r>
 Scalar_ const*
 FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::row() const {
   static_assert(r < rows_);
-  return &data_[r * (r - 1) / 2];
+  return &data()[r * (r - 1) / 2];
 }
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
 FixedLowerTriangularMatrix()
-    : data_{} {}
+    : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
-FixedLowerTriangularMatrix(uninitialized_t) {}
+FixedLowerTriangularMatrix(uninitialized_t) {
+  Construction<Data>::MakeUninitialized(data_);
+}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
 FixedLowerTriangularMatrix(std::array<Scalar, size_> const& data)
-    : data_(data) {}
+    : data_(Construction<Data>::Make(data)) {}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 template<bool uh>
@@ -453,6 +584,22 @@ FixedLowerTriangularMatrix(
     }
   }
 }
+
+template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
+constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
+FixedLowerTriangularMatrix(
+    FixedLowerTriangularMatrix<Scalar, rows_, uh> const& other)
+    : FixedLowerTriangularMatrix(uninitialized) {
+  data() = other.data();
+}
+
+template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
+constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
+FixedLowerTriangularMatrix(
+    FixedLowerTriangularMatrix<Scalar, rows_, uh>&& other)
+    : data_(std::move(data_)) {}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 template<bool uh>
@@ -473,7 +620,7 @@ operator()(std::int64_t const row, std::int64_t const column) {
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column <= row);
   CONSTEXPR_DCHECK(row < rows());
-  return data_[row * (row + 1) / 2 + column];
+  return data()[row * (row + 1) / 2 + column];
 }
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
@@ -482,30 +629,66 @@ operator()(std::int64_t const row, std::int64_t const column) const {
   CONSTEXPR_DCHECK(0 <= column);
   CONSTEXPR_DCHECK(column <= row);
   CONSTEXPR_DCHECK(row < rows());
-  return data_[row * (row + 1) / 2 + column];
+  return data()[row * (row + 1) / 2 + column];
+}
+
+template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
+constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>&
+FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
+    FixedLowerTriangularMatrix<Scalar, rows_, uh> const& other) {
+  data() = other.data();
+  return *this;
+}
+
+template<typename Scalar_, std::int64_t rows_, bool use_heap>
+template<bool uh>
+constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>&
+FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
+    FixedLowerTriangularMatrix<Scalar, rows_, uh>&& other) {
+  data_ = std::move(other.data_);
+  return *this;
 }
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>&
 FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
     Scalar const (&right)[size_]) {
-  std::copy(right, right + size_, data_.data());
+  std::copy(right, right + size_, data().data());
   return *this;
 }
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedStrictlyUpperTriangularMatrix()
-    : data_{} {}
+    : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
-FixedStrictlyUpperTriangularMatrix(uninitialized_t) {}
+FixedStrictlyUpperTriangularMatrix(uninitialized_t) {
+  Construction<Data>::MakeUninitialized(data_);
+}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedStrictlyUpperTriangularMatrix(std::array<Scalar, size_> const& data)
-    : data_(Transpose(data)) {}
+    : data_(Construction<Data>::Make(Transpose(data))) {}
+
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
+constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
+FixedStrictlyUpperTriangularMatrix(
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh> const& other)
+    : FixedStrictlyUpperTriangularMatrix(uninitialized) {
+  data() = other.data();
+}
+
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
+constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
+FixedStrictlyUpperTriangularMatrix(
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh>&& other)
+    : data_(std::move(data_)) {}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 template<bool uh>
@@ -541,7 +724,7 @@ operator()(std::int64_t const row, std::int64_t const column) {
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row < column);
   CONSTEXPR_DCHECK(column < columns());
-  return data_[column * (column - 1) / 2 + row];
+  return data()[column * (column - 1) / 2 + row];
 }
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
@@ -551,15 +734,33 @@ operator()(std::int64_t const row, std::int64_t const column) const {
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row < column);
   CONSTEXPR_DCHECK(column < columns());
-  return data_[column * (column - 1) / 2 + row];
+  return data()[column * (column - 1) / 2 + row];
+}
+
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
+constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>&
+FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::operator=(
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh> const& other) {
+  data() = other.data();
+  return *this;
+}
+
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
+constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>&
+FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::operator=(
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh>&& other) {
+  data_ = std::move(other.data_);
+  return *this;
 }
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>&
 FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::operator=(
     Scalar const (&right)[size_]) {
-  std::copy(right, right + size_, data_.data());
-  data_ = Transpose(data_);
+  std::copy(right, right + size_, data().data());
+  data() = Transpose(data());
   return *this;
 }
 
@@ -590,16 +791,34 @@ auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::Transpose(
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedUpperTriangularMatrix()
-    : data_{} {}
+    : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
-FixedUpperTriangularMatrix(uninitialized_t) {}
+FixedUpperTriangularMatrix(uninitialized_t) {
+  Construction<Data>::MakeUninitialized(data_);
+}
+
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
+constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
+FixedUpperTriangularMatrix(
+    FixedUpperTriangularMatrix<Scalar, columns_, uh> const& other)
+    : FixedUpperTriangularMatrix(uninitialized) {
+  data() = other.data();
+}
+
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
+constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
+FixedUpperTriangularMatrix(
+    FixedUpperTriangularMatrix<Scalar, columns_, uh>&& other)
+    : data_(std::move(data_)) {}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedUpperTriangularMatrix(std::array<Scalar, size_> const& data)
-    : data_(Transpose(data)) {}
+    : data_(Construction<Data>::Make(Transpose(data))) {}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 template<bool uh>
@@ -634,7 +853,7 @@ operator()(std::int64_t const row, std::int64_t const column) {
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row <= column);
   CONSTEXPR_DCHECK(column < columns());
-  return data_[column * (column + 1) / 2 + row];
+  return data()[column * (column + 1) / 2 + row];
 }
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
@@ -644,15 +863,33 @@ operator()(std::int64_t const row, std::int64_t const column) const {
   CONSTEXPR_DCHECK(0 <= row);
   CONSTEXPR_DCHECK(row <= column);
   CONSTEXPR_DCHECK(column < columns());
-  return data_[column * (column + 1) / 2 + row];
+  return data()[column * (column + 1) / 2 + row];
+}
+
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
+constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>&
+FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::operator=(
+    FixedUpperTriangularMatrix<Scalar, columns_, uh> const& other) {
+  data() = other.data();
+  return *this;
+}
+
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
+template<bool uh>
+constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>&
+FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::operator=(
+    FixedUpperTriangularMatrix<Scalar, columns_, uh>&& other) {
+  data_ = std::move(other.data_);
+  return *this;
 }
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>&
 FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::operator=(
     Scalar const (&right)[size_]) {
-  std::copy(right, right + size_, data_.data());
-  data_ = Transpose(data_);
+  std::copy(right, right + size_, data().data());
+  data() = Transpose(data());
   return *this;
 }
 
@@ -1059,7 +1296,7 @@ constexpr FixedVector<Product<LScalar, RScalar>, rows, uh> operator*(
     FixedMatrix<LScalar, rows, columns, luh> const& left,
     FixedVector<RScalar, columns, ruh> const& right) {
   std::array<Product<LScalar, RScalar>, rows> result;
-  auto const* row = left.data_.data();
+  auto const* row = left.data().data();
   for (std::int64_t i = 0; i < rows; ++i) {
     result[i] =
         DotProduct<LScalar, RScalar, std::make_index_sequence<columns>>::Compute(

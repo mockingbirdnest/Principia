@@ -248,7 +248,7 @@ TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
   sl4_(3, 1) = -666;
   EXPECT_EQ(-666, sl4_(3, 1));
 
-  FixedStrictlyLowerTriangularMatrix<double, 4, true> const sl4 = sl4_;
+  FixedStrictlyLowerTriangularMatrix<double, 4> const sl4 = sl4_;
   EXPECT_EQ(1, sl4(1, 0));
 }
 
@@ -266,7 +266,7 @@ TEST_F(FixedArraysTest, LowerTriangularMatrixIndexing) {
   l4_(3, 1) = -666;
   EXPECT_EQ(-666, l4_(3, 1));
 
-  FixedLowerTriangularMatrix<double, 4, true> const l4 = l4_;
+  FixedLowerTriangularMatrix<double, 4> const l4 = l4_;
   EXPECT_EQ(1, l4(0, 0));
 }
 
@@ -280,7 +280,7 @@ TEST_F(FixedArraysTest, StrictlyUpperTriangularMatrixIndexing) {
   su4_(1, 3) = -666;
   EXPECT_EQ(-666, su4_(1, 3));
 
-  FixedStrictlyUpperTriangularMatrix<double, 4, true> const su4 = su4_;
+  FixedStrictlyUpperTriangularMatrix<double, 4> const su4 = su4_;
   EXPECT_EQ(1, su4(0, 1));
 }
 
@@ -298,7 +298,7 @@ TEST_F(FixedArraysTest, UpperTriangularMatrixIndexing) {
   u4_(1, 3) = -666;
   EXPECT_EQ(-666, u4_(1, 3));
 
-  FixedUpperTriangularMatrix<double, 4, true> const u4 = u4_;
+  FixedUpperTriangularMatrix<double, 4> const u4 = u4_;
   EXPECT_EQ(1, u4(0, 0));
 }
 
