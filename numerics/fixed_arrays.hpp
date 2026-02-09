@@ -496,17 +496,17 @@ constexpr Product<LScalar, RScalar> InnerProduct(
     FixedVector<LScalar, size, luh> const& left,
     FixedVector<RScalar, size, ruh> const& right);
 
-template<typename Scalar, std::int64_t size, bool uh, bool vuh>
+template<typename Scalar, std::int64_t size, bool uh = false, bool vuh>
 constexpr FixedVector<double, size, uh> Normalize(
     FixedVector<Scalar, size, vuh> const& vector);
 
 template<typename LScalar, typename RScalar, std::int64_t size,
-         bool uh, bool luh, bool ruh>
+         bool uh = false, bool luh, bool ruh>
 constexpr FixedMatrix<Product<LScalar, RScalar>, size, size, uh>
 SymmetricProduct(FixedVector<LScalar, size, luh> const& left,
                  FixedVector<RScalar, size, ruh> const& right);
 
-template<typename Scalar, std::int64_t size, bool uh, bool vuh>
+template<typename Scalar, std::int64_t size, bool uh = false, bool vuh>
 constexpr FixedMatrix<Square<Scalar>, size, size, uh> SymmetricSquare(
     FixedVector<Scalar, size, vuh> const& vector);
 
