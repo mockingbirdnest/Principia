@@ -51,11 +51,6 @@ class FixedVector final {
   // Convertible to an array.
   explicit constexpr operator std::array<Scalar, size_>() const;
 
-  friend bool operator==(FixedVector const& left,
-                         FixedVector const& right) = default;
-  friend bool operator!=(FixedVector const& left,
-                         FixedVector const& right) = default;
-
   constexpr Scalar& operator[](std::int64_t index);
   constexpr Scalar const& operator[](std::int64_t index) const;
 
@@ -135,11 +130,6 @@ class FixedMatrix final {
   constexpr explicit FixedMatrix(
       TransposedView<FixedMatrix<Scalar, columns_, rows_, uh>> const& view);
 
-  friend bool operator==(FixedMatrix const& left,
-                         FixedMatrix const& right) = default;
-  friend bool operator!=(FixedMatrix const& left,
-                         FixedMatrix const& right) = default;
-
   // For  0 < i < rows and 0 < j < columns, the entry a_ij is accessed as
   // `a(i, j)`.  if i and j do not satisfy these conditions, the expression
   // `a(i, j)` implies undefined behaviour.
@@ -202,13 +192,6 @@ class FixedStrictlyLowerTriangularMatrix final {
   template<bool uh = use_heap>
   explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, uh>() const;
 
-  friend bool operator==(FixedStrictlyLowerTriangularMatrix const& left,
-                         FixedStrictlyLowerTriangularMatrix const& right) =
-      default;
-  friend bool operator!=(FixedStrictlyLowerTriangularMatrix const& left,
-                         FixedStrictlyLowerTriangularMatrix const& right) =
-      default;
-
   // For  0 ≤ j < i < rows, the entry a_ij is accessed as `a(i, j)`.
   // if i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
@@ -250,11 +233,6 @@ class FixedLowerTriangularMatrix final {
   template<bool uh = use_heap>
   explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, uh>() const;
 
-  friend bool operator==(FixedLowerTriangularMatrix const& left,
-                         FixedLowerTriangularMatrix const& right) = default;
-  friend bool operator!=(FixedLowerTriangularMatrix const& left,
-                         FixedLowerTriangularMatrix const& right) = default;
-
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as `a(i, j)`.
   // if i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
@@ -294,13 +272,6 @@ class FixedStrictlyUpperTriangularMatrix final {
   template<bool uh = use_heap>
   explicit constexpr
   operator FixedMatrix<Scalar, columns_, columns_, uh>() const;
-
-  friend bool operator==(
-      FixedStrictlyUpperTriangularMatrix const& left,
-      FixedStrictlyUpperTriangularMatrix const& right) = default;
-  friend bool operator!=(
-      FixedStrictlyUpperTriangularMatrix const& left,
-      FixedStrictlyUpperTriangularMatrix const& right) = default;
 
   // For  0 ≤ i < j < columns, the entry a_ij is accessed as `a(i, j)`.
   // if i and j do not satisfy these conditions, the expression `a(i, j)`
@@ -346,11 +317,6 @@ class FixedUpperTriangularMatrix final {
   explicit constexpr
   operator FixedMatrix<Scalar, columns_, columns_, uh>() const;
 
-  friend bool operator==(FixedUpperTriangularMatrix const& left,
-                         FixedUpperTriangularMatrix const& right) = default;
-  friend bool operator!=(FixedUpperTriangularMatrix const& left,
-                         FixedUpperTriangularMatrix const& right) = default;
-
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as `a(i, j)`.
   // if i and j do not satisfy these conditions, the expression `a(i, j)`
   // implies undefined behaviour.
@@ -390,6 +356,72 @@ SymmetricProduct(FixedVector<LScalar, size, luh> const& left,
 template<typename Scalar, std::int64_t size, bool uh, bool vuh>
 constexpr FixedMatrix<Square<Scalar>, size, size, uh> SymmetricSquare(
     FixedVector<Scalar, size, vuh> const& vector);
+
+// Equality.
+
+template<typename Scalar, std::int64_t size,
+         bool luh, bool ruh>
+bool operator==(FixedVector<Scalar, size, luh> const& left,
+                FixedVector<Scalar, size, ruh> const& right);
+
+template<typename Scalar, std::int64_t rows, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator==(FixedMatrix<Scalar, rows, columns, luh> const& left,
+                FixedMatrix<Scalar, rows, columns, ruh> const& right);
+
+template<typename Scalar, std::int64_t rows,
+         bool luh, bool ruh>
+bool operator==(
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, luh> const& left,
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, ruh> const& right);
+
+template<typename Scalar, std::int64_t rows,
+         bool luh, bool ruh>
+bool operator==(FixedLowerTriangularMatrix<Scalar, rows, luh> const& left,
+                FixedLowerTriangularMatrix<Scalar, rows, ruh> const& right);
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator==(
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, luh> const& left,
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, ruh> const& right);
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator==(FixedUpperTriangularMatrix<Scalar, columns, luh> const& left,
+                FixedUpperTriangularMatrix<Scalar, columns, ruh> const& right);
+
+template<typename Scalar, std::int64_t size,
+         bool luh, bool ruh>
+bool operator!=(FixedVector<Scalar, size, luh> const& left,
+                FixedVector<Scalar, size, ruh> const& right);
+
+template<typename Scalar, std::int64_t rows, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator!=(FixedMatrix<Scalar, rows, columns, luh> const& left,
+                FixedMatrix<Scalar, rows, columns, ruh> const& right);
+
+template<typename Scalar, std::int64_t rows,
+         bool luh, bool ruh>
+bool operator!=(
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, luh> const& left,
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, ruh> const& right);
+
+template<typename Scalar, std::int64_t rows,
+         bool luh, bool ruh>
+bool operator!=(FixedLowerTriangularMatrix<Scalar, rows, luh> const& left,
+                FixedLowerTriangularMatrix<Scalar, rows, ruh> const& right);
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator!=(
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, luh> const& left,
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, ruh> const& right);
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator!=(FixedUpperTriangularMatrix<Scalar, columns, luh> const& left,
+                FixedUpperTriangularMatrix<Scalar, columns, ruh> const& right);
 
 // Additive groups.
 

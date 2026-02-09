@@ -730,6 +730,85 @@ constexpr FixedMatrix<Square<Scalar>, size, size, uh> SymmetricSquare(
 }
 
 template<typename Scalar, std::int64_t size,
+         bool luh, bool ruh>
+bool operator==(FixedVector<Scalar, size, luh> const& left,
+                FixedVector<Scalar, size, ruh> const& right) {
+  return left.data() == right.data();
+}
+
+template<typename Scalar, std::int64_t rows, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator==(FixedMatrix<Scalar, rows, columns, luh> const& left,
+                FixedMatrix<Scalar, rows, columns, ruh> const& right) {}
+
+template<typename Scalar, std::int64_t rows,
+         bool luh, bool ruh>
+bool operator==(
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, luh> const& left,
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, ruh> const& right) {}
+
+template<typename Scalar, std::int64_t rows, bool luh, bool ruh>
+bool operator==(FixedLowerTriangularMatrix<Scalar, rows, luh> const& left, FixedLowerTriangularMatrix<Scalar, rows, ruh> const& right) {
+  return false;
+}
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator==(
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, luh> const& left,
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, ruh> const& right) {}
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator==(FixedUpperTriangularMatrix<Scalar, columns, luh> const& left,
+                FixedUpperTriangularMatrix<Scalar, columns, ruh> const& right) {
+}
+
+template<typename Scalar, std::int64_t size,
+         bool luh, bool ruh>
+bool operator!=(FixedVector<Scalar, size, luh> const& left,
+                FixedVector<Scalar, size, ruh> const& right) {
+  return !(left == right);
+}
+
+template<typename Scalar, std::int64_t rows, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator!=(FixedMatrix<Scalar, rows, columns, luh> const& left,
+                FixedMatrix<Scalar, rows, columns, ruh> const& right) {
+  return !(left == right);
+}
+
+template<typename Scalar, std::int64_t rows,
+         bool luh, bool ruh>
+bool operator!=(
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, luh> const& left,
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, ruh> const& right) {
+  return !(left == right);
+}
+
+template<typename Scalar, std::int64_t rows,
+         bool luh, bool ruh>
+bool operator!=(FixedLowerTriangularMatrix<Scalar, rows, luh> const& left,
+                FixedLowerTriangularMatrix<Scalar, rows, ruh> const& right) {
+  return !(left == right);
+}
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator!=(
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, luh> const& left,
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, ruh> const& right) {
+  return !(left == right);
+}
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator!=(FixedUpperTriangularMatrix<Scalar, columns, luh> const& left,
+                FixedUpperTriangularMatrix<Scalar, columns, ruh> const& right) {
+  return !(left == right);
+}
+
+template<typename Scalar, std::int64_t size,
          bool uh, bool ruh>
 constexpr FixedVector<Scalar, size, uh> operator+(
     FixedVector<Scalar, size, ruh> const& right) {
@@ -929,7 +1008,7 @@ constexpr Product<LScalar, RScalar> operator*(
     LScalar* const left,
     FixedVector<RScalar, size, ruh> const& right) {
   return DotProduct<LScalar, RScalar, std::make_index_sequence<size>>::Compute(
-      left, right.data_);
+      left, right.data());
 }
 
 template<typename LScalar, typename RScalar, std::int64_t size,
@@ -938,7 +1017,7 @@ constexpr Product<LScalar, RScalar> operator*(
     TransposedView<FixedVector<LScalar, size, luh>> const& left,
     FixedVector<RScalar, size, ruh> const& right) {
   return DotProduct<LScalar, RScalar, std::make_index_sequence<size>>::Compute(
-      left.transpose.data_, right.data_);
+      left.transpose.data(), right.data());
 }
 
 template<typename LScalar, typename RScalar,
@@ -984,7 +1063,7 @@ constexpr FixedVector<Product<LScalar, RScalar>, rows, uh> operator*(
   for (std::int64_t i = 0; i < rows; ++i) {
     result[i] =
         DotProduct<LScalar, RScalar, std::make_index_sequence<columns>>::Compute(
-            row, right.data_);
+            row, right.data());
     row += columns;
   }
   return FixedVector<Product<LScalar, RScalar>, rows, uh>(std::move(result));
