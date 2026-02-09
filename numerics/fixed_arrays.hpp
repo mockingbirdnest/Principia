@@ -393,7 +393,8 @@ constexpr FixedMatrix<Square<Scalar>, size, size, uh> SymmetricSquare(
 
 // Additive groups.
 
-template<typename Scalar, std::int64_t size, bool uh, bool ruh>
+template<typename Scalar, std::int64_t size,
+         bool uh, bool ruh>
 constexpr FixedVector<Scalar, size, uh> operator+(
     FixedVector<Scalar, size, ruh> const& right);
 
@@ -402,7 +403,8 @@ template<typename Scalar, std::int64_t rows, std::int64_t columns,
 constexpr FixedMatrix<Scalar, rows, columns, uh> operator+(
     FixedMatrix<Scalar, rows, columns, ruh> const& right);
 
-template<typename Scalar, std::int64_t size, bool uh, bool ruh>
+template<typename Scalar, std::int64_t size,
+         bool uh, bool ruh>
 constexpr FixedVector<Scalar, size, uh> operator-(
     FixedVector<Scalar, size, ruh> const& right);
 
