@@ -3,10 +3,12 @@
 #include "numerics/fixed_arrays.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <type_traits>
 #include <utility>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "glog/logging.h"
 #include "numerics/elementary_functions.hpp"
 
@@ -15,6 +17,7 @@ namespace numerics {
 namespace _fixed_arrays {
 namespace internal {
 
+using namespace principia::base::_not_null;
 using namespace principia::numerics::_elementary_functions;
 
 template<typename T>
@@ -41,19 +44,19 @@ template<typename Scalar, std::int64_t size>
 struct Construction<std::unique_ptr<std::array<Scalar, size>>> {
   static constexpr std::unique_ptr<std::array<Scalar, size>>
   Make(auto&&... args) {
-    return std::make_unique<std::array<Scalar, size>>(
+    return make_not_null_unique<std::array<Scalar, size>>(
         std::forward<decltype(args)>(args)...);
   }
 
   static constexpr void MakeUninitialized(
       std::unique_ptr<std::array<Scalar, size>>& data) {
-    data = std::make_unique<std::array<Scalar, size>>();
+    data = make_not_null_unique<std::array<Scalar, size>>();
   }
 
   static constexpr std::unique_ptr<std::array<Scalar, size>>
   MakeValueInitialized() {
     std::array<Scalar, size> zero{};
-    return std::make_unique<std::array<Scalar, size>>(std::move(zero));
+    return make_not_null_unique<std::array<Scalar, size>>(std::move(zero));
   }
 };
 
@@ -1262,9 +1265,9 @@ constexpr FixedVector<Difference<LScalar, RScalar>, size, uh> operator-(
 template<typename LScalar, typename RScalar,
          std::int64_t rows, std::int64_t columns,
          bool luh, bool ruh, bool uh>
-constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns, uh> operator-(
-    FixedMatrix<LScalar, rows, columns, luh> const& left,
-    FixedMatrix<RScalar, rows, columns, ruh> const& right) {
+constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns, uh>
+operator-(FixedMatrix<LScalar, rows, columns, luh> const& left,
+          FixedMatrix<RScalar, rows, columns, ruh> const& right) {
   FixedMatrix<Difference<LScalar, RScalar>, rows, columns, uh> result(
       uninitialized);
   for (std::int64_t i = 0; i < rows; ++i) {
@@ -1382,7 +1385,8 @@ template<typename LScalar, typename RScalar,
 constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize, uh> operator*(
     FixedVector<LScalar, lsize, luh> const& left,
     TransposedView<FixedVector<RScalar, rsize, ruh>> const& right) {
-  FixedMatrix<Product<LScalar, RScalar>, lsize, rsize, uh> result(uninitialized);
+  FixedMatrix<Product<LScalar, RScalar>, lsize, rsize, uh> result(
+      uninitialized);
   for (std::int64_t i = 0; i < lsize; ++i) {
     for (std::int64_t j = 0; j < rsize; ++j) {
       result(i, j) = left[i] * right[j];
@@ -1418,8 +1422,8 @@ constexpr FixedVector<Product<LScalar, RScalar>, rows, uh> operator*(
   auto const* row = left.data().data();
   for (std::int64_t i = 0; i < rows; ++i) {
     result[i] =
-        DotProduct<LScalar, RScalar, std::make_index_sequence<columns>>::Compute(
-            row, right.data());
+        DotProduct<LScalar, RScalar, std::make_index_sequence<columns>>::
+            Compute(row, right.data());
     row += columns;
   }
   return FixedVector<Product<LScalar, RScalar>, rows, uh>(std::move(result));

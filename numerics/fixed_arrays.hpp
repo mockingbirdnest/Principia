@@ -21,7 +21,6 @@ using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_si;
 
-//TODO(phl)Conversions across use_heap?
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap = false>
 class FixedMatrix;
