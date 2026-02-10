@@ -47,16 +47,16 @@ class FixedArraysTest : public ::testing::Test {
                   34, 55,
                       89}) {}
 
-  FixedVector<double, 3> u3_;
-  FixedVector<double, 3> v3_;
-  FixedVector<double, 4> v4_;
-  FixedMatrix<double, 3, 4> m34_;
-  FixedMatrix<double, 2, 3> m23_;
-  FixedMatrix<double, 2, 3> n23_;
-  FixedStrictlyLowerTriangularMatrix<double, 4> sl4_;
-  FixedLowerTriangularMatrix<double, 4> l4_;
-  FixedStrictlyUpperTriangularMatrix<double, 4> su4_;
-  FixedUpperTriangularMatrix<double, 4> u4_;
+  FixedVector<double, 3, /*use_heap=*/true> u3_;
+  FixedVector<double, 3, /*use_heap=*/true> v3_;
+  FixedVector<double, 4, /*use_heap=*/true> v4_;
+  FixedMatrix<double, 3, 4, /*use_heap=*/true> m34_;
+  FixedMatrix<double, 2, 3, /*use_heap=*/true> m23_;
+  FixedMatrix<double, 2, 3, /*use_heap=*/true> n23_;
+  FixedStrictlyLowerTriangularMatrix<double, 4, /*use_heap=*/true> sl4_;
+  FixedLowerTriangularMatrix<double, 4, /*use_heap=*/true> l4_;
+  FixedStrictlyUpperTriangularMatrix<double, 4, /*use_heap=*/true> su4_;
+  FixedUpperTriangularMatrix<double, 4, /*use_heap=*/true> u4_;
 };
 
 TEST_F(FixedArraysTest, AlgebraConcepts) {
