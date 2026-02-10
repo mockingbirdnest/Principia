@@ -166,6 +166,13 @@ TEST_F(FixedArraysTest, Assignment) {
   }
 }
 
+TEST_F(FixedArraysTest, UseHeap) {
+  n23_ = std::move(m23_);
+  m23_ = n23_;
+  FixedMatrix<double, 2, 3, /*use_heap=*/true> p23(m23_);
+  FixedMatrix<double, 2, 3, /*use_heap=*/false> q23(m23_);
+}
+
 TEST_F(FixedArraysTest, Norm) {
   EXPECT_EQ(35, TransposedView{v4_} * v4_);  // NOLINT
   EXPECT_EQ(Sqrt(35.0), v4_.Norm());
