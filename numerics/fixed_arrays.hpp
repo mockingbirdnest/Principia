@@ -42,13 +42,13 @@ class FixedVector final {
   constexpr FixedVector(
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
-  // https://cplusplus.com/forum/beginner/269900/
-  constexpr FixedVector(FixedVector const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedVector(FixedVector<Scalar, size_, uh> const& other);
-  template<bool uh>
-  constexpr FixedVector(FixedVector<Scalar, size_, uh>&& other);
+  // A move can only be optimized if the source and destination have the same
+  // heap usage.
+  constexpr FixedVector(FixedVector&& other);
+  // https://cplusplus.com/forum/beginner/269900/
+  constexpr FixedVector(FixedVector const volatile&) = delete;
 
   // Constructs a fixed vector by copying data from the view.  Note that the
   // result is fixed even if the matrix being viewed is an UnboundedMatrix.
@@ -62,12 +62,10 @@ class FixedVector final {
   constexpr Scalar& operator[](std::int64_t index);
   constexpr Scalar const& operator[](std::int64_t index) const;
 
-  constexpr FixedVector& operator=(FixedVector const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedVector& operator=(FixedVector<Scalar, size_, uh> const& other);
-  template<bool uh>
-  constexpr FixedVector& operator=(FixedVector<Scalar, size_, uh>&& other);
+  constexpr FixedVector& operator=(FixedVector&& other);
+  constexpr FixedVector& operator=(FixedVector const volatile&) = delete;
 
   constexpr FixedVector& operator=(Scalar const (&right)[size_]);
 
@@ -145,12 +143,10 @@ class FixedMatrix final {
   constexpr FixedMatrix(
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
-  constexpr FixedMatrix(FixedMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedMatrix(FixedMatrix<Scalar, rows_, columns_, uh> const& other);
-  template<bool uh>
-  constexpr FixedMatrix(FixedMatrix<Scalar, rows_, columns_, uh>&& other);
+  constexpr FixedMatrix(FixedMatrix&& other);
+  constexpr FixedMatrix(FixedMatrix const volatile&) = delete;
 
   template<bool uh>
   constexpr explicit FixedMatrix(
@@ -163,14 +159,11 @@ class FixedMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
-  constexpr FixedMatrix& operator=(FixedMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedMatrix& operator=(
       FixedMatrix<Scalar, rows_, columns_, uh> const& other);
-  template<bool uh>
-  constexpr FixedMatrix& operator=(
-      FixedMatrix<Scalar, rows_, columns_, uh>&& other);
+  constexpr FixedMatrix& operator=(FixedMatrix&& other);
+  constexpr FixedMatrix& operator=(FixedMatrix const volatile&) = delete;
 
   constexpr FixedMatrix& operator=(Scalar const (&right)[size_]);
 
@@ -238,15 +231,13 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
-  constexpr FixedStrictlyLowerTriangularMatrix(
-      FixedStrictlyLowerTriangularMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedStrictlyLowerTriangularMatrix(
       FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh> const& other);
-  template<bool uh>
   constexpr FixedStrictlyLowerTriangularMatrix(
-      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+      FixedStrictlyLowerTriangularMatrix&& other);
+  constexpr FixedStrictlyLowerTriangularMatrix(
+      FixedStrictlyLowerTriangularMatrix const volatile&) = delete;
 
   template<bool uh = use_heap>
   explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, uh>() const;
@@ -258,15 +249,13 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
-  constexpr FixedStrictlyLowerTriangularMatrix& operator=(
-      FixedStrictlyLowerTriangularMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedStrictlyLowerTriangularMatrix& operator=(
       FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh> const& other);
-  template<bool uh>
   constexpr FixedStrictlyLowerTriangularMatrix& operator=(
-      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+      FixedStrictlyLowerTriangularMatrix&& other);
+  constexpr FixedStrictlyLowerTriangularMatrix& operator=(
+      FixedStrictlyLowerTriangularMatrix const volatile&) = delete;
 
   constexpr FixedStrictlyLowerTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
@@ -309,15 +298,12 @@ class FixedLowerTriangularMatrix final {
   constexpr FixedLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
-  constexpr FixedLowerTriangularMatrix(
-      FixedLowerTriangularMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedLowerTriangularMatrix(
       FixedLowerTriangularMatrix<Scalar, rows_, uh> const& other);
-  template<bool uh>
+  constexpr FixedLowerTriangularMatrix(FixedLowerTriangularMatrix&& other);
   constexpr FixedLowerTriangularMatrix(
-      FixedLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+      FixedLowerTriangularMatrix const volatile&) = delete;
 
   template<bool uh>
   explicit FixedLowerTriangularMatrix(
@@ -334,15 +320,13 @@ class FixedLowerTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
-  constexpr FixedLowerTriangularMatrix& operator=(
-      FixedLowerTriangularMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedLowerTriangularMatrix& operator=(
       FixedLowerTriangularMatrix<Scalar, rows_, uh> const& other);
-  template<bool uh>
   constexpr FixedLowerTriangularMatrix& operator=(
-      FixedLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+      FixedLowerTriangularMatrix&& other);
+  constexpr FixedLowerTriangularMatrix& operator=(
+      FixedLowerTriangularMatrix const volatile&) = delete;
 
   constexpr FixedLowerTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
@@ -381,15 +365,13 @@ class FixedStrictlyUpperTriangularMatrix final {
   constexpr FixedStrictlyUpperTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
-  constexpr FixedStrictlyUpperTriangularMatrix(
-      FixedStrictlyUpperTriangularMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedStrictlyUpperTriangularMatrix(
       FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh> const& other);
-  template<bool uh>
   constexpr FixedStrictlyUpperTriangularMatrix(
-      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+      FixedStrictlyUpperTriangularMatrix&& other);
+  constexpr FixedStrictlyUpperTriangularMatrix(
+      FixedStrictlyUpperTriangularMatrix const volatile&) = delete;
 
   template<bool uh>
   explicit FixedStrictlyUpperTriangularMatrix(
@@ -408,15 +390,13 @@ class FixedStrictlyUpperTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
-  constexpr FixedStrictlyUpperTriangularMatrix& operator=(
-      FixedStrictlyUpperTriangularMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedStrictlyUpperTriangularMatrix& operator=(
       FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh> const& other);
-  template<bool uh>
   constexpr FixedStrictlyUpperTriangularMatrix& operator=(
-      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+      FixedStrictlyUpperTriangularMatrix&& other);
+  constexpr FixedStrictlyUpperTriangularMatrix& operator=(
+      FixedStrictlyUpperTriangularMatrix const volatile&) = delete;
 
   constexpr FixedStrictlyUpperTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
@@ -461,15 +441,12 @@ class FixedUpperTriangularMatrix final {
   constexpr FixedUpperTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
-  constexpr FixedUpperTriangularMatrix(
-      FixedUpperTriangularMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedUpperTriangularMatrix(
       FixedUpperTriangularMatrix<Scalar, columns_, uh> const& other);
-  template<bool uh>
+  constexpr FixedUpperTriangularMatrix(FixedUpperTriangularMatrix&& other);
   constexpr FixedUpperTriangularMatrix(
-      FixedUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+      FixedUpperTriangularMatrix const volatile&) = delete;
 
   template<bool uh>
   explicit FixedUpperTriangularMatrix(
@@ -487,15 +464,13 @@ class FixedUpperTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
-  constexpr FixedUpperTriangularMatrix& operator=(
-      FixedUpperTriangularMatrix const volatile&) = delete;
-
   template<bool uh>
   constexpr FixedUpperTriangularMatrix& operator=(
       FixedUpperTriangularMatrix<Scalar, columns_, uh> const& other);
-  template<bool uh>
   constexpr FixedUpperTriangularMatrix& operator=(
-      FixedUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+      FixedUpperTriangularMatrix&& other);
+  constexpr FixedUpperTriangularMatrix& operator=(
+      FixedUpperTriangularMatrix const volatile&) = delete;
 
   constexpr FixedUpperTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
