@@ -112,7 +112,7 @@ class FixedVector final {
       TransposedView<FixedVector<L, s, luh>> const& left,
       FixedVector<R, s, ruh> const& right);
   template<typename L, typename R, std::int64_t r, std::int64_t c,
-           bool uh, bool luh, bool ruh>
+           bool luh, bool ruh, bool uh>
   friend constexpr FixedVector<Product<L, R>, r, uh> operator*(
       FixedMatrix<L, r, c, luh> const& left,
       FixedVector<R, c, ruh> const& right);
@@ -203,7 +203,7 @@ class FixedMatrix final {
   friend bool operator==(FixedMatrix<S, r, c, luh> const& left,
                          FixedMatrix<S, r, c, ruh> const& right);
   template<typename L, typename R, std::int64_t r, std::int64_t c,
-           bool uh, bool luh, bool ruh>
+           bool luh, bool ruh, bool uh>
   friend constexpr FixedVector<Product<L, R>, r, uh> operator*(
       FixedMatrix<L, r, c, luh> const& left,
       FixedVector<R, c, ruh> const& right);
@@ -496,17 +496,17 @@ constexpr Product<LScalar, RScalar> InnerProduct(
     FixedVector<LScalar, size, luh> const& left,
     FixedVector<RScalar, size, ruh> const& right);
 
-template<typename Scalar, std::int64_t size, bool uh = false, bool vuh>
+template<typename Scalar, std::int64_t size, bool vuh, bool uh = vuh>
 constexpr FixedVector<double, size, uh> Normalize(
     FixedVector<Scalar, size, vuh> const& vector);
 
 template<typename LScalar, typename RScalar, std::int64_t size,
-         bool uh = false, bool luh, bool ruh>
+         bool luh, bool ruh, bool uh = (luh && ruh)>
 constexpr FixedMatrix<Product<LScalar, RScalar>, size, size, uh>
 SymmetricProduct(FixedVector<LScalar, size, luh> const& left,
                  FixedVector<RScalar, size, ruh> const& right);
 
-template<typename Scalar, std::int64_t size, bool uh = false, bool vuh>
+template<typename Scalar, std::int64_t size, bool vuh, bool uh = vuh>
 constexpr FixedMatrix<Square<Scalar>, size, size, uh> SymmetricSquare(
     FixedVector<Scalar, size, vuh> const& vector);
 
@@ -579,47 +579,47 @@ bool operator!=(FixedUpperTriangularMatrix<Scalar, columns, luh> const& left,
 // Additive groups.
 
 template<typename Scalar, std::int64_t size,
-         bool uh = false, bool ruh>
+         bool ruh, bool uh = ruh>
 constexpr FixedVector<Scalar, size, uh> operator+(
     FixedVector<Scalar, size, ruh> const& right);
 
 template<typename Scalar, std::int64_t rows, std::int64_t columns,
-         bool uh = false, bool ruh>
+         bool ruh, bool uh = ruh>
 constexpr FixedMatrix<Scalar, rows, columns, uh> operator+(
     FixedMatrix<Scalar, rows, columns, ruh> const& right);
 
 template<typename Scalar, std::int64_t size,
-         bool uh = false, bool ruh>
+         bool ruh, bool uh = ruh>
 constexpr FixedVector<Scalar, size, uh> operator-(
     FixedVector<Scalar, size, ruh> const& right);
 
 template<typename Scalar, std::int64_t rows, std::int64_t columns,
-         bool uh = false, bool ruh>
+         bool ruh, bool uh = ruh>
 constexpr FixedMatrix<Scalar, rows, columns, uh> operator-(
     FixedMatrix<Scalar, rows, columns, ruh> const& right);
 
 template<typename LScalar, typename RScalar, std::int64_t size,
-         bool uh = false, bool luh, bool ruh>
+         bool luh, bool ruh, bool uh = (luh && ruh)>
 constexpr FixedVector<Sum<LScalar, RScalar>, size, uh> operator+(
     FixedVector<LScalar, size, luh> const& left,
     FixedVector<RScalar, size, ruh> const& right);
 
 template<typename LScalar, typename RScalar,
          std::int64_t rows, std::int64_t columns,
-         bool uh = false, bool luh, bool ruh>
+         bool luh, bool ruh, bool uh = (luh && ruh)>
 constexpr FixedMatrix<Sum<LScalar, RScalar>, rows, columns, uh> operator+(
     FixedMatrix<LScalar, rows, columns, luh> const& left,
     FixedMatrix<RScalar, rows, columns, ruh> const& right);
 
 template<typename LScalar, typename RScalar, std::int64_t size,
-         bool uh = false, bool luh, bool ruh>
+         bool luh, bool ruh, bool uh = (luh && ruh)>
 constexpr FixedVector<Difference<LScalar, RScalar>, size, uh> operator-(
     FixedVector<LScalar, size, luh> const& left,
     FixedVector<RScalar, size, ruh> const& right);
 
 template<typename LScalar, typename RScalar,
          std::int64_t rows, std::int64_t columns,
-         bool uh = false, bool luh, bool ruh>
+         bool luh, bool ruh, bool uh = (luh && ruh)>
 constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns, uh>
 operator-(FixedMatrix<LScalar, rows, columns, luh> const& left,
           FixedMatrix<RScalar, rows, columns, ruh> const& right);
@@ -627,40 +627,40 @@ operator-(FixedMatrix<LScalar, rows, columns, luh> const& left,
 // Vector spaces.
 
 template<typename LScalar, typename RScalar, std::int64_t size,
-         bool uh = false, bool ruh>
+         bool ruh, bool uh = ruh>
 constexpr FixedVector<Product<LScalar, RScalar>, size, uh> operator*(
     LScalar const& left,
     FixedVector<RScalar, size, ruh> const& right);
 
 template<typename LScalar, typename RScalar, std::int64_t size,
-         bool uh = false, bool luh>
+         bool luh, bool uh = luh>
 constexpr FixedVector<Product<LScalar, RScalar>, size, uh> operator*(
     FixedVector<LScalar, size, luh> const& left,
     RScalar const& right);
 
 template<typename LScalar, typename RScalar,
          std::int64_t rows, std::int64_t columns,
-         bool uh = false, bool ruh>
+         bool ruh, bool uh = ruh>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns, uh>
 operator*(LScalar const& left,
           FixedMatrix<RScalar, rows, columns, ruh> const& right);
 
 template<typename LScalar, typename RScalar,
          std::int64_t rows, std::int64_t columns,
-         bool uh = false, bool luh>
+         bool luh, bool uh = luh>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns, uh>
 operator*(FixedMatrix<LScalar, rows, columns, luh> const& left,
           RScalar const& right);
 
 template<typename LScalar, typename RScalar, std::int64_t size,
-         bool uh = false, bool luh>
+         bool luh, bool uh = luh>
 constexpr FixedVector<Quotient<LScalar, RScalar>, size, uh> operator/(
     FixedVector<LScalar, size, luh> const& left,
     RScalar const& right);
 
 template<typename LScalar, typename RScalar,
          std::int64_t rows, std::int64_t columns,
-         bool uh = false, bool luh>
+         bool luh, bool uh = luh>
 constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns, uh>
 operator/(FixedMatrix<LScalar, rows, columns, luh> const& left,
           RScalar const& right);
@@ -681,21 +681,21 @@ constexpr Product<LScalar, RScalar> operator*(
 
 template<typename LScalar, typename RScalar,
          std::int64_t lsize, std::int64_t rsize,
-         bool uh = false, bool luh, bool ruh>
+         bool luh, bool ruh, bool uh = (luh && ruh)>
 constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize, uh> operator*(
     FixedVector<LScalar, lsize, luh> const& left,
     TransposedView<FixedVector<RScalar, rsize, ruh>> const& right);
 
 template<typename LScalar, typename RScalar,
          std::int64_t rows, std::int64_t dimension, std::int64_t columns,
-         bool uh = false, bool luh, bool ruh>
+         bool luh, bool ruh, bool uh = (luh && ruh)>
 constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns, uh>
 operator*(FixedMatrix<LScalar, rows, dimension, luh> const& left,
           FixedMatrix<RScalar, dimension, columns, ruh> const& right);
 
 template<typename LScalar, typename RScalar,
          std::int64_t rows, std::int64_t columns,
-         bool uh = false, bool luh, bool ruh>
+         bool luh, bool ruh, bool uh = (luh && ruh)>
 constexpr FixedVector<Product<LScalar, RScalar>, rows, uh> operator*(
     FixedMatrix<LScalar, rows, columns, luh> const& left,
     FixedVector<RScalar, columns, ruh> const& right);
@@ -704,7 +704,7 @@ constexpr FixedVector<Product<LScalar, RScalar>, rows, uh> operator*(
 // operator returning a TransposedView as that would cause dangling references.
 template<typename LScalar, typename RScalar,
          std::int64_t rows, std::int64_t columns,
-         bool uh = false, bool luh, bool ruh>
+         bool luh, bool ruh, bool uh = (luh && ruh)>
 constexpr FixedVector<Product<LScalar, RScalar>, columns, uh> operator*(
     TransposedView<FixedMatrix<LScalar, rows, columns, luh>> const& left,
     FixedVector<RScalar, rows, ruh> const& right);
