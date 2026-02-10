@@ -242,7 +242,7 @@ FixedVector<Scalar_, size_, use_heap>::end() const {
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
-auto FixedVector<Scalar_, size_, use_heap>::data() const
+constexpr auto FixedVector<Scalar_, size_, use_heap>::data() const
     -> std::array<Scalar_, size_> const& {
   if constexpr (use_heap) {
     return *data_;
@@ -252,7 +252,7 @@ auto FixedVector<Scalar_, size_, use_heap>::data() const
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
-auto FixedVector<Scalar_, size_, use_heap>::data()
+constexpr auto FixedVector<Scalar_, size_, use_heap>::data()
     -> std::array<Scalar_, size_>& {
   if constexpr (use_heap) {
     return *data_;
@@ -462,7 +462,7 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::Identity()
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
-auto FixedMatrix<Scalar_, rows_, columns_, use_heap>::data() const
+constexpr auto FixedMatrix<Scalar_, rows_, columns_, use_heap>::data() const
     -> std::array<Scalar_, size_> const& {
   if constexpr (use_heap) {
     return *data_;
@@ -473,7 +473,7 @@ auto FixedMatrix<Scalar_, rows_, columns_, use_heap>::data() const
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
-auto FixedMatrix<Scalar_, rows_, columns_, use_heap>::data()
+constexpr auto FixedMatrix<Scalar_, rows_, columns_, use_heap>::data()
     -> std::array<Scalar_, size_>& {
   if constexpr (use_heap) {
     return *data_;
@@ -583,8 +583,8 @@ FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::row() const {
 
 template<typename Scalar_, std::int64_t rows_,
          bool use_heap>
-auto FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::data() const
-    -> std::array<Scalar_, size_> const& {
+constexpr auto FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
+data() const -> std::array<Scalar_, size_> const& {
   if constexpr (use_heap) {
     return *data_;
   } else {
@@ -594,8 +594,8 @@ auto FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::data() const
 
 template<typename Scalar_, std::int64_t rows_,
          bool use_heap>
-auto FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::data()
-    -> std::array<Scalar_, size_>& {
+constexpr auto FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
+data() -> std::array<Scalar_, size_>& {
   if constexpr (use_heap) {
     return *data_;
   } else {
@@ -708,8 +708,8 @@ FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
 
 template<typename Scalar_, std::int64_t rows_,
          bool use_heap>
-auto FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::data() const
-    -> std::array<Scalar_, size_> const& {
+constexpr auto FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
+data() const -> std::array<Scalar_, size_> const& {
   if constexpr (use_heap) {
     return *data_;
   } else {
@@ -719,7 +719,7 @@ auto FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::data() const
 
 template<typename Scalar_, std::int64_t rows_,
          bool use_heap>
-auto FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::data()
+constexpr auto FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::data()
     -> std::array<Scalar_, size_>& {
   if constexpr (use_heap) {
     return *data_;
@@ -860,8 +860,8 @@ auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::Transpose(
 
 template<typename Scalar_, std::int64_t columns_,
          bool use_heap>
-auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
-    const -> std::array<Scalar_, size_> const& {
+constexpr auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
+data() const -> std::array<Scalar_, size_> const& {
   if constexpr (use_heap) {
     return *data_;
   } else {
@@ -871,8 +871,8 @@ auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
 
 template<typename Scalar_, std::int64_t columns_,
          bool use_heap>
-auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
-    -> std::array<Scalar_, size_>& {
+constexpr auto FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
+data() -> std::array<Scalar_, size_>& {
   if constexpr (use_heap) {
     return *data_;
   } else {
@@ -1011,8 +1011,8 @@ auto FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::Transpose(
 
 template<typename Scalar_, std::int64_t columns_,
          bool use_heap>
-auto FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
-    const -> std::array<Scalar_, size_> const& {
+constexpr auto FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
+data() const -> std::array<Scalar_, size_> const& {
   if constexpr (use_heap) {
     return *data_;
   } else {
@@ -1022,7 +1022,7 @@ auto FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
 
 template<typename Scalar_, std::int64_t columns_,
          bool use_heap>
-auto FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
+constexpr auto FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::data()
     -> std::array<Scalar_, size_>& {
   if constexpr (use_heap) {
     return *data_;

@@ -95,8 +95,8 @@ class FixedVector final {
                                   std::unique_ptr<std::array<Scalar, size_>>,
                                   std::array<Scalar, size_>>;
 
-  std::array<Scalar, size_> const& data() const;
-  std::array<Scalar, size_>& data();
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
 
   Data data_;
 
@@ -194,8 +194,8 @@ class FixedMatrix final {
                                   std::unique_ptr<std::array<Scalar, size_>>,
                                   std::array<Scalar, size_>>;
 
-  std::array<Scalar, size_> const& data() const;
-  std::array<Scalar, size_>& data();
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
 
   Data data_;
 
@@ -263,8 +263,8 @@ class FixedStrictlyLowerTriangularMatrix final {
                                   std::unique_ptr<std::array<Scalar, size_>>,
                                   std::array<Scalar, size_>>;
 
-  std::array<Scalar, size_> const& data() const;
-  std::array<Scalar, size_>& data();
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
 
   Data data_;
 
@@ -330,8 +330,8 @@ class FixedLowerTriangularMatrix final {
                                   std::unique_ptr<std::array<Scalar, size_>>,
                                   std::array<Scalar, size_>>;
 
-  std::array<Scalar, size_> const& data() const;
-  std::array<Scalar, size_>& data();
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
 
   Data data_;
 
@@ -403,8 +403,8 @@ class FixedStrictlyUpperTriangularMatrix final {
   static std::array<Scalar, size_> Transpose(
       std::array<Scalar, size_> const& data);
 
-  std::array<Scalar, size_> const& data() const;
-  std::array<Scalar, size_>& data();
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
 
   Data data_;
 
@@ -476,8 +476,8 @@ class FixedUpperTriangularMatrix final {
   static std::array<Scalar, size_> Transpose(
       std::array<Scalar, size_> const& data);
 
-  std::array<Scalar, size_> const& data() const;
-  std::array<Scalar, size_>& data();
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
 
   Data data_;
 
