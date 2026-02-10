@@ -109,7 +109,7 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
 
     // Rescale the nodes for feeding into the compute_derivative function.
     t_.clear();
-    for (const double node : integrator_.nodes_) {
+    for (double const node : integrator_.nodes_) {
       t_.push_back(t_initial + (0.5 * node + 0.5) * step);
     }
 
@@ -147,7 +147,7 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
       Xⁱ⁺¹_ = integrator_.CₓCα_ * (0.5 * step / Second * yʹ_) + CₓX₀_;
 
       // Check for convergence by computing the ∞-norm.
-      const double norm = LInfinityNorm(Xⁱ⁺¹_ - Xⁱ_);
+      double const norm = LInfinityNorm(Xⁱ⁺¹_ - Xⁱ_);
       Xⁱ_ = std::move(Xⁱ⁺¹_);
 
       // We require that ‖Xⁱ⁺¹ - Xⁱ‖ and ‖Xⁱ - Xⁱ⁻¹‖ are _both_ less than
@@ -228,7 +228,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
   FixedMatrix<double, M + 1, N + 1> ᵝT(uninitialized);
 
   for (std::int64_t i = 0; i <= M; ++i) {
-    const auto τᵢ = nodes_[i];
+    auto const τᵢ = nodes_[i];
     // The 0-degree polynomial is uniformly 1.
     ᵝT(i, 0) = 1;
     // The 0-degree polynomial is the identity.
