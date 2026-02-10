@@ -89,7 +89,7 @@ constexpr FixedVector<Scalar_, size_, use_heap>::FixedVector()
     : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
-FixedVector<Scalar_, size_, use_heap>::FixedVector(uninitialized_t) {
+constexpr FixedVector<Scalar_, size_, use_heap>::FixedVector(uninitialized_t) {
   Construction<Data>::MakeUninitialized(data_);
 }
 
@@ -265,7 +265,8 @@ constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix()
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
-FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(uninitialized_t) {
+constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::
+FixedMatrix(uninitialized_t) {
   Construction<Data>::MakeUninitialized(data_);
 }
 
@@ -484,8 +485,8 @@ constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
     : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
-FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
-    FixedStrictlyLowerTriangularMatrix(uninitialized_t) {
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
+FixedStrictlyLowerTriangularMatrix(uninitialized_t) {
   Construction<Data>::MakeUninitialized(data_);
 }
 
@@ -603,7 +604,7 @@ FixedLowerTriangularMatrix()
     : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
-FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
+constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
 FixedLowerTriangularMatrix(uninitialized_t) {
   Construction<Data>::MakeUninitialized(data_);
 }
@@ -725,7 +726,7 @@ FixedStrictlyUpperTriangularMatrix()
     : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
-FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
+constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedStrictlyUpperTriangularMatrix(uninitialized_t) {
   Construction<Data>::MakeUninitialized(data_);
 }
@@ -875,7 +876,7 @@ FixedUpperTriangularMatrix()
     : data_(Construction<Data>::MakeValueInitialized()) {}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
-FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
+constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedUpperTriangularMatrix(uninitialized_t) {
   Construction<Data>::MakeUninitialized(data_);
 }

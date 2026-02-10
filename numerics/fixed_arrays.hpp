@@ -35,7 +35,7 @@ class FixedVector final {
   static constexpr std::int64_t dimension = size_;
 
   constexpr FixedVector();
-  explicit FixedVector(uninitialized_t);
+  constexpr explicit FixedVector(uninitialized_t);
 
   constexpr FixedVector(
       std::array<Scalar, size_> const& data);  // NOLINT(runtime/explicit)
@@ -135,7 +135,7 @@ class FixedMatrix final {
   static constexpr std::int64_t columns() { return columns_; }
 
   constexpr FixedMatrix();
-  explicit FixedMatrix(uninitialized_t);
+  constexpr explicit FixedMatrix(uninitialized_t);
 
   // The `data` must be in row-major format.
   constexpr FixedMatrix(
@@ -225,7 +225,7 @@ class FixedStrictlyLowerTriangularMatrix final {
   static constexpr std::int64_t columns() { return rows_; }
 
   constexpr FixedStrictlyLowerTriangularMatrix();
-  explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
+  constexpr explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
 
   // The `data` must be in row-major format.
   constexpr FixedStrictlyLowerTriangularMatrix(
@@ -292,7 +292,7 @@ class FixedLowerTriangularMatrix final {
   static constexpr std::int64_t columns() { return rows_; }
 
   constexpr FixedLowerTriangularMatrix();
-  explicit FixedLowerTriangularMatrix(uninitialized_t);
+  constexpr explicit FixedLowerTriangularMatrix(uninitialized_t);
 
   // The `data` must be in row-major format.
   constexpr FixedLowerTriangularMatrix(
@@ -359,7 +359,7 @@ class FixedStrictlyUpperTriangularMatrix final {
   static constexpr std::int64_t columns() { return columns_; }
 
   constexpr FixedStrictlyUpperTriangularMatrix();
-  explicit FixedStrictlyUpperTriangularMatrix(uninitialized_t);
+  constexpr explicit FixedStrictlyUpperTriangularMatrix(uninitialized_t);
 
   // The `data` must be in row-major format.
   constexpr FixedStrictlyUpperTriangularMatrix(
@@ -435,7 +435,7 @@ class FixedUpperTriangularMatrix final {
   static constexpr std::int64_t columns() { return columns_; }
 
   constexpr FixedUpperTriangularMatrix();
-  explicit FixedUpperTriangularMatrix(uninitialized_t);
+  constexpr explicit FixedUpperTriangularMatrix(uninitialized_t);
 
   // The `data` must be in row-major format.
   constexpr FixedUpperTriangularMatrix(
