@@ -114,7 +114,9 @@ constexpr FixedVector<Scalar_, size_, use_heap>::FixedVector(
 template<typename Scalar_, std::int64_t size_, bool use_heap>
 constexpr FixedVector<Scalar_, size_, use_heap>::FixedVector(
     FixedVector&& other)
-    : data_(std::move(other.data_)) {}
+    : data_(std::move(other.data_)) {
+  Construction<Data>::MakeUninitialized(other.data_);
+}
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
 template<typename T>
@@ -162,6 +164,7 @@ template<typename Scalar_, std::int64_t size_, bool use_heap>
 constexpr FixedVector<Scalar_, size_, use_heap>&
 FixedVector<Scalar_, size_, use_heap>::operator=(FixedVector&& other) {
   data_ = std::move(other.data_);
+  Construction<Data>::MakeUninitialized(other.data_);
   return *this;
 }
 
@@ -295,7 +298,9 @@ template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>::FixedMatrix(
     FixedMatrix&& other)
-    : data_(std::move(other.data_)) {}
+    : data_(std::move(other.data_)) {
+  Construction<Data>::MakeUninitialized(other.data_);
+}
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
@@ -348,6 +353,7 @@ constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
 FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator=(
     FixedMatrix&& other) {
   data_ = std::move(other.data_);
+  Construction<Data>::MakeUninitialized(other.data_);
   return *this;
 }
 
@@ -508,7 +514,9 @@ template<typename Scalar_, std::int64_t rows_, bool use_heap>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::
 FixedStrictlyLowerTriangularMatrix(
     FixedStrictlyLowerTriangularMatrix&& other)
-    : data_(std::move(other.data_)) {}
+    : data_(std::move(other.data_)) {
+  Construction<Data>::MakeUninitialized(other.data_);
+}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 template<bool uh>
@@ -557,6 +565,7 @@ constexpr FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>&
 FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
     FixedStrictlyLowerTriangularMatrix&& other) {
   data_ = std::move(other.data_);
+  Construction<Data>::MakeUninitialized(other.data_);
   return *this;
 }
 
@@ -640,7 +649,9 @@ FixedLowerTriangularMatrix(
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::
 FixedLowerTriangularMatrix(FixedLowerTriangularMatrix&& other)
-    : data_(std::move(other.data_)) {}
+    : data_(std::move(other.data_)) {
+  Construction<Data>::MakeUninitialized(other.data_);
+}
 
 template<typename Scalar_, std::int64_t rows_, bool use_heap>
 template<bool uh>
@@ -687,6 +698,7 @@ constexpr FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>&
 FixedLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
     FixedLowerTriangularMatrix&& other) {
   data_ = std::move(other.data_);
+  Construction<Data>::MakeUninitialized(other.data_);
   return *this;
 }
 
@@ -749,7 +761,9 @@ template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedStrictlyUpperTriangularMatrix(
     FixedStrictlyUpperTriangularMatrix&& other)
-    : data_(std::move(other.data_)) {}
+    : data_(std::move(other.data_)) {
+  Construction<Data>::MakeUninitialized(other.data_);
+}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 template<bool uh>
@@ -812,6 +826,7 @@ constexpr FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>&
 FixedStrictlyUpperTriangularMatrix<Scalar_, columns_, use_heap>::operator=(
     FixedStrictlyUpperTriangularMatrix&& other) {
   data_ = std::move(other.data_);
+  Construction<Data>::MakeUninitialized(other.data_);
   return *this;
 }
 
@@ -893,7 +908,9 @@ FixedUpperTriangularMatrix(
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
 FixedUpperTriangularMatrix(FixedUpperTriangularMatrix&& other)
-    : data_(std::move(other.data_)) {}
+    : data_(std::move(other.data_)) {
+  Construction<Data>::MakeUninitialized(other.data_);
+}
 
 template<typename Scalar_, std::int64_t columns_, bool use_heap>
 constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::
@@ -960,6 +977,7 @@ constexpr FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>&
 FixedUpperTriangularMatrix<Scalar_, columns_, use_heap>::operator=(
     FixedUpperTriangularMatrix&& other) {
   data_ = std::move(other.data_);
+  Construction<Data>::MakeUninitialized(other.data_);
   return *this;
 }
 
