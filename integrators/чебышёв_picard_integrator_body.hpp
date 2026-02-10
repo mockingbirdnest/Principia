@@ -27,12 +27,12 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_si;
 
-template<typename ODE, std::int64_t M>
+template<typename ODE, std::int64_t M, bool uh>
 ODE::DependentVariables DependentVariablesFromMatrixRow(
     FixedMatrix<double,
                 M,
-                std::tuple_size_v<typename ODE::DependentVariables>> const&
-        matrix,
+                std::tuple_size_v<typename ODE::DependentVariables>,
+                uh> const& matrix,
     std::int64_t const row) {
   std::int64_t j = 0;
   typename ODE::DependentVariables y;
@@ -44,24 +44,28 @@ ODE::DependentVariables DependentVariablesFromMatrixRow(
   return y;
 }
 
-template<typename ODE, std::int64_t M>
+template<typename ODE, std::int64_t M, bool uh>
 void DependentVariablesToMatrixRow(
     typename ODE::DependentVariables const& y,
     std::int64_t const row,
-    FixedMatrix<double, M, std::tuple_size_v<typename ODE::DependentVariables>>&
-        matrix) {
+    FixedMatrix<double,
+                M,
+                std::tuple_size_v<typename ODE::DependentVariables>,
+                uh>& matrix) {
   std::int64_t j = 0;
   for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
     matrix(row, j++) = yⱼ / si::Unit<decltype(yⱼ)>;
   });
 }
 
-template<typename ODE, std::int64_t M>
+template<typename ODE, std::int64_t M, bool uh>
 void DependentVariableDerivativesToMatrixRow(
     typename ODE::DependentVariableDerivatives const& y,
     std::int64_t const row,
-    FixedMatrix<double, M, std::tuple_size_v<typename ODE::DependentVariables>>&
-        matrix) {
+    FixedMatrix<double,
+                M,
+                std::tuple_size_v<typename ODE::DependentVariables>,
+                uh>& matrix) {
   std::int64_t j = 0;
   for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
     matrix(row, j++) = yⱼ / si::Unit<decltype(yⱼ)>;
@@ -69,8 +73,8 @@ void DependentVariableDerivativesToMatrixRow(
 }
 
 // Returns max|aᵢⱼ|.
-template<std::int64_t M, std::int64_t N>
-double LInfinityNorm(FixedMatrix<double, M, N> const& A) {
+template<std::int64_t M, std::int64_t N, bool uh>
+double LInfinityNorm(FixedMatrix<double, M, N, uh> const& A) {
   double norm = 0.0;
   for (std::int64_t i = 0; i < M; ++i) {
     for (std::int64_t j = 0; j < N; ++j) {
