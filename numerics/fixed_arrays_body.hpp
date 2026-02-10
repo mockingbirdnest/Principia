@@ -410,9 +410,10 @@ operator/=(double const right) {
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
+template<bool uh>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
 FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator*=(
-    FixedMatrix<double, rows_, columns_, use_heap> const& right)
+    FixedMatrix<double, rows_, columns_, uh> const& right)
   requires(rows_ == columns_) {
   // TODO(egg): We don't need to copy the whole matrix.
   return *this = *this * right;

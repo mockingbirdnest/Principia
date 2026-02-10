@@ -170,8 +170,9 @@ class FixedMatrix final {
   constexpr FixedMatrix& operator*=(double right);
   constexpr FixedMatrix& operator/=(double right);
 
+  template<bool uh>
   constexpr FixedMatrix& operator*=(
-      FixedMatrix<double, rows_, columns_, use_heap> const& right)
+      FixedMatrix<double, rows_, columns_, uh> const& right)
     requires(rows_ == columns_);
 
   template<std::int64_t r>
