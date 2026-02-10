@@ -545,38 +545,6 @@ template<typename Scalar, std::int64_t columns,
 bool operator==(FixedUpperTriangularMatrix<Scalar, columns, luh> const& left,
                 FixedUpperTriangularMatrix<Scalar, columns, ruh> const& right);
 
-template<typename Scalar, std::int64_t size,
-         bool luh, bool ruh>
-bool operator!=(FixedVector<Scalar, size, luh> const& left,
-                FixedVector<Scalar, size, ruh> const& right);
-
-template<typename Scalar, std::int64_t rows, std::int64_t columns,
-         bool luh, bool ruh>
-bool operator!=(FixedMatrix<Scalar, rows, columns, luh> const& left,
-                FixedMatrix<Scalar, rows, columns, ruh> const& right);
-
-template<typename Scalar, std::int64_t rows,
-         bool luh, bool ruh>
-bool operator!=(
-    FixedStrictlyLowerTriangularMatrix<Scalar, rows, luh> const& left,
-    FixedStrictlyLowerTriangularMatrix<Scalar, rows, ruh> const& right);
-
-template<typename Scalar, std::int64_t rows,
-         bool luh, bool ruh>
-bool operator!=(FixedLowerTriangularMatrix<Scalar, rows, luh> const& left,
-                FixedLowerTriangularMatrix<Scalar, rows, ruh> const& right);
-
-template<typename Scalar, std::int64_t columns,
-         bool luh, bool ruh>
-bool operator!=(
-    FixedStrictlyUpperTriangularMatrix<Scalar, columns, luh> const& left,
-    FixedStrictlyUpperTriangularMatrix<Scalar, columns, ruh> const& right);
-
-template<typename Scalar, std::int64_t columns,
-         bool luh, bool ruh>
-bool operator!=(FixedUpperTriangularMatrix<Scalar, columns, luh> const& left,
-                FixedUpperTriangularMatrix<Scalar, columns, ruh> const& right);
-
 // Additive groups.
 
 template<typename Scalar, std::int64_t size,
