@@ -283,12 +283,14 @@ struct SubstitutionGenerator<TriangularMatrix<LScalar>,
   static Result Uninitialized(TriangularMatrix<LScalar> const& m);
 };
 
-template<typename LScalar, typename RScalar, std::int64_t dimension,
-         template<typename S, std::int64_t d> typename TriangularMatrix>
-struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
+template<typename LScalar, typename RScalar, std::int64_t dimension, bool luh,
+         template<typename S, std::int64_t d, bool uh>
+         typename TriangularMatrix>
+struct SubstitutionGenerator<TriangularMatrix<LScalar, dimension, luh>,
                              FixedVector<RScalar, dimension>> {
   using Result = FixedVector<Quotient<RScalar, LScalar>, dimension>;
-  static Result Uninitialized(TriangularMatrix<LScalar, dimension> const& m);
+  static Result Uninitialized(
+      TriangularMatrix<LScalar, dimension, luh> const& m);
 };
 
 template<typename Scalar>
@@ -605,11 +607,12 @@ Uninitialized(FixedVector<VScalar, dimension> const& v) -> Result {
   return {FixedVector<VScalar, dimension>(uninitialized), MScalar()};
 }
 
-template<typename LScalar, typename RScalar, std::int64_t dimension,
-         template<typename S, std::int64_t d> typename TriangularMatrix>
-auto SubstitutionGenerator<TriangularMatrix<LScalar, dimension>,
+template<typename LScalar, typename RScalar, std::int64_t dimension, bool luh,
+         template<typename S, std::int64_t d, bool uh>
+         typename TriangularMatrix>
+auto SubstitutionGenerator<TriangularMatrix<LScalar, dimension, luh>,
                            FixedVector<RScalar, dimension>>::Uninitialized(
-    TriangularMatrix<LScalar, dimension> const& m) -> Result {
+    TriangularMatrix<LScalar, dimension, luh> const& m) -> Result {
   return Result(uninitialized);
 }
 

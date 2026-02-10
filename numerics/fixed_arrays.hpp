@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -21,12 +22,13 @@ using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_si;
 
-template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap = false>
 class FixedMatrix;
-template<typename Scalar_, std::int64_t rows_>
+template<typename Scalar_, std::int64_t rows_, bool use_heap = false>
 class FixedUpperTriangularMatrix;
 
-template<typename Scalar_, std::int64_t size_>
+template<typename Scalar_, std::int64_t size_, bool use_heap = false>
 class FixedVector final {
  public:
   using Scalar = Scalar_;
@@ -40,6 +42,11 @@ class FixedVector final {
   constexpr FixedVector(
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
+  template<bool uh>
+  constexpr FixedVector(FixedVector<Scalar, size_, uh> const& other);
+  template<bool uh>
+  constexpr FixedVector(FixedVector<Scalar, size_, uh>&& other);
+
   // Constructs a fixed vector by copying data from the view.  Note that the
   // result is fixed even if the matrix being viewed is an UnboundedMatrix.
   template<typename T>
@@ -49,13 +56,13 @@ class FixedVector final {
   // Convertible to an array.
   explicit constexpr operator std::array<Scalar, size_>() const;
 
-  friend bool operator==(FixedVector const& left,
-                         FixedVector const& right) = default;
-  friend bool operator!=(FixedVector const& left,
-                         FixedVector const& right) = default;
-
   constexpr Scalar& operator[](std::int64_t index);
   constexpr Scalar const& operator[](std::int64_t index) const;
+
+  template<bool uh>
+  constexpr FixedVector& operator=(FixedVector<Scalar, size_, uh> const& other);
+  template<bool uh>
+  constexpr FixedVector& operator=(FixedVector<Scalar, size_, uh>&& other);
 
   constexpr FixedVector& operator=(Scalar const (&right)[size_]);
 
@@ -67,7 +74,8 @@ class FixedVector final {
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
-  FixedVector<double, size_> Normalize() const;
+  template<bool uh = use_heap>
+  FixedVector<double, size_, uh> Normalize() const;
 
   static constexpr std::int64_t size() { return size_; }
 
@@ -83,23 +91,38 @@ class FixedVector final {
   }
 
  private:
-  std::array<Scalar, size_> data_;
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
 
-  template<typename L, typename R, std::int64_t s>
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t s, bool luh, bool ruh>
+  friend bool operator==(FixedVector<S, s, luh> const& left,
+                         FixedVector<S, s, ruh> const& right);
+  template<typename L, typename R, std::int64_t s, bool ruh>
   friend constexpr Product<L, R> operator*(
       L* const left,
-      FixedVector<R, s> const& right);
-  template<typename L, typename R, std::int64_t s>
+      FixedVector<R, s, ruh> const& right);
+  template<typename L, typename R, std::int64_t s, bool luh, bool ruh>
   friend constexpr Product<L, R> operator*(
-      TransposedView<FixedVector<L, s>> const& left,
-      FixedVector<R, s> const& right);
-  template<typename L, typename R, std::int64_t r, std::int64_t c>
-  friend constexpr FixedVector<Product<L, R>, r> operator*(
-      FixedMatrix<L, r, c> const& left,
-      FixedVector<R, c> const& right);
+      TransposedView<FixedVector<L, s, luh>> const& left,
+      FixedVector<R, s, ruh> const& right);
+  template<typename L, typename R, std::int64_t r, std::int64_t c,
+           bool luh, bool ruh, bool uh>
+  friend constexpr FixedVector<Product<L, R>, r, uh> operator*(
+      FixedMatrix<L, r, c, luh> const& left,
+      FixedVector<R, c, ruh> const& right);
+
+  template<typename S, std::int64_t s, bool uh>
+  friend class FixedVector;
 };
 
-template<typename Scalar_, std::int64_t rows_, std::int64_t columns_>
+template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
+         bool use_heap>
 class FixedMatrix final {
   static constexpr std::int64_t size_ = rows_ * columns_;
 
@@ -117,13 +140,14 @@ class FixedMatrix final {
   constexpr FixedMatrix(
       std::array<Scalar, size_>&& data);  // NOLINT(runtime/explicit)
 
-  constexpr explicit FixedMatrix(
-      TransposedView<FixedMatrix<Scalar, columns_, rows_>> const& view);
+  template<bool uh>
+  constexpr FixedMatrix(FixedMatrix<Scalar, rows_, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedMatrix(FixedMatrix<Scalar, rows_, columns_, uh>&& other);
 
-  friend bool operator==(FixedMatrix const& left,
-                         FixedMatrix const& right) = default;
-  friend bool operator!=(FixedMatrix const& left,
-                         FixedMatrix const& right) = default;
+  template<bool uh>
+  constexpr explicit FixedMatrix(
+      TransposedView<FixedMatrix<Scalar, columns_, rows_, uh>> const& view);
 
   // For  0 < i < rows and 0 < j < columns, the entry a_ij is accessed as
   // `a(i, j)`.  if i and j do not satisfy these conditions, the expression
@@ -132,6 +156,13 @@ class FixedMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
+  template<bool uh>
+  constexpr FixedMatrix& operator=(
+      FixedMatrix<Scalar, rows_, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedMatrix& operator=(
+      FixedMatrix<Scalar, rows_, columns_, uh>&& other);
+
   constexpr FixedMatrix& operator=(Scalar const (&right)[size_]);
 
   constexpr FixedMatrix& operator+=(FixedMatrix const& right);
@@ -139,8 +170,9 @@ class FixedMatrix final {
   constexpr FixedMatrix& operator*=(double right);
   constexpr FixedMatrix& operator/=(double right);
 
+  template<bool uh>
   constexpr FixedMatrix& operator*=(
-      FixedMatrix<double, rows_, columns_> const& right)
+      FixedMatrix<double, rows_, columns_, uh> const& right)
     requires(rows_ == columns_);
 
   template<std::int64_t r>
@@ -150,24 +182,38 @@ class FixedMatrix final {
 
   // Applies the matrix as a bilinear form.  Present for compatibility with
   // `SymmetricBilinearForm`.  Prefer to use `TransposedView` and `operator*`.
-  template<typename LScalar, typename RScalar>
+  template<typename LScalar, typename RScalar, bool luh, bool ruh>
   Product<Scalar, Product<LScalar, RScalar>>
-      operator()(FixedVector<LScalar, columns_> const& left,
-                 FixedVector<RScalar, rows_> const& right) const;
+      operator()(FixedVector<LScalar, columns_, luh> const& left,
+                 FixedVector<RScalar, rows_, ruh> const& right) const;
 
   static FixedMatrix Identity()
     requires(std::is_arithmetic_v<Scalar_> && rows_ == columns_);
 
  private:
-  std::array<Scalar, size_> data_;
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
 
-  template<typename L, typename R, std::int64_t r, std::int64_t c>
-  friend constexpr FixedVector<Product<L, R>, r> operator*(
-      FixedMatrix<L, r, c> const& left,
-      FixedVector<R, c> const& right);
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t r, std::int64_t c, bool luh, bool ruh>
+  friend bool operator==(FixedMatrix<S, r, c, luh> const& left,
+                         FixedMatrix<S, r, c, ruh> const& right);
+  template<typename L, typename R, std::int64_t r, std::int64_t c,
+           bool luh, bool ruh, bool uh>
+  friend constexpr FixedVector<Product<L, R>, r, uh> operator*(
+      FixedMatrix<L, r, c, luh> const& left,
+      FixedVector<R, c, ruh> const& right);
+
+  template<typename S, std::int64_t r, std::int64_t c, bool uh>
+  friend class FixedMatrix;
 };
 
-template<typename Scalar_, std::int64_t rows_>
+template<typename Scalar_, std::int64_t rows_, bool use_heap = false>
 class FixedStrictlyLowerTriangularMatrix final {
   static constexpr std::int64_t size_ = rows_ * (rows_ - 1) / 2;
 
@@ -183,14 +229,15 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
-  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_>() const;
+  template<bool uh>
+  constexpr FixedStrictlyLowerTriangularMatrix(
+      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh> const& other);
+  template<bool uh>
+  constexpr FixedStrictlyLowerTriangularMatrix(
+      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh>&& other);
 
-  friend bool operator==(FixedStrictlyLowerTriangularMatrix const& left,
-                         FixedStrictlyLowerTriangularMatrix const& right) =
-      default;
-  friend bool operator!=(FixedStrictlyLowerTriangularMatrix const& left,
-                         FixedStrictlyLowerTriangularMatrix const& right) =
-      default;
+  template<bool uh = use_heap>
+  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, uh>() const;
 
   // For  0 ≤ j < i < rows, the entry a_ij is accessed as `a(i, j)`.
   // if i and j do not satisfy these conditions, the expression `a(i, j)`
@@ -199,6 +246,13 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
+  template<bool uh>
+  constexpr FixedStrictlyLowerTriangularMatrix& operator=(
+      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh> const& other);
+  template<bool uh>
+  constexpr FixedStrictlyLowerTriangularMatrix& operator=(
+      FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+
   constexpr FixedStrictlyLowerTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
 
@@ -206,10 +260,25 @@ class FixedStrictlyLowerTriangularMatrix final {
   Scalar const* row() const;
 
  private:
-  std::array<Scalar, size_> data_;
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t r,  bool luh, bool ruh>
+  friend bool operator==(
+      FixedStrictlyLowerTriangularMatrix<S, r, luh> const& left,
+      FixedStrictlyLowerTriangularMatrix<S, r, ruh> const& right);
+
+  template<typename S, std::int64_t r, bool uh>
+  friend class FixedStrictlyLowerTriangularMatrix;
 };
 
-template<typename Scalar_, std::int64_t rows_>
+template<typename Scalar_, std::int64_t rows_, bool use_heap = false>
 class FixedLowerTriangularMatrix final {
   static constexpr std::int64_t size_ = rows_ * (rows_ + 1) / 2;
 
@@ -225,15 +294,20 @@ class FixedLowerTriangularMatrix final {
   constexpr FixedLowerTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
+  template<bool uh>
+  constexpr FixedLowerTriangularMatrix(
+      FixedLowerTriangularMatrix<Scalar, rows_, uh> const& other);
+  template<bool uh>
+  constexpr FixedLowerTriangularMatrix(
+      FixedLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+
+  template<bool uh>
   explicit FixedLowerTriangularMatrix(
-      TransposedView<FixedUpperTriangularMatrix<Scalar, rows_>> const& view);
+      TransposedView<FixedUpperTriangularMatrix<Scalar, rows_, uh>> const&
+          view);
 
-  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_>() const;
-
-  friend bool operator==(FixedLowerTriangularMatrix const& left,
-                         FixedLowerTriangularMatrix const& right) = default;
-  friend bool operator!=(FixedLowerTriangularMatrix const& left,
-                         FixedLowerTriangularMatrix const& right) = default;
+  template<bool uh = use_heap>
+  explicit constexpr operator FixedMatrix<Scalar, rows_, rows_, uh>() const;
 
   // For  0 ≤ j ≤ i < rows, the entry a_ij is accessed as `a(i, j)`.
   // if i and j do not satisfy these conditions, the expression `a(i, j)`
@@ -242,14 +316,35 @@ class FixedLowerTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
+  template<bool uh>
+  constexpr FixedLowerTriangularMatrix& operator=(
+      FixedLowerTriangularMatrix<Scalar, rows_, uh> const& other);
+  template<bool uh>
+  constexpr FixedLowerTriangularMatrix& operator=(
+      FixedLowerTriangularMatrix<Scalar, rows_, uh>&& other);
+
   constexpr FixedLowerTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
 
  private:
-  std::array<Scalar, size_> data_;
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t r,  bool luh, bool ruh>
+  friend bool operator==(FixedLowerTriangularMatrix<S, r, luh> const& left,
+                         FixedLowerTriangularMatrix<S, r, ruh> const& right);
+
+  template<typename S, std::int64_t r, bool uh>
+  friend class FixedLowerTriangularMatrix;
 };
 
-template<typename Scalar_, std::int64_t columns_>
+template<typename Scalar_, std::int64_t columns_, bool use_heap = false>
 class FixedStrictlyUpperTriangularMatrix final {
   static constexpr std::int64_t size_ = columns_ * (columns_ - 1) / 2;
 
@@ -265,18 +360,22 @@ class FixedStrictlyUpperTriangularMatrix final {
   constexpr FixedStrictlyUpperTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
+  template<bool uh>
+  constexpr FixedStrictlyUpperTriangularMatrix(
+      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedStrictlyUpperTriangularMatrix(
+      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+
+  template<bool uh>
   explicit FixedStrictlyUpperTriangularMatrix(
       TransposedView<
-          FixedStrictlyLowerTriangularMatrix<Scalar, columns_>> const& view);
+          FixedStrictlyLowerTriangularMatrix<Scalar, columns_, uh>> const&
+          view);
 
-  explicit constexpr operator FixedMatrix<Scalar, columns_, columns_>() const;
-
-  friend bool operator==(
-      FixedStrictlyUpperTriangularMatrix const& left,
-      FixedStrictlyUpperTriangularMatrix const& right) = default;
-  friend bool operator!=(
-      FixedStrictlyUpperTriangularMatrix const& left,
-      FixedStrictlyUpperTriangularMatrix const& right) = default;
+  template<bool uh = use_heap>
+  explicit constexpr
+  operator FixedMatrix<Scalar, columns_, columns_, uh>() const;
 
   // For  0 ≤ i < j < columns, the entry a_ij is accessed as `a(i, j)`.
   // if i and j do not satisfy these conditions, the expression `a(i, j)`
@@ -285,19 +384,41 @@ class FixedStrictlyUpperTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
+  template<bool uh>
+  constexpr FixedStrictlyUpperTriangularMatrix& operator=(
+      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedStrictlyUpperTriangularMatrix& operator=(
+      FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+
   constexpr FixedStrictlyUpperTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
 
  private:
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
   // For ease of writing matrices in tests, the input data is received in row-
   // major format.  This transposes a trapezoidal slice to make it column-major.
   static std::array<Scalar, size_> Transpose(
       std::array<Scalar, size_> const& data);
 
-  std::array<Scalar, size_> data_;
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t c,  bool luh, bool ruh>
+  friend bool operator==(
+      FixedStrictlyUpperTriangularMatrix<S, c, luh> const& left,
+      FixedStrictlyUpperTriangularMatrix<S, c, ruh> const& right);
+
+  template<typename S, std::int64_t c, bool uh>
+  friend class FixedStrictlyUpperTriangularMatrix;
 };
 
-template<typename Scalar_, std::int64_t columns_>
+template<typename Scalar_, std::int64_t columns_, bool use_heap>
 class FixedUpperTriangularMatrix final {
   static constexpr std::int64_t size_ = columns_ * (columns_ + 1) / 2;
 
@@ -313,15 +434,21 @@ class FixedUpperTriangularMatrix final {
   constexpr FixedUpperTriangularMatrix(
       std::array<Scalar, size_> const& data);
 
+  template<bool uh>
+  constexpr FixedUpperTriangularMatrix(
+      FixedUpperTriangularMatrix<Scalar, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedUpperTriangularMatrix(
+      FixedUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+
+  template<bool uh>
   explicit FixedUpperTriangularMatrix(
-      TransposedView<FixedLowerTriangularMatrix<Scalar, columns_>> const& view);
+      TransposedView<
+          FixedLowerTriangularMatrix<Scalar, columns_, uh>> const& view);
 
-  explicit constexpr operator FixedMatrix<Scalar, columns_, columns_>() const;
-
-  friend bool operator==(FixedUpperTriangularMatrix const& left,
-                         FixedUpperTriangularMatrix const& right) = default;
-  friend bool operator!=(FixedUpperTriangularMatrix const& left,
-                         FixedUpperTriangularMatrix const& right) = default;
+  template<bool uh = use_heap>
+  explicit constexpr
+  operator FixedMatrix<Scalar, columns_, columns_, uh>() const;
 
   // For  0 ≤ i ≤ j < columns, the entry a_ij is accessed as `a(i, j)`.
   // if i and j do not satisfy these conditions, the expression `a(i, j)`
@@ -330,175 +457,251 @@ class FixedUpperTriangularMatrix final {
   constexpr Scalar const& operator()(std::int64_t row,
                                      std::int64_t column) const;
 
+  template<bool uh>
+  constexpr FixedUpperTriangularMatrix& operator=(
+      FixedUpperTriangularMatrix<Scalar, columns_, uh> const& other);
+  template<bool uh>
+  constexpr FixedUpperTriangularMatrix& operator=(
+      FixedUpperTriangularMatrix<Scalar, columns_, uh>&& other);
+
   constexpr FixedUpperTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
 
  private:
+  using Data = std::conditional_t<use_heap,
+                                  std::unique_ptr<std::array<Scalar, size_>>,
+                                  std::array<Scalar, size_>>;
+
   // For ease of writing matrices in tests, the input data is received in row-
   // major format.  This transposes a trapezoidal slice to make it column-major.
   static std::array<Scalar, size_> Transpose(
       std::array<Scalar, size_> const& data);
 
-  std::array<Scalar, size_> data_;
+  constexpr std::array<Scalar, size_> const& data() const;
+  constexpr std::array<Scalar, size_>& data();
+
+  Data data_;
+
+  template<typename S, std::int64_t c,  bool luh, bool ruh>
+  friend bool operator==(FixedUpperTriangularMatrix<S, c, luh> const& left,
+                         FixedUpperTriangularMatrix<S, c, ruh> const& right);
+
+  template<typename S, std::int64_t c, bool uh>
+  friend class FixedUpperTriangularMatrix;
 };
 
 // Prefer using the operator* that takes a TransposedView.
-template<typename LScalar, typename RScalar, std::int64_t size>
+template<typename LScalar, typename RScalar, std::int64_t size,
+         bool luh, bool ruh>
 constexpr Product<LScalar, RScalar> InnerProduct(
-    FixedVector<LScalar, size> const& left,
-    FixedVector<RScalar, size> const& right);
+    FixedVector<LScalar, size, luh> const& left,
+    FixedVector<RScalar, size, ruh> const& right);
 
-template<typename Scalar, std::int64_t size>
-constexpr FixedVector<double, size> Normalize(
-    FixedVector<Scalar, size> const& vector);
+template<typename Scalar, std::int64_t size, bool vuh, bool uh = vuh>
+constexpr FixedVector<double, size, uh> Normalize(
+    FixedVector<Scalar, size, vuh> const& vector);
 
-template<typename LScalar, typename RScalar, std::int64_t size>
-constexpr FixedMatrix<Product<LScalar, RScalar>, size, size> SymmetricProduct(
-    FixedVector<LScalar, size> const& left,
-    FixedVector<RScalar, size> const& right);
+template<typename LScalar, typename RScalar, std::int64_t size,
+         bool luh, bool ruh, bool uh = (luh && ruh)>
+constexpr FixedMatrix<Product<LScalar, RScalar>, size, size, uh>
+SymmetricProduct(FixedVector<LScalar, size, luh> const& left,
+                 FixedVector<RScalar, size, ruh> const& right);
 
-template<typename Scalar, std::int64_t size>
-constexpr FixedMatrix<Square<Scalar>, size, size> SymmetricSquare(
-    FixedVector<Scalar, size> const& vector);
+template<typename Scalar, std::int64_t size, bool vuh, bool uh = vuh>
+constexpr FixedMatrix<Square<Scalar>, size, size, uh> SymmetricSquare(
+    FixedVector<Scalar, size, vuh> const& vector);
+
+// Equality.
+
+template<typename Scalar, std::int64_t size,
+         bool luh, bool ruh>
+bool operator==(FixedVector<Scalar, size, luh> const& left,
+                FixedVector<Scalar, size, ruh> const& right);
+
+template<typename Scalar, std::int64_t rows, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator==(FixedMatrix<Scalar, rows, columns, luh> const& left,
+                FixedMatrix<Scalar, rows, columns, ruh> const& right);
+
+template<typename Scalar, std::int64_t rows,
+         bool luh, bool ruh>
+bool operator==(
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, luh> const& left,
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, ruh> const& right);
+
+template<typename Scalar, std::int64_t rows,
+         bool luh, bool ruh>
+bool operator==(FixedLowerTriangularMatrix<Scalar, rows, luh> const& left,
+                FixedLowerTriangularMatrix<Scalar, rows, ruh> const& right);
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator==(
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, luh> const& left,
+    FixedStrictlyUpperTriangularMatrix<Scalar, columns, ruh> const& right);
+
+template<typename Scalar, std::int64_t columns,
+         bool luh, bool ruh>
+bool operator==(FixedUpperTriangularMatrix<Scalar, columns, luh> const& left,
+                FixedUpperTriangularMatrix<Scalar, columns, ruh> const& right);
 
 // Additive groups.
 
-template<typename Scalar, std::int64_t size>
-constexpr FixedVector<Scalar, size> operator+(
-    FixedVector<Scalar, size> const& right);
+template<typename Scalar, std::int64_t size,
+         bool ruh, bool uh = ruh>
+constexpr FixedVector<Scalar, size, uh> operator+(
+    FixedVector<Scalar, size, ruh> const& right);
 
-template<typename Scalar, std::int64_t rows, std::int64_t columns>
-constexpr FixedMatrix<Scalar, rows, columns> operator+(
-    FixedMatrix<Scalar, rows, columns> const& right);
+template<typename Scalar, std::int64_t rows, std::int64_t columns,
+         bool ruh, bool uh = ruh>
+constexpr FixedMatrix<Scalar, rows, columns, uh> operator+(
+    FixedMatrix<Scalar, rows, columns, ruh> const& right);
 
-template<typename Scalar, std::int64_t size>
-constexpr FixedVector<Scalar, size> operator-(
-    FixedVector<Scalar, size> const& right);
+template<typename Scalar, std::int64_t size,
+         bool ruh, bool uh = ruh>
+constexpr FixedVector<Scalar, size, uh> operator-(
+    FixedVector<Scalar, size, ruh> const& right);
 
-template<typename Scalar, std::int64_t rows, std::int64_t columns>
-constexpr FixedMatrix<Scalar, rows, columns> operator-(
-    FixedMatrix<Scalar, rows, columns> const& right);
+template<typename Scalar, std::int64_t rows, std::int64_t columns,
+         bool ruh, bool uh = ruh>
+constexpr FixedMatrix<Scalar, rows, columns, uh> operator-(
+    FixedMatrix<Scalar, rows, columns, ruh> const& right);
 
-template<typename LScalar, typename RScalar, std::int64_t size>
-constexpr FixedVector<Sum<LScalar, RScalar>, size> operator+(
-    FixedVector<LScalar, size> const& left,
-    FixedVector<RScalar, size> const& right);
-
-template<typename LScalar, typename RScalar,
-         std::int64_t rows, std::int64_t columns>
-constexpr FixedMatrix<Sum<LScalar, RScalar>, rows, columns> operator+(
-    FixedMatrix<LScalar, rows, columns> const& left,
-    FixedMatrix<RScalar, rows, columns> const& right);
-
-template<typename LScalar, typename RScalar, std::int64_t size>
-constexpr FixedVector<Difference<LScalar, RScalar>, size> operator-(
-    FixedVector<LScalar, size> const& left,
-    FixedVector<RScalar, size> const& right);
+template<typename LScalar, typename RScalar, std::int64_t size,
+         bool luh, bool ruh, bool uh = (luh && ruh)>
+constexpr FixedVector<Sum<LScalar, RScalar>, size, uh> operator+(
+    FixedVector<LScalar, size, luh> const& left,
+    FixedVector<RScalar, size, ruh> const& right);
 
 template<typename LScalar, typename RScalar,
-         std::int64_t rows, std::int64_t columns>
-constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns> operator-(
-    FixedMatrix<LScalar, rows, columns> const& left,
-    FixedMatrix<RScalar, rows, columns> const& right);
+         std::int64_t rows, std::int64_t columns,
+         bool luh, bool ruh, bool uh = (luh && ruh)>
+constexpr FixedMatrix<Sum<LScalar, RScalar>, rows, columns, uh> operator+(
+    FixedMatrix<LScalar, rows, columns, luh> const& left,
+    FixedMatrix<RScalar, rows, columns, ruh> const& right);
+
+template<typename LScalar, typename RScalar, std::int64_t size,
+         bool luh, bool ruh, bool uh = (luh && ruh)>
+constexpr FixedVector<Difference<LScalar, RScalar>, size, uh> operator-(
+    FixedVector<LScalar, size, luh> const& left,
+    FixedVector<RScalar, size, ruh> const& right);
+
+template<typename LScalar, typename RScalar,
+         std::int64_t rows, std::int64_t columns,
+         bool luh, bool ruh, bool uh = (luh && ruh)>
+constexpr FixedMatrix<Difference<LScalar, RScalar>, rows, columns, uh>
+operator-(FixedMatrix<LScalar, rows, columns, luh> const& left,
+          FixedMatrix<RScalar, rows, columns, ruh> const& right);
 
 // Vector spaces.
 
-template<typename LScalar, typename RScalar, std::int64_t size>
-constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
+template<typename LScalar, typename RScalar, std::int64_t size,
+         bool ruh, bool uh = ruh>
+constexpr FixedVector<Product<LScalar, RScalar>, size, uh> operator*(
     LScalar const& left,
-    FixedVector<RScalar, size> const& right);
+    FixedVector<RScalar, size, ruh> const& right);
 
-template<typename LScalar, typename RScalar, std::int64_t size>
-constexpr FixedVector<Product<LScalar, RScalar>, size> operator*(
-    FixedVector<LScalar, size> const& left,
+template<typename LScalar, typename RScalar, std::int64_t size,
+         bool luh, bool uh = luh>
+constexpr FixedVector<Product<LScalar, RScalar>, size, uh> operator*(
+    FixedVector<LScalar, size, luh> const& left,
     RScalar const& right);
 
 template<typename LScalar, typename RScalar,
-         std::int64_t rows, std::int64_t columns>
-constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
+         std::int64_t rows, std::int64_t columns,
+         bool ruh, bool uh = ruh>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns, uh>
 operator*(LScalar const& left,
-          FixedMatrix<RScalar, rows, columns> const& right);
+          FixedMatrix<RScalar, rows, columns, ruh> const& right);
 
 template<typename LScalar, typename RScalar,
-         std::int64_t rows, std::int64_t columns>
-constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
-operator*(FixedMatrix<LScalar, rows, columns> const& left,
+         std::int64_t rows, std::int64_t columns,
+         bool luh, bool uh = luh>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns, uh>
+operator*(FixedMatrix<LScalar, rows, columns, luh> const& left,
           RScalar const& right);
 
-template<typename LScalar, typename RScalar, std::int64_t size>
-constexpr FixedVector<Quotient<LScalar, RScalar>, size> operator/(
-    FixedVector<LScalar, size> const& left,
+template<typename LScalar, typename RScalar, std::int64_t size,
+         bool luh, bool uh = luh>
+constexpr FixedVector<Quotient<LScalar, RScalar>, size, uh> operator/(
+    FixedVector<LScalar, size, luh> const& left,
     RScalar const& right);
 
 template<typename LScalar, typename RScalar,
-         std::int64_t rows, std::int64_t columns>
-constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns>
-operator/(FixedMatrix<LScalar, rows, columns> const& left,
+         std::int64_t rows, std::int64_t columns,
+         bool luh, bool uh = luh>
+constexpr FixedMatrix<Quotient<LScalar, RScalar>, rows, columns, uh>
+operator/(FixedMatrix<LScalar, rows, columns, luh> const& left,
           RScalar const& right);
 
 // Hilbert space and algebra.
 
 // TODO(phl): We should have a RowView.
-template<typename LScalar, typename RScalar, std::int64_t size>
+template<typename LScalar, typename RScalar, std::int64_t size, bool ruh>
 constexpr Product<LScalar, RScalar> operator*(
     LScalar* const left,
-    FixedVector<RScalar, size> const& right);
+    FixedVector<RScalar, size, ruh> const& right);
 
-template<typename LScalar, typename RScalar, std::int64_t size>
+template<typename LScalar, typename RScalar, std::int64_t size,
+         bool luh, bool ruh>
 constexpr Product<LScalar, RScalar> operator*(
-    TransposedView<FixedVector<LScalar, size>> const& left,
-    FixedVector<RScalar, size> const& right);
+    TransposedView<FixedVector<LScalar, size, luh>> const& left,
+    FixedVector<RScalar, size, ruh> const& right);
 
 template<typename LScalar, typename RScalar,
-         std::int64_t lsize, std::int64_t rsize>
-constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize> operator*(
-    FixedVector<LScalar, lsize> const& left,
-    TransposedView<FixedVector<RScalar, rsize>> const& right);
+         std::int64_t lsize, std::int64_t rsize,
+         bool luh, bool ruh, bool uh = (luh && ruh)>
+constexpr FixedMatrix<Product<LScalar, RScalar>, lsize, rsize, uh> operator*(
+    FixedVector<LScalar, lsize, luh> const& left,
+    TransposedView<FixedVector<RScalar, rsize, ruh>> const& right);
 
 template<typename LScalar, typename RScalar,
-         std::int64_t rows, std::int64_t dimension, std::int64_t columns>
-constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns>
-operator*(FixedMatrix<LScalar, rows, dimension> const& left,
-          FixedMatrix<RScalar, dimension, columns> const& right);
+         std::int64_t rows, std::int64_t dimension, std::int64_t columns,
+         bool luh, bool ruh, bool uh = (luh && ruh)>
+constexpr FixedMatrix<Product<LScalar, RScalar>, rows, columns, uh>
+operator*(FixedMatrix<LScalar, rows, dimension, luh> const& left,
+          FixedMatrix<RScalar, dimension, columns, ruh> const& right);
 
 template<typename LScalar, typename RScalar,
-         std::int64_t rows, std::int64_t columns>
-constexpr FixedVector<Product<LScalar, RScalar>, rows> operator*(
-    FixedMatrix<LScalar, rows, columns> const& left,
-    FixedVector<RScalar, columns> const& right);
+         std::int64_t rows, std::int64_t columns,
+         bool luh, bool ruh, bool uh = (luh && ruh)>
+constexpr FixedVector<Product<LScalar, RScalar>, rows, uh> operator*(
+    FixedMatrix<LScalar, rows, columns, luh> const& left,
+    FixedVector<RScalar, columns, ruh> const& right);
 
 // Use this operator to multiply a row vector with a matrix.  We don't have an
 // operator returning a TransposedView as that would cause dangling references.
 template<typename LScalar, typename RScalar,
-         std::int64_t rows, std::int64_t columns>
-constexpr FixedVector<Product<LScalar, RScalar>, columns> operator*(
-    TransposedView<FixedMatrix<LScalar, rows, columns>> const& left,
-    FixedVector<RScalar, rows> const& right);
+         std::int64_t rows, std::int64_t columns,
+         bool luh, bool ruh, bool uh = (luh && ruh)>
+constexpr FixedVector<Product<LScalar, RScalar>, columns, uh> operator*(
+    TransposedView<FixedMatrix<LScalar, rows, columns, luh>> const& left,
+    FixedVector<RScalar, rows, ruh> const& right);
 
 // Ouput.
 
-template<typename Scalar, std::int64_t size>
+template<typename Scalar, std::int64_t size, bool uh>
 std::ostream& operator<<(std::ostream& out,
-                         FixedVector<Scalar, size> const& vector);
+                         FixedVector<Scalar, size, uh> const& vector);
 
-template<typename Scalar, std::int64_t rows, std::int64_t columns>
+template<typename Scalar, std::int64_t rows, std::int64_t columns, bool uh>
 std::ostream& operator<<(std::ostream& out,
-                         FixedMatrix<Scalar, rows, columns> const& matrix);
+                         FixedMatrix<Scalar, rows, columns, uh> const& matrix);
 
-template<typename Scalar, std::int64_t rows>
+template<typename Scalar, std::int64_t rows, bool uh>
 std::ostream& operator<<(
     std::ostream& out,
-    FixedStrictlyLowerTriangularMatrix<Scalar, rows> const& matrix);
+    FixedStrictlyLowerTriangularMatrix<Scalar, rows, uh> const& matrix);
 
-template<typename Scalar, std::int64_t rows>
+template<typename Scalar, std::int64_t rows, bool uh>
 std::ostream& operator<<(
     std::ostream& out,
-    FixedLowerTriangularMatrix<Scalar, rows> const& matrix);
+    FixedLowerTriangularMatrix<Scalar, rows, uh> const& matrix);
 
-template<typename Scalar, std::int64_t columns>
+template<typename Scalar, std::int64_t columns, bool uh>
 std::ostream& operator<<(
     std::ostream& out,
-    FixedUpperTriangularMatrix<Scalar, columns> const& matrix);
+    FixedUpperTriangularMatrix<Scalar, columns, uh> const& matrix);
 
 }  // namespace internal
 

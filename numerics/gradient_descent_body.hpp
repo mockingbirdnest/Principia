@@ -26,10 +26,10 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_hermite2;
 
-template<typename Scalar, typename S, int s>
-struct Generator<Scalar, FixedVector<S, s>> {
-  using Gradient = FixedVector<Quotient<Scalar, S>, s>;
-  static FixedMatrix<double, s, s> InnerProductForm();
+template<typename Scalar, typename S, int s, bool uh>
+struct Generator<Scalar, FixedVector<S, s, uh>> {
+  using Gradient = FixedVector<Quotient<Scalar, S>, s, uh>;
+  static FixedMatrix<double, s, s, uh> InnerProductForm();
 };
 
 template<typename Scalar, typename S, typename F>
@@ -53,9 +53,9 @@ struct Generator<Scalar, Point<V>> {
 #endif
 };
 
-template<typename Scalar, typename S, int s>
-FixedMatrix<double, s, s>
-Generator<Scalar, FixedVector<S, s>>::InnerProductForm() {
+template<typename Scalar, typename S, int s, bool uh>
+FixedMatrix<double, s, s, uh>
+Generator<Scalar, FixedVector<S, s, uh>>::InnerProductForm() {
   FixedMatrix<double, s, s> result{};
   for (int i = 0; i < s; ++i) {
     result(i, i) = 1;
