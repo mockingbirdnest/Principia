@@ -415,7 +415,7 @@ constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
 FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator*=(
     FixedMatrix<double, rows_, columns_, uh> const& right)
   requires(rows_ == columns_) {
-  // TODO(egg): We don't need to copy the whole matrix.
+  // TODO(egg): We don’t need to copy the whole matrix.
   return *this = *this * right;
 }
 
