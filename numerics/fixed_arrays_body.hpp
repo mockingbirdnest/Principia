@@ -55,8 +55,12 @@ struct Construction<std::unique_ptr<std::array<Scalar, size>>> {
 
   static constexpr std::unique_ptr<std::array<Scalar, size>>
   MakeValueInitialized() {
-    std::array<Scalar, size> zero{};
-    return make_not_null_unique<std::array<Scalar, size>>(std::move(zero));
+    auto a = make_not_null_unique<std::array<Scalar, size>>();
+    // Avoid creating one big array on the stack.
+    for (auto& element : *a) {
+      element = Scalar{};
+    }
+    return std::move(a);
   }
 };
 
