@@ -50,17 +50,15 @@ struct Construction<std::unique_ptr<std::array<Scalar, size>>> {
 
   static constexpr void MakeUninitialized(
       std::unique_ptr<std::array<Scalar, size>>& data) {
-    data = make_not_null_unique<std::array<Scalar, size>>();
+    // This does default initialization of the array, which leaves the elements
+    // uninitialized.
+    data = std::make_unique_for_overwrite<std::array<Scalar, size>>();
   }
 
   static constexpr std::unique_ptr<std::array<Scalar, size>>
   MakeValueInitialized() {
-    auto a = make_not_null_unique<std::array<Scalar, size>>();
-    // Avoid creating one big array on the stack.
-    for (auto& element : *a) {
-      element = Scalar{};
-    }
-    return std::move(a);
+    // This does value initialization of the array.
+    return make_not_null_unique<std::array<Scalar, size>>();
   }
 };
 
