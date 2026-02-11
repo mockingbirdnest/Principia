@@ -44,8 +44,8 @@ class FixedVector final {
 
   template<bool uh>
   constexpr FixedVector(FixedVector<Scalar, size_, uh> const& other);
-  // A move can only be optimized if the source and destination have the same
-  // heap usage.
+  // A move is only optimized if the source and destination have the same heap
+  // usage.
   constexpr FixedVector(FixedVector&& other);
   // https://cplusplus.com/forum/beginner/269900/
   constexpr explicit FixedVector(FixedVector const volatile&) = delete;
