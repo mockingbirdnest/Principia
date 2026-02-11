@@ -1,7 +1,7 @@
 #include "mathematica/integrator_plots.hpp"
 
 #include <algorithm>
-#include <fstream>  // NOLINT(readability/streams)
+#include <fstream>   // NOLINT(readability/streams)
 #include <iostream>  // NOLINT(readability/streams)
 #include <limits>
 #include <string>
@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "absl/status/status.h"
-#include "base/bundle.hpp"
 #include "base/file.hpp"
 #include "base/not_null.hpp"
+#include "base/thread_pool.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -134,9 +134,9 @@ namespace internal {
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
-using namespace principia::base::_bundle;
 using namespace principia::base::_file;
 using namespace principia::base::_not_null;
+using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -315,21 +315,27 @@ class WorkErrorGraphGenerator {
   }
 
   std::string GetMathematicaData() {
-    LOG(INFO) << "Using " << std::thread::hardware_concurrency()
-              << " worker threads";
-    Bundle bundle;
+    std::int64_t const thread_count = std::thread::hardware_concurrency();
+    LOG(INFO) << "Using " << thread_count << " worker threads";
+    ThreadPool<absl::Status> thread_pool(thread_count);
+    std::vector<std::future<absl::Status>> futures;
+    futures.reserve(methods_.size() * integrations_per_integrator_);
+
     for (std::int64_t method_index = 0; method_index < methods_.size();
          ++method_index) {
       for (std::int64_t time_step_index = 0;
            time_step_index < integrations_per_integrator_;
            ++time_step_index) {
-        bundle.Add(std::bind(&WorkErrorGraphGenerator::Integrate,
-                             this,
-                             method_index,
-                             time_step_index));
+        futures.emplace_back(
+            thread_pool.Add(std::bind(&WorkErrorGraphGenerator::Integrate,
+                                      this,
+                                      method_index,
+                                      time_step_index)));
       }
     }
-    CHECK_OK(bundle.Join());
+    for (auto& future : futures) {
+      CHECK_OK(future.get());
+    }
 
     std::vector<std::vector<std::vector<std::tuple<double, Length>>>>
         q_error_data;
