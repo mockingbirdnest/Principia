@@ -1,3 +1,5 @@
+#if !_DEBUG
+
 #include "integrators/чебышёв_picard_integrator.hpp"
 
 #include <concepts>
@@ -136,16 +138,16 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
   problem.equation = ode;
   problem.initial_state = {Instant(), {y₀ * Metre + Point<Length>()}};
 
-  const double one_plus_sqrt_one_minus_ε² = 1 + Sqrt(1 - ε * ε);
-  const double α = 2 * ε / (one_plus_sqrt_one_minus_ε² - ε);
-  const double β = 1 / (1 + α) * Tan(ε * y₀ / 2 * Radian);
-  const double γ = ε / one_plus_sqrt_one_minus_ε²;
+  double const one_plus_sqrt_one_minus_ε² = 1 + Sqrt(1 - ε * ε);
+  double const α = 2 * ε / (one_plus_sqrt_one_minus_ε² - ε);
+  double const β = 1 / (1 + α) * Tan(ε * y₀ / 2 * Radian);
+  double const γ = ε / one_plus_sqrt_one_minus_ε²;
 
   return SolvedInitialValueProblem{
       .problem = problem,
       .solution = [ε, α, β, γ](Instant const& t) -> std::tuple<Point<Length>> {
-        const Angle φ = 0.5 * (1 - γ * ε) * (t - Instant()) / Second * Radian;
-        const double σ = α * (Sin(φ) + β * Cos(φ));
+        Angle const φ = 0.5 * (1 - γ * ε) * (t - Instant()) / Second * Radian;
+        double const σ = α * (Sin(φ) + β * Cos(φ));
 
         return (-γ * (t - Instant()) / Second +
                 2 / ε * ArcTan((β + σ * Cos(φ)) / (1 + σ * Sin(φ))) / Radian) *
@@ -182,7 +184,7 @@ TEST(ЧебышёвPicardIntegratorTest, MultipleSteps) {
   EXPECT_GE(states.back().s.value, t_final);
 
   // Verify the results are close to the known solution.
-  for (const auto& state : states) {
+  for (auto const& state : states) {
     auto t = state.s.value;
     auto y = std::get<0>(state.y).value;
     EXPECT_THAT(y, AlmostEquals(std::get<0>(problem.solution(t)), 0, 5))
@@ -218,7 +220,7 @@ TEST(ЧебышёвPicardIntegratorTest, Backwards) {
   EXPECT_LE(states.back().s.value, t_final);  // ≤ because we are backwards.
 
   // Verify the results are close to the known solution.
-  for (const auto& state : states) {
+  for (auto const& state : states) {
     auto t = state.s.value;
     auto y = std::get<0>(state.y).value;
     EXPECT_THAT(y, AlmostEquals(std::get<0>(problem.solution(t)), 0, 12))
@@ -301,7 +303,7 @@ TYPED_TEST_P(ЧебышёвPicardIntegratorParameterizedTest, Convergence) {
   EXPECT_OK(instance->Solve(problem.t₀() + step));
 
   // Verify the results are close to the known solution.
-  for (const auto& state : states) {
+  for (auto const& state : states) {
     auto t = state.s.value;
     auto y = std::get<0>(state.y).value;
     EXPECT_THAT(y,
@@ -455,3 +457,5 @@ INSTANTIATE_TYPED_TEST_SUITE_P(PerturbedSinusoid,
 
 }  // namespace integrators
 }  // namespace principia
+
+#endif

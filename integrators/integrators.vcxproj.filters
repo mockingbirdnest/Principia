@@ -98,6 +98,12 @@
     <ClInclude Include="explicit_linear_multistep_integrator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="чебышёв_picard_integrator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="чебышёв_picard_integrator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp">
@@ -119,6 +125,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="explicit_linear_multistep_integrator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="чебышёв_picard_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

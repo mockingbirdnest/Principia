@@ -102,15 +102,15 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
     std::vector<typename ODE::IndependentVariable> t_;
 
     // Controls the boundary condition.
-    FixedMatrix<double, M + 1, n> CₓX₀_;
+    FixedMatrix<double, M + 1, n, /*use_heap=*/true> CₓX₀_;
 
     // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
     // variables at each node.
-    FixedMatrix<double, M + 1, n> Xⁱ_;
-    FixedMatrix<double, M + 1, n> Xⁱ⁺¹_;
+    FixedMatrix<double, M + 1, n, /*use_heap=*/true> Xⁱ_;
+    FixedMatrix<double, M + 1, n, /*use_heap=*/true> Xⁱ⁺¹_;
 
     // The computed derivative (at each node, for the current iteration).
-    FixedMatrix<double, M + 1, n> yʹ_;
+    FixedMatrix<double, M + 1, n, /*use_heap=*/true> yʹ_;
 
     friend class ЧебышёвPicardIntegrator;
   };
@@ -144,7 +144,7 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
   FixedVector<double, M + 1> nodes_;
 
   // The product of 1.31a and 1.31b from [Mac15].
-  FixedMatrix<double, M + 1, M + 1> CₓCα_;
+  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> CₓCα_;
 };
 
 }  // namespace internal

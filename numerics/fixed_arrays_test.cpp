@@ -1,5 +1,7 @@
 #include "numerics/fixed_arrays.hpp"
 
+#include <utility>
+
 #include "base/algebra.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -164,6 +166,13 @@ TEST_F(FixedArraysTest, Assignment) {
     EXPECT_EQ(l3, m3);
     EXPECT_EQ(l3, n3);
   }
+}
+
+TEST_F(FixedArraysTest, UseHeap) {
+  n23_ = std::move(m23_);
+  m23_ = n23_;
+  FixedMatrix<double, 2, 3, /*use_heap=*/true> p23(m23_);
+  FixedMatrix<double, 2, 3, /*use_heap=*/false> q23(m23_);
 }
 
 TEST_F(FixedArraysTest, Norm) {
