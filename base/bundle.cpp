@@ -13,10 +13,16 @@ namespace _bundle {
 namespace internal {
 
 void Bundle::Add(Task task) {
-  absl::MutexLock l(&lock_);
+  lock_.Lock();
   CHECK(!joining_);
+
+  while (number_of_active_workers_ > std::thread::hardware_concurrency()) {
+    cv_.Wait(&lock_);
+  }
+
   ++number_of_active_workers_;
   workers_.emplace_back(&Bundle::Toil, this, std::move(task));
+  lock_.Unlock();
 }
 
 absl::Status Bundle::Join() {
@@ -68,6 +74,7 @@ void Bundle::Toil(Task const& task) {
   // decrement would be incorrect as we must ensure that exactly one thread sees
   // that counter dropping to zero.
   int const number_of_active_workers = --number_of_active_workers_;
+  cv_.Signal();
   if (joining_ && number_of_active_workers == 0) {
     all_done_.Notify();
   }

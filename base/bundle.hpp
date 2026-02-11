@@ -20,6 +20,9 @@ namespace internal {
 // created for each call to `Add`.  When one of the `Join*` is called, no more
 // calls to `Add` are allowed, and `Join*` returns the first error status (if
 // any) produced by the tasks.
+//
+// At most `std::thread::hardware_concurrency()` concurrent threads are allowed.
+// `Add` will block if neccessary in order to maintain this.
 class Bundle final {
  public:
   using Task = std::function<absl::Status()>;
@@ -49,6 +52,9 @@ class Bundle final {
   absl::Status status_ GUARDED_BY(status_lock_);
 
   absl::Mutex lock_;
+
+  // Condition variable for thread slots being available.
+  absl::CondVar cv_;
 
   // Whether `Join` has been called.  When set to true, `Add` should not be
   // called.
