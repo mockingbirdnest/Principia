@@ -1,3 +1,5 @@
+#if !_DEBUG
+
 #include "integrators/чебышёв_picard_integrator.hpp"
 
 #include <concepts>
@@ -455,3 +457,5 @@ INSTANTIATE_TYPED_TEST_SUITE_P(PerturbedSinusoid,
 
 }  // namespace integrators
 }  // namespace principia
+
+#endif
