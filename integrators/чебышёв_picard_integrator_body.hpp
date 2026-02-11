@@ -229,7 +229,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // ᵝT is a (M + 1)×(N + 1) matrix of Чебышёв polynomials evaluated at nodes.
   // See [Mac15], equation (1.20).
-  FixedMatrix<double, M + 1, N + 1> ᵝT(uninitialized);
+  FixedMatrix<double, M + 1, N + 1, /*use_heap=*/true> ᵝT(uninitialized);
 
   for (std::int64_t i = 0; i <= M; ++i) {
     auto const τᵢ = nodes_[i];
@@ -246,18 +246,18 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // ᵝW is a diagonal (N + 1)×(N + 1) matrix with diagonal [½, 1, 1, ..., ½].
   // See [Mac15], equation (1.20).
-  FixedMatrix<double, N + 1, N + 1> ᵝW;
+  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> ᵝW;
   ᵝW(0, 0) = 0.5;
   ᵝW(N, N) = 0.5;
   for (std::int64_t i = 1; i < N; ++i) {
     ᵝW(i, i) = 1;
   }
 
-  FixedMatrix<double, M + 1, N + 1> Cₓ = ᵝT * ᵝW;
+  FixedMatrix<double, M + 1, N + 1, /*use_heap=*/true> Cₓ = ᵝT * ᵝW;
 
   // R is a diagonal (N + 1)×(N + 1) matrix.
   // See [Mac15], equation (1.25).
-  FixedMatrix<double, N + 1, N + 1> R;
+  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> R;
   R(0, 0) = 1;
   R(N, N) = 1.0 / N;
   for (std::int64_t i = 1; i < N; ++i) {
@@ -266,7 +266,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // S is an (N + 1)×N matrix.
   // See equation 1.26 in [Mac15].
-  FixedMatrix<double, N + 1, N> S;
+  FixedMatrix<double, N + 1, N, /*use_heap=*/true> S;
   S(0, 0) = 1;
   S(0, 1) = -0.5;
   for (std::int64_t k = 2; k < N; ++k) {
@@ -281,7 +281,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // ᶠTᵀ is ᵝTᵀ with the last row removed.
   // See [Mac15], equation (1.22).
-  FixedMatrix<double, N, M + 1> ᶠTᵀ(uninitialized);
+  FixedMatrix<double, N, M + 1, /*use_heap=*/true> ᶠTᵀ(uninitialized);
   for (std::int64_t i = 0; i < N; ++i) {
     for (std::int64_t j = 0; j <= M; ++j) {
       ᶠTᵀ(i, j) = ᵝT(j, i);
@@ -290,7 +290,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 
   // V is is a diagonal (M + 1)×(M + 1) matrix with diagonal [1/M, 2/M, 2/M,
   // ..., 1/M].
-  FixedMatrix<double, M + 1, M + 1> V;
+  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> V;
   constexpr double one_over_M = 1.0 / M;
   V(0, 0) = one_over_M;
   V(M, M) = one_over_M;
