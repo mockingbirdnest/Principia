@@ -48,7 +48,7 @@ class FixedVector final {
   // heap usage.
   constexpr FixedVector(FixedVector&& other);
   // https://cplusplus.com/forum/beginner/269900/
-  constexpr FixedVector(FixedVector const volatile&) = delete;
+  constexpr explicit FixedVector(FixedVector const volatile&) = delete;
 
   // Constructs a fixed vector by copying data from the view.  Note that the
   // result is fixed even if the matrix being viewed is an UnboundedMatrix.
@@ -146,7 +146,7 @@ class FixedMatrix final {
   template<bool uh>
   constexpr FixedMatrix(FixedMatrix<Scalar, rows_, columns_, uh> const& other);
   constexpr FixedMatrix(FixedMatrix&& other);
-  constexpr FixedMatrix(FixedMatrix const volatile&) = delete;
+  constexpr explicit FixedMatrix(FixedMatrix const volatile&) = delete;
 
   template<bool uh>
   constexpr explicit FixedMatrix(
@@ -236,7 +236,7 @@ class FixedStrictlyLowerTriangularMatrix final {
       FixedStrictlyLowerTriangularMatrix<Scalar, rows_, uh> const& other);
   constexpr FixedStrictlyLowerTriangularMatrix(
       FixedStrictlyLowerTriangularMatrix&& other);
-  constexpr FixedStrictlyLowerTriangularMatrix(
+  constexpr explicit FixedStrictlyLowerTriangularMatrix(
       FixedStrictlyLowerTriangularMatrix const volatile&) = delete;
 
   template<bool uh = use_heap>
@@ -302,7 +302,7 @@ class FixedLowerTriangularMatrix final {
   constexpr FixedLowerTriangularMatrix(
       FixedLowerTriangularMatrix<Scalar, rows_, uh> const& other);
   constexpr FixedLowerTriangularMatrix(FixedLowerTriangularMatrix&& other);
-  constexpr FixedLowerTriangularMatrix(
+  constexpr explicit FixedLowerTriangularMatrix(
       FixedLowerTriangularMatrix const volatile&) = delete;
 
   template<bool uh>
@@ -370,7 +370,7 @@ class FixedStrictlyUpperTriangularMatrix final {
       FixedStrictlyUpperTriangularMatrix<Scalar, columns_, uh> const& other);
   constexpr FixedStrictlyUpperTriangularMatrix(
       FixedStrictlyUpperTriangularMatrix&& other);
-  constexpr FixedStrictlyUpperTriangularMatrix(
+  constexpr explicit FixedStrictlyUpperTriangularMatrix(
       FixedStrictlyUpperTriangularMatrix const volatile&) = delete;
 
   template<bool uh>
@@ -445,7 +445,7 @@ class FixedUpperTriangularMatrix final {
   constexpr FixedUpperTriangularMatrix(
       FixedUpperTriangularMatrix<Scalar, columns_, uh> const& other);
   constexpr FixedUpperTriangularMatrix(FixedUpperTriangularMatrix&& other);
-  constexpr FixedUpperTriangularMatrix(
+  constexpr explicit FixedUpperTriangularMatrix(
       FixedUpperTriangularMatrix const volatile&) = delete;
 
   template<bool uh>
