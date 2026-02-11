@@ -1,5 +1,7 @@
 #include "numerics/fixed_arrays.hpp"
 
+#include <utility>
+
 #include "base/algebra.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
