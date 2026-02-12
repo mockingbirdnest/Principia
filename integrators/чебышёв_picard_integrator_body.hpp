@@ -1,7 +1,5 @@
 #pragma once
 
-#include "integrators/чебышёв_picard_integrator.hpp"
-
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -11,6 +9,8 @@
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "geometry/sign.hpp"
+#include "integrators/чебышёв_picard_integrator.hpp"
+#include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_views.hpp"
 #include "quantities/si.hpp"
@@ -23,63 +23,38 @@ namespace internal {
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_tags;
 using namespace principia::geometry::_sign;
+using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::quantities::_si;
 
-template<typename ODE, std::int64_t M, bool uh>
-ODE::DependentVariables DependentVariablesFromMatrixRow(
-    FixedMatrix<double,
-                M,
-                std::tuple_size_v<typename ODE::DependentVariables>,
-                uh> const& matrix,
-    std::int64_t const row) {
-  std::int64_t j = 0;
-  typename ODE::DependentVariables y;
-  for_all_of(y).loop([&j, &matrix, row](auto& yⱼ) {
-    yⱼ = matrix(row, j++) *
-             si::Unit<std::remove_reference_t<decltype(yⱼ - yⱼ)>> +
-         std::remove_reference_t<decltype(yⱼ)>();
-  });
-  return y;
+// Strip DoublePrecision from a tuple.
+template<typename... T>
+std::tuple<T...> StripDoublePrecision(
+    std::tuple<DoublePrecision<T>...> const& in) {
+  std::tuple<T...> out;
+  for_all_of(in, out).loop(
+      [](auto const& inᵢ, auto& outᵢ) { outᵢ = inᵢ.value; });
+  return out;
 }
 
-template<typename ODE, std::int64_t M, bool uh>
-void DependentVariablesToMatrixRow(
-    typename ODE::DependentVariables const& y,
-    std::int64_t const row,
-    FixedMatrix<double,
-                M,
-                std::tuple_size_v<typename ODE::DependentVariables>,
-                uh>& matrix) {
-  std::int64_t j = 0;
-  for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
-    matrix(row, j++) = yⱼ / si::Unit<decltype(yⱼ)>;
-  });
-}
-
-template<typename ODE, std::int64_t M, bool uh>
-void DependentVariableDerivativesToMatrixRow(
-    typename ODE::DependentVariableDerivatives const& y,
-    std::int64_t const row,
-    FixedMatrix<double,
-                M,
-                std::tuple_size_v<typename ODE::DependentVariables>,
-                uh>& matrix) {
-  std::int64_t j = 0;
-  for_all_of(y).loop([row, &matrix, &j](auto const& yⱼ) {
-    matrix(row, j++) = yⱼ / si::Unit<decltype(yⱼ)>;
-  });
+// Wrap a tuple in DoublePrecision.
+template<typename... T>
+std::tuple<DoublePrecision<T>...> WrapInDoublePrecision(
+    std::tuple<T...> const& in) {
+  std::tuple<DoublePrecision<T>...> out;
+  for_all_of(in, out).loop([](auto const& inᵢ, auto& outᵢ) { outᵢ = inᵢ; });
+  return out;
 }
 
 // Returns max|aᵢⱼ|.
-template<std::int64_t M, std::int64_t N, bool uh>
-double LInfinityNorm(FixedMatrix<double, M, N, uh> const& A) {
+template<typename T, std::int64_t M, bool uh>
+double LInfinityNorm(FixedVector<VectorTuple<T>, M, uh> const& A) {
   double norm = 0.0;
   for (std::int64_t i = 0; i < M; ++i) {
-    for (std::int64_t j = 0; j < N; ++j) {
-      norm = std::max(norm, std::abs(A(i, j)));
-    }
+    for_all_of(A[i].tuple).loop([&norm](auto const& aᵢⱼ) {
+      norm = std::max(norm, std::abs(aᵢⱼ / si::Unit<decltype(aᵢⱼ)>));
+    });
   }
   return norm;
 }
@@ -118,15 +93,9 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     }
 
     // Set the boundary condition and store it in CₓX₀_.
-    std::int64_t j = 0;
-    for_all_of(current_state.y).loop([this, &j](auto const& yⱼ) {
-      CₓX₀_(0, j++) = (yⱼ.value - decltype(yⱼ.value)()) /
-                      si::Unit<decltype(yⱼ.value - yⱼ.value)>;
-    });
+    CₓX₀_[0] = {.tuple = StripDoublePrecision(current_state.y)};
     for (std::int64_t i = 1; i <= M; ++i) {
-      for (std::int64_t j = 0; j < n; ++j) {
-        CₓX₀_(i, j) = CₓX₀_(0, j);
-      }
+      CₓX₀_[i] = CₓX₀_[0];
     }
 
     // A good starting guess for X⁰ is uniform current_state.y; as it happens
@@ -138,17 +107,17 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     for (int64_t iteration = 0; iteration < params_.max_iterations;
          ++iteration) {
       // Evaluate the right hand side of the equation.
-      for (int64_t i = 0; i < Xⁱ_.rows(); ++i) {
-        auto const y = DependentVariablesFromMatrixRow<ODE, M + 1>(Xⁱ_, i);
+      for (std::int64_t i = 0; i <= M; ++i) {
+        auto const& y = Xⁱ_[i].tuple;
         DependentVariableDerivatives yʹᵢ;
         RETURN_IF_ERROR(equation.compute_derivative(t_[i], y, yʹᵢ));
 
         // Store it in yʹ.
-        DependentVariableDerivativesToMatrixRow<ODE, M + 1>(yʹᵢ, i, yʹ_);
+        yʹ_[i] = {.tuple = yʹᵢ};
       }
 
       // Compute new x.
-      Xⁱ⁺¹_ = integrator_.CₓCα_ * (0.5 * step / Second * yʹ_) + CₓX₀_;
+      Xⁱ⁺¹_ = integrator_.CₓCα_ * (0.5 * step * yʹ_) + CₓX₀_;
 
       // Check for convergence by computing the ∞-norm.
       double const norm = LInfinityNorm(Xⁱ⁺¹_ - Xⁱ_);
@@ -168,15 +137,12 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
 
     if (converged) {
       // We have successfully converged!
-      for (std::int64_t i = 0; i < Xⁱ_.rows(); ++i) {
-        append_state(
-            State(t_[i], DependentVariablesFromMatrixRow<ODE>(Xⁱ_, i)));
+      for (std::int64_t i = 0; i <= M; ++i) {
+        append_state(State(t_[i], Xⁱ_[i].tuple));
       }
 
       // Set the current state to the final state we appended.
-      current_state =
-          State(t_[Xⁱ_.rows() - 1],
-                DependentVariablesFromMatrixRow<ODE>(Xⁱ_, Xⁱ_.rows() - 1));
+      current_state = State(t_[M], Xⁱ_[M].tuple);
       RETURN_IF_STOPPED;
     } else {
       // We failed to converge.

@@ -13,6 +13,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "geometry/cartesian_product.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -25,6 +26,7 @@ namespace _чебышёв_picard_integrator {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_cartesian_product;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
@@ -102,15 +104,27 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
     std::vector<typename ODE::IndependentVariable> t_;
 
     // Controls the boundary condition.
-    FixedMatrix<double, M + 1, n, /*use_heap=*/true> CₓX₀_;
+    FixedVector<VectorTuple<typename ODE::DependentVariables>,
+                M + 1,
+                /*use_heap=*/true>
+        CₓX₀_;
 
     // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
     // variables at each node.
-    FixedMatrix<double, M + 1, n, /*use_heap=*/true> Xⁱ_;
-    FixedMatrix<double, M + 1, n, /*use_heap=*/true> Xⁱ⁺¹_;
+    FixedVector<VectorTuple<typename ODE::DependentVariables>,
+                M + 1,
+                /*use_heap=*/true>
+        Xⁱ_;
+    FixedVector<VectorTuple<typename ODE::DependentVariables>,
+                M + 1,
+                /*use_heap=*/true>
+        Xⁱ⁺¹_;
 
     // The computed derivative (at each node, for the current iteration).
-    FixedMatrix<double, M + 1, n, /*use_heap=*/true> yʹ_;
+    FixedVector<VectorTuple<typename ODE::DependentVariableDerivatives>,
+                M + 1,
+                /*use_heap=*/true>
+        yʹ_;
 
     friend class ЧебышёвPicardIntegrator;
   };

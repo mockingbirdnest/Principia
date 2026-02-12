@@ -70,6 +70,59 @@ template<typename LTuple, typename RTuple,
 constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 
 }  // namespace pointwise_inner_product
+
+namespace internal {
+
+using namespace principia::quantities::_tuples;
+
+// Tuple wrapper with vector operations always defined on it.
+//
+// (The vector operations defined in `vector_space` aren't always available).
+template<tuple T>
+struct VectorTuple {
+  friend auto operator<=>(VectorTuple const& left,
+                          VectorTuple const& right) = default;
+
+  template<tuple U>
+  VectorTuple<T>& operator+=(VectorTuple<U> const& right);
+  template<tuple U>
+  VectorTuple<T>& operator-=(VectorTuple<U> const& right);
+
+  template<typename Scalar>
+  VectorTuple<T>& operator*=(Scalar const& right);
+  template<typename Scalar>
+  VectorTuple<T>& operator/=(Scalar const& right);
+
+  T tuple;
+};
+
+template<tuple T>
+constexpr auto operator+(VectorTuple<T> const& right);
+
+template<tuple T>
+constexpr auto operator-(VectorTuple<T> const& right);
+
+template<tuple L, tuple R>
+constexpr auto operator+(VectorTuple<L> const& left,
+                         VectorTuple<R> const& right);
+
+template<tuple L, tuple R>
+constexpr auto operator-(VectorTuple<L> const& left,
+                         VectorTuple<R> const& right);
+
+template<typename L, tuple R>
+constexpr auto operator*(L const& left, VectorTuple<R> const& right);
+
+template<tuple L, typename R>
+constexpr auto operator*(VectorTuple<L> const& left, R const& right);
+
+template<tuple L, typename R>
+constexpr auto operator/(VectorTuple<L> const& left, R const& right);
+
+}  // namespace internal
+
+using internal::VectorTuple;
+
 }  // namespace _cartesian_product
 }  // namespace geometry
 }  // namespace principia

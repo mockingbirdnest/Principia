@@ -214,12 +214,16 @@ FixedVector<Scalar_, size_, use_heap>::operator/=(double const right) {
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
-Scalar_ FixedVector<Scalar_, size_, use_heap>::Norm() const {
+auto FixedVector<Scalar_, size_, use_heap>::Norm() const
+  requires homogeneous_ring<Scalar>
+{
   return Sqrt(Norm²());
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
-Square<Scalar_> FixedVector<Scalar_, size_, use_heap>::Norm²() const {
+auto FixedVector<Scalar_, size_, use_heap>::Norm²() const
+  requires homogeneous_ring<Scalar>
+{
   return DotProduct<Scalar, Scalar, std::make_index_sequence<size_>>::Compute(
       data(), data());
 }
@@ -1381,15 +1385,13 @@ template<typename LScalar, typename RScalar,
 constexpr FixedVector<Product<LScalar, RScalar>, rows, uh> operator*(
     FixedMatrix<LScalar, rows, columns, luh> const& left,
     FixedVector<RScalar, columns, ruh> const& right) {
-  std::array<Product<LScalar, RScalar>, rows> result;
-  auto const* row = left.data().data();
+  FixedVector<Product<LScalar, RScalar>, rows, uh> result;
   for (std::int64_t i = 0; i < rows; ++i) {
-    result[i] =
-        DotProduct<LScalar, RScalar, std::make_index_sequence<columns>>::
-            Compute(row, right.data());
-    row += columns;
+    for (std::int64_t j = 0; j < columns; ++j) {
+      result[i] += left(i, j) * right[j];
+    }
   }
-  return FixedVector<Product<LScalar, RScalar>, rows, uh>(std::move(result));
+  return result;
 }
 
 template<typename LScalar, typename RScalar,
