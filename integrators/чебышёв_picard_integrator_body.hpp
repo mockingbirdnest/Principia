@@ -1,5 +1,9 @@
 #pragma once
 
+#include "integrators/чебышёв_picard_integrator.hpp"
+
+#include <tuple>
+
 #include <algorithm>
 #include <limits>
 #include <memory>
@@ -9,7 +13,6 @@
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "base/tags.hpp"
 #include "geometry/sign.hpp"
-#include "integrators/чебышёв_picard_integrator.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/matrix_views.hpp"

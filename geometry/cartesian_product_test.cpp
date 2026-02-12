@@ -1,5 +1,7 @@
 #include "geometry/cartesian_product.hpp"
 
+#include <tuple>
+
 #include "base/algebra.hpp"
 #include "geometry/point.hpp"
 #include "gtest/gtest.h"
