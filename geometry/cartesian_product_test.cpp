@@ -3,8 +3,10 @@
 #include <chrono>
 #include <tuple>
 
+#include "astronomy/frames.hpp"
 #include "base/algebra.hpp"
 #include "geometry/point.hpp"
+#include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/named_quantities.hpp"
@@ -14,9 +16,11 @@
 namespace principia {
 namespace geometry {
 
+using namespace principia::astronomy::_frames;
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_point;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -42,6 +46,7 @@ TEST(CartesianProductTest, AlgebraConcepts) {
   static_assert(hilbert<ℝ², ℝ²>);
 }
 
+// Helper concepts for Unordered test.
 template<typename T>
 concept less_than = requires(T a, T b) {
   { a < b };
@@ -61,6 +66,34 @@ concept greater_than_or_equal = requires(T a, T b) {
 
 TEST(CartesianProductTest, Unordered) {
   static_assert(!less_than<ℝ²>);
+}
+
+// Helper concepts for DegreesOfFreedomIsMerelyAffine test.
+template<typename T>
+concept unary_plus = requires(T a) { +a; };
+template<typename T>
+concept unary_minus = requires(T a) { -a; };
+template<typename T, typename U>
+concept plus = requires(T a, U b) { a + b; };
+template<typename T, typename U>
+concept minus = requires(T a, U b) { a - b; };
+template<typename T, typename U>
+concept times = requires(T a, U b) { a * b; };
+template<typename T, typename U>
+concept divided_by = requires(T a, U b) { a / b; };
+
+TEST(CartesianProductTest, DegreesOfFreedomIsMerelyAffine) {
+  using DegreesOfFreedom = DirectSum<Position<ICRS>, Velocity<ICRS>>;
+  static_assert(real_affine_space<DegreesOfFreedom>);
+
+  static_assert(!unary_plus<DegreesOfFreedom>);
+  static_assert(!unary_minus<DegreesOfFreedom>);
+  static_assert(!plus<DegreesOfFreedom, DegreesOfFreedom>);
+  static_assert(!minus<Difference<DegreesOfFreedom>, DegreesOfFreedom>);
+  static_assert(!times<DegreesOfFreedom, double>);
+  static_assert(!times<double, DegreesOfFreedom>);
+  static_assert(!divided_by<DegreesOfFreedom, double>);
+  static_assert(!divided_by<double, DegreesOfFreedom>);
 }
 
 TEST(CartesianProductTest, Constructors) {
