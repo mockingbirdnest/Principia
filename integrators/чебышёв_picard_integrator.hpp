@@ -13,7 +13,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "geometry/cartesian_product.hpp"
+#include "geometry/direct_sum.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -26,7 +26,7 @@ namespace _чебышёв_picard_integrator {
 namespace internal {
 
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_cartesian_product;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;

@@ -1,4 +1,4 @@
-#include "geometry/cartesian_product.hpp"
+#include "geometry/direct_sum.hpp"
 
 #include <chrono>
 #include <tuple>
@@ -18,7 +18,7 @@ namespace geometry {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_algebra;
-using namespace principia::geometry::_cartesian_product;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_fixed_arrays;
@@ -28,7 +28,7 @@ using namespace principia::quantities::_si;
 
 using ℝ² = DirectSum<double, double>;
 
-TEST(CartesianProductTest, AlgebraConcepts) {
+TEST(DirectSumTest, AlgebraConcepts) {
   static_assert(affine<DirectSum<std::byte*, double>>);
 
   static_assert(additive_group<DirectSum<std::chrono::seconds, double>>);
@@ -64,7 +64,7 @@ concept greater_than_or_equal = requires(T a, T b) {
   { a >= b };
 };
 
-TEST(CartesianProductTest, Unordered) {
+TEST(DirectSumTest, Unordered) {
   static_assert(!less_than<ℝ²>);
 }
 
@@ -82,7 +82,7 @@ concept times = requires(T a, U b) { a * b; };
 template<typename T, typename U>
 concept divided_by = requires(T a, U b) { a / b; };
 
-TEST(CartesianProductTest, DegreesOfFreedomIsMerelyAffine) {
+TEST(DirectSumTest, DegreesOfFreedomIsMerelyAffine) {
   using DegreesOfFreedom = DirectSum<Position<ICRS>, Velocity<ICRS>>;
   static_assert(real_affine_space<DegreesOfFreedom>);
 
@@ -96,22 +96,22 @@ TEST(CartesianProductTest, DegreesOfFreedomIsMerelyAffine) {
   static_assert(!divided_by<double, DegreesOfFreedom>);
 }
 
-TEST(CartesianProductTest, Constructors) {
+TEST(DirectSumTest, Constructors) {
   EXPECT_EQ(DirectSum<double>(), DirectSum{0.0});
   EXPECT_EQ(DirectSum<Length>(), DirectSum{0 * Metre});
   EXPECT_EQ(DirectSum<Length>(std::tuple<Length>(4 * Metre)),
             DirectSum{4 * Metre});
 }
 
-TEST(CartesianProductTest, UnaryPlus) {
+TEST(DirectSumTest, UnaryPlus) {
   EXPECT_EQ(+ℝ²(1, 2), ℝ²(1, 2));
 }
 
-TEST(CartesianProductTest, Negation) {
+TEST(DirectSumTest, Negation) {
   EXPECT_EQ(-ℝ²(1, 2), ℝ²(-1, -2));
 }
 
-TEST(CartesianProductTest, Addition) {
+TEST(DirectSumTest, Addition) {
   EXPECT_EQ(ℝ²(1, 2) + ℝ²(3, 4), ℝ²(4, 6));
 
   // Affine addition.
@@ -121,21 +121,21 @@ TEST(CartesianProductTest, Addition) {
             DirectSum<Point<Length>>(Point<Length>() + 1 * Metre));
 }
 
-TEST(CartesianProductTest, Subtraction) {
+TEST(DirectSumTest, Subtraction) {
   EXPECT_EQ(ℝ²(1, 2) - ℝ²(3, 4), ℝ²(-2, -2));
 }
 
-TEST(CartesianProductTest, Multiplication) {
+TEST(DirectSumTest, Multiplication) {
   EXPECT_EQ(2 * ℝ²(3, 4), ℝ²(6, 8));
   EXPECT_EQ(ℝ²(3, 4) * 2, ℝ²(6, 8));
 }
 
-TEST(CartesianProductTest, Division) {
+TEST(DirectSumTest, Division) {
   // Note: ℝ²(3, 4) / 2 doesn't work because integers are not a field.
   EXPECT_EQ(ℝ²(3, 4) / 2.0, ℝ²(1.5, 2));
 }
 
-TEST(CartesianProductTest, InnerProduct) {
+TEST(DirectSumTest, InnerProduct) {
   DirectSum<double, double> one_two = {1, 2};
   DirectSum<double, double> three_four = {3, 4};
 
@@ -144,7 +144,7 @@ TEST(CartesianProductTest, InnerProduct) {
   EXPECT_EQ(three_four.Norm(), 5);
 }
 
-TEST(CartesianProductTest, StructuredBindingsConst) {
+TEST(DirectSumTest, StructuredBindingsConst) {
   DirectSum<Length, Time> one_two = {1 * Metre, 2 * Second};
 
   auto const& [length, time] = one_two;
@@ -152,7 +152,7 @@ TEST(CartesianProductTest, StructuredBindingsConst) {
   EXPECT_EQ(time, 2 * Second);
 }
 
-TEST(CartesianProductTest, StructuredBindingsNonConst) {
+TEST(DirectSumTest, StructuredBindingsNonConst) {
   DirectSum<Length, Time> one_two = {1 * Metre, 2 * Second};
 
   auto& [length, time] = one_two;
@@ -162,7 +162,7 @@ TEST(CartesianProductTest, StructuredBindingsNonConst) {
   EXPECT_EQ(one_two, (DirectSum<Length, Time>{2 * Metre, 6 * Second}));
 }
 
-TEST(CartesianProductTest, FixedVector) {
+TEST(DirectSumTest, FixedVector) {
   FixedVector<DirectSum<double, double>, 1>(
       std::array<DirectSum<double, double>, 1>{
           DirectSum<double, double>{1, 2}});
