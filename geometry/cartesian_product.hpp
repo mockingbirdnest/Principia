@@ -82,13 +82,21 @@ using namespace principia::quantities::_tuples;
 
 template<typename... T>
 struct DirectSum {
-  friend auto operator<=>(DirectSum const& left,
-                          DirectSum const& right) = default;
+  constexpr DirectSum() = default;
+
+  // Constructor from elements.
+  constexpr DirectSum(T&&... args);
+
+  // Constructor from tuple.
+  constexpr explicit DirectSum(std::tuple<T...>&& tuple);
 
   template<std::size_t I>
   constexpr auto const& get() const;
   template<std::size_t I>
   constexpr auto& get();
+
+  friend auto operator<=>(DirectSum const& left,
+                          DirectSum const& right) = default;
 
   template<typename... U>
   DirectSum<T...>& operator+=(DirectSum<U...> const& right);

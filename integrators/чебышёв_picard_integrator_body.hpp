@@ -65,6 +65,7 @@ double LInfinityNorm(FixedVector<DirectSum<T>, M, uh> const& A) {
 template<ЧебышёвPicardMethod Method, typename ODE_>
 absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     ODE::IndependentVariable const& t_final) {
+  using DependentVariables = typename ODE::DependentVariables;
   using DependentVariableDerivatives =
       typename ODE::DependentVariableDerivatives;
   using State = typename ODE::State;
@@ -96,7 +97,8 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     }
 
     // Set the boundary condition and store it in CₓX₀_.
-    CₓX₀_[0] = {.tuple = StripDoublePrecision(current_state.y)};
+    CₓX₀_[0] =
+        direct_sum_t<DependentVariables>(StripDoublePrecision(current_state.y));
     for (std::int64_t i = 1; i <= M; ++i) {
       CₓX₀_[i] = CₓX₀_[0];
     }
@@ -116,7 +118,7 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
         RETURN_IF_ERROR(equation.compute_derivative(t_[i], y, yʹᵢ));
 
         // Store it in yʹ.
-        yʹ_[i] = {.tuple = yʹᵢ};
+        yʹ_[i] = direct_sum_t<DependentVariableDerivatives>(std::move(yʹᵢ));
       }
 
       // Compute new x.

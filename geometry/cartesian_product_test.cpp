@@ -31,8 +31,14 @@ TEST(CartesianProductTest, Concepts) {
   static_assert(real_affine_space<DirectSum<Point<Length>, Speed>>);
 }
 
+TEST(CartesianProductTest, Constructors) {
+  EXPECT_EQ(DirectSum<Length>(), DirectSum{0 * Metre});
+  EXPECT_EQ(DirectSum<Length>(std::tuple<Length>(4 * Metre)),
+            DirectSum{4 * Metre});
+}
+
 TEST(CartesianProductTest, StructuredBindingsConst) {
-  DirectSum<Length, Time> one_two{.tuple = {1 * Metre, 2 * Second}};
+  DirectSum<Length, Time> one_two = {1 * Metre, 2 * Second};
 
   auto const& [length, time] = one_two;
   EXPECT_EQ(length, 1 * Metre);
@@ -40,20 +46,19 @@ TEST(CartesianProductTest, StructuredBindingsConst) {
 }
 
 TEST(CartesianProductTest, StructuredBindingsNonConst) {
-  DirectSum<Length, Time> one_two{.tuple = {1 * Metre, 2 * Second}};
+  DirectSum<Length, Time> one_two = {1 * Metre, 2 * Second};
 
   auto& [length, time] = one_two;
   length += 1 * Metre;
   time += 4 * Second;
 
-  EXPECT_EQ(one_two,
-            (DirectSum<Length, Time>{.tuple = {2 * Metre, 6 * Second}}));
+  EXPECT_EQ(one_two, (DirectSum<Length, Time>{2 * Metre, 6 * Second}));
 }
 
 TEST(CartesianProductTest, FixedVector) {
   FixedVector<DirectSum<double, double>, 1>(
       std::array<DirectSum<double, double>, 1>{
-          DirectSum<double, double>{.tuple = {1, 2}}});
+          DirectSum<double, double>{1, 2}});
 }
 
 }  // namespace geometry

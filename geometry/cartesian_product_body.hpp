@@ -400,6 +400,12 @@ constexpr auto CartesianProductPointwiseMultiplicativeSpace<
 // DirectSum.
 
 template<typename... T>
+constexpr DirectSum<T...>::DirectSum(T&&... args) : tuple(args...) {}
+
+template<typename... T>
+constexpr DirectSum<T...>::DirectSum(std::tuple<T...>&& tuple) : tuple(tuple) {}
+
+template<typename... T>
 template<std::size_t I>
 constexpr auto const& DirectSum<T...>::get() const {
   return std::get<I>(tuple);
@@ -447,51 +453,43 @@ constexpr auto operator+(DirectSum<T...> const& right) {
 template<typename... T>
 constexpr auto operator-(DirectSum<T...> const& right) {
   std::tuple<> zero;
-  return DirectSum{
-      .tuple =
-          CartesianProductSubtraction<decltype(zero),
-                                      std::tuple<T...>>::Subtract(zero,
-                                                                  right.tuple)};
+  return DirectSum(
+      CartesianProductSubtraction<decltype(zero), std::tuple<T...>>::Subtract(
+          zero, right.tuple));
 }
 
 template<typename... L, typename... R>
 constexpr auto operator+(DirectSum<L...> const& left,
                          DirectSum<R...> const& right) {
-  return DirectSum{
-      .tuple =
-          CartesianProductAddition<std::tuple<L...>, std::tuple<R...>>::Add(
-              left.tuple, right.tuple)};
+  return DirectSum(
+      CartesianProductAddition<std::tuple<L...>, std::tuple<R...>>::Add(
+          left.tuple, right.tuple));
 }
 
 template<typename... L, typename... R>
 constexpr auto operator-(DirectSum<L...> const& left,
                          DirectSum<R...> const& right) {
-  return DirectSum{
-      .tuple =
-          CartesianProductSubtraction<std::tuple<L...>,
-                                      std::tuple<R...>>::Subtract(left.tuple,
-                                                                  right.tuple)};
+  return DirectSum(
+      CartesianProductSubtraction<std::tuple<L...>, std::tuple<R...>>::Subtract(
+          left.tuple, right.tuple));
 }
 
 template<typename L, typename... R>
 constexpr auto operator*(L const& left, DirectSum<R...> const& right) {
-  return DirectSum{
-      .tuple = CartesianProductVectorSpace<L, std::tuple<R...>>::Multiply(
-          left, right.tuple)};
+  return DirectSum(CartesianProductVectorSpace<L, std::tuple<R...>>::Multiply(
+      left, right.tuple));
 }
 
 template<typename... L, typename R>
 constexpr auto operator*(DirectSum<L...> const& left, R const& right) {
-  return DirectSum{
-      .tuple = CartesianProductVectorSpace<R, std::tuple<L...>>::Multiply(
-          left.tuple, right)};
+  return DirectSum(CartesianProductVectorSpace<R, std::tuple<L...>>::Multiply(
+      left.tuple, right));
 }
 
 template<typename... L, typename R>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right) {
-  return DirectSum{.tuple =
-                       CartesianProductVectorSpace<R, std::tuple<L...>>::Divide(
-                           left.tuple, right)};
+  return DirectSum(CartesianProductVectorSpace<R, std::tuple<L...>>::Divide(
+      left.tuple, right));
 }
 
 }  // namespace internal
