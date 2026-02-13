@@ -79,8 +79,8 @@ constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 
 namespace internal {
 
-using namespace principia::quantities::_tuples;
 using namespace principia::base::_algebra;
+using namespace principia::quantities::_tuples;
 
 // The direct sum of a pack of affine types.
 //
@@ -92,7 +92,7 @@ struct DirectSum {
   constexpr DirectSum() = default;
 
   // Constructor from elements.
-  constexpr DirectSum(T&&... args);
+  constexpr DirectSum(T&&... args);  // NOLINT(runtime/explicit)
 
   // Constructor from tuple.
   constexpr explicit DirectSum(std::tuple<T...>&& tuple);
@@ -182,7 +182,8 @@ struct std::tuple_size<principia::geometry::_cartesian_product::DirectSum<T...>>
                                     std::tuple_size_v<std::tuple<T...>>> {};
 
 template<std::size_t I, typename... T>
-struct std::tuple_element<I, principia::geometry::_cartesian_product::DirectSum<T...>> {
+struct std::
+    tuple_element<I, principia::geometry::_cartesian_product::DirectSum<T...>> {
   using type = std::tuple_element_t<I, std::tuple<T...>>;
 };
 
