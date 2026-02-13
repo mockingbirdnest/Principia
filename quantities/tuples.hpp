@@ -1,7 +1,6 @@
 #pragma once
 
 #include <algorithm>
-#include <concepts>
 #include <tuple>
 #include <utility>
 
@@ -24,9 +23,6 @@ struct is_tuple<std::tuple<D...>> : std::true_type, not_constructible {};
 template<typename T>
 constexpr bool is_tuple_v = is_tuple<T>::value;
 
-template<typename T>
-concept tuple = requires { is_tuple_v<T>; };
-
 // This struct has a `Type` member which is a tuple obtained by applying
 // `Transform` to corresponding elements in `Tuples` (which may be tuples,
 // arrays, or pairs).  If the `Tuples` have different sizes, `void` is passed to
@@ -45,7 +41,6 @@ struct DerivativesGenerator;
 
 using internal::is_tuple;
 using internal::is_tuple_v;
-using internal::tuple;
 
 template<template<typename...> typename Transform, typename... Tuples>
 using Apply = typename internal::ApplyGenerator<Transform, Tuples...>::Type;

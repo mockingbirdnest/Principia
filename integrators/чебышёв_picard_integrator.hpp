@@ -90,10 +90,6 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
 
     static constexpr std::int64_t M = Method::M;
 
-    // The dimension of the ODE.
-    static constexpr std::int64_t n =
-        std::tuple_size_v<typename ODE::DependentVariables>;
-
     ЧебышёвPicardIntegrator const& integrator_;
     ЧебышёвPicardIterationParams params_;
 

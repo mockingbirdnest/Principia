@@ -152,7 +152,7 @@ constexpr auto InnerProduct(DirectSum<T...> const& left,
 
 // Helper for getting a DirectSum corresponding to a tuple when you don't
 // have access to the pack.
-template<tuple Tuple>
+template<typename Tuple>
 struct direct_sum {};
 
 template<affine... T>
