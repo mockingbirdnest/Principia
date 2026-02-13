@@ -80,6 +80,12 @@ TEST(CartesianProductTest, Negation) {
 
 TEST(CartesianProductTest, Addition) {
   EXPECT_EQ(ℝ²(1, 2) + ℝ²(3, 4), ℝ²(4, 6));
+
+  // Affine addition.
+  EXPECT_EQ(DirectSum<Length>(1 * Metre) + DirectSum<Point<Length>>(),
+            DirectSum<Point<Length>>(Point<Length>() + 1 * Metre));
+  EXPECT_EQ(DirectSum<Point<Length>>() + DirectSum<Length>(1 * Metre),
+            DirectSum<Point<Length>>(Point<Length>() + 1 * Metre));
 }
 
 TEST(CartesianProductTest, Subtraction) {

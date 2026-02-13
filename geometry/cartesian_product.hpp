@@ -113,10 +113,8 @@ struct DirectSum {
   bool operator==(DirectSum const&) const = default;
   bool operator!=(DirectSum const&) const = default;
 
-  template<affine... U>
-  DirectSum& operator+=(DirectSum<U...> const& right);
-  template<affine... U>
-  DirectSum& operator-=(DirectSum<U...> const& right);
+  DirectSum& operator+=(DirectSum<Difference<T>...> const& right);
+  DirectSum& operator-=(DirectSum<Difference<T>...> const& right);
 
   template<ring Scalar>
   DirectSum& operator*=(Scalar const& right);
@@ -132,13 +130,21 @@ constexpr auto operator+(DirectSum<T...> const& right);
 template<additive_group... T>
 constexpr auto operator-(DirectSum<T...> const& right);
 
-template<affine... L, affine... R>
-constexpr auto operator+(DirectSum<L...> const& left,
-                         DirectSum<R...> const& right);
+template<affine... T>
+constexpr DirectSum<T...> operator+(DirectSum<T...> const& left,
+                                    DirectSum<Difference<T>...> const& right);
+template<affine... T>
+constexpr DirectSum<T...> operator+(DirectSum<Difference<T>...> const& left,
+                                    DirectSum<T...> const& right)
+  requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value);
 
-template<affine... L, affine... R>
-constexpr auto operator-(DirectSum<L...> const& left,
-                         DirectSum<R...> const& right);
+template<affine... T>
+constexpr DirectSum<Difference<T>...> operator-(DirectSum<T...> const& left,
+                                                DirectSum<T...> const& right);
+template<affine... T>
+constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
+                                    DirectSum<Difference<T>...> const& right)
+  requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value);
 
 template<homogeneous_ring L, homogeneous_module<L>... R>
 constexpr auto operator*(L const& left, DirectSum<R...> const& right);

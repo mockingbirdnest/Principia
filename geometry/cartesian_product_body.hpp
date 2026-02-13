@@ -433,15 +433,15 @@ constexpr auto DirectSum<T...>::Norm²() const
 }
 
 template<affine... T>
-template<affine... U>
-DirectSum<T...>& DirectSum<T...>::operator+=(DirectSum<U...> const& right) {
+DirectSum<T...>& DirectSum<T...>::operator+=(
+    DirectSum<Difference<T>...> const& right) {
   *this = *this + right;
   return *this;
 }
 
 template<affine... T>
-template<affine... U>
-DirectSum<T...>& DirectSum<T...>::operator-=(DirectSum<U...> const& right) {
+DirectSum<T...>& DirectSum<T...>::operator-=(
+    DirectSum<Difference<T>...> const& right) {
   *this = *this - right;
   return *this;
 }
@@ -473,20 +473,46 @@ constexpr auto operator-(DirectSum<T...> const& right) {
           zero, right.tuple));
 }
 
-template<affine... L, affine... R>
-constexpr auto operator+(DirectSum<L...> const& left,
-                         DirectSum<R...> const& right) {
-  return DirectSum(
-      CartesianProductAddition<std::tuple<L...>, std::tuple<R...>>::Add(
-          left.tuple, right.tuple));
+template<affine... T>
+constexpr DirectSum<T...> operator+(DirectSum<T...> const& left,
+                                    DirectSum<Difference<T>...> const& right) {
+  DirectSum<T...> sum(uninitialized);
+  for_all_of(left.tuple, right.tuple, sum.tuple)
+      .loop([](auto const& left, auto const& right, auto& sum) {
+        sum = left + right;
+      });
+  return sum;
 }
 
-template<affine... L, affine... R>
-constexpr auto operator-(DirectSum<L...> const& left,
-                         DirectSum<R...> const& right) {
+template<affine... T>
+constexpr DirectSum<T...> operator+(DirectSum<Difference<T>...> const& left,
+                                    DirectSum<T...> const& right)
+  requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value)
+{
+  DirectSum<T...> sum(uninitialized);
+  for_all_of(left.tuple, right.tuple, sum.tuple)
+      .loop([](auto const& left, auto const& right, auto& sum) {
+        sum = left + right;
+      });
+  return sum;
+}
+
+template<affine... T>
+constexpr DirectSum<Difference<T>...> operator-(DirectSum<T...> const& left,
+                                                DirectSum<T...> const& right) {
   return DirectSum(
-      CartesianProductSubtraction<std::tuple<L...>, std::tuple<R...>>::Subtract(
+      CartesianProductSubtraction<std::tuple<T...>, std::tuple<T...>>::Subtract(
           left.tuple, right.tuple));
+}
+template<affine... T>
+constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
+                                    DirectSum<Difference<T>...> const& right)
+  requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value)
+{
+  return DirectSum(
+      CartesianProductSubtraction<
+          std::tuple<T...>,
+          std::tuple<Difference<T>...>>::Subtract(left.tuple, right.tuple));
 }
 
 template<homogeneous_ring L, homogeneous_module<L>... R>
