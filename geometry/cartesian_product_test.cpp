@@ -20,20 +20,19 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 TEST(CartesianProductTest, Concepts) {
-  static_assert(real_vector_space<VectorTuple<std::tuple<double>>>);
-  static_assert(real_vector_space<VectorTuple<std::tuple<double, double>>>);
-  static_assert(real_vector_space<VectorTuple<std::tuple<Length>>>);
-  static_assert(real_vector_space<VectorTuple<std::tuple<Length, Mass, Time>>>);
+  static_assert(real_vector_space<DirectSum<double>>);
+  static_assert(real_vector_space<DirectSum<double, double>>);
+  static_assert(real_vector_space<DirectSum<Length>>);
+  static_assert(real_vector_space<DirectSum<Length, Mass, Time>>);
 
-  static_assert(real_affine_space<VectorTuple<std::tuple<Point<Length>>>>);
-  static_assert(
-      real_affine_space<VectorTuple<std::tuple<Point<Length>, Speed>>>);
+  static_assert(real_affine_space<DirectSum<Point<Length>>>);
+  static_assert(real_affine_space<DirectSum<Point<Length>, Speed>>);
 }
 
 TEST(CartesianProductTest, FixedVector) {
-  FixedVector<VectorTuple<std::tuple<double, double>>, 1>(
-      std::array<VectorTuple<std::tuple<double, double>>, 1>{
-          VectorTuple<std::tuple<double, double>>{.tuple = {1, 2}}});
+  FixedVector<DirectSum<double, double>, 1>(
+      std::array<DirectSum<double, double>, 1>{
+          DirectSum<double, double>{.tuple = {1, 2}}});
 }
 
 }  // namespace geometry

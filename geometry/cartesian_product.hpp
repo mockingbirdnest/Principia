@@ -75,53 +75,65 @@ namespace internal {
 
 using namespace principia::quantities::_tuples;
 
-// Tuple wrapper with vector operations always defined on it.
-//
-// (The vector operations defined in `vector_space` aren't always available).
-template<tuple T>
-struct VectorTuple {
-  friend auto operator<=>(VectorTuple const& left,
-                          VectorTuple const& right) = default;
+template<typename... T>
+struct DirectSum {
+  friend auto operator<=>(DirectSum const& left,
+                          DirectSum const& right) = default;
 
-  template<tuple U>
-  VectorTuple<T>& operator+=(VectorTuple<U> const& right);
-  template<tuple U>
-  VectorTuple<T>& operator-=(VectorTuple<U> const& right);
+  template<typename... U>
+  DirectSum<T...>& operator+=(DirectSum<U...> const& right);
+  template<typename... U>
+  DirectSum<T...>& operator-=(DirectSum<U...> const& right);
 
   template<typename Scalar>
-  VectorTuple<T>& operator*=(Scalar const& right);
+  DirectSum<T...>& operator*=(Scalar const& right);
   template<typename Scalar>
-  VectorTuple<T>& operator/=(Scalar const& right);
+  DirectSum<T...>& operator/=(Scalar const& right);
 
-  T tuple;
+  std::tuple<T...> tuple;
 };
 
-template<tuple T>
-constexpr auto operator+(VectorTuple<T> const& right);
+template<typename... T>
+constexpr auto operator+(DirectSum<T...> const& right);
 
-template<tuple T>
-constexpr auto operator-(VectorTuple<T> const& right);
+template<typename... T>
+constexpr auto operator-(DirectSum<T...> const& right);
 
-template<tuple L, tuple R>
-constexpr auto operator+(VectorTuple<L> const& left,
-                         VectorTuple<R> const& right);
+template<typename... L, typename... R>
+constexpr auto operator+(DirectSum<L...> const& left,
+                         DirectSum<R...> const& right);
 
-template<tuple L, tuple R>
-constexpr auto operator-(VectorTuple<L> const& left,
-                         VectorTuple<R> const& right);
+template<typename... L, typename... R>
+constexpr auto operator-(DirectSum<L...> const& left,
+                         DirectSum<R...> const& right);
 
-template<typename L, tuple R>
-constexpr auto operator*(L const& left, VectorTuple<R> const& right);
+template<typename L, typename... R>
+constexpr auto operator*(L const& left, DirectSum<R...> const& right);
 
-template<tuple L, typename R>
-constexpr auto operator*(VectorTuple<L> const& left, R const& right);
+template<typename... L, typename R>
+constexpr auto operator*(DirectSum<L...> const& left, R const& right);
 
-template<tuple L, typename R>
-constexpr auto operator/(VectorTuple<L> const& left, R const& right);
+template<typename... L, typename R>
+constexpr auto operator/(DirectSum<L...> const& left, R const& right);
+
+// Helper for getting a DirectSum corresponding to a tuple when you don't have
+// access to the pack.
+template<tuple Tuple>
+struct direct_sum {};
+
+template<typename... T>
+struct direct_sum<std::tuple<T...>> {
+  typedef DirectSum<T...> type;
+};
+
+template<typename T>
+using direct_sum_t = direct_sum<T>::type;
 
 }  // namespace internal
 
-using internal::VectorTuple;
+using internal::DirectSum;
+using internal::direct_sum;
+using internal::direct_sum_t;
 
 }  // namespace _cartesian_product
 }  // namespace geometry

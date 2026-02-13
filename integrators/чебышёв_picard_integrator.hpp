@@ -104,24 +104,24 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
     std::vector<typename ODE::IndependentVariable> t_;
 
     // Controls the boundary condition.
-    FixedVector<VectorTuple<typename ODE::DependentVariables>,
+    FixedVector<direct_sum_t<typename ODE::DependentVariables>,
                 M + 1,
                 /*use_heap=*/true>
         CₓX₀_;
 
     // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
     // variables at each node.
-    FixedVector<VectorTuple<typename ODE::DependentVariables>,
+    FixedVector<direct_sum_t<typename ODE::DependentVariables>,
                 M + 1,
                 /*use_heap=*/true>
         Xⁱ_;
-    FixedVector<VectorTuple<typename ODE::DependentVariables>,
+    FixedVector<direct_sum_t<typename ODE::DependentVariables>,
                 M + 1,
                 /*use_heap=*/true>
         Xⁱ⁺¹_;
 
     // The computed derivative (at each node, for the current iteration).
-    FixedVector<VectorTuple<typename ODE::DependentVariableDerivatives>,
+    FixedVector<direct_sum_t<typename ODE::DependentVariableDerivatives>,
                 M + 1,
                 /*use_heap=*/true>
         yʹ_;
