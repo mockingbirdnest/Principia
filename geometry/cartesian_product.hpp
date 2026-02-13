@@ -101,33 +101,33 @@ struct DirectSum {
   constexpr explicit DirectSum(std::tuple<T...>&& tuple);
 
   template<std::size_t i, typename Self>
-  constexpr auto&& get(this Self&&);
+  constexpr auto&& get(this Self&& self);
 
   constexpr auto Norm() const
     requires hilbert<DirectSum<T...>, DirectSum<T...>>;
   constexpr auto Norm²() const
     requires hilbert<DirectSum<T...>, DirectSum<T...>>;
 
-  friend auto operator<=>(DirectSum const& left,
-                          DirectSum const& right) = default;
+  bool operator==(DirectSum const&) const = default;
+  bool operator!=(DirectSum const&) const = default;
 
   template<affine... U>
   DirectSum<T...>& operator+=(DirectSum<U...> const& right);
   template<affine... U>
   DirectSum<T...>& operator-=(DirectSum<U...> const& right);
 
-  template<typename Scalar>
+  template<ring Scalar>
   DirectSum<T...>& operator*=(Scalar const& right);
-  template<typename Scalar>
+  template<field Scalar>
   DirectSum<T...>& operator/=(Scalar const& right);
 
   std::tuple<T...> tuple;
 };
 
-template<affine... T>
+template<additive_group... T>
 constexpr auto operator+(DirectSum<T...> const& right);
 
-template<affine... T>
+template<additive_group... T>
 constexpr auto operator-(DirectSum<T...> const& right);
 
 template<affine... L, affine... R>
@@ -138,13 +138,13 @@ template<affine... L, affine... R>
 constexpr auto operator-(DirectSum<L...> const& left,
                          DirectSum<R...> const& right);
 
-template<typename L, affine... R>
+template<homogeneous_ring L, homogeneous_module<L>... R>
 constexpr auto operator*(L const& left, DirectSum<R...> const& right);
 
-template<affine... L, typename R>
+template<homogeneous_ring R, homogeneous_module<R>... L>
 constexpr auto operator*(DirectSum<L...> const& left, R const& right);
 
-template<affine... L, typename R>
+template<homogeneous_field R, homogeneous_vector_space<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right);
 
 template<affine... T>

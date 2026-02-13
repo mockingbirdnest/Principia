@@ -447,25 +447,25 @@ DirectSum<T...>& DirectSum<T...>::operator-=(DirectSum<U...> const& right) {
 }
 
 template<affine... T>
-template<typename Scalar>
+template<ring Scalar>
 DirectSum<T...>& DirectSum<T...>::operator*=(Scalar const& right) {
   *this = *this * right;
   return *this;
 }
 
 template<affine... T>
-template<typename Scalar>
+template<field Scalar>
 DirectSum<T...>& DirectSum<T...>::operator/=(Scalar const& right) {
   *this = *this / right;
   return *this;
 }
 
-template<affine... T>
+template<additive_group... T>
 constexpr auto operator+(DirectSum<T...> const& right) {
   return right;
 }
 
-template<affine... T>
+template<additive_group... T>
 constexpr auto operator-(DirectSum<T...> const& right) {
   std::tuple<> zero;
   return DirectSum(
@@ -489,19 +489,19 @@ constexpr auto operator-(DirectSum<L...> const& left,
           left.tuple, right.tuple));
 }
 
-template<typename L, affine... R>
+template<homogeneous_ring L, homogeneous_module<L>... R>
 constexpr auto operator*(L const& left, DirectSum<R...> const& right) {
   return DirectSum(CartesianProductVectorSpace<L, std::tuple<R...>>::Multiply(
       left, right.tuple));
 }
 
-template<affine... L, typename R>
+template<homogeneous_ring R, homogeneous_module<R>... L>
 constexpr auto operator*(DirectSum<L...> const& left, R const& right) {
   return DirectSum(CartesianProductVectorSpace<R, std::tuple<L...>>::Multiply(
       left.tuple, right));
 }
 
-template<affine... L, typename R>
+template<homogeneous_field R, homogeneous_vector_space<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right) {
   return DirectSum(CartesianProductVectorSpace<R, std::tuple<L...>>::Divide(
       left.tuple, right));
