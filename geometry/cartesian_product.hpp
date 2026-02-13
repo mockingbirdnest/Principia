@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/algebra.hpp"
+#include "base/not_constructible.hpp"
 #include "base/tags.hpp"
 #include "quantities/tuples.hpp"
 
@@ -81,6 +82,7 @@ constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 namespace internal {
 
 using namespace principia::base::_algebra;
+using namespace principia::base::_not_constructible;
 using namespace principia::base::_tags;
 using namespace principia::quantities::_tuples;
 
@@ -104,22 +106,22 @@ struct DirectSum {
   constexpr auto&& get(this Self&& self);
 
   constexpr auto Norm() const
-    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+    requires hilbert<DirectSum, DirectSum>;
   constexpr auto Norm²() const
-    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+    requires hilbert<DirectSum, DirectSum>;
 
   bool operator==(DirectSum const&) const = default;
   bool operator!=(DirectSum const&) const = default;
 
   template<affine... U>
-  DirectSum<T...>& operator+=(DirectSum<U...> const& right);
+  DirectSum& operator+=(DirectSum<U...> const& right);
   template<affine... U>
-  DirectSum<T...>& operator-=(DirectSum<U...> const& right);
+  DirectSum& operator-=(DirectSum<U...> const& right);
 
   template<ring Scalar>
-  DirectSum<T...>& operator*=(Scalar const& right);
+  DirectSum& operator*=(Scalar const& right);
   template<field Scalar>
-  DirectSum<T...>& operator/=(Scalar const& right);
+  DirectSum& operator/=(Scalar const& right);
 
   std::tuple<T...> tuple;
 };
@@ -154,10 +156,10 @@ constexpr auto InnerProduct(DirectSum<T...> const& left,
 // Helper for getting a DirectSum corresponding to a tuple when you don't
 // have access to the pack.
 template<typename Tuple>
-struct direct_sum {};
+struct direct_sum;
 
 template<affine... T>
-struct direct_sum<std::tuple<T...>> {
+struct direct_sum<std::tuple<T...>> : not_constructible {
   typedef DirectSum<T...> type;
 };
 

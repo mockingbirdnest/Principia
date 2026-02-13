@@ -467,7 +467,7 @@ constexpr auto operator+(DirectSum<T...> const& right) {
 
 template<additive_group... T>
 constexpr auto operator-(DirectSum<T...> const& right) {
-  std::tuple<> zero;
+  std::tuple<> zero{};
   return DirectSum(
       CartesianProductSubtraction<decltype(zero), std::tuple<T...>>::Subtract(
           zero, right.tuple));
