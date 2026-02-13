@@ -1385,10 +1385,19 @@ template<typename LScalar, typename RScalar,
 constexpr FixedVector<Product<LScalar, RScalar>, rows, uh> operator*(
     FixedMatrix<LScalar, rows, columns, luh> const& left,
     FixedVector<RScalar, columns, ruh> const& right) {
-  FixedVector<Product<LScalar, RScalar>, rows, uh> result;
+  FixedVector<Product<LScalar, RScalar>, rows, uh> result(uninitialized);
+  auto const* row = left.data().data();
   for (std::int64_t i = 0; i < rows; ++i) {
-    for (std::int64_t j = 0; j < columns; ++j) {
-      result[i] += left(i, j) * right[j];
+    if constexpr (columns < 64) {
+      result[i] =
+          DotProduct<LScalar, RScalar, std::make_index_sequence<columns>>::
+              Compute(row, right.data());
+      row += columns;
+    } else {
+      result[i] = {};
+      for (std::int64_t j = 0; j < columns; ++j) {
+        result[i] += left(i, j) * right[j];
+      }
     }
   }
   return result;

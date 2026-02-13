@@ -5,7 +5,6 @@
 #include <type_traits>
 
 #include "geometry/hilbert.hpp"
-#include "quantities/tuples.hpp"
 
 // The use of FORCE_INLINE in this file is because we want the construction of
 // complex polynomials to be reasonably efficient.
@@ -16,7 +15,6 @@ namespace _cartesian_product {
 namespace internal {
 
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_tuples;
 
 template<typename LTuple, typename RTuple,
          typename = std::make_index_sequence<

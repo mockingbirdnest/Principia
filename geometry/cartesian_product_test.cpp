@@ -16,8 +16,8 @@ using namespace principia::base::_algebra;
 using namespace principia::geometry::_cartesian_product;
 using namespace principia::geometry::_point;
 using namespace principia::numerics::_fixed_arrays;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_named_quantities;
+using namespace principia::quantities::_quantities;
 
 TEST(CartesianProductTest, Concepts) {
   static_assert(real_vector_space<VectorTuple<std::tuple<double>>>);
