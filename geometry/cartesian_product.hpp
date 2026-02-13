@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/algebra.hpp"
+#include "base/tags.hpp"
 #include "quantities/tuples.hpp"
 
 namespace principia {
@@ -80,6 +81,7 @@ constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 namespace internal {
 
 using namespace principia::base::_algebra;
+using namespace principia::base::_tags;
 using namespace principia::quantities::_tuples;
 
 // The direct sum of a pack of affine types.
@@ -90,6 +92,7 @@ using namespace principia::quantities::_tuples;
 template<affine... T>
 struct DirectSum {
   constexpr DirectSum() = default;
+  constexpr explicit DirectSum(uninitialized_t);
 
   // Constructor from elements.
   constexpr DirectSum(T&&... args);  // NOLINT(runtime/explicit)
@@ -97,10 +100,8 @@ struct DirectSum {
   // Constructor from tuple.
   constexpr explicit DirectSum(std::tuple<T...>&& tuple);
 
-  template<std::size_t I>
-  constexpr auto const& get() const;
-  template<std::size_t I>
-  constexpr auto& get();
+  template<std::size_t i, typename Self>
+  constexpr auto&& get(this Self&&);
 
   constexpr auto Norm() const
     requires hilbert<DirectSum<T...>, DirectSum<T...>>;

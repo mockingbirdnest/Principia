@@ -404,21 +404,18 @@ constexpr auto CartesianProductPointwiseMultiplicativeSpace<
 // DirectSum.
 
 template<affine... T>
+constexpr DirectSum<T...>::DirectSum(uninitialized_t) {}
+
+template<affine... T>
 constexpr DirectSum<T...>::DirectSum(T&&... args) : tuple(args...) {}
 
 template<affine... T>
 constexpr DirectSum<T...>::DirectSum(std::tuple<T...>&& tuple) : tuple(tuple) {}
 
 template<affine... T>
-template<std::size_t I>
-constexpr auto const& DirectSum<T...>::get() const {
-  return std::get<I>(tuple);
-}
-
-template<affine... T>
-template<std::size_t I>
-constexpr auto& DirectSum<T...>::get() {
-  return std::get<I>(tuple);
+template<std::size_t i, typename Self>
+constexpr auto&& DirectSum<T...>::get(this Self&& self) {
+  return std::get<i>(self.tuple);
 }
 
 template<affine... T>

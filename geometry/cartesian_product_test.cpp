@@ -22,7 +22,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-TEST(CartesianProductTest, Concepts) {
+TEST(CartesianProductTest, AlgebraConcepts) {
   static_assert(affine<DirectSum<std::byte*, double>>);
 
   static_assert(additive_group<DirectSum<std::chrono::seconds, double>>);
@@ -35,11 +35,12 @@ TEST(CartesianProductTest, Concepts) {
   static_assert(real_vector_space<DirectSum<double, double>>);
   static_assert(real_vector_space<DirectSum<Length, Mass, Time>>);
 
-  using R² = DirectSum<double, double>;
-  static_assert(hilbert<R², R²>);
+  using ℝ² = DirectSum<double, double>;
+  static_assert(hilbert<ℝ², ℝ²>);
 }
 
 TEST(CartesianProductTest, Constructors) {
+  EXPECT_EQ(DirectSum<double>(), DirectSum{0.0});
   EXPECT_EQ(DirectSum<Length>(), DirectSum{0 * Metre});
   EXPECT_EQ(DirectSum<Length>(std::tuple<Length>(4 * Metre)),
             DirectSum{4 * Metre});
