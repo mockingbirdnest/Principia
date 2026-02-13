@@ -8,6 +8,7 @@
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
@@ -18,6 +19,7 @@ using namespace principia::geometry::_point;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 TEST(CartesianProductTest, Concepts) {
   static_assert(real_vector_space<DirectSum<double>>);
@@ -27,6 +29,25 @@ TEST(CartesianProductTest, Concepts) {
 
   static_assert(real_affine_space<DirectSum<Point<Length>>>);
   static_assert(real_affine_space<DirectSum<Point<Length>, Speed>>);
+}
+
+TEST(CartesianProductTest, StructuredBindingsConst) {
+  DirectSum<Length, Time> one_two{.tuple = {1 * Metre, 2 * Second}};
+
+  auto const& [length, time] = one_two;
+  EXPECT_EQ(length, 1 * Metre);
+  EXPECT_EQ(time, 2 * Second);
+}
+
+TEST(CartesianProductTest, StructuredBindingsNonConst) {
+  DirectSum<Length, Time> one_two{.tuple = {1 * Metre, 2 * Second}};
+
+  auto& [length, time] = one_two;
+  length += 1 * Metre;
+  time += 4 * Second;
+
+  EXPECT_EQ(one_two,
+            (DirectSum<Length, Time>{.tuple = {2 * Metre, 6 * Second}}));
 }
 
 TEST(CartesianProductTest, FixedVector) {

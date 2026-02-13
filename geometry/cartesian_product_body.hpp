@@ -397,7 +397,19 @@ constexpr auto CartesianProductPointwiseMultiplicativeSpace<
       std::get<indices>(left), right)...};
 }
 
-// Operators for DirectSum.
+// DirectSum.
+
+template<typename... T>
+template<std::size_t I>
+constexpr auto const& DirectSum<T...>::get() const {
+  return std::get<I>(tuple);
+}
+
+template<typename... T>
+template<std::size_t I>
+constexpr auto& DirectSum<T...>::get() {
+  return std::get<I>(tuple);
+}
 
 template<typename... T>
 template<typename... U>
