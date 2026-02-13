@@ -144,6 +144,11 @@ TEST(DirectSumTest, InnerProduct) {
   EXPECT_EQ(three_four.Norm(), 5);
 }
 
+TEST(DirectSumTest, Get) {
+  DirectSum<double, double> one_two = {1, 2};
+  EXPECT_EQ(get<0>(one_two), 1);
+}
+
 TEST(DirectSumTest, StructuredBindingsConst) {
   DirectSum<Length, Time> one_two = {1 * Metre, 2 * Second};
 

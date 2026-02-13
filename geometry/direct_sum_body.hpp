@@ -1,9 +1,10 @@
+#include "geometry/direct_sum.hpp"
+
 #include <algorithm>
 #include <tuple>
 #include <type_traits>
 
 #include "base/for_all_of.hpp"
-#include "geometry/direct_sum.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/elementary_functions.hpp"
 
@@ -25,9 +26,12 @@ constexpr DirectSum<T...>::DirectSum(T&&... args) : tuple(args...) {}
 template<affine... T>
 constexpr DirectSum<T...>::DirectSum(std::tuple<T...>&& tuple) : tuple(tuple) {}
 
-template<affine... T>
-template<std::size_t i, typename Self>
-constexpr auto&& DirectSum<T...>::get(this Self&& self) {
+template<std::size_t i, affine... T>
+constexpr auto const& get(DirectSum<T...> const& self) {
+  return std::get<i>(self.tuple);
+}
+template<std::size_t i, affine... T>
+constexpr auto& get(DirectSum<T...>& self) {
   return std::get<i>(self.tuple);
 }
 
@@ -88,7 +92,7 @@ template<affine... T>
 constexpr DirectSum<T...> operator+(DirectSum<T...> const& left,
                                     DirectSum<Difference<T>...> const& right) {
   DirectSum<T...> sum(uninitialized);
-  for_all_of(left.tuple, right.tuple, sum.tuple)
+  for_all_of(left, right, sum)
       .loop([](auto const& left, auto const& right, auto& sum) {
         sum = left + right;
       });
@@ -101,7 +105,7 @@ constexpr DirectSum<T...> operator+(DirectSum<Difference<T>...> const& left,
   requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value)
 {
   DirectSum<T...> sum(uninitialized);
-  for_all_of(left.tuple, right.tuple, sum.tuple)
+  for_all_of(left, right, sum)
       .loop([](auto const& left, auto const& right, auto& sum) {
         sum = left + right;
       });
@@ -112,7 +116,7 @@ template<affine... T>
 constexpr DirectSum<Difference<T>...> operator-(DirectSum<T...> const& left,
                                                 DirectSum<T...> const& right) {
   DirectSum<Difference<T>...> difference(uninitialized);
-  for_all_of(left.tuple, right.tuple, difference.tuple)
+  for_all_of(left, right, difference)
       .loop([](auto const& left, auto const& right, auto& difference) {
         difference = left - right;
       });
@@ -125,7 +129,7 @@ constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
   requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value)
 {
   DirectSum<T...> difference(uninitialized);
-  for_all_of(left.tuple, right.tuple, difference.tuple)
+  for_all_of(left, right, difference)
       .loop([](auto const& left, auto const& right, auto& difference) {
         difference = left - right;
       });
@@ -135,30 +139,27 @@ constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
 template<homogeneous_ring L, homogeneous_module<L>... R>
 constexpr auto operator*(L const& left, DirectSum<R...> const& right) {
   DirectSum<Product<L, R>...> product(uninitialized);
-  for_all_of(right.tuple, product.tuple)
-      .loop([&left](auto const& right, auto& product) {
-        product = left * right;
-      });
+  for_all_of(right, product).loop([&left](auto const& right, auto& product) {
+    product = left * right;
+  });
   return product;
 }
 
 template<homogeneous_ring R, homogeneous_module<R>... L>
 constexpr auto operator*(DirectSum<L...> const& left, R const& right) {
   DirectSum<Product<L, R>...> product(uninitialized);
-  for_all_of(left.tuple, product.tuple)
-      .loop([&right](auto const& left, auto& product) {
-        product = left * right;
-      });
+  for_all_of(left, product).loop([&right](auto const& left, auto& product) {
+    product = left * right;
+  });
   return product;
 }
 
 template<homogeneous_field R, homogeneous_vector_space<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right) {
   DirectSum<Quotient<L, R>...> quotient(uninitialized);
-  for_all_of(left.tuple, quotient.tuple)
-      .loop([&right](auto const& left, auto& quotient) {
-        quotient = left / right;
-      });
+  for_all_of(left, quotient).loop([&right](auto const& left, auto& quotient) {
+    quotient = left / right;
+  });
   return quotient;
 }
 
@@ -167,7 +168,7 @@ constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right) {
   using T0 = std::tuple_element_t<0, DirectSum<T...>>;
   decltype(std::declval<T0>() * std::declval<T0>()) product = {};
-  for_all_of(left.tuple, right.tuple)
+  for_all_of(left, right)
       .loop([&product](auto const& leftᵢ, auto const& rightᵢ) {
         product += leftᵢ * rightᵢ;
       });

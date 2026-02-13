@@ -55,7 +55,7 @@ template<typename T, std::int64_t M, bool uh>
 double LInfinityNorm(FixedVector<DirectSum<T>, M, uh> const& A) {
   double norm = 0.0;
   for (std::int64_t i = 0; i < M; ++i) {
-    for_all_of(A[i].tuple).loop([&norm](auto const& aᵢⱼ) {
+    for_all_of(A[i]).loop([&norm](auto const& aᵢⱼ) {
       norm = std::max(norm, std::abs(aᵢⱼ / si::Unit<decltype(aᵢⱼ)>));
     });
   }

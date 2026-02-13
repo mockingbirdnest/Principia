@@ -36,8 +36,10 @@ struct DirectSum {
   // Constructor from tuple.
   constexpr explicit DirectSum(std::tuple<T...>&& tuple);
 
-  template<std::size_t i, typename Self>
-  constexpr auto&& get(this Self&& self);
+  template<std::size_t i, affine... U>
+  friend constexpr auto const& get(DirectSum<U...> const& self);
+  template<std::size_t i, affine... U>
+  friend constexpr auto& get(DirectSum<U...>& self);
 
   constexpr auto Norm() const
     requires hilbert<DirectSum, DirectSum>;
