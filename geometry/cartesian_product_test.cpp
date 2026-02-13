@@ -1,5 +1,6 @@
 #include "geometry/cartesian_product.hpp"
 
+#include <chrono>
 #include <tuple>
 
 #include "base/algebra.hpp"
@@ -22,13 +23,20 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 TEST(CartesianProductTest, Concepts) {
-  static_assert(real_vector_space<DirectSum<double>>);
-  static_assert(real_vector_space<DirectSum<double, double>>);
-  static_assert(real_vector_space<DirectSum<Length>>);
-  static_assert(real_vector_space<DirectSum<Length, Mass, Time>>);
+  static_assert(affine<DirectSum<std::byte*, double>>);
+
+  static_assert(additive_group<DirectSum<std::chrono::seconds, double>>);
+  static_assert(
+      homogeneous_module<DirectSum<std::chrono::seconds, double>, int>);
 
   static_assert(real_affine_space<DirectSum<Point<Length>>>);
   static_assert(real_affine_space<DirectSum<Point<Length>, Speed>>);
+
+  static_assert(real_vector_space<DirectSum<double, double>>);
+  static_assert(real_vector_space<DirectSum<Length, Mass, Time>>);
+
+  using R² = DirectSum<double, double>;
+  static_assert(hilbert<R², R²>);
 }
 
 TEST(CartesianProductTest, Constructors) {
@@ -53,6 +61,15 @@ TEST(CartesianProductTest, StructuredBindingsNonConst) {
   time += 4 * Second;
 
   EXPECT_EQ(one_two, (DirectSum<Length, Time>{2 * Metre, 6 * Second}));
+}
+
+TEST(CartesianProductTest, InnerProduct) {
+  DirectSum<double, double> one_two = {1, 2};
+  DirectSum<double, double> three_four = {3, 4};
+
+  EXPECT_EQ(InnerProduct(one_two, three_four), 11);
+  EXPECT_EQ(three_four.Norm²(), 25);
+  EXPECT_EQ(three_four.Norm(), 5);
 }
 
 TEST(CartesianProductTest, FixedVector) {

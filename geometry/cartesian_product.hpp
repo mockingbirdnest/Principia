@@ -5,6 +5,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/algebra.hpp"
 #include "quantities/tuples.hpp"
 
 namespace principia {
@@ -79,8 +80,14 @@ constexpr auto PointwiseInnerProduct(LTuple const& left, RTuple const& right);
 namespace internal {
 
 using namespace principia::quantities::_tuples;
+using namespace principia::base::_algebra;
 
-template<typename... T>
+// The direct sum of a pack of affine types.
+//
+// Has as much structure as the least powerful of its components (a `DirectSum`
+// of affine R-modules is an affine R-module, a `DirectSum` of additive groups
+// is an additive group, etc.).
+template<affine... T>
 struct DirectSum {
   constexpr DirectSum() = default;
 
@@ -95,12 +102,17 @@ struct DirectSum {
   template<std::size_t I>
   constexpr auto& get();
 
+  constexpr auto Norm() const
+    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+  constexpr auto Norm²() const
+    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+
   friend auto operator<=>(DirectSum const& left,
                           DirectSum const& right) = default;
 
-  template<typename... U>
+  template<affine... U>
   DirectSum<T...>& operator+=(DirectSum<U...> const& right);
-  template<typename... U>
+  template<affine... U>
   DirectSum<T...>& operator-=(DirectSum<U...> const& right);
 
   template<typename Scalar>
@@ -111,35 +123,39 @@ struct DirectSum {
   std::tuple<T...> tuple;
 };
 
-template<typename... T>
+template<affine... T>
 constexpr auto operator+(DirectSum<T...> const& right);
 
-template<typename... T>
+template<affine... T>
 constexpr auto operator-(DirectSum<T...> const& right);
 
-template<typename... L, typename... R>
+template<affine... L, affine... R>
 constexpr auto operator+(DirectSum<L...> const& left,
                          DirectSum<R...> const& right);
 
-template<typename... L, typename... R>
+template<affine... L, affine... R>
 constexpr auto operator-(DirectSum<L...> const& left,
                          DirectSum<R...> const& right);
 
-template<typename L, typename... R>
+template<typename L, affine... R>
 constexpr auto operator*(L const& left, DirectSum<R...> const& right);
 
-template<typename... L, typename R>
+template<affine... L, typename R>
 constexpr auto operator*(DirectSum<L...> const& left, R const& right);
 
-template<typename... L, typename R>
+template<affine... L, typename R>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right);
+
+template<affine... T>
+constexpr auto InnerProduct(DirectSum<T...> const& left,
+                            DirectSum<T...> const& right);
 
 // Helper for getting a DirectSum corresponding to a tuple when you don't
 // have access to the pack.
 template<tuple Tuple>
 struct direct_sum {};
 
-template<typename... T>
+template<affine... T>
 struct direct_sum<std::tuple<T...>> {
   typedef DirectSum<T...> type;
 };

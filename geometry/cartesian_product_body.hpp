@@ -4,7 +4,9 @@
 #include <tuple>
 #include <type_traits>
 
+#include "base/for_all_of.hpp"
 #include "geometry/hilbert.hpp"
+#include "numerics/elementary_functions.hpp"
 
 // The use of FORCE_INLINE in this file is because we want the construction of
 // complex polynomials to be reasonably efficient.
@@ -14,7 +16,9 @@ namespace geometry {
 namespace _cartesian_product {
 namespace internal {
 
+using namespace principia::base::_for_all_of;
 using namespace principia::geometry::_hilbert;
+using namespace principia::numerics::_elementary_functions;
 
 template<typename LTuple, typename RTuple,
          typename = std::make_index_sequence<
@@ -399,58 +403,72 @@ constexpr auto CartesianProductPointwiseMultiplicativeSpace<
 
 // DirectSum.
 
-template<typename... T>
+template<affine... T>
 constexpr DirectSum<T...>::DirectSum(T&&... args) : tuple(args...) {}
 
-template<typename... T>
+template<affine... T>
 constexpr DirectSum<T...>::DirectSum(std::tuple<T...>&& tuple) : tuple(tuple) {}
 
-template<typename... T>
+template<affine... T>
 template<std::size_t I>
 constexpr auto const& DirectSum<T...>::get() const {
   return std::get<I>(tuple);
 }
 
-template<typename... T>
+template<affine... T>
 template<std::size_t I>
 constexpr auto& DirectSum<T...>::get() {
   return std::get<I>(tuple);
 }
 
-template<typename... T>
-template<typename... U>
+template<affine... T>
+constexpr auto DirectSum<T...>::Norm() const
+  requires hilbert<DirectSum<T...>, DirectSum<T...>>
+{
+  return Sqrt(Norm²());
+}
+
+template<affine... T>
+constexpr auto DirectSum<T...>::Norm²() const
+  requires hilbert<DirectSum<T...>, DirectSum<T...>>
+{
+  return InnerProduct(*this, *this);
+}
+
+template<affine... T>
+template<affine... U>
 DirectSum<T...>& DirectSum<T...>::operator+=(DirectSum<U...> const& right) {
   *this = *this + right;
   return *this;
 }
 
-template<typename... T>
-template<typename... U>
+template<affine... T>
+template<affine... U>
 DirectSum<T...>& DirectSum<T...>::operator-=(DirectSum<U...> const& right) {
   *this = *this - right;
   return *this;
 }
 
-template<typename... T>
+template<affine... T>
 template<typename Scalar>
 DirectSum<T...>& DirectSum<T...>::operator*=(Scalar const& right) {
   *this = *this * right;
   return *this;
 }
 
-template<typename... T>
+template<affine... T>
 template<typename Scalar>
 DirectSum<T...>& DirectSum<T...>::operator/=(Scalar const& right) {
   *this = *this / right;
   return *this;
 }
 
-template<typename... T>
+template<affine... T>
 constexpr auto operator+(DirectSum<T...> const& right) {
   return right;
 }
 
-template<typename... T>
+template<affine... T>
 constexpr auto operator-(DirectSum<T...> const& right) {
   std::tuple<> zero;
   return DirectSum(
@@ -458,7 +476,7 @@ constexpr auto operator-(DirectSum<T...> const& right) {
           zero, right.tuple));
 }
 
-template<typename... L, typename... R>
+template<affine... L, affine... R>
 constexpr auto operator+(DirectSum<L...> const& left,
                          DirectSum<R...> const& right) {
   return DirectSum(
@@ -466,7 +484,7 @@ constexpr auto operator+(DirectSum<L...> const& left,
           left.tuple, right.tuple));
 }
 
-template<typename... L, typename... R>
+template<affine... L, affine... R>
 constexpr auto operator-(DirectSum<L...> const& left,
                          DirectSum<R...> const& right) {
   return DirectSum(
@@ -474,22 +492,35 @@ constexpr auto operator-(DirectSum<L...> const& left,
           left.tuple, right.tuple));
 }
 
-template<typename L, typename... R>
+template<typename L, affine... R>
 constexpr auto operator*(L const& left, DirectSum<R...> const& right) {
   return DirectSum(CartesianProductVectorSpace<L, std::tuple<R...>>::Multiply(
       left, right.tuple));
 }
 
-template<typename... L, typename R>
+template<affine... L, typename R>
 constexpr auto operator*(DirectSum<L...> const& left, R const& right) {
   return DirectSum(CartesianProductVectorSpace<R, std::tuple<L...>>::Multiply(
       left.tuple, right));
 }
 
-template<typename... L, typename R>
+template<affine... L, typename R>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right) {
   return DirectSum(CartesianProductVectorSpace<R, std::tuple<L...>>::Divide(
       left.tuple, right));
+}
+
+template<affine... T>
+constexpr auto InnerProduct(DirectSum<T...> const& left,
+                            DirectSum<T...> const& right) {
+  using T0 = std::tuple_element_t<0, DirectSum<T...>>;
+  decltype(std::declval<T0>() * std::declval<T0>()) product = {};
+  for_all_of(left.tuple, right.tuple)
+      .loop([&product](auto const& leftᵢ, auto const& rightᵢ) {
+        product += leftᵢ * rightᵢ;
+      });
+
+  return product;
 }
 
 }  // namespace internal
