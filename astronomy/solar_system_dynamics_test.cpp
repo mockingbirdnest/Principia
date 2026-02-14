@@ -305,7 +305,7 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
         .argument_of_periapsis_drift_per_orbit = 0.03654_(1) * ArcSecond}},
       {SolarSystemFactory::Venus,
        {.separation_per_orbit = 0.104901_(1) * ArcSecond,
-        .inclination_drift_per_orbit = 0.000001_(1) * ArcSecond,
+        .inclination_drift_per_orbit = 0.0000010_(1) * ArcSecond,
         .longitude_of_ascending_node_drift_per_orbit = 0.000006_(1) * ArcSecond,
         .argument_of_periapsis_drift_per_orbit = 0.072214_(1) * ArcSecond}},
       {SolarSystemFactory::Mars,
