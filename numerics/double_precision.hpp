@@ -39,6 +39,11 @@ struct DoublePrecision final {
   DoublePrecision<T>& operator-=(DoublePrecision<Difference<T>> const& right);
   DoublePrecision<T>& operator-=(Difference<T> const& right);
 
+  template<typename U>
+  DoublePrecision<T>& operator*=(U const& right);
+  template<typename U>
+  DoublePrecision<T>& operator/=(U const& right);
+
   // Compensated summation.  This is less precise, but more efficient, than
   // `operator-=` or `operator+=`.  Unlike `QuickTwoSum`, these functions don't
   // DCHECK their argument, so the caller must ensure that `right` is small

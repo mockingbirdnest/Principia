@@ -161,6 +161,20 @@ DoublePrecision<T>& DoublePrecision<T>::operator-=(
   return *this;
 }
 
+template<typename T>
+template<typename U>
+DoublePrecision<T>& DoublePrecision<T>::operator*=(U const& right) {
+  *this = *this * right;
+  return *this;
+}
+
+template<typename T>
+template<typename U>
+DoublePrecision<T>& DoublePrecision<T>::operator/=(U const& right) {
+  *this = *this / right;
+  return *this;
+}
+
 template <typename T>
 DoublePrecision<T>& DoublePrecision<T>::Decrement(Difference<T> const& right) {
   // See Higham, Accuracy and Stability of Numerical Algorithms, Algorithm 4.2.

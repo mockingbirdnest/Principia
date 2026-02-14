@@ -70,6 +70,14 @@ TEST_F(DoublePrecisionTest, DISABLED_IACA) {
 }
 #endif
 
+TEST_F(DoublePrecisionTest, AlgebraConcepts) {
+  static_assert(real_vector_space<DoublePrecision<double>>);
+  static_assert(real_vector_space<DoublePrecision<Displacement<World>>>);
+
+  static_assert(real_affine_space<DoublePrecision<Position<World>>>);
+  static_assert(!real_vector_space<DoublePrecision<Position<World>>>);
+}
+
 TEST_F(DoublePrecisionTest, CompensatedSummationIncrement) {
   Position<World> const initial =
       World::origin + Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
