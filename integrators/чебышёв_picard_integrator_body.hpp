@@ -50,7 +50,7 @@ std::tuple<DoublePrecision<T>...> WrapInDoublePrecision(
   return out;
 }
 
-// Returns max|aᵢⱼ|.
+// Returns max|aᵢⱼ expressed in SI units|.
 template<typename T, std::int64_t M, bool uh>
 double LInfinityNorm(FixedVector<DirectSum<T>, M, uh> const& A) {
   double norm = 0.0;

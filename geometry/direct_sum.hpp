@@ -26,7 +26,8 @@ using namespace principia::quantities::_tuples;
 // of affine R-modules is an affine R-module, a `DirectSum` of additive groups
 // is an additive group, etc.).
 template<affine... T>
-struct DirectSum {
+class DirectSum {
+ public:
   constexpr DirectSum() = default;
   constexpr explicit DirectSum(uninitialized_t);
 

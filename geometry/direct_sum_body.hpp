@@ -17,6 +17,8 @@ using namespace principia::base::_for_all_of;
 using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_elementary_functions;
 
+// TODO(phl): Technically this should forward to the constructor of each T that
+// takes an uninitialized_t.
 template<affine... T>
 constexpr DirectSum<T...>::DirectSum(uninitialized_t) {}
 

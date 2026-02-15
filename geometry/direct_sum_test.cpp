@@ -72,6 +72,9 @@ concept greater_than_or_equal = requires(T a, T b) {
 
 TEST(DirectSumTest, Unordered) {
   static_assert(!less_than<ℝ²>);
+  static_assert(!greater_than<ℝ²>);
+  static_assert(!less_than_or_equal<ℝ²>);
+  static_assert(!greater_than_or_equal<ℝ²>);
 }
 
 // Helper concepts for DegreesOfFreedomIsMerelyAffine test.
