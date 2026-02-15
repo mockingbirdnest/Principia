@@ -76,30 +76,30 @@ TEST(DirectSumTest, Unordered) {
 
 // Helper concepts for DegreesOfFreedomIsMerelyAffine test.
 template<typename T>
-concept unary_plus = requires(T a) { +a; };
+concept has_unary_plus = requires(T a) { +a; };
 template<typename T>
-concept unary_minus = requires(T a) { -a; };
+concept has_unary_minus = requires(T a) { -a; };
 template<typename T, typename U>
-concept plus = requires(T a, U b) { a + b; };
+concept has_plus = requires(T a, U b) { a + b; };
 template<typename T, typename U>
-concept minus = requires(T a, U b) { a - b; };
+concept has_minus = requires(T a, U b) { a - b; };
 template<typename T, typename U>
-concept times = requires(T a, U b) { a * b; };
+concept has_times = requires(T a, U b) { a * b; };
 template<typename T, typename U>
-concept divided_by = requires(T a, U b) { a / b; };
+concept has_divided_by = requires(T a, U b) { a / b; };
 
 TEST(DirectSumTest, DegreesOfFreedomIsMerelyAffine) {
   using DegreesOfFreedom = DirectSum<Position<World>, Velocity<World>>;
   static_assert(real_affine_space<DegreesOfFreedom>);
 
-  static_assert(!unary_plus<DegreesOfFreedom>);
-  static_assert(!unary_minus<DegreesOfFreedom>);
-  static_assert(!plus<DegreesOfFreedom, DegreesOfFreedom>);
-  static_assert(!minus<Difference<DegreesOfFreedom>, DegreesOfFreedom>);
-  static_assert(!times<DegreesOfFreedom, double>);
-  static_assert(!times<double, DegreesOfFreedom>);
-  static_assert(!divided_by<DegreesOfFreedom, double>);
-  static_assert(!divided_by<double, DegreesOfFreedom>);
+  static_assert(!has_unary_plus<DegreesOfFreedom>);
+  static_assert(!has_unary_minus<DegreesOfFreedom>);
+  static_assert(!has_plus<DegreesOfFreedom, DegreesOfFreedom>);
+  static_assert(!has_minus<Difference<DegreesOfFreedom>, DegreesOfFreedom>);
+  static_assert(!has_times<DegreesOfFreedom, double>);
+  static_assert(!has_times<double, DegreesOfFreedom>);
+  static_assert(!has_divided_by<DegreesOfFreedom, double>);
+  static_assert(!has_divided_by<double, DegreesOfFreedom>);
 }
 
 TEST(DirectSumTest, Constructors) {
