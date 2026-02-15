@@ -191,6 +191,12 @@
     <ClInclude Include="homothecy_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="direct_sum.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="direct_sum_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -266,6 +272,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="instant_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="direct_sum_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
