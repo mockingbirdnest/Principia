@@ -113,7 +113,7 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
          ++iteration) {
       // Evaluate the right hand side of the equation.
       for (std::int64_t i = 0; i <= M; ++i) {
-        auto const& y = Xⁱ_[i].tuple;
+        auto const& y = Xⁱ_[i].tuple();
         DependentVariableDerivatives yʹᵢ;
         RETURN_IF_ERROR(equation.compute_derivative(t_[i], y, yʹᵢ));
 
@@ -143,11 +143,11 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     if (converged) {
       // We have successfully converged!
       for (std::int64_t i = 0; i <= M; ++i) {
-        append_state(State(t_[i], Xⁱ_[i].tuple));
+        append_state(State(t_[i], Xⁱ_[i].tuple()));
       }
 
       // Set the current state to the final state we appended.
-      current_state = State(t_[M], Xⁱ_[M].tuple);
+      current_state = State(t_[M], Xⁱ_[M].tuple());
       RETURN_IF_STOPPED;
     } else {
       // We failed to converge.

@@ -1,10 +1,9 @@
-#include "geometry/direct_sum.hpp"
-
 #include <algorithm>
 #include <tuple>
 #include <type_traits>
 
 #include "base/for_all_of.hpp"
+#include "geometry/direct_sum.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/elementary_functions.hpp"
 
@@ -21,18 +20,16 @@ template<affine... T>
 constexpr DirectSum<T...>::DirectSum(uninitialized_t) {}
 
 template<affine... T>
-constexpr DirectSum<T...>::DirectSum(T&&... args) : tuple(args...) {}
+constexpr DirectSum<T...>::DirectSum(T&&... args) : tuple_(args...) {}
 
 template<affine... T>
-constexpr DirectSum<T...>::DirectSum(std::tuple<T...>&& tuple) : tuple(tuple) {}
+constexpr DirectSum<T...>::DirectSum(std::tuple<T...>&& tuple)
+    : tuple_(tuple) {}
 
-template<std::size_t i, affine... T>
-constexpr auto const& get(DirectSum<T...> const& self) {
-  return std::get<i>(self.tuple);
-}
-template<std::size_t i, affine... T>
-constexpr auto& get(DirectSum<T...>& self) {
-  return std::get<i>(self.tuple);
+template<affine... T>
+template<typename Self>
+auto&& DirectSum<T...>::tuple(this Self&& self) {
+  return self.tuple_;
 }
 
 template<affine... T>
@@ -75,6 +72,15 @@ template<field Scalar>
 DirectSum<T...>& DirectSum<T...>::operator/=(Scalar const& right) {
   *this = *this / right;
   return *this;
+}
+
+template<std::size_t i, affine... T>
+constexpr auto const& get(DirectSum<T...> const& self) {
+  return std::get<i>(self.tuple());
+}
+template<std::size_t i, affine... T>
+constexpr auto& get(DirectSum<T...>& self) {
+  return std::get<i>(self.tuple());
 }
 
 template<additive_group... T>

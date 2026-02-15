@@ -36,10 +36,9 @@ struct DirectSum {
   // Constructor from tuple.
   constexpr explicit DirectSum(std::tuple<T...>&& tuple);
 
-  template<std::size_t i, affine... U>
-  friend constexpr auto const& get(DirectSum<U...> const& self);
-  template<std::size_t i, affine... U>
-  friend constexpr auto& get(DirectSum<U...>& self);
+  // Getter for the inner tuple field.
+  template<typename Self>
+  auto&& tuple(this Self&& self);
 
   constexpr auto Norm() const
     requires hilbert<DirectSum<T...>, DirectSum<T...>>;
@@ -47,7 +46,6 @@ struct DirectSum {
     requires hilbert<DirectSum<T...>, DirectSum<T...>>;
 
   bool operator==(DirectSum const&) const = default;
-  bool operator!=(DirectSum const&) const = default;
 
   DirectSum& operator+=(DirectSum<Difference<T>...> const& right);
   DirectSum& operator-=(DirectSum<Difference<T>...> const& right);
@@ -57,8 +55,14 @@ struct DirectSum {
   template<field Scalar>
   DirectSum& operator/=(Scalar const& right);
 
-  std::tuple<T...> tuple;
+ private:
+  std::tuple<T...> tuple_;
 };
+
+template<std::size_t i, affine... T>
+constexpr auto const& get(DirectSum<T...> const& self);
+template<std::size_t i, affine... T>
+constexpr auto& get(DirectSum<T...>& self);
 
 template<additive_group... T>
 constexpr DirectSum<T...> operator+(DirectSum<T...> const& right);
