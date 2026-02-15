@@ -1,9 +1,10 @@
+#include "geometry/direct_sum.hpp"
+
 #include <algorithm>
 #include <tuple>
 #include <type_traits>
 
 #include "base/for_all_of.hpp"
-#include "geometry/direct_sum.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/elementary_functions.hpp"
 
@@ -173,10 +174,11 @@ template<affine... T>
 constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right) {
   using T0 = std::tuple_element_t<0, DirectSum<T...>>;
-  decltype(std::declval<T0>() * std::declval<T0>()) product = {};
+  typename Hilbert<T0>::InnerProductType product = {};
   for_all_of(left, right)
       .loop([&product](auto const& leftᵢ, auto const& rightᵢ) {
-        product += leftᵢ * rightᵢ;
+        product += Hilbert<std::remove_cvref_t<decltype(leftᵢ)>>::InnerProduct(
+            leftᵢ, rightᵢ);
       });
 
   return product;

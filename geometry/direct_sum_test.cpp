@@ -3,8 +3,9 @@
 #include <chrono>
 #include <tuple>
 
-#include "astronomy/frames.hpp"
 #include "base/algebra.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
@@ -16,9 +17,10 @@
 namespace principia {
 namespace geometry {
 
-using namespace principia::astronomy::_frames;
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_direct_sum;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_fixed_arrays;
@@ -27,6 +29,10 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 using ℝ² = DirectSum<double, double>;
+using World = Frame<serialization::Frame::TestTag,
+                    Inertial,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
 
 TEST(DirectSumTest, AlgebraConcepts) {
   static_assert(affine<DirectSum<std::byte*, double>>);
@@ -38,7 +44,7 @@ TEST(DirectSumTest, AlgebraConcepts) {
   static_assert(real_affine_space<DirectSum<Point<Length>>>);
   static_assert(real_affine_space<DirectSum<Point<Length>, Speed>>);
 
-  static_assert(real_vector_space<DirectSum<double, double>>);
+  static_assert(real_vector_space<ℝ²>);
   static_assert(real_vector_space<DirectSum<Length, Mass, Time>>);
 
   static_assert(homogeneous_vector_space<DirectSum<Length>, Time>);
@@ -83,7 +89,7 @@ template<typename T, typename U>
 concept divided_by = requires(T a, U b) { a / b; };
 
 TEST(DirectSumTest, DegreesOfFreedomIsMerelyAffine) {
-  using DegreesOfFreedom = DirectSum<Position<ICRS>, Velocity<ICRS>>;
+  using DegreesOfFreedom = DirectSum<Position<World>, Velocity<World>>;
   static_assert(real_affine_space<DegreesOfFreedom>);
 
   static_assert(!unary_plus<DegreesOfFreedom>);
@@ -136,16 +142,25 @@ TEST(DirectSumTest, Division) {
 }
 
 TEST(DirectSumTest, InnerProduct) {
-  DirectSum<double, double> one_two = {1, 2};
-  DirectSum<double, double> three_four = {3, 4};
+  ℝ² one_two = {1, 2};
+  ℝ² three_four = {3, 4};
 
   EXPECT_EQ(InnerProduct(one_two, three_four), 11);
   EXPECT_EQ(three_four.Norm²(), 25);
   EXPECT_EQ(three_four.Norm(), 5);
 }
 
+TEST(DirectSumTest, InnerProductOfDirectSumOfVector) {
+  DirectSum<Vector<double, World>> one_two_three = {
+      Vector<double, World>({1, 2, 3})};
+  DirectSum<Vector<double, World>> four_five_six = {
+      Vector<double, World>({4, 5, 6})};
+
+  EXPECT_EQ(InnerProduct(one_two_three, four_five_six), 32);
+}
+
 TEST(DirectSumTest, Get) {
-  DirectSum<double, double> one_two = {1, 2};
+  ℝ² one_two = {1, 2};
   EXPECT_EQ(get<0>(one_two), 1);
 }
 
@@ -168,9 +183,7 @@ TEST(DirectSumTest, StructuredBindingsNonConst) {
 }
 
 TEST(DirectSumTest, FixedVector) {
-  FixedVector<DirectSum<double, double>, 1>(
-      std::array<DirectSum<double, double>, 1>{
-          DirectSum<double, double>{1, 2}});
+  FixedVector<ℝ², 1>(std::array<ℝ², 1>{ℝ²{1, 2}});
 }
 
 }  // namespace geometry
