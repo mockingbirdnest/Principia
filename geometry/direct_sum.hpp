@@ -42,9 +42,9 @@ struct DirectSum {
   friend constexpr auto& get(DirectSum<U...>& self);
 
   constexpr auto Norm() const
-    requires hilbert<DirectSum, DirectSum>;
+    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
   constexpr auto Norm²() const
-    requires hilbert<DirectSum, DirectSum>;
+    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
 
   bool operator==(DirectSum const&) const = default;
   bool operator!=(DirectSum const&) const = default;
