@@ -2,6 +2,7 @@
 
 #include "integrators/чебышёв_picard_integrator.hpp"
 
+#include <algorithm>
 #include <concepts>
 #include <tuple>
 #include <vector>
