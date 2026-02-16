@@ -161,6 +161,7 @@ internal static class Loader {
                           dll_filename +
                           " from paths: " +
                           string.Join(", ", possible_dll_paths));
+    string error_messages = "";
     if (Environment.OSVersion.Platform == PlatformID.Win32NT) {
       principia_dll_ = LoadLibrary(possible_dll_paths[0]);
     } else {
@@ -168,10 +169,25 @@ internal static class Loader {
       const int RTLD_GLOBAL = 8;
       foreach (string path in possible_dll_paths) {
         principia_dll_ = dlopen(path, RTLD_NOW | RTLD_GLOBAL);
-        if (principia_dll_ != IntPtr.Zero) {
+        if (principia_dll_ == IntPtr.Zero) {
+          IntPtr error = dlerror();
+          if (error != IntPtr.Zero) {
+            error_messages += Marshal.PtrToStringAnsi(error) + "\n";
+          }
+        } else {
           break;
         }
       }
+    }
+    if (principia_dll_ == IntPtr.Zero) {
+      return "Unable to load the " +
+             platform +
+             " Principia DLL " +
+             dll_filename +
+             " from paths: " +
+             string.Join(", ", possible_dll_paths) +
+             ".  Errors: " +
+             error_messages;
     }
     UnityEngine.Debug.Log("Principia DLL loaded at address " +
                           principia_dll_.ToString("X16"));
@@ -241,6 +257,9 @@ internal static class Loader {
 
   [DllImport("dl")]
   private static extern int dlclose(IntPtr handle);
+
+  [DllImport("dl")]
+  private static extern IntPtr dlerror();
 
   [DllImport("dl")]
   private static extern IntPtr dlopen(string filename, int flags);
