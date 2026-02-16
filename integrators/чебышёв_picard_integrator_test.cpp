@@ -256,7 +256,6 @@ TEST(ЧебышёвPicardIntegratorTest, Divergence) {
                                        // Differences never even get this low!
                                        return std::get<0>(Δ) <= 0.1 * Metre;
                                      },
-
                              });
   auto const t_final = problem.t₀() + step;
 
