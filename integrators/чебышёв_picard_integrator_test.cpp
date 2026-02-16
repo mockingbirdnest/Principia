@@ -61,10 +61,7 @@ Displacement<World> displacement() {
 
 Length LInfinityNorm(std::tuple<Displacement<World>> const& v) {
   auto const& coordinates = std::get<0>(v).coordinates();
-
-  // Note that std::max(x, y, z) does not work for some reason.
-  return std::max(std::max(Abs(coordinates.x), Abs(coordinates.y)),
-                  Abs(coordinates.z));
+  return std::max({Abs(coordinates.x), Abs(coordinates.y), Abs(coordinates.z)});
 }
 
 // An initial value problem with a known solution.
