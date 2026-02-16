@@ -65,14 +65,18 @@ DirectSum<T...>& DirectSum<T...>::operator-=(
 
 template<affine... T>
 template<ring Scalar>
-DirectSum<T...>& DirectSum<T...>::operator*=(Scalar const& right) {
+DirectSum<T...>& DirectSum<T...>::operator*=(Scalar const& right)
+  requires(module<T, Scalar> && ...)
+{
   *this = *this * right;
   return *this;
 }
 
 template<affine... T>
 template<field Scalar>
-DirectSum<T...>& DirectSum<T...>::operator/=(Scalar const& right) {
+DirectSum<T...>& DirectSum<T...>::operator/=(Scalar const& right)
+  requires(vector_space<T, Scalar> && ...)
+{
   *this = *this / right;
   return *this;
 }
@@ -111,7 +115,7 @@ constexpr DirectSum<T...> operator+(DirectSum<T...> const& left,
 template<affine... T>
 constexpr DirectSum<T...> operator+(DirectSum<Difference<T>...> const& left,
                                     DirectSum<T...> const& right)
-  requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value)
+  requires(!additive_group<T> || ...)
 {
   DirectSum<T...> sum(uninitialized);
   for_all_of(left, right, sum)
@@ -135,7 +139,7 @@ constexpr DirectSum<Difference<T>...> operator-(DirectSum<T...> const& left,
 template<affine... T>
 constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
                                     DirectSum<Difference<T>...> const& right)
-  requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value)
+  requires(!additive_group<T> || ...)
 {
   DirectSum<T...> difference(uninitialized);
   for_all_of(left, right, difference)

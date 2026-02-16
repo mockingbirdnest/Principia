@@ -52,9 +52,11 @@ class DirectSum {
   DirectSum& operator-=(DirectSum<Difference<T>...> const& right);
 
   template<ring Scalar>
-  DirectSum& operator*=(Scalar const& right);
+  DirectSum& operator*=(Scalar const& right)
+    requires(module<T, Scalar> && ...);
   template<field Scalar>
-  DirectSum& operator/=(Scalar const& right);
+  DirectSum& operator/=(Scalar const& right)
+    requires(vector_space<T, Scalar> && ...);
 
  private:
   std::tuple<T...> tuple_;
@@ -77,7 +79,7 @@ constexpr DirectSum<T...> operator+(DirectSum<T...> const& left,
 template<affine... T>
 constexpr DirectSum<T...> operator+(DirectSum<Difference<T>...> const& left,
                                     DirectSum<T...> const& right)
-  requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value);
+  requires(!additive_group<T> || ...);
 
 template<affine... T>
 constexpr DirectSum<Difference<T>...> operator-(DirectSum<T...> const& left,
@@ -85,7 +87,7 @@ constexpr DirectSum<Difference<T>...> operator-(DirectSum<T...> const& left,
 template<affine... T>
 constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
                                     DirectSum<Difference<T>...> const& right)
-  requires(!std::is_same<DirectSum<T...>, DirectSum<Difference<T>...>>::value);
+  requires(!additive_group<T> || ...);
 
 template<homogeneous_ring L, homogeneous_module<L>... R>
 constexpr auto operator*(L const& left, DirectSum<R...> const& right);
