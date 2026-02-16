@@ -6,8 +6,9 @@
 #include <tuple>
 #include <vector>
 
+#include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
-#include "geometry/point.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -27,8 +28,9 @@ using ::testing::Test;
 using ::testing::Types;
 using ::testing::Values;
 
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_point;
+using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_чебышёв_picard_integrator;
@@ -39,10 +41,30 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 
+using World = Frame<serialization::Frame::TestTag,
+                    Inertial,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
+
 using ODE =
-    ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Point<Length>>;
+    ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Position<World>>;
 
 namespace {
+
+// Returns a displacement of one metre along the x axis.
+//
+// Used to embed one-dimensional problems in the World.
+Displacement<World> displacement() {
+  return Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
+}
+
+Length LInfinityNorm(std::tuple<Displacement<World>> const& v) {
+  auto const& coordinates = std::get<0>(v).coordinates();
+
+  // Note that std::max(x, y, z) does not work for some reason.
+  return std::max(std::max(Abs(coordinates.x), Abs(coordinates.y)),
+                  Abs(coordinates.z));
+}
 
 // An initial value problem with a known solution.
 struct SolvedInitialValueProblem {
@@ -66,18 +88,19 @@ SolvedInitialValueProblem LinearProblem() {
          ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
         auto& [yʹ] = dependent_variable_derivatives;
-        yʹ = (y - Point<Length>()) / Second;
+        yʹ = (y - World::origin) / Second;
         return absl::OkStatus();
       };
 
   InitialValueProblem<ODE> problem;
   problem.equation = linear_ode;
-  problem.initial_state = {Instant(), {Point<Length>() + 1 * Metre}};
+  problem.initial_state = {Instant(), {World::origin + displacement()}};
 
   return SolvedInitialValueProblem{
       .problem = problem,
-      .solution = [](Instant const& t) -> std::tuple<Point<Length>> {
-        return std::exp((t - Instant()) / Second) * Metre + Point<Length>();
+      .solution = [](Instant const& t) -> std::tuple<Position<World>> {
+        return std::exp((t - Instant()) / Second) * displacement() +
+               World::origin;
       }};
 }
 
@@ -91,21 +114,23 @@ SolvedInitialValueProblem TangentProblem() {
          ODE::DependentVariables const& dependent_variables,
          ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
-        double const y_unitless = (y - Point<Length>()) / Metre;
+        double const y_unitless =
+            InnerProduct(y - World::origin, displacement()) / (Metre * Metre);
         auto& [yʹ] = dependent_variable_derivatives;
-        yʹ = π / 8 * (1 + y_unitless * y_unitless) * Metre / Second;
+        yʹ = π / 8 * (1 + y_unitless * y_unitless) / Second * displacement();
         return absl::OkStatus();
       };
 
   InitialValueProblem<ODE> problem;
   problem.equation = ode;
-  problem.initial_state = {Instant() - 1 * Second, {Point<Length>()}};
+  problem.initial_state = {Instant() - 1 * Second, {World::origin}};
 
   return SolvedInitialValueProblem{
       .problem = problem,
-      .solution = [](Instant const& t) -> std::tuple<Point<Length>> {
-        return Tan(π / 8 * ((t - Instant()) / Second + 1) * Radian) * Metre +
-               Point<Length>();
+      .solution = [](Instant const& t) -> std::tuple<Position<World>> {
+        return Tan(π / 8 * ((t - Instant()) / Second + 1) * Radian) *
+                   displacement() +
+               World::origin;
       }};
 }
 
@@ -127,16 +152,17 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
           ODE::DependentVariables const& dependent_variables,
           ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
-        double const y_unitless = (y - Point<Length>()) / Metre;
+        double const y_unitless =
+            InnerProduct(y - World::origin, displacement()) / (Metre * Metre);
         auto& [yʹ] = dependent_variable_derivatives;
-        yʹ = Cos(((t - Instant()) / Second + ε * y_unitless) * Radian) * Metre /
-             Second;
+        yʹ = Cos(((t - Instant()) / Second + ε * y_unitless) * Radian) /
+             Second * displacement();
         return absl::OkStatus();
       };
 
   InitialValueProblem<ODE> problem;
   problem.equation = ode;
-  problem.initial_state = {Instant(), {y₀ * Metre + Point<Length>()}};
+  problem.initial_state = {Instant(), {y₀ * displacement() + World::origin}};
 
   double const one_plus_sqrt_one_minus_ε² = 1 + Sqrt(1 - ε * ε);
   double const α = 2 * ε / (one_plus_sqrt_one_minus_ε² - ε);
@@ -145,14 +171,15 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
 
   return SolvedInitialValueProblem{
       .problem = problem,
-      .solution = [ε, α, β, γ](Instant const& t) -> std::tuple<Point<Length>> {
+      .solution =
+          [ε, α, β, γ](Instant const& t) -> std::tuple<Position<World>> {
         Angle const φ = 0.5 * (1 - γ * ε) * (t - Instant()) / Second * Radian;
         double const σ = α * (Sin(φ) + β * Cos(φ));
 
         return (-γ * (t - Instant()) / Second +
                 2 / ε * ArcTan((β + σ * Cos(φ)) / (1 + σ * Sin(φ))) / Radian) *
-                   Metre +
-               Point<Length>();
+                   displacement() +
+               World::origin;
       }};
 }
 
@@ -176,7 +203,7 @@ TEST(ЧебышёвPicardIntegratorTest, MultipleSteps) {
       ЧебышёвPicardIterationParams<ODE>{
           .max_iterations = 64,
           .stopping_criterion =
-              [](auto const& Δ) { return std::get<0>(Δ) < 1e-16 * Metre; },
+              [](auto const& Δ) { return LInfinityNorm(Δ) < 1e-16 * Metre; },
       });
   auto const t_final = problem.t₀() + 2.5 * step;
 
@@ -214,7 +241,7 @@ TEST(ЧебышёвPicardIntegratorTest, Backwards) {
       ЧебышёвPicardIterationParams<ODE>{
           .max_iterations = 64,
           .stopping_criterion =
-              [](auto const& Δ) { return std::get<0>(Δ) < 2e-16 * Metre; },
+              [](auto const& Δ) { return LInfinityNorm(Δ) < 2e-16 * Metre; },
       });
   auto const t_final = problem.t₀() + 2.5 * step;
 
@@ -254,7 +281,7 @@ TEST(ЧебышёвPicardIntegratorTest, Divergence) {
                                  .stopping_criterion =
                                      [](auto const& Δ) {
                                        // Differences never even get this low!
-                                       return std::get<0>(Δ) <= 0.1 * Metre;
+                                       return LInfinityNorm(Δ) <= 0.1 * Metre;
                                      },
                              });
   auto const t_final = problem.t₀() + step;
@@ -308,7 +335,7 @@ TYPED_TEST_P(ЧебышёвPicardIntegratorParameterizedTest, Convergence) {
           .max_iterations = 64,
           .stopping_criterion =
               [](auto const& Δ) {
-                return std::get<0>(Δ) < TypeParam::stopping_criterion;
+                return LInfinityNorm(Δ) < TypeParam::stopping_criterion;
               },
       });
   EXPECT_OK(instance->Solve(problem.t₀() + step));
