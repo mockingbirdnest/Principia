@@ -2,11 +2,10 @@
 
 #include "integrators/чебышёв_picard_integrator.hpp"
 
-#include <tuple>
-
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <tuple>
 #include <utility>
 
 #include "base/for_all_of.hpp"
@@ -48,18 +47,6 @@ std::tuple<DoublePrecision<T>...> WrapInDoublePrecision(
   std::tuple<DoublePrecision<T>...> out;
   for_all_of(in, out).loop([](auto const& inᵢ, auto& outᵢ) { outᵢ = inᵢ; });
   return out;
-}
-
-// Returns max|aᵢⱼ expressed in SI units|.
-template<typename T, std::int64_t M, bool uh>
-double LInfinityNorm(FixedVector<DirectSum<T>, M, uh> const& A) {
-  double norm = 0.0;
-  for (std::int64_t i = 0; i < M; ++i) {
-    for_all_of(A[i]).loop([&norm](auto const& aᵢⱼ) {
-      norm = std::max(norm, std::abs(aᵢⱼ / si::Unit<decltype(aᵢⱼ)>));
-    });
-  }
-  return norm;
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
@@ -107,7 +94,7 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     // that's what we just set CₓX₀_ to.
     Xⁱ_ = CₓX₀_;
 
-    double previous_norm = std::numeric_limits<float>::infinity();
+    bool previous_should_stop = false;
     bool converged = false;
     for (int64_t iteration = 0; iteration < params_.max_iterations;
          ++iteration) {
@@ -124,19 +111,23 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
       // Compute new x.
       Xⁱ⁺¹_ = integrator_.CₓCα_ * (0.5 * step * yʹ_) + CₓX₀_;
 
-      // Check for convergence by computing the ∞-norm.
-      double const norm = LInfinityNorm(Xⁱ⁺¹_ - Xⁱ_);
+      // Check for convergence by applying the stopping criterion.
+      bool should_stop = true;
+      for (std::int64_t i = 0; i <= M; ++i) {
+        should_stop = should_stop &&
+                      params_.stopping_criterion((Xⁱ⁺¹_[i] - Xⁱ_[i]).tuple());
+      }
       Xⁱ_ = std::move(Xⁱ⁺¹_);
 
       // We require that ‖Xⁱ⁺¹ - Xⁱ‖ and ‖Xⁱ - Xⁱ⁻¹‖ are _both_ less than
       // the given tolerance to account for nonlinearity issues (as suggested in
       // [BJ12]).
-      if (std::max(norm, previous_norm) < params_.stopping_criterion) {
+      if (should_stop && previous_should_stop) {
         converged = true;
         break;
       }
 
-      previous_norm = norm;
+      previous_should_stop = should_stop;
       RETURN_IF_STOPPED;
     }
 
@@ -177,7 +168,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
     AppendState const& append_state,
     Time const& step,
     ЧебышёвPicardIntegrator const& integrator,
-    ЧебышёвPicardIterationParams const& params)
+    ЧебышёвPicardIterationParams<ODE> const& params)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator),
       params_(params),
@@ -281,7 +272,7 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
     AppendState const& append_state,
     Time const& step) const {
   return NewInstance(
-      problem, append_state, step, ЧебышёвPicardIterationParams());
+      problem, append_state, step, ЧебышёвPicardIterationParams<ODE>());
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
@@ -290,7 +281,7 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
     InitialValueProblem<ODE_> const& problem,
     AppendState const& append_state,
     Time const& step,
-    ЧебышёвPicardIterationParams const& params) const {
+    ЧебышёвPicardIterationParams<ODE> const& params) const {
   // Cannot use `make_not_null_unique` because the constructor of `Instance` is
   // private.
   return std::unique_ptr<Instance>(
