@@ -74,8 +74,8 @@ class FixedVector final {
   constexpr FixedVector& operator*=(double right);
   constexpr FixedVector& operator/=(double right);
 
-  Scalar Norm() const;
-  Square<Scalar> Norm²() const;
+  auto Norm() const requires homogeneous_ring<Scalar>;
+  auto Norm²() const requires homogeneous_ring<Scalar>;
 
   template<bool uh = use_heap>
   FixedVector<double, size_, uh> Normalize() const;
