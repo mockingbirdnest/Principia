@@ -8,11 +8,13 @@
 #ifndef PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_INTEGRATOR_HPP_
 #define PRINCIPIA_INTEGRATORS_ЧЕБЫШЁВ_PICARD_INTEGRATOR_HPP_
 
+#include <functional>
 #include <memory>
 #include <vector>
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "geometry/direct_sum.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -25,22 +27,25 @@ namespace _чебышёв_picard_integrator {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_quantities;
 
+template<typename ODE>
 struct ЧебышёвPicardIterationParams {
   // The maximum allowed number of Picard iterations per step. If iteration has
   // not stopped (according to the stopping criterion) by the final step, the
   // iteration will be considered to have diverged.
   std::int64_t max_iterations;
 
-  // If the maximum absolute difference between successive state approximations
-  // is less than this for two Picard iterations in a row, iteration will be
+  // This function will be called on the iteration deltas for each node. If it
+  // returns true for all nodes for two iterations in a row, iteration will be
   // considered to have converged.
-  double stopping_criterion;
+  std::function<bool(typename ODE::DependentVariableDifferences const&)>
+      stopping_criterion;
 };
 
 // This class solves ordinary differential equations of the form x′ = f(x, t)
@@ -84,16 +89,12 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
              AppendState const& append_state,
              Time const& step,
              ЧебышёвPicardIntegrator const& integrator,
-             ЧебышёвPicardIterationParams const& params);
+             ЧебышёвPicardIterationParams<ODE> const& params);
 
     static constexpr std::int64_t M = Method::M;
 
-    // The dimension of the ODE.
-    static constexpr std::int64_t n =
-        std::tuple_size_v<typename ODE::DependentVariables>;
-
     ЧебышёвPicardIntegrator const& integrator_;
-    ЧебышёвPicardIterationParams params_;
+    ЧебышёвPicardIterationParams<ODE> params_;
 
     // Working variables which are stored here so we don't need to reallocate
     // them on each Solve call.
@@ -102,15 +103,27 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
     std::vector<typename ODE::IndependentVariable> t_;
 
     // Controls the boundary condition.
-    FixedMatrix<double, M + 1, n, /*use_heap=*/true> CₓX₀_;
+    FixedVector<direct_sum_t<typename ODE::DependentVariables>,
+                M + 1,
+                /*use_heap=*/true>
+        CₓX₀_;
 
     // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
     // variables at each node.
-    FixedMatrix<double, M + 1, n, /*use_heap=*/true> Xⁱ_;
-    FixedMatrix<double, M + 1, n, /*use_heap=*/true> Xⁱ⁺¹_;
+    FixedVector<direct_sum_t<typename ODE::DependentVariables>,
+                M + 1,
+                /*use_heap=*/true>
+        Xⁱ_;
+    FixedVector<direct_sum_t<typename ODE::DependentVariables>,
+                M + 1,
+                /*use_heap=*/true>
+        Xⁱ⁺¹_;
 
     // The computed derivative (at each node, for the current iteration).
-    FixedMatrix<double, M + 1, n, /*use_heap=*/true> yʹ_;
+    FixedVector<direct_sum_t<typename ODE::DependentVariableDerivatives>,
+                M + 1,
+                /*use_heap=*/true>
+        yʹ_;
 
     friend class ЧебышёвPicardIntegrator;
   };
@@ -129,7 +142,7 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
       InitialValueProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step,
-      ЧебышёвPicardIterationParams const& params) const;
+      ЧебышёвPicardIterationParams<ODE> const& params) const;
 
   void WriteToMessage(
       not_null<serialization::FixedStepSizeIntegrator*> message) const override;
