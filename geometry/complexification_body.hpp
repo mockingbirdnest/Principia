@@ -68,7 +68,7 @@ typename Norm²Type<Vector> Complexification<Vector>::Norm²()
 
 template<typename Vector>
 typename NormType<Vector> Complexification<Vector>::Norm() const {
-  return Sqrt(Norm²() );
+  return Sqrt(Norm²());
 }
 
 template<typename Vector>
