@@ -148,7 +148,7 @@ constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
 }
 
 template<typename L, typename... R>
-  requires (!is_instance_of_v<DirectSum, L>) && (homogeneous_module<R, L> && ...)
+  requires(!is_instance_of_v<DirectSum, L>) && (homogeneous_module<R, L> && ...)
 constexpr auto operator*(L const& left, DirectSum<R...> const& right) {
   DirectSum<Product<L, R>...> product(uninitialized);
   for_all_of(right, product).loop([&left](auto const& right, auto& product) {

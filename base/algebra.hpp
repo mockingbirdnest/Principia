@@ -209,7 +209,7 @@ template<typename V, ring K>
 int dimension;
 
 template<affine A, ring K>
-  requires (!additive_group<A>)
+  requires(!additive_group<A>)
 int dimension<A, K> = dimension<Difference<A>, K>;
 
 template<ring K>
