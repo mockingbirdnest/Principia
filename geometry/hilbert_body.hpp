@@ -23,6 +23,7 @@ constexpr Norm²Type<T> Norm²(T const& x) {
 }
 
 template<homogeneous_field T>
+  requires std::totally_ordered<T>
 constexpr Norm²Type<T> Norm²(T const& x) {
   return x * x;
 }

@@ -12,6 +12,10 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 
+template<homogeneous_field T, homogeneous_field U>
+  requires std::totally_ordered<Product<T, U>>
+constexpr Product<T, U> InnerProduct(T const& left, U const& right);
+
 template<typename T>
 struct Norm²TypeGenerator {
   using type = decltype(std::declval<T>().Norm²());
@@ -25,10 +29,6 @@ struct Norm²TypeGenerator<T> {
 
 template<typename T>
 using Norm²Type = typename Norm²TypeGenerator<T>::type;
-
-template<homogeneous_field T, homogeneous_field U>
-  requires std::totally_ordered<Product<T, U>>
-constexpr Product<T, U> InnerProduct(T const& left, U const& right);
 
 template<typename T>
 constexpr Norm²Type<T> Norm²(T const& x);
