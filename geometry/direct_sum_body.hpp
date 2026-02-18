@@ -147,7 +147,8 @@ constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
   return difference;
 }
 
-template<homogeneous_ring L, homogeneous_module<L>... R>
+template<typename L, typename... R>
+  requires (!is_instance_of_v<DirectSum, L>) && (homogeneous_module<R, L> && ...)
 constexpr auto operator*(L const& left, DirectSum<R...> const& right) {
   DirectSum<Product<L, R>...> product(uninitialized);
   for_all_of(right, product).loop([&left](auto const& right, auto& product) {
@@ -156,7 +157,8 @@ constexpr auto operator*(L const& left, DirectSum<R...> const& right) {
   return product;
 }
 
-template<homogeneous_ring R, homogeneous_module<R>... L>
+template<typename... L, typename R>
+  requires(!is_instance_of_v<DirectSum, R>) && (homogeneous_module<L, R> && ...)
 constexpr auto operator*(DirectSum<L...> const& left, R const& right) {
   DirectSum<Product<L, R>...> product(uninitialized);
   for_all_of(left, product).loop([&right](auto const& left, auto& product) {
@@ -181,6 +183,7 @@ constexpr auto InnerProduct(DirectSum<T...> const& left,
   InnerProductType<T0, T0> product = {};
   for_all_of(left, right)
       .loop([&product](auto const& leftᵢ, auto const& rightᵢ) {
+        using geometry::_hilbert::InnerProduct;
         product += InnerProduct(leftᵢ, rightᵢ);
       });
 
