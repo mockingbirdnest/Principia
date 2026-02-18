@@ -49,15 +49,62 @@ DirectSum<DoublePrecision<T>...> WrapInDoublePrecision(
   return out;
 }
 
-template<ЧебышёвPicardMethod Method>
-ЧебышёвPicardMatrices<Method, 1>::ЧебышёвPicardMatrices()
-    : nodes(uninitialized), CₓCα(uninitialized) {
-  // We use the notation from [Mac15], section 1.4.3.
-
-  // Populate nodes.
+// Constructs a FixedVector of Чебышёв nodes of the second kind.
+template<std::int64_t M>
+FixedVector<double, M + 1> Nodes() {
+  FixedVector<double, M + 1> nodes(uninitialized);
   for (std::int64_t i = 0; i <= M; ++i) {
     nodes[i] = -Cos(π / M * i * Radian);
   }
+  return nodes;
+}
+
+// Constructs an N×N diagonal matrix defined by a function.
+template<std::int64_t N>
+FixedMatrix<double, N, N, /*use_heap=*/true> DiagonalMatrix(
+    std::function<double(std::int64_t)> const f) {
+  FixedMatrix<double, N, N, /*use_heap=*/true> A;
+  for (std::int64_t i = 0; i < N; ++i) {
+    A(i, i) = f(i);
+  }
+  return A;
+}
+
+// Constructs an S matrix of size (N + 1)×N.
+// See equation 1.26 in [Mac15].
+template<std::int64_t N>
+FixedMatrix<double, N + 1, N, /*use_heap=*/true> S() {
+  FixedMatrix<double, N + 1, N, /*use_heap=*/true> S;
+  S(0, 0) = 1;
+  S(0, 1) = -0.5;
+  for (std::int64_t k = 2; k < N; ++k) {
+    S(0, k) = (k % 2 == 1 ? 1 : -1) * (1.0 / (k - 1) - 1.0 / (k + 1));
+  }
+  for (std::int64_t i = 0; i < N; ++i) {
+    S(i + 1, i) = 1;
+  }
+  for (std::int64_t i = 1; i + 2 < N; ++i) {
+    S(i, i + 1) = -1;
+  }
+
+  return S;
+}
+
+// V is is a diagonal (M + 1)×(M + 1) matrix with diagonal [1/M, 2/M, 2/M,
+// ..., 1/M].
+template<std::int64_t M>
+FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> V() {
+  constexpr double one_over_M = 1.0 / M;
+  return DiagonalMatrix<M + 1>([one_over_M](std::int64_t const i) {
+    return (i == 0 || i == M) ? one_over_M : 2 * one_over_M;
+  });
+}
+
+template<ЧебышёвPicardMethod Method>
+ЧебышёвPicardMatrices<Method, 1>::ЧебышёвPicardMatrices(
+    FixedVector<double, Method::M + 1> const& nodes)
+    : CₓCα(uninitialized) {
+  // We use the notation from [Mac15], section 1.4.3.
 
   // ᵝT is a (M + 1)×(N + 1) matrix of Чебышёв polynomials evaluated at nodes.
   // See [Mac15], equation (1.20).
@@ -78,38 +125,24 @@ template<ЧебышёвPicardMethod Method>
 
   // ᵝW is a diagonal (N + 1)×(N + 1) matrix with diagonal [½, 1, 1, ..., ½].
   // See [Mac15], equation (1.20).
-  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> ᵝW;
-  ᵝW(0, 0) = 0.5;
-  ᵝW(N, N) = 0.5;
-  for (std::int64_t i = 1; i < N; ++i) {
-    ᵝW(i, i) = 1;
-  }
+  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> ᵝW =
+      DiagonalMatrix<N + 1>(
+          [](std::int64_t const i) { return (i == 0 || i == N) ? 0.5 : 1; });
 
   FixedMatrix<double, M + 1, N + 1, /*use_heap=*/true> Cₓ = ᵝT * ᵝW;
 
   // R is a diagonal (N + 1)×(N + 1) matrix.
   // See [Mac15], equation (1.25).
-  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> R;
-  R(0, 0) = 1;
-  R(N, N) = 1.0 / N;
-  for (std::int64_t i = 1; i < N; ++i) {
-    R(i, i) = 1.0 / (2 * i);
-  }
-
-  // S is an (N + 1)×N matrix.
-  // See equation 1.26 in [Mac15].
-  FixedMatrix<double, N + 1, N, /*use_heap=*/true> S;
-  S(0, 0) = 1;
-  S(0, 1) = -0.5;
-  for (std::int64_t k = 2; k < N; ++k) {
-    S(0, k) = (k % 2 == 1 ? 1 : -1) * (1.0 / (k - 1) - 1.0 / (k + 1));
-  }
-  for (std::int64_t i = 0; i < N; ++i) {
-    S(i + 1, i) = 1;
-  }
-  for (std::int64_t i = 1; i + 2 < N; ++i) {
-    S(i, i + 1) = -1;
-  }
+  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> R =
+      DiagonalMatrix<N + 1>([](std::int64_t const i) {
+        if (i == 0) {
+          return 1.0;
+        } else if (i == N) {
+          return 1.0 / N;
+        } else {
+          return 1.0 / (2 * i);
+        }
+      });
 
   // ᶠTᵀ is ᵝTᵀ with the last row removed.
   // See [Mac15], equation (1.22).
@@ -120,19 +153,88 @@ template<ЧебышёвPicardMethod Method>
     }
   }
 
-  // V is is a diagonal (M + 1)×(M + 1) matrix with diagonal [1/M, 2/M, 2/M,
-  // ..., 1/M].
-  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> V;
-  constexpr double one_over_M = 1.0 / M;
-  V(0, 0) = one_over_M;
-  V(M, M) = one_over_M;
-  for (std::int64_t i = 1; i < M; ++i) {
-    V(i, i) = 2.0 * one_over_M;
-  }
-
   // Cα is R * R * ᶠTᵀ * V (we do not assign it to a variable).
 
-  CₓCα = Cₓ * R * S * ᶠTᵀ * V;
+  CₓCα = Cₓ * R * S<N>() * ᶠTᵀ * V<M>();
+}
+
+template<ЧебышёвPicardMethod Method>
+ЧебышёвPicardMatrices<Method, 2>::ЧебышёвPicardMatrices(
+    FixedVector<double, Method::M + 1> const& nodes)
+    : vCₓᵝCα(uninitialized), xCₓᵅCᵧᵝCα(uninitialized) {
+  // We use the notation from [Mac15], section 1.4.4.
+
+  // ᵅT is a (M + 1)×(N + 1) matrix of Чебышёв polynomials evaluated at nodes.
+  // See [Mac15], equation (1.48a).
+  FixedMatrix<double, M + 1, N + 1, /*use_heap=*/true> ᵅT(uninitialized);
+  for (std::int64_t i = 0; i <= M; ++i) {
+    auto const τᵢ = nodes[i];
+    // The 0-degree polynomial is uniformly 1.
+    ᵅT(i, 0) = 1;
+    // The 0-degree polynomial is the identity.
+    ᵅT(i, 1) = τᵢ;
+
+    // We populate the rest of ᵅT using the recurrence relation.
+    for (std::int64_t j = 2; j <= N; ++j) {
+      ᵅT(i, j) = 2 * τᵢ * ᵅT(i, j - 1) - ᵅT(i, j - 2);
+    }
+  }
+
+  // ᵝT is a (M + 1)×N matrix of Чебышёв polynomials evaluated at nodes.
+  // See [Mac15], equation (1.48b).
+  FixedMatrix<double, M + 1, N, /*use_heap=*/true> ᵝT(uninitialized);
+  for (std::int64_t i = 0; i <= M; ++i) {
+    for (std::int64_t j = 0; j < N; ++j) {
+      ᵝT(i, j) = ᵅT(i, j);
+    }
+  }
+
+  // ᵅW is a diagonal (N + 1)×(N + 1) matrix with diagonal [½, 1, 1, ..., ½].
+  auto const ᵅW = DiagonalMatrix<N + 1>(
+      [](std::int64_t const i) { return (i == 0 || i == N) ? 0.5 : 1; });
+
+  // ᵝW is a diagonal N×N matrix with diagonal [½, 1, 1, ..., 1].
+  auto const ᵝW =
+      DiagonalMatrix<N>([](std::int64_t const i) { return i == 0 ? 0.5 : 1; });
+
+  FixedMatrix<double, M + 1, N, /*use_heap=*/true> const vCₓ = ᵝT * ᵝW;
+  FixedMatrix<double, M + 1, N + 1, /*use_heap=*/true> const xCₓ = ᵅT * ᵅW;
+
+  // ᵅR and ᵝR are diagonal matrices of size (N + 1)×(N + 1) and N×N,
+  // respectively.
+  auto const ᵅR = DiagonalMatrix<N + 1>([](std::int64_t const i) {
+    if (i == 0) {
+      return 1.0;
+    } else if (i == N) {
+      return 1.0 / N;
+    } else {
+      return 1.0 / (2 * i);
+    }
+  });
+
+  auto const ᵝR = DiagonalMatrix<N>(
+      [](std::int64_t const i) { return i == 0 ? 1.0 : 1.0 / (2 * i); });
+
+  // The S matrices are the same as in the first-order case.
+  auto const ᵝS = S<N - 1>();
+  auto const ᵅS = S<N>();
+
+  // ᶠTᵀ is ᵝTᵀ with the last row removed.
+  // See [Mac15], equation (1.22).
+  FixedMatrix<double, N - 1, M + 1, /*use_heap=*/true> ᶠTᵀ(uninitialized);
+  for (std::int64_t i = 0; i < N - 1; ++i) {
+    for (std::int64_t j = 0; j <= M; ++j) {
+      ᶠTᵀ(i, j) = ᵝT(j, i);
+    }
+  }
+
+  FixedMatrix<double, N, M + 1, /*use_heap=*/true> const ᵝCα =
+      ᵝR * ᵝS * ᶠTᵀ * V<M>();
+
+  FixedMatrix<double, N + 1, N, /*use_heap=*/true> const ᵅCᵧ = ᵅR * ᵅS;
+
+  vCₓᵝCα = vCₓ * ᵝCα;
+  xCₓᵅCᵧᵝCα = xCₓ * ᵅCᵧ * ᵝCα;
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
@@ -165,7 +267,7 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
 
     // Rescale the nodes for feeding into the compute_derivative function.
     t_.clear();
-    for (double const node : integrator_.matrices_.nodes) {
+    for (double const node : integrator_.nodes_) {
       t_.push_back(t_initial + (0.5 * node + 0.5) * step);
     }
 
@@ -265,7 +367,8 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
 }
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
-ЧебышёвPicardIntegrator<Method, ODE_>::ЧебышёвPicardIntegrator() {}
+ЧебышёвPicardIntegrator<Method, ODE_>::ЧебышёвPicardIntegrator()
+    : nodes_(Nodes<M>()), matrices_(nodes_) {}
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>

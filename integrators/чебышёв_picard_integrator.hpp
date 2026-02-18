@@ -52,21 +52,33 @@ struct ЧебышёвPicardIterationParams {
 template<ЧебышёвPicardMethod Method, std::int64_t order>
 struct ЧебышёвPicardMatrices {};
 
-// Matrices for first order ODEs.
+// Matrices for first-order ODEs.
 template<ЧебышёвPicardMethod Method>
 struct ЧебышёвPicardMatrices<Method, 1> {
-  ЧебышёвPicardMatrices();
+  explicit ЧебышёвPicardMatrices(
+      FixedVector<double, Method::M + 1> const& nodes);
 
   static constexpr std::int64_t M = Method::M;
   static constexpr std::int64_t N = Method::N;
 
-  // The nodes used for function evaluation.
-  //
-  // These are Чебышёв nodes of the second kind.
-  FixedVector<double, M + 1> nodes;
-
   // The product of 1.31a and 1.31b from [Mac15].
   FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> CₓCα;
+};
+
+// Matrices for second-order ODEs.
+template<ЧебышёвPicardMethod Method>
+struct ЧебышёвPicardMatrices<Method, 2> {
+  explicit ЧебышёвPicardMatrices(
+      FixedVector<double, Method::M + 1> const& nodes);
+
+  static constexpr std::int64_t M = Method::M;
+  static constexpr std::int64_t N = Method::N;
+
+  // The product of 1.53b (v-type) and 1.53a (β-type) from [Mac15].
+  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> vCₓᵝCα;
+  // The product of 1.53b (x-type), 1.53c (α-type), and 1.53a (β-type) from
+  // [Mac15].
+  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> xCₓᵅCᵧᵝCα;
 };
 
 // This class solves ordinary differential equations of the form x′ = f(x, t)
@@ -171,6 +183,11 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
  private:
   static constexpr std::int64_t M = Method::M;
   static constexpr std::int64_t N = Method::N;
+
+  // The nodes used for function evaluation.
+  //
+  // These are Чебышёв nodes of the second kind.
+  FixedVector<double, M + 1> nodes_;
 
   // The matrices used for iteration (which depend on the ODE order).
   ЧебышёвPicardMatrices<Method, ODE::order> matrices_;
