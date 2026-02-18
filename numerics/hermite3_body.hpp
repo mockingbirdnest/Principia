@@ -206,8 +206,8 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Error(
         get_value) const -> NormType {
   NormType result{};
   for (const auto& sample : samples) {
-    result =
-        std::max(result, Norm((*this)(get_argument(sample))-get_value(sample)));
+    result = std::max(result, Norm((*this)(get_argument(sample)) -
+                                           get_value(sample)));
   }
   return result;
 }

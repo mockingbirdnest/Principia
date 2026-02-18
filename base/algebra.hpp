@@ -224,6 +224,7 @@ using internal::additive_group;
 using internal::affine;
 using internal::affine_module;
 using internal::affine_space;
+using internal::dimension;
 using internal::field;
 using internal::homogeneous_affine_module;
 using internal::homogeneous_affine_space;
@@ -233,6 +234,7 @@ using internal::homogeneous_ring;
 using internal::homogeneous_vector_space;
 using internal::module;
 using internal::real_affine_space;
+using internal::real_dimension;
 using internal::real_vector_space;
 using internal::ring;
 using internal::vector_space;
@@ -246,8 +248,6 @@ using internal::Product;
 using internal::Quotient;
 using internal::Square;
 using internal::Sum;
-using internal::dimension;
-using internal::real_dimension;
 
 }  // namespace _algebra
 

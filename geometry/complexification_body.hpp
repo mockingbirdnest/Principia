@@ -1,11 +1,14 @@
 #pragma once
 
 #include "geometry/complexification.hpp"
+#include "numerics/elementary_functions.hpp"
 
 namespace principia {
 namespace geometry {
 namespace _complexification {
 namespace internal {
+
+using namespace principia::numerics::_elementary_functions;
 
 template<typename Vector>
 template<typename V, typename>
@@ -65,8 +68,7 @@ typename Norm²Type<Vector> Complexification<Vector>::Norm²()
 
 template<typename Vector>
 typename NormType<Vector> Complexification<Vector>::Norm() const {
-  using geometry::_hilbert::Norm;
-  return Norm(real_part_) + Norm(imaginary_part_);
+  return Sqrt(Norm²() );
 }
 
 template<typename Vector>
