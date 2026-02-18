@@ -5,7 +5,6 @@
 #include <type_traits>
 
 #include "base/for_all_of.hpp"
-#include "geometry/hilbert.hpp"
 #include "numerics/elementary_functions.hpp"
 
 namespace principia {
@@ -14,7 +13,6 @@ namespace _direct_sum {
 namespace internal {
 
 using namespace principia::base::_for_all_of;
-using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_elementary_functions;
 
 // TODO(phl): Technically this should forward to the constructor of each T that

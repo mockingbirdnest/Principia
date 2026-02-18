@@ -8,6 +8,7 @@
 #include "base/algebra.hpp"
 #include "base/not_constructible.hpp"
 #include "base/tags.hpp"
+#include "geometry/hilbert.hpp"
 #include "quantities/tuples.hpp"
 
 namespace principia {

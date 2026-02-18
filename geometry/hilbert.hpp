@@ -36,8 +36,11 @@ template<typename T, typename U = T>
 using InnerProductType =
     decltype(InnerProduct(std::declval<T>(), std::declval<U>()));
 
+// NOTE(egg): This is not defined in terms of Norm² because that one returns
+// auto, and MSVC doesn’t like it when we declare a Norm²() that returns a
+// Norm²Type computed from (a different) auto-valued Norm²().
 template<typename T>
-using Norm²Type = decltype(Norm²(std::declval<T>()));
+using Norm²Type = decltype(InnerProduct(std::declval<T>(), std::declval<T>()));
 
 template<typename T>
 using NormType = decltype(Norm(std::declval<T>()));
