@@ -18,14 +18,17 @@ constexpr Product<T, U> InnerProduct(T const& left, U const& right) {
 }
 
 template<typename T>
-  requires (requires(T x) { x.Norm²(); })
-constexpr decltype(std::declval<T>().Norm²()) Norm²(T const& x) {
+constexpr auto Norm²(T const& x) {
   return x.Norm²();
 }
 
+template<homogeneous_field T>
+constexpr auto Norm²(T const& x) {
+  return x * x;
+}
+
 template<typename T>
-  requires (requires(T x) { x.Norm(); })
-constexpr decltype(std::declval<T>().Norm()) Norm(T const& x) {
+constexpr auto Norm(T const& x) {
   return x.Norm();
 }
 
