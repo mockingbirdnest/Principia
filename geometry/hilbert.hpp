@@ -12,18 +12,30 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 
+template<typename T>
+struct Norm²TypeGenerator {
+  using type = decltype(std::declval<T>().Norm²());
+};
+
+template<homogeneous_field T>
+  requires std::totally_ordered<T>
+struct Norm²TypeGenerator<T> {
+  using type = Square<T>;
+};
+
+template<typename T>
+using Norm²Type = typename Norm²TypeGenerator<T>::type;
+
 template<homogeneous_field T, homogeneous_field U>
   requires std::totally_ordered<Product<T, U>>
 constexpr Product<T, U> InnerProduct(T const& left, U const& right);
 
 template<typename T>
-constexpr auto Norm²(T const& x);
+constexpr Norm²Type<T> Norm²(T const& x);
 
-// NOTE(egg): This returns Square<T>, but if we say so MSVC tries to instantiate
-// Square<T> for non-homogenous_field.
 template<homogeneous_field T>
   requires std::totally_ordered<T>
-constexpr auto Norm²(T const& x);
+constexpr Norm²Type<T> Norm²(T const& x);
 
 template<typename T>
 constexpr auto Norm(T const& x);
@@ -39,8 +51,6 @@ using InnerProductType =
 // NOTE(egg): This is not defined in terms of Norm² because that one returns
 // auto, and MSVC doesn’t like it when we declare a Norm²() that returns a
 // Norm²Type computed from (a different) auto-valued Norm²().
-template<typename T>
-using Norm²Type = decltype(InnerProduct(std::declval<T>(), std::declval<T>()));
 
 template<typename T>
 using NormType = decltype(Norm(std::declval<T>()));

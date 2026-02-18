@@ -59,7 +59,7 @@ Complexification<Vector> Complexification<Vector>::Conjugate() const {
 template<typename Vector>
 typename Norm²Type<Vector> Complexification<Vector>::Norm²()
     const {
-  using namespace principia::geometry::_hilbert;
+  using geometry::_hilbert::Norm²;
   return Norm²(real_part_) + Norm²(imaginary_part_);
 }
 

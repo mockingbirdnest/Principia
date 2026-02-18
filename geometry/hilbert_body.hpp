@@ -18,12 +18,12 @@ constexpr Product<T, U> InnerProduct(T const& left, U const& right) {
 }
 
 template<typename T>
-constexpr auto Norm²(T const& x) {
+constexpr Norm²Type<T> Norm²(T const& x) {
   return x.Norm²();
 }
 
 template<homogeneous_field T>
-constexpr auto Norm²(T const& x) {
+constexpr Norm²Type<T> Norm²(T const& x) {
   return x * x;
 }
 

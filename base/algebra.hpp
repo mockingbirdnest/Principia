@@ -204,6 +204,23 @@ concept homogeneous_affine_module = affine<A> && homogeneous_ring<R> &&
 template<typename V>
 concept real_affine_space = affine_space<V, double>;
 
+template<typename V, typename K>
+  requires homogeneous_affine_module<V, K>
+int dimension;
+
+template<affine A, typename K>
+  requires (!additive_group<A>)
+int dimension<A, K> = dimension<Difference<A>, K>;
+
+template<homogeneous_ring K>
+constexpr int dimension<K, K> = 1;
+
+template<homogeneous_field K>
+constexpr int dimension<K, Quotient<K, K>> = 1;
+
+template<real_affine_space V>
+constexpr int real_dimension = dimension<V, double>;
+
 }  // namespace internal
 
 using internal::additive_group;
@@ -232,6 +249,8 @@ using internal::Product;
 using internal::Quotient;
 using internal::Square;
 using internal::Sum;
+using internal::dimension;
+using internal::real_dimension;
 
 }  // namespace _algebra
 
