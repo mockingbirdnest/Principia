@@ -48,6 +48,27 @@ struct ЧебышёвPicardIterationParams {
       stopping_criterion;
 };
 
+// Matrices used in Чебышёв-Picard iteration (specialized by ODE order).
+template<ЧебышёвPicardMethod Method, std::int64_t order>
+struct ЧебышёвPicardMatrices {};
+
+// Matrices for first order ODEs.
+template<ЧебышёвPicardMethod Method>
+struct ЧебышёвPicardMatrices<Method, 1> {
+  ЧебышёвPicardMatrices();
+
+  static constexpr std::int64_t M = Method::M;
+  static constexpr std::int64_t N = Method::N;
+
+  // The nodes used for function evaluation.
+  //
+  // These are Чебышёв nodes of the second kind.
+  FixedVector<double, M + 1> nodes;
+
+  // The product of 1.31a and 1.31b from [Mac15].
+  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> CₓCα;
+};
+
 // This class solves ordinary differential equations of the form x′ = f(x, t)
 // using Чебышёв-Picard iteration.
 //
@@ -151,13 +172,8 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
   static constexpr std::int64_t M = Method::M;
   static constexpr std::int64_t N = Method::N;
 
-  // The nodes used for function evaluation.
-  //
-  // These are Чебышёв nodes of the second kind.
-  FixedVector<double, M + 1> nodes_;
-
-  // The product of 1.31a and 1.31b from [Mac15].
-  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> CₓCα_;
+  // The matrices used for iteration (which depend on the ODE order).
+  ЧебышёвPicardMatrices<Method, ODE::order> matrices_;
 };
 
 }  // namespace internal
