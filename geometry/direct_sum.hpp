@@ -8,6 +8,7 @@
 #include "base/algebra.hpp"
 #include "base/not_constructible.hpp"
 #include "base/tags.hpp"
+#include "base/traits.hpp"
 #include "geometry/hilbert.hpp"
 #include "quantities/tuples.hpp"
 
@@ -17,9 +18,9 @@ namespace _direct_sum {
 namespace internal {
 
 using namespace principia::base::_algebra;
-using namespace principia::base::_traits;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_tags;
+using namespace principia::base::_traits;
 using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_tuples;
 

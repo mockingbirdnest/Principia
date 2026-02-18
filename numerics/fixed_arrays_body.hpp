@@ -83,7 +83,8 @@ Product<LScalar, RScalar>
 DotProduct<LScalar, RScalar, std::index_sequence<i...>>::Compute(
     Left const& left,
     Right const& right) {
-  return ((left[i] * right[i]) + ...);
+  using principia::geometry::_hilbert::InnerProduct;
+  return (InnerProduct(left[i], right[i]) + ...);
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
@@ -215,14 +216,14 @@ FixedVector<Scalar_, size_, use_heap>::operator/=(double const right) {
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
 auto FixedVector<Scalar_, size_, use_heap>::Norm() const
-  requires homogeneous_ring<Scalar>
+  requires hilbert<Scalar>
 {
   return Sqrt(Norm²());
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
 auto FixedVector<Scalar_, size_, use_heap>::Norm²() const
-  requires homogeneous_ring<Scalar>
+  requires hilbert<Scalar>
 {
   return DotProduct<Scalar, Scalar, std::make_index_sequence<size_>>::Compute(
       data(), data());

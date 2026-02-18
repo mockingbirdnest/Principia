@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "base/algebra.hpp"
+#include "geometry/hilbert.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -13,6 +14,7 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::base::_algebra;
+using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
@@ -88,6 +90,7 @@ TEST_F(FixedArraysTest, LinearAlgebraConcepts) {
   static_assert(homogeneous_vector_space<FixedMatrix<Length, 3, 3>, Time>);
   static_assert(real_vector_space<FixedMatrix<Length, 3, 3>>);
   static_assert(!vector_space<FixedMatrix<Length, 3, 3>, Time>);
+  static_assert(hilbert<FixedVector<Length, 3>>);
 }
 
 TEST_F(FixedArraysTest, Assignment) {

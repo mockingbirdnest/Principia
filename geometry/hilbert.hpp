@@ -16,6 +16,10 @@ template<homogeneous_field T, homogeneous_field U>
   requires std::totally_ordered<Product<T, U>>
 constexpr Product<T, U> InnerProduct(T const& left, U const& right);
 
+// We go through a generator instead of defining the return types of the two
+// overloads of Norm² as auto for the one that does .Norm²() and Square<T> for
+// the other one because otherwise the compiler (at least MSVC) tries to expand
+// Square<T> even when T is not a homogeneous_field.
 template<typename T>
 struct Norm²TypeGenerator {
   using type = decltype(std::declval<T>().Norm²());
@@ -38,6 +42,7 @@ template<homogeneous_field T>
 constexpr Norm²Type<T> Norm²(T const& x);
 
 template<typename T>
+  requires (requires(T x) { x.Norm(); })
 constexpr auto Norm(T const& x);
 
 template<homogeneous_field T>
@@ -48,10 +53,6 @@ template<typename T, typename U = T>
 using InnerProductType =
     decltype(InnerProduct(std::declval<T>(), std::declval<U>()));
 
-// NOTE(egg): This is not defined in terms of Norm² because that one returns
-// auto, and MSVC doesn’t like it when we declare a Norm²() that returns a
-// Norm²Type computed from (a different) auto-valued Norm²().
-
 template<typename T>
 using NormType = decltype(Norm(std::declval<T>()));
 
@@ -61,8 +62,11 @@ using NormalizedType = Quotient<T, NormType<T>>;
 template<typename V>
 concept hilbert = requires(V u, V v) {
   { Norm(u) } -> homogeneous_field;
-  { InnerProduct(u, v) } -> std::same_as<Square<NormType<V>>>;
+  { InnerProduct(u, v) } -> homogeneous_field;
   { Norm²(u) } -> std::same_as<Square<NormType<V>>>;
+  // These types need not be the same, e.g., in ℂ, the InnerProductType is ℂ but
+  // the Norm²Type is ℝ.  Norm²Type should be a subfield of InnerProductType.
+  requires std::convertible_to<Norm²Type<V>, InnerProductType<V>>;
   requires std::totally_ordered<Norm²Type<V>>;
   requires std::totally_ordered<NormType<V>>;
   requires homogeneous_vector_space<V, NormType<V>>;

@@ -64,6 +64,12 @@ typename Norm²Type<Vector> Complexification<Vector>::Norm²()
 }
 
 template<typename Vector>
+typename NormType<Vector> Complexification<Vector>::Norm() const {
+  using geometry::_hilbert::Norm;
+  return Norm(real_part_) + Norm(imaginary_part_);
+}
+
+template<typename Vector>
 Complexification<Vector> operator+(Complexification<Vector> const& right) {
   return right;
 }

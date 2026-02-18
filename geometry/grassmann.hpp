@@ -351,4 +351,10 @@ using internal::Wedge;
 }  // namespace geometry
 }  // namespace principia
 
+template<typename Scalar, typename Frame, int rank>
+constexpr int principia::base::_algebra::dimension<
+    principia::geometry::_grassmann::Multivector<Scalar, Frame, rank>,
+    double> = principia::geometry::_grassmann::
+    Multivector<Scalar, Frame, rank>::dimension;
+
 #include "geometry/grassmann_body.hpp"

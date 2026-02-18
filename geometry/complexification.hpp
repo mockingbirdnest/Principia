@@ -43,6 +43,7 @@ class Complexification {
   Complexification Conjugate() const;
 
   typename Norm²Type<Vector> Norm²() const;
+  typename NormType<Vector> Norm() const;
 
  private:
   Vector real_part_{};

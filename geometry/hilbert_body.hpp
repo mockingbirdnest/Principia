@@ -29,6 +29,7 @@ constexpr Norm²Type<T> Norm²(T const& x) {
 }
 
 template<typename T>
+  requires(requires(T x) { x.Norm(); })
 constexpr auto Norm(T const& x) {
   return x.Norm();
 }

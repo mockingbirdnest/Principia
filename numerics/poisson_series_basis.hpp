@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/algebra.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/instant.hpp"
 #include "quantities/named_quantities.hpp"

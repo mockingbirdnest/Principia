@@ -204,23 +204,19 @@ concept homogeneous_affine_module = affine<A> && homogeneous_ring<R> &&
 template<typename V>
 concept real_affine_space = affine_space<V, double>;
 
-template<typename V, typename K>
+template<typename V, ring K>
   requires homogeneous_affine_module<V, K>
 int dimension;
 
-template<affine A, typename K>
+template<affine A, ring K>
   requires (!additive_group<A>)
 int dimension<A, K> = dimension<Difference<A>, K>;
 
-template<homogeneous_ring K>
+template<ring K>
 constexpr int dimension<K, K> = 1;
 
 template<real_affine_space V>
 constexpr int real_dimension = dimension<V, double>;
-
-template<real_affine_space V>
-  requires (requires {V::dimension;})
-constexpr int real_dimension<V> = V::dimension;
 
 }  // namespace internal
 

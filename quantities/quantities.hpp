@@ -7,6 +7,7 @@
 #include <string>
 #include <type_traits>
 
+#include "base/algebra.hpp"
 #include "base/macros.hpp"  // 🧙 For CONSTEXPR_NAN.
 #include "base/multiprecision.hpp"
 #include "base/not_constructible.hpp"
@@ -21,6 +22,7 @@ namespace quantities {
 namespace _quantities {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_multiprecision;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
@@ -190,5 +192,9 @@ using internal::ToM256D;
 }  // namespace _quantities
 }  // namespace quantities
 }  // namespace principia
+
+template<typename D>
+constexpr int principia::base::_algebra::dimension<
+    principia::quantities::_quantities::Quantity<D>, double> = 1;
 
 #include "quantities/quantities_body.hpp"

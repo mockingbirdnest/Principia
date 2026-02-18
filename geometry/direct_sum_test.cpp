@@ -6,6 +6,7 @@
 #include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/hilbert.hpp"
 #include "geometry/point.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
@@ -13,6 +14,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/algebra.hpp"
 
 namespace principia {
 namespace geometry {
@@ -28,6 +30,7 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::testing_utilities::_algebra;
 
 using ℝ² = DirectSum<double, double>;
 using World = Frame<serialization::Frame::TestTag,
@@ -50,7 +53,11 @@ TEST(DirectSumTest, AlgebraConcepts) {
 
   static_assert(homogeneous_vector_space<DirectSum<Length>, Time>);
 
+  static_assert(vector_space<DirectSum<IntegerModulo<2>, IntegerModulo<2>>,
+                             IntegerModulo<2>>);
+
   static_assert(hilbert<ℝ²>);
+  static_assert(!hilbert<DirectSum<IntegerModulo<2>, IntegerModulo<2>>>);
 }
 
 // Helper concepts for Unordered test.

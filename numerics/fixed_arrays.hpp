@@ -7,6 +7,7 @@
 
 #include "base/algebra.hpp"
 #include "base/tags.hpp"
+#include "geometry/hilbert.hpp"
 #include "numerics/matrix_views.hpp"
 #include "numerics/transposed_view.hpp"
 #include "quantities/si.hpp"
@@ -18,6 +19,7 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 using namespace principia::base::_tags;
+using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_matrix_views;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_si;
@@ -74,8 +76,8 @@ class FixedVector final {
   constexpr FixedVector& operator*=(double right);
   constexpr FixedVector& operator/=(double right);
 
-  auto Norm() const requires homogeneous_ring<Scalar>;
-  auto Norm²() const requires homogeneous_ring<Scalar>;
+  auto Norm() const requires hilbert<Scalar>;
+  auto Norm²() const requires hilbert<Scalar>;
 
   template<bool uh = use_heap>
   FixedVector<double, size_, uh> Normalize() const;
