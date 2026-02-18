@@ -365,7 +365,7 @@ class CartesianProductPointwiseMultiplicativeSpace<
     Scalar, Tuple, std::index_sequence<indices...>> {
  public:
   template<typename L, typename R>
-  using Product = typename InnerProductType<L, R>;
+  using Product = InnerProductType<L, R>;
   template<typename T>
   using ScalarLeftProduct = Product<Scalar, T>;
   template<typename T>

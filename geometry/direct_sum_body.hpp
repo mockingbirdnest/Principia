@@ -37,14 +37,14 @@ auto&& DirectSum<T...>::tuple(this Self&& self) {
 
 template<affine... T>
 constexpr auto DirectSum<T...>::Norm() const
-  requires hilbert<DirectSum<T...>, DirectSum<T...>>
+  requires(hilbert<T> && ...)
 {
   return Sqrt(Norm²());
 }
 
 template<affine... T>
 constexpr auto DirectSum<T...>::Norm²() const
-  requires hilbert<DirectSum<T...>, DirectSum<T...>>
+  requires(hilbert<T> && ...)
 {
   return InnerProduct(*this, *this);
 }
@@ -180,7 +180,7 @@ template<affine... T>
 constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right) {
   using T0 = std::tuple_element_t<0, DirectSum<T...>>;
-  typename InnerProductType<T0, T0> product = {};
+  InnerProductType<T0, T0> product = {};
   for_all_of(left, right)
       .loop([&product](auto const& leftᵢ, auto const& rightᵢ) {
         product += InnerProduct(leftᵢ, rightᵢ);

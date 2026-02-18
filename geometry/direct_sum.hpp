@@ -18,6 +18,7 @@ namespace internal {
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_tags;
+using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_tuples;
 
 // The direct sum of a pack of affine types.
@@ -42,9 +43,9 @@ class DirectSum {
   auto&& tuple(this Self&& self);
 
   constexpr auto Norm() const
-    requires hilbert<DirectSum<T...>>;
+    requires(hilbert<T> && ...);
   constexpr auto Norm²() const
-    requires hilbert<DirectSum<T...>>;
+    requires(hilbert<T> && ...);
 
   bool operator==(DirectSum const&) const = default;
 

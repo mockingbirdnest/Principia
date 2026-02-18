@@ -17,14 +17,12 @@ template<homogeneous_field T, homogeneous_field U>
 constexpr Product<T, U> InnerProduct(T const& left, U const& right);
 
 template<typename T>
-constexpr auto Norm²(T const& x);
-
-template<homogeneous_field T>
-  requires std::totally_ordered<Square<T>>
-constexpr Square<T> Norm²(T const& x);
+  requires (requires(T x) { x.Norm²(); })
+constexpr decltype(std::declval<T>().Norm²()) Norm²(T const& x);
 
 template<typename T>
-constexpr auto Norm(T const& x);
+  requires (requires(T x) { x.Norm(); })
+constexpr decltype(std::declval<T>().Norm()) Norm(T const& x);
 
 template<homogeneous_field T>
   requires std::totally_ordered<T>
@@ -35,7 +33,7 @@ using InnerProductType =
     decltype(InnerProduct(std::declval<T>(), std::declval<U>()));
 
 template<typename T>
-using Norm²Type = decltype(Norm²(std::declval<T>()));
+using Norm²Type =  InnerProductType<T, T>;// REMOVE BEFORE FLIGHT decltype(Norm²(std::declval<T>()));
 
 template<typename T>
 using NormType = decltype(Norm(std::declval<T>()));
@@ -55,6 +53,7 @@ concept hilbert = requires(V u, V v) {
 
 }  // namespace internal
 
+using internal::hilbert;
 using internal::InnerProduct;
 using internal::InnerProductType;
 using internal::Norm;

@@ -186,7 +186,7 @@ class PiecewisePoissonSeries {
                    PoissonSeries<R, ar, pr> const& right);
   template<typename L, typename R,
            int al, int pl, int ar, int pr, int aw, int pw>
-  typename Hilbert<L, R>::InnerProductType
+  typename InnerProductType<L, R>
   friend InnerProduct(PoissonSeries<L, al, pl> const& left,
                       PiecewisePoissonSeries<R, ar, pr> const& right,
                       PoissonSeries<double, aw, pw> const& weight,
@@ -195,7 +195,7 @@ class PiecewisePoissonSeries {
                       std::optional<int> max_points);
   template<typename L, typename R,
            int al, int pl, int ar, int pr, int aw, int pw>
-  typename Hilbert<L, R>::InnerProductType
+  typename InnerProductType<L, R>
   friend InnerProduct(PiecewisePoissonSeries<L, al, pl> const& left,
                       PoissonSeries<R, ar, pr> const& right,
                       PoissonSeries<double, aw, pw> const& weight,
