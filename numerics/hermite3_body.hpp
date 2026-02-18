@@ -186,10 +186,10 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
 
   // The extrema of `‖p_(t)‖₂` are either at the roots of its derivative or at
   // the upper bound of the interval.
-  Square<NormType> max = Hilbert<Difference<Value>>::Norm²((*this)(upper_));
+  Square<NormType> max = Norm²((*this)(upper_));
   for (auto const& root : norm₂²_derivative_roots) {
     if (lower_ < root && root < upper_) {
-      max = std::max(max, Hilbert<Difference<Value>>::Norm²((*this)(root)));
+      max = std::max(max, Norm²((*this)(root)));
     }
   }
 
@@ -206,9 +206,8 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Error(
         get_value) const -> NormType {
   NormType result{};
   for (const auto& sample : samples) {
-    result = std::max(result,
-                      Hilbert<Difference<Value>>::Norm(
-                          (*this)(get_argument(sample)) - get_value(sample)));
+    result =
+        std::max(result, Norm((*this)(get_argument(sample))-get_value(sample)));
   }
   return result;
 }
@@ -223,8 +222,7 @@ bool Hermite3<Value_, Argument_>::LInfinityL₂ErrorIsWithin(
         get_value,
     NormType const& tolerance) const {
   for (const auto& sample : samples) {
-    if (Hilbert<Difference<Value>>::Norm((*this)(get_argument(sample)) -
-                                         get_value(sample)) >= tolerance) {
+    if (Norm((*this)(get_argument(sample)) - get_value(sample)) >= tolerance) {
       return false;
     }
   }

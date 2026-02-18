@@ -115,9 +115,8 @@ class PoissonSeries {
       Instant const& t2) const;
 
   template<int aperiodic_wdegree, int periodic_wdegree>
-  typename Hilbert<Value>::NormType Norm(
-      PoissonSeries<double,
-                    aperiodic_wdegree, periodic_wdegree> const& weight,
+  typename NormType<Value> Norm(
+      PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,
       Instant const& t_min,
       Instant const& t_max) const;
 
@@ -187,7 +186,7 @@ class PoissonSeries {
                                   PoissonSeries<V, ad, pd> const& series);
   template<typename L, typename R,
            int al, int pl, int ar, int pr, int aw, int pw>
-  friend typename Hilbert<L, R>::InnerProductType InnerProduct(
+  friend typename InnerProductType<L, R>InnerProduct(
       PoissonSeries<L, al, pl> const& left,
       PoissonSeries<R, ar, pr> const& right,
       PoissonSeries<double, aw, pw> const& weight,
@@ -287,7 +286,7 @@ operator*(PoissonSeries<LValue,
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree>
-PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
+PoissonSeries<InnerProductType<LValue, RValue>,
               std::max({aperiodic_ldegree + aperiodic_rdegree,
                         aperiodic_ldegree + periodic_rdegree,
                         periodic_ldegree + aperiodic_rdegree,
@@ -319,15 +318,12 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PoissonSeries<LValue,
-                           aperiodic_ldegree, periodic_ldegree> const& left,
-             PoissonSeries<RValue,
-                           aperiodic_rdegree, periodic_rdegree> const& right,
-             PoissonSeries<double,
-                           aperiodic_wdegree, periodic_wdegree> const& weight,
-             Instant const& t_min,
-             Instant const& t_max);
+typename InnerProductType<LValue, RValue> InnerProduct(
+    PoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const& left,
+    PoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const& right,
+    PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,
+    Instant const& t_min,
+    Instant const& t_max);
 
 }  // namespace internal
 

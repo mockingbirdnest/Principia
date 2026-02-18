@@ -352,8 +352,7 @@ Integrate(Instant const& t1,
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_>
 template<int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<Value>::NormType
-PoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
+NormType<Value> PoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
 Norm(PoissonSeries<double,
                    aperiodic_wdegree, periodic_wdegree> const& weight,
      Instant const& t_min,
@@ -371,7 +370,7 @@ Norm(PoissonSeries<double,
           clenshaw_curtis_points_per_period);
 
   auto slow_integrand = [&split, &weight](Instant const& t) {
-    return Hilbert<Value>::Norm²(split.slow(t)) * weight(t);
+    return Norm²(split.slow(t)) * weight(t);
   };
   auto const slow_quadrature = _quadrature::AutomaticClenshawCurtis(
       slow_integrand,
@@ -794,7 +793,7 @@ operator*(PoissonSeries<LValue,
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree>
-PoissonSeries<typename Hilbert<LValue, RValue>::InnerProductType,
+PoissonSeries<InnerProductType<LValue, RValue>,
               std::max({aperiodic_ldegree + aperiodic_rdegree,
                         aperiodic_ldegree + periodic_rdegree,
                         periodic_ldegree + aperiodic_rdegree,
@@ -852,7 +851,7 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+typename InnerProductType<LValue, RValue> InnerProduct(
     PoissonSeries<LValue,
                   aperiodic_ldegree, periodic_ldegree> const& left,
     PoissonSeries<RValue,
@@ -876,8 +875,8 @@ typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
           clenshaw_curtis_points_per_period);
 
   auto slow_integrand = [&left_split, &right_split, &weight](Instant const& t) {
-    return Hilbert<LValue, RValue>::InnerProduct(left_split.slow(t),
-                                                 right_split.slow(t)) *
+    return InnerProduct<LValue, RValue>(left_split.slow(t),
+                                        right_split.slow(t)) *
            weight(t);
   };
   auto const slow_quadrature = _quadrature::AutomaticClenshawCurtis(

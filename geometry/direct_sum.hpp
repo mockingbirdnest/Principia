@@ -42,9 +42,9 @@ class DirectSum {
   auto&& tuple(this Self&& self);
 
   constexpr auto Norm() const
-    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+    requires hilbert<DirectSum<T...>>;
   constexpr auto Norm²() const
-    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+    requires hilbert<DirectSum<T...>>;
 
   bool operator==(DirectSum const&) const = default;
 

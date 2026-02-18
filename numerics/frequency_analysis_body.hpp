@@ -249,8 +249,8 @@ IncrementalProjection(
     Instant const& t_min,
     Instant const& t_max) {
   using Value = std::invoke_result_t<Function, Instant>;
-  using Norm = typename Hilbert<Value>::NormType;
-  using Normalized = typename Hilbert<Value>::NormalizedType;
+  using Norm = NormType<Value>;
+  using Normalized = NormalizedType<Value>;
   using BasisSeries = PoissonSeries<Normalized,
                                     aperiodic_degree, periodic_degree>;
   using ResultSeries = PoissonSeries<Value,

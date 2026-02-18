@@ -57,10 +57,9 @@ Complexification<Vector> Complexification<Vector>::Conjugate() const {
 }
 
 template<typename Vector>
-typename Hilbert<Vector>::Norm²Type Complexification<Vector>::Norm²()
+typename Norm²Type<Vector> Complexification<Vector>::Norm²()
     const {
-  return Hilbert<Vector>::Norm²(real_part_) +
-         Hilbert<Vector>::Norm²(imaginary_part_);
+  return Norm²(real_part_) + Norm²(imaginary_part_);
 }
 
 template<typename Vector>
@@ -181,18 +180,14 @@ Complexification<Quotient<LVector, RVector>> operator/(
 }
 
 template<typename LVector, typename RVector>
-Complexification<typename Hilbert<LVector, RVector>::InnerProductType>
-InnerProduct(Complexification<LVector> const& left,
-             Complexification<RVector> const& right) {
-  return Complexification<typename Hilbert<LVector, RVector>::InnerProductType>(
-      Hilbert<LVector, RVector>::InnerProduct(left.real_part(),
-                                              right.real_part()) +
-          Hilbert<LVector, RVector>::InnerProduct(left.imaginary_part(),
-                                                  right.imaginary_part()),
-      Hilbert<LVector, RVector>::InnerProduct(left.imaginary_part(),
-                                              right.real_part()) -
-          Hilbert<LVector, RVector>::InnerProduct(left.real_part(),
-                                                  right.real_part()));
+Complexification<InnerProductType<LVector, RVector>> InnerProduct(
+    Complexification<LVector> const& left,
+    Complexification<RVector> const& right) {
+  return Complexification<InnerProductType<LVector, RVector>>(
+      InnerProduct(left.real_part(), right.real_part()) +
+          InnerProduct(left.imaginary_part(), right.imaginary_part()),
+      InnerProduct(left.imaginary_part(), right.real_part()) -
+          InnerProduct(left.real_part(), right.real_part()));
 }
 
 template<typename Vector>

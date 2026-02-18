@@ -22,7 +22,7 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
 // bounds of some interval.
 template<affine Value_, affine Argument_>
 class Hermite3 final {
-  using NormType = typename Hilbert<Difference<Value_>>::NormType;
+  using NormType = NormType<Difference<Value_>>;
 
  public:
   using Argument = Argument_;

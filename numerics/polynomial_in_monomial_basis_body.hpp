@@ -921,7 +921,7 @@ template<typename LValue, typename RValue,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<
-    typename Hilbert<LValue, RValue>::InnerProductType, Argument,
+    InnerProductType<LValue, RValue>, Argument,
     ldegree + rdegree, Evaluator>
 PointwiseInnerProduct(
     PolynomialInMonomialBasis<LValue, Argument, ldegree,
@@ -932,7 +932,7 @@ PointwiseInnerProduct(
       PointwiseInnerProduct;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
   return PolynomialInMonomialBasis<
-      typename Hilbert<LValue, RValue>::InnerProductType, Argument,
+      InnerProductType<LValue, RValue>, Argument,
       ldegree + rdegree, Evaluator>(
           PointwiseInnerProduct(left.coefficients_, right.coefficients_),
           left.origin_);

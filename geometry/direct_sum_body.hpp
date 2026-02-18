@@ -180,11 +180,10 @@ template<affine... T>
 constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right) {
   using T0 = std::tuple_element_t<0, DirectSum<T...>>;
-  typename Hilbert<T0>::InnerProductType product = {};
+  typename InnerProductType<T0, T0> product = {};
   for_all_of(left, right)
       .loop([&product](auto const& leftᵢ, auto const& rightᵢ) {
-        product += Hilbert<std::remove_cvref_t<decltype(leftᵢ)>>::InnerProduct(
-            leftᵢ, rightᵢ);
+        product += InnerProduct(leftᵢ, rightᵢ);
       });
 
   return product;

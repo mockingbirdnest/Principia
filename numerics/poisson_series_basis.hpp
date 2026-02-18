@@ -57,7 +57,7 @@ template<typename Series, int degree>
 class PoissonSeriesBasisGenerator {
   using Value = std::invoke_result_t<Series, Instant>;
   static constexpr int dimension = Hilbert<Value>::dimension;
-  static_assert(std::is_same_v<Value, typename Hilbert<Value>::NormalizedType>,
+  static_assert(std::is_same_v<Value, NormalizedType<Value>>,
                 "Value type must be free from Quantity");
 
  public:

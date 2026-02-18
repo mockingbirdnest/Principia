@@ -111,7 +111,7 @@ class PiecewisePoissonSeries {
   Spectrum FourierTransform() const;
 
   template<int aperiodic_wdegree, int periodic_wdegree>
-  typename Hilbert<Value>::NormType Norm(
+  typename NormType<Value> Norm(
       PoissonSeries<double,
                     aperiodic_wdegree, periodic_wdegree> const& weight,
       Instant const& t_min,
@@ -333,7 +333,7 @@ template<
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+typename InnerProductType<LValue, RValue> InnerProduct(
     PoissonSeries<LValue,
                   aperiodic_ldegree, periodic_ldegree> const& left,
     PiecewisePoissonSeries<
@@ -347,7 +347,7 @@ template<
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+typename InnerProductType<LValue, RValue> InnerProduct(
     PoissonSeries<LValue,
                   aperiodic_ldegree, periodic_ldegree> const& left,
     PiecewisePoissonSeries<RValue,
@@ -363,7 +363,7 @@ template<
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+typename InnerProductType<LValue, RValue> InnerProduct(
     PiecewisePoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree> const& left,
     PoissonSeries<RValue,
@@ -377,7 +377,7 @@ template<
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType InnerProduct(
+typename InnerProductType<LValue, RValue> InnerProduct(
     PiecewisePoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree> const& left,
     PoissonSeries<RValue,

@@ -63,11 +63,11 @@ class PrincipalComponentPartitioningTree {
   using Displacement = Difference<Value>;
 
   // The type of the norm (and its square) of `Displacement`.
-  using Norm = typename Hilbert<Displacement>::NormType;
-  using Norm² = typename Hilbert<Displacement>::Norm²Type;
+  using Norm = NormType<Displacement>;
+  using Norm² = Norm²Type<Displacement>;
 
   // A unit vector corresponding to `Displacement`.
-  using Axis = typename Hilbert<Displacement>::NormalizedType;
+  using Axis = NormalizedType<Displacement>;
 
   // A form that operates on `Displacement`s.
   // NOTE(phl): We don't have SymmetricSquare for Bivector, so this effectively

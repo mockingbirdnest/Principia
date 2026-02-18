@@ -236,9 +236,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
-    typename Hilbert<Difference<Argument>>::NormType const& tolerance,
-    typename Hilbert<Difference<Argument>>::NormType const& radius,
-    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+    NormType<Difference<Argument>> const& tolerance,
+    NormType<Difference<Argument>> const& radius,
+    std::optional<NormType<Difference<Argument>>> const&
         first_step) {
   GateauxDerivative<Scalar, Argument> const gateaux_derivative_f =
       [&grad_f](Argument const& argument,
@@ -261,9 +261,9 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
-    typename Hilbert<Difference<Argument>>::NormType const& tolerance,
-    typename Hilbert<Difference<Argument>>::NormType const& radius,
-    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+    NormType<Difference<Argument>> const& tolerance,
+    NormType<Difference<Argument>> const& radius,
+    std::optional<NormType<Difference<Argument>>> const&
         first_step) {
   bool satisfies_strong_wolfe_condition;
 

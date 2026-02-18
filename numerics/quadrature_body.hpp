@@ -164,18 +164,16 @@ AutomaticClenshawCurtisImplementation(
           f, lower_bound, upper_bound, f_cos_N⁻¹π_bit_reversed);
 
   // This is the naïve estimate mentioned in [Gen72b], p. 339.
-  auto const absolute_error_estimate =
-      Hilbert<Result>::Norm(previous_estimate - estimate);
+  auto const absolute_error_estimate = Norm(previous_estimate - estimate);
 
   if ((!max_relative_error.has_value() ||
-       absolute_error_estimate >
-           max_relative_error.value() * Hilbert<Result>::Norm(estimate)) &&
+       absolute_error_estimate > max_relative_error.value() * Norm(estimate)) &&
       (!max_points.has_value() || points < max_points.value())) {
     if constexpr (points > 1 << 24) {
       LOG(FATAL) << "Too many refinements while integrating from "
                  << lower_bound << " to " << upper_bound
                  << ", relative error is "
-                 << absolute_error_estimate / Hilbert<Result>::Norm(estimate);
+                 << absolute_error_estimate / Norm(estimate);
     } else {
       f_cos_N⁻¹π_bit_reversed.reserve(2 * points - 1);
       return AutomaticClenshawCurtisImplementation<2 * points - 1>(
