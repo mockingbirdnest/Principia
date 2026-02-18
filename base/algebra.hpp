@@ -215,11 +215,12 @@ int dimension<A, K> = dimension<Difference<A>, K>;
 template<homogeneous_ring K>
 constexpr int dimension<K, K> = 1;
 
-template<homogeneous_field K>
-constexpr int dimension<K, Quotient<K, K>> = 1;
-
 template<real_affine_space V>
 constexpr int real_dimension = dimension<V, double>;
+
+template<real_affine_space V>
+  requires (requires {V::dimension;})
+constexpr int real_dimension<V> = V::dimension;
 
 }  // namespace internal
 

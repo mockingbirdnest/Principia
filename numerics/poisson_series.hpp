@@ -186,7 +186,7 @@ class PoissonSeries {
                                   PoissonSeries<V, ad, pd> const& series);
   template<typename L, typename R,
            int al, int pl, int ar, int pr, int aw, int pw>
-  friend typename InnerProductType<L, R>InnerProduct(
+  friend InnerProductType<L, R>InnerProduct(
       PoissonSeries<L, al, pl> const& left,
       PoissonSeries<R, ar, pr> const& right,
       PoissonSeries<double, aw, pw> const& weight,
@@ -318,7 +318,7 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const& left,
     PoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const& right,
     PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,

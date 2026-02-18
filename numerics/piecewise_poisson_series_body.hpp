@@ -540,7 +540,7 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const& left,
     PiecewisePoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const&
         right,
@@ -557,7 +557,7 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const& left,
     PiecewisePoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const&
         right,
@@ -572,7 +572,7 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PiecewisePoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const&
         left,
     PoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const& right,
@@ -589,7 +589,7 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PiecewisePoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const&
         left,
     PoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const& right,
@@ -606,6 +606,7 @@ typename InnerProductType<LValue, RValue> InnerProduct(
           clenshaw_curtis_points_per_period);
 
   auto integrand = [&left, &right, &weight](Instant const& t) {
+    using geometry::_hilbert::InnerProduct;
     return InnerProduct(left(t), right(t)) * weight(t);
   };
   return _quadrature::AutomaticClenshawCurtis(

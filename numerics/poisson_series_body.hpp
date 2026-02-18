@@ -851,7 +851,7 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PoissonSeries<LValue,
                   aperiodic_ldegree, periodic_ldegree> const& left,
     PoissonSeries<RValue,
@@ -875,9 +875,8 @@ typename InnerProductType<LValue, RValue> InnerProduct(
           clenshaw_curtis_points_per_period);
 
   auto slow_integrand = [&left_split, &right_split, &weight](Instant const& t) {
-    return InnerProduct<LValue, RValue>(left_split.slow(t),
-                                        right_split.slow(t)) *
-           weight(t);
+    using geometry::_hilbert::InnerProduct;
+    return InnerProduct(left_split.slow(t), right_split.slow(t)) * weight(t);
   };
   auto const slow_quadrature = _quadrature::AutomaticClenshawCurtis(
       slow_integrand,

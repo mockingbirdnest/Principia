@@ -186,7 +186,7 @@ class PiecewisePoissonSeries {
                    PoissonSeries<R, ar, pr> const& right);
   template<typename L, typename R,
            int al, int pl, int ar, int pr, int aw, int pw>
-  typename InnerProductType<L, R>
+  InnerProductType<L, R>
   friend InnerProduct(PoissonSeries<L, al, pl> const& left,
                       PiecewisePoissonSeries<R, ar, pr> const& right,
                       PoissonSeries<double, aw, pw> const& weight,
@@ -195,7 +195,7 @@ class PiecewisePoissonSeries {
                       std::optional<int> max_points);
   template<typename L, typename R,
            int al, int pl, int ar, int pr, int aw, int pw>
-  typename InnerProductType<L, R>
+  InnerProductType<L, R>
   friend InnerProduct(PiecewisePoissonSeries<L, al, pl> const& left,
                       PoissonSeries<R, ar, pr> const& right,
                       PoissonSeries<double, aw, pw> const& weight,
@@ -333,7 +333,7 @@ template<
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PoissonSeries<LValue,
                   aperiodic_ldegree, periodic_ldegree> const& left,
     PiecewisePoissonSeries<
@@ -347,7 +347,7 @@ template<
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PoissonSeries<LValue,
                   aperiodic_ldegree, periodic_ldegree> const& left,
     PiecewisePoissonSeries<RValue,
@@ -363,7 +363,7 @@ template<
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PiecewisePoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree> const& left,
     PoissonSeries<RValue,
@@ -377,7 +377,7 @@ template<
     int aperiodic_ldegree, int periodic_ldegree,
     int aperiodic_rdegree, int periodic_rdegree,
     int aperiodic_wdegree, int periodic_wdegree>
-typename InnerProductType<LValue, RValue> InnerProduct(
+InnerProductType<LValue, RValue> InnerProduct(
     PiecewisePoissonSeries<LValue,
                            aperiodic_ldegree, periodic_ldegree> const& left,
     PoissonSeries<RValue,
