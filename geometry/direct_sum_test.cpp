@@ -21,6 +21,7 @@ using namespace principia::base::_algebra;
 using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_fixed_arrays;
@@ -49,7 +50,7 @@ TEST(DirectSumTest, AlgebraConcepts) {
 
   static_assert(homogeneous_vector_space<DirectSum<Length>, Time>);
 
-  static_assert(hilbert<ℝ², ℝ²>);
+  static_assert(hilbert<ℝ²>);
 }
 
 // Helper concepts for Unordered test.

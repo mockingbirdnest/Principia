@@ -27,7 +27,7 @@ using World = Frame<serialization::Frame::TestTag,
                     Handedness::Right,
                     serialization::Frame::TEST>;
 
-// TODO(egg): tests.
+// REMOVE BEFORE FLIGHT: This needs tests.
 
 }  // namespace geometry
 }  // namespace principia
