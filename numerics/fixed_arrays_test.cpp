@@ -7,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
+#include "geometry/complexification.hpp"
 #include "numerics/transposed_view.hpp"
 #include "quantities/quantities.hpp"
 
@@ -14,6 +15,7 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::base::_algebra;
+using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
@@ -368,6 +370,15 @@ TEST_F(FixedArraysTest, Transpose) {
                                               3, 13, 34,
                                               5, 21, 55, 89})),
       (FixedLowerTriangularMatrix<double, 4>(TransposedView{u4_})));
+}
+
+TEST_F(FixedArraysTest, ℂ³) {
+  const Complexification<double> i(0, 1);
+  FixedVector<Complexification<double>, 3> v{{2, 6 * i, 3}};
+  EXPECT_EQ(49, v.Norm²());
+  EXPECT_EQ(7, v.Norm());
+  EXPECT_EQ(49, InnerProduct(v, v));
+  EXPECT_EQ(-23, TransposedView{v} * v);
 }
 
 }  // namespace numerics

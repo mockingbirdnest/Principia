@@ -197,7 +197,7 @@ Complexification<InnerProductType<LVector, RVector>> InnerProduct(
       InnerProduct(left.real_part(), right.real_part()) +
           InnerProduct(left.imaginary_part(), right.imaginary_part()),
       InnerProduct(left.imaginary_part(), right.real_part()) -
-          InnerProduct(left.real_part(), right.real_part()));
+          InnerProduct(left.real_part(), right.imaginary_part()));
 }
 
 template<typename Vector>

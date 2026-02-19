@@ -76,15 +76,47 @@ struct DotProduct<LScalar, RScalar, std::index_sequence<i...>> {
                                            Right const& right);
 };
 
-
 template<typename LScalar, typename RScalar, std::int64_t... i>
 template<typename Left, typename Right>
 Product<LScalar, RScalar>
 DotProduct<LScalar, RScalar, std::index_sequence<i...>>::Compute(
     Left const& left,
     Right const& right) {
-  using principia::geometry::_hilbert::InnerProduct;
+  return ((left[i] * right[i]) + ...);
+}
+
+// Same as DotProduct, but for scalars in a Hilbert space, using InnerProduct
+// rather than *.
+template<typename LScalar, typename RScalar, typename>
+struct Hilbert;
+
+template<typename LScalar, typename RScalar, std::int64_t... i>
+struct Hilbert<LScalar, RScalar, std::index_sequence<i...>> {
+  template<typename Left, typename Right>
+  static InnerProductType<LScalar, RScalar> ComputeInnerProduct(
+      Left const& left,
+      Right const& right);
+  template<typename Left>
+  static Norm²Type<LScalar> ComputeNorm²(Left const& left);
+};
+
+template<typename LScalar, typename RScalar, std::int64_t... i>
+template<typename Left, typename Right>
+InnerProductType<LScalar, RScalar>
+Hilbert<LScalar, RScalar, std::index_sequence<i...>>::ComputeInnerProduct(
+    Left const& left,
+    Right const& right) {
+  using geometry::_hilbert::InnerProduct;
   return (InnerProduct(left[i], right[i]) + ...);
+}
+
+template<typename LScalar, typename RScalar, std::int64_t... i>
+template<typename Left>
+Norm²Type<LScalar>
+Hilbert<LScalar, RScalar, std::index_sequence<i...>>::ComputeNorm²(
+    Left const& left) {
+  using geometry::_hilbert::Norm²;
+  return (Norm²(left[i]) + ...);
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
@@ -225,8 +257,8 @@ template<typename Scalar_, std::int64_t size_, bool use_heap>
 auto FixedVector<Scalar_, size_, use_heap>::Norm²() const
   requires hilbert<Scalar>
 {
-  return DotProduct<Scalar, Scalar, std::make_index_sequence<size_>>::Compute(
-      data(), data());
+  return Hilbert<Scalar, Scalar, std::make_index_sequence<size_>>::ComputeNorm²(
+      data());
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
@@ -1048,8 +1080,8 @@ template<typename LScalar, typename RScalar, std::int64_t size,
 constexpr Product<LScalar, RScalar> InnerProduct(
     FixedVector<LScalar, size, luh> const& left,
     FixedVector<RScalar, size, ruh> const& right) {
-  return DotProduct<LScalar, RScalar, std::make_index_sequence<size>>::Compute(
-      left, right);
+  return Hilbert<LScalar, RScalar, std::make_index_sequence<size>>::
+      ComputeInnerProduct(left, right);
 }
 
 template<typename Scalar, std::int64_t size, bool vuh, bool uh>
