@@ -19,8 +19,8 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::quantities::_quantities;
+using namespace principia::testing_utilities::_almost_equals;
 using ::testing::Pointer;
 
 using World = Frame<serialization::Frame::TestTag,

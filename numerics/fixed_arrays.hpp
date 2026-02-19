@@ -172,9 +172,11 @@ class FixedMatrix final {
   constexpr FixedMatrix& operator=(Scalar const (&right)[size_]);
 
   template<bool uh>
-  constexpr FixedMatrix& operator+=(FixedMatrix<Difference<Scalar>, rows_, columns_, uh> const& right);
+  constexpr FixedMatrix& operator+=(
+      FixedMatrix<Difference<Scalar>, rows_, columns_, uh> const& right);
   template<bool uh>
-  constexpr FixedMatrix& operator-=(FixedMatrix<Difference<Scalar>, rows_, columns_, uh> const& right);
+  constexpr FixedMatrix& operator-=(
+      FixedMatrix<Difference<Scalar>, rows_, columns_, uh> const& right);
   constexpr FixedMatrix& operator*=(double right);
   constexpr FixedMatrix& operator/=(double right);
 
