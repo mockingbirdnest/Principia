@@ -95,7 +95,7 @@ FixedMatrix<double, N + 1, N, /*use_heap=*/true> S() {
 template<std::int64_t M>
 FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> V() {
   constexpr double one_over_M = 1.0 / M;
-  return DiagonalMatrix<M + 1>([one_over_M](std::int64_t const i) {
+  return DiagonalMatrix<M + 1>([](std::int64_t const i) {
     return (i == 0 || i == M) ? one_over_M : 2 * one_over_M;
   });
 }
@@ -237,6 +237,80 @@ template<ЧебышёвPicardMethod Method>
   xCₓᵅCᵧᵝCα = xCₓ * ᵅCᵧ * ᵝCα;
 }
 
+template<std::int64_t M,
+         typename IndependentVariable,
+         typename... DependentVariable>
+FixedVector<DirectSum<DependentVariable...>, M + 1, true>
+ЧебышёвPicardIterationState<
+    M,
+    ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
+                                                   DependentVariable...>>::
+    UninitializedDependentVariableMatrix(
+        InitialValueProblem<ODE> const& problem) {
+  return FixedVector<DirectSum<DependentVariable...>, M + 1, true>(
+      uninitialized);
+}
+
+template<std::int64_t M,
+         typename IndependentVariable,
+         typename... DependentVariable>
+FixedVector<DirectSum<Derivative<DependentVariable, IndependentVariable>...>,
+            M + 1,
+            true>
+ЧебышёвPicardIterationState<
+    M,
+    ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
+                                                   DependentVariable...>>::
+    UninitializedRightHandSideMatrix(InitialValueProblem<ODE> const& problem) {
+  return FixedVector<
+      DirectSum<Derivative<DependentVariable, IndependentVariable>...>,
+      M + 1,
+      true>(uninitialized);
+}
+
+template<std::int64_t M,
+         typename IndependentVariable,
+         typename... DependentVariable>
+IndependentVariable ЧебышёвPicardIterationState<
+    M,
+    ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
+                                                   DependentVariable...>>::
+    GetIndependentVariable(ODE::State const& state) {
+  return state.s.value;
+}
+
+template<std::int64_t M, typename DependentVariable>
+std::pair<UnboundedMatrix<DependentVariable>,
+          UnboundedMatrix<Derivative<DependentVariable, Instant>>>
+ЧебышёвPicardIterationState<
+    M,
+    ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>>::
+    UninitializedDependentVariableMatrix(
+        InitialValueProblem<ODE> const& problem) {
+  return {UnboundedMatrix<DependentVariable>(
+              M + 1, problem.initial_state.positions.size(), uninitialized),
+          UnboundedMatrix<Derivative<DependentVariable, Instant>>(
+              M + 1, problem.initial_state.velocities.size(), uninitialized)};
+}
+
+template<std::int64_t M, typename DependentVariable>
+UnboundedMatrix<Derivative<DependentVariable, Instant, 2>>
+ЧебышёвPicardIterationState<
+    M,
+    ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>>::
+    UninitializedRightHandSideMatrix(InitialValueProblem<ODE> const& problem) {
+  return UnboundedMatrix<Derivative<DependentVariable, Instant, 2>>(
+      M + 1, problem.initial_state.positions.size(), uninitialized);
+}
+
+template<std::int64_t M, typename DependentVariable>
+Instant ЧебышёвPicardIterationState<
+    M,
+    ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>>::
+    GetIndependentVariable(ODE::State const& state) {
+  return state.time.value;
+}
+
 template<ЧебышёвPicardMethod Method, typename ODE_>
 absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     ODE::IndependentVariable const& t_final) {
@@ -254,16 +328,24 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
   Sign const integration_direction = Sign(step);
   if (integration_direction.is_positive()) {
     // Integrating forward.
-    CHECK_LT(current_state.s.value, t_final);
+    CHECK_LT((ЧебышёвPicardIterationState<M, ODE>::GetIndependentVariable(
+                 current_state)),
+             t_final);
   } else {
     // Integrating backward.
-    CHECK_GT(current_state.s.value, t_final);
+    CHECK_GT((ЧебышёвPicardIterationState<M, ODE>::GetIndependentVariable(
+                 current_state)),
+             t_final);
   }
 
   while (integration_direction.is_positive()
-             ? current_state.s.value < t_final
-             : current_state.s.value > t_final) {
-    auto const t_initial = current_state.s.value;
+             ? ЧебышёвPicardIterationState<M, ODE>::GetIndependentVariable(
+                   current_state) < t_final
+             : ЧебышёвPicardIterationState<M, ODE>::GetIndependentVariable(
+                   current_state) > t_final) {
+    auto const t_initial =
+        ЧебышёвPicardIterationState<M, ODE>::GetIndependentVariable(
+            current_state);
 
     // Rescale the nodes for feeding into the compute_derivative function.
     t_.clear();
@@ -271,15 +353,48 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
       t_.push_back(t_initial + (0.5 * node + 0.5) * step);
     }
 
-    // Set the boundary condition and store it in CₓX₀_.
-    CₓX₀_[0] = StripDoublePrecision(current_state.y);
-    for (std::int64_t i = 1; i <= M; ++i) {
-      CₓX₀_[i] = CₓX₀_[0];
-    }
+    // Set the boundary condition and store it in boundary_.
+    if constexpr (ODE::order == 1) {
+      boundary_[0] = StripDoublePrecision(current_state.y);
+      for (std::int64_t i = 1; i <= M; ++i) {
+        boundary_[i] = boundary_[0];
+      }
 
-    // A good starting guess for X⁰ is uniform current_state.y; as it happens
-    // that's what we just set CₓX₀_ to.
-    Xⁱ_ = CₓX₀_;
+      // A good starting guess for X⁰ is uniform current_state.y; as it happens
+      // that's what we just set boundary_ to.
+      Xⁱ_ = boundary_;
+    } else {
+      for (std::int64_t i = 0; i <= M; ++i) {
+        for (std::int64_t j = 0; j < boundary_.first.columns(); ++j) {
+          boundary_.second(i, j) = current_state.velocities[j].value;
+
+          // xCx * (X0 + aCy * bi)
+          // xCx * (X0 + aCy * (V0 + …))
+          // xCx * X0 + xCx * aCy * V0
+          // xCx * X0 + xCx * ᵅR * ᵅS * V0
+          // xCx * X0 + xCx * ᵅR * [2v0, 2v0, 0, 0, ...]
+          // xCx * X0 + xCx * [2v0, v0, 0, 0, ...]
+          // aTaW * X0 + aTaW * [2v0, v0, 0, 0, ...]
+          // aTaW * [2x0, 0, 0, ...] + aTaW * [2v0, v0, 0, 0, ...]
+          // aT * [x0, 0, 0, ...] + aT * [v0, v0, 0, 0, ...]
+          // [x0, x0, x0, ...] + [v0 * (1 + t0), v0 * (1 + t1), ]
+
+          // FIXME:
+          boundary_.first(i, j) =
+              current_state.positions[j].value +
+              current_state.velocities[j].value * (t_[i] - t_[0]);
+        }
+      }
+
+      // A good starting guess for X⁰ is uniform velocity.
+      Xⁱ_.second = boundary_.second;
+      for (std::int64_t i = 0; i <= M; ++i) {
+        for (std::int64_t j = 0; j < boundary_.first.columns(); ++j) {
+          Xⁱ_.first(i, j) = current_state.positions[j].value +
+                            current_state.velocities[j].value * (t_[i] - t_[0]);
+        }
+      }
+    }
 
     bool previous_should_stop = false;
     bool converged = false;
@@ -287,22 +402,52 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
          ++iteration) {
       // Evaluate the right hand side of the equation.
       for (std::int64_t i = 0; i <= M; ++i) {
-        auto const& y = Xⁱ_[i];
-        DependentVariableDerivatives yʹᵢ;
-        RETURN_IF_ERROR(equation.compute_derivative(t_[i], y, yʹᵢ));
+        if constexpr (ODE::order == 1) {
+          auto const& y = Xⁱ_[i];
+          DependentVariableDerivatives yʹᵢ;
+          RETURN_IF_ERROR(equation.compute_derivative(t_[i], y, yʹᵢ));
 
-        // Store it in yʹ.
-        yʹ_[i] = std::move(yʹᵢ);
+          // Store it in yʹ.
+          f_[i] = std::move(yʹᵢ);
+        } else {
+          DependentVariables y;
+          DependentVariableDerivatives yʹ;
+          for (std::int64_t j = 0; j < Xⁱ_.first.columns(); ++j) {
+            y.push_back(Xⁱ_.first(i, j));
+            yʹ.push_back(Xⁱ_.second(i, j));
+          }
+          // TODO:
+          typename ODE::DependentVariableDerivatives2 yʺᵢ(Xⁱ_.first.columns());
+          RETURN_IF_ERROR(equation.compute_acceleration(t_[i], y, yʹ, yʺᵢ));
+          for (std::int64_t j = 0; j < Xⁱ_.first.columns(); ++j) {
+            f_(i, j) = yʺᵢ[j];
+          }
+        }
       }
 
       // Compute new x.
-      Xⁱ⁺¹_ = integrator_.matrices_.CₓCα * (0.5 * step * yʹ_) + CₓX₀_;
+      if constexpr (ODE::order == 1) {
+        Xⁱ⁺¹_ = integrator_.matrices_.CₓCα * (0.5 * step * f_) + boundary_;
+      } else {
+        Xⁱ⁺¹_.second = integrator_.matrices_.vCₓᵝCα * (0.5 * step * f_) + boundary_.second;
+        // FIXME:
+        Xⁱ⁺¹_.first = integrator_.matrices_.xCₓᵅCᵧᵝCα * (0.25 * step * step * f_) + boundary_.first;
+      }
 
       // Check for convergence by applying the stopping criterion.
       bool should_stop = true;
       for (std::int64_t i = 0; i <= M; ++i) {
-        should_stop = should_stop &&
-                      params_.stopping_criterion((Xⁱ⁺¹_[i] - Xⁱ_[i]));
+        if constexpr (ODE::order == 1) {
+          should_stop =
+              should_stop && params_.stopping_criterion(Xⁱ⁺¹_[i] - Xⁱ_[i]);
+        } else {
+          // TODO: velocity should also be used.
+          typename ODE::DependentVariableDifferences Δ;
+          for (std::int64_t j = 0; j < Xⁱ_.first.columns(); ++j) {
+            Δ.push_back((Xⁱ⁺¹_.first)(i, j) - (Xⁱ_.first)(i, j));
+          }
+          should_stop = should_stop && params_.stopping_criterion(Δ);
+        }
       }
       Xⁱ_ = std::move(Xⁱ⁺¹_);
 
@@ -321,11 +466,31 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     if (converged) {
       // We have successfully converged!
       for (std::int64_t i = 0; i <= M; ++i) {
-        append_state(State(t_[i], Xⁱ_[i]));
+        if constexpr (ODE::order == 1) {
+          append_state(State(t_[i], Xⁱ_[i]));
+        } else {
+          DependentVariables q;
+          DependentVariableDerivatives v;
+          for (std::int64_t j = 0; j < Xⁱ_.first.columns(); ++j) {
+            q.push_back((Xⁱ_.first)(i, j));
+            v.push_back((Xⁱ_.second)(i, j));
+          }
+          append_state(State(t_[i], q, v));
+        }
       }
 
       // Set the current state to the final state we appended.
-      current_state = State(t_[M], Xⁱ_[M]);
+      if constexpr (ODE::order == 1) {
+        current_state = State(t_[M], Xⁱ_[M]);
+      } else {
+        DependentVariables q;
+        DependentVariableDerivatives v;
+        for (std::int64_t j = 0; j < Xⁱ_.first.columns(); ++j) {
+          q.push_back((Xⁱ_.first)(M, j));
+          v.push_back((Xⁱ_.second)(M, j));
+        }
+        current_state = State(t_[M], q, v);
+      }
       RETURN_IF_STOPPED;
     } else {
       // We failed to converge.
@@ -358,11 +523,15 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
     ЧебышёвPicardIterationParams<ODE> const& params)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator),
-      params_(params),
-      CₓX₀_(uninitialized),
-      Xⁱ_(uninitialized),
-      Xⁱ⁺¹_(uninitialized),
-      yʹ_(uninitialized) {
+      boundary_(ЧебышёвPicardIterationState<Method::M, ODE_>::
+                    UninitializedDependentVariableMatrix(problem)),
+      Xⁱ_(ЧебышёвPicardIterationState<Method::M, ODE_>::
+              UninitializedDependentVariableMatrix(problem)),
+      Xⁱ⁺¹_(ЧебышёвPicardIterationState<Method::M, ODE_>::
+                UninitializedDependentVariableMatrix(problem)),
+      f_(ЧебышёвPicardIterationState<Method::M, ODE_>::
+             UninitializedRightHandSideMatrix(problem)),
+      params_(params) {
   t_.reserve(M + 1);
 }
 
