@@ -41,7 +41,8 @@ class DirectSum {
   template<typename Self>
   constexpr auto&& tuple(this Self&& self);
 
-  // Visible by ADL, can be redefined in specializations.
+  // Visible by ADL, can be redefined in specializations.  Cannot deduce this
+  // because it's not a member function.
   template<std::size_t i>
   friend constexpr auto const& get(DirectSum const& direct_sum) {
     return std::get<i>(direct_sum.tuple_);

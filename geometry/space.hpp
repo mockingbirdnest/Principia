@@ -80,7 +80,6 @@ class DirectSum<Position<Frame>, Velocity<Frame>> {
     }
   }
 
-  //TODO(phl)Can we hide this?
   template<std::size_t i>
   friend constexpr auto& get(DirectSum& direct_sum) {
     if constexpr (i == 0) {
@@ -138,7 +137,6 @@ class DirectSum<Displacement<Frame>, Velocity<Frame>> {
     }
   }
 
-  //TODO(phl)Can we hide this?
   template<std::size_t i>
   friend constexpr auto& get(DirectSum& direct_sum) {
     if constexpr (i == 0) {

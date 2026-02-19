@@ -83,31 +83,31 @@ NANOBENCHMARK_EXTERN_ALTERNATE_NAME_FUNCTION(
     RelativeDegreesOfFreedomInstantNanobenchmark,
     fill6_from_xmm0,
     "?fill6_from_xmm0@internal@_microarchitectures@nanobenchmarks@principia@@"
-    "YQ?AV?$Pair@V?$Multivector@V?$Quantity@U?$Dimensions@$00$0A@$0A@$0A@$0A@$"
-    "0A@$0A@$0A@@internal@_dimensions@quantities@principia@@@internal@_"
+    "YQ?AV?$DirectSum@V?$Multivector@V?$Quantity@U?$Dimensions@$00$0A@$0A@$0A@$"
+    "0A@$0A@$0A@$0A@@internal@_dimensions@quantities@principia@@@internal@_"
     "quantities@quantities@principia@@U?$Frame@W4Frame_TestTag@serialization@"
     "principia@@$0A@$00$00@2_frame@geometry@5@$00@internal@_grassmann@geometry@"
     "principia@@V?$Multivector@V?$Quantity@U?$Dimensions@$00$0A@$0?0$0A@$0A@$"
     "0A@$0A@$0A@@internal@_dimensions@quantities@principia@@@internal@_"
     "quantities@quantities@principia@@U?$Frame@W4Frame_TestTag@serialization@"
-    "principia@@$0A@$00$00@2_frame@geometry@5@$00@2345@@1_pair@geometry@4@V?$"
-    "Point@V?$Quantity@U?$Dimensions@$0A@$0A@$00$0A@$0A@$0A@$0A@$0A@@internal@_"
-    "dimensions@quantities@principia@@@internal@_quantities@quantities@"
-    "principia@@@1_point@74@@Z");
+    "principia@@$0A@$00$00@2_frame@geometry@5@$00@2345@@1_direct_sum@geometry@"
+    "4@V?$Point@V?$Quantity@U?$Dimensions@$0A@$0A@$00$0A@$0A@$0A@$0A@$0A@@"
+    "internal@_dimensions@quantities@principia@@@internal@_quantities@"
+    "quantities@principia@@@1_point@74@@Z");
 NANOBENCHMARK_EXTERN_ALTERNATE_NAME_FUNCTION(
     RelativeDegreesOfFreedomInstantNanobenchmark,
     fill_from_ymm0_ymm1,
     "?fill_from_ymm0_ymm1@internal@_microarchitectures@nanobenchmarks@"
-    "principia@@YQ?AV?$Pair@V?$Multivector@V?$Quantity@U?$Dimensions@$00$0A@$"
-    "0A@$0A@$0A@$0A@$0A@$0A@@internal@_dimensions@quantities@principia@@@"
+    "principia@@YQ?AV?$DirectSum@V?$Multivector@V?$Quantity@U?$Dimensions@$00$"
+    "0A@$0A@$0A@$0A@$0A@$0A@$0A@@internal@_dimensions@quantities@principia@@@"
     "internal@_quantities@quantities@principia@@U?$Frame@W4Frame_TestTag@"
     "serialization@principia@@$0A@$00$00@2_frame@geometry@5@$00@internal@_"
     "grassmann@geometry@principia@@V?$Multivector@V?$Quantity@U?$Dimensions@$"
     "00$0A@$0?0$0A@$0A@$0A@$0A@$0A@@internal@_dimensions@quantities@principia@@"
     "@internal@_quantities@quantities@principia@@U?$Frame@W4Frame_TestTag@"
-    "serialization@principia@@$0A@$00$00@2_frame@geometry@5@$00@2345@@1_pair@"
-    "geometry@4@V?$Point@V?$Quantity@U?$Dimensions@$0A@$0A@$00$0A@$0A@$0A@$0A@$"
-    "0A@@internal@_dimensions@quantities@principia@@@internal@_quantities@"
+    "serialization@principia@@$0A@$00$00@2_frame@geometry@5@$00@2345@@1_direct_"
+    "sum@geometry@4@V?$Point@V?$Quantity@U?$Dimensions@$0A@$0A@$00$0A@$0A@$0A@$"
+    "0A@$0A@@internal@_dimensions@quantities@principia@@@internal@_quantities@"
     "quantities@principia@@@1_point@74@@Z");
 
 #if PRINCIPIA_COMPILER_CLANG
