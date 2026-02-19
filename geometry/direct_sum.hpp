@@ -8,7 +8,6 @@
 #include "base/algebra.hpp"
 #include "base/not_constructible.hpp"
 #include "base/tags.hpp"
-#include "quantities/tuples.hpp"
 
 namespace principia {
 namespace geometry {
@@ -18,7 +17,6 @@ namespace internal {
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_tags;
-using namespace principia::quantities::_tuples;
 
 // The direct sum of a pack of affine types.
 //
