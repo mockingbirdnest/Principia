@@ -2,9 +2,9 @@
 
 #include <limits>
 
+#include "geometry/direct_sum.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/pair.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
 #include "glog/logging.h"
@@ -29,11 +29,12 @@ using ::testing::Lt;
 using ::testing::Matcher;
 using ::testing::Not;
 using ::testing::_;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_pair;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -86,36 +87,6 @@ TEST_F(ComponentwiseTest, Grassmann) {
                             RelativeErrorFrom(2.5 * Metre, Lt(0.5))));
 }
 
-TEST_F(ComponentwiseTest, Pair) {
-  using VV = Pair<Vector<Action, World>, Vector<Amount, World>>;
-  VV vv(Vector<Action, World>({(1.0 + 1.0e-12) * si::Unit<Action>,
-                                1.0e-10 *  si::Unit<Action>,
-                                3.5 *  si::Unit<Action>}),
-        Vector<Amount, World>({(1.0 + 1.0e-12) * si::Unit<Amount>,
-                                (2.0 + 1.0e-10) *  si::Unit<Amount>,
-                                 3.5 *  si::Unit<Amount>}));
-  EXPECT_THAT(vv, Componentwise(
-                      Componentwise(
-                          AlmostEquals(1.0 * si::Unit<Action>, 4504),
-                          VanishesBefore(1.0 * si::Unit<Action>, 450360),
-                          Eq(3.5 * si::Unit<Action>)),
-                      AlmostEquals(
-                          Vector<Amount, World>({1.0 * si::Unit<Amount>,
-                                                 2.0 *  si::Unit<Amount>,
-                                                 3.5 *  si::Unit<Amount>}),
-                          225180)));
-  EXPECT_THAT(vv, Not(Componentwise(
-                      Componentwise(
-                          AlmostEquals(1.0 * si::Unit<Action>, 4504),
-                          VanishesBefore(1.0 * si::Unit<Action>, 450360),
-                          Eq(2.5 * si::Unit<Action>)),
-                      AlmostEquals(
-                          Vector<Amount, World>({1.0 * si::Unit<Amount>,
-                                                 2.0 *  si::Unit<Amount>,
-                                                 3.5 *  si::Unit<Amount>}),
-                          2))));
-}
-
 TEST_F(ComponentwiseTest, Describe) {
   using RP2 = RP2Point<double, World>;
   using R3 = R3Element<double>;
@@ -159,7 +130,7 @@ TEST_F(ComponentwiseTest, Describe) {
 }
 
 TEST_F(ComponentwiseTest, Variadic) {
-  using VV = Pair<Vector<Length, World>, Vector<Speed, World>>;
+  using VV = DirectSum<Vector<Length, World>, Vector<Speed, World>>;
   VV vv(Vector<Length, World>({1 * Metre,
                                2 * Metre,
                                3 * Metre}),
@@ -178,7 +149,7 @@ TEST_F(ComponentwiseTest, Variadic) {
 }
 
 TEST_F(ComponentwiseTest, Values) {
-  using VV = Pair<Vector<Length, World>, Vector<Speed, World>>;
+  using VV = DirectSum<Vector<Length, World>, Vector<Speed, World>>;
   VV vv(Vector<Length, World>({1 * Metre,
                                2 * Metre,
                                3 * Metre}),
