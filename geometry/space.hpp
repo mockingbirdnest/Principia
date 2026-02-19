@@ -3,7 +3,7 @@
 #include <cstdint>
 
 #include "base/algebra.hpp"
-#include "base/mappable.hpp"
+#include "base/mappable.hpp"  // 🧙 For reopening the namespace.
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "geometry/direct_sum.hpp"

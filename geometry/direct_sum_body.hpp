@@ -1,8 +1,10 @@
 #include "geometry/direct_sum.hpp"
 
 #include <algorithm>
+#include <string>
 #include <tuple>
 #include <type_traits>
+#include <vector>
 
 #include "absl/strings/str_join.h"
 #include "base/for_all_of.hpp"
