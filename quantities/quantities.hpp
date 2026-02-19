@@ -191,10 +191,14 @@ using internal::ToM256D;
 
 }  // namespace _quantities
 }  // namespace quantities
-}  // namespace principia
+namespace base {
+namespace _algebra {
 
 template<typename D>
-constexpr int principia::base::_algebra::dimension<
-    principia::quantities::_quantities::Quantity<D>, double> = 1;
+constexpr int dimension<quantities::_quantities::Quantity<D>, double> = 1;
+
+}  // namespace _algebra
+}  // namespace base
+}  // namespace principia
 
 #include "quantities/quantities_body.hpp"
