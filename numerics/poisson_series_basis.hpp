@@ -4,6 +4,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/algebra.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/instant.hpp"
 #include "quantities/named_quantities.hpp"
@@ -13,6 +14,7 @@ namespace numerics {
 namespace _poisson_series_basis {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_instant;
 using namespace principia::quantities::_named_quantities;
@@ -56,8 +58,8 @@ class PoissonSeriesSubspace {
 template<typename Series, int degree>
 class PoissonSeriesBasisGenerator {
   using Value = std::invoke_result_t<Series, Instant>;
-  static constexpr int dimension = Hilbert<Value>::dimension;
-  static_assert(std::is_same_v<Value, typename Hilbert<Value>::NormalizedType>,
+  static constexpr int dimension = real_dimension<Value>;
+  static_assert(std::is_same_v<Value, NormalizedType<Value>>,
                 "Value type must be free from Quantity");
 
  public:

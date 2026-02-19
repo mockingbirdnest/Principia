@@ -365,7 +365,7 @@ class CartesianProductPointwiseMultiplicativeSpace<
     Scalar, Tuple, std::index_sequence<indices...>> {
  public:
   template<typename L, typename R>
-  using Product = typename Hilbert<L, R>::InnerProductType;
+  using Product = InnerProductType<L, R>;
   template<typename T>
   using ScalarLeftProduct = Product<Scalar, T>;
   template<typename T>
@@ -385,8 +385,7 @@ constexpr auto CartesianProductPointwiseMultiplicativeSpace<
     std::index_sequence<indices...>>::Multiply(Scalar const& left,
                                                Tuple const& right)
     -> Apply<ScalarLeftProduct, Tuple> {
-  return {Hilbert<Scalar, std::tuple_element_t<indices, Tuple>>::InnerProduct(
-      left, std::get<indices>(right))...};
+  return {InnerProduct(left, std::get<indices>(right))...};
 }
 
 template<typename Scalar, typename Tuple, std::size_t... indices>
@@ -395,8 +394,7 @@ constexpr auto CartesianProductPointwiseMultiplicativeSpace<
     std::index_sequence<indices...>>::Multiply(Tuple const& left,
                                                Scalar const& right)
     -> Apply<ScalarRightProduct, Tuple> {
-  return {Hilbert<std::tuple_element_t<indices, Tuple>, Scalar>::InnerProduct(
-      std::get<indices>(left), right)...};
+  return {InnerProduct(std::get<indices>(left), right)...};
 }
 
 }  // namespace internal

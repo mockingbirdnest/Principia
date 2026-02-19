@@ -181,12 +181,11 @@ FourierTransform() const -> Spectrum {
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_>
 template<int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<Value>::NormType
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
-Norm(PoissonSeries<double,
-                   aperiodic_wdegree, periodic_wdegree> const& weight,
-     Instant const& t_min,
-     Instant const& t_max) const {
+NormType<Value>
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::Norm(
+    PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) const {
   AngularFrequency const max_ω = 2 * this->max_ω() + weight.max_ω();
   std::optional<int> const max_points =
       _quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
@@ -196,7 +195,7 @@ Norm(PoissonSeries<double,
           clenshaw_curtis_points_per_period);
 
   auto integrand = [this, &weight](Instant const& t) {
-    return Hilbert<Value>::Norm²((*this)(t)) * weight(t);
+    return Norm²((*this)(t)) * weight(t);
   };
   return Sqrt(_quadrature::AutomaticClenshawCurtis(
                   integrand,
@@ -540,14 +539,12 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PoissonSeries<LValue,
-                           aperiodic_ldegree, periodic_ldegree> const& left,
-             PiecewisePoissonSeries<
-                 RValue, aperiodic_rdegree, periodic_rdegree> const& right,
-             PoissonSeries<double,
-                           aperiodic_wdegree, periodic_wdegree> const& weight,
-             std::optional<int> max_points) {
+InnerProductType<LValue, RValue> InnerProduct(
+    PoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const& left,
+    PiecewisePoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const&
+        right,
+    PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,
+    std::optional<int> max_points) {
   return InnerProduct<LValue, RValue,
                       aperiodic_ldegree, periodic_ldegree,
                       aperiodic_rdegree, periodic_rdegree,
@@ -559,16 +556,14 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PoissonSeries<LValue,
-                           aperiodic_ldegree, periodic_ldegree> const& left,
-             PiecewisePoissonSeries<
-                 RValue, aperiodic_rdegree, periodic_rdegree> const& right,
-             PoissonSeries<double,
-                           aperiodic_wdegree, periodic_wdegree> const& weight,
-             Instant const& t_min,
-             Instant const& t_max,
-             std::optional<int> max_points) {
+InnerProductType<LValue, RValue> InnerProduct(
+    PoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const& left,
+    PiecewisePoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const&
+        right,
+    PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,
+    Instant const& t_min,
+    Instant const& t_max,
+    std::optional<int> max_points) {
   return InnerProduct(right, left, weight, t_min, t_max, max_points);
 }
 
@@ -576,35 +571,31 @@ template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PiecewisePoissonSeries<
-                 LValue, aperiodic_ldegree, periodic_ldegree> const& left,
-             PoissonSeries<RValue,
-                           aperiodic_rdegree, periodic_rdegree> const& right,
-             PoissonSeries<double,
-                           aperiodic_wdegree, periodic_wdegree> const& weight,
-             std::optional<int> max_points) {
+InnerProductType<LValue, RValue> InnerProduct(
+    PiecewisePoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const&
+        left,
+    PoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const& right,
+    PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,
+    std::optional<int> max_points) {
   return InnerProduct<LValue, RValue,
                       aperiodic_ldegree, periodic_ldegree,
                       aperiodic_rdegree, periodic_rdegree,
                       aperiodic_wdegree, periodic_wdegree>(
-       left, right, weight, left.t_min(), left.t_max(), max_points);
+      left, right, weight, left.t_min(), left.t_max(), max_points);
 }
 
 template<typename LValue, typename RValue,
          int aperiodic_ldegree, int periodic_ldegree,
          int aperiodic_rdegree, int periodic_rdegree,
          int aperiodic_wdegree, int periodic_wdegree>
-typename Hilbert<LValue, RValue>::InnerProductType
-InnerProduct(PiecewisePoissonSeries<
-                 LValue, aperiodic_ldegree, periodic_ldegree> const& left,
-             PoissonSeries<RValue,
-                           aperiodic_rdegree, periodic_rdegree> const& right,
-             PoissonSeries<double,
-                           aperiodic_wdegree, periodic_wdegree> const& weight,
-             Instant const& t_min,
-             Instant const& t_max,
-             std::optional<int> max_points) {
+InnerProductType<LValue, RValue> InnerProduct(
+    PiecewisePoissonSeries<LValue, aperiodic_ldegree, periodic_ldegree> const&
+        left,
+    PoissonSeries<RValue, aperiodic_rdegree, periodic_rdegree> const& right,
+    PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,
+    Instant const& t_min,
+    Instant const& t_max,
+    std::optional<int> max_points) {
   AngularFrequency const max_ω = left.max_ω() + right.max_ω() + weight.max_ω();
   std::optional<int> const max_points_heuristic =
       _quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(
@@ -614,7 +605,8 @@ InnerProduct(PiecewisePoissonSeries<
           clenshaw_curtis_points_per_period);
 
   auto integrand = [&left, &right, &weight](Instant const& t) {
-    return Hilbert<LValue, RValue>::InnerProduct(left(t), right(t)) * weight(t);
+    using geometry::_hilbert::InnerProduct;
+    return InnerProduct(left(t), right(t)) * weight(t);
   };
   return _quadrature::AutomaticClenshawCurtis(
              integrand,
