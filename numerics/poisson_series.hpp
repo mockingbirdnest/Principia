@@ -115,7 +115,7 @@ class PoissonSeries {
       Instant const& t2) const;
 
   template<int aperiodic_wdegree, int periodic_wdegree>
-  typename NormType<Value> Norm(
+  NormType<Value> Norm(
       PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,
       Instant const& t_min,
       Instant const& t_max) const;
