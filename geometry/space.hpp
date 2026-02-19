@@ -66,6 +66,32 @@ class DirectSum<Position<Frame>, Velocity<Frame>> {
   constexpr DirectSum(Position<Frame> const& position,
                       Velocity<Frame> const& velocity);
 
+  // Visible by ADL.
+  template<std::size_t i>
+  friend constexpr auto const& get(DirectSum const& direct_sum) {
+    if constexpr (i == 0) {
+      return direct_sum.position();
+    } else if constexpr (i == 1) {
+      return direct_sum.velocity();
+    } else {
+      static_assert(
+          i < 2, "Index out of bounds in get<DirectSum<Position, Velocity>>");
+    }
+  }
+
+  //TODO(phl)Can we hide this?
+  template<std::size_t i>
+  friend constexpr auto& get(DirectSum& direct_sum) {
+    if constexpr (i == 0) {
+      return direct_sum.position();
+    } else if constexpr (i == 1) {
+      return direct_sum.velocity();
+    } else {
+      static_assert(
+          i < 2, "Index out of bounds in get<DirectSum<Position, Velocity>>");
+    }
+  }
+
   bool operator==(DirectSum const&) const = default;
 
   DirectSum& operator+=(
@@ -96,6 +122,34 @@ class DirectSum<Displacement<Frame>, Velocity<Frame>> {
 
   constexpr DirectSum(Displacement<Frame> const& displacement,
                       Velocity<Frame> const& velocity);
+
+  // Visible by ADL.
+  template<std::size_t i>
+  friend constexpr auto const& get(DirectSum const& direct_sum) {
+    if constexpr (i == 0) {
+      return direct_sum.displacement();
+    } else if constexpr (i == 1) {
+      return direct_sum.velocity();
+    } else {
+      static_assert(
+          i < 2,
+          "Index out of bounds in get<DirectSum<Displacement, Velocity>>");
+    }
+  }
+
+  //TODO(phl)Can we hide this?
+  template<std::size_t i>
+  friend constexpr auto& get(DirectSum& direct_sum) {
+    if constexpr (i == 0) {
+      return direct_sum.displacement();
+    } else if constexpr (i == 1) {
+      return direct_sum.velocity();
+    } else {
+      static_assert(
+          i < 2,
+          "Index out of bounds in get<DirectSum<Displacement, Velocity>>");
+    }
+  }
 
   bool operator==(DirectSum const&) const = default;
 

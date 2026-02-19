@@ -1,6 +1,8 @@
 #pragma once
 
 #include <algorithm>
+#include <ostream>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -37,7 +39,18 @@ class DirectSum {
 
   // Getter for the inner tuple field.
   template<typename Self>
-  auto&& tuple(this Self&& self);
+  constexpr auto&& tuple(this Self&& self);
+
+  // Visible by ADL, can be redefined in specializations.
+  template<std::size_t i>
+  friend constexpr auto const& get(DirectSum const& direct_sum) {
+    return std::get<i>(direct_sum.tuple_);
+  }
+
+  template<std::size_t i>
+  friend constexpr auto& get(DirectSum& direct_sum) {
+    return std::get<i>(direct_sum.tuple_);
+  }
 
   constexpr auto Norm() const
     requires hilbert<DirectSum<T...>, DirectSum<T...>>;
@@ -59,11 +72,6 @@ class DirectSum {
  private:
   std::tuple<T...> tuple_;
 };
-
-template<std::size_t i, affine... T>
-constexpr auto const& get(DirectSum<T...> const& direct_sum);
-template<std::size_t i, affine... T>
-constexpr auto& get(DirectSum<T...>& direct_sum);
 
 template<additive_group... T>
 constexpr DirectSum<T...> operator+(DirectSum<T...> const& right);
@@ -99,6 +107,12 @@ constexpr auto operator/(DirectSum<L...> const& left, R const& right);
 template<affine... T>
 constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right);
+
+template<affine... T>
+std::string DebugString(DirectSum<T...> const& direct_sum);
+
+template<affine... T>
+std::ostream& operator<<(std::ostream& out, DirectSum<T...> const& direct_sum);
 
 // Helper for getting a DirectSum corresponding to a tuple when you don't
 // have access to the pack.

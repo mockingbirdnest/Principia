@@ -4,6 +4,7 @@
 #include <tuple>
 #include <type_traits>
 
+#include "absl/strings/str_join.h"
 #include "base/for_all_of.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/elementary_functions.hpp"
@@ -31,7 +32,7 @@ constexpr DirectSum<T...>::DirectSum(std::tuple<T...>&& tuple)
 
 template<affine... T>
 template<typename Self>
-auto&& DirectSum<T...>::tuple(this Self&& self) {
+constexpr auto&& DirectSum<T...>::tuple(this Self&& self) {
   return self.tuple_;
 }
 
@@ -79,15 +80,6 @@ DirectSum<T...>& DirectSum<T...>::operator/=(Scalar const& right)
 {
   *this = *this / right;
   return *this;
-}
-
-template<std::size_t i, affine... T>
-constexpr auto const& get(DirectSum<T...> const& direct_sum) {
-  return std::get<i>(direct_sum.tuple());
-}
-template<std::size_t i, affine... T>
-constexpr auto& get(DirectSum<T...>& direct_sum) {
-  return std::get<i>(direct_sum.tuple());
 }
 
 template<additive_group... T>
@@ -188,6 +180,33 @@ constexpr auto InnerProduct(DirectSum<T...> const& left,
       });
 
   return product;
+}
+
+template<affine... T>
+std::string DebugString(DirectSum<T...> const& direct_sum) {
+  std::vector<std::string> strings;
+  strings.reserve(sizeof...(T) + 2);
+  strings.push_back("{");
+  for_all_of(direct_sum).loop([&strings](auto const& component) {
+    strings.push_back(DebugString(component));
+  });
+  strings.push_back("}");
+  return absl::StrJoin(strings, ", ");
+}
+
+template<affine... T>
+std::ostream& operator<<(std::ostream& out, DirectSum<T...> const& direct_sum) {
+  out << "{";
+  bool first = true;
+  for_all_of(direct_sum).loop([&out, &first](auto const& component) {
+    if (!first) {
+      out << ", ";
+    }
+    out << component;
+    first = false;
+  });
+  out << "}";
+  return out;
 }
 
 }  // namespace internal
