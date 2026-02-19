@@ -42,7 +42,8 @@ class Complexification {
 
   Complexification Conjugate() const;
 
-  typename Hilbert<Vector>::Norm²Type Norm²() const;
+  Norm²Type<Vector> Norm²() const;
+  NormType<Vector> Norm() const;
 
  private:
   Vector real_part_{};
@@ -110,9 +111,9 @@ Complexification<Quotient<LVector, RVector>> operator/(
 
 // The Hermitian inner product.
 template<typename LVector, typename RVector>
-Complexification<typename Hilbert<LVector, RVector>::InnerProductType>
-InnerProduct(Complexification<LVector> const& left,
-             Complexification<RVector> const& right);
+Complexification<InnerProductType<LVector, RVector>> InnerProduct(
+    Complexification<LVector> const& left,
+    Complexification<RVector> const& right);
 
 template<typename Vector>
 std::ostream& operator<<(std::ostream& out, Complexification<Vector> const& z);

@@ -56,10 +56,10 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
-    typename Hilbert<Difference<Argument>>::NormType const& tolerance,
-    typename Hilbert<Difference<Argument>>::NormType const& radius =
-        Infinity<typename Hilbert<Difference<Argument>>::NormType>,
-    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+    NormType<Difference<Argument>> const& tolerance,
+    NormType<Difference<Argument>> const& radius =
+        Infinity<NormType<Difference<Argument>>>,
+    std::optional<NormType<Difference<Argument>>> const&
         first_step = std::nullopt);
 
 // Same as above, but the Gateaux derivative of f is passed in addition to its
@@ -71,10 +71,10 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Field<Scalar, Argument> const& f,
     Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
     GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
-    typename Hilbert<Difference<Argument>>::NormType const& tolerance,
-    typename Hilbert<Difference<Argument>>::NormType const& radius =
-        Infinity<typename Hilbert<Difference<Argument>>::NormType>,
-    std::optional<typename Hilbert<Difference<Argument>>::NormType> const&
+    NormType<Difference<Argument>> const& tolerance,
+    NormType<Difference<Argument>> const& radius =
+        Infinity<NormType<Difference<Argument>>>,
+    std::optional<NormType<Difference<Argument>>> const&
         first_step = std::nullopt);
 
 }  // namespace internal

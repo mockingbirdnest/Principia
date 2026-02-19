@@ -8,6 +8,8 @@
 #include "base/algebra.hpp"
 #include "base/not_constructible.hpp"
 #include "base/tags.hpp"
+#include "base/traits.hpp"
+#include "geometry/hilbert.hpp"
 #include "quantities/tuples.hpp"
 
 namespace principia {
@@ -18,6 +20,8 @@ namespace internal {
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_tags;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_hilbert;
 using namespace principia::quantities::_tuples;
 
 // The direct sum of a pack of affine types.
@@ -42,9 +46,9 @@ class DirectSum {
   auto&& tuple(this Self&& self);
 
   constexpr auto Norm() const
-    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+    requires(hilbert<T> && ...);
   constexpr auto Norm²() const
-    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+    requires(hilbert<T> && ...);
 
   bool operator==(DirectSum const&) const = default;
 
@@ -89,16 +93,25 @@ constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
                                     DirectSum<Difference<T>...> const& right)
   requires(!additive_group<T> || ...);
 
-template<homogeneous_ring L, homogeneous_module<L>... R>
+// We would want to write <homogeneous_ring L, homogeneous_module<L>... R>
+// below, but when trying to determine whether DirectSum is a homogeneous_ring
+// (which it should not be), we need to try (and fail) overload resolution on a
+// product of DirectSum.  That in turn requires figuring out whether DirectSum
+// would work as L here, and in particular, whether it is a homogeneous_ring.
+// By forbidding instances of DirectSum directly we break the cyclic dependency.
+template<typename L, typename... R>
+  requires(!is_instance_of_v<DirectSum, L>) && (homogeneous_module<R, L> && ...)
 constexpr auto operator*(L const& left, DirectSum<R...> const& right);
 
-template<homogeneous_ring R, homogeneous_module<R>... L>
+template<typename... L, typename R>
+  requires(!is_instance_of_v<DirectSum, R>) && (homogeneous_module<L, R> && ...)
 constexpr auto operator*(DirectSum<L...> const& left, R const& right);
 
 template<homogeneous_field R, homogeneous_vector_space<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right);
 
 template<affine... T>
+  requires(hilbert<T> && ...)
 constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right);
 

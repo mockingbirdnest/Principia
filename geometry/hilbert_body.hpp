@@ -11,79 +11,34 @@ namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
 
-template<typename T1, typename T2>
-  requires convertible_to_quantity<T1> && convertible_to_quantity<T2>
-auto Hilbert<T1, T2>::InnerProduct(T1 const& t1, T2 const& t2)
-    -> InnerProductType {
-  return t1 * t2;
+template<homogeneous_field T, homogeneous_field U>
+  requires std::totally_ordered<Product<T, U>>
+constexpr Product<T, U> InnerProduct(T const& left, U const& right) {
+  return left * right;
 }
 
 template<typename T>
-  requires convertible_to_quantity<T>
-auto Hilbert<T, T>::InnerProduct(T const& t1, T const& t2) -> InnerProductType {
-  return t1 * t2;
+constexpr Norm²Type<T> Norm²(T const& x) {
+  return x.Norm²();
+}
+
+template<homogeneous_field T>
+  requires std::totally_ordered<T>
+constexpr Norm²Type<T> Norm²(T const& x) {
+  return x * x;
 }
 
 template<typename T>
-  requires convertible_to_quantity<T>
-auto Hilbert<T, T>::Norm²(T const& t) -> Norm²Type {
-  return t * t;
+  requires(requires(T x) { x.Norm(); })
+constexpr auto Norm(T const& x) {
+  return x.Norm();
 }
 
-template<typename T>
-  requires convertible_to_quantity<T>
-auto Hilbert<T, T>::Norm(T const& t) -> NormType {
-  return Abs(t);
+template<homogeneous_field T>
+  requires std::totally_ordered<T>
+constexpr T Norm(T const& x) {
+  return Abs(x);
 }
-
-#if !(_MSC_FULL_VER == 193'431'937 || \
-      _MSC_FULL_VER == 193'431'942 || \
-      _MSC_FULL_VER == 193'431'944 || \
-      _MSC_FULL_VER == 193'532'216 || \
-      _MSC_FULL_VER == 193'532'217 || \
-      _MSC_FULL_VER == 193'632'532 || \
-      _MSC_FULL_VER == 193'632'535 || \
-      _MSC_FULL_VER == 193'732'822 || \
-      _MSC_FULL_VER == 193'833'135 || \
-      _MSC_FULL_VER == 193'933'523 || \
-      _MSC_FULL_VER == 194'033'813 || \
-      _MSC_FULL_VER == 194'134'120 || \
-      _MSC_FULL_VER == 194'134'123 || \
-      _MSC_FULL_VER == 194'234'435 || \
-      _MSC_FULL_VER == 194'334'809 || \
-      _MSC_FULL_VER == 194'435'211 || \
-      _MSC_FULL_VER == 194'435'213 || \
-      _MSC_FULL_VER == 194'435'221 || \
-      _MSC_FULL_VER == 194'435'222)
-template<typename T1, typename T2>
-  requires hilbert<T1, T2>
-auto Hilbert<T1, T2>::InnerProduct(T1 const& t1, T2 const& t2)
-    -> InnerProductType {
-  // Is there a better way to avoid recursion than to put our fingers inside
-  // grassmann?
-  return _grassmann::internal::InnerProduct(t1, t2);
-}
-
-template<typename T>
-  requires hilbert<T, T>
-auto Hilbert<T, T>::InnerProduct(T const& t1, T const& t2) -> InnerProductType {
-  // Is there a better way to avoid recursion than to put our fingers inside
-  // grassmann?
-  return _grassmann::internal::InnerProduct(t1, t2);
-}
-
-template<typename T>
-  requires hilbert<T, T>
-auto Hilbert<T, T>::Norm²(T const& t) -> Norm²Type {
-  return t.Norm²();
-}
-
-template<typename T>
-  requires hilbert<T, T>
-auto Hilbert<T, T>::Norm(T const& t) -> NormType {
-  return t.Norm();
-}
-#endif
 
 }  // namespace internal
 }  // namespace _hilbert

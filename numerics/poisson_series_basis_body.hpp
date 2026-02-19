@@ -101,7 +101,7 @@ Polynomial PolynomialGenerator<Polynomial, dimension>::UnitPolynomial(
 
   using Coefficients = typename Polynomial::Coefficients;
   using Coefficient = std::tuple_element_t<degree, Coefficients>;
-  using NormalizedCoefficient = typename Hilbert<Coefficient>::NormalizedType;
+  using NormalizedCoefficient = NormalizedType<Coefficient>;
   Coefficients coefficients;
   std::get<degree>(coefficients) =
       CoefficientGenerator<NormalizedCoefficient,

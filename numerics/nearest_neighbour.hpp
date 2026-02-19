@@ -63,11 +63,11 @@ class PrincipalComponentPartitioningTree {
   using Displacement = Difference<Value>;
 
   // The type of the norm (and its square) of `Displacement`.
-  using Norm = typename Hilbert<Displacement>::NormType;
-  using Norm² = typename Hilbert<Displacement>::Norm²Type;
+  using NormType = NormType<Displacement>;
+  using Norm²Type = Norm²Type<Displacement>;
 
   // A unit vector corresponding to `Displacement`.
-  using Axis = typename Hilbert<Displacement>::NormalizedType;
+  using Axis = NormalizedType<Displacement>;
 
   // A form that operates on `Displacement`s.
   // NOTE(phl): We don't have SymmetricSquare for Bivector, so this effectively
@@ -108,7 +108,7 @@ class PrincipalComponentPartitioningTree {
   // the better.
   struct Index {
     std::int32_t index;
-    Norm projection;
+    NormType projection;
   };
   using Indices = std::vector<Index>;
 
@@ -147,7 +147,7 @@ class PrincipalComponentPartitioningTree {
             Filter const& filter,
             Internal const* parent,
             Node const& node,
-            Norm²& min_distance²,
+            Norm²Type& min_distance²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
 
@@ -156,14 +156,14 @@ class PrincipalComponentPartitioningTree {
             Filter const& filter,
             Internal const* parent,
             Internal const& internal,
-            Norm²& min_distance²,
+            Norm²Type& min_distance²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
   void Find(Displacement const& displacement,
             Filter const& filter,
             Internal const* parent,
             Leaf const& leaf,
-            Norm²& min_distance²,
+            Norm²Type& min_distance²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
 
