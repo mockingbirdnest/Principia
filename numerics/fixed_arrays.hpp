@@ -69,8 +69,12 @@ class FixedVector final {
 
   constexpr FixedVector& operator=(Scalar const (&right)[size_]);
 
-  constexpr FixedVector& operator+=(FixedVector const& right);
-  constexpr FixedVector& operator-=(FixedVector const& right);
+  template<bool uh>
+  constexpr FixedVector& operator+=(
+      FixedVector<Difference<Scalar>, size_, uh> const& right);
+  template<bool uh>
+  constexpr FixedVector& operator-=(
+      FixedVector<Difference<Scalar>, size_, uh> const& right);
   constexpr FixedVector& operator*=(double right);
   constexpr FixedVector& operator/=(double right);
 
@@ -167,8 +171,10 @@ class FixedMatrix final {
 
   constexpr FixedMatrix& operator=(Scalar const (&right)[size_]);
 
-  constexpr FixedMatrix& operator+=(FixedMatrix const& right);
-  constexpr FixedMatrix& operator-=(FixedMatrix const& right);
+  template<bool uh>
+  constexpr FixedMatrix& operator+=(FixedMatrix<Difference<Scalar>, rows_, columns_, uh> const& right);
+  template<bool uh>
+  constexpr FixedMatrix& operator-=(FixedMatrix<Difference<Scalar>, rows_, columns_, uh> const& right);
   constexpr FixedMatrix& operator*=(double right);
   constexpr FixedMatrix& operator/=(double right);
 

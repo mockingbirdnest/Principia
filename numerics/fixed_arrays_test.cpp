@@ -3,6 +3,8 @@
 #include <utility>
 
 #include "base/algebra.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -13,11 +15,18 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::base::_algebra;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::quantities::_quantities;
 using ::testing::Pointer;
+
+using World = Frame<serialization::Frame::TestTag,
+                    Inertial,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
 
 class FixedArraysTest : public ::testing::Test {
  protected:
@@ -62,21 +71,37 @@ class FixedArraysTest : public ::testing::Test {
 };
 
 TEST_F(FixedArraysTest, AlgebraConcepts) {
+  static_assert(affine<FixedVector<double, 3>>);
+  static_assert(affine<FixedVector<Length, 3>>);
+  static_assert(affine<FixedVector<Position<World>, 3>>);
+
+  static_assert(additive_group<FixedVector<double, 3>>);
+  static_assert(additive_group<FixedVector<Length, 3>>);
+  static_assert(!additive_group<FixedVector<Position<World>, 3>>);
+
+  static_assert(!homogeneous_ring<FixedVector<double, 3>>);
+  static_assert(!homogeneous_ring<FixedVector<Length, 3>>);
+  static_assert(!homogeneous_ring<FixedVector<Position<World>, 3>>);
+
   static_assert(affine<FixedMatrix<double, 2, 3>>);
   static_assert(affine<FixedMatrix<double, 3, 3>>);
   static_assert(affine<FixedMatrix<Length, 3, 3>>);
+  static_assert(affine<FixedMatrix<Position<World>, 3, 3>>);
 
   static_assert(additive_group<FixedMatrix<double, 2, 3>>);
   static_assert(additive_group<FixedMatrix<double, 3, 3>>);
   static_assert(additive_group<FixedMatrix<Length, 3, 3>>);
+  static_assert(!additive_group<FixedMatrix<Position<World>, 3, 3>>);
 
   static_assert(!homogeneous_ring<FixedMatrix<double, 2, 3>>);
   static_assert(homogeneous_ring<FixedMatrix<double, 3, 3>>);
   static_assert(homogeneous_ring<FixedMatrix<Length, 3, 3>>);
+  static_assert(!homogeneous_ring<FixedMatrix<Position<World>, 3, 3>>);
 
   static_assert(!ring<FixedMatrix<double, 2, 3>>);
   static_assert(ring<FixedMatrix<double, 3, 3>>);
   static_assert(!ring<FixedMatrix<Length, 3, 3>>);
+  static_assert(!ring<FixedMatrix<Position<World>, 3, 3>>);
 
   static_assert(!homogeneous_field<FixedMatrix<double, 3, 3>>);
   static_assert(!homogeneous_field<FixedMatrix<Length, 3, 3>>);

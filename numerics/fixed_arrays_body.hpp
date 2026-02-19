@@ -178,8 +178,10 @@ FixedVector<Scalar_, size_, use_heap>::operator=(Scalar const (&right)[size_]) {
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
+template<bool uh>
 constexpr FixedVector<Scalar_, size_, use_heap>&
-FixedVector<Scalar_, size_, use_heap>::operator+=(FixedVector const& right) {
+FixedVector<Scalar_, size_, use_heap>::operator+=(
+    FixedVector<Difference<Scalar>, size_, uh> const& right) {
   for (std::int64_t i = 0; i < size(); ++i) {
     data()[i] += right.data()[i];
   }
@@ -187,8 +189,10 @@ FixedVector<Scalar_, size_, use_heap>::operator+=(FixedVector const& right) {
 }
 
 template<typename Scalar_, std::int64_t size_, bool use_heap>
+template<bool uh>
 constexpr FixedVector<Scalar_, size_, use_heap>&
-FixedVector<Scalar_, size_, use_heap>::operator-=(FixedVector const& right) {
+FixedVector<Scalar_, size_, use_heap>::operator-=(
+    FixedVector<Difference<Scalar>, size_, uh> const& right) {
   for (std::int64_t i = 0; i < size(); ++i) {
     data()[i] -= right.data()[i];
   }
@@ -374,9 +378,10 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator=(
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
+template<bool uh>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
 FixedMatrix<Scalar_, rows_, columns_, use_heap>::
-operator+=(FixedMatrix const& right) {
+operator+=(FixedMatrix<Difference<Scalar>, rows_, columns_, uh> const& right) {
   for (std::int64_t i = 0; i < size_; ++i) {
     data()[i] += right.data()[i];
   }
@@ -385,9 +390,10 @@ operator+=(FixedMatrix const& right) {
 
 template<typename Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
+template<bool uh>
 constexpr FixedMatrix<Scalar_, rows_, columns_, use_heap>&
 FixedMatrix<Scalar_, rows_, columns_, use_heap>::
-operator-=(FixedMatrix const& right) {
+operator-=(FixedMatrix<Difference<Scalar>, rows_, columns_, uh> const& right) {
   for (std::int64_t i = 0; i < size_; ++i) {
     data()[i] -= right.data()[i];
   }

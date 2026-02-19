@@ -72,8 +72,8 @@ class UnboundedVector final {
 
   UnboundedVector& operator=(std::initializer_list<Scalar> right);
 
-  UnboundedVector& operator+=(UnboundedVector const& right);
-  UnboundedVector& operator-=(UnboundedVector const& right);
+  UnboundedVector& operator+=(UnboundedVector<Difference<Scalar>> const& right);
+  UnboundedVector& operator-=(UnboundedVector<Difference<Scalar>> const& right);
   UnboundedVector& operator*=(double right);
   UnboundedVector& operator/=(double right);
 
@@ -83,8 +83,8 @@ class UnboundedVector final {
 
   void EraseToEnd(std::int64_t begin_index);
 
-  Scalar Norm() const;
-  Square<Scalar> Norm²() const;
+  auto Norm() const requires homogeneous_ring<Scalar>;
+  auto Norm²() const requires homogeneous_ring<Scalar>;
 
   UnboundedVector<double> Normalize() const;
 
@@ -141,8 +141,8 @@ class UnboundedMatrix final {
 
   UnboundedMatrix& operator=(std::initializer_list<Scalar> right);
 
-  UnboundedMatrix& operator+=(UnboundedMatrix const& right);
-  UnboundedMatrix& operator-=(UnboundedMatrix const& right);
+  UnboundedMatrix& operator+=(UnboundedMatrix<Difference<Scalar>> const& right);
+  UnboundedMatrix& operator-=(UnboundedMatrix<Difference<Scalar>> const& right);
   UnboundedMatrix& operator*=(double right);
   UnboundedMatrix& operator/=(double right);
 

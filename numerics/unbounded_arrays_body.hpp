@@ -75,7 +75,7 @@ UnboundedVector<Scalar_>& UnboundedVector<Scalar_>::operator=(
 
 template<typename Scalar_>
 UnboundedVector<Scalar_>& UnboundedVector<Scalar_>::operator+=(
-    UnboundedVector const& right) {
+    UnboundedVector<Difference<Scalar>> const& right) {
   DCHECK_EQ(size(), right.size());
   for (std::int64_t i = 0; i < size(); ++i) {
     data_[i] += right.data_[i];
@@ -85,7 +85,7 @@ UnboundedVector<Scalar_>& UnboundedVector<Scalar_>::operator+=(
 
 template<typename Scalar_>
 UnboundedVector<Scalar_>& UnboundedVector<Scalar_>::operator-=(
-    UnboundedVector const& right) {
+    UnboundedVector<Difference<Scalar>> const& right) {
   DCHECK_EQ(size(), right.size());
   for (std::int64_t i = 0; i < size(); ++i) {
     data_[i] -= right.data_[i];
@@ -135,12 +135,16 @@ void UnboundedVector<Scalar_>::EraseToEnd(std::int64_t const begin_index) {
 }
 
 template<typename Scalar_>
-Scalar_ UnboundedVector<Scalar_>::Norm() const {
+auto UnboundedVector<Scalar_>::Norm() const
+  requires homogeneous_ring<Scalar>
+{
   return Sqrt(Norm²());
 }
 
 template<typename Scalar_>
-Square<Scalar_> UnboundedVector<Scalar_>::Norm²() const {
+auto UnboundedVector<Scalar_>::Norm²() const
+  requires homogeneous_ring<Scalar>
+{
   Square<Scalar> norm²{};
   for (auto const c : data_) {
     norm² += c * c;
@@ -254,7 +258,7 @@ UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator=(
 
 template<typename Scalar_>
 UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator+=(
-    UnboundedMatrix const& right) {
+    UnboundedMatrix<Difference<Scalar>> const& right) {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
   for (std::int64_t i = 0; i < data_.size(); ++i) {
@@ -265,7 +269,7 @@ UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator+=(
 
 template<typename Scalar_>
 UnboundedMatrix<Scalar_>& UnboundedMatrix<Scalar_>::operator-=(
-    UnboundedMatrix const& right) {
+    UnboundedMatrix<Difference<Scalar>> const& right) {
   DCHECK_EQ(rows(), right.rows());
   DCHECK_EQ(columns(), right.columns());
   for (std::int64_t i = 0; i < data_.size(); ++i) {
