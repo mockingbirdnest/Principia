@@ -3,11 +3,11 @@
 #include <utility>
 
 #include "base/algebra.hpp"
+#include "geometry/complexification.hpp"
 #include "geometry/hilbert.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
-#include "geometry/complexification.hpp"
 #include "numerics/transposed_view.hpp"
 #include "quantities/quantities.hpp"
 
