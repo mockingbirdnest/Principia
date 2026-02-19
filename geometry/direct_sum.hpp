@@ -61,9 +61,9 @@ class DirectSum {
 };
 
 template<std::size_t i, affine... T>
-constexpr auto const& get(DirectSum<T...> const& self);
+constexpr auto const& get(DirectSum<T...> const& direct_sum);
 template<std::size_t i, affine... T>
-constexpr auto& get(DirectSum<T...>& self);
+constexpr auto& get(DirectSum<T...>& direct_sum);
 
 template<additive_group... T>
 constexpr DirectSum<T...> operator+(DirectSum<T...> const& right);

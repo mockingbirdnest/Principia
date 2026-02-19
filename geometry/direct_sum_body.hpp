@@ -82,12 +82,12 @@ DirectSum<T...>& DirectSum<T...>::operator/=(Scalar const& right)
 }
 
 template<std::size_t i, affine... T>
-constexpr auto const& get(DirectSum<T...> const& self) {
-  return std::get<i>(self.tuple());
+constexpr auto const& get(DirectSum<T...> const& direct_sum) {
+  return std::get<i>(direct_sum.tuple());
 }
 template<std::size_t i, affine... T>
-constexpr auto& get(DirectSum<T...>& self) {
-  return std::get<i>(self.tuple());
+constexpr auto& get(DirectSum<T...>& direct_sum) {
+  return std::get<i>(direct_sum.tuple());
 }
 
 template<additive_group... T>

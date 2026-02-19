@@ -1,10 +1,5 @@
 #pragma once
 
-#include <string>
-#include <vector>
-
-#include "base/concepts.hpp"
-#include "base/not_constructible.hpp"
 #include "geometry/direct_sum.hpp"
 #include "geometry/space.hpp"
 
@@ -13,8 +8,6 @@ namespace physics {
 namespace _degrees_of_freedom {
 namespace internal {
 
-using namespace principia::base::_concepts;
-using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_space;
 
@@ -22,7 +15,8 @@ template<typename Frame>
 using DegreesOfFreedom = DirectSum<Position<Frame>, Velocity<Frame>>;
 
 template<typename Frame>
-using RelativeDegreesOfFreedom = Pair<Displacement<Frame>, Velocity<Frame>>;
+using RelativeDegreesOfFreedom =
+    DirectSum<Displacement<Frame>, Velocity<Frame>>;
 
 }  // namespace internal
 
