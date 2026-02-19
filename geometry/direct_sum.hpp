@@ -1,6 +1,8 @@
 #pragma once
 
 #include <algorithm>
+#include <ostream>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -10,7 +12,6 @@
 #include "base/tags.hpp"
 #include "base/traits.hpp"
 #include "geometry/hilbert.hpp"
-#include "quantities/tuples.hpp"
 
 namespace principia {
 namespace geometry {
@@ -22,7 +23,6 @@ using namespace principia::base::_not_constructible;
 using namespace principia::base::_tags;
 using namespace principia::base::_traits;
 using namespace principia::geometry::_hilbert;
-using namespace principia::quantities::_tuples;
 
 // The direct sum of a pack of affine types.
 //
@@ -43,7 +43,19 @@ class DirectSum {
 
   // Getter for the inner tuple field.
   template<typename Self>
-  auto&& tuple(this Self&& self);
+  constexpr auto&& tuple(this Self&& self);
+
+  // Visible by ADL, can be redefined in specializations.  Cannot deduce this
+  // because it's not a member function.
+  template<std::size_t i>
+  friend constexpr auto const& get(DirectSum const& direct_sum) {
+    return std::get<i>(direct_sum.tuple_);
+  }
+
+  template<std::size_t i>
+  friend constexpr auto& get(DirectSum& direct_sum) {
+    return std::get<i>(direct_sum.tuple_);
+  }
 
   constexpr auto Norm() const
     requires(hilbert<T> && ...);
@@ -65,11 +77,6 @@ class DirectSum {
  private:
   std::tuple<T...> tuple_;
 };
-
-template<std::size_t i, affine... T>
-constexpr auto const& get(DirectSum<T...> const& self);
-template<std::size_t i, affine... T>
-constexpr auto& get(DirectSum<T...>& self);
 
 template<additive_group... T>
 constexpr DirectSum<T...> operator+(DirectSum<T...> const& right);
@@ -114,6 +121,12 @@ template<affine... T>
   requires(hilbert<T> && ...)
 constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right);
+
+template<affine... T>
+std::string DebugString(DirectSum<T...> const& direct_sum);
+
+template<affine... T>
+std::ostream& operator<<(std::ostream& out, DirectSum<T...> const& direct_sum);
 
 // Helper for getting a DirectSum corresponding to a tuple when you don't
 // have access to the pack.
