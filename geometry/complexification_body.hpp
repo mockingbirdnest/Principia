@@ -192,6 +192,7 @@ template<typename LVector, typename RVector>
 Complexification<InnerProductType<LVector, RVector>> InnerProduct(
     Complexification<LVector> const& left,
     Complexification<RVector> const& right) {
+  using geometry::_hilbert::InnerProduct;
   return Complexification<InnerProductType<LVector, RVector>>(
       InnerProduct(left.real_part(), right.real_part()) +
           InnerProduct(left.imaginary_part(), right.imaginary_part()),
