@@ -181,12 +181,11 @@ FourierTransform() const -> Spectrum {
 template<typename Value,
          int aperiodic_degree_, int periodic_degree_>
 template<int aperiodic_wdegree, int periodic_wdegree>
-typename NormType<Value>
-PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::
-Norm(PoissonSeries<double,
-                   aperiodic_wdegree, periodic_wdegree> const& weight,
-     Instant const& t_min,
-     Instant const& t_max) const {
+NormType<Value>
+PiecewisePoissonSeries<Value, aperiodic_degree_, periodic_degree_>::Norm(
+    PoissonSeries<double, aperiodic_wdegree, periodic_wdegree> const& weight,
+    Instant const& t_min,
+    Instant const& t_max) const {
   AngularFrequency const max_ω = 2 * this->max_ω() + weight.max_ω();
   std::optional<int> const max_points =
       _quadrature::MaxPointsHeuristicsForAutomaticClenshawCurtis(

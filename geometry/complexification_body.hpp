@@ -60,14 +60,14 @@ Complexification<Vector> Complexification<Vector>::Conjugate() const {
 }
 
 template<typename Vector>
-typename Norm²Type<Vector> Complexification<Vector>::Norm²()
+Norm²Type<Vector> Complexification<Vector>::Norm²()
     const {
   using geometry::_hilbert::Norm²;
   return Norm²(real_part_) + Norm²(imaginary_part_);
 }
 
 template<typename Vector>
-typename NormType<Vector> Complexification<Vector>::Norm() const {
+NormType<Vector> Complexification<Vector>::Norm() const {
   return Sqrt(Norm²());
 }
 
