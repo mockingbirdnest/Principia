@@ -177,6 +177,7 @@ constexpr auto operator/(DirectSum<L...> const& left, R const& right) {
 }
 
 template<affine... T>
+  requires(hilbert<T> && ...)
 constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right) {
   using T0 = std::tuple_element_t<0, DirectSum<T...>>;

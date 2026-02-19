@@ -111,6 +111,7 @@ template<homogeneous_field R, homogeneous_vector_space<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right);
 
 template<affine... T>
+  requires(hilbert<T> && ...)
 constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right);
 
