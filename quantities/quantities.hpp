@@ -191,6 +191,7 @@ using internal::ToM256D;
 
 }  // namespace _quantities
 }  // namespace quantities
+
 namespace base {
 namespace _algebra {
 
