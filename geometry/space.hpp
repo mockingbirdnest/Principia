@@ -3,6 +3,7 @@
 #include <cstdint>
 
 #include "base/algebra.hpp"
+#include "base/mappable.hpp"
 #include "base/not_null.hpp"
 #include "base/tags.hpp"
 #include "geometry/direct_sum.hpp"
@@ -191,6 +192,31 @@ constexpr auto const& get(
 }  // namespace internal
 }  // namespace _direct_sum
 }  // namespace geometry
+
+// Reopen the base namespace to make DirectSum<Displacement, Velocity> mappable.
+namespace base {
+namespace _mappable {
+namespace internal {
+
+using namespace principia::geometry::_direct_sum;
+using namespace principia::geometry::_space;
+
+template<typename Functor, typename Frame>
+class Mappable<Functor, DirectSum<Displacement<Frame>, Velocity<Frame>>> {
+ public:
+  using type = DirectSum<
+      decltype(std::declval<Functor>()(std::declval<Displacement<Frame>>())),
+      decltype(std::declval<Functor>()(std::declval<Velocity<Frame>>()))>;
+
+  static type Do(
+      Functor const& functor,
+      DirectSum<Displacement<Frame>, Velocity<Frame>> const& direct_sum);
+};
+
+}  // namespace internal
+}  // namespace _mappable
+}  // namespace base
+
 }  // namespace principia
 
 #include "geometry/space_body.hpp"

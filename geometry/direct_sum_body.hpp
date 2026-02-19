@@ -185,13 +185,11 @@ constexpr auto InnerProduct(DirectSum<T...> const& left,
 template<affine... T>
 std::string DebugString(DirectSum<T...> const& direct_sum) {
   std::vector<std::string> strings;
-  strings.reserve(sizeof...(T) + 2);
-  strings.push_back("{");
+  strings.reserve(sizeof...(T));
   for_all_of(direct_sum).loop([&strings](auto const& component) {
     strings.push_back(DebugString(component));
   });
-  strings.push_back("}");
-  return absl::StrJoin(strings, ", ");
+  return absl::StrCat("{", absl::StrJoin(strings, ", "), "}");
 }
 
 template<affine... T>

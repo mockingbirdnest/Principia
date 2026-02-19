@@ -2,10 +2,14 @@
 
 #include "geometry/space.hpp"
 
+#include "geometry/serialization.hpp"
+
 namespace principia {
 namespace geometry {
 namespace _direct_sum {
 namespace internal {
+
+using namespace principia::geometry::_serialization;
 
 template<typename Frame>
 constexpr DirectSum<Position<Frame>, Velocity<Frame>>::DirectSum(
@@ -48,12 +52,25 @@ constexpr auto&& DirectSum<Position<Frame>, Velocity<Frame>>::velocity(
 
 template<typename Frame>
 void DirectSum<Position<Frame>, Velocity<Frame>>::WriteToMessage(
-    not_null<serialization::Pair*> const message) const {}
+    not_null<serialization::Pair*> const message) const {
+  PointOrMultivectorSerializer<Position<Frame>, serialization::Pair::Element>::
+      WriteToMessage(position_, message->mutable_t1());
+  PointOrMultivectorSerializer<Velocity<Frame>, serialization::Pair::Element>::
+      WriteToMessage(velocity_, message->mutable_t2());
+}
 
 template<typename Frame>
 DirectSum<Position<Frame>, Velocity<Frame>>
 DirectSum<Position<Frame>, Velocity<Frame>>::ReadFromMessage(
-    serialization::Pair const& message) {}
+    serialization::Pair const& message) {
+  auto const position = PointOrMultivectorSerializer<
+      Position<Frame>,
+      serialization::Pair::Element>::ReadFromMessage(message.t1());
+  auto const velocity = PointOrMultivectorSerializer<
+      Velocity<Frame>,
+      serialization::Pair::Element>::ReadFromMessage(message.t2());
+  return DirectSum(position, velocity);
+}
 
 template<typename Frame>
 constexpr DirectSum<Displacement<Frame>, Velocity<Frame>>::DirectSum(
@@ -96,12 +113,26 @@ constexpr auto&& DirectSum<Displacement<Frame>, Velocity<Frame>>::velocity(
 
 template<typename Frame>
 void DirectSum<Displacement<Frame>, Velocity<Frame>>::WriteToMessage(
-    not_null<serialization::Pair*> const message) const {}
+    not_null<serialization::Pair*> const message) const {
+  PointOrMultivectorSerializer<Displacement<Frame>,
+                               serialization::Pair::Element>::
+      WriteToMessage(displacement_, message->mutable_t1());
+  PointOrMultivectorSerializer<Velocity<Frame>, serialization::Pair::Element>::
+      WriteToMessage(velocity_, message->mutable_t2());
+}
 
 template<typename Frame>
 DirectSum<Displacement<Frame>, Velocity<Frame>>
 DirectSum<Displacement<Frame>, Velocity<Frame>>::ReadFromMessage(
-    serialization::Pair const& message) {}
+    serialization::Pair const& message) {
+  auto const displacement = PointOrMultivectorSerializer<
+      Displacement<Frame>,
+      serialization::Pair::Element>::ReadFromMessage(message.t1());
+  auto const velocity = PointOrMultivectorSerializer<
+      Velocity<Frame>,
+      serialization::Pair::Element>::ReadFromMessage(message.t2());
+  return DirectSum(displacement, velocity);
+}
 
 template<std::size_t i, typename Frame>
 constexpr auto const& get(
@@ -132,4 +163,23 @@ constexpr auto const& get(
 }  // namespace internal
 }  // namespace _direct_sum
 }  // namespace geometry
+
+namespace base {
+namespace _mappable {
+namespace internal {
+
+template<typename Functor, typename Frame>
+typename Mappable<Functor,
+                  DirectSum<Displacement<Frame>, Velocity<Frame>>>::type
+Mappable<Functor, DirectSum<Displacement<Frame>, Velocity<Frame>>>::Do(
+    Functor const& functor,
+    DirectSum<Displacement<Frame>, Velocity<Frame>> const& direct_sum) {
+  return type(functor(direct_sum.displacement()),
+              functor(direct_sum.velocity()));
+}
+
+}  // namespace internal
+}  // namespace _mappable
+}  // namespace base
+
 }  // namespace principia
