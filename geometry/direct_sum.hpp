@@ -122,23 +122,8 @@ std::string DebugString(DirectSum<T...> const& direct_sum);
 template<affine... T>
 std::ostream& operator<<(std::ostream& out, DirectSum<T...> const& direct_sum);
 
-// Helper for getting a DirectSum corresponding to a tuple when you don't
-// have access to the pack.
-template<typename Tuple>
-struct direct_sum;
-
-template<affine... T>
-struct direct_sum<std::tuple<T...>> : not_constructible {
-  typedef DirectSum<T...> type;
-};
-
-template<typename T>
-using direct_sum_t = direct_sum<T>::type;
-
 }  // namespace internal
 
-using internal::direct_sum;
-using internal::direct_sum_t;
 using internal::DirectSum;
 
 }  // namespace _direct_sum

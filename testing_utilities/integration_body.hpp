@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
-#include "geometry/direct_sum.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
@@ -15,7 +14,6 @@ namespace _integration {
 namespace internal {
 
 using namespace principia::astronomy::_epoch;
-using namespace principia::geometry::_direct_sum;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 

@@ -116,8 +116,6 @@ TEST(DirectSumTest, DegreesOfFreedomIsMerelyAffine) {
 TEST(DirectSumTest, Constructors) {
   EXPECT_EQ(DirectSum<double>(), DirectSum{0.0});
   EXPECT_EQ(DirectSum<Length>(), DirectSum{0 * Metre});
-  EXPECT_EQ(DirectSum<Length>(std::tuple<Length>(4 * Metre)),
-            DirectSum{4 * Metre});
 }
 
 TEST(DirectSumTest, UnaryPlus) {
