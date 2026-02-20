@@ -9,6 +9,7 @@
 
 #include "base/algebra.hpp"
 #include "base/tags.hpp"
+#include "geometry/hilbert.hpp"
 #include "numerics/concepts.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_views.hpp"
@@ -22,6 +23,7 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 using namespace principia::base::_tags;
+using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_concepts;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_views;
@@ -83,8 +85,8 @@ class UnboundedVector final {
 
   void EraseToEnd(std::int64_t begin_index);
 
-  auto Norm() const requires homogeneous_ring<Scalar>;
-  auto Norm²() const requires homogeneous_ring<Scalar>;
+  auto Norm() const requires hilbert<Scalar>;
+  auto Norm²() const requires hilbert<Scalar>;
 
   UnboundedVector<double> Normalize() const;
 

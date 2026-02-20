@@ -136,18 +136,19 @@ void UnboundedVector<Scalar_>::EraseToEnd(std::int64_t const begin_index) {
 
 template<affine Scalar_>
 auto UnboundedVector<Scalar_>::Norm() const
-  requires homogeneous_ring<Scalar>
+  requires hilbert<Scalar>
 {
   return Sqrt(Norm²());
 }
 
 template<affine Scalar_>
 auto UnboundedVector<Scalar_>::Norm²() const
-  requires homogeneous_ring<Scalar>
+  requires hilbert<Scalar>
 {
+  using geometry::_hilbert::Norm²;
   Square<Scalar> norm²{};
   for (auto const c : data_) {
-    norm² += c * c;
+    norm² += Norm²(c);
   }
   return norm²;
 }
