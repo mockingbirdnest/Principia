@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <concepts>
 #include <ostream>
 #include <string>
 #include <tuple>
@@ -35,9 +36,13 @@ class DirectSum {
   constexpr DirectSum() = default;
   constexpr explicit DirectSum(uninitialized_t);
 
-  // Constructor from elements.
-  constexpr DirectSum(T&&... args);  // NOLINT(runtime/explicit)
+  // Constructor from elements.  These are similar to constructors (2) and (3)
+  // from https://en.cppreference.com/w/cpp/utility/tuple/tuple.html,
+  // respectively.
   constexpr DirectSum(T const&... args);  // NOLINT(runtime/explicit)
+  template<typename... Args>
+    requires(sizeof...(T) >= 1 && (std::constructible_from<T, Args> && ...))
+  constexpr DirectSum(Args&&... args);  // NOLINT(runtime/explicit)
 
   // Visible by ADL, can be redefined in specializations.  Cannot deduce this
   // because it's not a member function.

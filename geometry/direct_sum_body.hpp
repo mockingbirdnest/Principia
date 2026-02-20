@@ -4,6 +4,7 @@
 #include <string>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "absl/strings/str_join.h"
@@ -24,10 +25,13 @@ template<affine... T>
 constexpr DirectSum<T...>::DirectSum(uninitialized_t) {}
 
 template<affine... T>
-constexpr DirectSum<T...>::DirectSum(T&&... args) : tuple_(args...) {}
+constexpr DirectSum<T...>::DirectSum(T const&... args) : tuple_(args...) {}
 
 template<affine... T>
-constexpr DirectSum<T...>::DirectSum(T const&... args) : tuple_(args...) {}
+template<typename... Args>
+  requires(sizeof...(T) >= 1 && (std::constructible_from<T, Args> && ...))
+constexpr DirectSum<T...>::DirectSum(Args&&... args)
+    : tuple_(std::forward<Args>(args)...) {}
 
 template<affine... T>
 constexpr auto DirectSum<T...>::Norm() const

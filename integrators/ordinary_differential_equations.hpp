@@ -57,9 +57,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   using DependentVariableDerivatives = DirectSum<
       Derivative<DependentVariable, IndependentVariable>...>;
 
-  // A functor that computes f(s, y) and stores it in `y′`.  This functor must
-  // be called with `get<i>(y′).size()` equal to `get<i>(y).size()` for all `i`,
-  // but there is no requirement on the values in `y′`.
+  // A functor that computes f(s, y) and stores it in `y′`.
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& s,
                                  DependentVariables const& y,
