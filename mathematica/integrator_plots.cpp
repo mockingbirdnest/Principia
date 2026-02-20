@@ -525,7 +525,8 @@ class WorkErrorGraphGenerator {
             [tolerance](Time const& current_step_size,
                         FirstOrderODE::State const& state,
                         FirstOrderODE::State::Error const& error) {
-              return tolerance / get<0>(error).Norm();
+              auto const& [position_error, _] = error;
+              return tolerance / position_error.Norm();
             },
             AdaptiveStepSizeIntegrator<FirstOrderODE>::Parameters{
                 /*first_step=*/tmax_[0] - t0,

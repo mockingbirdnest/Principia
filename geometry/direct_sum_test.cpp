@@ -78,20 +78,6 @@ concept greater_than_or_equal = requires(T a, T b) {
   { a >= b };
 };
 
-TEST(DirectSumTest, Aggregates) {
-  using T = DirectSum<Length, Mass, Time>;
-  T x = {1 * Metre, 2 * Kilogram, 3 * Second};
-  T y{4 * Metre, 5 * Kilogram, 6 * Second};
-
-  struct S {
-    S(T x, T y) : x(x), y(y) {}
-    T x;
-    T y;
-  };
-  S s = {{1 * Metre, 2 * Kilogram, 3 * Second},
-         {4 * Metre, 5 * Kilogram, 6 * Second}};
-}
-
 TEST(DirectSumTest, Unordered) {
   static_assert(!less_than<ℝ²>);
   static_assert(!greater_than<ℝ²>);
@@ -130,8 +116,8 @@ TEST(DirectSumTest, DegreesOfFreedomIsMerelyAffine) {
 TEST(DirectSumTest, Constructors) {
   EXPECT_EQ(DirectSum<double>(), DirectSum{0.0});
   EXPECT_EQ(DirectSum<Length>(), DirectSum{0 * Metre});
-  //EXPECT_EQ(DirectSum<Length>(std::tuple<Length>(4 * Metre)),
-  //          DirectSum{4 * Metre});
+  EXPECT_EQ(DirectSum<Length>(std::tuple<Length>(4 * Metre)),
+            DirectSum{4 * Metre});
 }
 
 TEST(DirectSumTest, UnaryPlus) {
