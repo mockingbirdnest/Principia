@@ -3,10 +3,10 @@
 #include <utility>
 
 #include "base/algebra.hpp"
-#include "geometry/frame.hpp"
-#include "geometry/space.hpp"
 #include "geometry/complexification.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/hilbert.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -17,10 +17,10 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::base::_algebra;
-using namespace principia::geometry::_frame;
-using namespace principia::geometry::_space;
 using namespace principia::geometry::_complexification;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
