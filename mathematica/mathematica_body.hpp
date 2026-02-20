@@ -13,6 +13,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "astronomy/epoch.hpp"
+#include "base/for_all_of.hpp"
 #include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
@@ -24,6 +25,7 @@ namespace _mathematica {
 namespace internal {
 
 using namespace principia::astronomy::_epoch;
+using namespace principia::base::_for_all_of;
 using namespace principia::base::_mod;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_not_null;
@@ -461,6 +463,17 @@ template<typename S, typename F,
 std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
                           OptionalExpressIn express_in) {
   return ToMathematica(form.coordinates(), express_in);
+}
+
+template<typename OptionalExpressIn, typename... T>
+std::string ToMathematica(DirectSum<T...> const& direct_sum,
+                          OptionalExpressIn express_in) {
+  std::vector<std::string> strings;
+  strings.reserve(sizeof...(T));
+  for_all_of(direct_sum).loop([&express_in, &strings](auto const& component) {
+    strings.push_back(ToMathematica(component, express_in));
+  });
+  return RawApply("List", strings);
 }
 
 template<typename F, typename OptionalExpressIn>

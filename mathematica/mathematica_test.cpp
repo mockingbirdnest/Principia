@@ -8,6 +8,7 @@
 #include "astronomy/orbital_elements.hpp"
 #include "base/macros.hpp"  //  🧙 For CLANG_VERSION_LE.
 #include "base/multiprecision.hpp"
+#include "geometry/direct_sum.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -39,6 +40,7 @@ namespace mathematica {
 
 using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_multiprecision;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -196,6 +198,19 @@ TEST_F(MathematicaTest, ToMathematica) {
     Vector<double, F> const v({2.0, 3.0, -4.0});
     EXPECT_EQ(ToMathematica(v),
               ToMathematica(Point<Vector<double, F>>() + v));
+  }
+  {
+    using DS = DirectSum<Length, Mass>;
+    EXPECT_EQ("List["
+              "Quantity[Times[16^^10000000000000,Power[2,Subtract[1,52]]],"
+              "\" m\"],"
+              "Quantity[Times[16^^18000000000000,Power[2,Subtract[1,52]]],"
+              "\" kg\"]]",
+              ToMathematica(DS{2.0 * Metre, 3.0 * Kilogram}, PreserveUnits));
+    EXPECT_EQ("List["
+              "Times[16^^10000000000000,Power[2,Subtract[1,52]]],"
+              "Times[16^^18000000000000,Power[2,Subtract[1,52]]]]",
+              ToMathematica(DS{2.0 * Metre, 3.0 * Kilogram}, ExpressInSIUnits));
   }
   {
     EXPECT_EQ(
