@@ -1,19 +1,32 @@
 #include "numerics/unbounded_arrays.hpp"
 
+#include "base/algebra.hpp"
+#include "geometry/frame.hpp"
+#include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/transposed_view.hpp"
+#include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace numerics {
 
+using namespace principia::base::_algebra;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_almost_equals;
 using ::testing::Pointer;
+
+using World = Frame<serialization::Frame::TestTag,
+                    Inertial,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
 
 class UnboundedArraysTest : public ::testing::Test {
  protected:
@@ -54,6 +67,52 @@ class UnboundedArraysTest : public ::testing::Test {
   UnboundedStrictlyUpperTriangularMatrix<double> su4_;
   UnboundedUpperTriangularMatrix<double> u4_;
 };
+
+TEST_F(UnboundedArraysTest, AlgebraConcepts) {
+  static_assert(affine<UnboundedVector<double>>);
+  static_assert(affine<UnboundedVector<Length>>);
+  static_assert(affine<UnboundedVector<Position<World>>>);
+
+  static_assert(additive_group<UnboundedVector<double>>);
+  static_assert(additive_group<UnboundedVector<Length>>);
+  static_assert(!additive_group<UnboundedVector<Position<World>>>);
+
+  static_assert(!homogeneous_ring<UnboundedVector<double>>);
+  static_assert(!homogeneous_ring<UnboundedVector<Length>>);
+  static_assert(!homogeneous_ring<UnboundedVector<Position<World>>>);
+
+  static_assert(real_affine_space<UnboundedVector<double>>);
+  static_assert(real_affine_space<UnboundedVector<Length>>);
+  static_assert(real_affine_space<UnboundedVector<Position<World>>>);
+
+  static_assert(real_vector_space<UnboundedVector<double>>);
+  static_assert(real_vector_space<UnboundedVector<Length>>);
+  static_assert(!real_vector_space<UnboundedVector<Position<World>>>);
+
+  static_assert(affine<UnboundedMatrix<double>>);
+  static_assert(affine<UnboundedMatrix<Length>>);
+  static_assert(affine<UnboundedMatrix<Position<World>>>);
+
+  static_assert(additive_group<UnboundedMatrix<double>>);
+  static_assert(additive_group<UnboundedMatrix<Length>>);
+  static_assert(!additive_group<UnboundedMatrix<Position<World>>>);
+
+  static_assert(homogeneous_ring<UnboundedMatrix<double>>);
+  static_assert(homogeneous_ring<UnboundedMatrix<Length>>);
+
+  // UnboundedMatrix<double> is not a ring because it doesn't have a statically
+  // known 1.
+  static_assert(!ring<UnboundedMatrix<double>>);
+  static_assert(!ring<UnboundedMatrix<Length>>);
+
+  static_assert(real_affine_space<UnboundedMatrix<double>>);
+  static_assert(real_affine_space<UnboundedMatrix<Length>>);
+  static_assert(real_affine_space<UnboundedMatrix<Position<World>>>);
+
+  static_assert(real_vector_space<UnboundedMatrix<double>>);
+  static_assert(real_vector_space<UnboundedMatrix<Length>>);
+  static_assert(!real_vector_space<UnboundedMatrix<Position<World>>>);
+}
 
 TEST_F(UnboundedArraysTest, Assignment) {
   {
