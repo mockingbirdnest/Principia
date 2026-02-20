@@ -254,6 +254,15 @@ using internal::SphericalCoordinates;
 
 }  // namespace _r3_element
 }  // namespace geometry
+
+namespace base {
+namespace _algebra {
+
+template<typename Scalar>
+constexpr int dimension<geometry::_r3_element::R3Element<Scalar>, double> = 3;
+
+}  // namespace _algebra
+}  // namespace base
 }  // namespace principia
 
 #include "geometry/r3_element_body.hpp"

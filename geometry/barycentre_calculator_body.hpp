@@ -83,10 +83,12 @@ Point Barycentre(Point const (&points)[size]) {
       total += points[i] - origin;
     }
   }
+  // TODO(phl): The cast is necessary because `std::size_t` is not a field.
+  // It's somewhat annoying, though.  Can we fix this?
   if constexpr (additive_group<Point>) {
-    return total / size;
+    return total / static_cast<double>(size);
   } else {
-    return origin + total / size;
+    return origin + total / static_cast<double>(size);
   }
 }
 

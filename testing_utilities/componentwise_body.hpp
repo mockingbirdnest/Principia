@@ -62,47 +62,6 @@ operator Matcher<TripleType>() const {
       t1_matcher_, t2_matcher_, t3_matcher_));
 }
 
-template<typename T1, typename T2>
-template<typename T1Matcher, typename T2Matcher>
-ComponentwiseMatcher2Impl<Pair<T1, T2> const&>::
-ComponentwiseMatcher2Impl(T1Matcher const& t1_matcher,
-                          T2Matcher const& t2_matcher)
-    : t1_matcher_(SafeMatcherCast<T1>(t1_matcher)),
-      t2_matcher_(SafeMatcherCast<T2>(t2_matcher)) {}
-
-template<typename T1, typename T2>
-bool ComponentwiseMatcher2Impl<Pair<T1, T2> const&>::MatchAndExplain(
-    Pair<T1, T2> const& actual,
-    MatchResultListener* listener) const {
-  bool const t1_matches = t1_matcher_.MatchAndExplain(actual.t1_, listener);
-  if (!t1_matches) {
-    *listener << "in the first element; ";
-  }
-  bool const t2_matches = t2_matcher_.MatchAndExplain(actual.t2_, listener);
-  if (!t2_matches) {
-    *listener << "in the second element; ";
-  }
-  return t1_matches && t2_matches;
-}
-
-template<typename T1, typename T2>
-void ComponentwiseMatcher2Impl<Pair<T1, T2> const&>::DescribeTo(
-    std::ostream* out) const {
-  *out << "first element ";
-  t1_matcher_.DescribeTo(out);
-  *out << " and second element ";
-  t2_matcher_.DescribeTo(out);
-}
-
-template<typename T1, typename T2>
-void ComponentwiseMatcher2Impl<Pair<T1, T2> const&>::
-DescribeNegationTo(std::ostream* out) const {
-  *out << "first element ";
-  t1_matcher_.DescribeNegationTo(out);
-  *out << " or second element ";
-  t2_matcher_.DescribeNegationTo(out);
-}
-
 template<typename Frame>
 template<typename QMatcher, typename PMatcher>
 ComponentwiseMatcher2Impl<DegreesOfFreedom<Frame> const&>::

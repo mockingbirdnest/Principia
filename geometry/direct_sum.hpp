@@ -1,6 +1,8 @@
 #pragma once
 
 #include <algorithm>
+#include <ostream>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -8,7 +10,8 @@
 #include "base/algebra.hpp"
 #include "base/not_constructible.hpp"
 #include "base/tags.hpp"
-#include "quantities/tuples.hpp"
+#include "base/traits.hpp"
+#include "geometry/hilbert.hpp"
 
 namespace principia {
 namespace geometry {
@@ -18,7 +21,8 @@ namespace internal {
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_constructible;
 using namespace principia::base::_tags;
-using namespace principia::quantities::_tuples;
+using namespace principia::base::_traits;
+using namespace principia::geometry::_hilbert;
 
 // The direct sum of a pack of affine types.
 //
@@ -39,12 +43,24 @@ class DirectSum {
 
   // Getter for the inner tuple field.
   template<typename Self>
-  auto&& tuple(this Self&& self);
+  constexpr auto&& tuple(this Self&& self);
+
+  // Visible by ADL, can be redefined in specializations.  Cannot deduce this
+  // because it's not a member function.
+  template<std::size_t i>
+  friend constexpr auto const& get(DirectSum const& direct_sum) {
+    return std::get<i>(direct_sum.tuple_);
+  }
+
+  template<std::size_t i>
+  friend constexpr auto& get(DirectSum& direct_sum) {
+    return std::get<i>(direct_sum.tuple_);
+  }
 
   constexpr auto Norm() const
-    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+    requires(hilbert<T> && ...);
   constexpr auto Norm²() const
-    requires hilbert<DirectSum<T...>, DirectSum<T...>>;
+    requires(hilbert<T> && ...);
 
   bool operator==(DirectSum const&) const = default;
 
@@ -61,11 +77,6 @@ class DirectSum {
  private:
   std::tuple<T...> tuple_;
 };
-
-template<std::size_t i, affine... T>
-constexpr auto const& get(DirectSum<T...> const& self);
-template<std::size_t i, affine... T>
-constexpr auto& get(DirectSum<T...>& self);
 
 template<additive_group... T>
 constexpr DirectSum<T...> operator+(DirectSum<T...> const& right);
@@ -89,18 +100,33 @@ constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
                                     DirectSum<Difference<T>...> const& right)
   requires(!additive_group<T> || ...);
 
-template<homogeneous_ring L, homogeneous_module<L>... R>
+// We would want to write <homogeneous_ring L, homogeneous_module<L>... R>
+// below, but when trying to determine whether DirectSum is a homogeneous_ring
+// (which it should not be), we need to try (and fail) overload resolution on a
+// product of DirectSum.  That in turn requires figuring out whether DirectSum
+// would work as L here, and in particular, whether it is a homogeneous_ring.
+// By forbidding instances of DirectSum directly we break the cyclic dependency.
+template<typename L, typename... R>
+  requires(!is_instance_of_v<DirectSum, L>) && (homogeneous_module<R, L> && ...)
 constexpr auto operator*(L const& left, DirectSum<R...> const& right);
 
-template<homogeneous_ring R, homogeneous_module<R>... L>
+template<typename... L, typename R>
+  requires(!is_instance_of_v<DirectSum, R>) && (homogeneous_module<L, R> && ...)
 constexpr auto operator*(DirectSum<L...> const& left, R const& right);
 
 template<homogeneous_field R, homogeneous_vector_space<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right);
 
 template<affine... T>
+  requires(hilbert<T> && ...)
 constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right);
+
+template<affine... T>
+std::string DebugString(DirectSum<T...> const& direct_sum);
+
+template<affine... T>
+std::ostream& operator<<(std::ostream& out, DirectSum<T...> const& direct_sum);
 
 // Helper for getting a DirectSum corresponding to a tuple when you don't
 // have access to the pack.

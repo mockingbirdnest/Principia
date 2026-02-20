@@ -5,6 +5,8 @@
 #include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/space.hpp"
+#include "geometry/complexification.hpp"
+#include "geometry/hilbert.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -17,6 +19,8 @@ namespace numerics {
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_space;
+using namespace principia::geometry::_complexification;
+using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
@@ -113,6 +117,7 @@ TEST_F(FixedArraysTest, LinearAlgebraConcepts) {
   static_assert(homogeneous_vector_space<FixedMatrix<Length, 3, 3>, Time>);
   static_assert(real_vector_space<FixedMatrix<Length, 3, 3>>);
   static_assert(!vector_space<FixedMatrix<Length, 3, 3>, Time>);
+  static_assert(hilbert<FixedVector<Length, 3>>);
 }
 
 TEST_F(FixedArraysTest, Assignment) {
@@ -390,6 +395,15 @@ TEST_F(FixedArraysTest, Transpose) {
                                               3, 13, 34,
                                               5, 21, 55, 89})),
       (FixedLowerTriangularMatrix<double, 4>(TransposedView{u4_})));
+}
+
+TEST_F(FixedArraysTest, ℂ³) {
+  const Complexification<double> i(0, 1);
+  FixedVector<Complexification<double>, 3> v{{2, 6 * i, 3}};
+  EXPECT_EQ(49, v.Norm²());
+  EXPECT_EQ(7, v.Norm());
+  EXPECT_EQ(49, InnerProduct(v, v));
+  EXPECT_EQ(-23, TransposedView{v} * v);
 }
 
 }  // namespace numerics

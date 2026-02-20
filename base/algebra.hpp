@@ -204,10 +204,19 @@ concept homogeneous_affine_module = affine<A> && homogeneous_ring<R> &&
 template<typename V>
 concept real_affine_space = affine_space<V, double>;
 
-template<typename T1, typename T2>
-concept hilbert = requires(T1 const& t1, T2 const& t2) {
-  InnerProduct(t1, t2);
-};
+template<typename V, ring K>
+  requires homogeneous_affine_module<V, K>
+int dimension;
+
+template<affine A, ring K>
+  requires homogeneous_affine_module<A, K> && (!additive_group<A>)
+int dimension<A, K> = dimension<Difference<A>, K>;
+
+template<ring K>
+constexpr int dimension<K, K> = 1;
+
+template<real_affine_space V>
+constexpr int real_dimension = dimension<V, double>;
 
 }  // namespace internal
 
@@ -215,8 +224,8 @@ using internal::additive_group;
 using internal::affine;
 using internal::affine_module;
 using internal::affine_space;
+using internal::dimension;
 using internal::field;
-using internal::hilbert;
 using internal::homogeneous_affine_module;
 using internal::homogeneous_affine_space;
 using internal::homogeneous_field;
@@ -225,6 +234,7 @@ using internal::homogeneous_ring;
 using internal::homogeneous_vector_space;
 using internal::module;
 using internal::real_affine_space;
+using internal::real_dimension;
 using internal::real_vector_space;
 using internal::ring;
 using internal::vector_space;

@@ -28,6 +28,9 @@ static_assert(additive_group<IntegerModulo<4>>);
 static_assert(ring<IntegerModulo<4>>);
 static_assert(!field<IntegerModulo<4>>);
 
+static_assert(dimension<int, int> == 1);
+static_assert(real_dimension<double> == 1);
+
 TEST_F(AlgebraTest, Group) {
   TestGroup(0, 42, -3, 2, std::plus<>(), std::negate<>(), 0, 0);
   TestGroup<double>(1.0, 42.0, -3.0, 2.0, std::multiplies<>(),

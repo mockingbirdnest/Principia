@@ -6,7 +6,6 @@
 #include <string>
 
 #include "geometry/grassmann.hpp"
-#include "geometry/pair.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
 #include "geometry/space.hpp"
@@ -22,7 +21,6 @@ using ::testing::Matcher;
 using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_pair;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
@@ -77,25 +75,6 @@ class ComponentwiseMatcher3 final {
 
 template<typename PairType>
 class ComponentwiseMatcher2Impl;
-
-template<typename T1, typename T2>
-class ComponentwiseMatcher2Impl<Pair<T1, T2> const&> final
-    : public MatcherInterface<Pair<T1, T2> const&> {
- public:
-  template<typename T1Matcher, typename T2Matcher>
-  ComponentwiseMatcher2Impl(T1Matcher const& t1_matcher,
-                            T2Matcher const& t2_matcher);
-
-  bool MatchAndExplain(Pair<T1, T2> const& actual,
-                       MatchResultListener* listener) const override;
-
-  void DescribeTo(std::ostream* out) const override;
-  void DescribeNegationTo(std::ostream* out) const override;
-
- private:
-  Matcher<T1> const t1_matcher_;
-  Matcher<T2> const t2_matcher_;
-};
 
 template<typename Frame>
 class ComponentwiseMatcher2Impl<DegreesOfFreedom<Frame> const&> final

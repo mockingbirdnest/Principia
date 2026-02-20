@@ -32,8 +32,7 @@ using Field = std::function<Scalar(Argument const&)>;
 template<typename Scalar, typename Argument>
 using Gradient =
     Product<Scalar,
-            Quotient<Difference<Argument>,
-                     typename Hilbert<Difference<Argument>>::Norm²Type>>;
+            Quotient<Difference<Argument>, Norm²Type<Difference<Argument>>>>;
 
 // NOTE(phl): This could nearly be a self-standing function (it doesn't have
 // much state) but having the type `Box` floating around would be unpleasant.
@@ -45,7 +44,7 @@ using Gradient =
 template<typename Scalar, typename Argument, int dimensions = 3>
 class MultiLevelSingleLinkage {
  public:
-  using NormType = typename Hilbert<Difference<Argument>>::NormType;
+  using NormType = NormType<Difference<Argument>>;
 
   // A parallelepiped defined by its centre and the displacements of three
   // vertices.  Random points are uniformly distributed in the box.
@@ -85,7 +84,7 @@ class MultiLevelSingleLinkage {
       NormType local_search_tolerance);
 
  private:
-  using Norm²Type = typename Hilbert<Difference<Argument>>::Norm²Type;
+  using Norm²Type = Norm²Type<Difference<Argument>>;
 
   // We need pointer stability for the arguments as we store pointers, e.g., in
   // PCP trees.  We generally cannot `reserve` because we don't know the final
