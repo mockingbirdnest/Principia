@@ -2,10 +2,10 @@
 
 #include "testing_utilities/integration.hpp"
 
-#include <tuple>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "geometry/direct_sum.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
@@ -15,6 +15,7 @@ namespace _integration {
 namespace internal {
 
 using namespace principia::astronomy::_epoch;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
@@ -45,8 +46,8 @@ absl::Status ComputeHarmonicOscillatorAcceleration3D(
 
 inline absl::Status ComputeHarmonicOscillatorDerivatives1D(
     Instant const& t,
-    std::tuple<Length, Speed> const& state,
-    std::tuple<Speed, Acceleration>& result,
+    DirectSum<Length, Speed> const& state,
+    DirectSum<Speed, Acceleration>& result,
     int* const evaluations) {
   auto const& [q, v] = state;
   auto& [qʹ, vʹ] = result;

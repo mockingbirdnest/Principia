@@ -4,6 +4,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "geometry/direct_sum.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -19,6 +20,7 @@ namespace _integration {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
@@ -49,8 +51,8 @@ absl::Status ComputeHarmonicOscillatorAcceleration3D(
 //   vʹ = -q k / m.
 absl::Status ComputeHarmonicOscillatorDerivatives1D(
     Instant const& t,
-    std::tuple<Length, Speed> const& state,
-    std::tuple<Speed, Acceleration>& result,
+    DirectSum<Length, Speed> const& state,
+    DirectSum<Speed, Acceleration>& result,
     int* evaluations);
 
 // The Kepler problem with unit gravitational parameter, where the

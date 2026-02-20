@@ -32,9 +32,9 @@ using namespace principia::quantities::_si;
 
 // Strip DoublePrecision from a tuple.
 template<typename... T>
-std::tuple<T...> StripDoublePrecision(
-    std::tuple<DoublePrecision<T>...> const& in) {
-  std::tuple<T...> out;
+DirectSum<T...> StripDoublePrecision(
+    DirectSum<DoublePrecision<T>...> const& in) {
+  DirectSum<T...> out;
   for_all_of(in, out).loop(
       [](auto const& inᵢ, auto& outᵢ) { outᵢ = inᵢ.value; });
   return out;
@@ -42,9 +42,9 @@ std::tuple<T...> StripDoublePrecision(
 
 // Wrap a tuple in DoublePrecision.
 template<typename... T>
-std::tuple<DoublePrecision<T>...> WrapInDoublePrecision(
-    std::tuple<T...> const& in) {
-  std::tuple<DoublePrecision<T>...> out;
+DirectSum<DoublePrecision<T>...> WrapInDoublePrecision(
+    DirectSum<T...> const& in) {
+  DirectSum<DoublePrecision<T>...> out;
   for_all_of(in, out).loop([](auto const& inᵢ, auto& outᵢ) { outᵢ = inᵢ; });
   return out;
 }
@@ -84,8 +84,7 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     }
 
     // Set the boundary condition and store it in CₓX₀_.
-    CₓX₀_[0] =
-        direct_sum_t<DependentVariables>(StripDoublePrecision(current_state.y));
+    CₓX₀_[0] = StripDoublePrecision(current_state.y);
     for (std::int64_t i = 1; i <= M; ++i) {
       CₓX₀_[i] = CₓX₀_[0];
     }
@@ -100,12 +99,12 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
          ++iteration) {
       // Evaluate the right hand side of the equation.
       for (std::int64_t i = 0; i <= M; ++i) {
-        auto const& y = Xⁱ_[i].tuple();
+        auto const& y = Xⁱ_[i];
         DependentVariableDerivatives yʹᵢ;
         RETURN_IF_ERROR(equation.compute_derivative(t_[i], y, yʹᵢ));
 
         // Store it in yʹ.
-        yʹ_[i] = direct_sum_t<DependentVariableDerivatives>(std::move(yʹᵢ));
+        yʹ_[i] = std::move(yʹᵢ);
       }
 
       // Compute new x.
@@ -115,7 +114,7 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
       bool should_stop = true;
       for (std::int64_t i = 0; i <= M; ++i) {
         should_stop = should_stop &&
-                      params_.stopping_criterion((Xⁱ⁺¹_[i] - Xⁱ_[i]).tuple());
+                      params_.stopping_criterion((Xⁱ⁺¹_[i] - Xⁱ_[i]));
       }
       Xⁱ_ = std::move(Xⁱ⁺¹_);
 
@@ -134,11 +133,11 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
     if (converged) {
       // We have successfully converged!
       for (std::int64_t i = 0; i <= M; ++i) {
-        append_state(State(t_[i], Xⁱ_[i].tuple()));
+        append_state(State(t_[i], Xⁱ_[i]));
       }
 
       // Set the current state to the final state we appended.
-      current_state = State(t_[M], Xⁱ_[M].tuple());
+      current_state = State(t_[M], Xⁱ_[M]);
       RETURN_IF_STOPPED;
     } else {
       // We failed to converge.

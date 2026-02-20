@@ -4,9 +4,9 @@
 
 #include <algorithm>
 #include <concepts>
-#include <tuple>
 #include <vector>
 
+#include "geometry/direct_sum.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -29,6 +29,7 @@ using ::testing::Test;
 using ::testing::Types;
 using ::testing::Values;
 
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
@@ -59,8 +60,8 @@ Displacement<World> displacement() {
   return Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
 }
 
-Length LInfinityNorm(std::tuple<Displacement<World>> const& v) {
-  auto const& coordinates = std::get<0>(v).coordinates();
+Length LInfinityNorm(DirectSum<Displacement<World>> const& v) {
+  auto const& coordinates = get<0>(v).coordinates();
   return std::max({Abs(coordinates.x), Abs(coordinates.y), Abs(coordinates.z)});
 }
 
@@ -96,7 +97,7 @@ SolvedInitialValueProblem LinearProblem() {
 
   return SolvedInitialValueProblem{
       .problem = problem,
-      .solution = [](Instant const& t) -> std::tuple<Position<World>> {
+      .solution = [](Instant const& t) -> DirectSum<Position<World>> {
         return std::exp((t - Instant()) / Second) * displacement() +
                World::origin;
       }};
@@ -125,7 +126,7 @@ SolvedInitialValueProblem TangentProblem() {
 
   return SolvedInitialValueProblem{
       .problem = problem,
-      .solution = [](Instant const& t) -> std::tuple<Position<World>> {
+      .solution = [](Instant const& t) -> DirectSum<Position<World>> {
         return Tan(π / 8 * ((t - Instant()) / Second + 1) * Radian) *
                    displacement() +
                World::origin;
@@ -170,7 +171,7 @@ SolvedInitialValueProblem PerturbedSinusoidProblem(double const ε,
   return SolvedInitialValueProblem{
       .problem = problem,
       .solution =
-          [ε, α, β, γ](Instant const& t) -> std::tuple<Position<World>> {
+          [ε, α, β, γ](Instant const& t) -> DirectSum<Position<World>> {
         Angle const φ = 0.5 * (1 - γ * ε) * (t - Instant()) / Second * Radian;
         double const σ = α * (Sin(φ) + β * Cos(φ));
 
@@ -213,8 +214,8 @@ TEST(ЧебышёвPicardIntegratorTest, MultipleSteps) {
   // Verify the results are close to the known solution.
   for (auto const& state : states) {
     auto t = state.s.value;
-    auto y = std::get<0>(state.y).value;
-    EXPECT_THAT(y, AlmostEquals(std::get<0>(problem.solution(t)), 0, 5))
+    auto y = get<0>(state.y).value;
+    EXPECT_THAT(y, AlmostEquals(get<0>(problem.solution(t)), 0, 5))
         << "t=" << t;
   }
 }
@@ -251,8 +252,8 @@ TEST(ЧебышёвPicardIntegratorTest, Backwards) {
   // Verify the results are close to the known solution.
   for (auto const& state : states) {
     auto t = state.s.value;
-    auto y = std::get<0>(state.y).value;
-    EXPECT_THAT(y, AlmostEquals(std::get<0>(problem.solution(t)), 0, 12))
+    auto y = get<0>(state.y).value;
+    EXPECT_THAT(y, AlmostEquals(get<0>(problem.solution(t)), 0, 12))
         << "t=" << t;
   }
 }
@@ -341,9 +342,9 @@ TYPED_TEST_P(ЧебышёвPicardIntegratorParameterizedTest, Convergence) {
   // Verify the results are close to the known solution.
   for (auto const& state : states) {
     auto t = state.s.value;
-    auto y = std::get<0>(state.y).value;
+    auto y = get<0>(state.y).value;
     EXPECT_THAT(y,
-                AbsoluteErrorFrom(std::get<0>(problem.solution(t)),
+                AbsoluteErrorFrom(get<0>(problem.solution(t)),
                                   Lt(TypeParam::tolerance)))
         << "t=" << t;
   }

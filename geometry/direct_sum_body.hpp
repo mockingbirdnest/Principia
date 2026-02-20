@@ -27,14 +27,7 @@ template<affine... T>
 constexpr DirectSum<T...>::DirectSum(T&&... args) : tuple_(args...) {}
 
 template<affine... T>
-constexpr DirectSum<T...>::DirectSum(std::tuple<T...>&& tuple)
-    : tuple_(tuple) {}
-
-template<affine... T>
-template<typename Self>
-constexpr auto&& DirectSum<T...>::tuple(this Self&& self) {
-  return self.tuple_;
-}
+constexpr DirectSum<T...>::DirectSum(T const&... args) : tuple_(args...) {}
 
 template<affine... T>
 constexpr auto DirectSum<T...>::Norm() const
