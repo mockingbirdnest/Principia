@@ -105,8 +105,8 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
         integrator.NewInstance(problem, append_state, step);
     EXPECT_OK(instance->Solve(t_final));
     Time const t = final_state.s.value - t_initial;
-    Length const& q = std::get<0>(final_state.y).value;
-    Speed const& v = std::get<1>(final_state.y).value;
+    Length const& q = get<0>(final_state.y).value;
+    Speed const& v = get<1>(final_state.y).value;
     double const log_q_error = std::log10(RelativeError(
         q,
         specific_impulse *

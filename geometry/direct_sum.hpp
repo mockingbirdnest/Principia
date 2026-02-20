@@ -41,6 +41,8 @@ class DirectSum {
   // Constructor from tuple.
   constexpr explicit DirectSum(std::tuple<T...>&& tuple);
 
+  constexpr DirectSum(std::initializer_list<std::tuple<T...>> initializer_list);
+
   // Getter for the inner tuple field.
   template<typename Self>
   constexpr auto&& tuple(this Self&& self);
@@ -61,6 +63,9 @@ class DirectSum {
     requires(hilbert<T> && ...);
   constexpr auto Norm²() const
     requires(hilbert<T> && ...);
+
+  DirectSum& operator=(
+      std::initializer_list<std::tuple<T...>> initializer_list);
 
   bool operator==(DirectSum const&) const = default;
 
