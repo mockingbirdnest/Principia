@@ -256,34 +256,38 @@ class Plotter {
     mesh.vertices = VertexBuffer.vertices;
     int index_count = style == GLLines.Style.Dashed ? vertex_count & ~1
                                                     : vertex_count;
+
     if (indices_ == null || indices_.Length < index_count) {
       indices_ = new int[index_count];
       for (int i = 0; i < index_count; ++i) {
         indices_[i] = i;
       }
     }
-    var colours = new UnityEngine.Color[VertexBuffer.size];
+
+    if (colours_ == null || colours_.Length < VertexBuffer.size) {
+      colours_ = new UnityEngine.Color[VertexBuffer.size];
+    }
     if (style == GLLines.Style.Faded) {
       for (int i = 0; i < vertex_count; ++i) {
         var faded_colour = colour;
         // Fade from the opacity of `colour` (when i = 0) down to 20% of that
         // opacity.
         faded_colour.a *= 1 - 0.8f * (i / (float)vertex_count);
-        colours[i] = faded_colour;
+        colours_[i] = faded_colour;
       }
     } else {
       for (int i = 0; i < vertex_count; ++i) {
-        colours[i] = colour;
+        colours_[i] = colour;
       }
     }
-    mesh.colors = colours;
-    mesh.SetIndices(
-        indices_,
-        indicesStart: 0,
-        indicesLength: index_count,
-        style == GLLines.Style.Dashed ? UnityEngine.MeshTopology.Lines
-                                      : UnityEngine.MeshTopology.LineStrip,
-        submesh: 0);
+    mesh.SetColors(colours_, start: 0, length: VertexBuffer.size);
+    mesh.SetIndices(indices_,
+                    indicesStart: 0,
+                    indicesLength: index_count,
+                    style == GLLines.Style.Dashed
+                        ? UnityEngine.MeshTopology.Lines
+                        : UnityEngine.MeshTopology.LineStrip,
+                    submesh: 0);
     mesh.RecalculateBounds();
     // If the lines are drawn in layer 31 (Vectors), which sounds more
     // appropriate, they vanish when zoomed out.  Layer 9 works; pay no
@@ -336,7 +340,8 @@ class Plotter {
   private UnityEngine.Mesh target_psychohistory_mesh_;
   private UnityEngine.Mesh target_prediction_mesh_;
   private int[] indices_ = null;
-}
+  private UnityEngine.Color[] colours_ = null;
+    }
 
 }  // namespace ksp_plugin_adapter
 }  // namespace principia
