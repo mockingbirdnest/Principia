@@ -253,20 +253,24 @@ class Plotter {
                             int vertex_count,
                             UnityEngine.Color colour,
                             GLLines.Style style) {
+    if (vertex_count > VertexBuffer.size) {
+      Log.Fatal("Trying to draw " +
+                vertex_count +
+                " vertices, maximum is " +
+                VertexBuffer.size);
+    }
+
     mesh.vertices = VertexBuffer.vertices;
     int index_count = style == GLLines.Style.Dashed ? vertex_count & ~1
                                                     : vertex_count;
 
-    if (indices_ == null || indices_.Length < index_count) {
-      indices_ = new int[index_count];
-      for (int i = 0; i < index_count; ++i) {
+    if (indices_ == null) {
+      indices_ = new int[VertexBuffer.size];
+      for (int i = 0; i < indices_.Length; ++i) {
         indices_[i] = i;
       }
     }
 
-    if (colours_ == null || colours_.Length < VertexBuffer.size) {
-      colours_ = new UnityEngine.Color[VertexBuffer.size];
-    }
     if (style == GLLines.Style.Faded) {
       for (int i = 0; i < vertex_count; ++i) {
         var faded_colour = colour;
@@ -280,6 +284,7 @@ class Plotter {
         colours_[i] = colour;
       }
     }
+
     mesh.SetColors(colours_, start: 0, length: VertexBuffer.size);
     mesh.SetIndices(indices_,
                     indicesStart: 0,
@@ -340,8 +345,9 @@ class Plotter {
   private UnityEngine.Mesh target_psychohistory_mesh_;
   private UnityEngine.Mesh target_prediction_mesh_;
   private int[] indices_ = null;
-  private UnityEngine.Color[] colours_ = null;
-    }
+  private UnityEngine.Color[] colours_ =
+      new UnityEngine.Color[VertexBuffer.size];
+}
 
-}  // namespace ksp_plugin_adapter
+  }  // namespace ksp_plugin_adapter
 }  // namespace principia
