@@ -285,7 +285,7 @@ class Plotter {
       }
     }
 
-    mesh.SetColors(colours_, start: 0, length: VertexBuffer.size);
+    mesh.colors = colours_;
     mesh.SetIndices(indices_,
                     indicesStart: 0,
                     indicesLength: index_count,
