@@ -445,6 +445,24 @@ UnboundedMatrix<Product<LScalar, RScalar>> operator*(
     UnboundedVector<LScalar> const& left,
     TransposedView<UnboundedVector<RScalar>> const& right);
 
+template<affine LScalar,
+         affine RScalar,
+         std::int64_t dimension,
+         std::int64_t columns,
+         bool ruh>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    FixedMatrix<RScalar, dimension, columns, ruh> const& right);
+
+template<affine LScalar,
+         affine RScalar,
+         std::int64_t rows,
+         std::int64_t dimension,
+         bool luh>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    FixedMatrix<LScalar, rows, dimension, luh> const& left,
+    UnboundedMatrix<RScalar> const& right);
+
 template<affine LScalar, affine RScalar>
 UnboundedMatrix<Product<LScalar, RScalar>> operator*(
     UnboundedMatrix<LScalar> const& left,

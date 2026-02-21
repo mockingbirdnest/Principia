@@ -6,6 +6,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/transposed_view.hpp"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -17,6 +18,7 @@ using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_transposed_view;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_quantities;
@@ -242,6 +244,14 @@ TEST_F(UnboundedArraysTest, Algebra) {
   UnboundedMatrix<double> m43(TransposedView{m34_});
   EXPECT_EQ((UnboundedVector<double>({-486, -229, 333, 198})),
             m43 * v3_);
+}
+
+TEST_F(UnboundedArraysTest, FixedMatrixProduct) {
+  auto const a = UnboundedMatrix<double>({1, 2, 3, 4});
+  auto const b = FixedMatrix<double, 2, 2>({5, 6, 7, 8});
+
+  EXPECT_EQ(a * b, (UnboundedMatrix<double>({19, 22, 43, 50})));
+  EXPECT_EQ(b * a, (UnboundedMatrix<double>({23, 34, 31, 46})));
 }
 
 TEST_F(UnboundedArraysTest, VectorIndexing) {
