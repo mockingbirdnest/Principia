@@ -349,5 +349,5 @@ class Plotter {
       new UnityEngine.Color[VertexBuffer.size];
 }
 
-  }  // namespace ksp_plugin_adapter
+}  // namespace ksp_plugin_adapter
 }  // namespace principia
