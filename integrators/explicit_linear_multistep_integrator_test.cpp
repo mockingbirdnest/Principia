@@ -199,15 +199,14 @@ TEST_P(ExplicitLinearMultistepIntegratorTest, Convergence) {
         integrator.NewInstance(problem, append_state, step);
     EXPECT_OK(instance->Solve(t_final));
     Time const t = final_state.s.value - t_initial;
-    Length const& q = std::get<0>(final_state.y).value;
-    Speed const& v = std::get<1>(final_state.y).value;
+    auto const& [q, v] = final_state.y;
     double const log_q_error = std::log10(RelativeError(
-        q,
+        q.value,
         specific_impulse *
             (t + (t - initial_mass / mass_flow) *
                      std::log(initial_mass / mass(final_state.s.value)))));
     double const log_p_error = std::log10(RelativeError(
-        v,
+        v.value,
         specific_impulse * std::log(initial_mass / mass(final_state.s.value))));
     if (log_q_error <= -13 || log_p_error <= -13) {
       // If we keep going the effects of finite precision will drown out

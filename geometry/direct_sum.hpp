@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include <concepts>
 #include <ostream>
 #include <string>
 #include <tuple>
@@ -35,15 +36,13 @@ class DirectSum {
   constexpr DirectSum() = default;
   constexpr explicit DirectSum(uninitialized_t);
 
-  // Constructor from elements.
-  constexpr DirectSum(T&&... args);  // NOLINT(runtime/explicit)
-
-  // Constructor from tuple.
-  constexpr explicit DirectSum(std::tuple<T...>&& tuple);
-
-  // Getter for the inner tuple field.
-  template<typename Self>
-  constexpr auto&& tuple(this Self&& self);
+  // Constructor from elements.  These are similar to constructors (2) and (3)
+  // from https://en.cppreference.com/w/cpp/utility/tuple/tuple.html,
+  // respectively.
+  constexpr DirectSum(T const&... args);  // NOLINT(runtime/explicit)
+  template<typename... Args>
+    requires(sizeof...(T) >= 1 && (std::constructible_from<T, Args> && ...))
+  constexpr DirectSum(Args&&... args);  // NOLINT(runtime/explicit)
 
   // Visible by ADL, can be redefined in specializations.  Cannot deduce this
   // because it's not a member function.
@@ -128,23 +127,8 @@ std::string DebugString(DirectSum<T...> const& direct_sum);
 template<affine... T>
 std::ostream& operator<<(std::ostream& out, DirectSum<T...> const& direct_sum);
 
-// Helper for getting a DirectSum corresponding to a tuple when you don't
-// have access to the pack.
-template<typename Tuple>
-struct direct_sum;
-
-template<affine... T>
-struct direct_sum<std::tuple<T...>> : not_constructible {
-  typedef DirectSum<T...> type;
-};
-
-template<typename T>
-using direct_sum_t = direct_sum<T>::type;
-
 }  // namespace internal
 
-using internal::direct_sum;
-using internal::direct_sum_t;
 using internal::DirectSum;
 
 }  // namespace _direct_sum

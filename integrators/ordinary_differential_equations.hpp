@@ -1,12 +1,12 @@
 #pragma once
 
 #include <functional>
-#include <tuple>
 #include <vector>
 
 #include "absl/status/status.h"
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
+#include "geometry/direct_sum.hpp"
 #include "geometry/instant.hpp"
 #include "numerics/double_precision.hpp"
 #include "quantities/quantities.hpp"
@@ -20,6 +20,7 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_double_precision;
 using namespace principia::quantities::_quantities;
@@ -50,15 +51,13 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   static constexpr std::int64_t order = 1;
   using IndependentVariable = IndependentVariable_;
   using IndependentVariableDifference = Difference<IndependentVariable>;
-  using DependentVariables = std::tuple<DependentVariable...>;
+  using DependentVariables = DirectSum<DependentVariable...>;
   using DependentVariableDifferences =
-      std::tuple<Difference<DependentVariable>...>;
-  using DependentVariableDerivatives = std::tuple<
+      DirectSum<Difference<DependentVariable>...>;
+  using DependentVariableDerivatives = DirectSum<
       Derivative<DependentVariable, IndependentVariable>...>;
 
-  // A functor that computes f(s, y) and stores it in `y′`.  This functor must
-  // be called with `std::get<i>(y′).size()` equal to `std::get<i>(y).size()`
-  // for all i, but there is no requirement on the values in `y′`.
+  // A functor that computes f(s, y) and stores it in `y′`.
   using RightHandSideComputation =
       std::function<absl::Status(IndependentVariable const& s,
                                  DependentVariables const& y,
@@ -71,7 +70,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     State(IndependentVariable const& s, DependentVariables const& y);
 
     DoublePrecision<IndependentVariable> s;
-    std::tuple<DoublePrecision<DependentVariable>...> y;
+    DirectSum<DoublePrecision<DependentVariable>...> y;
 
     friend bool operator==(State const& lhs, State const& rhs) = default;
     friend bool operator!=(State const& lhs, State const& rhs) = default;
@@ -91,9 +90,9 @@ struct DecomposableFirstOrderDifferentialEquation final {
   static constexpr std::int64_t order = 1;
   using IndependentVariable = Instant;
   using IndependentVariableDifference = Time;
-  using DependentVariables = std::tuple<std::vector<DependentVariable>...>;
+  using DependentVariables = DirectSum<std::vector<DependentVariable>...>;
   using DependentVariableDifferences =
-      std::tuple<std::vector<Difference<DependentVariable>>...>;
+      DirectSum<std::vector<Difference<DependentVariable>>...>;
 
   using Flow =
       std::function<absl::Status(IndependentVariable const& t_initial,
@@ -108,7 +107,7 @@ struct DecomposableFirstOrderDifferentialEquation final {
     State(IndependentVariable const& t, DependentVariables const& y);
 
     DoublePrecision<Instant> time;
-    std::tuple<std::vector<DoublePrecision<DependentVariable>>...> y;
+    DirectSum<std::vector<DoublePrecision<DependentVariable>>...> y;
 
     friend bool operator==(State const& lhs, State const& rhs) = default;
     friend bool operator!=(State const& lhs, State const& rhs) = default;

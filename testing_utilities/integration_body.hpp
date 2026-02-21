@@ -2,7 +2,6 @@
 
 #include "testing_utilities/integration.hpp"
 
-#include <tuple>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
@@ -45,8 +44,8 @@ absl::Status ComputeHarmonicOscillatorAcceleration3D(
 
 inline absl::Status ComputeHarmonicOscillatorDerivatives1D(
     Instant const& t,
-    std::tuple<Length, Speed> const& state,
-    std::tuple<Speed, Acceleration>& result,
+    DirectSum<Length, Speed> const& state,
+    DirectSum<Speed, Acceleration>& result,
     int* const evaluations) {
   auto const& [q, v] = state;
   auto& [qʹ, vʹ] = result;

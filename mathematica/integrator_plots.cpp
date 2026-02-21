@@ -5,7 +5,6 @@
 #include <iostream>  // NOLINT(readability/streams)
 #include <limits>
 #include <string>
-#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -14,6 +13,7 @@
 #include "base/not_null.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/barycentre_calculator.hpp"
+#include "geometry/direct_sum.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -138,6 +138,7 @@ using namespace principia::base::_file;
 using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -337,11 +338,11 @@ class WorkErrorGraphGenerator {
       CHECK_OK(future.get());
     }
 
-    std::vector<std::vector<std::vector<std::tuple<double, Length>>>>
+    std::vector<std::vector<std::vector<DirectSum<double, Length>>>>
         q_error_data;
-    std::vector<std::vector<std::vector<std::tuple<double, Speed>>>>
+    std::vector<std::vector<std::vector<DirectSum<double, Speed>>>>
         v_error_data;
-    std::vector<std::vector<std::vector<std::tuple<double, Energy>>>>
+    std::vector<std::vector<std::vector<DirectSum<double, Energy>>>>
         e_error_data;
     std::vector<std::string> names;
     std::vector<std::vector<int>> orders;
@@ -393,8 +394,8 @@ class WorkErrorGraphGenerator {
     first_order_problem.equation.compute_derivative =
         [&number_of_evaluations, this](
             Instant const& s,
-            std::tuple<Position<World>, Velocity<World>> const& y,
-            std::tuple<Velocity<World>, Vector<Acceleration, World>>& yʹ) {
+            DirectSum<Position<World>, Velocity<World>> const& y,
+            DirectSum<Velocity<World>, Vector<Acceleration, World>>& yʹ) {
           std::vector<Vector<Acceleration, World>> acceleration{
               Vector<Acceleration, World>{}};
           auto const& [q, v] = y;
@@ -410,7 +411,7 @@ class WorkErrorGraphGenerator {
     Length max_q_error;
     Speed max_v_error;
     Energy max_e_error;
-    std::vector<std::tuple<Instant, Energy>>* e_error_history =
+    std::vector<DirectSum<Instant, Energy>>* e_error_history =
         time_step_index % 50 == 0
             ? &e_error_history_[method_index][time_step_index / 50]
             : nullptr;
@@ -524,7 +525,8 @@ class WorkErrorGraphGenerator {
             [tolerance](Time const& current_step_size,
                         FirstOrderODE::State const& state,
                         FirstOrderODE::State::Error const& error) {
-              return tolerance / std::get<0>(error).Norm();
+              auto const& [position_error, _] = error;
+              return tolerance / position_error.Norm();
             },
             AdaptiveStepSizeIntegrator<FirstOrderODE>::Parameters{
                 /*first_step=*/tmax_[0] - t0,
@@ -619,7 +621,7 @@ class WorkErrorGraphGenerator {
   std::vector<std::vector<std::vector<Length>>> q_errors_;
   std::vector<std::vector<std::vector<Speed>>> v_errors_;
   std::vector<std::vector<std::vector<Energy>>> e_errors_;
-  std::vector<std::vector<std::vector<std::tuple<Instant, Energy>>>>
+  std::vector<std::vector<std::vector<DirectSum<Instant, Energy>>>>
       e_error_history_;
   std::vector<std::vector<std::vector<double>>> evaluations_;
   std::vector<Instant> const tmax_;

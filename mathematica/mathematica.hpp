@@ -10,6 +10,7 @@
 #include "base/algebra.hpp"
 #include "base/multiprecision.hpp"
 #include "base/traits.hpp"
+#include "geometry/direct_sum.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
@@ -39,6 +40,7 @@ using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_algebra;
 using namespace principia::base::_multiprecision;
 using namespace principia::base::_traits;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_quaternion;
@@ -241,6 +243,10 @@ template<typename S, typename F,
          template<typename, typename> typename M,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
+                          OptionalExpressIn express_in = std::nullopt);
+
+template<typename OptionalExpressIn = std::nullopt_t, typename... T>
+std::string ToMathematica(DirectSum<T...> const& direct_sum,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename F, typename OptionalExpressIn = std::nullopt_t>
