@@ -253,33 +253,46 @@ class Plotter {
                             int vertex_count,
                             UnityEngine.Color colour,
                             GLLines.Style style) {
+    if (vertex_count > VertexBuffer.size) {
+      Log.Fatal("Trying to draw " +
+                vertex_count +
+                " vertices, maximum is " +
+                VertexBuffer.size);
+    }
+
     mesh.vertices = VertexBuffer.vertices;
     int index_count = style == GLLines.Style.Dashed ? vertex_count & ~1
                                                     : vertex_count;
-    var indices = new int[index_count];
-    for (int i = 0; i < index_count; ++i) {
-      indices[i] = i;
+
+    if (indices_ == null) {
+      indices_ = new int[VertexBuffer.size];
+      for (int i = 0; i < indices_.Length; ++i) {
+        indices_[i] = i;
+      }
     }
-    var colours = new UnityEngine.Color[VertexBuffer.size];
+
     if (style == GLLines.Style.Faded) {
       for (int i = 0; i < vertex_count; ++i) {
         var faded_colour = colour;
         // Fade from the opacity of `colour` (when i = 0) down to 20% of that
         // opacity.
         faded_colour.a *= 1 - 0.8f * (i / (float)vertex_count);
-        colours[i] = faded_colour;
+        colours_[i] = faded_colour;
       }
     } else {
       for (int i = 0; i < vertex_count; ++i) {
-        colours[i] = colour;
+        colours_[i] = colour;
       }
     }
-    mesh.colors = colours;
-    mesh.SetIndices(
-        indices,
-        style == GLLines.Style.Dashed ? UnityEngine.MeshTopology.Lines
-                                      : UnityEngine.MeshTopology.LineStrip,
-        submesh: 0);
+
+    mesh.colors = colours_;
+    mesh.SetIndices(indices_,
+                    indicesStart: 0,
+                    indicesLength: index_count,
+                    style == GLLines.Style.Dashed
+                        ? UnityEngine.MeshTopology.Lines
+                        : UnityEngine.MeshTopology.LineStrip,
+                    submesh: 0);
     mesh.RecalculateBounds();
     // If the lines are drawn in layer 31 (Vectors), which sounds more
     // appropriate, they vanish when zoomed out.  Layer 9 works; pay no
@@ -331,6 +344,9 @@ class Plotter {
       new List<UnityEngine.Mesh>();
   private UnityEngine.Mesh target_psychohistory_mesh_;
   private UnityEngine.Mesh target_prediction_mesh_;
+  private int[] indices_ = null;
+  private UnityEngine.Color[] colours_ =
+      new UnityEngine.Color[VertexBuffer.size];
 }
 
 }  // namespace ksp_plugin_adapter
