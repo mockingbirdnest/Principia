@@ -256,9 +256,11 @@ class Plotter {
     mesh.vertices = VertexBuffer.vertices;
     int index_count = style == GLLines.Style.Dashed ? vertex_count & ~1
                                                     : vertex_count;
-    var indices = new int[index_count];
-    for (int i = 0; i < index_count; ++i) {
-      indices[i] = i;
+    if (indices_ == null || indices_.Length < index_count) {
+      indices_ = new int[index_count];
+      for (int i = 0; i < index_count; ++i) {
+        indices_[i] = i;
+      }
     }
     var colours = new UnityEngine.Color[VertexBuffer.size];
     if (style == GLLines.Style.Faded) {
@@ -276,7 +278,9 @@ class Plotter {
     }
     mesh.colors = colours;
     mesh.SetIndices(
-        indices,
+        indices_,
+        indicesStart: 0,
+        indicesLength: index_count,
         style == GLLines.Style.Dashed ? UnityEngine.MeshTopology.Lines
                                       : UnityEngine.MeshTopology.LineStrip,
         submesh: 0);
@@ -331,6 +335,7 @@ class Plotter {
       new List<UnityEngine.Mesh>();
   private UnityEngine.Mesh target_psychohistory_mesh_;
   private UnityEngine.Mesh target_prediction_mesh_;
+  private int[] indices_ = null;
 }
 
 }  // namespace ksp_plugin_adapter
