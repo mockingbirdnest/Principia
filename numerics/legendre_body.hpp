@@ -12,6 +12,7 @@ namespace numerics {
 namespace _legendre {
 namespace internal {
 
+using namespace principia::geometry::_direct_sum;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_elementary_functions;
 
@@ -24,13 +25,13 @@ struct LegendreCoefficientsGenerator<degree, std::index_sequence<indices...>> {
   // https://en.wikipedia.org/wiki/Legendre_polynomials, fourth formula in the
   // "Explicit representations" section.  The formula has been rewritten to
   // eliminate references to the Γ function.
-  static constexpr auto coefficients = std::make_tuple(
+  static constexpr DirectSum coefficients = {
       (degree - indices) % 2 == 0
           ? ((degree - indices) % 4 == 0 ? 1 : -1) *
                 DoubleFactorial(degree + indices - 1) /
                 static_cast<double>(Factorial(indices) *
                                     DoubleFactorial(degree - indices))
-          : 0 ...);
+          : 0 ...};
 };
 
 // Apparently, FORCE_INLINE has to be on the definition for it to work on

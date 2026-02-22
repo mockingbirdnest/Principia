@@ -122,8 +122,8 @@ TEST_F(PolynomialInMonomialBasisTest, ℤⳆnℤOfX) {
 
 // Check that coefficients can be accessed and have the right type.
 TEST_F(PolynomialInMonomialBasisTest, Coefficients) {
-  Displacement<World> const d = std::get<0>(coefficients_);
-  Velocity<World> const v = std::get<1>(coefficients_);
+  Displacement<World> const d = get<0>(coefficients_);
+  Velocity<World> const v = get<1>(coefficients_);
   EXPECT_EQ(1 * Metre, d.coordinates().z);
   EXPECT_EQ(1 * Metre / Second, v.coordinates().y);
 }
@@ -173,9 +173,9 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2A) {
 // Check that a polynomial can return an affine value.
 TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
   Instant const t0 = Instant() + 0.3 * Second;
-  P2P const p({World::origin + std::get<0>(coefficients_),
-               std::get<1>(coefficients_),
-               std::get<2>(coefficients_)},
+  P2P const p({World::origin + get<0>(coefficients_),
+               get<1>(coefficients_),
+               get<2>(coefficients_)},
               t0);
   EXPECT_EQ(2, p.degree());
   Position<World> const d = p(t0 + 0.5 * Second);
@@ -198,9 +198,9 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
 // polynomials.
 TEST_F(PolynomialInMonomialBasisTest, Addition2P) {
   Instant const t0 = Instant() + 0.3 * Second;
-  P2P const p1({World::origin + std::get<0>(coefficients_),
-               std::get<1>(coefficients_),
-               std::get<2>(coefficients_)},
+  P2P const p1({World::origin + get<0>(coefficients_),
+               get<1>(coefficients_),
+               get<2>(coefficients_)},
               t0);
   P2P const p2 = p1;
   P2A const p3 = p2 - p1;
