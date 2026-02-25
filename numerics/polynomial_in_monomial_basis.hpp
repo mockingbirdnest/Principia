@@ -124,9 +124,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   using Evaluator = Evaluator_<V, A, d>;
 
   // Equivalent to:
-  //   std::tuple<Value,
-  //              Derivative<Value, Argument>,
-  //              Derivative<Derivative<Value, Argument>>...>
+  //   DirectSum<Value,
+  //             Derivative<Value, Argument>,
+  //             Derivative<Derivative<Value, Argument>>...>
   using Coefficients = Derivatives<Value, Argument, degree_ + 1>;
 
   // The coefficients are relative to origin; in other words they are applied to

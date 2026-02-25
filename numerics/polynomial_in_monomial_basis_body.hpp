@@ -28,6 +28,7 @@ namespace internal {
 
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_constructible;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;
 using namespace principia::numerics::_elementary_functions;
@@ -102,7 +103,7 @@ MakePolynomial(typename Polynomial::Coefficients const& coefficients,
   std::array<typename Polynomial::Coefficients, degree + 1> const
       all_coefficients{
           MonomialAtOrigin<Value, Argument, degree, indices>::
-              MakeCoefficients(std::get<indices>(coefficients), shift)...};
+              MakeCoefficients(get<indices>(coefficients), shift)...};
 
   // It would be nicer to compute the sum using a fold expression, but Clang
   // refuses to find the operator + in that context.  Fold expressions, the
@@ -130,7 +131,7 @@ void TupleAssigner<LTuple, RTuple, std::index_sequence<indices...>>::Assign(
     LTuple& left_tuple,
     RTuple const& right_tuple) {
   // This fold expression effectively implements repeated assignments.
-  ((std::get<indices>(left_tuple) = std::get<indices>(right_tuple)), ...);
+  ((get<indices>(left_tuple) = get<indices>(right_tuple)), ...);
 }
 
 
@@ -153,13 +154,13 @@ TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
     RTuple const& right_tuple) {
   using geometry::_cartesian_product::vector_space::operator+;
   using geometry::_cartesian_product::vector_space::operator*;
-  auto const degree_0 = std::tuple(std::get<0>(left_tuple));
+  auto const degree_0 = std::tuple(get<0>(left_tuple));
   if constexpr (sizeof...(left_indices) == 0) {
     return degree_0;
   } else {
     // The + 1 in the expressions below match the - 1 in the primary declaration
     // of TupleComposition.
-    return degree_0 + ((std::get<left_indices + 1>(left_tuple) *
+    return degree_0 + ((get<left_indices + 1>(left_tuple) *
                         geometry::_cartesian_product::polynomial_ring::Pow<
                             left_indices + 1>(right_tuple)) + ...);
   }
@@ -179,8 +180,8 @@ template<typename Tuple, int order, std::size_t... indices>
 constexpr auto
 TupleDerivation<Tuple, order, std::index_sequence<indices...>>::Derive(
     Tuple const& tuple) {
-  return std::make_tuple(FallingFactorial(order + indices, order) *
-                         std::get<order + indices>(tuple)...);
+  return DirectSum{FallingFactorial(order + indices, order) *
+                   get<order + indices>(tuple)...};
 }
 
 
@@ -198,7 +199,7 @@ template<typename Tuple, int count, std::size_t... indices>
 constexpr auto
 TupleDropper<Tuple, count, std::index_sequence<indices...>>::Drop(
     Tuple const& tuple) {
-  return std::make_tuple(std::get<count + indices>(tuple)...);
+  return DirectSum{get<count + indices>(tuple)...};
 }
 
 
@@ -216,8 +217,8 @@ constexpr auto
 TupleIntegration<Argument, Tuple, std::index_sequence<indices...>>::Integrate(
     Tuple const& tuple) {
   constexpr auto zero = Primitive<std::tuple_element_t<0, Tuple>, Argument>{};
-  return std::make_tuple(
-      zero, std::get<indices>(tuple) / static_cast<double>(indices + 1)...);
+  return DirectSum{
+      zero, get<indices>(tuple) / static_cast<double>(indices + 1)...};
 }
 
 
@@ -262,7 +263,7 @@ template<typename Tuple, int k, int size>
 void TupleSerializer<Tuple, k, size>::FillFromMessage(
     serialization::PolynomialInMonomialBasis const& message,
     Tuple& tuple) {
-  std::get<k>(tuple) =
+  get<k>(tuple) =
       DoubleOrQuantityOrPointOrMultivectorSerializer<
           std::tuple_element_t<k, Tuple>,
           serialization::PolynomialInMonomialBasis::Coefficient>::
@@ -276,7 +277,7 @@ std::vector<std::string> TupleSerializer<Tuple, k, size>::TupleDebugString(
     std::string const& argument) {
   auto tail =
       TupleSerializer<Tuple, k + 1, size>::TupleDebugString(tuple, argument);
-  auto const coefficient = std::get<k>(tuple);
+  auto const coefficient = get<k>(tuple);
   if (coefficient == std::tuple_element_t<k, Tuple>{}) {
     return tail;
   }
@@ -834,7 +835,7 @@ operator+(PolynomialInMonomialBasis<ValueDifference,
                                                       Evaluator>::Coefficients,
                    /*count=*/1>::Drop(left.coefficients_);
   return PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>(
-      std::tuple_cat(std::tuple(std::get<0>(left.coefficients_) + right),
+      std::tuple_cat(std::tuple(get<0>(left.coefficients_) + right),
                      dropped_left_coefficients),
       left.origin_);
 }
@@ -851,7 +852,7 @@ operator+(Value const& left,
                        Coefficients,
                    /*count=*/1>::Drop(right.coefficients_);
   return PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>(
-      std::tuple_cat(std::tuple(left + std::get<0>(right.coefficients_)),
+      std::tuple_cat(std::tuple(left + get<0>(right.coefficients_)),
                      dropped_right_coefficients),
       right.origin_);
 }
@@ -869,7 +870,7 @@ operator-(
       /*count=*/1>::Drop(left.coefficients_);
   return PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
                                    Evaluator>(
-      std::tuple_cat(std::tuple(std::get<0>(left.coefficients_) - right),
+      std::tuple_cat(std::tuple(get<0>(left.coefficients_) - right),
                      dropped_left_coefficients),
       left.origin_);
 }
@@ -887,7 +888,7 @@ operator-(Value const& left,
       /*count=*/1>::Drop(right.coefficients_);
   return PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
                                    Evaluator>(
-      std::tuple_cat(std::tuple(left - std::get<0>(right.coefficients_)),
+      std::tuple_cat(std::tuple(left - get<0>(right.coefficients_)),
                      dropped_right_coefficients),
       right.origin_);
 }
