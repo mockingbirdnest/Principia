@@ -29,6 +29,20 @@ constexpr void Iteration<Tuple...>::loop(F const& f) {
 }
 
 template<typename... Tuple>
+template<std::size_t i, typename F>
+constexpr void Iteration<Tuple...>::loop_indexed(F const& f) {
+  if constexpr (i < size) {
+    std::apply(
+        [&f](Tuple&&... tuple) {
+          using namespace std;
+          f(i, get<i>(tuple)...);
+        },
+        all_the_tuples_);
+    loop<i + 1, F>(f);
+  }
+}
+
+template<typename... Tuple>
 constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple) {
   return Iteration<Tuple...>(std::forward<Tuple>(tuple)...);
 }

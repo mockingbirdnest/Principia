@@ -23,6 +23,9 @@ class Iteration {
   template<std::size_t i = 0, typename F>
   constexpr void loop(F const& f);
 
+  template<std::size_t i = 0, typename F>
+  constexpr void loop_indexed(F const& f);
+
  private:
   std::tuple<Tuple&&...> all_the_tuples_;
 };
