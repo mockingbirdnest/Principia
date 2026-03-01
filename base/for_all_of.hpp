@@ -39,11 +39,12 @@ class Iteration {
 //                            int const array_element) {
 //     std::cout << tuple_element << " " << array_element << "\n";
 //   });
-// For `loop_indexed`, `F::operator()` must also take an index as a
-// template parameter:
-//   for_all_of(t, a).loop_indexed([]<int i>(auto const tuple_element,
-//                                           int const array_element) {
-//     std::cout << i << " " << tuple_element << " " << array_element << "\n";
+// For `loop_indexed`, `F::operator()` must also take an index as a template
+// parameter:
+//   std::tuple out{std::pair{"", 0}, std::pair{0.0, 0}, std::array{0, 0}};
+//   for_all_of(t, a).loop_indexed([&]<int i>(auto const tuple_element,
+//                                            int const array_element) {
+//     get<i>(out) = {tuple_element, array_element};
 //   });
 template<typename... Tuple>
 constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple);
