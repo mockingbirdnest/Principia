@@ -113,8 +113,9 @@ TEST_F(ForAllOfTest, IntegerRange) {
 TEST_F(ForAllOfTest, Example) {
   std::tuple const t{"a", 2.5, 3};
   std::array const a{4, 5, 6};
-  for_all_of(t, a).loop([](auto const tuple_element, int const i) {
-    std::cout << tuple_element << " " << i << "\n";
+  for_all_of(t, a).loop([](auto const tuple_element,
+                           int const array_element) {
+    std::cout << tuple_element << " " << array_element << "\n";
   });
   std::tuple out{std::pair{"", 0}, std::pair{0.0, 0}, std::array{0, 0}};
   for_all_of(t, a).loop_indexed([&]<int i>(auto const tuple_element,
