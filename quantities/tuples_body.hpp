@@ -3,7 +3,6 @@
 #include "base/algebra.hpp"
 #include "geometry/direct_sum.hpp"
 #include "quantities/tuples.hpp"
-#include "geometry/direct_sum.hpp"
 
 #include <algorithm>
 #include <cstddef>
