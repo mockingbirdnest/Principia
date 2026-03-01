@@ -47,8 +47,8 @@ constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple) {
   return Iteration<Tuple...>(std::forward<Tuple>(tuple)...);
 }
 
-template<int begin, int end>
-template<int i, typename F>
+template<std::int64_t begin, std::int64_t end>
+template<std::int64_t i, typename F>
 constexpr void for_integer_range<begin, end>::loop(F const& f) {
   if constexpr (i != end) {
     f.template operator()<i>();

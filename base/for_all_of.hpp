@@ -53,8 +53,8 @@ class Iteration {
 template<typename... Tuple>
 constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple);
 
-// Iterates over the integers in [begin, end[.  `F::operator()` must be parameterless and
-// take an index as a template parameter:
+// Iterates over the integers in [begin, end[.  `F::operator()` must be
+// parameterless and take an index as a template parameter:
 //   std::tuple t{std::string("a"), 2.5, 3};
 //   for_integer_range<0, 3>::loop([&]<int i> {
 //     if constexpr (i == 0) {
@@ -63,10 +63,10 @@ constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple);
 //       get<i>(t) += i;
 //     }
 //   });
-template<int begin, int end>
+template<std::int64_t begin, std::int64_t end>
 class for_integer_range : not_constructible {
  public:
-  template<int i = begin, typename F>
+  template<std::int64_t i = begin, typename F>
   static constexpr void loop(F const& f);
 };
 
