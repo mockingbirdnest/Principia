@@ -13,7 +13,6 @@
 #include "absl/strings/str_join.h"
 #include "base/concepts.hpp"
 #include "base/not_constructible.hpp"
-#include "geometry/cartesian_product.hpp"  // 🧙 For geometry::_cartesian_product.
 #include "geometry/serialization.hpp"
 #include "google/protobuf/util/message_differencer.h"
 #include "numerics/combinatorics.hpp"
