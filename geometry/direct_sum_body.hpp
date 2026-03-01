@@ -162,7 +162,7 @@ constexpr auto operator*(DirectSum<L...> const& left, R const& right) {
   return product;
 }
 
-template<typename R, affine... L>
+template<homogeneous_ring R, homogeneous_module<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right) {
   DirectSum<Quotient<L, R>...> quotient(uninitialized);
   for_all_of(left, quotient).loop([&right](auto const& left, auto& quotient) {

@@ -117,7 +117,12 @@ template<typename... L, typename R>
            (homogeneous_module<R, L> && ...))
 constexpr auto operator*(DirectSum<L...> const& left, R const& right);
 
-template<typename R, affine... L>
+// The requirement should really be that the `L`s be
+// `homogenous_vector_space<K>` for some `K` and that `R` be convertible to `K`
+// (possibly a subring); but we cannot deduce `K`, so we require only a module.
+// Requiring that `R` be `K` does not work, as it forbids division by integers
+// for real vector spaces `L`.
+template<homogeneous_ring R, homogeneous_module<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right);
 
 template<affine... T>
