@@ -557,11 +557,11 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   using Lattice = FixedMatrix<cpp_int, 5, 4>;
 
   Lattice const L(
-      {C,     0, std::get<0>(P̃₀_coefficients), std::get<0>(P̃₁_coefficients),
-       0, C * T, std::get<1>(P̃₀_coefficients), std::get<1>(P̃₁_coefficients),
-       0,     0, std::get<2>(P̃₀_coefficients), std::get<2>(P̃₁_coefficients),
-       0,     0,                            3,                            0,
-       0,     0,                            0,                            3});
+      {C,     0, get<0>(P̃₀_coefficients), get<0>(P̃₁_coefficients),
+       0, C * T, get<1>(P̃₀_coefficients), get<1>(P̃₁_coefficients),
+       0,     0, get<2>(P̃₀_coefficients), get<2>(P̃₁_coefficients),
+       0,     0,                       3,                       0,
+       0,     0,                       0,                       3});
   VLOG(3) << "L = " << L;
 
   // Step 7: reduce the lattice.
@@ -639,8 +639,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   AccuratePolynomial<cpp_rational, 1> const q =
       Compose(Q, AccuratePolynomial<cpp_rational, 1>({0, cpp_rational(1, T)}));
 
-  cpp_rational const t₀ =
-      -std::get<0>(q.coefficients()) / std::get<1>(q.coefficients());
+  cpp_rational const t₀ = -get<0>(q.coefficients()) / get<1>(q.coefficients());
   VLOG(3) << "t₀ = " << t₀;
   if (abs(t₀) > T) {
     return absl::NotFoundError("Out of bounds");
