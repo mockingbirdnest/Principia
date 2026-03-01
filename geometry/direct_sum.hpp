@@ -106,14 +106,18 @@ constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
 // would work as L here, and in particular, whether it is a homogeneous_ring.
 // By forbidding instances of DirectSum directly we break the cyclic dependency.
 template<typename L, typename... R>
-  requires(!is_instance_of_v<DirectSum, L>) && (homogeneous_module<R, L> && ...)
+  requires(!is_instance_of_v<DirectSum, L>) &&
+          ((homogeneous_module<R, L> && ...) ||
+           (homogeneous_module<L, R> && ...))
 constexpr auto operator*(L const& left, DirectSum<R...> const& right);
 
 template<typename... L, typename R>
-  requires(!is_instance_of_v<DirectSum, R>) && (homogeneous_module<L, R> && ...)
+  requires(!is_instance_of_v<DirectSum, R>) &&
+          ((homogeneous_module<L, R> && ...) ||
+           (homogeneous_module<R, L> && ...))
 constexpr auto operator*(DirectSum<L...> const& left, R const& right);
 
-template<homogeneous_field R, homogeneous_vector_space<R>... L>
+template<typename R, affine... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right);
 
 template<affine... T>

@@ -146,8 +146,7 @@ TEST(DirectSumTest, Multiplication) {
 }
 
 TEST(DirectSumTest, Division) {
-  // Note: ℝ²(3, 4) / 2 doesn't work because integers are not a field.
-  EXPECT_EQ(ℝ²(3, 4) / 2.0, ℝ²(1.5, 2));
+  EXPECT_EQ(ℝ²(3, 4) / 2, ℝ²(1.5, 2));
 }
 
 TEST(DirectSumTest, InnerProduct) {

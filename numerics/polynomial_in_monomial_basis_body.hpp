@@ -27,6 +27,8 @@ namespace _polynomial_in_monomial_basis {
 namespace internal {
 
 using namespace principia::base::_concepts;
+using namespace principia::base::_for_all_of;
+using namespace principia::base::_tags;
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_serialization;
@@ -98,7 +100,6 @@ auto PolynomialAtOrigin<Value, Argument, degree, Evaluator_,
 MakePolynomial(typename Polynomial::Coefficients const& coefficients,
                Argument const& from_origin,
                Argument const& to_origin) -> Polynomial {
-  using geometry::_cartesian_product::vector_space::operator+;
   Difference<Argument> const shift = to_origin - from_origin;
   std::array<typename Polynomial::Coefficients, degree + 1> const
       all_coefficients{
@@ -134,39 +135,6 @@ void TupleAssigner<LTuple, RTuple, std::index_sequence<indices...>>::Assign(
   ((get<indices>(left_tuple) = get<indices>(right_tuple)), ...);
 }
 
-
-// - 1 in the second type is ultimately to avoid evaluating Pow<0> as generating
-// a one is hard.
-template<typename LTuple, typename RTuple,
-         typename = std::make_index_sequence<std::tuple_size_v<LTuple> - 1>>
-struct TupleComposition;
-
-template<typename LTuple, typename RTuple, std::size_t... left_indices>
-struct TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>> {
-  static constexpr auto Compose(LTuple const& left_tuple,
-                                RTuple const& right_tuple);
-};
-
-template<typename LTuple, typename RTuple, std::size_t... left_indices>
-constexpr auto
-TupleComposition<LTuple, RTuple, std::index_sequence<left_indices...>>::Compose(
-    LTuple const& left_tuple,
-    RTuple const& right_tuple) {
-  using geometry::_cartesian_product::vector_space::operator+;
-  using geometry::_cartesian_product::vector_space::operator*;
-  auto const degree_0 = std::tuple(get<0>(left_tuple));
-  if constexpr (sizeof...(left_indices) == 0) {
-    return degree_0;
-  } else {
-    // The + 1 in the expressions below match the - 1 in the primary declaration
-    // of TupleComposition.
-    return degree_0 + ((get<left_indices + 1>(left_tuple) *
-                        geometry::_cartesian_product::polynomial_ring::Pow<
-                            left_indices + 1>(right_tuple)) + ...);
-  }
-}
-
-
 template<typename Tuple, int order,
          typename = std::make_index_sequence<std::tuple_size_v<Tuple> - order>>
 struct TupleDerivation;
@@ -183,25 +151,6 @@ TupleDerivation<Tuple, order, std::index_sequence<indices...>>::Derive(
   return DirectSum{FallingFactorial(order + indices, order) *
                    get<order + indices>(tuple)...};
 }
-
-
-template<typename Tuple, int count,
-         typename = std::make_index_sequence<std::tuple_size_v<Tuple> - count>>
-struct TupleDropper;
-
-template<typename Tuple, int count, std::size_t... indices>
-struct TupleDropper<Tuple, count, std::index_sequence<indices...>> {
-  // Drops the first `count` elements of `tuple`.
-  static constexpr auto Drop(Tuple const& tuple);
-};
-
-template<typename Tuple, int count, std::size_t... indices>
-constexpr auto
-TupleDropper<Tuple, count, std::index_sequence<indices...>>::Drop(
-    Tuple const& tuple) {
-  return DirectSum{get<count + indices>(tuple)...};
-}
-
 
 template<typename Argument, typename Tuple,
          typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
@@ -221,6 +170,18 @@ TupleIntegration<Argument, Tuple, std::index_sequence<indices...>>::Integrate(
       zero, get<indices>(tuple) / static_cast<double>(indices + 1)...};
 }
 
+// Helper for composition.
+template<int exponent, typename P>
+constexpr auto Pow(P const& polynomial) {
+  static_assert(exponent > 0, "Cannot raise a polynomial to the zero-th power");
+  if constexpr (exponent == 1) {
+    return polynomial;
+  } else if constexpr (exponent % 2 == 0) {
+    return Pow<exponent / 2>(polynomial * polynomial);
+  } else {
+    return Pow<exponent / 2>(polynomial * polynomial) * polynomial;
+  }
+}
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -668,7 +629,6 @@ template<additive_group Value, affine Argument, int rdegree,
 constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>
 operator-(PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
               right) {
-  using geometry::_cartesian_product::vector_space::operator-;
   return PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>(
       -right.coefficients_,
       right.origin_);
@@ -683,11 +643,25 @@ operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
         right) {
-  using geometry::_cartesian_product::vector_space::operator+;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
+  typename PolynomialInMonomialBasis<Value,
+                                     Argument,
+                                     std::max(ldegree, rdegree),
+                                     Evaluator>::Coefficients
+  result_coefficients(uninitialized);
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>().loop([&]<int i>() {
+    if constexpr (i <= std::min(ldegree, rdegree)) {
+      get<i>(result_coefficients) =
+          get<i>(left.coefficients_) + get<i>(right.coefficients_);
+    } else if constexpr (i <= ldegree) {
+      get<i>(result_coefficients) = get<i>(left.coefficients_);
+    } else {
+      get<i>(result_coefficients) = get<i>(right.coefficients_);
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument,
                                    std::max(ldegree, rdegree), Evaluator>(
-      left.coefficients_ + right.coefficients_,
+      std::move(result_coefficients),
       left.origin_);
 }
 
@@ -701,11 +675,25 @@ operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
                                     Evaluator> const& left,
           PolynomialInMonomialBasis<Value, Argument, rdegree,
                                     Evaluator> const& right) {
-  using geometry::_cartesian_product::vector_space::operator+;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
+  typename PolynomialInMonomialBasis<Value,
+                                     Argument,
+                                     std::max(ldegree, rdegree),
+                                     Evaluator>::Coefficients
+  result_coefficients(uninitialized);
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>().loop([&]<int i>() {
+    if constexpr (i <= std::min(ldegree, rdegree)) {
+      get<i>(result_coefficients) =
+          get<i>(left.coefficients_) + get<i>(right.coefficients_);
+    } else if constexpr (i <= ldegree) {
+      get<i>(result_coefficients) = get<i>(left.coefficients_);
+    } else {
+      get<i>(result_coefficients) = get<i>(right.coefficients_);
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument,
                                    std::max(ldegree, rdegree), Evaluator>(
-      left.coefficients_ + right.coefficients_,
+      std::move(result_coefficients),
       left.origin_);
 }
 
@@ -719,11 +707,25 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree,
                                     Evaluator> const& left,
           PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
                                     Evaluator> const& right) {
-  using geometry::_cartesian_product::vector_space::operator+;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
+  typename PolynomialInMonomialBasis<Value,
+                                     Argument,
+                                     std::max(ldegree, rdegree),
+                                     Evaluator>::Coefficients
+  result_coefficients(uninitialized);
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>().loop([&]<int i>() {
+    if constexpr (i <= std::min(ldegree, rdegree)) {
+      get<i>(result_coefficients) =
+          get<i>(left.coefficients_) + get<i>(right.coefficients_);
+    } else if constexpr (i <= ldegree) {
+      get<i>(result_coefficients) = get<i>(left.coefficients_);
+    } else {
+      get<i>(result_coefficients) = get<i>(right.coefficients_);
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument,
                                    std::max(ldegree, rdegree), Evaluator>(
-      left.coefficients_ + right.coefficients_,
+      std::move(result_coefficients),
       left.origin_);
 }
 
@@ -737,11 +739,25 @@ operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
         right) {
-  using geometry::_cartesian_product::vector_space::operator-;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
+  typename PolynomialInMonomialBasis<Difference<Value>,
+                                     Argument,
+                                     std::max(ldegree, rdegree),
+                                     Evaluator>::Coefficients
+  result_coefficients(uninitialized);
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>().loop([&]<int i>() {
+    if constexpr (i <= std::min(ldegree, rdegree)) {
+      get<i>(result_coefficients) =
+          get<i>(left.coefficients_) - get<i>(right.coefficients_);
+    } else if constexpr (i <= ldegree) {
+      get<i>(result_coefficients) = get<i>(left.coefficients_);
+    } else {
+      get<i>(result_coefficients) = -get<i>(right.coefficients_);
+    }
+  });
   return PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     std::max(ldegree, rdegree), Evaluator>(
-      left.coefficients_ - right.coefficients_,
+      std::move(result_coefficients),
       left.origin_);
 }
 
@@ -753,7 +769,6 @@ PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const&
               right) {
-  using geometry::_cartesian_product::vector_space::operator*;
   return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree,
                                    Evaluator>(left * right.coefficients_,
                                               right.origin_);
@@ -767,7 +782,6 @@ PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree, Evaluator>
 operator*(
     PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& left,
     Scalar const& right) {
-  using geometry::_cartesian_product::vector_space::operator*;
   return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree,
                                    Evaluator>(left.coefficients_ * right,
                                               left.origin_);
@@ -781,7 +795,6 @@ PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree, Evaluator>
 operator/(
     PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& left,
     Scalar const& right) {
-  using geometry::_cartesian_product::vector_space::operator/;
   return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree,
                                    Evaluator>(left.coefficients_ / right,
                                               left.origin_);
@@ -797,13 +810,22 @@ operator*(
     PolynomialInMonomialBasis<LValue, Argument, ldegree, Evaluator> const& left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree, Evaluator> const&
         right) {
-  using geometry::_cartesian_product::polynomial_ring::operator*;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
+  typename PolynomialInMonomialBasis<Product<LValue, RValue>,
+                                     Argument,
+                                     ldegree + rdegree,
+                                     Evaluator>::Coefficients
+      result_coefficients;
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto const& l) {
+    for_all_of(right.coefficients_).loop_indexed([&]<int j>(auto const& r) {
+      get<i + j>(result_coefficients) += l * r;
+    });
+  });
   return PolynomialInMonomialBasis<Product<LValue, RValue>,
                                    Argument,
                                    ldegree + rdegree,
-                                   Evaluator>(
-      left.coefficients_ * right.coefficients_, left.origin_);
+                                   Evaluator>(std::move(result_coefficients),
+                                              left.origin_);
 }
 
 #if PRINCIPIA_COMPILER_MSVC_HANDLES_POLYNOMIAL_OPERATORS
@@ -828,15 +850,17 @@ operator+(PolynomialInMonomialBasis<ValueDifference,
                                     Evaluator> const& left,
           Value const& right) {
 #endif
-  auto const dropped_left_coefficients =
-      TupleDropper<typename PolynomialInMonomialBasis<Difference<Value>,
-                                                      Argument,
-                                                      ldegree,
-                                                      Evaluator>::Coefficients,
-                   /*count=*/1>::Drop(left.coefficients_);
+  typename PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>::
+      Coefficients result_coefficients(uninitialized);
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto const& l) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = l + right;
+    } else {
+      get<i>(result_coefficients) = l;
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>(
-      std::tuple_cat(std::tuple(get<0>(left.coefficients_) + right),
-                     dropped_left_coefficients),
+      std::move(result_coefficients),
       left.origin_);
 }
 
@@ -846,14 +870,17 @@ constexpr PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>
 operator+(Value const& left,
           PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
                                     Evaluator> const& right) {
-  auto const dropped_right_coefficients =
-      TupleDropper<typename PolynomialInMonomialBasis<
-                       Difference<Value>, Argument, rdegree, Evaluator>::
-                       Coefficients,
-                   /*count=*/1>::Drop(right.coefficients_);
+  typename PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>::
+      Coefficients result_coefficients(uninitialized);
+  for_all_of(right.coefficients_).loop_indexed([&]<int i>(auto const& r) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = left + r;
+    } else {
+      get<i>(result_coefficients) = r;
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>(
-      std::tuple_cat(std::tuple(left + get<0>(right.coefficients_)),
-                     dropped_right_coefficients),
+      std::move(result_coefficients),
       right.origin_);
 }
 
@@ -864,14 +891,21 @@ constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
 operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
     Value const& right) {
-  auto const dropped_left_coefficients = TupleDropper<
-      typename PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>::
-          Coefficients,
-      /*count=*/1>::Drop(left.coefficients_);
+  typename PolynomialInMonomialBasis<Difference<Value>,
+                                     Argument,
+                                     ldegree,
+                                     Evaluator>::Coefficients
+      result_coefficients(uninitialized);
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto const& l) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = l - right;
+    } else {
+      get<i>(result_coefficients) = l;
+    }
+  });
   return PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
                                    Evaluator>(
-      std::tuple_cat(std::tuple(get<0>(left.coefficients_) - right),
-                     dropped_left_coefficients),
+      std::move(result_coefficients),
       left.origin_);
 }
 
@@ -882,14 +916,21 @@ constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
 operator-(Value const& left,
           PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
               right) {
-  auto const dropped_right_coefficients = TupleDropper<
-      typename PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>::
-          Coefficients,
-      /*count=*/1>::Drop(right.coefficients_);
+  typename PolynomialInMonomialBasis<Difference<Value>,
+                                     Argument,
+                                     rdegree,
+                                     Evaluator>::Coefficients
+      result_coefficients(uninitialized);
+  for_all_of(right.coefficients_).loop_indexed([&]<int i>(auto const& r) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = left - r;
+    } else {
+      get<i>(result_coefficients) = r;
+    }
+  });
   return PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
                                    Evaluator>(
-      std::tuple_cat(std::tuple(left - get<0>(right.coefficients_)),
-                     dropped_right_coefficients),
+      std::move(result_coefficients),
       right.origin_);
 }
 
@@ -902,18 +943,28 @@ Compose(
     PolynomialInMonomialBasis<LValue, RValue, ldegree, Evaluator> const& left,
     PolynomialInMonomialBasis<RValue, RArgument, rdegree, Evaluator> const&
         right) {
-  using LArgument = RValue;
-  using LCoefficients =
-      typename PolynomialInMonomialBasis<LValue, LArgument, ldegree,
-                                         Evaluator>::Coefficients;
-  using RCoefficients =
-      typename PolynomialInMonomialBasis<RValue, RArgument, rdegree,
-                                         Evaluator>::Coefficients;
-  auto const left_at_origin = left.AtOrigin(LArgument{});
+  typename PolynomialInMonomialBasis<LValue,
+                                     RArgument,
+                                     ldegree * rdegree,
+                                     Evaluator>::Coefficients
+      result_coefficients;
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto const& l) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = l;
+    } else {
+      // NOTE(egg): `for_all_of(Pow<i>(right).coefficients_).loop_indexed(...)`
+      // does not compile.  Pow<i>(right) would outlive the loop so it should be
+      // fine, but presumably we would need to be clever about value categories
+      // somewhere in `for_all_of`.
+      auto const rightⁱ = Pow<i>(right);
+      for_all_of(rightⁱ.coefficients_).loop_indexed([&]<int j>(auto const& r) {
+        get<j>(result_coefficients) += l * r;
+      });
+    }
+  });
   return PolynomialInMonomialBasis<LValue, RArgument, ldegree * rdegree,
                                    Evaluator>(
-      TupleComposition<LCoefficients, RCoefficients>::Compose(
-          left_at_origin.coefficients_, right.coefficients_),
+      std::move(result_coefficients),
       right.origin_);
 }
 
@@ -929,14 +980,22 @@ PointwiseInnerProduct(
                               Evaluator> const& left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree,
                               Evaluator> const& right) {
-  using geometry::_cartesian_product::pointwise_inner_product::
-      PointwiseInnerProduct;
+  typename PolynomialInMonomialBasis<InnerProductType<LValue, RValue>,
+                                     Argument,
+                                     ldegree + rdegree,
+                                     Evaluator>::Coefficients
+      result_coefficients;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  return PolynomialInMonomialBasis<
-      InnerProductType<LValue, RValue>, Argument,
-      ldegree + rdegree, Evaluator>(
-          PointwiseInnerProduct(left.coefficients_, right.coefficients_),
-          left.origin_);
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto l) {
+    for_all_of(right.coefficients_).loop_indexed([&]<int j>(auto r) {
+      get<i + j>(result_coefficients) += InnerProduct(l, r);
+    });
+  });
+  return PolynomialInMonomialBasis<InnerProductType<LValue, RValue>,
+                                   Argument,
+                                   ldegree + rdegree,
+                                   Evaluator>(std::move(result_coefficients),
+                                              left.origin_);
 }
 
 template<typename Value, affine Argument, int degree,

@@ -35,15 +35,42 @@ class Iteration {
 // Example:
 //   std::tuple const t{"a", 2.5, 3};
 //   std::array const a{4, 5, 6};
-//   for_all_of(t, a).loop([](auto const tuple_element, int const i) {
-//     std::cout << tuple_element << " " << i << "\n";
+//   for_all_of(t, a).loop([](auto const tuple_element,
+//                            int const array_element) {
+//     std::cout << tuple_element << " " << array_element << "\n";
+//   });
+// For `loop_indexed`, `F::operator()` must also take an index as a
+// template parameter:
+//   for_all_of(t, a).loop_indexed([]<int i>(auto const tuple_element,
+//                                           int const array_element) {
+//     std::cout << i << " " << tuple_element << " " << array_element << "\n";
 //   });
 template<typename... Tuple>
 constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple);
 
+// Iterates over the integers in [begin, end[.  `F::operator()` must be parameterless and
+// take an index as a template parameter:
+//   std::tuple t{std::string("a"), 2.5, 3};
+//   for_integer_range<0, 3>().loop([&]<int i>() {
+//     if constexpr (i == 0) {
+//       get<i>(t) += std::to_string(i);
+//     } else {
+//       get<i>(t) += i;
+//     }
+//   });
+template<int begin, int end>
+class for_integer_range {
+ public:
+  constexpr for_integer_range() = default;
+
+  template<int i = begin, typename F>
+  constexpr void loop(F const& f);
+};
+
 }  // namespace internal
 
 using internal::for_all_of;
+using internal::for_integer_range;
 
 }  // namespace _for_all_of
 }  // namespace base

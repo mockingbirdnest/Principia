@@ -348,8 +348,8 @@ TEST_F(PolynomialInMonomialBasisTest, Affine) {
   using P0A = PolynomialInMonomialBasis<Instant, Time, 0>;
   using P0V = PolynomialInMonomialBasis<Time, Time, 0>;
 
-  P0A const p0a(std::tuple{Instant() + 1 * Second});
-  P0V const p0v(std::tuple{2 * Second});
+  P0A const p0a({Instant() + 1 * Second});
+  P0V const p0v({2 * Second});
   {
     P0A const p = p0v + Instant();
     EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
@@ -513,9 +513,9 @@ TEST_F(PolynomialInMonomialBasisTest, PrimitiveIntegrate) {
 
 TEST_F(PolynomialInMonomialBasisTest, EvaluateConstant) {
   PolynomialInMonomialBasis<Entropy, Time, 0, Horner> const horner_boltzmann(
-      std::make_tuple(BoltzmannConstant));
+      {BoltzmannConstant});
   PolynomialInMonomialBasis<Entropy, Time, 0, Estrin> const estrin_boltzmann(
-      std::make_tuple(BoltzmannConstant));
+      {BoltzmannConstant});
   EXPECT_THAT(horner_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(estrin_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(horner_boltzmann.EvaluateDerivative(1729 * Second),
