@@ -45,9 +45,9 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
     grad_σℜ = ℜʹ * r_normalized;
   } else {
     auto const& c = sigmoid_coefficients_;
-    Derivative<double, Length> const c1 = std::get<1>(c);
-    Derivative<double, Length, 2> const c2 = std::get<2>(c);
-    Derivative<double, Length, 3> const c3 = std::get<3>(c);
+    Derivative<double, Length> const c1 = get<1>(c);
+    Derivative<double, Length, 2> const c2 = get<2>(c);
+    Derivative<double, Length, 3> const c3 = get<3>(c);
     auto const r³ = r² * r_norm;
     double const c3r³ = c3 * r³;
     double const c2r² = c2 * r²;
