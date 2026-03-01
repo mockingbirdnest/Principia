@@ -115,25 +115,6 @@ MakePolynomial(typename Polynomial::Coefficients const& coefficients,
   return Polynomial(sum_coefficients, to_origin);
 }
 
-// Index-by-index assignment of RTuple to LTuple, which must have at least as
-// many elements (and the types must match).
-template<typename LTuple, typename RTuple,
-         typename = std::make_index_sequence<std::tuple_size_v<RTuple>>>
-struct TupleAssigner;
-
-template<typename LTuple, typename RTuple, std::size_t... indices>
-struct TupleAssigner<LTuple, RTuple, std::index_sequence<indices...>> {
-  static void Assign(LTuple& left_tuple, RTuple const& right_tuple);
-};
-
-template<typename LTuple, typename RTuple, std::size_t... indices>
-void TupleAssigner<LTuple, RTuple, std::index_sequence<indices...>>::Assign(
-    LTuple& left_tuple,
-    RTuple const& right_tuple) {
-  // This fold expression effectively implements repeated assignments.
-  ((get<indices>(left_tuple) = get<indices>(right_tuple)), ...);
-}
-
 template<typename Tuple, int order,
          typename = std::make_index_sequence<std::tuple_size_v<Tuple> - order>>
 struct TupleDerivation;
@@ -357,9 +338,14 @@ operator PolynomialInMonomialBasis<Value_, Argument_, higher_degree_,
   static_assert(degree_ <= higher_degree_);
   using Result =
       PolynomialInMonomialBasis<Value, Argument, higher_degree_, Evaluator_>;
-  typename Result::Coefficients higher_coefficients;
-  TupleAssigner<typename Result::Coefficients, Coefficients>::Assign(
-      higher_coefficients, std::move(std::forward<Self>(self).coefficients_));
+  typename Result::Coefficients higher_coefficients(uninitialized);
+  for_all_of(higher_coefficients).loop_indexed([&]<int i>(auto& coefficient) {
+    if constexpr (i <= degree_) {
+      coefficient = std::move(get<i>(std::forward<Self>(self).coefficients_));
+    } else {
+      coefficient = {};
+    }
+  });
   return Result(higher_coefficients,
                 std::move(std::forward<Self>(self).origin_));
 }
