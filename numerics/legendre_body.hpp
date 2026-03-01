@@ -4,6 +4,7 @@
 
 #include <tuple>
 
+#include "geometry/direct_sum.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/elementary_functions.hpp"
 

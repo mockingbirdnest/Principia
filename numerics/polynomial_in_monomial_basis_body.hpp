@@ -12,7 +12,10 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "base/concepts.hpp"
+#include "base/for_all_of.hpp"
 #include "base/not_constructible.hpp"
+#include "base/tags.hpp"
+#include "geometry/direct_sum.hpp"
 #include "geometry/serialization.hpp"
 #include "google/protobuf/util/message_differencer.h"
 #include "numerics/combinatorics.hpp"
@@ -27,8 +30,8 @@ namespace internal {
 
 using namespace principia::base::_concepts;
 using namespace principia::base::_for_all_of;
-using namespace principia::base::_tags;
 using namespace principia::base::_not_constructible;
+using namespace principia::base::_tags;
 using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_serialization;
 using namespace principia::numerics::_combinatorics;

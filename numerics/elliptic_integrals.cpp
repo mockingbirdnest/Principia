@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/tags.hpp"
+#include "geometry/direct_sum.hpp"
 #include "glog/logging.h"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/combinatorics.hpp"
