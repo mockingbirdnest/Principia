@@ -937,14 +937,16 @@ Compose(
     if constexpr (i == 0) {
       get<i>(result_coefficients) = l;
     } else {
-      // NOTE(egg): `for_all_of(Pow<i>(right).coefficients_).loop_indexed(...)`
-      // does not compile.  Pow<i>(right) would outlive the loop so it should be
-      // fine, but presumably we would need to be clever about value categories
-      // somewhere in `for_all_of`.
-      auto const rightⁱ = Pow<i>(right);
-      for_all_of(rightⁱ.coefficients_).loop_indexed([&]<int j>(auto const& r) {
-        get<j>(result_coefficients) += l * r;
-      });
+      // NOTE(egg):
+      // `for_all_of((l * Pow<i>(right - left.origin_)).coefficients_)...` does
+      // not compile.  The temporary polynomial would outlive the loop so it
+      // should be fine, but presumably we would need to be clever about value
+      // categories somewhere in `for_all_of`.
+      auto const left_monomial = l * Pow<i>(right - left.origin_);
+      for_all_of(left_monomial.coefficients_)
+          .loop_indexed([&]<int j>(auto const& c) {
+            get<j>(result_coefficients) += c;
+          });
     }
   });
   return PolynomialInMonomialBasis<LValue, RArgument, ldegree * rdegree,
