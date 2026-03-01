@@ -634,7 +634,7 @@ operator+(
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
-  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i>() {
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i> {
     if constexpr (i <= std::min(ldegree, rdegree)) {
       get<i>(result_coefficients) =
           get<i>(left.coefficients_) + get<i>(right.coefficients_);
@@ -666,7 +666,7 @@ operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
-  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i>() {
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i> {
     if constexpr (i <= std::min(ldegree, rdegree)) {
       get<i>(result_coefficients) =
           get<i>(left.coefficients_) + get<i>(right.coefficients_);
@@ -698,7 +698,7 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree,
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
-  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i>() {
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i> {
     if constexpr (i <= std::min(ldegree, rdegree)) {
       get<i>(result_coefficients) =
           get<i>(left.coefficients_) + get<i>(right.coefficients_);
@@ -730,7 +730,7 @@ operator-(
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
-  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i>() {
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i> {
     if constexpr (i <= std::min(ldegree, rdegree)) {
       get<i>(result_coefficients) =
           get<i>(left.coefficients_) - get<i>(right.coefficients_);
