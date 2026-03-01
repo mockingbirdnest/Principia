@@ -74,7 +74,7 @@ struct TupleHelper : not_constructible {
                                    OptionalExpressIn express_in) {
     TupleHelper<index - 1, Tuple, OptionalExpressIn>::ToMathematicaStrings(
         tuple, expressions, express_in);
-    expressions.push_back(ToMathematica(std::get<index - 1>(tuple),
+    expressions.push_back(ToMathematica(get<index - 1>(tuple),
                           express_in));
   }
 };
