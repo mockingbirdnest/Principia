@@ -4,10 +4,14 @@
 #include <tuple>
 #include <utility>
 
+#include "base/not_constructible.hpp"
+
 namespace principia {
 namespace base {
 namespace _for_all_of {
 namespace internal {
+
+using namespace principia::base::_not_constructible;
 
 template<typename... Tuple>
 class Iteration {
@@ -52,7 +56,7 @@ constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple);
 // Iterates over the integers in [begin, end[.  `F::operator()` must be parameterless and
 // take an index as a template parameter:
 //   std::tuple t{std::string("a"), 2.5, 3};
-//   for_integer_range<0, 3>().loop([&]<int i>() {
+//   for_integer_range<0, 3>::loop([&]<int i>() {
 //     if constexpr (i == 0) {
 //       get<i>(t) += std::to_string(i);
 //     } else {
@@ -60,12 +64,10 @@ constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple);
 //     }
 //   });
 template<int begin, int end>
-class for_integer_range {
+class for_integer_range : not_constructible {
  public:
-  constexpr for_integer_range() = default;
-
   template<int i = begin, typename F>
-  constexpr void loop(F const& f);
+  static constexpr void loop(F const& f);
 };
 
 }  // namespace internal
