@@ -342,15 +342,13 @@ operator PolynomialInMonomialBasis<Value_, Argument_, higher_degree_,
   using Result =
       PolynomialInMonomialBasis<Value, Argument, higher_degree_, Evaluator_>;
   typename Result::Coefficients higher_coefficients(uninitialized);
-  for_all_of(higher_coefficients)
-      .loop_indexed([&self]<int i>(auto& coefficient) {
-        if constexpr (i <= degree_) {
-          coefficient =
-              std::move(get<i>(std::forward<Self>(self).coefficients_));
-        } else {
-          coefficient = {};
-        }
-      });
+  for_all_of(higher_coefficients).loop_indexed([&]<int i>(auto& coefficient) {
+    if constexpr (i <= degree_) {
+      coefficient = std::move(get<i>(std::forward<Self>(self).coefficients_));
+    } else {
+      coefficient = {};
+    }
+  });
   return Result(higher_coefficients,
                 std::move(std::forward<Self>(self).origin_));
 }
@@ -638,17 +636,16 @@ operator+(
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
-  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop(
-      [&result_coefficients]<int i> {
-        if constexpr (i <= std::min(ldegree, rdegree)) {
-          get<i>(result_coefficients) =
-              get<i>(left.coefficients_) + get<i>(right.coefficients_);
-        } else if constexpr (i <= ldegree) {
-          get<i>(result_coefficients) = get<i>(left.coefficients_);
-        } else {
-          get<i>(result_coefficients) = get<i>(right.coefficients_);
-        }
-      });
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i> {
+    if constexpr (i <= std::min(ldegree, rdegree)) {
+      get<i>(result_coefficients) =
+          get<i>(left.coefficients_) + get<i>(right.coefficients_);
+    } else if constexpr (i <= ldegree) {
+      get<i>(result_coefficients) = get<i>(left.coefficients_);
+    } else {
+      get<i>(result_coefficients) = get<i>(right.coefficients_);
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument,
                                    std::max(ldegree, rdegree), Evaluator>(
       std::move(result_coefficients),
@@ -670,17 +667,16 @@ operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
-  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop(
-      [&result_coefficients]<int i> {
-        if constexpr (i <= std::min(ldegree, rdegree)) {
-          get<i>(result_coefficients) =
-              get<i>(left.coefficients_) + get<i>(right.coefficients_);
-        } else if constexpr (i <= ldegree) {
-          get<i>(result_coefficients) = get<i>(left.coefficients_);
-        } else {
-          get<i>(result_coefficients) = get<i>(right.coefficients_);
-        }
-      });
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i> {
+    if constexpr (i <= std::min(ldegree, rdegree)) {
+      get<i>(result_coefficients) =
+          get<i>(left.coefficients_) + get<i>(right.coefficients_);
+    } else if constexpr (i <= ldegree) {
+      get<i>(result_coefficients) = get<i>(left.coefficients_);
+    } else {
+      get<i>(result_coefficients) = get<i>(right.coefficients_);
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument,
                                    std::max(ldegree, rdegree), Evaluator>(
       std::move(result_coefficients),
@@ -702,17 +698,16 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree,
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
-  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop(
-      [&result_coefficients]<int i> {
-        if constexpr (i <= std::min(ldegree, rdegree)) {
-          get<i>(result_coefficients) =
-              get<i>(left.coefficients_) + get<i>(right.coefficients_);
-        } else if constexpr (i <= ldegree) {
-          get<i>(result_coefficients) = get<i>(left.coefficients_);
-        } else {
-          get<i>(result_coefficients) = get<i>(right.coefficients_);
-        }
-      });
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i> {
+    if constexpr (i <= std::min(ldegree, rdegree)) {
+      get<i>(result_coefficients) =
+          get<i>(left.coefficients_) + get<i>(right.coefficients_);
+    } else if constexpr (i <= ldegree) {
+      get<i>(result_coefficients) = get<i>(left.coefficients_);
+    } else {
+      get<i>(result_coefficients) = get<i>(right.coefficients_);
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument,
                                    std::max(ldegree, rdegree), Evaluator>(
       std::move(result_coefficients),
@@ -734,17 +729,16 @@ operator-(
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
-  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop(
-      [&result_coefficients]<int i> {
-        if constexpr (i <= std::min(ldegree, rdegree)) {
-          get<i>(result_coefficients) =
-              get<i>(left.coefficients_) - get<i>(right.coefficients_);
-        } else if constexpr (i <= ldegree) {
-          get<i>(result_coefficients) = get<i>(left.coefficients_);
-        } else {
-          get<i>(result_coefficients) = -get<i>(right.coefficients_);
-        }
-      });
+  for_integer_range<0, std::max(ldegree, rdegree) + 1>::loop([&]<int i> {
+    if constexpr (i <= std::min(ldegree, rdegree)) {
+      get<i>(result_coefficients) =
+          get<i>(left.coefficients_) - get<i>(right.coefficients_);
+    } else if constexpr (i <= ldegree) {
+      get<i>(result_coefficients) = get<i>(left.coefficients_);
+    } else {
+      get<i>(result_coefficients) = -get<i>(right.coefficients_);
+    }
+  });
   return PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     std::max(ldegree, rdegree), Evaluator>(
       std::move(result_coefficients),
@@ -806,9 +800,9 @@ operator*(
                                      Evaluator>::Coefficients
       result_coefficients;
   for_all_of(left.coefficients_)
-      .loop_indexed([&result_coefficients]<int i>(auto const& l) {
+      .loop_indexed([&]<int i>(auto const& l) {
         for_all_of(right.coefficients_)
-            .loop_indexed([&result_coefficients]<int j>(auto const& r) {
+            .loop_indexed([&]<int j>(auto const& r) {
               get<i + j>(result_coefficients) += l * r;
             });
       });
@@ -839,14 +833,13 @@ operator+(PolynomialInMonomialBasis<ValueDifference, Argument,
 #endif
   typename PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>::
       Coefficients result_coefficients(uninitialized);
-  for_all_of(left.coefficients_)
-      .loop_indexed([&result_coefficients]<int i>(auto const& l) {
-        if constexpr (i == 0) {
-          get<i>(result_coefficients) = l + right;
-        } else {
-          get<i>(result_coefficients) = l;
-        }
-      });
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto const& l) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = l + right;
+    } else {
+      get<i>(result_coefficients) = l;
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>(
       std::move(result_coefficients),
       left.origin_);
@@ -860,14 +853,13 @@ operator+(Value const& left,
                                     Evaluator> const& right) {
   typename PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>::
       Coefficients result_coefficients(uninitialized);
-  for_all_of(right.coefficients_)
-      .loop_indexed([&result_coefficients]<int i>(auto const& r) {
-        if constexpr (i == 0) {
-          get<i>(result_coefficients) = left + r;
-        } else {
-          get<i>(result_coefficients) = r;
-        }
-      });
+  for_all_of(right.coefficients_).loop_indexed([&]<int i>(auto const& r) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = left + r;
+    } else {
+      get<i>(result_coefficients) = r;
+    }
+  });
   return PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator>(
       std::move(result_coefficients),
       right.origin_);
@@ -884,14 +876,13 @@ operator-(
                                      ldegree,
                                      Evaluator>::Coefficients
       result_coefficients(uninitialized);
-  for_all_of(left.coefficients_)
-      .loop_indexed([&result_coefficients]<int i>(auto const& l) {
-        if constexpr (i == 0) {
-          get<i>(result_coefficients) = l - right;
-        } else {
-          get<i>(result_coefficients) = l;
-        }
-      });
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto const& l) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = l - right;
+    } else {
+      get<i>(result_coefficients) = l;
+    }
+  });
   return PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
                                    Evaluator>(
       std::move(result_coefficients),
@@ -909,14 +900,13 @@ operator-(Value const& left,
                                      rdegree,
                                      Evaluator>::Coefficients
       result_coefficients(uninitialized);
-  for_all_of(right.coefficients_)
-      .loop_indexed([&result_coefficients]<int i>(auto const& r) {
-        if constexpr (i == 0) {
-          get<i>(result_coefficients) = left - r;
-        } else {
-          get<i>(result_coefficients) = r;
-        }
-      });
+  for_all_of(right.coefficients_).loop_indexed([&]<int i>(auto const& r) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = left - r;
+    } else {
+      get<i>(result_coefficients) = r;
+    }
+  });
   return PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
                                    Evaluator>(
       std::move(result_coefficients),
@@ -936,23 +926,22 @@ Compose(
                                      ldegree * rdegree,
                                      Evaluator>::Coefficients
       result_coefficients;
-  for_all_of(left.coefficients_)
-      .loop_indexed([&result_coefficients]<int i>(auto const& l) {
-        if constexpr (i == 0) {
-          get<i>(result_coefficients) = l;
-        } else {
-          // NOTE(egg):
-          // `for_all_of((l * Pow<i>(right - left.origin_)).coefficients_)...`
-          // does not compile.  The temporary polynomial would outlive the loop
-          // so it should be fine, but presumably we would need to be clever
-          // about value categories somewhere in `for_all_of`.
-          auto const left_monomial = l * Pow<i>(right - left.origin_);
-          for_all_of(left_monomial.coefficients_)
-              .loop_indexed([&result_coefficients]<int j>(auto const& c) {
-                get<j>(result_coefficients) += c;
-              });
-        }
-      });
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto const& l) {
+    if constexpr (i == 0) {
+      get<i>(result_coefficients) = l;
+    } else {
+      // NOTE(egg):
+      // `for_all_of((l * Pow<i>(right - left.origin_)).coefficients_)...`
+      // does not compile.  The temporary polynomial would outlive the loop
+      // so it should be fine, but presumably we would need to be clever
+      // about value categories somewhere in `for_all_of`.
+      auto const left_monomial = l * Pow<i>(right - left.origin_);
+      for_all_of(left_monomial.coefficients_)
+          .loop_indexed([&]<int j>(auto const& c) {
+            get<j>(result_coefficients) += c;
+          });
+    }
+  });
   return PolynomialInMonomialBasis<LValue, RArgument, ldegree * rdegree,
                                    Evaluator>(
       std::move(result_coefficients),
@@ -976,13 +965,11 @@ PointwiseInnerProduct(
                                      Evaluator>::Coefficients
       result_coefficients;
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  for_all_of(left.coefficients_)
-      .loop_indexed([&result_coefficients]<int i>(auto l) {
-        for_all_of(right.coefficients_)
-            .loop_indexed([&result_coefficients]<int j>(auto r) {
-              get<i + j>(result_coefficients) += InnerProduct(l, r);
-            });
-      });
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto l) {
+    for_all_of(right.coefficients_).loop_indexed([&]<int j>(auto r) {
+      get<i + j>(result_coefficients) += InnerProduct(l, r);
+    });
+  });
   return PolynomialInMonomialBasis<InnerProductType<LValue, RValue>, Argument,
                                    ldegree + rdegree,
                                    Evaluator>(std::move(result_coefficients),
