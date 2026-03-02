@@ -442,9 +442,9 @@ TEST_F(PolynomialInMonomialBasisTest, AffineAcrossDegrees) {
   std::tuple left_operands{p1a, p1a, p1, p1, p3a, p3a, p3, p3};
   std::tuple right_operands{p3a, p3, p3a, p3, p1a, p1, p1a, p1};
   for_all_of(left_operands, right_operands)
-      .loop([](auto const& l, auto const& r) {
-        using L = std::remove_cvref_t<decltype(l)>::Value;
-        using R = std::remove_cvref_t<decltype(r)>::Value;
+      .loop([](auto l, auto r) {
+        using L = decltype(l)::Value;
+        using R = decltype(r)::Value;
         if constexpr (!(std::same_as<L, Instant> &&
                         std::same_as<R, Instant>)) {
           auto const l_plus_r = l + r;
