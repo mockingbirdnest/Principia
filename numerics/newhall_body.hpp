@@ -37,60 +37,28 @@ using HomogeneousQV = DirectSum<Value, Value>;
 template<typename Value>
 using HomogeneousQVs = std::array<HomogeneousQV<Value>, divisions + 1>;
 
-// A helper to unroll the dot product between an array-like object (which must
-// have an operator[]) and a `QV`.
-template<int index = 2 * divisions + 1>
-struct DotProduct {
-  template<typename Left, typename RightElement>
-  static RightElement Compute(Left const& left, QV<RightElement> const& right);
-};
-
-template<>
-struct DotProduct<0> {
-  template<typename Left, typename RightElement>
-  static RightElement Compute(Left const& left, QV<RightElement> const& right);
-};
-
-template<int index>
-template<typename Left, typename RightElement>
-RightElement DotProduct<index>::Compute(Left const& left,
-                                        QV<RightElement> const& right) {
-  return left[index] * right[index] +
-         DotProduct<index - 1>::Compute(left, right);
+// TODO(phl)comment,name
+template<typename Value>
+Value DotProduct(DirectSum<double, double> const* const left,
+                 HomogeneousQVs<Value> const& right) {
+  Value result{};
+  for_integer_range<0, divisions + 1>(
+      [&]<int i> { result += left[i] * right[i]; });
+  return result;
 }
 
-template<typename Left, typename RightElement>
-RightElement DotProduct<0>::Compute(Left const& left,
-                                    QV<RightElement> const& right) {
-  return left[0] * right[0];
-}
-
-// Fills `result` (which must be array-like) with the result of multiplying a
-// matrix with a `QV`.
-template<int degree, typename RightElement, typename Result>
-void Multiply(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
-              QV<RightElement> const& right,
-              Result& result) {
-  auto const* row = left.template row<0>();
-  for (int i = 0; i < degree + 1; ++i) {
-    result[i] = DotProduct<>::Compute(row, right);
-    row += 2 * divisions + 2;
-  }
-}
-
+// TODO(phl)comment,name
 template<int degree, typename Value>
 std::array<Value, degree + 1> Multiply(
-    FixedMatrix<DirectSum<double, double>,
-                degree + 1, divisions + 1> const& left,
-    HomogeneousQV<Value> const right) {
+    FixedMatrix<DirectSum<double, double>, degree + 1, divisions + 1> const&
+        left,
+    HomogeneousQVs<Value> const& right) {
   std::array<Value, degree + 1> result;
-  auto const* row = left.template row<0>();
-  for_all_of(left, right).Loop(
-      [&](int i) {
-        result[i] = row[i].first * right.first + row[i].second * right.second;
-      },
-      degree + 1);
-}
+  for_integer_range<0, degree + 1>([&]<int i> {
+    // TODO(phl)not a ptr
+    auto const* row = left.template row<i>();
+    result[i] = DotProduct(row, right);
+  });
   return result;
 }
 
@@ -178,41 +146,34 @@ struct NewhallMonomialApproximator {
       Value& error_estimate);
 };
 
-#define PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(degree) \
-  template<typename Value>                                            \
-  struct NewhallЧебышёвApproximator<Value, (degree)> {                \
-    static std::array<Value, (degree) + 1> HomogeneousCoefficients(   \
-        HomogeneousQVs<Value> const& hqvs,                             \
-        Value& error_estimate) {                                      \
-      std::array<Value, degree + 1> result;                           \
-      Multiply<(degree)>(                                             \
-          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04, \
-          hqvs,                                                       \
-          result);                                                    \
-      error_estimate = result[degree];                                \
-      return result;                                                  \
-    }                                                                 \
+#define PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(degree)        \
+  template<typename Value>                                                   \
+  struct NewhallЧебышёвApproximator<Value, (degree)> {                       \
+    static std::array<Value, (degree) + 1> HomogeneousCoefficients(          \
+        HomogeneousQVs<Value> const& hqvs,                                   \
+        Value& error_estimate) {                                             \
+      auto const result = Multiply<(degree)>(                                \
+          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04, hqvs); \
+      error_estimate = result[(degree)];                                       \
+      return result;                                                         \
+    }                                                                        \
   }
 
 // The error estimate must be computed in the Чебышёв basis because the elements
 // of the monomial basis are not bounded.
-#define PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(degree) \
-  template<typename Value>                                             \
-  struct NewhallMonomialApproximator<Value, (degree)> {                \
-    static std::array<Value, (degree) + 1> HomogeneousCoefficients(    \
-        HomogeneousQVs<Value> const& hqvs,                             \
-        Value& error_estimate) {                                       \
-      error_estimate = DotProduct<>::Compute(                          \
-          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04   \
-              .row<(degree)>(),                                        \
-          hqvs);                                                       \
-      std::array<Value, (degree) + 1> result;                          \
-      Multiply<(degree)>(                                              \
-          newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04, \
-          hqvs,                                                        \
-          result);                                                     \
-      return result;                                                   \
-    }                                                                  \
+#define PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(degree)        \
+  template<typename Value>                                                    \
+  struct NewhallMonomialApproximator<Value, (degree)> {                       \
+    static std::array<Value, (degree) + 1> HomogeneousCoefficients(           \
+        HomogeneousQVs<Value> const& hqvs,                                    \
+        Value& error_estimate) {                                              \
+      error_estimate = DotProduct(                                            \
+          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04          \
+              .row<(degree)>(),                                               \
+          hqvs);                                                              \
+      return Multiply<(degree)>(                                              \
+          newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04, hqvs); \
+    }                                                                         \
   }
 
 PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(3);
