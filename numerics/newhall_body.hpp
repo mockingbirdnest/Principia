@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/for_all_of.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
@@ -16,6 +17,7 @@ namespace numerics {
 namespace _newhall {
 namespace internal {
 
+using namespace principia::base::_for_all_of;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_newhall_matrices;
@@ -74,6 +76,22 @@ void Multiply(FixedMatrix<double, degree + 1, 2 * divisions + 2> const& left,
     result[i] = DotProduct<>::Compute(row, right);
     row += 2 * divisions + 2;
   }
+}
+
+template<int degree, typename Value>
+std::array<Value, degree + 1> Multiply(
+    FixedMatrix<DirectSum<double, double>,
+                degree + 1, divisions + 1> const& left,
+    HomogeneousQV<Value> const right) {
+  std::array<Value, degree + 1> result;
+  auto const* row = left.template row<0>();
+  for_all_of(left, right).Loop(
+      [&](int i) {
+        result[i] = row[i].first * right.first + row[i].second * right.second;
+      },
+      degree + 1);
+}
+  return result;
 }
 
 template<typename Value, int degree,
