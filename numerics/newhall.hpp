@@ -36,7 +36,7 @@ using QV = DirectSum<Value, Variation<Value>>;
 // norm of that estimate.
 template<typename Value, int degree>
 PolynomialInЧебышёвBasis<Value, Instant, degree>
-NewhallApproximationInЧебышёвBasis(std::vector<QV<Value>> const& qv,
+NewhallApproximationInЧебышёвBasis(std::vector<QV<Value>> const& qvs,
                                    Instant const& t_min,
                                    Instant const& t_max,
                                    Value& error_estimate);
@@ -45,7 +45,7 @@ NewhallApproximationInЧебышёвBasis(std::vector<QV<Value>> const& qv,
 template<typename Value>
 not_null<std::unique_ptr<PolynomialInЧебышёвBasis<Value, Instant>>>
 NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<QV<Value>> const& qv,
+                                   std::vector<QV<Value>> const& qvs,
                                    Instant const& t_min,
                                    Instant const& t_max,
                                    Value& error_estimate);
@@ -57,7 +57,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
 template<typename Value, int degree,
          template<typename, typename, int> typename Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>
-NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qv,
+NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qvs,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Difference<Value>& error_estimate);
@@ -67,7 +67,7 @@ NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qv,
 template<typename Value>
 not_null<std::unique_ptr<Polynomial<Value, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
-                                    std::vector<QV<Value>> const& qv,
+                                    std::vector<QV<Value>> const& qvs,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Policy const& policy,

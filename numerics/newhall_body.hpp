@@ -32,6 +32,9 @@ constexpr int divisions = 8;
 template<typename Value>
 using HomogeneousQV = DirectSum<Value, Value>;
 
+template<typename Value>
+using HomogeneousQVs = std::array<HomogeneousQV<Value>, divisions + 1>;
+
 // A helper to unroll the dot product between an array-like object (which must
 // have an operator[]) and a `QV`.
 template<int index = 2 * divisions + 1>
@@ -146,14 +149,14 @@ Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
 template<typename Value, int degree>
 struct NewhallЧебышёвApproximator {
   static std::array<Value, degree + 1> HomogeneousCoefficients(
-      HomogeneousQV<Value> const& hqv,
+      HomogeneousQVs<Value> const& hqvs,
       Value& error_estimate);
 };
 
 template<typename Value, int degree>
 struct NewhallMonomialApproximator {
   static std::array<Value, degree + 1> HomogeneousCoefficients(
-      QV<Value> const& qv,
+      HomogeneousQVs<Value> const& qvs,
       Value& error_estimate);
 };
 
@@ -161,12 +164,12 @@ struct NewhallMonomialApproximator {
   template<typename Value>                                            \
   struct NewhallЧебышёвApproximator<Value, (degree)> {                \
     static std::array<Value, (degree) + 1> HomogeneousCoefficients(   \
-        HomogeneousQV<Value> const& hqv,                              \
+        HomogeneousQVs<Value> const& hqvs,                             \
         Value& error_estimate) {                                      \
       std::array<Value, degree + 1> result;                           \
       Multiply<(degree)>(                                             \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04, \
-          hqv,                                                        \
+          hqvs,                                                       \
           result);                                                    \
       error_estimate = result[degree];                                \
       return result;                                                  \
@@ -179,16 +182,16 @@ struct NewhallMonomialApproximator {
   template<typename Value>                                             \
   struct NewhallMonomialApproximator<Value, (degree)> {                \
     static std::array<Value, (degree) + 1> HomogeneousCoefficients(    \
-        QV<Value> const& qv,                                           \
+        HomogeneousQVs<Value> const& hqvs,                             \
         Value& error_estimate) {                                       \
       error_estimate = DotProduct<>::Compute(                          \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04   \
               .row<(degree)>(),                                        \
-          qv);                                                         \
+          hqvs);                                                       \
       std::array<Value, (degree) + 1> result;                          \
       Multiply<(degree)>(                                              \
           newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04, \
-          qv,                                                          \
+          hqvs,                                                        \
           result);                                                     \
       return result;                                                   \
     }                                                                  \
@@ -231,26 +234,26 @@ PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(17);
 
 template<typename Value, int degree>
 PolynomialInЧебышёвBasis<Value, Instant, degree>
-NewhallApproximationInЧебышёвBasis(std::vector<QV<Value>> const& qv,
+NewhallApproximationInЧебышёвBasis(std::vector<QV<Value>> const& qvs,
                                    Instant const& t_min,
                                    Instant const& t_max,
                                    Value& error_estimate) {
-  CHECK_EQ(divisions + 1, qv.size());
+  CHECK_EQ(divisions + 1, qvs.size());
 
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
   //TODO(phl)invert?
-  HomogeneousQV<Value> hqv;
+  HomogeneousQVs<Difference<Value>> hqvs;
   for (int i = 0, j = divisions; i < divisions + 1 && j >= 0; ++i, --j) {
-    auto const& [q, v] = qv[i];
-    hqv[j] = {q, v * duration_over_two};
+    auto const& [q, v] = qvs[i];
+    hqvs[j] = {q, v * duration_over_two};
   }
 
   auto const coefficients =
       NewhallЧебышёвApproximator<Difference<Value>, degree>::
-          HomogeneousCoefficients(hqv, error_estimate);
+          HomogeneousCoefficients(hqvs, error_estimate);
   return PolynomialInЧебышёвBasis<Value, Instant, degree>(
       coefficients, t_min, t_max);
 }
@@ -260,12 +263,12 @@ NewhallApproximationInЧебышёвBasis(std::vector<QV<Value>> const& qv,
     return make_not_null_unique<                                      \
         PolynomialInЧебышёвBasis<Value, Instant, (degree)>>(          \
         NewhallApproximationInЧебышёвBasis<Value, (degree)>(          \
-            qv, t_min, t_max, error_estimate))
+            qvs, t_min, t_max, error_estimate))
 
 template<typename Value>
 not_null<std::unique_ptr<PolynomialInЧебышёвBasis<Value, Instant>>>
 NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<QV<Value>> const& qv,
+                                   std::vector<QV<Value>> const& qvs,
                                    Instant const& t_min,
                                    Instant const& t_max,
                                    Value& error_estimate) {
@@ -296,29 +299,29 @@ NewhallApproximationInЧебышёвBasis(int degree,
 template<typename Value, int degree,
          template<typename, typename, int> typename Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>
-NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qv,
+NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qvs,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Difference<Value>& error_estimate) {
-  CHECK_EQ(divisions + 1, qv.size());
+  CHECK_EQ(divisions + 1, qvs.size());
 
   Value const origin{};
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  QV<Difference<Value>> qv;
-  for (int i = 0, j = 2 * divisions;
+  HomogeneousQVs<Difference<Value>> hqvs;
+  for (int i = 0, j = divisions;
        i < divisions + 1 && j >= 0;
-       ++i, j -= 2) {
-    qv[j] = q[i] - origin;
-    qv[j + 1] = v[i] * duration_over_two;
+       ++i, --j) {
+    auto const& [q, v] = qvs[i];
+    hqvs[j] = {q - origin, v * duration_over_two};
   }
 
   Instant const t_mid = Barycentre({t_min, t_max});
   return origin + Dehomogeneize<Difference<Value>, degree, Evaluator>(
                       NewhallMonomialApproximator<Difference<Value>, degree>::
-                          HomogeneousCoefficients(qv, error_estimate),
+                          HomogeneousCoefficients(hqvs, error_estimate),
                       /*scale=*/1.0 / duration_over_two,
                       t_mid);
 }
@@ -329,12 +332,12 @@ NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qv,
         NewhallApproximationInMonomialBasis<Value,                     \
                                             (degree),                  \
                                             DefaultEvaluator>(         \
-            q, v, t_min, t_max, error_estimate))
+            qvs, t_min, t_max, error_estimate))
 
 template<typename Value>
 not_null<std::unique_ptr<Polynomial<Value, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
-                                    std::vector<QV<Value>> const& qv,
+                                    std::vector<QV<Value>> const& qvs,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Policy const& policy,
