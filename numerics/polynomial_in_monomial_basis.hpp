@@ -439,8 +439,7 @@ template<typename Value, affine Argument, int ldegree_,
          template<typename, typename, int>
          typename Evaluator_>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator_>
-operator+(PolynomialInMonomialBasis<Difference<Value>,
-                                    Argument,
+operator+(PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     ldegree_,
                                     Evaluator_> const& left,
           Value const& right);

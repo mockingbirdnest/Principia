@@ -632,8 +632,7 @@ operator+(
     PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
         right) {
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  typename PolynomialInMonomialBasis<Value,
-                                     Argument,
+  typename PolynomialInMonomialBasis<Value, Argument,
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
@@ -664,8 +663,7 @@ operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
           PolynomialInMonomialBasis<Value, Argument, rdegree,
                                     Evaluator> const& right) {
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  typename PolynomialInMonomialBasis<Value,
-                                     Argument,
+  typename PolynomialInMonomialBasis<Value, Argument,
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
@@ -696,8 +694,7 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree,
           PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
                                     Evaluator> const& right) {
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  typename PolynomialInMonomialBasis<Value,
-                                     Argument,
+  typename PolynomialInMonomialBasis<Value, Argument,
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
@@ -728,8 +725,7 @@ operator-(
     PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
         right) {
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  typename PolynomialInMonomialBasis<Difference<Value>,
-                                     Argument,
+  typename PolynomialInMonomialBasis<Difference<Value>, Argument,
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
@@ -799,18 +795,18 @@ operator*(
     PolynomialInMonomialBasis<RValue, Argument, rdegree, Evaluator> const&
         right) {
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  typename PolynomialInMonomialBasis<Product<LValue, RValue>,
-                                     Argument,
+  typename PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                      ldegree + rdegree,
                                      Evaluator>::Coefficients
       result_coefficients;
-  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto const& l) {
-    for_all_of(right.coefficients_).loop_indexed([&]<int j>(auto const& r) {
-      get<i + j>(result_coefficients) += l * r;
-    });
-  });
-  return PolynomialInMonomialBasis<Product<LValue, RValue>,
-                                   Argument,
+  for_all_of(left.coefficients_)
+      .loop_indexed([&]<int i>(auto const& l) {
+        for_all_of(right.coefficients_)
+            .loop_indexed([&]<int j>(auto const& r) {
+              get<i + j>(result_coefficients) += l * r;
+            });
+      });
+  return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                    ldegree + rdegree,
                                    Evaluator>(std::move(result_coefficients),
                                               left.origin_);
@@ -820,20 +816,17 @@ operator*(
 template<typename Value, affine Argument, int ldegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>
-operator+(PolynomialInMonomialBasis<Difference<Value>,
-                                    Argument,
+operator+(PolynomialInMonomialBasis<Difference<Value>, Argument,
                                     ldegree,
                                     Evaluator> const& left,
           Value const& right) {
 #else
 template<typename Value,
-         std::same_as<Difference<Value>> ValueDifference,
-         affine Argument,
+         std::same_as<Difference<Value>> ValueDifference, affine Argument,
          int ldegree,
          template<typename, typename, int> typename Evaluator>
 constexpr PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator>
-operator+(PolynomialInMonomialBasis<ValueDifference,
-                                    Argument,
+operator+(PolynomialInMonomialBasis<ValueDifference, Argument,
                                     ldegree,
                                     Evaluator> const& left,
           Value const& right) {
@@ -879,8 +872,7 @@ constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
 operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
     Value const& right) {
-  typename PolynomialInMonomialBasis<Difference<Value>,
-                                     Argument,
+  typename PolynomialInMonomialBasis<Difference<Value>, Argument,
                                      ldegree,
                                      Evaluator>::Coefficients
       result_coefficients(uninitialized);
@@ -904,8 +896,7 @@ constexpr PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
 operator-(Value const& left,
           PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
               right) {
-  typename PolynomialInMonomialBasis<Difference<Value>,
-                                     Argument,
+  typename PolynomialInMonomialBasis<Difference<Value>, Argument,
                                      rdegree,
                                      Evaluator>::Coefficients
       result_coefficients(uninitialized);
@@ -931,8 +922,7 @@ Compose(
     PolynomialInMonomialBasis<LValue, RValue, ldegree, Evaluator> const& left,
     PolynomialInMonomialBasis<RValue, RArgument, rdegree, Evaluator> const&
         right) {
-  typename PolynomialInMonomialBasis<LValue,
-                                     RArgument,
+  typename PolynomialInMonomialBasis<LValue, RArgument,
                                      ldegree * rdegree,
                                      Evaluator>::Coefficients
       result_coefficients;
@@ -941,10 +931,10 @@ Compose(
       get<i>(result_coefficients) = l;
     } else {
       // NOTE(egg):
-      // `for_all_of((l * Pow<i>(right - left.origin_)).coefficients_)...` does
-      // not compile.  The temporary polynomial would outlive the loop so it
-      // should be fine, but presumably we would need to be clever about value
-      // categories somewhere in `for_all_of`.
+      // `for_all_of((l * Pow<i>(right - left.origin_)).coefficients_)...`
+      // does not compile.  The temporary polynomial would outlive the loop
+      // so it should be fine, but presumably we would need to be clever
+      // about value categories somewhere in `for_all_of`.
       auto const left_monomial = l * Pow<i>(right - left.origin_);
       for_all_of(left_monomial.coefficients_)
           .loop_indexed([&]<int j>(auto const& c) {
@@ -970,8 +960,7 @@ PointwiseInnerProduct(
                               Evaluator> const& left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree,
                               Evaluator> const& right) {
-  typename PolynomialInMonomialBasis<InnerProductType<LValue, RValue>,
-                                     Argument,
+  typename PolynomialInMonomialBasis<InnerProductType<LValue, RValue>, Argument,
                                      ldegree + rdegree,
                                      Evaluator>::Coefficients
       result_coefficients;
@@ -981,8 +970,7 @@ PointwiseInnerProduct(
       get<i + j>(result_coefficients) += InnerProduct(l, r);
     });
   });
-  return PolynomialInMonomialBasis<InnerProductType<LValue, RValue>,
-                                   Argument,
+  return PolynomialInMonomialBasis<InnerProductType<LValue, RValue>, Argument,
                                    ldegree + rdegree,
                                    Evaluator>(std::move(result_coefficients),
                                               left.origin_);

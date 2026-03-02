@@ -1533,7 +1533,7 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
   PolynomialInMonomialBasis<double, double, 1>
       fukushima_elliptic_Js_maclaurin_m_1(
           {fukushima_elliptic_Js_maclaurin_n_1_0(n),
-                          fukushima_elliptic_Js_maclaurin_n_1_1(n)});
+           fukushima_elliptic_Js_maclaurin_n_1_1(n)});
   PolynomialInMonomialBasis<double, double, 2>
       fukushima_elliptic_Js_maclaurin_m_2(
           {fukushima_elliptic_Js_maclaurin_n_2_0(n),

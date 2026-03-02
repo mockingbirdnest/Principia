@@ -93,12 +93,9 @@ void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
 
 template<affine Value_, affine Argument_>
 BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
-  auto const& coefficients = p_.Derivative().coefficients();
+  auto const& [a₀, a₁, a₂] = p_.Derivative().coefficients();
   auto const roots =
-      SolveQuadraticEquation<Argument, Derivative1>(p_.origin(),
-                                                    get<0>(coefficients),
-                                                    get<1>(coefficients),
-                                                    get<2>(coefficients));
+      SolveQuadraticEquation<Argument, Derivative1>(p_.origin(), a₀, a₁, a₂);
   BoundedArray<Argument, 2> valid_roots;
   for (auto const& root : roots) {
     if (lower_ <= root && root <= upper_) {
