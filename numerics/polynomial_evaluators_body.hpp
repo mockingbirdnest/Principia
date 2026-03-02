@@ -19,7 +19,7 @@ using namespace principia::numerics::_elementary_functions;
 // Internal helper for Estrin evaluation.  `degree` is the degree of the overall
 // polynomial, `low` and `subdegree` defines the subpolynomial that we currently
 // evaluate, i.e., the one with a constant term coefficient
-// `std::get<low>(coefficients)` and degree `subdegree`.
+// `get<low>(coefficients)` and degree `subdegree`.
 template<typename Value, typename Argument,
          int degree, bool fma, int low, int subdegree>
 struct InternalEstrinEvaluator {
@@ -134,8 +134,8 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
 Evaluate(Coefficients const& coefficients,
          Argument const& argument) {
   auto const& x = argument;
-  auto const& a = std::get<low + 1>(coefficients);
-  auto const& b = std::get<low>(coefficients);
+  auto const& a = get<low + 1>(coefficients);
+  auto const& b = get<low>(coefficients);
   if constexpr (fma) {
     return FusedMultiplyAdd(a, x, b);
   } else {
@@ -148,7 +148,7 @@ FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
 Evaluate(Coefficients const& coefficients,
          Argument const& argument) {
-  return std::get<low>(coefficients);
+  return get<low>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
@@ -165,8 +165,8 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
 EvaluateDerivative(Coefficients const& coefficients,
                    Argument const& argument) {
   auto const& x = argument;
-  auto const& a = (low + 1) * std::get<low + 1>(coefficients);
-  auto const& b = low * std::get<low>(coefficients);
+  auto const& a = (low + 1) * get<low + 1>(coefficients);
+  auto const& b = low * get<low>(coefficients);
   if constexpr (fma) {
     return FusedMultiplyAdd(a, x, b);
   } else {
@@ -179,7 +179,7 @@ FORCE_INLINE(inline) Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
 EvaluateDerivative(Coefficients const& coefficients,
                    Argument const& argument) {
-  return low * std::get<low>(coefficients);
+  return low * get<low>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
@@ -192,7 +192,7 @@ EvaluateDerivative(Coefficients const& coefficients,
 
 // Internal helper for Horner evaluation.  `degree` is the degree of the overall
 // polynomial, `low` defines the subpolynomial that we currently evaluate, i.e.,
-// the one with a constant term coefficient `std::get<low>(coefficients)`.
+// the one with a constant term coefficient `get<low>(coefficients)`.
 template<typename Value, typename Argument, int degree, bool fma, int low>
 struct InternalHornerEvaluator {
   using Coefficients = internal::Coefficients<Value, Argument, degree>;
@@ -229,7 +229,7 @@ Evaluate(Coefficients const& coefficients,
     auto const a =
         InternalHornerEvaluator<Value, Argument, degree, fma, low + 1>::
             Evaluate(coefficients, argument);
-    auto const& b = std::get<low>(coefficients);
+    auto const& b = get<low>(coefficients);
     if constexpr (fma) {
       return FusedMultiplyAdd(a, x, b);
     } else {
@@ -250,7 +250,7 @@ EvaluateDerivative(Coefficients const& coefficients,
     auto const a =
         InternalHornerEvaluator<Value, Argument, degree, fma, low + 1>::
             EvaluateDerivative(coefficients, argument);
-    auto const b = std::get<low>(coefficients) * low;
+    auto const b = get<low>(coefficients) * low;
     if constexpr (fma) {
       return FusedMultiplyAdd(a, x, b);
     } else {
@@ -264,7 +264,7 @@ FORCE_INLINE(inline) Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
 Evaluate(Coefficients const& coefficients,
          Argument const& argument) {
-  return std::get<degree>(coefficients);
+  return get<degree>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree, bool fma>
@@ -272,7 +272,7 @@ FORCE_INLINE(inline) Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
 EvaluateDerivative(Coefficients const& coefficients,
                     Argument const& argument) {
-  return std::get<degree>(coefficients) * degree;
+  return get<degree>(coefficients) * degree;
 }
 
 template<typename Value, typename Argument, int degree,

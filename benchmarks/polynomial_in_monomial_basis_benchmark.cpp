@@ -69,8 +69,7 @@ struct ValueGenerator<Multivector<S, F, r>> {
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct RandomTupleGenerator {
   static void Fill(Tuple& t, std::mt19937_64& random) {
-    std::get<k>(t) =
-        ValueGenerator<std::tuple_element_t<k, Tuple>>::Get(random);
+    get<k>(t) = ValueGenerator<std::tuple_element_t<k, Tuple>>::Get(random);
     RandomTupleGenerator<Tuple, k + 1, size>::Fill(t, random);
   }
 };

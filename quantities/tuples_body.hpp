@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base/algebra.hpp"
+#include "geometry/direct_sum.hpp"
 #include "quantities/tuples.hpp"
 
 #include <algorithm>
@@ -16,6 +17,7 @@ namespace _tuples {
 namespace internal {
 
 using namespace principia::base::_algebra;
+using namespace principia::geometry::_direct_sum;
 
 // A helper for getting the type of an element even for an index that is not in
 // range.  In that case, the member Type is defined to be void.  Doing this with
@@ -59,7 +61,7 @@ template<typename Value, typename Argument, int n, std::size_t... orders>
 struct DerivativesGenerator<Value, Argument, n,
                             std::index_sequence<orders...>>
     : not_constructible {
-  using Type = std::tuple<Derivative<Value, Argument, orders>...>;
+  using Type = DirectSum<Derivative<Value, Argument, orders>...>;
 };
 
 }  // namespace internal

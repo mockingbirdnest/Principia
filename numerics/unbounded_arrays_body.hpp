@@ -1030,13 +1030,13 @@ UnboundedMatrix<Product<LScalar, RScalar>> operator*(
   return result;
 }
 
-template<affine LScalar, affine RScalar>
-UnboundedMatrix<Product<LScalar, RScalar>> operator*(
-    UnboundedMatrix<LScalar> const& left,
-    UnboundedMatrix<RScalar> const& right) {
+template<two_dimensional L, two_dimensional R>
+UnboundedMatrix<Product<typename L::Scalar, typename R::Scalar>> MatrixProduct(
+    L const& left,
+    R const& right) {
   DCHECK_EQ(left.columns(), right.rows());
-  UnboundedMatrix<Product<LScalar, RScalar>> result(left.rows(),
-                                                    right.columns());
+  UnboundedMatrix<Product<typename L::Scalar, typename R::Scalar>> result(
+      left.rows(), right.columns());
   for (std::int64_t i = 0; i < left.rows(); ++i) {
     for (std::int64_t j = 0; j < right.columns(); ++j) {
       for (std::int64_t k = 0; k < left.columns(); ++k) {
@@ -1045,6 +1045,35 @@ UnboundedMatrix<Product<LScalar, RScalar>> operator*(
     }
   }
   return result;
+}
+
+template<affine LScalar, affine RScalar>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    UnboundedMatrix<RScalar> const& right) {
+  return MatrixProduct(left, right);
+}
+
+template<affine LScalar,
+         affine RScalar,
+         std::int64_t dimension,
+         std::int64_t columns,
+         bool ruh>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    UnboundedMatrix<LScalar> const& left,
+    FixedMatrix<RScalar, dimension, columns, ruh> const& right) {
+  return MatrixProduct(left, right);
+}
+
+template<affine LScalar,
+         affine RScalar,
+         std::int64_t rows,
+         std::int64_t dimension,
+         bool luh>
+UnboundedMatrix<Product<LScalar, RScalar>> operator*(
+    FixedMatrix<LScalar, rows, dimension, luh> const& left,
+    UnboundedMatrix<RScalar> const& right) {
+  return MatrixProduct(left, right);
 }
 
 template<affine LScalar, affine RScalar>

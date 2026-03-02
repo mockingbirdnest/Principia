@@ -271,7 +271,7 @@ BarycentreDerivative(
     Instant const& t,
     CachedDerivatives& cache) const {
   Instant& cache_key = cache.times[degree];
-  auto& cached = std::get<degree>(cache.derivatives);
+  auto& cached = get<degree>(cache.derivatives);
   if (cache_key != t) {
     BarycentreCalculator<Derivative<Position<InertialFrame>, Instant, degree>,
                          GravitationalParameter>

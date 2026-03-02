@@ -4,6 +4,7 @@
 #include <tuple>
 
 #include "base/algebra.hpp"
+#include "base/tags.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
@@ -20,6 +21,7 @@ namespace principia {
 namespace geometry {
 
 using namespace principia::base::_algebra;
+using namespace principia::base::_tags;
 using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -37,6 +39,46 @@ using World = Frame<serialization::Frame::TestTag,
                     Inertial,
                     Handedness::Right,
                     serialization::Frame::TEST>;
+
+// A helper type for counting constructions.  It must be an affine type.
+struct ConstructionCounter {
+  static std::int64_t initialized_count;
+  static std::int64_t uninitialized_count;
+
+  constexpr explicit ConstructionCounter(uninitialized_t) {
+    ++uninitialized_count;
+  }
+
+  constexpr ConstructionCounter() {
+    ++initialized_count;
+  }
+
+  ConstructionCounter& operator+=(double) {
+    return *this;
+  };
+  ConstructionCounter& operator-=(double) {
+    return *this;
+  };
+};
+
+std::int64_t ConstructionCounter::initialized_count = 0;
+std::int64_t ConstructionCounter::uninitialized_count = 0;
+
+double operator-(ConstructionCounter const& left,
+                 ConstructionCounter const& right) {
+  return 0.0;
+}
+
+ConstructionCounter operator+(ConstructionCounter const& left, double right) {
+  return left;
+}
+
+ConstructionCounter operator-(ConstructionCounter const& left, double right) {
+  return left;
+}
+
+static_assert(affine<ConstructionCounter>);
+
 
 TEST(DirectSumTest, AlgebraConcepts) {
   static_assert(affine<DirectSum<std::byte*, double>>);
@@ -118,6 +160,17 @@ TEST(DirectSumTest, Constructors) {
   EXPECT_EQ(DirectSum<Length>(), DirectSum{0 * Metre});
 }
 
+TEST(DirectSumTest, UninitializedConstruction) {
+  DirectSum<double, Length, ConstructionCounter> d1(uninitialized);
+  EXPECT_EQ(get<1>(d1), 0 * Metre);
+  EXPECT_EQ(0, ConstructionCounter::initialized_count);
+  EXPECT_EQ(1, ConstructionCounter::uninitialized_count);
+  DirectSum<double, Length, ConstructionCounter> d2;
+  EXPECT_EQ(get<1>(d2), 0 * Metre);
+  EXPECT_EQ(1, ConstructionCounter::initialized_count);
+  EXPECT_EQ(1, ConstructionCounter::uninitialized_count);
+}
+
 TEST(DirectSumTest, UnaryPlus) {
   EXPECT_EQ(+ℝ²(1, 2), ℝ²(1, 2));
 }
@@ -146,8 +199,7 @@ TEST(DirectSumTest, Multiplication) {
 }
 
 TEST(DirectSumTest, Division) {
-  // Note: ℝ²(3, 4) / 2 doesn't work because integers are not a field.
-  EXPECT_EQ(ℝ²(3, 4) / 2.0, ℝ²(1.5, 2));
+  EXPECT_EQ(ℝ²(3, 4) / 2, ℝ²(1.5, 2));
 }
 
 TEST(DirectSumTest, InnerProduct) {

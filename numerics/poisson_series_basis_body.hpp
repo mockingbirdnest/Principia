@@ -103,7 +103,7 @@ Polynomial PolynomialGenerator<Polynomial, dimension>::UnitPolynomial(
   using Coefficient = std::tuple_element_t<degree, Coefficients>;
   using NormalizedCoefficient = NormalizedType<Coefficient>;
   Coefficients coefficients;
-  std::get<degree>(coefficients) =
+  get<degree>(coefficients) =
       CoefficientGenerator<NormalizedCoefficient,
                            dimension>::template Unit<coordinate>() /
       Pow<degree>(0.5 * (t_max - t_min));

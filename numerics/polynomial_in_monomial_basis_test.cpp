@@ -3,6 +3,7 @@
 #include <tuple>
 
 #include "base/algebra.hpp"
+#include "base/for_all_of.hpp"
 #include "base/multiprecision.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -32,6 +33,7 @@ namespace numerics {
 
 using ::testing::Eq;
 using namespace principia::base::_algebra;
+using namespace principia::base::_for_all_of;
 using namespace principia::base::_multiprecision;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -122,8 +124,8 @@ TEST_F(PolynomialInMonomialBasisTest, ℤⳆnℤOfX) {
 
 // Check that coefficients can be accessed and have the right type.
 TEST_F(PolynomialInMonomialBasisTest, Coefficients) {
-  Displacement<World> const d = std::get<0>(coefficients_);
-  Velocity<World> const v = std::get<1>(coefficients_);
+  Displacement<World> const d = get<0>(coefficients_);
+  Velocity<World> const v = get<1>(coefficients_);
   EXPECT_EQ(1 * Metre, d.coordinates().z);
   EXPECT_EQ(1 * Metre / Second, v.coordinates().y);
 }
@@ -173,9 +175,9 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2A) {
 // Check that a polynomial can return an affine value.
 TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
   Instant const t0 = Instant() + 0.3 * Second;
-  P2P const p({World::origin + std::get<0>(coefficients_),
-               std::get<1>(coefficients_),
-               std::get<2>(coefficients_)},
+  P2P const p({World::origin + get<0>(coefficients_),
+               get<1>(coefficients_),
+               get<2>(coefficients_)},
               t0);
   EXPECT_EQ(2, p.degree());
   Position<World> const d = p(t0 + 0.5 * Second);
@@ -198,9 +200,9 @@ TEST_F(PolynomialInMonomialBasisTest, Evaluate2P) {
 // polynomials.
 TEST_F(PolynomialInMonomialBasisTest, Addition2P) {
   Instant const t0 = Instant() + 0.3 * Second;
-  P2P const p1({World::origin + std::get<0>(coefficients_),
-               std::get<1>(coefficients_),
-               std::get<2>(coefficients_)},
+  P2P const p1({World::origin + get<0>(coefficients_),
+               get<1>(coefficients_),
+               get<2>(coefficients_)},
               t0);
   P2P const p2 = p1;
   P2A const p3 = p2 - p1;
@@ -345,26 +347,26 @@ TEST_F(PolynomialInMonomialBasisTest, Ring) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, Affine) {
-  using P0A = PolynomialInMonomialBasis<Instant, Time, 0>;
-  using P0V = PolynomialInMonomialBasis<Time, Time, 0>;
+  using P1A = PolynomialInMonomialBasis<Instant, Time, 1>;
+  using P1V = PolynomialInMonomialBasis<Time, Time, 1>;
 
-  P0A const p0a(std::tuple{Instant() + 1 * Second});
-  P0V const p0v(std::tuple{2 * Second});
+  P1A const p1a({Instant() + 1 * Second, 1});
+  P1V const p1v({2 * Second, 1});
   {
-    P0A const p = p0v + Instant();
-    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
+    P1A const p = p1v + Instant();
+    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 5 * Second, 0));
   }
   {
-    P0A const p =  Instant() + p0v;
-    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
+    P1A const p =  Instant() + p1v;
+    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 5 * Second, 0));
   }
   {
-    P0V const p = p0a - Instant();
-    EXPECT_THAT(p(3 * Second), AlmostEquals(1 * Second, 0));
+    P1V const p = p1a - Instant();
+    EXPECT_THAT(p(3 * Second), AlmostEquals(4 * Second, 0));
   }
   {
-    P0V const p = Instant() - p0a;
-    EXPECT_THAT(p(3 * Second), AlmostEquals(-1 * Second, 0));
+    P1V const p = Instant() - p1a;
+    EXPECT_THAT(p(3 * Second), AlmostEquals(-4 * Second, 0));
   }
 }
 
@@ -422,6 +424,40 @@ TEST_F(PolynomialInMonomialBasisTest, Monoid) {
     auto const actual = Compose(p1a, p2a)(t0 + 1 * Second);
     EXPECT_THAT(actual, AlmostEquals(334 * Ampere, 0));
   }
+}
+
+TEST_F(PolynomialInMonomialBasisTest, AffineAcrossDegrees) {
+  using P1 = PolynomialInMonomialBasis<Time, Temperature, 1>;
+  using P3 = PolynomialInMonomialBasis<Time, Temperature, 3>;
+  using P1A = PolynomialInMonomialBasis<Instant, Temperature, 1>;
+  using P3A = PolynomialInMonomialBasis<Instant, Temperature, 3>;
+  P1 const p1({2 * Second, -4 * Second / Kelvin});
+  P3 const p3({2 * Second,
+               -4 * Second / Kelvin,
+               3 * Second / Kelvin / Kelvin,
+               1 * Second / Kelvin / Kelvin / Kelvin});
+  Instant const t0;
+  P1A const p1a = p1 + t0;
+  P3A const p3a = p3 + t0;
+  std::tuple left_operands{p1a, p1a, p1, p1, p3a, p3a, p3, p3};
+  std::tuple right_operands{p3a, p3, p3a, p3, p1a, p1, p1a, p1};
+  for_all_of(left_operands, right_operands)
+      .loop([](auto l, auto r) {
+        using L = decltype(l)::Value;
+        using R = decltype(r)::Value;
+        if constexpr (!(std::same_as<L, Instant> &&
+                        std::same_as<R, Instant>)) {
+          auto const l_plus_r = l + r;
+          EXPECT_THAT(l_plus_r(1 * Kelvin),
+                      AlmostEquals(l(1 * Kelvin) + r(1 * Kelvin), 0));
+        }
+        if constexpr (!(std::same_as<L, Time> &&
+                        std::same_as<R, Instant>)) {
+          auto const l_minus_r = l - r;
+          EXPECT_THAT(l_minus_r(1 * Kelvin),
+                      AlmostEquals(l(1 * Kelvin) - r(1 * Kelvin), 0));
+        }
+      });
 }
 
 TEST_F(PolynomialInMonomialBasisTest, PointwiseInnerProduct) {
@@ -513,9 +549,9 @@ TEST_F(PolynomialInMonomialBasisTest, PrimitiveIntegrate) {
 
 TEST_F(PolynomialInMonomialBasisTest, EvaluateConstant) {
   PolynomialInMonomialBasis<Entropy, Time, 0, Horner> const horner_boltzmann(
-      std::make_tuple(BoltzmannConstant));
+      {BoltzmannConstant});
   PolynomialInMonomialBasis<Entropy, Time, 0, Estrin> const estrin_boltzmann(
-      std::make_tuple(BoltzmannConstant));
+      {BoltzmannConstant});
   EXPECT_THAT(horner_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(estrin_boltzmann(1729 * Second), Eq(BoltzmannConstant));
   EXPECT_THAT(horner_boltzmann.EvaluateDerivative(1729 * Second),

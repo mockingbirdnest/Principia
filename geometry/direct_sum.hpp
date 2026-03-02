@@ -106,14 +106,23 @@ constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
 // would work as L here, and in particular, whether it is a homogeneous_ring.
 // By forbidding instances of DirectSum directly we break the cyclic dependency.
 template<typename L, typename... R>
-  requires(!is_instance_of_v<DirectSum, L>) && (homogeneous_module<R, L> && ...)
+  requires(!is_instance_of_v<DirectSum, L>) &&
+          ((homogeneous_module<R, L> && ...) ||
+           (homogeneous_module<L, R> && ...))
 constexpr auto operator*(L const& left, DirectSum<R...> const& right);
 
 template<typename... L, typename R>
-  requires(!is_instance_of_v<DirectSum, R>) && (homogeneous_module<L, R> && ...)
+  requires(!is_instance_of_v<DirectSum, R>) &&
+          ((homogeneous_module<L, R> && ...) ||
+           (homogeneous_module<R, L> && ...))
 constexpr auto operator*(DirectSum<L...> const& left, R const& right);
 
-template<homogeneous_field R, homogeneous_vector_space<R>... L>
+// The requirement should really be that the `L`s be
+// `homogenous_vector_space<K>` for some `K` and that `R` be convertible to `K`
+// (possibly a subring); but we cannot deduce `K`, so we require only a module.
+// Requiring that `R` be `K` does not work, as it forbids division by integers
+// for real vector spaces `L`.
+template<homogeneous_ring R, homogeneous_module<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right);
 
 template<affine... T>

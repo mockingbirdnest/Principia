@@ -27,6 +27,9 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
       previous_scale_ = scale;
       UnityEngine.QuaternionD previous_referenced_pivot =
           previous_camera_reference_rotation_ *
+          UnityEngine.QuaternionD.AngleAxis(
+              Planetarium.InverseRotAngle - last_fresh_planetarium_rotation_,
+              Vector3d.up) *
           last_fresh_planetarium_camera_rotation_ *
           camera_roll;
       // Note that we use a single-precision quaternion here because the
@@ -63,6 +66,7 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
                                        0);
       last_fresh_planetarium_camera_rotation_ =
           PlanetariumCamera.fetch.GetPivot().rotation;
+      last_fresh_planetarium_rotation_ = Planetarium.InverseRotAngle;
       should_transfer_camera_coordinates = false;
     }
     previous_camera_reference_rotation_ = reference_rotation;
@@ -76,10 +80,14 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
       if (InputLockManager.IsUnlocked(ControlTypes.CAMERACONTROLS)) {
           last_fresh_planetarium_camera_rotation_ =
               PlanetariumCamera.fetch.GetPivot().rotation;
+          last_fresh_planetarium_rotation_ = Planetarium.InverseRotAngle;
           scale_correction = (float)(previous_scale_ / scale);
       }
       PlanetariumCamera.fetch.GetPivot().rotation =
           reference_rotation *
+          UnityEngine.QuaternionD.AngleAxis(
+              Planetarium.InverseRotAngle - last_fresh_planetarium_rotation_,
+              Vector3d.up) *
           last_fresh_planetarium_camera_rotation_ *
           camera_roll;
       PlanetariumCamera.fetch.SetDistance(
@@ -111,6 +119,7 @@ public class PlanetariumCameraAdjuster : UnityEngine.MonoBehaviour {
   public bool should_transfer_camera_coordinates { private get; set; }
 
   private UnityEngine.QuaternionD last_fresh_planetarium_camera_rotation_;
+  private double last_fresh_planetarium_rotation_;
 
   // The camera reference rotation applied during the previous frame; this is
   // used when transferring camera coordinates to preserve continuity.

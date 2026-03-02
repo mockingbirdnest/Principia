@@ -44,16 +44,13 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
     σℜ_over_r = ℜ_over_r;
     grad_σℜ = ℜʹ * r_normalized;
   } else {
-    auto const& c = sigmoid_coefficients_;
-    Derivative<double, Length> const c1 = std::get<1>(c);
-    Derivative<double, Length, 2> const c2 = std::get<2>(c);
-    Derivative<double, Length, 3> const c3 = std::get<3>(c);
+    auto const& [_, c₁, c₂, c₃] = sigmoid_coefficients_;
     auto const r³ = r² * r_norm;
-    double const c3r³ = c3 * r³;
-    double const c2r² = c2 * r²;
-    double const c1r = c1 * r_norm;
-    double const σ = c3r³ + c2r² + c1r;
-    double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
+    double const c₃r³ = c₃ * r³;
+    double const c₂r² = c₂ * r²;
+    double const c₁r = c₁ * r_norm;
+    double const σ = c₃r³ + c₂r² + c₁r;
+    double const σʹr = 3 * c₃r³ + 2 * c₂r² + c₁r;
 
     σℜ_over_r = σ * ℜ_over_r;
     // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
@@ -72,15 +69,12 @@ inline void HarmonicDamping::ComputeDampedRadialQuantities(
     // Below the inner threshold, σ = 1.
     σℜ_over_r = ℜ_over_r;
   } else {
-    auto const& c = sigmoid_coefficients_;
-    Derivative<double, Length> const c1 = std::get<1>(c);
-    Derivative<double, Length, 2> const c2 = std::get<2>(c);
-    Derivative<double, Length, 3> const c3 = std::get<3>(c);
+    auto const& [_, c₁, c₂, c₃] = sigmoid_coefficients_;
     auto const r³ = r² * r_norm;
-    double const c3r³ = c3 * r³;
-    double const c2r² = c2 * r²;
-    double const c1r = c1 * r_norm;
-    double const σ = c3r³ + c2r² + c1r;
+    double const c₃r³ = c₃ * r³;
+    double const c₂r² = c₂ * r²;
+    double const c₁r = c₁ * r_norm;
+    double const σ = c₃r³ + c₂r² + c₁r;
 
     σℜ_over_r = σ * ℜ_over_r;
   }
