@@ -800,13 +800,11 @@ operator*(
                                      ldegree + rdegree,
                                      Evaluator>::Coefficients
       result_coefficients;
-  for_all_of(left.coefficients_)
-      .loop_indexed([&]<int i>(auto const& l) {
-        for_all_of(right.coefficients_)
-            .loop_indexed([&]<int j>(auto const& r) {
-              get<i + j>(result_coefficients) += l * r;
-            });
-      });
+  for_all_of(left.coefficients_).loop_indexed([&]<int i>(auto const& l) {
+    for_all_of(right.coefficients_).loop_indexed([&]<int j>(auto const& r) {
+      get<i + j>(result_coefficients) += l * r;
+    });
+  });
   return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                    ldegree + rdegree,
                                    Evaluator>(std::move(result_coefficients),
@@ -932,10 +930,10 @@ Compose(
       get<i>(result_coefficients) = l;
     } else {
       // NOTE(egg):
-      // `for_all_of((l * Pow<i>(right - left.origin_)).coefficients_)...`
-      // does not compile.  The temporary polynomial would outlive the loop
-      // so it should be fine, but presumably we would need to be clever
-      // about value categories somewhere in `for_all_of`.
+      // `for_all_of((l * Pow<i>(right - left.origin_)).coefficients_)...` does
+      // not compile.  The temporary polynomial would outlive the loop so it
+      // should be fine, but presumably we would need to be clever about value
+      // categories somewhere in `for_all_of`.
       auto const left_monomial = l * Pow<i>(right - left.origin_);
       for_all_of(left_monomial.coefficients_)
           .loop_indexed([&]<int j>(auto const& c) {
