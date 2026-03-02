@@ -714,18 +714,19 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree,
       left.origin_);
 }
 
-template<affine Value, affine Argument, int ldegree, int rdegree,
+template<affine LValue, affine RValue, affine Argument,
+         int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
-PolynomialInMonomialBasis<Difference<Value>, Argument,
+PolynomialInMonomialBasis<Difference<LValue, RValue>, Argument,
                           std::max(ldegree, rdegree),
                           Evaluator>
 operator-(
-    PolynomialInMonomialBasis<Value, Argument, ldegree, Evaluator> const& left,
-    PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
+    PolynomialInMonomialBasis<LValue, Argument, ldegree, Evaluator> const& left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree, Evaluator> const&
         right) {
   CONSTEXPR_CHECK(left.origin_ == right.origin_);
-  typename PolynomialInMonomialBasis<Difference<Value>, Argument,
+  typename PolynomialInMonomialBasis<Difference<LValue, RValue>, Argument,
                                      std::max(ldegree, rdegree),
                                      Evaluator>::Coefficients
   result_coefficients(uninitialized);
@@ -739,8 +740,8 @@ operator-(
       get<i>(result_coefficients) = -get<i>(right.coefficients_);
     }
   });
-  return PolynomialInMonomialBasis<Difference<Value>, Argument,
-                                    std::max(ldegree, rdegree), Evaluator>(
+  return PolynomialInMonomialBasis<Difference<LValue, RValue>, Argument,
+                                   std::max(ldegree, rdegree), Evaluator>(
       std::move(result_coefficients),
       left.origin_);
 }

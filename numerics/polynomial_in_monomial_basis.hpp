@@ -245,11 +245,11 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   constexpr PolynomialInMonomialBasis<V, A, std::max(l, r), E> friend operator+(
       PolynomialInMonomialBasis<V, A, l, E> const& left,
       PolynomialInMonomialBasis<Difference<V>, A, r, E> const& right);
-  template<affine V, affine A, int l, int r,
+  template<affine LV, affine RV, affine A, int l, int r,
            template<typename, typename, int> typename E>
-  constexpr PolynomialInMonomialBasis<Difference<V>, A, std::max(l, r), E>
-  friend operator-(PolynomialInMonomialBasis<V, A, l, E> const& left,
-                   PolynomialInMonomialBasis<V, A, r, E> const& right);
+  constexpr PolynomialInMonomialBasis<Difference<LV, RV>, A, std::max(l, r), E>
+  friend operator-(PolynomialInMonomialBasis<LV, A, l, E> const& left,
+                   PolynomialInMonomialBasis<RV, A, r, E> const& right);
   template<typename S,
            typename V, affine A, int d,
            template<typename, typename, int> typename E>
@@ -378,13 +378,14 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree_,
           PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree_,
                                     Evaluator_> const& right);
 
-template<affine Value, affine Argument, int ldegree_, int rdegree_,
+template<affine LValue, affine RValue, affine Argument,
+         int ldegree_, int rdegree_,
          template<typename, typename, int> typename Evaluator_>
-constexpr PolynomialInMonomialBasis<Difference<Value>, Argument,
+constexpr PolynomialInMonomialBasis<Difference<LValue, RValue>, Argument,
                                     std::max(ldegree_, rdegree_), Evaluator_>
-operator-(PolynomialInMonomialBasis<Value, Argument, ldegree_,
+operator-(PolynomialInMonomialBasis<LValue, Argument, ldegree_,
                                     Evaluator_> const& left,
-          PolynomialInMonomialBasis<Value, Argument, rdegree_,
+          PolynomialInMonomialBasis<RValue, Argument, rdegree_,
                                     Evaluator_> const& right);
 
 // TODO(phl): The operators below work fine when `Value` is a vector space, but

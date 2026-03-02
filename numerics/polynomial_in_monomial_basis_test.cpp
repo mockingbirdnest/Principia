@@ -3,6 +3,7 @@
 #include <tuple>
 
 #include "base/algebra.hpp"
+#include "base/for_all_of.hpp"
 #include "base/multiprecision.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -32,6 +33,7 @@ namespace numerics {
 
 using ::testing::Eq;
 using namespace principia::base::_algebra;
+using namespace principia::base::_for_all_of;
 using namespace principia::base::_multiprecision;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -422,6 +424,40 @@ TEST_F(PolynomialInMonomialBasisTest, Monoid) {
     auto const actual = Compose(p1a, p2a)(t0 + 1 * Second);
     EXPECT_THAT(actual, AlmostEquals(334 * Ampere, 0));
   }
+}
+
+TEST_F(PolynomialInMonomialBasisTest, AffineAcrossDegrees) {
+  using P1 = PolynomialInMonomialBasis<Time, Temperature, 1>;
+  using P3 = PolynomialInMonomialBasis<Time, Temperature, 3>;
+  using P1A = PolynomialInMonomialBasis<Instant, Temperature, 1>;
+  using P3A = PolynomialInMonomialBasis<Instant, Temperature, 3>;
+  P1 const p1({2 * Second, -4 * Second / Kelvin});
+  P3 const p3({2 * Second,
+               -4 * Second / Kelvin,
+               3 * Second / Kelvin / Kelvin,
+               1 * Second / Kelvin / Kelvin / Kelvin});
+  Instant const t0;
+  P1A const p1a = p1 + t0;
+  P3A const p3a = p3 + t0;
+  std::tuple left_operands{p1a, p1a, p1, p1, p3a, p3a, p3, p3};
+  std::tuple right_operands{p3a, p3, p3a, p3, p1a, p1, p1a, p1};
+  for_all_of(left_operands, right_operands)
+      .loop([](auto const& l, auto const& r) {
+        using L = std::remove_cvref_t<decltype(l)>::Value;
+        using R = std::remove_cvref_t<decltype(r)>::Value;
+        if constexpr (!(std::same_as<L, Instant> &&
+                        std::same_as<R, Instant>)) {
+          auto const l_plus_r = l + r;
+          EXPECT_THAT(l_plus_r(1 * Kelvin),
+                      AlmostEquals(l(1 * Kelvin) + r(1 * Kelvin), 0));
+        }
+        if constexpr (!(std::same_as<L, Time> &&
+                        std::same_as<R, Instant>)) {
+          auto const l_minus_r = l - r;
+          EXPECT_THAT(l_minus_r(1 * Kelvin),
+                      AlmostEquals(l(1 * Kelvin) - r(1 * Kelvin), 0));
+        }
+      });
 }
 
 TEST_F(PolynomialInMonomialBasisTest, PointwiseInnerProduct) {
