@@ -905,7 +905,7 @@ operator-(Value const& left,
     if constexpr (i == 0) {
       get<i>(result_coefficients) = left - r;
     } else {
-      get<i>(result_coefficients) = r;
+      get<i>(result_coefficients) = -r;
     }
   });
   return PolynomialInMonomialBasis<Difference<Value>, Argument, rdegree,
