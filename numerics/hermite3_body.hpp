@@ -93,12 +93,9 @@ void Hermite3<Value_, Argument_>::EvaluateWithDerivative(
 
 template<affine Value_, affine Argument_>
 BoundedArray<Argument_, 2> Hermite3<Value_, Argument_>::FindExtrema() const {
-  auto const& coefficients = p_.Derivative().coefficients();
+  auto const& [a₀, a₁, a₂] = p_.Derivative().coefficients();
   auto const roots =
-      SolveQuadraticEquation<Argument, Derivative1>(p_.origin(),
-                                                    std::get<0>(coefficients),
-                                                    std::get<1>(coefficients),
-                                                    std::get<2>(coefficients));
+      SolveQuadraticEquation<Argument, Derivative1>(p_.origin(), a₀, a₁, a₂);
   BoundedArray<Argument, 2> valid_roots;
   for (auto const& root : roots) {
     if (lower_ <= root && root <= upper_) {
@@ -121,10 +118,10 @@ auto Hermite3<Value_, Argument_>::LInfinityL₁NormUpperBound() const
 
   // NOTE(phl): This could be done for any degree by shaving the tuple using
   // template metaprogramming, but our degree is 3, so unrolling is simpler.
-  auto const split_a0 = S::Split(std::get<0>(coefficients));
-  auto const split_a1 = S::Split(std::get<1>(coefficients));
-  auto const split_a2 = S::Split(std::get<2>(coefficients));
-  auto const split_a3 = S::Split(std::get<3>(coefficients));
+  auto const split_a0 = S::Split(get<0>(coefficients));
+  auto const split_a1 = S::Split(get<1>(coefficients));
+  auto const split_a2 = S::Split(get<2>(coefficients));
+  auto const split_a3 = S::Split(get<3>(coefficients));
 
   // Build a split Hermite polynomial for each dimension.
   std::vector<H> split_hermites;
@@ -164,7 +161,7 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
 
   auto const& coefficients = p_.coefficients();
   PolynomialInMonomialBasis<QValue, Argument, 1> const q(
-      {std::get<2>(coefficients), std::get<3>(coefficients)},
+      {get<2>(coefficients), get<3>(coefficients)},
       lower_);
   // The monomial `(t - lower_)`.
   PolynomialInMonomialBasis<Difference<Argument>, Argument, 1> const monomial(
@@ -180,9 +177,9 @@ auto Hermite3<Value_, Argument_>::LInfinityL₂Norm() const -> NormType {
   auto const norm₂²_derivative_roots =
       SolveQuadraticEquation<Argument, DValue>(
           q.origin(),
-          std::get<0>(norm₂²_derivative_coefficients),
-          std::get<1>(norm₂²_derivative_coefficients),
-          std::get<2>(norm₂²_derivative_coefficients));
+          get<0>(norm₂²_derivative_coefficients),
+          get<1>(norm₂²_derivative_coefficients),
+          get<2>(norm₂²_derivative_coefficients));
 
   // The extrema of `‖p_(t)‖₂` are either at the roots of its derivative or at
   // the upper bound of the interval.

@@ -122,7 +122,7 @@ Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
         Frequency const& scale,
         Exponentiation<Frequency, k> const& scale_k,
         DehomogeneizedCoefficients& dehomogeneized_coefficients) {
-  std::get<k>(dehomogeneized_coefficients) =
+  get<k>(dehomogeneized_coefficients) =
       homogeneous_coefficients[k] * scale_k;
   Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, k + 1>::Convert(
       homogeneous_coefficients,
@@ -138,7 +138,7 @@ Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
         Frequency const& scale,
         Exponentiation<Frequency, degree> const& scale_degree,
         DehomogeneizedCoefficients& dehomogeneized_coefficients) {
-  std::get<degree>(dehomogeneized_coefficients) =
+  get<degree>(dehomogeneized_coefficients) =
       homogeneous_coefficients[degree] * scale_degree;
 }
 

@@ -163,7 +163,9 @@ constexpr DirectSum<T...> operator-(DirectSum<T...> const& left,
 }
 
 template<typename L, typename... R>
-  requires(!is_instance_of_v<DirectSum, L>) && (homogeneous_module<R, L> && ...)
+  requires(!is_instance_of_v<DirectSum, L>) &&
+          ((homogeneous_module<R, L> && ...) ||
+           (homogeneous_module<L, R> && ...))
 constexpr auto operator*(L const& left, DirectSum<R...> const& right) {
   DirectSum<Product<L, R>...> product(uninitialized);
   for_all_of(right, product).loop([&left](auto const& right, auto& product) {
@@ -173,7 +175,9 @@ constexpr auto operator*(L const& left, DirectSum<R...> const& right) {
 }
 
 template<typename... L, typename R>
-  requires(!is_instance_of_v<DirectSum, R>) && (homogeneous_module<L, R> && ...)
+  requires(!is_instance_of_v<DirectSum, R>) &&
+          ((homogeneous_module<L, R> && ...) ||
+           (homogeneous_module<R, L> && ...))
 constexpr auto operator*(DirectSum<L...> const& left, R const& right) {
   DirectSum<Product<L, R>...> product(uninitialized);
   for_all_of(left, product).loop([&right](auto const& left, auto& product) {
@@ -182,7 +186,7 @@ constexpr auto operator*(DirectSum<L...> const& left, R const& right) {
   return product;
 }
 
-template<homogeneous_field R, homogeneous_vector_space<R>... L>
+template<homogeneous_ring R, homogeneous_module<R>... L>
 constexpr auto operator/(DirectSum<L...> const& left, R const& right) {
   DirectSum<Quotient<L, R>...> quotient(uninitialized);
   for_all_of(left, quotient).loop([&right](auto const& left, auto& quotient) {

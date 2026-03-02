@@ -2,6 +2,7 @@
 
 #include <array>
 #include <iostream>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -67,11 +68,71 @@ TEST_F(ForAllOfTest, Parallel) {
   static_assert(std::get<2>(sum) == -41);
 }
 
+TEST_F(ForAllOfTest, Indexed) {
+  // In C++26 this could be a structured binding.
+  constexpr auto tuple_and_array = []() {
+    ATuple tuple{'A', 42.0, 666};
+    AnArray array{42.0, 43.0, -41.0};
+    for_all_of(tuple, array)
+        .loop_indexed([]<int i>(auto& tuple_element, auto& array_element) {
+          tuple_element = 64 + i;
+          array_element = i;
+        });
+    return std::pair{tuple, array};
+  }();
+  constexpr auto tuple = std::get<0>(tuple_and_array);
+  constexpr auto array = std::get<1>(tuple_and_array);
+  static_assert(std::get<0>(tuple) == '@');
+  static_assert(std::get<1>(tuple) == 65.0);
+  static_assert(std::get<2>(tuple) == 66);
+  static_assert(std::get<0>(array) == 0.0);
+  static_assert(std::get<1>(array) == 1.0);
+  static_assert(std::get<2>(array) == 2.0);
+}
+
+TEST_F(ForAllOfTest, IntegerRange) {
+  // In C++26 this could be a structured binding.
+  constexpr auto tuple_and_array = []() {
+    ATuple tuple{'A', 42.0, 666};
+    AnArray array{42.0, 43.0, -41.0};
+    for_integer_range<0, 3>::loop([&]<int i> {
+      std::get<i>(tuple) = 64 + i;
+      std::get<i>(array) = i;
+    });
+    return std::pair{tuple, array};
+  }();
+  constexpr auto tuple = std::get<0>(tuple_and_array);
+  constexpr auto array = std::get<1>(tuple_and_array);
+  static_assert(std::get<0>(tuple) == '@');
+  static_assert(std::get<1>(tuple) == 65.0);
+  static_assert(std::get<2>(tuple) == 66);
+  static_assert(std::get<0>(array) == 0.0);
+  static_assert(std::get<1>(array) == 1.0);
+  static_assert(std::get<2>(array) == 2.0);
+}
+
 TEST_F(ForAllOfTest, Example) {
   std::tuple const t{"a", 2.5, 3};
   std::array const a{4, 5, 6};
-  for_all_of(t, a).loop([](auto const tuple_element, int const i) {
-    std::cout << tuple_element << " " << i << "\n";
+  for_all_of(t, a).loop([](auto const tuple_element,
+                           int const array_element) {
+    std::cout << tuple_element << " " << array_element << "\n";
+  });
+  std::tuple out{std::array{0, 0}, std::pair{"", 0}, std::pair{0.0, 0}, ""};
+  for_all_of(t, a).loop_indexed([&]<int i>(auto const tuple_element,
+                                           int const array_element) {
+    get<(i + 1) % 3>(out) = {tuple_element, array_element};
+  });
+}
+
+TEST_F(ForAllOfTest, IntegerRangeExample) {
+  std::tuple t{std::string("a"), 2.5, 3};
+  for_integer_range<0, 3>::loop([&]<int i> {
+    if constexpr (i == 0) {
+      get<i>(t) += std::to_string(i);
+    } else {
+      get<i>(t) += i;
+    }
   });
 }
 
