@@ -347,26 +347,26 @@ TEST_F(PolynomialInMonomialBasisTest, Ring) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, Affine) {
-  using P0A = PolynomialInMonomialBasis<Instant, Time, 0>;
-  using P0V = PolynomialInMonomialBasis<Time, Time, 0>;
+  using P1A = PolynomialInMonomialBasis<Instant, Time, 1>;
+  using P1V = PolynomialInMonomialBasis<Time, Time, 1>;
 
-  P0A const p0a({Instant() + 1 * Second});
-  P0V const p0v({2 * Second});
+  P1A const p1a({Instant() + 1 * Second, 1});
+  P1V const p1v({2 * Second, 1});
   {
-    P0A const p = p0v + Instant();
-    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
+    P1A const p = p1v + Instant();
+    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 5 * Second, 0));
   }
   {
-    P0A const p =  Instant() + p0v;
-    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 2 * Second, 0));
+    P1A const p =  Instant() + p1v;
+    EXPECT_THAT(p(3 * Second), AlmostEquals(Instant() + 5 * Second, 0));
   }
   {
-    P0V const p = p0a - Instant();
-    EXPECT_THAT(p(3 * Second), AlmostEquals(1 * Second, 0));
+    P1V const p = p1a - Instant();
+    EXPECT_THAT(p(3 * Second), AlmostEquals(4 * Second, 0));
   }
   {
-    P0V const p = Instant() - p0a;
-    EXPECT_THAT(p(3 * Second), AlmostEquals(-1 * Second, 0));
+    P1V const p = Instant() - p1a;
+    EXPECT_THAT(p(3 * Second), AlmostEquals(-4 * Second, 0));
   }
 }
 
