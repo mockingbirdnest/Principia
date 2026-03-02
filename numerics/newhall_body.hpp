@@ -28,8 +28,9 @@ constexpr int divisions = 8;
 // displacements) and velocities.  However, this would require giving dimensions
 // to the derivatives of the Чебышёв polynomials.  Let's no go there, let's do a
 // bit of type decay instead.
+//TODO(phl)comment
 template<typename Value>
-using QV = std::array<Value, 2 * divisions + 2>;
+using HomogeneousQV = DirectSum<Value, Value>;
 
 // A helper to unroll the dot product between an array-like object (which must
 // have an operator[]) and a `QV`.
@@ -145,7 +146,7 @@ Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
 template<typename Value, int degree>
 struct NewhallЧебышёвApproximator {
   static std::array<Value, degree + 1> HomogeneousCoefficients(
-      QV<Value> const& qv,
+      HomogeneousQV<Value> const& hqv,
       Value& error_estimate);
 };
 
@@ -160,12 +161,12 @@ struct NewhallMonomialApproximator {
   template<typename Value>                                            \
   struct NewhallЧебышёвApproximator<Value, (degree)> {                \
     static std::array<Value, (degree) + 1> HomogeneousCoefficients(   \
-        QV<Value> const& qv,                                          \
+        HomogeneousQV<Value> const& hqv,                              \
         Value& error_estimate) {                                      \
       std::array<Value, degree + 1> result;                           \
       Multiply<(degree)>(                                             \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04, \
-          qv,                                                         \
+          hqv,                                                        \
           result);                                                    \
       error_estimate = result[degree];                                \
       return result;                                                  \
@@ -230,29 +231,26 @@ PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(17);
 
 template<typename Value, int degree>
 PolynomialInЧебышёвBasis<Value, Instant, degree>
-NewhallApproximationInЧебышёвBasis(std::vector<Value> const& q,
-                                   std::vector<Variation<Value>> const& v,
+NewhallApproximationInЧебышёвBasis(std::vector<QV<Value>> const& qv,
                                    Instant const& t_min,
                                    Instant const& t_max,
                                    Value& error_estimate) {
-  CHECK_EQ(divisions + 1, q.size());
-  CHECK_EQ(divisions + 1, v.size());
+  CHECK_EQ(divisions + 1, qv.size());
 
   Time const duration_over_two = 0.5 * (t_max - t_min);
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  QV<Value> qv;
-  for (int i = 0, j = 2 * divisions;
-       i < divisions + 1 && j >= 0;
-       ++i, j -= 2) {
-    qv[j] = q[i];
-    qv[j + 1] = v[i] * duration_over_two;
+  //TODO(phl)invert?
+  HomogeneousQV<Value> hqv;
+  for (int i = 0, j = divisions; i < divisions + 1 && j >= 0; ++i, --j) {
+    auto const& [q, v] = qv[i];
+    hqv[j] = {q, v * duration_over_two};
   }
 
   auto const coefficients =
       NewhallЧебышёвApproximator<Difference<Value>, degree>::
-          HomogeneousCoefficients(qv, error_estimate);
+          HomogeneousCoefficients(hqv, error_estimate);
   return PolynomialInЧебышёвBasis<Value, Instant, degree>(
       coefficients, t_min, t_max);
 }
@@ -262,13 +260,12 @@ NewhallApproximationInЧебышёвBasis(std::vector<Value> const& q,
     return make_not_null_unique<                                      \
         PolynomialInЧебышёвBasis<Value, Instant, (degree)>>(          \
         NewhallApproximationInЧебышёвBasis<Value, (degree)>(          \
-            q, v, t_min, t_max, error_estimate))
+            qv, t_min, t_max, error_estimate))
 
 template<typename Value>
 not_null<std::unique_ptr<PolynomialInЧебышёвBasis<Value, Instant>>>
 NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<Value> const& q,
-                                   std::vector<Variation<Value>> const& v,
+                                   std::vector<QV<Value>> const& qv,
                                    Instant const& t_min,
                                    Instant const& t_max,
                                    Value& error_estimate) {
@@ -299,13 +296,11 @@ NewhallApproximationInЧебышёвBasis(int degree,
 template<typename Value, int degree,
          template<typename, typename, int> typename Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>
-NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
-                                    std::vector<Variation<Value>> const& v,
+NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qv,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Difference<Value>& error_estimate) {
-  CHECK_EQ(divisions + 1, q.size());
-  CHECK_EQ(divisions + 1, v.size());
+  CHECK_EQ(divisions + 1, qv.size());
 
   Value const origin{};
   Time const duration_over_two = 0.5 * (t_max - t_min);
@@ -339,8 +334,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
 template<typename Value>
 not_null<std::unique_ptr<Polynomial<Value, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
-                                    std::vector<Value> const& q,
-                                    std::vector<Variation<Value>> const& v,
+                                    std::vector<QV<Value>> const& qv,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Policy const& policy,
