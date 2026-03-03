@@ -6,6 +6,8 @@
 #include <vector>
 
 #include "base/for_all_of.hpp"
+#include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
+#include "base/tags.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
 #include "numerics/elementary_functions.hpp"
@@ -19,6 +21,7 @@ namespace _newhall {
 namespace internal {
 
 using namespace principia::base::_for_all_of;
+using namespace principia::base::_tags;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
@@ -45,8 +48,9 @@ using NewhallMatrixElement = DirectSum<double, double>;
 // column vector.  In [New89], p. 308, the former is a row of `C₁⁻¹C₂` , the
 // latter is the vector `f`.
 template<typename Value>
-Value MultiplyMatrixRowByColumnVector(NewhallMatrixElement const* const left,
-                                      RescaledQVs<Value> const& right) {
+FORCE_INLINE(constexpr) Value MultiplyMatrixRowByColumnVector(
+    NewhallMatrixElement const* const left,
+    RescaledQVs<Value> const& right) {
   Value result{};
   for_integer_range<0, divisions + 1>::loop([&]<int i> {
     auto const& [l0, l1] = left[i];
@@ -62,6 +66,7 @@ Value MultiplyMatrixRowByColumnVector(NewhallMatrixElement const* const left,
 // Similar to the previous function, but performs the multiplication for all
 // rows of the matrix, returning the result as an array.
 template<int degree, typename Value>
+FORCE_INLINE(constexpr)
 std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
     FixedMatrix<NewhallMatrixElement, degree + 1, divisions + 1> const& left,
     RescaledQVs<Value> const& right) {
@@ -82,12 +87,13 @@ std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
 // the width of the interval [t_min, t_max].
 template<typename Value, int degree,
          template<typename, typename, int> typename Evaluator>
+FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
     std::array<Value, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
     Instant const& origin) {
   using P = PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>;
-  typename P::Coefficients dehomogeneized_coefficients;
+  typename P::Coefficients dehomogeneized_coefficients(uninitialized);
   for_integer_range<0, degree + 1>::loop([&]<int k> {
     get<k>(dehomogeneized_coefficients) =
         homogeneous_coefficients[k] * Pow<k>(scale);
@@ -112,7 +118,8 @@ struct NewhallMonomialApproximator {
 #define PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(degree)        \
   template<typename Value>                                                   \
   struct NewhallЧебышёвApproximator<Value, (degree)> {                       \
-    static std::array<Value, (degree) + 1> ComputeCoefficients(              \
+    FORCE_INLINE(static constexpr)                                           \
+    std::array<Value, (degree) + 1> ComputeCoefficients(                     \
         RescaledQVs<Value> const& rqvs,                                      \
         Value& error_estimate) {                                             \
       auto const result = MultiplyMatrixByColumnVector<(degree)>(            \
@@ -127,7 +134,8 @@ struct NewhallMonomialApproximator {
 #define PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(degree)        \
   template<typename Value>                                                    \
   struct NewhallMonomialApproximator<Value, (degree)> {                       \
-    static std::array<Value, (degree) + 1> ComputeHomogeneousCoefficients(    \
+    FORCE_INLINE(static constexpr)                                            \
+    std::array<Value, (degree) + 1> ComputeHomogeneousCoefficients(           \
         RescaledQVs<Value> const& rqvs,                                       \
         Value& error_estimate) {                                              \
       error_estimate = MultiplyMatrixRowByColumnVector(                       \
