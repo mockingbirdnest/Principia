@@ -47,7 +47,10 @@ Value DotProduct(NewhallMatrixElement const* const left,
   for_integer_range<0, divisions + 1>::loop([&]<int i> {
     auto const& [l0, l1] = left[i];
     auto const& [r0, r1] = right[i];
-    result += l0 * r0 + l1 * r1;
+    // This computation preserves the accuracy obtained with the previous
+    // implementation.
+    result += l0 * r0;
+    result += l1 * r1;
   });
   return result;
 }
