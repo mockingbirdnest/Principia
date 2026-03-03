@@ -7,6 +7,7 @@
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
+#include "geometry/direct_sum.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "numerics/newhall.hpp"
@@ -21,6 +22,7 @@ namespace numerics {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_newhall;
@@ -33,8 +35,7 @@ using namespace principia::quantities::_si;
 void BM_NewhallApproximationDouble(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
-  std::vector<double> p;
-  std::vector<Variation<double>> v;
+  std::vector<DirectSum<double, Variation<double>>> pv;
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
@@ -42,23 +43,22 @@ void BM_NewhallApproximationDouble(benchmark::State& state) {
   double error_estimate;
   for (auto _ : state) {
     state.PauseTiming();
-    p.clear();
-    v.clear();
+    pv.clear();
     for (int i = 0; i <= 8; ++i) {
-      p.push_back(static_cast<double>(static_cast<double>(random())));
-      v.push_back(static_cast<double>(static_cast<double>(random())) / Second);
+      auto& [p, v] = pv.emplace_back();
+      p = static_cast<double>(static_cast<double>(random()));
+      v = static_cast<double>(static_cast<double>(random())) / Second;
     }
     state.ResumeTiming();
     auto const series = NewhallApproximationInMonomialBasis<double>(
-        degree, p, v, t_min, t_max, Policy::AlwaysEstrin(), error_estimate);
+        degree, pv, t_min, t_max, Policy::AlwaysEstrin(), error_estimate);
   }
 }
 
 void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
-  std::vector<Displacement<ICRS>> p;
-  std::vector<Variation<Displacement<ICRS>>> v;
+  std::vector<DirectSum<Displacement<ICRS>, Variation<Displacement<ICRS>>>> pv;
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
@@ -66,20 +66,20 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   Displacement<ICRS> error_estimate;
   for (auto _ : state) {
     state.PauseTiming();
-    p.clear();
-    v.clear();
+    pv.clear();
     for (int i = 0; i <= 8; ++i) {
-      p.push_back(Displacement<ICRS>({static_cast<double>(random()) * Metre,
-                                      static_cast<double>(random()) * Metre,
-                                      static_cast<double>(random()) * Metre}));
-      v.push_back(Variation<Displacement<ICRS>>(
+      auto& [p, v] = pv.emplace_back();
+      p = Displacement<ICRS>({static_cast<double>(random()) * Metre,
+                              static_cast<double>(random()) * Metre,
+                              static_cast<double>(random()) * Metre});
+      v = Variation<Displacement<ICRS>>(
           {static_cast<double>(random()) * Metre / Second,
            static_cast<double>(random()) * Metre / Second,
-           static_cast<double>(random()) * Metre / Second}));
+           static_cast<double>(random()) * Metre / Second});
     }
     state.ResumeTiming();
     auto const series = NewhallApproximationInMonomialBasis<Displacement<ICRS>>(
-        degree, p, v, t_min, t_max, Policy::AlwaysEstrin(), error_estimate);
+        degree, pv, t_min, t_max, Policy::AlwaysEstrin(), error_estimate);
   }
 }
 

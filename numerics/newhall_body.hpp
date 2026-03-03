@@ -41,7 +41,6 @@ using RescaledQVs = std::array<RescaledQV<Value>, divisions + 1>;
 
 using NewhallMatrixElement = DirectSum<double, double>;
 
-// TODO(phl)int64_t
 // Multiplies a row of a matrix (given as a pointer to its first element) by a
 // column vector.  In [New89], p. 308, the former is a row of `C₁⁻¹C₂` , the
 // latter is the vector `f`.
@@ -116,7 +115,7 @@ struct NewhallMonomialApproximator {
     static std::array<Value, (degree) + 1> ComputeCoefficients(              \
         RescaledQVs<Value> const& rqvs,                                      \
         Value& error_estimate) {                                             \
-      auto const result = Multiply<(degree)>(                                \
+      auto const result = MultiplyMatrixByColumnVector<(degree)>(            \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04, rqvs); \
       error_estimate = result[(degree)];                                     \
       return result;                                                         \
@@ -135,7 +134,7 @@ struct NewhallMonomialApproximator {
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04          \
               .row<(degree)>(),                                               \
           rqvs);                                                              \
-      return Multiply<(degree)>(                                              \
+      return MultiplyMatrixByColumnVector<(degree)>(                          \
           newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04, rqvs); \
     }                                                                         \
   }
