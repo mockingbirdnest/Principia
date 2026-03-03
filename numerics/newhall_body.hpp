@@ -44,8 +44,11 @@ template<typename Value>
 Value DotProduct(NewhallMatrixElement const* const left,
                  HomogeneousQVs<Value> const& right) {
   Value result{};
-  for_integer_range<0, divisions + 1>::loop(
-      [&]<int i> { result += left[i] * right[i]; });
+  for_integer_range<0, divisions + 1>::loop([&]<int i> {
+    auto const& [l0, l1] = left[i];
+    auto const& [r0, r1] = right[i];
+    result += l0 * r0 + l1 * r1;
+  });
   return result;
 }
 
