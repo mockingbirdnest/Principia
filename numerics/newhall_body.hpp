@@ -37,12 +37,14 @@ using HomogeneousQV = DirectSum<Value, Value>;
 template<typename Value>
 using HomogeneousQVs = std::array<HomogeneousQV<Value>, divisions + 1>;
 
-// TODO(phl)comment,name
+using NewhallMatrixElement = DirectSum<double, double>;
+
+// TODO(phl)comment,name,int64_t
 template<typename Value>
-Value DotProduct(DirectSum<double, double> const* const left,
+Value DotProduct(NewhallMatrixElement const* const left,
                  HomogeneousQVs<Value> const& right) {
   Value result{};
-  for_integer_range<0, divisions + 1>(
+  for_integer_range<0, divisions + 1>::loop(
       [&]<int i> { result += left[i] * right[i]; });
   return result;
 }
@@ -50,11 +52,10 @@ Value DotProduct(DirectSum<double, double> const* const left,
 // TODO(phl)comment,name
 template<int degree, typename Value>
 std::array<Value, degree + 1> Multiply(
-    FixedMatrix<DirectSum<double, double>, degree + 1, divisions + 1> const&
-        left,
+    FixedMatrix<NewhallMatrixElement, degree + 1, divisions + 1> const& left,
     HomogeneousQVs<Value> const& right) {
   std::array<Value, degree + 1> result;
-  for_integer_range<0, degree + 1>([&]<int i> {
+  for_integer_range<0, degree + 1>::loop([&]<int i> {
     // TODO(phl)not a ptr
     auto const* row = left.template row<i>();
     result[i] = DotProduct(row, right);
