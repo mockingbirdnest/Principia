@@ -8,6 +8,7 @@
 #include "base/for_all_of.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/newhall_matrices.mathematica.h"
 #include "quantities/quantities.hpp"
@@ -19,6 +20,7 @@ namespace internal {
 
 using namespace principia::base::_for_all_of;
 using namespace principia::geometry::_barycentre_calculator;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_newhall_matrices;
 using namespace principia::quantities::_quantities;
@@ -26,23 +28,26 @@ using namespace principia::quantities::_quantities;
 // Only supports 8 divisions for now.
 constexpr int divisions = 8;
 
-// Logically `QV` should be heterogeneous, as it contains positions (or
-// displacements) and velocities.  However, this would require giving dimensions
-// to the derivatives of the Чебышёв polynomials.  Let's no go there, let's do a
-// bit of type decay instead.
-//TODO(phl)comment
+// The input is given as typed pairs of type `QV` with an argument in
+// [t_min, t_max].  However, the argument must be rescaled to [-1, 1] because
+// that's the interval over which the Чебышёв polynomials are defined ([New89],
+// p. 305).  After rescaling, the typed pairs contain two elements of type
+// `Value`.
 template<typename Value>
-using HomogeneousQV = DirectSum<Value, Value>;
+using RescaledQV = DirectSum<Value, Value>;
 
 template<typename Value>
-using HomogeneousQVs = std::array<HomogeneousQV<Value>, divisions + 1>;
+using RescaledQVs = std::array<RescaledQV<Value>, divisions + 1>;
 
 using NewhallMatrixElement = DirectSum<double, double>;
 
-// TODO(phl)comment,name,int64_t
+// TODO(phl)int64_t
+// Multiplies a row of a matrix (given as a pointer to its first element) by a
+// column vector.  In [New89], p. 308, the former is a row of `C₁⁻¹C₂` , the
+// latter is the vector `f`.
 template<typename Value>
-Value DotProduct(NewhallMatrixElement const* const left,
-                 HomogeneousQVs<Value> const& right) {
+Value MultiplyMatrixRowByColumnVector(NewhallMatrixElement const* const left,
+                                      RescaledQVs<Value> const& right) {
   Value result{};
   for_integer_range<0, divisions + 1>::loop([&]<int i> {
     auto const& [l0, l1] = left[i];
@@ -55,47 +60,27 @@ Value DotProduct(NewhallMatrixElement const* const left,
   return result;
 }
 
-// TODO(phl)comment,name
+// Similar to the previous function, but performs the multiplication for all
+// rows of the matrix, returning the result as an array.
 template<int degree, typename Value>
-std::array<Value, degree + 1> Multiply(
+std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
     FixedMatrix<NewhallMatrixElement, degree + 1, divisions + 1> const& left,
-    HomogeneousQVs<Value> const& right) {
+    RescaledQVs<Value> const& right) {
   std::array<Value, degree + 1> result;
   for_integer_range<0, degree + 1>::loop([&]<int i> {
-    // TODO(phl)not a ptr
+    // TODO(phl): This should use a row view.
     auto const* row = left.template row<i>();
-    result[i] = DotProduct(row, right);
+    result[i] = MultiplyMatrixRowByColumnVector(row, right);
   });
   return result;
 }
 
-template<typename Value, int degree,
-         template<typename, typename, int> typename Evaluator>
-PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
-    std::array<Value, degree + 1> const& homogeneous_coefficients,
-    Frequency const& scale,
-    Instant const& origin);
-
-template<typename Value,
-         typename DehomogeneizedCoefficients, int degree, int k>
-struct Dehomogeneizer {
-  static void Convert(
-      std::array<Value, degree + 1> const& homogeneous_coefficients,
-      Frequency const& scale,
-      Exponentiation<Frequency, k> const& scale_k,
-      DehomogeneizedCoefficients& dehomogeneized_coefficients);
-};
-
-template<typename Value,
-         typename DehomogeneizedCoefficients, int degree>
-struct Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, degree> {
-  static void Convert(
-      std::array<Value, degree + 1> const& homogeneous_coefficients,
-      Frequency const& scale,
-      Exponentiation<Frequency, degree> const& scale_degree,
-      DehomogeneizedCoefficients& dehomogeneized_coefficients);
-};
-
+//TODO(phl)scale
+// Given the coefficients of a homogeneous polynomial with argument `double`,
+// returns the coefficients adjusted to the argument interval [t_min, t_max]
+// (specified by `scale`) and the origin of the approximation.  It is necessary
+// to go through a homegeneous polynomial because the tables cannot account for
+// the width of the interval [t_min, t_max].
 template<typename Value, int degree,
          template<typename, typename, int> typename Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
@@ -104,64 +89,36 @@ PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
     Instant const& origin) {
   using P = PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>;
   typename P::Coefficients dehomogeneized_coefficients;
-  Dehomogeneizer<Value, typename P::Coefficients, degree, /*k=*/0>::Convert(
-      homogeneous_coefficients,
-      scale,
-      /*scale_k=*/1.0,
-      dehomogeneized_coefficients);
+  for_integer_range<0, degree + 1>::loop([&]<int k> {
+    get<k>(dehomogeneized_coefficients) =
+        homogeneous_coefficients[k] * Pow<k>(scale);
+  });
   return P(dehomogeneized_coefficients, origin);
-}
-
-template<typename Value,
-         typename DehomogeneizedCoefficients, int degree, int k>
-void Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, k>::
-Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
-        Frequency const& scale,
-        Exponentiation<Frequency, k> const& scale_k,
-        DehomogeneizedCoefficients& dehomogeneized_coefficients) {
-  get<k>(dehomogeneized_coefficients) =
-      homogeneous_coefficients[k] * scale_k;
-  Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, k + 1>::Convert(
-      homogeneous_coefficients,
-      scale,
-      scale_k * scale,
-      dehomogeneized_coefficients);
-}
-
-template<typename Value,
-         typename DehomogeneizedCoefficients, int degree>
-void Dehomogeneizer<Value, DehomogeneizedCoefficients, degree, degree>::
-Convert(std::array<Value, degree + 1> const& homogeneous_coefficients,
-        Frequency const& scale,
-        Exponentiation<Frequency, degree> const& scale_degree,
-        DehomogeneizedCoefficients& dehomogeneized_coefficients) {
-  get<degree>(dehomogeneized_coefficients) =
-      homogeneous_coefficients[degree] * scale_degree;
 }
 
 template<typename Value, int degree>
 struct NewhallЧебышёвApproximator {
-  static std::array<Value, degree + 1> HomogeneousCoefficients(
-      HomogeneousQVs<Value> const& hqvs,
+  static std::array<Value, degree + 1> ComputeCoefficients(
+      RescaledQVs<Value> const& rqvs,
       Value& error_estimate);
 };
 
 template<typename Value, int degree>
 struct NewhallMonomialApproximator {
-  static std::array<Value, degree + 1> HomogeneousCoefficients(
-      HomogeneousQVs<Value> const& qvs,
+  static std::array<Value, degree + 1> ComputeHomogeneousCoefficients(
+      RescaledQVs<Value> const& qvs,
       Value& error_estimate);
 };
 
 #define PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(degree)        \
   template<typename Value>                                                   \
   struct NewhallЧебышёвApproximator<Value, (degree)> {                       \
-    static std::array<Value, (degree) + 1> HomogeneousCoefficients(          \
-        HomogeneousQVs<Value> const& hqvs,                                   \
+    static std::array<Value, (degree) + 1> ComputeCoefficients(              \
+        RescaledQVs<Value> const& rqvs,                                      \
         Value& error_estimate) {                                             \
       auto const result = Multiply<(degree)>(                                \
-          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04, hqvs); \
-      error_estimate = result[(degree)];                                       \
+          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04, rqvs); \
+      error_estimate = result[(degree)];                                     \
       return result;                                                         \
     }                                                                        \
   }
@@ -171,15 +128,15 @@ struct NewhallMonomialApproximator {
 #define PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(degree)        \
   template<typename Value>                                                    \
   struct NewhallMonomialApproximator<Value, (degree)> {                       \
-    static std::array<Value, (degree) + 1> HomogeneousCoefficients(           \
-        HomogeneousQVs<Value> const& hqvs,                                    \
+    static std::array<Value, (degree) + 1> ComputeHomogeneousCoefficients(    \
+        RescaledQVs<Value> const& rqvs,                                       \
         Value& error_estimate) {                                              \
-      error_estimate = DotProduct(                                            \
+      error_estimate = MultiplyMatrixRowByColumnVector(                       \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04          \
               .row<(degree)>(),                                               \
-          hqvs);                                                              \
+          rqvs);                                                              \
       return Multiply<(degree)>(                                              \
-          newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04, hqvs); \
+          newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04, rqvs); \
     }                                                                         \
   }
 
@@ -230,16 +187,15 @@ NewhallApproximationInЧебышёвBasis(std::vector<QV<Value>> const& qvs,
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  //TODO(phl)invert?
-  HomogeneousQVs<Difference<Value>> hqvs;
+  RescaledQVs<Difference<Value>> rqvs;
   for (int i = 0, j = divisions; i < divisions + 1 && j >= 0; ++i, --j) {
     auto const& [q, v] = qvs[i];
-    hqvs[j] = {q, v * duration_over_two};
+    rqvs[j] = {q, v * duration_over_two};
   }
 
   auto const coefficients =
-      NewhallЧебышёвApproximator<Difference<Value>, degree>::
-          HomogeneousCoefficients(hqvs, error_estimate);
+      NewhallЧебышёвApproximator<
+          Difference<Value>, degree>::ComputeCoefficients(rqvs, error_estimate);
   return PolynomialInЧебышёвBasis<Value, Instant, degree>(
       coefficients, t_min, t_max);
 }
@@ -296,18 +252,18 @@ NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qvs,
 
   // Tricky.  The order in Newhall's matrices is such that the entries for the
   // largest time occur first.
-  HomogeneousQVs<Difference<Value>> hqvs;
+  RescaledQVs<Difference<Value>> rqvs;
   for (int i = 0, j = divisions;
        i < divisions + 1 && j >= 0;
        ++i, --j) {
     auto const& [q, v] = qvs[i];
-    hqvs[j] = {q - origin, v * duration_over_two};
+    rqvs[j] = {q - origin, v * duration_over_two};
   }
 
   Instant const t_mid = Barycentre({t_min, t_max});
   return origin + Dehomogeneize<Difference<Value>, degree, Evaluator>(
                       NewhallMonomialApproximator<Difference<Value>, degree>::
-                          HomogeneousCoefficients(hqvs, error_estimate),
+                          ComputeHomogeneousCoefficients(rqvs, error_estimate),
                       /*scale=*/1.0 / duration_over_two,
                       t_mid);
 }
