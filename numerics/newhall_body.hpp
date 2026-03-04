@@ -116,7 +116,7 @@ struct NewhallЧебышёвApproximator {
 template<typename Value, int degree>
 struct NewhallMonomialApproximator {
   static std::array<Value, degree + 1> ComputeHomogeneousCoefficients(
-      RescaledQVs<Value> const& qvs,
+      RescaledQVs<Value> const& rqvs,
       Value& error_estimate);
 };
 
