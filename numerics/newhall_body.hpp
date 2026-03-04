@@ -79,7 +79,6 @@ std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
   return result;
 }
 
-//TODO(phl)scale
 // Given the coefficients of a homogeneous polynomial with argument `double`,
 // returns the coefficients adjusted to the argument interval [t_min, t_max]
 // (specified by `scale`) and the origin of the approximation.  It is necessary
