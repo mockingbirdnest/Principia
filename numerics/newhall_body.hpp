@@ -52,7 +52,7 @@ FORCE_INLINE(constexpr) Value MultiplyMatrixRowByColumnVector(
     NewhallMatrixElement const* const left,
     RescaledQVs<Value> const& right) {
   Value result{};
-  for_integer_range<0, divisions + 1>::loop([&]<int i> {
+  for_integer_range<0, divisions + 1>::loop([&]<int i> [[msvc::forceinline]] {
     auto const& [l0, l1] = left[i];
     auto const& [r0, r1] = right[i];
     // This computation preserves the accuracy obtained with the previous
@@ -71,7 +71,7 @@ std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
     FixedMatrix<NewhallMatrixElement, degree + 1, divisions + 1> const& left,
     RescaledQVs<Value> const& right) {
   std::array<Value, degree + 1> result;
-  for_integer_range<0, degree + 1>::loop([&]<int i> {
+  for_integer_range<0, degree + 1>::loop([&]<int i> [[msvc::forceinline]] {
     // TODO(phl): This should use a row view.
     auto const* row = left.template row<i>();
     result[i] = MultiplyMatrixRowByColumnVector(row, right);
@@ -89,16 +89,22 @@ template<typename Value, int degree,
          template<typename, typename, int> typename Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
-    std::array<Value, degree + 1> const& homogeneous_coefficients,
+    std::array<Difference<Value>, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
-    Instant const& origin) {
+    Value const& value_origin,
+    Instant const& argument_origin) {
   using P = PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>;
   typename P::Coefficients dehomogeneized_coefficients(uninitialized);
-  for_integer_range<0, degree + 1>::loop([&]<int k> {
-    get<k>(dehomogeneized_coefficients) =
-        homogeneous_coefficients[k] * Pow<k>(scale);
+  for_integer_range<0, degree + 1>::loop([&]<int k> [[msvc::forceinline]] {
+    if constexpr (k == 0) {
+      get<k>(dehomogeneized_coefficients) =
+          homogeneous_coefficients[k] + value_origin;
+    } else {
+      get<k>(dehomogeneized_coefficients) =
+          homogeneous_coefficients[k] * Pow<k>(scale);
+    }
   });
-  return P(dehomogeneized_coefficients, origin);
+  return P(dehomogeneized_coefficients, argument_origin);
 }
 
 template<typename Value, int degree>
@@ -268,11 +274,12 @@ NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qvs,
   }
 
   Instant const t_mid = Barycentre({t_min, t_max});
-  return origin + Dehomogeneize<Difference<Value>, degree, Evaluator>(
-                      NewhallMonomialApproximator<Difference<Value>, degree>::
-                          ComputeHomogeneousCoefficients(rqvs, error_estimate),
-                      /*scale=*/1.0 / duration_over_two,
-                      t_mid);
+  return Dehomogeneize<Value, degree, Evaluator>(
+      NewhallMonomialApproximator<Difference<Value>, degree>::
+          ComputeHomogeneousCoefficients(rqvs, error_estimate),
+      /*scale=*/1.0 / duration_over_two,
+      /*value_origin=*/origin,
+      /*argument_origin=*/t_mid);
 }
 
 #define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree) \
