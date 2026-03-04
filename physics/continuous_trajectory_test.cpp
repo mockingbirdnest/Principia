@@ -352,7 +352,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
         .WillOnce(SetArgReferee<4>(
             Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _,_, _, _, _))
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _))
         .WillOnce(SetArgReferee<4>(
             Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
     EXPECT_CALL(*trajectory,
