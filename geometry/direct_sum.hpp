@@ -34,7 +34,10 @@ template<affine... T>
 class DirectSum {
  public:
   constexpr DirectSum() = default;
-  constexpr explicit DirectSum(uninitialized_t);
+  constexpr explicit DirectSum(uninitialized_t)
+    requires(uninitialized_constructible<T> || ...);
+  constexpr explicit DirectSum(uninitialized_t)
+    requires(!uninitialized_constructible<T> && ...);
 
   // Constructor from elements.  These are similar to constructors (2) and (3)
   // from https://en.cppreference.com/w/cpp/utility/tuple/tuple.html,
