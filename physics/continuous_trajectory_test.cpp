@@ -64,8 +64,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
   not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
-      std::vector<Position<Frame>> const& q,
-      std::vector<Velocity<Frame>> const& v,
+      std::vector<DegreesOfFreedom<Frame>> const& all_degrees_of_freedom,
       Instant const& t_min,
       Instant const& t_max,
       Displacement<Frame>& error_estimate) const override;
@@ -74,8 +73,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
       void,
       FillNewhallApproximationInMonomialBasis,
       (int degree,
-       std::vector<Position<Frame>> const& q,
-       std::vector<Velocity<Frame>> const& v,
+       std::vector<DegreesOfFreedom<Frame>> const& all_degrees_of_freedom,
        Instant const& t_min,
        Instant const& t_max,
        Displacement<Frame>& error_estimate,
@@ -85,8 +83,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
 
   absl::Status LockAndComputeBestNewhallApproximation(
       Instant const& time,
-      std::vector<Position<Frame>> const& q,
-      std::vector<Velocity<Frame>> const& v);
+      std::vector<DegreesOfFreedom<Frame>> const& all_degrees_of_freedom);
 
   // Helpers to access the internal state of the Newhall optimization.
   int degree() const;
@@ -99,8 +96,7 @@ template<typename Frame>
 not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
 TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
-    std::vector<Position<Frame>> const& q,
-    std::vector<Velocity<Frame>> const& v,
+    std::vector<DegreesOfFreedom<Frame>> const& all_degrees_of_freedom,
     Instant const& t_min,
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
@@ -110,7 +106,7 @@ TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
   not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
       polynomial = make_not_null_unique<P>(coefficients, Instant());
   FillNewhallApproximationInMonomialBasis(degree,
-                                          q, v,
+                                          all_degrees_of_freedom,
                                           t_min, t_max,
                                           error_estimate,
                                           polynomial);
@@ -121,10 +117,9 @@ template<typename Frame>
 absl::Status
 TestableContinuousTrajectory<Frame>::LockAndComputeBestNewhallApproximation(
     Instant const& time,
-    std::vector<Position<Frame>> const& q,
-    std::vector<Velocity<Frame>> const& v) {
+    std::vector<DegreesOfFreedom<Frame>> const& all_degrees_of_freedom) {
   absl::MutexLock l(&this->lock_);
-  return this->ComputeBestNewhallApproximation(time, q, v);
+  return this->ComputeBestNewhallApproximation(time, all_degrees_of_freedom);
 }
 
 template<typename Frame>
@@ -237,8 +232,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   Time const step = 1 * Second;
   Length const tolerance = 1 * Metre;
   Instant t = t0_;
-  std::vector<Position<World>> const q;
-  std::vector<Velocity<World>> const v;
+  std::vector<DegreesOfFreedom<World>> const qvs;
 
   auto const trajectory = std::make_unique<TestableContinuousTrajectory<World>>(
                               step,
@@ -250,23 +244,23 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre})));
     t += step;
-    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
+    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(6, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
     EXPECT_FALSE(trajectory->is_unstable());
@@ -278,23 +272,23 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({1 * Metre, 3 * Metre, 1 * Metre})));
     t += step;
-    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
+    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(5, trajectory->degree());
     EXPECT_EQ(sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
@@ -304,11 +298,11 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({0.1 * Metre, 1.5 * Metre, 0 * Metre})));
     t += step;
-    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
+    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(5, trajectory->degree());
     EXPECT_EQ(sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
@@ -318,33 +312,33 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({0.1 * Metre, 2 * Metre, 0.5 * Metre})))
-        .WillOnce(SetArgReferee<5>(
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({1 * Metre, 2 * Metre, 1 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({1 * Metre, 1.5 * Metre, 1 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(7, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(7, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({1 * Metre, 1.2 * Metre, 1 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(8, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(8, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})));
     t += step;
-    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
+    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(7, trajectory->degree());
     EXPECT_EQ(sqrt(3.44) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
@@ -354,19 +348,19 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(7, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(7, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({0.1 * Metre, 0.5 * Metre, 0.2 * Metre})));
     t += step;
-    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
+    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(4, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
     EXPECT_FALSE(trajectory->is_unstable());
@@ -379,23 +373,23 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({1 * Metre, 1 * Metre, 1 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})));
     t += step;
-    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
+    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(6, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
     EXPECT_FALSE(trajectory->is_unstable());
@@ -405,13 +399,13 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _))
         .Times(99)
-        .WillRepeatedly(SetArgReferee<5>(
+        .WillRepeatedly(SetArgReferee<4>(
             Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})));
     for (int i = 0; i < 99; ++i) {
       t += step;
-      EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
+      EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     }
     EXPECT_EQ(6, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
@@ -422,19 +416,19 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
   {
     Sequence s;
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre})));
     EXPECT_CALL(*trajectory,
-                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
-        .WillOnce(SetArgReferee<5>(
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _))
+        .WillOnce(SetArgReferee<4>(
             Displacement<World>({0.2 * Metre, 0.2 * Metre, 0.2 * Metre})));
     t += step;
-    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, q, v));
+    EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(5, trajectory->degree());
     EXPECT_EQ(tolerance, trajectory->adjusted_tolerance());
     EXPECT_FALSE(trajectory->is_unstable());

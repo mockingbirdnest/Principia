@@ -5,6 +5,8 @@
 #include <tuple>
 #include <utility>
 
+#include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
+
 namespace principia {
 namespace base {
 namespace _for_all_of {
@@ -49,7 +51,7 @@ constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple) {
 
 template<std::int64_t begin, std::int64_t end>
 template<std::int64_t i, typename F>
-constexpr void for_integer_range<begin, end>::loop(F const& f) {
+FORCE_INLINE(constexpr) void for_integer_range<begin, end>::loop(F const& f) {
   if constexpr (i != end) {
     f.template operator()<i>();
     loop<i + 1, F>(f);

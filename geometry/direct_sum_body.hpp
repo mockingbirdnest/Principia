@@ -46,7 +46,12 @@ class Uninitializer<> {
 
 template<affine... T>
 constexpr DirectSum<T...>::DirectSum(uninitialized_t)
+  requires(uninitialized_constructible<T> || ...)
     : tuple_(Uninitializer<T...>::Make()) {}
+
+template<affine... T>
+constexpr DirectSum<T...>::DirectSum(uninitialized_t)
+  requires(!uninitialized_constructible<T> && ...) {}
 
 template<affine... T>
 constexpr DirectSum<T...>::DirectSum(T const&... args) : tuple_(args...) {}

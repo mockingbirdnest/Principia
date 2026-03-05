@@ -186,8 +186,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   virtual not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
-      std::vector<Position<Frame>> const& q,
-      std::vector<Velocity<Frame>> const& v,
+      std::vector<DegreesOfFreedom<Frame>> const& all_degrees_of_freedom,
       Instant const& t_min,
       Instant const& t_max,
       Displacement<Frame>& error_estimate) const;
@@ -198,8 +197,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // instabilities.
   absl::Status ComputeBestNewhallApproximation(
       Instant const& time,
-      std::vector<Position<Frame>> const& q,
-      std::vector<Velocity<Frame>> const& v) REQUIRES(lock_);
+      std::vector<DegreesOfFreedom<Frame>> const& all_degrees_of_freedom)
+      REQUIRES(lock_);
 
   // Returns an iterator to the polynomial applicable for the given `time`, or
   // `begin` if `time` is before the first polynomial or `end` if `time` is

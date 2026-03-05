@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/algebra.hpp"
+#include "geometry/direct_sum.hpp"
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -26,6 +27,7 @@ namespace principia {
 namespace numerics {
 
 using namespace principia::base::_algebra;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
@@ -48,8 +50,7 @@ template<typename Value, int degree>
 class ЧебышёвAdapter {
  public:
   static ЧебышёвAdapter NewhallApproximation(
-      std::vector<Value> const& q,
-      std::vector<Variation<Value>> const& v,
+      std::vector<DirectSum<Value, Variation<Value>>> const& qvs,
       Instant const& t_min,
       Instant const& t_max,
       Difference<Value>& error_estimate);
@@ -68,8 +69,7 @@ template<typename Value, int degree>
 class MonomialAdapter {
  public:
   static MonomialAdapter NewhallApproximation(
-      std::vector<Value> const& q,
-      std::vector<Variation<Value>> const& v,
+      std::vector<DirectSum<Value, Variation<Value>>> const& qvs,
       Instant const& t_min,
       Instant const& t_max,
       Difference<Value>& error_estimate);
@@ -88,13 +88,12 @@ class MonomialAdapter {
 template<typename Value, int degree>
 ЧебышёвAdapter<Value, degree>
 ЧебышёвAdapter<Value, degree>::NewhallApproximation(
-    std::vector<Value> const& q,
-    std::vector<Variation<Value>> const& v,
+    std::vector<DirectSum<Value, Variation<Value>>> const& qvs,
     Instant const& t_min,
     Instant const& t_max,
     Difference<Value>& error_estimate) {
   return ЧебышёвAdapter(NewhallApproximationInЧебышёвBasis<Value, degree>(
-      q, v,
+      qvs,
       t_min, t_max,
       error_estimate));
 }
@@ -118,14 +117,13 @@ template<typename Value, int degree>
 template<typename Value, int degree>
 MonomialAdapter<Value, degree>
 MonomialAdapter<Value, degree>::NewhallApproximation(
-    std::vector<Value> const& q,
-    std::vector<Variation<Value>> const& v,
+    std::vector<DirectSum<Value, Variation<Value>>> const& qvs,
     Instant const& t_min,
     Instant const& t_max,
     Difference<Value>& error_estimate) {
   return MonomialAdapter(
       NewhallApproximationInMonomialBasis<Value, degree, Estrin>(
-          q, v,
+          qvs,
           t_min, t_max,
           error_estimate));
 }
@@ -189,17 +187,15 @@ class NewhallTest : public ::testing::Test {
           expected_variation_absolute_error,
       std::optional<ApproximateQuantity<Difference<Value>>> const&
           expected_value_absolute_error_with_fma = std::nullopt) {
-    std::vector<Value> arguments;
-    std::vector<Variation<Value>> variations;
+    std::vector<DirectSum<Value, Variation<Value>>> qvs;
     for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
-      arguments.push_back(length_function(t));
-      variations.push_back(speed_function(t));
+      qvs.push_back({length_function(t), speed_function(t)});
     }
 
     Difference<Value> argument_error_estimate;
     auto const approximation =
         Adapter<Value, degree>::NewhallApproximation(
-            arguments, variations, t_min_, t_max_, argument_error_estimate);
+            qvs, t_min_, t_max_, argument_error_estimate);
 
     // Compute the absolute error of both functions throughout the interval.
     Difference<Value> argument_absolute_error;
@@ -800,18 +796,16 @@ TEST_F(NewhallTest, Affine) {
 }
 
 TEST_F(NewhallTest, NonConstantDegree) {
-    std::vector<Length> lengths;
-    std::vector<Speed> speeds;
+    std::vector<DirectSum<Length, Speed>> qvs;
     for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
-      lengths.push_back(length_function_1_(t));
-      speeds.push_back(speed_function_1_(t));
+      qvs.push_back({length_function_1_(t), speed_function_1_(t)});
     }
 
     Length length_error_estimate;
     auto const approximation =
         NewhallApproximationInMonomialBasis<Length>(
             /*degree=*/10,
-            lengths, speeds, t_min_, t_max_,
+            qvs, t_min_, t_max_,
             Policy::AlwaysEstrin(),
             length_error_estimate);
 

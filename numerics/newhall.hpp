@@ -5,6 +5,7 @@
 
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
+#include "geometry/direct_sum.hpp"
 #include "geometry/instant.hpp"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
@@ -18,21 +19,24 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_instant;
 using namespace principia::numerics::_polynomial;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_named_quantities;
 
+template<typename Value>
+using QV = DirectSum<Value, Variation<Value>>;
+
 // Computes a Newhall approximation of the given `degree` in the Чебышёв basis.
-// `q` and `v` are the positions and velocities over a constant division of
+// `qv` are the positions and velocities over a constant division of
 // [t_min, t_max].  `error_estimate` gives an estimate of the error between the
 // approximation the input data.  The client probably wants to compute some
 // norm of that estimate.
 template<typename Value, int degree>
 PolynomialInЧебышёвBasis<Value, Instant, degree>
-NewhallApproximationInЧебышёвBasis(std::vector<Value> const& q,
-                                   std::vector<Variation<Value>> const& v,
+NewhallApproximationInЧебышёвBasis(std::vector<QV<Value>> const& qvs,
                                    Instant const& t_min,
                                    Instant const& t_max,
                                    Value& error_estimate);
@@ -41,8 +45,7 @@ NewhallApproximationInЧебышёвBasis(std::vector<Value> const& q,
 template<typename Value>
 not_null<std::unique_ptr<PolynomialInЧебышёвBasis<Value, Instant>>>
 NewhallApproximationInЧебышёвBasis(int degree,
-                                   std::vector<Value> const& q,
-                                   std::vector<Variation<Value>> const& v,
+                                   std::vector<QV<Value>> const& qvs,
                                    Instant const& t_min,
                                    Instant const& t_max,
                                    Value& error_estimate);
@@ -54,8 +57,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
 template<typename Value, int degree,
          template<typename, typename, int> typename Evaluator>
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>
-NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
-                                    std::vector<Variation<Value>> const& v,
+NewhallApproximationInMonomialBasis(std::vector<QV<Value>> const& qvs,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Difference<Value>& error_estimate);
@@ -65,8 +67,7 @@ NewhallApproximationInMonomialBasis(std::vector<Value> const& q,
 template<typename Value>
 not_null<std::unique_ptr<Polynomial<Value, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
-                                    std::vector<Value> const& q,
-                                    std::vector<Variation<Value>> const& v,
+                                    std::vector<QV<Value>> const& qvs,
                                     Instant const& t_min,
                                     Instant const& t_max,
                                     Policy const& policy,

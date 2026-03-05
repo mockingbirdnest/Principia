@@ -101,21 +101,18 @@ absl::Status ContinuousTrajectory<Frame>::Append(
   absl::Status status;
   CHECK_LE(last_points_.size(), divisions);
   if (last_points_.size() == divisions) {
-    // These vectors are thread-local to avoid deallocation/reallocation each
-    // time we go through this code path.
-    thread_local std::vector<Position<Frame>> q(divisions + 1);
-    thread_local std::vector<Velocity<Frame>> v(divisions + 1);
-    q.clear();
-    v.clear();
+    // This vector is thread-local to avoid deallocation/reallocation each time
+    // we go through this code path.
+    thread_local std::vector<DegreesOfFreedom<Frame>> all_degrees_of_freedom(
+        divisions + 1);
+    all_degrees_of_freedom.clear();
 
     for (auto const& [_, degrees_of_freedom] : last_points_) {
-      q.push_back(degrees_of_freedom.position());
-      v.push_back(degrees_of_freedom.velocity());
+      all_degrees_of_freedom.push_back(degrees_of_freedom);
     }
-    q.push_back(degrees_of_freedom.position());
-    v.push_back(degrees_of_freedom.velocity());
+    all_degrees_of_freedom.push_back(degrees_of_freedom);
 
-    status = ComputeBestNewhallApproximation(time, q, v);
+    status = ComputeBestNewhallApproximation(time, all_degrees_of_freedom);
 
     // Wipe-out the points that have just been incorporated in a polynomial.
     last_points_.clear();
@@ -403,22 +400,20 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       Time const step =
           (polynomial.upper_bound() - polynomial.lower_bound()) / divisions;
       Instant t = polynomial.lower_bound();
-      std::vector<Position<Frame>> q;
-      std::vector<Velocity<Frame>> v;
+      std::vector<DegreesOfFreedom<Frame>> all_degrees_of_freedom;
       Displacement<Frame> displacement;
       Velocity<Frame> velocity;
       for (int i = 0; i <= divisions; t += step, ++i) {
         polynomial.EvaluateWithDerivative(t, displacement, velocity);
-        q.push_back(Frame::origin + displacement);
-        v.push_back(velocity);
+        all_degrees_of_freedom.emplace_back(Frame::origin + displacement,
+                                            velocity);
       }
       Displacement<Frame> error_estimate;  // Should we do something with this?
       continuous_trajectory->polynomials_.emplace_back(
           polynomial.upper_bound(),
           continuous_trajectory->NewhallApproximationInMonomialBasis(
               polynomial.degree(),
-              q,
-              v,
+              all_degrees_of_freedom,
               polynomial.lower_bound(),
               polynomial.upper_bound(),
               error_estimate));
@@ -746,14 +741,13 @@ template<typename Frame>
 not_null<std::unique_ptr<Polynomial<Position<Frame>, Instant>>>
 ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
-    std::vector<Position<Frame>> const& q,
-    std::vector<Velocity<Frame>> const& v,
+    std::vector<DegreesOfFreedom<Frame>> const& all_degrees_of_freedom,
     Instant const& t_min,
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
   return numerics::_newhall::NewhallApproximationInMonomialBasis<
              Position<Frame>>(degree,
-                              q, v,
+                              all_degrees_of_freedom,
                               t_min, t_max,
                               polynomial_evaluator_policy_,
                               error_estimate);
@@ -762,8 +756,7 @@ ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
 template<typename Frame>
 absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
-    std::vector<Position<Frame>> const& q,
-    std::vector<Velocity<Frame>> const& v) {
+    std::vector<DegreesOfFreedom<Frame>> const& all_degrees_of_freedom) {
   lock_.AssertHeld();
   Length const previous_adjusted_tolerance = adjusted_tolerance_;
 
@@ -783,7 +776,7 @@ absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   polynomials_.emplace_back(time,
                             NewhallApproximationInMonomialBasis(
                                 degree_,
-                                q, v,
+                                all_degrees_of_freedom,
                                 last_points_.cbegin()->first, time,
                                 displacement_error_estimate));
 
@@ -819,7 +812,7 @@ absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
             << " because error estimate was " << error_estimate;
     polynomials_.back().polynomial = NewhallApproximationInMonomialBasis(
                                          degree_,
-                                         q, v,
+                                         all_degrees_of_freedom,
                                          last_points_.cbegin()->first, time,
                                          displacement_error_estimate);
     previous_error_estimate = error_estimate;
@@ -854,8 +847,8 @@ absl::Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     message << "Error trying to fit a smooth polynomial to the trajectory. "
             << "The approximation error jumped from "
             << previous_adjusted_tolerance << " to " << adjusted_tolerance_
-            << " at time " << time << ". The last position is " << q.back()
-            << " and the last velocity is " << v.back()
+            << " at time " << time << ". The last degrees of freedom are "
+            << all_degrees_of_freedom.back()
             << ". An apocalypse occurred and two celestials probably "
             << "collided because your solar system is unstable.";
     return absl::InvalidArgumentError(message.str());
