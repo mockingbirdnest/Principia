@@ -124,8 +124,7 @@ Q Abs(Q const& x) {
 }
 
 template<convertible_to_quantity Q>
-FORCE_INLINE(inline)
-Q Abs(Q const& x) {
+FORCE_INLINE Q Abs(Q const& x) {
   return si::Unit<Q> * std::abs(x / si::Unit<Q>);
 }
 

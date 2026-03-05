@@ -12,7 +12,7 @@ namespace internal {
 using namespace principia::geometry::_instant;
 
 template<typename Frame>
-FORCE_INLINE(inline) DiscreteTrajectoryIterator<Frame>&
+FORCE_INLINE DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator++() {
   CHECK(!is_at_end(point_));
   auto& point = iterator(point_);
@@ -36,7 +36,7 @@ DiscreteTrajectoryIterator<Frame>::operator++() {
 }
 
 template<typename Frame>
-FORCE_INLINE(inline) DiscreteTrajectoryIterator<Frame>&
+FORCE_INLINE DiscreteTrajectoryIterator<Frame>&
 DiscreteTrajectoryIterator<Frame>::operator--() {
   bool const point_is_at_end = is_at_end(point_);
   if (point_is_at_end) {
