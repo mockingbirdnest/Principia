@@ -49,13 +49,20 @@ constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple) {
   return Iteration<Tuple...>(std::forward<Tuple>(tuple)...);
 }
 
+template<typename F, std::int64_t begin, typename Sequence>
+struct Foo;
+
+template<typename F, std::int64_t begin, std::int64_t... sequence>
+struct Foo<F, begin, std::integer_sequence<std::int64_t, sequence...>> {
+  FORCE_INLINE(static) void Bar(F const& f) {
+    (f.template operator()<begin + sequence>(), ...);
+  }
+};
+
 template<std::int64_t begin, std::int64_t end>
 template<std::int64_t i, typename F>
 constexpr void for_integer_range<begin, end>::loop(F const& f) {
-  if constexpr (i != end) {
-    f.template operator()<i>();
-    loop<i + 1, F>(f);
-  }
+  Foo<F, begin, std::make_integer_sequence<std::int64_t, end - begin>>::Bar(f);
 }
 
 }  // namespace internal
