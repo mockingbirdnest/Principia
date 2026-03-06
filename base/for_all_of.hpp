@@ -63,6 +63,11 @@ constexpr Iteration<Tuple...> for_all_of(Tuple&&... tuple);
 //       get<i>(t) += i;
 //     }
 //   });
+//
+// NOTE: Do *not* FORCE_INLINE this function, it is used in a nested loop in
+// `newhall_body.hpp` and inlining causes the continuous build in Release mode
+// to go from ~20 min to ~50 min.  Instead, use [[msvc::forceinline_calls]] at
+// selected call sites.
 template<std::int64_t begin, std::int64_t end>
 class for_integer_range : not_constructible {
  public:

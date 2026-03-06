@@ -52,7 +52,9 @@ FORCE_INLINE(constexpr) Value MultiplyMatrixRowByColumnVector(
     NewhallMatrixElement const* const left,
     RescaledQVs<Value> const& right) {
   Value result{};
-  [[msvc::forceinline_calls]]for_integer_range<0, divisions + 1>::loop([&]<int i> [[msvc::forceinline]] {
+
+  [[msvc::forceinline_calls]]
+  for_integer_range<0, divisions + 1>::loop([&]<int i> [[msvc::forceinline]] {
     auto const& [l0, l1] = left[i];
     auto const& [r0, r1] = right[i];
     // This computation preserves the accuracy obtained with the previous
@@ -71,7 +73,8 @@ std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
     FixedMatrix<NewhallMatrixElement, degree + 1, divisions + 1> const& left,
     RescaledQVs<Value> const& right) {
   std::array<Value, degree + 1> result;
-  [[msvc::forceinline_calls]]for_integer_range<0, degree + 1>::loop([&]<int i> [[msvc::forceinline]] {
+  // Do not inline, it would cause the compilation time to explode.
+  for_integer_range<0, degree + 1>::loop([&]<int i> [[msvc::forceinline]] {
     // TODO(phl): This should use a row view.
     auto const* row = left.template row<i>();
     result[i] = MultiplyMatrixRowByColumnVector(row, right);
@@ -94,7 +97,9 @@ PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
     Instant const& argument_origin) {
   using P = PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>;
   typename P::Coefficients dehomogeneized_coefficients(uninitialized);
-  [[msvc::forceinline_calls]]for_integer_range<0, degree + 1>::loop([&]<int k> [[msvc::forceinline]] {
+
+  [[msvc::forceinline_calls]]
+  for_integer_range<0, degree + 1>::loop([&]<int k> [[msvc::forceinline]] {
     if constexpr (k == 0) {
       get<k>(dehomogeneized_coefficients) =
           homogeneous_coefficients[k] + value_origin;
@@ -103,6 +108,7 @@ PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
           homogeneous_coefficients[k] * Pow<k>(scale);
     }
   });
+
   return P(dehomogeneized_coefficients, argument_origin);
 }
 
