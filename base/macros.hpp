@@ -103,13 +103,18 @@ char const* const Architecture = "x86-64";
 
 // Used to force inlining.
 #if PRINCIPIA_COMPILER_CLANG    ||  \
-    PRINCIPIA_COMPILER_CLANG_CL ||  \
-    PRINCIPIA_COMPILER_GCC
+    PRINCIPIA_COMPILER_CLANG_CL
+#  define FORCE_INLINE [[clang::always_inline]]
+#  define FORCE_INLINE_CALLS [[clang::always_inline]]
+#elif PRINCIPIA_COMPILER_GCC
 #  define FORCE_INLINE [[gnu::always_inline]]
+#  define FORCE_INLINE_CALLS
 #elif PRINCIPIA_COMPILER_MSVC
 #  define FORCE_INLINE [[msvc::forceinline]]
+#  define FORCE_INLINE_CALLS [[msvc::forceinline_calls]]
 #elif PRINCIPIA_COMPILER_ICC
 #  define FORCE_INLINE __attribute__((always_inline))
+#  define FORCE_INLINE_CALLS
 #else
 #  error "What compiler is this?"
 #endif

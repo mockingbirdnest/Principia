@@ -53,7 +53,7 @@ FORCE_INLINE constexpr Value MultiplyMatrixRowByColumnVector(
     RescaledQVs<Value> const& right) {
   Value result{};
 
-  [[msvc::forceinline_calls]]
+  FORCE_INLINE_CALLS
   for_integer_range<0, divisions + 1>::loop([&]<int i> FORCE_INLINE {
     auto const& [l0, l1] = left[i];
     auto const& [r0, r1] = right[i];
@@ -99,7 +99,7 @@ PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
   using P = PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>;
   typename P::Coefficients dehomogeneized_coefficients(uninitialized);
 
-  [[msvc::forceinline_calls]]
+  FORCE_INLINE_CALLS
   for_integer_range<0, degree + 1>::loop([&]<int k> FORCE_INLINE {
     if constexpr (k == 0) {
       get<k>(dehomogeneized_coefficients) =
