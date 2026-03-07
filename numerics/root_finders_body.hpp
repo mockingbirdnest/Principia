@@ -455,8 +455,7 @@ Argument Brent(Function f,
 }
 
 template<typename Argument, typename Value>
-FORCE_INLINE(inline)
-BoundedArray<Argument, 2> SolveQuadraticEquation(
+FORCE_INLINE BoundedArray<Argument, 2> SolveQuadraticEquation(
     Argument const& origin,
     Value const& a₀,
     Derivative<Value, Argument> const& a₁,

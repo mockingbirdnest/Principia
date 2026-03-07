@@ -18,7 +18,7 @@ struct ForIntegerRangeImplementation;
 template<typename F, std::int64_t begin, std::int64_t... sequence>
 struct ForIntegerRangeImplementation<
     F, begin, std::integer_sequence<std::int64_t, sequence...>> {
-  FORCE_INLINE(static constexpr) void Loop(F const& f) {
+  FORCE_INLINE static constexpr void Loop(F const& f) {
     (f.template operator()<begin + sequence>(), ...);
   }
 };

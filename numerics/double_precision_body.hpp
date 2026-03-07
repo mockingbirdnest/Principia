@@ -288,8 +288,7 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
 }
 
 template<FMAPresence fma_presence, typename T, typename U>
-FORCE_INLINE(inline)
-DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
+FORCE_INLINE DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
   if (fma_presence == FMAPresence::Present ||
       (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
     // [Mul+10, p. 152], algorithm 2MultFMA.
@@ -304,7 +303,7 @@ DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
 }
 
 template<typename T, typename U>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 #if _DEBUG
   using quantities::_quantities::DebugString;
@@ -322,7 +321,7 @@ DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 }
 
 template<typename T, typename U>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a, U const& b) {
 #if _DEBUG
   using quantities::_quantities::DebugString;
@@ -460,7 +459,7 @@ DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
 }
 
 template<typename T, typename U>
-FORCE_INLINE(inline)
+FORCE_INLINE
 DoublePrecision<Product<T, U>> operator*(T const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.
@@ -470,7 +469,7 @@ DoublePrecision<Product<T, U>> operator*(T const& left,
 }
 
 template<typename T, typename U>
-FORCE_INLINE(inline)
+FORCE_INLINE
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          U const& right) {
   // [Lin81], algorithm longmul.
@@ -480,7 +479,7 @@ DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
 }
 
 template<typename T, typename U>
-FORCE_INLINE(inline)
+FORCE_INLINE
 DoublePrecision<Product<T, U>> operator*(DoublePrecision<T> const& left,
                                          DoublePrecision<U> const& right) {
   // [Lin81], algorithm longmul.

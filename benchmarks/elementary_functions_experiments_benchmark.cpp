@@ -344,8 +344,7 @@ TableSpacingImplementation<table_spacing>::TableSpacingImplementation() {
 
 template<Argument table_spacing>
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value TableSpacingImplementation<table_spacing>::Sin(
+FORCE_INLINE Value TableSpacingImplementation<table_spacing>::Sin(
     Argument const x) {
   DCHECK(CanEmitFMAInstructions);
 
@@ -368,8 +367,7 @@ Value TableSpacingImplementation<table_spacing>::Sin(
 
 template<Argument table_spacing>
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value TableSpacingImplementation<table_spacing>::Cos(
+FORCE_INLINE Value TableSpacingImplementation<table_spacing>::Cos(
     Argument const x) {
   DCHECK(CanEmitFMAInstructions);
 
@@ -439,8 +437,7 @@ MultiTableImplementation::MultiTableImplementation() {
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value MultiTableImplementation::Sin(Argument const x) {
+FORCE_INLINE Value MultiTableImplementation::Sin(Argument const x) {
   DCHECK(CanEmitFMAInstructions);
 
   std::int64_t i;
@@ -466,8 +463,7 @@ Value MultiTableImplementation::Sin(Argument const x) {
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value MultiTableImplementation::Cos(Argument const x) {
+FORCE_INLINE Value MultiTableImplementation::Cos(Argument const x) {
   DCHECK(CanEmitFMAInstructions);
 
   std::int64_t i;
@@ -492,7 +488,7 @@ Value MultiTableImplementation::Cos(Argument const x) {
           cos_x₀_minus_h_sin_x₀.error);
 }
 
-FORCE_INLINE(inline)
+FORCE_INLINE inline
 void MultiTableImplementation::SelectCutoff(Argument const x,
                                             std::int64_t& index,
                                             Argument& cutoff) {
@@ -555,8 +551,7 @@ SingleTableImplementation::SingleTableImplementation() {
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value SingleTableImplementation::Sin(Argument const x) {
+FORCE_INLINE Value SingleTableImplementation::Sin(Argument const x) {
   DCHECK(CanEmitFMAInstructions);
 
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
@@ -590,8 +585,7 @@ Value SingleTableImplementation::Sin(Argument const x) {
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value SingleTableImplementation::Cos(Argument const x) {
+FORCE_INLINE Value SingleTableImplementation::Cos(Argument const x) {
   DCHECK(CanEmitFMAInstructions);
 
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
@@ -644,8 +638,7 @@ NearZeroImplementation::NearZeroImplementation() {
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value NearZeroImplementation::Sin(Argument const x) {
+FORCE_INLINE Value NearZeroImplementation::Sin(Argument const x) {
   DCHECK(CanEmitFMAInstructions);
 
   if (x < near_zero_cutoff) {
@@ -685,8 +678,7 @@ Value NearZeroImplementation::Sin(Argument const x) {
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value NearZeroImplementation::Cos(Argument const x) {
+FORCE_INLINE Value NearZeroImplementation::Cos(Argument const x) {
   DCHECK(CanEmitFMAInstructions);
 
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
@@ -745,15 +737,14 @@ FMAImplementation::FMAImplementation() {
   }
 }
 
-FORCE_INLINE(inline)
+FORCE_INLINE inline
 Value FMAImplementation::Sin(Argument const x) {
   return CanUseHardwareFMA ? SinImplementation<FMAPresence::Present>(x)
                            : SinImplementation<FMAPresence::Absent>(x);
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value FMAImplementation::SinImplementation(Argument const x) {
+FORCE_INLINE Value FMAImplementation::SinImplementation(Argument const x) {
   if (x < near_zero_cutoff) {
     auto const x² = x * x;
     auto const x³ = x² * x;
@@ -790,15 +781,14 @@ Value FMAImplementation::SinImplementation(Argument const x) {
   }
 }
 
-FORCE_INLINE(inline)
+FORCE_INLINE inline
 Value FMAImplementation::Cos(Argument const x) {
   return CanUseHardwareFMA ? CosImplementation<FMAPresence::Present>(x)
                         : CosImplementation<FMAPresence::Absent>(x);
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
-Value FMAImplementation::CosImplementation(Argument const x) {
+FORCE_INLINE Value FMAImplementation::CosImplementation(Argument const x) {
   auto const i = static_cast<std::int64_t>(x * (1.0 / table_spacing));
   auto const& accurate_values = accurate_values_[i];
   auto const& x₀ = accurate_values.x;

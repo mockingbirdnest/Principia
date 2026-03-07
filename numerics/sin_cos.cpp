@@ -240,10 +240,9 @@ Value DetectDangerousRounding(Value const y, Value const δy) {
 }
 
 template<FMAPresence fma_presence, bool preserve_sign>
-FORCE_INLINE(inline)
-void Reduce(Argument const x,
-            DoublePrecision<Argument>& x_reduced,
-            std::int64_t& quadrant) {
+FORCE_INLINE void Reduce(Argument const x,
+                         DoublePrecision<Argument>& x_reduced,
+                         std::int64_t& quadrant) {
   Argument const abs_x = Abs(x);
   OSACA_IF(abs_x < π / 4) {
     x_reduced.value = x;
@@ -339,7 +338,7 @@ Value CosPolynomial(Argument const x) {
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
+FORCE_INLINE
 Value SinImplementation(DoublePrecision<Argument> const x_reduced) {
   auto const x̃ = x_reduced.value;
   auto const δx̃ = x_reduced.error;
@@ -390,7 +389,7 @@ Value SinImplementation(DoublePrecision<Argument> const x_reduced) {
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
+FORCE_INLINE
 Value CosImplementation(DoublePrecision<Argument> const x_reduced) {
   auto const x̃ = x_reduced.value;
   auto const δx̃ = x_reduced.error;
@@ -426,7 +425,7 @@ Value CosImplementation(DoublePrecision<Argument> const x_reduced) {
 }
 
 template<FMAPresence fma_presence>
-FORCE_INLINE(inline)
+FORCE_INLINE
 SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
   SC<Value> m128ds;
   auto const x̃ = x_reduced.value;

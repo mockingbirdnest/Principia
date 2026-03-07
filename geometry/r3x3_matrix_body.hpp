@@ -26,7 +26,7 @@ R3x3Matrix<Scalar>::R3x3Matrix(R3Element<Scalar> const& row_x,
     : rows_({row_x, row_y, row_z}) {}
 
 template<typename Scalar>
-FORCE_INLINE(inline) Scalar R3x3Matrix<Scalar>::operator()(
+FORCE_INLINE Scalar R3x3Matrix<Scalar>::operator()(
     int const r, int const c) const {
   switch (r) {
     case 0:

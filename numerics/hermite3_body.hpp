@@ -238,8 +238,7 @@ Hermite3<Value_, Argument_>::Hermite3(
 }
 
 template<affine Value_, affine Argument_>
-FORCE_INLINE(inline)
-PolynomialInMonomialBasis<Value_, Argument_, 3>
+FORCE_INLINE PolynomialInMonomialBasis<Value_, Argument_, 3>
 Hermite3<Value_, Argument_>::MakePolynomial(
     std::pair<Argument, Argument> const& arguments,
     std::pair<Value, Value> const& values,
