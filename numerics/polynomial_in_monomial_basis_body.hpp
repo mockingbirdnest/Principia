@@ -118,41 +118,6 @@ MakePolynomial(typename Polynomial::Coefficients const& coefficients,
   return Polynomial(sum_coefficients, to_origin);
 }
 
-template<typename Tuple, int order,
-         typename = std::make_index_sequence<std::tuple_size_v<Tuple> - order>>
-struct TupleDerivation;
-
-template<typename Tuple, int order, std::size_t... indices>
-struct TupleDerivation<Tuple, order, std::index_sequence<indices...>> {
-  static constexpr auto Derive(Tuple const& tuple);
-};
-
-template<typename Tuple, int order, std::size_t... indices>
-constexpr auto
-TupleDerivation<Tuple, order, std::index_sequence<indices...>>::Derive(
-    Tuple const& tuple) {
-  return DirectSum{FallingFactorial(order + indices, order) *
-                   get<order + indices>(tuple)...};
-}
-
-template<typename Argument, typename Tuple,
-         typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
-struct TupleIntegration;
-
-template<typename Argument, typename Tuple, std::size_t... indices>
-struct TupleIntegration<Argument, Tuple, std::index_sequence<indices...>> {
-  static constexpr auto Integrate(Tuple const& tuple);
-};
-
-template<typename Argument, typename Tuple, std::size_t... indices>
-constexpr auto
-TupleIntegration<Argument, Tuple, std::index_sequence<indices...>>::Integrate(
-    Tuple const& tuple) {
-  constexpr auto zero = Primitive<std::tuple_element_t<0, Tuple>, Argument>{};
-  return DirectSum{
-      zero, get<indices>(tuple) / static_cast<double>(indices + 1)...};
-}
-
 // Helper for composition.
 template<int exponent, typename P>
 constexpr auto Pow(P const& polynomial) {
@@ -165,99 +130,6 @@ constexpr auto Pow(P const& polynomial) {
     return Pow<exponent / 2>(polynomial * polynomial) * polynomial;
   }
 }
-
-template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
-struct TupleSerializer : not_constructible {
-  static void WriteToMessage(
-      Tuple const& tuple,
-      not_null<serialization::PolynomialInMonomialBasis*> message);
-  static void FillFromMessage(
-      serialization::PolynomialInMonomialBasis const& message,
-      Tuple& tuple);
-  // Cannot be called DebugString because of ADL in its body.
-  static std::vector<std::string> TupleDebugString(Tuple const& tuple,
-                                                   std::string const& argument);
-};
-
-template<typename Tuple, int size>
-struct TupleSerializer<Tuple, size, size> : not_constructible {
-  static void WriteToMessage(
-      Tuple const& tuple,
-      not_null<serialization::PolynomialInMonomialBasis*> message);
-  static void FillFromMessage(
-      serialization::PolynomialInMonomialBasis const& message,
-      Tuple& tuple);
-  // Cannot be called DebugString because of ADL in its body.
-  static std::vector<std::string> TupleDebugString(Tuple const& tuple,
-                                                   std::string const& argument);
-};
-
-template<typename Tuple, int k, int size>
-void TupleSerializer<Tuple, k, size>::WriteToMessage(
-    Tuple const& tuple,
-    not_null<serialization::PolynomialInMonomialBasis*> message) {
-  DoubleOrQuantityOrPointOrMultivectorSerializer<
-      std::tuple_element_t<k, Tuple>,
-      serialization::PolynomialInMonomialBasis::Coefficient>::
-      WriteToMessage(get<k>(tuple), message->add_coefficient());
-  TupleSerializer<Tuple, k + 1, size>::WriteToMessage(tuple, message);
-}
-
-template<typename Tuple, int k, int size>
-void TupleSerializer<Tuple, k, size>::FillFromMessage(
-    serialization::PolynomialInMonomialBasis const& message,
-    Tuple& tuple) {
-  get<k>(tuple) =
-      DoubleOrQuantityOrPointOrMultivectorSerializer<
-          std::tuple_element_t<k, Tuple>,
-          serialization::PolynomialInMonomialBasis::Coefficient>::
-          ReadFromMessage(message.coefficient(k));
-  TupleSerializer<Tuple, k + 1, size>::FillFromMessage(message, tuple);
-}
-
-template<typename Tuple, int k, int size>
-std::vector<std::string> TupleSerializer<Tuple, k, size>::TupleDebugString(
-    Tuple const& tuple,
-    std::string const& argument) {
-  auto tail =
-      TupleSerializer<Tuple, k + 1, size>::TupleDebugString(tuple, argument);
-  auto const coefficient = get<k>(tuple);
-  if (coefficient == std::tuple_element_t<k, Tuple>{}) {
-    return tail;
-  }
-  std::string head;
-  switch (k) {
-    case 0:
-      head = DebugString(coefficient);
-      break;
-    case 1:
-      head = absl::StrCat(DebugString(coefficient), " * ", argument);
-      break;
-    default:
-      head = absl::StrCat(DebugString(coefficient), " * ", argument, "^", k);
-      break;
-  }
-  tail.insert(tail.begin(), head);
-  return tail;
-}
-
-template<typename Tuple, int size>
-void TupleSerializer<Tuple, size, size>::WriteToMessage(
-    Tuple const& tuple,
-    not_null<serialization::PolynomialInMonomialBasis*> message) {}
-
-template<typename Tuple, int size>
-void TupleSerializer<Tuple, size, size>::FillFromMessage(
-    serialization::PolynomialInMonomialBasis const& message,
-    Tuple& tuple) {}
-
-template<typename Tuple, int size>
-std::vector<std::string> TupleSerializer<Tuple, size, size>::TupleDebugString(
-    Tuple const& tuple,
-    std::string const& argument) {
-  return {};
-}
-
 
 template<typename Value, typename Argument, int degree,
          template<typename, typename, int> typename Evaluator_>
@@ -480,12 +352,15 @@ PolynomialInMonomialBasis<
     Evaluator_>
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 Derivative() const {
-  return PolynomialInMonomialBasis<
+  using Result = PolynomialInMonomialBasis<
              base::_algebra::Derivative<Value, Argument, order>,
              Argument,
-             degree_ - order, Evaluator_>(
-             TupleDerivation<Coefficients, order>::Derive(coefficients_),
-             origin_);
+             degree_ - order, Evaluator_>;
+  typename Result::Coefficients result_coefficients(uninitialized);
+  for_all_of(result_coefficients).loop_indexed([&]<int n>(auto& aₙ) {
+    aₙ = FallingFactorial(n + order, order) * get<n + order>(coefficients_);
+  });
+  return Result(std::move(result_coefficients), origin_);
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -495,12 +370,20 @@ PolynomialInMonomialBasis<Primitive<Value_, Argument_>, Argument_, degree_ + 1,
 PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 Primitive() const
   requires additive_group<Value> {
-  return PolynomialInMonomialBasis<
-             base::_algebra::Primitive<Value, Argument>,
-             Argument,
-             degree_ + 1, Evaluator_>(
-             TupleIntegration<Argument, Coefficients>::Integrate(coefficients_),
-             origin_);
+  using Result =
+      PolynomialInMonomialBasis<base::_algebra::Primitive<Value, Argument>,
+                                Argument,
+                                degree_ + 1,
+                                Evaluator_>;
+  typename Result::Coefficients result_coefficients(uninitialized);
+  for_all_of(result_coefficients).loop_indexed([&]<int n>(auto& aₙ) {
+    if constexpr (n == 0) {
+      aₙ = {};
+    } else {
+      aₙ = get<n - 1>(coefficients_) / n;
+    }
+  });
+  return Result(std::move(result_coefficients), origin_);
 }
 
 template<typename Value_, typename Argument_, int degree_,
@@ -526,7 +409,12 @@ void PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
     message->set_degree(degree_);
     auto* const extension = message->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);
-    TupleSerializer<Coefficients, 0>::WriteToMessage(coefficients_, extension);
+    for_all_of(coefficients_).loop([&](auto const& coefficient) {
+      DoubleOrQuantityOrPointOrMultivectorSerializer<
+          std::remove_cvref_t<decltype(coefficient)>,
+          serialization::PolynomialInMonomialBasis::Coefficient>::
+          WriteToMessage(coefficient, extension->add_coefficient());
+    });
     ArgumentSerializer::WriteToMessage(origin_, extension);
     Evaluator<Value_, Difference<Argument_>, degree_>::WriteToMessage(
         extension->mutable_evaluator());
@@ -566,7 +454,12 @@ ReadFromMessage(serialization::Polynomial const& message) {
   }
 
   Coefficients coefficients;
-  TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
+  for_all_of(coefficients).loop_indexed([&]<int k>(auto& coefficient) {
+    coefficient = DoubleOrQuantityOrPointOrMultivectorSerializer<
+        std::remove_reference_t<decltype(coefficient)>,
+        serialization::PolynomialInMonomialBasis::Coefficient>::
+        ReadFromMessage(extension.coefficient(k));
+  });
 
   auto const origin = is_pre_gröbner
                           ? Argument{}
@@ -984,14 +877,25 @@ std::ostream& operator<<(
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>::
           Coefficients;
-  std::vector<std::string> debug_string;
-  debug_string = TupleSerializer<Coefficients, 0>::TupleDebugString(
-      polynomial.coefficients_,
-      absl::StrCat("(T - ", DebugString(polynomial.origin_), ")"));
-  if (debug_string.empty()) {
+  std::string const argument =
+      absl::StrCat("(T - ", DebugString(polynomial.origin_), ")");
+  std::vector<std::string> terms;
+  for_all_of(polynomial.coefficients_).loop_indexed([&]<int n>(auto const& aₙ) {
+    if (aₙ == decltype(aₙ){}) {
+      return;
+    }
+    terms.push_back(DebugString(aₙ));
+    if constexpr (n > 0) {
+      absl::StrAppend(&terms.back(), " * ", argument);
+      if constexpr (n > 1) {
+        absl::StrAppend(&terms.back(), "^", n);
+      }
+    }
+  });
+  if (terms.empty()) {
     out << DebugString(Value{});
   } else {
-    out << absl::StrJoin(debug_string, " + ");
+    out << absl::StrJoin(terms, " + ");
   }
   return out;
 }

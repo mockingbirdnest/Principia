@@ -1,5 +1,6 @@
 #include "numerics/polynomial_in_monomial_basis.hpp"
 
+#include <string>
 #include <tuple>
 
 #include "base/algebra.hpp"
@@ -22,6 +23,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/check_well_formedness.hpp"  // 🧙 For PRINCIPIA_CHECK_ILL_FORMED.
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/string_log_sink.hpp"
 
 #define PRINCIPIA_USE_IACA 0
 #if PRINCIPIA_USE_IACA
@@ -31,6 +33,7 @@
 namespace principia {
 namespace numerics {
 
+using ::testing::EndsWith;
 using ::testing::Eq;
 using namespace principia::base::_algebra;
 using namespace principia::base::_for_all_of;
@@ -49,6 +52,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_algebra;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_string_log_sink;
 
 class PolynomialInMonomialBasisTest : public ::testing::Test {
  public:
@@ -689,9 +693,36 @@ TEST_F(PolynomialInMonomialBasisTest, Output) {
   P2A p2a(coefficients_, Instant());
   P17::Coefficients const coefficients;
   P17 p17(coefficients);
+  StringLogSink log_error(google::ERROR);
   LOG(ERROR) << p2v;
+  EXPECT_THAT(
+      log_error.string(),
+      EndsWith(
+          "] {+0.00000000000000000e+00 m, +0.00000000000000000e+00 m, "
+          "+1.00000000000000000e+00 m}"
+          " + {+0.00000000000000000e+00 m s^-1,"
+          " +1.00000000000000000e+00 m s^-1, +0.00000000000000000e+00 m s^-1}"
+          " * (T - +0.00000000000000000e+00 s)"
+          " + {+1.00000000000000000e+00 m s^-2,"
+          " +0.00000000000000000e+00 m s^-2, +0.00000000000000000e+00 m s^-2}"
+          " * (T - +0.00000000000000000e+00 s)^2"));
   LOG(ERROR) << p2a;
+  EXPECT_THAT(
+      log_error.string(),
+      EndsWith(
+          "] {+0.00000000000000000e+00 m, +0.00000000000000000e+00 m, "
+          "+1.00000000000000000e+00 m}"
+          " + {+0.00000000000000000e+00 m s^-1,"
+          " +1.00000000000000000e+00 m s^-1, +0.00000000000000000e+00 m s^-1}"
+          " * (T - J2000+0.00000000000000000e+00 s (TT))"
+          " + {+1.00000000000000000e+00 m s^-2,"
+          " +0.00000000000000000e+00 m s^-2, +0.00000000000000000e+00 m s^-2}"
+          " * (T - J2000+0.00000000000000000e+00 s (TT))^2"));
   LOG(ERROR) << p17;
+  EXPECT_THAT(log_error.string(),
+              EndsWith("] {+0.00000000000000000e+00 m, "
+                       "+0.00000000000000000e+00 m, "
+                       "+0.00000000000000000e+00 m}"));
 }
 
 }  // namespace numerics
