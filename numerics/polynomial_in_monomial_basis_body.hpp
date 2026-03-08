@@ -414,7 +414,7 @@ void PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
           std::remove_cvref_t<decltype(coefficient)>,
           serialization::PolynomialInMonomialBasis::Coefficient>::
           WriteToMessage(coefficient, extension->add_coefficient());
-    }); 
+    });
     ArgumentSerializer::WriteToMessage(origin_, extension);
     Evaluator<Value_, Difference<Argument_>, degree_>::WriteToMessage(
         extension->mutable_evaluator());
@@ -459,7 +459,7 @@ ReadFromMessage(serialization::Polynomial const& message) {
         std::remove_reference_t<decltype(coefficient)>,
         serialization::PolynomialInMonomialBasis::Coefficient>::
         ReadFromMessage(extension.coefficient(k));
-  }); 
+  });
 
   auto const origin = is_pre_gröbner
                           ? Argument{}
@@ -877,7 +877,8 @@ std::ostream& operator<<(
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>::
           Coefficients;
-  std::string const argument = absl::StrCat("(T - ", DebugString(polynomial.origin_), ")");
+  std::string const argument =
+      absl::StrCat("(T - ", DebugString(polynomial.origin_), ")");
   std::vector<std::string> terms;
   for_all_of(polynomial.coefficients_).loop_indexed([&]<int n>(auto const& aₙ) {
     if (aₙ == decltype(aₙ){}) {
