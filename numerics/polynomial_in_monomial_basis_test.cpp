@@ -1,5 +1,6 @@
 #include "numerics/polynomial_in_monomial_basis.hpp"
 
+#include <string>
 #include <tuple>
 
 #include "base/algebra.hpp"
@@ -718,10 +719,10 @@ TEST_F(PolynomialInMonomialBasisTest, Output) {
           " +0.00000000000000000e+00 m s^-2, +0.00000000000000000e+00 m s^-2}"
           " * (T - J2000+0.00000000000000000e+00 s (TT))^2"));
   LOG(ERROR) << p17;
-  EXPECT_THAT(
-      log_error.string(),
-      EndsWith(
-          "] {+0.00000000000000000e+00 m, ""+0.00000000000000000e+00 m, ""+0.00000000000000000e+00 m}"));
+  EXPECT_THAT(log_error.string(),
+              EndsWith("] {+0.00000000000000000e+00 m, "
+                       "+0.00000000000000000e+00 m, "
+                       "+0.00000000000000000e+00 m}"));
 }
 
 }  // namespace numerics
