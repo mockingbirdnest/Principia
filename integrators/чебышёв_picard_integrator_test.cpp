@@ -6,8 +6,10 @@
 #include <concepts>
 #include <vector>
 
+#include "base/algebra.hpp"
 #include "geometry/direct_sum.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
@@ -15,6 +17,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -29,14 +32,17 @@ using ::testing::Test;
 using ::testing::Types;
 using ::testing::Values;
 
+using namespace principia::base::_algebra;
 using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_чебышёв_picard_integrator;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -62,17 +68,20 @@ Displacement<World> displacement() {
   return Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
 }
 
-Length LInfinityNorm(Displacement<World> const& v) {
+template<quantity Scalar, typename Frame>
+Scalar LInfinityNorm(Vector<Scalar, Frame> const& v) {
   return std::max(
       {Abs(v.coordinates().x), Abs(v.coordinates().y), Abs(v.coordinates().z)});
 }
 
-Length LInfinityNorm(DirectSum<Displacement<World>> const& v) {
+template<affine Scalar>
+auto LInfinityNorm(DirectSum<Scalar> const& v) {
   return LInfinityNorm(get<0>(v));
 }
 
-Length LInfinityNorm(std::vector<Displacement<World>> const& v) {
-  Length norm = 0 * Metre;
+template<typename Scalar>
+auto LInfinityNorm(std::vector<Scalar> const& v) {
+  auto norm = decltype(LInfinityNorm(std::declval<Scalar>()))();
   for (auto const& vᵢ : v) {
     norm = std::max(norm, LInfinityNorm(vᵢ));
   }
@@ -399,7 +408,14 @@ TYPED_TEST_P(ЧебышёвPicardIntegratorParameterizedTest, Convergence) {
           .max_iterations = 64,
           .stopping_criterion =
               [](auto const& Δ) {
-                return LInfinityNorm(Δ) < TypeParam::stopping_criterion;
+                if constexpr (ODE::order == 1) {
+                  return LInfinityNorm(Δ) < TypeParam::stopping_criterion;
+                } else {
+                  return LInfinityNorm(Δ.position_error) <
+                             TypeParam::stopping_criterion &&
+                         LInfinityNorm(Δ.velocity_error) <
+                             TypeParam::stopping_criterion / Second;
+                }
               },
       });
   EXPECT_OK(instance->Solve(problem.t₀() + step));
@@ -560,7 +576,7 @@ struct SecondOrderLinear8Seconds : not_constructible {
   using Method = ЧебышёвPicard<32>;
   static constexpr Time step = 8 * Second;
   static constexpr Length stopping_criterion = 1e-12 * Metre;
-  static constexpr Length tolerance = 2e-14 * Metre;
+  static constexpr Length tolerance = 3e-14 * Metre;
 };
 struct SecondOrderLinearMGreaterThanN : not_constructible {
   using ODE = SecondOrderODE;

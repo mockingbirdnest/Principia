@@ -416,7 +416,6 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
             y.push_back(Xⁱ_.first(i, j));
             yʹ.push_back(Xⁱ_.second(i, j));
           }
-          // TODO:
           typename ODE::DependentVariableDerivatives2 yʺᵢ(Xⁱ_.first.columns());
           RETURN_IF_ERROR(equation.compute_acceleration(t_[i], y, yʹ, yʺᵢ));
           for (std::int64_t j = 0; j < Xⁱ_.first.columns(); ++j) {
@@ -430,7 +429,6 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
         Xⁱ⁺¹_ = integrator_.matrices_.CₓCα * (0.5 * step * f_) + boundary_;
       } else {
         Xⁱ⁺¹_.second = integrator_.matrices_.vCₓᵝCα * (0.5 * step * f_) + boundary_.second;
-        // FIXME:
         Xⁱ⁺¹_.first = integrator_.matrices_.xCₓᵅCᵧᵝCα * (0.25 * step * step * f_) + boundary_.first;
       }
 
@@ -441,10 +439,11 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
           should_stop =
               should_stop && params_.stopping_criterion(Xⁱ⁺¹_[i] - Xⁱ_[i]);
         } else {
-          // TODO: velocity should also be used.
-          typename ODE::DependentVariableDifferences Δ;
+          typename ODE::State::Error Δ;
           for (std::int64_t j = 0; j < Xⁱ_.first.columns(); ++j) {
-            Δ.push_back((Xⁱ⁺¹_.first)(i, j) - (Xⁱ_.first)(i, j));
+            Δ.position_error.push_back((Xⁱ⁺¹_.first)(i, j) - (Xⁱ_.first)(i, j));
+            Δ.velocity_error.push_back((Xⁱ⁺¹_.second)(i, j) -
+                                       (Xⁱ_.second)(i, j));
           }
           should_stop = should_stop && params_.stopping_criterion(Δ);
         }

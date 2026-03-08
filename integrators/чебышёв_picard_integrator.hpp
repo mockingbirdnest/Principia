@@ -50,7 +50,7 @@ struct ЧебышёвPicardIterationParams {
   // This function will be called on the iteration deltas for each node. If it
   // returns true for all nodes for two iterations in a row, iteration will be
   // considered to have converged.
-  std::function<bool(typename ODE::DependentVariableDifferences const&)>
+  std::function<bool(typename ODE::State::Error const&)>
       stopping_criterion;
 };
 
@@ -123,8 +123,7 @@ struct ЧебышёвPicardIterationState<
     ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>> {
   using ODE =
       ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>;
-  // TODO(rnlahaye): these should use some sort of "partially-fixed matrix" that
-  // uses one blob of memory.
+  // TODO(rnlahaye): these should use some sort of "partially-fixed matrix".
   using DependentVariableMatrix =
       std::pair<UnboundedMatrix<DependentVariable>,
                 UnboundedMatrix<Derivative<DependentVariable, Instant>>>;
