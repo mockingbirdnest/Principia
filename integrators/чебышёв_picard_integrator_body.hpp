@@ -407,8 +407,11 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
       if constexpr (ODE::order == 1) {
         Xⁱ⁺¹_ = integrator_.matrices_.CₓCα * (0.5 * step * f_) + boundary_;
       } else {
-        Xⁱ⁺¹_.second = integrator_.matrices_.vCₓᵝCα * (0.5 * step * f_) + boundary_.second;
-        Xⁱ⁺¹_.first = integrator_.matrices_.xCₓᵅCᵧᵝCα * (0.25 * step * step * f_) + boundary_.first;
+        Xⁱ⁺¹_.second =
+            integrator_.matrices_.vCₓᵝCα * (0.5 * step * f_) + boundary_.second;
+        Xⁱ⁺¹_.first =
+            integrator_.matrices_.xCₓᵅCᵧᵝCα * (0.25 * step * step * f_) +
+            boundary_.first;
       }
 
       // Check for convergence by applying the stopping criterion.
