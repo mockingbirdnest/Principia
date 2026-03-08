@@ -359,42 +359,21 @@ absl::Status ЧебышёвPicardIntegrator<Method, ODE_>::Instance::Solve(
       for (std::int64_t i = 1; i <= M; ++i) {
         boundary_[i] = boundary_[0];
       }
-
-      // A good starting guess for X⁰ is uniform current_state.y; as it happens
-      // that's what we just set boundary_ to.
-      Xⁱ_ = boundary_;
     } else {
       for (std::int64_t i = 0; i <= M; ++i) {
         for (std::int64_t j = 0; j < boundary_.first.columns(); ++j) {
           boundary_.second(i, j) = current_state.velocities[j].value;
-
-          // xCx * (X0 + aCy * bi)
-          // xCx * (X0 + aCy * (V0 + …))
-          // xCx * X0 + xCx * aCy * V0
-          // xCx * X0 + xCx * ᵅR * ᵅS * V0
-          // xCx * X0 + xCx * ᵅR * [2v0, 2v0, 0, 0, ...]
-          // xCx * X0 + xCx * [2v0, v0, 0, 0, ...]
-          // aTaW * X0 + aTaW * [2v0, v0, 0, 0, ...]
-          // aTaW * [2x0, 0, 0, ...] + aTaW * [2v0, v0, 0, 0, ...]
-          // aT * [x0, 0, 0, ...] + aT * [v0, v0, 0, 0, ...]
-          // [x0, x0, x0, ...] + [v0 * (1 + t0), v0 * (1 + t1), ]
-
-          // FIXME:
           boundary_.first(i, j) =
               current_state.positions[j].value +
               current_state.velocities[j].value * (t_[i] - t_[0]);
         }
       }
-
-      // A good starting guess for X⁰ is uniform velocity.
-      Xⁱ_.second = boundary_.second;
-      for (std::int64_t i = 0; i <= M; ++i) {
-        for (std::int64_t j = 0; j < boundary_.first.columns(); ++j) {
-          Xⁱ_.first(i, j) = current_state.positions[j].value +
-                            current_state.velocities[j].value * (t_[i] - t_[0]);
-        }
-      }
     }
+
+    // A good starting guess for X⁰ is uniform position (for first-order) or
+    // velocity (for second-order); as it happens that's what we just set
+    // boundary_ to.
+    Xⁱ_ = boundary_;
 
     bool previous_should_stop = false;
     bool converged = false;
