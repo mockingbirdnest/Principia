@@ -38,7 +38,7 @@ struct LegendreCoefficientsGenerator<degree, std::index_sequence<indices...>> {
 // Apparently, FORCE_INLINE has to be on the definition for it to work on
 // namespace-level functions.
 template<int degree_>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<double, double, degree_>
 LegendrePolynomial() {
   return PolynomialInMonomialBasis<double, double, degree_>(

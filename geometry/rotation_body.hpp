@@ -22,7 +22,7 @@ using namespace principia::numerics::_elementary_functions;
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and
 // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/.
-FORCE_INLINE(inline) Quaternion ToQuaternion(R3x3Matrix<double> const& matrix) {
+FORCE_INLINE inline Quaternion ToQuaternion(R3x3Matrix<double> const& matrix) {
   // TODO(egg): this should probably contain some checks that `matrix` has
   // positive determinant...
   double const t = matrix.Trace();

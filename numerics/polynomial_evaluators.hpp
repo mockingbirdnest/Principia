@@ -30,13 +30,13 @@ class EstrinEvaluator {
   using Coefficients = internal::Coefficients<Value, Argument, degree>;
 
  public:
-  FORCE_INLINE(static) Value
+  FORCE_INLINE static Value
   Evaluate(Coefficients const& coefficients,
            Argument const& argument);
-  FORCE_INLINE(static) Derivative<Value, Argument>
+  FORCE_INLINE static Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
-  FORCE_INLINE(static) void
+  FORCE_INLINE static void
   EvaluateWithDerivative(Coefficients const& coefficients,
                          Argument const& argument,
                          Value& value,
@@ -57,13 +57,13 @@ class HornerEvaluator {
   using Coefficients = internal::Coefficients<Value, Argument, degree>;
 
  public:
-  FORCE_INLINE(static) Value
+  FORCE_INLINE static Value
   Evaluate(Coefficients const& coefficients,
            Argument const& argument);
-  FORCE_INLINE(static) Derivative<Value, Argument>
+  FORCE_INLINE static Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
-  FORCE_INLINE(static) void
+  FORCE_INLINE static void
   EvaluateWithDerivative(Coefficients const& coefficients,
                          Argument const& argument,
                          Value& value,

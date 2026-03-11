@@ -48,13 +48,13 @@ using NewhallMatrixElement = DirectSum<double, double>;
 // column vector.  In [New89], p. 308, the former is a row of `C₁⁻¹C₂` , the
 // latter is the vector `f`.
 template<typename Value>
-FORCE_INLINE(constexpr) Value MultiplyMatrixRowByColumnVector(
+FORCE_INLINE constexpr Value MultiplyMatrixRowByColumnVector(
     NewhallMatrixElement const* const left,
     RescaledQVs<Value> const& right) {
   Value result{};
 
-  [[msvc::forceinline_calls]]
-  for_integer_range<0, divisions + 1>::loop([&]<int i> [[msvc::forceinline]] {
+  FORCE_INLINE_CALLS
+  for_integer_range<0, divisions + 1>::loop([&]<int i> FORCE_INLINE {
     auto const& [l0, l1] = left[i];
     auto const& [r0, r1] = right[i];
     // This computation preserves the accuracy obtained with the previous
@@ -68,14 +68,14 @@ FORCE_INLINE(constexpr) Value MultiplyMatrixRowByColumnVector(
 // Similar to the previous function, but performs the multiplication for all
 // rows of the matrix, returning the result as an array.
 template<int degree, typename Value>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
     FixedMatrix<NewhallMatrixElement, degree + 1, divisions + 1> const& left,
     RescaledQVs<Value> const& right) {
   std::array<Value, degree + 1> result;
   // Do not inline the call to `loop`, it would cause the compilation time to
   // explode.  Inlining the lambda is fine.
-  for_integer_range<0, degree + 1>::loop([&]<int i> [[msvc::forceinline]] {
+  for_integer_range<0, degree + 1>::loop([&]<int i> FORCE_INLINE {
     // TODO(phl): This should use a row view.
     auto const* row = left.template row<i>();
     result[i] = MultiplyMatrixRowByColumnVector(row, right);
@@ -90,7 +90,7 @@ std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
 // the width of the interval [t_min, t_max].
 template<typename Value, int degree,
          template<typename, typename, int> typename Evaluator>
-FORCE_INLINE(constexpr)
+constexpr
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
     std::array<Difference<Value>, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
@@ -99,8 +99,8 @@ PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
   using P = PolynomialInMonomialBasis<Value, Instant, degree, Evaluator>;
   typename P::Coefficients dehomogeneized_coefficients(uninitialized);
 
-  [[msvc::forceinline_calls]]
-  for_integer_range<0, degree + 1>::loop([&]<int k> [[msvc::forceinline]] {
+  FORCE_INLINE_CALLS
+  for_integer_range<0, degree + 1>::loop([&]<int k> FORCE_INLINE {
     if constexpr (k == 0) {
       get<k>(dehomogeneized_coefficients) =
           homogeneous_coefficients[k] + value_origin;
@@ -130,10 +130,9 @@ struct NewhallMonomialApproximator {
 #define PRINCIPIA_NEWHALL_ЧЕБЫШЁВ_APPROXIMATOR_SPECIALIZATION(degree)        \
   template<typename Value>                                                   \
   struct NewhallЧебышёвApproximator<Value, (degree)> {                       \
-    FORCE_INLINE(static constexpr)                                           \
-    std::array<Value, (degree) + 1> ComputeCoefficients(                     \
-        RescaledQVs<Value> const& rqvs,                                      \
-        Value& error_estimate) {                                             \
+    FORCE_INLINE static constexpr std::array<Value, (degree) + 1>            \
+    ComputeCoefficients(RescaledQVs<Value> const& rqvs,                      \
+                        Value& error_estimate) {                             \
       auto const result = MultiplyMatrixByColumnVector<(degree)>(            \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04, rqvs); \
       error_estimate = result[(degree)];                                     \
@@ -146,10 +145,9 @@ struct NewhallMonomialApproximator {
 #define PRINCIPIA_NEWHALL_MONOMIAL_APPROXIMATOR_SPECIALIZATION(degree)        \
   template<typename Value>                                                    \
   struct NewhallMonomialApproximator<Value, (degree)> {                       \
-    FORCE_INLINE(static constexpr)                                            \
-    std::array<Value, (degree) + 1> ComputeHomogeneousCoefficients(           \
-        RescaledQVs<Value> const& rqvs,                                       \
-        Value& error_estimate) {                                              \
+    FORCE_INLINE static constexpr std::array<Value, (degree) + 1>             \
+    ComputeHomogeneousCoefficients(RescaledQVs<Value> const& rqvs,            \
+                                   Value& error_estimate) {                   \
       error_estimate = MultiplyMatrixRowByColumnVector(                       \
           newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04          \
               .row<(degree)>(),                                               \

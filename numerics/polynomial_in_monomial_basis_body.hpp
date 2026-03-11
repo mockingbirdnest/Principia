@@ -517,7 +517,7 @@ operator-(PolynomialInMonomialBasis<Value, Argument, rdegree, Evaluator> const&
 
 template<additive_group Value, affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree),
                           Evaluator>
 operator+(
@@ -548,7 +548,7 @@ operator+(
 template<affine Value, affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
   requires (!additive_group<Value>)  // NOLINT
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree),
                           Evaluator>
 operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
@@ -579,7 +579,7 @@ operator+(PolynomialInMonomialBasis<Difference<Value>, Argument, ldegree,
 template<affine Value, affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
   requires (!additive_group<Value>)  // NOLINT
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<Value, Argument, std::max(ldegree, rdegree),
                           Evaluator>
 operator+(PolynomialInMonomialBasis<Value, Argument, ldegree,
@@ -610,7 +610,7 @@ operator+(PolynomialInMonomialBasis<Value, Argument, ldegree,
 template<affine LValue, affine RValue, affine Argument,
          int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<Difference<LValue, RValue>, Argument,
                           std::max(ldegree, rdegree),
                           Evaluator>
@@ -642,7 +642,7 @@ operator-(
 template<typename Scalar,
          typename Value, affine Argument, int degree,
          template<typename, typename, int> typename Evaluator>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const&
@@ -655,7 +655,7 @@ operator*(Scalar const& left,
 template<typename Scalar,
          typename Value, affine Argument, int degree,
          template<typename, typename, int> typename Evaluator>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree, Evaluator>
 operator*(
     PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& left,
@@ -668,7 +668,7 @@ operator*(
 template<typename Scalar,
          typename Value, affine Argument, int degree,
          template<typename, typename, int> typename Evaluator>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree, Evaluator>
 operator/(
     PolynomialInMonomialBasis<Value, Argument, degree, Evaluator> const& left,
@@ -681,7 +681,7 @@ operator/(
 template<typename LValue, typename RValue,
          affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<Product<LValue, RValue>, Argument, ldegree + rdegree,
                           Evaluator>
 operator*(
@@ -843,7 +843,7 @@ Compose(
 template<typename LValue, typename RValue,
          affine Argument, int ldegree, int rdegree,
          template<typename, typename, int> typename Evaluator>
-FORCE_INLINE(constexpr)
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<
     InnerProductType<LValue, RValue>, Argument,
     ldegree + rdegree, Evaluator>
