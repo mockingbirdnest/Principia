@@ -535,6 +535,12 @@ internal class
     if (focus_ == null) {
       PrincipiaPluginAdapter.LoadTextureOrDie(out focus_, "focus.png");
     }
+    if (pinned_ == null) {
+      PrincipiaPluginAdapter.LoadTextureOrDie(out pinned_, "pinned.png");
+    }
+    if (unpinned_ == null) {
+      PrincipiaPluginAdapter.LoadTextureOrDie(out unpinned_, "unpinned.png");
+    }
     using (new UnityEngine.GUILayout.VerticalScope()) {
       UnityEngine.GUILayout.Label(
           L10N.CacheFormat(
@@ -669,15 +675,7 @@ internal class
       }
       UnityEngine.GUILayout.Label(celestial.StandaloneName());
       UnityEngine.GUILayout.FlexibleSpace();
-      if (celestial.is_root()) {
-        UnityEngine.GUILayout.Label(
-            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Pin"),
-            UnityEngine.GUI.skin.label,
-            GUILayoutWidth(1));
-      } else if (UnityEngine.GUILayout.Toggle(pinned[celestial],
-                                              "",
-                                              GUILayoutWidth(1)) !=
-                 pinned[celestial]) {
+      if (RenderPinButton(celestial)) {
         pinned[celestial] = !pinned[celestial];
         ScheduleShrink();
       }
@@ -824,6 +822,16 @@ internal class
     }
   }
 
+  private bool RenderPinButton(CelestialBody celestial) {
+    return UnityEngine.GUILayout.Button(
+        new UnityEngine.GUIContent(pinned[celestial] ? pinned_ : unpinned_,
+                                   L10N.CacheFormat(
+                                       "#Principia_ReferenceFrameSelector_Pin")),
+        Style.Aligned(UnityEngine.TextAnchor.LowerCenter,
+                      UnityEngine.GUI.skin.button),
+        GUILayoutWidth(1));
+  }
+
   private bool SelectedFrameIs(CelestialBody celestial, FrameType type) {
     return !target_frame_selected &&
         selected_celestial == celestial && frame_type == type;
@@ -881,6 +889,8 @@ internal class
   private float tree_width_ = 0f;
   private FrameType last_orbital_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
   private static UnityEngine.Texture focus_;
+  private static UnityEngine.Texture pinned_;
+  private static UnityEngine.Texture unpinned_;
 }
 
 }  // namespace ksp_plugin_adapter
