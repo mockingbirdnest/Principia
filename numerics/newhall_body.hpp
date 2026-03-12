@@ -73,12 +73,10 @@ std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
     FixedMatrix<NewhallMatrixElement, degree + 1, divisions + 1> const& left,
     RescaledQVs<Value> const& right) {
   std::array<Value, degree + 1> result;
-  // Do not inline the call to `loop`, it would cause the compilation time to
-  // explode.  Inlining the lambda is fine.
-  for_integer_range<0, degree + 1>::loop([&]<int i> FORCE_INLINE {
+  for (std::int64_t i = 0; i <= degree; ++i) {
     auto const* row = left.row(i);
     result[i] = MultiplyMatrixRowByColumnVector(row, right);
-  });
+  }
   return result;
 }
 
