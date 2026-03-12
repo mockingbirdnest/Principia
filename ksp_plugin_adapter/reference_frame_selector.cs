@@ -535,8 +535,11 @@ internal class
     if (focus_ == null) {
       PrincipiaPluginAdapter.LoadTextureOrDie(out focus_, "focus.png");
     }
-    if (pin_ == null) {
-      PrincipiaPluginAdapter.LoadTextureOrDie(out pin_, "pin.png");
+    if (pinned_ == null) {
+      PrincipiaPluginAdapter.LoadTextureOrDie(out pinned_, "pinned.png");
+    }
+    if (unpinned_ == null) {
+      PrincipiaPluginAdapter.LoadTextureOrDie(out unpinned_, "unpinned.png");
     }
     using (new UnityEngine.GUILayout.VerticalScope()) {
       UnityEngine.GUILayout.Label(
@@ -672,7 +675,7 @@ internal class
       }
       UnityEngine.GUILayout.Label(celestial.StandaloneName());
       UnityEngine.GUILayout.FlexibleSpace();
-      if (RenderPinButton()) {
+      if (RenderPinButton(celestial)) {
         pinned[celestial] = !pinned[celestial];
         ScheduleShrink();
       }
@@ -819,9 +822,9 @@ internal class
     }
   }
 
-  private bool RenderPinButton() {
+  private bool RenderPinButton(CelestialBody celestial) {
     return UnityEngine.GUILayout.Button(
-        new UnityEngine.GUIContent(pin_,
+        new UnityEngine.GUIContent(pinned[celestial] ? pinned_ : unpinned_,
                                    L10N.CacheFormat(
                                        "#Principia_ReferenceFrameSelector_Pin")),
         Style.Aligned(UnityEngine.TextAnchor.LowerCenter,
@@ -886,7 +889,8 @@ internal class
   private float tree_width_ = 0f;
   private FrameType last_orbital_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
   private static UnityEngine.Texture focus_;
-  private static UnityEngine.Texture pin_;
+  private static UnityEngine.Texture pinned_;
+  private static UnityEngine.Texture unpinned_;
 }
 
 }  // namespace ksp_plugin_adapter
