@@ -87,7 +87,7 @@ std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
 // the width of the interval [t_min, t_max].
 template<typename Value, int degree,
          template<typename, typename, int> typename Evaluator>
-constexpr
+FORCE_INLINE constexpr
 PolynomialInMonomialBasis<Value, Instant, degree, Evaluator> Dehomogeneize(
     std::array<Difference<Value>, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
