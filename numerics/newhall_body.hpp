@@ -76,8 +76,7 @@ std::array<Value, degree + 1> MultiplyMatrixByColumnVector(
   // Do not inline the call to `loop`, it would cause the compilation time to
   // explode.  Inlining the lambda is fine.
   for_integer_range<0, degree + 1>::loop([&]<int i> FORCE_INLINE {
-    // TODO(phl): This should use a row view.
-    auto const* row = left.template row<i>();
+    auto const* row = left.row(i);
     result[i] = MultiplyMatrixRowByColumnVector(row, right);
   });
   return result;
@@ -149,8 +148,8 @@ struct NewhallMonomialApproximator {
     ComputeHomogeneousCoefficients(RescaledQVs<Value> const& rqvs,            \
                                    Value& error_estimate) {                   \
       error_estimate = MultiplyMatrixRowByColumnVector(                       \
-          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04          \
-              .row<(degree)>(),                                               \
+          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04.row(     \
+              degree),                                                        \
           rqvs);                                                              \
       return MultiplyMatrixByColumnVector<(degree)>(                          \
           newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04, rqvs); \
