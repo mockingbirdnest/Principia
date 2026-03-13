@@ -467,10 +467,14 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                                 plugin.CurrentTime()).FormatDuration())
             : elements?.first_collision_risk_time != null
                 ? L10N.CacheFormat(
-                    "#Principia_OrbitAnalyser_Warning_CollisionRisk")
+                    "#Principia_OrbitAnalyser_Warning_CollisionRisk",
+                    (elements.first_collision_risk_time.Value -
+                     plugin.CurrentTime()).FormatDuration())
                 : elements?.first_reentry_time != null
                     ? L10N.CacheFormat(
-                        "#Principia_OrbitAnalyser_Warning_Reentry")
+                        "#Principia_OrbitAnalyser_Warning_Reentry",
+                        (elements.first_reentry_time.Value -
+                         plugin.CurrentTime()).FormatDuration())
                     : "";
     UnityEngine.GUILayout.Label(altitude_warning,
                                 Style.Warning(UnityEngine.GUI.skin.label));

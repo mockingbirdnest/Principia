@@ -698,9 +698,8 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
           ? nullptr
           : new int(plugin.CelestialIndexOfBody(*vessel_analysis->primary()));
 
-  auto const to_double_ptr = [&plugin](std::optional<Instant> const& instant) {
-    return instant.has_value() ? new double(ToGameTime(plugin, *instant))
-                               : nullptr;
+  auto const to_double_ptr = [&plugin](std::optional<Instant> const& t) {
+    return t.has_value() ? new double(ToGameTime(plugin, *t)) : nullptr;
   };
 
   analysis->mission_duration = vessel_analysis->mission_duration() / Second;
