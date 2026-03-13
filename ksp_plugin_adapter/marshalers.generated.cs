@@ -678,6 +678,98 @@ internal partial class Status {
   }
 }
 
+internal partial class OrbitalElements {
+  internal class Marshaler : MonoMarshaler {
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct Representation {
+      public double sidereal_period;
+      public double nodal_period;
+      public double anomalistic_period;
+      public double nodal_precession;
+      public Interval mean_semimajor_axis;
+      public Interval mean_eccentricity;
+      public Interval mean_inclination;
+      public Interval mean_longitude_of_ascending_nodes;
+      public Interval mean_argument_of_periapsis;
+      public Interval mean_periapsis_distance;
+      public Interval mean_apoapsis_distance;
+      public Interval radial_distance;
+      public IntPtr first_collision_time;
+      public IntPtr first_collision_risk_time;
+      public IntPtr first_reentry_time;
+    }
+
+    public static Representation ManagedToNative(OrbitalElements value) {
+      return new Representation{
+          sidereal_period = value.sidereal_period,
+          nodal_period = value.nodal_period,
+          anomalistic_period = value.anomalistic_period,
+          nodal_precession = value.nodal_precession,
+          mean_semimajor_axis = value.mean_semimajor_axis,
+          mean_eccentricity = value.mean_eccentricity,
+          mean_inclination = value.mean_inclination,
+          mean_longitude_of_ascending_nodes = value.mean_longitude_of_ascending_nodes,
+          mean_argument_of_periapsis = value.mean_argument_of_periapsis,
+          mean_periapsis_distance = value.mean_periapsis_distance,
+          mean_apoapsis_distance = value.mean_apoapsis_distance,
+          radial_distance = value.radial_distance,
+          first_collision_time = OwnershipTransferMarshaler<double, OptionalMarshaler<double>>.GetInstance(null).MarshalManagedToNative(value.first_collision_time),
+          first_collision_risk_time = OwnershipTransferMarshaler<double, OptionalMarshaler<double>>.GetInstance(null).MarshalManagedToNative(value.first_collision_risk_time),
+          first_reentry_time = OwnershipTransferMarshaler<double, OptionalMarshaler<double>>.GetInstance(null).MarshalManagedToNative(value.first_reentry_time),
+      };
+    }
+
+    public static OrbitalElements NativeToManaged(Representation representation) {
+      return new OrbitalElements{
+          sidereal_period = representation.sidereal_period,
+          nodal_period = representation.nodal_period,
+          anomalistic_period = representation.anomalistic_period,
+          nodal_precession = representation.nodal_precession,
+          mean_semimajor_axis = representation.mean_semimajor_axis,
+          mean_eccentricity = representation.mean_eccentricity,
+          mean_inclination = representation.mean_inclination,
+          mean_longitude_of_ascending_nodes = representation.mean_longitude_of_ascending_nodes,
+          mean_argument_of_periapsis = representation.mean_argument_of_periapsis,
+          mean_periapsis_distance = representation.mean_periapsis_distance,
+          mean_apoapsis_distance = representation.mean_apoapsis_distance,
+          radial_distance = representation.radial_distance,
+          first_collision_time = OwnershipTransferMarshaler<double, OptionalMarshaler<double>>.GetInstance(null).MarshalNativeToManaged(representation.first_collision_time) as double?,
+          first_collision_risk_time = OwnershipTransferMarshaler<double, OptionalMarshaler<double>>.GetInstance(null).MarshalNativeToManaged(representation.first_collision_risk_time) as double?,
+          first_reentry_time = OwnershipTransferMarshaler<double, OptionalMarshaler<double>>.GetInstance(null).MarshalNativeToManaged(representation.first_reentry_time) as double?,
+      };
+    }
+
+    public static ICustomMarshaler GetInstance(string s) {
+      return instance_;
+    }
+
+    public override void CleanUpNativeDataImplementation(IntPtr native_data) {
+      var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
+      OwnershipTransferMarshaler<double, OptionalMarshaler<double>>.GetInstance(null).CleanUpNativeData(representation.first_collision_time);
+      OwnershipTransferMarshaler<double, OptionalMarshaler<double>>.GetInstance(null).CleanUpNativeData(representation.first_collision_risk_time);
+      OwnershipTransferMarshaler<double, OptionalMarshaler<double>>.GetInstance(null).CleanUpNativeData(representation.first_reentry_time);
+      Marshal.FreeHGlobal(native_data);
+    }
+
+    public override IntPtr MarshalManagedToNativeImplementation(object managed_object) {
+      if (!(managed_object is OrbitalElements value)) {
+        throw new NotSupportedException();
+      }
+      var representation = ManagedToNative(value);
+      IntPtr buffer = Marshal.AllocHGlobal(Marshal.SizeOf(representation));
+      Marshal.StructureToPtr(representation, buffer, fDeleteOld: false);
+      return buffer;
+    }
+
+    public override object MarshalNativeToManaged(IntPtr native_data) {
+      var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
+      return NativeToManaged(representation);
+    }
+
+    private static readonly Marshaler instance_ = new Marshaler();
+  }
+}
+
 internal partial class OrbitAnalysis {
   internal class Marshaler : MonoMarshaler {
     [StructLayout(LayoutKind.Sequential)]
@@ -696,7 +788,7 @@ internal partial class OrbitAnalysis {
           progress_of_next_analysis = value.progress_of_next_analysis,
           primary_index = OwnershipTransferMarshaler<int, OptionalMarshaler<int>>.GetInstance(null).MarshalManagedToNative(value.primary_index),
           mission_duration = value.mission_duration,
-          elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).MarshalManagedToNative(value.elements),
+          elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements, OrbitalElements.Marshaler>>.GetInstance(null).MarshalManagedToNative(value.elements),
           recurrence = OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).MarshalManagedToNative(value.recurrence),
           ground_track_equatorial_crossings = OwnershipTransferMarshaler<EquatorialCrossings, OptionalMarshaler<EquatorialCrossings>>.GetInstance(null).MarshalManagedToNative(value.ground_track_equatorial_crossings),
           solar_times_of_nodes = OwnershipTransferMarshaler<SolarTimesOfNodes, OptionalMarshaler<SolarTimesOfNodes>>.GetInstance(null).MarshalManagedToNative(value.solar_times_of_nodes),
@@ -708,7 +800,7 @@ internal partial class OrbitAnalysis {
           progress_of_next_analysis = representation.progress_of_next_analysis,
           primary_index = OwnershipTransferMarshaler<int, OptionalMarshaler<int>>.GetInstance(null).MarshalNativeToManaged(representation.primary_index) as int?,
           mission_duration = representation.mission_duration,
-          elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).MarshalNativeToManaged(representation.elements) as OrbitalElements?,
+          elements = OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements, OrbitalElements.Marshaler>>.GetInstance(null).MarshalNativeToManaged(representation.elements) as OrbitalElements,
           recurrence = OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).MarshalNativeToManaged(representation.recurrence) as OrbitRecurrence?,
           ground_track_equatorial_crossings = OwnershipTransferMarshaler<EquatorialCrossings, OptionalMarshaler<EquatorialCrossings>>.GetInstance(null).MarshalNativeToManaged(representation.ground_track_equatorial_crossings) as EquatorialCrossings?,
           solar_times_of_nodes = OwnershipTransferMarshaler<SolarTimesOfNodes, OptionalMarshaler<SolarTimesOfNodes>>.GetInstance(null).MarshalNativeToManaged(representation.solar_times_of_nodes) as SolarTimesOfNodes?,
@@ -722,7 +814,7 @@ internal partial class OrbitAnalysis {
     public override void CleanUpNativeDataImplementation(IntPtr native_data) {
       var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
       OwnershipTransferMarshaler<int, OptionalMarshaler<int>>.GetInstance(null).CleanUpNativeData(representation.primary_index);
-      OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements>>.GetInstance(null).CleanUpNativeData(representation.elements);
+      OwnershipTransferMarshaler<OrbitalElements, OptionalMarshaler<OrbitalElements, OrbitalElements.Marshaler>>.GetInstance(null).CleanUpNativeData(representation.elements);
       OwnershipTransferMarshaler<OrbitRecurrence, OptionalMarshaler<OrbitRecurrence>>.GetInstance(null).CleanUpNativeData(representation.recurrence);
       OwnershipTransferMarshaler<EquatorialCrossings, OptionalMarshaler<EquatorialCrossings>>.GetInstance(null).CleanUpNativeData(representation.ground_track_equatorial_crossings);
       OwnershipTransferMarshaler<SolarTimesOfNodes, OptionalMarshaler<SolarTimesOfNodes>>.GetInstance(null).CleanUpNativeData(representation.solar_times_of_nodes);

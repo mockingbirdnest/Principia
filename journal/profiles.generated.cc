@@ -191,7 +191,7 @@ Interval DeserializeInterval(serialization::Interval const& interval, Player::Po
           interval.max()};
 }
 
-OrbitalElements DeserializeOrbitalElements(serialization::OrbitalElements const& orbital_elements, Player::PointerMap& pointer_map) {
+OrbitalElements DeserializeOrbitalElements(serialization::OrbitalElements const& orbital_elements, Player::PointerMap& pointer_map, double& first_collision_time_storage, double& first_collision_risk_time_storage, double& first_reentry_time_storage) {
   return {orbital_elements.sidereal_period(),
           orbital_elements.nodal_period(),
           orbital_elements.anomalistic_period(),
@@ -203,7 +203,19 @@ OrbitalElements DeserializeOrbitalElements(serialization::OrbitalElements const&
           DeserializeInterval(orbital_elements.mean_argument_of_periapsis(), pointer_map),
           DeserializeInterval(orbital_elements.mean_periapsis_distance(), pointer_map),
           DeserializeInterval(orbital_elements.mean_apoapsis_distance(), pointer_map),
-          DeserializeInterval(orbital_elements.radial_distance(), pointer_map)};
+          DeserializeInterval(orbital_elements.radial_distance(), pointer_map),
+          orbital_elements.has_first_collision_time() ? [&first_collision_time_storage](double value) {
+            first_collision_time_storage = value;
+            return &first_collision_time_storage;
+          }(orbital_elements.first_collision_time()) : nullptr,
+          orbital_elements.has_first_collision_risk_time() ? [&first_collision_risk_time_storage](double value) {
+            first_collision_risk_time_storage = value;
+            return &first_collision_risk_time_storage;
+          }(orbital_elements.first_collision_risk_time()) : nullptr,
+          orbital_elements.has_first_reentry_time() ? [&first_reentry_time_storage](double value) {
+            first_reentry_time_storage = value;
+            return &first_reentry_time_storage;
+          }(orbital_elements.first_reentry_time()) : nullptr};
 }
 
 OrbitRecurrence DeserializeOrbitRecurrence(serialization::OrbitRecurrence const& orbit_recurrence, Player::PointerMap& pointer_map) {
@@ -227,15 +239,15 @@ SolarTimesOfNodes DeserializeSolarTimesOfNodes(serialization::SolarTimesOfNodes 
           DeserializeInterval(solar_times_of_nodes.mean_solar_times_of_descending_nodes(), pointer_map)};
 }
 
-OrbitAnalysis DeserializeOrbitAnalysis(serialization::OrbitAnalysis const& orbit_analysis, Player::PointerMap& pointer_map, int& primary_index_storage, OrbitalElements& elements_storage, OrbitRecurrence& recurrence_storage, EquatorialCrossings& ground_track_equatorial_crossings_storage, SolarTimesOfNodes& solar_times_of_nodes_storage) {
+OrbitAnalysis DeserializeOrbitAnalysis(serialization::OrbitAnalysis const& orbit_analysis, Player::PointerMap& pointer_map, int& primary_index_storage, OrbitalElements& elements_storage, double& first_collision_time_storage, double& first_collision_risk_time_storage, double& first_reentry_time_storage, OrbitRecurrence& recurrence_storage, EquatorialCrossings& ground_track_equatorial_crossings_storage, SolarTimesOfNodes& solar_times_of_nodes_storage) {
   return {orbit_analysis.progress_of_next_analysis(),
           orbit_analysis.has_primary_index() ? [&primary_index_storage](int value) {
             primary_index_storage = value;
             return &primary_index_storage;
           }(orbit_analysis.primary_index()) : nullptr,
           orbit_analysis.mission_duration(),
-          orbit_analysis.has_elements() ? [&pointer_map, &elements_storage](serialization::OrbitalElements const& message) {
-            elements_storage = DeserializeOrbitalElements(message, pointer_map);
+          orbit_analysis.has_elements() ? [&pointer_map, &elements_storage, &first_collision_time_storage, &first_collision_risk_time_storage, &first_reentry_time_storage](serialization::OrbitalElements const& message) {
+            elements_storage = DeserializeOrbitalElements(message, pointer_map, first_collision_time_storage, first_collision_risk_time_storage, first_reentry_time_storage);
             return &elements_storage;
           }(orbit_analysis.elements()) : nullptr,
           orbit_analysis.has_recurrence() ? [&pointer_map, &recurrence_storage](serialization::OrbitRecurrence const& message) {
@@ -515,6 +527,18 @@ serialization::OrbitalElements SerializeOrbitalElements(OrbitalElements const& o
   *m.mutable_mean_periapsis_distance() = SerializeInterval(orbital_elements.mean_periapsis_distance);
   *m.mutable_mean_apoapsis_distance() = SerializeInterval(orbital_elements.mean_apoapsis_distance);
   *m.mutable_radial_distance() = SerializeInterval(orbital_elements.radial_distance);
+  if (orbital_elements.first_collision_time != nullptr) {
+    m.set_first_collision_time(*orbital_elements.first_collision_time);
+  }
+  if (orbital_elements.first_collision_risk_time != nullptr) {
+    m.set_first_collision_risk_time(*orbital_elements.first_collision_risk_time);
+  }
+  if (orbital_elements.first_reentry_time != nullptr) {
+    m.set_first_reentry_time(*orbital_elements.first_reentry_time);
+  }
+  m.set_first_collision_time_address(SerializePointer(orbital_elements.first_collision_time));
+  m.set_first_collision_risk_time_address(SerializePointer(orbital_elements.first_collision_risk_time));
+  m.set_first_reentry_time_address(SerializePointer(orbital_elements.first_reentry_time));
   return m;
 }
 
@@ -574,6 +598,12 @@ serialization::OrbitAnalysis SerializeOrbitAnalysis(OrbitAnalysis const& orbit_a
 
 void InsertStatus(serialization::Status const& status_proto, Status const& status_object, Player::PointerMap& pointer_map) {
   Insert(status_proto.message(), status_object.message, pointer_map);
+}
+
+void InsertOrbitalElements(serialization::OrbitalElements const& orbital_elements_proto, OrbitalElements const& orbital_elements_object, Player::PointerMap& pointer_map) {
+  Insert(orbital_elements_proto.first_collision_time_address(), orbital_elements_object.first_collision_time, pointer_map);
+  Insert(orbital_elements_proto.first_collision_risk_time_address(), orbital_elements_object.first_collision_risk_time, pointer_map);
+  Insert(orbital_elements_proto.first_reentry_time_address(), orbital_elements_object.first_reentry_time, pointer_map);
 }
 
 void InsertOrbitAnalysis(serialization::OrbitAnalysis const& orbit_analysis_proto, OrbitAnalysis const& orbit_analysis_object, Player::PointerMap& pointer_map) {
@@ -1227,10 +1257,13 @@ void FlightPlanGetCoastAnalysis::Run(Message const& message, Player::PointerMap&
   InsertOrbitAnalysis(message.return_().result(), *result, pointer_map);
   int primary_index_storage;
   OrbitalElements elements_storage;
+  double first_collision_time_storage;
+  double first_collision_risk_time_storage;
+  double first_reentry_time_storage;
   OrbitRecurrence recurrence_storage;
   EquatorialCrossings ground_track_equatorial_crossings_storage;
   SolarTimesOfNodes solar_times_of_nodes_storage;
-  PRINCIPIA_CHECK_EQ(DeserializeOrbitAnalysis(message.return_().result(), pointer_map, primary_index_storage, elements_storage, recurrence_storage, ground_track_equatorial_crossings_storage, solar_times_of_nodes_storage), *result);
+  PRINCIPIA_CHECK_EQ(DeserializeOrbitAnalysis(message.return_().result(), pointer_map, primary_index_storage, elements_storage, first_collision_time_storage, first_collision_risk_time_storage, first_reentry_time_storage, recurrence_storage, ground_track_equatorial_crossings_storage, solar_times_of_nodes_storage), *result);
   Insert(message.return_().address(), result, pointer_map);
 }
 
@@ -3284,10 +3317,13 @@ void VesselGetAnalysis::Run(Message const& message, Player::PointerMap& pointer_
   InsertOrbitAnalysis(message.return_().result(), *result, pointer_map);
   int primary_index_storage;
   OrbitalElements elements_storage;
+  double first_collision_time_storage;
+  double first_collision_risk_time_storage;
+  double first_reentry_time_storage;
   OrbitRecurrence recurrence_storage;
   EquatorialCrossings ground_track_equatorial_crossings_storage;
   SolarTimesOfNodes solar_times_of_nodes_storage;
-  PRINCIPIA_CHECK_EQ(DeserializeOrbitAnalysis(message.return_().result(), pointer_map, primary_index_storage, elements_storage, recurrence_storage, ground_track_equatorial_crossings_storage, solar_times_of_nodes_storage), *result);
+  PRINCIPIA_CHECK_EQ(DeserializeOrbitAnalysis(message.return_().result(), pointer_map, primary_index_storage, elements_storage, first_collision_time_storage, first_collision_risk_time_storage, first_reentry_time_storage, recurrence_storage, ground_track_equatorial_crossings_storage, solar_times_of_nodes_storage), *result);
   Insert(message.return_().address(), result, pointer_map);
 }
 

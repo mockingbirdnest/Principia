@@ -356,6 +356,9 @@ struct OrbitalElements {
   Interval mean_periapsis_distance;
   Interval mean_apoapsis_distance;
   Interval radial_distance;
+  double const* first_collision_time;
+  double const* first_collision_risk_time;
+  double const* first_reentry_time;
 };
 
 static_assert(std::is_pod<OrbitalElements>::value,

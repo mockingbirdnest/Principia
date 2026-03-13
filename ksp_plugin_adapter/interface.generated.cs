@@ -198,8 +198,7 @@ internal partial struct Interval {
   public double max;
 }
 
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct OrbitalElements {
+internal partial class OrbitalElements {
   public double sidereal_period;
   public double nodal_period;
   public double anomalistic_period;
@@ -212,6 +211,9 @@ internal partial struct OrbitalElements {
   public Interval mean_periapsis_distance;
   public Interval mean_apoapsis_distance;
   public Interval radial_distance;
+  public double? first_collision_time;
+  public double? first_collision_risk_time;
+  public double? first_reentry_time;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -242,7 +244,7 @@ internal partial class OrbitAnalysis {
   public double progress_of_next_analysis;
   public int? primary_index;
   public double mission_duration;
-  public OrbitalElements? elements;
+  public OrbitalElements elements;
   public OrbitRecurrence? recurrence;
   public EquatorialCrossings? ground_track_equatorial_crossings;
   public SolarTimesOfNodes? solar_times_of_nodes;
