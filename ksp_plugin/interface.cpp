@@ -273,6 +273,10 @@ serialization::GravityModel::Body MakeGravityModel(
   if (body_parameters.max_radius != nullptr) {
     gravity_model.set_max_radius(body_parameters.max_radius);
   }
+  if (body_parameters.atmosphere_depth != nullptr) {
+    gravity_model.set_atmosphere_depth(body_parameters.atmosphere_depth);
+  }
+  gravity_model.set_has_ocean(body_parameters.has_ocean);
   if (body_parameters.axis_right_ascension != nullptr) {
     gravity_model.set_axis_right_ascension(
         body_parameters.axis_right_ascension);

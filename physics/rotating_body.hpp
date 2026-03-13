@@ -51,6 +51,8 @@ class RotatingBody : public MassiveBody {
     Parameters(Length const& min_radius,
                Length const& mean_radius,
                Length const& max_radius,
+               Length const& atmosphere_depth,
+               bool has_ocean,
                Angle const& reference_angle,
                Instant const& reference_instant,
                AngularFrequency const& angular_frequency,
@@ -69,6 +71,8 @@ class RotatingBody : public MassiveBody {
     Length const min_radius_;
     Length const mean_radius_;
     Length const max_radius_;
+    Length const atmosphere_depth_;
+    bool const has_ocean_ = false;
     Angle const reference_angle_;
     Instant const reference_instant_;
     AngularFrequency const angular_frequency_;
@@ -85,6 +89,9 @@ class RotatingBody : public MassiveBody {
   Length min_radius() const override;
   Length mean_radius() const override;
   Length max_radius() const override;
+
+  Length atmosphere_depth() const;
+  bool has_ocean() const;
 
   // Returns the direction defined by the right ascension and declination passed
   // at construction.

@@ -464,7 +464,8 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
       // This wouldn't be hard, we'd need another OptionalMarshaler that calls
       // the element's marshaler, but we don't need it yet.
       LOG(FATAL) << "Optional messages with an element that does have a custom "
-                    "marshaler are not yet implemented.";
+                    "marshaler are not yet implemented, field "
+                 << descriptor->full_name();
     } else {
       field_cs_custom_marshaler_[descriptor] =
           custom_marshaler_generic_name(cs_unboxed_type);
