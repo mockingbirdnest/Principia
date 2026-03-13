@@ -229,8 +229,13 @@ RotatingBody<Frame>::ReadFromMessage(
         Angle::ReadFromMessage(message.right_ascension_of_pole()),
         Angle::ReadFromMessage(message.declination_of_pole()));
   } else if (is_pre_legendre) {
+    // By assuming no atmosphere we may miss a reentry.  The C# code has a
+    // compatibility path to recheck.
     Length const atmosphere_depth;
-    bool const has_ocean = false;
+    // By assuming that the celestial has an ocean here report a collision as
+    // soon as the orbit goes below the mean radius.  This may be pessimistic,
+    // but that seems preferable since the user is playing with fire anyway.
+    bool const has_ocean = true;
     parameters.emplace(
         Length::ReadFromMessage(message.min_radius()),
         Length::ReadFromMessage(message.mean_radius()),

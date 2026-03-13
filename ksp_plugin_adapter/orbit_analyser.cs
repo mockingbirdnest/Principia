@@ -462,20 +462,26 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
         (lowest_distance - primary?.Radius)?.FormatAltitude());
     string altitude_warning =
         elements?.first_collision_time != null
-            ? L10N.CacheFormat("#Principia_OrbitAnalyser_Warning_Collision",
+            ? L10N.CacheFormat("#Principia_OrbitAnalyser_Warning_CollisionIn",
                                (elements.first_collision_time.Value -
                                 plugin.CurrentTime()).FormatDuration())
             : elements?.first_collision_risk_time != null
                 ? L10N.CacheFormat(
-                    "#Principia_OrbitAnalyser_Warning_CollisionRisk",
+                    "#Principia_OrbitAnalyser_Warning_CollisionRiskIn",
                     (elements.first_collision_risk_time.Value -
                      plugin.CurrentTime()).FormatDuration())
                 : elements?.first_reentry_time != null
                     ? L10N.CacheFormat(
-                        "#Principia_OrbitAnalyser_Warning_Reentry",
+                        "#Principia_OrbitAnalyser_Warning_ReentryIn",
                         (elements.first_reentry_time.Value -
                          plugin.CurrentTime()).FormatDuration())
-                    : "";
+                    :
+                    // Compatibility code.  Old saves don't know about the
+                    // atmosphere so they may miss the reentry.
+                    lowest_distance < primary?.Radius + primary?.atmosphereDepth
+                        ? L10N.CacheFormat(
+                            "#Principia_OrbitAnalyser_Warning_Reentry")
+                        : "";
     UnityEngine.GUILayout.Label(altitude_warning,
                                 Style.Warning(UnityEngine.GUI.skin.label));
   }
