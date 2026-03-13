@@ -359,6 +359,12 @@ class JournalProtoProcessor final {
       cxx_deserialization_storage_arguments_;
 
   // For interchange messages that require deserialization storage, the
+  // captures needed for lambdas to access the storage.  Starts with a comma,
+  // captures are comma-separated.
+  std::map<Descriptor const*, std::string>
+      cxx_deserialization_storage_captures_;
+
+  // For interchange messages that require deserialization storage, the
   // declaration of the storage in the caller of the Deserialize function.
   std::map<Descriptor const*, std::string>
       cxx_deserialization_storage_declarations_;
