@@ -32,7 +32,7 @@ using namespace std::chrono_literals;
 Player::Player(std::filesystem::path const& path)
     : stream_(path, std::ios::in) {
   principia__ActivatePlayer();
-  CHECK(!stream_.fail());
+  CHECK(!stream_.fail()) << path;
 }
 
 bool Player::Play(int const index) {
