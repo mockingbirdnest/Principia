@@ -428,6 +428,21 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
     std::string const& cxx_type) {
   FieldOptions const& options = descriptor->options();
 
+  // This may be null as we may be called on a scalar field.
+  Descriptor const* message_type = descriptor->message_type();
+  // Build a lambda to construct an optional marshaler name.
+  std::function<std::string(std::string const&)> optional_marshaler_name;
+  if (Contains(cs_custom_marshaler_name_, message_type)) {
+    optional_marshaler_name = [this, message_type](std::string const& type) {
+      return "OptionalMarshaler<" + type + ", " +
+             cs_custom_marshaler_name_[message_type] + ">";
+    };
+  } else {
+    optional_marshaler_name = [](std::string const& type) {
+      return "OptionalMarshaler<" + type + ">";
+    };
+  }
+
   // Build a lambda to construct a marshaler name.
   // TODO(phl): Using an OwnershipTransferMarshaler on a field means that the
   // marshaler for the containing object must itself be wrapped in an
@@ -442,15 +457,12 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
         << descriptor->full_name()
         << " is a produced field and must have an (address_of) option";
     custom_marshaler_generic_name =
-        [](std::string const& type) {
-          return "OwnershipTransferMarshaler<" + type +
-                 ", OptionalMarshaler<" + type + ">>";
+        [&optional_marshaler_name](std::string const& type) {
+          return "OwnershipTransferMarshaler<" + type + ", " +
+                 optional_marshaler_name(type) + ">";
         };
   } else {
-    custom_marshaler_generic_name =
-        [](std::string const& type) {
-          return "OptionalMarshaler<" + type + ">";
-        };
+    custom_marshaler_generic_name = optional_marshaler_name;
   }
 
   // It is not possible to use a custom marshaler on an `T?`, as this raises
@@ -458,21 +470,15 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   // "Custom marshalers are only allowed on classes, strings, arrays, and boxed
   // value types.".
   if (Contains(interchange_, descriptor)) {
-    // This may be null as we may be called on a scalar field.
-    Descriptor const* message_type = descriptor->message_type();
-    if (Contains(cs_custom_marshaler_name_, message_type)) {
-      // This wouldn't be hard, we'd need another OptionalMarshaler that calls
-      // the element's marshaler, but we don't need it yet.
-      LOG(FATAL) << "Optional messages with an element that does have a custom "
-                    "marshaler are not yet implemented, field "
-                 << descriptor->full_name();
+    field_cs_custom_marshaler_[descriptor] =
+        custom_marshaler_generic_name(cs_unboxed_type);
+    if (Contains(cs_interchange_classes_, message_type)) {
+      field_cs_type_[descriptor] = cs_unboxed_type;
     } else {
-      field_cs_custom_marshaler_[descriptor] =
-          custom_marshaler_generic_name(cs_unboxed_type);
+      // For fields of interchange messages we can use a `T?` as the field is
+      // not the part being marshaled, it is the entire interchange message.
+      field_cs_type_[descriptor] = cs_unboxed_type + "?";
     }
-    // For fields of interchange messages we can use a `T?` as the field is not
-    // the part being marshaled, it is the entire interchange message.
-    field_cs_type_[descriptor] = cs_unboxed_type + "?";
   } else {
     // We could use a boxed `T`, whose type would be `object`, but we would lose
     // static typing.  We use a custom strongly-typed boxed type instead.
