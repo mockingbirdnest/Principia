@@ -73,17 +73,13 @@ internal class OptionalMarshaler<T, TMarshaler> : MonoMarshaler
     if (managed_object is T value_if_boxed) {
       value = value_if_boxed;
     } else {
-      if (managed_object is Boxed<T> value_if_strongly_boxed) {
-        value = value_if_strongly_boxed.all;
-      } else {
-        throw Log.Fatal(
-            string.Format(
-                CultureInfo.InvariantCulture,
-                "|{0}<{1}>| must be used on a boxed |{1}| or on a |{2}<{1}>|.",
-                GetType().Name,
-                typeof(T).Name,
-                typeof(Boxed<>).Name));
-      }
+      throw Log.Fatal(
+          string.Format(
+              CultureInfo.InvariantCulture,
+              "|{0}<{1}>| must be used on a boxed |{1}| or on a |{2}<{1}>|.",
+              GetType().Name,
+              typeof(T).Name,
+              typeof(Boxed<>).Name));
     }
     return t_marshaler_instance_.MarshalManagedToNativeImplementation(value);
   }
