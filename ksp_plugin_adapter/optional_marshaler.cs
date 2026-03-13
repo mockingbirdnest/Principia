@@ -60,7 +60,7 @@ internal class OptionalMarshaler<T, TMarshaler> : MonoMarshaler
   }
 
   public override void CleanUpNativeDataImplementation(IntPtr native_data) {
-    Marshal.FreeHGlobal(native_data);
+    t_marshaler_instance_.CleanUpNativeDataImplementation(native_data);
   }
 
   public override IntPtr MarshalManagedToNativeImplementation(
