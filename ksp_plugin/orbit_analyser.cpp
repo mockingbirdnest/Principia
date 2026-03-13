@@ -349,6 +349,18 @@ OrbitAnalyser::Analysis::radial_distance_interval() const {
   return radial_distance_interval_;
 }
 
+std::optional<Instant> OrbitAnalyser::Analysis::first_collision() const {
+  return first_collision_;
+}
+
+std::optional<Instant> OrbitAnalyser::Analysis::first_collision_risk() const {
+  return first_collision_risk_;
+}
+
+std::optional<Instant> OrbitAnalyser::Analysis::first_reentry() const {
+  return first_reentry_;
+}
+
 std::optional<OrbitalElements> const& OrbitAnalyser::Analysis::elements()
     const {
   return elements_;

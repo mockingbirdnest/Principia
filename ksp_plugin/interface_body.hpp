@@ -698,6 +698,11 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
           ? nullptr
           : new int(plugin.CelestialIndexOfBody(*vessel_analysis->primary()));
 
+  auto const to_double_ptr = [&plugin](std::optional<Instant> const& instant) {
+    return instant.has_value() ? new double(ToGameTime(plugin, *instant))
+                               : nullptr;
+  };
+
   analysis->mission_duration = vessel_analysis->mission_duration() / Second;
   if (vessel_analysis->elements().has_value()) {
     auto const& elements = *vessel_analysis->elements();
@@ -720,6 +725,11 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
             ToInterval(elements.mean_apoapsis_distance_interval()),
         .radial_distance =
             ToInterval(*vessel_analysis->radial_distance_interval()),
+        .first_collision_time =
+            to_double_ptr(vessel_analysis->first_collision()),
+        .first_collision_risk_time =
+            to_double_ptr(vessel_analysis->first_collision_risk()),
+        .first_reentry_time = to_double_ptr(vessel_analysis->first_reentry()),
     };
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {

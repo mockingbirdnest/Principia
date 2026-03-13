@@ -61,6 +61,9 @@ class OrbitAnalyser {
     Time const& mission_duration() const;
     RotatingBody<Barycentric> const* primary() const;
     std::optional<Interval<Length>> radial_distance_interval() const;
+    std::optional<Instant> first_collision() const;
+    std::optional<Instant> first_collision_risk() const;
+    std::optional<Instant> first_reentry() const;
     std::optional<OrbitalElements> const& elements() const;
     std::optional<OrbitRecurrence> const& recurrence() const;
     std::optional<OrbitGroundTrack> const& ground_track() const;

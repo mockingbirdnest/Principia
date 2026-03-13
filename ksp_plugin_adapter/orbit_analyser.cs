@@ -460,17 +460,15 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_LowestAltitude"),
         (lowest_distance - primary?.Radius)?.FormatAltitude());
-    double? lowest_primary_distance = primary?.ocean == true
-                                          ? primary.Radius
-                                          : primary?.pqsController?.radiusMin;
     string altitude_warning =
-        lowest_distance < lowest_primary_distance
-            ?
-            L10N.CacheFormat("#Principia_OrbitAnalyser_Warning_Collision")
-            : lowest_distance < primary?.pqsController?.radiusMax
+        elements?.first_collision_time != null
+            ? L10N.CacheFormat("#Principia_OrbitAnalyser_Warning_Collision",
+                               (elements.first_collision_time.Value -
+                                plugin.CurrentTime()).FormatDuration())
+            : elements?.first_collision_risk_time != null
                 ? L10N.CacheFormat(
                     "#Principia_OrbitAnalyser_Warning_CollisionRisk")
-                : lowest_distance < primary?.Radius + primary?.atmosphereDepth
+                : elements?.first_reentry_time != null
                     ? L10N.CacheFormat(
                         "#Principia_OrbitAnalyser_Warning_Reentry")
                     : "";
