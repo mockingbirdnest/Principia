@@ -254,7 +254,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
           leftValue  : 0,
           rightValue : 1);
 
-      OrbitalElements? elements = analysis.elements;
+      OrbitalElements elements = analysis.elements;
       OrbitRecurrence? recurrence = analysis.recurrence;
       EquatorialCrossings? equatorial_crossings =
           analysis.ground_track_equatorial_crossings;
@@ -276,13 +276,13 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
       Style.HorizontalLine();
       string duration_in_revolutions;
-      if (elements.HasValue) {
+      if (elements != null) {
         int sidereal_revolutions =
-            (int)(mission_duration / elements.Value.sidereal_period);
+            (int)(mission_duration / elements.sidereal_period);
         int nodal_revolutions =
-            (int)(mission_duration / elements.Value.nodal_period);
+            (int)(mission_duration / elements.nodal_period);
         int anomalistic_revolutions =
-            (int)(mission_duration / elements.Value.anomalistic_period);
+            (int)(mission_duration / elements.anomalistic_period);
         int ground_track_cycles = nodal_revolutions /
                                   analysis.recurrence?.number_of_revolutions ??
                                   0;
@@ -345,40 +345,40 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
   public static string OrbitDescription(CelestialBody primary,
                                         double mission_duration,
-                                        OrbitalElements? elements,
+                                        OrbitalElements elements,
                                         OrbitRecurrence? recurrence,
                                         EquatorialCrossings? equatorial_crossings,
                                         SolarTimesOfNodes? solar_times_of_nodes,
                                         int? nodal_revolutions) {
-    if (!elements.HasValue) {
+    if (elements == null) {
       return null;
     }
     string properties = "";
     bool circular = false;
     bool equatorial = false;
-    if (elements.Value.mean_eccentricity.max < 0.01) {
+    if (elements.mean_eccentricity.max < 0.01) {
       circular = true;
       properties +=
           L10N.CacheFormat(
               "#Principia_OrbitAnalyser_OrbitDescription_Circular");
-    } else if (elements.Value.mean_eccentricity.min > 0.5) {
+    } else if (elements.mean_eccentricity.min > 0.5) {
       circular = true;
       properties +=
           L10N.CacheFormat(
               "#Principia_OrbitAnalyser_OrbitDescription_HighlyElliptical");
     }
     const double degree = Math.PI / 180;
-    if (elements.Value.mean_inclination.max < 5 * degree ||
-        elements.Value.mean_inclination.min > 175 * degree) {
+    if (elements.mean_inclination.max < 5 * degree ||
+        elements.mean_inclination.min > 175 * degree) {
       equatorial = true;
       properties +=
           L10N.CacheFormat(
               "#Principia_OrbitAnalyser_OrbitDescription_Equatorial");
-    } else if (elements.Value.mean_inclination.min > 80 * degree &&
-               elements.Value.mean_inclination.max < 100 * degree) {
+    } else if (elements.mean_inclination.min > 80 * degree &&
+               elements.mean_inclination.max < 100 * degree) {
       properties +=
           L10N.CacheFormat("#Principia_OrbitAnalyser_OrbitDescription_Polar");
-    } else if (elements.Value.mean_inclination.min > 90 * degree) {
+    } else if (elements.mean_inclination.min > 90 * degree) {
       properties +=
           L10N.CacheFormat(
               "#Principia_OrbitAnalyser_OrbitDescription_Retrograde");
@@ -439,7 +439,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       double drift = Math.Max(
           ascending_times.max - ascending_times.min,
           descending_times.max - descending_times.min);
-      double revolutions = mission_duration / elements.Value.nodal_period;
+      double revolutions = mission_duration / elements.nodal_period;
       // We ignore 0 drift as it means that there was only one pass, which is
       // insufficient to assess synchronicity.
       // TODO(egg): The criterion should be the drift per year, not the drift
@@ -454,7 +454,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                                 properties);
   }
 
-  private void RenderLowestAltitude(OrbitalElements? elements,
+  private void RenderLowestAltitude(OrbitalElements elements,
                                     CelestialBody primary) {
     double? lowest_distance = elements?.radial_distance.min;
     LabeledField(
@@ -478,7 +478,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                                 Style.Warning(UnityEngine.GUI.skin.label));
   }
 
-  private void RenderOrbitalElements(OrbitalElements? elements,
+  private void RenderOrbitalElements(OrbitalElements elements,
                                      CelestialBody primary) {
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
