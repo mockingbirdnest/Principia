@@ -610,7 +610,7 @@ SolarSystem<Frame>::MakeRotatingBodyParameters(
       body.has_atmosphere_depth()
           ? ParseQuantity<Length>(body.atmosphere_depth())
           : Length();
-  auto const has_ocean = body.has_has_ocean() ? body.has_ocean() : false;
+  auto const has_ocean = body.has_has_ocean() ? body.has_ocean() : true;
   return make_not_null_unique<typename RotatingBody<Frame>::Parameters>(
       ParseQuantity<Length>(min_radius),
       ParseQuantity<Length>(body.mean_radius()),

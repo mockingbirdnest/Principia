@@ -577,7 +577,7 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
 
   std::string const storage_name = descriptor->name() + "_storage";
 
-  // Storage that may be needed for deserializing e.g., the optional fields of
+  // Storage that may be needed for deserializing, e.g., the optional fields of
   // the message.
   std::string message_storage_arguments;
   std::string message_storage_captures;

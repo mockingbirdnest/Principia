@@ -72,7 +72,10 @@ class RotatingBody : public MassiveBody {
     Length const mean_radius_;
     Length const max_radius_;
     Length const atmosphere_depth_;
-    bool const has_ocean_ = false;
+    // By assuming that the celestial has an ocean here we report a collision as
+    // soon as the orbit goes below the mean radius.  This may be pessimistic,
+    // but that seems preferable since the user is playing with fire anyway.
+    bool const has_ocean_ = true;
     Angle const reference_angle_;
     Instant const reference_instant_;
     AngularFrequency const angular_frequency_;

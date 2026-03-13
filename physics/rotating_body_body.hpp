@@ -215,8 +215,13 @@ RotatingBody<Frame>::ReadFromMessage(
     Length const mean_radius = Length::ReadFromMessage(message.mean_radius());
     Length const min_radius = mean_radius;
     Length const max_radius = mean_radius;
+    // By assuming no atmosphere we may miss a reentry.  The C# code has a
+    // compatibility path to recheck.
     Length const atmosphere_depth;
-    bool const has_ocean = false;
+    // By assuming that the celestial has an ocean here we report a collision as
+    // soon as the orbit goes below the mean radius.  This may be pessimistic,
+    // but that seems preferable since the user is playing with fire anyway.
+    bool const has_ocean = true;
     parameters.emplace(
         min_radius,
         mean_radius,
@@ -232,7 +237,7 @@ RotatingBody<Frame>::ReadFromMessage(
     // By assuming no atmosphere we may miss a reentry.  The C# code has a
     // compatibility path to recheck.
     Length const atmosphere_depth;
-    // By assuming that the celestial has an ocean here report a collision as
+    // By assuming that the celestial has an ocean here we report a collision as
     // soon as the orbit goes below the mean radius.  This may be pessimistic,
     // but that seems preferable since the user is playing with fire anyway.
     bool const has_ocean = true;
