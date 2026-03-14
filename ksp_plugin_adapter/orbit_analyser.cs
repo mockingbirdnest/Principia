@@ -463,12 +463,12 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     string altitude_warning =
         elements?.first_collision_time != null
             ?
-            L10N.CacheFormat("#Principia_OrbitAnalyser_Warning_CollisionIn",
+            L10N.CacheFormat("#Principia_OrbitAnalyser_Warning_CollisionWithin",
                              (elements.first_collision_time.Value -
                               plugin.CurrentTime()).FormatDuration())
             : elements?.first_collision_risk_time != null
                 ? L10N.CacheFormat(
-                    "#Principia_OrbitAnalyser_Warning_CollisionRiskIn",
+                    "#Principia_OrbitAnalyser_Warning_CollisionRiskAfter",
                     (elements.first_collision_risk_time.Value -
                      plugin.CurrentTime()).FormatDuration())
                 : elements?.first_reentry_time != null
