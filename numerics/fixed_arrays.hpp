@@ -187,8 +187,7 @@ class FixedMatrix final {
       FixedMatrix<double, rows_, columns_, uh> const& right)
     requires(rows_ == columns_);
 
-  template<std::int64_t r>
-  Scalar const* row() const;
+  Scalar const* row(std::int64_t r) const;
 
   Scalar FrobeniusNorm() const;
 
@@ -270,8 +269,7 @@ class FixedStrictlyLowerTriangularMatrix final {
   constexpr FixedStrictlyLowerTriangularMatrix& operator=(
       Scalar const (&right)[size_]);
 
-  template<std::int64_t r>
-  Scalar const* row() const;
+  Scalar const* row(std::int64_t r) const;
 
  private:
   using Data = std::conditional_t<use_heap,

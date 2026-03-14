@@ -255,8 +255,8 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> GaussLegendre(
   return Gauss<points>(f,
                        lower_bound,
                        upper_bound,
-                       LegendreRoots.row<points>(),
-                       GaussLegendreWeights.row<points>());
+                       LegendreRoots.row(points),
+                       GaussLegendreWeights.row(points));
 }
 
 template<int initial_points, typename Argument, typename Function>

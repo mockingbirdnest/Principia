@@ -469,9 +469,9 @@ FixedMatrix<Scalar_, rows_, columns_, use_heap>::operator*=(
 
 template<affine Scalar_, std::int64_t rows_, std::int64_t columns_,
          bool use_heap>
-template<std::int64_t r>
-Scalar_ const* FixedMatrix<Scalar_, rows_, columns_, use_heap>::row() const {
-  static_assert(r < rows_);
+Scalar_ const* FixedMatrix<Scalar_, rows_, columns_, use_heap>::row(
+    std::int64_t const r) const {
+  CONSTEXPR_DCHECK(r < rows_);
   return &data()[r * columns()];
 }
 
@@ -624,10 +624,10 @@ FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::operator=(
 }
 
 template<affine Scalar_, std::int64_t rows_, bool use_heap>
-template<std::int64_t r>
 Scalar_ const*
-FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::row() const {
-  static_assert(r < rows_);
+FixedStrictlyLowerTriangularMatrix<Scalar_, rows_, use_heap>::row(
+    std::int64_t const r) const {
+  CONSTEXPR_DCHECK(r < rows_);
   return &data()[r * (r - 1) / 2];
 }
 
