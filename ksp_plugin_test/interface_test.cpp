@@ -260,6 +260,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
          min_radius              : "0.5 m"
          mean_radius             : "1 m"
          max_radius              : "1.5 m"
+         atmosphere_depth        : "3 m"
+         has_ocean               : true
          axis_right_ascension    : "0 deg"
          axis_declination        : "90 deg"
          reference_angle         : "0 deg"
@@ -289,6 +291,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       /*min_radius=*/"0.5 m",
       /*mean_radius=*/"1 m",
       /*max_radius=*/"1.5 m",
+      /*atmosphere_depth=*/"3 m",
+      /*has_ocean=*/true,
       /*axis_right_ascension=*/"0 deg",
       /*axis_declination=*/"90 deg",
       /*reference_angle=*/"0 deg",
@@ -317,6 +321,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
            min_radius              : "600 km"
            mean_radius             : "666 km"
            max_radius              : "700 km"
+           atmosphere_depth        : "3 m"
+           has_ocean               : false
            axis_right_ascension    : "42 deg"
            axis_declination        : "8°"
            reference_angle         : "2 rad"
@@ -347,6 +353,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                           "600 km",
                                           "666 km",
                                           "700 km",
+                                          "3 m",
+                                          false,
                                           "42 deg",
                                           "8°",
                                           "2 rad",
@@ -375,6 +383,8 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
            min_radius              : "600 km"
            mean_radius             : "666 km"
            max_radius              : "700 km"
+           atmosphere_depth        : "3 m"
+           has_ocean               : false
            axis_right_ascension    : "42 deg"
            axis_declination        : "8°"
            reference_angle         : "2 rad"
@@ -417,6 +427,8 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
                                           "600 km",
                                           "666 km",
                                           "700 km",
+                                          "3 m",
+                                          false,
                                           "42 deg",
                                           "8°",
                                           "2 rad",

@@ -53,6 +53,8 @@ RotatingBody<Frame>::Parameters::Parameters(
     Angle const& right_ascension_of_pole,
     Angle const& declination_of_pole)
     : Parameters(mean_radius, mean_radius, mean_radius,
+                 Length{},
+                 true,
                  reference_angle,
                  reference_instant,
                  angular_frequency,
