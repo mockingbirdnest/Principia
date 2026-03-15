@@ -10,14 +10,18 @@
 
 #include <functional>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "absl/status/status.h"
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/direct_sum.hpp"
+#include "geometry/instant.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "numerics/unbounded_arrays.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/integrators.pb.h"
 
@@ -26,12 +30,15 @@ namespace integrators {
 namespace _чебышёв_picard_integrator {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_direct_sum;
+using namespace principia::geometry::_instant;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::quantities::_quantities;
 
 template<typename ODE>
@@ -44,8 +51,92 @@ struct ЧебышёвPicardIterationParams {
   // This function will be called on the iteration deltas for each node. If it
   // returns true for all nodes for two iterations in a row, iteration will be
   // considered to have converged.
-  std::function<bool(typename ODE::DependentVariableDifferences const&)>
+  std::function<bool(typename ODE::State::Error const&)>
       stopping_criterion;
+};
+
+// Matrices used in Чебышёв-Picard iteration (specialized by ODE order).
+template<ЧебышёвPicardMethod Method, std::int64_t order>
+struct ЧебышёвPicardMatrices {};
+
+// Matrices for first-order ODEs.
+template<ЧебышёвPicardMethod Method>
+struct ЧебышёвPicardMatrices<Method, 1> {
+  explicit ЧебышёвPicardMatrices(
+      FixedVector<double, Method::M + 1> const& nodes);
+
+  static constexpr std::int64_t M = Method::M;
+  static constexpr std::int64_t N = Method::N;
+
+  // The product of 1.31a and 1.31b from [Mac15].
+  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> CₓCα;
+};
+
+// Matrices for second-order ODEs.
+template<ЧебышёвPicardMethod Method>
+struct ЧебышёвPicardMatrices<Method, 2> {
+  explicit ЧебышёвPicardMatrices(
+      FixedVector<double, Method::M + 1> const& nodes);
+
+  static constexpr std::int64_t M = Method::M;
+  static constexpr std::int64_t N = Method::N;
+
+  // The product of 1.53b (v-type) and 1.53a (β-type) from [Mac15].
+  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> vCₓᵝCα;
+  // The product of 1.53b (x-type), 1.53c (α-type), and 1.53a (β-type) from
+  // [Mac15].
+  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> xCₓᵅCᵧᵝCα;
+};
+
+// Helper struct to select iteration state types.
+template<std::int64_t M, typename ODE>
+struct ЧебышёвPicardIterationState {};
+
+template<std::int64_t M,
+         typename IndependentVariable,
+         typename... DependentVariable>
+struct ЧебышёвPicardIterationState<
+    M,
+    ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
+                                                   DependentVariable...>> {
+  using ODE =
+      ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
+                                                     DependentVariable...>;
+  using DependentVariableMatrix =
+      FixedVector<DirectSum<DependentVariable...>, M + 1, true>;
+  using RightHandSideMatrix = FixedVector<
+      DirectSum<Derivative<DependentVariable, IndependentVariable>...>,
+      M + 1,
+      true>;
+
+  static DependentVariableMatrix UninitializedDependentVariableMatrix(
+      InitialValueProblem<ODE> const& problem);
+  static RightHandSideMatrix UninitializedRightHandSideMatrix(
+      InitialValueProblem<ODE> const& problem);
+
+  static IndependentVariable GetIndependentVariable(
+      typename ODE::State const& state);
+};
+
+template<std::int64_t M, typename DependentVariable>
+struct ЧебышёвPicardIterationState<
+    M,
+    ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>> {
+  using ODE =
+      ExplicitSecondOrderOrdinaryDifferentialEquation<DependentVariable>;
+  // TODO(rnlahaye): these should use some sort of "partially-fixed matrix".
+  using DependentVariableMatrix =
+      std::pair<UnboundedMatrix<DependentVariable>,
+                UnboundedMatrix<Derivative<DependentVariable, Instant>>>;
+  using RightHandSideMatrix =
+      UnboundedMatrix<Derivative<DependentVariable, Instant, 2>>;
+
+  static DependentVariableMatrix UninitializedDependentVariableMatrix(
+      InitialValueProblem<ODE> const& problem);
+  static RightHandSideMatrix UninitializedRightHandSideMatrix(
+      InitialValueProblem<ODE> const& problem);
+
+  static Instant GetIndependentVariable(ODE::State const& state);
 };
 
 // This class solves ordinary differential equations of the form x′ = f(x, t)
@@ -103,27 +194,19 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
     std::vector<typename ODE::IndependentVariable> t_;
 
     // Controls the boundary condition.
-    FixedVector<typename ODE::DependentVariables,
-                M + 1,
-                /*use_heap=*/true>
-        CₓX₀_;
+    ЧебышёвPicardIterationState<M, ODE>::DependentVariableMatrix boundary_;
 
     // Xⁱ is an (M + 1)×n matrix containing the values of the dependent
     // variables at each node.
-    FixedVector<typename ODE::DependentVariables,
-                M + 1,
-                /*use_heap=*/true>
-        Xⁱ_;
-    FixedVector<typename ODE::DependentVariables,
-                M + 1,
-                /*use_heap=*/true>
-        Xⁱ⁺¹_;
+    ЧебышёвPicardIterationState<M, ODE>::DependentVariableMatrix Xⁱ_;
+    ЧебышёвPicardIterationState<M, ODE>::DependentVariableMatrix Xⁱ⁺¹_;
 
-    // The computed derivative (at each node, for the current iteration).
-    FixedVector<typename ODE::DependentVariableDerivatives,
-                M + 1,
-                /*use_heap=*/true>
-        yʹ_;
+    // The computed right-hand-side of the ODE (at each node, for the current
+    // iteration).
+    //
+    // For a first-order ODE, this contains first derivatives. For a
+    // second-order ODE, it contains second derivatives.
+    ЧебышёвPicardIterationState<M, ODE>::RightHandSideMatrix f_;
 
     friend class ЧебышёвPicardIntegrator;
   };
@@ -156,8 +239,8 @@ class ЧебышёвPicardIntegrator : public FixedStepSizeIntegrator<ODE_> {
   // These are Чебышёв nodes of the second kind.
   FixedVector<double, M + 1> nodes_;
 
-  // The product of 1.31a and 1.31b from [Mac15].
-  FixedMatrix<double, M + 1, M + 1, /*use_heap=*/true> CₓCα_;
+  // The matrices used for iteration (which depend on the ODE order).
+  ЧебышёвPicardMatrices<Method, ODE::order> matrices_;
 };
 
 }  // namespace internal
