@@ -248,6 +248,8 @@ serialization::GravityModel::Body MakeGravityModel(
       << NAMED(make_optional_c_string(body_parameters.min_radius)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.mean_radius)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.max_radius)) << "\n"
+      << NAMED(make_optional_c_string(body_parameters.atmosphere_depth)) << "\n"
+      << NAMED(body_parameters.has_ocean) << "\n"
       << NAMED(make_optional_c_string(body_parameters.axis_right_ascension))
       << "\n"
       << NAMED(make_optional_c_string(body_parameters.axis_declination)) << "\n"
