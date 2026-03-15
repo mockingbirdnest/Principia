@@ -5,6 +5,8 @@ gravity_model {
     gravitational_parameter : "1.17233279483249e+18 m^3/s^2"
     reference_instant       : "JD2451545.000000000"
     mean_radius             : "261600000 m"
+    atmosphere_depth        : "600000 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
@@ -17,6 +19,7 @@ gravity_model {
     min_radius              : "209100 m"
     mean_radius             : "210000 m"
     max_radius              : "214940 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "25 deg"
@@ -27,6 +30,8 @@ gravity_model {
     gravitational_parameter : "282528004209995 m^3/s^2"
     reference_instant       : "JD2451545.000000000"
     mean_radius             : "6000000 m"
+    atmosphere_depth        : "200000 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
@@ -39,6 +44,7 @@ gravity_model {
     min_radius              : "40200 m"
     mean_radius             : "44000 m"
     max_radius              : "50400 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "25 deg"
@@ -51,6 +57,7 @@ gravity_model {
     min_radius              : "41000 m"
     mean_radius             : "65000 m"
     max_radius              : "89600 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "230 deg"
@@ -63,6 +70,7 @@ gravity_model {
     min_radius              : "597000 m"
     mean_radius             : "600000 m"
     max_radius              : "617000 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
@@ -75,6 +83,7 @@ gravity_model {
     min_radius              : "296900 m"
     mean_radius             : "300000 m"
     max_radius              : "308100 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
@@ -87,6 +96,8 @@ gravity_model {
     min_radius              : "497100 m"
     mean_radius             : "500000 m"
     max_radius              : "507900 m"
+    atmosphere_depth        : "50000 m"
+    has_ocean               : true
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "90 deg"
@@ -99,6 +110,7 @@ gravity_model {
     min_radius              : "135900 m"
     mean_radius             : "138000 m"
     max_radius              : "145100 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "25 deg"
@@ -111,6 +123,8 @@ gravity_model {
     min_radius              : "319500 m"
     mean_radius             : "320000 m"
     max_radius              : "330500 m"
+    atmosphere_depth        : "50000 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "90 deg"
@@ -123,6 +137,7 @@ gravity_model {
     min_radius              : "117900 m"
     mean_radius             : "130000 m"
     max_radius              : "143700 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
@@ -135,6 +150,8 @@ gravity_model {
     min_radius              : "598015 m"
     mean_radius             : "600000 m"
     max_radius              : "608735 m"
+    atmosphere_depth        : "70000 m"
+    has_ocean               : true
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "90 deg"
@@ -146,6 +163,7 @@ gravity_model {
     reference_instant       : "JD2451545.000000000"
     mean_radius             : "60000 m"
     max_radius              : "66000 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "230 deg"
@@ -158,6 +176,7 @@ gravity_model {
     min_radius              : "199600 m"
     mean_radius             : "200000 m"
     max_radius              : "208300 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "230 deg"
@@ -170,6 +189,8 @@ gravity_model {
     min_radius              : "698000 m"
     mean_radius             : "700000 m"
     max_radius              : "709000 m"
+    atmosphere_depth        : "90000 m"
+    has_ocean               : true
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
@@ -182,6 +203,7 @@ gravity_model {
     min_radius              : "5000 m"
     mean_radius             : "13000 m"
     max_radius              : "21150 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "5 deg"
@@ -194,6 +216,7 @@ gravity_model {
     min_radius              : "249300 m"
     mean_radius             : "250000 m"
     max_radius              : "258200 m"
+    has_ocean               : false
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "190 deg"
