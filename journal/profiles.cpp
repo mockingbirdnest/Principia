@@ -6,13 +6,35 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/map_util.hpp"
 #include "glog/logging.h"
 
 namespace principia {
 namespace journal {
 
-using namespace principia::base::_map_util;
+#define PRINCIPIA_LAX_POINTER_MAPPING 0
+#define PRINCIPIA_PERFORM_RUN_CHECKS 0
+#define PRINCIPIA_SET_VERBOSE_LOGGING 1
+
+#if PRINCIPIA_PERFORM_RUN_CHECKS
+#define PRINCIPIA_CHECK_EQ(a, b)                                               \
+  CHECK((a) == (b)) << "Set PRINCIPIA_PERFORM_RUN_CHECKS to 0 in profile.cpp " \
+                    << "to disable this check."
+#else
+#define PRINCIPIA_CHECK_EQ(a, b)          \
+  {                                       \
+    [[maybe_unused]] auto const aa = (a); \
+    [[maybe_unused]] auto const bb = (b); \
+  }
+#endif
+
+#if PRINCIPIA_LAX_POINTER_MAPPING
+#define PRINCIPIA_NO_POINTER_MAPPING(message) LOG(ERROR) << message
+#else
+#define PRINCIPIA_NO_POINTER_MAPPING(message)                                \
+  LOG(FATAL) << message                                                      \
+             << ".  Set PRINCIPIA_LAX_POINTER_MAPPING to 1 in profiles.cpp " \
+                "to disable this check.  "
+#endif
 
 namespace {
 
@@ -32,12 +54,14 @@ void Insert(std::uint64_t const address,
   }
 }
 
-void Delete(std::uint64_t const address,
-            Player::PointerMap& pointer_map) {
+void Delete(std::uint64_t const address, Player::PointerMap& pointer_map) {
   if (reinterpret_cast<void*>(address) != nullptr) {
-    auto const it = pointer_map.find(address);
-    CHECK(it != pointer_map.end()) << address;
-    pointer_map.erase(it);
+    if (auto const it = pointer_map.find(address); it == pointer_map.end()) {
+      PRINCIPIA_NO_POINTER_MAPPING(
+          "Pointer address not found in Delete: " << address);
+    } else {
+      pointer_map.erase(it);
+    }
   }
 }
 
@@ -48,7 +72,14 @@ T DeserializePointer(std::uint64_t const address,
   if (reinterpret_cast<T>(address) == nullptr) {
     return nullptr;
   } else {
-    return reinterpret_cast<T>(FindOrDie(pointer_map, address));
+    if (auto const it = pointer_map.find(address); it == pointer_map.end()) {
+      PRINCIPIA_NO_POINTER_MAPPING(
+          "Pointer address not found in DeserializePointer<"
+          << typeid(T).name() << ">: " << address);
+      return nullptr;
+    } else {
+      return reinterpret_cast<T>(it->second);
+    }
   }
 }
 
@@ -78,25 +109,13 @@ std::uint64_t SerializePointer(T* t) {
 
 }  // namespace
 
-#define PRINCIPIA_PERFORM_RUN_CHECKS 1
-#define PRINCIPIA_SET_VERBOSE_LOGGING 1
-
-#if PRINCIPIA_PERFORM_RUN_CHECKS
-#define PRINCIPIA_CHECK_EQ(a, b)                                               \
-  CHECK((a) == (b)) << "Set PRINCIPIA_PERFORM_RUN_CHECKS to 0 in profile.cpp " \
-                    << "to disable this check."
-#else
-#define PRINCIPIA_CHECK_EQ(a, b)          \
-  {                                       \
-    [[maybe_unused]] auto const aa = (a); \
-    [[maybe_unused]] auto const bb = (b); \
-  }
-#endif
-
 #include "journal/profiles.generated.cc"
 
+#undef PRINCIPIA_LAX_POINTER_MAPPING
+#undef PRINCIPIA_PERFORM_RUN_CHECKS
 #undef PRINCIPIA_SET_VERBOSE_LOGGING
 #undef PRINCIPIA_CHECK_EQ
+#undef PRINCIPIA_NO_POINTER_MAPPING
 
 }  // namespace journal
 }  // namespace principia

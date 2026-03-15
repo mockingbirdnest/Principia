@@ -23,22 +23,40 @@ using namespace principia::quantities::_astronomy;
 
 // TODO(egg): This could be implemented using ComputeApsides.
 template<typename PrimaryCentred>
-Interval<Length> RadialDistanceInterval(
-    DiscreteTrajectory<PrimaryCentred> const& trajectory) {
-  std::vector<Length> radial_distances;
-  radial_distances.reserve(trajectory.size());
+void RadialDistanceAnalysis(
+    RotatingBody<Barycentric> const& body,
+    DiscreteTrajectory<PrimaryCentred> const& trajectory,
+    Interval<Length>& radial_distance_interval,
+    std::optional<Instant>& first_collision,
+    std::optional<Instant>& first_collision_risk,
+    std::optional<Instant>& first_reentry) {
+  radial_distance_interval = Interval<Length>{};
+  first_collision.reset();
+  first_collision_risk.reset();
+  first_reentry.reset();
+
+  Length const collision_threshold =
+      body.has_ocean() ? body.mean_radius() : body.min_radius();
+  Length const collision_risk_threshold = body.max_radius();
+  Length const reentry_threshold = body.mean_radius() + body.atmosphere_depth();
+
   DegreesOfFreedom<PrimaryCentred> const primary_dof{PrimaryCentred::origin,
                                                      PrimaryCentred::unmoving};
   for (auto const& [time, degrees_of_freedom] : trajectory) {
-    radial_distances.push_back(
-        (degrees_of_freedom.position() - primary_dof.position()).Norm());
+    Length const radial_distance =
+        (degrees_of_freedom.position() - primary_dof.position()).Norm();
+    if (radial_distance < collision_threshold &&
+        !first_collision.has_value()) {
+      first_collision = time;
+    } else if (radial_distance < collision_risk_threshold &&
+               !first_collision_risk.has_value()) {
+      first_collision_risk = time;
+    } else if (radial_distance < reentry_threshold &&
+               !first_reentry.has_value()) {
+      first_reentry = time;
+    }
+    radial_distance_interval.Include(radial_distance);
   }
-
-  Interval<Length> radial_distance_interval;
-  for (auto const& r : radial_distances) {
-    radial_distance_interval.Include(r);
-  }
-  return radial_distance_interval;
 }
 
 OrbitAnalyser::OrbitAnalyser(
@@ -136,8 +154,16 @@ absl::Status OrbitAnalyser::AnalyseOrbit(Parameters const& parameters) {
         status_or_primary_centred_trajectory.value();
 
     analysis.primary_ = primary;
-    analysis.radial_distance_interval_ =
-        RadialDistanceInterval(primary_centred_trajectory);
+
+    Interval<Length> radial_distance_interval;
+    RadialDistanceAnalysis(*primary,
+                           primary_centred_trajectory,
+                           radial_distance_interval,
+                           analysis.first_collision_,
+                           analysis.first_collision_risk_,
+                           analysis.first_reentry_);
+    analysis.radial_distance_interval_ = radial_distance_interval;
+
     auto elements = OrbitalElements::ForTrajectory(
         primary_centred_trajectory, *primary, MasslessBody{});
 
@@ -321,6 +347,18 @@ RotatingBody<Barycentric> const* OrbitAnalyser::Analysis::primary() const {
 std::optional<Interval<Length>>
 OrbitAnalyser::Analysis::radial_distance_interval() const {
   return radial_distance_interval_;
+}
+
+std::optional<Instant> OrbitAnalyser::Analysis::first_collision() const {
+  return first_collision_;
+}
+
+std::optional<Instant> OrbitAnalyser::Analysis::first_collision_risk() const {
+  return first_collision_risk_;
+}
+
+std::optional<Instant> OrbitAnalyser::Analysis::first_reentry() const {
+  return first_reentry_;
 }
 
 std::optional<OrbitalElements> const& OrbitAnalyser::Analysis::elements()

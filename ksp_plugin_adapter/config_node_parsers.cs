@@ -17,6 +17,8 @@ internal static class ConfigNodeParsers {
         mean_radius             = body.Radius + " m",
         max_radius              =
             (body.pqsController?.radiusMax ?? body.Radius) + " m",
+        atmosphere_depth        = body.atmosphereDepth + " m" ,
+        has_ocean               = body.ocean,
         axis_right_ascension    =
             node.GetAtMostOneValue("axis_right_ascension"),
         axis_declination        = node.GetAtMostOneValue("axis_declination"),
@@ -86,6 +88,8 @@ internal static class ConfigNodeParsers {
         min_radius = (body.pqsController?.radiusMin ?? body.Radius) + " m",
         mean_radius = body.Radius + " m",
         max_radius = (body.pqsController?.radiusMax ?? body.Radius) + " m",
+        atmosphere_depth        = body.atmosphereDepth + " m" ,
+        has_ocean               = body.ocean,
         axis_right_ascension    =
             node?.GetAtMostOneValue("axis_right_ascension") ?? "-90 deg",
         axis_declination        =

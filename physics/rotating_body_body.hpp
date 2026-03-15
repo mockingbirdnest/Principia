@@ -23,6 +23,8 @@ RotatingBody<Frame>::Parameters::Parameters(
     Length const& min_radius,
     Length const& mean_radius,
     Length const& max_radius,
+    Length const& atmosphere_depth,
+    bool const has_ocean,
     Angle const& reference_angle,
     Instant const& reference_instant,
     AngularFrequency const& angular_frequency,
@@ -31,6 +33,8 @@ RotatingBody<Frame>::Parameters::Parameters(
     : min_radius_(min_radius),
       mean_radius_(mean_radius),
       max_radius_(max_radius),
+      atmosphere_depth_(atmosphere_depth),
+      has_ocean_(has_ocean),
       reference_angle_(reference_angle),
       reference_instant_(reference_instant),
       angular_frequency_(angular_frequency),
@@ -49,6 +53,8 @@ RotatingBody<Frame>::Parameters::Parameters(
     Angle const& right_ascension_of_pole,
     Angle const& declination_of_pole)
     : Parameters(mean_radius, mean_radius, mean_radius,
+                 Length{},
+                 true,
                  reference_angle,
                  reference_instant,
                  angular_frequency,
@@ -87,6 +93,16 @@ Length RotatingBody<Frame>::mean_radius() const {
 template<typename Frame>
 Length RotatingBody<Frame>::max_radius() const {
   return parameters_.max_radius_;
+}
+
+template<typename Frame>
+Length RotatingBody<Frame>::atmosphere_depth() const {
+  return parameters_.atmosphere_depth_;
+}
+
+template<typename Frame>
+bool RotatingBody<Frame>::has_ocean() const {
+  return parameters_.has_ocean_;
 }
 
 template<typename Frame>
@@ -191,16 +207,48 @@ RotatingBody<Frame>::ReadFromMessage(
     MassiveBody::Parameters const& massive_body_parameters) {
   bool is_pre_del_ferro = !message.has_min_radius() &&
                           !message.has_max_radius();
-  LOG_IF(WARNING, is_pre_del_ferro) << "Reading pre-del Ferro RotatingBody";
+  bool is_pre_legendre = !message.has_atmosphere_depth() &&
+                         !message.has_has_ocean();
+  LOG_IF(WARNING, is_pre_legendre)
+      << "Reading pre-" << (is_pre_del_ferro ? "del Ferro" : "Legendre")
+      << " RotatingBody";
   std::optional<Parameters> parameters;
   if (is_pre_del_ferro) {
     Length const mean_radius = Length::ReadFromMessage(message.mean_radius());
     Length const min_radius = mean_radius;
     Length const max_radius = mean_radius;
+    // By assuming no atmosphere we may miss a reentry.  The C# code has a
+    // compatibility path to recheck.
+    Length const atmosphere_depth;
+    // By assuming that the celestial has an ocean here we report a collision as
+    // soon as the orbit goes below the mean radius.  This may be pessimistic,
+    // but that seems preferable since the user is playing with fire anyway.
+    bool const has_ocean = true;
     parameters.emplace(
         min_radius,
         mean_radius,
         max_radius,
+        atmosphere_depth,
+        has_ocean,
+        Angle::ReadFromMessage(message.reference_angle()),
+        Instant::ReadFromMessage(message.reference_instant()),
+        AngularFrequency::ReadFromMessage(message.angular_frequency()),
+        Angle::ReadFromMessage(message.right_ascension_of_pole()),
+        Angle::ReadFromMessage(message.declination_of_pole()));
+  } else if (is_pre_legendre) {
+    // By assuming no atmosphere we may miss a reentry.  The C# code has a
+    // compatibility path to recheck.
+    Length const atmosphere_depth;
+    // By assuming that the celestial has an ocean here we report a collision as
+    // soon as the orbit goes below the mean radius.  This may be pessimistic,
+    // but that seems preferable since the user is playing with fire anyway.
+    bool const has_ocean = true;
+    parameters.emplace(
+        Length::ReadFromMessage(message.min_radius()),
+        Length::ReadFromMessage(message.mean_radius()),
+        Length::ReadFromMessage(message.max_radius()),
+        atmosphere_depth,
+        has_ocean,
         Angle::ReadFromMessage(message.reference_angle()),
         Instant::ReadFromMessage(message.reference_instant()),
         AngularFrequency::ReadFromMessage(message.angular_frequency()),
@@ -211,6 +259,8 @@ RotatingBody<Frame>::ReadFromMessage(
         Length::ReadFromMessage(message.min_radius()),
         Length::ReadFromMessage(message.mean_radius()),
         Length::ReadFromMessage(message.max_radius()),
+        Length::ReadFromMessage(message.atmosphere_depth()),
+        message.has_has_ocean() && message.has_ocean(),
         Angle::ReadFromMessage(message.reference_angle()),
         Instant::ReadFromMessage(message.reference_instant()),
         AngularFrequency::ReadFromMessage(message.angular_frequency()),

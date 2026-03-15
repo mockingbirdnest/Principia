@@ -305,6 +305,8 @@ message RotatingBody {
   optional Quantity min_radius = 9;  // Added in Del Ferro.
   required Quantity mean_radius = 5;
   optional Quantity max_radius = 10;  // Added in Del Ferro.
+  optional Quantity atmosphere_depth = 11;  // Added in Legendre.
+  optional bool has_ocean = 12;  // Added in Legendre.
   required Quantity reference_angle = 2;
   required Point reference_instant = 3;
   required Quantity angular_frequency = 6;

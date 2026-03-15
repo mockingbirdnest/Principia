@@ -428,6 +428,21 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
     std::string const& cxx_type) {
   FieldOptions const& options = descriptor->options();
 
+  // This may be null as we may be called on a scalar field.
+  Descriptor const* message_type = descriptor->message_type();
+  // Build a lambda to construct an optional marshaler name.
+  std::function<std::string(std::string const&)> optional_marshaler_name;
+  if (Contains(cs_custom_marshaler_name_, message_type)) {
+    optional_marshaler_name = [this, message_type](std::string const& type) {
+      return "OptionalMarshaler<" + type + ", " +
+             cs_custom_marshaler_name_[message_type] + ">";
+    };
+  } else {
+    optional_marshaler_name = [](std::string const& type) {
+      return "OptionalMarshaler<" + type + ">";
+    };
+  }
+
   // Build a lambda to construct a marshaler name.
   // TODO(phl): Using an OwnershipTransferMarshaler on a field means that the
   // marshaler for the containing object must itself be wrapped in an
@@ -442,15 +457,12 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
         << descriptor->full_name()
         << " is a produced field and must have an (address_of) option";
     custom_marshaler_generic_name =
-        [](std::string const& type) {
-          return "OwnershipTransferMarshaler<" + type +
-                 ", OptionalMarshaler<" + type + ">>";
+        [&optional_marshaler_name](std::string const& type) {
+          return "OwnershipTransferMarshaler<" + type + ", " +
+                 optional_marshaler_name(type) + ">";
         };
   } else {
-    custom_marshaler_generic_name =
-        [](std::string const& type) {
-          return "OptionalMarshaler<" + type + ">";
-        };
+    custom_marshaler_generic_name = optional_marshaler_name;
   }
 
   // It is not possible to use a custom marshaler on an `T?`, as this raises
@@ -458,20 +470,15 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
   // "Custom marshalers are only allowed on classes, strings, arrays, and boxed
   // value types.".
   if (Contains(interchange_, descriptor)) {
-    // This may be null as we may be called on a scalar field.
-    Descriptor const* message_type = descriptor->message_type();
-    if (Contains(cs_custom_marshaler_name_, message_type)) {
-      // This wouldn't be hard, we'd need another OptionalMarshaler that calls
-      // the element's marshaler, but we don't need it yet.
-      LOG(FATAL) << "Optional messages with an element that does have a custom "
-                    "marshaler are not yet implemented.";
+    field_cs_custom_marshaler_[descriptor] =
+        custom_marshaler_generic_name(cs_unboxed_type);
+    if (Contains(cs_interchange_classes_, message_type)) {
+      field_cs_type_[descriptor] = cs_unboxed_type;
     } else {
-      field_cs_custom_marshaler_[descriptor] =
-          custom_marshaler_generic_name(cs_unboxed_type);
+      // For fields of interchange messages we can use a `T?` as the field is
+      // not the part being marshaled, it is the entire interchange message.
+      field_cs_type_[descriptor] = cs_unboxed_type + "?";
     }
-    // For fields of interchange messages we can use a `T?` as the field is not
-    // the part being marshaled, it is the entire interchange message.
-    field_cs_type_[descriptor] = cs_unboxed_type + "?";
   } else {
     // We could use a boxed `T`, whose type would be `object`, but we would lose
     // static typing.  We use a custom strongly-typed boxed type instead.
@@ -569,17 +576,35 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
       /*cxx_type=*/message_type_name);
 
   std::string const storage_name = descriptor->name() + "_storage";
+
+  // Storage that may be needed for deserializing, e.g., the optional fields of
+  // the message.
+  std::string message_storage_arguments;
+  std::string message_storage_captures;
+  if (Contains(cxx_deserialization_storage_arguments_, message_type)) {
+    message_storage_arguments =
+        cxx_deserialization_storage_arguments_[message_type];
+    message_storage_captures =
+        cxx_deserialization_storage_captures_[message_type];
+  }
+
   field_cxx_deserialization_storage_name_[descriptor] = storage_name;
   field_cxx_deserializer_fn_[descriptor] =
-      [message_type_name, storage_name](
-          std::string const& expr) {
+      [message_storage_arguments,
+       message_storage_captures,
+       message_type_name,
+       storage_name](std::string const& expr) {
         // Yes, this lambda generates a lambda.
-        return "[&pointer_map, &" + storage_name +
-               "](serialization::" + message_type_name + " const& message) {\n"
-               "            " + storage_name + " = Deserialize" +
-               message_type_name + "(message, pointer_map);\n" +
-               "            return &" + storage_name + ";\n"
-               "          }(" + expr + ")";
+        return "[&pointer_map, &" + storage_name + message_storage_captures +
+               "](serialization::" + message_type_name +
+               " const& message) {\n"
+               "            " +
+               storage_name + " = Deserialize" + message_type_name +
+               "(message, pointer_map" + message_storage_arguments + ");\n" +
+               "            return &" + storage_name +
+               ";\n"
+               "          }(" +
+               expr + ")";
       };
   field_cxx_deserialization_storage_type_[descriptor] = message_type_name;
   field_cxx_optional_pointer_fn_[descriptor] =
@@ -1526,6 +1551,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     if (Contains(field_cxx_deserialization_storage_name_, field_descriptor)) {
       cxx_deserialization_storage_arguments_[descriptor] +=
           ", " + field_cxx_deserialization_storage_name_[field_descriptor];
+      cxx_deserialization_storage_captures_[descriptor] +=
+          ", &" + field_cxx_deserialization_storage_name_[field_descriptor];
       cxx_deserialization_storage_declarations_[descriptor] +=
           "  " + field_cxx_deserialization_storage_type_[field_descriptor] +
           " " + field_cxx_deserialization_storage_name_[field_descriptor] +
@@ -1534,6 +1561,32 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           ", " +
           field_cxx_deserialization_storage_type_[field_descriptor] + "& " +
           field_cxx_deserialization_storage_name_[field_descriptor];
+    }
+
+    // If the field is a message, it may itself need extra storage for
+    // deserialization, generate it now.
+    if (field_descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
+      Descriptor const* field_message_type = field_descriptor->message_type();
+      if (Contains(cxx_deserialization_storage_arguments_,
+                   field_message_type)) {
+        cxx_deserialization_storage_arguments_[descriptor] +=
+             cxx_deserialization_storage_arguments_[field_message_type];
+      }
+      if (Contains(cxx_deserialization_storage_captures_,
+                   field_message_type)) {
+        cxx_deserialization_storage_captures_[descriptor] +=
+             cxx_deserialization_storage_captures_[field_message_type];
+      }
+      if (Contains(cxx_deserialization_storage_declarations_,
+                   field_message_type)) {
+        cxx_deserialization_storage_declarations_[descriptor] +=
+            cxx_deserialization_storage_declarations_[field_message_type];
+      }
+      if (Contains(cxx_deserialization_storage_parameters_,
+                   field_message_type)) {
+        cxx_deserialization_storage_parameters_[descriptor] +=
+            cxx_deserialization_storage_parameters_[field_message_type];
+      }
     }
 
     // If the field has an (address_of) attribute, serialization and insertion

@@ -51,6 +51,8 @@ message BodyParameters {
   optional string min_radius = 12;
   optional string mean_radius = 2;
   optional string max_radius = 13;
+  optional string atmosphere_depth = 14;  // Added in Legendre.
+  required bool has_ocean = 15;  // Added in Legendre.
   optional string axis_right_ascension = 3;
   optional string axis_declination = 4;
   optional string reference_angle = 8;
@@ -214,6 +216,13 @@ message OrbitalElements {
   required Interval mean_apoapsis_distance = 11;
   // Added in Gallai.
   required Interval radial_distance = 12;
+  // Added in Legendre.
+  optional double first_collision_time = 13 [(is_produced) = true];
+  optional double first_collision_risk_time = 14 [(is_produced) = true];
+  optional double first_reentry_time = 15 [(is_produced) = true];
+  required fixed64 first_collision_time_address = 16 [(address_of) = "first_collision_time"];
+  required fixed64 first_collision_risk_time_address = 17 [(address_of) = "first_collision_risk_time"];
+  required fixed64 first_reentry_time_address = 18 [(address_of) = "first_reentry_time"];
 }
 
 message OrbitRecurrence {
