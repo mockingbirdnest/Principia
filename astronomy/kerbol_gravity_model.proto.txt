@@ -1,4 +1,4 @@
-# This system is for KSP 1.2.2.
+# This system is for KSP 1.9.1.
 gravity_model {
   body {
     name : "Sun"
