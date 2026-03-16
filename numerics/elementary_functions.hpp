@@ -75,9 +75,9 @@ Product<Q1, Q2> FusedNegatedMultiplySubtract(Q1 const& x,
 
 // Equivalent to `std::abs(x)`.
 template<boost_cpp_number Q>
-Q Abs(Q const& quantity);
+Q Abs(Q const& x);
 template<convertible_to_quantity Q>
-Q Abs(Q const& quantity);
+Q Abs(Q const& x);
 
 // Returns a value between zero and `modulus`.
 template<typename Q>

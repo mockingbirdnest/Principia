@@ -66,7 +66,7 @@ inline void Sign::WriteToMessage(
   message->set_negative(negative_);
 }
 
-inline Sign Sign::ReadFromMessage(serialization::Sign const message) {
+inline Sign Sign::ReadFromMessage(serialization::Sign const& message) {
   return Sign(/*negative=*/message.negative());
 }
 

@@ -354,7 +354,7 @@ constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
 template<typename T, typename U, typename, typename>
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b) {
-  static_assert(std::is_same<T, U>::value,
+  static_assert(std::is_same_v<T, U>,
                 "Template metaprogramming went wrong");
   using Point = T;
   using Vector = Difference<T, U>;
@@ -383,14 +383,14 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
 
 template<typename T>
 DoublePrecision<Difference<T>> operator+(DoublePrecision<T> const& left) {
-  static_assert(std::is_same<Difference<T>, T>::value,
+  static_assert(std::is_same_v<Difference<T>, T>,
                 "Unary + must be used on a vector");
   return left;
 }
 
 template<typename T>
 DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left) {
-  static_assert(std::is_same<Difference<T>, T>::value,
+  static_assert(std::is_same_v<Difference<T>, T>,
                 "Unary - must be used on a vector");
   DoublePrecision<Difference<T>> result(uninitialized);
   result.value = -left.value;
