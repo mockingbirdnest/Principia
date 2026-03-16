@@ -162,7 +162,7 @@ constexpr Date Date::Week(int const year, int const week, int const day) {
                          (week - 1) * 7 + (day - 1));
 }
 
-inline constexpr Date Date::JD(double jd) {
+constexpr Date Date::JD(double jd) {
   // The calculation and the notation follow [Mee98, p. 63].
   // We use casting to std::int64_t as a constexpr std::trunc.  This corresponds
   // to Meeus’s INT.
@@ -203,7 +203,7 @@ constexpr int Date::day() const {
   return day_;
 }
 
-inline constexpr _date_time::Calendar Date::calendar() const {
+constexpr _date_time::Calendar Date::calendar() const {
   return calendar_;
 }
 
@@ -211,7 +211,7 @@ constexpr int Date::ordinal() const {
   return jd() - Date(year_, 1, 1, calendar_).jd() + 1;
 }
 
-inline constexpr double Date::jd() const {
+constexpr double Date::jd() const {
   // The calculation and the notation follow [Mee98, p. 60 sq.].
   double Y = year_;
   double M = month_;

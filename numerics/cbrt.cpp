@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
+#include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <utility>
@@ -137,9 +139,9 @@ bool CbrtOneBit(double const y, double const a, double const b) {
   double const a²₀b = a²₀ * b;
   double const a²₁b = a²₁ * b;
   double const ab² = a * b²;
-  for (double rhs : {2 * a²₀b, a²₀b, 2 * a²₁b, a²₁b,  // 3 a²b
-                     2 * ab², ab²,                    // 3 ab²
-                     b³}) {
+  for (double const rhs : {2 * a²₀b, a²₀b, 2 * a²₁b, a²₁b,  // 3 a²b
+                           2 * ab², ab²,                    // 3 ab²
+                           b³}) {
     auto const ρ = PriestNievergeltNormalize(NievergeltQuadruplyCompensatedStep(
         TwoSum(ρ_next[0], ρ_next[1]), TwoDifference(ρ_next[2], rhs)));
     DCHECK_EQ(ρ[3], 0);
