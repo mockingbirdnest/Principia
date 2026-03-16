@@ -1,5 +1,6 @@
 #include "quantities/quantities.hpp"
 
+#include <functional>
 #include <string>
 
 #include "glog/logging.h"

@@ -114,7 +114,7 @@ class FixedVector final {
                          FixedVector<S, s, ruh> const& right);
   template<typename L, affine R, std::int64_t s, bool ruh>
   friend constexpr Product<L, R> operator*(
-      L* const left,
+      L* left,
       FixedVector<R, s, ruh> const& right);
   template<affine L, affine R, std::int64_t s, bool luh, bool ruh>
   friend constexpr Product<L, R> operator*(

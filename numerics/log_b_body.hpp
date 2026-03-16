@@ -9,7 +9,8 @@ namespace numerics {
 namespace _log_b {
 namespace internal {
 
-template<typename SourceFormat, typename>
+template<typename SourceFormat>
+  requires(std::is_floating_point_v<SourceFormat>)
 constexpr SourceFormat LogB(SourceFormat const x) {
   if (x != x) {
     return x;
