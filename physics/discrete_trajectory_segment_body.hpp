@@ -212,13 +212,10 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   std::int64_t const timeline_size =
       covers_entire_segment ? timeline_.size()
                             : std::distance(timeline_begin, timeline_end);
-  std::int64_t const number_of_points_to_skip_at_end =
-      covers_entire_segment ? 0 : std::distance(timeline_end, timeline_.end());
   WriteToMessage(message,
                  timeline_begin,
                  timeline_end,
                  timeline_size,
-                 number_of_points_to_skip_at_end,
                  exact);
 }
 

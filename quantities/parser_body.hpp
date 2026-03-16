@@ -87,7 +87,7 @@ inline Unit operator*(Unit const& left, Unit const& right) {
   for (std::int64_t i = 0; i < dimensions.size(); ++i) {
     dimensions[i] = left.dimensions[i] + right.dimensions[i];
   }
-  return {dimensions, left.scale * right.scale};
+  return {std::move(dimensions), left.scale * right.scale};
 }
 
 inline Unit operator/(Unit const& left, Unit const& right) {
@@ -95,7 +95,7 @@ inline Unit operator/(Unit const& left, Unit const& right) {
   for (std::int64_t i = 0; i < dimensions.size(); ++i) {
     dimensions[i] = left.dimensions[i] - right.dimensions[i];
   }
-  return {dimensions, left.scale / right.scale};
+  return {std::move(dimensions), left.scale / right.scale};
 }
 
 inline Unit operator^(Unit const& left, int const exponent) {
@@ -103,7 +103,7 @@ inline Unit operator^(Unit const& left, int const exponent) {
   for (std::int64_t i = 0; i < dimensions.size(); ++i) {
     dimensions[i] = left.dimensions[i] * exponent;
   }
-  return {dimensions, std::pow(left.scale, exponent)};
+  return {std::move(dimensions), std::pow(left.scale, exponent)};
 }
 
 inline Unit ParseUnit(std::string const& s) {
