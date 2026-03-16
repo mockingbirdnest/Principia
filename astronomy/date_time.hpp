@@ -70,7 +70,7 @@ class Date final {
 
  private:
   constexpr Date(int year, int month, int day,
-                 _date_time::Calendar const calendar);
+                 _date_time::Calendar calendar);
 
   int year_;
   int month_;

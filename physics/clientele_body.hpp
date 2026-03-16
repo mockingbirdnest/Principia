@@ -8,8 +8,8 @@ namespace _clientele {
 namespace internal {
 
 template<typename Key>
-Clientele<Key>::Clientele(Key const& default_value)
-    : default_value_(default_value) {}
+Clientele<Key>::Clientele(Key const& default_key)
+    : default_key_(default_key) {}
 
 template<typename Key>
 void Clientele<Key>::Join(Key const& key) {
@@ -29,7 +29,7 @@ template<typename Key>
 Key const& Clientele<Key>::first() const {
   absl::MutexLock l(&lock_);
   if (auto const it = clients_.begin(); it == clients_.end()) {
-    return default_value_;
+    return default_key_;
   } else {
     return *it;
   }

@@ -36,7 +36,7 @@ constexpr std::int64_t FallingFactorial(std::int64_t const n,
 
 constexpr std::int64_t KroneckerDelta(std::int64_t const i,
                                       std::int64_t const j) {
-  return i == j;
+  return static_cast<std::int64_t>(i == j);
 }
 
 }  // namespace internal

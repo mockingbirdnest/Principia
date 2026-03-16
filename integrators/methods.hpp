@@ -138,8 +138,8 @@ struct SymplecticPartitionedRungeKutta : not_constructible {
 template<typename SymplecticPartitionedRungeKuttaMethod,
          serialization::FixedStepSizeIntegrator::CompositionMethod composition_>
 struct AsSymplecticRungeKuttaNyström {
-  static_assert(std::is_base_of<SymplecticPartitionedRungeKutta,
-                                SymplecticPartitionedRungeKuttaMethod>::value,
+  static_assert(std::is_base_of_v<SymplecticPartitionedRungeKutta,
+                                  SymplecticPartitionedRungeKuttaMethod>,
                 "Method must be derived from SymplecticPartitionedRungeKutta");
   static_assert(
       !SymplecticPartitionedRungeKuttaMethod::first_same_as_last ||

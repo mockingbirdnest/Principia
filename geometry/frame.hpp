@@ -68,8 +68,8 @@ struct Frame : not_constructible {
 
   using Tag = FrameTag;
   static constexpr bool has_tag = std::is_enum_v<FrameTag>;
-  template<typename T = FrameTag,
-           typename = std::enable_if_t<std::is_enum_v<T>>>
+  template<typename T = FrameTag>
+    requires(std::is_enum_v<T>)
   static constexpr FrameTag tag();
 
   static void WriteToMessage(not_null<serialization::Frame*> message);

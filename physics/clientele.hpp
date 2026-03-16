@@ -29,7 +29,7 @@ class Clientele {
   Key const& first() const;
 
  private:
-  Key const default_value_;
+  Key const default_key_;
 
   mutable absl::Mutex lock_;
   absl::btree_multiset<Key> clients_;

@@ -26,8 +26,7 @@ class Starter {
   // instance of the main integrator.
   Starter(FixedStepSizeIntegrator<ODE> const& startup_integrator,
           std::int64_t startup_step_divisor,
-          not_null<typename FixedStepSizeIntegrator<ODE>::Instance*> const
-              instance);
+          not_null<typename FixedStepSizeIntegrator<ODE>::Instance*> instance);
 
   // Performs the startup integration, i.e., computes enough states to either
   // reach `s_final` or to reach a point where `instance.previous_steps_` has

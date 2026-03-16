@@ -32,13 +32,13 @@ void HierarchicalSystem<Frame>::Add(
     not_null<std::unique_ptr<MassiveBody const>> body,
     not_null<MassiveBody const*> const parent,
     KeplerianElements<Frame> const& jacobi_osculating_elements) {
-  not_null<MassiveBody const*> unowned_body = body.get();
+  not_null<MassiveBody const*> const unowned_body = body.get();
   System& parent_system = *systems_[parent];
   parent_system.satellites.emplace_back(
       make_not_null_unique<Subsystem>(std::move(body)));
   {  // Hide the moved-from `body`.
-    not_null<MassiveBody const*> body = unowned_body;
-    not_null<Subsystem*> inserted_system =
+    not_null<MassiveBody const*> const body = unowned_body;
+    not_null<Subsystem*> const inserted_system =
         parent_system.satellites.back().get();
     systems_[body] = inserted_system;
     inserted_system->jacobi_osculating_elements = jacobi_osculating_elements;

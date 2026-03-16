@@ -109,7 +109,7 @@ Ephemeris<Frame>::Ephemeris(
             return Reanimate(desired_t_min);
           },
           20ms),  // 50 Hz.
-      reanimator_clientele_(/*default_value=*/InfiniteFuture) {
+      reanimator_clientele_(/*default_key=*/InfiniteFuture) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -965,7 +965,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
+absl::Status Ephemeris<Frame>::Reanimate(Instant const& desired_t_min) {
   absl::btree_set<Instant> checkpoints;
   {
     absl::ReaderMutexLock l(&lock_);
@@ -1310,8 +1310,7 @@ template<typename Frame>
 Vector<Jerk, Frame>
 Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBody(
     not_null<MassiveBody const*> const body,
-    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
-    Instant const& t) const {
+    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom) const {
   // NOTE(phl): This doesn't take high-order geopotential into account.
   int const b1 = bodies_indices_.at(body);
   std::vector<Vector<Jerk, Frame>> jerks(degrees_of_freedom.size());

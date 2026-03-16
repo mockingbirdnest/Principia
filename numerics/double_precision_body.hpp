@@ -351,7 +351,8 @@ constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
 }
 
 // Point × Point → Vector.
-template<typename T, typename U, typename, typename>
+template<typename T, typename U, typename>
+  requires(!std::is_same_v<U, Difference<U>>)
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b) {
   static_assert(std::is_same_v<T, U>,

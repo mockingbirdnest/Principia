@@ -331,7 +331,7 @@ class Ephemeris {
   // and its trajectories starting in such a way that `t_min()` is at or before
   // `desired_t_min`.  The member variable `oldest_reanimated_checkpoint_` tells
   // the reanimator where to stop.
-  absl::Status Reanimate(Instant const desired_t_min) EXCLUDES(lock_);
+  absl::Status Reanimate(Instant const& desired_t_min) EXCLUDES(lock_);
 
   // Reconstructs the past state of the ephemeris between `t_initial` and
   // `t_final` using the given checkpoint `message`.
@@ -400,14 +400,15 @@ class Ephemeris {
       std::vector<Position<Frame>> const& positions,
       Instant const& t) const;
 
-  // Returns the gravitational jerk on the massive `body` at time `t`.  The
+  // Returns the gravitational jerk on the massive `body`.  The
   // `degrees_of_freedom` must be for all the bodies in this object, in the
-  // order of `bodies_` and must have been evaluated at time `t`.
+  // order of `bodies_` and must have been evaluated at the same time.  Note
+  // that this function does not explicitly depend on time because we don't take
+  // into account the geopotential for the jerk.
   Vector<Jerk, Frame>
   ComputeGravitationalJerkOnMassiveBody(
       not_null<MassiveBody const*> body,
-      std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
-      Instant const& t) const;
+      std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom) const;
 
   // Computes the accelerations between one body, `body1` (with index `b1` in
   // the `positions` and `accelerations` arrays) and the bodies `bodies2` (with

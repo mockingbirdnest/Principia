@@ -54,7 +54,7 @@ template<typename Frame>
 std::vector<RelativeDegreesOfFreedom<Frame>>
 JacobiCoordinates<Frame>::BarycentricDegreesOfFreedom() const {
   std::vector<RelativeDegreesOfFreedom<Frame>> result;
-  DegreesOfFreedom<PrimocentricFrame> system_barycentre =
+  DegreesOfFreedom<PrimocentricFrame> const system_barycentre =
       system_barycentre_.Get();
   for (auto const& dof : primocentric_dof_) {
     result.emplace_back(id_pf_(dof - system_barycentre));

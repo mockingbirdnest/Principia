@@ -1,15 +1,21 @@
 #include "tools/generate_configuration.hpp"
 
 #include <filesystem>
+#include <fstream>
 #include <iomanip>
+#include <ios>
 #include <limits>
+#include <optional>
+#include <sstream>
 #include <string>
+#include <string_view>
 
-#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/serialization.hpp"
 #include "glog/logging.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/text_format.h"
 #include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/solar_system.hpp"
@@ -19,13 +25,13 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/astronomy.pb.h"
+#include "serialization/integrators.pb.h"
 
 namespace principia {
 namespace tools {
 namespace _generate_configuration {
 namespace internal {
 
-using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_serialization;
@@ -39,9 +45,9 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 namespace {
-constexpr char cfg[] = "cfg";
-constexpr char proto_txt[] = "proto.txt";
-}  // namespace
+
+constexpr std::string_view cfg = "cfg";
+constexpr std::string_view proto_txt = "proto.txt";
 
 std::string NormalizeLength(std::string const& s) {
   // If the string contains an R, it's expressed using astronomical radii.
@@ -58,6 +64,8 @@ std::string NormalizeLength(std::string const& s) {
   }
 }
 
+}  // namespace
+
 void GenerateConfiguration(std::string const& game_epoch,
                            std::string const& gravity_model_stem,
                            std::string const& initial_state_stem,
@@ -65,7 +73,7 @@ void GenerateConfiguration(std::string const& game_epoch,
                            std::string const& needs) {
   std::filesystem::path const directory =
       SOLUTION_DIR / "astronomy";
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       (directory / gravity_model_stem).replace_extension(proto_txt),
       (directory / initial_state_stem).replace_extension(proto_txt),
       /*ignore_frame=*/true);
@@ -239,7 +247,7 @@ void GenerateConfiguration(std::string const& game_epoch,
 
   // Parse the numerics blueprint file here, it doesn't belong in class
   // SolarSystem.
-  std::filesystem::path numerics_blueprint_filename =
+  std::filesystem::path const numerics_blueprint_filename =
       (directory / numerics_blueprint_stem).replace_extension(proto_txt);
   serialization::SolarSystemFile numerics_blueprint;
   std::ifstream numerics_blueprint_ifstream(numerics_blueprint_filename);

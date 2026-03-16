@@ -229,14 +229,14 @@ ReadFromMessage(serialization::PiecewisePoissonSeries const& message) {
   CHECK_NE(0, message.series_size());
   CHECK_EQ(message.bounds_size(), message.series_size() + 1);
   Interval<Instant> const first_interval{
-      Instant::ReadFromMessage(message.bounds(0)),
-      Instant::ReadFromMessage(message.bounds(1))};
+      .min = Instant::ReadFromMessage(message.bounds(0)),
+      .max = Instant::ReadFromMessage(message.bounds(1))};
   PiecewisePoissonSeries series(first_interval,
                                 Series::ReadFromMessage(message.series(0)));
   for (int i = 1; i < message.series_size(); ++i) {
     Interval<Instant> const interval{
-        Instant::ReadFromMessage(message.bounds(i)),
-        Instant::ReadFromMessage(message.bounds(i + 1))};
+        .min = Instant::ReadFromMessage(message.bounds(i)),
+        .max = Instant::ReadFromMessage(message.bounds(i + 1))};
     series.Append(interval, Series::ReadFromMessage(message.series(i)));
   }
   if (message.has_addend()) {

@@ -96,8 +96,8 @@ constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b);
 // two.
 template<typename T,
          typename U,
-         typename = Difference<T, Difference<T, U>>,
-         typename = std::enable_if_t<!std::is_same_v<U, Difference<U>>>>
+         typename = Difference<T, Difference<T, U>>>
+  requires(!std::is_same_v<U, Difference<U>>)
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b);
 
