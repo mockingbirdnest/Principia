@@ -44,13 +44,6 @@ namespace base {
 namespace _map_util {
 namespace internal {
 
-// Returns true if and only if the given collection contains the given key.
-template <class Collection>
-bool Contains(Collection const& collection,
-              typename Collection::key_type const key) {
-  return collection.find(key) != collection.end();
-}
-
 template<class Collection>
 const typename Collection::value_type::second_type& FindOrDie(
     Collection const& collection,
@@ -72,7 +65,6 @@ typename Collection::value_type::second_type& FindOrDie(
 
 }  // namespace internal
 
-using internal::Contains;
 using internal::FindOrDie;
 
 }  // namespace _map_util

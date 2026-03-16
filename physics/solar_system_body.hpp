@@ -249,7 +249,7 @@ SolarSystem<Frame>::gravity_model_message(std::string const& name) const {
 template<typename Frame>
 bool SolarSystem<Frame>::has_cartesian_initial_state_message(
     std::string const& name) const {
-  return Contains(cartesian_initial_state_map_, name);
+  return cartesian_initial_state_map_.contains(name);
 }
 
 template<typename Frame>
@@ -262,7 +262,7 @@ SolarSystem<Frame>::cartesian_initial_state_message(
 template<typename Frame>
 bool SolarSystem<Frame>::has_keplerian_initial_state_message(
     std::string const& name) const {
-  return Contains(keplerian_initial_state_map_, name);
+  return keplerian_initial_state_map_.contains(name);
 }
 
 template<typename Frame>
@@ -448,7 +448,7 @@ SolarSystem<Frame>::MakeHierarchicalSystem() const {
   std::set<std::string> current_layer;
   do {
     for (auto const& [name, body] : keplerian_initial_state_map_) {
-      if (Contains(previous_layer, body->parent())) {
+      if (previous_layer.contains(body->parent())) {
         current_layer.insert(name);
         KeplerianElements<Frame> const elements =
             MakeKeplerianElements(body->elements());
