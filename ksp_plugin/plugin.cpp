@@ -560,10 +560,8 @@ void Plugin::ReportPartCollision(PartId const part1, PartId const part2) const {
   Part& p2 = *v2.part(part2);
   LOG(INFO) << "Collision between " << p1.ShortDebugString() << " and "
             << p2.ShortDebugString();
-  CHECK(Contains(kept_vessels_, &v1)) << v1.ShortDebugString()
-                                      << " will vanish";
-  CHECK(Contains(kept_vessels_, &v2)) << v2.ShortDebugString()
-                                      << " will vanish";
+  CHECK(kept_vessels_.contains(&v1)) << v1.ShortDebugString() << " will vanish";
+  CHECK(kept_vessels_.contains(&v2)) << v2.ShortDebugString() << " will vanish";
   CHECK(v1.WillKeepPart(part1)) << p1.ShortDebugString() << " will vanish";
   CHECK(v2.WillKeepPart(part2)) << p2.ShortDebugString() << " will vanish";
   Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
@@ -796,7 +794,7 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
   // Update the vessels.
   for (auto const& [_, vessel] : vessels_) {
     if (vessel->psychohistory()->back().time < current_time_) {
-      if (Contains(collided_vessels, vessel.get())) {
+      if (collided_vessels.contains(vessel.get())) {
         vessel->DisableDownsampling();
       }
       vessel->AdvanceTime();
@@ -941,7 +939,7 @@ void Plugin::UpdatePrediction(std::vector<GUID> const& vessel_guids) const {
     }
   }
   for (auto const& [guid, vessel] : vessels_) {
-    if (!Contains(predicted_vessels, vessel.get()) &&
+    if (!predicted_vessels.contains(vessel.get()) &&
         vessel.get() != target_vessel) {
       vessel->StopPrognosticator();
     }
@@ -1160,7 +1158,7 @@ void Plugin::ComputeAndRenderNodes(
 }
 
 bool Plugin::HasCelestial(Index const index) const {
-  return Contains(celestials_, index);
+  return celestials_.contains(index);
 }
 
 Celestial const& Plugin::GetCelestial(Index const index) const {
@@ -1168,7 +1166,7 @@ Celestial const& Plugin::GetCelestial(Index const index) const {
 }
 
 bool Plugin::HasVessel(GUID const& vessel_guid) const {
-  return Contains(vessels_, vessel_guid);
+  return vessels_.contains(vessel_guid);
 }
 
 not_null<Vessel*> Plugin::GetVessel(GUID const& vessel_guid) const {
@@ -1493,8 +1491,8 @@ void Plugin::WriteToMessage(
                            serialization_index_for_pile_up);
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
-    vessel_message->set_loaded(Contains(loaded_vessels_, vessel.get()));
-    vessel_message->set_kept(Contains(kept_vessels_, vessel.get()));
+    vessel_message->set_loaded(loaded_vessels_.contains(vessel.get()));
+    vessel_message->set_kept(kept_vessels_.contains(vessel.get()));
   }
   for (auto const& [part_id, vessel] : part_id_to_vessel_) {
     (*message->mutable_part_id_to_vessel())[part_id] = vessel_to_guid[vessel];
@@ -1792,7 +1790,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
 }
 
 bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
-  return Contains(loaded_vessels_, vessel);
+  return loaded_vessels_.contains(vessel);
 }
 
 }  // namespace internal

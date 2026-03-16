@@ -460,7 +460,7 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // giant self-evaluating lambdas).
   CHECK_EQ(parts_.size(), apparent_part_rigid_motion_.size());
   for (not_null<Part*> const part : parts_) {
-    CHECK(Contains(apparent_part_rigid_motion_, part));
+    CHECK(apparent_part_rigid_motion_.contains(part));
   }
 
   Instant const& t0 = psychohistory_->back().time;

@@ -139,19 +139,19 @@ not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
 
 void Vessel::KeepPart(PartId const id) {
   CHECK_LE(kept_parts_.size(), parts_.size());
-  CHECK(Contains(parts_, id)) << id;
+  CHECK(parts_.contains(id)) << id;
   kept_parts_.insert(id);
 }
 
 bool Vessel::WillKeepPart(PartId const id) const {
-  return Contains(kept_parts_, id);
+  return kept_parts_.contains(id);
 }
 
 void Vessel::FreeParts() {
   CHECK_LE(kept_parts_.size(), parts_.size());
   for (auto it = parts_.begin(); it != parts_.end();) {
     not_null<Part*> const part = it->second.get();
-    if (Contains(kept_parts_, part->part_id())) {
+    if (kept_parts_.contains(part->part_id())) {
       ++it;
     } else {
       part->reset_containing_pile_up();
@@ -693,7 +693,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
     part->WriteToMessage(message->add_parts(), serialization_index_for_pile_up);
   }
   for (auto const& part_id : kept_parts_) {
-    CHECK(Contains(parts_, part_id));
+    CHECK(parts_.contains(part_id));
     message->add_kept_parts(part_id);
   }
 
@@ -781,7 +781,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->parts_.emplace(part_id, std::move(part));
   }
   for (PartId const part_id : message.kept_parts()) {
-    CHECK(Contains(vessel->parts_, part_id));
+    CHECK(vessel->parts_.contains(part_id));
     vessel->kept_parts_.insert(part_id);
   }
 

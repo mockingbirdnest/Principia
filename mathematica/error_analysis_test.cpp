@@ -90,7 +90,7 @@ TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
     }
     flags.emplace(flag_name, std::nullopt);
   }
-  if (flags.empty() || Contains(flags, "help") || Contains(flags, "?")) {
+  if (flags.empty() || flags.contains("help") || flags.contains("?")) {
     // Example:
     // .\Release\x64\mathematica_tests.exe \
     //   --gtest_filter=ErrorAnalysisTest.DISABLED_SECULAR_LocalErrorAnalysis \

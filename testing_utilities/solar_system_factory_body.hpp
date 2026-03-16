@@ -77,9 +77,9 @@ void SolarSystemFactory::AdjustAccuracy(
   std::vector<std::string> bodies_to_remove;
   std::vector<std::string> bodies_to_spherify;
   for (std::string const& solar_system_name : solar_system.names()) {
-    if (!Contains(existing, solar_system_name)) {
+    if (!existing.contains(solar_system_name)) {
       bodies_to_remove.push_back(solar_system_name);
-    } else if (!Contains(oblate, solar_system_name)) {
+    } else if (!oblate.contains(solar_system_name)) {
       bodies_to_spherify.push_back(solar_system_name);
     }
   }
