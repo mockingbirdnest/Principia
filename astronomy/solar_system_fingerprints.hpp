@@ -9,19 +9,23 @@ namespace internal {
 
 // Indices in the arrays below.
 constexpr std::int64_t KSP122 = 0;
-constexpr std::int64_t KSP191 = 1;
+constexpr std::int64_t KSP191PreLegendre = 1;
+constexpr std::int64_t KSP191 = 2;
 
 constexpr std::uint64_t KSPStockSystemFingerprints[] = {
     0x9F3E8BFE0E32C283,
-    0x7A077635599E23F2};
+    0x7A077635599E23F2,
+    0xFE67F3BAEE725803};
 constexpr std::uint64_t KSPStabilizedSystemFingerprints[] = {
     0x9F1B6D95399877C6,
-    0x4B830CBDF5E77F8D};
+    0x4B830CBDF5E77F8D,
+    0xB1BA690A45CAD577};
 
 }  // namespace internal
 
 using internal::KSP122;
 using internal::KSP191;
+using internal::KSP191PreLegendre;
 using internal::KSPStabilizedSystemFingerprints;
 using internal::KSPStockSystemFingerprints;
 

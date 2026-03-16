@@ -188,6 +188,9 @@ void RotatingBody<Frame>::WriteToMessage(
       rotating_body->mutable_mean_radius());
   parameters_.max_radius_.WriteToMessage(
       rotating_body->mutable_max_radius());
+  parameters_.atmosphere_depth_.WriteToMessage(
+      rotating_body->mutable_atmosphere_depth());
+  rotating_body->set_has_ocean(parameters_.has_ocean_);
   parameters_.reference_angle_.WriteToMessage(
       rotating_body->mutable_reference_angle());
   parameters_.reference_instant_.WriteToMessage(

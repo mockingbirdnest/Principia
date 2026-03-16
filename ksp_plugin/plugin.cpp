@@ -197,7 +197,7 @@ void Plugin::EndInitialization() {
             << system_fingerprint_;
 
   bool is_well_known = false;
-  for (auto const ksp_version : {KSP122, KSP191}) {
+  for (auto const ksp_version : {KSP122, KSP191PreLegendre, KSP191}) {
     if (system_fingerprint_ == KSPStockSystemFingerprints[ksp_version]) {
       LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
       StabilizeKSP(solar_system);
@@ -1547,7 +1547,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   if (message.has_system_fingerprint()) {
     plugin->system_fingerprint_ = message.system_fingerprint();
     std::string details = "this is an unknown system";
-    for (auto const ksp_version : {KSP122, KSP191}) {
+    for (auto const ksp_version : {KSP122, KSP191PreLegendre, KSP191}) {
       if (plugin->system_fingerprint_ ==
           KSPStockSystemFingerprints[ksp_version]) {
         details = "this is the dreaded KSP stock system!";
