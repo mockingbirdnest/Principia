@@ -191,7 +191,6 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
                  timeline_.begin(),
                  timeline_.end(),
                  timeline_.size(),
-                 /*number_of_points_to_skip_at_end*/ 0,
                  exact);
 }
 

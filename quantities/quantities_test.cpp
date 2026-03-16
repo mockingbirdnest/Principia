@@ -11,7 +11,7 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/numbers.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
 #include "serialization/quantities.pb.h"
