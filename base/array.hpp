@@ -35,13 +35,13 @@ struct Array final {
           std::is_integral_v<decltype(std ::declval<Container>().size())>>>
   constexpr Array(Container& container);  // NOLINT(runtime/explicit)
 
-  template<
-      typename Container,
-      typename = std::enable_if_t<
-          std::is_convertible_v<decltype(std::declval<Container const>().data()),
-                              Element*> &&
-          std::is_integral_v<
-              decltype(std ::declval<Container const>().size())>>>
+  template<typename Container,
+           typename = std::enable_if_t<
+               std::is_convertible_v<
+                   decltype(std::declval<Container const>().data()),
+                   Element*> &&
+               std::is_integral_v<
+                   decltype(std ::declval<Container const>().size())>>>
   constexpr Array(Container const& container);  // NOLINT(runtime/explicit)
 
   // Construction from a string literal if `Element` is a character type or some
