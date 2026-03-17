@@ -1,7 +1,9 @@
 #include "base/algebra.hpp"
 
 #include <chrono>
+#include <cstddef>
 #include <string>
+#include <string_view>
 
 #include "base/multiprecision.hpp"
 #include "geometry/instant.hpp"
@@ -62,30 +64,34 @@ TEST(Concepts, LinearAlgebra) {
   static_assert(!real_vector_space<int>);
 }
 
+namespace {
+
 template<affine T>
-constexpr std::string_view description(T) {
+constexpr std::string_view description(T const&) {
   return "affine";
 }
 template<additive_group T>
-constexpr std::string_view description(T) {
+constexpr std::string_view description(T const&) {
   return "additive group";
 }
 template<homogeneous_ring T>
-constexpr std::string_view description(T) {
+constexpr std::string_view description(T const&) {
   return "homogeneous ring";
 }
 template<ring T>
-constexpr std::string_view description(T) {
+constexpr std::string_view description(T const&) {
   return "ring";
 }
 template<homogeneous_field T>
-constexpr std::string_view description(T) {
+constexpr std::string_view description(T const&) {
   return "homogeneous field";
 }
 template<field T>
-constexpr std::string_view description(T) {
+constexpr std::string_view description(T const&) {
   return "field";
 }
+
+}  // namespace
 
 TEST(Concepts, Subsumption) {
   static_assert(description(Instant{}) == "affine");
