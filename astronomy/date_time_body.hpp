@@ -3,7 +3,6 @@
 #include "astronomy/date_time.hpp"
 
 #include <array>
-#include <cmath>
 #include <iomanip>
 #include <limits>
 
@@ -164,12 +163,13 @@ constexpr Date Date::Week(int const year, int const week, int const day) {
 }
 
 constexpr Date Date::JD(double jd) {
-  // The calculation and the notation follow [Mee98, p. 63].  The function
-  // `std::trunc` corresponds to Meeus’s INT.
-  double const Z = std::round(jd);
+  // The calculation and the notation follow [Mee98, p. 63].
+  // We use casting to std::int64_t as a constexpr std::trunc.  This corresponds
+  // to Meeus’s INT.
+  double const Z = static_cast<std::int64_t>(jd + 0.5);
+  CONSTEXPR_CHECK(Z == jd + 0.5);
   // We require that jd represent midnight, so that the fractional part of jd +
   // 0.5 must be 0.
-  CONSTEXPR_CHECK(Z == jd + 0.5);
   constexpr double F = 0;
   double A = std::numeric_limits<double>::quiet_NaN();
   _date_time::Calendar calendar{};
@@ -177,15 +177,15 @@ constexpr Date Date::JD(double jd) {
     A = Z;
     calendar = Calendar::Julian;
   } else {
-    double const α = std::trunc((Z - 1867'216.25) / 36524.25);
-    A = Z + 1 + α - std::trunc(α / 4);
+    double const α = static_cast<std::int64_t>((Z - 1867'216.25) / 36524.25);
+    A = Z + 1 + α - static_cast<std::int64_t>(α / 4);
     calendar = Calendar::Gregorian;
   }
   double const B = A + 1524;
-  double const C = std::trunc((B - 122.1) / 365.25);
-  double const D = std::trunc(365.25 * C);
-  double const E = std::trunc((B - D) / 30.6001);
-  int const d = B - D - std::trunc(30.6001 * E) + F;
+  double const C = static_cast<std::int64_t>((B - 122.1) / 365.25);
+  double const D = static_cast<std::int64_t>(365.25 * C);
+  double const E = static_cast<std::int64_t>((B - D) / 30.6001);
+  int const d = B - D - static_cast<std::int64_t>(30.6001 * E) + F;
   int const m = E < 14 ? E - 1 : E - 13;
   int const y = m > 2 ? C - 4716 : C - 4715;
   return Date(y, m, d, calendar);
@@ -226,11 +226,11 @@ constexpr double Date::jd() const {
   if (calendar_ == Calendar::Julian) {
      B = 0;
   } else {
-    double const A = std::trunc(Y / 100);
-    B = 2 - A + std::trunc(A / 4);
+    double const A = static_cast<std::int64_t>(Y / 100);
+    B = 2 - A + static_cast<std::int64_t>(A / 4);
   }
-  return std::trunc(365.25 * (Y + 4716)) +
-         std::trunc(30.6001 * (M + 1)) + D + B - 1524.5;
+  return static_cast<std::int64_t>(365.25 * (Y + 4716)) +
+         static_cast<std::int64_t>(30.6001 * (M + 1)) + D + B - 1524.5;
 }
 
 constexpr int Date::mjd() const {
