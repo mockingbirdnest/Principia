@@ -486,7 +486,8 @@ Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
 template<typename Scalar, std::int64_t columns>
 auto CholeskyDecompositionGenerator<
     FixedUpperTriangularMatrix<Scalar, columns>>::
-Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& u) -> Result {
+Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& /*u*/)
+    -> Result {
   return Result(uninitialized);
 }
 
@@ -501,7 +502,8 @@ Uninitialized(UnboundedUpperTriangularMatrix<Scalar> const& u) -> Result {
 template<typename Scalar, std::int64_t columns>
 auto ᵗRDRDecompositionGenerator<FixedVector<Scalar, columns>,
                                 FixedUpperTriangularMatrix<Scalar, columns>>::
-Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& u) -> Result {
+Uninitialized(FixedUpperTriangularMatrix<Scalar, columns> const& /*u*/)
+    -> Result {
   return {FixedUpperTriangularMatrix<double, columns>(uninitialized),
           FixedVector<Scalar, columns>(uninitialized)};
 }
@@ -524,7 +526,8 @@ Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
 
 template<typename Scalar, std::int64_t dimension>
 auto GramSchmidtGenerator<FixedMatrix<Scalar, dimension, dimension>>::
-Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
+Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& /*m*/)
+    -> Result {
   return Result{
       .Q = FixedMatrix<double, dimension, dimension>(uninitialized),
       .R = FixedUpperTriangularMatrix<Scalar, dimension>(uninitialized)};
@@ -541,7 +544,7 @@ Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
 template<typename Scalar, std::int64_t rows, std::int64_t columns>
 auto UnitriangularGramSchmidtGenerator<
     FixedMatrix<Scalar, rows, columns>>::
-Uninitialized(FixedMatrix<Scalar, rows, columns> const& m) -> Result {
+Uninitialized(FixedMatrix<Scalar, rows, columns> const& /*m*/) -> Result {
   return Result{
       .Q = FixedMatrix<Scalar, rows, columns>(uninitialized),
       .R = FixedUpperTriangularMatrix<double, columns>(uninitialized)};
@@ -550,7 +553,7 @@ Uninitialized(FixedMatrix<Scalar, rows, columns> const& m) -> Result {
 template<std::int64_t rows, std::int64_t columns>
 auto UnitriangularGramSchmidtGenerator<
     FixedMatrix<cpp_rational, rows, columns>>::
-Uninitialized(FixedMatrix<cpp_rational, rows, columns> const& m) -> Result {
+Uninitialized(FixedMatrix<cpp_rational, rows, columns> const& /*m*/) -> Result {
   return Result{
       .Q = FixedMatrix<cpp_rational, rows, columns>(uninitialized),
       .R = FixedUpperTriangularMatrix<cpp_rational, columns>(uninitialized)};
@@ -559,7 +562,7 @@ Uninitialized(FixedMatrix<cpp_rational, rows, columns> const& m) -> Result {
 template<std::int64_t rows, std::int64_t columns>
 auto UnitriangularGramSchmidtGenerator<
     FixedMatrix<cpp_int, rows, columns>>::
-Uninitialized(FixedMatrix<cpp_int, rows, columns> const& m) -> Result {
+Uninitialized(FixedMatrix<cpp_int, rows, columns> const& /*m*/) -> Result {
   return Result{
       .Q = FixedMatrix<cpp_rational, rows, columns>(uninitialized),
       .R = FixedUpperTriangularMatrix<cpp_rational, columns>(uninitialized)};
@@ -580,13 +583,14 @@ Uninitialized(UnboundedMatrix<Scalar> const& m) -> Result {
 
 template<typename Scalar, std::int64_t dimension>
 auto ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>>::
-Identity(FixedMatrix<Scalar, dimension, dimension> const& m) -> Rotation {
+Identity(FixedMatrix<Scalar, dimension, dimension> const& /*m*/) -> Rotation {
   return Rotation::Identity();
 }
 
 template<typename Scalar, std::int64_t dimension>
 auto ClassicalJacobiGenerator<FixedMatrix<Scalar, dimension, dimension>>::
-Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& m) -> Result {
+Uninitialized(FixedMatrix<Scalar, dimension, dimension> const& /*m*/)
+    -> Result {
   return {.rotation = FixedMatrix<double, dimension, dimension>(),
           .eigenvalues = FixedVector<Scalar, dimension>()};
 }
@@ -603,7 +607,7 @@ template<typename MScalar, typename VScalar, std::int64_t dimension>
 auto RayleighQuotientIterationGenerator<
     FixedMatrix<MScalar, dimension, dimension>,
     FixedVector<VScalar, dimension>>::
-Uninitialized(FixedVector<VScalar, dimension> const& v) -> Result {
+Uninitialized(FixedVector<VScalar, dimension> const& /*v*/) -> Result {
   return {FixedVector<VScalar, dimension>(uninitialized), MScalar()};
 }
 
@@ -612,7 +616,7 @@ template<typename LScalar, typename RScalar, std::int64_t dimension, bool luh,
          typename TriangularMatrix>
 auto SubstitutionGenerator<TriangularMatrix<LScalar, dimension, luh>,
                            FixedVector<RScalar, dimension>>::Uninitialized(
-    TriangularMatrix<LScalar, dimension, luh> const& m) -> Result {
+    TriangularMatrix<LScalar, dimension, luh> const& /*m*/) -> Result {
   return Result(uninitialized);
 }
 
@@ -636,7 +640,7 @@ template<typename MScalar, typename VScalar,
 FixedLowerTriangularMatrix<Quotient<MScalar, MScalar>, rows>
 SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                FixedVector<VScalar, rows>>::
-UninitializedL(FixedMatrix<MScalar, rows, columns> const& m) {
+UninitializedL(FixedMatrix<MScalar, rows, columns> const& /*m*/) {
   return FixedLowerTriangularMatrix<Quotient<MScalar, MScalar>, rows>(
       uninitialized);
 }
@@ -646,7 +650,7 @@ template<typename MScalar, typename VScalar,
 FixedUpperTriangularMatrix<MScalar, columns>
 SolveGenerator<FixedMatrix<MScalar, rows, columns>,
                FixedVector<VScalar, rows>>::
-UninitializedU(FixedMatrix<MScalar, rows, columns> const& m) {
+UninitializedU(FixedMatrix<MScalar, rows, columns> const& /*m*/) {
   return FixedUpperTriangularMatrix<MScalar, columns>(uninitialized);
 }
 

@@ -109,7 +109,7 @@ ExplicitLinearMultistepIntegrator<Method, ODE_>::Instance::Solve(
         .loop([](auto const& yₙ₊₁,
                  auto& y,
                  auto& y_stage,
-                 auto& current_step_yʹ) {
+                 auto& /*current_step_yʹ*/) {
           y_stage = yₙ₊₁.value;
           y = yₙ₊₁;
         });

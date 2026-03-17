@@ -116,8 +116,8 @@ Solve(typename ODE::IndependentVariable const& s_final) {
         for (int j = 0; j < i; ++j) {
           for_all_of(k[j], y, y_stage, Σⱼ_aᵢⱼ_kⱼ)
               .loop([&a, i, j](auto const& kⱼ,
-                               auto const& y,
-                               auto& y_stage,
+                               auto const& /*y*/,
+                               auto& /*y_stage*/,
                                auto& Σⱼ_aᵢⱼ_kⱼ) {
                 Σⱼ_aᵢⱼ_kⱼ += a(i, j) * kⱼ;
               });
@@ -140,8 +140,10 @@ Solve(typename ODE::IndependentVariable const& s_final) {
     DependentVariableDifferences Σᵢ_bᵢ_kᵢ{};
     for (int i = 0; i < stages_; ++i) {
       for_all_of(k[i], y, Δy, Σᵢ_bᵢ_kᵢ)
-          .loop([&b, i](
-                    auto const& kᵢ, auto const& y, auto& Δy, auto& Σᵢ_bᵢ_kᵢ) {
+          .loop([&b, i](auto const& kᵢ,
+                        auto const& /*y*/,
+                        auto& Δy,
+                        auto& Σᵢ_bᵢ_kᵢ) {
             Σᵢ_bᵢ_kᵢ += b[i] * kᵢ;
             Δy = Σᵢ_bᵢ_kᵢ;
           });

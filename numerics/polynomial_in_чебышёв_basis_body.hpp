@@ -51,11 +51,11 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
   return RealRootsOrDie(ε);
 }
 
-#define PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(degree) \
-  case (degree):                                                             \
-    return std::make_unique<                                                 \
-        PolynomialInЧебышёвBasis<Value, Argument, degree>>(                  \
-        PolynomialInЧебышёвBasis<Value, Argument, degree>::ReadFromMessage(  \
+#define PRINCIPIA_POLYNOMIAL_IN_ЧЕБЫШЁВ_BASIS_DESERIALIZATION_DEGREE(degree)  \
+  case (degree):                                                              \
+    return std::make_unique<                                                  \
+        PolynomialInЧебышёвBasis<Value, Argument, (degree)>>(                 \
+        PolynomialInЧебышёвBasis<Value, Argument, (degree)>::ReadFromMessage( \
             message))
 
 template<affine Value_, affine Argument_>

@@ -35,7 +35,8 @@ class Sign final {
   static constexpr Sign Positive();
   static constexpr Sign Negative();
 
-  template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+  template<typename T>
+    requires(std::is_integral_v<T>)
   static constexpr Sign OfNonZero(T x);
 
   constexpr bool is_positive() const;

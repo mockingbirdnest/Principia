@@ -94,21 +94,21 @@ void Identity<FromFrame, ToFrame>::WriteToMessage(
 
 template<typename FromFrame, typename ToFrame>
 Identity<FromFrame, ToFrame> Identity<FromFrame, ToFrame>::ReadFromMessage(
-    serialization::Identity const& message)
+    serialization::Identity const& /*message*/)
   requires serializable<FromFrame> && serializable<ToFrame> {
   return Identity();
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Identity<FromFrame, ToFrame> operator*(
-    Identity<ThroughFrame, ToFrame> const& left,
-    Identity<FromFrame, ThroughFrame> const& right) {
+    Identity<ThroughFrame, ToFrame> const& /*left*/,
+    Identity<FromFrame, ThroughFrame> const& /*right*/) {
   return Identity<FromFrame, ToFrame>();
 }
 
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
-                         Identity<FromFrame, ToFrame> const& identity) {
+                         Identity<FromFrame, ToFrame> const& /*identity*/) {
   return out << "𝟙";
 }
 

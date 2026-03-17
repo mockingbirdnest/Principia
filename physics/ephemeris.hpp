@@ -394,7 +394,7 @@ class Ephemeris {
   // `bodies_` and must have been evaluated at time `t`.
   Vector<Acceleration, Frame>
   ComputeGravitationalAccelerationOnMassiveBody(
-      not_null<MassiveBody const*> const body,
+      not_null<MassiveBody const*> body,
       std::vector<Position<Frame>> const& positions,
       Instant const& t) const;
 

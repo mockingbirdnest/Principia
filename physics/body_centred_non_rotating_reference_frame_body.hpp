@@ -28,7 +28,7 @@ BodyCentredNonRotatingReferenceFrame(
     not_null<Ephemeris<InertialFrame> const*> ephemeris,
     not_null<MassiveBody const*> centre)
     : ephemeris_(std::move(ephemeris)),
-      centre_(std::move(centre)),
+      centre_(centre),
       centre_trajectory_(ephemeris_->trajectory(centre_)),
       orthogonal_map_([this]() {
         // Note that we cannot do this by making `equatorial` and

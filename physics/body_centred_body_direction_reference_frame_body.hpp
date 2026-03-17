@@ -33,14 +33,15 @@ BodyCentredBodyDirectionReferenceFrame(
     not_null<MassiveBody const*> secondary)
     : ephemeris_(std::move(ephemeris)),
       primary_(primary),
-      secondary_(std::move(secondary)),
+      secondary_(secondary),
       compute_gravitational_acceleration_on_primary_(
-          [this](Position<InertialFrame> const& position, Instant const& t) {
+          [this](Position<InertialFrame> const& /*position*/,
+                 Instant const& t) {
             return ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
                 primary_, t);
           }),
       compute_gravitational_jerk_on_primary_(
-          [this](DegreesOfFreedom<InertialFrame> const& degrees_of_freedom,
+          [this](DegreesOfFreedom<InertialFrame> const& /*degrees_of_freedom*/,
                  Instant const& t) {
             return ephemeris_->ComputeGravitationalJerkOnMassiveBody(primary_,
                                                                      t);
@@ -57,7 +58,7 @@ BodyCentredBodyDirectionReferenceFrame(
     not_null<MassiveBody const*> secondary)
     : ephemeris_(std::move(ephemeris)),
       primary_(nullptr),
-      secondary_(std::move(secondary)),
+      secondary_(secondary),
       compute_gravitational_acceleration_on_primary_(
           [this](Position<InertialFrame> const& position, Instant const& t) {
             return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(

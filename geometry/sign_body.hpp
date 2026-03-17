@@ -27,7 +27,8 @@ template<typename Dimensions>
 Sign::Sign(Quantity<Dimensions> const& x)
     : Sign(x / si::Unit<Quantity<Dimensions>>) {}
 
-template<typename T, typename>
+template<typename T>
+  requires(std::is_integral_v<T>)
 constexpr Sign Sign::OfNonZero(T x) {
   CONSTEXPR_CHECK(x != 0) << x;
   return Sign(/*negative=*/x < 0);

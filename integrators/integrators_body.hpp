@@ -350,7 +350,7 @@ struct SprkAsSrknConstructor;
 template<typename Integrator, typename ODE>
 struct SprkAsSrknConstructor<Integrator, FixedStepSizeIntegrator<ODE> const&> {
   static FixedStepSizeIntegrator<ODE> const& Make(
-      serialization::FixedStepSizeIntegratorInstance const& message,
+      serialization::FixedStepSizeIntegratorInstance const& /*message*/,
       Integrator const& integrator) {
     return integrator;
   }

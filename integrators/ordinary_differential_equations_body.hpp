@@ -25,7 +25,7 @@ State::State(IndependentVariable const& s, DependentVariables const& y)
 template<typename IndependentVariable_, typename... DependentVariable>
 void ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable_,
                                                     DependentVariable...>::
-State::WriteToMessage(not_null<serialization::State*> message) const {
+State::WriteToMessage(not_null<serialization::State*> /*message*/) const {
   // Writing the tuple would be tricky.
   LOG(FATAL) << "NYI";
 }
@@ -36,7 +36,7 @@ typename ExplicitFirstOrderOrdinaryDifferentialEquation<
     DependentVariable...>::State
 ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable_,
                                                DependentVariable...>::
-State::ReadFromMessage(serialization::State const& message) {
+State::ReadFromMessage(serialization::State const& /*message*/) {
   // Reading the tuple would be tricky.
   LOG(FATAL) << "NYI";
 }

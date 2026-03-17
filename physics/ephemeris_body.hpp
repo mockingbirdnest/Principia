@@ -1690,7 +1690,7 @@ template<typename Frame>
 double Ephemeris<Frame>::ToleranceToErrorRatio(
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance,
-    Time const& current_step_size,
+    Time const& /*current_step_size*/,
     typename NewtonianMotionEquation::State const& /*state*/,
     typename NewtonianMotionEquation::State::Error const& error) {
   Length max_length_error;

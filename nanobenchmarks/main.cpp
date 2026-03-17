@@ -1,24 +1,23 @@
 
 #include <algorithm>
 #include <cstdio>
-#include <iomanip>
-#include <iostream>
+#include <format>
 #include <map>
 #include <memory>
 #include <print>
 #include <ranges>
 #include <regex>
 #include <string>
-#include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
-#include "geometry/frame.hpp"
+#include "base/cpuid.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "mathematica/logger.hpp"
-#include "mathematica/mathematica.hpp"
 #include "nanobenchmarks/dependencies.hpp"
 #include "nanobenchmarks/flag_parsing.hpp"  // 🧙 For std::vector-valued flags.
 #include "nanobenchmarks/latency_distribution_table.hpp"
@@ -55,11 +54,10 @@ namespace nanobenchmarks {
 namespace _main {
 namespace {
 
-using namespace principia::geometry::_frame;
+using namespace principia::base::_cpuid;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::mathematica::_logger;
-using namespace principia::mathematica::_mathematica;
 using namespace principia::nanobenchmarks::_dependencies;
 using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::nanobenchmarks::_latency_distribution_table;
@@ -182,8 +180,8 @@ double CalibrateOverhead(TSCCalibration const& calibration,
 }
 
 template<>
-double CalibrateOverhead<double, double>(TSCCalibration const& calibration,
-                                         Logger* const logger) {
+double CalibrateOverhead<double, double>(TSCCalibration const& /*calibration*/,
+                                         Logger* const /*logger*/) {
   return 0;
 }
 
@@ -266,9 +264,9 @@ void Main() {
     logger = std::make_unique<Logger>(filename, /*make_unique=*/false);
   }
   std::println("{} {}",
-               principia::base::_cpuid::CPUVendorIdentificationString(),
-               principia::base::_cpuid::ProcessorBrandString());
-  std::println("Features: {}", principia::base::_cpuid::CPUFeatures());
+               CPUVendorIdentificationString(),
+               ProcessorBrandString());
+  std::println("Features: {}", CPUFeatures());
 
   TSCCalibration const calibration = CalibrateTSC(logger.get());
   RunMatching<double, double>(filter,

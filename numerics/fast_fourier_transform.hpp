@@ -51,16 +51,15 @@ class FastFourierTransform {
   // purpose of expressing the frequencies, the values are assumed to be
   // sampled at intervals of Δt.
 
-  template<typename Container,
-           typename = std::enable_if_t<
-               std::is_convertible_v<typename Container::value_type, Value>>>
+  template<typename Container>
+    requires(std::is_convertible_v<typename Container::value_type, Value>)
   FastFourierTransform(Container const& container,
                        Difference<Argument> const& Δt);
 
-  template<typename Iterator,
-           typename = std::enable_if_t<std::is_convertible_v<
-               typename std::iterator_traits<Iterator>::value_type,
-               Value>>>
+  template<typename Iterator>
+    requires(std::is_convertible_v<
+             typename std::iterator_traits<Iterator>::value_type,
+             Value>)
   FastFourierTransform(Iterator begin, Iterator end,
                        Difference<Argument> const& Δt);
 
