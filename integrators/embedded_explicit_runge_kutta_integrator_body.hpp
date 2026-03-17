@@ -366,9 +366,8 @@ WriteToMessage(
 template<typename Method, typename ODE_>
 internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaIntegrator() {
-  static_assert(
-      std::is_base_of_v<_methods::EmbeddedExplicitRungeKutta, Method>,
-      "Method must be derived from EmbeddedExplicitRungeKutta");
+  static_assert(std::is_base_of_v<_methods::EmbeddedExplicitRungeKutta, Method>,
+                "Method must be derived from EmbeddedExplicitRungeKutta");
   static internal::EmbeddedExplicitRungeKuttaIntegrator<Method, ODE_> const
       integrator;
   return integrator;

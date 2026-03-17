@@ -208,9 +208,8 @@ void ExplicitLinearMultistepIntegrator<Method, ODE_>::WriteToMessage(
 template<typename Method, typename ODE_>
 internal::ExplicitLinearMultistepIntegrator<Method, ODE_> const&
 ExplicitLinearMultistepIntegrator() {
-  static_assert(
-      std::is_base_of_v<_methods::ExplicitLinearMultistep, Method>,
-      "Method must be derived from ExplicitLinearMultistep");
+  static_assert(std::is_base_of_v<_methods::ExplicitLinearMultistep, Method>,
+                "Method must be derived from ExplicitLinearMultistep");
   // TODO(phl): Someday, and that day may never come, I will call upon you to
   // expose the startup integrator to the clients.  But until that day, accept
   // this Runge-Kutta integrator as a gift.

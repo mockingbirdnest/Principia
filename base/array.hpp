@@ -22,17 +22,16 @@ struct Array final {
   Array(Array<OtherElement> const& other);
   // No allocation of memory.
   template<typename Size,
-           typename =
-               typename std::enable_if_t<std::is_integral_v<Size>>>
+           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
   Array(Element* data, Size size);
 
   // Implicit conversion from strings, vectors, and the like.
   template<
       typename Container,
       typename = std::enable_if_t<
-          std::is_convertible_v<decltype(std::declval<Container>().data()),
-                              Element*> &&
-          std::is_integral_v<decltype(std ::declval<Container>().size())>>>
+               std::is_convertible_v<decltype(std::declval<Container>().data()),
+                                     Element*> &&
+               std::is_integral_v<decltype(std ::declval<Container>().size())>>>
   constexpr Array(Container& container);  // NOLINT(runtime/explicit)
 
   template<typename Container,
@@ -71,13 +70,11 @@ struct UniqueArray final {
   UniqueArray();
   // Allocates memory for `size` elements.
   template<typename Size,
-           typename =
-               typename std::enable_if_t<std::is_integral_v<Size>>>
+           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
   explicit UniqueArray(Size size);
   // Takes ownership of an existing array.
   template<typename Size,
-           typename =
-               typename std::enable_if_t<std::is_integral_v<Size>>>
+           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
   UniqueArray(std::unique_ptr<Element[]> data, Size size);
 
   // Move it, move it!
