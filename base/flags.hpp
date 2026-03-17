@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -33,7 +34,7 @@ class Flags {
   static std::set<std::string> Values(std::string_view name);
 
  private:
-  static std::multimap<std::string, std::string>& flags();
+  static std::multimap<std::string, std::string, std::less<>>& flags();
 };
 
 }  // namespace internal

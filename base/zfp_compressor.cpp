@@ -1,12 +1,14 @@
 #include "base/zfp_compressor.hpp"
 
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <string>
-#include <vector>
+#include <string_view>
 
 #include "base/array.hpp"
+#include "glog/logging.h"
 
 namespace principia {
 namespace base {
@@ -49,7 +51,7 @@ void ZfpCompressor::WriteToMessage(const zfp_field* const field,
 }
 
 void ZfpCompressor::ReadFromMessage(zfp_field* const field,
-                                    std::string_view& message) const {
+                                    std::string_view& message) {
   std::unique_ptr<zfp_stream, std::function<void(zfp_stream*)>> const zfp(
       zfp_stream_open(/*stream=*/nullptr),
       [](zfp_stream* const zfp) { zfp_stream_close(zfp); });

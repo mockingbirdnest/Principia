@@ -1,5 +1,7 @@
 #include "numerics/root_finders.hpp"
 
+#include <cmath>
+#include <cstdint>
 #include <functional>
 #include <set>
 #include <vector>
@@ -8,6 +10,7 @@
 #include "absl/base/casts.h"
 #include "geometry/instant.hpp"
 #include "geometry/point.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -15,6 +18,7 @@
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "numerics/scale_b.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -167,7 +171,7 @@ TEST_F(RootFindersTest, WilkinsGuFunction) {
       EXPECT_THAT(x, AlmostEquals(X[k], 0)) << k;
     }
 
-    if (expected_bisections.count(k) != 0) {
+    if (expected_bisections.contains(k)) {
       // “Since we are bisecting the function regardless of its value at X[k] ,
       // we may choose an arbitrary positive value for f (X[k]), such as 100.”
       return 100;
@@ -494,8 +498,8 @@ TEST_F(RootFindersTest, QuadraticEquations) {
   // Golden ratio.
   auto const s1 = SolveQuadraticEquation(0.0, -1.0, -1.0, 1.0);
   EXPECT_THAT(s1,
-              ElementsAre(AlmostEquals((1 - sqrt(5)) / 2, 1),
-                          AlmostEquals((1 + sqrt(5)) / 2, 0)));
+              ElementsAre(AlmostEquals((1 - std::sqrt(5)) / 2, 1),
+                          AlmostEquals((1 + std::sqrt(5)) / 2, 0)));
 
   // No solutions.
   auto const s2 = SolveQuadraticEquation(0.0, 1.0, 0.0, 1.0);
