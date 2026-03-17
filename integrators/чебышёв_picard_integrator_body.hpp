@@ -261,7 +261,7 @@ FixedVector<DirectSum<Derivative<DependentVariable, IndependentVariable>...>,
     M,
     ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
                                                    DependentVariable...>>::
-    UninitializedRightHandSideMatrix(InitialValueProblem<ODE> const& /*problem*/) {
+UninitializedRightHandSideMatrix(InitialValueProblem<ODE> const& /*problem*/) {
   return FixedVector<
       DirectSum<Derivative<DependentVariable, IndependentVariable>...>,
       M + 1,
