@@ -53,7 +53,8 @@ template<typename FrameTag,
          FrameMotion motion_, Handedness handedness_,
          std::conditional_t<std::is_enum_v<FrameTag>,
                             FrameTag, std::nullptr_t> tag_>
-template<typename T, typename>
+template<typename T>
+  requires(google::protobuf::is_proto_enum<T>::value)
 void Frame<FrameTag, motion_, handedness_, tag_>::ReadFromMessage(
   serialization::Frame const& message) {
   static_assert(has_tag);

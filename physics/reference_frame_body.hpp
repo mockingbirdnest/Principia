@@ -45,9 +45,9 @@ ReferenceFrame<InertialFrame, ThisFrame>::FrenetFrame(
       GeometricAcceleration(t, degrees_of_freedom);
   Vector<Acceleration, ThisFrame> const normal_acceleration =
       acceleration.OrthogonalizationAgainst(velocity);
-  Vector<double, ThisFrame> tangent = Normalize(velocity);
-  Vector<double, ThisFrame> normal = Normalize(normal_acceleration);
-  Bivector<double, ThisFrame> binormal = Wedge(tangent, normal);
+  Vector<double, ThisFrame> const tangent = Normalize(velocity);
+  Vector<double, ThisFrame> const normal = Normalize(normal_acceleration);
+  Bivector<double, ThisFrame> const binormal = Wedge(tangent, normal);
   // Maps `tangent` to {1, 0, 0}, `normal` to {0, 1, 0}, and `binormal` to
   // {0, 0, 1}.
   return Rotation<Frenet<ThisFrame>, ThisFrame>(tangent, normal, binormal);

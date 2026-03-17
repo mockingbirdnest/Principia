@@ -51,7 +51,7 @@ using namespace principia::quantities::_quantities;
 template<typename InertialFrame, typename ThisFrame>
 class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
  public:
-  virtual ~RigidReferenceFrame() = default;
+  ~RigidReferenceFrame() override = default;
 
   SimilarMotion<InertialFrame, ThisFrame> ToThisFrameAtTimeSimilarly(
       Instant const& t) const final;
@@ -69,9 +69,9 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   // The acceleration due to the non-inertial motion of `ThisFrame` and gravity.
   // A particle in free fall follows a trajectory whose second derivative
   // is `GeometricAcceleration`.
-  virtual Vector<Acceleration, ThisFrame> GeometricAcceleration(
+  Vector<Acceleration, ThisFrame> GeometricAcceleration(
       Instant const& t,
-      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
+      DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const override;
 
   // The acceleration of a particle at rest in `ThisFrame` at the given
   // `position` owing to non-inertial motion of `ThisFrame` and gravity,
@@ -86,16 +86,16 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
   // the angle θ rather than time, which eliminates the Euler acceleration:
   //   a = θ′² d²r/dθ², starting from a rest defined as dr/dθ = 0.
   // Either way, the vector field a derives from a potential.
-  virtual Vector<Acceleration, ThisFrame>
+  Vector<Acceleration, ThisFrame>
   RotationFreeGeometricAccelerationAtRest(
       Instant const& t,
-      Position<ThisFrame> const& position) const;
+      Position<ThisFrame> const& position) const override;
 
   // Computes the (scalar) potential from which the acceleration given by
   // `RotationFreeGeometricAccelerationAtRest` derives.
-  virtual SpecificEnergy GeometricPotential(
+  SpecificEnergy GeometricPotential(
       Instant const& t,
-      Position<ThisFrame> const& position) const;
+      Position<ThisFrame> const& position) const override;
 
   // Dispatches to one of the subclasses depending on the contents of the
   // message.

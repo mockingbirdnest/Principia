@@ -302,7 +302,7 @@ Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
     auto it = previous_steps.rbegin();
 
     // Compute the displacement difference using double precision.
-    DoublePrecision<Displacement> displacement_change =
+    DoublePrecision<Displacement> const displacement_change =
         it->displacements[d] - std::next(it)->displacements[d];
     velocity = DoublePrecision<Velocity>(
         (displacement_change.value + displacement_change.error) / step);

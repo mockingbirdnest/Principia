@@ -56,7 +56,8 @@ Length AdaptiveStepParameters<ODE>::length_integration_tolerance() const {
 }
 
 template<typename ODE>
-template<typename E, std::enable_if_t<E::order == 2, std::nullptr_t>>
+template<typename E>
+  requires(E::order == 2)
 Speed AdaptiveStepParameters<ODE>::speed_integration_tolerance() const {
   return speed_integration_tolerance_.value();
 }
@@ -74,7 +75,8 @@ void AdaptiveStepParameters<ODE>::set_length_integration_tolerance(
 }
 
 template<typename ODE>
-template<typename E, std::enable_if_t<E::order == 2, std::nullptr_t>>
+template<typename E>
+  requires(E::order == 2)
 void AdaptiveStepParameters<ODE>::set_speed_integration_tolerance(
     Speed const& speed_integration_tolerance) {
   speed_integration_tolerance_ = speed_integration_tolerance;

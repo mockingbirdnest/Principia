@@ -75,9 +75,8 @@ struct Frame : not_constructible {
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
   // Checks that the `message` matches the current type.
-  template<
-      typename T = FrameTag,
-      typename = std::enable_if_t<google::protobuf::is_proto_enum<T>::value>>
+  template<typename T = FrameTag>
+    requires(google::protobuf::is_proto_enum<T>::value)
   static void ReadFromMessage(serialization::Frame const& message);
 };
 

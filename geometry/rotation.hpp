@@ -110,8 +110,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   // Construct a rotation from the axes of `ToFrame`, expressed in `FromFrame`.
   template<int rank_x, int rank_y, int rank_z,
            typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same_v<F, T>>>
+           typename T = ToFrame>
+    requires(!std::is_same_v<F, T>)
   Rotation(Multivector<double, FromFrame, rank_x> x_to_frame,
            Multivector<double, FromFrame, rank_y> y_to_frame,
            Multivector<double, FromFrame, rank_z> z_to_frame);

@@ -48,7 +48,7 @@ template<class Collection>
 const typename Collection::value_type::second_type& FindOrDie(
     Collection const& collection,
     typename Collection::value_type::first_type const& key) {
-  typename Collection::const_iterator const it = collection.find(key);
+  auto const it = collection.find(key);
   CHECK(it != collection.end()) << "Map key not found: " << key;
   return it->second;
 }
@@ -58,7 +58,7 @@ template<class Collection>
 typename Collection::value_type::second_type& FindOrDie(
     Collection& collection,
     typename Collection::value_type::first_type const& key) {
-  typename Collection::iterator const it = collection.find(key);
+  auto const it = collection.find(key);
   CHECK(it != collection.end()) << "Map key not found: " << key;
   return it->second;
 }

@@ -54,7 +54,7 @@ SimilarMotion<FromFrame, ToFrame>::velocity_of_origin_of() const {
 template<typename FromFrame, typename ToFrame>
 DegreesOfFreedom<ToFrame> SimilarMotion<FromFrame, ToFrame>::operator()(
     DegreesOfFreedom<FromFrame> const& degrees_of_freedom) const {
-  Position<ToFrame> position = similarity_(degrees_of_freedom.position());
+  Position<ToFrame> const position = similarity_(degrees_of_freedom.position());
   return {position,
           dilatation_rate_of_to_frame_ * (position - ToFrame::origin) +
               angular_velocity_of<FromFrame>() * (position - ToFrame::origin) /
@@ -102,7 +102,7 @@ SimilarMotion<FromFrame, ToFrame>::SimilarMotion(
     AngularVelocity<FromFrame> angular_velocity_of_to_frame,
     Velocity<FromFrame> velocity_of_to_frame_origin,
     Variation<double> dilatation_rate_of_to_frame)
-    : similarity_(similarity),
+    : similarity_(std::move(similarity)),
       angular_velocity_of_to_frame_(angular_velocity_of_to_frame),
       velocity_of_to_frame_origin_(velocity_of_to_frame_origin),
       dilatation_rate_of_to_frame_(dilatation_rate_of_to_frame) {}
