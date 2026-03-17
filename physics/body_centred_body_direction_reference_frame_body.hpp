@@ -28,10 +28,10 @@ using namespace principia::quantities::_si;
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
 BodyCentredBodyDirectionReferenceFrame(
-    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     not_null<MassiveBody const*> const primary,
-    not_null<MassiveBody const*> secondary)
-    : ephemeris_(std::move(ephemeris)),
+    not_null<MassiveBody const*> const secondary)
+    : ephemeris_(ephemeris),
       primary_(primary),
       secondary_(secondary),
       compute_gravitational_acceleration_on_primary_(
@@ -53,10 +53,10 @@ BodyCentredBodyDirectionReferenceFrame(
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
 BodyCentredBodyDirectionReferenceFrame(
-    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     std::function<Trajectory<InertialFrame> const&()> primary_trajectory,
-    not_null<MassiveBody const*> secondary)
-    : ephemeris_(std::move(ephemeris)),
+    not_null<MassiveBody const*> const secondary)
+    : ephemeris_(ephemeris),
       primary_(nullptr),
       secondary_(secondary),
       compute_gravitational_acceleration_on_primary_(
