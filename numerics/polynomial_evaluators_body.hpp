@@ -147,15 +147,15 @@ template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
 Evaluate(Coefficients const& coefficients,
-         Argument const& argument) {
+         Argument const& /*argument*/) {
   return get<low>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, -1>::
-Evaluate(Coefficients const& coefficients,
-         Argument const& argument) {
+Evaluate(Coefficients const& /*coefficients*/,
+         Argument const& /*argument*/) {
   return Derivative<Value, Argument, low>{};
 }
 
@@ -178,15 +178,15 @@ template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
 EvaluateDerivative(Coefficients const& coefficients,
-                   Argument const& argument) {
+                   Argument const& /*argument*/) {
   return low * get<low>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
 FORCE_INLINE Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, -1>::
-EvaluateDerivative(Coefficients const& coefficients,
-                   Argument const& argument) {
+EvaluateDerivative(Coefficients const& /*coefficients*/,
+                   Argument const& /*argument*/) {
   return Derivative<Value, Argument, low>{};
 }
 
@@ -263,7 +263,7 @@ template<typename Value, typename Argument, int degree, bool fma>
 FORCE_INLINE Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
 Evaluate(Coefficients const& coefficients,
-         Argument const& argument) {
+         Argument const& /*argument*/) {
   return get<degree>(coefficients);
 }
 
@@ -271,7 +271,7 @@ template<typename Value, typename Argument, int degree, bool fma>
 FORCE_INLINE Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, fma, degree>::
 EvaluateDerivative(Coefficients const& coefficients,
-                    Argument const& argument) {
+                    Argument const& /*argument*/) {
   return get<degree>(coefficients) * degree;
 }
 

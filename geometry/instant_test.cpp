@@ -1,12 +1,9 @@
 #include "geometry/instant.hpp"
 
-#include <strstream>
-
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -16,7 +13,6 @@ using ::testing::Eq;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::geometry::_instant;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 class InstantOutputTest : public ::testing::Test {};
