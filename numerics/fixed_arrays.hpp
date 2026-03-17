@@ -114,7 +114,7 @@ class FixedVector final {
                          FixedVector<S, s, ruh> const& right);
   template<typename L, affine R, std::int64_t s, bool ruh>
   friend constexpr Product<L, R> operator*(
-      L* const left,
+      L* left,
       FixedVector<R, s, ruh> const& right);
   template<affine L, affine R, std::int64_t s, bool luh, bool ruh>
   friend constexpr Product<L, R> operator*(
@@ -655,7 +655,7 @@ operator/(FixedMatrix<LScalar, rows, columns, luh> const& left,
 // TODO(phl): We should have a RowView.
 template<affine LScalar, affine RScalar, std::int64_t size, bool ruh>
 constexpr Product<LScalar, RScalar> operator*(
-    LScalar* const left,
+    LScalar* left,
     FixedVector<RScalar, size, ruh> const& right);
 
 template<affine LScalar, affine RScalar, std::int64_t size,

@@ -9,11 +9,11 @@ namespace internal {
 
 // A constexpr implementation of the IEEE 754:2008 nextUp and nextDown
 // functions.
-template<typename SourceFormat,
-         typename = std::enable_if_t<std::is_floating_point_v<SourceFormat>>>
+template<typename SourceFormat>
+  requires(std::is_floating_point_v<SourceFormat>)
 constexpr SourceFormat NextUp(SourceFormat x);
-template<typename SourceFormat,
-         typename = std::enable_if_t<std::is_floating_point_v<SourceFormat>>>
+template<typename SourceFormat>
+  requires(std::is_floating_point_v<SourceFormat>)
 constexpr SourceFormat NextDown(SourceFormat x);
 
 }  // namespace internal

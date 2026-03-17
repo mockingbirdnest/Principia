@@ -109,7 +109,7 @@ Ephemeris<Frame>::Ephemeris(
             return Reanimate(desired_t_min);
           },
           20ms),  // 50 Hz.
-      reanimator_clientele_(/*default_value=*/InfiniteFuture) {
+      reanimator_clientele_(/*default_key=*/InfiniteFuture) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -592,15 +592,14 @@ Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBody(
     }
   }
 
-  return ComputeGravitationalJerkOnMassiveBody(body, degrees_of_freedom, t);
+  return ComputeGravitationalJerkOnMassiveBody(body, degrees_of_freedom);
 }
 
 template<typename Frame>
 std::vector<Vector<Jerk, Frame>>
 Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBodies(
     std::vector<not_null<MassiveBody const*>> const& bodies,
-    BodiesToDegreesOfFreedom const& bodies_to_degrees_of_freedom,
-    Instant const& t) const {
+    BodiesToDegreesOfFreedom const& bodies_to_degrees_of_freedom) const {
   // NOTE(phl): This doesn't take high-order geopotential into account.
   // Put the positions in the order needed by the computation.
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
@@ -613,7 +612,7 @@ Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBodies(
   jerks.reserve(bodies.size());
   for (auto const& body : bodies) {
     jerks.push_back(
-        ComputeGravitationalJerkOnMassiveBody(body, degrees_of_freedom, t));
+        ComputeGravitationalJerkOnMassiveBody(body, degrees_of_freedom));
   }
   return jerks;
 }
@@ -965,7 +964,7 @@ Ephemeris<Frame>::MakeCheckpointerReader() {
 }
 
 template<typename Frame>
-absl::Status Ephemeris<Frame>::Reanimate(Instant const desired_t_min) {
+absl::Status Ephemeris<Frame>::Reanimate(Instant const& desired_t_min) {
   absl::btree_set<Instant> checkpoints;
   {
     absl::ReaderMutexLock l(&lock_);
@@ -1310,8 +1309,7 @@ template<typename Frame>
 Vector<Jerk, Frame>
 Ephemeris<Frame>::ComputeGravitationalJerkOnMassiveBody(
     not_null<MassiveBody const*> const body,
-    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom,
-    Instant const& t) const {
+    std::vector<DegreesOfFreedom<Frame>> const& degrees_of_freedom) const {
   // NOTE(phl): This doesn't take high-order geopotential into account.
   int const b1 = bodies_indices_.at(body);
   std::vector<Vector<Jerk, Frame>> jerks(degrees_of_freedom.size());

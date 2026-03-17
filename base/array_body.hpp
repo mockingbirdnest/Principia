@@ -43,8 +43,8 @@ constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
   // check that the cast is trivial or reinterprets a `char const*`.  The cast
   // is C-style rather than a reinterpret so that this constructor is constexpr
   // in the trivial case.
-  static_assert(std::is_same<Element, Character>::value ||
-                    std::is_same<Character, char const>::value,
+  static_assert(std::is_same_v<Element, Character> ||
+                    std::is_same_v<Character, char const>,
                 "reinterpret_cast is unsafe");
   if (characters[size] != 0) {
     LOG(FATAL) << "Array constructed with a character array terminated by the "

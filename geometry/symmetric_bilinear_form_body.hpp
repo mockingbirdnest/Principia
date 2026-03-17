@@ -58,7 +58,7 @@ CosSin SymmetricSchurDecomposition2By2(R3x3Matrix<Scalar> const& A,
     c = 1 / Sqrt(1 + t * t);
     s = t * c;
   } else {
-    θ = {1, 0};
+    θ = {.cos = 1, .sin = 0};
   }
   return θ;
 };

@@ -155,12 +155,12 @@ Policy::WithEvaluator(
   LOG(FATAL) << "Unexpected policy " << kind_;
 }
 
-inline constexpr Policy Policy::AlwaysEstrin() {
+constexpr Policy Policy::AlwaysEstrin() {
   return Policy(
       serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN);
 }
 
-inline constexpr Policy Policy::AlwaysEstrinWithoutFMA() {
+constexpr Policy Policy::AlwaysEstrinWithoutFMA() {
   return Policy(
       serialization::PolynomialInMonomialBasis::Policy::
                     ALWAYS_ESTRIN_WITHOUT_FMA);
@@ -176,7 +176,7 @@ inline Policy Policy::ReadFromMessage(
   return Policy(message.kind());
 }
 
-inline constexpr Policy::Policy(
+constexpr Policy::Policy(
     serialization::PolynomialInMonomialBasis::Policy::Kind const kind)
     : kind_(kind) {}
 

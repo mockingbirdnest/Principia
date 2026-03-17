@@ -208,10 +208,10 @@ not_null<std::unique_ptr<RotatingBody<Frame>>>
 RotatingBody<Frame>::ReadFromMessage(
     serialization::RotatingBody const& message,
     MassiveBody::Parameters const& massive_body_parameters) {
-  bool is_pre_del_ferro = !message.has_min_radius() &&
-                          !message.has_max_radius();
-  bool is_pre_legendre = !message.has_atmosphere_depth() &&
-                         !message.has_has_ocean();
+  bool const is_pre_del_ferro = !message.has_min_radius() &&
+                                !message.has_max_radius();
+  bool const is_pre_legendre = !message.has_atmosphere_depth() &&
+                               !message.has_has_ocean();
   LOG_IF(WARNING, is_pre_legendre)
       << "Reading pre-" << (is_pre_del_ferro ? "del Ferro" : "Legendre")
       << " RotatingBody";

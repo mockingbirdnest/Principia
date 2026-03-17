@@ -191,7 +191,6 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
                  timeline_.begin(),
                  timeline_.end(),
                  timeline_.size(),
-                 /*number_of_points_to_skip_at_end*/ 0,
                  exact);
 }
 
@@ -212,13 +211,10 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   std::int64_t const timeline_size =
       covers_entire_segment ? timeline_.size()
                             : std::distance(timeline_begin, timeline_end);
-  std::int64_t const number_of_points_to_skip_at_end =
-      covers_entire_segment ? 0 : std::distance(timeline_end, timeline_.end());
   WriteToMessage(message,
                  timeline_begin,
                  timeline_end,
                  timeline_size,
-                 number_of_points_to_skip_at_end,
                  exact);
 }
 
@@ -246,7 +242,7 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
 
   // Decompress the timeline before restoring the downsampling parameters to
   // avoid re-downsampling.
-  ZfpCompressor decompressor;
+  ZfpCompressor const decompressor;
   ZfpCompressor::ReadVersion(message);
 
   int const timeline_size = message.zfp().timeline_size();
@@ -658,7 +654,6 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     typename Timeline::const_iterator const timeline_begin,
     typename Timeline::const_iterator const timeline_end,
     std::int64_t const timeline_size,
-    std::int64_t const number_of_points_to_skip_at_end,
     std::vector<iterator> const& exact) const {
   if (downsampling_parameters_.has_value()) {
     auto* const serialized_downsampling_parameters =
@@ -739,14 +734,14 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
   }
 
   // Times and errors are exact.
-  ZfpCompressor time_compressor(0);
-  ZfpCompressor error_compressor(0);
+  ZfpCompressor const time_compressor(0);
+  ZfpCompressor const error_compressor(0);
   // Lengths are approximated to the downsampling tolerance if downsampling is
   // enabled, otherwise they are exact.
   Length const length_tolerance = downsampling_parameters_.has_value()
                                       ? downsampling_parameters_->tolerance
                                       : Length();
-  ZfpCompressor length_compressor(length_tolerance / Metre);
+  ZfpCompressor const length_compressor(length_tolerance / Metre);
   // Speeds are approximated based on the length tolerance and the maximum
   // step in the timeline.
   ZfpCompressor const speed_compressor((length_tolerance / max_Δt) /

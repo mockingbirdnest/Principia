@@ -43,7 +43,8 @@ template<typename FrameTag,
          FrameMotion motion_, Handedness handedness_,
          std::conditional_t<std::is_enum_v<FrameTag>,
                             FrameTag, std::nullptr_t> tag_>
-template<typename T, typename>
+template<typename T>
+  requires(std::is_enum_v<T>)
 constexpr FrameTag Frame<FrameTag, motion_, handedness_, tag_>::tag() {
   return tag_;
 }

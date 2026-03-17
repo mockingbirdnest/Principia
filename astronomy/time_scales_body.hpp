@@ -351,15 +351,16 @@ constexpr EOPC04Entry const* LookupTT(Instant const& tt,
 
 constexpr ExperimentalEOPC02Entry const* LookupInExperimentalEOPC02(
     Time const& ut1) {
-  return LookupUT1(ut1, &experimental_eop_c02[0], experimental_eop_c02.size());
+  return LookupUT1(
+      ut1, experimental_eop_c02.data(), experimental_eop_c02.size());
 }
 
 constexpr EOPC04Entry const* LookupInEOPC04(Time const& ut1) {
-  return LookupUT1(ut1, &eop_c04[0], eop_c04.size());
+  return LookupUT1(ut1, eop_c04.data(), eop_c04.size());
 }
 
 constexpr EOPC04Entry const* LookupInEOPC04(Instant const& tt) {
-  return LookupTT(tt, &eop_c04[0], eop_c04.size());
+  return LookupTT(tt, eop_c04.data(), eop_c04.size());
 }
 
 // Linear interpolation of TT on the UT1 range [low->ut1(), (low + 1)->ut1()].

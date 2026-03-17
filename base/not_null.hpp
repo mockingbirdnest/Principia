@@ -369,7 +369,7 @@ std::ostream& operator<<(std::ostream& stream,
                          not_null<Pointer> const& pointer);
 
 template<typename Result, typename T>
-not_null<Result> dynamic_cast_not_null(not_null<T*> const pointer);
+not_null<Result> dynamic_cast_not_null(not_null<T*> pointer);
 
 template<typename Result, typename T>
 not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer);

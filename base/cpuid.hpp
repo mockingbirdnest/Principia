@@ -39,14 +39,14 @@ class CPUIDFeatureFlag {
   static const CPUIDFeatureFlag AVX512_FP16;  // IEEE-754 binary16.
 
  private:
+  CPUIDFeatureFlag(std::string_view name,
+                   std::uint32_t leaf,
+                   std::uint32_t sub_leaf,
+                   std::uint32_t CPUIDResult::* field,
+                   std::int8_t bit);
   CPUIDFeatureFlag(std::string_view const name,
                    std::uint32_t const leaf,
-                   std::uint32_t const sub_leaf,
-                   std::uint32_t CPUIDResult::*const field,
-                   std::int8_t const bit);
-  CPUIDFeatureFlag(std::string_view const name,
-                   std::uint32_t const leaf,
-                   std::uint32_t CPUIDResult::*const field,
+                   std::uint32_t CPUIDResult::* const field,
                    std::int8_t const bit)
       : CPUIDFeatureFlag(name, leaf, 0, field, bit) {}
 

@@ -49,15 +49,15 @@ constexpr bool Sign::is_negative() const {
   return negative_;
 }
 
-inline constexpr Sign Sign::operator+() const {
+constexpr Sign Sign::operator+() const {
   return *this;
 }
 
-inline constexpr Sign Sign::operator-() const {
+constexpr Sign Sign::operator-() const {
   return Sign(!negative_);
 }
 
-inline constexpr Sign::operator int() const {
+constexpr Sign::operator int() const {
   return *this * 1;
 }
 
@@ -66,7 +66,7 @@ inline void Sign::WriteToMessage(
   message->set_negative(negative_);
 }
 
-inline Sign Sign::ReadFromMessage(serialization::Sign const message) {
+inline Sign Sign::ReadFromMessage(serialization::Sign const& message) {
   return Sign(/*negative=*/message.negative());
 }
 

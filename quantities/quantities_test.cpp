@@ -4,13 +4,17 @@
 #include <string>
 
 #include "glog/logging.h"
+#include "gmock/gmock.h"
+#include "google/protobuf/stubs/logging.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
+#include "serialization/quantities.pb.h"
 #include "testing_utilities/algebra.hpp"
 
 namespace principia {
@@ -92,7 +96,7 @@ TEST_F(QuantitiesTest, IsFinite) {
 }
 
 TEST_F(QuantitiesTest, SIUnitReference) {
-  Length l1 = 1 * Foot;
+  Length const l1 = 1 * Foot;
   Length const& l2 = l1;
   EXPECT_EQ(1 * Metre, si::Unit<decltype(l2)>);
 }

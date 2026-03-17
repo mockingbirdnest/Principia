@@ -216,14 +216,11 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   // Implementation of serialization.  The caller is expected to pass consistent
   // parameters.  `timeline_begin` and `timeline_end` define the range to write.
   // `timeline_size` is the distance from `timeline_begin` to `timeline_end`.
-  // `number_of_points_to_skip_at_end` is the distance between `timeline_end`
-  // and the true `end` of the timeline.
   void WriteToMessage(
       not_null<serialization::DiscreteTrajectorySegment*> message,
       typename Timeline::const_iterator timeline_begin,
       typename Timeline::const_iterator timeline_end,
       std::int64_t timeline_size,
-      std::int64_t number_of_points_to_skip_at_end,
       std::vector<iterator> const& exact) const;
 
   std::optional<DownsamplingParameters> downsampling_parameters_;

@@ -122,14 +122,14 @@ template<typename FromFrame, typename ToFrame>
 template<typename Scalar, typename F, typename T, typename>
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, FromFrame> const& axis,
-                                       DefinesFrame<ToFrame> tag)
+                                       DefinesFrame<ToFrame>)
     : Rotation(AngleAxis(-angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename Scalar, typename F, typename T, typename, typename>
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, ToFrame> const& axis,
-                                       DefinesFrame<FromFrame> tag)
+                                       DefinesFrame<FromFrame>)
     : Rotation(AngleAxis(angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
@@ -139,8 +139,10 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& β,
     Angle const& γ,
     EulerAngles const axes,
-    DefinesFrame<ToFrame> tag)
-    : Rotation(Rotation<ToFrame, FromFrame>(α, β, γ, axes, tag).Inverse()) {}
+    DefinesFrame<ToFrame>)
+    : Rotation(
+          Rotation<ToFrame, FromFrame>(α, β, γ, axes, DefinesFrame<ToFrame>{})
+              .Inverse()) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename, typename>
@@ -149,7 +151,7 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& β,
     Angle const& γ,
     EulerAngles const axes,
-    DefinesFrame<FromFrame> tag)
+    DefinesFrame<FromFrame>)
     : Rotation(AngleAxis(α, BasisVector(BinaryCodedTernaryDigit(2, axes))) *
                AngleAxis(β, BasisVector(BinaryCodedTernaryDigit(1, axes))) *
                AngleAxis(γ, BasisVector(BinaryCodedTernaryDigit(0, axes)))) {}
@@ -161,8 +163,10 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& β,
     Angle const& γ,
     CardanoAngles const axes,
-    DefinesFrame<ToFrame> tag)
-    : Rotation(Rotation<ToFrame, FromFrame>(α, β, γ, axes, tag).Inverse()) {}
+    DefinesFrame<ToFrame>)
+    : Rotation(
+          Rotation<ToFrame, FromFrame>(α, β, γ, axes, DefinesFrame<ToFrame>{})
+              .Inverse()) {}
 
 template<typename FromFrame, typename ToFrame>
 template<typename F, typename T, typename, typename>
@@ -171,7 +175,7 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& β,
     Angle const& γ,
     CardanoAngles const axes,
-    DefinesFrame<FromFrame> tag)
+    DefinesFrame<FromFrame>)
     : Rotation(AngleAxis(α, BasisVector(BinaryCodedTernaryDigit(2, axes))) *
                AngleAxis(β, BasisVector(BinaryCodedTernaryDigit(1, axes))) *
                AngleAxis(γ, BasisVector(BinaryCodedTernaryDigit(0, axes)))) {}

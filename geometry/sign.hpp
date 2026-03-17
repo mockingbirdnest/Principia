@@ -48,7 +48,7 @@ class Sign final {
   constexpr operator int() const;
 
   void WriteToMessage(not_null<serialization::Sign*> message) const;
-  static Sign ReadFromMessage(serialization::Sign message);
+  static Sign ReadFromMessage(serialization::Sign const& message);
 
  private:
   constexpr explicit Sign(bool negative);

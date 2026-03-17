@@ -22,28 +22,28 @@ template<typename Complex, int array_size_, int chunk_size_ = array_size_>
 class DanielsonLánczos {
  public:
   static void Transform(typename std::array<Complex,
-                                            array_size_>::iterator const begin);
+                                            array_size_>::iterator begin);
 };
 
 template<typename Complex, int array_size_>
 class DanielsonLánczos<Complex, array_size_, 1> {
  public:
   static void Transform(typename std::array<Complex,
-                                            array_size_>::iterator const begin);
+                                            array_size_>::iterator begin);
 };
 
 template<typename Complex, int array_size_>
 class DanielsonLánczos<Complex, array_size_, 2> {
  public:
   static void Transform(typename std::array<Complex,
-                                            array_size_>::iterator const begin);
+                                            array_size_>::iterator begin);
 };
 
 template<typename Complex, int array_size_>
 class DanielsonLánczos<Complex, array_size_, 4> {
  public:
   static void Transform(typename std::array<Complex,
-                                            array_size_>::iterator const begin);
+                                            array_size_>::iterator begin);
 };
 
 template<typename Complex, int array_size_, int chunk_size_>

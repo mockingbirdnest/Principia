@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 #include "base/concepts.hpp"
 #include "base/mappable.hpp"
 #include "base/not_null.hpp"
@@ -97,7 +99,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   template<typename Scalar,
            typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<std::is_same<F, T>::value>>
+           typename = std::enable_if_t<std::is_same_v<F, T>>>
   Rotation(Angle const& angle, Bivector<Scalar, FromFrame> const& axis);
 
   // The constructors below define passive rotations (changes of coordinates
@@ -109,7 +111,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   template<int rank_x, int rank_y, int rank_z,
            typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same<F, T>::value>>
+           typename = std::enable_if_t<!std::is_same_v<F, T>>>
   Rotation(Multivector<double, FromFrame, rank_x> x_to_frame,
            Multivector<double, FromFrame, rank_y> y_to_frame,
            Multivector<double, FromFrame, rank_z> z_to_frame);
@@ -121,7 +123,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   template<int rank_x, int rank_y, int rank_z,
            typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same<F, T>::value>,
+           typename = std::enable_if_t<!std::is_same_v<F, T>>,
            typename = void>
   Rotation(Multivector<double, ToFrame, rank_x> x_from_frame,
            Multivector<double, ToFrame, rank_y> y_from_frame,
@@ -139,7 +141,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   template<typename Scalar,
            typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same<F, T>::value>>
+           typename = std::enable_if_t<!std::is_same_v<F, T>>>
   Rotation(Angle const& angle,
            Bivector<Scalar, FromFrame> const& axis,
            DefinesFrame<ToFrame> tag);
@@ -147,7 +149,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   template<typename Scalar,
            typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same<F, T>::value>,
+           typename = std::enable_if_t<!std::is_same_v<F, T>>,
            typename = void>
   Rotation(Angle const& angle,
            Bivector<Scalar, ToFrame> const& axis,
@@ -166,7 +168,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same<F, T>::value>>
+           typename = std::enable_if_t<!std::is_same_v<F, T>>>
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
@@ -175,7 +177,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same<F, T>::value>,
+           typename = std::enable_if_t<!std::is_same_v<F, T>>,
            typename = void>
   Rotation(Angle const& α,
            Angle const& β,
@@ -196,7 +198,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same<F, T>::value>>
+           typename = std::enable_if_t<!std::is_same_v<F, T>>>
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
@@ -205,7 +207,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same<F, T>::value>,
+           typename = std::enable_if_t<!std::is_same_v<F, T>>,
            typename = void>
   Rotation(Angle const& α,
            Angle const& β,
@@ -219,7 +221,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<std::is_same<F, T>::value>>
+           typename = std::enable_if_t<std::is_same_v<F, T>>>
   Bivector<double, FromFrame> RotationAxis() const;
 
   Angle RotationAngle() const;

@@ -15,7 +15,8 @@ namespace internal {
 using namespace principia::numerics::_log_b;
 using namespace principia::numerics::_scale_b;
 
-template<typename SourceFormat, typename>
+template<typename SourceFormat>
+  requires(std::is_floating_point_v<SourceFormat>)
 constexpr SourceFormat NextUp(SourceFormat const x) {
   // Handle the edge cases in the order in which they are listed in
   // IEEE 754:2008.
@@ -57,7 +58,8 @@ constexpr SourceFormat NextUp(SourceFormat const x) {
   return x + ulp;
 }
 
-template<typename SourceFormat, typename>
+template<typename SourceFormat>
+  requires(std::is_floating_point_v<SourceFormat>)
 constexpr SourceFormat NextDown(SourceFormat const x) {
   return -NextUp(-x);
 }

@@ -26,8 +26,6 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
     : reference_radius_(reference_radius),
       j2_(j2),
       j2_over_μ_(j2 * reference_radius * reference_radius),
-      cos_(typename OblateBody<Frame>::GeopotentialCoefficients()),
-      sin_(typename OblateBody<Frame>::GeopotentialCoefficients()),
       degree_(2),
       is_zonal_(true) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
@@ -37,8 +35,6 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(Length const& reference_radius)
     : reference_radius_(reference_radius),
-      cos_(typename OblateBody<Frame>::GeopotentialCoefficients()),
-      sin_(typename OblateBody<Frame>::GeopotentialCoefficients()),
       degree_(0),
       is_zonal_(false) {}
 
@@ -107,10 +103,10 @@ template<typename Frame>
 void OblateBody<Frame>::Parameters::WriteToMessage(
     not_null<serialization::OblateBody::Geopotential*> const message) const {
   for (int n = 0; n <= degree_; ++n) {
-    auto const row = message->add_row();
+    auto* const row = message->add_row();
     row->set_degree(n);
     for (int m = 0; m <= n; ++m) {
-      auto const column = row->add_column();
+      auto* const column = row->add_column();
       column->set_order(m);
       column->set_cos(cos_(n, m));
       column->set_sin(sin_(n, m));

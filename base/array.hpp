@@ -17,31 +17,30 @@ struct Array final {
   Array() = default;
   // Mostly useful for adding constness.
   template<typename OtherElement,
-           typename = typename std::enable_if<
-               std::is_convertible<OtherElement*, Element*>::value>::type>
+           typename = typename std::enable_if_t<
+               std::is_convertible_v<OtherElement*, Element*>>>
   Array(Array<OtherElement> const& other);
   // No allocation of memory.
   template<typename Size,
-           typename =
-               typename std::enable_if<std::is_integral<Size>::value>::type>
+           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
   Array(Element* data, Size size);
 
   // Implicit conversion from strings, vectors, and the like.
   template<
       typename Container,
       typename = std::enable_if_t<
-          std::is_convertible<decltype(std::declval<Container>().data()),
-                              Element*>::value &&
-          std::is_integral<decltype(std ::declval<Container>().size())>::value>>
+               std::is_convertible_v<decltype(std::declval<Container>().data()),
+                                     Element*> &&
+               std::is_integral_v<decltype(std ::declval<Container>().size())>>>
   constexpr Array(Container& container);  // NOLINT(runtime/explicit)
 
-  template<
-      typename Container,
-      typename = std::enable_if_t<
-          std::is_convertible<decltype(std::declval<Container const>().data()),
-                              Element*>::value &&
-          std::is_integral<
-              decltype(std ::declval<Container const>().size())>::value>>
+  template<typename Container,
+           typename = std::enable_if_t<
+               std::is_convertible_v<
+                   decltype(std::declval<Container const>().data()),
+                   Element*> &&
+               std::is_integral_v<
+                   decltype(std ::declval<Container const>().size())>>>
   constexpr Array(Container const& container);  // NOLINT(runtime/explicit)
 
   // Construction from a string literal if `Element` is a character type or some
@@ -50,14 +49,14 @@ struct Array final {
            typename Character,
            typename = std::enable_if_t<
                size_plus_1 >= 1 &&
-               (std::is_same<Element, unsigned char const>::value ||
-                std::is_same<Element, char const>::value ||
-                std::is_same<Element, wchar_t const>::value ||
-                std::is_same<Element, char16_t const>::value ||
-                std::is_same<Element, char32_t const>::value) &&
-               (std::is_same<Element, Character>::value ||
+               (std::is_same_v<Element, unsigned char const> ||
+                std::is_same_v<Element, char const> ||
+                std::is_same_v<Element, wchar_t const> ||
+                std::is_same_v<Element, char16_t const> ||
+                std::is_same_v<Element, char32_t const>) &&
+               (std::is_same_v<Element, Character> ||
                 (sizeof(Element) == 1 &&
-                 std::is_same<Character, char const>::value))>>
+                 std::is_same_v<Character, char const>))>>
   constexpr explicit Array(Character (&characters)[size_plus_1]);
 
   Element* data;
@@ -71,13 +70,11 @@ struct UniqueArray final {
   UniqueArray();
   // Allocates memory for `size` elements.
   template<typename Size,
-           typename =
-               typename std::enable_if<std::is_integral<Size>::value>::type>
+           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
   explicit UniqueArray(Size size);
   // Takes ownership of an existing array.
   template<typename Size,
-           typename =
-               typename std::enable_if<std::is_integral<Size>::value>::type>
+           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
   UniqueArray(std::unique_ptr<Element[]> data, Size size);
 
   // Move it, move it!
@@ -135,25 +132,25 @@ class BoundedArray final {
 // Deep comparisons.
 template<typename LeftElement,
          typename RightElement,
-         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
-                                     std::is_integral<RightElement>::value>>
+         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
+                                     std::is_integral_v<RightElement>>>
 bool operator==(Array<LeftElement> left, Array<RightElement> right);
 template<typename LeftElement,
          typename RightElement,
-         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
-                                     std::is_integral<RightElement>::value>>
+         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
+                                     std::is_integral_v<RightElement>>>
 bool operator==(Array<LeftElement> left,
                 UniqueArray<RightElement> const& right);
 template<typename LeftElement,
          typename RightElement,
-         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
-                                     std::is_integral<RightElement>::value>>
+         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
+                                     std::is_integral_v<RightElement>>>
 bool operator==(UniqueArray<LeftElement> const& left,
                 Array<RightElement> right);
 template<typename LeftElement,
          typename RightElement,
-         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
-                                     std::is_integral<RightElement>::value>>
+         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
+                                     std::is_integral_v<RightElement>>>
 bool operator==(UniqueArray<LeftElement> const& left,
                 UniqueArray<RightElement> const& right);
 

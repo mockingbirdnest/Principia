@@ -108,7 +108,7 @@ inline Unit operator^(Unit const& left, int const exponent) {
 
 inline Unit ParseUnit(std::string const& s) {
   // Unitless quantities.
-  if (s == "") {
+  if (s.empty()) {
     return Unit(1.0);
   // Units of length.
   } else if (s == "Å") {

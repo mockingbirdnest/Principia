@@ -334,7 +334,7 @@ BarycentreDerivative(
 
       auto const all_jerks =
           ephemeris_->ComputeGravitationalJerkOnMassiveBodies(
-              this->*bodies, *bodies_to_degrees_of_freedom, t);
+              this->*bodies, *bodies_to_degrees_of_freedom);
 
       int i = 0;
       for (not_null const body : this->*bodies) {

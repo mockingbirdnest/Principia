@@ -95,7 +95,7 @@ template<typename Scalar>
 struct SphericalCoordinates final {
   // Default, but prevents aggregate initialization of `SphericalCoordinates` to
   // obviate confusion over the order of `latitude` and `longitude`.
-  SphericalCoordinates();
+  SphericalCoordinates() = default;
 
   // Uses the x-y plane as the equator, the x-axis as the reference direction on
   // the equator, and the z-axis as the north pole.

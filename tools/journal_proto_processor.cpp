@@ -2,16 +2,18 @@
 
 #include <algorithm>
 #include <cctype>
-#include <fstream>
+#include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "base/map_util.hpp"
 #include "glog/logging.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "serialization/journal.pb.h"
 
 namespace principia {
@@ -20,14 +22,13 @@ namespace _journal_proto_processor {
 namespace internal {
 
 using ::google::protobuf::MessageOptions;
-using namespace principia::base::_map_util;
 
 namespace {
 
-constexpr char method_message_name[] = "Method";
-constexpr char in_message_name[] = "In";
-constexpr char return_message_name[] = "Return";
-constexpr char out_message_name[] = "Out";
+constexpr std::string_view method_message_name = "Method";
+constexpr std::string_view in_message_name = "In";
+constexpr std::string_view return_message_name = "Return";
+constexpr std::string_view out_message_name = "Out";
 
 std::string Join(std::vector<std::string> const& v, std::string const& joiner) {
   std::string joined;
@@ -71,7 +72,7 @@ void JournalProtoProcessor::ProcessMessages() {
   // Process all the messages in that file.
   for (int i = 0; i < file_descriptor->message_type_count(); ++i) {
     Descriptor const* message_descriptor = file_descriptor->message_type(i);
-    std::string message_descriptor_name = message_descriptor->name();
+    std::string const message_descriptor_name = message_descriptor->name();
     if (message_descriptor->extension_range_count() > 0) {
       // Only the `Method` message should have a range.  Don't generate any code
       // for it.
@@ -206,7 +207,6 @@ std::vector<std::string> JournalProtoProcessor::GetCxxPlayStatements() const {
 
 void JournalProtoProcessor::ProcessRepeatedNonStringField(
     FieldDescriptor const* descriptor,
-    std::string const& cs_boxed_type,
     std::string const& cs_unboxed_type,
     std::string const& cxx_type) {
   if (interchange_.contains(descriptor)) {
@@ -281,7 +281,6 @@ void JournalProtoProcessor::ProcessRepeatedDoubleField(
     FieldDescriptor const* descriptor) {
   ProcessRepeatedNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"BoxedDouble",
       /*cs_unboxed_type=*/"double",
       /*cxx_type=*/"double");
   ProcessRepeatedScalarField(descriptor, "double");
@@ -291,7 +290,6 @@ void JournalProtoProcessor::ProcessRepeatedInt32Field(
     FieldDescriptor const* descriptor) {
   ProcessRepeatedNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"BoxedInt32",
       /*cs_unboxed_type=*/"int",
       /*cxx_type=*/"int");
   ProcessRepeatedScalarField(descriptor, "int");
@@ -301,7 +299,6 @@ void JournalProtoProcessor::ProcessRepeatedInt64Field(
     FieldDescriptor const* descriptor) {
   ProcessRepeatedNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"BoxedInt64",
       /*cs_unboxed_type=*/"long",
       /*cxx_type=*/"std::int64_t");
   ProcessRepeatedScalarField(descriptor, "std::int64_t");
@@ -311,7 +308,6 @@ void JournalProtoProcessor::ProcessRepeatedUint32Field(
     FieldDescriptor const* descriptor) {
   ProcessRepeatedNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"BoxedUInt32",
       /*cs_unboxed_type=*/"uint",
       /*cxx_type=*/"uint32_t");
   ProcessRepeatedScalarField(descriptor, "uint32_t");
@@ -323,7 +319,6 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   std::string const& message_type_name = message_type->name();
   ProcessRepeatedNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"Boxed" + message_type_name,
       /*cs_unboxed_type=*/message_type_name,
       /*cxx_type=*/message_type_name);
 
@@ -1634,7 +1629,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         // that the marshaller trumps, because it takes care of everything.
         std::string const field_private_member_name =
             field_descriptor_name + "_";
-        std::vector<std::string> fn_arguments = {field_private_member_name};
+        std::vector<std::string> const fn_arguments = {
+            field_private_member_name};
         cs_interchange_type_declaration_[descriptor] +=
             "  private " + field_cs_private_type_[field_descriptor] + " " +
             field_private_member_name + ";\n";

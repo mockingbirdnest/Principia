@@ -58,9 +58,9 @@ AutomaticClenshawCurtisImplementation(
     Function const& f,
     Argument const& lower_bound,
     Argument const& upper_bound,
-    std::optional<double> const max_relative_error,
-    std::optional<int> const max_points,
-    Primitive<std::invoke_result_t<Function, Argument>, Argument> const
+    std::optional<double> max_relative_error,
+    std::optional<int> max_points,
+    Primitive<std::invoke_result_t<Function, Argument>, Argument>
         previous_estimate,
     std::vector<std::invoke_result_t<Function, Argument>>&
         f_cos_N⁻¹π_bit_reversed);

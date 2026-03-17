@@ -27,13 +27,13 @@ using namespace principia::quantities::_si;
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
 constexpr R3Element<Scalar>::R3Element() : x(), y(), z() {
-  static_assert(std::is_standard_layout<R3Element>::value,
+  static_assert(std::is_standard_layout_v<R3Element>,
                 "R3Element has a nonstandard layout");
 }
 
 template<typename Scalar>
 constexpr R3Element<Scalar>::R3Element(uninitialized_t) {
-  static_assert(std::is_standard_layout<R3Element>::value,
+  static_assert(std::is_standard_layout_v<R3Element>,
                 "R3Element has a nonstandard layout");
 }
 
@@ -48,7 +48,7 @@ R3Element<Scalar>::R3Element(Scalar const& x, Scalar const& y, Scalar const& z)
     : x(x), y(y), z(z)
 #endif
 {
-  static_assert(std::is_standard_layout<R3Element>::value,
+  static_assert(std::is_standard_layout_v<R3Element>,
                 "R3Element has a nonstandard layout");
 }
 
@@ -59,7 +59,7 @@ inline R3Element<Scalar>::R3Element(__m256d xyzt) : xyzt(xyzt) {}
 template<typename Scalar>
 R3Element<Scalar>::R3Element(__m128d const xy, __m128d const zt)
     : xy(xy), zt(zt) {
-  static_assert(std::is_standard_layout<R3Element>::value,
+  static_assert(std::is_standard_layout_v<R3Element>,
                 "R3Element has a nonstandard layout");
 }
 #endif
@@ -207,9 +207,6 @@ R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
           Serializer::ReadFromMessage(message.y()),
           Serializer::ReadFromMessage(message.z())};
 }
-
-template<typename Scalar>
-SphericalCoordinates<Scalar>::SphericalCoordinates() {}
 
 template<typename Scalar>
 R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() {
