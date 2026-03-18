@@ -1,7 +1,10 @@
 #pragma once
 
-#include "geometry/rotation.hpp"
 #include "physics/similar_motion.hpp"
+
+#include <utility>
+
+#include "geometry/rotation.hpp"
 
 namespace principia {
 namespace physics {
