@@ -54,9 +54,10 @@ BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
       centre_trajectory_->EvaluateDegreesOfFreedom(t);
 
-  Rotation<InertialFrame, ThisFrame> rotation =
+  Rotation<InertialFrame, ThisFrame> const rotation =
       centre_->template ToSurfaceFrame<ThisFrame>(t);
-  AngularVelocity<InertialFrame> angular_velocity = centre_->angular_velocity();
+  AngularVelocity<InertialFrame> const angular_velocity =
+      centre_->angular_velocity();
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(centre_degrees_of_freedom.position(),
                            ThisFrame::origin,

@@ -14,6 +14,7 @@
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -22,7 +23,6 @@
 #include "mathematica/mathematica.hpp"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_reference_frame.hpp"
@@ -32,6 +32,7 @@
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -63,7 +64,6 @@ using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
@@ -97,35 +97,38 @@ struct SP3Orbit {
 };
 
 SP3Files const& SP3Files::GNSS() {
-  static const SP3Files files = {{"WUM0MGXFIN_20190970000_01D_15M_ORB.SP3",
-                                  "WUM0MGXFIN_20190980000_01D_15M_ORB.SP3",
-                                  "WUM0MGXFIN_20190990000_01D_15M_ORB.SP3",
-                                  "WUM0MGXFIN_20191000000_01D_15M_ORB.SP3",
-                                  "WUM0MGXFIN_20191010000_01D_15M_ORB.SP3",
-                                  "WUM0MGXFIN_20191020000_01D_15M_ORB.SP3",
-                                  "WUM0MGXFIN_20191030000_01D_15M_ORB.SP3",
-                                  "WUM0MGXFIN_20191040000_01D_15M_ORB.SP3",
-                                  "WUM0MGXFIN_20191050000_01D_15M_ORB.SP3",
-                                  "WUM0MGXFIN_20191060000_01D_15M_ORB.SP3"},
-                                 StandardProduct3::Dialect::ChineseMGEX};
+  static const SP3Files files = {
+      .names = {"WUM0MGXFIN_20190970000_01D_15M_ORB.SP3",
+                "WUM0MGXFIN_20190980000_01D_15M_ORB.SP3",
+                "WUM0MGXFIN_20190990000_01D_15M_ORB.SP3",
+                "WUM0MGXFIN_20191000000_01D_15M_ORB.SP3",
+                "WUM0MGXFIN_20191010000_01D_15M_ORB.SP3",
+                "WUM0MGXFIN_20191020000_01D_15M_ORB.SP3",
+                "WUM0MGXFIN_20191030000_01D_15M_ORB.SP3",
+                "WUM0MGXFIN_20191040000_01D_15M_ORB.SP3",
+                "WUM0MGXFIN_20191050000_01D_15M_ORB.SP3",
+                "WUM0MGXFIN_20191060000_01D_15M_ORB.SP3"},
+      .dialect = StandardProduct3::Dialect::ChineseMGEX};
   return files;
 }
 
 SP3Files const& SP3Files::SPOT5() {
-  static const SP3Files files = {{"ssasp501.b10170.e10181.D__.sp3"},
-                                 StandardProduct3::Dialect::Standard};
+  static const SP3Files files = {
+      .names = {"ssasp501.b10170.e10181.D__.sp3"},
+      .dialect = StandardProduct3::Dialect::Standard};
   return files;
 }
 
 SP3Files const& SP3Files::Sentinel3A() {
-  static const SP3Files files = {{"ssas3a20.b18358.e19003.DG_.sp3"},
-                                 StandardProduct3::Dialect::Standard};
+  static const SP3Files files = {
+      .names = {"ssas3a20.b18358.e19003.DG_.sp3"},
+      .dialect = StandardProduct3::Dialect::Standard};
   return files;
 }
 
 SP3Files const& SP3Files::TOPEXPoséidon() {
-  static const SP3Files files = {{"grgtop03.b97344.e97348.D_S.sp3"},
-                                 StandardProduct3::Dialect::GRGS};
+  static const SP3Files files = {.names = {"grgtop03.b97344.e97348.D_S.sp3"},
+                                 .dialect = StandardProduct3::Dialect::GRGS};
   return files;
 }
 
@@ -156,13 +159,13 @@ class OrbitAnalysisTest : public ::testing::Test {
   // of `sp3_orbit.satellites` in `sp3_orbit.files`.
   not_null<std::unique_ptr<DiscreteTrajectory<GCRS>>> EarthCentredTrajectory(
       SP3Orbit const& sp3_orbit) {
-    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> gcrs{ephemeris_.get(),
-                                                          &earth_};
-    BodySurfaceReferenceFrame<ICRS, ITRS> itrs{ephemeris_.get(), &earth_};
+    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> const gcrs{
+        ephemeris_.get(), &earth_};
+    BodySurfaceReferenceFrame<ICRS, ITRS> const itrs{ephemeris_.get(), &earth_};
 
     auto result = make_not_null_unique<DiscreteTrajectory<GCRS>>();
     for (auto const& file : sp3_orbit.files.names) {
-      StandardProduct3 sp3(
+      StandardProduct3 const sp3(
           SOLUTION_DIR / "astronomy" / "standard_product_3" / file,
           sp3_orbit.files.dialect);
       std::vector<not_null<DiscreteTrajectory<ITRS> const*>> const& orbit =
@@ -249,7 +252,7 @@ class OrbitAnalysisTest : public ::testing::Test {
   RotatingBody<ICRS> const& earth_;
 
  private:
-  SolarSystem<ICRS> RemoveAllButEarth(SolarSystem<ICRS> solar_system) {
+  static SolarSystem<ICRS> RemoveAllButEarth(SolarSystem<ICRS> solar_system) {
     std::vector<std::string> const names = solar_system.names();
     for (auto const& name : names) {
       if (name != "Earth") {
@@ -267,7 +270,8 @@ class OrbitAnalysisTest : public ::testing::Test {
 // PRN C01, GEO, 140.0° E.
 TEST_F(OrbitAnalysisTest, 北斗GEO) {
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::北斗, 1}, SP3Files::GNSS()});
+      {.satellite = {StandardProduct3::SatelliteGroup::北斗, 1},
+       .files = SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 1),
@@ -288,7 +292,8 @@ TEST_F(OrbitAnalysisTest, 北斗GEO) {
 // PRN C06, IGSO, 117°E.
 TEST_F(OrbitAnalysisTest, 北斗IGSO) {
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::北斗, 6}, SP3Files::GNSS()});
+      {.satellite = {StandardProduct3::SatelliteGroup::北斗, 6},
+       .files = SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 1),
@@ -309,7 +314,8 @@ TEST_F(OrbitAnalysisTest, 北斗IGSO) {
 // PRN J01, quasi-zenith orbit.
 TEST_F(OrbitAnalysisTest, みちびきQZO) {
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::みちびき, 1}, SP3Files::GNSS()});
+      {.satellite = {StandardProduct3::SatelliteGroup::みちびき, 1},
+       .files = SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 1),
@@ -339,7 +345,8 @@ TEST_F(OrbitAnalysisTest, みちびきGEO) {
   // J07 is missing from the last two files.
   j07_files.names.resize(j07_files.names.size() - 2);
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::みちびき, 7}, j07_files});
+      {.satellite = {StandardProduct3::SatelliteGroup::みちびき, 7},
+       .files = j07_files});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 1),
@@ -360,7 +367,8 @@ TEST_F(OrbitAnalysisTest, みちびきGEO) {
 // PRN C34, slot A-7.
 TEST_F(OrbitAnalysisTest, 北斗MEO) {
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::北斗, 34}, SP3Files::GNSS()});
+      {.satellite = {StandardProduct3::SatelliteGroup::北斗, 34},
+       .files = SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -388,7 +396,8 @@ TEST_F(OrbitAnalysisTest, 北斗MEO) {
 // PRN E01, slot A02.
 TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::Galileo, 1}, SP3Files::GNSS()});
+      {.satellite = {StandardProduct3::SatelliteGroup::Galileo, 1},
+       .files = SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -483,7 +492,8 @@ TEST_F(OrbitAnalysisTest, GalileoNominalSlot) {
 // PRN E14, slot Ext02.
 TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::Galileo, 14}, SP3Files::GNSS()});
+      {.satellite = {StandardProduct3::SatelliteGroup::Galileo, 14},
+       .files = SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -559,7 +569,8 @@ TEST_F(OrbitAnalysisTest, GalileoExtendedSlot) {
 // PRN R01, plane 1.
 TEST_F(OrbitAnalysisTest, ГЛОНАСС) {
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::ГЛОНАСС, 1}, SP3Files::GNSS()});
+      {.satellite = {StandardProduct3::SatelliteGroup::ГЛОНАСС, 1},
+       .files = SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -580,7 +591,8 @@ TEST_F(OrbitAnalysisTest, ГЛОНАСС) {
 // PRN G01, plane D, slot 2.
 TEST_F(OrbitAnalysisTest, GPS) {
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::GPS, 1}, SP3Files::GNSS()});
+      {.satellite = {StandardProduct3::SatelliteGroup::GPS, 1},
+       .files = SP3Files::GNSS()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 2),
@@ -601,9 +613,9 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // The references for these orbital characteristics are [BSFL98], [Ben97] and
   // [BS96].
 
-  auto const [elements, recurrence, ground_track] =
-      ElementsAndRecurrence({{StandardProduct3::SatelliteGroup::General, 1},
-                             SP3Files::TOPEXPoséidon()});
+  auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
+      {.satellite = {StandardProduct3::SatelliteGroup::General, 1},
+       .files = SP3Files::TOPEXPoséidon()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 13),
@@ -735,7 +747,8 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
 // COSPAR ID 2002-021A, SPOT-5 (Satellite Pour l’Observation de la Terre).
 TEST_F(OrbitAnalysisTest, SPOT5) {
   auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
-      {{StandardProduct3::SatelliteGroup::General, 94}, SP3Files::SPOT5()});
+      {.satellite = {StandardProduct3::SatelliteGroup::General, 94},
+       .files = SP3Files::SPOT5()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 14),
@@ -772,9 +785,9 @@ TEST_F(OrbitAnalysisTest, SPOT5) {
 
 // COSPAR ID 2016-011A, Sentinel-3A.
 TEST_F(OrbitAnalysisTest, Sentinel3A) {
-  auto const [elements, recurrence, ground_track] =
-      ElementsAndRecurrence({{StandardProduct3::SatelliteGroup::General, 74},
-                             SP3Files::Sentinel3A()});
+  auto const [elements, recurrence, ground_track] = ElementsAndRecurrence(
+      {.satellite = {StandardProduct3::SatelliteGroup::General, 74},
+       .files = SP3Files::Sentinel3A()});
 
   EXPECT_THAT(recurrence,
               AllOf(Property(&OrbitRecurrence::νₒ, 14),

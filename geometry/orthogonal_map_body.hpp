@@ -83,7 +83,8 @@ OrthogonalMap<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
+template<typename F, typename T>
+  requires(F::handedness == T::handedness)
 OrthogonalMap<FromFrame, ToFrame>
 OrthogonalMap<FromFrame, ToFrame>::Identity() {
   return OrthogonalMap(Quaternion(1));

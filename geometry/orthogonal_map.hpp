@@ -99,8 +99,8 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
   ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
   template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<F::handedness == T::handedness>>
+           typename T = ToFrame>
+    requires(F::handedness == T::handedness)
   static OrthogonalMap Identity();
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;

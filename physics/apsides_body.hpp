@@ -482,10 +482,10 @@ absl::Status ComputeNodes(
     DistinguishedPoints<Frame>& descending,
     Predicate predicate) {
   static_assert(
-      std::is_convertible<decltype(predicate(
+      std::is_convertible_v<decltype(predicate(
                               std::declval<DegreesOfFreedom<Frame>>())),
-                          bool>::value,
-      "|predicate| must be a predicate on |DegreesOfFreedom<Frame>|");
+                          bool>,
+      "`predicate` must be a predicate on `DegreesOfFreedom<Frame>`");
 
   std::optional<Instant> previous_time;
   std::optional<Length> previous_z;
