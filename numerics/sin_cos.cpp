@@ -6,6 +6,7 @@
 #include <limits>
 #include <utility>
 
+#include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
 #include "base/tags.hpp"
 #include "core-math/cos.h"
 #include "core-math/sin.h"
@@ -63,6 +64,12 @@ using namespace principia::numerics::_polynomial_evaluators;
     return expression;                                                       \
   }()
 
+// Forward declarations needed by the OSACA macros.
+template<FMAPresence fma_presence>
+double __cdecl Sin(double x);
+template<FMAPresence fma_presence>
+double __cdecl Cos(double x);
+
 namespace {
 
 using Argument = M128D;
@@ -103,12 +110,6 @@ constexpr double e_cos = 0x1.0001'58B5'12B3'2p0;  // 2^-69.570.
 
 SlowPathCallback slow_path_sin_callback = nullptr;
 SlowPathCallback slow_path_cos_callback = nullptr;
-
-// Forward declarations needed by the OSACA macros.
-template<FMAPresence fma_presence>
-double __cdecl Sin(double x);
-template<FMAPresence fma_presence>
-double __cdecl Cos(double x);
 
 namespace m128d {
 

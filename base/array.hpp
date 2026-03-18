@@ -69,8 +69,8 @@ struct UniqueArray final {
   // An object of size 0.
   UniqueArray();
   // Allocates memory for `size` elements.
-  template<typename Size,
-           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
+  template<typename Size>
+    requires(std::is_integral_v<Size>)
   explicit UniqueArray(Size size);
   // Takes ownership of an existing array.
   template<typename Size,
