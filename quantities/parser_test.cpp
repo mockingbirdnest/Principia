@@ -1,7 +1,5 @@
 #include "quantities/parser.hpp"
 
-#include <array>
-
 #include "base/algebra.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

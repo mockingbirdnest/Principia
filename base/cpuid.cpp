@@ -1,7 +1,10 @@
 #include "base/cpuid.hpp"
 
+#include <cstdint>
+#include <cstring>
 #include <ranges>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "absl/strings/str_join.h"
@@ -54,7 +57,7 @@ std::string_view CPUIDFeatureFlag::name() const {
 }
 
 bool CPUIDFeatureFlag::IsSet() const {
-  return CPUID(leaf_, sub_leaf_).*field_ & (1 << bit_);
+  return static_cast<bool>(CPUID(leaf_, sub_leaf_).*field_ & (1 << bit_));
 }
 
 #define PRINCIPIA_CPUID_FLAG(name, ...) \

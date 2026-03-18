@@ -57,7 +57,8 @@ template<typename Element>
 UniqueArray<Element>::UniqueArray() : size(0) {}
 
 template<typename Element>
-template<typename Size, typename>
+template<typename Size>
+  requires(std::is_integral_v<Size>)
 UniqueArray<Element>::UniqueArray(Size const size)
     : data(size == 0 ? nullptr : new Element[static_cast<std::size_t>(size)]),
       size(static_cast<std::int64_t>(size)) {}

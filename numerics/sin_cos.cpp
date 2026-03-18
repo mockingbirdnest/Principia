@@ -2,6 +2,7 @@
 
 #include <immintrin.h>
 
+#include <cstdint>
 #include <limits>
 #include <utility>
 
@@ -10,10 +11,10 @@
 #include "core-math/sin.h"
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "numerics/m128d.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 
 // The algorithms in this file are documented in `Sin Cos.pdf`.  To the extent
 // possible, the code follows the notation of that document.
@@ -25,7 +26,6 @@ namespace internal {
 using namespace principia::base::_tags;
 using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_double_precision;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_polynomial_evaluators;
 
@@ -62,6 +62,8 @@ using namespace principia::numerics::_polynomial_evaluators;
     constexpr SC<double> values = {.sin = 0, .cos = 1};                      \
     return expression;                                                       \
   }()
+
+namespace {
 
 using Argument = M128D;
 using Value = M128D;
@@ -491,6 +493,8 @@ SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
   }
   return m128ds;
 }
+
+}  // namespace
 
 template<FMAPresence fma_presence>
 double __cdecl Sin(double x) {
