@@ -1,6 +1,7 @@
 #include "physics/jacobi_coordinates.hpp"
 
 #include <algorithm>
+#include <iterator>
 #include <vector>
 
 #include "geometry/frame.hpp"

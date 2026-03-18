@@ -89,7 +89,8 @@ Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
     : Rotation(AngleAxis(angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
-template<int rank_x, int rank_y, int rank_z, typename F, typename T, typename>
+template<int rank_x, int rank_y, int rank_z, typename F, typename T>
+  requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(
     Multivector<double, FromFrame, rank_x> x_to_frame,
     Multivector<double, FromFrame, rank_y> y_to_frame,

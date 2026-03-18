@@ -18,7 +18,7 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
 inline absl::Status ComputeHarmonicOscillatorAcceleration1D(
-    Instant const& t,
+    Instant const& /*t*/,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
     int* const evaluations) {
@@ -31,7 +31,7 @@ inline absl::Status ComputeHarmonicOscillatorAcceleration1D(
 
 template<typename Frame>
 absl::Status ComputeHarmonicOscillatorAcceleration3D(
-    Instant const& t,
+    Instant const& /*t*/,
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>& result,
     int* const evaluations) {
@@ -43,7 +43,7 @@ absl::Status ComputeHarmonicOscillatorAcceleration3D(
 }
 
 inline absl::Status ComputeHarmonicOscillatorDerivatives1D(
-    Instant const& t,
+    Instant const& /*t*/,
     DirectSum<Length, Speed> const& state,
     DirectSum<Speed, Acceleration>& result,
     int* const evaluations) {
@@ -59,7 +59,7 @@ inline absl::Status ComputeHarmonicOscillatorDerivatives1D(
 
 template<typename Frame>
 absl::Status ComputeKeplerAcceleration(
-    Instant const& t,
+    Instant const& /*t*/,
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>& result,
     int* evaluations) {

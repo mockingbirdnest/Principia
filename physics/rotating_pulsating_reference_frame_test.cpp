@@ -2,13 +2,14 @@
 
 #include <memory>
 
+#include "absl/status/status.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -37,7 +38,6 @@ using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_explicit_runge_kutta_integrator;
@@ -137,7 +137,7 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
       ExplicitFirstOrderOrdinaryDifferentialEquation<Instant,
                                                      Position<EarthMoon>,
                                                      Velocity<EarthMoon>>;
-  InitialValueProblem<ODE> problem{
+  InitialValueProblem<ODE> const problem{
       .equation{.compute_derivative =
                     [this](Instant const& t,
                            ODE::DependentVariables const& y,

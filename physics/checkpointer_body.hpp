@@ -199,7 +199,7 @@ void Checkpointer<Message>::WriteToMessage(
     not_null<google::protobuf::RepeatedPtrField<typename Message::Checkpoint>*>
         message) const {
   absl::ReaderMutexLock l(&lock_);
-  for (const auto [time, checkpoint] : checkpoints_) {
+  for (auto const& [time, checkpoint] : checkpoints_) {
     typename Message::Checkpoint* const message_checkpoint = message->Add();
     *message_checkpoint = checkpoint;
     time.WriteToMessage(message_checkpoint->mutable_time());
@@ -215,7 +215,7 @@ Checkpointer<Message>::ReadFromMessage(
         message) {
   auto checkpointer =
       std::make_unique<Checkpointer>(std::move(writer), std::move(reader));
-  for (const auto& checkpoint : message) {
+  for (auto const& checkpoint : message) {
     Instant const time = Instant::ReadFromMessage(checkpoint.time());
     checkpointer->checkpoints_.emplace(time, checkpoint);
   }

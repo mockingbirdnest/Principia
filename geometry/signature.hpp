@@ -49,8 +49,8 @@ class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
   constexpr Sign Determinant() const;
 
   template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<F::handedness == T::handedness>>
+           typename T = ToFrame>
+    requires(F::handedness == T::handedness)
   static constexpr Signature Identity();
 
   template<typename F = FromFrame,

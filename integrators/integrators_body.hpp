@@ -376,7 +376,7 @@ template<typename Result,
          typename... Args>
 Result ReadSprkFromMessage(
     serialization::FixedStepSizeIntegratorInstance const& message,
-    Args... args) {
+    Args const&... args) {
   CHECK(message.integrator().has_composition_method());
   if constexpr (first_same_as_last) {
     switch (message.integrator().composition_method()) {

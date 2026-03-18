@@ -1654,7 +1654,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
                 parameters.speed_integration_tolerance(),
                 _1, _2, _3);
 
-  typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state =
+  typename AdaptiveStepSizeIntegrator<ODE>::AppendState const append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesStateToTrajectories,
                 _1,
                 std::cref(trajectories));

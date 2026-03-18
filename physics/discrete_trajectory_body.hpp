@@ -737,6 +737,7 @@ absl::Status DiscreteTrajectory<Frame>::ConsistencyStatus() const {
                           " between segment #", i,
                           " and the time-to-segment map"));
       }
+      ++i;
     }
   }
   {

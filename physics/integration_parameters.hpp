@@ -44,15 +44,15 @@ class AdaptiveStepParameters final {
   AdaptiveStepSizeIntegrator<ODE> const& integrator() const;
   std::int64_t max_steps() const;
   Length length_integration_tolerance() const;
-  template<typename E = ODE,
-           std::enable_if_t<E::order == 2, std::nullptr_t> = nullptr>
+  template<typename E = ODE>
+    requires(E::order == 2)
   Speed speed_integration_tolerance() const;
 
   void set_max_steps(std::int64_t max_steps);
   void set_length_integration_tolerance(
       Length const& length_integration_tolerance);
-  template<typename E = ODE,
-           std::enable_if_t<E::order == 2, std::nullptr_t> = nullptr>
+  template<typename E = ODE>
+    requires(E::order == 2)
   void set_speed_integration_tolerance(
       Speed const& speed_integration_tolerance);
 

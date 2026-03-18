@@ -117,8 +117,8 @@ OrbitGroundTrack::EquatorCrossingLongitudes::longitudes_reduced_to_pass(
   Angle const reduction =
       -std::floor((longitudes.midpoint() + shift) / (2 * π * Radian)) *
       (2 * π * Radian);
-  return {longitudes.min + shift + reduction,
-          longitudes.max + shift + reduction};
+  return {.min = longitudes.min + shift + reduction,
+          .max = longitudes.max + shift + reduction};
 }
 
 inline OrbitGroundTrack::EquatorCrossingLongitudes::EquatorCrossingLongitudes(

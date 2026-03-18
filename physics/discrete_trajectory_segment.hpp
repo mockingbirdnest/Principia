@@ -75,7 +75,7 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   explicit DiscreteTrajectorySegment(
       DiscreteTrajectorySegmentIterator<Frame> self);
 
-  ~DiscreteTrajectorySegment() = default;
+  ~DiscreteTrajectorySegment() override = default;
 
   // Moveable.
   DiscreteTrajectorySegment(DiscreteTrajectorySegment&&) = default;

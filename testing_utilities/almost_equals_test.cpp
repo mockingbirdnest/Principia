@@ -8,7 +8,6 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/fixed_arrays.hpp"
@@ -16,6 +15,7 @@
 #include "quantities/bipm.hpp"
 #include "quantities/cgs.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For e.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
@@ -64,7 +64,7 @@ TEST_F(AlmostEqualsTest, Dimensionless) {
 }
 
 TEST_F(AlmostEqualsTest, Quantity) {
-  Speed v1 = 1 * Knot;
+  Speed const v1 = 1 * Knot;
   Speed const v2 = v1;
   EXPECT_THAT(v2, AlmostEquals(v1, 0));
   EXPECT_THAT(2 * v2, Not(AlmostEquals(v1, 4)));
@@ -265,7 +265,7 @@ TEST_F(AlmostEqualsTest, UnboundedUpperTriangularMatrix) {
 }
 
 TEST_F(AlmostEqualsTest, Describe) {
-  Speed v1 = 1 * si::Unit<Speed>;
+  Speed const v1 = 1 * si::Unit<Speed>;
   {
     std::ostringstream out;
     AlmostEquals(v1, 2, 6).impl().DescribeTo(&out);

@@ -49,7 +49,8 @@ constexpr Signature<ToFrame, FromFrame> Signature<FromFrame, ToFrame>::Inverse()
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename>
+template<typename F, typename T>
+  requires(F::handedness == T::handedness)
 constexpr Signature<FromFrame, ToFrame>
 Signature<FromFrame, ToFrame>::Identity() {
   return Signature(
