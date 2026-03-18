@@ -3,6 +3,7 @@ Checks:            '-*,bugprone-argument-comment,bugprone-assert-side-effect,bug
 CheckOptions:
   - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           '1'
+ExtraArgsBefore:         ['-fno-char8_t']
 WarningsAsErrors:  ''
 HeaderFilterRegex: '.*Principia.*\.hpp'
 ExcludeHeaderFilterRegex: '(.*\.(h|inc)$|.*Boost.*)'
