@@ -19,6 +19,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "physics/apsides.hpp"
 #include "physics/checkpointer.hpp"
 #include "physics/clientele.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -47,6 +48,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
+using namespace principia::physics::_apsides;
 using namespace principia::physics::_checkpointer;
 using namespace principia::physics::_clientele;
 using namespace principia::physics::_continuous_trajectory;
@@ -283,15 +285,15 @@ class Ephemeris {
       Instant const& t) const EXCLUDES(lock_);
 
   // Computes the apsides of the relative trajectory of `body1` and `body2`.
-  // Appends to the given trajectories two points for each apsis, one for
+  // Appends to the given out parameters two points for each apsis, one for
   // `body1` and one for `body2`.  The times of `apoapsides1` and `apoapsides2`
   // are identical (are similarly for `periapsides1` and `periapsides2`).
   virtual void ComputeApsides(not_null<MassiveBody const*> body1,
                               not_null<MassiveBody const*> body2,
-                              DiscreteTrajectory<Frame>& apoapsides1,
-                              DiscreteTrajectory<Frame>& periapsides1,
-                              DiscreteTrajectory<Frame>& apoapsides2,
-                              DiscreteTrajectory<Frame>& periapsides2);
+                              DistinguishedPoints<Frame>& apoapsides1,
+                              DistinguishedPoints<Frame>& periapsides1,
+                              DistinguishedPoints<Frame>& apoapsides2,
+                              DistinguishedPoints<Frame>& periapsides2);
 
   // Returns the index of the given body in the serialization produced by
   // `WriteToMessage` and read by the `Read...` functions.  This index is not
