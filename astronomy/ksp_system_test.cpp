@@ -207,14 +207,10 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   Logger logger(TEMP_DIR / "ksp_system.generated.wl",
                 /*make_unique=*/false);
 
-#if 0
-  auto const a_century_hence = solar_system_.epoch() + 100 * JulianYear;
-#else  // A small century so the tests don't take too long.
-  auto const a_century_hence = solar_system_.epoch() + 5 * JulianYear;
-#endif
+  auto const final_time = solar_system_.epoch() + 5 * JulianYear;
 
   LOG(INFO) << "Starting integration";
-  EXPECT_OK(ephemeris_->Prolong(a_century_hence));
+  EXPECT_OK(ephemeris_->Prolong(final_time));
   LOG(INFO) << "Integration done";
 
   std::map<not_null<MassiveBody const*>, Length> last_separations;
@@ -226,7 +222,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
     last_separation_changes.emplace(moon, Sign::Positive());
   }
   for (int n = 0;
-       t < a_century_hence;
+       t < final_time;
        ++n, t = solar_system_.epoch() + n * Hour) {
     auto const position =
         [this, t](not_null<MassiveBody const*> const body) {
