@@ -28,19 +28,20 @@ using namespace principia::quantities::_si;
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
 BodyCentredBodyDirectionReferenceFrame(
-    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     not_null<MassiveBody const*> const primary,
-    not_null<MassiveBody const*> secondary)
-    : ephemeris_(std::move(ephemeris)),
+    not_null<MassiveBody const*> const secondary)
+    : ephemeris_(ephemeris),
       primary_(primary),
-      secondary_(std::move(secondary)),
+      secondary_(secondary),
       compute_gravitational_acceleration_on_primary_(
-          [this](Position<InertialFrame> const& position, Instant const& t) {
+          [this](Position<InertialFrame> const& /*position*/,
+                 Instant const& t) {
             return ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
                 primary_, t);
           }),
       compute_gravitational_jerk_on_primary_(
-          [this](DegreesOfFreedom<InertialFrame> const& degrees_of_freedom,
+          [this](DegreesOfFreedom<InertialFrame> const& /*degrees_of_freedom*/,
                  Instant const& t) {
             return ephemeris_->ComputeGravitationalJerkOnMassiveBody(primary_,
                                                                      t);
@@ -52,12 +53,12 @@ BodyCentredBodyDirectionReferenceFrame(
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
 BodyCentredBodyDirectionReferenceFrame(
-    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     std::function<Trajectory<InertialFrame> const&()> primary_trajectory,
-    not_null<MassiveBody const*> secondary)
-    : ephemeris_(std::move(ephemeris)),
+    not_null<MassiveBody const*> const secondary)
+    : ephemeris_(ephemeris),
       primary_(nullptr),
-      secondary_(std::move(secondary)),
+      secondary_(secondary),
       compute_gravitational_acceleration_on_primary_(
           [this](Position<InertialFrame> const& position, Instant const& t) {
             return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(

@@ -109,14 +109,18 @@ void DanielsonLánczos<Complex, array_size_, 4>::Transform(
 }
 
 template<typename Value, typename Argument, std::size_t size_>
-template<typename Container, typename>
+template<typename Container>
+  requires(std::is_convertible_v<typename Container::value_type, Value>)
 FastFourierTransform<Value, Argument, size_>::FastFourierTransform(
     Container const& container,
     Difference<Argument> const& Δt)
     : FastFourierTransform(container.cbegin(), container.cend(), Δt) {}
 
 template<typename Value, typename Argument, std::size_t size_>
-template<typename Iterator, typename>
+template<typename Iterator>
+  requires(std::is_convertible_v<
+              typename std::iterator_traits<Iterator>::value_type,
+              Value>)
 FastFourierTransform<Value, Argument, size_>::FastFourierTransform(
     Iterator const begin,
     Iterator const end,

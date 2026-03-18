@@ -125,12 +125,14 @@ constexpr void not_null<Pointer>::reset(not_null<Q> const ptr) {
 }
 
 template<typename Pointer>
-constexpr bool not_null<Pointer>::operator==(std::nullptr_t const other) const {
+constexpr bool not_null<Pointer>::operator==(
+    std::nullptr_t const /*other*/) const {
   return false;
 }
 
 template<typename Pointer>
-constexpr bool not_null<Pointer>::operator!=(std::nullptr_t const other) const {
+constexpr bool not_null<Pointer>::operator!=(
+    std::nullptr_t const /*other*/) const {
   return true;
 }
 
@@ -180,7 +182,7 @@ constexpr bool not_null<Pointer>::operator>(not_null const other) const {
 }
 
 template<typename Pointer>
-constexpr not_null<Pointer>::not_null(pointer other, unchecked_tag const tag)
+constexpr not_null<Pointer>::not_null(pointer other, unchecked_tag const)
     : storage_(std::move(other)) {}
 
 template<typename Pointer>

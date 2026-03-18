@@ -293,7 +293,7 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE_>::Instance::
 ReadFromMessage(
     serialization::
         EmbeddedExplicitRungeKuttaNystromIntegratorInstance const&
-            extension,
+            /*extension*/,
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     ToleranceToErrorRatio const& tolerance_to_error_ratio,
@@ -363,8 +363,7 @@ template<typename Method, typename ODE_>
 internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, ODE_> const&
 EmbeddedExplicitRungeKuttaNyströmIntegrator() {
   static_assert(
-      std::is_base_of<_methods::EmbeddedExplicitRungeKuttaNyström,
-                      Method>::value,
+      std::is_base_of_v<_methods::EmbeddedExplicitRungeKuttaNyström, Method>,
       "Method must be derived from EmbeddedExplicitRungeKuttaNyström");
   static internal::EmbeddedExplicitRungeKuttaNyströmIntegrator<Method,
                                                                ODE_> const

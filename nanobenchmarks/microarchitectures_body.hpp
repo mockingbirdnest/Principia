@@ -308,7 +308,7 @@ MicroarchitectureDescription<RelativeDegreesOfFreedom<World>, Instant> const
 template<typename Value, typename Argument>
 std::vector<NanobenchmarkAndCycles<Value, Argument>> const&
 ReferenceCycleCounts() {
-  static std::vector<NanobenchmarkAndCycles<Value, Argument>>* const
+  static std::vector<NanobenchmarkAndCycles<Value, Argument>> const* const
       reference_cycle_counts = [] {
         for (auto const& [regex, architecture] :
              microarchitectures<Value, Argument>) {

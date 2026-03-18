@@ -62,7 +62,7 @@ FixedVector<double, M + 1> Nodes() {
 // Constructs an N×N diagonal matrix defined by a function.
 template<std::int64_t N>
 FixedMatrix<double, N, N, /*use_heap=*/true> DiagonalMatrix(
-    std::function<double(std::int64_t)> const f) {
+    std::function<double(std::int64_t)> const& f) {
   FixedMatrix<double, N, N, /*use_heap=*/true> A;
   for (std::int64_t i = 0; i < N; ++i) {
     A(i, i) = f(i);
@@ -246,7 +246,7 @@ FixedVector<DirectSum<DependentVariable...>, M + 1, true>
     ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
                                                    DependentVariable...>>::
     UninitializedDependentVariableMatrix(
-        InitialValueProblem<ODE> const& problem) {
+        InitialValueProblem<ODE> const& /*problem*/) {
   return FixedVector<DirectSum<DependentVariable...>, M + 1, true>(
       uninitialized);
 }
@@ -261,7 +261,7 @@ FixedVector<DirectSum<Derivative<DependentVariable, IndependentVariable>...>,
     M,
     ExplicitFirstOrderOrdinaryDifferentialEquation<IndependentVariable,
                                                    DependentVariable...>>::
-    UninitializedRightHandSideMatrix(InitialValueProblem<ODE> const& problem) {
+UninitializedRightHandSideMatrix(InitialValueProblem<ODE> const& /*problem*/) {
   return FixedVector<
       DirectSum<Derivative<DependentVariable, IndependentVariable>...>,
       M + 1,
@@ -545,7 +545,7 @@ not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 
 template<ЧебышёвPicardMethod Method, typename ODE_>
 void ЧебышёвPicardIntegrator<Method, ODE_>::WriteToMessage(
-    not_null<serialization::FixedStepSizeIntegrator*> message) const {
+    not_null<serialization::FixedStepSizeIntegrator*> /*message*/) const {
   LOG(FATAL) << "Serialization of ЧебышёвPicardIntegrator is not yet supported";
   std::abort();
 }

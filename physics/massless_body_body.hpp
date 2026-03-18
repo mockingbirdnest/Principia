@@ -32,7 +32,7 @@ inline not_null<std::unique_ptr<MasslessBody>> MasslessBody::ReadFromMessage(
 }
 
 inline not_null<std::unique_ptr<MasslessBody>> MasslessBody::ReadFromMessage(
-    serialization::MasslessBody const& message) {
+    serialization::MasslessBody const& /*message*/) {
   return std::make_unique<MasslessBody>();
 }
 

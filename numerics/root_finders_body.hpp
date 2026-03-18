@@ -31,8 +31,8 @@ Argument Bisect(Function f,
                 Argument const& upper_bound) {
   using Value = decltype(f(lower_bound));
   Value const zero{};
-  Value f_upper = f(upper_bound);
-  Value f_lower = f(lower_bound);
+  Value const f_upper = f(upper_bound);
+  Value const f_lower = f(lower_bound);
   if (f_upper == zero) {
     return upper_bound;
   }
@@ -179,8 +179,8 @@ absl::btree_set<Argument> DoubleBrent(Function f,
   Argument const a_effective = a + tolerance;
   Argument const b_effective = b - tolerance;
 
-  Value f_a = f(a);
-  Value f_b = f(b);
+  Value const f_a = f(a);
+  Value const f_b = f(b);
 
   // The case of a zero at a bound will be handled below.  It can arise because
   // the search for a zero returns a bound, even though the function is not
@@ -328,7 +328,7 @@ template<typename Argument, typename Function, typename Compare>
 Argument Brent(Function f,
                Argument const& lower_bound,
                Argument const& upper_bound,
-               Compare compare,
+               Compare /*compare*/,
                double eps) {
   using Value = decltype(f(lower_bound));
 

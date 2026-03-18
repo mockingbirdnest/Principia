@@ -191,7 +191,7 @@ inline std::string DebugString(double const number, int const precision) {
 }
 
 template<boost_cpp_number N>
-std::string DebugString(N const& number, int const precision) {
+std::string DebugString(N const& number, int const /*precision*/) {
   return number.str();
 }
 

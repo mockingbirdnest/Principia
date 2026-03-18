@@ -1,9 +1,9 @@
 #include "numerics/elliptic_integrals.hpp"
 
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <limits>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -15,6 +15,7 @@
 #include "numerics/elementary_functions.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 
 // The implementation in this file is derived from [Fuk18] (license: MIT). The
@@ -1219,7 +1220,7 @@ Angle BulirschCel(double kc, double const nc, double a, double b) {
   } else {
     double f = kc * kc;
     double q = 1.0 - f;
-    double g = 1.0 - p;
+    double const g = 1.0 - p;
     f = f - p;
     q = (b - a * p) * q;
     p = Sqrt(f / g);
@@ -1229,7 +1230,7 @@ Angle BulirschCel(double kc, double const nc, double a, double b) {
 
   // Bartky's algorithm.
   for (;;) {
-    double f = a;
+    double const f = a;
     a = b / p + a;
     double g = e / p;
     b = f * g + b;
@@ -1377,9 +1378,9 @@ void FukushimaEllipticBcDcJc(double const c₀,
   // NOTE(phl): I couldn't find a justification for this number.
   constexpr int max_transformations = 10;
 
-  double y[max_transformations + 1];
-  double s[max_transformations + 1];
-  double cd[max_transformations + 1];
+  std::array<double, max_transformations + 1> y;
+  std::array<double, max_transformations + 1> s;
+  std::array<double, max_transformations + 1> cd;
 
   double const m = 1.0 - mc;
   double const h = n * (1.0 - n) * (n - m);
@@ -1444,9 +1445,9 @@ void FukushimaEllipticBsDsJs(double const s₀,
   // maximum number of iterations in the first loop below.
   constexpr int max_transformations = 10;
 
-  double y[max_transformations + 1];
-  double s[max_transformations + 1];
-  double cd[max_transformations + 1];
+  std::array<double, max_transformations + 1> y;
+  std::array<double, max_transformations + 1> s;
+  std::array<double, max_transformations + 1> cd;
 
   // Half and double argument transformations, [Fuk12b] section 3.3.
   double const m = 1.0 - mc;
@@ -1527,25 +1528,25 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
                                          double const m) {
   // Maclaurin series in m whose coefficients are polynomials in n.  The index
   // is the degree in m (k in Fukushima's notation).
-  PolynomialInMonomialBasis<double, double, 0>
+  PolynomialInMonomialBasis<double, double, 0> const
       fukushima_elliptic_Js_maclaurin_m_0(
           {fukushima_elliptic_Js_maclaurin_n_0_0(n)});
-  PolynomialInMonomialBasis<double, double, 1>
+  PolynomialInMonomialBasis<double, double, 1> const
       fukushima_elliptic_Js_maclaurin_m_1(
           {fukushima_elliptic_Js_maclaurin_n_1_0(n),
            fukushima_elliptic_Js_maclaurin_n_1_1(n)});
-  PolynomialInMonomialBasis<double, double, 2>
+  PolynomialInMonomialBasis<double, double, 2> const
       fukushima_elliptic_Js_maclaurin_m_2(
           {fukushima_elliptic_Js_maclaurin_n_2_0(n),
            fukushima_elliptic_Js_maclaurin_n_2_1(n),
            fukushima_elliptic_Js_maclaurin_n_2_2(n)});
-  PolynomialInMonomialBasis<double, double, 3>
+  PolynomialInMonomialBasis<double, double, 3> const
       fukushima_elliptic_Js_maclaurin_m_3(
           {fukushima_elliptic_Js_maclaurin_n_3_0(n),
            fukushima_elliptic_Js_maclaurin_n_3_1(n),
            fukushima_elliptic_Js_maclaurin_n_3_2(n),
            fukushima_elliptic_Js_maclaurin_n_3_3(n)});
-  PolynomialInMonomialBasis<double, double, 4>
+  PolynomialInMonomialBasis<double, double, 4> const
       fukushima_elliptic_Js_maclaurin_m_4(
           {fukushima_elliptic_Js_maclaurin_n_4_0(n),
            fukushima_elliptic_Js_maclaurin_n_4_1(n),
@@ -1566,13 +1567,13 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
     // A Maclaurin series in y whose coefficients are polynomials in n and m.
     // The index is the degree in y of the series.  Since Js has no constant
     // term, this is (l - 1) in Fukushima's notation.
-    PolynomialInMonomialBasis<double, double, 4>
+    PolynomialInMonomialBasis<double, double, 4> const
         fukushima_elliptic_Js_maclaurin_y_4(
             {J₁, J₂, J₃, J₄, J₅});
     return y * fukushima_elliptic_Js_maclaurin_y_4(y) * Radian;
   }
 
-  PolynomialInMonomialBasis<double, double, 5>
+  PolynomialInMonomialBasis<double, double, 5> const
       fukushima_elliptic_Js_maclaurin_m_5(
           {fukushima_elliptic_Js_maclaurin_n_5_0(n),
            fukushima_elliptic_Js_maclaurin_n_5_1(n),
@@ -1582,13 +1583,13 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
            fukushima_elliptic_Js_maclaurin_n_5_5(n)});
   double const J₆ = fukushima_elliptic_Js_maclaurin_m_5(m);
   if (y <= 2.0727505e-03) {
-    PolynomialInMonomialBasis<double, double, 5>
+    PolynomialInMonomialBasis<double, double, 5> const
         fukushima_elliptic_js_maclaurin_y_5(
             {J₁, J₂, J₃, J₄, J₅, J₆});
     return y * fukushima_elliptic_js_maclaurin_y_5(y) * Radian;
   }
 
-  PolynomialInMonomialBasis<double, double, 6>
+  PolynomialInMonomialBasis<double, double, 6> const
       fukushima_elliptic_Js_maclaurin_m_6(
           {fukushima_elliptic_Js_maclaurin_n_6_0(n),
            fukushima_elliptic_Js_maclaurin_n_6_1(n),
@@ -1599,13 +1600,13 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
            fukushima_elliptic_Js_maclaurin_n_6_6(n)});
   double const J₇ = fukushima_elliptic_Js_maclaurin_m_6(m);
   if (y <= 5.0047026e-03) {
-    PolynomialInMonomialBasis<double, double, 6>
+    PolynomialInMonomialBasis<double, double, 6> const
         fukushima_elliptic_js_maclaurin_y_6(
             {J₁, J₂, J₃, J₄, J₅, J₆, J₇});
     return y * fukushima_elliptic_js_maclaurin_y_6(y) * Radian;
   }
 
-  PolynomialInMonomialBasis<double, double, 7>
+  PolynomialInMonomialBasis<double, double, 7> const
       fukushima_elliptic_Js_maclaurin_m_7(
           {fukushima_elliptic_Js_maclaurin_n_7_0(n),
            fukushima_elliptic_Js_maclaurin_n_7_1(n),
@@ -1617,13 +1618,13 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
            fukushima_elliptic_Js_maclaurin_n_7_7(n)});
   double const J₈ = fukushima_elliptic_Js_maclaurin_m_7(m);
   if (y <= 9.6961652e-03) {
-    PolynomialInMonomialBasis<double, double, 7>
+    PolynomialInMonomialBasis<double, double, 7> const
         fukushima_elliptic_js_maclaurin_y_7(
             {J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈});
     return y * fukushima_elliptic_js_maclaurin_y_7(y) * Radian;
   }
 
-  PolynomialInMonomialBasis<double, double, 8>
+  PolynomialInMonomialBasis<double, double, 8> const
       fukushima_elliptic_Js_maclaurin_m_8(
           {fukushima_elliptic_Js_maclaurin_n_8_0(n),
            fukushima_elliptic_Js_maclaurin_n_8_1(n),
@@ -1636,13 +1637,13 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
            fukushima_elliptic_Js_maclaurin_n_8_8(n)});
   double const J₉ = fukushima_elliptic_Js_maclaurin_m_8(m);
   if (y <= 1.6220210e-02) {
-    PolynomialInMonomialBasis<double, double, 8>
+    PolynomialInMonomialBasis<double, double, 8> const
         fukushima_elliptic_Js_maclaurin_y_8(
             {J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈, J₉});
     return y * fukushima_elliptic_Js_maclaurin_y_8(y) * Radian;
   }
 
-  PolynomialInMonomialBasis<double, double, 9>
+  PolynomialInMonomialBasis<double, double, 9> const
       fukushima_elliptic_Js_maclaurin_m_9(
           {fukushima_elliptic_Js_maclaurin_n_9_0(n),
            fukushima_elliptic_Js_maclaurin_n_9_1(n),
@@ -1655,7 +1656,7 @@ Angle FukushimaEllipticJsMaclaurinSeries(double const y,
            fukushima_elliptic_Js_maclaurin_n_9_8(n),
            fukushima_elliptic_Js_maclaurin_n_9_9(n)});
   double const J₁₀ = fukushima_elliptic_Js_maclaurin_m_9(m);
-  PolynomialInMonomialBasis<double, double, 9>
+  PolynomialInMonomialBasis<double, double, 9> const
       fukushima_elliptic_Js_maclaurin_y_9(
           {J₁, J₂, J₃, J₄, J₅, J₆, J₇, J₈, J₉, J₁₀});
   return y * fukushima_elliptic_Js_maclaurin_y_9(y) * Radian;
@@ -1971,7 +1972,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
                           Angle& B_φǀm,
                           Angle& D_φǀm,
                           Angle& J_φ_nǀm) {
-  return FukushimaEllipticBDJ<Angle>(φ, n, mc, B_φǀm, D_φǀm, J_φ_nǀm);
+  FukushimaEllipticBDJ<Angle>(φ, n, mc, B_φǀm, D_φǀm, J_φ_nǀm);
 }
 
 void FukushimaEllipticBD(Angle const& φ,

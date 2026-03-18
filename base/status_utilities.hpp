@@ -8,12 +8,12 @@ namespace base {
 namespace _status_utilities {
 namespace internal {
 
-inline absl::Status const& GetStatus(absl::Status const& s) {
+inline absl::Status GetStatus(absl::Status const& s) {
   return s;
 }
 
 template<typename T>
-absl::Status const& GetStatus(absl::StatusOr<T> const& s) {
+absl::Status GetStatus(absl::StatusOr<T> const& s) {
   return s.status();
 }
 
@@ -29,7 +29,8 @@ absl::Status const& GetStatus(absl::StatusOr<T> const& s) {
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \
     /* Using _status below to avoid capture problems if expr is "status". */ \
-    ::absl::Status const _status =                                           \
+    /* Not const to allow moving. */                                         \
+    ::absl::Status _status =                                                 \
         (::principia::base::_status_utilities::internal::GetStatus(expr));   \
     if (!_status.ok())                                                       \
       return _status;                                                        \

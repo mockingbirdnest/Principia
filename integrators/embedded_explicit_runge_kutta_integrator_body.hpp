@@ -208,7 +208,7 @@ Solve(typename ODE::IndependentVariable const& s_final) {
       for (int i = 0; i < stages_; ++i) {
         for_all_of(k[i], ŷ, Δŷ, Σᵢ_b̂ᵢ_kᵢ, Σᵢ_bᵢ_kᵢ, error_estimate)
             .loop([&b, &b̂, i](auto const& kᵢ,
-                              auto const& ŷ,
+                              auto const& /*ŷ*/,
                               auto& Δŷ,
                               auto& Σᵢ_b̂ᵢ_kᵢ,
                               auto& Σᵢ_bᵢ_kᵢ,

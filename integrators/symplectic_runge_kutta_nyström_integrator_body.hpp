@@ -177,7 +177,7 @@ not_null<std::unique_ptr<
 SymplecticRungeKuttaNyströmIntegrator<Method, ODE_>::Instance::
 ReadFromMessage(
     serialization::SymplecticRungeKuttaNystromIntegratorInstance const&
-        extension,
+        /*extension*/,
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
@@ -263,7 +263,7 @@ template<typename Method, typename ODE_>
 internal::SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator() {
   static_assert(
-      std::is_base_of<_methods::SymplecticRungeKuttaNyström, Method>::value,
+      std::is_base_of_v<_methods::SymplecticRungeKuttaNyström, Method>,
       "Method must be derived from SymplecticRungeKuttaNyström");
   static internal::SymplecticRungeKuttaNyströmIntegrator<Method, ODE_> const
       integrator;
@@ -279,7 +279,7 @@ internal::SymplecticRungeKuttaNyströmIntegrator<
     ODE_> const&
 SymplecticRungeKuttaNyströmIntegrator() {
   static_assert(
-      std::is_base_of<_methods::SymplecticPartitionedRungeKutta, Method>::value,
+      std::is_base_of_v<_methods::SymplecticPartitionedRungeKutta, Method>,
       "Method must be derived from SymplecticPartitionedRungeKutta");
   static internal::SymplecticRungeKuttaNyströmIntegrator<
       typename _methods::AsSymplecticRungeKuttaNyström<Method,

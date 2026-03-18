@@ -326,7 +326,7 @@ OrbitalElements::MeanEquinoctialElements(
   ODE const equation = {
       .compute_derivative = [&equinoctial_elements, period](
                                 Instant const& t,
-                                ODE::DependentVariables const& y,
+                                ODE::DependentVariables const& /*y*/,
                                 ODE::DependentVariableDerivatives& yʹ) {
         auto const [_1, a₋, h₋, k₋, λ₋, p₋, q₋, pʹ₋, qʹ₋] =
             equinoctial_elements(t - period / 2);
@@ -360,7 +360,7 @@ OrbitalElements::MeanEquinoctialElements(
 
   auto const tolerance_to_error_ratio =
       [period](Time const& step,
-         ODE::State const& state,
+         ODE::State const& /*state*/,
          ODE::State::Error const& error) -> double {
     // When the trajectory is very regular, the integrator is "too good" at
     // approximating it, which causes the output of the integration to be very

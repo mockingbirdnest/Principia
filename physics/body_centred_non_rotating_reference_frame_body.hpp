@@ -25,10 +25,10 @@ using namespace principia::physics::_rotating_body;
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::
 BodyCentredNonRotatingReferenceFrame(
-    not_null<Ephemeris<InertialFrame> const*> ephemeris,
-    not_null<MassiveBody const*> centre)
-    : ephemeris_(std::move(ephemeris)),
-      centre_(std::move(centre)),
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    not_null<MassiveBody const*> const centre)
+    : ephemeris_(ephemeris),
+      centre_(centre),
       centre_trajectory_(ephemeris_->trajectory(centre_)),
       orthogonal_map_([this]() {
         // Note that we cannot do this by making `equatorial` and

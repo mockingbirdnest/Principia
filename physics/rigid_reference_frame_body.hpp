@@ -241,7 +241,7 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives(
     Velocity<InertialFrame> const& ṙ,
     Vector<Acceleration, InertialFrame> const& r̈,
     Trihedron<Length, ArealSpeed> const& orthogonal,
-    Trihedron<double, double> const& orthonormal,
+    Trihedron<double, double> const& /*orthonormal*/,
     Trihedron<Length, ArealSpeed, 1>& 𝛛orthogonal,
     Trihedron<double, double, 1>& 𝛛orthonormal) {
   auto const& F = orthogonal.fore;
@@ -275,9 +275,9 @@ void RigidReferenceFrame<InertialFrame, ThisFrame>::ComputeTrihedraDerivatives2(
     Vector<Acceleration, InertialFrame> const& r̈,
     Vector<Jerk, InertialFrame> const& r⁽³⁾,
     Trihedron<Length, ArealSpeed> const& orthogonal,
-    Trihedron<double, double> const& orthonormal,
+    Trihedron<double, double> const& /*orthonormal*/,
     Trihedron<Length, ArealSpeed, 1> const& 𝛛orthogonal,
-    Trihedron<double, double, 1> const& 𝛛orthonormal,
+    Trihedron<double, double, 1> const& /*𝛛orthonormal*/,
     Trihedron<Length, ArealSpeed, 2>& 𝛛²orthogonal,
     Trihedron<double, double, 2>& 𝛛²orthonormal) {
   auto const& F = orthogonal.fore;

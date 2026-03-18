@@ -57,7 +57,7 @@ Nanobenchmark<Value_, Argument_>::Run(Logger* const logger) const {
   static std::vector<double>& samples = *new std::vector<double>(
       sample_count, std::numeric_limits<double>::quiet_NaN());
   int registers[4]{};
-  int leaf = 0;
+  int const leaf = 0;
   for (int j = 0; j < sample_count; ++j) {
     double const input = absl::GetFlag(FLAGS_input);
     double x = input;
@@ -141,7 +141,7 @@ NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarkFor(
 template<typename Value_, typename Argument_>
 NanobenchmarkRegistry<Value_, Argument_>&
 NanobenchmarkRegistry<Value_, Argument_>::singleton() {
-  static NanobenchmarkRegistry* instance = new NanobenchmarkRegistry;
+  static auto* instance = new NanobenchmarkRegistry;
   return *instance;
 }
 

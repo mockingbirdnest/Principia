@@ -302,7 +302,7 @@ EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, ODE_>::
 Instance::ReadFromMessage(
     serialization::
         EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance const&
-            extension,
+            /*extension*/,
     InitialValueProblem<ODE> const& problem,
     AppendState const& append_state,
     ToleranceToErrorRatio const& tolerance_to_error_ratio,
@@ -374,8 +374,8 @@ internal::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
                                                                  ODE_> const&
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
   static_assert(
-      std::is_base_of<_methods::EmbeddedExplicitGeneralizedRungeKuttaNyström,
-                      Method>::value,
+      std::is_base_of_v<_methods::EmbeddedExplicitGeneralizedRungeKuttaNyström,
+                        Method>,
       "Method must be derived from "
       "EmbeddedExplicitGeneralizedRungeKuttaNyström");
   static internal::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<

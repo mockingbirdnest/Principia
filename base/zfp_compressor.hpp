@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -52,8 +53,8 @@ class ZfpCompressor {
   // the data that was consumed.
   void WriteToMessage(const zfp_field* field,
                       not_null<std::string*> message) const;
-  void ReadFromMessage(zfp_field* field,
-                       std::string_view& message) const;
+  static void ReadFromMessage(zfp_field* field,
+                              std::string_view& message);
 
  private:
   std::optional<double> const accuracy_;

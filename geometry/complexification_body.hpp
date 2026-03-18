@@ -11,7 +11,8 @@ namespace internal {
 using namespace principia::numerics::_elementary_functions;
 
 template<typename Vector>
-template<typename V, typename>
+template<typename V>
+  requires(std::is_convertible_v<V, Vector>)
 Complexification<Vector>::Complexification(V const& real_part)
     : real_part_(real_part) {}
 

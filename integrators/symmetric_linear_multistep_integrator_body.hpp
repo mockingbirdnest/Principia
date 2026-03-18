@@ -354,7 +354,7 @@ template<typename Method, typename ODE_>
 internal::SymmetricLinearMultistepIntegrator<Method, ODE_> const&
 SymmetricLinearMultistepIntegrator() {
   static_assert(
-      std::is_base_of<_methods::SymmetricLinearMultistep, Method>::value,
+      std::is_base_of_v<_methods::SymmetricLinearMultistep, Method>,
       "Method must be derived from SymmetricLinearMultistep");
   // TODO(phl): Someday, and that day may never come, I will call upon you to
   // expose the startup integrator to the clients.  But until that day, accept
