@@ -27,7 +27,7 @@ template<typename... SubsetPropertiesArgs>
 Subset<T> Subset<T>::MakeSingleton(
     T& element,
     SubsetPropertiesArgs... subset_properties_args) {
-  not_null<Node*> node = Node::Get(element);
+  not_null<Node*> const node = Node::Get(element);
   node->parent_ = node;
   node->rank_ = 0;
   node->properties_ =

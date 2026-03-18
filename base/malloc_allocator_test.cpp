@@ -1,5 +1,8 @@
 #include "base/malloc_allocator.hpp"
 
+#include <cstdint>
+#include <cstdlib>
+
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -53,8 +56,8 @@ TEST(MallocAllocatorTest, RoundTrip) {
 
 TEST(MallocAllocatorTest, Conversion) {
   // This is required by some containers.
-  MallocAllocator<int> foo;
-  MallocAllocator<float> bar(foo);
+  MallocAllocator<int> const foo;
+  MallocAllocator<float> const bar(foo);
 }
 
 TEST(MallocAllocatorTest, Alignment) {

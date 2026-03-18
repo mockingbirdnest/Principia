@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cstring>
 #include <ios>
 #include <memory>
 #include <ostream>
@@ -13,10 +14,6 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-
-// Clang doesn't have a correct `std::array` yet, and we don't actually use this
-// code, so let's get rid of the entire test.
-#if PRINCIPIA_COMPILER_MSVC
 
 MATCHER_P(EqualsBytes, expected, "") {
   auto const actual = arg;
@@ -55,7 +52,7 @@ class Base32768Test : public testing::Test {
   void CheckEncoding(Array<std::uint8_t const> const binary,
                      Array<char16_t const> const base32768) {
     CHECK_EQ(base32768.size, encoder_.EncodedLength(binary));
-    UniqueArray<char16_t> output(base32768.size);
+    UniqueArray<char16_t> const output(base32768.size);
     encoder_.Encode(binary, output.get());
     EXPECT_EQ(0,
               std::char_traits<char16_t>::compare(
@@ -71,7 +68,7 @@ class Base32768Test : public testing::Test {
   void CheckDecoding(Array<std::uint8_t const> const binary,
                      Array<char16_t const> const base32768) {
     CHECK_EQ(binary.size, encoder_.DecodedLength(base32768));
-    UniqueArray<std::uint8_t> output(binary.size);
+    UniqueArray<std::uint8_t> const output(binary.size);
     encoder_.Decode(base32768, output.get());
     EXPECT_EQ(0, std::memcmp(output.data.get(), binary.data, binary.size));
     for (int i = 0; i < binary.size; ++i) {
@@ -280,14 +277,14 @@ TEST_F(Base32768Test, Random) {
   std::uniform_int_distribution<std::uint64_t> length_distribution(100, 150);
   std::uniform_int_distribution<int> bytes_distribution(0, 256);
   for (int test = 0; test < 1000; ++test) {
-    UniqueArray<std::uint8_t> binary1(length_distribution(random));
+    UniqueArray<std::uint8_t> const binary1(length_distribution(random));
     for (int i = 0; i < binary1.size; ++i) {
       binary1.data[i] = bytes_distribution(random);
     }
 
     Base32768Encoder</*null_terminated=*/false> encoder;
     UniqueArray<char16_t> const base32768 = encoder.Encode(binary1.get());
-    UniqueArray<std::uint8_t> binary2 = encoder.Decode(base32768.get());
+    UniqueArray<std::uint8_t> const binary2 = encoder.Decode(base32768.get());
 
     EXPECT_THAT(binary2.get(), EqualsBytes(binary1.get())) << "test: " << test;
   }
@@ -296,5 +293,3 @@ TEST_F(Base32768Test, Random) {
 
 }  // namespace base
 }  // namespace principia
-
-#endif

@@ -21,10 +21,7 @@ inline DelegatingArrayOutputStream::DelegatingArrayOutputStream(
     Array<std::uint8_t> const bytes,
     std::function<Array<std::uint8_t>(Array<std::uint8_t> const bytes)> on_full)
     : bytes_(bytes),
-      on_full_(std::move(on_full)),
-      byte_count_(0),
-      position_(0),
-      last_returned_size_(0) {}
+      on_full_(std::move(on_full)) {}
 
 inline bool DelegatingArrayOutputStream::Next(void** const data,
                                               int* const size) {

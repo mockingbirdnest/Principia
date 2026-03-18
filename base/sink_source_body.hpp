@@ -51,10 +51,10 @@ void ArraySink<Element>::Append(const char* const data, std::size_t const n) {
 
 template<typename Element>
 char* ArraySink<Element>::GetAppendBuffer(
-    std::size_t const min_size,
+    std::size_t const /*min_size*/,
     std::size_t const desired_size_hint,
-    char* const scratch,
-    std::size_t const scratch_size,
+    char* const /*scratch*/,
+    std::size_t const /*scratch_size*/,
     std::size_t* const allocated_size) {
   *allocated_size = std::min(static_cast<std::int64_t>(desired_size_hint),
                              array_.size - next_to_write_);

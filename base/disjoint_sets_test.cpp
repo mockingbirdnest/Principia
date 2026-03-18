@@ -5,8 +5,6 @@
 #include "base/not_null.hpp"
 #include "gtest/gtest.h"
 
-using ::testing::Eq;
-
 namespace principia {
 namespace base {
 
