@@ -23,6 +23,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"

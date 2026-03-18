@@ -170,6 +170,7 @@ template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
 SolarSystem<Frame>::MakeAllMassiveBodies() const {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  bodies.reserve(gravity_model_map_.size());
   for (auto const& [_, body] : gravity_model_map_) {
     bodies.emplace_back(MakeMassiveBody(*body));
   }

@@ -345,7 +345,7 @@ NewInstance(InitialValueProblem<ODE> const& problem,
                    append_state,
                    tolerance_to_error_ratio,
                    parameters,
-                   /*step=*/parameters.first_step,
+                   /*time_step=*/parameters.first_step,
                    /*first_use=*/true,
                    *this));
 }

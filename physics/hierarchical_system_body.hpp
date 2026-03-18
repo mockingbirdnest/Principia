@@ -180,6 +180,7 @@ void HierarchicalSystem<Frame>::WriteToMessage(
         serialization::HierarchicalSystem::Subsystem>* const messages) {
   // Sort the subsystems by name to ensure stability of the serialization.
   std::vector<Subsystem const*> sorted_subsystems;
+  sorted_subsystems.reserve(subsystems.size());
   for (auto const& subsystem : subsystems) {
     sorted_subsystems.push_back(subsystem.get());
   }

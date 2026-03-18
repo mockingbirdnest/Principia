@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <ios>
 
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"

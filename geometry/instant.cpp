@@ -1,6 +1,7 @@
 #include "geometry/instant.hpp"
 
 #include <limits>
+#include <ostream>
 #include <string>
 #include <string_view>
 

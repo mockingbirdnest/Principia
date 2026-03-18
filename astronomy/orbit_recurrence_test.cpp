@@ -1,8 +1,10 @@
 #include "astronomy/orbit_recurrence.hpp"
 
+#include <cmath>
 #include <limits>
 #include <memory>
 
+#include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"

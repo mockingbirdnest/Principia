@@ -1641,7 +1641,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
 
   typename AdaptiveStepSizeIntegrator<ODE>::Parameters const
       integrator_parameters(
-          /*first_time_step=*/t_final - problem.initial_state.time.value,
+          /*first_step=*/t_final - problem.initial_state.time.value,
           /*safety_factor=*/0.9,
           parameters.max_steps(),
           /*last_step_is_exact=*/true);

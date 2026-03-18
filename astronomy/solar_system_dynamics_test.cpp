@@ -1,7 +1,10 @@
 #include <algorithm>
+#include <chrono>
+#include <ios>
 #include <optional>
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "astronomy/epoch.hpp"
@@ -14,6 +17,7 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -606,16 +610,17 @@ class SolarSystemDynamicsConvergenceTest
   }
 
  protected:
+  static
   FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
-  integrator() const {
+  integrator() {
     return GetParam().integrator;
   }
 
-  int iterations() const {
+  static int iterations() {
     return GetParam().iterations;
   }
 
-  int first_step_in_seconds() const {
+  static int first_step_in_seconds() {
     return GetParam().first_step_in_seconds;
   }
 

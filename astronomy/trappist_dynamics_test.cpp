@@ -1,9 +1,14 @@
 #include <algorithm>
+#include <array>
 #include <chrono>
+#include <cmath>
+#include <functional>
 #include <iomanip>
+#include <iterator>
 #include <limits>
 #include <map>
 #include <memory>
+#include <optional>
 #include <random>
 #include <string>
 #include <thread>
@@ -13,6 +18,8 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/algebra.hpp"
@@ -24,6 +31,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -40,6 +48,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
@@ -289,8 +298,8 @@ void Population::ComputeAllFitnesses() {
   file_ << "------ Generation " << absl::StrCat(generation_) << "\n";
   double min_fitness = std::numeric_limits<double>::infinity();
   double max_fitness = 0.0;
-  std::string* fittest_info = nullptr;
-  std::string* least_fit_info = nullptr;
+  std::string const* fittest_info = nullptr;
+  std::string const* least_fit_info = nullptr;
 
   // Compute the cumulative fitness: we'll use it to pick who is allowed to
   // reproduce.
@@ -1125,7 +1134,7 @@ class TrappistDynamicsTest : public ::testing::Test {
 
   static std::string SanitizedName(MassiveBody const& body) {
     auto sanitized_name = body.name();
-    return sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
+    return sanitized_name.erase(sanitized_name.find_first_of('-'), 1);
   }
 
   constexpr static char home_name[] = "Trappist-1e";
@@ -1311,6 +1320,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_SECULAR_Optimization) {
   planet_names.erase(
       std::find(planet_names.begin(), planet_names.end(), star_name));
   std::vector<KeplerianElements<Sky>> elements;
+  elements.reserve(planet_names.size());
   for (auto const& planet_name : planet_names) {
     elements.push_back(SolarSystem<Sky>::MakeKeplerianElements(
         system.keplerian_initial_state_message(planet_name).elements()));

@@ -83,7 +83,8 @@ Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
     : quaternion_(quaternion) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, typename F, typename T, typename>
+template<typename Scalar, typename F, typename T>
+  requires(std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, FromFrame> const& axis)
     : Rotation(AngleAxis(angle, Normalize(axis).coordinates())) {}
@@ -105,7 +106,8 @@ Rotation<FromFrame, ToFrame>::Rotation(
 
 template<typename FromFrame, typename ToFrame>
 template<int rank_x, int rank_y, int rank_z,
-         typename F, typename T, typename, typename>  // typename and spam.
+         typename F, typename T, typename>
+  requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(
     Multivector<double, ToFrame, rank_x> x_from_frame,
     Multivector<double, ToFrame, rank_y> y_from_frame,
@@ -120,21 +122,24 @@ Rotation<FromFrame, ToFrame>::Rotation(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, typename F, typename T, typename>
+template<typename Scalar, typename F, typename T>
+  requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, FromFrame> const& axis,
                                        DefinesFrame<ToFrame>)
     : Rotation(AngleAxis(-angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, typename F, typename T, typename, typename>
+template<typename Scalar, typename F, typename T, typename>
+  requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, ToFrame> const& axis,
                                        DefinesFrame<FromFrame>)
     : Rotation(AngleAxis(angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename>
+template<typename F, typename T>
+  requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& α,
     Angle const& β,
@@ -146,7 +151,8 @@ Rotation<FromFrame, ToFrame>::Rotation(
               .Inverse()) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename, typename>
+template<typename F, typename T, typename>
+  requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& α,
     Angle const& β,
@@ -158,7 +164,8 @@ Rotation<FromFrame, ToFrame>::Rotation(
                AngleAxis(γ, BasisVector(BinaryCodedTernaryDigit(0, axes)))) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename>
+template<typename F, typename T>
+  requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& α,
     Angle const& β,
@@ -170,7 +177,8 @@ Rotation<FromFrame, ToFrame>::Rotation(
               .Inverse()) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename, typename>
+template<typename F, typename T, typename>
+  requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(
     Angle const& α,
     Angle const& β,

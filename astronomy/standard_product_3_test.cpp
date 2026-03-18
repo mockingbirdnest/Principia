@@ -1,5 +1,6 @@
 #include "astronomy/standard_product_3.hpp"
 
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <ostream>

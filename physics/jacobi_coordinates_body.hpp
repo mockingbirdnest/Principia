@@ -53,9 +53,10 @@ MassiveBody JacobiCoordinates<Frame>::System() const {
 template<typename Frame>
 std::vector<RelativeDegreesOfFreedom<Frame>>
 JacobiCoordinates<Frame>::BarycentricDegreesOfFreedom() const {
-  std::vector<RelativeDegreesOfFreedom<Frame>> result;
   DegreesOfFreedom<PrimocentricFrame> const system_barycentre =
       system_barycentre_.Get();
+  std::vector<RelativeDegreesOfFreedom<Frame>> result;
+  result.reserve(primocentric_dof_.size());
   for (auto const& dof : primocentric_dof_) {
     result.emplace_back(id_pf_(dof - system_barycentre));
   }

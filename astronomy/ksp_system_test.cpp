@@ -3,6 +3,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "absl/strings/ascii.h"
@@ -14,6 +15,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -343,17 +345,17 @@ class KSPSystemConvergenceTest
   }
 
  protected:
-  FixedStepSizeIntegrator<
+  static FixedStepSizeIntegrator<
       Ephemeris<KSP>::NewtonianMotionEquation> const&
-  integrator() const {
+  integrator() {
     return GetParam().integrator;
   }
 
-  int iterations() const {
+  static int iterations() {
     return GetParam().iterations;
   }
 
-  double first_step_in_seconds() const {
+  static double first_step_in_seconds() {
     return GetParam().first_step_in_seconds;
   }
 

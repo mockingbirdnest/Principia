@@ -10,6 +10,7 @@
 #include "base/tags.hpp"
 #include "core-math/cos.h"
 #include "core-math/sin.h"
+#include "glog/logging.h"
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/m128d.hpp"

@@ -442,7 +442,7 @@ std::string ToMathematica(DoublePrecision<T> const& double_precision,
 template<typename S, typename F, typename OptionalExpressIn>
 std::string ToMathematica(Vector<S, F> const& vector,
                           OptionalExpressIn express_in) {
-  return ToMathematica(vector.coordinates(), express_in);
+  return ToMathematica(vector.coordinates(), std::move(express_in));
 }
 
 template<typename S, typename F, typename OptionalExpressIn>
@@ -502,7 +502,7 @@ std::string ToMathematica(Tuple const& tuple, OptionalExpressIn express_in) {
   std::vector<std::string> expressions;
   expressions.reserve(std::tuple_size_v<Tuple>);
   TupleHelper<std::tuple_size_v<Tuple>, Tuple, OptionalExpressIn>::
-      ToMathematicaStrings(tuple, expressions, express_in);
+      ToMathematicaStrings(tuple, expressions, std::move(express_in));
   return RawApply("List", expressions);
 }
 
@@ -703,7 +703,7 @@ std::string ToMathematica(std::optional<T> const& opt,
   if (opt.has_value()) {
     value.push_back(opt.value());
   }
-  return ToMathematica(value, express_in);
+  return ToMathematica(value, std::move(express_in));
 }
 
 template<typename OptionalExpressIn>

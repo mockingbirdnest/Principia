@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "astronomy/stabilize_ksp.hpp"
+#include "base/macros.hpp"  // 🧙 For MSVC_ONLY_TEST.
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
@@ -12,6 +13,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -25,6 +27,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -140,6 +143,7 @@ class KSPResonanceTest : public ::testing::Test {
 
       // Indexed by body.
       std::vector<Displacement<KSP>> barycentric_positions;
+      barycentric_positions.reserve(jool_system_.size());
       for (not_null<MassiveBody const*> const body : jool_system_) {
         // TODO(egg): when our dynamic frames support that, it would make sense
         // to use a nonrotating dynamic frame centred at the barycentre of the
@@ -182,7 +186,7 @@ class KSPResonanceTest : public ::testing::Test {
     };
 
     LOG(INFO) << "Periods at " << t;
-    for (auto const moon : {laythe_, vall_, tylo_, pol_, bop_}) {
+    for (auto const* const moon : {laythe_, vall_, tylo_, pol_, bop_}) {
       auto const moon_y =
           [&barycentric_position, moon](Instant const& t) {
         return barycentric_position(moon, t).coordinates().y;

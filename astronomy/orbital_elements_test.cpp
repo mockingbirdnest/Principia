@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
@@ -62,7 +63,7 @@ using namespace principia::testing_utilities::_numerics_matchers;
 
 class OrbitalElementsTest : public ::testing::Test {
  protected:
-  OrbitalElementsTest() {}
+  OrbitalElementsTest() = default;
 
   // Completes `initial_osculating_elements` and returns a GCRS trajectory
   // obtained by flowing the corresponding initial conditions in `ephemeris`.
