@@ -10,6 +10,7 @@
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
