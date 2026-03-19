@@ -20,7 +20,6 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
-using ::testing::Ne;
 using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;

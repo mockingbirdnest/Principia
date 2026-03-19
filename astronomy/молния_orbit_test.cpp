@@ -107,7 +107,7 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
   initial_elements.mean_anomaly = 2 * Radian;
 
   MasslessBody const satellite{};
-  KeplerOrbit<ICRS> initial_orbit(
+  KeplerOrbit<ICRS> const initial_orbit(
       *earth_body, satellite, initial_elements, J2000);
   auto const satellite_state_vectors = initial_orbit.StateVectors(J2000);
 
@@ -143,7 +143,8 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
     RelativeDegreesOfFreedom<ICRS> const relative_dof =
         trajectory.EvaluateDegreesOfFreedom(t) -
         ephemeris_->trajectory(earth_body)->EvaluateDegreesOfFreedom(t);
-    KeplerOrbit<ICRS> actual_orbit(*earth_body, satellite, relative_dof, t);
+    KeplerOrbit<ICRS> const actual_orbit(
+        *earth_body, satellite, relative_dof, t);
     auto actual_elements = actual_orbit.elements_at_epoch();
 
     if (actual_elements.longitude_of_ascending_node >

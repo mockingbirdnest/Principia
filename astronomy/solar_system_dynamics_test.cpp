@@ -46,7 +46,6 @@
 namespace principia {
 namespace astronomy {
 
-using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::Gt;
 using namespace principia::astronomy::_epoch;
@@ -135,7 +134,7 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     expected_subsystem_barycentre.Add(expected_system.degrees_of_freedom(name),
                                       body->gravitational_parameter());
     for (int const moon_index : bodies_orbiting_[index]) {
-      std::string  moon_name = SolarSystemFactory::name(moon_index);
+      std::string const moon_name = SolarSystemFactory::name(moon_index);
       auto const moon = system.massive_body(ephemeris, moon_name);
       actual_subsystem_barycentre.Add(
           ephemeris.trajectory(moon)->EvaluateDegreesOfFreedom(epoch),
@@ -210,13 +209,13 @@ class SolarSystemDynamicsTest : public ::testing::Test {
         /*angular_velocity_of_to_frame=*/ICRS::nonrotating,
         /*velocity_of_to_frame_origin=*/ICRS::unmoving);
 
-    KeplerOrbit<ParentEquator> actual_osculating_orbit(
+    KeplerOrbit<ParentEquator> const actual_osculating_orbit(
         /*primary=*/*parent,
         /*secondary=*/*body,
         /*state_vectors=*/to_parent_equator(actual_dof) -
             to_parent_equator(actual_parent_dof),
         epoch);
-    KeplerOrbit<ParentEquator> expected_osculating_orbit(
+    KeplerOrbit<ParentEquator> const expected_osculating_orbit(
         /*primary=*/*parent,
         /*secondary=*/*body,
         /*state_vectors=*/to_parent_equator(expected_dof) -
@@ -252,12 +251,12 @@ class SolarSystemDynamicsTest : public ::testing::Test {
 
 #if !_DEBUG
 TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
-  SolarSystem<ICRS> solar_system_at_j2000(
+  SolarSystem<ICRS> const solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
 
-  SolarSystem<ICRS> ten_years_later(
+  SolarSystem<ICRS> const ten_years_later(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2455200_500000000.proto.txt");
@@ -545,7 +544,7 @@ TEST(MarsTest, Phobos) {
   Logger logger(TEMP_DIR / "phobos.generated.wl",
                 /*make_unique=*/false);
 
-  SolarSystem<ICRS> solar_system_at_j2000(
+  SolarSystem<ICRS> const solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
@@ -634,7 +633,7 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
   google::LogToStderr();
   Time const integration_duration = 1 * JulianYear;
 
-  SolarSystem<ICRS> solar_system_at_j2000(
+  SolarSystem<ICRS> const solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");

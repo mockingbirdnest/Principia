@@ -266,8 +266,8 @@ Population::Population(Genome const& luca,
       file_(file),
       current_(size, luca),
       next_(size, luca) {
-  for (int i = 0; i < current_.size(); ++i) {
-    current_[i].Mutate(engine_, /*generation=*/-1);
+  for (auto& genome : current_) {
+    genome.Mutate(engine_, /*generation=*/-1);
   }
 }
 
@@ -511,8 +511,8 @@ SystemParameters operator-(SystemParameters const& left,
 
 SystemParameters operator*(double const left, SystemParameters const& right) {
   SystemParameters result = right;
-  for (int i = 0; i < result.size(); ++i) {
-    result[i] = left * result[i];
+  for (auto& sp : result) {
+    sp = left * sp;
   }
   return result;
 }
@@ -1294,7 +1294,7 @@ TEST_F(TrappistDynamicsTest, PlanetBPlanetDAlignment) {
     Angle const star_b = AngleBetween(home_star, home_planet_b);
     Angle const star_d = AngleBetween(home_star, home_planet_d);
     Angle const angle = Sqrt(star_b * star_b + star_d * star_d);
-    bool in_front =
+    bool const in_front =
         InnerProduct(home_star, planet_b_star) > 0.0 * Metre * Metre &&
         InnerProduct(home_star, planet_d_star) > 0.0 * Metre * Metre;
     if (in_front && angle < min_angle) {

@@ -416,7 +416,7 @@ std::string ToMathematica(Quantity<D> const& quantity,
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity,
                           decltype(PreserveUnits) /*express_in*/) {
-  std::string s = DebugString(quantity);
+  std::string const s = DebugString(quantity);
   std::string const number = ToMathematica(quantity / si::Unit<Quantity<D>>);
   std::size_t const split = s.find(' ');
   std::string const units = Escape(s.substr(split, s.size()));
@@ -693,7 +693,7 @@ std::string ToMathematica(OrbitalElements::EquinoctialElements const& elements,
                                        elements.q,
                                        elements.pʹ,
                                        elements.qʹ),
-                       express_in);
+                       std::move(express_in));
 }
 
 template<typename T, typename OptionalExpressIn>

@@ -432,8 +432,9 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   std::vector<double> descending_node_eccentricities;
   std::vector<Angle> descending_node_arguments;
 
-  for (auto const& nodes : {Nodes{"ascending", ascending_nodes},
-                            Nodes{"descending", descending_nodes}}) {
+  for (auto const& nodes :
+       {Nodes{.name = "ascending", .points = ascending_nodes},
+        Nodes{.name = "descending", .points = descending_nodes}}) {
     for (auto const& [time, degrees_of_freedom] : nodes.points) {
       auto const elements = KeplerOrbit<Selenocentric>(
           *moon_,

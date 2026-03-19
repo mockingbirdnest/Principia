@@ -81,26 +81,28 @@ using StandardProduct3DeathTest = StandardProduct3Test;
 TEST_F(StandardProduct3Test, PositionOnly) {
   // SP3-a file from the European Space Operations Centre (European
   // Space Agency).
-  StandardProduct3 sp3a(
+  StandardProduct3 const sp3a(
       SOLUTION_DIR / "astronomy" / "standard_product_3" / "esa11802.eph",
       StandardProduct3::Dialect::Standard);
 
   // SP3-b file from the laser operational and analysis centre (Лазерный
   // Операционно-Аналитический Центр) Mission Control Centre (Центр Управления
   // Полётами).
-  StandardProduct3 sp3b(
+  StandardProduct3 const sp3b(
       SOLUTION_DIR / "astronomy" / "standard_product_3" / "mcc14000.sp3",
       StandardProduct3::Dialect::Standard);
 
   // SP3-c and SP3-d file from the Center for Orbit Determination
   // in Europe (Astronomical Institute of the University of Bern).
   // These files are from the Multi-GNSS EXperiment (MGEX).
-  StandardProduct3 sp3c(SOLUTION_DIR / "astronomy" / "standard_product_3" /
-                            "COD0MGXFIN_20181260000_01D_05M_ORB.SP3",
-                        StandardProduct3::Dialect::Standard);
-  StandardProduct3 sp3d(SOLUTION_DIR / "astronomy" / "standard_product_3" /
-                            "COD0MGXFIN_20183640000_01D_05M_ORB.SP3",
-                        StandardProduct3::Dialect::Standard);
+  StandardProduct3 const sp3c(SOLUTION_DIR / "astronomy" /
+                                  "standard_product_3" /
+                                  "COD0MGXFIN_20181260000_01D_05M_ORB.SP3",
+                              StandardProduct3::Dialect::Standard);
+  StandardProduct3 const sp3d(SOLUTION_DIR / "astronomy" /
+                                  "standard_product_3" /
+                                  "COD0MGXFIN_20183640000_01D_05M_ORB.SP3",
+                              StandardProduct3::Dialect::Standard);
 
   EXPECT_THAT(sp3a.version(), Eq(StandardProduct3::Version::A));
   EXPECT_THAT(sp3b.version(), Eq(StandardProduct3::Version::B));
@@ -138,16 +140,17 @@ TEST_F(StandardProduct3Test, PositionOnly) {
 // Conformant position and velocity files of versions a and c.
 TEST_F(StandardProduct3Test, PositionAndVelocity) {
   // SP3-a file from the National Geospatial-intelligence Agency.
-  StandardProduct3 sp3a(
+  StandardProduct3 const sp3a(
       SOLUTION_DIR / "astronomy" / "standard_product_3" / "nga20342.eph",
       StandardProduct3::Dialect::Standard);
 
   // SP3-c file from the Centro di Geodesia Spaziale (Agenzia Spaziale
   // Italiana), an ILRS analysis centre.
   // Orbit for ЭТАЛОН-2.
-  StandardProduct3 sp3c(SOLUTION_DIR / "astronomy" / "standard_product_3" /
-                            "asi.orb.etalon2.171209.v70.sp3",
-                        StandardProduct3::Dialect::Standard);
+  StandardProduct3 const sp3c(SOLUTION_DIR / "astronomy" /
+                                  "standard_product_3" /
+                                  "asi.orb.etalon2.171209.v70.sp3",
+                              StandardProduct3::Dialect::Standard);
 
   EXPECT_THAT(sp3a.version(), Eq(StandardProduct3::Version::A));
   EXPECT_THAT(sp3c.version(), Eq(StandardProduct3::Version::C));
@@ -210,17 +213,19 @@ TEST_F(StandardProduct3DeathTest, ChineseMGEXNonConformance) {
 // Test that we successfully parse the nonstandard dialects.
 
 TEST_F(StandardProduct3Test, Dialects) {
-  StandardProduct3 ilrsa(SOLUTION_DIR / "astronomy" / "standard_product_3" /
-                             "ilrsa.orb.lageos2.160319.v35.sp3",
-                         StandardProduct3::Dialect::ILRSA);
+  StandardProduct3 const ilrsa(SOLUTION_DIR / "astronomy" /
+                                   "standard_product_3" /
+                                   "ilrsa.orb.lageos2.160319.v35.sp3",
+                               StandardProduct3::Dialect::ILRSA);
 
-  StandardProduct3 ilrsb(SOLUTION_DIR / "astronomy" / "standard_product_3" /
-                             "ilrsb.orb.lageos2.160319.v35.sp3",
-                         StandardProduct3::Dialect::ILRSB);
+  StandardProduct3 const ilrsb(SOLUTION_DIR / "astronomy" /
+                                   "standard_product_3" /
+                                   "ilrsb.orb.lageos2.160319.v35.sp3",
+                               StandardProduct3::Dialect::ILRSB);
 
-  StandardProduct3 whu(SOLUTION_DIR / "astronomy" / "standard_product_3" /
-                           "WUM0MGXFIN_20190270000_01D_15M_ORB.SP3",
-                       StandardProduct3::Dialect::ChineseMGEX);
+  StandardProduct3 const whu(SOLUTION_DIR / "astronomy" / "standard_product_3" /
+                                 "WUM0MGXFIN_20190270000_01D_15M_ORB.SP3",
+                             StandardProduct3::Dialect::ChineseMGEX);
 
   EXPECT_THAT(ilrsa.satellites(),
               ElementsAre(StandardProduct3::SatelliteIdentifier{
@@ -263,8 +268,7 @@ class StandardProduct3DynamicsTest
               SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
               SOLUTION_DIR / "astronomy" /
                   "sol_initial_state_jd_2436116_311504629.proto.txt");
-          std::vector<std::string> names = solar_system.names();
-          for (auto const& name : names) {
+          for (auto const& name : solar_system.names()) {
             if (name != "Earth") {
               solar_system.RemoveMassiveBody(name);
             }
@@ -367,7 +371,7 @@ INSTANTIATE_TEST_SUITE_P(
 // This test checks that, for each point of the orbit, its evolution taking into
 // account only a simple oblate Earth is close enough to the next point.
 TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
-  StandardProduct3 sp3(GetParam().filename, GetParam().dialect);
+  StandardProduct3 const sp3(GetParam().filename, GetParam().dialect);
   EXPECT_THAT(sp3.version(), Eq(GetParam().version));
   EXPECT_THAT(sp3.file_has_velocities(), Eq(GetParam().file_has_velocities));
   for (auto const& satellite : sp3.satellites()) {

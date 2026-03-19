@@ -36,7 +36,6 @@ namespace principia {
 namespace astronomy {
 
 using ::testing::AnyOf;
-using ::testing::Lt;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_orbital_elements;
@@ -76,12 +75,11 @@ class OrbitalElementsTest : public ::testing::Test {
       Ephemeris<ICRS>& ephemeris) {
     MassiveBody const& earth = FindEarthOrDie(ephemeris);
     EXPECT_OK(ephemeris.Prolong(final_time));
-    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> gcrs{&ephemeris, &earth};
+    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> const gcrs{&ephemeris,
+                                                                &earth};
     DiscreteTrajectory<ICRS> icrs_trajectory;
-    KeplerOrbit<GCRS> initial_osculating_orbit{earth,
-                                               MasslessBody{},
-                                               initial_osculating_elements,
-                                               initial_time};
+    KeplerOrbit<GCRS> const initial_osculating_orbit{
+        earth, MasslessBody{}, initial_osculating_elements, initial_time};
     initial_osculating_elements = initial_osculating_orbit.elements_at_epoch();
     icrs_trajectory.segments().front().SetDownsampling(
         {.tolerance = 1 * Milli(Metre)});
@@ -121,7 +119,7 @@ class OrbitalElementsTest : public ::testing::Test {
 #if !defined(_DEBUG)
 
 TEST_F(OrbitalElementsTest, RealPerturbation) {
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
@@ -208,7 +206,7 @@ TEST_F(OrbitalElementsTest, RealPerturbation) {
 }
 
 TEST_F(OrbitalElementsTest, Escape) {
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
@@ -243,7 +241,7 @@ TEST_F(OrbitalElementsTest, Escape) {
 }
 
 TEST_F(OrbitalElementsTest, Years) {
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");

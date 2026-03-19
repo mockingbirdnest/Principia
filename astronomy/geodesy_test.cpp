@@ -93,20 +93,20 @@ class GeodesyTest : public ::testing::Test {
 #if !defined(_DEBUG)
 
 TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
-  MasslessBody lageos2;
+  MasslessBody const lageos2;
 
-  StandardProduct3 initial_ilrsa(SOLUTION_DIR / "astronomy" /
-                                     "standard_product_3" /
-                                     "ilrsa.orb.lageos2.160319.v35.sp3",
-                                 StandardProduct3::Dialect::ILRSA);
-  StandardProduct3 initial_ilrsb(SOLUTION_DIR / "astronomy" /
-                                     "standard_product_3" /
-                                     "ilrsb.orb.lageos2.160319.v35.sp3",
-                                 StandardProduct3::Dialect::ILRSB);
-  StandardProduct3 final_ilrsa(SOLUTION_DIR / "astronomy" /
-                                   "standard_product_3" /
-                                   "ilrsa.orb.lageos2.180804.v70.sp3",
-                               StandardProduct3::Dialect::ILRSA);
+  StandardProduct3 const initial_ilrsa(SOLUTION_DIR / "astronomy" /
+                                           "standard_product_3" /
+                                           "ilrsa.orb.lageos2.160319.v35.sp3",
+                                       StandardProduct3::Dialect::ILRSA);
+  StandardProduct3 const initial_ilrsb(SOLUTION_DIR / "astronomy" /
+                                           "standard_product_3" /
+                                           "ilrsb.orb.lageos2.160319.v35.sp3",
+                                       StandardProduct3::Dialect::ILRSB);
+  StandardProduct3 const final_ilrsa(SOLUTION_DIR / "astronomy" /
+                                         "standard_product_3" /
+                                         "ilrsa.orb.lageos2.180804.v70.sp3",
+                                     StandardProduct3::Dialect::ILRSA);
 
   StandardProduct3::SatelliteIdentifier const lageos2_id{
       StandardProduct3::SatelliteGroup::General, 52};
