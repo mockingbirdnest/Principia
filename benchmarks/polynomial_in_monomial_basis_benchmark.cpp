@@ -32,7 +32,7 @@ using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-static constexpr std::int64_t number_of_iterations = 100;
+constexpr std::int64_t number_of_iterations = 100;
 
 template<typename T>
 struct ValueGenerator;

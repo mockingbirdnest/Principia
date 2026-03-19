@@ -45,7 +45,7 @@ using Polynomial2 =
 
 constexpr Argument x_min = π / 6;  // The sinus is greater than 1/2.
 constexpr Argument x_max = π / 4;  // Upper bound after argument reduction.
-static constexpr std::int64_t number_of_iterations = 1000;
+constexpr std::int64_t number_of_iterations = 1000;
 
 template<FMAPresence fma_presence>
 DoublePrecision<double> TwoProductAdd(double const a,

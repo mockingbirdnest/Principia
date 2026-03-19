@@ -578,8 +578,6 @@ void FlowEphemerisWithFixedStepSRKN(
   CHECK_OK(ephemeris.FlowWithFixedStep(t, *instance));
 }
 
-}  // namespace
-
 BENCHMARK(BM_EphemerisMultithreadingBenchmark)
     ->ArgPair(3, 1)
     ->ArgPair(3, 2)
@@ -702,5 +700,6 @@ BENCHMARK_TEMPLATE(BM_EphemerisStartup, &FlowEphemerisWithFixedStepSRKN)
     ->Arg(3)
     ->Unit(benchmark::kMicrosecond);
 
+}  // namespace
 }  // namespace physics
 }  // namespace principia
