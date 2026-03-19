@@ -46,7 +46,6 @@
 namespace principia {
 namespace astronomy {
 
-using ::testing::Lt;
 using ::testing::Gt;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
