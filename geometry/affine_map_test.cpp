@@ -1,5 +1,7 @@
 #include "geometry/affine_map.hpp"
 
+#include <cstddef>
+#include <iostream>
 #include <limits>
 #include <vector>
 
@@ -11,6 +13,7 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"

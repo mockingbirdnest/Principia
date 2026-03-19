@@ -145,7 +145,8 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::operator()(
 template<typename Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
-template<template<typename, typename> typename, typename>
+template<template<typename, typename> typename M>
+  requires(is_same_template_v<M, Vector>)
 SymmetricBilinearForm<Scalar, Frame, Bivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::Anticommutator() const {
   return SymmetricBilinearForm<Scalar, Frame, Bivector>(
@@ -155,7 +156,8 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::Anticommutator() const {
 template<typename Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
-template<template<typename, typename> typename, typename>
+template<template<typename, typename> typename M>
+  requires(is_same_template_v<M, Bivector>)
 SymmetricBilinearForm<Scalar, Frame, Vector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::AnticommutatorInverse()
     const {

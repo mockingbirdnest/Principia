@@ -1,9 +1,6 @@
 #include "geometry/r3x3_matrix.hpp"
 
-#include <utility>
-
 #include "geometry/r3_element.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -55,7 +52,7 @@ TEST_F(R3x3MatrixTest, FrobeniusNorm) {
 }
 
 TEST_F(R3x3MatrixTest, QRDecomposition) {
-  R3x3Matrix<Length> hilbert(
+  R3x3Matrix<Length> const hilbert(
       {1 * Metre, 1.0 / 2.0 * Metre, 1.0 / 3.0 * Metre},
       {1.0 / 2.0 * Metre, 1.0 / 3.0 * Metre, 1.0 / 4.0 * Metre},
       {1.0 / 3.0 * Metre, 1.0 / 4.0 * Metre, 1.0 / 5.0 * Metre});
@@ -79,22 +76,22 @@ TEST_F(R3x3MatrixTest, QRDecomposition) {
 
 TEST_F(R3x3MatrixTest, Solve) {
   {
-    R3x3Matrix<double> a({2, -3, -4}, {0, 0, -1}, {1, -2, 1});
-    R3Element<Length> b(2 * Metre, 5 * Metre, 3 * Metre);
+    R3x3Matrix<double> const a({2, -3, -4}, {0, 0, -1}, {1, -2, 1});
+    R3Element<Length> const b(2 * Metre, 5 * Metre, 3 * Metre);
     EXPECT_THAT(a.Solve(b),
                 Eq(R3Element<Length>(-60 * Metre, -34 * Metre, -5 * Metre)));
   }
   {
-    R3x3Matrix<double> hilbert({1, 1.0 / 2.0, 1.0 / 3.0},
-                               {1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0},
-                               {1.0 / 3.0, 1.0 / 4.0, 1.0 / 5.0});
-    R3Element<double> b(6, -12, 5);
+    R3x3Matrix<double> const hilbert({1, 1.0 / 2.0, 1.0 / 3.0},
+                                     {1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0},
+                                     {1.0 / 3.0, 1.0 / 4.0, 1.0 / 5.0});
+    R3Element<double> const b(6, -12, 5);
     EXPECT_THAT(hilbert.Solve(b),
                 AlmostEquals(R3Element<double>(636, -3420, 3240), 48));
   }
   {
-    R3x3Matrix<double> vandermonde({1, 2, 4}, {1, -3, 9}, {1, 5, 25});
-    R3Element<double> b(7, -9, 11);
+    R3x3Matrix<double> const vandermonde({1, 2, 4}, {1, -3, 9}, {1, 5, 25});
+    R3Element<double> const b(7, -9, 11);
     EXPECT_THAT(
         vandermonde.Solve(b),
         AlmostEquals(R3Element<double>(2, 89.0 / 30.0, -7.0 / 30.0), 4));
@@ -182,8 +179,8 @@ TEST_F(R3x3MatrixTest, Assignment) {
 }
 
 TEST_F(R3x3MatrixTest, KroneckerProduct) {
-  R3Element<double> v1{1, 2, 4};
-  R3Element<double> v2{2, 3, 5};
+  R3Element<double> const v1{1, 2, 4};
+  R3Element<double> const v2{2, 3, 5};
   EXPECT_THAT(KroneckerProduct(v1, v2),
               Eq(R3x3Matrix<double>({2,  3,  5},
                                     {4,  6, 10},

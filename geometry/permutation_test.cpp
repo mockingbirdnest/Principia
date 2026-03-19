@@ -1,12 +1,13 @@
 #include "geometry/permutation.hpp"
 
-#include <vector>
+#include <array>
+#include <iostream>
+#include <type_traits>
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
@@ -114,12 +115,12 @@ TEST_F(PermutationTest, YXZ) {
 }
 
 TEST_F(PermutationTest, Determinant) {
-  PermutationR1R2 xyz(EvenPermutation::XYZ);
-  PermutationR1R2 yzx(EvenPermutation::YZX);
-  PermutationR1R2 zxy(EvenPermutation::ZXY);
-  PermutationR1L xzy(OddPermutation::XZY);
-  PermutationR1L zyx(OddPermutation::ZYX);
-  PermutationR1L yxz(OddPermutation::YXZ);
+  PermutationR1R2 const xyz(EvenPermutation::XYZ);
+  PermutationR1R2 const yzx(EvenPermutation::YZX);
+  PermutationR1R2 const zxy(EvenPermutation::ZXY);
+  PermutationR1L const xzy(OddPermutation::XZY);
+  PermutationR1L const zyx(OddPermutation::ZYX);
+  PermutationR1L const yxz(OddPermutation::YXZ);
   EXPECT_TRUE(xyz.Determinant().is_positive());
   EXPECT_TRUE(yzx.Determinant().is_positive());
   EXPECT_TRUE(zxy.Determinant().is_positive());
@@ -230,7 +231,7 @@ TEST_F(PermutationTest, Compose) {
 }
 
 TEST_F(PermutationDeathTest, SerializationError) {
-  Identity<R1, R2> id;
+  Identity<R1, R2> const id;
   EXPECT_DEATH({
     serialization::LinearMap message;
     id.WriteToMessage(&message);

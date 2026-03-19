@@ -180,7 +180,7 @@ TEST_F(SymmetricBilinearFormTest, LinearMap) {
                      R3x3Matrix<double>({1,  2,  4},
                                         {2, -3,  5},
                                         {4,  5,  0}));
-  Vector<Length, World> v({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
+  Vector<Length, World> const v({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   EXPECT_THAT(
       f * v,
       Eq(Vector<Square<Length>, World>({3.0 * Pow<2>(Metre),
@@ -194,8 +194,8 @@ TEST_F(SymmetricBilinearFormTest, LinearMap) {
 }
 
 TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
-  Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
-  Vector<double, World> v2({2.0, 6.0, -5.0});
+  Vector<Length, World> const v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
+  Vector<double, World> const v2({2.0, 6.0, -5.0});
   EXPECT_THAT(SymmetricProduct(v1, v2),
               Eq(MakeSymmetricBilinearForm<World>(
                      R3x3Matrix<double>({   2,     6,  -3.5},
@@ -261,8 +261,8 @@ TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
 }
 
 TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
-  Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
-  Vector<double, World> v2({2.0, 6.0, -5.0});
+  Vector<Length, World> const v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
+  Vector<double, World> const v2({2.0, 6.0, -5.0});
   EXPECT_THAT((InnerProductForm<World, Vector>()(v1, v2)), Eq(25 * Metre));
 }
 
@@ -271,8 +271,8 @@ TEST_F(SymmetricBilinearFormTest, Apply) {
                      R3x3Matrix<double>({1,  2,  4},
                                         {2, -3,  5},
                                         {4,  5,  0}));
-  Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
-  Vector<Length, World> v2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
+  Vector<Length, World> const v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
+  Vector<Length, World> const v2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
   EXPECT_THAT(f(v1, v2), Eq(-161 * Pow<3>(Metre)));
 }
 

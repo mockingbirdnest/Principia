@@ -1,7 +1,5 @@
 #include "geometry/point.hpp"
 
-#include <vector>
-
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/cpuid.hpp"
@@ -10,6 +8,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "numerics/fma.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -91,9 +90,9 @@ TEST_F(PointTest, AssignmentOperators) {
 
 TEST_F(PointTest, Ordering) {
   // Check that the quantity concept works for double.
-  Point<double> zero;
-  Point<double> d1 = zero + 1.0;
-  Point<double> d2 = zero -3.0;
+  Point<double> const zero;
+  Point<double> const d1 = zero + 1.0;
+  Point<double> const d2 = zero -3.0;
   EXPECT_TRUE(d2 < d1);
   // Check ordering for instants.
   Instant const t1 = mjd0 + 1 * Day;
@@ -162,7 +161,7 @@ TEST_F(PointTest, SerializationSuccess) {
 TEST_F(PointDeathTest, BarycentreError) {
   using InstantBarycentreCalculator = BarycentreCalculator<Instant, Volume>;
   EXPECT_DEATH({
-    InstantBarycentreCalculator calculator;
+    InstantBarycentreCalculator const calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
 }
@@ -192,7 +191,7 @@ TEST_F(PointTest, InstantBarycentreCalculator) {
 
 TEST_F(PointTest, DoubleBarycentreCalculator) {
   BarycentreCalculator<Point<double>, double> calculator;
-  Point<double> zero;
+  Point<double> const zero;
   Point<double> const d1 = zero + 2;
   Point<double> const d2 = zero - 3;
   Point<double> const d3 = zero + 5;

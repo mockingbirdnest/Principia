@@ -60,14 +60,14 @@ class SymmetricBilinearForm {
   //   F.Anticommutator() * Wedge(v, w) = Wedge(F * v, w) + Wedge(v, F * w),
   // which is the generalization to nonsymmetric F.
   // This operation is linear in `*this`.
-  template<template<typename, typename> typename M = Multivector,
-           typename = std::enable_if_t<is_same_template_v<M, Vector>>>
+  template<template<typename, typename> typename M = Multivector>
+    requires(is_same_template_v<M, Vector>)
   SymmetricBilinearForm<Scalar, Frame, Bivector> Anticommutator() const;
 
   // This function is the inverse of `Anticommutator()`.  It is well-defined
   // only in dimension 3, where dim ⋀²V = dim V.
-  template<template<typename, typename> typename M = Multivector,
-           typename = std::enable_if_t<is_same_template_v<M, Bivector>>>
+  template<template<typename, typename> typename M = Multivector>
+    requires(is_same_template_v<M, Bivector>)
   SymmetricBilinearForm<Scalar, Frame, Vector> AnticommutatorInverse() const;
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,

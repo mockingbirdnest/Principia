@@ -66,7 +66,7 @@ TEST_F(ComplexificationTest, Addition) {
 TEST_F(ComplexificationTest, Multiplication) {
   auto const& v = v1_;
   // Complex * real.
-  Complexification<Displacement<World>> iv = i_ * v;
+  Complexification<Displacement<World>> const iv = i_ * v;
   EXPECT_THAT(iv.real_part(), Eq(Displacement<World>{}));
   EXPECT_THAT(iv.imaginary_part(), Eq(v));
   // Real * complex.
@@ -75,11 +75,11 @@ TEST_F(ComplexificationTest, Multiplication) {
   EXPECT_THAT((iv * 2).real_part(), Eq(Displacement<World>{}));
   EXPECT_THAT((iv * 2).imaginary_part(), Eq(2 * v));
   // Complex * complex.
-  Complexification<Displacement<World>> i²v = i_ * iv;
+  Complexification<Displacement<World>> const i²v = i_ * iv;
   EXPECT_THAT(i²v.real_part(), Eq(-v));
   EXPECT_THAT(i²v.imaginary_part(), Eq(Displacement<World>{}));
 
-  Complexification<double> i² = i_ * i_;
+  Complexification<double> const i² = i_ * i_;
   EXPECT_THAT(i².real_part(), Eq(-1));
   EXPECT_THAT(i².imaginary_part(), Eq(0));
 }
@@ -92,7 +92,7 @@ TEST_F(ComplexificationTest, Division) {
   Complexification<Length> const z =
       v1_.coordinates().x + i_ * v2_.coordinates().x;
   // Complex / complex.
-  Complexification<Vector<double, World>> quotient = (v1_ + i_ * v2_) / z;
+  Complexification<Vector<double, World>> const quotient = (v1_ + i_ * v2_) / z;
   EXPECT_THAT(quotient, Eq(v1_ / z + i_ * v2_ / z));
 
   EXPECT_THAT(quotient.real_part().coordinates().x, Eq(1));

@@ -1,5 +1,8 @@
 #include "geometry/direct_sum.hpp"
 
+#include <array>
+#include <cstddef>
+#include <cstdint>
 #include <chrono>
 #include <tuple>
 
@@ -64,16 +67,18 @@ struct ConstructionCounter {
 std::int64_t ConstructionCounter::initialized_count = 0;
 std::int64_t ConstructionCounter::uninitialized_count = 0;
 
-double operator-(ConstructionCounter const& left,
-                 ConstructionCounter const& right) {
+double operator-(ConstructionCounter const& /*left*/,
+                 ConstructionCounter const& /*right*/) {
   return 0.0;
 }
 
-ConstructionCounter operator+(ConstructionCounter const& left, double right) {
+ConstructionCounter operator+(ConstructionCounter const& left,
+                              double const /*right*/) {
   return left;
 }
 
-ConstructionCounter operator-(ConstructionCounter const& left, double right) {
+ConstructionCounter operator-(ConstructionCounter const& left,
+                              double const /*right*/) {
   return left;
 }
 
@@ -203,8 +208,8 @@ TEST(DirectSumTest, Division) {
 }
 
 TEST(DirectSumTest, InnerProduct) {
-  ℝ² one_two = {1, 2};
-  ℝ² three_four = {3, 4};
+  ℝ² const one_two = {1, 2};
+  ℝ² const three_four = {3, 4};
 
   EXPECT_EQ(InnerProduct(one_two, three_four), 11);
   EXPECT_EQ(three_four.Norm²(), 25);
@@ -212,21 +217,21 @@ TEST(DirectSumTest, InnerProduct) {
 }
 
 TEST(DirectSumTest, InnerProductOfDirectSumOfVector) {
-  DirectSum<Vector<double, World>> one_two_three = {
+  DirectSum<Vector<double, World>> const one_two_three = {
       Vector<double, World>({1, 2, 3})};
-  DirectSum<Vector<double, World>> four_five_six = {
+  DirectSum<Vector<double, World>> const four_five_six = {
       Vector<double, World>({4, 5, 6})};
 
   EXPECT_EQ(InnerProduct(one_two_three, four_five_six), 32);
 }
 
 TEST(DirectSumTest, Get) {
-  ℝ² one_two = {1, 2};
+  ℝ² const one_two = {1, 2};
   EXPECT_EQ(get<0>(one_two), 1);
 }
 
 TEST(DirectSumTest, StructuredBindingsConst) {
-  DirectSum<Length, Time> one_two = {1 * Metre, 2 * Second};
+  DirectSum<Length, Time> const one_two = {1 * Metre, 2 * Second};
 
   auto const& [length, time] = one_two;
   EXPECT_EQ(length, 1 * Metre);

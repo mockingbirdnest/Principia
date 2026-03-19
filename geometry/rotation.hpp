@@ -220,8 +220,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   Rotation<ToFrame, FromFrame> Inverse() const;
 
   template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<std::is_same_v<F, T>>>
+           typename T = ToFrame>
+    requires(std::is_same_v<F, T>)
   Bivector<double, FromFrame> RotationAxis() const;
 
   Angle RotationAngle() const;

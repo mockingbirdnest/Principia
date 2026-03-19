@@ -1,7 +1,5 @@
 #include "geometry/barycentre_calculator.hpp"
 
-#include <vector>
-
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
@@ -47,7 +45,7 @@ using BarycentreCalculatorDeathTest = BarycentreCalculatorTest;
 TEST_F(BarycentreCalculatorDeathTest, Error) {
   using Calculator = BarycentreCalculator<Bivector<Entropy, World>, double>;
   EXPECT_DEATH({
-    Calculator calculator;
+    Calculator const calculator{};
     calculator.Get();
   }, "Empty BarycentreCalculator");
 }
@@ -74,8 +72,8 @@ TEST_F(BarycentreCalculatorTest, Scalar) {
 }
 
 TEST_F(BarycentreCalculatorTest, Function) {
-  Displacement<World> r({1 * Metre, 2 * Metre, 5 * Metre});
-  Position<World> q = World::origin + r;
+  Displacement<World> const r({1 * Metre, 2 * Metre, 5 * Metre});
+  Position<World> const q = World::origin + r;
   EXPECT_THAT(Barycentre({World::origin, q}, {2 * Kilogram, 3 * Kilogram}),
               Eq(World::origin + 3 * r / 5));
   EXPECT_THAT(Barycentre({World::origin, q}, {2, 3}),

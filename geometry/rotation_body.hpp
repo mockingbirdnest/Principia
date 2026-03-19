@@ -201,7 +201,8 @@ Rotation<ToFrame, FromFrame> Rotation<FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename>
+template<typename F, typename T>
+  requires(std::is_same_v<F, T>)
 Bivector<double, FromFrame> Rotation<FromFrame, ToFrame>::RotationAxis() const {
   return Bivector<double, FromFrame>(Normalize(quaternion_.imaginary_part()));
 }

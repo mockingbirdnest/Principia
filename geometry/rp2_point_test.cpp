@@ -1,7 +1,5 @@
 #include "geometry/rp2_point.hpp"
 
-#include <limits>
-
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -28,13 +26,13 @@ class RP2PointTest : public ::testing::Test {
 };
 
 TEST_F(RP2PointTest, Basic) {
-  RP2Point<Length, Projective> p1(1.0 * Metre, 2.0 * Metre, 3.0);
-  RP2Point<Length, Projective> p2(2.0 * Metre, 4.0 * Metre, 6.0);
-  RP2Point<Length, Projective> p3(2.0 * Metre, 4.0 * Metre, 5.0);
-  RP2Point<Length, Projective> p4(1.0 * Metre, 2.0 * Metre, 0.0);
-  RP2Point<Length, Projective> p5(2.0 * Metre, 4.0 * Metre, 0.0);
-  RP2Point<Length, Projective> p6(0.0 * Metre, -4.0 * Metre, 0.0);
-  RP2Point<Length, Projective> p7(0.0 * Metre, -0.0 * Metre, -0.0);
+  RP2Point<Length, Projective> const p1(1.0 * Metre, 2.0 * Metre, 3.0);
+  RP2Point<Length, Projective> const p2(2.0 * Metre, 4.0 * Metre, 6.0);
+  RP2Point<Length, Projective> const p3(2.0 * Metre, 4.0 * Metre, 5.0);
+  RP2Point<Length, Projective> const p4(1.0 * Metre, 2.0 * Metre, 0.0);
+  RP2Point<Length, Projective> const p5(2.0 * Metre, 4.0 * Metre, 0.0);
+  RP2Point<Length, Projective> const p6(0.0 * Metre, -4.0 * Metre, 0.0);
+  RP2Point<Length, Projective> const p7(0.0 * Metre, -0.0 * Metre, -0.0);
 
   // Basic equality.
   EXPECT_EQ(p1, p2);

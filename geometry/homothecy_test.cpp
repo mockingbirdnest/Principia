@@ -1,15 +1,10 @@
 #include "geometry/homothecy.hpp"
 
-#include <vector>
-
-#include "base/algebra.hpp"
 #include "geometry/conformal_map.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -20,12 +15,10 @@ namespace principia {
 namespace geometry {
 
 using ::testing::Eq;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_conformal_map;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_homothecy;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
@@ -56,7 +49,7 @@ class HomothecyTest : public testing::Test {
 };
 
 TEST_F(HomothecyTest, Vector) {
-  AmountHomothecy h(5 * Mole);
+  AmountHomothecy const h(5 * Mole);
   EXPECT_THAT(h(vector_).coordinates(),
               Componentwise(5 * Mole * Metre,
                             -10 * Mole * Metre,
@@ -64,7 +57,7 @@ TEST_F(HomothecyTest, Vector) {
 }
 
 TEST_F(HomothecyTest, Inverse) {
-  AmountHomothecy h(5 * Mole);
+  AmountHomothecy const h(5 * Mole);
   Vector<Length, R2> const vector({1 * Metre, -2 * Metre, 3 * Metre});
   EXPECT_THAT(h.Inverse()(vector).coordinates(),
               Componentwise(AlmostEquals(0.2 * Metre / Mole, 0),
@@ -79,7 +72,7 @@ TEST_F(HomothecyTest, Identity) {
 }
 
 TEST_F(HomothecyTest, Forget) {
-  AmountHomothecy h(5 * Mole);
+  AmountHomothecy const h(5 * Mole);
   EXPECT_THAT(h.Forget<ConformalMap>()(vector_).coordinates(),
               Componentwise(5 * Mole * Metre,
                             -10 * Mole * Metre,
@@ -87,8 +80,8 @@ TEST_F(HomothecyTest, Forget) {
 }
 
 TEST_F(HomothecyTest, Composition) {
-  AmountHomothecy h1(5 * Mole);
-  CurrentHomothecy h2(3 * Ampere);
+  AmountHomothecy const h1(5 * Mole);
+  CurrentHomothecy const h2(3 * Ampere);
 
   EXPECT_THAT((h2 * h1)(vector_).coordinates(),
               Componentwise(15 * Metre * Mole * Ampere,
@@ -99,7 +92,7 @@ TEST_F(HomothecyTest, Composition) {
 TEST_F(HomothecyTest, Serialization) {
   serialization::Homothecy message;
 
-  AmountHomothecy homothecy(5 * Mole);
+  AmountHomothecy const homothecy(5 * Mole);
   homothecy.WriteToMessage(&message);
   EXPECT_THAT(AmountHomothecy::ReadFromMessage(message)(vector_),
               Eq(homothecy(vector_)));
