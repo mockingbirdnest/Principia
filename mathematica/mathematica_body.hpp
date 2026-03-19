@@ -88,7 +88,7 @@ struct TupleHelper<0, Tuple, OptionalExpressIn> : not_constructible {
 };
 
 template<typename R, typename I>
-std::string ToMathematica(R const real,
+std::string ToMathematica(R const& real,
                           std::int64_t base,
                           std::function<R(R)> const& abs,
                           std::function<int(R)> const& ilogb,

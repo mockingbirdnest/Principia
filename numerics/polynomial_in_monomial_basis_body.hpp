@@ -276,7 +276,7 @@ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::operator/=(
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 Value_ PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-operator()(Argument const argument) const {
+operator()(Argument const& argument) const {
   return Evaluator<Value_, Difference<Argument_>, degree_>::Evaluate(
       coefficients_, argument - origin_);
 }
@@ -285,7 +285,7 @@ template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 Derivative<Value_, Argument_>
  PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-EvaluateDerivative(Argument const argument) const {
+EvaluateDerivative(Argument const& argument) const {
   return Evaluator<Value_, Difference<Argument_>, degree_>::EvaluateDerivative(
       coefficients_, argument - origin_);
 }
@@ -293,7 +293,7 @@ EvaluateDerivative(Argument const argument) const {
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 void PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
-EvaluateWithDerivative(Argument const argument,
+EvaluateWithDerivative(Argument const& argument,
                        Value& value,
                        base::_algebra::Derivative<Value, Argument>&
                            derivative) const {

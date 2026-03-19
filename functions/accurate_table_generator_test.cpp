@@ -1,13 +1,21 @@
 #include "functions/accurate_table_generator.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstdint>
+#include <functional>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <tuple>
 #include <vector>
 
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/strip.h"
 #include "base/multiprecision.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "functions/multiprecision.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -227,12 +235,12 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
   CHECK(0.5 <= u₀ & u₀ < 1.0) << u₀;
   CHECK(0.5 <= sin(u₀) && sin(u₀) < 1.0);
   CHECK(0.5 <= cos(u₀) && cos(u₀) < 1.0);
-  AccuratePolynomial<cpp_rational, 2> sin_taylor2(
+  AccuratePolynomial<cpp_rational, 2> const sin_taylor2(
       {4 * cpp_rational(Sin(u₀ / 4)),
        cpp_rational(Cos(u₀ / 4)),
        -cpp_rational(Sin(u₀ / 4)) / 8},
       u₀);
-  AccuratePolynomial<cpp_rational, 2> cos_taylor2(
+  AccuratePolynomial<cpp_rational, 2> const cos_taylor2(
       {cpp_rational(Cos(u₀ / 4)),
        -cpp_rational(Sin(u₀ / 4) / 4),
        -cpp_rational(Cos(u₀ / 4) / 32)},
@@ -256,8 +264,8 @@ TEST_F(AccurateTableGeneratorTest, StehléZimmermannSinCos15) {
       {sin_taylor2, cos_taylor2},
       {remainder_sin_taylor2, remainder_cos_taylor2},
       u₀,
-      /*N=*/1ll << 53,
-      /*T=*/1ll << 21);
+      /*N=*/INT64_C(1) << 53,
+      /*T=*/INT64_C(1) << 21);
   EXPECT_THAT(u,
               IsOkAndHolds(cpp_rational(4785074575333183, 9007199254740992)));
   EXPECT_EQ(*u, cpp_rational(static_cast<double>(*u)));
@@ -559,7 +567,7 @@ TEST_F(AccurateTableGeneratorTest, DISABLED_SECULAR_SinCos20) {
   std::int64_t const i_min = 1;
 
   // The index of the last interval, which goes a bit beyond π / 4.
-  std::int64_t i_max = std::ceil(π / (8 * h) - 0.5);
+  std::int64_t const i_max = std::ceil(π / (8 * h) - 0.5);
 
   // Check that the last interval straddles π / 4.
   CHECK_LT(centre(i_max) - h, π / 4);

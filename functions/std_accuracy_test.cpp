@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <random>
 
@@ -9,8 +10,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"  // 🧙 For π.
-#include "quantities/si.hpp"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
@@ -20,8 +19,6 @@ namespace functions {
 using ::testing::AnyOf;
 using namespace principia::base::_multiprecision;
 using namespace principia::functions::_multiprecision;
-using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 
