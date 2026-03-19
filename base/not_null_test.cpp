@@ -21,11 +21,11 @@ using namespace principia::base::_not_null;
 class NotNullTest : public testing::Test {
  protected:
   // A very convoluted wrapper for the x86 add...
-  void Add(not_null<int*> const destination,
+  static void Add(not_null<int*> const destination,
            not_null<int const*> const source) {
     *destination += *source;
   }
-  void Sub(not_null<int*> const destination,
+  static void Sub(not_null<int*> const destination,
            not_null<int const*> const source) {
     *destination -= *source;
   }
