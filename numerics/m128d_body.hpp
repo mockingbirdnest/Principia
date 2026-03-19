@@ -66,11 +66,11 @@ inline M128D& M128D::operator/=(M128D const right) {
 
 inline M128D const M128D::identity_(1.0);
 inline M128D const M128D::all_ones_ =
-    M128D::MakeFromBits(0xffff'ffff'ffff'ffffull);
+    M128D::MakeFromBits(UINT64_C(0xffff'ffff'ffff'ffff));
 inline M128D const M128D::negated_sign_bit_ =
-    M128D::MakeFromBits(0x7fff'ffff'ffff'ffffull);
+    M128D::MakeFromBits(UINT64_C(0x7fff'ffff'ffff'ffff));
 inline M128D const M128D::sign_bit_ =
-    M128D::MakeFromBits(0x8000'0000'0000'0000ull);
+    M128D::MakeFromBits(UINT64_C(0x8000'0000'0000'0000));
 
 inline M128D PRINCIPIA_M128D_CC operator+(M128D const right) {
   return right;

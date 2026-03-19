@@ -2,18 +2,21 @@
 
 #include <immintrin.h>
 
+#include <cstdint>
 #include <limits>
 #include <utility>
 
+#include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
 #include "base/tags.hpp"
 #include "core-math/cos.h"
 #include "core-math/sin.h"
+#include "glog/logging.h"
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "numerics/m128d.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 
 // The algorithms in this file are documented in `Sin Cos.pdf`.  To the extent
 // possible, the code follows the notation of that document.
@@ -25,7 +28,6 @@ namespace internal {
 using namespace principia::base::_tags;
 using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_double_precision;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_polynomial_evaluators;
 
@@ -62,6 +64,14 @@ using namespace principia::numerics::_polynomial_evaluators;
     constexpr SC<double> values = {.sin = 0, .cos = 1};                      \
     return expression;                                                       \
   }()
+
+// Forward declarations needed by the OSACA macros.
+template<FMAPresence fma_presence>
+double __cdecl Sin(double x);
+template<FMAPresence fma_presence>
+double __cdecl Cos(double x);
+
+namespace {
 
 using Argument = M128D;
 using Value = M128D;
@@ -101,12 +111,6 @@ constexpr double e_cos = 0x1.0001'58B5'12B3'2p0;  // 2^-69.570.
 
 SlowPathCallback slow_path_sin_callback = nullptr;
 SlowPathCallback slow_path_cos_callback = nullptr;
-
-// Forward declarations needed by the OSACA macros.
-template<FMAPresence fma_presence>
-double __cdecl Sin(double x);
-template<FMAPresence fma_presence>
-double __cdecl Cos(double x);
 
 namespace m128d {
 
@@ -491,6 +495,8 @@ SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
   }
   return m128ds;
 }
+
+}  // namespace
 
 template<FMAPresence fma_presence>
 double __cdecl Sin(double x) {

@@ -1,10 +1,14 @@
 #include "astronomy/standard_product_3.hpp"
 
 #include <array>
+#include <filesystem>
+#include <functional>
 #include <fstream>
 #include <memory>
 #include <optional>
+#include <ostream>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -30,6 +34,8 @@ using namespace principia::numerics::_finite_difference;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+
+namespace {
 
 // Given a trajectory whose velocities are bad or absent (e.g., NaN), uses
 // n-point finite difference formulæ on the positions to produce a trajectory
@@ -76,6 +82,8 @@ not_null<std::unique_ptr<DiscreteTrajectory<ITRS>>> ComputeVelocities(
   CHECK_EQ(result->size(), arc.size());
   return result;
 }
+
+}  // namespace
 
 StandardProduct3::StandardProduct3(
     std::filesystem::path const& filename,

@@ -46,7 +46,6 @@ namespace astronomy {
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::Field;
-using ::testing::Lt;
 using ::testing::Property;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;

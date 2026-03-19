@@ -5,6 +5,7 @@
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -19,7 +20,6 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
-using ::testing::Ne;
 using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_time_scales;

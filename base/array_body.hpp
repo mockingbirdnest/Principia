@@ -13,29 +13,47 @@ namespace _array {
 namespace internal {
 
 template<typename Element>
-template<typename OtherElement, typename>
+template<typename OtherElement>
+  requires(std::is_convertible_v<OtherElement*, Element*>)
 Array<Element>::Array(Array<OtherElement> const& other)
     : data(other.data), size(other.size) {}
 
 template<typename Element>
-template<typename Size, typename>
+template<typename Size>
+  requires(std::is_integral_v<Size>)
 Array<Element>::Array(Element* const data, Size const size)
     : data(data), size(static_cast<std::int64_t>(size)) {}
 
 template<typename Element>
-template<typename Container, typename>
+template<typename Container>
+  requires(std::is_convertible_v<decltype(std::declval<Container>().data()),
+                                 Element*> &&
+           std::is_integral_v<decltype(std ::declval<Container>().size())>)
 constexpr Array<Element>::Array(Container& container)
     : data(container.data()),
       size(static_cast<std::int64_t>(container.size())) {}
 
 template<typename Element>
-template<typename Container, typename>
+template<typename Container>
+  requires(std::is_convertible_v<
+               decltype(std::declval<Container const>().data()),
+               Element*> &&
+           std::is_integral_v<
+               decltype(std ::declval<Container const>().size())>)
 constexpr Array<Element>::Array(Container const& container)
     : data(container.data()),
       size(static_cast<std::int64_t>(container.size())) {}
 
 template<typename Element>
-template<std::size_t size_plus_1, typename Character, typename>
+template<std::size_t size_plus_1, typename Character>
+  requires(size_plus_1 >= 1 &&
+           (std::is_same_v<Element, unsigned char const> ||
+            std::is_same_v<Element, char const> ||
+            std::is_same_v<Element, wchar_t const> ||
+            std::is_same_v<Element, char16_t const> ||
+            std::is_same_v<Element, char32_t const>) &&
+           (std::is_same_v<Element, Character> ||
+            (sizeof(Element) == 1 && std::is_same_v<Character, char const>)))
 constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
     : data(reinterpret_cast<Element*>(characters)),
       size(size_plus_1 - 1) {
@@ -57,7 +75,8 @@ template<typename Element>
 UniqueArray<Element>::UniqueArray() : size(0) {}
 
 template<typename Element>
-template<typename Size, typename>
+template<typename Size>
+  requires(std::is_integral_v<Size>)
 UniqueArray<Element>::UniqueArray(Size const size)
     : data(size == 0 ? nullptr : new Element[static_cast<std::size_t>(size)]),
       size(static_cast<std::int64_t>(size)) {}

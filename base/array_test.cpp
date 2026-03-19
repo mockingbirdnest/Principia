@@ -20,7 +20,7 @@ namespace base {
 using namespace principia::base::_array;
 
 TEST(ArrayTest, BoundedArray0) {
-  BoundedArray<double, 3> a{};
+  BoundedArray<double, 3> const a{};
   EXPECT_THAT(a, AllOf(IsEmpty(), SizeIs(0)));
   double sum = 0.0;
   for (double const value : a) {
@@ -30,7 +30,7 @@ TEST(ArrayTest, BoundedArray0) {
 }
 
 TEST(ArrayTest, BoundedArray1) {
-  BoundedArray<double, 3> a{1.0};
+  BoundedArray<double, 3> const a{1.0};
   EXPECT_THAT(a, AllOf(Not(IsEmpty()), SizeIs(1)));
   double sum = 0.0;
   for (double const value : a) {
@@ -40,7 +40,7 @@ TEST(ArrayTest, BoundedArray1) {
 }
 
 TEST(ArrayTest, BoundedArray2) {
-  BoundedArray<double, 3> a{1.0, 10.0};
+  BoundedArray<double, 3> const a{1.0, 10.0};
   EXPECT_THAT(a, AllOf(Not(IsEmpty()), SizeIs(2)));
   double sum = 0.0;
   for (double const value : a) {
@@ -50,7 +50,7 @@ TEST(ArrayTest, BoundedArray2) {
 }
 
 TEST(ArrayTest, BoundedArray3) {
-  BoundedArray<double, 3> a{1.0, 10.0, 100.0};
+  BoundedArray<double, 3> const a{1.0, 10.0, 100.0};
   EXPECT_THAT(a, AllOf(Not(IsEmpty()), SizeIs(3)));
   double sum = 0.0;
   for (double const value : a) {
@@ -78,7 +78,7 @@ TEST(ArrayTest, BoundedArrayReverse) {
 }
 
 TEST(ArrayTest, Return) {
-  std::string s;
+  std::string const s;
   auto fn = [s]() -> BoundedArray<std::string, 3> {
     return {s};
   };

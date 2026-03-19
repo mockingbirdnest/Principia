@@ -16,47 +16,39 @@ struct Array final {
   // An object of size 0.
   Array() = default;
   // Mostly useful for adding constness.
-  template<typename OtherElement,
-           typename = typename std::enable_if_t<
-               std::is_convertible_v<OtherElement*, Element*>>>
+  template<typename OtherElement>
+    requires(std::is_convertible_v<OtherElement*, Element*>)
   Array(Array<OtherElement> const& other);
   // No allocation of memory.
-  template<typename Size,
-           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
+  template<typename Size>
+    requires(std::is_integral_v<Size>)
   Array(Element* data, Size size);
 
   // Implicit conversion from strings, vectors, and the like.
-  template<
-      typename Container,
-      typename = std::enable_if_t<
-               std::is_convertible_v<decltype(std::declval<Container>().data()),
-                                     Element*> &&
-               std::is_integral_v<decltype(std ::declval<Container>().size())>>>
+  template<typename Container>
+    requires(std::is_convertible_v<decltype(std::declval<Container>().data()),
+                                   Element*> &&
+             std::is_integral_v<decltype(std ::declval<Container>().size())>)
   constexpr Array(Container& container);  // NOLINT(runtime/explicit)
 
-  template<typename Container,
-           typename = std::enable_if_t<
-               std::is_convertible_v<
-                   decltype(std::declval<Container const>().data()),
-                   Element*> &&
-               std::is_integral_v<
-                   decltype(std ::declval<Container const>().size())>>>
+  template<typename Container>
+    requires(
+        std::is_convertible_v<decltype(std::declval<Container const>().data()),
+                              Element*> &&
+        std::is_integral_v<decltype(std ::declval<Container const>().size())>)
   constexpr Array(Container const& container);  // NOLINT(runtime/explicit)
 
   // Construction from a string literal if `Element` is a character type or some
   // flavour of byte.
-  template<std::size_t size_plus_1,
-           typename Character,
-           typename = std::enable_if_t<
-               size_plus_1 >= 1 &&
-               (std::is_same_v<Element, unsigned char const> ||
-                std::is_same_v<Element, char const> ||
-                std::is_same_v<Element, wchar_t const> ||
-                std::is_same_v<Element, char16_t const> ||
-                std::is_same_v<Element, char32_t const>) &&
-               (std::is_same_v<Element, Character> ||
-                (sizeof(Element) == 1 &&
-                 std::is_same_v<Character, char const>))>>
+  template<std::size_t size_plus_1, typename Character>
+    requires(size_plus_1 >= 1 &&
+             (std::is_same_v<Element, unsigned char const> ||
+              std::is_same_v<Element, char const> ||
+              std::is_same_v<Element, wchar_t const> ||
+              std::is_same_v<Element, char16_t const> ||
+              std::is_same_v<Element, char32_t const>) &&
+             (std::is_same_v<Element, Character> ||
+              (sizeof(Element) == 1 && std::is_same_v<Character, char const>)))
   constexpr explicit Array(Character (&characters)[size_plus_1]);
 
   Element* data;
@@ -69,8 +61,8 @@ struct UniqueArray final {
   // An object of size 0.
   UniqueArray();
   // Allocates memory for `size` elements.
-  template<typename Size,
-           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
+  template<typename Size>
+    requires(std::is_integral_v<Size>)
   explicit UniqueArray(Size size);
   // Takes ownership of an existing array.
   template<typename Size,

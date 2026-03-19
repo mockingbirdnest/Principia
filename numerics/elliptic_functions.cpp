@@ -1,13 +1,12 @@
 #include "numerics/elliptic_functions.hpp"
 
 #include <cmath>
-#include <tuple>
 
 #include "glog/logging.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -17,7 +16,6 @@ namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_elliptic_integrals;
-using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_si;
 
@@ -80,7 +78,7 @@ void JacobiSNCNDNReduced(Angle const& u,
   double const b₀1 = fukushima_b₀_maclaurin_m_1(m);
   double const b₀2 = fukushima_b₀_maclaurin_m_2(m);
   double const b₀3 = fukushima_b₀_maclaurin_m_3(m);
-  PolynomialInMonomialBasis<double, double, 3>
+  PolynomialInMonomialBasis<double, double, 3> const
       fukushima_b₀_maclaurin_u₀²_3({0.0, b₀1, b₀2, b₀3});
   double const u₀² = (u₀ * u₀) / Pow<2>(Radian);
 
@@ -208,7 +206,7 @@ Angle JacobiAmplitude(Angle const& u, double mc) {
   double c;
   double d;
   double n;
-  Angle abs_u = Abs(u);
+  Angle const abs_u = Abs(u);
   if (abs_u < k_over_2_lower_bound) {
     JacobiSNCNDNReduced(abs_u, mc, s, c, d);
     if (u < Angle()) {

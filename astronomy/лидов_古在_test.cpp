@@ -11,6 +11,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"

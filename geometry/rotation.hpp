@@ -98,8 +98,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   // is an active rotation.
   template<typename Scalar,
            typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<std::is_same_v<F, T>>>
+           typename T = ToFrame>
+    requires(std::is_same_v<F, T>)
   Rotation(Angle const& angle, Bivector<Scalar, FromFrame> const& axis);
 
   // The constructors below define passive rotations (changes of coordinates
@@ -123,8 +123,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   template<int rank_x, int rank_y, int rank_z,
            typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same_v<F, T>>,
            typename = void>
+    requires(!std::is_same_v<F, T>)
   Rotation(Multivector<double, ToFrame, rank_x> x_from_frame,
            Multivector<double, ToFrame, rank_y> y_from_frame,
            Multivector<double, ToFrame, rank_z> z_from_frame);
@@ -140,8 +140,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   template<typename Scalar,
            typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same_v<F, T>>>
+           typename T = ToFrame>
+    requires(!std::is_same_v<F, T>)
   Rotation(Angle const& angle,
            Bivector<Scalar, FromFrame> const& axis,
            DefinesFrame<ToFrame> tag);
@@ -149,8 +149,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   template<typename Scalar,
            typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same_v<F, T>>,
            typename = void>
+    requires(!std::is_same_v<F, T>)
   Rotation(Angle const& angle,
            Bivector<Scalar, ToFrame> const& axis,
            DefinesFrame<FromFrame> tag);
@@ -167,8 +167,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   // are the transformations between `Reference` and `Orbit`.
 
   template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same_v<F, T>>>
+           typename T = ToFrame>
+    requires(!std::is_same_v<F, T>)
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
@@ -177,8 +177,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same_v<F, T>>,
            typename = void>
+    requires(!std::is_same_v<F, T>)
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
@@ -197,8 +197,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   // are the transformations between `Aircraft` and `Ground`.
 
   template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same_v<F, T>>>
+           typename T = ToFrame>
+    requires(!std::is_same_v<F, T>)
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,
@@ -207,8 +207,8 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   template<typename F = FromFrame,
            typename T = ToFrame,
-           typename = std::enable_if_t<!std::is_same_v<F, T>>,
            typename = void>
+    requires(!std::is_same_v<F, T>)
   Rotation(Angle const& α,
            Angle const& β,
            Angle const& γ,

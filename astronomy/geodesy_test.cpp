@@ -93,20 +93,20 @@ class GeodesyTest : public ::testing::Test {
 #if !defined(_DEBUG)
 
 TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
-  MasslessBody lageos2;
+  MasslessBody const lageos2;
 
-  StandardProduct3 initial_ilrsa(SOLUTION_DIR / "astronomy" /
-                                     "standard_product_3" /
-                                     "ilrsa.orb.lageos2.160319.v35.sp3",
-                                 StandardProduct3::Dialect::ILRSA);
-  StandardProduct3 initial_ilrsb(SOLUTION_DIR / "astronomy" /
-                                     "standard_product_3" /
-                                     "ilrsb.orb.lageos2.160319.v35.sp3",
-                                 StandardProduct3::Dialect::ILRSB);
-  StandardProduct3 final_ilrsa(SOLUTION_DIR / "astronomy" /
-                                   "standard_product_3" /
-                                   "ilrsa.orb.lageos2.180804.v70.sp3",
-                               StandardProduct3::Dialect::ILRSA);
+  StandardProduct3 const initial_ilrsa(SOLUTION_DIR / "astronomy" /
+                                           "standard_product_3" /
+                                           "ilrsa.orb.lageos2.160319.v35.sp3",
+                                       StandardProduct3::Dialect::ILRSA);
+  StandardProduct3 const initial_ilrsb(SOLUTION_DIR / "astronomy" /
+                                           "standard_product_3" /
+                                           "ilrsb.orb.lageos2.160319.v35.sp3",
+                                       StandardProduct3::Dialect::ILRSB);
+  StandardProduct3 const final_ilrsa(SOLUTION_DIR / "astronomy" /
+                                         "standard_product_3" /
+                                         "ilrsa.orb.lageos2.180804.v70.sp3",
+                                     StandardProduct3::Dialect::ILRSA);
 
   StandardProduct3::SatelliteIdentifier const lageos2_id{
       StandardProduct3::SatelliteGroup::General, 52};
@@ -217,32 +217,21 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
                             *expected_elements.mean_anomaly),
               IsNear(58_(1) * ArcMinute));
 
-#if 0
   // Error arising from uncertainty in the initial state, estimated as the
   // difference between the primary and secondary ILRS products.
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
                             primary_actual_final_dof.position()),
-              AnyOf(IsNear(237_(1) * Metre),    // Linux.
-                    IsNear(28_(1) * Metre),     // No FMA.
-                    IsNear(98_(1) * Metre),     // FMA.
-                    IsNear(220_(1) * Metre)));  // VS 2019.
+              AnyOf(IsNear(283_(1) * Metre)));  // Windows.
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
                            primary_actual_final_dof.position() - ITRS::origin),
-                AnyOf(IsNear(4.0_(1) * ArcSecond),    // Linux.
-                      IsNear(0.47_(1) * ArcSecond),   // No FMA.
-                      IsNear(1.6_(1) * ArcSecond),    // FMA.
-                      IsNear(3.7_(1) * ArcSecond)));  // VS 2019.
+              AnyOf(IsNear(4.7_(1) * ArcSecond)));  // Windows.
   // Radial error at the geocentre.
   EXPECT_THAT(AbsoluteError(
                   (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
-              AnyOf(IsNear(99_(1) * Centi(Metre)),    // Linux.
-                    IsNear(11_(1) * Centi(Metre)),    // No FMA.
-                    IsNear(43_(1) * Centi(Metre)),    // FMA.
-                    IsNear(93_(1) * Centi(Metre))));  // VS 2019.
-#endif
+              AnyOf(IsNear(115_(1) * Centi(Metre))));  // Windows.
 }
 
 #endif

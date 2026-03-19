@@ -345,14 +345,6 @@ class not_null<Pointer&&>;
 template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer);
 
-#if 0
-// While the above factory would cover this case using the implicit
-// conversion, this results in a redundant `CHECK`.
-// This function returns its argument.
-template<typename Pointer>
-not_null<Pointer> check_not_null(not_null<Pointer> pointer);
-#endif
-
 template<typename T, typename... Args>
 not_null<std::shared_ptr<T>> make_not_null_shared(Args&&... args);
 

@@ -1,8 +1,11 @@
 #include <algorithm>
+#include <array>
 #include <filesystem>
 #include <limits>
 #include <memory>
+#include <ostream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
@@ -33,6 +36,7 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -428,8 +432,9 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   std::vector<double> descending_node_eccentricities;
   std::vector<Angle> descending_node_arguments;
 
-  for (auto const& nodes : {Nodes{"ascending", ascending_nodes},
-                            Nodes{"descending", descending_nodes}}) {
+  for (auto const& nodes :
+       {Nodes{.name = "ascending", .points = ascending_nodes},
+        Nodes{.name = "descending", .points = descending_nodes}}) {
     for (auto const& [time, degrees_of_freedom] : nodes.points) {
       auto const elements = KeplerOrbit<Selenocentric>(
           *moon_,

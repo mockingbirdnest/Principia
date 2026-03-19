@@ -1,6 +1,8 @@
 #include "base/pull_serializer.hpp"
 
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <list>
 #include <memory>
@@ -26,7 +28,6 @@ using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
-using ::google::compression::Compressor;
 using ::std::placeholders::_1;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;

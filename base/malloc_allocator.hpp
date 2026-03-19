@@ -27,7 +27,7 @@ class MallocAllocator {
 
   // Constructors. This is a stateless struct so these don't do anything (but
   // they are required by some containers).
-  MallocAllocator() {}
+  MallocAllocator() = default;
   MallocAllocator(const MallocAllocator& other) = default;
   template<typename U>
   MallocAllocator(const MallocAllocator<U>& other) {}
@@ -46,7 +46,7 @@ class MallocAllocator {
 #endif
   }
 
-  void deallocate(T* p, std::size_t n) {
+  void deallocate(T* p, std::size_t const /*n*/) {
 #if PRINCIPIA_COMPILER_MSVC
     _aligned_free(p);
 #else

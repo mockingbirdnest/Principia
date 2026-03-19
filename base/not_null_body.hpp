@@ -187,18 +187,13 @@ constexpr not_null<Pointer>::not_null(pointer other, unchecked_tag const)
 
 template<typename Pointer>
 _checked_not_null<Pointer> check_not_null(Pointer pointer) {
-  CHECK(pointer != nullptr);
+  if constexpr (!is_instance_of_not_null_v<Pointer>) {
+    CHECK(pointer != nullptr);
+  }
   return not_null<std::remove_reference_t<Pointer>>(
       std::move(pointer),
       not_null<Pointer>::unchecked_tag_);
 }
-
-#if 0
-template<typename Pointer>
-not_null<Pointer> check_not_null(not_null<Pointer> pointer) {
-  return std::move(pointer);
-}
-#endif
 
 template<typename T, typename... Args>
 not_null<std::shared_ptr<T>> make_not_null_shared(Args&&... args) {

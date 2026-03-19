@@ -21,11 +21,11 @@ using namespace principia::base::_not_null;
 class NotNullTest : public testing::Test {
  protected:
   // A very convoluted wrapper for the x86 add...
-  void Add(not_null<int*> const destination,
+  static void Add(not_null<int*> const destination,
            not_null<int const*> const source) {
     *destination += *source;
   }
-  void Sub(not_null<int*> const destination,
+  static void Sub(not_null<int*> const destination,
            not_null<int const*> const source) {
     *destination -= *source;
   }
@@ -174,15 +174,16 @@ TEST_F(NotNullTest, Arrow) {
       make_not_null_unique<std::string>("-");
   not_null_owner_string->append(">");
   EXPECT_THAT(*not_null_owner_string, Eq("->"));
-  not_null<std::string*> not_null_access_string = not_null_owner_string.get();
+  not_null<std::string*> const not_null_access_string =
+      not_null_owner_string.get();
   not_null_access_string->insert(0, "operator");
   EXPECT_THAT(*not_null_access_string, Eq("operator->"));
 }
 
 TEST_F(NotNullTest, NotNullNotNull) {
-  not_null<std::unique_ptr<int>> owner = make_not_null_unique<int>(42);
-  not_null<not_null<int*>> x = owner.get();
-  not_null<int*> y = x;
+  not_null<std::unique_ptr<int>> const owner = make_not_null_unique<int>(42);
+  not_null<not_null<int*>> const x = owner.get();
+  not_null<int*> const y = x;
   *x = 6 * 9;
   EXPECT_THAT(*owner, Eq(6 * 9));
   EXPECT_THAT(*x, Eq(6 * 9));
@@ -190,8 +191,9 @@ TEST_F(NotNullTest, NotNullNotNull) {
 }
 
 TEST_F(NotNullTest, CheckArguments) {
-  not_null<std::unique_ptr<int>> accumulator = make_not_null_unique<int>(21);
-  std::unique_ptr<int const> twenty_one = std::make_unique<int const>(21);
+  not_null<std::unique_ptr<int>> const accumulator =
+      make_not_null_unique<int>(21);
+  std::unique_ptr<int const> const twenty_one = std::make_unique<int const>(21);
   Add(accumulator.get(), check_not_null(twenty_one.get()));
   EXPECT_THAT(*twenty_one, Eq(21));
   EXPECT_THAT(*accumulator, Eq(42));
@@ -213,23 +215,24 @@ TEST_F(NotNullTest, DynamicCast) {
   };
   class Derived : public Base {};
   {
-    not_null<Base*> b = new Derived;
-    [[maybe_unused]] not_null<Derived*> d = dynamic_cast_not_null<Derived*>(b);
+    not_null<Base*> const b = new Derived;
+    [[maybe_unused]] not_null<Derived*> const d =
+        dynamic_cast_not_null<Derived*>(b);
     delete b;
   }
   {
     not_null<std::unique_ptr<Base>> b = make_not_null_unique<Derived>();
-    not_null<std::unique_ptr<Derived>> d =
+    not_null<std::unique_ptr<Derived>> const d =
         dynamic_cast_not_null<std::unique_ptr<Derived>>(std::move(b));
   }
 }
 
 TEST_F(NotNullTest, RValue) {
   std::unique_ptr<int> owner_int = std::make_unique<int>(1);
-  not_null<int*> not_null_int = new int(2);
+  not_null<int*> const not_null_int = new int(2);
   EXPECT_NE(owner_int.get(), not_null_int);
 
-  not_null<std::unique_ptr<int>> not_null_owner_int =
+  not_null<std::unique_ptr<int>> const not_null_owner_int =
       make_not_null_unique<int>(4);
   std::vector<int*> v1;
   // `v1.push_back` would be ambiguous here if `not_null<pointer>` had an
@@ -268,15 +271,16 @@ TEST_F(NotNullTest, RValue) {
   // compiles this even when it is ambiguous, while clang correctly fails.
   owner_int = make_not_null_unique<int>(1729);
 
-  not_null<int*> not_null_access_int = owner_int.get();
+  not_null<int*> const not_null_access_int = owner_int.get();
   [[maybe_unused]] int const* access_const_int = not_null_access_int;
 
-  not_null<std::shared_ptr<int>> not_null_shared_int = std::make_shared<int>(3);
+  not_null<std::shared_ptr<int>> const not_null_shared_int =
+      std::make_shared<int>(3);
   // This exercises `operator OtherPointer() const&`.  The conversion from
   // `not_null<int*>` to `int const*` does not; instead it goes through the
   // conversion `not_null<int*>` -> `int*` -> `int const*`, where the latter is
   // a qualification adjustment, part of a standard conversion sequence.
-  std::shared_ptr<int const> shared_const_int = not_null_shared_int;
+  std::shared_ptr<int const> const shared_const_int = not_null_shared_int;
 
   // MSVC seems to be confused by templatized move-conversion operators.
 #if PRINCIPIA_COMPILER_MSVC
@@ -287,7 +291,8 @@ TEST_F(NotNullTest, RValue) {
           make_not_null_unique<int>(5));
 #else
   // Uses `operator OtherPointer() &&`.
-  std::unique_ptr<int const> owner_const_int = make_not_null_unique<int>(5);
+  std::unique_ptr<int const> const owner_const_int =
+      make_not_null_unique<int>(5);
 #endif
   EXPECT_EQ(5, *owner_const_int);
 }

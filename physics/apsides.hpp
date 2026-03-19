@@ -89,18 +89,6 @@ absl::Status ComputeNodes(Trajectory<Frame> const& trajectory,
                           DistinguishedPoints<Frame>& descending,
                           Predicate predicate = Identically(true));
 
-// TODO(egg): when we can usefully iterate over an arbitrary `Trajectory`, move
-// the following from `Ephemeris`.
-#if 0
-template<typename Frame>
-void ComputeApsides(Trajectory<Frame> const& trajectory1,
-                    Trajectory<Frame> const& trajectory2,
-                    DistinguishedPoints<Frame>& apoapsides1,
-                    DistinguishedPoints<Frame>& periapsides1,
-                    DistinguishedPoints<Frame>& apoapsides2,
-                    DistinguishedPoints<Frame>& periapsides2);
-#endif
-
 }  // namespace internal
 
 using internal::ComputeApsides;

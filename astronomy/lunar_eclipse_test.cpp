@@ -1,10 +1,13 @@
 #include <memory>
+#include <string_view>
 
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/macros.hpp"  // 🧙 For NAMED.
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/sign.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -24,7 +27,6 @@
 namespace principia {
 namespace astronomy {
 
-using ::testing::Eq;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::geometry::_grassmann;
@@ -50,7 +52,7 @@ Time const bisection_interval = 10 * Minute;
 Sign const U14 = Sign::Positive();
 Sign const U23 = Sign::Negative();
 
-char const arrow[] = "-------------------> ";
+constexpr std::string_view arrow = "-------------------> ";
 
 }  // namespace
 
@@ -79,10 +81,11 @@ class LunarEclipseTest : public ::testing::Test {
 
   // A positive `time_error` means that the actual contact happens after
   // `current_time`.
-  void CheckLunarUmbralEclipse(Instant const& current_time,
-                               Sign const moon_offset_sign,
-                               ApproximateQuantity<Angle> const& angular_error,
-                               ApproximateQuantity<Time> const& time_error) {
+  static void CheckLunarUmbralEclipse(
+      Instant const& current_time,
+      Sign const moon_offset_sign,
+      ApproximateQuantity<Angle> const& angular_error,
+      ApproximateQuantity<Time> const& time_error) {
     EXPECT_OK(ephemeris_->Prolong(current_time + bisection_interval));
     auto const sun = solar_system_1950_.massive_body(*ephemeris_, "Sun");
     auto const earth = solar_system_1950_.massive_body(*ephemeris_, "Earth");
@@ -141,7 +144,7 @@ class LunarEclipseTest : public ::testing::Test {
 
   // A positive `time_error` means that the actual contact happens after
   // `current_time`.
-  void CheckLunarPenumbralEclipse(
+  static void CheckLunarPenumbralEclipse(
       Instant const& current_time,
       Sign const moon_offset_sign,
       ApproximateQuantity<Angle> const& angular_error,

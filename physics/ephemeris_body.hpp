@@ -695,12 +695,13 @@ SpecificEnergy Ephemeris<Frame>::ComputeGravitationalPotential(
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
-                                      not_null<MassiveBody const*> const body2,
-                                      DiscreteTrajectory<Frame>& apoapsides1,
-                                      DiscreteTrajectory<Frame>& periapsides1,
-                                      DiscreteTrajectory<Frame>& apoapsides2,
-                                      DiscreteTrajectory<Frame>& periapsides2) {
+void Ephemeris<Frame>::ComputeApsides(
+    not_null<MassiveBody const*> const body1,
+    not_null<MassiveBody const*> const body2,
+    DistinguishedPoints<Frame>& apoapsides1,
+    DistinguishedPoints<Frame>& periapsides1,
+    DistinguishedPoints<Frame>& apoapsides2,
+    DistinguishedPoints<Frame>& periapsides2) {
   absl::ReaderMutexLock l(&lock_);
 
   not_null<ContinuousTrajectory<Frame> const*> const body1_trajectory =
@@ -746,13 +747,11 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
       DegreesOfFreedom<Frame> const apsis2_degrees_of_freedom =
           body2_trajectory->EvaluateDegreesOfFreedomLocked(apsis_time);
       if (Sign(squared_distance_derivative).is_negative()) {
-        apoapsides1.Append(apsis_time, apsis1_degrees_of_freedom).IgnoreError();
-        apoapsides2.Append(apsis_time, apsis2_degrees_of_freedom).IgnoreError();
+        apoapsides1.emplace(apsis_time, apsis1_degrees_of_freedom);
+        apoapsides2.emplace(apsis_time, apsis2_degrees_of_freedom);
       } else {
-        periapsides1.Append(apsis_time,
-                            apsis1_degrees_of_freedom).IgnoreError();
-        periapsides2.Append(apsis_time,
-                            apsis2_degrees_of_freedom).IgnoreError();
+        periapsides1.emplace(apsis_time, apsis1_degrees_of_freedom);
+        periapsides2.emplace(apsis_time, apsis2_degrees_of_freedom);
       }
     }
 
@@ -1641,7 +1640,7 @@ absl::Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
 
   typename AdaptiveStepSizeIntegrator<ODE>::Parameters const
       integrator_parameters(
-          /*first_time_step=*/t_final - problem.initial_state.time.value,
+          /*first_step=*/t_final - problem.initial_state.time.value,
           /*safety_factor=*/0.9,
           parameters.max_steps(),
           /*last_step_is_exact=*/true);

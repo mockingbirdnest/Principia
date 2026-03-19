@@ -21,7 +21,6 @@ namespace principia {
 namespace quantities {
 
 using ::testing::Eq;
-using ::testing::Lt;
 using ::testing::MatchesRegex;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_astronomy;

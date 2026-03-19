@@ -2,7 +2,6 @@
 
 #include <functional>
 
-#include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
 #include "numerics/fma.hpp"
 
 namespace principia {
