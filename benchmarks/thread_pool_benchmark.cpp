@@ -12,10 +12,9 @@
 
 namespace principia {
 namespace base {
+namespace {
 
 using namespace principia::base::_thread_pool;
-
-namespace {
 
 absl::Mutex lock;
 std::mt19937_64 random(42);
@@ -54,7 +53,6 @@ double ComsumeCpuExclusiveLock(std::int64_t const n) {
 void BM_ThreadPoolNoLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range(0));
   std::int64_t const count = 1000;
-  std::vector<std::int64_t> results;
   for (auto _ : state) {
     std::vector<std::future<void>> futures;
     futures.reserve(count);
@@ -73,7 +71,6 @@ void BM_ThreadPoolNoLock(benchmark::State& state) {
 void BM_ThreadPoolSharedLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range(0));
   std::int64_t const count = 1000;
-  std::vector<std::int64_t> results;
   for (auto _ : state) {
     std::vector<std::future<void>> futures;
     futures.reserve(count);
@@ -92,7 +89,6 @@ void BM_ThreadPoolSharedLock(benchmark::State& state) {
 void BM_ThreadPoolExclusiveLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range(0));
   std::int64_t const count = 1000;
-  std::vector<std::int64_t> results;
   for (auto _ : state) {
     std::vector<std::future<void>> futures;
     futures.reserve(count);
@@ -107,8 +103,6 @@ void BM_ThreadPoolExclusiveLock(benchmark::State& state) {
     }
   }
 }
-
-}  // namespace
 
 BENCHMARK(BM_ThreadPoolNoLock)
     ->Arg(1)
@@ -141,5 +135,6 @@ BENCHMARK(BM_ThreadPoolExclusiveLock)
     ->Arg(8)
     ->Unit(benchmark::kMillisecond);
 
+}  // namespace
 }  // namespace base
 }  // namespace principia

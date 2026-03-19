@@ -44,7 +44,7 @@ EvaluateDegreesOfFreedomInNavigation<Barycentric>(
     PlottingFrame const& plotting_frame,
     Trajectory<Barycentric> const& trajectory,
     Instant const& t) {
-  SimilarMotion<Barycentric, Navigation> to_plotting_frame_at_t =
+  SimilarMotion<Barycentric, Navigation> const to_plotting_frame_at_t =
       plotting_frame.ToThisFrameAtTimeSimilarly(t);
   return to_plotting_frame_at_t(trajectory.EvaluateDegreesOfFreedom(t));
 }
@@ -52,7 +52,7 @@ EvaluateDegreesOfFreedomInNavigation<Barycentric>(
 template<>
 inline DegreesOfFreedom<Navigation>
 EvaluateDegreesOfFreedomInNavigation<Navigation>(
-    PlottingFrame const& plotting_frame,
+    PlottingFrame const& /*plotting_frame*/,
     Trajectory<Navigation> const& trajectory,
     Instant const& t) {
   return trajectory.EvaluateDegreesOfFreedom(t);

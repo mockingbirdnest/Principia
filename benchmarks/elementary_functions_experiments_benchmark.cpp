@@ -11,6 +11,7 @@
 #include "base/tags.hpp"
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
+#include "glog/logging.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
@@ -20,6 +21,7 @@
 
 namespace principia {
 namespace functions {
+namespace {
 
 using namespace principia::base::_tags;
 using namespace principia::benchmarks::_metric;
@@ -28,8 +30,6 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_scale_b;
-
-namespace {
 
 using Value = double;
 using Argument = double;
@@ -1036,8 +1036,6 @@ void BM_ExperimentCosFMA(benchmark::State& state) {
       state);
 }
 
-}  // namespace
-
 BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
                    Metric::Latency,
                    2.0 / 256.0)
@@ -1103,5 +1101,6 @@ BENCHMARK_TEMPLATE(BM_ExperimentCosFMA, Metric::Latency)
 BENCHMARK_TEMPLATE(BM_ExperimentCosFMA, Metric::Throughput)
     ->Unit(benchmark::kNanosecond);
 
+}  // namespace
 }  // namespace functions
 }  // namespace principia

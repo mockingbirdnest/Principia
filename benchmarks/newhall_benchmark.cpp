@@ -19,6 +19,7 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
@@ -31,8 +32,6 @@ using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
-
-namespace {
 
 void BM_NewhallApproximationDouble(benchmark::State& state) {
   int const degree = state.range(0);
@@ -48,8 +47,8 @@ void BM_NewhallApproximationDouble(benchmark::State& state) {
     pv.clear();
     for (int i = 0; i <= 8; ++i) {
       auto& [p, v] = pv.emplace_back();
-      p = static_cast<double>(static_cast<double>(random()));
-      v = static_cast<double>(static_cast<double>(random())) / Second;
+      p = static_cast<double>(random());
+      v = static_cast<double>(random()) / Second;
     }
     state.ResumeTiming();
     auto const series = NewhallApproximationInMonomialBasis<double>(
@@ -85,10 +84,9 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   }
 }
 
-}  // namespace
-
 BENCHMARK(BM_NewhallApproximationDouble)->Arg(4)->Arg(8)->Arg(16);
 BENCHMARK(BM_NewhallApproximationDisplacement)->Arg(4)->Arg(8)->Arg(16);
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

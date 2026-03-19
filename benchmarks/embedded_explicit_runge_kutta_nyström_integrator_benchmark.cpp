@@ -3,7 +3,9 @@
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
+#include <sstream>
 #include <vector>
 
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
@@ -23,6 +25,7 @@
 
 namespace principia {
 namespace integrators {
+namespace {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -40,8 +43,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_integration;
 
-namespace {
-
 using World = Frame<struct WorldTag, Inertial>;
 
 using ODE1D = SpecialSecondOrderDifferentialEquation<Length>;
@@ -49,7 +50,7 @@ using ODE3D = SpecialSecondOrderDifferentialEquation<Position<World>>;
 
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio1D(
-    Time const& h,
+    Time const& /*h*/,
     typename ODE::State const& /*state*/,
     typename ODE::State::Error const& error,
     Length const& q_tolerance,
@@ -60,7 +61,7 @@ double HarmonicOscillatorToleranceRatio1D(
 
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio3D(
-    Time const& h,
+    Time const& /*h*/,
     typename ODE::State const& /*state*/,
     typename ODE::State::Error const& error,
     Length const& q_tolerance,
@@ -214,8 +215,6 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
   state.SetLabel(ss.str());
 }
 
-}  // namespace
-
 // Keep each argument on a single line below, lest it breaks benchmark parsing.
 
 BENCHMARK_TEMPLATE2(
@@ -228,5 +227,6 @@ BENCHMARK_TEMPLATE2(
     methods::DormandالمكاوىPrince1986RKN434FM, ODE3D)
     ->Unit(benchmark::kMillisecond);
 
+}  // namespace
 }  // namespace integrators
 }  // namespace principia

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <sstream>
 #include <vector>
 
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
@@ -23,6 +24,7 @@
 
 namespace principia {
 namespace integrators {
+namespace {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -39,8 +41,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_integration;
-
-namespace {
 
 using World = Frame<struct WorldTag, Inertial>;
 using ODE1D = SpecialSecondOrderDifferentialEquation<Length>;
@@ -184,8 +184,6 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
   state.SetLabel(ss.str());
 }
 
-}  // namespace
-
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
     methods::McLachlanAtela1992Order4Optimal, ODE1D)
@@ -252,5 +250,6 @@ BENCHMARK_TEMPLATE2(
     methods::BlanesMoan2002SRKN14A, ODE3D)
     ->Unit(benchmark::kMillisecond);
 
+}  // namespace
 }  // namespace integrators
 }  // namespace principia

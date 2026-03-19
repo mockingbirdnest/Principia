@@ -1,6 +1,7 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=VisibleSegments  // NOLINT(whitespace/line_length)
 
 #include <random>
+#include <string>
 #include <vector>
 
 #include "benchmark/benchmark.h"
@@ -11,11 +12,13 @@
 #include "geometry/space_transformations.hpp"
 #include "geometry/sphere.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
+namespace {
 
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_orthogonal_map;
@@ -26,8 +29,6 @@ using namespace principia::geometry::_sphere;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-
-namespace {
 
 using World = Frame<struct WorldTag>;
 using Camera = Frame<struct CameraTag>;
@@ -109,8 +110,8 @@ void BM_VisibleSegmentsOrbit(benchmark::State& state) {
   int const count = state.range(0);
   std::vector<Segment<World>> segments;
   for (int i = 0; i < count; ++i) {
-    Angle θ1 = 2 * π * i * Radian / static_cast<double>(count);
-    Angle θ2 = 2 * π * (i + 1) * Radian / static_cast<double>(count);
+    Angle const θ1 = 2 * π * i * Radian / static_cast<double>(count);
+    Angle const θ2 = 2 * π * (i + 1) * Radian / static_cast<double>(count);
     segments.emplace_back(
         Position<World>(
             World::origin +
@@ -173,8 +174,8 @@ void BM_VisibleSegmentsOrbitMultipleSpheres(benchmark::State& state) {
   int const count = state.range(0);
   std::vector<Segment<World>> segments;
   for (int i = 0; i < count; ++i) {
-    Angle θ1 = 2 * π * i * Radian / static_cast<double>(count);
-    Angle θ2 = 2 * π * (i + 1) * Radian / static_cast<double>(count);
+    Angle const θ1 = 2 * π * i * Radian / static_cast<double>(count);
+    Angle const θ2 = 2 * π * (i + 1) * Radian / static_cast<double>(count);
     segments.emplace_back(
         Position<World>(
             World::origin +
@@ -220,13 +221,12 @@ void BM_VisibleSegmentsRandomNoIntersection(benchmark::State& state) {
       xy_distribution, xy_distribution, z_distribution, state);
 }
 
-}  // namespace
-
 // TODO(phl): Running BM_VisibleSegmentsOrbit with 10000 hits a singularity.
 BENCHMARK(BM_VisibleSegmentsOrbit)->Arg(10)->Arg(100)->Arg(1000);
 BENCHMARK(BM_VisibleSegmentsRandomEverywhere)->Arg(1000);
 BENCHMARK(BM_VisibleSegmentsRandomNoIntersection)->Arg(1000);
 BENCHMARK(BM_VisibleSegmentsOrbitMultipleSpheres)->Args({1000, 20});
 
+}  // namespace
 }  // namespace geometry
 }  // namespace principia

@@ -12,13 +12,12 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_nearest_neighbour;
-
-namespace {
 
 using World = Frame<struct WorldTag>;
 using V = Vector<double, World>;
@@ -31,7 +30,6 @@ PrincipalComponentPartitioningTree<V> BuildTreeUsingAdd(
   std::uniform_real_distribution<double> coordinate_distribution(-10, 10);
 
   PrincipalComponentPartitioningTree<V> tree({}, max_values_per_cell);
-  std::vector<not_null<V const*>> pointers;
   values.reserve(points_in_tree);  // To avoid pointer invalidation below.
   values.clear();
   for (int i = 0; i < points_in_tree; ++i) {
@@ -101,8 +99,6 @@ void BM_PCPFindNearestNeighbour(benchmark::State& state) {
   }
 }
 
-}  // namespace
-
 BENCHMARK(BM_PCPBuildTreeUsingAdd)
     ->Args({1'000, 1})
     ->Args({1'000, 4})
@@ -152,5 +148,6 @@ BENCHMARK(BM_PCPFindNearestNeighbour)
     ->Args({100'000, 64})
     ->Args({100'000, 256});
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

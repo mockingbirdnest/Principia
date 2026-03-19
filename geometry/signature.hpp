@@ -54,8 +54,8 @@ class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
   static constexpr Signature Identity();
 
   template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<F::handedness != T::handedness>>
+           typename T = ToFrame>
+    requires(F::handedness != T::handedness)
   static constexpr Signature CentralInversion();
 
   constexpr Signature<ToFrame, FromFrame> Inverse() const;

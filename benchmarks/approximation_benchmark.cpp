@@ -17,6 +17,7 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
@@ -32,7 +33,7 @@ constexpr int64_t number_of_angular_frequencies = 5;
 template<int max_degree>
 class ApproximationBenchmark : public benchmark::Fixture {
  protected:
-  void SetUp(benchmark::State& state) override {
+  void SetUp(benchmark::State& /*state*/) override {
     std::mt19937_64 random(42);
     std::uniform_real_distribution<> coefficients(0.0, 10.0);
     std::uniform_real_distribution<> angular_frequency(0.0, 100.0);
@@ -106,5 +107,6 @@ BENCHMARK_TEMPLATE_F(ApproximationBenchmark,
   ComputeAdaptiveЧебышёвPolynomialInterpolant(state);
 }
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

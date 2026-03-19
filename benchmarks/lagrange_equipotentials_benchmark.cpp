@@ -18,6 +18,7 @@
 
 namespace principia {
 namespace physics {
+namespace {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
@@ -111,7 +112,6 @@ BENCHMARK_F(LagrangeEquipotentialsBenchmark, SunNeptune)(
           *ephemeris_, SolarSystemFactory::name(i)));
     }
   }
-  std::vector<not_null<MassiveBody const*>> primaries;
 
   for (auto _ : state) {
     parameters.time = t0_;
@@ -122,5 +122,6 @@ BENCHMARK_F(LagrangeEquipotentialsBenchmark, SunNeptune)(
   }
 }
 
+}  // namespace
 }  // namespace physics
 }  // namespace principia

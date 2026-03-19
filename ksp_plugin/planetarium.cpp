@@ -1,7 +1,11 @@
 #include "ksp_plugin/planetarium.hpp"
 
 #include <algorithm>
+#include <cstddef>
+#include <functional>
+#include <iterator>
 #include <optional>
+#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -49,8 +53,8 @@ Planetarium::Planetarium(
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator const begin,
-    DiscreteTrajectory<Barycentric>::iterator const end,
+    DiscreteTrajectory<Barycentric>::iterator const /*begin*/,
+    DiscreteTrajectory<Barycentric>::iterator const /*end*/,
     Instant const& now,
     bool const /*reverse*/) const {
   auto const plottable_begin = trajectory.lower_bound(plotting_frame_->t_min());

@@ -132,7 +132,7 @@ UnboundedMatrix<Scalar> const& m) -> G {
 
 template<typename Scalar, int rows, int columns>
 auto GramGenerator<FixedMatrix<Scalar, rows, columns>>::Uninitialized(
-FixedMatrix<Scalar, rows, columns> const& m) -> G {
+FixedMatrix<Scalar, rows, columns> const& /*m*/) -> G {
   return G(uninitialized);
 }
 
@@ -187,52 +187,52 @@ inline auto NguyễnStehléGenerator<UnboundedMatrix<cpp_int>>::Zero(
 template<typename Scalar, int rows, int columns>
   requires quantity<Scalar>
 auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::UninitializedR(
-    FixedMatrix<Scalar, rows, columns> const& m) -> R {
+    FixedMatrix<Scalar, rows, columns> const& /*m*/) -> R {
   return R(uninitialized);
 }
 
 template<typename Scalar, int rows, int columns>
   requires quantity<Scalar>
 auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::UninitializedΜ(
-    FixedMatrix<Scalar, rows, columns> const& m) -> Μ {
+    FixedMatrix<Scalar, rows, columns> const& /*m*/) -> Μ {
   return Μ(uninitialized);
 }
 
 template<typename Scalar, int rows, int columns>
   requires quantity<Scalar>
 auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::UninitializedS(
-    FixedMatrix<Scalar, rows, columns> const& m) -> S {
+    FixedMatrix<Scalar, rows, columns> const& /*m*/) -> S {
   return S(uninitialized);
 }
 
 template<typename Scalar, int rows, int columns>
   requires quantity<Scalar>
 auto NguyễnStehléGenerator<FixedMatrix<Scalar, rows, columns>>::Zero(
-    FixedMatrix<Scalar, rows, columns> const& m) -> Vector {
+    FixedMatrix<Scalar, rows, columns> const& /*m*/) -> Vector {
   return Vector();
 }
 
 template<int rows, int columns>
 auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::UninitializedR(
-    FixedMatrix<cpp_int, rows, columns> const& m) -> R {
+    FixedMatrix<cpp_int, rows, columns> const& /*m*/) -> R {
   return R(uninitialized);
 }
 
 template<int rows, int columns>
 auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::UninitializedΜ(
-    FixedMatrix<cpp_int, rows, columns> const& m) -> Μ {
+    FixedMatrix<cpp_int, rows, columns> const& /*m*/) -> Μ {
   return Μ(uninitialized);
 }
 
 template<int rows, int columns>
 auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::UninitializedS(
-    FixedMatrix<cpp_int, rows, columns> const& m) -> S {
+    FixedMatrix<cpp_int, rows, columns> const& /*m*/) -> S {
   return S(uninitialized);
 }
 
 template<int rows, int columns>
 auto NguyễnStehléGenerator<FixedMatrix<cpp_int, rows, columns>>::Zero(
-    FixedMatrix<cpp_int, rows, columns> const& m) -> Vector {
+    FixedMatrix<cpp_int, rows, columns> const& /*m*/) -> Vector {
   return Vector();
 }
 
@@ -540,7 +540,7 @@ Matrix NguyễnStehlé(Matrix const& L) {
     // Step 3.
     SizeReduce(κ, b, G, r, μ, s);
     // Step 4.
-    std::int64_t κʹ = κ;
+    std::int64_t const κʹ = κ;
     while (κ >= ζ + 2 && δ̄ * r(κ - 1, κ - 1) >= s[κ - 1]) {
       --κ;
     }

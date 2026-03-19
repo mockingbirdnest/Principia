@@ -15,6 +15,7 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
@@ -24,8 +25,6 @@ using namespace principia::numerics::_global_optimization;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_optimization_test_functions;
-
-namespace {
 
 using World = Frame<struct WorldTag>;
 
@@ -163,11 +162,10 @@ void BM_MLSLHartmann3(benchmark::State& state) {
                    static_cast<double>(total_minima) / state.iterations()));
 }
 
-}  // namespace
-
 BENCHMARK(BM_MLSLBranin)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 BENCHMARK(BM_MLSLGoldsteinPrice)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 BENCHMARK(BM_MLSLHartmann3)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

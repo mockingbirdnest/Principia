@@ -38,12 +38,14 @@
 #include "physics/rotating_body.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
 namespace geometry {
+namespace {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
@@ -80,8 +82,6 @@ using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-namespace {
 
 constexpr Length near = 40'000 * Kilo(Metre);
 constexpr Length far = 400'000 * Kilo(Metre);
@@ -234,7 +234,7 @@ class Satellites {
       Perspective<Navigation, Camera> const& perspective,
       not_null<PlottingFrame const*> plotting_frame) const {
     // No dark area, human visual acuity, wide field of view.
-    Planetarium::Parameters parameters(
+    Planetarium::Parameters const parameters(
         /*sphere_radius_multiplier=*/1,
         angular_resolution,
         /*field_of_view=*/90 * Degree);
@@ -327,10 +327,10 @@ void BM_PlanetariumPlotMethod3(
         Length const distance_from_earth),
     Length const distance_from_earth,
     PlottingFrame const& (Satellites::*const plotting_frame)() const) {
-  static Satellites satellites;
+  static Satellites const satellites;
   Instant const t = satellites.goes_8_trajectory().front().time;
   PlottingFrame const& plotting = (satellites.*plotting_frame)();
-  Planetarium planetarium = satellites.MakePlanetarium(
+  Planetarium const planetarium = satellites.MakePlanetarium(
       0.4 * ArcMinute,
       perspective((satellites.gcrs().ToThisFrameAtTimeSimilarly(t) *
                    plotting.FromThisFrameAtTimeSimilarly(t)).similarity(),
@@ -373,10 +373,10 @@ void BM_PlanetariumPlotMethod4DiscreteTrajectory(
         Length const distance_from_earth),
     Length const distance_from_earth,
     PlottingFrame const& (Satellites::*const plotting_frame)() const) {
-  static Satellites satellites;
+  static Satellites const satellites;
   Instant const t = satellites.goes_8_trajectory().front().time;
   PlottingFrame const& plotting = (satellites.*plotting_frame)();
-  Planetarium planetarium = satellites.MakePlanetarium(
+  Planetarium const planetarium = satellites.MakePlanetarium(
       1 * ArcMinute,
       perspective((satellites.gcrs().ToThisFrameAtTimeSimilarly(t) *
                    plotting.FromThisFrameAtTimeSimilarly(t)).similarity(),
@@ -419,10 +419,10 @@ void BM_PlanetariumPlotMethod4ContinuousTrajectory(
         Length const distance_from_earth),
     Length const distance_from_earth,
     PlottingFrame const& (Satellites::*const plotting_frame)() const) {
-  static Satellites satellites;
+  static Satellites const satellites;
   Instant const t = satellites.goes_8_trajectory().front().time;
   PlottingFrame const& plotting = (satellites.*plotting_frame)();
-  Planetarium planetarium = satellites.MakePlanetarium(
+  Planetarium const planetarium = satellites.MakePlanetarium(
       1 * ArcMinute,
       perspective((satellites.gcrs().ToThisFrameAtTimeSimilarly(t) *
                    plotting.FromThisFrameAtTimeSimilarly(t)).similarity(),
@@ -456,8 +456,6 @@ void BM_PlanetariumPlotMethod4ContinuousTrajectory(
                                       << " × " << y << " × " << z)
                      .str());
 }
-
-}  // namespace
 
 #define PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR( \
     name, perspective, plotting_frame)                             \
@@ -521,5 +519,6 @@ PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_POLAR_AND_EQUATORIAL(
     SEL,
     &Satellites::sun_earth_lagrange);
 
+}  // namespace
 }  // namespace geometry
 }  // namespace principia

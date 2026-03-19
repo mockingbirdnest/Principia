@@ -15,18 +15,16 @@
 
 namespace principia {
 namespace physics {
+namespace {
 
 using serialization::DoublePrecision;
 using serialization::Ephemeris;
-using serialization::IntegratorInstance;
 using serialization::R3Element;
 using serialization::State;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::physics::_checkpointer;
 using namespace principia::quantities::_si;
-
-namespace {
 
 // Stub writer for checkpointer. Adds some data to the checkpoint.
 void WriteToCheckpoint(not_null<typename Ephemeris::Checkpoint*> checkpoint) {
@@ -137,8 +135,6 @@ void BM_CheckpointerAllCheckpointsBetween(benchmark::State& state) {
   }
 }
 
-}  // namespace
-
 BENCHMARK(BM_CheckpointerOldestCheckpoint)->Range(1, 512);
 BENCHMARK(BM_CheckpointerNewestCheckpoint)->Range(1, 512);
 BENCHMARK(BM_CheckpointerCheckpointAtOrAfter)->Range(1, 512);
@@ -147,5 +143,6 @@ BENCHMARK(BM_CheckpointerAllCheckpoints)->Range(1, 512);
 BENCHMARK(BM_CheckpointerAllCheckpointsAtOrBefore)->Range(1, 512);
 BENCHMARK(BM_CheckpointerAllCheckpointsBetween)->Range(1, 512);
 
+}  // namespace
 }  // namespace physics
 }  // namespace principia

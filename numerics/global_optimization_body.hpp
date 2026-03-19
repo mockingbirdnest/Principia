@@ -75,10 +75,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMaxima(
     std::int64_t const points_per_round,
     std::optional<std::int64_t> const number_of_rounds,
     NormType const local_search_tolerance) {
-  Field<Scalar, Argument> minus_f = [this](Argument const& x) {
+  Field<Scalar, Argument> const minus_f = [this](Argument const& x) {
     return -f_(x);
   };
-  Field<Gradient<Scalar, Argument>, Argument> minus_grad_f =
+  Field<Gradient<Scalar, Argument>, Argument> const minus_grad_f =
       [this](Argument const& x) {
     return -grad_f_(x);
   };

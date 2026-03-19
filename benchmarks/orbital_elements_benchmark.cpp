@@ -25,6 +25,7 @@
 
 namespace principia {
 namespace astronomy {
+namespace {
 
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
@@ -79,7 +80,8 @@ class OrbitalElementsBenchmark : public benchmark::Fixture {
       KeplerianElements<GCRS> const& initial_osculating_elements,
       Instant const& initial_time,
       Instant const& final_time) {
-    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> gcrs{ephemeris_, earth_};
+    BodyCentredNonRotatingReferenceFrame<ICRS, GCRS> const gcrs{ephemeris_,
+                                                                earth_};
     DiscreteTrajectory<ICRS> icrs_trajectory;
     icrs_trajectory.segments().front().SetDownsampling(
         DiscreteTrajectorySegment<ICRS>::DownsamplingParameters{
@@ -163,5 +165,6 @@ BENCHMARK_F(OrbitalElementsBenchmark, ComputeOrbitalElementsInclined)(
   }
 }
 
+}  // namespace
 }  // namespace astronomy
 }  // namespace principia

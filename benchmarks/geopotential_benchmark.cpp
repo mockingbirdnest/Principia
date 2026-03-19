@@ -1,5 +1,6 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_filter=Geopotential  // NOLINT(whitespace/line_length)
 
+#include <cstdint>
 #include <random>
 #include <vector>
 
@@ -27,6 +28,7 @@
 
 namespace principia {
 namespace physics {
+namespace {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_algebra;
@@ -99,7 +101,7 @@ OblateBody<ICRS> MakeEarthBody(SolarSystem<ICRS>& solar_system,
   auto const earth_reference_radius =
       ParseQuantity<Length>(earth_message.reference_radius());
   MassiveBody::Parameters const massive_body_parameters(earth_μ);
-  RotatingBody<ICRS>::Parameters rotating_body_parameters(
+  RotatingBody<ICRS>::Parameters const rotating_body_parameters(
       /*mean_radius=*/solar_system.mean_radius("Earth"),
       /*reference_angle=*/0 * Radian,
       /*reference_instant=*/Instant(),
@@ -217,9 +219,9 @@ void BM_ComputeGeopotentialF90(benchmark::State& state) {
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
   auto const earth = MakeEarthBody(solar_system_2000, max_degree);
 
-  double mu =
+  double const mu =
       earth.gravitational_parameter() / si::Unit<GravitationalParameter>;
-  double rbar = earth.reference_radius() / Metre;
+  double const rbar = earth.reference_radius() / Metre;
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> distribution(-1e7, 1e7);
@@ -243,6 +245,8 @@ void BM_ComputeGeopotentialF90(benchmark::State& state) {
     PRINCIPIA_CASE_COMPUTE_GEOPOTENTIAL_F90(8);
     PRINCIPIA_CASE_COMPUTE_GEOPOTENTIAL_F90(9);
     PRINCIPIA_CASE_COMPUTE_GEOPOTENTIAL_F90(10);
+    default:
+      LOG(FATAL) << "Unexpected degree " << max_degree;
   }
 }
 
@@ -266,5 +270,6 @@ BENCHMARK(BM_ComputeGeopotentialDistance)
     ->Arg(5'000'000)  // Central
     ->Unit(benchmark::kMicrosecond);
 
+}  // namespace
 }  // namespace physics
 }  // namespace principia

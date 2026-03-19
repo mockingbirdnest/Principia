@@ -1,7 +1,9 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=BM_EvaluateElementaryFunction  // NOLINT(whitespace/line_length)
 
 #include <cmath>
+#include <cstdint>
 #include <random>
+#include <sstream>
 
 #include "absl/strings/str_cat.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_REPEAT.
@@ -16,13 +18,12 @@
 
 namespace principia {
 namespace functions {
+namespace {
 
 using namespace principia::base::_traits;
 using namespace principia::benchmarks::_metric;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_sin_cos;
-
-namespace {
 
 constexpr FMAPresence fma_presence =
     CanEmitFMAInstructions ? FMAPresence::Present : FMAPresence::Absent;
@@ -83,84 +84,83 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
                        static_cast<double>(iterations * number_of_iterations)));
 }
 
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Latency,
+                   double,
+                   std::sin)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Throughput,
+                   double,
+                   std::sin)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Latency,
+                   double,
+                   cr_sin)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Throughput,
+                   double,
+                   cr_sin)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Latency,
+                   double,
+                   Sin<fma_presence>)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Throughput,
+                   double,
+                   Sin<fma_presence>)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Latency,
+                   double,
+                   std::cos)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Throughput,
+                   double,
+                   std::cos)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Latency,
+                   double,
+                   cr_cos)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Throughput,
+                   double,
+                   cr_cos)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Latency,
+                   double,
+                   Cos<fma_presence>)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Throughput,
+                   double,
+                   Cos<fma_presence>)
+    ->Unit(benchmark::kNanosecond);
+
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Latency,
+                   SC<double>,
+                   SinCos<fma_presence>)
+    ->Unit(benchmark::kNanosecond);
+BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
+                   Metric::Throughput,
+                   SC<double>,
+                   SinCos<fma_presence>)
+    ->Unit(benchmark::kNanosecond);
+
 }  // namespace
-
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Latency,
-                   double,
-                   std::sin)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Throughput,
-                   double,
-                   std::sin)
-    ->Unit(benchmark::kNanosecond);
-
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Latency,
-                   double,
-                   cr_sin)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Throughput,
-                   double,
-                   cr_sin)
-    ->Unit(benchmark::kNanosecond);
-
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Latency,
-                   double,
-                   Sin<fma_presence>)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Throughput,
-                   double,
-                   Sin<fma_presence>)
-    ->Unit(benchmark::kNanosecond);
-
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Latency,
-                   double,
-                   std::cos)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Throughput,
-                   double,
-                   std::cos)
-    ->Unit(benchmark::kNanosecond);
-
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Latency,
-                   double,
-                   cr_cos)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Throughput,
-                   double,
-                   cr_cos)
-    ->Unit(benchmark::kNanosecond);
-
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Latency,
-                   double,
-                   Cos<fma_presence>)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Throughput,
-                   double,
-                   Cos<fma_presence>)
-    ->Unit(benchmark::kNanosecond);
-
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Latency,
-                   SC<double>,
-                   SinCos<fma_presence>)
-    ->Unit(benchmark::kNanosecond);
-BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
-                   Metric::Throughput,
-                   SC<double>,
-                   SinCos<fma_presence>)
-    ->Unit(benchmark::kNanosecond);
-
 }  // namespace functions
 }  // namespace principia
