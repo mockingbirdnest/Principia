@@ -268,7 +268,9 @@ class StandardProduct3DynamicsTest
               SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
               SOLUTION_DIR / "astronomy" /
                   "sol_initial_state_jd_2436116_311504629.proto.txt");
-          for (auto const& name : solar_system.names()) {
+          // Need a copy because the loop is modifying the names.
+          std::vector<std::string> const names = solar_system.names();
+          for (auto const& name : names) {
             if (name != "Earth") {
               solar_system.RemoveMassiveBody(name);
             }
