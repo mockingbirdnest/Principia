@@ -22,6 +22,8 @@ using namespace principia::base::_base32768;
 using namespace principia::base::_base64;
 using namespace principia::base::_hexadecimal;
 
+namespace {
+
 template<typename Encoder>
 void BM_Encode(benchmark::State& state) {
   constexpr int preallocated_size = 1 << 20;
@@ -96,6 +98,8 @@ void BM_Decode(benchmark::State& state) {
   }
   state.SetBytesProcessed(bytes_processed);
 }
+
+}  // namespace
 
 using Encoder16 = HexadecimalEncoder</*null_terminated=*/false>;
 using Encoder64 = Base64Encoder</*null_terminated=*/false>;

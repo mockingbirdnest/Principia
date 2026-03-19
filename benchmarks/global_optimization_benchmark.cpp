@@ -25,6 +25,8 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_optimization_test_functions;
 
+namespace {
+
 using World = Frame<struct WorldTag>;
 
 void BM_MLSLBranin(benchmark::State& state) {
@@ -160,6 +162,8 @@ void BM_MLSLHartmann3(benchmark::State& state) {
       absl::StrCat("number of minima: ",
                    static_cast<double>(total_minima) / state.iterations()));
 }
+
+}  // namespace
 
 BENCHMARK(BM_MLSLBranin)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 BENCHMARK(BM_MLSLGoldsteinPrice)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});

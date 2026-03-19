@@ -374,6 +374,7 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
     state.ResumeTiming();
 
     std::vector<std::future<void>> futures;
+    futures.reserve(instances.size());
     for (auto& instance : instances) {
       futures.push_back(pool.Add([&ephemeris, &instance, final_time]() {
         CHECK_OK(ephemeris->FlowWithFixedStep(final_time, *instance));
@@ -503,8 +504,6 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
                  std::to_string(total_degree));
 }
 
-}  // namespace
-
 template<SolarSystemFactory::Accuracy accuracy, Flow* flow>
 void BM_EphemerisL4Probe(benchmark::State& state) {
   EphemerisL4ProbeBenchmark<accuracy, flow>(
@@ -577,6 +576,8 @@ void FlowEphemerisWithFixedStepSRKN(
           /*step=*/10 * Second));
   CHECK_OK(ephemeris.FlowWithFixedStep(t, *instance));
 }
+
+}  // namespace
 
 BENCHMARK(BM_EphemerisMultithreadingBenchmark)
     ->ArgPair(3, 1)

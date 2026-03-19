@@ -15,6 +15,8 @@ namespace base {
 
 using namespace principia::base::_thread_pool;
 
+namespace {
+
 absl::Mutex lock;
 std::mt19937_64 random(42);
 std::uniform_int_distribution<int> distribution(0, 1e5);
@@ -51,10 +53,12 @@ double ComsumeCpuExclusiveLock(std::int64_t const n) {
 
 void BM_ThreadPoolNoLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range(0));
+  std::int64_t const count = 1000;
   std::vector<std::int64_t> results;
   for (auto _ : state) {
     std::vector<std::future<void>> futures;
-    for (int i = 0; i < 1000; ++i) {
+    futures.reserve(count);
+    for (int i = 0; i < count; ++i) {
       futures.push_back(pool.Add([]() {
         double const result = ComsumeCpuNoLock(1e5);
         benchmark::DoNotOptimize(result);
@@ -68,10 +72,12 @@ void BM_ThreadPoolNoLock(benchmark::State& state) {
 
 void BM_ThreadPoolSharedLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range(0));
+  std::int64_t const count = 1000;
   std::vector<std::int64_t> results;
   for (auto _ : state) {
     std::vector<std::future<void>> futures;
-    for (int i = 0; i < 1000; ++i) {
+    futures.reserve(count);
+    for (int i = 0; i < count; ++i) {
       futures.push_back(pool.Add([]() {
         double const result = ComsumeCpuSharedLock(1e5);
         benchmark::DoNotOptimize(result);
@@ -85,10 +91,12 @@ void BM_ThreadPoolSharedLock(benchmark::State& state) {
 
 void BM_ThreadPoolExclusiveLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range(0));
+  std::int64_t const count = 1000;
   std::vector<std::int64_t> results;
   for (auto _ : state) {
     std::vector<std::future<void>> futures;
-    for (int i = 0; i < 1000; ++i) {
+    futures.reserve(count);
+    for (int i = 0; i < count; ++i) {
       futures.push_back(pool.Add([]() {
         double const result = ComsumeCpuExclusiveLock(1e5);
         benchmark::DoNotOptimize(result);
@@ -99,6 +107,8 @@ void BM_ThreadPoolExclusiveLock(benchmark::State& state) {
     }
   }
 }
+
+}  // namespace
 
 BENCHMARK(BM_ThreadPoolNoLock)
     ->Arg(1)

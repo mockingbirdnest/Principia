@@ -28,9 +28,9 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 namespace {
+
 using World = Frame<struct WorldTag>;
 using Camera = Frame<struct CameraTag>;
-}  // namespace
 
 void RandomSegmentsBenchmark(
     std::uniform_real_distribution<>& x_distribution,
@@ -56,6 +56,7 @@ void RandomSegmentsBenchmark(
   int const count = state.range(0);
   std::mt19937_64 random(42);
   std::vector<Segment<World>> segments;
+  segments.reserve(count);
   for (int i = 0; i < count; ++i) {
     segments.emplace_back(
         Position<World>(
@@ -218,6 +219,8 @@ void BM_VisibleSegmentsRandomNoIntersection(benchmark::State& state) {
   RandomSegmentsBenchmark(
       xy_distribution, xy_distribution, z_distribution, state);
 }
+
+}  // namespace
 
 // TODO(phl): Running BM_VisibleSegmentsOrbit with 10000 hits a singularity.
 BENCHMARK(BM_VisibleSegmentsOrbit)->Arg(10)->Arg(100)->Arg(1000);

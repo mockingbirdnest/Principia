@@ -58,6 +58,8 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
 
+namespace {
+
 using Rendering = Frame<struct RenderingTag>;
 
 template<typename F, template<typename> class T>
@@ -324,6 +326,8 @@ void BM_RotatingPulsatingReferenceFrame(benchmark::State& state) {
                                  probe_trajectory.end());
   }
 }
+
+}  // namespace
 
 int const iterations = (1000 << 10) + 1;
 

@@ -18,6 +18,8 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_nearest_neighbour;
 
+namespace {
+
 using World = Frame<struct WorldTag>;
 using V = Vector<double, World>;
 
@@ -98,6 +100,8 @@ void BM_PCPFindNearestNeighbour(benchmark::State& state) {
                                      coordinate_distribution(random)})));
   }
 }
+
+}  // namespace
 
 BENCHMARK(BM_PCPBuildTreeUsingAdd)
     ->Args({1'000, 1})

@@ -12,13 +12,14 @@ namespace quantities {
 using namespace principia::benchmarks::_quantities;
 using namespace principia::quantities::_named_quantities;
 
+namespace {
+
 void BM_DimensionfulDiscreteCosineTransform(benchmark::State& state) {
   std::vector<Momentum> output;
   for (auto _ : state) {
     DimensionfulDiscreteCosineTransform(output);
   }
 }
-BENCHMARK(BM_DimensionfulDiscreteCosineTransform);
 
 void BM_DoubleDiscreteCosineTransform(benchmark::State& state) {
   std::vector<double> output;
@@ -26,6 +27,10 @@ void BM_DoubleDiscreteCosineTransform(benchmark::State& state) {
     DoubleDiscreteCosineTransform(output);
   }
 }
+
+}  // namespace
+
+BENCHMARK(BM_DimensionfulDiscreteCosineTransform);
 BENCHMARK(BM_DoubleDiscreteCosineTransform);
 
 }  // namespace quantities

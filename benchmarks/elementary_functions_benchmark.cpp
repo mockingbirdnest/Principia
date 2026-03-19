@@ -22,6 +22,8 @@ using namespace principia::benchmarks::_metric;
 using namespace principia::numerics::_fma;
 using namespace principia::numerics::_sin_cos;
 
+namespace {
+
 constexpr FMAPresence fma_presence =
     CanEmitFMAInstructions ? FMAPresence::Present : FMAPresence::Absent;
 constexpr std::int64_t number_of_iterations = 1000;
@@ -80,6 +82,8 @@ void BM_EvaluateElementaryFunction(benchmark::State& state) {
                    static_cast<double>(cycles) /
                        static_cast<double>(iterations * number_of_iterations)));
 }
+
+}  // namespace
 
 BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
                    Metric::Latency,

@@ -29,6 +29,8 @@ using namespace principia::numerics::_fma;
 using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_scale_b;
 
+namespace {
+
 using Value = double;
 using Argument = double;
 
@@ -162,7 +164,7 @@ class MultiTableImplementation {
     Value cos_x;
   };
 
-  void SelectCutoff(Argument x, std::int64_t& index, Argument& cutoff);
+  static void SelectCutoff(Argument x, std::int64_t& index, Argument& cutoff);
 
   template<FMAPresence fma_presence>
   static Value SinPolynomial(Argument x);
@@ -1033,6 +1035,8 @@ void BM_ExperimentCosFMA(benchmark::State& state) {
       1.2e-16,
       state);
 }
+
+}  // namespace
 
 BENCHMARK_TEMPLATE(BM_ExperimentSinTableSpacing,
                    Metric::Latency,

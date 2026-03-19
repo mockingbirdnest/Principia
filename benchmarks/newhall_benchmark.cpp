@@ -32,6 +32,8 @@ using namespace principia::numerics::_polynomial_in_monomial_basis;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
+namespace {
+
 void BM_NewhallApproximationDouble(benchmark::State& state) {
   int const degree = state.range(0);
   std::mt19937_64 random(42);
@@ -83,10 +85,7 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   }
 }
 
-using ResultMonomialDouble =
-    not_null<std::unique_ptr<Polynomial<double, Instant>>>;
-using ResultMonomialDisplacement =
-    not_null<std::unique_ptr<Polynomial<Displacement<ICRS>, Instant>>>;
+}  // namespace
 
 BENCHMARK(BM_NewhallApproximationDouble)->Arg(4)->Arg(8)->Arg(16);
 BENCHMARK(BM_NewhallApproximationDisplacement)->Arg(4)->Arg(8)->Arg(16);

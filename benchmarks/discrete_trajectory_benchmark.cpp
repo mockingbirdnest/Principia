@@ -113,8 +113,6 @@ DiscreteTrajectory<World> MakeTrajectoryWithEmptySegments(
   return trajectory;
 }
 
-}  // namespace
-
 void BM_DiscreteTrajectoryFront(benchmark::State& state) {
   Instant const t0;
   auto const timeline = NewMotionlessTrajectoryTimeline(World::origin,
@@ -492,6 +490,8 @@ void BM_DiscreteTrajectoryDownsampling(benchmark::State& state) {
                   << downsampled_trajectory.size() << " after")
                      .str());
 }
+
+}  // namespace
 
 BENCHMARK(BM_DiscreteTrajectoryFront);
 BENCHMARK(BM_DiscreteTrajectoryFrontEmpty);

@@ -30,6 +30,8 @@ using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
+namespace {
+
 static constexpr std::int64_t number_of_iterations = 100;
 
 template<typename T>
@@ -192,6 +194,8 @@ void BM_EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
                  << " in BM_EvaluatePolynomialInMonomialBasis";
   }
 }
+
+}  // namespace
 
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
                    double, Metric::Latency, Estrin)

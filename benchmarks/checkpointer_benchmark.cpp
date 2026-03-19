@@ -26,6 +26,8 @@ using namespace principia::geometry::_instant;
 using namespace principia::physics::_checkpointer;
 using namespace principia::quantities::_si;
 
+namespace {
+
 // Stub writer for checkpointer. Adds some data to the checkpoint.
 void WriteToCheckpoint(not_null<typename Ephemeris::Checkpoint*> checkpoint) {
   // Fill out the state with dummy values. We don't care what the values are (or
@@ -134,6 +136,8 @@ void BM_CheckpointerAllCheckpointsBetween(benchmark::State& state) {
     benchmark::DoNotOptimize(checkpointer->all_checkpoints_between(t1, t2));
   }
 }
+
+}  // namespace
 
 BENCHMARK(BM_CheckpointerOldestCheckpoint)->Range(1, 512);
 BENCHMARK(BM_CheckpointerNewestCheckpoint)->Range(1, 512);

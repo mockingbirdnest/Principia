@@ -27,8 +27,8 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 namespace {
+
 constexpr int evaluations_per_iteration = 1000;
-}  // namespace
 
 template<int degree>
 void BM_EvaluatePolynomialInЧебышёвBasisDouble(benchmark::State& state) {
@@ -193,6 +193,8 @@ void BM_EvaluatePolynomialInЧебышёвBasisDisplacement(
   ss << result;
   state.SetLabel(ss.str().substr(0, 0));
 }
+
+}  // namespace
 
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInЧебышёвBasisDouble, 4)
     ->Unit(benchmark::kMicrosecond);

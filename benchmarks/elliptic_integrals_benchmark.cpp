@@ -17,6 +17,8 @@ using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
+namespace {
+
 void BM_EllipticF(benchmark::State& state) {
   constexpr int size = 20;
 
@@ -106,6 +108,8 @@ void BM_FukushimaEllipticBDJ(benchmark::State& state) {
     benchmark::DoNotOptimize(j);
   }
 }
+
+}  // namespace
 
 BENCHMARK(BM_EllipticF);
 BENCHMARK(BM_EllipticFEΠ);

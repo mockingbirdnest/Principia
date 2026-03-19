@@ -46,9 +46,6 @@ using World = Frame<struct WorldTag, Inertial>;
 using ODE1D = SpecialSecondOrderDifferentialEquation<Length>;
 using ODE3D = SpecialSecondOrderDifferentialEquation<Position<World>>;
 
-
-}  // namespace
-
 template<typename Integrator>
 void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
                                               Length& q_error,
@@ -186,6 +183,8 @@ void BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
   ss << q_error << ", " << v_error;
   state.SetLabel(ss.str());
 }
+
+}  // namespace
 
 BENCHMARK_TEMPLATE2(
     BM_SymplecticRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,

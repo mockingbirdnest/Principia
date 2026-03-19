@@ -1,5 +1,6 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=ApproximationBenchmark  // NOLINT(whitespace/line_length)
 
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
@@ -77,6 +78,7 @@ class ApproximationBenchmark : public benchmark::Fixture {
     }
   }
 
+ private:
   Instant const t0_;
   std::vector<Length> cos_coefficients_;
   std::vector<Length> sin_coefficients_;

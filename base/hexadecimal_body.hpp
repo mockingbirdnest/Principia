@@ -4,6 +4,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <string_view>
 
 #include "glog/logging.h"
 
@@ -12,7 +13,7 @@ namespace base {
 namespace _hexadecimal {
 namespace internal {
 
-constexpr char byte_to_hexadecimal_digits[] =
+constexpr std::string_view byte_to_hexadecimal_digits =
     "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F2021222324"
     "25262728292A2B2C2D2E2F303132333435363738393A3B3C3D3E3F40414243444546474849"
     "4A4B4C4D4E4F505152535455565758595A5B5C5D5E5F606162636465666768696A6B6C6D6E"

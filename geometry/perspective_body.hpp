@@ -323,9 +323,9 @@ Perspective<FromFrame, ToFrame>::VisibleSegments(
 
   BoundedArray<double, 2> const μs =
       SolveQuadraticEquation(/*origin=*/0.0,
-                             /*a0=*/AC² - sphere.radius²(),
-                             /*a1=*/-2.0 * ABAC,
-                             /*a2=*/AB²);
+                             /*a₀=*/AC² - sphere.radius²(),
+                             /*a₁=*/-2.0 * ABAC,
+                             /*a₂=*/AB²);
 
   // Merge and sort all the intersections.
   std::copy(μs.begin(), μs.end(), std::back_inserter(λs));

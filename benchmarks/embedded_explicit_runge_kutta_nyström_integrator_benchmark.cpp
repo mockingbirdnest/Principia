@@ -69,8 +69,6 @@ double HarmonicOscillatorToleranceRatio3D(
                   v_tolerance / (error.velocity_error[0]).Norm());
 }
 
-}  // namespace
-
 template<typename Integrator>
 void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
                                               Length& q_error,
@@ -96,7 +94,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
   };
 
   typename Integrator::Parameters const parameters(
-      /*first_time_step=*/t_final - t_initial,
+      /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio1D<ODE1D>,
@@ -152,7 +150,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
   };
 
   typename Integrator::Parameters const parameters(
-      /*first_time_step=*/t_final - t_initial,
+      /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio3D<ODE3D>,
@@ -215,6 +213,8 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
   ss << q_error << ", " << v_error;
   state.SetLabel(ss.str());
 }
+
+}  // namespace
 
 // Keep each argument on a single line below, lest it breaks benchmark parsing.
 

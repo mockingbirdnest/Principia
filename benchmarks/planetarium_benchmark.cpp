@@ -282,7 +282,7 @@ class Satellites {
   }
 
  private:
-  Ephemeris<Barycentric>::FixedStepParameters EphemerisParameters() {
+  static Ephemeris<Barycentric>::FixedStepParameters EphemerisParameters() {
     return Ephemeris<Barycentric>::FixedStepParameters(
         SymmetricLinearMultistepIntegrator<
             QuinlanTremaine1990Order12,
@@ -290,7 +290,7 @@ class Satellites {
         /*step=*/10 * Minute);
   }
 
-  Ephemeris<Barycentric>::FixedStepParameters HistoryParameters() {
+  static Ephemeris<Barycentric>::FixedStepParameters HistoryParameters() {
     return Ephemeris<Barycentric>::FixedStepParameters(
         SymmetricLinearMultistepIntegrator<
             Quinlan1999Order8A,
@@ -299,7 +299,7 @@ class Satellites {
   }
 
   DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters
-  DownsamplingParameters() {
+  static DownsamplingParameters() {
     return DiscreteTrajectorySegment<Barycentric>::DownsamplingParameters{
         .tolerance = 10 * Metre};
   }
@@ -319,8 +319,6 @@ class Satellites {
   not_null<std::unique_ptr<PlottingFrame>> const sun_earth_lagrange_;
   DiscreteTrajectory<Barycentric> goes_8_trajectory_;
 };
-
-}  // namespace
 
 void BM_PlanetariumPlotMethod3(
     benchmark::State& state,
@@ -458,6 +456,8 @@ void BM_PlanetariumPlotMethod4ContinuousTrajectory(
                                       << " × " << y << " × " << z)
                      .str());
 }
+
+}  // namespace
 
 #define PRINCIPIA_BENCHMARK_PLANETARIUM_PLOT_METHODS_NEAR_AND_FAR( \
     name, perspective, plotting_frame)                             \

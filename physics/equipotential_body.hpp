@@ -59,7 +59,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
   typename AdaptiveStepSizeIntegrator<ODE>::Parameters const
       integrator_parameters(
-          /*first_time_step=*/initial_s_step_,
+          /*first_step=*/initial_s_step_,
           /*safety_factor=*/0.9,
           /*max_steps=*/adaptive_parameters_.max_steps(),
           /*last_step_is_exact=*/true);
