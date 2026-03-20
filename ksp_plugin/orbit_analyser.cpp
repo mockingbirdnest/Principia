@@ -4,6 +4,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/synchronization/mutex.h"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"

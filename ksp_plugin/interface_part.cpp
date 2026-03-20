@@ -1,6 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include "geometry/grassmann.hpp"
+#include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/identification.hpp"

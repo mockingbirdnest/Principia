@@ -337,7 +337,7 @@ class Vessel {
   Checkpointer<serialization::Vessel>::Writer
   MakeCheckpointerWriter();
   Checkpointer<serialization::Vessel>::Reader
-  MakeCheckpointerReader();
+  static MakeCheckpointerReader();
 
   absl::Status Reanimate(Instant desired_t_min) EXCLUDES(lock_);
 

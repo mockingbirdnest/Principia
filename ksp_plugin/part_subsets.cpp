@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "base/not_null.hpp"
+#include "glog/logging.h"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"

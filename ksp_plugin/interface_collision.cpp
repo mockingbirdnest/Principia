@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "base/push_pull_callback.hpp"
+#include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"

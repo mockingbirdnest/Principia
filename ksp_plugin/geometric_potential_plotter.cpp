@@ -3,6 +3,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/synchronization/mutex.h"
+
 namespace principia {
 namespace ksp_plugin {
 namespace _geometric_potential_plotter {

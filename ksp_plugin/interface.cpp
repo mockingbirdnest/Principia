@@ -1,6 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <cmath>
+#include <cstdio>
 #include <cstring>
 #include <filesystem>
 #include <iomanip>
@@ -17,6 +18,7 @@
 #include <psapi.h>
 #endif
 
+#include "absl/status/status.h"
 #include "base/array.hpp"
 #include "base/base64.hpp"
 #include "base/cpuid.hpp"
@@ -39,6 +41,7 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
 #include "gipfeli/gipfeli.h"
+#include "glog/logging.h"
 #include "google/protobuf/arena.h"
 #include "integrators/integrators.hpp"
 #include "journal/method.hpp"

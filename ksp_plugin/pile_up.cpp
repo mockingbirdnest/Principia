@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/synchronization/mutex.h"
 #include "base/map_util.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -14,6 +15,7 @@
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "numerics/davenport_q_method.hpp"

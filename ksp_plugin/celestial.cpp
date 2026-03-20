@@ -2,6 +2,8 @@
 
 #include <utility>
 
+#include "glog/logging.h"
+
 namespace principia {
 namespace ksp_plugin {
 namespace _celestial {

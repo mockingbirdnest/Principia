@@ -8,6 +8,7 @@
 #include "absl/status/statusor.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
+#include "glog/logging.h"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"

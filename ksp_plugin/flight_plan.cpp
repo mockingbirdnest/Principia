@@ -7,8 +7,11 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "base/algebra.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
+#include "glog/logging.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"

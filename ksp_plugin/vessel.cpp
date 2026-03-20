@@ -9,9 +9,13 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/synchronization/mutex.h"
 #include "base/concepts.hpp"
 #include "base/map_util.hpp"
 #include "geometry/barycentre_calculator.hpp"
+#include "glog/logging.h"
 #include "ksp_plugin/integrators.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/make_not_null.hpp"
