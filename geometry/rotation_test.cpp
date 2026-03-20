@@ -457,7 +457,7 @@ TEST_F(RotationTest, CardanoAngles) {
   auto const up = -down;
 
   using Aircraft = Frame<struct AircraftTag>;
-  Vector<double, Aircraft> const forward({1, 0, 0});
+  Vector<double, Aircraft> const forward({1, 0, 0});  // NOLINT
   Vector<double, Aircraft> const right({0, 1, 0});
   Vector<double, Aircraft> const bottom({0, 0, 1});
 
