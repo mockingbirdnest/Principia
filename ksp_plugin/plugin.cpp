@@ -1,11 +1,7 @@
 #include "ksp_plugin/plugin.hpp"
 
 #include <algorithm>
-#include <cmath>
-#include <filesystem>
-#include <fstream>
 #include <ios>
-#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -20,17 +16,13 @@
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/time_scales.hpp"
-#include "base/file.hpp"
-#include "base/fingerprint2011.hpp"
 #include "base/flags.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
 #include "base/serialization.hpp"
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
-#include "geometry/r3x3_matrix.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
@@ -44,7 +36,6 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_frame_field.hpp"
 #include "physics/body_surface_reference_frame.hpp"
-#include "physics/kepler_orbit.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
@@ -59,17 +50,13 @@ using ::operator<<;
 using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::base::_file;
-using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_flags;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_map_util;
 using namespace principia::base::_serialization;
-using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_permutation;
-using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
@@ -80,11 +67,15 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_frame_field;
 using namespace principia::physics::_body_surface_reference_frame;
-using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_parser;
+
+namespace {
+
+// Keep this consistent with `prediction_steps_` in `main_window.cs`.
+constexpr std::int64_t max_steps_in_prediction = 1 << 24;
 
 Length const& MaxCollisionError() {
   static Length const max_collision_error = []() {
@@ -101,8 +92,7 @@ Length const& MaxCollisionError() {
   return max_collision_error;
 }
 
-// Keep this consistent with `prediction_steps_` in `main_window.cs`.
-constexpr std::int64_t max_steps_in_prediction = 1 << 24;
+}  // namespace
 
 Plugin::Plugin(std::string const& game_epoch,
                std::string const& solar_system_epoch,
@@ -1350,7 +1340,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
   };
 
   std::unique_ptr<FrameField<Navigation, RightHandedNavball>> frame_field;
-  auto* const plotting_frame_as_body_surface_reference_frame =
+  auto const* const plotting_frame_as_body_surface_reference_frame =
       dynamic_cast<BodySurfaceReferenceFrame<Barycentric, Navigation> const*>(
           &*renderer_->GetPlottingFrame());
   if (plotting_frame_as_body_surface_reference_frame == nullptr) {
@@ -1571,10 +1561,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   // current time: an older checkpoint would require unnecessary work in
   // Prolong that could be postponed until reanimation; a newer checkpoint would
   // not cover the current time.
-  plugin->ephemeris_ =
-      Ephemeris<Barycentric>::ReadFromMessage(/*using_checkpoint_at_or_before=*/
-                                              plugin->current_time_,
-                                              message.ephemeris());
+  plugin->ephemeris_ = Ephemeris<Barycentric>::ReadFromMessage(
+      /*desired_t_min=*/plugin->current_time_,
+      message.ephemeris());
   plugin->ephemeris_->Prolong(plugin->game_epoch_).IgnoreError();
   plugin->ephemeris_->Prolong(plugin->current_time_).IgnoreError();
   CHECK_LE(plugin->ephemeris_->t_min(), plugin->current_time_);

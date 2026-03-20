@@ -1,7 +1,5 @@
 #include "ksp_plugin/geometric_potential_plotter.hpp"
 
-#include <algorithm>
-#include <functional>
 #include <utility>
 #include <vector>
 

@@ -8,13 +8,11 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
-#include "geometry/rp2_point.hpp"
 #include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -29,11 +27,9 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_perspective;
 using namespace principia::geometry::_rotation;
-using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_frames;
-using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_discrete_trajectory;

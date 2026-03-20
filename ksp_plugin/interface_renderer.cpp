@@ -8,7 +8,6 @@
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "physics/apsides.hpp"
-#include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace interface {
@@ -17,7 +16,6 @@ using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_apsides;
-using namespace principia::physics::_discrete_trajectory;
 
 namespace {
 

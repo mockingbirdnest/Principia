@@ -10,7 +10,6 @@
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/renderer.hpp"
-#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/quantities.hpp"
 
@@ -24,7 +23,6 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_renderer;
-using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_quantities;
 
@@ -95,7 +93,7 @@ double __cdecl principia__IteratorGetDistinguishedPointsTime(
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DistinguishedPoints<World>> const*>(iterator));
-  auto const plugin = typed_iterator->plugin();
+  auto const* const plugin = typed_iterator->plugin();
   return m.Return(typed_iterator->Get<double>(
       [plugin](DistinguishedPoints<World>::value_type const& v) -> double {
         auto const& [time, _] = v;
@@ -109,7 +107,7 @@ Node __cdecl principia__IteratorGetNode(Iterator const* const iterator) {
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<std::vector<Renderer::Node>> const*>(
           iterator));
-  auto const plugin = typed_iterator->plugin();
+  auto const* const plugin = typed_iterator->plugin();
   return m.Return(typed_iterator->Get<Node>(
       [plugin](Renderer::Node const& node) { return ToNode(*plugin, node); }));
 }

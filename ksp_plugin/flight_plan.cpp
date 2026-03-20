@@ -32,6 +32,8 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_make_not_null;
 using namespace std::chrono_literals;
 
+namespace {
+
 inline absl::Status BadDesiredFinalTime() {
   return absl::Status(FlightPlan::bad_desired_final_time,
                       "Bad desired final time");
@@ -45,6 +47,8 @@ inline absl::Status Singular(Square<Speed> const& Δv²) {
   return absl::Status(FlightPlan::singular,
                       absl::StrCat("Singular: ", DebugString(Δv²)));
 }
+
+}  // namespace
 
 FlightPlan::FlightPlan(
     Mass const& initial_mass,

@@ -1,7 +1,5 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
-#include <algorithm>
-#include <cstdint>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -10,7 +8,6 @@
 #include "absl/status/statusor.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
-#include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -24,7 +21,6 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
-using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -529,9 +525,9 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   cache_.clear();
 
   // The following is a copy, and is not affected by changes to the
-  // `flight_plan_`.  It is moved into the metric.
-  NavigationManœuvre manœuvre = flight_plan_->GetManœuvre(index);
-  auto const metric = metric_factory_(this, std::move(manœuvre), index);
+  // `flight_plan_`.
+  NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
+  auto const metric = metric_factory_(this, manœuvre, index);
 
   auto const status_or_solution =
       BroydenFletcherGoldfarbShanno<double, HomogeneousArgument>(

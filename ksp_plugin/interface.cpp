@@ -1,6 +1,5 @@
 #include "ksp_plugin/interface.hpp"
 
-#include <cctype>
 #include <cmath>
 #include <cstring>
 #include <filesystem>
@@ -18,9 +17,6 @@
 #include <psapi.h>
 #endif
 
-#include "absl/strings/str_split.h"
-#include "astronomy/epoch.hpp"
-#include "astronomy/time_scales.hpp"
 #include "base/array.hpp"
 #include "base/base64.hpp"
 #include "base/cpuid.hpp"
@@ -51,21 +47,15 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
-#include "ksp_plugin/part.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
-#include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
-#include "physics/solar_system.hpp"
 #include "physics/tensors.hpp"
-#include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
@@ -80,8 +70,6 @@ namespace interface {
 using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
 using ::operator<<;
-using namespace principia::astronomy::_epoch;
-using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_array;
 using namespace principia::base::_base64;
 using namespace principia::base::_cpuid;
@@ -107,21 +95,15 @@ using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
-using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_oblate_body;
-using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
-using namespace principia::physics::_solar_system;
 using namespace principia::physics::_tensors;
-using namespace principia::quantities::_astronomy;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
@@ -626,7 +608,7 @@ int __cdecl principia__EquipotentialCount(Plugin* const plugin) {
       dynamic_cast<
           RotatingPulsatingReferenceFrame<Barycentric,
                                           Navigation> const*>(plotting_frame);
-  if (!plotting_frame_as_rotating_pulsating) {
+  if (plotting_frame_as_rotating_pulsating == nullptr) {
     // We do not draw equipotentials in the current plotting frame.
     return m.Return(0);
   } else {

@@ -1,6 +1,5 @@
 #include "ksp_plugin/renderer.hpp"
 
-#include <algorithm>
 #include <memory>
 #include <optional>
 #include <utility>

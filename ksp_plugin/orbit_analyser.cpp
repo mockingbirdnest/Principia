@@ -21,6 +21,8 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_astronomy;
 
+namespace {
+
 // TODO(egg): This could be implemented using ComputeApsides.
 template<typename PrimaryCentred>
 void RadialDistanceAnalysis(
@@ -58,6 +60,8 @@ void RadialDistanceAnalysis(
     radial_distance_interval.Include(radial_distance);
   }
 }
+
+}  // namespace
 
 OrbitAnalyser::OrbitAnalyser(
     not_null<Ephemeris<Barycentric>*> const ephemeris,

@@ -73,7 +73,7 @@ Vessel::Vessel(
             return Reanimate(desired_t_min);
           },
           20ms),  // 50 Hz.
-      reanimator_clientele_(/*default_value=*/InfiniteFuture),
+      reanimator_clientele_(/*default_key=*/InfiniteFuture),
       backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()),
@@ -724,7 +724,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
           std::get<serialization::FlightPlan>(flight_plan);
     } else if (std::holds_alternative<OptimizableFlightPlan>(
                    flight_plan)) {
-      auto& deserialized_flight_plan =
+      auto const& deserialized_flight_plan =
           std::get<OptimizableFlightPlan>(flight_plan);
       deserialized_flight_plan.flight_plan->WriteToMessage(
           message->add_flight_plans());
