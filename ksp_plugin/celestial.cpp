@@ -1,14 +1,14 @@
 #include "ksp_plugin/celestial.hpp"
 
-#include <utility>
+#include "glog/logging.h"
 
 namespace principia {
 namespace ksp_plugin {
 namespace _celestial {
 namespace internal {
 
-Celestial::Celestial(not_null<RotatingBody<Barycentric> const*> body)
-    : body_(std::move(body)) {}
+Celestial::Celestial(not_null<RotatingBody<Barycentric> const*> const body)
+    : body_(body) {}
 
 bool Celestial::is_initialized() const {
   return trajectory_ != nullptr;

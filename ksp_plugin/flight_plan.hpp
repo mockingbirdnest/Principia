@@ -44,7 +44,7 @@ class FlightPlan {
   // ends at `desired_final_time`.
   FlightPlan(Mass const& initial_mass,
              Instant const& initial_time,
-             DegreesOfFreedom<Barycentric> initial_degrees_of_freedom,
+             DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,
              Instant const& desired_final_time,
              not_null<Ephemeris<Barycentric>*> ephemeris,
              Ephemeris<Barycentric>::AdaptiveStepParameters

@@ -72,7 +72,7 @@ TEST_F(JournalDeathTest, Return) {
   },
   "!returned_");
   EXPECT_DEATH({
-    Method<NewPlugin> m({"1 s", "2 s", 3});
+    Method<NewPlugin> const m({"1 s", "2 s", 3});
   },
   "returned_");
 }

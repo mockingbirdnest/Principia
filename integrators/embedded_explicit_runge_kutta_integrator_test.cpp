@@ -317,7 +317,7 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, Singularity) {
   problem.equation = rocket_equation;
   problem.initial_state = {t_initial, {{0 * Metre}, {0 * Metre / Second}}};
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-      /*first_time_step=*/t_final - t_initial,
+      /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio = [length_tolerance, speed_tolerance](
       Time const& /*h*/,

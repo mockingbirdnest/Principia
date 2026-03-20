@@ -303,7 +303,7 @@ void Ephemeris<Frame>::AwaitReanimation(Instant const& desired_t_min) {
     return t_min_locked() <= desired_t_min;
   };
 
-  Client me(desired_t_min, reanimator_clientele_);
+  Client const me(desired_t_min, reanimator_clientele_);
   RequestReanimation(desired_t_min);
   absl::ReaderMutexLock l(&lock_);
   lock_.Await(absl::Condition(&desired_t_min_reached));

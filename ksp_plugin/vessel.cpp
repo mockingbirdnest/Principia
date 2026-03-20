@@ -1,17 +1,29 @@
 #include "ksp_plugin/vessel.hpp"
 
 #include <algorithm>
+#include <chrono>
+#include <cstdint>
 #include <functional>
+#include <iterator>
 #include <memory>
+#include <optional>
+#include <ranges>
 #include <set>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/synchronization/mutex.h"
 #include "base/concepts.hpp"
+#include "base/macros.hpp"  // 🧙 For NAMED.
 #include "base/map_util.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/barycentre_calculator.hpp"
+#include "glog/logging.h"
 #include "ksp_plugin/integrators.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/make_not_null.hpp"
@@ -21,7 +33,6 @@ namespace ksp_plugin {
 namespace _vessel {
 namespace internal {
 
-using ::std::placeholders::_1;
 using namespace principia::base::_concepts;
 using namespace principia::base::_map_util;
 using namespace principia::geometry::_barycentre_calculator;
@@ -73,7 +84,7 @@ Vessel::Vessel(
             return Reanimate(desired_t_min);
           },
           20ms),  // 50 Hz.
-      reanimator_clientele_(/*default_value=*/InfiniteFuture),
+      reanimator_clientele_(/*default_key=*/InfiniteFuture),
       backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()),
@@ -283,12 +294,12 @@ not_null<Part*> Vessel::part(PartId const id) const {
   return FindOrDie(parts_, id).get();
 }
 
-void Vessel::ForSomePart(std::function<void(Part&)> action) const {
+void Vessel::ForSomePart(std::function<void(Part&)> const& action) const {
   CHECK(!parts_.empty());
   action(*parts_.begin()->second);
 }
 
-void Vessel::ForAllParts(std::function<void(Part&)> action) const {
+void Vessel::ForAllParts(std::function<void(Part&)> const& action) const {
   for (auto const& [_, part] : parts_) {
     action(*part);
   }
@@ -494,7 +505,7 @@ void Vessel::AwaitReanimation(Instant const& desired_t_min) {
     return DesiredTMinReachedOrFullyReanimated(desired_t_min);
   };
 
-  Client me(desired_t_min, reanimator_clientele_);
+  Client const me(desired_t_min, reanimator_clientele_);
   RequestReanimation(desired_t_min);
   absl::ReaderMutexLock l(&lock_);
   lock_.Await(absl::Condition(&desired_t_min_reached_or_fully_reanimated));
@@ -602,9 +613,9 @@ void Vessel::RefreshPrediction() {
   // therefore the ephemeris currently covers the last time of the
   // psychohistory.  Were this to change, this code might have to change.
   PrognosticatorParameters prognosticator_parameters{
-      psychohistory_->back().time,
-      psychohistory_->back().degrees_of_freedom,
-      prediction_adaptive_step_parameters_};
+      .first_time = psychohistory_->back().time,
+      .first_degrees_of_freedom = psychohistory_->back().degrees_of_freedom,
+      .adaptive_step_parameters = prediction_adaptive_step_parameters_};
   if (synchronous_) {
     auto status_or_prognostication =
         FlowPrognostication(std::move(prognosticator_parameters));
@@ -724,7 +735,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
           std::get<serialization::FlightPlan>(flight_plan);
     } else if (std::holds_alternative<OptimizableFlightPlan>(
                    flight_plan)) {
-      auto& deserialized_flight_plan =
+      auto const& deserialized_flight_plan =
           std::get<OptimizableFlightPlan>(flight_plan);
       deserialized_flight_plan.flight_plan->WriteToMessage(
           message->add_flight_plans());
@@ -967,7 +978,7 @@ Checkpointer<serialization::Vessel>::Writer Vessel::MakeCheckpointerWriter() {
 }
 
 Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
-  return [](serialization::Vessel::Checkpoint const& message) {
+  return [](serialization::Vessel::Checkpoint const& /*message*/) {
     return absl::OkStatus();
   };
 }
@@ -999,8 +1010,7 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
     checkpoints.erase(oldest_reanimated_checkpoint_);
   }
 
-  for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
-    Instant const& checkpoint = *it;
+  for (auto const& checkpoint : checkpoints | std::views::reverse) {
     RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
         checkpoint,
         [this, t_initial = checkpoint, &t_final](
@@ -1202,7 +1212,7 @@ void Vessel::AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory) {
 }
 
 bool Vessel::IsCollapsible() const {
-  PileUp* containing_pile_up = nullptr;
+  PileUp const* containing_pile_up = nullptr;
   std::set<not_null<Part*>> parts;
   for (const auto& [_, part] : parts_) {
     // We expect parts to be piled up.
@@ -1221,13 +1231,12 @@ bool Vessel::IsCollapsible() const {
     }
   }
   CHECK_NE(nullptr, containing_pile_up);
-  for (auto const& part : containing_pile_up->parts()) {
-    // Not collapsible if the pile-up contains a part not in this vessel.
-    if (!parts.contains(part)) {
-      return false;
-    }
-  }
-  return true;
+  return std::ranges::all_of(
+      containing_pile_up->parts(),
+      [&parts](auto const& part) {
+          // Not collapsible if the pile-up contains a part not in this vessel.
+          return parts.contains(part);
+        });
 }
 
 bool Vessel::has_deserialized_flight_plan() const {

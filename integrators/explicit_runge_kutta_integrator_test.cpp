@@ -1,10 +1,9 @@
 #include "integrators/explicit_runge_kutta_integrator.hpp"
 
-#include <algorithm>
-#include <limits>
+#include <cmath>
 #include <vector>
 
-#include "geometry/direct_sum.hpp"
+#include "absl/status/status.h"
 #include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -24,7 +23,6 @@
 namespace principia {
 namespace integrators {
 
-using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_explicit_runge_kutta_integrator;
 using namespace principia::integrators::_integrators;

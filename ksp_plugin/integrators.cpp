@@ -1,5 +1,6 @@
 #include "ksp_plugin/integrators.hpp"
 
+#include <cstdint>
 #include <limits>
 
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"

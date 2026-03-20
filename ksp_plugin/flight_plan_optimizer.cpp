@@ -1,18 +1,18 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
-#include <algorithm>
-#include <cstdint>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
-#include "absl/status/statusor.h"
+#include "absl/status/status.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
-#include "integrators/ordinary_differential_equations.hpp"
+#include "glog/logging.h"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -24,7 +24,6 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
-using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -95,7 +94,7 @@ class FlightPlanOptimizer::MetricForCelestialDistance
   MetricForCelestialDistance(not_null<FlightPlanOptimizer*> optimizer,
                              NavigationManœuvre manœuvre,
                              int index,
-                             not_null<Celestial const*> const celestial,
+                             not_null<Celestial const*> celestial,
                              Length const& target_distance);
 
   double Evaluate(
@@ -175,8 +174,8 @@ FlightPlanOptimizer::LinearCombinationOfMetrics::LinearCombinationOfMetrics(
     : Metric(optimizer, manœuvre, index),
       weights_(weights) {
   CHECK_EQ(factories.size(), weights.size());
-  for (int i = 0; i < factories.size(); ++i) {
-    metrics_.push_back(factories[i](optimizer, manœuvre, index));
+  for (auto const& factory : factories) {
+    metrics_.push_back(factory(optimizer, manœuvre, index));
   }
 }
 
@@ -301,12 +300,12 @@ FlightPlanOptimizer::MetricForCelestialDistance::EvaluateGateauxDerivative(
 
 FlightPlanOptimizer::MetricForInclination::MetricForInclination(
     not_null<FlightPlanOptimizer*> const optimizer,
-    NavigationManœuvre const manœuvre,
+    NavigationManœuvre manœuvre,
     int const index,
     not_null<Celestial const*> const celestial,
     not_null<std::unique_ptr<NavigationFrame const>> frame,
     Angle const& target_inclination)
-    : Metric(optimizer, manœuvre, index),
+    : Metric(optimizer, std::move(manœuvre), index),
       celestial_(celestial),
       frame_(std::move(frame)),
       target_inclination_(target_inclination) {}
@@ -529,9 +528,9 @@ absl::Status FlightPlanOptimizer::Optimize(int const index,
   cache_.clear();
 
   // The following is a copy, and is not affected by changes to the
-  // `flight_plan_`.  It is moved into the metric.
-  NavigationManœuvre manœuvre = flight_plan_->GetManœuvre(index);
-  auto const metric = metric_factory_(this, std::move(manœuvre), index);
+  // `flight_plan_`.
+  NavigationManœuvre const manœuvre = flight_plan_->GetManœuvre(index);
+  auto const metric = metric_factory_(this, manœuvre, index);
 
   auto const status_or_solution =
       BroydenFletcherGoldfarbShanno<double, HomogeneousArgument>(

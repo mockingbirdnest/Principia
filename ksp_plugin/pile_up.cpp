@@ -1,29 +1,26 @@
 #include "ksp_plugin/pile_up.hpp"
 
-#include <algorithm>
 #include <functional>
+#include <future>
 #include <iterator>
 #include <list>
-#include <map>
+#include <optional>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "absl/synchronization/mutex.h"
 #include "base/map_util.hpp"
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "geometry/permutation.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/rotation.hpp"
-#include "geometry/sign.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "numerics/davenport_q_method.hpp"
-#include "numerics/elementary_functions.hpp"
-#include "quantities/parser.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -31,24 +28,16 @@ namespace ksp_plugin {
 namespace _pile_up {
 namespace internal {
 
-using ::std::placeholders::_1;
-using ::std::placeholders::_2;
-using ::std::placeholders::_3;
 using namespace principia::base::_map_util;
-using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_orthogonal_map;
-using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
-using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::numerics::_davenport_q_method;
-using namespace principia::numerics::_elementary_functions;
-using namespace principia::quantities::_parser;
 using namespace principia::quantities::_si;
 
 const auto part_x = Vector<double, RigidPart>({1, 0, 0});
@@ -153,7 +142,7 @@ void PileUp::RecomputeFromParts() {
 
     AngularVelocity<NonRotatingPileUp> const part_angular_velocity =
         part_motion.angular_velocity_of<RigidPart>();
-    InertiaTensor<NonRotatingPileUp> part_inertia_tensor =
+    InertiaTensor<NonRotatingPileUp> const part_inertia_tensor =
         part_motion.orthogonal_map()(part->inertia_tensor());
     if (part->is_solid_rocket_motor()) {
       // KSP makes the inertia tensor vary proportionally to the mass; this
@@ -173,7 +162,7 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
     message->add_part_id(part->part_id());
   }
   trajectory_.WriteToMessage(message->mutable_history(),
-                             /*forks=*/{history_, psychohistory_},
+                             /*tracked=*/{history_, psychohistory_},
                              /*exact=*/{});
   for (auto const& [part, rigid_motion] : actual_part_rigid_motion_) {
     rigid_motion.WriteToMessage(&(
@@ -292,7 +281,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
       DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
       auto trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
-          /*forks=*/{&psychohistory});
+          /*tracked=*/{&psychohistory});
       pile_up = std::unique_ptr<PileUp>(
           new PileUp(
               std::move(parts),
@@ -312,7 +301,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
       DiscreteTrajectorySegmentIterator<Barycentric> psychohistory;
       auto trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
           message.history(),
-          /*forks=*/{&history, &psychohistory});
+          /*tracked=*/{&history, &psychohistory});
       pile_up = std::unique_ptr<PileUp>(
           new PileUp(
               std::move(parts),
@@ -622,7 +611,7 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     }
 
     auto const intrinsic_acceleration =
-        [a = intrinsic_force_ / mass_](Instant const& t) { return a; };
+        [a = intrinsic_force_ / mass_](Instant const& /*t*/) { return a; };
     status = ephemeris_->FlowWithAdaptiveStep(&trajectory_,
                                               intrinsic_acceleration,
                                               t,

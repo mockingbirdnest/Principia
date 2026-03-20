@@ -125,15 +125,15 @@ template<ЧебышёвPicardMethod Method>
 
   // ᵝW is a diagonal (N + 1)×(N + 1) matrix with diagonal [½, 1, 1, ..., ½].
   // See [Mac15], equation (1.20).
-  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> ᵝW =
+  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> const ᵝW =
       DiagonalMatrix<N + 1>(
           [](std::int64_t const i) { return (i == 0 || i == N) ? 0.5 : 1; });
 
-  FixedMatrix<double, M + 1, N + 1, /*use_heap=*/true> Cₓ = ᵝT * ᵝW;
+  FixedMatrix<double, M + 1, N + 1, /*use_heap=*/true> const Cₓ = ᵝT * ᵝW;
 
   // R is a diagonal (N + 1)×(N + 1) matrix.
   // See [Mac15], equation (1.25).
-  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> R =
+  FixedMatrix<double, N + 1, N + 1, /*use_heap=*/true> const R =
       DiagonalMatrix<N + 1>([](std::int64_t const i) {
         if (i == 0) {
           return 1.0;

@@ -1,14 +1,16 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <functional>
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/push_pull_callback.hpp"
+#include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
 #include "physics/apsides.hpp"
-#include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -19,7 +21,6 @@ using namespace principia::base::_push_pull_callback;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_apsides;
-using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 

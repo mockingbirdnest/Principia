@@ -1,9 +1,15 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/synchronization/mutex.h"
+#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
+#include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "ksp_plugin/integrators.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -20,6 +26,8 @@ using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_astronomy;
+
+namespace {
 
 // TODO(egg): This could be implemented using ComputeApsides.
 template<typename PrimaryCentred>
@@ -58,6 +66,8 @@ void RadialDistanceAnalysis(
     radial_distance_interval.Include(radial_distance);
   }
 }
+
+}  // namespace
 
 OrbitAnalyser::OrbitAnalyser(
     not_null<Ephemeris<Barycentric>*> const ephemeris,
@@ -241,7 +251,7 @@ absl::Status OrbitAnalyser::FlowWithProgressBar(
   trajectory.Append(parameters.first_time,
                     parameters.first_degrees_of_freedom).IgnoreError();
 
-  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> const trajectories = {
       &trajectory};
   auto instance = ephemeris_->StoppableNewInstance(
       trajectories,

@@ -1,9 +1,13 @@
 #include "ksp_plugin/geometric_potential_plotter.hpp"
 
-#include <algorithm>
-#include <functional>
+#include <iterator>
+#include <optional>
 #include <utility>
 #include <vector>
+
+#include "absl/status/status.h"
+#include "absl/synchronization/mutex.h"
+#include "glog/logging.h"
 
 namespace principia {
 namespace ksp_plugin {
@@ -67,7 +71,7 @@ absl::Status GeometricPotentialPlotter::PlotEquipotentials(
   // We don’t reset `next_equipotentials_` unless `result.ok()`, so that if we
   // have a transient error, we keep the old ones until the problem goes away.
   if (result.ok()) {
-    next_equipotentials_ = {{}, parameters};
+    next_equipotentials_ = {.lines = {}, .parameters = parameters};
     for (auto& [energy, lines] : result->lines) {
       next_equipotentials_->lines.insert(next_equipotentials_->lines.end(),
                                          std::make_move_iterator(lines.begin()),

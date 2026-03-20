@@ -39,7 +39,8 @@ class Player final {
 
   // Implementation of `Play` and `Scan`.
   bool Process(std::unique_ptr<serialization::Method> method_in,
-               int const index, bool const play);
+               int index,
+               bool play);
 
   template<typename Profile>
   bool RunIfAppropriate(serialization::Method const& method_in,

@@ -3,9 +3,13 @@
 #include "integrators/чебышёв_picard_integrator.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <concepts>
+#include <limits>
+#include <functional>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "base/algebra.hpp"
 #include "geometry/direct_sum.hpp"
 #include "geometry/frame.hpp"
@@ -18,6 +22,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/concepts.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -30,8 +35,6 @@ namespace integrators {
 using ::testing::Lt;
 using ::testing::Test;
 using ::testing::Types;
-using ::testing::Values;
-
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_frame;
@@ -111,7 +114,7 @@ SolvedInitialValueProblem<FirstOrderODE> LinearProblem() {
   using ODE = FirstOrderODE;
   ODE linear_ode;
   linear_ode.compute_derivative =
-      [](Instant const& t,
+      [](Instant const& /*t*/,
          ODE::DependentVariables const& dependent_variables,
          ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;
@@ -139,9 +142,9 @@ SolvedInitialValueProblem<SecondOrderODE> SecondOrderLinearProblem() {
   using ODE = SecondOrderODE;
   ODE ode;
   ode.compute_acceleration =
-      [](Instant const& t,
+      [](Instant const& /*t*/,
          ODE::DependentVariables const& positions,
-         ODE::DependentVariableDerivatives const& velocities,
+         ODE::DependentVariableDerivatives const& /*velocities*/,
          ODE::DependentVariableDerivatives2& accelerations) {
         auto const& y = positions[0];
         auto& yʺ = accelerations[0];
@@ -170,7 +173,7 @@ SolvedInitialValueProblem<FirstOrderODE> TangentProblem() {
   using ODE = FirstOrderODE;
   ODE ode;
   ode.compute_derivative =
-      [](Instant const& t,
+      [](Instant const& /*t*/,
          ODE::DependentVariables const& dependent_variables,
          ODE::DependentVariableDerivatives& dependent_variable_derivatives) {
         auto const& [y] = dependent_variables;

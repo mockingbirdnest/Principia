@@ -1,11 +1,11 @@
 #include "journal/recorder.hpp"
 
 #include <filesystem>
+#include <ios>
 
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/serialization.hpp"
-#include "base/version.hpp"
 #include "glog/logging.h"
 #include "ksp_plugin/interface.hpp"  // 🧙 For principia__GetVersion.
 
@@ -18,7 +18,6 @@ using interface::principia__GetVersion;
 using namespace principia::base::_array;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_serialization;
-using namespace principia::base::_version;
 
 Recorder::Recorder(std::filesystem::path const& path)
     : stream_(path, std::ios::out) {

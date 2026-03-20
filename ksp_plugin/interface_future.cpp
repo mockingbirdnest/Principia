@@ -1,9 +1,8 @@
 #include "ksp_plugin/interface.hpp"
 
-#include <algorithm>
-#include <chrono>
 #include <utility>
 
+#include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/identification.hpp"

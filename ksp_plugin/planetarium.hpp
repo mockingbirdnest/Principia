@@ -196,9 +196,9 @@ class Planetarium {
 
 inline ScaledSpacePoint ScaledSpacePoint::FromCoordinates(
     R3Element<double> const& coordinates) {
-  return ScaledSpacePoint{static_cast<float>(coordinates.x),
-                          static_cast<float>(coordinates.y),
-                          static_cast<float>(coordinates.z)};
+  return ScaledSpacePoint{.x = static_cast<float>(coordinates.x),
+                          .y = static_cast<float>(coordinates.y),
+                          .z = static_cast<float>(coordinates.z)};
 }
 
 }  // namespace internal

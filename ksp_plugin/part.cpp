@@ -1,6 +1,10 @@
 #include "ksp_plugin/part.hpp"
 
+#include <cstdint>
+#include <functional>
+#include <iterator>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 
@@ -9,7 +13,9 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space_transformations.hpp"
+#include "glog/logging.h"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -359,7 +365,7 @@ void Part::FillContainingPileUpFromMessage(
 }
 
 std::string Part::ShortDebugString() const {
-  Array<std::uint8_t const> id_bytes(
+  Array<std::uint8_t const> const id_bytes(
       reinterpret_cast<std::uint8_t const*>(&part_id_), sizeof(part_id_));
   HexadecimalEncoder</*null_terminated=*/true> encoder;
   auto const hex_id = encoder.Encode(id_bytes);

@@ -18,7 +18,7 @@ using namespace principia::physics::_oblate_body;
 using namespace principia::quantities::_si;
 
 Length EquatorRelevanceThreshold(RotatingBody<Barycentric> const& body) {
-  OblateBody<Barycentric> const* oblate_body =
+  auto const* const oblate_body =
       dynamic_cast<OblateBody<Barycentric> const*>(&body);
   Length const j2_threshold =
       oblate_body == nullptr

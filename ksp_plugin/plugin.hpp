@@ -532,7 +532,7 @@ class Plugin {
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
                std::string const& name,
-               Args... args);
+               Args&&... args);
 
   // Whether `loaded_vessels_` contains `vessel`.
   bool is_loaded(not_null<Vessel*> vessel) const;

@@ -1,10 +1,16 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <functional>
+#include <ostream>
+#include <utility>
 #include <vector>
 #include <string>
 
 #include "geometry/instant.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -16,7 +22,6 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/integration.hpp"
-#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
@@ -29,7 +34,6 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::testing::AllOf;
-using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
@@ -45,7 +49,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_integration;
-using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_statistics;
@@ -90,7 +93,7 @@ namespace {
 struct SimpleHarmonicMotionTestInstance final {
   template<typename Integrator>
   SimpleHarmonicMotionTestInstance(Integrator const& integrator,
-                                   std::string const& name,
+                                   std::string name,
                                    Time const& beginning_of_convergence,
                                    Length const& expected_position_error,
                                    Speed const& expected_velocity_error,
@@ -101,7 +104,7 @@ struct SimpleHarmonicMotionTestInstance final {
         evaluations(integrator.evaluations),
         order(integrator.order),
         time_reversible(integrator.time_reversible),
-        name(name),
+        name(std::move(name)),
         beginning_of_convergence(beginning_of_convergence),
         expected_position_error(expected_position_error),
         expected_velocity_error(expected_velocity_error),
@@ -128,7 +131,7 @@ struct SimpleHarmonicMotionTestInstance final {
 // "where GetParam() = Leapfrog" rather than
 // "where GetParam() = n-byte object <hex>"
 std::ostream& operator<<(std::ostream& stream,
-                         SimpleHarmonicMotionTestInstance instance) {
+                         SimpleHarmonicMotionTestInstance const& instance) {
   return stream << instance.name;
 }
 
@@ -352,7 +355,6 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, TimeReversibility) {
   // 8A method.
   Time const step = 0.5 * Second;
 
-  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,
@@ -474,7 +476,6 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   std::vector<double> log_p_errors;
   log_step_sizes.reserve(step_sizes);
 
-  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,

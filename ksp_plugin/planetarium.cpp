@@ -1,11 +1,9 @@
 #include "ksp_plugin/planetarium.hpp"
 
 #include <algorithm>
-#include <cstddef>
 #include <functional>
 #include <iterator>
 #include <optional>
-#include <sstream>
 #include <utility>
 #include <vector>
 

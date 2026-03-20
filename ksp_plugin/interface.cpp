@@ -1,15 +1,21 @@
 #include "ksp_plugin/interface.hpp"
 
-#include <cctype>
+#include <chrono>
 #include <cmath>
+#include <cstdint>
+#include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <filesystem>
 #include <iomanip>
+#include <ios>
 #include <limits>
 #include <map>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 #define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
@@ -18,9 +24,7 @@
 #include <psapi.h>
 #endif
 
-#include "absl/strings/str_split.h"
-#include "astronomy/epoch.hpp"
-#include "astronomy/time_scales.hpp"
+#include "absl/status/status.h"
 #include "base/array.hpp"
 #include "base/base64.hpp"
 #include "base/cpuid.hpp"
@@ -42,8 +46,11 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
+#include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
+#include "glog/logging.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/stubs/logging.h"
 #include "integrators/integrators.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
@@ -51,21 +58,15 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
-#include "ksp_plugin/part.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
-#include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
-#include "physics/solar_system.hpp"
 #include "physics/tensors.hpp"
-#include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
@@ -79,9 +80,6 @@ namespace interface {
 
 using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
-using ::operator<<;
-using namespace principia::astronomy::_epoch;
-using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_array;
 using namespace principia::base::_base64;
 using namespace principia::base::_cpuid;
@@ -107,21 +105,15 @@ using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
-using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_oblate_body;
-using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
-using namespace principia::physics::_solar_system;
 using namespace principia::physics::_tensors;
-using namespace principia::quantities::_astronomy;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_parser;
 using namespace principia::quantities::_quantities;
@@ -351,10 +343,10 @@ void __cdecl principia__ActivateRecorder(bool const activate) {
     // Build a name somewhat similar to that of the log files.
     auto const now = std::chrono::system_clock::now();
     std::time_t const time = std::chrono::system_clock::to_time_t(now);
-    std::tm* const localtime = std::localtime(&time);
+    std::tm const* const localtime = std::localtime(&time);
     std::stringstream name;
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
-    Recorder* const recorder = new Recorder(
+    auto* const recorder = new Recorder(
         std::filesystem::path("glog") / "Principia" / name.str());
     Vessel::MakeSynchronous();
     Recorder::Activate(recorder);
@@ -383,10 +375,10 @@ XYZ __cdecl principia__AngularMomentumFromAngularVelocity(
       FromXYZ<AngularVelocity<World>>(world_angular_velocity);
 
   static constexpr MomentOfInertia zero;
-  auto const moments_of_inertia =
-      FromXYZ<R3Element<MomentOfInertia>>({moments_of_inertia_in_tonnes.x,
-                                           moments_of_inertia_in_tonnes.y,
-                                           moments_of_inertia_in_tonnes.z});
+  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
+      {.x = moments_of_inertia_in_tonnes.x,
+       .y = moments_of_inertia_in_tonnes.y,
+       .z = moments_of_inertia_in_tonnes.z});
   InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
       R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
                                   {zero, moments_of_inertia.y, zero},
@@ -399,7 +391,7 @@ XYZ __cdecl principia__AngularMomentumFromAngularVelocity(
   InertiaTensor<World> const inertia_tensor =
       part_to_world(principal_axes_to_part(inertia_tensor_in_princial_axes));
 
-  Bivector<AngularMomentum, World> angular_momentum =
+  Bivector<AngularMomentum, World> const angular_momentum =
       inertia_tensor * angular_velocity;
 
   return m.Return(ToXYZ(angular_momentum));
@@ -626,7 +618,7 @@ int __cdecl principia__EquipotentialCount(Plugin* const plugin) {
       dynamic_cast<
           RotatingPulsatingReferenceFrame<Barycentric,
                                           Navigation> const*>(plotting_frame);
-  if (!plotting_frame_as_rotating_pulsating) {
+  if (plotting_frame_as_rotating_pulsating == nullptr) {
     // We do not draw equipotentials in the current plotting frame.
     return m.Return(0);
   } else {
@@ -973,10 +965,10 @@ void __cdecl principia__InsertOrKeepLoadedPart(
 
   static constexpr MomentOfInertia zero;
 
-  auto const moments_of_inertia =
-      FromXYZ<R3Element<MomentOfInertia>>({moments_of_inertia_in_tonnes.x,
-                                           moments_of_inertia_in_tonnes.y,
-                                           moments_of_inertia_in_tonnes.z});
+  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
+      {.x = moments_of_inertia_in_tonnes.x,
+       .y = moments_of_inertia_in_tonnes.y,
+       .z = moments_of_inertia_in_tonnes.z});
   InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
       R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
                                   {zero, moments_of_inertia.y, zero},

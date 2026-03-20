@@ -2,6 +2,7 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 
 namespace principia {
 namespace base {

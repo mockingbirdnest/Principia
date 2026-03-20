@@ -67,8 +67,8 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
   Sign Determinant() const;
 
   template<typename F = FromFrame,
-           typename T = ToFrame,
-           typename = std::enable_if_t<F::handedness == T::handedness>>
+           typename T = ToFrame>
+    requires(F::handedness == T::handedness)
   Rotation<FromFrame, ToFrame> AsRotation() const;
 
   OrthogonalMap<ToFrame, FromFrame> Inverse() const;

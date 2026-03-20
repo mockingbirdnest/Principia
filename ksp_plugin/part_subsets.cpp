@@ -1,14 +1,13 @@
 #include "ksp_plugin/part_subsets.hpp"
 
 #include <list>
-#include <memory>
 #include <utility>
 
 #include "base/not_null.hpp"
+#include "glog/logging.h"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
-#include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 
 namespace principia {
@@ -20,7 +19,6 @@ using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;
-using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 
 Subset<Part>::Properties::Properties(not_null<Part*> const part) {

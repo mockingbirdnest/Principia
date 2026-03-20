@@ -1,18 +1,19 @@
 #include "ksp_plugin/plugin.hpp"
 
 #include <algorithm>
-#include <cmath>
-#include <filesystem>
-#include <fstream>
+#include <cstdint>
+#include <functional>
 #include <ios>
-#include <limits>
+#include <iterator>
 #include <list>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <thread>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -20,21 +21,19 @@
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/time_scales.hpp"
-#include "base/file.hpp"
-#include "base/fingerprint2011.hpp"
 #include "base/flags.hpp"
 #include "base/hexadecimal.hpp"
+#include "base/macros.hpp"  // 🧙 For NAMED.
 #include "base/map_util.hpp"
 #include "base/serialization.hpp"
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
-#include "geometry/r3x3_matrix.hpp"
-#include "geometry/sign.hpp"
 #include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/stubs/logging.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
@@ -44,10 +43,10 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_frame_field.hpp"
 #include "physics/body_surface_reference_frame.hpp"
-#include "physics/kepler_orbit.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/parser.hpp"
 
 namespace principia {
@@ -59,18 +58,13 @@ using ::operator<<;
 using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::base::_file;
-using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_flags;
 using namespace principia::base::_hexadecimal;
 using namespace principia::base::_map_util;
 using namespace principia::base::_serialization;
-using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_permutation;
-using namespace principia::geometry::_r3x3_matrix;
-using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
 using namespace principia::ksp_plugin::_integrators;
@@ -80,15 +74,19 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_frame_field;
 using namespace principia::physics::_body_surface_reference_frame;
-using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_parser;
 
+namespace {
+
+// Keep this consistent with `prediction_steps_` in `main_window.cs`.
+constexpr std::int64_t max_steps_in_prediction = 1 << 24;
+
 Length const& MaxCollisionError() {
   static Length const max_collision_error = []() {
-    std::string_view name = "max_collision_error";
+    std::string_view const name = "max_collision_error";
     if (Flags::IsPresent(name)) {
       auto const values = Flags::Values(name);
       CHECK_EQ(values.size(), 1);
@@ -101,8 +99,7 @@ Length const& MaxCollisionError() {
   return max_collision_error;
 }
 
-// Keep this consistent with `prediction_steps_` in `main_window.cs`.
-constexpr std::int64_t max_steps_in_prediction = 1 << 24;
+}  // namespace
 
 Plugin::Plugin(std::string const& game_epoch,
                std::string const& solar_system_epoch,
@@ -248,7 +245,7 @@ void Plugin::EndInitialization() {
   for (auto const& [celestial_index, celestial] : celestials_) {
     auto const& parent_index = FindOrDie(parents_, celestial_index);
     if (parent_index) {
-      not_null<Celestial const*> parent =
+      not_null<Celestial const*> const parent =
           FindOrDie(celestials_, *parent_index).get();
       celestial->set_parent(parent);
     } else {
@@ -372,7 +369,7 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 bool const loaded,
                                 bool& inserted) {
   CHECK(!initializing_);
-  not_null<Celestial const*> parent =
+  not_null<Celestial const*> const parent =
       FindOrDie(celestials_, parent_index).get();
   auto vit = vessels_.find(vessel_guid);
   if (vit == vessels_.end()) {
@@ -484,7 +481,7 @@ void Plugin::InsertOrKeepLoadedPart(
             world_to_barycentric_motion * part_rigid_motion);
   }
   vessel->KeepPart(part_id);
-  not_null<Part*> part = vessel->part(part_id);
+  not_null<Part*> const part = vessel->part(part_id);
   part->make_truthful();
   part->set_mass(mass);
   part->set_centre_of_mass(centre_of_mass);
@@ -668,7 +665,7 @@ void Plugin::SetPartApparentRigidMotion(
   // need not worry about the current definition of
   // `{World::origin, World::unmoving}` as we do when getting the actual degrees
   // of freedom (via `Plugin::BarycentricToWorld`).
-  RigidMotion<ApparentWorld, Apparent> world_to_apparent{
+  RigidMotion<ApparentWorld, Apparent> const world_to_apparent{
       RigidTransformation<ApparentWorld, Apparent>{
           ApparentWorld::origin,
           Apparent::origin,
@@ -854,7 +851,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       FindOrDie(vessels_, vessel_guid);
-  not_null<Celestial const*> parent =
+  not_null<Celestial const*> const parent =
       FindOrDie(celestials_, parent_index).get();
   if (vessel->parent() != parent) {
     vessel->set_parent(parent);
@@ -1349,8 +1346,8 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
     Position<World> const sun_world_position_;
   };
 
-  std::unique_ptr<FrameField<Navigation, RightHandedNavball>> frame_field;
-  auto* const plotting_frame_as_body_surface_reference_frame =
+  std::unique_ptr<FrameField<Navigation, RightHandedNavball>> const frame_field;
+  auto const* const plotting_frame_as_body_surface_reference_frame =
       dynamic_cast<BodySurfaceReferenceFrame<Barycentric, Navigation> const*>(
           &*renderer_->GetPlottingFrame());
   if (plotting_frame_as_body_surface_reference_frame == nullptr) {
@@ -1571,10 +1568,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   // current time: an older checkpoint would require unnecessary work in
   // Prolong that could be postponed until reanimation; a newer checkpoint would
   // not cover the current time.
-  plugin->ephemeris_ =
-      Ephemeris<Barycentric>::ReadFromMessage(/*using_checkpoint_at_or_before=*/
-                                              plugin->current_time_,
-                                              message.ephemeris());
+  plugin->ephemeris_ = Ephemeris<Barycentric>::ReadFromMessage(
+      /*desired_t_min=*/plugin->current_time_,
+      message.ephemeris());
   plugin->ephemeris_->Prolong(plugin->game_epoch_).IgnoreError();
   plugin->ephemeris_->Prolong(plugin->current_time_).IgnoreError();
   CHECK_LE(plugin->ephemeris_->t_min(), plugin->current_time_);
@@ -1672,7 +1668,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   };
 
   for (auto const& vessel_message : message.vessel()) {
-    GUID const guid = vessel_message.guid();
+    GUID const& guid = vessel_message.guid();
     auto const& vessel = FindOrDie(plugin->vessels_, guid);
     vessel->FillContainingPileUpsFromMessage(vessel_message.vessel(),
                                              pile_up_for_serialization_index);
@@ -1775,7 +1771,7 @@ template<typename... Args>
 void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
-                     Args... args) {
+                     Args&&... args) {
   auto const [_, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);
   auto deletion_callback = [part_id, &map = part_id_to_vessel_] {

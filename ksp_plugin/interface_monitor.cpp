@@ -6,6 +6,7 @@
 #include <string>
 #include <type_traits>
 
+#include "glog/logging.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -21,7 +22,7 @@ constexpr int window_size = 500;
 
 struct Monitor {
   std::string* name = nullptr;
-  std::chrono::steady_clock::time_point start_time{};
+  std::chrono::steady_clock::time_point start_time;
   bool is_running = false;
 
   int window_index = 0;
@@ -31,8 +32,8 @@ struct Monitor {
 };
 
 static_assert(
-    std::is_trivially_destructible<std::array<Monitor, monitor_count>>::value,
-    "An array of |Monitor|s should be trivially destructible");
+    std::is_trivially_destructible_v<std::array<Monitor, monitor_count>>,
+    "An array of `Monitor`s should be trivially destructible");
 std::array<Monitor, monitor_count> monitors{};
 }  // namespace
 

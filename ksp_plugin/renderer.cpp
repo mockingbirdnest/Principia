@@ -1,6 +1,5 @@
 #include "ksp_plugin/renderer.hpp"
 
-#include <algorithm>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -9,6 +8,7 @@
 #include "base/ranges.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/permutation.hpp"
+#include "glog/logging.h"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 
 namespace principia {

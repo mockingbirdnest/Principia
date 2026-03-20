@@ -1,7 +1,7 @@
 #include "ksp_plugin/flight_plan_optimization_driver.hpp"
 
-#include <functional>
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "absl/status/status.h"
@@ -12,8 +12,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace _flight_plan_optimization_driver {
 namespace internal {
-
-using std::placeholders::_1;
 
 FlightPlanOptimizationDriver::FlightPlanOptimizationDriver(
     not_null<std::shared_ptr<FlightPlan>> const& flight_plan,

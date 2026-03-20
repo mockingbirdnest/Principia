@@ -20,10 +20,7 @@ using namespace principia::base::_sink_source;
 
 inline DelegatingArrayInputStream::DelegatingArrayInputStream(
     std::function<Array<std::uint8_t>()> on_empty)
-    : on_empty_(std::move(on_empty)),
-      byte_count_(0),
-      position_(0),
-      last_returned_size_(0) {}
+    : on_empty_(std::move(on_empty)) {}
 
 inline bool DelegatingArrayInputStream::Next(void const** const data,
                                              int* const size) {
