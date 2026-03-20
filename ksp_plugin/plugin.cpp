@@ -88,7 +88,7 @@ constexpr std::int64_t max_steps_in_prediction = 1 << 24;
 
 Length const& MaxCollisionError() {
   static Length const max_collision_error = []() {
-    std::string_view name = "max_collision_error";
+    std::string_view const name = "max_collision_error";
     if (Flags::IsPresent(name)) {
       auto const values = Flags::Values(name);
       CHECK_EQ(values.size(), 1);
@@ -247,7 +247,7 @@ void Plugin::EndInitialization() {
   for (auto const& [celestial_index, celestial] : celestials_) {
     auto const& parent_index = FindOrDie(parents_, celestial_index);
     if (parent_index) {
-      not_null<Celestial const*> parent =
+      not_null<Celestial const*> const parent =
           FindOrDie(celestials_, *parent_index).get();
       celestial->set_parent(parent);
     } else {
@@ -371,7 +371,7 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 bool const loaded,
                                 bool& inserted) {
   CHECK(!initializing_);
-  not_null<Celestial const*> parent =
+  not_null<Celestial const*> const parent =
       FindOrDie(celestials_, parent_index).get();
   auto vit = vessels_.find(vessel_guid);
   if (vit == vessels_.end()) {
@@ -483,7 +483,7 @@ void Plugin::InsertOrKeepLoadedPart(
             world_to_barycentric_motion * part_rigid_motion);
   }
   vessel->KeepPart(part_id);
-  not_null<Part*> part = vessel->part(part_id);
+  not_null<Part*> const part = vessel->part(part_id);
   part->make_truthful();
   part->set_mass(mass);
   part->set_centre_of_mass(centre_of_mass);
@@ -667,7 +667,7 @@ void Plugin::SetPartApparentRigidMotion(
   // need not worry about the current definition of
   // `{World::origin, World::unmoving}` as we do when getting the actual degrees
   // of freedom (via `Plugin::BarycentricToWorld`).
-  RigidMotion<ApparentWorld, Apparent> world_to_apparent{
+  RigidMotion<ApparentWorld, Apparent> const world_to_apparent{
       RigidTransformation<ApparentWorld, Apparent>{
           ApparentWorld::origin,
           Apparent::origin,
@@ -853,7 +853,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       FindOrDie(vessels_, vessel_guid);
-  not_null<Celestial const*> parent =
+  not_null<Celestial const*> const parent =
       FindOrDie(celestials_, parent_index).get();
   if (vessel->parent() != parent) {
     vessel->set_parent(parent);
@@ -1348,7 +1348,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
     Position<World> const sun_world_position_;
   };
 
-  std::unique_ptr<FrameField<Navigation, RightHandedNavball>> frame_field;
+  std::unique_ptr<FrameField<Navigation, RightHandedNavball>> const frame_field;
   auto const* const plotting_frame_as_body_surface_reference_frame =
       dynamic_cast<BodySurfaceReferenceFrame<Barycentric, Navigation> const*>(
           &*renderer_->GetPlottingFrame());
@@ -1670,7 +1670,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   };
 
   for (auto const& vessel_message : message.vessel()) {
-    GUID const guid = vessel_message.guid();
+    GUID const& guid = vessel_message.guid();
     auto const& vessel = FindOrDie(plugin->vessels_, guid);
     vessel->FillContainingPileUpsFromMessage(vessel_message.vessel(),
                                              pile_up_for_serialization_index);
@@ -1773,7 +1773,7 @@ template<typename... Args>
 void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
-                     Args... args) {
+                     Args&&... args) {
   auto const [_, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
   CHECK(inserted) << NAMED(part_id);
   auto deletion_callback = [part_id, &map = part_id_to_vessel_] {

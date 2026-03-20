@@ -365,7 +365,7 @@ void Part::FillContainingPileUpFromMessage(
 }
 
 std::string Part::ShortDebugString() const {
-  Array<std::uint8_t const> id_bytes(
+  Array<std::uint8_t const> const id_bytes(
       reinterpret_cast<std::uint8_t const*>(&part_id_), sizeof(part_id_));
   HexadecimalEncoder</*null_terminated=*/true> encoder;
   auto const hex_id = encoder.Encode(id_bytes);

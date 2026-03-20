@@ -28,9 +28,6 @@ namespace ksp_plugin {
 namespace _pile_up {
 namespace internal {
 
-using ::std::placeholders::_1;
-using ::std::placeholders::_2;
-using ::std::placeholders::_3;
 using namespace principia::base::_map_util;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_orthogonal_map;
@@ -145,7 +142,7 @@ void PileUp::RecomputeFromParts() {
 
     AngularVelocity<NonRotatingPileUp> const part_angular_velocity =
         part_motion.angular_velocity_of<RigidPart>();
-    InertiaTensor<NonRotatingPileUp> part_inertia_tensor =
+    InertiaTensor<NonRotatingPileUp> const part_inertia_tensor =
         part_motion.orthogonal_map()(part->inertia_tensor());
     if (part->is_solid_rocket_motor()) {
       // KSP makes the inertia tensor vary proportionally to the mass; this
@@ -614,7 +611,7 @@ absl::Status PileUp::AdvanceTime(Instant const& t) {
     }
 
     auto const intrinsic_acceleration =
-        [a = intrinsic_force_ / mass_](Instant const& t) { return a; };
+        [a = intrinsic_force_ / mass_](Instant const& /*t*/) { return a; };
     status = ephemeris_->FlowWithAdaptiveStep(&trajectory_,
                                               intrinsic_acceleration,
                                               t,

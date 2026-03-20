@@ -86,11 +86,11 @@ Planetarium* __cdecl principia__PlanetariumCreate(
                                    FromXYZ<Position<World>>(sun_world_position),
                                    plugin->PlanetariumRotation());
 
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters const parameters(
       /*sphere_radius_multiplier=*/1.0,
       angular_resolution * Radian,
       field_of_view * Radian);
-  Perspective<Navigation, Camera> perspective(
+  Perspective<Navigation, Camera> const perspective(
       world_to_plotting_affine_map *
           camera_to_world_affine_map.Forget<Similarity>(),
       focal * Metre);

@@ -59,12 +59,13 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
   intensity.Δv = FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v);
   NavigationManœuvre::Timing timing;
   timing.initial_time = FromGameTime(plugin, burn.initial_time);
-  return {intensity,
-          timing,
-          burn.thrust_in_kilonewtons * Kilo(Newton),
-          burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
-          NewNavigationFrame(plugin, burn.frame),
-          burn.is_inertially_fixed};
+  return {.intensity = intensity,
+          .timing = timing,
+          .thrust = burn.thrust_in_kilonewtons * Kilo(Newton),
+          .specific_impulse =
+              burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
+          .frame = NewNavigationFrame(plugin, burn.frame),
+          .is_inertially_fixed = burn.is_inertially_fixed};
 }
 
 Burn GetBurn(Plugin const& plugin,
@@ -142,12 +143,13 @@ Burn GetBurn(Plugin const& plugin,
 
   CHECK_EQ(number_of_subclasses, 1) << "Could not construct frame parameters";
 
-  return {manœuvre.thrust() / Kilo(Newton),
-          manœuvre.specific_impulse() / (Second * StandardGravity),
-          parameters,
-          ToGameTime(plugin, manœuvre.initial_time()),
-          ToXYZ(manœuvre.Δv()),
-          manœuvre.is_inertially_fixed()};
+  return {.thrust_in_kilonewtons = manœuvre.thrust() / Kilo(Newton),
+          .specific_impulse_in_seconds_g0 =
+              manœuvre.specific_impulse() / (Second * StandardGravity),
+          .frame = parameters,
+          .initial_time = ToGameTime(plugin, manœuvre.initial_time()),
+          .delta_v = ToXYZ(manœuvre.Δv()),
+          .is_inertially_fixed = manœuvre.is_inertially_fixed()};
 }
 
 NavigationManoeuvre* ToNewInterfaceNavigationManoeuvre(

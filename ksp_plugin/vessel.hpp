@@ -150,9 +150,9 @@ class Vessel {
   virtual not_null<Part*> part(PartId id) const;
 
   // Calls `action` on one part.
-  virtual void ForSomePart(std::function<void(Part&)> action) const;
+  virtual void ForSomePart(std::function<void(Part&)> const& action) const;
   // Calls `action` on all parts.
-  virtual void ForAllParts(std::function<void(Part&)> action) const;
+  virtual void ForAllParts(std::function<void(Part&)> const& action) const;
 
   virtual DiscreteTrajectory<Barycentric> const& trajectory() const;
   virtual DiscreteTrajectorySegmentIterator<Barycentric> psychohistory() const;

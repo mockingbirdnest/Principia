@@ -12,6 +12,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "base/algebra.hpp"
+#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "glog/logging.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -58,7 +59,7 @@ inline absl::Status Singular(Square<Speed> const& Δv²) {
 FlightPlan::FlightPlan(
     Mass const& initial_mass,
     Instant const& initial_time,
-    DegreesOfFreedom<Barycentric> initial_degrees_of_freedom,
+    DegreesOfFreedom<Barycentric> const& initial_degrees_of_freedom,
     Instant const& desired_final_time,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters,
@@ -66,7 +67,7 @@ FlightPlan::FlightPlan(
         generalized_adaptive_step_parameters)
     : initial_mass_(initial_mass),
       initial_time_(initial_time),
-      initial_degrees_of_freedom_(std::move(initial_degrees_of_freedom)),
+      initial_degrees_of_freedom_(initial_degrees_of_freedom),
       ephemeris_(ephemeris),
       desired_final_time_(desired_final_time),
       adaptive_step_parameters_(std::move(adaptive_step_parameters)),
@@ -360,7 +361,7 @@ void FlightPlan::WriteToMessage(
 std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     serialization::FlightPlan const& message,
     not_null<Ephemeris<Barycentric>*> const ephemeris) {
-  Instant initial_time = Instant::ReadFromMessage(message.initial_time());
+  Instant const initial_time = Instant::ReadFromMessage(message.initial_time());
   std::unique_ptr<DegreesOfFreedom<Barycentric>> initial_degrees_of_freedom;
   CHECK(message.has_adaptive_step_parameters());
   auto const adaptive_step_parameters =

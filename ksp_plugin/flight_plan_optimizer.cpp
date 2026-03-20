@@ -94,7 +94,7 @@ class FlightPlanOptimizer::MetricForCelestialDistance
   MetricForCelestialDistance(not_null<FlightPlanOptimizer*> optimizer,
                              NavigationManœuvre manœuvre,
                              int index,
-                             not_null<Celestial const*> const celestial,
+                             not_null<Celestial const*> celestial,
                              Length const& target_distance);
 
   double Evaluate(
@@ -174,8 +174,8 @@ FlightPlanOptimizer::LinearCombinationOfMetrics::LinearCombinationOfMetrics(
     : Metric(optimizer, manœuvre, index),
       weights_(weights) {
   CHECK_EQ(factories.size(), weights.size());
-  for (int i = 0; i < factories.size(); ++i) {
-    metrics_.push_back(factories[i](optimizer, manœuvre, index));
+  for (auto const& factory : factories) {
+    metrics_.push_back(factory(optimizer, manœuvre, index));
   }
 }
 
@@ -300,12 +300,12 @@ FlightPlanOptimizer::MetricForCelestialDistance::EvaluateGateauxDerivative(
 
 FlightPlanOptimizer::MetricForInclination::MetricForInclination(
     not_null<FlightPlanOptimizer*> const optimizer,
-    NavigationManœuvre const manœuvre,
+    NavigationManœuvre manœuvre,
     int const index,
     not_null<Celestial const*> const celestial,
     not_null<std::unique_ptr<NavigationFrame const>> frame,
     Angle const& target_inclination)
-    : Metric(optimizer, manœuvre, index),
+    : Metric(optimizer, std::move(manœuvre), index),
       celestial_(celestial),
       frame_(std::move(frame)),
       target_inclination_(target_inclination) {}

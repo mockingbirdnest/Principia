@@ -50,6 +50,7 @@
 #include "gipfeli/gipfeli.h"
 #include "glog/logging.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/stubs/logging.h"
 #include "integrators/integrators.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
@@ -79,7 +80,6 @@ namespace interface {
 
 using ::google::protobuf::Arena;
 using ::google::protobuf::ArenaOptions;
-using ::operator<<;
 using namespace principia::base::_array;
 using namespace principia::base::_base64;
 using namespace principia::base::_cpuid;
@@ -343,10 +343,10 @@ void __cdecl principia__ActivateRecorder(bool const activate) {
     // Build a name somewhat similar to that of the log files.
     auto const now = std::chrono::system_clock::now();
     std::time_t const time = std::chrono::system_clock::to_time_t(now);
-    std::tm* const localtime = std::localtime(&time);
+    std::tm const* const localtime = std::localtime(&time);
     std::stringstream name;
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
-    Recorder* const recorder = new Recorder(
+    auto* const recorder = new Recorder(
         std::filesystem::path("glog") / "Principia" / name.str());
     Vessel::MakeSynchronous();
     Recorder::Activate(recorder);
@@ -375,10 +375,10 @@ XYZ __cdecl principia__AngularMomentumFromAngularVelocity(
       FromXYZ<AngularVelocity<World>>(world_angular_velocity);
 
   static constexpr MomentOfInertia zero;
-  auto const moments_of_inertia =
-      FromXYZ<R3Element<MomentOfInertia>>({moments_of_inertia_in_tonnes.x,
-                                           moments_of_inertia_in_tonnes.y,
-                                           moments_of_inertia_in_tonnes.z});
+  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
+      {.x = moments_of_inertia_in_tonnes.x,
+       .y = moments_of_inertia_in_tonnes.y,
+       .z = moments_of_inertia_in_tonnes.z});
   InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
       R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
                                   {zero, moments_of_inertia.y, zero},
@@ -391,7 +391,7 @@ XYZ __cdecl principia__AngularMomentumFromAngularVelocity(
   InertiaTensor<World> const inertia_tensor =
       part_to_world(principal_axes_to_part(inertia_tensor_in_princial_axes));
 
-  Bivector<AngularMomentum, World> angular_momentum =
+  Bivector<AngularMomentum, World> const angular_momentum =
       inertia_tensor * angular_velocity;
 
   return m.Return(ToXYZ(angular_momentum));
@@ -965,10 +965,10 @@ void __cdecl principia__InsertOrKeepLoadedPart(
 
   static constexpr MomentOfInertia zero;
 
-  auto const moments_of_inertia =
-      FromXYZ<R3Element<MomentOfInertia>>({moments_of_inertia_in_tonnes.x,
-                                           moments_of_inertia_in_tonnes.y,
-                                           moments_of_inertia_in_tonnes.z});
+  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
+      {.x = moments_of_inertia_in_tonnes.x,
+       .y = moments_of_inertia_in_tonnes.y,
+       .z = moments_of_inertia_in_tonnes.z});
   InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
       R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
                                   {zero, moments_of_inertia.y, zero},

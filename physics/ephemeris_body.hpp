@@ -303,7 +303,7 @@ void Ephemeris<Frame>::AwaitReanimation(Instant const& desired_t_min) {
     return t_min_locked() <= desired_t_min;
   };
 
-  Client me(desired_t_min, reanimator_clientele_);
+  Client const me(desired_t_min, reanimator_clientele_);
   RequestReanimation(desired_t_min);
   absl::ReaderMutexLock l(&lock_);
   lock_.Await(absl::Condition(&desired_t_min_reached));
@@ -848,7 +848,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   ephemeris->trajectories_.clear();
   for (auto const& trajectory : message.trajectory()) {
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
-    not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
+    not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> const
         deserialized_trajectory = ContinuousTrajectory<Frame>::ReadFromMessage(
             desired_t_min, trajectory);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());

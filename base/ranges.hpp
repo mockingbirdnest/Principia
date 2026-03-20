@@ -13,17 +13,16 @@ class IterableRange {
   using IteratorTraits = std::iterator_traits<Iterator>;
 
  public:
-  static_assert(
-      std::is_base_of<std::forward_iterator_tag,
-                      typename IteratorTraits::iterator_category>::value,
-      "Iterator must be a forward iterator");
+  static_assert(std::is_base_of_v<std::forward_iterator_tag,
+                                  typename IteratorTraits::iterator_category>,
+                "Iterator must be a forward iterator");
   using iterator = Iterator;
   // There is no way to obtain the const_iterator from the iterator; we could
   // have something specialized for all iterators of standard containers, but
   // for now we simply restrict ourselves to immutable ranges.
   static_assert(
-      std::is_const<
-          std::remove_reference_t<decltype(*std::declval<Iterator>())>>::value,
+      std::is_const_v<
+          std::remove_reference_t<decltype(*std::declval<Iterator>())>>,
       "Iterator must be a const iterator");
   using const_iterator = Iterator;
   using difference_type = typename IteratorTraits::difference_type;

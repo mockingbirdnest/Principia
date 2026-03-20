@@ -8,6 +8,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
+#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "ksp_plugin/integrators.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -250,7 +251,7 @@ absl::Status OrbitAnalyser::FlowWithProgressBar(
   trajectory.Append(parameters.first_time,
                     parameters.first_degrees_of_freedom).IgnoreError();
 
-  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> const trajectories = {
       &trajectory};
   auto instance = ephemeris_->StoppableNewInstance(
       trajectories,
