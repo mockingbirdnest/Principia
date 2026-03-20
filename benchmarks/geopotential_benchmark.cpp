@@ -129,10 +129,10 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> distribution(-1e7, 1e7);
-  std::int64_t const size = 1e3;
+  std::int64_t const count = 1e3;
   std::vector<Displacement<ICRS>> displacements;
-  displacements.reserve(size);
-  for (int i = 0; i < size; ++i) {
+  displacements.reserve(count);
+  for (int i = 0; i < count; ++i) {
     displacements.push_back(earth.FromSurfaceFrame<ITRS>(Instant())(
         Displacement<ITRS>({distribution(random) * Metre,
                             distribution(random) * Metre,
@@ -226,10 +226,10 @@ void BM_ComputeGeopotentialF90(benchmark::State& state) {
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> distribution(-1e7, 1e7);
-  std::int64_t const size = 1e3;
+  std::int64_t const count = 1e3;
   std::vector<Displacement<ICRS>> displacements;
-  displacements.reserve(size);
-  for (int i = 0; i < size; ++i) {
+  displacements.reserve(count);
+  for (int i = 0; i < count; ++i) {
     displacements.push_back(earth.FromSurfaceFrame<ITRS>(Instant())(
         Displacement<ITRS>({distribution(random) * Metre,
                             distribution(random) * Metre,

@@ -135,8 +135,8 @@ TEST_F(RotationTest, AppliedToBivector) {
                                     2.0 * Metre)), 1, 2));
   EXPECT_THAT(rotation_c_(bivector_),
               AlmostEquals(Bivector<Length, World>(
-                  R3Element<Length>((0.5 + sqrt(3.0)) * Metre,
-                                    (1.0 - 0.5 * sqrt(3.0)) * Metre,
+                  R3Element<Length>((0.5 + Sqrt(3.0)) * Metre,
+                                    (1.0 - 0.5 * Sqrt(3.0)) * Metre,
                                     3.0 * Metre)), 0));
 }
 
@@ -210,7 +210,7 @@ TEST_F(RotationTest, ToQuaternion1) {
   R3Element<double> const v1 = {2, 5, 6};
   R3Element<double> const v2 =
       R3Element<double>(-3, 4, 1).OrthogonalizationAgainst(v1);
-  R3Element<double> v3 = Cross(v1, v2);
+  R3Element<double> const v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
