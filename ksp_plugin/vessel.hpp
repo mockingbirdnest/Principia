@@ -339,7 +339,7 @@ class Vessel {
   Checkpointer<serialization::Vessel>::Reader
   MakeCheckpointerReader();
 
-  absl::Status Reanimate(Instant const desired_t_min) EXCLUDES(lock_);
+  absl::Status Reanimate(Instant desired_t_min) EXCLUDES(lock_);
 
   // `t_initial` is the time of the checkpoint, which is the end of the non-
   // collapsible segment.  `t_final` is the start of the trajectory or of the

@@ -1,10 +1,9 @@
 #include "journal/profiles.hpp"
 
-#include <fstream>
-#include <list>
+#include <cstdint>
+#include <cstring>
 #include <string>
 #include <type_traits>
-#include <vector>
 
 #include "glog/logging.h"
 
@@ -27,6 +26,8 @@ namespace journal {
   }
 #endif
 
+// The argument `message` below is intentionally not wrapped into parentheses as
+// it may not be a complete expression.
 #if PRINCIPIA_LAX_POINTER_MAPPING
 #define PRINCIPIA_NO_POINTER_MAPPING(message) LOG(ERROR) << message
 #else
@@ -47,7 +48,7 @@ void Insert(std::uint64_t const address,
     return;
   }
   void* const inserted_pointer = static_cast<void*>(
-      const_cast<typename std::remove_cv<T>::type*>(pointer));
+      const_cast<typename std::remove_cv_t<T>*>(pointer));
   auto const [it, inserted] = pointer_map.emplace(address, inserted_pointer);
   if (!inserted) {
     CHECK_EQ(it->second, inserted_pointer) << address;
@@ -65,8 +66,8 @@ void Delete(std::uint64_t const address, Player::PointerMap& pointer_map) {
   }
 }
 
-template<typename T,
-         typename = typename std::enable_if<std::is_pointer<T>::value>::type>
+template<typename T>
+  requires(std::is_pointer_v<T>)
 T DeserializePointer(std::uint64_t const address,
                      Player::PointerMap const& pointer_map) {
   if (reinterpret_cast<T>(address) == nullptr) {

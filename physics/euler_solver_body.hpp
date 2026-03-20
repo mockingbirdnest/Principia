@@ -121,9 +121,9 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   // Compute the rotation 𝒮_ that adjusts the signs of the coordinates of m in a
   // way that ensures that the quaternions are well-conditioned and that the σ's
   // disappear.
-  Bivector<double, PreferredPrincipalAxesFrame> e₁({1, 0, 0});
-  Bivector<double, PreferredPrincipalAxesFrame> e₂({0, 1, 0});
-  Bivector<double, PreferredPrincipalAxesFrame> e₃({0, 0, 1});
+  Bivector<double, PreferredPrincipalAxesFrame> const e₁({1, 0, 0});
+  Bivector<double, PreferredPrincipalAxesFrame> const e₂({0, 1, 0});
+  Bivector<double, PreferredPrincipalAxesFrame> const e₃({0, 0, 1});
   if (formula_ == Formula::iii) {
     𝒮_ = Signature<PrincipalAxesFrame, PreferredPrincipalAxesFrame>(
         Sign(m.x), DeduceSignPreservingOrientation{}, Sign(m.z));

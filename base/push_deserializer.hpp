@@ -48,10 +48,10 @@ class DelegatingArrayInputStream
   Array<std::uint8_t> bytes_;
   std::function<Array<std::uint8_t>()> on_empty_;
 
-  std::int64_t byte_count_;
-  std::int64_t position_;
-  std::int64_t last_returned_size_;  // How many bytes we returned last time
-                                     // Next() was called.
+  std::int64_t byte_count_ = 0;
+  std::int64_t position_ = 0;
+  std::int64_t last_returned_size_ = 0;  // How many bytes we returned last time
+                                         // Next() was called.
 };
 
 std::ostream& operator<<(std::ostream& out,

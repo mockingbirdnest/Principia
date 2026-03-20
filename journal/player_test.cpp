@@ -24,6 +24,8 @@ using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_plugin;
 using namespace std::chrono_literals;
 
+namespace {
+
 void BM_PlayForReal(benchmark::State& state) {
   for (auto _ : state) {
     Player player(
@@ -38,6 +40,8 @@ void BM_PlayForReal(benchmark::State& state) {
 }
 
 BENCHMARK(BM_PlayForReal);
+
+}  // namespace
 
 class PlayerTest : public ::testing::Test {
  protected:
@@ -63,7 +67,7 @@ TEST_F(PlayerTest, PlayTiny) {
     std::unique_ptr<Plugin> const plugin(
         interface::principia__NewPlugin("MJD0", "MJD0", 0));
 
-    Recorder* const r(new Recorder(test_name_ + ".journal.hex"));
+    auto* const r(new Recorder(test_name_ + ".journal.hex"));
     Recorder::Activate(r);
 
     {
@@ -99,7 +103,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Benchmarks) {
 // A convenience test to find the last unpaired method of a journal.  You must
 // set `path`.
 TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
-  std::string path =
+  std::string const path =
       R"(P:\Public Mockingbird\Principia\Crashes\3375\JOURNAL.20220610-092143)";  // NOLINT
   Player player(path);
   int count = 0;
@@ -118,7 +122,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // A test to debug a journal.  You must set `path` and fill the `method_in` and
 // `method_out_return` protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
-  std::string path =
+  std::string const path =
       R"(P:\Public Mockingbird\Principia\Issues\3872\JOURNAL.20240210-173425)";  // NOLINT
   Player player(path);
   int count = 0;

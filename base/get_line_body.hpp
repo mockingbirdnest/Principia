@@ -12,8 +12,9 @@ namespace internal {
 
 constexpr int buffer_size = 200;
 
-std::string GetLineWithSize(std::size_t const size, std::ifstream& stream) {
-  std::unique_ptr<char[]> buffer(new char[size]);
+inline std::string GetLineWithSize(std::size_t const size,
+                                   std::ifstream& stream) {
+  std::unique_ptr<char[]> const buffer(new char[size]);
   if (!stream.getline(&buffer[0], size).eof() && stream.fail()) {
     stream.clear();
     std::string string_buffer(buffer.get());
@@ -25,7 +26,7 @@ std::string GetLineWithSize(std::size_t const size, std::ifstream& stream) {
   }
 }
 
-std::string GetLine(std::ifstream& stream) {
+inline std::string GetLine(std::ifstream& stream) {
   return GetLineWithSize(buffer_size, stream);
 }
 

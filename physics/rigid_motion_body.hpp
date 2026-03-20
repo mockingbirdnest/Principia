@@ -112,7 +112,8 @@ RigidMotion<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename>
+template<typename F, typename T>
+  requires(F::handedness == T::handedness && F::motion <= T::motion)
 RigidMotion<FromFrame, ToFrame> RigidMotion<FromFrame, ToFrame>::Identity() {
   return RigidMotion(RigidTransformation<FromFrame, ToFrame>::Identity(),
                      FromFrame::nonrotating,

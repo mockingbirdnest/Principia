@@ -202,11 +202,11 @@ not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     PlottingFrameParameters const& parameters);
 
 not_null<OrbitAnalysis*> NewOrbitAnalysis(
-    OrbitAnalyser::Analysis* const vessel_analysis,
+    OrbitAnalyser::Analysis* vessel_analysis,
     Plugin const& plugin,
-    int const* const revolutions_per_cycle,
-    int const* const days_per_cycle,
-    int const ground_track_revolution);
+    int const* revolutions_per_cycle,
+    int const* days_per_cycle,
+    int ground_track_revolution);
 
 FlightPlan& GetFlightPlan(Plugin const& plugin, char const* vessel_guid);
 

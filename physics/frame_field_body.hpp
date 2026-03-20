@@ -24,7 +24,7 @@ Rotation<Frame, ThisFrame> FrameField<Frame, ThisFrame>::ToThisFrame(
 template<typename Frame, typename ThisFrame>
 Rotation<ThisFrame, Frame>
 CoordinateFrameField<Frame, ThisFrame>::FromThisFrame(
-    Position<Frame> const& q) const {
+    Position<Frame> const& /*q*/) const {
   return Rotation<ThisFrame, Frame>::Identity();
 }
 

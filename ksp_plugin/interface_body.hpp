@@ -140,9 +140,9 @@ struct XYZConverter<R3Element<MomentOfInertia>> {
         xyz.x * mts_unit, xyz.y * mts_unit, xyz.z * mts_unit);
   }
   static XYZ ToXYZ(R3Element<MomentOfInertia> const& moments_of_inertia) {
-    return {moments_of_inertia.x / mts_unit,
-            moments_of_inertia.y / mts_unit,
-            moments_of_inertia.z / mts_unit};
+    return {.x = moments_of_inertia.x / mts_unit,
+            .y = moments_of_inertia.y / mts_unit,
+            .z = moments_of_inertia.z / mts_unit};
   }
 };
 
@@ -449,10 +449,12 @@ inline AdaptiveStepParameters ToAdaptiveStepParameters(
         adaptive_step_parameters) {
   serialization::AdaptiveStepSizeIntegrator message;
   adaptive_step_parameters.integrator().WriteToMessage(&message);
-  return {message.kind(),
-          adaptive_step_parameters.max_steps(),
-          adaptive_step_parameters.length_integration_tolerance() / Metre,
-          adaptive_step_parameters.speed_integration_tolerance() /
+  return {.integrator_kind = message.kind(),
+          .max_steps = adaptive_step_parameters.max_steps(),
+          .length_integration_tolerance =
+              adaptive_step_parameters.length_integration_tolerance() / Metre,
+          .speed_integration_tolerance =
+              adaptive_step_parameters.speed_integration_tolerance() /
               (Metre / Second)};
 }
 
@@ -467,28 +469,33 @@ inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
   serialization::AdaptiveStepSizeIntegrator message2;
   generalized_adaptive_step_parameters.integrator().WriteToMessage(&message2);
   // TODO(phl): Should we CHECK that the fields are consistent?
-  return {message1.kind(),
-          message2.kind(),
-          adaptive_step_parameters.max_steps(),
-          adaptive_step_parameters.length_integration_tolerance() / Metre,
-          adaptive_step_parameters.speed_integration_tolerance() /
+  return {.integrator_kind = message1.kind(),
+          .generalized_integrator_kind = message2.kind(),
+          .max_steps = adaptive_step_parameters.max_steps(),
+          .length_integration_tolerance =
+              adaptive_step_parameters.length_integration_tolerance() / Metre,
+          .speed_integration_tolerance =
+              adaptive_step_parameters.speed_integration_tolerance() /
               (Metre / Second)};
 }
 
 inline KeplerianElements ToKeplerianElements(
     physics::_kepler_orbit::KeplerianElements<Barycentric> const&
         keplerian_elements) {
-  return {*keplerian_elements.eccentricity,
-          keplerian_elements.semimajor_axis
-              ? *keplerian_elements.semimajor_axis / Metre
-              : std::numeric_limits<double>::quiet_NaN(),
-          keplerian_elements.mean_motion
-              ? *keplerian_elements.mean_motion / (Radian / Second)
-              : std::numeric_limits<double>::quiet_NaN(),
-          keplerian_elements.inclination / Degree,
+  return {
+      .eccentricity = *keplerian_elements.eccentricity,
+      .semimajor_axis = keplerian_elements.semimajor_axis
+                            ? *keplerian_elements.semimajor_axis / Metre
+                            : std::numeric_limits<double>::quiet_NaN(),
+      .mean_motion = keplerian_elements.mean_motion
+                         ? *keplerian_elements.mean_motion / (Radian / Second)
+                         : std::numeric_limits<double>::quiet_NaN(),
+      .inclination_in_degrees = keplerian_elements.inclination / Degree,
+      .longitude_of_ascending_node_in_degrees =
           keplerian_elements.longitude_of_ascending_node / Degree,
+      .argument_of_periapsis_in_degrees =
           *keplerian_elements.argument_of_periapsis / Degree,
-          *keplerian_elements.mean_anomaly / Radian};
+      .mean_anomaly = *keplerian_elements.mean_anomaly / Radian};
 }
 
 inline Node ToNode(Plugin const& plugin,
@@ -510,8 +517,8 @@ inline QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
 
 inline Status* ToNewStatus(absl::Status const& status) {
   if (status.ok()) {
-    return new Status{static_cast<int>(status.code()),
-                      /*message=*/nullptr};
+    return new Status{.error = static_cast<int>(status.code()),
+                      .message = nullptr};
   } else {
     std::string_view const message = status.message();
     LOG(ERROR) << message;
@@ -519,24 +526,24 @@ inline Status* ToNewStatus(absl::Status const& status) {
     std::memcpy(allocated_message.data.get(),
                 message.data(),
                 message.size() + 1);
-    return new Status{static_cast<int>(status.code()),
-                      allocated_message.data.release()};
+    return new Status{.error = static_cast<int>(status.code()),
+                      .message = allocated_message.data.release()};
   }
 }
 
 inline WXYZ ToWXYZ(Quaternion const& quaternion) {
-  return {quaternion.real_part(),
-          quaternion.imaginary_part().x,
-          quaternion.imaginary_part().y,
-          quaternion.imaginary_part().z};
+  return {.w = quaternion.real_part(),
+          .x = quaternion.imaginary_part().x,
+          .y = quaternion.imaginary_part().y,
+          .z = quaternion.imaginary_part().z};
 }
 
 inline XY ToXY(RP2Point<Length, Camera> const& rp2_point) {
-  return {rp2_point.x() / Metre, rp2_point.y() / Metre};
+  return {.x = rp2_point.x() / Metre, .y = rp2_point.y() / Metre};
 }
 
 inline XYZ ToXYZ(R3Element<double> const& r3_element) {
-  return {r3_element.x, r3_element.y, r3_element.z};
+  return {.x = r3_element.x, .y = r3_element.y, .z = r3_element.z};
 }
 
 inline XYZ ToXYZ(Position<World> const& position) {
