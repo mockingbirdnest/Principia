@@ -1,11 +1,16 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <cstddef>
 #include <filesystem>
+#include <functional>
+#include <ostream>
 #include <vector>
 #include <string>
 
 #include "geometry/instant.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -18,11 +23,9 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/integration.hpp"
-#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
-#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace integrators {
@@ -31,7 +34,6 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::testing::AllOf;
-using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
@@ -48,11 +50,9 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_integration;
-using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_statistics;
-using namespace principia::testing_utilities::_vanishes_before;
 
 #define INSTANCE(integrator,                                          \
                  beginning_of_convergence,                            \
@@ -74,14 +74,14 @@ namespace {
 struct SimpleHarmonicMotionTestInstance final {
   template<typename Integrator>
   SimpleHarmonicMotionTestInstance(Integrator const& integrator,
-                                   std::string const& name,
+                                   std::string name,
                                    Time const& beginning_of_convergence,
                                    Length const& expected_position_error,
                                    Speed const& expected_velocity_error,
                                    Energy const& expected_energy_error)
       : integrator(integrator),
         order(integrator.order),
-        name(name),
+        name(std::move(name)),
         beginning_of_convergence(beginning_of_convergence),
         expected_position_error(expected_position_error),
         expected_velocity_error(expected_velocity_error),
@@ -227,7 +227,6 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
   std::vector<double> log_p_errors;
   log_step_sizes.reserve(step_sizes);
 
-  std::vector<ODE::State> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration1D,

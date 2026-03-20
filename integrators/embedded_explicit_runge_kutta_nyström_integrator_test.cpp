@@ -1,11 +1,14 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 
 #include <algorithm>
+#include <cstdint>
+#include <functional>
 #include <limits>
+#include <ostream>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "geometry/instant.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -13,6 +16,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -51,12 +55,12 @@ using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 namespace {
 
 double HarmonicOscillatorToleranceRatio(
-    Time const& h,
+    Time const& /*h*/,
     ODE::State const& /*state*/,
     ODE::State::Error const& error,
     Length const& q_tolerance,
     Speed const& v_tolerance,
-    std::function<void(bool tolerable)> callback) {
+    std::function<void(bool tolerable)> const& callback) {
   double const r = std::min(q_tolerance / Abs(error.position_error[0]),
                             v_tolerance / Abs(error.velocity_error[0]));
   callback(r > 1.0);
@@ -115,7 +119,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
 
   {
     AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-        /*first_time_step=*/t_final - t_initial,
+        /*first_step=*/t_final - t_initial,
         /*safety_factor=*/0.9);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
@@ -149,7 +153,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   problem.initial_state = solution.back();
   {
     AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-        /*first_time_step=*/t_initial - t_final,
+        /*first_step=*/t_initial - t_final,
         /*safety_factor=*/0.9);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
@@ -205,7 +209,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
     solution.push_back(state);
   };
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-      /*first_time_step=*/t_final - t_initial,
+      /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9,
       /*max_steps=*/100,
       /*last_step_is_exact=*/true);
@@ -242,7 +246,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
        {steps_forward, steps_forward + 1234}) {
     solution.clear();
     AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-        /*first_time_step=*/t_final - t_initial,
+        /*first_step=*/t_final - t_initial,
         /*safety_factor=*/0.9,
         /*max_steps=*/max_steps,
         /*last_step_is_exact=*/true);
@@ -288,7 +292,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   ODE rocket_equation;
   rocket_equation.compute_acceleration = [&mass, specific_impulse, mass_flow](
       Instant const& t,
-      std::vector<Length> const& position,
+      std::vector<Length> const& /*position*/,
       std::vector<Acceleration>& acceleration) {
     acceleration.back() = mass_flow * specific_impulse / mass(t);
     return absl::OkStatus();
@@ -300,10 +304,10 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   problem.equation = rocket_equation;
   problem.initial_state = {t_initial, {0 * Metre}, {0 * Metre / Second}};
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-      /*first_time_step=*/t_final - t_initial,
+      /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio = [length_tolerance, speed_tolerance](
-      Time const& h,
+      Time const& /*h*/,
       ODE::State const& /*state*/,
       ODE::State::Error const& error) {
     return std::min(length_tolerance / Abs(error.position_error[0]),
@@ -356,7 +360,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
     };
 
     AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-        /*first_time_step=*/duration,
+        /*first_step=*/duration,
         /*safety_factor=*/0.9,
         /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
         /*last_step_is_exact=*/false);
@@ -408,7 +412,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
     };
 
     AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-        /*first_time_step=*/duration,
+        /*first_step=*/duration,
         /*safety_factor=*/0.9,
         /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
         /*last_step_is_exact=*/false);
@@ -456,7 +460,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
     solution.push_back(state);
   };
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
-      /*first_time_step=*/t_final - t_initial,
+      /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,

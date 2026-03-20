@@ -1,10 +1,11 @@
 #include "integrators/explicit_linear_multistep_integrator.hpp"
 
-#include <algorithm>
-#include <limits>
+#include <cmath>
+#include <ostream>
 #include <string>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "geometry/instant.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -40,6 +41,8 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_statistics;
 
+namespace {
+
 // The execution time is exponential in `step_sizes`.
 constexpr int step_sizes = 110;
 constexpr double step_reduction = 1.1;
@@ -66,14 +69,14 @@ struct IntegratorTestParam final {
   template<typename Integrator>
   IntegratorTestParam(
       Integrator const& integrator,
-      std::string const& name,
+      std::string name,
       int const initial_number_of_steps,
       ApproximateQuantity<double> const& expected_q_convergence,
       ApproximateQuantity<double> const& expected_q_correlation,
       ApproximateQuantity<double> const& expected_v_convergence,
       ApproximateQuantity<double> const& expected_v_correlation)
       : integrator(integrator),
-        name(name),
+        name(std::move(name)),
         initial_number_of_steps(initial_number_of_steps),
         expected_q_convergence(expected_q_convergence),
         expected_q_correlation(expected_q_correlation),
@@ -126,6 +129,8 @@ std::vector<IntegratorTestParam> IntegratorTestParams() {
                 4.72_(1),
                 0.99971_(1))};
 }
+
+}  // namespace
 
 class ExplicitLinearMultistepIntegratorTest
       : public ::testing::TestWithParam<IntegratorTestParam> {

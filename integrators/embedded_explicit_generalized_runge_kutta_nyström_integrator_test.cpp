@@ -1,12 +1,11 @@
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"  // NOLINT(whitespace/line_length)
 
 #include <algorithm>
+#include <functional>
 #include <limits>
 #include <vector>
 
-#include "base/algebra.hpp"
 #include "geometry/instant.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -17,7 +16,6 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/is_near.hpp"
@@ -31,9 +29,6 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::std::placeholders::_4;
-using ::testing::ElementsAreArray;
-using ::testing::Lt;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_instant;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_integrators;
@@ -44,7 +39,6 @@ using namespace principia::numerics::_legendre;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_integration;
 using namespace principia::testing_utilities::_is_near;
@@ -56,12 +50,12 @@ using ODE = ExplicitSecondOrderOrdinaryDifferentialEquation<double>;
 namespace {
 
 double ToleranceToErrorRatio(
-    Time const& h,
+    Time const& /*h*/,
     ODE::State const& /*state*/,
     ODE::State::Error const& error,
     double const& tolerance,
     Variation<double> const& derivative_tolerance,
-    std::function<void(bool tolerable)> callback) {
+    std::function<void(bool tolerable)> const& callback) {
   double const r =
       std::min(tolerance / Abs(error.position_error[0]),
                derivative_tolerance / Abs(error.velocity_error[0]));
