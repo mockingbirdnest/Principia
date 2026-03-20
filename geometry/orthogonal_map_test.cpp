@@ -1,12 +1,13 @@
 #include "geometry/orthogonal_map.hpp"
 
+#include <iostream>
+
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
@@ -153,7 +154,7 @@ TEST_F(OrthogonalMapTest, Composition) {
 }
 
 TEST_F(OrthogonalMapDeathTest, SerializationError) {
-  Identity<DirectWorld, DirectWorld> id;
+  Identity<DirectWorld, DirectWorld> const id;
   EXPECT_DEATH({
     serialization::LinearMap message;
     id.WriteToMessage(&message);

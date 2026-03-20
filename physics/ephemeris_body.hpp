@@ -7,6 +7,7 @@
 #include <limits>
 #include <memory>
 #include <optional>
+#include <ranges>
 #include <utility>
 #include <vector>
 
@@ -983,8 +984,7 @@ absl::Status Ephemeris<Frame>::Reanimate(Instant const& desired_t_min) {
   // backwards in time.  The last checkpoint is not restored, it just serves as
   // a limit.
   std::optional<Instant> following_checkpoint;
-  for (auto it = checkpoints.crbegin(); it != checkpoints.crend(); ++it) {
-    Instant const& checkpoint = *it;
+  for (auto const& checkpoint : checkpoints | std::views::reverse) {
     if (following_checkpoint.has_value()) {
       RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
           checkpoint,

@@ -6,11 +6,13 @@
 #include "base/tags.hpp"
 #include "benchmark/benchmark.h"
 #include "numerics/elliptic_integrals.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::base::_tags;
 using namespace principia::numerics::_elliptic_integrals;
@@ -111,5 +113,6 @@ BENCHMARK(BM_EllipticF);
 BENCHMARK(BM_EllipticFEΠ);
 BENCHMARK(BM_FukushimaEllipticBDJ);
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

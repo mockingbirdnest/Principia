@@ -1,5 +1,6 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=ApproximationBenchmark  // NOLINT(whitespace/line_length)
 
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <vector>
@@ -16,6 +17,7 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
@@ -31,7 +33,7 @@ constexpr int64_t number_of_angular_frequencies = 5;
 template<int max_degree>
 class ApproximationBenchmark : public benchmark::Fixture {
  protected:
-  void SetUp(benchmark::State& state) override {
+  void SetUp(benchmark::State& /*state*/) override {
     std::mt19937_64 random(42);
     std::uniform_real_distribution<> coefficients(0.0, 10.0);
     std::uniform_real_distribution<> angular_frequency(0.0, 100.0);
@@ -77,6 +79,7 @@ class ApproximationBenchmark : public benchmark::Fixture {
     }
   }
 
+ private:
   Instant const t0_;
   std::vector<Length> cos_coefficients_;
   std::vector<Length> sin_coefficients_;
@@ -104,5 +107,6 @@ BENCHMARK_TEMPLATE_F(ApproximationBenchmark,
   ComputeAdaptiveЧебышёвPolynomialInterpolant(state);
 }
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

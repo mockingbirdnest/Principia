@@ -61,7 +61,8 @@ Homothecy<Scalar, FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename, typename>
+template<typename S>
+  requires(std::is_floating_point_v<S> || std::is_integral_v<S>)
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Identity() {
   return Homothecy(1);

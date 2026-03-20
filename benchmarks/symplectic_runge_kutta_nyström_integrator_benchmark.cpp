@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <sstream>
 #include <vector>
 
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
@@ -23,6 +24,7 @@
 
 namespace principia {
 namespace integrators {
+namespace {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -40,14 +42,9 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_integration;
 
-namespace {
-
 using World = Frame<struct WorldTag, Inertial>;
 using ODE1D = SpecialSecondOrderDifferentialEquation<Length>;
 using ODE3D = SpecialSecondOrderDifferentialEquation<Position<World>>;
-
-
-}  // namespace
 
 template<typename Integrator>
 void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
@@ -253,5 +250,6 @@ BENCHMARK_TEMPLATE2(
     methods::BlanesMoan2002SRKN14A, ODE3D)
     ->Unit(benchmark::kMillisecond);
 
+}  // namespace
 }  // namespace integrators
 }  // namespace principia

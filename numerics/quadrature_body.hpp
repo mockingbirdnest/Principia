@@ -34,7 +34,7 @@ Primitive<std::invoke_result_t<Function, Argument>, Argument> Gauss(
     Argument const& upper_bound,
     double const* const nodes,
     double const* const weights) {
-  Difference<Argument> half_width = (upper_bound - lower_bound) / 2;
+  Difference<Argument> const half_width = (upper_bound - lower_bound) / 2;
   std::invoke_result_t<Function, Argument> result{};
   for (int i = 0; i < points; ++i) {
     Argument const scaled_node = lower_bound + half_width * (nodes[i] + 1);

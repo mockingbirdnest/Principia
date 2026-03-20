@@ -15,6 +15,7 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
@@ -165,5 +166,6 @@ BENCHMARK(BM_MLSLBranin)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 BENCHMARK(BM_MLSLGoldsteinPrice)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 BENCHMARK(BM_MLSLHartmann3)->ArgsProduct({{10, 20, 50}, {10, 20, 50}});
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

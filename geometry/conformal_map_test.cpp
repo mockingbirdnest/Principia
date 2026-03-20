@@ -1,5 +1,7 @@
 #include "geometry/conformal_map.hpp"
 
+#include <iostream>
+
 #include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -7,9 +9,7 @@
 #include "geometry/identity.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
-#include "geometry/sign.hpp"
 #include "geometry/signature.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -30,7 +30,6 @@ using namespace principia::geometry::_homothecy;
 using namespace principia::geometry::_identity;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rotation;
-using namespace principia::geometry::_sign;
 using namespace principia::geometry::_signature;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
@@ -127,7 +126,7 @@ TEST_F(ConformalMapTest, Composition) {
 }
 
 TEST_F(ConformalMapDeathTest, SerializationError) {
-  Identity<DirectWorld, DirectWorld> id;
+  Identity<DirectWorld, DirectWorld> const id;
   EXPECT_DEATH({
     serialization::LinearMap message;
     id.WriteToMessage(&message);

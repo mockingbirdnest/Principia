@@ -12,6 +12,7 @@
 
 namespace principia {
 namespace base {
+namespace {
 
 using namespace principia::base::_thread_pool;
 
@@ -51,10 +52,11 @@ double ComsumeCpuExclusiveLock(std::int64_t const n) {
 
 void BM_ThreadPoolNoLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range(0));
-  std::vector<std::int64_t> results;
+  std::int64_t const count = 1000;
   for (auto _ : state) {
     std::vector<std::future<void>> futures;
-    for (int i = 0; i < 1000; ++i) {
+    futures.reserve(count);
+    for (int i = 0; i < count; ++i) {
       futures.push_back(pool.Add([]() {
         double const result = ComsumeCpuNoLock(1e5);
         benchmark::DoNotOptimize(result);
@@ -68,10 +70,11 @@ void BM_ThreadPoolNoLock(benchmark::State& state) {
 
 void BM_ThreadPoolSharedLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range(0));
-  std::vector<std::int64_t> results;
+  std::int64_t const count = 1000;
   for (auto _ : state) {
     std::vector<std::future<void>> futures;
-    for (int i = 0; i < 1000; ++i) {
+    futures.reserve(count);
+    for (int i = 0; i < count; ++i) {
       futures.push_back(pool.Add([]() {
         double const result = ComsumeCpuSharedLock(1e5);
         benchmark::DoNotOptimize(result);
@@ -85,10 +88,11 @@ void BM_ThreadPoolSharedLock(benchmark::State& state) {
 
 void BM_ThreadPoolExclusiveLock(benchmark::State& state) {
   ThreadPool<void> pool(/*pool_size=*/state.range(0));
-  std::vector<std::int64_t> results;
+  std::int64_t const count = 1000;
   for (auto _ : state) {
     std::vector<std::future<void>> futures;
-    for (int i = 0; i < 1000; ++i) {
+    futures.reserve(count);
+    for (int i = 0; i < count; ++i) {
       futures.push_back(pool.Add([]() {
         double const result = ComsumeCpuExclusiveLock(1e5);
         benchmark::DoNotOptimize(result);
@@ -131,5 +135,6 @@ BENCHMARK(BM_ThreadPoolExclusiveLock)
     ->Arg(8)
     ->Unit(benchmark::kMillisecond);
 
+}  // namespace
 }  // namespace base
 }  // namespace principia

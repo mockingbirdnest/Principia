@@ -194,7 +194,7 @@ double LineSearch(
     bool& satisfies_strong_wolfe_condition) {
   auto const ϕ_0 = f(x);
   auto const ϕʹ_0 = InnerProduct(grad_f_x, p);
-  double αᵢ₋₁ = 0;  // α₀.
+  double const αᵢ₋₁ = 0;  // α₀.
   double αᵢ = 1;    // α₁.
   Scalar ϕ_αᵢ₋₁ = ϕ_0;
   Scalar ϕʹ_αᵢ₋₁ = ϕʹ_0;

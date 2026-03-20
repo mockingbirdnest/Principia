@@ -15,10 +15,10 @@
 
 namespace principia {
 namespace physics {
+namespace {
 
 using serialization::DoublePrecision;
 using serialization::Ephemeris;
-using serialization::IntegratorInstance;
 using serialization::R3Element;
 using serialization::State;
 using namespace principia::base::_not_null;
@@ -66,7 +66,7 @@ std::unique_ptr<Checkpointer<Ephemeris>> NewCheckpointerWithSize(
 }
 
 void BM_CheckpointerOldestCheckpoint(benchmark::State& state) {
-  std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
+  std::unique_ptr<Checkpointer<Ephemeris>> const checkpointer =
       NewCheckpointerWithSize(state.range(0));
 
   for (auto _ : state) {
@@ -75,7 +75,7 @@ void BM_CheckpointerOldestCheckpoint(benchmark::State& state) {
 }
 
 void BM_CheckpointerNewestCheckpoint(benchmark::State& state) {
-  std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
+  std::unique_ptr<Checkpointer<Ephemeris>> const checkpointer =
       NewCheckpointerWithSize(state.range(0));
 
   for (auto _ : state) {
@@ -85,7 +85,7 @@ void BM_CheckpointerNewestCheckpoint(benchmark::State& state) {
 
 void BM_CheckpointerCheckpointAtOrAfter(benchmark::State& state) {
   int const size = state.range(0);
-  std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
+  std::unique_ptr<Checkpointer<Ephemeris>> const checkpointer =
       NewCheckpointerWithSize(size);
   Instant const t = Instant() + (size / 3.0) * Second;
 
@@ -95,7 +95,7 @@ void BM_CheckpointerCheckpointAtOrAfter(benchmark::State& state) {
 }
 void BM_CheckpointerCheckpointAtOrBefore(benchmark::State& state) {
   int const size = state.range(0);
-  std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
+  std::unique_ptr<Checkpointer<Ephemeris>> const checkpointer =
       NewCheckpointerWithSize(size);
   Instant const t = Instant() + (size * 2.0 / 3.0) * Second;
 
@@ -105,7 +105,7 @@ void BM_CheckpointerCheckpointAtOrBefore(benchmark::State& state) {
 }
 
 void BM_CheckpointerAllCheckpoints(benchmark::State& state) {
-  std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
+  std::unique_ptr<Checkpointer<Ephemeris>> const checkpointer =
       NewCheckpointerWithSize(state.range(0));
 
   for (auto _ : state) {
@@ -115,7 +115,7 @@ void BM_CheckpointerAllCheckpoints(benchmark::State& state) {
 
 void BM_CheckpointerAllCheckpointsAtOrBefore(benchmark::State& state) {
   int const size = state.range(0);
-  std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
+  std::unique_ptr<Checkpointer<Ephemeris>> const checkpointer =
       NewCheckpointerWithSize(state.range(0));
   Instant const t = Instant() + (size / 3.0) * Second;
 
@@ -125,7 +125,7 @@ void BM_CheckpointerAllCheckpointsAtOrBefore(benchmark::State& state) {
 }
 void BM_CheckpointerAllCheckpointsBetween(benchmark::State& state) {
   int const size = state.range(0);
-  std::unique_ptr<Checkpointer<Ephemeris>> checkpointer =
+  std::unique_ptr<Checkpointer<Ephemeris>> const checkpointer =
       NewCheckpointerWithSize(state.range(0));
   Instant const t1 = Instant() + (size / 3.0) * Second;
   Instant const t2 = Instant() + (size * 2.0 / 3.0) * Second;
@@ -143,5 +143,6 @@ BENCHMARK(BM_CheckpointerAllCheckpoints)->Range(1, 512);
 BENCHMARK(BM_CheckpointerAllCheckpointsAtOrBefore)->Range(1, 512);
 BENCHMARK(BM_CheckpointerAllCheckpointsBetween)->Range(1, 512);
 
+}  // namespace
 }  // namespace physics
 }  // namespace principia

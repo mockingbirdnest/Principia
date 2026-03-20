@@ -10,7 +10,8 @@ namespace _integration_parameters {
 namespace internal {
 
 template<typename ODE>
-template<typename E, std::enable_if_t<E::order == 1, std::nullptr_t>>
+template<typename E>
+  requires(E::order == 1)
 AdaptiveStepParameters<ODE>::AdaptiveStepParameters(
     AdaptiveStepSizeIntegrator<E> const& integrator,
     std::int64_t const max_steps,
@@ -24,7 +25,8 @@ AdaptiveStepParameters<ODE>::AdaptiveStepParameters(
 }
 
 template<typename ODE>
-template<typename E, std::enable_if_t<E::order == 2, std::nullptr_t>>
+template<typename E>
+  requires(E::order == 2)
 AdaptiveStepParameters<ODE>::AdaptiveStepParameters(
     AdaptiveStepSizeIntegrator<E> const& integrator,
     std::int64_t const max_steps,

@@ -1,16 +1,14 @@
 #include "geometry/rotation.hpp"
 
-#include <utility>
-
 #include "geometry/frame.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/space.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -69,8 +67,8 @@ class RotationTest : public testing::Test {
         rotation_a_(Rot(120 * Degree, Bivector<double, World>({1, 1, 1}))),
         rotation_b_(Rot(90 * Degree, Bivector<double, World>({1, 0, 0}))),
         rotation_c_(Rot(ToQuaternion(
-                            R3x3Matrix<double>({{0.5, 0.5 * sqrt(3), 0},
-                                                {-0.5 * sqrt(3), 0.5, 0},
+                            R3x3Matrix<double>({{0.5, 0.5 * Sqrt(3), 0},
+                                                {-0.5 * Sqrt(3), 0.5, 0},
                                                 {0, 0, 1}})))) {}
 
   Vector<Length, World> const vector_;
@@ -119,8 +117,8 @@ TEST_F(RotationTest, AppliedToVector) {
                                     2.0 * Metre)), 1, 2));
   EXPECT_THAT(rotation_c_(vector_),
               AlmostEquals(Vector<Length, World>(
-                  R3Element<Length>((0.5 + sqrt(3.0)) * Metre,
-                                    (1.0 - 0.5 * sqrt(3.0)) * Metre,
+                  R3Element<Length>((0.5 + Sqrt(3.0)) * Metre,
+                                    (1.0 - 0.5 * Sqrt(3.0)) * Metre,
                                     3.0 * Metre)), 0));
 }
 
@@ -137,8 +135,8 @@ TEST_F(RotationTest, AppliedToBivector) {
                                     2.0 * Metre)), 1, 2));
   EXPECT_THAT(rotation_c_(bivector_),
               AlmostEquals(Bivector<Length, World>(
-                  R3Element<Length>((0.5 + sqrt(3.0)) * Metre,
-                                    (1.0 - 0.5 * sqrt(3.0)) * Metre,
+                  R3Element<Length>((0.5 + Sqrt(3.0)) * Metre,
+                                    (1.0 - 0.5 * Sqrt(3.0)) * Metre,
                                     3.0 * Metre)), 0));
 }
 
@@ -212,12 +210,12 @@ TEST_F(RotationTest, ToQuaternion1) {
   R3Element<double> const v1 = {2, 5, 6};
   R3Element<double> const v2 =
       R3Element<double>(-3, 4, 1).OrthogonalizationAgainst(v1);
-  R3Element<double> v3 = Cross(v1, v2);
+  R3Element<double> const v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
-  R3x3Matrix<double> m = {w1, w2, w3};
-  Rot rotation(ToQuaternion(m.Transpose()));
+  R3x3Matrix<double> const m = {w1, w2, w3};
+  Rot const rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
@@ -227,12 +225,12 @@ TEST_F(RotationTest, ToQuaternion2) {
   R3Element<double> const v1 = {-2, -5, -6};
   R3Element<double> const v2 =
       R3Element<double>(-3, 4, 1).OrthogonalizationAgainst(v1);
-  R3Element<double> v3 = Cross(v1, v2);
+  R3Element<double> const v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
-  R3x3Matrix<double> m = {w1, w2, w3};
-  Rot rotation(ToQuaternion(m.Transpose()));
+  R3x3Matrix<double> const m = {w1, w2, w3};
+  Rot const rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
@@ -242,12 +240,12 @@ TEST_F(RotationTest, ToQuaternion3) {
   R3Element<double> const v1 = {-2, -5, -6};
   R3Element<double> const v2 =
       R3Element<double>(-3, 4, 1).OrthogonalizationAgainst(v1);
-  R3Element<double> v3 = Cross(v1, v2);
+  R3Element<double> const v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
-  R3x3Matrix<double> m = {w1, w2, w3};
-  Rot rotation(ToQuaternion(m.Transpose()));
+  R3x3Matrix<double> const m = {w1, w2, w3};
+  Rot const rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
@@ -257,19 +255,19 @@ TEST_F(RotationTest, ToQuaternion4) {
   R3Element<double> const v1 = {-2, -5, -6};
   R3Element<double> const v2 =
       R3Element<double>(-3, 4, 1).OrthogonalizationAgainst(v1);
-  R3Element<double> v3 = Cross(v1, v2);
+  R3Element<double> const v3 = Cross(v1, v2);
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
-  R3x3Matrix<double> m = {w1, w2, w3};
-  Rot rotation(ToQuaternion(m.Transpose()));
+  R3x3Matrix<double> const m = {w1, w2, w3};
+  Rot const rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
 }
 
 TEST_F(RotationDeathTest, SerializationError) {
-  Identity<World, World> id;
+  Identity<World, World> const id;
   EXPECT_DEATH({
     serialization::LinearMap message;
     id.WriteToMessage(&message);
@@ -300,9 +298,9 @@ TEST_F(RotationTest, SerializationSuccess) {
 }
 
 TEST_F(RotationTest, Basis) {
-  Vector<double, World> a = Normalize(Vector<double, World>({1, 1, -1}));
-  Vector<double, World> b = Normalize(Vector<double, World>({1, 0, 1}));
-  Bivector<double, World> c = Wedge(a, b);
+  Vector<double, World> const a = Normalize(Vector<double, World>({1, 1, -1}));
+  Vector<double, World> const b = Normalize(Vector<double, World>({1, 0, 1}));
+  Bivector<double, World> const c = Wedge(a, b);
 
   Rotation<World, World1> const to_world1(a, b, c);
   EXPECT_THAT(to_world1(a),
@@ -453,15 +451,15 @@ TEST_F(RotationTest, EulerAngles) {
 
 TEST_F(RotationTest, CardanoAngles) {
   using Ground = Frame<struct GroundTag>;
-  Vector<double, Ground> north({1, 0, 0});
-  Vector<double, Ground> east({0, 1, 0});
-  Vector<double, Ground> down({0, 0, 1});
+  Vector<double, Ground> const north({1, 0, 0});
+  Vector<double, Ground> const east({0, 1, 0});
+  Vector<double, Ground> const down({0, 0, 1});
   auto const up = -down;
 
   using Aircraft = Frame<struct AircraftTag>;
-  Vector<double, Aircraft> forward({1, 0, 0});
-  Vector<double, Aircraft> right({0, 1, 0});
-  Vector<double, Aircraft> bottom({0, 0, 1});
+  Vector<double, Aircraft> const forward({1, 0, 0});  // NOLINT
+  Vector<double, Aircraft> const right({0, 1, 0});
+  Vector<double, Aircraft> const bottom({0, 0, 1});
 
   Angle const heading = 1 * Degree;
   Angle const pitch = 5 * Degree;

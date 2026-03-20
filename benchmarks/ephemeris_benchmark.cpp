@@ -6,6 +6,7 @@
 #include <limits>
 #include <list>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -39,12 +40,14 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/bipm.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
 namespace physics {
+namespace {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_stabilize_ksp;
@@ -77,8 +80,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-namespace {
 
 using Flow = void(not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
                   Instant const& t,
@@ -198,7 +199,7 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
   for (auto _ : state) {
     state.PauseTiming();
     // A probe in low earth orbit.
-    MasslessBody probe;
+    MasslessBody const probe;
     DiscreteTrajectory<Barycentric> trajectory;
     DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
@@ -267,7 +268,7 @@ void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
   for (auto _ : state) {
     state.PauseTiming();
     // A probe orbiting the Earth beyond the orbit of the Moon.
-    MasslessBody probe;
+    MasslessBody const probe;
     DiscreteTrajectory<Barycentric> trajectory;
     DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
@@ -332,7 +333,7 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
   auto const earth_degrees_of_freedom =
       at_спутник_1_launch->degrees_of_freedom(earth_name);
 
-  MasslessBody probe;
+  MasslessBody const probe;
   std::list<DiscreteTrajectory<Barycentric>> trajectories;
   for (int i = 0; i < state.range(0); ++i) {
     KeplerianElements<Barycentric> elements;
@@ -374,6 +375,7 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
     state.ResumeTiming();
 
     std::vector<std::future<void>> futures;
+    futures.reserve(instances.size());
     for (auto& instance : instances) {
       futures.push_back(pool.Add([&ephemeris, &instance, final_time]() {
         CHECK_OK(ephemeris->FlowWithFixedStep(final_time, *instance));
@@ -417,9 +419,9 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
 
   auto make_l4_probe_trajectory = [&at_спутник_1_launch]() {
     // A probe near the L4 point of the Sun-Earth system.
-    Identity<ICRS, Barycentric> to_barycentric;
-    Identity<Barycentric, ICRS> from_barycentric;
-    MasslessBody probe;
+    Identity<ICRS, Barycentric> const to_barycentric;
+    Identity<Barycentric, ICRS> const from_barycentric;
+    MasslessBody const probe;
     auto trajectory = std::make_unique<DiscreteTrajectory<Barycentric>>();
     DegreesOfFreedom<Barycentric> const sun_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
@@ -502,8 +504,6 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
                  " ua, degree " +
                  std::to_string(total_degree));
 }
-
-}  // namespace
 
 template<SolarSystemFactory::Accuracy accuracy, Flow* flow>
 void BM_EphemerisL4Probe(benchmark::State& state) {
@@ -700,5 +700,6 @@ BENCHMARK_TEMPLATE(BM_EphemerisStartup, &FlowEphemerisWithFixedStepSRKN)
     ->Arg(3)
     ->Unit(benchmark::kMicrosecond);
 
+}  // namespace
 }  // namespace physics
 }  // namespace principia

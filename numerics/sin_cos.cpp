@@ -128,7 +128,8 @@ M128D const Cʹ₂(internal::Cʹ₂);
 M128D const δC₂(internal::δC₂);
 
 // Accurate table index.
-M128D const mantissa_index_bits = M128D::MakeFromBits(0x0000'0000'0000'01ffull);
+M128D const mantissa_index_bits =
+    M128D::MakeFromBits(UINT64_C(0x0000'0000'0000'01ff));
 M128D const accurate_table_index_addend(static_cast<double>(
     1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1)));
 

@@ -56,9 +56,8 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
 
   ConformalMap<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
 
-  template<typename S = Scalar,
-           typename = std::enable_if_t<std::is_floating_point_v<S> ||
-                                       std::is_integral_v<S>>>
+  template<typename S = Scalar>
+    requires(std::is_floating_point_v<S> || std::is_integral_v<S>)
   static ConformalMap Identity();
 
   template<typename VScalar>

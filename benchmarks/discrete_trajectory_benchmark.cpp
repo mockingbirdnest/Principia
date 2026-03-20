@@ -22,6 +22,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
@@ -29,6 +30,7 @@
 
 namespace principia {
 namespace physics {
+namespace {
 
 using namespace principia::astronomy::_time_scales;
 using namespace principia::geometry::_barycentre_calculator;
@@ -50,8 +52,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_solar_system_factory;
-
-namespace {
 
 Ephemeris<Barycentric>::FixedStepParameters EphemerisParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
@@ -112,8 +112,6 @@ DiscreteTrajectory<World> MakeTrajectoryWithEmptySegments(
       Instant(), DegreesOfFreedom<World>(World::origin, Velocity<World>())));
   return trajectory;
 }
-
-}  // namespace
 
 void BM_DiscreteTrajectoryFront(benchmark::State& state) {
   Instant const t0;
@@ -518,5 +516,6 @@ BENCHMARK(BM_DiscreteTrajectoryEvaluateDegreesOfFreedomExact);
 BENCHMARK(BM_DiscreteTrajectoryEvaluateDegreesOfFreedomInterpolated);
 BENCHMARK(BM_DiscreteTrajectoryDownsampling);
 
+}  // namespace
 }  // namespace physics
 }  // namespace principia

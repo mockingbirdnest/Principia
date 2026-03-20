@@ -1,8 +1,6 @@
 #include "geometry/grassmann.hpp"
 
-#include <cfloat>
 #include <functional>
-#include <iostream>  // NOLINT(readability/streams)
 #include <utility>
 
 #include "base/algebra.hpp"
@@ -16,6 +14,7 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For e.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
@@ -173,7 +172,7 @@ TEST_F(GrassmannTest, MixedScalarMultiplication) {
                   -1 / Day,
                   SpeedOfLight / Parsec,
                   -π, 0, 1);
-  Inverse<Time> t = -3 / Second;
+  Inverse<Time> const t = -3 / Second;
   EXPECT_EQ((t * Vector<Length, World>(u_)), (Vector<Length, World>(u_) * t));
   EXPECT_EQ((Vector<Length, World>(v_) * t) / t, (Vector<Length, World>(v_)));
 }

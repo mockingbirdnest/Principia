@@ -1,5 +1,6 @@
 #include "geometry/perspective.hpp"
 
+#include <iostream>
 #include <limits>
 
 #include "geometry/frame.hpp"
@@ -11,6 +12,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -20,7 +22,6 @@
 namespace principia {
 namespace geometry {
 
-using ::testing::Eq;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Pair;
@@ -65,7 +66,7 @@ TEST_F(PerspectiveTest, Basic) {
       camera_origin,
       Camera::origin,
       world_to_camera_rotation.Forget<OrthogonalMap>());
-  Perspective<World, Camera> perspective(
+  Perspective<World, Camera> const perspective(
       world_to_camera_transformation.Forget<Similarity>(),
       /*focal=*/10 * Metre);
 
@@ -125,8 +126,9 @@ TEST_F(PerspectiveTest, Basic) {
 }
 
 TEST_F(PerspectiveTest, SegmentBehindFocalPlane) {
-  Perspective<World, Camera> perspective(Similarity<World, Camera>::Identity(),
-                                         /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      Similarity<World, Camera>::Identity(),
+      /*focal=*/1 * Metre);
 
   // In front of the camera.
   Position<World> const p1 =
@@ -149,8 +151,9 @@ TEST_F(PerspectiveTest, SegmentBehindFocalPlane) {
 }
 
 TEST_F(PerspectiveTest, IsHiddenBySphere) {
-  Perspective<World, Camera> perspective(Similarity<World, Camera>::Identity(),
-                                         /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      Similarity<World, Camera>::Identity(),
+      /*focal=*/1 * Metre);
 
   Sphere<World> const sphere(
       World::origin + Displacement<World>({10 * Metre, 20 * Metre, 30 * Metre}),
@@ -180,8 +183,9 @@ TEST_F(PerspectiveTest, IsHiddenBySphere) {
 }
 
 TEST_F(PerspectiveTest, SphereSin²HalfAngle) {
-  Perspective<World, Camera> perspective(Similarity<World, Camera>::Identity(),
-                                         /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      Similarity<World, Camera>::Identity(),
+      /*focal=*/1 * Metre);
 
   Sphere<World> const sphere(
       World::origin + Displacement<World>({0 * Metre, 0 * Metre, 100 * Metre}),
@@ -192,8 +196,9 @@ TEST_F(PerspectiveTest, SphereSin²HalfAngle) {
 }
 
 TEST_F(PerspectiveTest, Output) {
-  Perspective<World, Camera> perspective(Similarity<World, Camera>::Identity(),
-                                         /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(
+      Similarity<World, Camera>::Identity(),
+      /*focal=*/1 * Metre);
   std::cout << perspective << "\n";
 }
 
@@ -232,7 +237,7 @@ TEST_F(VisibleSegmentsTest, AwayPositiveX) {
   Position<World> const p2 =
       World::origin +
       Displacement<World>({9 * Metre, 21 * Metre, 32 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(segment));
 }
@@ -245,7 +250,7 @@ TEST_F(VisibleSegmentsTest, AwayNegativeX) {
   Position<World> const p2 =
       World::origin +
       Displacement<World>({-3 * Metre, 21 * Metre, 32 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(segment));
 }
@@ -263,7 +268,7 @@ TEST_F(VisibleSegmentsTest, TangentNotBitten) {
       World::origin +
       Displacement<World>(
           {9.8 * Metre, Sqrt(3.96) * (1 + ε) * Metre, -9 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(segment));
 }
@@ -279,7 +284,7 @@ TEST_F(VisibleSegmentsTest, TangentBittenBittenBitten) {
       World::origin +
       Displacement<World>(
           {9.8 * Metre, Sqrt(3.96) * (1 - ε) * Metre, -9 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(Pair(p1, _), Pair(_, p2)));
 }
@@ -292,7 +297,7 @@ TEST_F(VisibleSegmentsTest, InFrontSmaller) {
   Position<World> const p2 =
       World::origin +
       Displacement<World>({-5 * Metre, 0 * Metre, -0.1 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(segment));
 }
@@ -306,7 +311,7 @@ TEST_F(VisibleSegmentsTest, InFrontOnTheSide) {
   Position<World> const p2 =
       World::origin +
       Displacement<World>({-5 * Metre, 0 * Metre, -0.1 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(segment));
 }
@@ -320,7 +325,7 @@ TEST_F(VisibleSegmentsTest, InFrontLarger) {
   Position<World> const p2 =
       World::origin +
       Displacement<World>({-5 * Metre, 0 * Metre, -5 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(segment));
 }
@@ -333,7 +338,7 @@ TEST_F(VisibleSegmentsTest, InFrontNotAlongZ) {
   Position<World> const p2 =
       World::origin +
       Displacement<World>({-5 * Metre, 3 * Metre, 0.1 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(segment));
 }
@@ -346,7 +351,7 @@ TEST_F(VisibleSegmentsTest, BehindSmallerThanDiameter) {
   Position<World> const p2 =
       World::origin +
       Displacement<World>({5 * Metre, -0.8 * Metre, -0.3 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_), IsEmpty());
 }
 
@@ -358,7 +363,7 @@ TEST_F(VisibleSegmentsTest, BehindLargerThanDiameter) {
   Position<World> const p2 =
       World::origin +
       Displacement<World>({10 * Metre, -1.6 * Metre, 1.2 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_), IsEmpty());
 }
 
@@ -377,7 +382,7 @@ TEST_F(VisibleSegmentsTest, IntersectingFrontOfTheSphere) {
   Position<World> const p4 =
       World::origin +
       Displacement<World>({-0.5 * Metre, 0 * Metre, Sqrt(3.0) / 2 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(Pair(p1, AlmostEquals(p3, 0)),
                           Pair(AlmostEquals(p4, 2), p2)));
@@ -400,7 +405,7 @@ TEST_F(VisibleSegmentsTest, IntersectingConeInFrontOfTheSphereCentre) {
       World::origin +
       Displacement<World>(
           {-0.05 * Metre, 0 * Metre, 199.0 / (60.0 * Sqrt(11.0)) * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(Pair(p1, AlmostEquals(p3, 4)),
                           Pair(AlmostEquals(p4, 4), p2)));
@@ -423,7 +428,7 @@ TEST_F(VisibleSegmentsTest, IntersectingConeTwoVisibleSegments) {
       World::origin +
       Displacement<World>(
           {10 * Metre, 0 * Metre, 20.0 / (3.0 * Sqrt(11.0)) * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(Pair(p1, AlmostEquals(p3, 3)),
                           Pair(AlmostEquals(p4, 15), p2)));
@@ -443,7 +448,7 @@ TEST_F(VisibleSegmentsTest, IntersectingConeOneVisibleSegment) {
       World::origin +
       Displacement<World>(
           {10 * Metre, 0 * Metre, 20.0 / (3.0 * Sqrt(11.0)) * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(Pair(p1, AlmostEquals(p3, 95))));
 }
@@ -466,7 +471,7 @@ TEST_F(VisibleSegmentsTest, IntersectingConeAndSphere) {
       Displacement<World>({10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre,
                            0 * Metre,
                            10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(Pair(p1, AlmostEquals(p3, 1)),
                           Pair(AlmostEquals(p4, 4), p2)));
@@ -484,7 +489,7 @@ TEST_F(VisibleSegmentsTest, HyperbolicIntersection) {
       World::origin + Displacement<World>({-6.71731874077453561e+00 * Metre,
                                            -7.93922086105482183e+00 * Metre,
                                            +4.06349175030368848e+00 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(segment));
 }
@@ -496,7 +501,7 @@ TEST_F(VisibleSegmentsTest, BehindCamera) {
       World::origin + Displacement<World>({-1.35994803226833153e+10 * Metre,
                                            +6.48711944107992947e+06 * Metre,
                                            +1.16940398868560791e+05 * Metre}));
-  RigidTransformation<World, Camera> world_to_camera_transformation(
+  RigidTransformation<World, Camera> const world_to_camera_transformation(
       camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
   Perspective<World, Camera> const perspective(
       world_to_camera_transformation.Forget<Similarity>(),
@@ -515,7 +520,7 @@ TEST_F(VisibleSegmentsTest, BehindCamera) {
                                            +1.02318443313949741e+07 * Metre,
                                            -1.54719462661686703e+03 * Metre});
 
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
               ElementsAre(segment));
 }
@@ -526,7 +531,7 @@ TEST_F(VisibleSegmentsTest, CameraInsideSphere) {
       World::origin + Displacement<World>({-1.35993502776454182e+10 * Metre,
                                            +4.79792595486199576e+06 * Metre,
                                            -1.57980008827209473e+05 * Metre}));
-  RigidTransformation<World, Camera> world_to_camera_transformation(
+  RigidTransformation<World, Camera> const world_to_camera_transformation(
       camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
   Perspective<World, Camera> const perspective(
       world_to_camera_transformation.Forget<Similarity>(),
@@ -545,7 +550,7 @@ TEST_F(VisibleSegmentsTest, CameraInsideSphere) {
                                            +1.02318443313949741e+07 * Metre,
                                            -1.54719462661686703e+03 * Metre});
 
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective.VisibleSegments(segment, sphere), IsEmpty());
 }
 
@@ -556,7 +561,7 @@ TEST_F(VisibleSegmentsTest, AnotherHyperbolicIntersection) {
       World::origin + Displacement<World>({-1.35999109873531647e+10 * Metre,
                                            -2.00764947838563850e+05 * Metre,
                                            -2.22307361124038696e+05 * Metre}));
-  RigidTransformation<World, Camera> world_to_camera_transformation(
+  RigidTransformation<World, Camera> const world_to_camera_transformation(
       camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
   Perspective<World, Camera> const perspective(
       world_to_camera_transformation.Forget<Similarity>(),
@@ -575,7 +580,7 @@ TEST_F(VisibleSegmentsTest, AnotherHyperbolicIntersection) {
                                            +1.02318443313949741e+07 * Metre,
                                            -1.54719462661686703e+03 * Metre});
 
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective.VisibleSegments(segment, sphere), IsEmpty());
 }
 
@@ -586,7 +591,7 @@ TEST_F(VisibleSegmentsTest, SmallAngle) {
       World::origin + Displacement<World>({+6.91404109651565552e+05 * Metre,
                                            -6.24300985912289470e+04 * Metre,
                                            -1.05537869332772680e+04 * Metre});
-  RigidTransformation<World, Camera> world_to_camera_transformation(
+  RigidTransformation<World, Camera> const world_to_camera_transformation(
       camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
   Perspective<World, Camera> const perspective(
       world_to_camera_transformation.Forget<Similarity>(),
@@ -604,7 +609,7 @@ TEST_F(VisibleSegmentsTest, SmallAngle) {
       World::origin + Displacement<World>({+6.66878618906021118e+05 * Metre,
                                            +7.60722757674634922e+05 * Metre,
                                            +1.90209760584930445e+04 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
               ElementsAre(segment));
 }
@@ -617,7 +622,7 @@ TEST_F(VisibleSegmentsTest, MultipleSpheres) {
       World::origin + Displacement<World>({2 * Metre, 0 * Metre, -10 * Metre});
   Position<World> const p2 =
       World::origin + Displacement<World>({2 * Metre, 0 * Metre, 10 * Metre});
-  Segment<World> segment{p1, p2};
+  Segment<World> const segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, {sphere_, sphere2}),
               SizeIs(3));
 }

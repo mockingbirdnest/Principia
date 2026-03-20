@@ -168,12 +168,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   constexpr PolynomialInMonomialBasis& operator/=(S const& right)
     requires vector_space<Value, S>;
 
-  Value PRINCIPIA_VECTORCALL operator()(Argument argument) const;
+  Value PRINCIPIA_VECTORCALL operator()(Argument const& argument) const;
   Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
-      Argument argument) const;
+      Argument const& argument) const;
 
   void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
-      Argument argument,
+      Argument const& argument,
       Value& value,
       Derivative<Value, Argument>& derivative) const;
 

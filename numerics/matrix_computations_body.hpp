@@ -217,7 +217,7 @@ void FrancisQRStep(Matrix& H) {
       z = H(k + 3, k);
     }
   }
-  FixedVector<Scalar, 2> xy({x, y});
+  FixedVector<Scalar, 2> const xy({x, y});
   auto const P = ComputeHouseholderReflection(xy);
   {
     auto block = BlockView<Matrix>{.matrix = H,

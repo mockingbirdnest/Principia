@@ -1,5 +1,6 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=EvaluatePolynomialInMonomialBasis  // NOLINT(whitespace/line_length)
 
+#include <cstdint>
 #include <random>
 #include <tuple>
 
@@ -18,6 +19,7 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::benchmarks::_metric;
@@ -30,7 +32,7 @@ using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-static constexpr std::int64_t number_of_iterations = 100;
+constexpr std::int64_t number_of_iterations = 100;
 
 template<typename T>
 struct ValueGenerator;
@@ -292,5 +294,6 @@ BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInMonomialBasis,
     ->Arg(2)->Arg(4)->Arg(6)->Arg(8)->Arg(10)->Arg(12)->Arg(14)->Arg(16)
     ->Unit(benchmark::kNanosecond);
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

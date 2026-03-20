@@ -6,6 +6,7 @@
 
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 
 namespace principia {

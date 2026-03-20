@@ -173,7 +173,7 @@ std::string Format() {
       format_unit("cd", D::LuminousIntensity) + format_unit("rad", D::Angle);
 
   if (format.empty()) {
-    return format;
+    return std::string();
   } else {
     return format.substr(1, format.size() - 1);
   }

@@ -233,7 +233,7 @@ bool VerifyBinade01Solution(StehléZimmermannSpecification const& scaled,
 
 // This is essentially the same as Gal's exhaustive search, but with the
 // scaling to binade 0.
-absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
+inline absl::StatusOr<std::int64_t> StehléZimmermannExhaustiveSearch(
     std::array<AccurateFunction, 2> const& F,
     std::int64_t const M,
     std::int64_t const T) {
@@ -465,13 +465,15 @@ std::vector<cpp_rational> GalExhaustiveMultisearch(
   ThreadPool<cpp_rational> search_pool(std::thread::hardware_concurrency());
 
   std::vector<std::future<cpp_rational>> futures;
-  for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
-    futures.push_back(search_pool.Add([i, &functions, &starting_arguments]() {
-      return GalExhaustiveSearch<zeroes>(functions, starting_arguments[i]);
+  futures.reserve(starting_arguments.size());
+  for (auto const& starting_argument : starting_arguments) {
+    futures.push_back(search_pool.Add([&functions, &starting_argument]() {
+      return GalExhaustiveSearch<zeroes>(functions, starting_argument);
     }));
   }
 
   std::vector<cpp_rational> results;
+  results.reserve(futures.size());
   for (auto& future : futures) {
     results.push_back(future.get());
   }
@@ -518,9 +520,9 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousSearch(
   // a single call.
   double ε = 0;
   auto const T_over_N = cpp_rational(T, N);
-  for (std::int64_t i = 0; i < remainders.size(); ++i) {
-    ε = std::max(ε, std::abs(N * remainders[i](starting_argument - T_over_N)));
-    ε = std::max(ε, std::abs(N * remainders[i](starting_argument + T_over_N)));
+  for (auto const& r : remainders) {
+    ε = std::max(ε, std::abs(N * r(starting_argument - T_over_N)));
+    ε = std::max(ε, std::abs(N * r(starting_argument + T_over_N)));
   }
   VLOG(3) << "ε = " << ε;
 
@@ -704,7 +706,7 @@ absl::StatusOr<cpp_rational> StehléZimmermannSimultaneousFullSearch(
       absl::MutexLock l(&lock);
       // The argument returned by the slice search is scaled, so we must
       // adjust it before returning.
-      auto const scaled_solution = status_or_scaled_solution.value();
+      auto const& scaled_solution = status_or_scaled_solution.value();
       auto const solution = scaled_solution / argument_scale;
       VLOG(1) << "Solution for " << starting_argument << ", slice #"
               << slice_index << " is " << solution;
@@ -849,6 +851,7 @@ void StehléZimmermannSimultaneousStreamingMultisearch(
   ThreadPool<void> search_pool(std::thread::hardware_concurrency());
 
   std::vector<std::future<void>> futures;
+  futures.reserve(starting_arguments.size());
   for (std::int64_t i = 0; i < starting_arguments.size(); ++i) {
     futures.push_back(search_pool.Add([i,
                                        &callback,

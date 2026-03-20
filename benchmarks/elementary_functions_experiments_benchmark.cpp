@@ -11,6 +11,7 @@
 #include "base/tags.hpp"
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
+#include "glog/logging.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
@@ -20,6 +21,7 @@
 
 namespace principia {
 namespace functions {
+namespace {
 
 using namespace principia::base::_tags;
 using namespace principia::benchmarks::_metric;
@@ -43,7 +45,7 @@ using Polynomial2 =
 
 constexpr Argument x_min = π / 6;  // The sinus is greater than 1/2.
 constexpr Argument x_max = π / 4;  // Upper bound after argument reduction.
-static constexpr std::int64_t number_of_iterations = 1000;
+constexpr std::int64_t number_of_iterations = 1000;
 
 template<FMAPresence fma_presence>
 DoublePrecision<double> TwoProductAdd(double const a,
@@ -162,7 +164,7 @@ class MultiTableImplementation {
     Value cos_x;
   };
 
-  void SelectCutoff(Argument x, std::int64_t& index, Argument& cutoff);
+  static void SelectCutoff(Argument x, std::int64_t& index, Argument& cutoff);
 
   template<FMAPresence fma_presence>
   static Value SinPolynomial(Argument x);
@@ -1099,5 +1101,6 @@ BENCHMARK_TEMPLATE(BM_ExperimentCosFMA, Metric::Latency)
 BENCHMARK_TEMPLATE(BM_ExperimentCosFMA, Metric::Throughput)
     ->Unit(benchmark::kNanosecond);
 
+}  // namespace
 }  // namespace functions
 }  // namespace principia

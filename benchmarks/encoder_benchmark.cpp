@@ -16,6 +16,7 @@
 
 namespace principia {
 namespace base {
+namespace {
 
 using namespace principia::base::_array;
 using namespace principia::base::_base32768;
@@ -116,6 +117,7 @@ BENCHMARK_TEMPLATE(BM_Encode, Encoder32768);
 BENCHMARK_TEMPLATE(BM_Decode, Encoder32768);
 #endif
 
+}  // namespace
 }  // namespace base
 }  // namespace principia
 

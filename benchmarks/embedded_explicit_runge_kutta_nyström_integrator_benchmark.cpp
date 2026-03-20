@@ -3,7 +3,9 @@
 #define GLOG_NO_ABBREVIATED_SEVERITIES
 
 #include <algorithm>
+#include <cstddef>
 #include <functional>
+#include <sstream>
 #include <vector>
 
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
@@ -23,6 +25,7 @@
 
 namespace principia {
 namespace integrators {
+namespace {
 
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -40,8 +43,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_integration;
 
-namespace {
-
 using World = Frame<struct WorldTag, Inertial>;
 
 using ODE1D = SpecialSecondOrderDifferentialEquation<Length>;
@@ -49,7 +50,7 @@ using ODE3D = SpecialSecondOrderDifferentialEquation<Position<World>>;
 
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio1D(
-    Time const& h,
+    Time const& /*h*/,
     typename ODE::State const& /*state*/,
     typename ODE::State::Error const& error,
     Length const& q_tolerance,
@@ -60,7 +61,7 @@ double HarmonicOscillatorToleranceRatio1D(
 
 template<typename ODE>
 double HarmonicOscillatorToleranceRatio3D(
-    Time const& h,
+    Time const& /*h*/,
     typename ODE::State const& /*state*/,
     typename ODE::State::Error const& error,
     Length const& q_tolerance,
@@ -68,8 +69,6 @@ double HarmonicOscillatorToleranceRatio3D(
   return std::min(q_tolerance / (error.position_error[0]).Norm(),
                   v_tolerance / (error.velocity_error[0]).Norm());
 }
-
-}  // namespace
 
 template<typename Integrator>
 void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
@@ -96,7 +95,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
   };
 
   typename Integrator::Parameters const parameters(
-      /*first_time_step=*/t_final - t_initial,
+      /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio1D<ODE1D>,
@@ -152,7 +151,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
   };
 
   typename Integrator::Parameters const parameters(
-      /*first_time_step=*/t_final - t_initial,
+      /*first_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio3D<ODE3D>,
@@ -228,5 +227,6 @@ BENCHMARK_TEMPLATE2(
     methods::DormandالمكاوىPrince1986RKN434FM, ODE3D)
     ->Unit(benchmark::kMillisecond);
 
+}  // namespace
 }  // namespace integrators
 }  // namespace principia

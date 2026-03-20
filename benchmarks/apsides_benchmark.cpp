@@ -28,6 +28,7 @@
 
 namespace principia {
 namespace physics {
+namespace {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_standard_product_3;
@@ -170,5 +171,6 @@ BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
   }
 }
 
+}  // namespace
 }  // namespace physics
 }  // namespace principia

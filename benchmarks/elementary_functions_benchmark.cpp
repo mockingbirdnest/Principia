@@ -1,7 +1,9 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=BM_EvaluateElementaryFunction  // NOLINT(whitespace/line_length)
 
 #include <cmath>
+#include <cstdint>
 #include <random>
+#include <sstream>
 
 #include "absl/strings/str_cat.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_REPEAT.
@@ -16,6 +18,7 @@
 
 namespace principia {
 namespace functions {
+namespace {
 
 using namespace principia::base::_traits;
 using namespace principia::benchmarks::_metric;
@@ -158,5 +161,6 @@ BENCHMARK_TEMPLATE(BM_EvaluateElementaryFunction,
                    SinCos<fma_presence>)
     ->Unit(benchmark::kNanosecond);
 
+}  // namespace
 }  // namespace functions
 }  // namespace principia

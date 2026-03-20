@@ -135,14 +135,14 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
 
   BarycentreCalculator<Position<Inertial>, GravitationalParameter>
       primary_Inertial_position;
-  for (not_null primary : parameters.primaries) {
+  for (not_null const primary : parameters.primaries) {
     primary_Inertial_position.Add(
         ephemeris_->trajectory(primary)->EvaluatePosition(t),
         primary->gravitational_parameter());
   }
   BarycentreCalculator<Position<Inertial>, GravitationalParameter>
       secondary_Inertial_position;
-  for (not_null secondary : parameters.secondaries) {
+  for (not_null const secondary : parameters.secondaries) {
     secondary_Inertial_position.Add(
         ephemeris_->trajectory(secondary)->EvaluatePosition(t),
         secondary->gravitational_parameter());
@@ -189,9 +189,9 @@ LagrangeEquipotentials<Inertial, RotatingPulsating>::ComputeLines(
   }
 
   // TODO(egg): Consider additional wells.
-  std::vector<typename Equipotential<Inertial, RotatingPulsating>::Well> wells{
-      {secondary_position, secondary_radius / r * (1 * Metre)},
-      {primary_position, primary_radius / r * (1 * Metre)}};
+  std::vector<typename Equipotential<Inertial, RotatingPulsating>::Well> const
+      wells{{secondary_position, secondary_radius / r * (1 * Metre)},
+            {primary_position, primary_radius / r * (1 * Metre)}};
 
   // L₁ lies between the primary and the secondary, and on  that segment it is a
   // maximum of the potential.

@@ -10,6 +10,7 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::numerics::_elliptic_functions;
 using namespace principia::quantities::_quantities;
@@ -70,5 +71,6 @@ void BM_JacobiSNCNDN(benchmark::State& state) {
 BENCHMARK(BM_JacobiAmplitude);
 BENCHMARK(BM_JacobiSNCNDN);
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

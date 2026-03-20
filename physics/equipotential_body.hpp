@@ -59,7 +59,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLine(
 
   typename AdaptiveStepSizeIntegrator<ODE>::Parameters const
       integrator_parameters(
-          /*first_time_step=*/initial_s_step_,
+          /*first_step=*/initial_s_step_,
           /*safety_factor=*/0.9,
           /*max_steps=*/adaptive_parameters_.max_steps(),
           /*last_step_is_exact=*/true);
@@ -106,7 +106,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
     Instant const& t,
     std::vector<Position<Frame>> const& peaks,
     std::vector<Well> const& wells,
-    std::function<Position<Frame>(Position<Frame>)> towards_infinity,
+    std::function<Position<Frame>(Position<Frame>)> const& towards_infinity,
     SpecificEnergy const& energy) const -> Lines {
   using WellIterator = typename std::vector<Well>::const_iterator;
 
@@ -325,7 +325,7 @@ absl::Status Equipotential<InertialFrame, Frame>::RightHandSide(
 
 template<typename InertialFrame, typename Frame>
 double Equipotential<InertialFrame, Frame>::ToleranceToErrorRatio(
-    IndependentVariableDifference const current_s_step,
+    IndependentVariableDifference const /*current_s_step*/,
     State const& /*state*/,
     typename State::Error const& error) const {
   auto const& [length_error, braking_error] = error;

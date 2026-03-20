@@ -1,6 +1,6 @@
 #include "geometry/identity.hpp"
 
-#include <vector>
+#include <iostream>
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -8,7 +8,6 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
@@ -96,7 +95,7 @@ TEST_F(IdentityTest, Inverse) {
       Vector<Length, World2>(R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
   EXPECT_THAT(Id().Inverse()(vector2).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
-  Id id;
+  Id const id;
   Identity<World1, World1> const identity1 = id.Inverse() * id;
   EXPECT_THAT(identity1(vector1), Eq(vector1));
   Identity<World2, World2> const identity2 = id * id.Inverse();
@@ -116,14 +115,14 @@ TEST_F(IdentityTest, Compose) {
   using Id12 = Identity<World1, World2>;
   using Id13 = Identity<World1, World3>;
   using Id23 = Identity<World2, World3>;
-  Id12 id12;
+  Id12 const id12;
   Orth12 const o12 = id12.Forget<OrthogonalMap>();
-  Id23 id23;
+  Id23 const id23;
   Orth23 const o23 = id23.Forget<OrthogonalMap>();
   Id13 const id13 = id23 * id12;
   Orth13 const o13 = o23 * o12;
   for (Length l = 1 * Metre; l < 4 * Metre; l += 1 * Metre) {
-    Vector<Length, World1> modified_vector(
+    Vector<Length, World1> const modified_vector(
         {l, vector_.coordinates().y, vector_.coordinates().z});
     EXPECT_THAT(id13(modified_vector), Eq(o13(modified_vector)));
   }
@@ -132,14 +131,14 @@ TEST_F(IdentityTest, Compose) {
 TEST_F(IdentityDeathTest, SerializationError) {
   using Id12 = Identity<World1, World2>;
   EXPECT_DEATH({
-    serialization::LinearMap message;
+    serialization::LinearMap const message;
     Id12 const id = Id12::ReadFromMessage(message);
   }, "Fingerprint");
 }
 
 TEST_F(IdentityTest, SerializationSuccess) {
   serialization::LinearMap message;
-  Identity<World1, World2> id12a;
+  Identity<World1, World2> const id12a;
   id12a.WriteToMessage(&message);
   EXPECT_TRUE(message.has_from_frame());
   EXPECT_TRUE(message.has_to_frame());
@@ -156,7 +155,7 @@ TEST_F(IdentityTest, SerializationSuccess) {
 
 TEST_F(IdentityTest, Output) {
   using Id12 = Identity<World1, World2>;
-  Id12 id12;
+  Id12 const id12;
   std::cout << id12 << "\n";
 }
 

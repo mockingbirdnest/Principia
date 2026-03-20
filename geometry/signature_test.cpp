@@ -1,6 +1,6 @@
 #include "geometry/signature.hpp"
 
-#include <vector>
+#include <array>
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -8,7 +8,6 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -66,7 +65,7 @@ class SignatureTest : public testing::Test {
 using SignatureDeathTest = SignatureTest;
 
 TEST_F(SignatureTest, Forget) {
-  std::array<PositiveSignature, 4> all_positive_signatures{
+  std::array<PositiveSignature, 4> const all_positive_signatures{
       {PositiveSignature::Identity(),
        PositiveSignature(Sign::Positive(),
                          Sign::Negative(),
@@ -77,7 +76,7 @@ TEST_F(SignatureTest, Forget) {
        PositiveSignature(Sign::Negative(),
                          Sign::Negative(),
                          DeduceSignPreservingOrientation{})}};
-  std::array<NegativeSignature, 4> all_negative_signatures{
+  std::array<NegativeSignature, 4> const all_negative_signatures{
       {NegativeSignature::CentralInversion(),
        NegativeSignature(Sign::Negative(),
                          Sign::Positive(),
@@ -143,7 +142,7 @@ TEST_F(SignatureTest, YZPlaneReflection) {
 }
 
 TEST_F(SignatureTest, XZPlaneReflection) {
-  NegativeSignature rotation(
+  NegativeSignature const rotation(
       Sign::Positive(), DeduceSignReversingOrientation{}, Sign::Positive());
   EXPECT_THAT(rotation(vector_).coordinates(),
               Componentwise(1 * Metre, -2 * Metre, 3 * Metre));
@@ -197,9 +196,9 @@ TEST_F(SignatureTest, Inversion) {
 }
 
 TEST_F(SignatureTest, Composition) {
-  Signature<R2, L> reflection(
+  Signature<R2, L> const reflection(
       Sign::Negative(), Sign::Positive(), DeduceSignReversingOrientation{});
-  Signature<R1, R2> rotation(
+  Signature<R1, R2> const rotation(
       Sign::Negative(), Sign::Positive(), DeduceSignPreservingOrientation{});
 
   EXPECT_THAT((reflection * rotation)(vector_),
@@ -211,9 +210,9 @@ TEST_F(SignatureTest, Composition) {
 }
 
 TEST_F(SignatureTest, AppliedToSymmetricBilinearForm) {
-  Signature<R1, L> reflection(
+  Signature<R1, L> const reflection(
       Sign::Negative(), Sign::Positive(), DeduceSignReversingOrientation{});
-  Vector<Length, L> vector({ 1 * Metre, 2 * Metre, 3 * Metre });
+  Vector<Length, L> const vector({ 1 * Metre, 2 * Metre, 3 * Metre });
 
   EXPECT_THAT(form_(vector_, vector_), 115 * Pow<3>(Metre));
   EXPECT_THAT(reflection(form_)(vector, vector), 63 * Pow<3>(Metre));
@@ -222,7 +221,7 @@ TEST_F(SignatureTest, AppliedToSymmetricBilinearForm) {
 TEST_F(SignatureTest, Serialization) {
   serialization::Signature message;
 
-  PositiveSignature signature(
+  PositiveSignature const signature(
       Sign::Positive(), Sign::Negative(), DeduceSignPreservingOrientation{});
   signature.WriteToMessage(&message);
   EXPECT_THAT(PositiveSignature::ReadFromMessage(message)(vector_),

@@ -1,5 +1,7 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=LatticesBenchmark  // NOLINT(whitespace/line_length)
 
+#include <array>
+#include <cstdint>
 #include <random>
 
 #include "base/multiprecision.hpp"
@@ -9,6 +11,7 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::base::_multiprecision;
 using namespace principia::numerics::_fixed_arrays;
@@ -21,7 +24,7 @@ class LatticesBenchmark : public benchmark::Fixture {
  protected:
   using Lattice = FixedMatrix<Element, 5, 4>;
 
-  void SetUp(benchmark::State& state) {
+  void SetUp(benchmark::State& /*state*/) override {
     std::mt19937_64 random(42);
     std::uniform_int_distribution<std::int64_t> uniformly_at(-max_element,
                                                              max_element);
@@ -52,6 +55,7 @@ class LatticesBenchmark : public benchmark::Fixture {
     }
   }
 
+ private:
   std::array<Lattice, number_of_lattices> lattices_;
 };
 
@@ -205,5 +209,6 @@ BENCHMARK_TEMPLATE_F(LatticesBenchmark,
   RunNguyễnStehlé(state);
 }
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

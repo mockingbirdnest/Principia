@@ -32,6 +32,7 @@
 
 namespace principia {
 namespace physics {
+namespace {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
@@ -78,7 +79,6 @@ void FillLinearTrajectory(Position<F> const& initial,
 // This code is derived from Plugin::RenderTrajectory.
 std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyReferenceFrame(
-    not_null<Body const*> const body,
     not_null<ReferenceFrame<Barycentric,
                             Rendering>*> const reference_frame,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
@@ -119,7 +119,6 @@ ApplyReferenceFrame(
 // This code is derived from Plugin::RenderTrajectory.
 std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyRigidReferenceFrame(
-    not_null<Body const*> const body,
     not_null<RigidReferenceFrame<Barycentric,
                                  Rendering>*> const reference_frame,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
@@ -161,7 +160,7 @@ void BM_BodyCentredNonRotatingReferenceFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range(0);
 
-  SolarSystem<Barycentric> solar_system(
+  SolarSystem<Barycentric> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt",
@@ -179,13 +178,13 @@ void BM_BodyCentredNonRotatingReferenceFrame(benchmark::State& state) {
   not_null<MassiveBody const*> const earth =
       solar_system.massive_body(*ephemeris, "Earth");
 
-  MasslessBody probe;
-  Position<Barycentric> probe_initial_position =
+  MasslessBody const probe;
+  Position<Barycentric> const probe_initial_position =
       Barycentric::origin + Displacement<Barycentric>(
                                      {0.5 * AstronomicalUnit,
                                       -1 * AstronomicalUnit,
                                       0 * AstronomicalUnit});
-  Velocity<Barycentric> probe_velocity =
+  Velocity<Barycentric> const probe_velocity =
       Velocity<Barycentric>({0 * si::Unit<Speed>,
                              100 * Kilo(Metre) / Second,
                              0 * si::Unit<Speed>});
@@ -200,8 +199,7 @@ void BM_BodyCentredNonRotatingReferenceFrame(benchmark::State& state) {
   BodyCentredNonRotatingReferenceFrame<Barycentric, Rendering>
       reference_frame(ephemeris.get(), earth);
   for (auto _ : state) {
-    auto v = ApplyRigidReferenceFrame(&probe,
-                                      &reference_frame,
+    auto v = ApplyRigidReferenceFrame(&reference_frame,
                                       probe_trajectory.begin(),
                                       probe_trajectory.end());
   }
@@ -211,7 +209,7 @@ void BM_BarycentricRotatingReferenceFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range(0);
 
-  SolarSystem<Barycentric> solar_system(
+  SolarSystem<Barycentric> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt",
@@ -231,12 +229,12 @@ void BM_BarycentricRotatingReferenceFrame(benchmark::State& state) {
   not_null<MassiveBody const*> const venus =
       solar_system.massive_body(*ephemeris, "Venus");
 
-  MasslessBody probe;
-  Position<Barycentric> probe_initial_position =
+  MasslessBody const probe;
+  Position<Barycentric> const probe_initial_position =
       Barycentric::origin + Displacement<Barycentric>({0.5 * AstronomicalUnit,
                                                        -1 * AstronomicalUnit,
                                                        0 * AstronomicalUnit});
-  Velocity<Barycentric> probe_velocity =
+  Velocity<Barycentric> const probe_velocity =
       Velocity<Barycentric>({0 * si::Unit<Speed>,
                              100 * Kilo(Metre) / Second,
                              0 * si::Unit<Speed>});
@@ -251,8 +249,7 @@ void BM_BarycentricRotatingReferenceFrame(benchmark::State& state) {
   BarycentricRotatingReferenceFrame<Barycentric, Rendering>
       reference_frame(ephemeris.get(), earth, venus);
   for (auto _ : state) {
-    auto v = ApplyRigidReferenceFrame(&probe,
-                                      &reference_frame,
+    auto v = ApplyRigidReferenceFrame(&reference_frame,
                                       probe_trajectory.begin(),
                                       probe_trajectory.end());
   }
@@ -262,7 +259,7 @@ void BM_RotatingPulsatingReferenceFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range(0);
 
-  SolarSystem<Barycentric> solar_system(
+  SolarSystem<Barycentric> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt",
@@ -277,12 +274,12 @@ void BM_RotatingPulsatingReferenceFrame(benchmark::State& state) {
           /*step=*/45 * Minute));
   CHECK_OK(ephemeris->Prolong(solar_system.epoch() + steps * Δt));
 
-  MasslessBody probe;
-  Position<Barycentric> probe_initial_position =
+  MasslessBody const probe;
+  Position<Barycentric> const probe_initial_position =
       Barycentric::origin + Displacement<Barycentric>({0.5 * AstronomicalUnit,
                                                        -1 * AstronomicalUnit,
                                                        0 * AstronomicalUnit});
-  Velocity<Barycentric> probe_velocity =
+  Velocity<Barycentric> const probe_velocity =
       Velocity<Barycentric>({0 * si::Unit<Speed>,
                              100 * Kilo(Metre) / Second,
                              0 * si::Unit<Speed>});
@@ -318,8 +315,7 @@ void BM_RotatingPulsatingReferenceFrame(benchmark::State& state) {
   RotatingPulsatingReferenceFrame<Barycentric, Rendering>
       reference_frame(ephemeris.get(), primaries, secondaries);
   for (auto _ : state) {
-    auto v = ApplyReferenceFrame(&probe,
-                                 &reference_frame,
+    auto v = ApplyReferenceFrame(&reference_frame,
                                  probe_trajectory.begin(),
                                  probe_trajectory.end());
   }
@@ -337,5 +333,6 @@ BENCHMARK(BM_RotatingPulsatingReferenceFrame)
     ->Arg(iterations)
     ->Unit(benchmark::kMillisecond);
 
+}  // namespace
 }  // namespace physics
 }  // namespace principia

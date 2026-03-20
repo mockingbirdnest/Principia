@@ -1,7 +1,8 @@
 #include "geometry/frame.hpp"
 
+#include <type_traits>
+
 #include "base/concepts.hpp"
-#include "glog/logging.h"
 #include "google/protobuf/descriptor.h"
 #include "gtest/gtest.h"
 #include "serialization/geometry.pb.h"

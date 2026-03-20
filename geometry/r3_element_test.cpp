@@ -2,13 +2,13 @@
 
 #include <functional>
 
-#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/bipm.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For e.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
@@ -142,9 +142,9 @@ TEST_F(R3ElementTest, OrthogonalizeSuccess) {
 TEST_F(R3ElementTest, Normalize) {
   R3Element<Length> const v = {1 * Metre, -2 * Metre, 5 * Metre};
   EXPECT_THAT(Normalize(v),
-              AlmostEquals(R3Element<double>(1.0 / sqrt(30.0),
-                                             -2.0 / sqrt(30.0),
-                                             5.0 / sqrt(30.0)), 0));
+              AlmostEquals(R3Element<double>(1.0 / Sqrt(30.0),
+                                             -2.0 / Sqrt(30.0),
+                                             5.0 / Sqrt(30.0)), 0));
 }
 
 TEST_F(R3ElementDeathTest, SerializationError) {
@@ -203,10 +203,10 @@ TEST_F(R3ElementTest, SerializationSuccess) {
 }
 
 TEST_F(R3ElementTest, SphericalCoordinates) {
-  R3Element<Length> x{1 * Metre, 0 * Metre, 0 * Metre};
-  R3Element<Length> y{0 * Metre, 1 * Metre, 0 * Metre};
-  R3Element<Length> z{0 * Metre, 0 * Metre, 1 * Metre};
-  R3Element<Length> v{1 * Metre, -1 * Metre, -Sqrt(6) * Metre};
+  R3Element<Length> const x{1 * Metre, 0 * Metre, 0 * Metre};
+  R3Element<Length> const y{0 * Metre, 1 * Metre, 0 * Metre};
+  R3Element<Length> const z{0 * Metre, 0 * Metre, 1 * Metre};
+  R3Element<Length> const v{1 * Metre, -1 * Metre, -Sqrt(6) * Metre};
 
   EXPECT_EQ(0 * Degree, x.ToSpherical().latitude);
   EXPECT_EQ(0 * Degree, x.ToSpherical().longitude);

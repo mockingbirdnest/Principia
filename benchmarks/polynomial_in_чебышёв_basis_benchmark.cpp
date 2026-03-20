@@ -1,6 +1,8 @@
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=3 --benchmark_filter=EvaluatePolynomialInЧебышёвBasis  // NOLINT(whitespace/line_length)
 
+#include <array>
 #include <random>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -16,6 +18,7 @@
 
 namespace principia {
 namespace numerics {
+namespace {
 
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
@@ -26,9 +29,7 @@ using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-namespace {
 constexpr int evaluations_per_iteration = 1000;
-}  // namespace
 
 template<int degree>
 void BM_EvaluatePolynomialInЧебышёвBasisDouble(benchmark::State& state) {
@@ -269,5 +270,6 @@ BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInЧебышёвBasisDisplacement, 18)
 BENCHMARK_TEMPLATE(BM_EvaluatePolynomialInЧебышёвBasisDisplacement, 19)
     ->Unit(benchmark::kMicrosecond);
 
+}  // namespace
 }  // namespace numerics
 }  // namespace principia

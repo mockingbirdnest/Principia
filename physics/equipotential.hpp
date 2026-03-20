@@ -93,7 +93,7 @@ class Equipotential {
       Instant const& t,
       std::vector<Position<Frame>> const& peaks,
       std::vector<Well> const& wells,
-      std::function<Position<Frame>(Position<Frame>)> towards_infinity,
+      std::function<Position<Frame>(Position<Frame>)> const& towards_infinity,
       SpecificEnergy const& energy) const;
 
  private:
