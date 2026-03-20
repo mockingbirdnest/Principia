@@ -1,7 +1,5 @@
 #include "ksp_plugin/celestial.hpp"
 
-#include <utility>
-
 #include "glog/logging.h"
 
 namespace principia {
