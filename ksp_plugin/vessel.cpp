@@ -1011,7 +1011,6 @@ absl::Status Vessel::Reanimate(Instant const desired_t_min) {
   }
 
   for (auto const& checkpoint : checkpoints | std::views::reverse) {
-    Instant const& checkpoint = *it;
     RETURN_IF_ERROR(checkpointer_->ReadFromCheckpointAt(
         checkpoint,
         [this, t_initial = checkpoint, &t_final](

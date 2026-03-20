@@ -848,7 +848,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   ephemeris->trajectories_.clear();
   for (auto const& trajectory : message.trajectory()) {
     not_null<MassiveBody const*> const body = ephemeris->bodies_[index].get();
-    not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> const
+    not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
         deserialized_trajectory = ContinuousTrajectory<Frame>::ReadFromMessage(
             desired_t_min, trajectory);
     ephemeris->trajectories_.push_back(deserialized_trajectory.get());
