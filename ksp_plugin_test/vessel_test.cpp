@@ -1,6 +1,5 @@
 #include "ksp_plugin/vessel.hpp"
 
-#include <limits>
 #include <list>
 #include <memory>
 #include <set>
@@ -26,10 +25,8 @@
 #include "ksp_plugin/pile_up.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rigid_motion.hpp"
@@ -73,10 +70,8 @@ using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::ksp_plugin_test::_plugin_io;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rotating_body;
@@ -990,7 +985,7 @@ TEST_F(VesselTest, Reanimator) {
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "reanimation test.proto.b64",
       /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+      /*encoder=*/"base64");
 
   auto const vessel = plugin->GetVessel("bd00adbd-2666-4172-8e5e-12862bad4562");
   EXPECT_EQ("Entwurf", vessel->name());

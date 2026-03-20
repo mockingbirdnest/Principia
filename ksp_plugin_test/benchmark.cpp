@@ -23,6 +23,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace _benchmark {
 namespace internal {
+namespace {
 
 using interface::principia__AdvanceTime;
 using interface::principia__FutureCatchUpVessel;
@@ -61,6 +62,7 @@ void BM_PluginIntegrationBenchmark(benchmark::State& state) {
         (plugin->CurrentTime() + step - plugin->GameEpoch()) / Second,
         /*planetarium_rotation=*/45);
     std::vector<PileUpFuture*> futures;
+    futures.reserve(vessel_guids.size());
     for (GUID const& vessel_guid : vessel_guids) {
       futures.push_back(
           principia__FutureCatchUpVessel(plugin.get(), vessel_guid.c_str()));
@@ -130,6 +132,7 @@ TEST(PluginBenchmark, DISABLED_All) {
   benchmark::RunSpecifiedBenchmarks();
 }
 
+}  // namespace
 }  // namespace internal
 }  // namespace _benchmark
 }  // namespace ksp_plugin

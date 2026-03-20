@@ -34,7 +34,6 @@
 #include "ksp_plugin/frames.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/quadrature.hpp"
-#include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -90,7 +89,6 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_quadrature;
-using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
@@ -323,7 +321,7 @@ class PlanetariumTest : public ::testing::Test {
                     trajectory1.t_min(),
                     trajectory2.t_max(),
                     /*max_relative_error=*/1.0e-6,
-                    /*max_point=*/1000) /
+                    /*max_points=*/1000) /
                 (trajectory1.t_max() - trajectory1.t_min()));
   }
 

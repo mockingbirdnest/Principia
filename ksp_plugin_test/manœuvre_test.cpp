@@ -19,7 +19,6 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
@@ -63,7 +62,6 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;

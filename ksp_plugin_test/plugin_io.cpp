@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -16,8 +17,8 @@ namespace ksp_plugin_test {
 namespace _plugin_io {
 namespace internal {
 
-const char preferred_compressor[] = "gipfeli";
-const char preferred_encoder[] = "base64";
+constexpr std::string_view preferred_compressor = "gipfeli";
+constexpr std::string_view preferred_encoder = "base64";
 
 using interface::principia__DeletePlugin;
 using interface::principia__DeleteString;

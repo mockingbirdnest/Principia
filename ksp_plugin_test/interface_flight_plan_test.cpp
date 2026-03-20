@@ -2,10 +2,10 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/not_null.hpp"
-#include "geometry/identity.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
@@ -15,9 +15,7 @@
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
@@ -27,7 +25,6 @@
 #include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
 #include "ksp_plugin_test/mock_vessel.hpp"  // 🧙 For MockVessel.
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
-#include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
@@ -56,7 +53,6 @@ using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_identity;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
@@ -64,14 +60,11 @@ using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
-using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
-using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
-using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
@@ -83,8 +76,8 @@ using namespace principia::testing_utilities::_almost_equals;
 
 namespace {
 
-char const vessel_guid[] = "123-456";
-Index const celestial_index = 1;
+constexpr std::string_view vessel_guid = "123-456";
+constexpr Index celestial_index = 1;
 
 MATCHER_P(HasThrust, thrust, "") {
   return arg.thrust == thrust;

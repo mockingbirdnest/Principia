@@ -5,15 +5,14 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
-#include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/identity.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
@@ -27,7 +26,6 @@
 #include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
@@ -53,9 +51,7 @@ using ::testing::SizeIs;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_identity;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
@@ -68,7 +64,6 @@ using namespace principia::ksp_plugin::_plugin;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
-using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
@@ -82,10 +77,10 @@ using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace {
 
-PartId const part_id = 789;
-GUID const vessel_guid = "123-456";
-char const part_name[] = "Picard's desk";
-char const vessel_name[] = "NCC-1701-D";
+constexpr PartId part_id = 789;
+constexpr GUID vessel_guid = "123-456";
+constexpr std::string_view part_name = "Picard's desk";
+constexpr std::string_view vessel_name = "NCC-1701-D";
 
 }  // namespace
 
@@ -197,13 +192,13 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
 
   bool inserted;
   plugin_->InsertOrKeepVessel(vessel_guid,
-                              vessel_name,
+                              vessel_name.data(),
                               SolarSystemFactory::Earth,
                               /*loaded=*/false,
                               inserted);
   plugin_->InsertUnloadedPart(
       part_id,
-      part_name,
+      part_name.data(),
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
@@ -234,7 +229,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
     plugin_->InsertOrKeepVessel(vessel_guid,
-                                vessel_name,
+                                vessel_name.data(),
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
@@ -248,7 +243,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
     VesselSet collided_vessels;
     plugin_->CatchUpLaggingVessels(collided_vessels);
     plugin_->InsertOrKeepVessel(vessel_guid,
-                                vessel_name,
+                                vessel_name.data(),
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
@@ -288,7 +283,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
 
   bool inserted;
   plugin_->InsertOrKeepVessel(vessel_guid,
-                              vessel_name,
+                              vessel_name.data(),
                               SolarSystemFactory::Earth,
                               /*loaded=*/false,
                               inserted);
@@ -306,7 +301,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
                 from_the_earth_to_the_moon.displacement()))(
               from_the_earth_to_the_moon.velocity());
   plugin_->InsertUnloadedPart(part_id,
-                              part_name,
+                              part_name.data(),
                               vessel_guid,
                               {from_the_earth_to_l5, initial_velocity});
   plugin_->PrepareToReportCollisions();
@@ -336,7 +331,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     VesselSet collided_vessels;
     plugin_->CatchUpLaggingVessels(collided_vessels);
     plugin_->InsertOrKeepVessel(vessel_guid,
-                                vessel_name,
+                                vessel_name.data(),
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
@@ -348,7 +343,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     VesselSet collided_vessels;
     plugin_->CatchUpLaggingVessels(collided_vessels);
     plugin_->InsertOrKeepVessel(vessel_guid,
-                                vessel_name,
+                                vessel_name.data(),
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
@@ -358,7 +353,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   VesselSet collided_vessels;
   plugin_->CatchUpLaggingVessels(collided_vessels);
   plugin_->InsertOrKeepVessel(vessel_guid,
-                              vessel_name,
+                              vessel_name.data(),
                               SolarSystemFactory::Earth,
                               /*loaded=*/false,
                               inserted);

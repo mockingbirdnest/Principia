@@ -1,7 +1,6 @@
 #include "ksp_plugin/pile_up.hpp"
 
 #include <limits>
-#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -18,7 +17,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
-#include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/mock_integrators.hpp"  // 🧙 For mock integrators.
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -63,7 +61,6 @@ using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
-using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::ksp_plugin::_frames;

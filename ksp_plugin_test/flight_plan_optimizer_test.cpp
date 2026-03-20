@@ -173,7 +173,7 @@ class FlightPlanOptimizerTest : public testing::Test {
     plugin_ = ReadPluginFromFile(
         SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
         /*compressor=*/"gipfeli",
-        /*decoder=*/"base64");
+        /*encoder=*/"base64");
 
     auto const ifnity =
         plugin_->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
@@ -193,6 +193,8 @@ class FlightPlanOptimizerTest : public testing::Test {
     EXPECT_THAT(flight_plan_->number_of_manœuvres(), Eq(16));
     std::vector<std::pair<DateTime, Speed>>
         manœuvre_ignition_tt_seconds_and_Δvs;
+    manœuvre_ignition_tt_seconds_and_Δvs.reserve(
+        flight_plan_->number_of_manœuvres());
     for (int i = 0; i < flight_plan_->number_of_manœuvres(); ++i) {
       manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
           TTSecond(flight_plan_->GetManœuvre(i).initial_time()),

@@ -1,8 +1,5 @@
 #include "ksp_plugin/plugin.hpp"
 
-#include <algorithm>
-#include <cmath>
-#include <limits>
 #include <map>
 #include <memory>
 #include <optional>
@@ -13,7 +10,6 @@
 #include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
-#include "base/algebra.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
@@ -27,7 +23,6 @@
 #include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -44,13 +39,11 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
-#include "testing_utilities/make_not_null.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/serialization.hpp"
@@ -81,7 +74,6 @@ using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::base::_algebra;
 using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
@@ -93,7 +85,6 @@ using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
-using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
@@ -110,13 +101,11 @@ using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
-using namespace principia::testing_utilities::_make_not_null;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_serialization;

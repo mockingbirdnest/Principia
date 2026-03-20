@@ -10,15 +10,12 @@
 #include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin_test/mock_celestial.hpp"  // 🧙 For MockCelestial.
 #include "ksp_plugin_test/mock_vessel.hpp"  // 🧙 For MockVessel.
-#include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/ephemeris.hpp"
 #include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
 #include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
@@ -42,14 +39,11 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
-using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
-using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_quantities;

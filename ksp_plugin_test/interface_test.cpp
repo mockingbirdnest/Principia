@@ -1,18 +1,16 @@
 #include "ksp_plugin/interface.hpp"
 
-#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
-#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
@@ -23,22 +21,18 @@
 #include "journal/recorder.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
-#include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
 #include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
-#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
-#include "quantities/astronomy.hpp"
-#include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -68,12 +62,10 @@ using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::base::_file;
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_rotation;
@@ -81,19 +73,15 @@ using namespace principia::geometry::_space;
 using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
-using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::ksp_plugin::_vessel;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
-using namespace principia::quantities::_astronomy;
-using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -102,18 +90,18 @@ using namespace principia::testing_utilities::_serialization;
 
 namespace {
 
-char const part_name[] = "Picard's chair";
-char const vessel_guid[] = "123-456";
-char const vessel_name[] = "NCC-1701-D";
+constexpr std::string_view part_name = "Picard's chair";
+constexpr std::string_view vessel_guid = "123-456";
+constexpr std::string_view vessel_name = "NCC-1701-D";
 
-Index const celestial_index = 1;
-Index const parent_index = 2;
-Index const unused = 666;
+constexpr Index celestial_index = 1;
+constexpr Index parent_index = 2;
+constexpr Index unused = 666;
 
-PartId const part_id = 42;
+constexpr PartId part_id = 42;
 
-double const planetarium_rotation = 10;
-double const time = 11;
+constexpr double planetarium_rotation = 10;
+constexpr double time = 11;
 
 XYZ parent_position = {4, 5, 6};
 XYZ parent_velocity = {7, 8, 9};
@@ -476,8 +464,8 @@ TEST_F(InterfaceTest, InsertOrKeepVessel) {
       .WillOnce(Return(true));
   EXPECT_FALSE(plugin_->HasVessel(vessel_guid));
   principia__InsertOrKeepVessel(plugin_.get(),
-                                vessel_guid,
-                                vessel_name,
+                                vessel_guid.data(),
+                                vessel_name.data(),
                                 parent_index,
                                 /*loaded=*/false,
                                 &inserted);
@@ -501,8 +489,8 @@ TEST_F(InterfaceTest, InsertUnloadedPart) {
                            parent_velocity.z * si::Unit<Speed>}))));
   principia__InsertUnloadedPart(plugin_.get(),
                                 part_id,
-                                part_name,
-                                vessel_guid,
+                                part_name.data(),
+                                vessel_guid.data(),
                                 parent_relative_degrees_of_freedom);
 }
 
@@ -527,7 +515,7 @@ TEST_F(InterfaceTest, VesselFromParent) {
                                 parent_velocity.z * si::Unit<Speed>}))));
   QP const result = principia__VesselFromParent(plugin_.get(),
                                                 celestial_index,
-                                                vessel_guid);
+                                                vessel_guid.data());
   EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
 }
 

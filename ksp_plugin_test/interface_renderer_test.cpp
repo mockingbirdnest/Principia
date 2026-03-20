@@ -1,6 +1,8 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <array>
 #include <memory>
+#include <string_view>
 
 #include "base/not_null.hpp"
 #include "geometry/rotation.hpp"
@@ -38,11 +40,11 @@ using namespace principia::quantities::_si;
 
 namespace {
 
-char const vessel_guid[] = "123-456";
+constexpr std::string_view vessel_guid = "123-456";
 
-Index const celestial_index = 1;
-Index const parent_index = 2;
-Index const unused = 666;
+constexpr Index celestial_index = 1;
+constexpr Index parent_index = 2;
+constexpr Index unused = 666;
 
 }  // namespace
 
@@ -69,8 +71,10 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  int const* const celestial_index_array[2] = {&celestial_index, nullptr};
-  int const* const parent_index_array[2] = {&parent_index, nullptr};
+  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
+                                                           nullptr};
+  std::array<int const*, 2> const parent_index_array = {&parent_index,
+                                                        nullptr};
   PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
@@ -93,8 +97,10 @@ TEST_F(InterfaceRendererTest, Frenet) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  int const* const celestial_index_array[2] = {&celestial_index, nullptr};
-  int const* const parent_index_array[2] = {&parent_index, nullptr};
+  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
+                                                           nullptr};
+  std::array<int const*, 2> const parent_index_array = {&parent_index,
+                                                        nullptr};
   PlottingFrameParameters parameters = {
       serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
       unused,
