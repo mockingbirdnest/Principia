@@ -236,7 +236,7 @@ void Base32768Encoder<null_terminated>::Encode(Array<std::uint8_t const> input,
         repertoire = &seven_bits;
       }
     }
-    std::int32_t code_point = (data & mask) >> shift;
+    std::int32_t const code_point = (data & mask) >> shift;
     CHECK_LE(0, code_point);
     CHECK_LT(code_point, 1 << bits_per_code_point);
     output.data[0] = repertoire->Encode(code_point);
