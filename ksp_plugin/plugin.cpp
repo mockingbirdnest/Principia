@@ -1,14 +1,19 @@
 #include "ksp_plugin/plugin.hpp"
 
 #include <algorithm>
+#include <cstdint>
+#include <functional>
 #include <ios>
+#include <iterator>
 #include <list>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <thread>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -18,6 +23,7 @@
 #include "astronomy/time_scales.hpp"
 #include "base/flags.hpp"
 #include "base/hexadecimal.hpp"
+#include "base/macros.hpp"  // 🧙 For NAMED.
 #include "base/map_util.hpp"
 #include "base/serialization.hpp"
 #include "geometry/frame.hpp"
@@ -27,6 +33,8 @@
 #include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/stubs/logging.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
@@ -39,6 +47,7 @@
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/parser.hpp"
 
 namespace principia {

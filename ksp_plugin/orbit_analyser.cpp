@@ -1,12 +1,14 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
+#include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "ksp_plugin/integrators.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"

@@ -1,6 +1,10 @@
 #include "ksp_plugin/part.hpp"
 
+#include <cstdint>
+#include <functional>
+#include <iterator>
 #include <memory>
+#include <ostream>
 #include <string>
 #include <utility>
 
@@ -11,6 +15,7 @@
 #include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 
 namespace principia {

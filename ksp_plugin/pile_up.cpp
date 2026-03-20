@@ -1,8 +1,10 @@
 #include "ksp_plugin/pile_up.hpp"
 
 #include <functional>
+#include <future>
 #include <iterator>
 #include <list>
+#include <optional>
 #include <memory>
 #include <utility>
 #include <vector>

@@ -1,15 +1,21 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <chrono>
 #include <cmath>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 #include <filesystem>
 #include <iomanip>
+#include <ios>
 #include <limits>
 #include <map>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 #define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
@@ -40,6 +46,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
+#include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
 #include "glog/logging.h"
 #include "google/protobuf/arena.h"

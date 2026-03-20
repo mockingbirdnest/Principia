@@ -1,5 +1,6 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <iterator>
 #include <vector>
 #include <utility>
 

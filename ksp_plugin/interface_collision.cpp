@@ -1,6 +1,8 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <functional>
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/push_pull_callback.hpp"

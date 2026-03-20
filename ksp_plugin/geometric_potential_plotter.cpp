@@ -1,10 +1,13 @@
 #include "ksp_plugin/geometric_potential_plotter.hpp"
 
+#include <iterator>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
+#include "glog/logging.h"
 
 namespace principia {
 namespace ksp_plugin {

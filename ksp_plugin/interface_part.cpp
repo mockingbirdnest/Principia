@@ -1,5 +1,8 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <cstdint>
+#include <optional>
+
 #include "geometry/grassmann.hpp"
 #include "glog/logging.h"
 #include "journal/method.hpp"

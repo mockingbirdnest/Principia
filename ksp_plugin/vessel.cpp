@@ -1,11 +1,16 @@
 #include "ksp_plugin/vessel.hpp"
 
 #include <algorithm>
+#include <chrono>
+#include <cstdint>
 #include <functional>
+#include <iterator>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "absl/container/btree_set.h"
@@ -14,6 +19,7 @@
 #include "absl/synchronization/mutex.h"
 #include "base/concepts.hpp"
 #include "base/map_util.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
 #include "ksp_plugin/integrators.hpp"
