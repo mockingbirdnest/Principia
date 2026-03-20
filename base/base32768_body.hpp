@@ -15,10 +15,6 @@
 #include "base/bits.hpp"
 #include "glog/logging.h"
 
-// Clang doesn't have a correct `std::array` yet, and we don't actually use this
-// code, so let's get rid of the entire body.
-#if PRINCIPIA_COMPILER_MSVC
-
 namespace principia {
 namespace base {
 namespace _base32768 {
@@ -358,5 +354,3 @@ std::int64_t Base32768Encoder<null_terminated>::DecodedLength(
 }  // namespace _base32768
 }  // namespace base
 }  // namespace principia
-
-#endif
