@@ -75,8 +75,8 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneConstructor) {
   // are on the separator plane.)  The other principal axes are more complicated
   // because of the position of the centroid, but the first query entails an
   // "other side" search on (v1, v2).
-  PrincipalComponentPartitioningTree<V> tree({&v1, &v2, &v3, &v4},
-                                             /*max_values_per_cell=*/1);
+  PrincipalComponentPartitioningTree<V> const tree({&v1, &v2, &v3, &v4},
+                                                   /*max_values_per_cell=*/1);
 
   EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0})), Pointee(v1));
   EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0})), Pointee(v2));
@@ -132,10 +132,10 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomConstructor) {
              tree_pointers,
              random,
              coordinate_distribution);
-  PrincipalComponentPartitioningTree<V> tree1(tree_pointers,
-                                              /*max_values_per_cell=*/1);
-  PrincipalComponentPartitioningTree<V> tree3(tree_pointers,
-                                              /*max_values_per_cell=*/3);
+  PrincipalComponentPartitioningTree<V> const tree1(tree_pointers,
+                                                    /*max_values_per_cell=*/1);
+  PrincipalComponentPartitioningTree<V> const tree3(tree_pointers,
+                                                    /*max_values_per_cell=*/3);
 
   for (int i = 0; i < points_to_test; ++i) {
     auto const query_point = V({coordinate_distribution(random),
@@ -207,10 +207,10 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomFilter) {
              tree_pointers,
              random,
              coordinate_distribution);
-  PrincipalComponentPartitioningTree<V> tree1(tree_pointers,
-                                              /*max_values_per_cell=*/1);
-  PrincipalComponentPartitioningTree<V> tree3(tree_pointers,
-                                              /*max_values_per_cell=*/3);
+  PrincipalComponentPartitioningTree<V> const tree1(tree_pointers,
+                                                    /*max_values_per_cell=*/1);
+  PrincipalComponentPartitioningTree<V> const tree3(tree_pointers,
+                                                    /*max_values_per_cell=*/3);
 
   const PrincipalComponentPartitioningTree<V>::Filter filter =
       [](V const* const point) {

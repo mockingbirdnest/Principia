@@ -201,8 +201,8 @@ TEST_F(FixedArraysTest, Assignment) {
 TEST_F(FixedArraysTest, UseHeap) {
   n23_ = std::move(m23_);
   m23_ = n23_;
-  FixedMatrix<double, 2, 3, /*use_heap=*/true> p23(m23_);
-  FixedMatrix<double, 2, 3, /*use_heap=*/false> q23(m23_);
+  FixedMatrix<double, 2, 3, /*use_heap=*/true> const p23(m23_);
+  FixedMatrix<double, 2, 3, /*use_heap=*/false> const q23(m23_);
 }
 
 TEST_F(FixedArraysTest, Norm) {
@@ -346,7 +346,7 @@ TEST_F(FixedArraysTest, Row) {
                                      4, -5, 6});
   auto const* const r0 = m.row(0);
   auto const* const r1 = m.row(1);
-  FixedVector<double, 3> v = {{1, 2, -3}};
+  FixedVector<double, 3> const v = {{1, 2, -3}};
 
   EXPECT_EQ(-4, r0 * v);
   EXPECT_EQ(-24, r1 * v);
@@ -398,8 +398,8 @@ TEST_F(FixedArraysTest, Transpose) {
 }
 
 TEST_F(FixedArraysTest, ℂ³) {
-  const Complexification<double> i(0, 1);
-  FixedVector<Complexification<double>, 3> v{{2, 6 * i, 3}};
+  Complexification<double> const i(0, 1);
+  FixedVector<Complexification<double>, 3> const v{{2, 6 * i, 3}};
   EXPECT_EQ(49, v.Norm²());
   EXPECT_EQ(7, v.Norm());
   EXPECT_EQ(49, InnerProduct(v, v));

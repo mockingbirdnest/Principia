@@ -72,7 +72,7 @@ TEST_F(Hermite3Test, Quadratic) {
   EXPECT_THAT(
       near_quadratic.FindExtrema(),
       ElementsAre(t0_ + 1.5 * Second));
-  Hermite3<Length, Instant> quadratic(
+  Hermite3<Length, Instant> const quadratic(
       {t0_ + 1 * Second, t0_ + 2 * Second},
       {0 * Metre, 0 * Metre},
       {-1 * Metre / Second, 1 * Metre / Second});

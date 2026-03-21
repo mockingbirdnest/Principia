@@ -1,6 +1,7 @@
 #include "numerics/elliptic_functions.hpp"
 
 #include <cmath>
+#include <cstdio>
 #include <limits>
 
 #include "glog/logging.h"
@@ -32,8 +33,14 @@ class EllipticFunctionsTest : public ::testing::Test {};
 TEST_F(EllipticFunctionsTest, Xgscd) {
   auto const xgscd_expected =
       ReadFromTabulatedData(SOLUTION_DIR / "numerics" / "xgscd.proto.txt");
-  double Δmc, mc, m, s, c, d;
-  Angle u, du;
+  double Δmc;
+  double mc;
+  double m;
+  double s;
+  double c;
+  double d;
+  Angle u;
+  Angle du;
   int const jend = 10;
   int const iend = 8;
   Δmc = 1.0 / static_cast<double>(jend);

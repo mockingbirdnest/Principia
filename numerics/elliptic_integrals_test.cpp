@@ -1,6 +1,7 @@
 #include "numerics/elliptic_integrals.hpp"
 
 #include <algorithm>
+#include <cstdio>
 #include <filesystem>
 
 #include "glog/logging.h"

@@ -228,9 +228,9 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
 
 TEST_F(PiecewisePoissonSeriesTest, Fourier) {
   Degree0::Series::AperiodicPolynomial const aperiodic_constant({1.0}, t0_);
-  Degree0::Series::PeriodicPolynomial periodic_constant({1.0}, t0_);
+  Degree0::Series::PeriodicPolynomial const periodic_constant({1.0}, t0_);
   AngularFrequency const ω = 4 * Radian / Second;
-  PoissonSeries<Displacement<World>, 0, 0> signal(
+  PoissonSeries<Displacement<World>, 0, 0> const signal(
       aperiodic_constant * Displacement<World>{},
       {{ω,
         {.sin = periodic_constant *

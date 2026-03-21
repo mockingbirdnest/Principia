@@ -1,5 +1,6 @@
 #include "numerics/polynomial_evaluators.hpp"
 
+#include <cmath>
 #include <cstddef>
 #include <utility>
 

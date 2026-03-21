@@ -53,6 +53,8 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics_matchers;
 
+namespace {
+
 // Constructs a piecewise Poisson series that has the given number of pieces
 // covering [t_min, t_max] and that matches `series` over that interval.
 template<typename Piecewise>
@@ -67,6 +69,8 @@ Piecewise Slice(typename Piecewise::Series const& series,
   }
   return piecewise;
 }
+
+}  // namespace
 
 class FrequencyAnalysisTest : public ::testing::Test {
  protected:

@@ -56,30 +56,30 @@ class PoissonSeriesTest : public ::testing::Test {
         ω1_(1 * Radian / Second),
         ω2_(2 * Radian / Second),
         ω3_(-3 * Radian / Second) {
-    Degree1::AperiodicPolynomial pa0({0, 0 / Second}, t0_);
-    Degree1::PeriodicPolynomial psa0({100, 200 / Second}, t0_);
-    Degree1::PeriodicPolynomial pca0({1, 2 / Second}, t0_);
-    Degree1::AperiodicPolynomial pb0({3, 4 / Second}, t0_);
+    Degree1::AperiodicPolynomial const pa0({0, 0 / Second}, t0_);
+    Degree1::PeriodicPolynomial const psa0({100, 200 / Second}, t0_);
+    Degree1::PeriodicPolynomial const pca0({1, 2 / Second}, t0_);
+    Degree1::AperiodicPolynomial const pb0({3, 4 / Second}, t0_);
 
-    Degree1::PeriodicPolynomial psa1({5, 6 / Second}, t0_);
-    Degree1::PeriodicPolynomial pca1({7, 8 / Second}, t0_);
-    Degree1::PeriodicPolynomial psb1({9, 10 / Second}, t0_);
-    Degree1::PeriodicPolynomial pcb1({11, 12 / Second}, t0_);
+    Degree1::PeriodicPolynomial const psa1({5, 6 / Second}, t0_);
+    Degree1::PeriodicPolynomial const pca1({7, 8 / Second}, t0_);
+    Degree1::PeriodicPolynomial const psb1({9, 10 / Second}, t0_);
+    Degree1::PeriodicPolynomial const pcb1({11, 12 / Second}, t0_);
 
-    Degree1::PeriodicPolynomial psa2({13, 14 / Second}, t0_);
-    Degree1::PeriodicPolynomial pca2({15, 16 / Second}, t0_);
+    Degree1::PeriodicPolynomial const psa2({13, 14 / Second}, t0_);
+    Degree1::PeriodicPolynomial const pca2({15, 16 / Second}, t0_);
 
-    Degree1::PeriodicPolynomial psb3({-17, -18 / Second}, t0_);
-    Degree1::PeriodicPolynomial pcb3({19, 20 / Second}, t0_);
+    Degree1::PeriodicPolynomial const psb3({-17, -18 / Second}, t0_);
+    Degree1::PeriodicPolynomial const pcb3({19, 20 / Second}, t0_);
 
-    Degree1::Polynomials psca0{.sin = psa0, .cos = pca0};
+    Degree1::Polynomials const psca0{.sin = psa0, .cos = pca0};
 
-    Degree1::Polynomials psca1{.sin = psa1, .cos = pca1};
-    Degree1::Polynomials pscb1{.sin = psb1, .cos = pcb1};
+    Degree1::Polynomials const psca1{.sin = psa1, .cos = pca1};
+    Degree1::Polynomials const pscb1{.sin = psb1, .cos = pcb1};
 
-    Degree1::Polynomials psca2{.sin = psa2, .cos = pca2};
+    Degree1::Polynomials const psca2{.sin = psa2, .cos = pca2};
 
-    Degree1::Polynomials pscb3{.sin = psb3, .cos = pcb3};
+    Degree1::Polynomials const pscb3{.sin = psb3, .cos = pcb3};
 
     pa_ = std::make_unique<Degree1>(
         pa0,

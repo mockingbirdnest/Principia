@@ -595,7 +595,7 @@ TEST_F(PolynomialInMonomialBasisTest, Boost) {
 // Check that polynomials may be serialized.
 TEST_F(PolynomialInMonomialBasisTest, Serialization) {
   {
-    P2V p2v(coefficients_);
+    P2V const p2v(coefficients_);
     serialization::Polynomial message;
     p2v.WriteToMessage(&message);
     EXPECT_EQ(2, message.degree());
@@ -621,7 +621,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_THAT(message2, EqualsProto(message));
   }
   {
-    P2A p2a(coefficients_, Instant());
+    P2A const p2a(coefficients_, Instant());
     serialization::Polynomial message;
     p2a.WriteToMessage(&message);
     EXPECT_EQ(2, message.degree());
