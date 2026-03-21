@@ -181,7 +181,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
   EXPECT_THAT(flight_plan.number_of_manœuvres(), Eq(16));
   std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
   manœuvre_ignition_tt_seconds_and_Δvs.reserve(
-      flight_plan.number_of_manœuvres())
+      flight_plan.number_of_manœuvres());
   for (int i = 0; i < flight_plan.number_of_manœuvres(); ++i) {
     manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
         TTSecond(flight_plan.GetManœuvre(i).initial_time()),

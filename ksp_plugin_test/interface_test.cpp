@@ -6,7 +6,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include "astronomy/time_scales.hpp"
@@ -85,9 +84,9 @@ using namespace principia::testing_utilities::_serialization;
 
 namespace {
 
-constexpr std::string_view part_name = "Picard's chair";
-constexpr std::string_view vessel_guid = "123-456";
-constexpr std::string_view vessel_name = "NCC-1701-D";
+constexpr char part_name[] = "Picard's chair";
+constexpr char vessel_guid[] = "123-456";
+constexpr char vessel_name[] = "NCC-1701-D";
 
 constexpr Index celestial_index = 1;
 constexpr Index parent_index = 2;
@@ -459,8 +458,8 @@ TEST_F(InterfaceTest, InsertOrKeepVessel) {
       .WillOnce(Return(true));
   EXPECT_FALSE(plugin_->HasVessel(vessel_guid));
   principia__InsertOrKeepVessel(plugin_.get(),
-                                vessel_guid.data(),
-                                vessel_name.data(),
+                                vessel_guid,
+                                vessel_name,
                                 parent_index,
                                 /*loaded=*/false,
                                 &inserted);
@@ -484,8 +483,8 @@ TEST_F(InterfaceTest, InsertUnloadedPart) {
                            parent_velocity.z * si::Unit<Speed>}))));
   principia__InsertUnloadedPart(plugin_.get(),
                                 part_id,
-                                part_name.data(),
-                                vessel_guid.data(),
+                                part_name,
+                                vessel_guid,
                                 parent_relative_degrees_of_freedom);
 }
 
@@ -510,7 +509,7 @@ TEST_F(InterfaceTest, VesselFromParent) {
                                 parent_velocity.z * si::Unit<Speed>}))));
   QP const result = principia__VesselFromParent(plugin_.get(),
                                                 celestial_index,
-                                                vessel_guid.data());
+                                                vessel_guid);
   EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
 }
 

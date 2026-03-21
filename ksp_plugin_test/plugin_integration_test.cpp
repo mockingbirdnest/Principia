@@ -6,7 +6,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <string_view>
 #include <thread>
 #include <vector>
 
@@ -81,8 +80,8 @@ namespace {
 
 constexpr PartId part_id = 789;
 constexpr GUID vessel_guid = "123-456";
-constexpr std::string_view part_name = "Picard's desk";
-constexpr std::string_view vessel_name = "NCC-1701-D";
+constexpr char part_name[] = "Picard's desk";
+constexpr char vessel_name[] = "NCC-1701-D";
 
 }  // namespace
 
@@ -194,13 +193,13 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
 
   bool inserted;
   plugin_->InsertOrKeepVessel(vessel_guid,
-                              vessel_name.data(),
+                              vessel_name,
                               SolarSystemFactory::Earth,
                               /*loaded=*/false,
                               inserted);
   plugin_->InsertUnloadedPart(
       part_id,
-      part_name.data(),
+      part_name,
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
@@ -231,7 +230,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
     plugin_->InsertOrKeepVessel(vessel_guid,
-                                vessel_name.data(),
+                                vessel_name,
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
@@ -245,7 +244,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
     VesselSet collided_vessels;
     plugin_->CatchUpLaggingVessels(collided_vessels);
     plugin_->InsertOrKeepVessel(vessel_guid,
-                                vessel_name.data(),
+                                vessel_name,
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
@@ -285,7 +284,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
 
   bool inserted;
   plugin_->InsertOrKeepVessel(vessel_guid,
-                              vessel_name.data(),
+                              vessel_name,
                               SolarSystemFactory::Earth,
                               /*loaded=*/false,
                               inserted);
@@ -303,7 +302,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
                 from_the_earth_to_the_moon.displacement()))(
               from_the_earth_to_the_moon.velocity());
   plugin_->InsertUnloadedPart(part_id,
-                              part_name.data(),
+                              part_name,
                               vessel_guid,
                               {from_the_earth_to_l5, initial_velocity});
   plugin_->PrepareToReportCollisions();
@@ -333,7 +332,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     VesselSet collided_vessels;
     plugin_->CatchUpLaggingVessels(collided_vessels);
     plugin_->InsertOrKeepVessel(vessel_guid,
-                                vessel_name.data(),
+                                vessel_name,
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
@@ -345,7 +344,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     VesselSet collided_vessels;
     plugin_->CatchUpLaggingVessels(collided_vessels);
     plugin_->InsertOrKeepVessel(vessel_guid,
-                                vessel_name.data(),
+                                vessel_name,
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
@@ -355,7 +354,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   VesselSet collided_vessels;
   plugin_->CatchUpLaggingVessels(collided_vessels);
   plugin_->InsertOrKeepVessel(vessel_guid,
-                              vessel_name.data(),
+                              vessel_name,
                               SolarSystemFactory::Earth,
                               /*loaded=*/false,
                               inserted);

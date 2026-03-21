@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <string>
-#include <string_view>
 #include <utility>
 
 #include "absl/status/status.h"
@@ -82,7 +81,7 @@ using namespace principia::testing_utilities::_almost_equals;
 
 namespace {
 
-constexpr std::string_view vessel_guid = "123-456";
+constexpr char vessel_guid[] = "123-456";
 constexpr Index celestial_index = 1;
 
 MATCHER_P(HasThrust, thrust, "") {
