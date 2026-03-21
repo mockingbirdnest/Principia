@@ -9,6 +9,7 @@
 #include "base/file.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "glog/logging.h"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "testing_utilities/serialization.hpp"
 

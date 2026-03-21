@@ -6,6 +6,7 @@
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For EXPECT_OK.
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"

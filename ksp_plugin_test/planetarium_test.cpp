@@ -27,6 +27,7 @@
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
+#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -48,6 +49,7 @@
 #include "physics/rotating_body.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"

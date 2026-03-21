@@ -7,6 +7,7 @@
 
 #include "absl/status/status.h"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For EXPECT_OK.
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"

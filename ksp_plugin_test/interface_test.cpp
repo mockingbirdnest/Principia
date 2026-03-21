@@ -1,5 +1,6 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <cstdlib>
 #include <memory>
 #include <optional>
 #include <string>

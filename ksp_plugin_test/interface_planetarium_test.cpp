@@ -15,6 +15,7 @@
 #include "ksp_plugin_test/mock_planetarium.hpp"  // 🧙 For MockPlanetarium.
 #include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
 #include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRendeder.
+#include "quantities/numbers.hpp"  // 🧙 For π.
 
 namespace principia {
 namespace interface {

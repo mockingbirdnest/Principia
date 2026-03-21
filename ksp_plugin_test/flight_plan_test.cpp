@@ -29,6 +29,7 @@
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/ksp_plugin.pb.h"
