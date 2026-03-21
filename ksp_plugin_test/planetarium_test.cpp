@@ -31,6 +31,7 @@
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
 #include "glog/logging.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"

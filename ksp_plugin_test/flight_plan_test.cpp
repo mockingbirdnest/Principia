@@ -90,7 +90,7 @@ class FlightPlanTest : public testing::Test {
             /*angular_frequency=*/1 * Radian / Second,
             /*right_ascension_of_pole=*/0 * Radian,
             /*declination_of_pole=*/0 * Radian)));
-    std::vector<DegreesOfFreedom<Barycentric>> initial_state{
+    std::vector<DegreesOfFreedom<Barycentric>> const initial_state{
         {Barycentric::origin, Barycentric::unmoving}};
     ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
         std::move(bodies),

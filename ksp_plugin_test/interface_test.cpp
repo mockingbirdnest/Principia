@@ -1,5 +1,6 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <iostream>
@@ -529,8 +530,10 @@ TEST_F(InterfaceTest, CelestialFromParent) {
 TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
 
-  int const* const celestial_index_array[2] = {&celestial_index, nullptr};
-  int const* const parent_index_array[2] = {&parent_index, nullptr};
+  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
+                                                           nullptr};
+  std::array<int const*, 2> const parent_index_array = {&parent_index,
+                                                        nullptr};
   PlottingFrameParameters parameters = {
       .extension = serialization::BarycentricRotatingReferenceFrame::
           kExtensionFieldNumber,
@@ -578,8 +581,10 @@ TEST_F(InterfaceTest, NavballOrientation) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  int const* const celestial_index_array[2] = {&celestial_index, nullptr};
-  int const* const parent_index_array[2] = {&parent_index, nullptr};
+  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
+                                                           nullptr};
+  std::array<int const*, 2> const parent_index_array = {&parent_index,
+                                                        nullptr};
   PlottingFrameParameters const parameters = {
       .extension = serialization::BarycentricRotatingReferenceFrame::
           kExtensionFieldNumber,

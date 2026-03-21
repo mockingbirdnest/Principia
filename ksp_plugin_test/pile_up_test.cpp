@@ -45,7 +45,6 @@ namespace ksp_plugin {
 
 using ::testing::DoAll;
 using ::testing::IsEmpty;
-using ::testing::Matcher;
 using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::_;

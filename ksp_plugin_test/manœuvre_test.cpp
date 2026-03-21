@@ -27,6 +27,7 @@
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For e.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"

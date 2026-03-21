@@ -53,7 +53,6 @@ namespace ksp_plugin {
 
 using ::testing::AnyNumber;
 using ::testing::Eq;
-using ::testing::Ne;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::astronomy::_frames;
