@@ -65,5 +65,11 @@ class MockRenderer : public Renderer {
 using internal::MockRenderer;
 
 }  // namespace _renderer
+
+namespace _mock_renderer = _renderer;
+
 }  // namespace ksp_plugin
+
+namespace ksp_plugin_test = ksp_plugin;
+
 }  // namespace principia

@@ -142,5 +142,8 @@ ACTION_P(AppendPointsToDiscreteTrajectory, trajectory) {
 }
 
 }  // namespace _ephemeris
+
+namespace _mock_ephemeris = _ephemeris;
+
 }  // namespace physics
 }  // namespace principia
