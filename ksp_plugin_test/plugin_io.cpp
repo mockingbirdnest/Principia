@@ -1,5 +1,8 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 
+#include <cstdint>
+#include <cstring>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -82,8 +85,8 @@ void WritePluginToFile(std::filesystem::path const& filename,
 }
 
 void WritePluginToFile(std::filesystem::path const& filename,
-                       std::string_view const compressor,
-                       std::string_view const encoder,
+                       std::string_view const /*compressor*/,
+                       std::string_view const /*encoder*/,
                        not_null<std::unique_ptr<Plugin const>> plugin,
                        std::int64_t& bytes_processed) {
   OFStream file(filename);
@@ -95,8 +98,8 @@ void WritePluginToFile(std::filesystem::path const& filename,
   for (;;) {
     b64 = principia__SerializePlugin(plugin.get(),
                                      &serializer,
-                                     preferred_compressor,
-                                     preferred_encoder);
+                                     preferred_compressor.data(),
+                                     preferred_encoder.data());
     if (b64 == nullptr) {
       break;
     }

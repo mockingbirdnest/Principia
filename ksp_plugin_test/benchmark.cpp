@@ -1,5 +1,7 @@
 #include "ksp_plugin/plugin.hpp"
 
+#include <cstdint>
+#include <cstring>
 #include <vector>
 
 #include "base/pull_serializer.hpp"

@@ -1,7 +1,12 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
 #include <algorithm>
+#include <array>
+#include <cstdint>
+#include <functional>
 #include <memory>
+#include <random>
+#include <string_view>
 #include <utility>
 #include <vector>
 

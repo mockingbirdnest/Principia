@@ -8,6 +8,9 @@
 
 #include "ksp_plugin/planetarium.hpp"
 
+#include <algorithm>
+#include <cstdint>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <utility>

@@ -1,8 +1,13 @@
 #include "ksp_plugin/vessel.hpp"
 
+#include <chrono>
+#include <cstdint>
+#include <iterator>
 #include <list>
 #include <memory>
+#include <optional>
 #include <set>
+#include <thread>
 #include <utility>
 #include <vector>
 

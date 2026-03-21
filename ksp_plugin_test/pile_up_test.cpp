@@ -1,5 +1,8 @@
 #include "ksp_plugin/pile_up.hpp"
 
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
 #include <limits>
 #include <memory>
 #include <utility>

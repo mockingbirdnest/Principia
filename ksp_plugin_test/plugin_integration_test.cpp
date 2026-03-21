@@ -1,11 +1,13 @@
 #include "ksp_plugin/plugin.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <vector>
 
 #include "astronomy/frames.hpp"
