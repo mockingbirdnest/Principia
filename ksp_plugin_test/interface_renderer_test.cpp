@@ -37,7 +37,7 @@ using namespace principia::quantities::_si;
 
 namespace {
 
-constexpr std::string_view vessel_guid = "123-456";
+constexpr char vessel_guid[] = "123-456";
 
 constexpr Index celestial_index = 1;
 constexpr Index parent_index = 2;

@@ -5,7 +5,7 @@
 
 #include "gmock/gmock.h"
 #include "integrators/integrators.hpp"
-#include "integrators/mock_integrators.hpp"  // 🧙 For MockFixedStepSizeIntegrator.  // NOLINT
+#include "integrators/mock_integrators.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
@@ -14,6 +14,7 @@ namespace _ephemeris {
 namespace internal {
 
 using namespace principia::integrators::_integrators;
+using namespace principia::integrators::_mock_integrators;
 
 template<typename Frame>
 class MockEphemeris : public Ephemeris<Frame> {

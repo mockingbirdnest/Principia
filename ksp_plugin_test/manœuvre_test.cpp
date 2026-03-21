@@ -21,8 +21,8 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
