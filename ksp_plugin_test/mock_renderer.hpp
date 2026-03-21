@@ -3,6 +3,8 @@
 #include <memory>
 
 #include "gmock/gmock.h"
+#include "ksp_plugin_test/mock_celestial.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/rigid_reference_frame.hpp"
 
 namespace principia {

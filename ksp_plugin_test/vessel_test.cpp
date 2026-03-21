@@ -33,6 +33,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/tensors.hpp"

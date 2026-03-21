@@ -9,6 +9,9 @@
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin_test/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_renderer.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/si.hpp"
 

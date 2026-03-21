@@ -12,6 +12,9 @@
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/planetarium.hpp"
+#include "ksp_plugin_test/mock_planetarium.hpp"
+#include "ksp_plugin_test/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_renderer.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 
 namespace principia {
