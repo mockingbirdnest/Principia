@@ -1,9 +1,13 @@
+#include <cstddef>
+#include <cstdio>
+#include <filesystem>
 #include <map>
+#include <optional>
+#include <print>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
@@ -20,7 +24,6 @@
 namespace principia {
 namespace mathematica {
 
-using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_frames;
@@ -76,7 +79,7 @@ TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
   ::std::vector<std::string> argv = ::testing::internal::GetArgvs();
   std::map<std::string, std::optional<std::string>> flags;
   for (int i = 2; i < argv.size(); ++i) {
-    std::string const flag(argv[i]);
+    std::string const& flag(argv[i]);
     std::size_t const name_begin = flag.find_first_not_of("-/");
     std::size_t const name_end = flag.find('=');
     if (name_begin == std::string::npos) {
@@ -98,9 +101,9 @@ TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
     //   --gravity_model=.\astronomy\kerbol_gravity_model.proto.txt \
     //   --initial_state=.\astronomy\kerbol_initial_state_0_0.proto.txt \
     //   --time_step=35min --integrator=BLANES_MOAN_2002_SRKN_14A
-    std::printf(
+    std::println(
         "Usage:\n"
-        "mathematica_tests --gtest_filter=%s.%s \n"
+        "mathematica_tests --gtest_filter={}.{} \n"
         "    --gravity_model=<path>\n"
         "    --initial_state=<path>\n"
         "    --integrator=<fixed_step_size_integrator >\n"
@@ -110,7 +113,7 @@ TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
         "        default: BLANES_MOAN_2002_SRKN_14A\n"
         "    [--fine_step=<quantity(time)>] default: 1 min\n"
         "    [--granularity=<quantity(time)>] default: 1 d\n"
-        "    [--duration=<quantity(time)>] default: 500 d\n",
+        "    [--duration=<quantity(time)>] default: 500 d",
         testing::UnitTest::GetInstance()->current_test_info()->test_case_name(),
         testing::UnitTest::GetInstance()->current_test_info()->name());
     return;
@@ -129,7 +132,8 @@ TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
       (std::string("local_error_analysis[") + solar_system->names()[0] + "," +
        solar_system->epoch_literal() + "," + *flags["integrator"] + "," +
        DebugString(time_step) + "].wl");
-  LocalErrorAnalyser analyser(std::move(solar_system), integrator, time_step);
+  LocalErrorAnalyser const analyser(
+      std::move(solar_system), integrator, time_step);
   analyser.WriteLocalErrors(
       out,
       ParseFixedStepSizeIntegrator<

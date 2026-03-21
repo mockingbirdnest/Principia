@@ -15,7 +15,7 @@ using namespace principia::base::_mod;
 
 template<typename Method, typename ODE_>
 absl::Status SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
-Instance::Solve(Instant const& t_final) {
+Instance::Solve(Instant const& /*t_final*/) {
   LOG(FATAL) << "I'm sorry Dave.  I'm afraid I can't do that.";
 }
 
@@ -36,7 +36,7 @@ Instance::Clone() const {
 template<typename Method, typename ODE_>
 void SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_>::
 Instance::WriteToMessage(
-    not_null<serialization::IntegratorInstance*> message) const {
+    not_null<serialization::IntegratorInstance*> /*message*/) const {
   LOG(FATAL) << "WriteToMessage NYI";
 }
 
@@ -78,7 +78,7 @@ template<typename Method, typename ODE_>
 internal::SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const&
 SymplecticPartitionedRungeKuttaIntegrator() {
   static_assert(
-      std::is_base_of<_methods::SymplecticPartitionedRungeKutta, Method>::value,
+      std::is_base_of_v<_methods::SymplecticPartitionedRungeKutta, Method>,
       "Method must be derived from SymplecticPartitionedRungeKutta");
   static internal::SymplecticPartitionedRungeKuttaIntegrator<Method, ODE_> const
       integrator;
