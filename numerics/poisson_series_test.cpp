@@ -40,7 +40,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
-using namespace principia::testing_utilities::_vanishes_before;
 
 class PoissonSeriesTest : public ::testing::Test {
  protected:

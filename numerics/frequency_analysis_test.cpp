@@ -397,7 +397,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
   std::uniform_real_distribution<> frequency_distribution(2000.0, 3000.0);
 
   std::vector<AngularFrequency> ωs;
-  ws.reserve(3);
+  ωs.reserve(3);
   for (int i = 0; i < 3; ++i) {
     ωs.push_back(frequency_distribution(random) * Radian / Second);
   }

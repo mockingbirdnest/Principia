@@ -220,7 +220,7 @@ bool Hermite3<Value_, Argument_>::LInfinityL₂ErrorIsWithin(
     NormType const& tolerance) const {
   return std::ranges::all_of(
       samples,
-      [&get_argument, &get_value](auto const& sample) {
+      [&](auto const& sample) {
         return Norm((*this)(get_argument(sample)) - get_value(sample)) <
                tolerance;
       });
