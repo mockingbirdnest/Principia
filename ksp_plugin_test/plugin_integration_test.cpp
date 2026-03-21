@@ -79,7 +79,7 @@ using namespace principia::testing_utilities::_solar_system_factory;
 namespace {
 
 constexpr PartId part_id = 789;
-constexpr GUID vessel_guid = "123-456";
+GUID const vessel_guid = "123-456";
 constexpr char part_name[] = "Picard's desk";
 constexpr char vessel_name[] = "NCC-1701-D";
 
