@@ -27,6 +27,7 @@ using interface::AdaptiveStepParameters;
 using interface::BodyGeopotentialElement;
 using interface::BodyParameters;
 using interface::Burn;
+using interface::ClassicalElements;
 using interface::ConfigurationAccuracyParameters;
 using interface::ConfigurationAdaptiveStepParameters;
 using interface::ConfigurationDownsamplingParameters;

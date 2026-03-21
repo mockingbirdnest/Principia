@@ -148,6 +148,20 @@ char const* __cdecl principia__IteratorGetVesselGuid(
       }));
 }
 
+ClassicalElements __cdecl principia__IteratorGetClassicalElements(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetClassicalElements> m({iterator});
+  using Elements = astronomy::_orbital_elements::OrbitalElements::
+                          ClassicalElements;
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<
+          std::vector<Elements>> const*>(iterator));
+  return m.Return(typed_iterator->Get<ClassicalElements>(
+      [typed_iterator](Elements const& elements) -> ClassicalElements {
+        return ToClassicalElements(*typed_iterator->plugin(), elements);
+      }));
+}
+
 void __cdecl principia__IteratorIncrement(Iterator* const iterator) {
   journal::Method<journal::IteratorIncrement> m({iterator});
   CHECK_NOTNULL(iterator)->Increment();

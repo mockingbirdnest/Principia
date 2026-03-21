@@ -202,6 +202,15 @@ message Interval {
   required double max = 2;
 }
 
+message ClassicalElements {
+  required double time = 1;
+  required double semimajor_axis = 2;
+  required double eccentricity = 3;
+  required double inclination_in_degrees = 4;
+  required double longitude_of_ascending_node_in_degrees = 5;
+  required double argument_of_periapsis_in_degrees = 6;
+}
+
 message OrbitalElements {
   required double sidereal_period = 1;
   required double nodal_period = 2;
@@ -223,6 +232,10 @@ message OrbitalElements {
   required fixed64 first_collision_time_address = 16 [(address_of) = "first_collision_time"];
   required fixed64 first_collision_risk_time_address = 17 [(address_of) = "first_collision_risk_time"];
   required fixed64 first_reentry_time_address = 18 [(address_of) = "first_reentry_time"];
+  // Added in Lehmer.
+  required fixed64 mean_elements = 19 [(pointer_to) = "Iterator",
+                                       (disposable) = "DisposableIterator",
+                                       (is_produced) = true];
 }
 
 message OrbitRecurrence {
@@ -262,7 +275,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5202.
+  extensions 5000 to 5999;  // Last used: 5203.
 }
 
 message ActivatePlayer {
@@ -1764,6 +1777,22 @@ message IteratorGetVesselGuid {
   }
   message Return {
     required string result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetClassicalElements {
+  extend Method {
+    optional IteratorGetClassicalElements extension = 5203;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required ClassicalElements result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

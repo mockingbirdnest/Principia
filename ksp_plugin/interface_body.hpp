@@ -498,6 +498,23 @@ inline KeplerianElements ToKeplerianElements(
       .mean_anomaly = *keplerian_elements.mean_anomaly / Radian};
 }
 
+inline ClassicalElements ToClassicalElements(
+    Plugin const& plugin,
+    astronomy::_orbital_elements::OrbitalElements::
+                          ClassicalElements const&
+        elements) {
+  return {
+      .time = ToGameTime(plugin, elements.time),
+      .semimajor_axis = elements.semimajor_axis / Metre,
+      .eccentricity = elements.eccentricity,
+      .inclination_in_degrees = elements.inclination / Degree,
+      .longitude_of_ascending_node_in_degrees =
+          elements.longitude_of_ascending_node / Degree,
+      .argument_of_periapsis_in_degrees =
+          elements.argument_of_periapsis / Degree,
+  };
+}
+
 inline Node ToNode(Plugin const& plugin,
                    Renderer::Node const& node) {
   return Node{
@@ -736,6 +753,9 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .first_collision_risk_time =
             to_double_ptr(vessel_analysis->first_collision_risk()),
         .first_reentry_time = to_double_ptr(vessel_analysis->first_reentry()),
+        .mean_elements =
+            new TypedIterator<std::vector<astronomy::_orbital_elements::OrbitalElements::ClassicalElements>>(
+                elements.mean_elements(), &plugin),
     };
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {
