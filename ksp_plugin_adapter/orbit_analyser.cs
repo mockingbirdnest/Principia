@@ -219,7 +219,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       return;
     }
 
-    using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(12))) {
+    using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(22))) {
       if (should_request_analysis) {
         mission_duration_.Render(enabled : true);
         // If the main window is hidden, make sure that the orbit analyser
@@ -489,6 +489,17 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
   private void RenderOrbitalElements(OrbitalElements elements,
                                      CelestialBody primary) {
+    double t_min = double.PositiveInfinity;
+    double t_max = double.NegativeInfinity;
+    if (elements != null) {
+      if (!elements.mean_elements.IteratorAtEnd()) {
+        t_min = elements.mean_elements.IteratorGetClassicalElements().time;
+      }
+      for (;!elements.mean_elements.IteratorAtEnd(); elements.mean_elements.IteratorIncrement()) {
+        t_max = elements.mean_elements.IteratorGetClassicalElements().time;
+      }
+      elements.mean_elements.IteratorReset();
+    }
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
         elements?.sidereal_period.FormatDuration());
@@ -498,19 +509,165 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_AnomalisticPeriod"),
         elements?.anomalistic_period.FormatDuration());
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
-        elements?.mean_semimajor_axis.FormatLengthInterval());
+        
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
+          elements?.mean_semimajor_axis.FormatLengthInterval());
+      UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+                                GUILayoutWidth(10),
+                                GUILayoutHeight(1));
+      var rect = UnityEngine.GUILayoutUtility.GetLastRect();
+      if (elements != null) {
+        UnityEngine.Vector2? last_point = null;
+        for (;
+             !elements.mean_elements.IteratorAtEnd();
+             elements.mean_elements.IteratorIncrement()) {
+          var datum =
+              elements.mean_elements.IteratorGetClassicalElements();
+          var point =
+              new UnityEngine.Vector2(
+                  rect.xMin +
+                  (float)((datum.time - t_min) *
+                          (rect.width / (t_max - t_min))),
+                  rect.yMax -
+                  (float)((datum.semimajor_axis -
+                           elements.mean_semimajor_axis.min) *
+                          (rect.height /
+                           (elements.mean_semimajor_axis.max -
+                            elements.mean_semimajor_axis.min))));
+          if (last_point != null) {
+            Drawing.DrawLine(last_point.Value,
+                             point,
+                             XKCDColors.Sunflower,
+                             width: 2,
+                             antiAlias: true);
+          }
+          last_point = point;
+        }
+        elements.mean_elements.IteratorReset();
+      }
+    }
+        
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Eccentricity"),
         elements?.mean_eccentricity.FormatInterval());
+    UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+                              GUILayoutWidth(10),
+                              GUILayoutHeight(1));
+    var rect = UnityEngine.GUILayoutUtility.GetLastRect();
+    if (elements != null) {
+      UnityEngine.Vector2? last_point = null;
+      for (;
+           !elements.mean_elements.IteratorAtEnd();
+           elements.mean_elements.IteratorIncrement()) {
+        var datum =
+            elements.mean_elements.IteratorGetClassicalElements();
+        var point =
+            new UnityEngine.Vector2(
+                rect.xMin +
+                (float)((datum.time - t_min) *
+                        (rect.width / (t_max - t_min))),
+                rect.yMax -
+                (float)((datum.eccentricity -
+                         elements.mean_eccentricity.min) *
+                        (rect.height /
+                         (elements.mean_eccentricity.max -
+                          elements.mean_eccentricity.min))));
+        if (last_point != null) {
+          Drawing.DrawLine(last_point.Value,
+                           point,
+                           XKCDColors.Sunflower,
+                           width: 2,
+                           antiAlias: true);
+        }
+        last_point = point;
+      }
+      elements.mean_elements.IteratorReset();
+    }
+    }
+        
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      const double degree = Math.PI / 180;
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Inclination"),
         elements?.mean_inclination.FormatAngleInterval());
+    UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+                              GUILayoutWidth(10),
+                              GUILayoutHeight(1));
+    var rect = UnityEngine.GUILayoutUtility.GetLastRect();
+    if (elements != null) {
+      UnityEngine.Vector2? last_point = null;
+      for (;
+           !elements.mean_elements.IteratorAtEnd();
+           elements.mean_elements.IteratorIncrement()) {
+        var datum =
+            elements.mean_elements.IteratorGetClassicalElements();
+        var point =
+            new UnityEngine.Vector2(
+                rect.xMin +
+                (float)((datum.time - t_min) *
+                        (rect.width / (t_max - t_min))),
+                rect.yMax -
+                (float)((datum.inclination_in_degrees -
+                         elements.mean_inclination.min / degree) *
+                        (rect.height /
+                         ((elements.mean_inclination.max -
+                           elements.mean_inclination.min) / degree))));
+        if (last_point != null) {
+          Drawing.DrawLine(last_point.Value,
+                           point,
+                           XKCDColors.Sunflower,
+                           width: 2,
+                           antiAlias: true);
+        }
+        last_point = point;
+      }
+      elements.mean_elements.IteratorReset();
+    }
+    }
+        
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      const double degree = Math.PI / 180;
     LabeledField(
         L10N.CacheFormat(
             "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
         elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
+    UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+                              GUILayoutWidth(10),
+                              GUILayoutHeight(1));
+    var rect = UnityEngine.GUILayoutUtility.GetLastRect();
+    if (elements != null) {
+      UnityEngine.Vector2? last_point = null;
+      for (;
+           !elements.mean_elements.IteratorAtEnd();
+           elements.mean_elements.IteratorIncrement()) {
+        var datum =
+            elements.mean_elements.IteratorGetClassicalElements();
+        var point =
+            new UnityEngine.Vector2(
+                rect.xMin +
+                (float)((datum.time - t_min) *
+                        (rect.width / (t_max - t_min))),
+                rect.yMax -
+                (float)((datum.longitude_of_ascending_node_in_degrees -
+                         elements.mean_longitude_of_ascending_nodes.min / degree) *
+                        (rect.height /
+                         ((elements.mean_longitude_of_ascending_nodes.max -
+                          elements.mean_longitude_of_ascending_nodes.min) / degree))));
+        if (last_point != null) {
+          Drawing.DrawLine(last_point.Value,
+                           point,
+                           XKCDColors.Sunflower,
+                           width: 2,
+                           antiAlias: true);
+        }
+        last_point = point;
+      }
+      elements.mean_elements.IteratorReset();
+    }
+    }
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPrecession"),
         elements?.nodal_precession.FormatAngularFrequency());
@@ -520,11 +677,48 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     string apoapsis = L10N.CelestialString(
         "#Principia_OrbitAnalyser_Elements_Apoapsis",
         new[]{primary});
+        
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      const double degree = Math.PI / 180;
     LabeledField(
         L10N.CacheFormat(
             "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
             periapsis),
         elements?.mean_argument_of_periapsis.FormatAngleInterval());
+    UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+                              GUILayoutWidth(10),
+                              GUILayoutHeight(1));
+    var rect = UnityEngine.GUILayoutUtility.GetLastRect();
+    if (elements != null) {
+      UnityEngine.Vector2? last_point = null;
+      for (;
+           !elements.mean_elements.IteratorAtEnd();
+           elements.mean_elements.IteratorIncrement()) {
+        var datum =
+            elements.mean_elements.IteratorGetClassicalElements();
+        var point =
+            new UnityEngine.Vector2(
+                rect.xMin +
+                (float)((datum.time - t_min) *
+                        (rect.width / (t_max - t_min))),
+                rect.yMax -
+                (float)((datum.argument_of_periapsis_in_degrees -
+                         elements.mean_argument_of_periapsis.min / degree) *
+                        (rect.height /
+                         ((elements.mean_argument_of_periapsis.max -
+                           elements.mean_argument_of_periapsis.min) / degree))));
+        if (last_point != null) {
+          Drawing.DrawLine(last_point.Value,
+                           point,
+                           XKCDColors.Sunflower,
+                           width: 2,
+                           antiAlias: true);
+        }
+        last_point = point;
+      }
+      elements.mean_elements.IteratorReset();
+    }
+    }
     LabeledField(
         L10N.CacheFormat(
             "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude",
@@ -640,7 +834,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
   }
 
   private void LabeledField(string label, string value) {
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
+    using (new UnityEngine.GUILayout.HorizontalScope(GUILayoutWidth(12))) {
       UnityEngine.GUILayout.Label(label);
       UnityEngine.GUILayout.Label(value ?? em_dash,
                                   Style.RightAligned(
