@@ -44,9 +44,6 @@
 #include "physics/equipotential.hpp"
 #include "physics/lagrange_equipotentials.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
@@ -100,6 +97,9 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_lagrange_equipotentials;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_continuous_trajectory;
+using namespace principia::physics::_mock_ephemeris;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;

@@ -33,7 +33,6 @@
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
@@ -93,6 +92,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;

@@ -33,7 +33,6 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/tensors.hpp"
@@ -77,6 +76,7 @@ using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_tensors;

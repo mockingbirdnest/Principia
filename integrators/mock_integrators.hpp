@@ -65,5 +65,8 @@ class MockFixedStepSizeIntegrator
 using internal::MockFixedStepSizeIntegrator;
 
 }  // namespace _integrators
+
+namespace _mock_integrators = _integrators;
+
 }  // namespace integrators
 }  // namespace principia

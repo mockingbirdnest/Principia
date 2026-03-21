@@ -19,18 +19,10 @@
 #include "integrators/methods.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "ksp_plugin_test/mock_flight_plan.hpp"  // 🧙 For MockFlightPlan.
-#include "ksp_plugin_test/mock_manœuvre.hpp"  // 🧙 For MockManœuvre.
-#include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
-#include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
-#include "ksp_plugin_test/mock_vessel.hpp"  // 🧙 For MockVessel.
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
@@ -62,10 +54,18 @@ using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_
 using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin_test::_mock_flight_plan;
+using namespace principia::ksp_plugin_test::_mock_manœuvre;
+using namespace principia::ksp_plugin_test::_mock_plugin;
+using namespace principia::ksp_plugin_test::_mock_renderer;
+using namespace principia::ksp_plugin_test::_mock_vessel;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_continuous_trajectory;
+using namespace principia::physics::_mock_ephemeris;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;

@@ -24,12 +24,9 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
-#include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -70,9 +67,12 @@ using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_plugin;
+using namespace principia::ksp_plugin_test::_mock_plugin;
+using namespace principia::ksp_plugin_test::_mock_renderer;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

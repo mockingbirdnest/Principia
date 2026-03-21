@@ -19,7 +19,6 @@
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "integrators/mock_integrators.hpp"  // 🧙 For mock integrators.
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -30,7 +29,6 @@
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
 #include "physics/rigid_motion.hpp"
 #include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
@@ -60,6 +58,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
+using namespace principia::integrators::_mock_integrators;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
@@ -71,6 +70,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;

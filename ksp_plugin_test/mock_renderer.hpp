@@ -3,8 +3,6 @@
 #include <memory>
 
 #include "gmock/gmock.h"
-#include "ksp_plugin_test/mock_celestial.hpp"  // 🧙 For MockCelestial.
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
 #include "physics/rigid_reference_frame.hpp"
 
 namespace principia {
@@ -12,6 +10,8 @@ namespace ksp_plugin {
 namespace _renderer {
 namespace internal {
 
+using namespace principia::ksp_plugin_test::_mock_celestial;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_rigid_reference_frame;
 
 MockCelestial* const sun = new MockCelestial;
