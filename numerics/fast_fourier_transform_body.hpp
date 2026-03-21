@@ -167,8 +167,7 @@ auto FastFourierTransform<Value, Argument, size_>::Mode(
     AngularFrequency const& max_ω) const -> Interval<AngularFrequency> {
   CHECK_LE(min_ω, max_ω);
   auto const spectrum = PowerSpectrum();
-  typename std::map<AngularFrequency, Norm²Type<Value>>::const_iterator
-      max = spectrum.end();
+  auto max = spectrum.end();
 
   // Only look at the first size / 2 + 1 elements because the spectrum is
   // symmetrical.

@@ -1,5 +1,6 @@
 #include "numerics/elliptic_functions.hpp"
 
+#include <cmath>
 #include <limits>
 
 #include "glog/logging.h"
@@ -9,7 +10,6 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/serialization.hpp"
 
@@ -23,7 +23,6 @@ using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
-using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_serialization;
 
@@ -35,9 +34,8 @@ TEST_F(EllipticFunctionsTest, Xgscd) {
       ReadFromTabulatedData(SOLUTION_DIR / "numerics" / "xgscd.proto.txt");
   double Δmc, mc, m, s, c, d;
   Angle u, du;
-  int jend, iend;
-  jend = 10;
-  iend = 8;
+  int const jend = 10;
+  int const iend = 8;
   Δmc = 1.0 / static_cast<double>(jend);
   std::printf("%10s%10s%25s%25s%25s\n", "m", "u", "s", "c", "d");
   int expected_index = 0;

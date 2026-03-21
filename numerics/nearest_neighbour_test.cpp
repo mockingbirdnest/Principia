@@ -27,7 +27,7 @@ class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
   using V = Vector<double, World>;
 
   // Computes the nearest point using the brute force algorithm.
-  V const* BruteForceNearestNeighbour(
+  static V const* BruteForceNearestNeighbour(
       V const& query_value,
       std::vector<V> const& values,
       PrincipalComponentPartitioningTree<V>::Filter const& filter = nullptr) {
@@ -45,7 +45,7 @@ class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
   }
 
   // Fills the vectors with `number_of_values` randomly generated values.
-  void MakeValues(
+  static void MakeValues(
       int const number_of_values,
       std::vector<V>& values,
       std::vector<not_null<V const*>>& pointers,
@@ -142,9 +142,10 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomConstructor) {
                                 coordinate_distribution(random),
                                 coordinate_distribution(random)});
 
-    auto* const nearest = BruteForceNearestNeighbour(query_point, tree_points);
-    auto* const nearest1 = tree1.FindNearestNeighbour(query_point);
-    auto* const nearest3 = tree3.FindNearestNeighbour(query_point);
+    auto const* const nearest =
+        BruteForceNearestNeighbour(query_point, tree_points);
+    auto const* const nearest1 = tree1.FindNearestNeighbour(query_point);
+    auto const* const nearest3 = tree3.FindNearestNeighbour(query_point);
 
     EXPECT_THAT(nearest1, Eq(nearest)) << *nearest1 << " " << *nearest;
     EXPECT_THAT(nearest3, Eq(nearest)) << *nearest3 << " " << *nearest;
@@ -181,9 +182,10 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomAdd) {
                                 coordinate_distribution(random),
                                 coordinate_distribution(random)});
 
-    auto* const nearest = BruteForceNearestNeighbour(query_point, tree_points);
-    auto* const nearest1 = tree1.FindNearestNeighbour(query_point);
-    auto* const nearest3 = tree3.FindNearestNeighbour(query_point);
+    auto const* const nearest =
+        BruteForceNearestNeighbour(query_point, tree_points);
+    auto const* const nearest1 = tree1.FindNearestNeighbour(query_point);
+    auto const* const nearest3 = tree3.FindNearestNeighbour(query_point);
 
     EXPECT_THAT(nearest1, Eq(nearest)) << *nearest1 << " " << *nearest;
     EXPECT_THAT(nearest3, Eq(nearest)) << *nearest3 << " " << *nearest;
@@ -221,10 +223,12 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomFilter) {
                                 coordinate_distribution(random),
                                 coordinate_distribution(random)});
 
-    auto* const nearest =
+    auto const* const nearest =
         BruteForceNearestNeighbour(query_point, tree_points, filter);
-    auto* const nearest1 = tree1.FindNearestNeighbour(query_point, filter);
-    auto* const nearest3 = tree3.FindNearestNeighbour(query_point, filter);
+    auto const* const nearest1 =
+        tree1.FindNearestNeighbour(query_point, filter);
+    auto const* const nearest3 =
+        tree3.FindNearestNeighbour(query_point, filter);
 
     EXPECT_THAT(nearest1, Eq(nearest)) << *nearest1 << " " << *nearest;
     EXPECT_THAT(nearest3, Eq(nearest)) << *nearest3 << " " << *nearest;

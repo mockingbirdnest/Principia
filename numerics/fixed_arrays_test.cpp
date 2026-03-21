@@ -122,8 +122,8 @@ TEST_F(FixedArraysTest, LinearAlgebraConcepts) {
 
 TEST_F(FixedArraysTest, Assignment) {
   {
-    FixedVector<double, 2> u2({1, 2});
-    FixedVector<double, 2> v2 = {{1, 2}};
+    FixedVector<double, 2> const u2({1, 2});
+    FixedVector<double, 2> const v2 = {{1, 2}};
     FixedVector<double, 2> w2;
     w2 = {1, 2};
     EXPECT_EQ(u2, v2);
@@ -131,10 +131,10 @@ TEST_F(FixedArraysTest, Assignment) {
   }
 
   {
-    FixedMatrix<double, 2, 3> l23({1, 2, 3,
-                                   4, 5, 6});
-    FixedMatrix<double, 2, 3> m23 = {{1, 2, 3,
-                                      4, 5, 6}};
+    FixedMatrix<double, 2, 3> const l23({1, 2, 3,
+                                         4, 5, 6});
+    FixedMatrix<double, 2, 3> const m23 = {{1, 2, 3,
+                                            4, 5, 6}};
     FixedMatrix<double, 2, 3> n23 = {{0, 0, 0,
                                       0, 0, 0}};
     n23 = {1, 2, 3,
@@ -143,16 +143,16 @@ TEST_F(FixedArraysTest, Assignment) {
     EXPECT_EQ(l23, n23);
   }
   {
-    FixedStrictlyLowerTriangularMatrix<double, 3> l3({
-                                                      1,
-                                                      2, 3 });
-    FixedStrictlyLowerTriangularMatrix<double, 3> m3 = {{
-                                                         1,
-                                                         2, 3}};
+    FixedStrictlyLowerTriangularMatrix<double, 3> const l3({
+                                                            1,
+                                                            2, 3 });
+    FixedStrictlyLowerTriangularMatrix<double, 3> const m3 = {{
+                                                               1,
+                                                               2, 3}};
     FixedStrictlyLowerTriangularMatrix<double, 3> n3 = {{
                                                          0,
                                                          0, 0}};
-    FixedStrictlyLowerTriangularMatrix<double, 3> o3;
+    FixedStrictlyLowerTriangularMatrix<double, 3> const o3;
     EXPECT_EQ(o3, n3);
     n3 = {
           1,
@@ -161,16 +161,16 @@ TEST_F(FixedArraysTest, Assignment) {
     EXPECT_EQ(l3, n3);
   }
   {
-    FixedLowerTriangularMatrix<double, 3> l3({1,
-                                              2, 3,
-                                              4, 5, 6});
-    FixedLowerTriangularMatrix<double, 3> m3 = {{1,
-                                                 2, 3,
-                                                 4, 5, 6}};
+    FixedLowerTriangularMatrix<double, 3> const l3({1,
+                                                    2, 3,
+                                                    4, 5, 6});
+    FixedLowerTriangularMatrix<double, 3> const m3 = {{1,
+                                                       2, 3,
+                                                       4, 5, 6}};
     FixedLowerTriangularMatrix<double, 3> n3 = {{0,
                                                  0, 0,
                                                  0, 0, 0}};
-    FixedLowerTriangularMatrix<double, 3> o3;
+    FixedLowerTriangularMatrix<double, 3> const o3;
     EXPECT_EQ(o3, n3);
     n3 = {1,
           2, 3,
@@ -179,16 +179,16 @@ TEST_F(FixedArraysTest, Assignment) {
     EXPECT_EQ(l3, n3);
   }
   {
-    FixedUpperTriangularMatrix<double, 3> l3({1, 2, 3,
-                                                 4, 5,
-                                                    6});
-    FixedUpperTriangularMatrix<double, 3> m3 = {{1, 2, 3,
-                                                    4, 5,
-                                                       6}};
+    FixedUpperTriangularMatrix<double, 3> const l3({1, 2, 3,
+                                                       4, 5,
+                                                          6});
+    FixedUpperTriangularMatrix<double, 3> const m3 = {{1, 2, 3,
+                                                          4, 5,
+                                                             6}};
     FixedUpperTriangularMatrix<double, 3> n3 = {{0, 0, 0,
                                                     0, 0,
                                                        0}};
-    FixedUpperTriangularMatrix<double, 3> o3;
+    FixedUpperTriangularMatrix<double, 3> const o3;
     EXPECT_EQ(o3, n3);
     n3 = {1, 2, 3,
              4, 5,
@@ -260,7 +260,7 @@ TEST_F(FixedArraysTest, Algebra) {
   EXPECT_EQ(v3_, m34_ * v4_);
   EXPECT_EQ((FixedVector<double, 4>({-486, -229, 333, 198})),
             TransposedView{m34_} * v3_);  // NOLINT
-  FixedMatrix<double, 4, 3> m43(TransposedView{m34_});
+  FixedMatrix<double, 4, 3> const m43(TransposedView{m34_});
   EXPECT_EQ((FixedVector<double, 4>({-486, -229, 333, 198})),
             m43 * v3_);
 }
@@ -342,8 +342,8 @@ TEST_F(FixedArraysTest, UpperTriangularMatrixIndexing) {
 }
 
 TEST_F(FixedArraysTest, Row) {
-  FixedMatrix<double, 2, 3> m({1, 2, 3,
-                               4, -5, 6});
+  FixedMatrix<double, 2, 3> const m({1, 2, 3,
+                                     4, -5, 6});
   auto const* const r0 = m.row(0);
   auto const* const r1 = m.row(1);
   FixedVector<double, 3> v = {{1, 2, -3}};

@@ -218,12 +218,12 @@ bool Hermite3<Value_, Argument_>::LInfinityL₂ErrorIsWithin(
     std::function<Value const&(typename Samples::value_type const&)> const&
         get_value,
     NormType const& tolerance) const {
-  for (const auto& sample : samples) {
-    if (Norm((*this)(get_argument(sample)) - get_value(sample)) >= tolerance) {
-      return false;
-    }
-  }
-  return true;
+  return std::ranges::all_of(
+      samples,
+      [&get_argument, &get_value](auto const& sample) {
+        return Norm((*this)(get_argument(sample)) - get_value(sample)) <
+               tolerance;
+      });
 }
 
 template<affine Value_, affine Argument_>

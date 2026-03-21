@@ -191,17 +191,17 @@ TEST_F(MatrixViewsTest, ColumnView_Multiplication) {
 }
 
 TEST_F(MatrixViewsTest, ColumnView_Norm) {
-  ColumnView<FixedMatrix<double, 3, 4>> cfm34{.matrix = fm34_,
-                                              .first_row = 1,
-                                              .last_row = 2,
-                                              .column = 3};
+  ColumnView<FixedMatrix<double, 3, 4>> const cfm34{.matrix = fm34_,
+                                                    .first_row = 1,
+                                                    .last_row = 2,
+                                                    .column = 3};
   EXPECT_EQ(106, cfm34.Norm²());
   EXPECT_THAT(cfm34.Norm(), AlmostEquals(Sqrt(106), 0));
 
-  ColumnView<UnboundedMatrix<double>> cum34{.matrix = um34_,
-                                            .first_row = 1,
-                                            .last_row = 2,
-                                            .column = 3};
+  ColumnView<UnboundedMatrix<double>> const cum34{.matrix = um34_,
+                                                  .first_row = 1,
+                                                  .last_row = 2,
+                                                  .column = 3};
   EXPECT_EQ(106, cum34.Norm²());
   EXPECT_THAT(cum34.Norm(), AlmostEquals(Sqrt(106), 0));
 }

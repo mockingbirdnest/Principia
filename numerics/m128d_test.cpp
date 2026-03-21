@@ -25,8 +25,8 @@ TEST_F(M128DTest, Concepts) {
 
 TEST_F(M128DTest, Arithmetic) {
   M128D a(-5.0);
-  M128D b(2.0);
-  M128D c(3.0);
+  M128D const b(2.0);
+  M128D const c(3.0);
 
   EXPECT_THAT(static_cast<double>(-b), AlmostEquals(-2.0, 0));
   EXPECT_THAT(static_cast<double>(a + b), AlmostEquals(-3.0, 0));

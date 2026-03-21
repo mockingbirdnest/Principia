@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <random>
-#include <utility>
 #include <vector>
 
 #include "geometry/frame.hpp"
@@ -18,8 +18,8 @@
 #include "numerics/fast_fourier_transform.hpp"
 #include "numerics/piecewise_poisson_series.hpp"
 #include "numerics/poisson_series.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -45,7 +45,6 @@ using namespace principia::numerics::_fast_fourier_transform;
 using namespace principia::numerics::_frequency_analysis;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
-using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -136,10 +135,11 @@ TEST_F(FrequencyAnalysisTest, PreciseModeScalar) {
 
   Instant const t_min = t0_;
   Instant const t_max = t0_ + (FFT::size - 1) * Δt;
-  PiecewiseSeries0 const piecewise_sin =
+  auto const piecewise_sin =
       Slice<PiecewiseSeries0>(sin, /*pieces=*/1000, t_min, t_max);
 
   std::vector<Length> signal;
+  signal.reserve(FFT::size);
   for (int n = 0; n < FFT::size; ++n) {
     signal.push_back(piecewise_sin(t0_ + n * Δt));
   }
@@ -185,10 +185,11 @@ TEST_F(FrequencyAnalysisTest, PreciseModeVector) {
 
   Instant const t_min = t0_;
   Instant const t_max = t0_ + (FFT::size - 1) * Δt;
-  PiecewiseSeries0 const piecewise_sin =
+  auto const piecewise_sin =
       Slice<PiecewiseSeries0>(sin, /*pieces=*/1000, t_min, t_max);
 
   std::vector<Displacement<World>> signal;
+  signal.reserve(FFT::size);
   for (int n = 0; n < FFT::size; ++n) {
     signal.push_back(piecewise_sin(t0_ + n * Δt));
   }
@@ -359,7 +360,8 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
 
   // Build a series that is based on `series` with different perturbations over
   // different intervals.
-  PiecewiseSeries4 piecewise_series({t_min, t_min + 1 * Second}, series);
+  PiecewiseSeries4 piecewise_series({.min = t_min, .max = t_min + 1 * Second},
+                                    series);
   for (int i = 1; i < 10; ++i) {
     auto const perturbation_sin =
         random_polynomial4_(t_mid, random, perturbation_distribution);
@@ -368,8 +370,9 @@ TEST_F(FrequencyAnalysisTest, PiecewisePoissonSeriesProjection) {
     Series4 const perturbation_series(
         Series4::AperiodicPolynomial({}, t_mid),
         {{ω, Series4::Polynomials{perturbation_sin, perturbation_cos}}});
-    piecewise_series.Append({t_min + i * Second, t_min + (i + 1) * Second},
-                            series + perturbation_series);
+    piecewise_series.Append(
+        {.min = t_min + i * Second, .max = t_min + (i + 1) * Second},
+        series + perturbation_series);
   }
 
   // Projection on a 4th degree basis.  The approximation is reasonably
@@ -394,6 +397,7 @@ TEST_F(FrequencyAnalysisTest, PoissonSeriesIncrementalProjectionNoSecular) {
   std::uniform_real_distribution<> frequency_distribution(2000.0, 3000.0);
 
   std::vector<AngularFrequency> ωs;
+  ws.reserve(3);
   for (int i = 0; i < 3; ++i) {
     ωs.push_back(frequency_distribution(random) * Radian / Second);
   }

@@ -1,5 +1,7 @@
 #include "functions/multiprecision.hpp"
 
+#include "boost/multiprecision/cpp_bin_float.hpp"
+
 namespace principia {
 namespace functions {
 namespace _multiprecision {
