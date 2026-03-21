@@ -538,8 +538,8 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
       .extension = serialization::BarycentricRotatingReferenceFrame::
           kExtensionFieldNumber,
       .centre_index = unused,
-      .primary_index = &celestial_index_array[0],
-      .secondary_index = &parent_index_array[0]};
+      .primary_index = celestial_index_array.data(),
+      .secondary_index = parent_index_array.data()};
   {
     auto* const mock_navigation_frame =
         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
@@ -589,8 +589,8 @@ TEST_F(InterfaceTest, NavballOrientation) {
       .extension = serialization::BarycentricRotatingReferenceFrame::
           kExtensionFieldNumber,
       .centre_index = unused,
-      .primary_index = &celestial_index_array[0],
-      .secondary_index = &parent_index_array[0]};
+      .primary_index = celestial_index_array.data(),
+      .secondary_index = parent_index_array.data()};
 
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));

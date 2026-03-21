@@ -413,7 +413,7 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_EQ(0, vessel_.selected_flight_plan_index());
   EXPECT_EQ(0, vessel_.flight_plan().number_of_manœuvres());
   EXPECT_EQ(1, vessel_.flight_plan().number_of_segments());
-  FlightPlan* p1 = &vessel_.flight_plan();
+  FlightPlan const* p1 = &vessel_.flight_plan();
   EXPECT_OK(vessel_.RebaseFlightPlan(5 * Kilogram));
   EXPECT_NE(p1, &vessel_.flight_plan());
   p1 = &vessel_.flight_plan();
@@ -425,7 +425,7 @@ TEST_F(VesselTest, FlightPlan) {
                            DefaultBurnParameters());
   EXPECT_EQ(2, vessel_.flight_plan_count());
   EXPECT_EQ(1, vessel_.selected_flight_plan_index());
-  FlightPlan* const p2 = &vessel_.flight_plan();
+  FlightPlan const* const p2 = &vessel_.flight_plan();
   EXPECT_NE(p1, p2);
   vessel_.SelectFlightPlan(0);
   EXPECT_EQ(p1, &vessel_.flight_plan());
