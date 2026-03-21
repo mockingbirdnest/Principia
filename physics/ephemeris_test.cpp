@@ -6,6 +6,7 @@
 #include <random>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -13,7 +14,6 @@
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -66,7 +66,6 @@ using namespace principia::astronomy::_frames;
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_r3x3_matrix;
@@ -1042,7 +1041,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
   auto const μ2 = 3 * SolarGravitationalParameter;
   auto const μ3 = 4 * SolarGravitationalParameter;
 
-  auto const b0 =
+  auto const* const b0 =
       new OblateBody<ICRS>(μ0,
                            RotatingBody<ICRS>::Parameters(1 * Metre,
                                                           1 * Radian,
@@ -1051,9 +1050,9 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
                                                           0 * Radian,
                                                           π / 2 * Radian),
                            OblateBody<ICRS>::Parameters(j2, radius));
-  auto const b1 = new MassiveBody(μ1);
-  auto const b2 = new MassiveBody(μ2);
-  auto const b3 = new MassiveBody(μ3);
+  auto const* const b1 = new MassiveBody(μ1);
+  auto const* const b2 = new MassiveBody(μ2);
+  auto const* const b3 = new MassiveBody(μ3);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRS>> initial_state;

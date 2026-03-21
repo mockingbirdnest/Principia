@@ -1,7 +1,5 @@
 #include "physics/degrees_of_freedom.hpp"
 
-#include <vector>
-
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/space.hpp"

@@ -2,7 +2,6 @@
 
 #include <memory>
 
-#include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
@@ -35,7 +34,6 @@ namespace physics {
 
 using ::testing::IsNull;
 using ::testing::NotNull;
-using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;

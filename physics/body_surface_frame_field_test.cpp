@@ -11,8 +11,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
-#include "physics/continuous_trajectory.hpp"
-#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_ephemeris.hpp"
@@ -34,8 +32,6 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_body_surface_frame_field;
-using namespace principia::physics::_continuous_trajectory;
-using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_mock_continuous_trajectory;
 using namespace principia::physics::_mock_ephemeris;
@@ -55,7 +51,7 @@ class BodySurfaceFrameFieldTest : public ::testing::Test {
                   /*reference_angle=*/0 * Radian,
                   /*reference_instant=*/J2000,
                   /*angular_frequency=*/10 * Radian / Second,
-                  /*ascension_of_pole=*/π / 4 * Radian,
+                  /*right_ascension_of_pole=*/π / 4 * Radian,
                   /*declination_of_pole=*/π / 4 * Radian)) {
     // The polar axis is {1/2, 1/2, 1/Sqrt[2]}.
     EXPECT_CALL(ephemeris_, trajectory(_)).WillOnce(Return(&trajectory_));

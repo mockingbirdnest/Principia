@@ -1,9 +1,9 @@
 #include "physics/barycentric_rotating_reference_frame.hpp"
 
 #include <memory>
+#include <string_view>
 
 #include "astronomy/frames.hpp"
-#include "base/algebra.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -37,7 +37,6 @@ using ::testing::Not;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::astronomy::_frames;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;

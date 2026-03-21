@@ -9,7 +9,6 @@
 
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -40,7 +39,6 @@ using ::testing::Lt;
 using ::testing::Matcher;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;

@@ -1,6 +1,5 @@
 #include "physics/rigid_reference_frame.hpp"
 
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -34,7 +33,6 @@ using ::testing::Lt;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;

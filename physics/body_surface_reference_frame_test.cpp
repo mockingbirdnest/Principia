@@ -1,9 +1,9 @@
 #include "physics/body_surface_reference_frame.hpp"
 
 #include <memory>
+#include <string_view>
 
 #include "astronomy/frames.hpp"
-#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -38,7 +38,6 @@ using ::testing::Not;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::astronomy::_frames;
-using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -107,7 +106,7 @@ class BodySurfaceReferenceFrameTest : public ::testing::Test {
                     /*reference_angle=*/0 * Radian,
                     /*reference_instant=*/t0_,
                     /*angular_frequency=*/10 * Radian / Second,
-                    /*ascension_of_pole=*/0 * Radian,
+                    /*right_ascension_of_pole=*/0 * Radian,
                     /*declination_of_pole=*/π / 2 * Radian)),
         massive_centre_(&centre_) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));

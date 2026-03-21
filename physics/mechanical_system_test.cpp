@@ -1,6 +1,5 @@
 #include "physics/mechanical_system.hpp"
 
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
@@ -22,7 +21,6 @@ namespace principia {
 namespace physics {
 
 using ::testing::Eq;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;

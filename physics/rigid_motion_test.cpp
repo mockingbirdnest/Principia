@@ -1,11 +1,9 @@
 #include "physics/rigid_motion.hpp"
 
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
-#include "geometry/point.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
@@ -27,12 +25,10 @@
 namespace principia {
 namespace physics {
 
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
-using namespace principia::geometry::_point;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_signature;

@@ -1,9 +1,9 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 
 #include <memory>
+#include <string_view>
 
 #include "astronomy/frames.hpp"
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -34,7 +34,6 @@ using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
 using namespace principia::astronomy::_frames;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;

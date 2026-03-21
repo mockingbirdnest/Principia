@@ -11,7 +11,6 @@
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
@@ -27,7 +26,6 @@ using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 class DiscreteTrajectoryIteratorTest : public ::testing::Test {
