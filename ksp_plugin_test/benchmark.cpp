@@ -1,10 +1,8 @@
 #include "ksp_plugin/plugin.hpp"
 
-#include <string>
 #include <vector>
 
 #include "base/pull_serializer.hpp"
-#include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
 #include "benchmark/benchmark.h"
 #include "gtest/gtest.h"
@@ -31,7 +29,6 @@ using interface::principia__FutureWaitForVesselToCatchUp;
 using interface::principia__IteratorDelete;
 using interface::principia__SerializePlugin;
 using namespace principia::base::_pull_serializer;
-using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;

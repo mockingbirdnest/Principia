@@ -12,26 +12,21 @@
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
 #include "geometry/instant.hpp"
-#include "geometry/orthogonal_map.hpp"
-#include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
 #include "journal/recorder.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
-#include "ksp_plugin/part.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "ksp_plugin/renderer.hpp"
-#include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
 #include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
-#include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -67,20 +62,14 @@ using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_orthogonal_map;
-using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
-using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_renderer;
-using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
-using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;

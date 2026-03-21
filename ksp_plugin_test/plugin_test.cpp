@@ -7,10 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
-#include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
 #include "geometry/grassmann.hpp"
@@ -23,8 +21,6 @@
 #include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "integrators/methods.hpp"
-#include "integrators/ordinary_differential_equations.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -74,7 +70,6 @@ using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_grassmann;
@@ -85,8 +80,6 @@ using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
-using namespace principia::integrators::_methods;
-using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
@@ -220,7 +213,7 @@ class PluginTestWithoutPlugin : public testing::Test {
                  satellite_initial_displacement_.Norm()) * unit_tangent;
   }
 
-  void PrintSerializedPlugin(const Plugin& plugin) {
+  static void PrintSerializedPlugin(const Plugin& plugin) {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
     auto const serialized = SerializeAsBytes(message);

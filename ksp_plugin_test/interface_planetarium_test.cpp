@@ -12,12 +12,9 @@
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/planetarium.hpp"
-#include "ksp_plugin/plugin.hpp"
-#include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin_test/mock_planetarium.hpp"  // 🧙 For MockPlanetarium.
 #include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
 #include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRendeder.
-#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace interface {
@@ -36,9 +33,6 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
-using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_renderer;
-using namespace principia::quantities::_quantities;
 
 class InterfacePlanetariumTest : public ::testing::Test {
  protected:

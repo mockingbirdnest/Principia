@@ -5,6 +5,7 @@
 #include <string_view>
 #include <utility>
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -17,8 +18,6 @@
 #include "integrators/methods.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "ksp_plugin/renderer.hpp"
-#include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin_test/mock_flight_plan.hpp"  // 🧙 For MockFlightPlan.
 #include "ksp_plugin_test/mock_manœuvre.hpp"  // 🧙 For MockManœuvre.
 #include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
@@ -62,8 +61,6 @@ using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_
 using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_renderer;
-using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;

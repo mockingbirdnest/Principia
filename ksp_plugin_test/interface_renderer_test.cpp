@@ -5,13 +5,10 @@
 #include <string_view>
 
 #include "base/not_null.hpp"
-#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "ksp_plugin/renderer.hpp"
-#include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
 #include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
@@ -30,11 +27,8 @@ using ::testing::ReturnRef;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_rotation;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_renderer;
-using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_si;
 

@@ -11,7 +11,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/vessel.hpp"
 #include "ksp_plugin_test/mock_celestial.hpp"  // 🧙 For MockCelestial.
 #include "ksp_plugin_test/mock_vessel.hpp"  // 🧙 For MockVessel.
 #include "physics/degrees_of_freedom.hpp"
@@ -21,7 +20,6 @@
 #include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -41,12 +39,10 @@ using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_renderer;
-using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;

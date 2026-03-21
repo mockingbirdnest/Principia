@@ -307,7 +307,7 @@ class PlanetariumTest : public ::testing::Test {
     return plotted_trajectories;
   }
 
-  Length ComputePlottedLinesDistance(
+  static Length ComputePlottedLinesDistance(
       DiscreteTrajectory<Navigation> const& trajectory1,
       DiscreteTrajectory<Navigation> const& trajectory2) {
     CHECK_EQ(trajectory1.t_min(), trajectory2.t_min());

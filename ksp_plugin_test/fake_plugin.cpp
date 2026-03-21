@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 
+#include "glog/logging.h"
 #include "physics/massless_body.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
