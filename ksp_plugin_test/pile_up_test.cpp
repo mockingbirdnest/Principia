@@ -15,11 +15,11 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "integrators/mock_integrators.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -43,10 +43,7 @@
 namespace principia {
 namespace ksp_plugin {
 
-using ::testing::ByMove;
 using ::testing::DoAll;
-using ::testing::ElementsAre;
-using ::testing::Eq;
 using ::testing::IsEmpty;
 using ::testing::Matcher;
 using ::testing::MockFunction;
@@ -60,7 +57,6 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
-using namespace principia::integrators::_mock_integrators;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
@@ -589,7 +585,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   // want to be empty.  We put a tiny one very far.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   bodies.emplace_back(make_not_null_unique<MassiveBody>(1 * Kilogram));
-  std::vector<DegreesOfFreedom<Barycentric>> initial_state{
+  std::vector<DegreesOfFreedom<Barycentric>> const initial_state{
       DegreesOfFreedom<Barycentric>{
           Barycentric::origin +
               Displacement<Barycentric>(
@@ -608,12 +604,12 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
           1 * Second}};
 
   Time const fixed_step = 10 * Second;
-  Ephemeris<Barycentric>::FixedStepParameters fixed_parameters{
+  Ephemeris<Barycentric>::FixedStepParameters const fixed_parameters{
       SymplecticRungeKuttaNyströmIntegrator<
           BlanesMoan2002SRKN6B,
           Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       fixed_step};
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_parameters{
+  Ephemeris<Barycentric>::AdaptiveStepParameters const adaptive_parameters{
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
           Ephemeris<Barycentric>::NewtonianMotionEquation>(),
@@ -655,12 +651,12 @@ TEST_F(PileUpTest, Serialization) {
   p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
-  TestablePileUp pile_up({&p1_, &p2_},
-                         J2000,
-                         DefaultPsychohistoryParameters(),
-                         DefaultHistoryParameters(),
-                         &ephemeris,
-                         deletion_callback_.AsStdFunction());
+  TestablePileUp const pile_up({&p1_, &p2_},
+                               J2000,
+                               DefaultPsychohistoryParameters(),
+                               DefaultHistoryParameters(),
+                               &ephemeris,
+                               deletion_callback_.AsStdFunction());
 
   serialization::PileUp message;
   pile_up.WriteToMessage(&message);
@@ -701,12 +697,12 @@ TEST_F(PileUpTest, SerializationCompatibility) {
   p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
-  TestablePileUp pile_up({&p1_, &p2_},
-                         J2000,
-                         DefaultPsychohistoryParameters(),
-                         DefaultHistoryParameters(),
-                         &ephemeris,
-                         deletion_callback_.AsStdFunction());
+  TestablePileUp const pile_up({&p1_, &p2_},
+                               J2000,
+                               DefaultPsychohistoryParameters(),
+                               DefaultHistoryParameters(),
+                               &ephemeris,
+                               deletion_callback_.AsStdFunction());
 
   serialization::PileUp message;
   pile_up.WriteToMessage(&message);

@@ -43,19 +43,13 @@ namespace principia {
 namespace interface {
 
 using ::testing::AllOf;
-using ::testing::Bool;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-using ::testing::Ge;
 using ::testing::HasSubstr;
-using ::testing::IsEmpty;
 using ::testing::Not;
-using ::testing::NotNull;
 using ::testing::Pair;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
-using ::testing::internal::CaptureStderr;
-using ::testing::internal::GetCapturedStderr;
 using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_mercury_orbiter;
 using namespace principia::astronomy::_time_scales;
@@ -129,7 +123,7 @@ TEST_F(PluginCompatibilityTest, PreCartan) {
 }
 
 TEST_F(PluginCompatibilityTest, PreCohen) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   CheckSaveCompatibility(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3039.proto.hex",
       /*compressor=*/"",
@@ -146,7 +140,7 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 #if !_DEBUG
 
 TEST_F(PluginCompatibilityTest, Reach) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
       /*compressor=*/"gipfeli",
@@ -294,7 +288,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
 #endif
 
 TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\1119\1119.proto.b64)",
       /*compressor=*/"gipfeli",
@@ -359,7 +353,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
 }
 
 TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
       /*compressor=*/"gipfeli",
@@ -426,7 +420,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
 }
 
 TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136b.proto.b64)",
       /*compressor=*/"gipfeli",
@@ -447,7 +441,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
 }
 
 TEST_F(PluginCompatibilityTest, PreHardy) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   CheckSaveCompatibility(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3244.proto.b64",
       /*compressor=*/"gipfeli",

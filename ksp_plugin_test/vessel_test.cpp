@@ -425,7 +425,7 @@ TEST_F(VesselTest, FlightPlan) {
                            DefaultBurnParameters());
   EXPECT_EQ(2, vessel_.flight_plan_count());
   EXPECT_EQ(1, vessel_.selected_flight_plan_index());
-  FlightPlan* p2 = &vessel_.flight_plan();
+  FlightPlan* const p2 = &vessel_.flight_plan();
   EXPECT_NE(p1, p2);
   vessel_.SelectFlightPlan(0);
   EXPECT_EQ(p1, &vessel_.flight_plan());
@@ -987,7 +987,7 @@ TEST_F(VesselTest, TailSerialization) {
 
 TEST_F(VesselTest, Reanimator) {
   google::LogToStderr();
-  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+  not_null<std::unique_ptr<Plugin const>> const plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "reanimation test.proto.b64",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");

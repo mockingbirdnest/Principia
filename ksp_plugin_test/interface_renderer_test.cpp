@@ -2,7 +2,6 @@
 
 #include <array>
 #include <memory>
-#include <string_view>
 
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
@@ -19,13 +18,10 @@ namespace principia {
 namespace interface {
 
 using ::testing::ByMove;
-using ::testing::IsNull;
 using ::testing::Pointer;
-using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::StrictMock;
-using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
@@ -58,9 +54,8 @@ class InterfaceRendererTest : public ::testing::Test {
 };
 
 TEST_F(InterfaceRendererTest, SetPlottingFrame) {
-  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
+  auto* const mock_navigation_frame =
+      new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
@@ -72,11 +67,12 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
                                                            nullptr};
   std::array<int const*, 2> const parent_index_array = {&parent_index,
                                                         nullptr};
-  PlottingFrameParameters parameters = {
-      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
-      unused,
-      &celestial_index_array[0],
-      &parent_index_array[0]};
+  PlottingFrameParameters const parameters = {
+      .extension = serialization::BarycentricRotatingReferenceFrame::
+          kExtensionFieldNumber,
+      .centre_index = unused,
+      .primary_index = celestial_index_array.data(),
+      .secondary_index = parent_index_array.data()};
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
@@ -84,9 +80,8 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
 }
 
 TEST_F(InterfaceRendererTest, Frenet) {
-  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
+  auto* const mock_navigation_frame =
+      new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
@@ -98,11 +93,12 @@ TEST_F(InterfaceRendererTest, Frenet) {
                                                            nullptr};
   std::array<int const*, 2> const parent_index_array = {&parent_index,
                                                         nullptr};
-  PlottingFrameParameters parameters = {
-      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
-      unused,
-      &celestial_index_array[0],
-      &parent_index_array[0]};
+  PlottingFrameParameters const parameters = {
+      .extension = serialization::BarycentricRotatingReferenceFrame::
+          kExtensionFieldNumber,
+      .centre_index = unused,
+      .primary_index = celestial_index_array.data(),
+      .secondary_index = parent_index_array.data()};
 
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
@@ -111,7 +107,7 @@ TEST_F(InterfaceRendererTest, Frenet) {
   {
     auto const tangent = Vector<double, World>({4, 5, 6});
     EXPECT_CALL(*plugin_, VesselTangent(vessel_guid)).WillOnce(Return(tangent));
-    XYZ t = principia__VesselTangent(plugin_.get(), vessel_guid);
+    XYZ const t = principia__VesselTangent(plugin_.get(), vessel_guid);
     EXPECT_EQ(t.x, tangent.coordinates().x);
     EXPECT_EQ(t.y, tangent.coordinates().y);
     EXPECT_EQ(t.z, tangent.coordinates().z);
@@ -119,7 +115,7 @@ TEST_F(InterfaceRendererTest, Frenet) {
   {
     auto const normal = Vector<double, World>({-13, 7, 5});
     EXPECT_CALL(*plugin_, VesselNormal(vessel_guid)).WillOnce(Return(normal));
-    XYZ n = principia__VesselNormal(plugin_.get(), vessel_guid);
+    XYZ const n = principia__VesselNormal(plugin_.get(), vessel_guid);
     EXPECT_EQ(n.x, normal.coordinates().x);
     EXPECT_EQ(n.y, normal.coordinates().y);
     EXPECT_EQ(n.z, normal.coordinates().z);
@@ -128,7 +124,7 @@ TEST_F(InterfaceRendererTest, Frenet) {
     auto const binormal = Vector<double, World>({43, 67, 163});
     EXPECT_CALL(*plugin_, VesselBinormal(vessel_guid))
         .WillOnce(Return(binormal));
-    XYZ b = principia__VesselBinormal(plugin_.get(), vessel_guid);
+    XYZ const b = principia__VesselBinormal(plugin_.get(), vessel_guid);
     EXPECT_EQ(b.x, binormal.coordinates().x);
     EXPECT_EQ(b.y, binormal.coordinates().y);
     EXPECT_EQ(b.z, binormal.coordinates().z);
@@ -138,7 +134,7 @@ TEST_F(InterfaceRendererTest, Frenet) {
         {4 * Metre / Second, 5 * Metre / Second, 6 * Metre / Second});
     EXPECT_CALL(*plugin_, VesselVelocity(vessel_guid))
         .WillOnce(Return(velocity));
-    XYZ v = principia__VesselVelocity(plugin_.get(), vessel_guid);
+    XYZ const v = principia__VesselVelocity(plugin_.get(), vessel_guid);
     EXPECT_EQ(v.x, velocity.coordinates().x / (Metre / Second));
     EXPECT_EQ(v.y, velocity.coordinates().y / (Metre / Second));
     EXPECT_EQ(v.z, velocity.coordinates().z / (Metre / Second));

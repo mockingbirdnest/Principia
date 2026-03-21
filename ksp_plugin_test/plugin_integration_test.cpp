@@ -132,7 +132,7 @@ class PluginIntegrationTest : public PluginIntegrationTestWithoutPlugin {
     for (int index = SolarSystemFactory::Sun;
          index <= SolarSystemFactory::LastBody;
          ++index) {
-      std::optional<Index> parent_index =
+      std::optional<Index> const parent_index =
           index == SolarSystemFactory::Sun
               ? std::nullopt
               : std::make_optional(SolarSystemFactory::parent(index));
@@ -710,7 +710,7 @@ TEST_F(PluginIntegrationTestWithoutPlugin, Prediction) {
 
   plugin.renderer().SetPlottingFrame(
       plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
+  Ephemeris<Barycentric>::AdaptiveStepParameters const adaptive_step_parameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
           Ephemeris<Barycentric>::NewtonianMotionEquation>(),

@@ -110,7 +110,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
                                   /*t2=*/t0_ + 10 * Second),
       /*to=*/trajectory_to_render);
 
-  RigidMotion<Barycentric, Navigation> rigid_motion(
+  RigidMotion<Barycentric, Navigation> const rigid_motion(
       RigidTransformation<Barycentric, Navigation>::Identity(),
       Barycentric::nonrotating,
       Barycentric::unmoving);
@@ -221,7 +221,7 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
       1 * Radian,
       Bivector<double, Barycentric>({1.0, 1.1, 1.2}),
       DefinesFrame<AliceSun>{});
-  RigidMotion<Navigation, Barycentric> rigid_motion(
+  RigidMotion<Navigation, Barycentric> const rigid_motion(
       RigidTransformation<Navigation, Barycentric>::Identity(),
       Navigation::nonrotating,
       Navigation::unmoving);

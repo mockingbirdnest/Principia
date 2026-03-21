@@ -53,8 +53,6 @@ namespace ksp_plugin {
 
 using ::testing::AnyOf;
 using ::testing::Eq;
-using ::testing::Ge;
-using ::testing::Le;
 using ::testing::Matcher;
 using ::testing::ResultOf;
 using namespace principia::astronomy::_date_time;

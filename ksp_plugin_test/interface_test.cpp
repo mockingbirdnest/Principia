@@ -39,18 +39,13 @@
 namespace principia {
 namespace interface {
 
-using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
-using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ExitedWithCode;
-using ::testing::Invoke;
 using ::testing::IsNull;
 using ::testing::NotNull;
-using ::testing::Pointee;
 using ::testing::Pointer;
-using ::testing::Property;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -99,7 +94,8 @@ constexpr double time = 11;
 
 XYZ parent_position = {4, 5, 6};
 XYZ parent_velocity = {7, 8, 9};
-QP parent_relative_degrees_of_freedom = {parent_position, parent_velocity};
+QP parent_relative_degrees_of_freedom = {.q = parent_position,
+                                         .p = parent_velocity};
 
 }  // namespace
 
@@ -220,10 +216,10 @@ TEST_F(InterfaceTest, Log) {
 }
 
 TEST_F(InterfaceTestWithoutPlugin, NewPlugin) {
-  std::unique_ptr<Plugin> plugin(principia__NewPlugin(
-                                     "MJD1",
-                                     "MJD2",
-                                     planetarium_rotation));
+  std::unique_ptr<Plugin> const plugin(principia__NewPlugin(
+                                           "MJD1",
+                                           "MJD2",
+                                           planetarium_rotation));
   EXPECT_THAT(plugin, Not(IsNull()));
 }
 
@@ -536,14 +532,14 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   int const* const celestial_index_array[2] = {&celestial_index, nullptr};
   int const* const parent_index_array[2] = {&parent_index, nullptr};
   PlottingFrameParameters parameters = {
-      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
-      unused,
-      &celestial_index_array[0],
-      &parent_index_array[0]};
+      .extension = serialization::BarycentricRotatingReferenceFrame::
+          kExtensionFieldNumber,
+      .centre_index = unused,
+      .primary_index = &celestial_index_array[0],
+      .secondary_index = &parent_index_array[0]};
   {
-    StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
-        mock_navigation_frame =
-            new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
+    auto* const mock_navigation_frame =
+        new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBarycentricRotatingNavigationFrame(celestial_index,
                                                       parent_index))
@@ -559,9 +555,8 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
       kExtensionFieldNumber;
   parameters.centre_index = celestial_index;
   {
-    StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
-        mock_navigation_frame =
-            new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
+    auto* const mock_navigation_frame =
+        new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBodyCentredNonRotatingNavigationFrame(celestial_index))
         .WillOnce(Return(ByMove(
@@ -574,9 +569,8 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
-  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
+  auto* const mock_navigation_frame =
+      new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
@@ -586,17 +580,18 @@ TEST_F(InterfaceTest, NavballOrientation) {
               mock_navigation_frame))));
   int const* const celestial_index_array[2] = {&celestial_index, nullptr};
   int const* const parent_index_array[2] = {&parent_index, nullptr};
-  PlottingFrameParameters parameters = {
-      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
-      unused,
-      &celestial_index_array[0],
-      &parent_index_array[0]};
+  PlottingFrameParameters const parameters = {
+      .extension = serialization::BarycentricRotatingReferenceFrame::
+          kExtensionFieldNumber,
+      .centre_index = unused,
+      .primary_index = &celestial_index_array[0],
+      .secondary_index = &parent_index_array[0]};
 
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 
-  Position<World> sun_position =
+  Position<World> const sun_position =
       World::origin + Displacement<World>(
                           {1 * si::Unit<Length>,
                            2 * si::Unit<Length>,
@@ -604,9 +599,9 @@ TEST_F(InterfaceTest, NavballOrientation) {
   EXPECT_CALL(*plugin_, NavballFrameField(sun_position))
       .WillOnce(Return(
           ByMove(std::make_unique<CoordinateFrameField<World, Navball>>())));
-  WXYZ q = principia__NavballOrientation(plugin_.get(),
-                                         {1, 2, 3},
-                                         {2, 3, 5});
+  WXYZ const q = principia__NavballOrientation(plugin_.get(),
+                                               {1, 2, 3},
+                                               {2, 3, 5});
   EXPECT_EQ(q.w, 1);
   EXPECT_EQ(q.x, 0);
   EXPECT_EQ(q.y, 0);

@@ -51,24 +51,10 @@
 namespace principia {
 namespace ksp_plugin {
 
-using ::testing::AllOf;
 using ::testing::AnyNumber;
-using ::testing::ByMove;
-using ::testing::Contains;
-using ::testing::DoAll;
 using ::testing::Eq;
-using ::testing::Ge;
-using ::testing::Gt;
-using ::testing::InSequence;
-using ::testing::Le;
-using ::testing::Lt;
 using ::testing::Ne;
-using ::testing::Ref;
 using ::testing::Return;
-using ::testing::SaveArg;
-using ::testing::SetArgPointee;
-using ::testing::SizeIs;
-using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
@@ -890,12 +876,12 @@ TEST_F(PluginTestWithoutPlugin, Navball) {
       navigation_frame.get();
   plugin.renderer().SetPlottingFrame(std::move(navigation_frame));
   EXPECT_EQ(navigation_frame_copy, plugin.renderer().GetPlottingFrame());
-  Vector<double, Navball> x_navball({1, 0, 0});
-  Vector<double, Navball> y_navball({0, 1, 0});
-  Vector<double, Navball> z_navball({0, 0, 1});
-  Vector<double, World> x_world({0, 0, -1});
-  Vector<double, World> y_world({0, 1, 0});
-  Vector<double, World> z_world({1, 0, 0});
+  Vector<double, Navball> const x_navball({1, 0, 0});
+  Vector<double, Navball> const y_navball({0, 1, 0});
+  Vector<double, Navball> const z_navball({0, 0, 1});
+  Vector<double, World> const x_world({0, 0, -1});
+  Vector<double, World> const y_world({0, 1, 0});
+  Vector<double, World> const z_world({1, 0, 0});
   auto const navball = plugin.NavballFrameField(World::origin);
   EXPECT_THAT(
       AbsoluteError(x_world, navball->FromThisFrame(World::origin)(x_navball)),
@@ -989,12 +975,12 @@ TEST_F(PluginTestWithoutPlugin, Frenet) {
                                          satellite_initial_velocity_));
   plugin.PrepareToReportCollisions();
   plugin.FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
-  Vector<double, World> t = alice_sun_to_world(
-                                Normalize(satellite_initial_velocity_));
-  Vector<double, World> n = alice_sun_to_world(
-                                Normalize(-satellite_initial_displacement_));
+  Vector<double, World> const t =
+      alice_sun_to_world(Normalize(satellite_initial_velocity_));
+  Vector<double, World> const n =
+      alice_sun_to_world(Normalize(-satellite_initial_displacement_));
   // World is left-handed, but the Frenet trihedron is right-handed.
-  Vector<double, World> b(-Cross(t.coordinates(), n.coordinates()));
+  Vector<double, World> const b(-Cross(t.coordinates(), n.coordinates()));
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth);

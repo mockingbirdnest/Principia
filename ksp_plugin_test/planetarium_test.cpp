@@ -293,11 +293,11 @@ class PlanetariumTest : public ::testing::Test {
                   .coordinates());
         };
 
-    Planetarium planetarium(planetarium_parameters,
-                            perspective,
-                            ephemeris_.get(),
-                            &plotting_frame,
-                            plotting_to_scaled_space);
+    Planetarium const planetarium(planetarium_parameters,
+                                  perspective,
+                                  ephemeris_.get(),
+                                  &plotting_frame,
+                                  plotting_to_scaled_space);
 
     // Compute over 30 days.
     for (int i = 0; i < 30; ++i) {
@@ -359,15 +359,15 @@ TEST_F(PlanetariumTest, PlotMethod0) {
                            /*to=*/discrete_trajectory);
 
   // No dark area, infinite acuity, wide field of view.
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters const parameters(
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0 * Degree,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
-                          perspective_,
-                          &mock_ephemeris_,
-                          &plotting_frame_,
-                          plotting_to_scaled_space_);
+  Planetarium const planetarium(parameters,
+                                perspective_,
+                                &mock_ephemeris_,
+                                &plotting_frame_,
+                                plotting_to_scaled_space_);
   auto const rp2_lines =
       planetarium.PlotMethod0(discrete_trajectory,
                               discrete_trajectory.begin(),
@@ -408,15 +408,15 @@ TEST_F(PlanetariumTest, PlotMethod1) {
                            /*to=*/discrete_trajectory);
 
   // No dark area, human visual acuity, wide field of view.
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters const parameters(
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
-                          perspective_,
-                          &mock_ephemeris_,
-                          &plotting_frame_,
-                          plotting_to_scaled_space_);
+  Planetarium const planetarium(parameters,
+                                perspective_,
+                                &mock_ephemeris_,
+                                &plotting_frame_,
+                                plotting_to_scaled_space_);
   auto const rp2_lines =
       planetarium.PlotMethod1(discrete_trajectory,
                               discrete_trajectory.begin(),
@@ -447,15 +447,15 @@ TEST_F(PlanetariumTest, PlotMethod2) {
                            /*to=*/discrete_trajectory);
 
   // No dark area, human visual acuity, wide field of view.
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters const parameters(
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
-                          perspective_,
-                          &mock_ephemeris_,
-                          &plotting_frame_,
-                          plotting_to_scaled_space_);
+  Planetarium const planetarium(parameters,
+                                perspective_,
+                                &mock_ephemeris_,
+                                &plotting_frame_,
+                                plotting_to_scaled_space_);
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory,
                               discrete_trajectory.begin(),
@@ -502,11 +502,11 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 
   EXPECT_EQ(23423, discrete_trajectory.size());
 
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters const parameters(
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(
+  Planetarium const planetarium(
       parameters,
       Perspective<Navigation, Camera>(rigid_transformation.Forget<Similarity>(),
                                       /*focal=*/1 * Metre),
@@ -527,7 +527,7 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
   // Human visual acuity.
-  Angle reference_angular_resolution = 0.4 * ArcMinute;
+  Angle const reference_angular_resolution = 0.4 * ArcMinute;
 
   auto const lagrange_equipotentials = ComputeLagrangeEquipotentials();
 
@@ -625,12 +625,14 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
         EXPECT_EQ(26565, number_of_points);
         EXPECT_THAT(max_distance, IsNear(1.48_(1) * Centi(Metre)));
         break;
+      default:
+        LOG(FATAL) << "Unexpected value " << i;
     }
   }
 }
 
 TEST_F(PlanetariumTest, PlotMethod4_Equipotentials_AngularResolution) {
-  Angle reference_angular_resolution = 0.25 * ArcMinute;
+  Angle const reference_angular_resolution = 0.25 * ArcMinute;
 
   auto const lagrange_equipotentials = ComputeLagrangeEquipotentials();
 
@@ -728,6 +730,8 @@ TEST_F(PlanetariumTest, PlotMethod4_Equipotentials_AngularResolution) {
         EXPECT_EQ(28959, number_of_points);
         EXPECT_THAT(max_distance, IsNear(1.37_(1) * Centi(Metre)));
         break;
+      default:
+        LOG(FATAL) << "Unexpected value " << i;
     }
   }
 }
