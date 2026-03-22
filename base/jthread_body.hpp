@@ -4,12 +4,16 @@
 
 #include <memory>
 #include <set>
+#include <stop_token>
+#include <thread>
 #include <utility>
 
 namespace principia {
 namespace base {
 namespace _jthread {
 namespace internal {
+
+#if 0
 
 class StopState {
  public:
@@ -164,10 +168,12 @@ inline stop_token jthread::get_stop_token() const {
   return stop_token(stop_state_.get());
 }
 
+#endif
+
 template<typename Function, typename... Args>
-jthread MakeStoppableThread(Function&& f, Args&&... args) {
-  return jthread(
-      [f](stop_token const& st, Args&&... args) {
+std::jthread MakeStoppableThread(Function&& f, Args&&... args) {
+  return std::jthread(
+      [f](std::stop_token const& st, Args&&... args) {
         // This assignment happens on the thread of the jthread.
         this_stoppable_thread::stop_token_ = st;
         f(std::forward<Args>(args)...);
@@ -175,7 +181,7 @@ jthread MakeStoppableThread(Function&& f, Args&&... args) {
       std::forward<Args>(args)...);
 }
 
-inline stop_token this_stoppable_thread::get_stop_token() {
+inline std::stop_token this_stoppable_thread::get_stop_token() {
   return stop_token_;
 }
 

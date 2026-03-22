@@ -12,6 +12,7 @@ namespace base {
 
 using namespace principia::base::_jthread;
 
+#if 0
 TEST(JThreadTest, StopOnDestruction) {
   auto f = [](stop_token st, int value, bool* const observed_stop) {
     while (!st.stop_requested()) {
@@ -120,6 +121,7 @@ TEST(JThreadTest, StopCallback) {
       });
   EXPECT_TRUE(callback_after_stop_executed);
 }
+#endif
 
 TEST(JThreadTest, ThisJThread) {
   bool observed_stop = false;

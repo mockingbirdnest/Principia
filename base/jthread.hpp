@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <set>
+#include <stop_token>
 #include <thread>
 
 #include "absl/status/status.h"
@@ -18,6 +19,8 @@ using namespace principia::base::_not_null;
 
 // A minimal implementation of the C++20 jthread library, intended to be
 // compatible.
+
+#if 0
 
 class StopState;
 
@@ -112,19 +115,21 @@ class jthread {
   std::thread thread_;
 };
 
+#endif
+
 // `f` *does not* take a stop_token as its first parameter.
 template<typename Function, typename... Args>
-static jthread MakeStoppableThread(Function&& f, Args&&... args);
+static std::jthread MakeStoppableThread(Function&& f, Args&&... args);
 
 class this_stoppable_thread {
  public:
-  static stop_token get_stop_token();
+  static std::stop_token get_stop_token();
 
  private:
-  inline static thread_local stop_token stop_token_;
+  inline static thread_local std::stop_token stop_token_;
 
   template<typename Function, typename... Args>
-  friend jthread MakeStoppableThread(Function&& f, Args&&... args);
+  friend std::jthread MakeStoppableThread(Function&& f, Args&&... args);
 };
 
 #define RETURN_IF_STOPPED                                                    \
@@ -138,10 +143,12 @@ class this_stoppable_thread {
 }  // namespace internal
 
 using internal::MakeStoppableThread;
+#if 0
 using internal::jthread;
 using internal::stop_callback;
 using internal::stop_source;
 using internal::stop_token;
+#endif
 using internal::this_stoppable_thread;
 
 }  // namespace _jthread
