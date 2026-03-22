@@ -119,7 +119,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   // The `typename = void` template parameter gives it a different signature
   // from the above when `FromFrame` and `ToFrame` are the same (otherwise this
   // is a problem when instantiating the class, even though they are both
-  // disabled by `enable_if`).
+  // disabled by `requires`).
   template<int rank_x, int rank_y, int rank_z,
            typename F = FromFrame,
            typename T = ToFrame,

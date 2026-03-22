@@ -65,8 +65,8 @@ struct UniqueArray final {
     requires(std::is_integral_v<Size>)
   explicit UniqueArray(Size size);
   // Takes ownership of an existing array.
-  template<typename Size,
-           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
+  template<typename Size>
+    requires(std::is_integral_v<Size>)
   UniqueArray(std::unique_ptr<Element[]> data, Size size);
 
   // Move it, move it!
@@ -123,26 +123,22 @@ class BoundedArray final {
 
 // Deep comparisons.
 template<typename LeftElement,
-         typename RightElement,
-         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
-                                     std::is_integral_v<RightElement>>>
+         typename RightElement>
+  requires(std::is_integral_v<LeftElement> && std::is_integral_v<RightElement>)
 bool operator==(Array<LeftElement> left, Array<RightElement> right);
 template<typename LeftElement,
-         typename RightElement,
-         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
-                                     std::is_integral_v<RightElement>>>
+         typename RightElement>
+  requires(std::is_integral_v<LeftElement> && std::is_integral_v<RightElement>)
 bool operator==(Array<LeftElement> left,
                 UniqueArray<RightElement> const& right);
 template<typename LeftElement,
-         typename RightElement,
-         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
-                                     std::is_integral_v<RightElement>>>
+         typename RightElement>
+  requires(std::is_integral_v<LeftElement> && std::is_integral_v<RightElement>)
 bool operator==(UniqueArray<LeftElement> const& left,
                 Array<RightElement> right);
 template<typename LeftElement,
-         typename RightElement,
-         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
-                                     std::is_integral_v<RightElement>>>
+         typename RightElement>
+  requires(std::is_integral_v<LeftElement> && std::is_integral_v<RightElement>)
 bool operator==(UniqueArray<LeftElement> const& left,
                 UniqueArray<RightElement> const& right);
 
