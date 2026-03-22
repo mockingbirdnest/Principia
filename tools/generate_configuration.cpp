@@ -55,7 +55,7 @@ std::string NormalizeLength(std::string const& s) {
   if (s.find('R') == std::string::npos) {
     return s;
   } else {
-    Length const length = ParseQuantity<Length>(s);
+    auto const length = ParseQuantity<Length>(s);
     std::ostringstream stream;
     stream << std::scientific
            << std::setprecision(std::numeric_limits<double>::max_digits10)

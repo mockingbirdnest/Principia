@@ -1119,11 +1119,11 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
         };
   }
   field_cxx_optional_assignment_fn_[descriptor] =
-      [](std::string const& expr, std::string const& stmt) {
+      [](std::string const& /*expr*/, std::string const& stmt) {
         return stmt;
       };
   field_cxx_optional_pointer_fn_[descriptor] =
-      [](std::string const& condition, std::string const& expr) {
+      [](std::string const& /*condition*/, std::string const& expr) {
         return expr;
       };
   field_cxx_serializer_fn_[descriptor] =

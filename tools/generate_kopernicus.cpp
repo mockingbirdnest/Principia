@@ -79,7 +79,7 @@ void GenerateKopernicusForSlippist1(
     std::string const& initial_state_stem) {
   std::filesystem::path const directory =
       SOLUTION_DIR / "astronomy";
-  SolarSystem<Sky> solar_system(
+  SolarSystem<Sky> const solar_system(
       (directory / gravity_model_stem).replace_extension(proto_txt),
       (directory / initial_state_stem).replace_extension(proto_txt),
       /*ignore_frame=*/true);
