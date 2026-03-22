@@ -531,7 +531,8 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
           earth_position +
               Vector<Length, ICRS>({0 * Metre, distance_1, 0 * Metre}),
           earth_velocity)));
-  auto const intrinsic_acceleration1 = [earth, distance_1](Instant const& /*t*/) {
+  auto const intrinsic_acceleration1 = [earth, distance_1](
+      Instant const& /*t*/) {
     return Vector<Acceleration, ICRS>(
         {0 * si::Unit<Acceleration>,
          earth->gravitational_parameter() / (distance_1 * distance_1),
@@ -546,7 +547,8 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
           earth_position +
               Vector<Length, ICRS>({0 * Metre, -distance_2, 0 * Metre}),
           earth_velocity)));
-  auto const intrinsic_acceleration2 = [earth, distance_2](Instant const& /*t*/) {
+  auto const intrinsic_acceleration2 = [earth, distance_2](
+      Instant const& /*t*/) {
     return Vector<Acceleration, ICRS>(
         {0 * si::Unit<Acceleration>,
          -earth->gravitational_parameter() / (distance_2 * distance_2),
