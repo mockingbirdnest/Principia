@@ -63,7 +63,7 @@ class SolarSystemFactoryTest : public testing::Test {
   // that `tertiary` is within the Laplace sphere of `secondary` with respect
   // to `*primary`. If `relative_error` is greater than 1e-6, it should be tight
   // within an order of magnitude.
-  void TestStronglyBoundOrbit(
+  static void TestStronglyBoundOrbit(
       double eccentricity,
       double relative_error,
       MassiveBody const& tertiary_body,
