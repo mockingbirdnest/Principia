@@ -29,7 +29,7 @@ struct Collapse<Quantity<NoDimensions>> : not_constructible {
 };
 
 template<template<typename> typename Quantity, typename D, int n>
-struct NthRootGenerator<Quantity<D>, n, void> : not_constructible {
+struct NthRootGenerator<Quantity<D>, n> : not_constructible {
   using Type = typename Collapse<
       Quantity<typename DimensionsNthRootGenerator<D, n>::Type>>::Type;
 };
@@ -39,8 +39,8 @@ struct NthRootGenerator<Quantity<D>, n, void> : not_constructible {
 // but it would make the template magic even harder to follow, so let's not do
 // that until we have a good reason.
 template<typename Q, int n>
-struct NthRootGenerator<Q, n, std::enable_if_t<std::is_arithmetic_v<Q>>>
-    : not_constructible {
+  requires(std::is_arithmetic_v<Q>)
+struct NthRootGenerator<Q, n> : not_constructible {
   using Type = double;
 };
 
