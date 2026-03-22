@@ -1,13 +1,12 @@
 #include "testing_utilities/componentwise.hpp"
 
-#include <limits>
+#include <sstream>
 
 #include "geometry/direct_sum.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -49,7 +48,7 @@ using World = Frame<struct WorldTag>;
 class ComponentwiseTest : public testing::Test {};
 
 TEST_F(ComponentwiseTest, R3Element) {
-  R3Element<double> r(1.0 + 1.0e-12, 1.0e-10, 3.5);
+  R3Element<double> const r(1.0 + 1.0e-12, 1.0e-10, 3.5);
   EXPECT_THAT(r, Componentwise(AlmostEquals(1.0, 4504),
                                VanishesBefore(1.0, 450360),
                                Eq(3.5)));
@@ -62,18 +61,18 @@ TEST_F(ComponentwiseTest, R3Element) {
 }
 
 TEST_F(ComponentwiseTest, Grassmann) {
-  Vector<Length, World> v({(1.0 + 1.0e-12) * Metre,
-                            1.0e-10 * Metre,
-                            3.5 * Metre});
+  Vector<Length, World> const v({(1.0 + 1.0e-12) * Metre,
+                                  1.0e-10 * Metre,
+                                  3.5 * Metre});
   EXPECT_THAT(v, Componentwise(AlmostEquals(1.0 * Metre, 4504),
                                VanishesBefore(1.0 * Metre, 450360),
                                Eq(3.5 * Metre)));
   EXPECT_THAT(v, Not(Componentwise(AlmostEquals(1.0 * Metre, 4),
                                    VanishesBefore(1.0 * Metre, 4),
                                    Eq(2.5 * Metre))));
-  Bivector<Length, World> b({(1.0 + 1.0e-12) * Metre,
-                              1.0e-10 * Metre,
-                              3.5 * Metre});
+  Bivector<Length, World> const b({(1.0 + 1.0e-12) * Metre,
+                                    1.0e-10 * Metre,
+                                    3.5 * Metre});
   EXPECT_THAT(b, Componentwise(AlmostEquals(1.0 * Metre, 4504),
                                VanishesBefore(1.0 * Metre, 450360),
                                Eq(3.5 * Metre)));
@@ -130,12 +129,12 @@ TEST_F(ComponentwiseTest, Describe) {
 
 TEST_F(ComponentwiseTest, Variadic) {
   using VV = DirectSum<Vector<Length, World>, Vector<Speed, World>>;
-  VV vv(Vector<Length, World>({1 * Metre,
-                               2 * Metre,
-                               3 * Metre}),
-        Vector<Speed, World>({4 * Metre / Second,
-                              5 * Metre / Second,
-                              6 * Metre / Second}));
+  VV const vv(Vector<Length, World>({1 * Metre,
+                                     2 * Metre,
+                                     3 * Metre}),
+              Vector<Speed, World>({4 * Metre / Second,
+                                    5 * Metre / Second,
+                                    6 * Metre / Second}));
   EXPECT_THAT(
       vv,
       Componentwise(Componentwise(IsNear(1.0_(1) * Metre),
@@ -149,12 +148,12 @@ TEST_F(ComponentwiseTest, Variadic) {
 
 TEST_F(ComponentwiseTest, Values) {
   using VV = DirectSum<Vector<Length, World>, Vector<Speed, World>>;
-  VV vv(Vector<Length, World>({1 * Metre,
-                               2 * Metre,
-                               3 * Metre}),
-        Vector<Speed, World>({4 * Metre / Second,
-                              5 * Metre / Second,
-                              6 * Metre / Second}));
+  VV const vv(Vector<Length, World>({1 * Metre,
+                                     2 * Metre,
+                                     3 * Metre}),
+              Vector<Speed, World>({4 * Metre / Second,
+                                    5 * Metre / Second,
+                                    6 * Metre / Second}));
   EXPECT_THAT(
       vv,
       Componentwise(Componentwise(1 * Metre,
@@ -167,9 +166,9 @@ TEST_F(ComponentwiseTest, Values) {
 
 TEST_F(ComponentwiseTest, Underscore) {
   using V = Vector<Length, World>;
-  V v = Vector<Length, World>({1e-50 * Metre,
-                               2e-50 * Metre,
-                               3 * Metre});
+  V const v = Vector<Length, World>({1e-50 * Metre,
+                                     2e-50 * Metre,
+                                     3 * Metre});
   EXPECT_THAT(v,
               Componentwise(VanishesBefore(1 * Metre, 0),
                             VanishesBefore(1 * Metre, 0),

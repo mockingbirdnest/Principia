@@ -7,7 +7,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
@@ -22,7 +21,6 @@ namespace testing_utilities {
 
 using ::testing::Eq;
 using ::testing::Gt;
-using ::testing::Ne;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
@@ -35,6 +33,14 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
 
+namespace {
+
+double DoubleAbs(const double x) {
+  return std::abs(x);
+}
+
+}  // namespace
+
 class NumericsTest : public testing::Test {
  protected:
   using World = Frame<struct WorldTag>;
@@ -43,10 +49,6 @@ class NumericsTest : public testing::Test {
   R3Element<double> const j_ = {0, 1, 0};
   R3Element<double> const k_ = {0, 0, 1};
 };
-
-double DoubleAbs(const double x) {
-  return std::abs(x);
-}
 
 TEST_F(NumericsTest, ULPs) {
   EXPECT_THAT(ULPDistance(1, 1), Eq(0));
@@ -137,8 +139,8 @@ TEST_F(NumericsTest, TrivectorAbsoluteError) {
 }
 
 TEST_F(NumericsTest, PointAbsoluteError) {
-  Point<Vector<double, World>> p1;
-  Point<Vector<double, World>> p2;
+  Point<Vector<double, World>> const p1;
+  Point<Vector<double, World>> const p2;
   EXPECT_THAT(AbsoluteError(p1, p2 + Vector<double, World>(j_)), Eq(1));
 }
 

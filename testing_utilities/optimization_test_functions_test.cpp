@@ -1,6 +1,7 @@
 #include "testing_utilities/optimization_test_functions.hpp"
 
 #include "gtest/gtest.h"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 
