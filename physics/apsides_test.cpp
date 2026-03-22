@@ -242,7 +242,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
                                                    apoapsides,
                                                    periapsides);
   EXPECT_THAT(intervals, IsEmpty());
-  EXPECT_THAT(log_warning.string(), HasSubstr("Anomalous apsides"));
+  EXPECT_THAT(log_warning.string(), HasSubstr("Anomalous apsides"));  // NOLINT
 }
 
 #endif
