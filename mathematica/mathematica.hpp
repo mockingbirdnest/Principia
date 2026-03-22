@@ -171,15 +171,14 @@ std::string ToMathematica(bool b,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename T,
-         typename = std::enable_if_t<std::is_integral_v<T>>,
          typename OptionalExpressIn = std::nullopt_t>
+  requires(std::is_integral_v<T>)
 std::string ToMathematica(T integer,
                           OptionalExpressIn express_in = std::nullopt);
 
 template<typename T,
-         typename = std::enable_if_t<std::is_floating_point_v<T>>,
-         typename OptionalExpressIn = std::nullopt_t,
-         typename = void>
+         typename OptionalExpressIn = std::nullopt_t>
+  requires(std::is_floating_point_v<T>)
 std::string ToMathematica(T real,
                           OptionalExpressIn express_in = std::nullopt,
                           std::int64_t base = 16);
@@ -259,8 +258,8 @@ std::string ToMathematica(
     OptionalExpressIn express_in = std::nullopt);
 
 template<typename Tuple,
-         typename = std::enable_if_t<is_tuple_v<Tuple>>,
          typename OptionalExpressIn = std::nullopt_t>
+  requires(is_tuple_v<Tuple>)
 std::string ToMathematica(Tuple const& tuple,
                           OptionalExpressIn express_in = std::nullopt);
 
