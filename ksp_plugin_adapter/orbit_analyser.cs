@@ -330,6 +330,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       Style.HorizontalLine();
       UnityEngine.GUILayout.Label(
           L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_MeanElements"));
+      DrawElementGraphs(elements);
       RenderOrbitalElements(elements, primary);
       Style.HorizontalLine();
       UnityEngine.GUILayout.Label(
@@ -486,20 +487,109 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     UnityEngine.GUILayout.Label(altitude_warning,
                                 Style.Warning(UnityEngine.GUI.skin.label));
   }
+  
+  UnityEngine.Texture2D a_graph_;
+  UnityEngine.Texture2D e_graph_;
+  UnityEngine.Texture2D i_graph_;
+  UnityEngine.Texture2D Ω_graph_;
+  UnityEngine.Texture2D ω_graph_;
+  double last_t_min_ = double.PositiveInfinity;
 
-  private void RenderOrbitalElements(OrbitalElements elements,
-                                     CelestialBody primary) {
+  private void DrawElementGraphs(OrbitalElements elements) {
+    if (a_graph_ == null) {
+      a_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
+      e_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
+      i_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
+      Ω_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
+      ω_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
+    }
     double t_min = double.PositiveInfinity;
     double t_max = double.NegativeInfinity;
     if (elements != null) {
       if (!elements.mean_elements.IteratorAtEnd()) {
         t_min = elements.mean_elements.IteratorGetClassicalElements().time;
       }
+      if (t_min == last_t_min_) {
+        return;
+      }
       for (;!elements.mean_elements.IteratorAtEnd(); elements.mean_elements.IteratorIncrement()) {
         t_max = elements.mean_elements.IteratorGetClassicalElements().time;
       }
       elements.mean_elements.IteratorReset();
     }
+    double Δt = t_max - t_min;
+    last_t_min_ = t_min;
+    foreach (var graph in new[] {a_graph_, e_graph_, i_graph_, Ω_graph_, ω_graph_}) {
+      for (int x = 0; x < graph.width; ++x) {
+        for (int y = 0; y < graph.height; ++y) {
+          graph.SetPixel(x, y, XKCDColors.Black);
+        }
+      }
+    }
+    if (elements == null) {
+      foreach (var graph in new[] {a_graph_, e_graph_, i_graph_, Ω_graph_, ω_graph_}) {
+        graph.Apply();
+      }
+      return;
+    }
+    for (;
+          !elements.mean_elements.IteratorAtEnd();
+          elements.mean_elements.IteratorIncrement()) {
+      var elements_at_t =
+          elements.mean_elements.IteratorGetClassicalElements();
+      double x = a_graph_.width * (elements_at_t.time - t_min) / Δt ;
+      const double degree = Math.PI / 180;
+      a_graph_.SetPixel((int)x,
+                        (int)(a_graph_.height -
+                              a_graph_.height *
+                              (elements_at_t.semimajor_axis -
+                               elements.mean_periapsis_distance.min) /
+                              (elements.mean_apoapsis_distance.max -
+                               elements.mean_periapsis_distance.min)),
+                        XKCDColors.Sunflower);
+      e_graph_.SetPixel((int)x,
+                        (int)(e_graph_.height -
+                              e_graph_.height *
+                              (elements_at_t.eccentricity -
+                               elements.mean_eccentricity.min) /
+                              (elements.mean_eccentricity.max -
+                               elements.mean_eccentricity.min)),
+                        XKCDColors.Sunflower);
+      i_graph_.SetPixel((int)x,
+                        (int)(i_graph_.height -
+                              i_graph_.height *
+                              (elements_at_t.inclination_in_degrees * degree -
+                               elements.mean_inclination.min) /
+                              (elements.mean_inclination.max -
+                               elements.mean_inclination.min)),
+                        XKCDColors.Sunflower);
+      Ω_graph_.SetPixel((int)x,
+                        (int)(Ω_graph_.height -
+                              Ω_graph_.height *
+                              (elements_at_t.
+                                   longitude_of_ascending_node_in_degrees *
+                               degree -
+                               elements.mean_longitude_of_ascending_nodes.min) /
+                              (elements.mean_longitude_of_ascending_nodes.max -
+                               elements.mean_longitude_of_ascending_nodes.min)),
+                        XKCDColors.Sunflower);
+      ω_graph_.SetPixel((int)x,
+                        (int)(ω_graph_.height -
+                              ω_graph_.height *
+                              (elements_at_t.argument_of_periapsis_in_degrees *
+                               degree -
+                               elements.mean_argument_of_periapsis.min) /
+                              (elements.mean_argument_of_periapsis.max -
+                               elements.mean_argument_of_periapsis.min)),
+                        XKCDColors.Sunflower);
+    }
+    foreach (var graph in new[] {a_graph_, e_graph_, i_graph_, Ω_graph_, ω_graph_}) {
+      graph.Apply();
+    }
+  }
+
+  private void RenderOrbitalElements(OrbitalElements elements,
+                                     CelestialBody primary) {
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
         elements?.sidereal_period.FormatDuration());
@@ -509,164 +599,45 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_AnomalisticPeriod"),
         elements?.anomalistic_period.FormatDuration());
-        
+
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       LabeledField(
           L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
           elements?.mean_semimajor_axis.FormatLengthInterval());
-      UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+      UnityEngine.GUILayout.Box("",
                                 GUILayoutWidth(10),
                                 GUILayoutHeight(1));
-      var rect = UnityEngine.GUILayoutUtility.GetLastRect();
-      if (elements != null) {
-        UnityEngine.Vector2? last_point = null;
-        for (;
-             !elements.mean_elements.IteratorAtEnd();
-             elements.mean_elements.IteratorIncrement()) {
-          var datum =
-              elements.mean_elements.IteratorGetClassicalElements();
-          var point =
-              new UnityEngine.Vector2(
-                  rect.xMin +
-                  (float)((datum.time - t_min) *
-                          (rect.width / (t_max - t_min))),
-                  rect.yMax -
-                  (float)((datum.semimajor_axis -
-                           elements.mean_semimajor_axis.min) *
-                          (rect.height /
-                           (elements.mean_semimajor_axis.max -
-                            elements.mean_semimajor_axis.min))));
-          if (last_point != null) {
-            Drawing.DrawLine(last_point.Value,
-                             point,
-                             XKCDColors.Sunflower,
-                             width: 2,
-                             antiAlias: true);
-          }
-          last_point = point;
-        }
-        elements.mean_elements.IteratorReset();
-      }
+      UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), a_graph_);
     }
-        
     using (new UnityEngine.GUILayout.HorizontalScope()) {
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Eccentricity"),
         elements?.mean_eccentricity.FormatInterval());
-    UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+    UnityEngine.GUILayout.Box("",
                               GUILayoutWidth(10),
                               GUILayoutHeight(1));
-    var rect = UnityEngine.GUILayoutUtility.GetLastRect();
-    if (elements != null) {
-      UnityEngine.Vector2? last_point = null;
-      for (;
-           !elements.mean_elements.IteratorAtEnd();
-           elements.mean_elements.IteratorIncrement()) {
-        var datum =
-            elements.mean_elements.IteratorGetClassicalElements();
-        var point =
-            new UnityEngine.Vector2(
-                rect.xMin +
-                (float)((datum.time - t_min) *
-                        (rect.width / (t_max - t_min))),
-                rect.yMax -
-                (float)((datum.eccentricity -
-                         elements.mean_eccentricity.min) *
-                        (rect.height /
-                         (elements.mean_eccentricity.max -
-                          elements.mean_eccentricity.min))));
-        if (last_point != null) {
-          Drawing.DrawLine(last_point.Value,
-                           point,
-                           XKCDColors.Sunflower,
-                           width: 2,
-                           antiAlias: true);
-        }
-        last_point = point;
-      }
-      elements.mean_elements.IteratorReset();
-    }
+    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), e_graph_);
     }
         
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      const double degree = Math.PI / 180;
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Inclination"),
         elements?.mean_inclination.FormatAngleInterval());
-    UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+    UnityEngine.GUILayout.Box("",
                               GUILayoutWidth(10),
                               GUILayoutHeight(1));
-    var rect = UnityEngine.GUILayoutUtility.GetLastRect();
-    if (elements != null) {
-      UnityEngine.Vector2? last_point = null;
-      for (;
-           !elements.mean_elements.IteratorAtEnd();
-           elements.mean_elements.IteratorIncrement()) {
-        var datum =
-            elements.mean_elements.IteratorGetClassicalElements();
-        var point =
-            new UnityEngine.Vector2(
-                rect.xMin +
-                (float)((datum.time - t_min) *
-                        (rect.width / (t_max - t_min))),
-                rect.yMax -
-                (float)((datum.inclination_in_degrees -
-                         elements.mean_inclination.min / degree) *
-                        (rect.height /
-                         ((elements.mean_inclination.max -
-                           elements.mean_inclination.min) / degree))));
-        if (last_point != null) {
-          Drawing.DrawLine(last_point.Value,
-                           point,
-                           XKCDColors.Sunflower,
-                           width: 2,
-                           antiAlias: true);
-        }
-        last_point = point;
-      }
-      elements.mean_elements.IteratorReset();
-    }
+    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), i_graph_);
     }
         
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      const double degree = Math.PI / 180;
     LabeledField(
         L10N.CacheFormat(
             "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
         elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
-    UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+    UnityEngine.GUILayout.Box("",
                               GUILayoutWidth(10),
                               GUILayoutHeight(1));
-    var rect = UnityEngine.GUILayoutUtility.GetLastRect();
-    if (elements != null) {
-      UnityEngine.Vector2? last_point = null;
-      for (;
-           !elements.mean_elements.IteratorAtEnd();
-           elements.mean_elements.IteratorIncrement()) {
-        var datum =
-            elements.mean_elements.IteratorGetClassicalElements();
-        var point =
-            new UnityEngine.Vector2(
-                rect.xMin +
-                (float)((datum.time - t_min) *
-                        (rect.width / (t_max - t_min))),
-                rect.yMax -
-                (float)((datum.longitude_of_ascending_node_in_degrees -
-                         elements.mean_longitude_of_ascending_nodes.min / degree) *
-                        (rect.height /
-                         ((elements.mean_longitude_of_ascending_nodes.max -
-                          elements.mean_longitude_of_ascending_nodes.min) / degree))));
-        if (last_point != null) {
-          Drawing.DrawLine(last_point.Value,
-                           point,
-                           XKCDColors.Sunflower,
-                           width: 2,
-                           antiAlias: true);
-        }
-        last_point = point;
-      }
-      elements.mean_elements.IteratorReset();
-    }
+    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), Ω_graph_);
     }
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPrecession"),
@@ -679,45 +650,15 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
         new[]{primary});
         
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      const double degree = Math.PI / 180;
     LabeledField(
         L10N.CacheFormat(
             "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
             periapsis),
         elements?.mean_argument_of_periapsis.FormatAngleInterval());
-    UnityEngine.GUILayout.Box(UnityEngine.Texture2D.blackTexture,
+    UnityEngine.GUILayout.Box(ω_graph_,
                               GUILayoutWidth(10),
                               GUILayoutHeight(1));
-    var rect = UnityEngine.GUILayoutUtility.GetLastRect();
-    if (elements != null) {
-      UnityEngine.Vector2? last_point = null;
-      for (;
-           !elements.mean_elements.IteratorAtEnd();
-           elements.mean_elements.IteratorIncrement()) {
-        var datum =
-            elements.mean_elements.IteratorGetClassicalElements();
-        var point =
-            new UnityEngine.Vector2(
-                rect.xMin +
-                (float)((datum.time - t_min) *
-                        (rect.width / (t_max - t_min))),
-                rect.yMax -
-                (float)((datum.argument_of_periapsis_in_degrees -
-                         elements.mean_argument_of_periapsis.min / degree) *
-                        (rect.height /
-                         ((elements.mean_argument_of_periapsis.max -
-                           elements.mean_argument_of_periapsis.min) / degree))));
-        if (last_point != null) {
-          Drawing.DrawLine(last_point.Value,
-                           point,
-                           XKCDColors.Sunflower,
-                           width: 2,
-                           antiAlias: true);
-        }
-        last_point = point;
-      }
-      elements.mean_elements.IteratorReset();
-    }
+    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), ω_graph_);
     }
     LabeledField(
         L10N.CacheFormat(
