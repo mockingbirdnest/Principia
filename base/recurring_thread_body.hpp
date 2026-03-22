@@ -6,14 +6,14 @@
 #include <thread>
 #include <utility>
 
-#include "base/jthread.hpp"
+#include "base/stoppable_thread.hpp"
 
 namespace principia {
 namespace base {
 namespace _recurring_thread {
 namespace internal {
 
-using namespace principia::base::_jthread;
+using namespace principia::base::_stoppable_thread;
 
 inline void BaseRecurringThread::Start() {
   absl::MutexLock l(&jthread_lock_);
