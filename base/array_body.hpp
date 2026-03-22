@@ -57,7 +57,7 @@ template<std::size_t size_plus_1, typename Character>
 constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
     : data(reinterpret_cast<Element*>(characters)),
       size(size_plus_1 - 1) {
-  // The `require` clause should prevent this from failing, but we explicitly
+  // The `requires` clause should prevent this from failing, but we explicitly
   // check that the cast is trivial or reinterprets a `char const*`.  The cast
   // is C-style rather than a reinterpret so that this constructor is constexpr
   // in the trivial case.
