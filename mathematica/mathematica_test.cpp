@@ -1,7 +1,9 @@
 #include "mathematica/mathematica.hpp"
 
 #include <list>
+#include <optional>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "absl/strings/str_replace.h"
@@ -236,14 +238,14 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(l2));
   }
   {
-    UnboundedUpperTriangularMatrix<double> u2({1, 2,
-                                                  3});
+    UnboundedUpperTriangularMatrix<double> const u2({1, 2,
+                                                        3});
     EXPECT_EQ(ToMathematica(std::tuple{std::tuple{1.0, 2.0},
                                        std::tuple{0.0, 3.0}}),
               ToMathematica(u2));
   }
   {
-    UnboundedVector<double> v2({1, 2});
+    UnboundedVector<double> const v2({1, 2});
     EXPECT_EQ(ToMathematica(std::tuple{1.0, 2.0}), ToMathematica(v2));
   }
   {
@@ -262,7 +264,7 @@ TEST_F(MathematicaTest, ToMathematica) {
               ToMathematica(trajectory.front(), PreserveUnits));
   }
   {
-    OrbitalElements::EquinoctialElements elements{
+    OrbitalElements::EquinoctialElements const elements{
         Instant(), 1 * Metre, 2, 3, 4 * Radian, 5, 6, 7, 8};
     EXPECT_EQ(
         ToMathematica(std::tuple{
@@ -271,7 +273,7 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(elements, PreserveUnits));
   }
   {
-    PolynomialInMonomialBasis<Length, Time, 2> polynomial1(
+    PolynomialInMonomialBasis<Length, Time, 2> const polynomial1(
         {2 * Metre, -3 * Metre / Second, 4 * Metre / Second / Second});
     EXPECT_EQ(
         absl::StrReplaceAll(
@@ -280,7 +282,7 @@ TEST_F(MathematicaTest, ToMathematica) {
              {"β", ToMathematica(-3 * Metre / Second, PreserveUnits)},
              {"γ", ToMathematica(4 * Metre / Second / Second, PreserveUnits)}}),
         ToMathematica(polynomial1, PreserveUnits));
-    PolynomialInMonomialBasis<Length, Instant, 2> polynomial2(
+    PolynomialInMonomialBasis<Length, Instant, 2> const polynomial2(
         {5 * Metre, 6 * Metre / Second, -7 * Metre / Second / Second},
         Instant() + 2 * Second);
     EXPECT_EQ(
@@ -298,7 +300,7 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(polynomial2, PreserveUnits));
   }
   {
-    PolynomialInЧебышёвBasis<Length, Time, 2> series(
+    PolynomialInЧебышёвBasis<Length, Time, 2> const series(
         {1 * Metre, -3 * Metre, 2 * Metre}, 2 * Second, 4 * Second);
     EXPECT_EQ(absl::StrReplaceAll(
                   R"(Function[Plus[
@@ -317,10 +319,10 @@ TEST_F(MathematicaTest, ToMathematica) {
   {
     using Series = PoissonSeries<double, 0, 0>;
     Instant const t0 = Instant() + 3 * Second;
-    Series::AperiodicPolynomial secular({1.5}, t0);
-    Series::PeriodicPolynomial sin({0.5}, t0);
-    Series::PeriodicPolynomial cos({-1}, t0);
-    Series series(secular, {{4 * Radian / Second, {sin, cos}}});
+    Series::AperiodicPolynomial const secular({1.5}, t0);
+    Series::PeriodicPolynomial const sin({0.5}, t0);
+    Series::PeriodicPolynomial const cos({-1}, t0);
+    Series const series(secular, {{4 * Radian / Second, {sin, cos}}});
     EXPECT_EQ(
         absl::StrReplaceAll(
             u8R"(Function[Plus[
@@ -340,12 +342,13 @@ TEST_F(MathematicaTest, ToMathematica) {
     using PiecewiseSeries = PiecewisePoissonSeries<double, 0, 0>;
     using Series = PiecewiseSeries::Series;
     Instant const t0 = Instant() + 3 * Second;
-    Series series(Series::AperiodicPolynomial({1.5}, t0),
-                  {{4 * Radian / Second,
-                    {/*sin=*/Series::PeriodicPolynomial({0.5}, t0),
-                     /*cos=*/Series::PeriodicPolynomial({-1}, t0)}}});
-    Interval<Instant> interval{t0 - 2 * Second, t0 + 3 * Second};
-    PiecewiseSeries pw(interval, series);
+    Series const series(Series::AperiodicPolynomial({1.5}, t0),
+                        {{4 * Radian / Second,
+                          {/*sin=*/Series::PeriodicPolynomial({0.5}, t0),
+                           /*cos=*/Series::PeriodicPolynomial({-1}, t0)}}});
+    Interval<Instant> const interval{.min = t0 - 2 * Second,
+                                     .max = t0 + 3 * Second};
+    PiecewiseSeries const pw(interval, series);
     EXPECT_EQ(
         absl::StrReplaceAll(
             "Function[Piecewise[List[List[α,Between[#,β]]]]]",
@@ -356,8 +359,8 @@ TEST_F(MathematicaTest, ToMathematica) {
         ToMathematica(pw, PreserveUnits));
   }
   {
-    std::optional<std::string> opt1;
-    std::optional<std::string> opt2("foo");
+    std::optional<std::string> const opt1;
+    std::optional<std::string> const opt2("foo");
     EXPECT_EQ("List[]", ToMathematica(opt1));
     EXPECT_EQ("List[\"foo\"]", ToMathematica(opt2));
   }
@@ -385,7 +388,7 @@ TEST_F(MathematicaTest, Escape) {
   EXPECT_EQ(R"("foo")", ToMathematica("foo"));
   {
     // This string messes up the macro.
-    std::string expected = R"("fo\"o")";
+    std::string const expected = R"("fo\"o")";
     EXPECT_EQ(expected, ToMathematica("fo\"o"));
   }
   EXPECT_EQ(R"("fo\\o")", ToMathematica("fo\\o"));
@@ -426,7 +429,7 @@ TEST_F(MathematicaTest, ExpressIn) {
         ToMathematica(trajectory.front(), ExpressIn(Metre, Second)));
   }
   {
-    OrbitalElements::EquinoctialElements elements{
+    OrbitalElements::EquinoctialElements const elements{
         Instant(), 1 * Metre, 2, 3, 4 * Radian, 5, 6, 7, 8};
     EXPECT_EQ(
         ToMathematica(std::tuple(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)),

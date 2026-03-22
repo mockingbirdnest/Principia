@@ -19,15 +19,15 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For e.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
@@ -38,13 +38,12 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/make_not_null.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 
-using ::testing::AllOf;
-using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Return;
 using ::testing::SetArgPointee;
@@ -63,8 +62,9 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_ephemeris;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
@@ -127,7 +127,7 @@ class ManœuvreTest : public ::testing::Test {
 };
 
 TEST_F(ManœuvreTest, TimedBurn) {
-  Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
+  Vector<double, Frenet<Rendering>> const e_y({0, 1, 0});
 
   Manœuvre<World, Rendering>::Intensity intensity;
   intensity.direction = e_y;
@@ -190,7 +190,7 @@ TEST_F(ManœuvreTest, TimedBurn) {
 }
 
 TEST_F(ManœuvreTest, TargetΔv) {
-  Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
+  Vector<double, Frenet<Rendering>> const e_y({0, 1, 0});
 
   Manœuvre<World, Rendering>::Intensity intensity;
   intensity.Δv = e_y * Metre / Second;
@@ -256,35 +256,35 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
 
   // Table 2-2. Significant Event Times Summary.
   Instant const range_zero;
-  Instant const s_ivb_1st_90_percent_thrust = range_zero +    530.53 * Second;
-  Instant const s_ivb_1st_eco               = range_zero +    684.98 * Second;
+  Instant const s_ivb_1st_90_percent_thrust = range_zero + 530.53 * Second;
+  Instant const s_ivb_1st_eco = range_zero + 684.98 * Second;
   // Initiate S-IVB Restart Sequence and Start of Time Base 6 (T6).
-  Instant const t6                          = range_zero +   9659.54 * Second;
+  Instant const t6 = range_zero + 9659.54 * Second;
   Instant const s_ivb_2nd_90_percent_thrust = range_zero + 10'240.02 * Second;
-  Instant const s_ivb_2nd_eco               = range_zero + 10'555.51 * Second;
+  Instant const s_ivb_2nd_eco = range_zero + 10'555.51 * Second;
 
   // From Table 7-2. S-IVB Steady State Performance - First Burn.
-  Force thrust_1st                  = 901'557 * Newton;
-  Speed specific_impulse_1st        = 4'204.1 * Newton * Second / Kilogram;
-  Variation<Mass> lox_flowrate_1st  = 178.16 * Kilogram / Second;
-  Variation<Mass> fuel_flowrate_1st = 36.30 * Kilogram / Second;
+  Force const thrust_1st = 901'557 * Newton;
+  Speed const specific_impulse_1st = 4'204.1 * Newton * Second / Kilogram;
+  Variation<Mass> const lox_flowrate_1st = 178.16 * Kilogram / Second;
+  Variation<Mass> const fuel_flowrate_1st = 36.30 * Kilogram / Second;
 
   // From Table 7-7. S-IVB Steady State Performance - Second Burn.
-  Force thrust_2nd                  = 897'548 * Newton;
-  Speed specific_impulse_2nd        = 4199.2 * Newton * Second / Kilogram;
-  Variation<Mass> lox_flowrate_2nd  = 177.70 * Kilogram / Second;
-  Variation<Mass> fuel_flowrate_2nd = 36.01 * Kilogram / Second;
+  Force const thrust_2nd = 897'548 * Newton;
+  Speed const specific_impulse_2nd = 4199.2 * Newton * Second / Kilogram;
+  Variation<Mass> const lox_flowrate_2nd = 177.70 * Kilogram / Second;
+  Variation<Mass> const fuel_flowrate_2nd = 36.01 * Kilogram / Second;
 
   // Table 21-5. Total Vehicle Mass, S-IVB First Burn Phase, Kilograms.
-  Mass total_vehicle_at_s_ivb_1st_90_percent_thrust = 161143 * Kilogram;
-  Mass total_vehicle_at_s_ivb_1st_eco               = 128095 * Kilogram;
+  Mass const total_vehicle_at_s_ivb_1st_90_percent_thrust = 161143 * Kilogram;
+  Mass const total_vehicle_at_s_ivb_1st_eco = 128095 * Kilogram;
 
   // Table 21-7. Total Vehicle Mass, S-IVB Second Burn Phase, Kilograms.
-  Mass total_vehicle_at_s_ivb_2nd_90_percent_thrust = 126780 * Kilogram;
-  Mass total_vehicle_at_s_ivb_2nd_eco               =  59285 * Kilogram;
+  Mass const total_vehicle_at_s_ivb_2nd_90_percent_thrust = 126780 * Kilogram;
+  Mass const total_vehicle_at_s_ivb_2nd_eco = 59285 * Kilogram;
 
   // An arbitrary direction, we're not testing this.
-  Vector<double, Frenet<Rendering>> e_y({0, 1, 0});
+  Vector<double, Frenet<Rendering>> const e_y({0, 1, 0});
 
   Manœuvre<World, Rendering>::Intensity first_burn_intensity;
   first_burn_intensity.direction = e_y;
@@ -414,7 +414,8 @@ TEST_F(ManœuvreTest, Serialization) {
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
       std::move(mock_reference_frame),
       /*is_inertially_fixed=*/true};
-  Manœuvre<World, Rendering> manœuvre(/*initial_mass=*/2 * Kilogram, burn);
+  Manœuvre<World, Rendering> const manœuvre(/*initial_mass=*/2 * Kilogram,
+                                            burn);
 
   serialization::ReferenceFrame serialized_mock_reference_frame;
   serialized_mock_reference_frame.MutableExtension(

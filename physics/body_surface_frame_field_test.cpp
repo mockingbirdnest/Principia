@@ -14,8 +14,8 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
+#include "physics/mock_continuous_trajectory.hpp"
+#include "physics/mock_ephemeris.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -37,6 +37,8 @@ using namespace principia::physics::_body_surface_frame_field;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_continuous_trajectory;
+using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;

@@ -34,5 +34,11 @@ class MockCelestial : public Celestial {
 using internal::MockCelestial;
 
 }  // namespace _celestial
+
+namespace _mock_celestial = _celestial;
+
 }  // namespace ksp_plugin
+
+namespace ksp_plugin_test = ksp_plugin;
+
 }  // namespace principia

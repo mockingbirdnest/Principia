@@ -10,21 +10,15 @@
 #include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/vessel.hpp"
-#include "ksp_plugin_test/mock_celestial.hpp"  // 🧙 For MockCelestial.
-#include "ksp_plugin_test/mock_vessel.hpp"  // 🧙 For MockVessel.
-#include "physics/continuous_trajectory.hpp"
+#include "ksp_plugin_test/mock_celestial.hpp"
+#include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/ephemeris.hpp"
-#include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/mock_continuous_trajectory.hpp"
+#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
-#include "physics/rigid_reference_frame.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -42,17 +36,16 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
-using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_renderer;
-using namespace principia::ksp_plugin::_vessel;
-using namespace principia::physics::_continuous_trajectory;
+using namespace principia::ksp_plugin_test::_mock_celestial;
+using namespace principia::ksp_plugin_test::_mock_vessel;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_mock_continuous_trajectory;
+using namespace principia::physics::_mock_ephemeris;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
-using namespace principia::physics::_rigid_reference_frame;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
@@ -117,7 +110,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
                                   /*t2=*/t0_ + 10 * Second),
       /*to=*/trajectory_to_render);
 
-  RigidMotion<Barycentric, Navigation> rigid_motion(
+  RigidMotion<Barycentric, Navigation> const rigid_motion(
       RigidTransformation<Barycentric, Navigation>::Identity(),
       Barycentric::nonrotating,
       Barycentric::unmoving);
@@ -228,7 +221,7 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
       1 * Radian,
       Bivector<double, Barycentric>({1.0, 1.1, 1.2}),
       DefinesFrame<AliceSun>{});
-  RigidMotion<Navigation, Barycentric> rigid_motion(
+  RigidMotion<Navigation, Barycentric> const rigid_motion(
       RigidTransformation<Navigation, Barycentric>::Identity(),
       Navigation::nonrotating,
       Navigation::unmoving);

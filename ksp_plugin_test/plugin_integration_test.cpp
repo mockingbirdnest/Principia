@@ -1,24 +1,25 @@
 #include "ksp_plugin/plugin.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <limits>
 #include <memory>
 #include <optional>
 #include <string>
-#include <utility>
+#include <thread>
 #include <vector>
 
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
-#include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/identity.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
+#include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -27,11 +28,10 @@
 #include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -53,9 +53,7 @@ using ::testing::SizeIs;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_affine_map;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_identity;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
@@ -68,11 +66,9 @@ using namespace principia::ksp_plugin::_plugin;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
-using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
@@ -82,10 +78,10 @@ using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace {
 
-PartId const part_id = 789;
+constexpr PartId part_id = 789;
 GUID const vessel_guid = "123-456";
-char const part_name[] = "Picard's desk";
-char const vessel_name[] = "NCC-1701-D";
+constexpr char part_name[] = "Picard's desk";
+constexpr char vessel_name[] = "NCC-1701-D";
 
 }  // namespace
 
@@ -136,7 +132,7 @@ class PluginIntegrationTest : public PluginIntegrationTestWithoutPlugin {
     for (int index = SolarSystemFactory::Sun;
          index <= SolarSystemFactory::LastBody;
          ++index) {
-      std::optional<Index> parent_index =
+      std::optional<Index> const parent_index =
           index == SolarSystemFactory::Sun
               ? std::nullopt
               : std::make_optional(SolarSystemFactory::parent(index));
@@ -424,250 +420,6 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   }
 }
 
-#if 0
-// The Enterprise D is a low orbit around a massive body with unit gravitational
-// parameter, enters the physics bubble, separates, the saucer section reverses
-// the direction of its orbit, the physics bubble ends, the two sections meet
-// again on the other side of the body, the main section matches its velocity
-// with that of the saucer, they are reunited, the physics bubble ends again.
-TEST_F(PluginIntegrationTest, PhysicsBubble) {
-  GUID const enterprise_d = "NCC-1701-D";
-  GUID const enterprise_d_saucer = "NCC-1701-D (saucer)";
-  PartId const engineering_section = 0;
-  PartId const saucer_section = 1;
-  Index const celestial = 0;
-  // We use km-day as our unit system because we need the orbit duration to
-  // be much larger than 10 s, the fixed step of the histories.
-  Time const period = 2 * π * Day;
-  double const ε = 1e-10;
-  Time const δt = period * ε;
-  Length const a = 1 * Kilo(Metre);
-  Speed const v0 = 1 * Kilo(Metre) / Day;
-  Instant t;
-  Plugin plugin(t, t, 0 * Radian);
-  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
-      MassiveBody::Parameters(1 * Pow<3>(Kilo(Metre)) / Pow<2>(Day)),
-      RotatingBody<Barycentric>::Parameters(
-          /*mean_radius=*/1 * Metre,
-          /*reference_angle=*/1 * Radian,
-          /*reference_instant=*/astronomy::J2000,
-          /*angular_frequency=*/1 * Radian / Second,
-          /*right_ascension_of_pole=*/0 * Degree,
-          /*declination_of_pole=*/90 * Degree));
-  plugin.InsertCelestialJacobiKeplerian(
-      celestial,
-      /*parent_index=*/std::nullopt,
-      /*keplerian_elements=*/std::nullopt,
-      std::move(sun_body));
-  plugin.EndInitialization();
-
-  // Step 1: insert the Enterprise.
-  t += δt;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.InsertUnloadedPart(
-      enterprise_d,
-      {Displacement<AliceSun>({a, 0 * a, 0 * a}),
-       Velocity<AliceSun>({0 * v0, v0, 0 * v0})});
-  plugin.AdvanceTime(t, 0 * Radian);
-
-  // Step 2: physics bubble starts.
-  t += δt;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  {
-    std::vector<IdAndOwnedPart> parts;
-    parts.emplace_back(
-        engineering_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin + Displacement<World>({a, 0 * a, 0 * a}),
-                Velocity<World>({0 * v0, 0 * v0, v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-    parts.emplace_back(
-        saucer_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin + Displacement<World>({a, 0 * a, 0 * a}),
-                Velocity<World>({0 * v0, 0 * v0, v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-  }
-  plugin.AdvanceTime(t, 0 * Radian);
-
-  // Step 3: separation and saucer burn.
-  t += δt;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
-  // The value of the offset here should be irrelevant, make sure we notice it
-  // if it has an influence.
-  plugin.InsertUnloadedPart(
-      enterprise_d_saucer,
-      {Displacement<AliceSun>({NaN<Length>(),
-                               NaN<Length>(),
-                               NaN<Length>()}),
-       Velocity<AliceSun>({NaN<Speed>(),
-                           NaN<Speed>(),
-                           NaN<Speed>()})});
-  {
-    std::vector<IdAndOwnedPart> parts;
-    parts.emplace_back(
-        engineering_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin + Displacement<World>({a, 0 * a, 0 * a}),
-                Velocity<World>({0 * v0, 0 * v0, v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-  }
-  {
-    std::vector<IdAndOwnedPart> parts;
-    parts.emplace_back(
-        saucer_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin + Displacement<World>({a, 0 * a, 0 * a}),
-                Velocity<World>({0 * v0, 0 * v0, -v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-  }
-  plugin.AdvanceTime(t, 0 * Radian);
-
-  // Step 4: end of physics bubble.
-  t += δt;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
-  plugin.AdvanceTime(t, 0 * Radian);
-  EXPECT_THAT(
-      RelativeError(Displacement<AliceSun>({a, 0 * a, 0 * a}),
-                    plugin.VesselFromParent(enterprise_d).displacement()),
-      Lt(100 * ε));
-  EXPECT_THAT(RelativeError(
-                  Displacement<AliceSun>({a, 0 * a, 0 * a}),
-                  plugin.VesselFromParent(enterprise_d_saucer).displacement()),
-              Lt(100 * ε));
-  EXPECT_THAT(RelativeError(Velocity<AliceSun>({0 * v0, v0, 0 * v0}),
-                            plugin.VesselFromParent(enterprise_d).velocity()),
-              Lt(100 * ε));
-  EXPECT_THAT(
-      RelativeError(Velocity<AliceSun>({0 * v0, -v0, 0 * v0}),
-                    plugin.VesselFromParent(enterprise_d_saucer).velocity()),
-      Lt(100 * ε));
-
-  // Step 5: coming together on the other side.
-  t += 0.5 * period;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
-  plugin.AdvanceTime(t, 0 * Radian);
-  EXPECT_THAT(
-      RelativeError(Displacement<AliceSun>({-a, 0 * a, 0 * a}),
-                    plugin.VesselFromParent(enterprise_d).displacement()),
-      Lt(100 * ε));
-  EXPECT_THAT(RelativeError(
-                  Displacement<AliceSun>({-a, 0 * a, 0 * a}),
-                  plugin.VesselFromParent(enterprise_d_saucer).displacement()),
-              Lt(100 * ε));
-  EXPECT_THAT(RelativeError(Velocity<AliceSun>({0 * v0, -v0, 0 * v0}),
-                            plugin.VesselFromParent(enterprise_d).velocity()),
-              Lt(100 * ε));
-  EXPECT_THAT(
-      RelativeError(Velocity<AliceSun>({0 * v0, v0, 0 * v0}),
-                    plugin.VesselFromParent(enterprise_d_saucer).velocity()),
-      Lt(100 * ε));
-
-  // Step 6: reopen physics bubble.
-  t += δt;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
-  // The absolute world positions don't matter, at least one vessel (indeed all)
-  // are pre-existing.  Exercise this.
-  {
-    std::vector<IdAndOwnedPart> parts;
-    parts.emplace_back(
-        engineering_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin + Displacement<World>({1729 * a, 0 * a, 0 * a}),
-                Velocity<World>({0 * v0, 0 * v0, -v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-  }
-  {
-    std::vector<IdAndOwnedPart> parts;
-    parts.emplace_back(
-        saucer_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin + Displacement<World>({1729 * a, 0 * a, 0 * a}),
-                Velocity<World>({0 * v0, 0 * v0, v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-  }
-  plugin.AdvanceTime(t, 0 * Radian);
-
-  // Step 7: match velocities.
-  t += δt;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
-  {
-    std::vector<IdAndOwnedPart> parts;
-    parts.emplace_back(
-        engineering_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-  }
-  {
-    std::vector<IdAndOwnedPart> parts;
-    parts.emplace_back(
-        saucer_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-  }
-  plugin.AdvanceTime(t, 0 * Radian);
-
-  // Step 8: docking.
-  t += δt;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  {
-    std::vector<IdAndOwnedPart> parts;
-    parts.emplace_back(
-        engineering_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-    parts.emplace_back(
-        saucer_section,
-        make_not_null_unique<Part<World>>(
-            DegreesOfFreedom<World>(
-                World::origin, Velocity<World>({0 * v0, 0 * v0, v0})),
-            1 * Kilogram, Vector<Acceleration, World>()));
-  }
-  plugin.AdvanceTime(t, 0 * Radian);
-
-  // Step 9: close physics bubble.
-  t += δt;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.AdvanceTime(t, 0 * Radian);
-  EXPECT_THAT(
-      RelativeError(Displacement<AliceSun>({-a, 0 * a, 0 * a}),
-                    plugin.VesselFromParent(enterprise_d).displacement()),
-      Lt(100 * ε));
-  EXPECT_THAT(RelativeError(Velocity<AliceSun>({0 * v0, v0, 0 * v0}),
-                            plugin.VesselFromParent(enterprise_d).velocity()),
-              Lt(100 * ε));
-
-  // Step 10: orbit a bit.
-  t += period;
-  plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.AdvanceTime(t, 0 * Radian);
-  EXPECT_THAT(
-      RelativeError(Displacement<AliceSun>({-a, 0 * a, 0 * a}),
-                    plugin.VesselFromParent(enterprise_d).displacement()),
-      Lt(100 * ε));
-  EXPECT_THAT(RelativeError(Velocity<AliceSun>({0 * v0, v0, 0 * v0}),
-                            plugin.VesselFromParent(enterprise_d).velocity()),
-              Lt(100 * ε));
-}
-#endif
-
 // Checks that we correctly predict a full circular orbit around a massive body
 // with unit gravitational parameter at unit distance.  Since predictions are
 // only computed on `AdvanceTime()`, we advance time by a small amount.
@@ -714,7 +466,7 @@ TEST_F(PluginIntegrationTestWithoutPlugin, Prediction) {
 
   plugin.renderer().SetPlottingFrame(
       plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
+  Ephemeris<Barycentric>::AdaptiveStepParameters const adaptive_step_parameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
           Ephemeris<Barycentric>::NewtonianMotionEquation>(),

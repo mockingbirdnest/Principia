@@ -1,8 +1,5 @@
 #include "ksp_plugin/plugin.hpp"
 
-#include <algorithm>
-#include <cmath>
-#include <limits>
 #include <map>
 #include <memory>
 #include <optional>
@@ -10,11 +7,8 @@
 #include <utility>
 #include <vector>
 
-#include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
-#include "base/algebra.hpp"
-#include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
 #include "geometry/grassmann.hpp"
@@ -25,11 +19,10 @@
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
+#include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
-#include "integrators/integrators.hpp"
-#include "integrators/methods.hpp"
-#include "integrators/ordinary_differential_equations.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -40,17 +33,15 @@
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
+#include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
-#include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
-#include "testing_utilities/make_not_null.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/serialization.hpp"
@@ -60,29 +51,12 @@
 namespace principia {
 namespace ksp_plugin {
 
-using ::testing::AllOf;
 using ::testing::AnyNumber;
-using ::testing::ByMove;
-using ::testing::Contains;
-using ::testing::DoAll;
 using ::testing::Eq;
-using ::testing::Ge;
-using ::testing::Gt;
-using ::testing::InSequence;
-using ::testing::Le;
-using ::testing::Lt;
-using ::testing::Ne;
-using ::testing::Ref;
 using ::testing::Return;
-using ::testing::SaveArg;
-using ::testing::SetArgPointee;
-using ::testing::SizeIs;
-using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::base::_algebra;
-using namespace principia::base::_map_util;
 using namespace principia::base::_not_null;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_grassmann;
@@ -93,9 +67,6 @@ using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
-using namespace principia::integrators::_integrators;
-using namespace principia::integrators::_methods;
-using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
@@ -107,16 +78,15 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
-using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
-using namespace principia::testing_utilities::_make_not_null;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_serialization;
@@ -231,7 +201,7 @@ class PluginTestWithoutPlugin : public testing::Test {
                  satellite_initial_displacement_.Norm()) * unit_tangent;
   }
 
-  void PrintSerializedPlugin(const Plugin& plugin) {
+  static void PrintSerializedPlugin(const Plugin& plugin) {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
     auto const serialized = SerializeAsBytes(message);
@@ -905,12 +875,12 @@ TEST_F(PluginTestWithoutPlugin, Navball) {
       navigation_frame.get();
   plugin.renderer().SetPlottingFrame(std::move(navigation_frame));
   EXPECT_EQ(navigation_frame_copy, plugin.renderer().GetPlottingFrame());
-  Vector<double, Navball> x_navball({1, 0, 0});
-  Vector<double, Navball> y_navball({0, 1, 0});
-  Vector<double, Navball> z_navball({0, 0, 1});
-  Vector<double, World> x_world({0, 0, -1});
-  Vector<double, World> y_world({0, 1, 0});
-  Vector<double, World> z_world({1, 0, 0});
+  Vector<double, Navball> const x_navball({1, 0, 0});
+  Vector<double, Navball> const y_navball({0, 1, 0});
+  Vector<double, Navball> const z_navball({0, 0, 1});
+  Vector<double, World> const x_world({0, 0, -1});
+  Vector<double, World> const y_world({0, 1, 0});
+  Vector<double, World> const z_world({1, 0, 0});
   auto const navball = plugin.NavballFrameField(World::origin);
   EXPECT_THAT(
       AbsoluteError(x_world, navball->FromThisFrame(World::origin)(x_navball)),
@@ -1004,12 +974,12 @@ TEST_F(PluginTestWithoutPlugin, Frenet) {
                                          satellite_initial_velocity_));
   plugin.PrepareToReportCollisions();
   plugin.FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
-  Vector<double, World> t = alice_sun_to_world(
-                                Normalize(satellite_initial_velocity_));
-  Vector<double, World> n = alice_sun_to_world(
-                                Normalize(-satellite_initial_displacement_));
+  Vector<double, World> const t =
+      alice_sun_to_world(Normalize(satellite_initial_velocity_));
+  Vector<double, World> const n =
+      alice_sun_to_world(Normalize(-satellite_initial_displacement_));
   // World is left-handed, but the Frenet trihedron is right-handed.
-  Vector<double, World> b(-Cross(t.coordinates(), n.coordinates()));
+  Vector<double, World> const b(-Cross(t.coordinates(), n.coordinates()));
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth);

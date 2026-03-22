@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 
+#include "glog/logging.h"
 #include "physics/massless_body.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -23,7 +24,7 @@ FakePlugin::FakePlugin(SolarSystem<ICRS> const& solar_system)
   for (int index = SolarSystemFactory::Sun;
        index <= SolarSystemFactory::LastBody;
        ++index) {
-    std::optional<Index> parent_index =
+    std::optional<Index> const parent_index =
         index == SolarSystemFactory::Sun
             ? std::nullopt
             : std::make_optional(SolarSystemFactory::parent(index));
@@ -43,7 +44,7 @@ Vessel& FakePlugin::AddVesselInEarthOrbit(
     PartId const part_id,
     std::string const& part_name,
     KeplerianElements<Barycentric> const& elements) {
-  KeplerOrbit<Barycentric> earth_orbit(
+  KeplerOrbit<Barycentric> const earth_orbit(
       *GetCelestial(SolarSystemFactory::Earth).body(),
       MasslessBody{},
       elements,

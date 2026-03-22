@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <utility>
 
 namespace principia {
 namespace base {
@@ -103,7 +104,7 @@ template<typename T, typename... Ts>
 struct tail<T, Ts...> {
   using type = typename tail<Ts...>::type;
   static constexpr type value(T, Ts... ts) {
-    return tail<Ts...>::value(ts...);
+    return tail<Ts...>::value(std::move(ts)...);
   }
 };
 

@@ -33,7 +33,6 @@
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
 #include "google/protobuf/repeated_field.h"
-#include "google/protobuf/stubs/logging.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"

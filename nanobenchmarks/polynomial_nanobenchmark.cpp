@@ -10,6 +10,7 @@
 
 namespace principia {
 namespace nanobenchmarks {
+namespace {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -147,5 +148,6 @@ NANOBENCHMARK_FIXTURE(PolynomialRelativeDegreesOfFreedomNanobenchmark,
   return RelativeDegreesOfFreedom<World>(d, v);
 }
 
+}  // namespace
 }  // namespace nanobenchmarks
 }  // namespace principia

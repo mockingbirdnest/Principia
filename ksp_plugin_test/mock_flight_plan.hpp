@@ -63,5 +63,11 @@ class MockFlightPlan : public FlightPlan {
 using internal::MockFlightPlan;
 
 }  // namespace _flight_plan
+
+namespace _mock_flight_plan = _flight_plan;
+
 }  // namespace ksp_plugin
+
+namespace ksp_plugin_test = ksp_plugin;
+
 }  // namespace principia

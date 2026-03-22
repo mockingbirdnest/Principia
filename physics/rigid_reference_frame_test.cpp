@@ -12,7 +12,7 @@
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
@@ -44,6 +44,7 @@ using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;

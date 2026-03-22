@@ -53,5 +53,8 @@ class MockRigidReferenceFrame : public RigidReferenceFrame<InertialFrame,
 using internal::MockRigidReferenceFrame;
 
 }  // namespace _rigid_reference_frame
+
+namespace _mock_rigid_reference_frame = _rigid_reference_frame;
+
 }  // namespace physics
 }  // namespace principia

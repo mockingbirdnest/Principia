@@ -35,5 +35,11 @@ class MockManœuvre : public Manœuvre<InertialFrame, Frame>{
 using internal::MockManœuvre;
 
 }  // namespace _manœuvre
+
+namespace _mock_manœuvre = _manœuvre;
+
 }  // namespace ksp_plugin
+
+namespace ksp_plugin_test = ksp_plugin;
+
 }  // namespace principia

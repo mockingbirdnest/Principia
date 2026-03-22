@@ -1,9 +1,13 @@
 #include "ksp_plugin/vessel.hpp"
 
-#include <limits>
+#include <chrono>
+#include <cstdint>
+#include <iterator>
 #include <list>
 #include <memory>
+#include <optional>
 #include <set>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -13,8 +17,8 @@
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
-#include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
@@ -26,12 +30,10 @@
 #include "ksp_plugin/pile_up.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
-#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
+#include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/tensors.hpp"
@@ -61,7 +63,6 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
@@ -73,11 +74,10 @@ using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::ksp_plugin_test::_plugin_io;
-using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_tensors;
@@ -413,7 +413,7 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_EQ(0, vessel_.selected_flight_plan_index());
   EXPECT_EQ(0, vessel_.flight_plan().number_of_manœuvres());
   EXPECT_EQ(1, vessel_.flight_plan().number_of_segments());
-  FlightPlan* p1 = &vessel_.flight_plan();
+  FlightPlan const* p1 = &vessel_.flight_plan();
   EXPECT_OK(vessel_.RebaseFlightPlan(5 * Kilogram));
   EXPECT_NE(p1, &vessel_.flight_plan());
   p1 = &vessel_.flight_plan();
@@ -425,7 +425,7 @@ TEST_F(VesselTest, FlightPlan) {
                            DefaultBurnParameters());
   EXPECT_EQ(2, vessel_.flight_plan_count());
   EXPECT_EQ(1, vessel_.selected_flight_plan_index());
-  FlightPlan* p2 = &vessel_.flight_plan();
+  FlightPlan const* const p2 = &vessel_.flight_plan();
   EXPECT_NE(p1, p2);
   vessel_.SelectFlightPlan(0);
   EXPECT_EQ(p1, &vessel_.flight_plan());
@@ -987,10 +987,10 @@ TEST_F(VesselTest, TailSerialization) {
 
 TEST_F(VesselTest, Reanimator) {
   google::LogToStderr();
-  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+  not_null<std::unique_ptr<Plugin const>> const plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "reanimation test.proto.b64",
       /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+      /*encoder=*/"base64");
 
   auto const vessel = plugin->GetVessel("bd00adbd-2666-4172-8e5e-12862bad4562");
   EXPECT_EQ("Entwurf", vessel->name());

@@ -59,5 +59,11 @@ class MockVessel : public Vessel {
 using internal::MockVessel;
 
 }  // namespace _vessel
+
+namespace _mock_vessel = _vessel;
+
 }  // namespace ksp_plugin
+
+namespace ksp_plugin_test = ksp_plugin;
+
 }  // namespace principia
