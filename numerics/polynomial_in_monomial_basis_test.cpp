@@ -721,7 +721,7 @@ TEST_F(PolynomialInMonomialBasisTest, Output) {
           " +0.00000000000000000e+00 m s^-2, +0.00000000000000000e+00 m s^-2}"
           " * (T - J2000+0.00000000000000000e+00 s (TT))^2"));
   LOG(ERROR) << p17;
-  EXPECT_THAT(log_error.string(),
+  EXPECT_THAT(log_error.string(),  // NOLINT
               EndsWith("] {+0.00000000000000000e+00 m, "
                        "+0.00000000000000000e+00 m, "
                        "+0.00000000000000000e+00 m}"));
