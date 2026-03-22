@@ -8,8 +8,8 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
-#include "base/stoppable_thread.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
+#include "base/stoppable_thread.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"

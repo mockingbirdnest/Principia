@@ -15,8 +15,8 @@
 #include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "base/algebra.hpp"
-#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "base/map_util.hpp"
+#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"

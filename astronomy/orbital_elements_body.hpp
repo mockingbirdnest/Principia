@@ -9,8 +9,8 @@
 
 #include "absl/strings/str_cat.h"
 #include "base/algebra.hpp"
-#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
+#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
