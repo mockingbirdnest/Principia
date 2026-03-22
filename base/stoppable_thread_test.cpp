@@ -4,8 +4,6 @@
 #include <ostream>
 #include <thread>
 
-#include "absl/time/clock.h"
-#include "absl/time/time.h"
 #include "gtest/gtest.h"
 
 namespace principia {
@@ -14,13 +12,13 @@ namespace base {
 using namespace principia::base::_stoppable_thread;
 using namespace std::chrono_literals;
 
-TEST(JThreadTest, ThisJThread) {
+TEST(StoppableThreadTest, ThisStoppableThread) {
   bool observed_stop = false;
 
   auto sleepy_worker = MakeStoppableThread(
       [](bool* const observed_stop) {
         for (;;) {
-          absl::SleepFor(absl::Milliseconds(10));
+          std::this_thread::sleep_for(10ms);
           if (this_stoppable_thread::get_stop_token().stop_requested()) {
             std::cout << "Sleepy worker is requested to stop\n";
             *observed_stop = true;
