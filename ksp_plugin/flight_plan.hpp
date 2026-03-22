@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "absl/status/status.h"
-#include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -22,7 +21,6 @@ namespace ksp_plugin {
 namespace _flight_plan {
 namespace internal {
 
-using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_frames;
@@ -262,7 +260,7 @@ class FlightPlan {
   bool analysis_is_enabled_ = true;
 
   // These members are only accessed by the main thread.
-  jthread prolongator_;
+  std::jthread prolongator_;
   Instant last_prolongation_time_ = InfinitePast;
 
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;

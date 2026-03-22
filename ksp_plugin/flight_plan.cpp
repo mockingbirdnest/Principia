@@ -12,7 +12,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "base/algebra.hpp"
-#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
+#include "base/jthread.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "glog/logging.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -29,6 +29,7 @@ namespace _flight_plan {
 namespace internal {
 
 using namespace principia::base::_algebra;
+using namespace principia::base::_jthread;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
@@ -669,7 +670,7 @@ void FlightPlan::MakeProlongator(Instant const& prolongation_time) {
   if (prolongation_time < last_prolongation_time_) {
     // The desired prolongation became shorter, just kill the prolongator
     // thread.  We may recreate it below, but shorter.
-    prolongator_ = jthread();
+    prolongator_ = std::jthread();
   }
   if (ephemeris_->t_max() < prolongation_time) {
     // The ephemeris is too short, start a thread to prolong it.  Note that we

@@ -1,8 +1,8 @@
 #pragma once
 
+#include <thread>
 #include <vector>
 
-#include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -16,7 +16,6 @@ namespace ksp_plugin {
 namespace _geometric_potential_plotter {
 namespace internal {
 
-using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::ksp_plugin::_frames;
@@ -63,7 +62,7 @@ class GeometricPotentialPlotter {
   std::optional<Equipotentials> equipotentials_;
 
   mutable absl::Mutex lock_;
-  jthread plotter_;
+  std::jthread plotter_;
 
   // The `plotter_` is idle:
   // — if it is not joinable, e.g. because it was stopped by `Interrupt()`, or

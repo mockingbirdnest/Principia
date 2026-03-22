@@ -7,6 +7,7 @@
 
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
+#include "base/jthread.hpp"
 #include "glog/logging.h"
 
 namespace principia {
@@ -14,12 +15,14 @@ namespace ksp_plugin {
 namespace _geometric_potential_plotter {
 namespace internal {
 
+using namespace principia::base::_jthread;
+
 GeometricPotentialPlotter::GeometricPotentialPlotter(
     not_null<Ephemeris<Barycentric>*> const ephemeris)
     : ephemeris_(ephemeris) {}
 
 void GeometricPotentialPlotter::Interrupt() {
-  plotter_ = jthread();
+  plotter_ = std::jthread();
   // We are single-threaded here, no need to lock.
   plotter_idle_ = true;
 }

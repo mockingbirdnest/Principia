@@ -3,12 +3,13 @@
 #include "astronomy/orbital_elements.hpp"
 
 #include <algorithm>
+#include <thread>
 #include <utility>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
 #include "base/algebra.hpp"
-#include "base/jthread.hpp"
+#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/integrators.hpp"
@@ -27,7 +28,6 @@ namespace _orbital_elements {
 namespace internal {
 
 using namespace principia::base::_algebra;
-using namespace principia::base::_jthread;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
