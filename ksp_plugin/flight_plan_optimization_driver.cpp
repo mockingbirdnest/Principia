@@ -7,7 +7,7 @@
 
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
-#include "base/jthread.hpp"
+#include "base/stoppable_thread.hpp"
 #include "glog/logging.h"
 
 namespace principia {
@@ -15,7 +15,7 @@ namespace ksp_plugin {
 namespace _flight_plan_optimization_driver {
 namespace internal {
 
-using namespace principia::base::_jthread;
+using namespace principia::base::_stoppable_thread;
 
 FlightPlanOptimizationDriver::FlightPlanOptimizationDriver(
     not_null<std::shared_ptr<FlightPlan>> const& flight_plan,

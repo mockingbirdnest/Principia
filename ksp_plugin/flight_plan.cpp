@@ -12,7 +12,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "base/algebra.hpp"
-#include "base/jthread.hpp"
+#include "base/stoppable_thread.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "glog/logging.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -29,7 +29,7 @@ namespace _flight_plan {
 namespace internal {
 
 using namespace principia::base::_algebra;
-using namespace principia::base::_jthread;
+using namespace principia::base::_stoppable_thread;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;

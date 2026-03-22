@@ -8,7 +8,7 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
-#include "base/jthread.hpp"
+#include "base/stoppable_thread.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "ksp_plugin/integrators.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -21,7 +21,7 @@ namespace ksp_plugin {
 namespace _orbit_analyser {
 namespace internal {
 
-using namespace principia::base::_jthread;
+using namespace principia::base::_stoppable_thread;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
