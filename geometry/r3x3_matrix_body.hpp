@@ -236,9 +236,9 @@ R3Element<Quotient<RScalar, Scalar>> R3x3Matrix<Scalar>::Solve(
 template<typename Scalar>
 R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Identity()
   requires(std::is_same_v<Scalar, double>) {
-  return R3x3Matrix<S>({1, 0, 0},
-                       {0, 1, 0},
-                       {0, 0, 1});
+  return R3x3Matrix<Scalar>({1, 0, 0},
+                            {0, 1, 0},
+                            {0, 0, 1});
 }
 
 template<typename Scalar>
