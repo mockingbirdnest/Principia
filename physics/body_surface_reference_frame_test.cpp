@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
-#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -21,6 +20,7 @@
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -35,10 +35,7 @@ namespace physics {
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
-using ::testing::Return;
-using ::testing::_;
 using namespace principia::astronomy::_frames;
-using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -76,7 +73,7 @@ class BodySurfaceReferenceFrameTest : public ::testing::Test {
                               serialization::Frame::TEST>;
 
   BodySurfaceReferenceFrameTest()
-      : period_(10 * π * sqrt(5.0 / 7.0) * Second),
+      : period_(10 * π * Sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
                       SOLUTION_DIR / "astronomy" /
@@ -107,7 +104,7 @@ class BodySurfaceReferenceFrameTest : public ::testing::Test {
                     /*reference_angle=*/0 * Radian,
                     /*reference_instant=*/t0_,
                     /*angular_frequency=*/10 * Radian / Second,
-                    /*ascension_of_pole=*/0 * Radian,
+                    /*right_ascension_of_pole=*/0 * Radian,
                     /*declination_of_pole=*/π / 2 * Radian)),
         massive_centre_(&centre_) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));

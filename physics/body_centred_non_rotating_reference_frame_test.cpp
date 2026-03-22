@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -13,11 +12,13 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -34,7 +35,6 @@ using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
 using namespace principia::astronomy::_frames;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -42,6 +42,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
@@ -75,7 +76,7 @@ class BodyCentredNonRotatingReferenceFrameTest : public ::testing::Test {
                       serialization::Frame::TEST1>;
 
   BodyCentredNonRotatingReferenceFrameTest()
-      : period_(10 * π * sqrt(5.0 / 7.0) * Second),
+      : period_(10 * π * Sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
                       SOLUTION_DIR / "astronomy" /

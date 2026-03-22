@@ -1,9 +1,12 @@
 #include "testing_utilities/is_near.hpp"
 
+#include <cmath>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/bipm.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For e.
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 
@@ -26,7 +29,7 @@ TEST_F(IsNearTest, Dimensionless) {
 }
 
 TEST_F(IsNearTest, Quantity) {
-  Speed v = 1 * Knot;
+  Speed const v = 1 * Knot;
   EXPECT_THAT(v, IsNear(0.514_(1) * Metre / Second));
   EXPECT_THAT(v, Not(IsNear(3.0_(9) * Metre / Second)));
   EXPECT_THAT(v, IsNear(1.0_(1) * NauticalMile / Hour));

@@ -1,5 +1,8 @@
 #include "testing_utilities/solar_system_factory.hpp"
 
+#include <array>
+#include <cmath>
+#include <functional>
 #include <memory>
 #include <optional>
 #include <string>
@@ -10,14 +13,11 @@
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "numerics/elementary_functions.hpp"
-#include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/quantities.hpp"
-#include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -30,14 +30,11 @@ using ::testing::UnorderedElementsAreArray;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_grassmann;
-using namespace principia::numerics::_elementary_functions;
-using namespace principia::physics::_body;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
-using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_solar_system_factory;
 
@@ -48,7 +45,7 @@ class SolarSystemFactoryTest : public testing::Test {
   // than the corresponding ratio for the primary. In this region, the 2-body
   // approximation around the secondary is better than the 2-body approximation
   // around the primary.
-  Length LaplaceSphereRadiusRadius(
+  static Length LaplaceSphereRadiusRadius(
       MassiveBody const& primary_body,
       DegreesOfFreedom<ICRS> const& primary_dof,
       MassiveBody const& secondary_body,
@@ -66,7 +63,7 @@ class SolarSystemFactoryTest : public testing::Test {
   // that `tertiary` is within the Laplace sphere of `secondary` with respect
   // to `*primary`. If `relative_error` is greater than 1e-6, it should be tight
   // within an order of magnitude.
-  void TestStronglyBoundOrbit(
+  static void TestStronglyBoundOrbit(
       double eccentricity,
       double relative_error,
       MassiveBody const& tertiary_body,
@@ -80,7 +77,7 @@ class SolarSystemFactoryTest : public testing::Test {
       std::string const& message) {
     RelativeDegreesOfFreedom<ICRS> const tertiary_secondary =
         tertiary_dof - secondary_dof;
-    KeplerOrbit<ICRS> orbit{
+    KeplerOrbit<ICRS> const orbit{
         secondary_body, tertiary_body, tertiary_secondary, J2000};
     Vector<Length, ICRS> const& r = tertiary_secondary.displacement();
     EXPECT_THAT(
@@ -120,7 +117,7 @@ class SolarSystemFactoryTest : public testing::Test {
                            message);
   }
 
-  std::vector<DegreesOfFreedom<ICRS>> GetDegreesOfFreedom(
+  static std::vector<DegreesOfFreedom<ICRS>> GetDegreesOfFreedom(
       SolarSystem<ICRS> const& solar_system) {
     std::vector<DegreesOfFreedom<ICRS>> degrees_of_freedom;
     for (int i = SolarSystemFactory::Sun;
@@ -132,7 +129,7 @@ class SolarSystemFactoryTest : public testing::Test {
     return degrees_of_freedom;
   }
 
-  std::vector<std::unique_ptr<MassiveBody>> GetMassiveBodies(
+  static std::vector<std::unique_ptr<MassiveBody>> GetMassiveBodies(
       SolarSystem<ICRS> const& solar_system) {
     std::vector<std::unique_ptr<MassiveBody>> massive_bodies;
     for (int i = SolarSystemFactory::Sun;
@@ -160,7 +157,7 @@ TEST_F(SolarSystemFactoryTest, Name) {
        ++i) {
     names.push_back(SolarSystemFactory::name(i));
   }
-  std::string const expected_names[] = {
+  std::array const expected_names = {
       "Sun", "Jupiter", "Saturn", "Neptune", "Uranus", "Earth", "Venus", "Mars",
       "Mercury", "Ganymede", "Titan", "Callisto", "Io", "Moon", "Europa",
       "Triton", "Eris", "Pluto", "Titania", "Oberon", "Rhea", "Iapetus",
@@ -182,7 +179,7 @@ TEST_F(SolarSystemFactoryTest, Parent) {
     parent_names.push_back(
         SolarSystemFactory::name(SolarSystemFactory::parent(i)));
   }
-  std::string const expected_parent_names[] = {
+  std::array const expected_parent_names = {
       "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Sun", "Jupiter",
       "Saturn", "Jupiter", "Jupiter", "Earth", "Jupiter", "Neptune", "Sun",
       "Sun", "Uranus", "Uranus", "Saturn", "Saturn", "Pluto", "Uranus",

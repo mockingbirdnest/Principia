@@ -5,8 +5,6 @@
 #include <ranges>
 
 #include "glog/logging.h"
-#include "google/protobuf/descriptor.h"
-#include "serialization/journal.pb.h"
 #include "tools/journal_proto_processor.hpp"
 
 namespace principia {

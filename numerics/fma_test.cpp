@@ -1,7 +1,6 @@
 #include "numerics/fma.hpp"
 
 #include "base/cpuid.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/almost_equals.hpp"

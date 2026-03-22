@@ -4,6 +4,8 @@
 #include <utility>
 #include <vector>
 
+#include "glog/logging.h"
+
 namespace principia {
 namespace physics {
 namespace _protector {

@@ -222,7 +222,7 @@ Projection(Function const& function,
   std::optional<AngularFrequency> optional_ω = ω;
 
   // A calculator that returns optional_ω once and then stops.
-  auto angular_frequency_calculator = [&optional_ω](auto const& residual) {
+  auto angular_frequency_calculator = [&optional_ω](auto const& /*residual*/) {
     auto const result = optional_ω;
     optional_ω = std::nullopt;
     return result;

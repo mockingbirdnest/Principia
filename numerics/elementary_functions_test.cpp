@@ -1,11 +1,13 @@
 #include "numerics/elementary_functions.hpp"
 
+#include <cmath>
+
 #include "base/cpuid.hpp"
-#include "base/multiprecision.hpp"
 #include "gtest/gtest.h"
 #include "numerics/fma.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/uk.hpp"
@@ -18,10 +20,8 @@
 namespace principia {
 namespace numerics {
 
-using ::testing::Eq;
 using ::testing::Lt;
 using namespace principia::base::_cpuid;
-using namespace principia::base::_multiprecision;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
 using namespace principia::quantities::_astronomy;

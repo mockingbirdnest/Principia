@@ -1,6 +1,7 @@
 #include "numerics/quadrature.hpp"
 
 #include <limits>
+#include <optional>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -16,7 +17,6 @@ namespace principia {
 namespace numerics {
 namespace quadrature {
 
-using ::testing::AnyOf;
 using ::testing::Eq;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_quadrature;

@@ -1,3 +1,5 @@
+#if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
+
 #include <algorithm>
 #include <ctime>
 #include <memory>
@@ -20,8 +22,6 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-
-#if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
 
 namespace principia {
 namespace physics {

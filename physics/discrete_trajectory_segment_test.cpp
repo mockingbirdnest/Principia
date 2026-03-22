@@ -1,6 +1,7 @@
 #include "physics/discrete_trajectory_segment.hpp"
 
 #include <algorithm>
+#include <iterator>
 #include <memory>
 #include <vector>
 
@@ -85,8 +86,8 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
     segment_->ForgetAfter(t);
   }
 
-  void ForgetAfter(Instant const& t,
-                   DiscreteTrajectorySegment<World>& segment) {
+  static void ForgetAfter(Instant const& t,
+                          DiscreteTrajectorySegment<World>& segment) {
     segment.ForgetAfter(t);
   }
 
@@ -94,8 +95,8 @@ class DiscreteTrajectorySegmentTest : public ::testing::Test {
     segment_->ForgetBefore(t);
   }
 
-  void ForgetBefore(Instant const& t,
-                    DiscreteTrajectorySegment<World>& segment) {
+  static void ForgetBefore(Instant const& t,
+                           DiscreteTrajectorySegment<World>& segment) {
     segment.ForgetBefore(t);
   }
 
@@ -497,7 +498,7 @@ TEST_F(DiscreteTrajectorySegmentTest, SerializationRoundTrip) {
 }
 
 TEST_F(DiscreteTrajectorySegmentTest, SerializationEmpty) {
-  DiscreteTrajectorySegment<World> segment;
+  DiscreteTrajectorySegment<World> const segment;
   serialization::DiscreteTrajectorySegment message;
   segment.WriteToMessage(&message, /*exact=*/{});
   auto const deserialized_segments = MakeSegments(1);

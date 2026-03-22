@@ -24,7 +24,6 @@ namespace principia {
 namespace testing_utilities {
 
 using ::testing::Ne;
-using ::testing::Eq;
 using ::testing::Not;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;

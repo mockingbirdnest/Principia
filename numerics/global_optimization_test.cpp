@@ -1,21 +1,21 @@
 #include "numerics/global_optimization.hpp"
 
+#include <optional>
+
 #include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
-#include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/optimization_test_functions.hpp"
-#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace numerics {
@@ -31,16 +31,13 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_global_optimization;
-using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_optimization_test_functions;
-using namespace principia::testing_utilities::_vanishes_before;
 
 // The test functions in this file are from
 // https://www.sfu.ca/~ssurjano/optimization.html.

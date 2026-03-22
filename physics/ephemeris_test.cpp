@@ -1,5 +1,7 @@
 #include "physics/ephemeris.hpp"
 
+#include <algorithm>
+#include <cmath>
 #include <limits>
 #include <memory>
 #include <optional>
@@ -9,16 +11,18 @@
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/barycentre_calculator.hpp"
-#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
 #include "gipfeli/gipfeli.h"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -41,6 +45,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/physics.pb.h"
@@ -66,7 +71,6 @@ using namespace principia::astronomy::_frames;
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
-using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_r3x3_matrix;
@@ -122,7 +126,8 @@ class EphemerisTest : public testing::TestWithParam<FixedStepSizeIntegrator<
                 "sol_initial_state_jd_2433282_500000000.proto.txt"),
         t0_(solar_system_.epoch()) {}
 
-  FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
+  static FixedStepSizeIntegrator<
+      Ephemeris<ICRS>::NewtonianMotionEquation> const&
   integrator() {
     return *GetParam();
   }
@@ -226,7 +231,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
-  MasslessBody probe;
+  MasslessBody const probe;
   DiscreteTrajectory<ICRS> trajectory;
   EXPECT_OK(trajectory.Append(
       t0_,
@@ -390,7 +395,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
-  MasslessBody probe;
+  MasslessBody const probe;
   DiscreteTrajectory<ICRS> trajectory;
   EXPECT_OK(trajectory.Append(
       t0_,
@@ -398,7 +403,7 @@ TEST_P(EphemerisTest, EarthProbe) {
           earth_position +
               Vector<Length, ICRS>({0 * Metre, distance, 0 * Metre}),
           earth_velocity)));
-  auto const intrinsic_acceleration = [earth, distance](Instant const& t) {
+  auto const intrinsic_acceleration = [earth, distance](Instant const& /*t*/) {
     return Vector<Acceleration, ICRS>(
         {0 * si::Unit<Acceleration>,
          earth->gravitational_parameter() / (distance * distance),
@@ -518,7 +523,7 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
                                /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
-  MasslessBody probe1;
+  MasslessBody const probe1;
   DiscreteTrajectory<ICRS> trajectory1;
   EXPECT_OK(trajectory1.Append(
       t0_,
@@ -526,14 +531,15 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
           earth_position +
               Vector<Length, ICRS>({0 * Metre, distance_1, 0 * Metre}),
           earth_velocity)));
-  auto const intrinsic_acceleration1 = [earth, distance_1](Instant const& t) {
+  auto const intrinsic_acceleration1 = [earth, distance_1](
+      Instant const& /*t*/) {
     return Vector<Acceleration, ICRS>(
         {0 * si::Unit<Acceleration>,
          earth->gravitational_parameter() / (distance_1 * distance_1),
          0 * si::Unit<Acceleration>});
   };
 
-  MasslessBody probe2;
+  MasslessBody const probe2;
   DiscreteTrajectory<ICRS> trajectory2;
   EXPECT_OK(trajectory2.Append(
       t0_,
@@ -541,7 +547,8 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
           earth_position +
               Vector<Length, ICRS>({0 * Metre, -distance_2, 0 * Metre}),
           earth_velocity)));
-  auto const intrinsic_acceleration2 = [earth, distance_2](Instant const& t) {
+  auto const intrinsic_acceleration2 = [earth, distance_2](
+      Instant const& /*t*/) {
     return Vector<Acceleration, ICRS>(
         {0 * si::Unit<Acceleration>,
          -earth->gravitational_parameter() / (distance_2 * distance_2),
@@ -1042,7 +1049,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
   auto const μ2 = 3 * SolarGravitationalParameter;
   auto const μ3 = 4 * SolarGravitationalParameter;
 
-  auto const b0 =
+  auto const* const b0 =
       new OblateBody<ICRS>(μ0,
                            RotatingBody<ICRS>::Parameters(1 * Metre,
                                                           1 * Radian,
@@ -1051,9 +1058,9 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
                                                           0 * Radian,
                                                           π / 2 * Radian),
                            OblateBody<ICRS>::Parameters(j2, radius));
-  auto const b1 = new MassiveBody(μ1);
-  auto const b2 = new MassiveBody(μ2);
-  auto const b3 = new MassiveBody(μ3);
+  auto const* const b1 = new MassiveBody(μ1);
+  auto const* const b2 = new MassiveBody(μ2);
+  auto const* const b3 = new MassiveBody(μ3);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRS>> initial_state;
@@ -1095,9 +1102,9 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
       Ephemeris<ICRS>::FixedStepParameters(integrator(), duration / 100));
   EXPECT_OK(ephemeris.Prolong(t0_ + duration));
 
-  Vector<Acceleration, ICRS> actual_acceleration0 =
+  Vector<Acceleration, ICRS> const actual_acceleration0 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b0, t0_);
-  Vector<Acceleration, ICRS> expected_acceleration0 =
+  Vector<Acceleration, ICRS> const expected_acceleration0 =
       (μ1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
        μ2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
        μ3 * (q3 - q0) / Pow<3>((q3 - q0).Norm())) +
@@ -1113,9 +1120,9 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
                     VanishesBefore(expected_acceleration0.coordinates().x, 0),
                     AlmostEquals(expected_acceleration0.coordinates().z, 2)));
 
-  Vector<Acceleration, ICRS> actual_acceleration1 =
+  Vector<Acceleration, ICRS> const actual_acceleration1 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b1, t0_);
-  Vector<Acceleration, ICRS> expected_acceleration1 =
+  Vector<Acceleration, ICRS> const expected_acceleration1 =
       μ0 * (q0 - q1) / Pow<3>((q0 - q1).Norm()) +
       μ2 * (q2 - q1) / Pow<3>((q2 - q1).Norm()) +
       μ3 * (q3 - q1) / Pow<3>((q3 - q1).Norm()) +
@@ -1129,9 +1136,9 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
                     VanishesBefore(expected_acceleration1.coordinates().x, 0),
                     AlmostEquals(expected_acceleration1.coordinates().z, 0)));
 
-  Vector<Acceleration, ICRS> actual_acceleration2 =
+  Vector<Acceleration, ICRS> const actual_acceleration2 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b2, t0_);
-  Vector<Acceleration, ICRS> expected_acceleration2 =
+  Vector<Acceleration, ICRS> const expected_acceleration2 =
       μ0 * (q0 - q2) / Pow<3>((q0 - q2).Norm()) +
       μ1 * (q1 - q2) / Pow<3>((q1 - q2).Norm()) +
       μ3 * (q3 - q2) / Pow<3>((q3 - q2).Norm()) +
@@ -1146,9 +1153,9 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
                     VanishesBefore(expected_acceleration2.coordinates().x, 0),
                     AlmostEquals(expected_acceleration2.coordinates().z, 1)));
 
-  Vector<Acceleration, ICRS> actual_acceleration3 =
+  Vector<Acceleration, ICRS> const actual_acceleration3 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b3, t0_);
-  Vector<Acceleration, ICRS> expected_acceleration3 =
+  Vector<Acceleration, ICRS> const expected_acceleration3 =
       μ0 * (q0 - q3) / Pow<3>((q0 - q3).Norm()) +
       μ1 * (q1 - q3) / Pow<3>((q1 - q3).Norm()) +
       μ2 * (q2 - q3) / Pow<3>((q2 - q3).Norm()) +
@@ -1164,7 +1171,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationOnMassiveBody) {
 }
 
 TEST_P(EphemerisTest, ComputeGravitationalPotential) {
-  SolarSystem<ICRS> solar_system_2000(
+  SolarSystem<ICRS> const solar_system_2000(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
@@ -1236,7 +1243,7 @@ TEST_P(EphemerisTest, ComputeGravitationalPotential) {
 }
 
 TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       SOLUTION_DIR / "astronomy" / "test_gravity_model_two_bodies.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "test_initial_state_two_bodies_elliptical.proto.txt");
@@ -1247,8 +1254,10 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
       16000 * π / (Sqrt(7) * std::pow(73 - 8 * Sqrt(35), 1.5)) * Second;
   Length const a = 400 / (73 - 8 * Sqrt(35)) * Kilo(Metre);
   double const e = (7 + 8 * Sqrt(35)) / 80;
-  Speed v_apoapsis = (-1631 + 348 * Sqrt(35)) / 1460 * Kilo(Metre) / Second;
-  Speed v_periapsis = Sqrt(7 * (87 + 8 * Sqrt(35))) / 20 * Kilo(Metre) / Second;
+  Speed const v_apoapsis =
+      (-1631 + 348 * Sqrt(35)) / 1460 * Kilo(Metre) / Second;
+  Speed const v_periapsis =
+      Sqrt(7 * (87 + 8 * Sqrt(35))) / 20 * Kilo(Metre) / Second;
 
   auto ephemeris = solar_system.MakeEphemeris(
       /*accuracy_parameters=*/{fitting_tolerance,
@@ -1335,7 +1344,7 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
 // #2400.  It exhibits oscillations with a period close to 5600 s and its
 // downsampling period alternates between 120 and 130 s.
 TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
@@ -1359,7 +1368,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
                            -11880.03394238412 * Metre / Second,
                            200.2551546021678 * Metre / Second});
 
-  MasslessBody probe;
+  MasslessBody const probe;
   DiscreteTrajectory<ICRS> trajectory1;
   auto& segment1 = trajectory1.segments().front();
   segment1.SetDownsampling({.tolerance = 10 * Metre});
@@ -1416,7 +1425,7 @@ TEST(EphemerisTestNoFixture, Reanimator) {
   Instant const t_initial;
   Instant const t_final = t_initial + 5 * JulianYear;
 
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");

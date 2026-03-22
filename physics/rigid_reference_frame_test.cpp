@@ -1,6 +1,5 @@
 #include "physics/rigid_reference_frame.hpp"
 
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -16,6 +15,7 @@
 #include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -34,7 +34,6 @@ using ::testing::Lt;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::_;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -625,11 +624,11 @@ TEST_F(ReferenceFrameTest, FrenetFrame) {
 
   // Fixed points on top of each jaw.
   Length const r = 0.2 * Metre;
-  DegreesOfFreedom<FixedJaw> fixed_jaw_degrees_of_freedom(
+  DegreesOfFreedom<FixedJaw> const fixed_jaw_degrees_of_freedom(
       FixedJaw::origin +
           Displacement<FixedJaw>({0 * Metre, 0 * Metre, r}),
       FixedJaw::unmoving);
-  DegreesOfFreedom<MovingJaw> moving_jaw_degrees_of_freedom(
+  DegreesOfFreedom<MovingJaw> const moving_jaw_degrees_of_freedom(
       MovingJaw::origin +
           Displacement<MovingJaw>({0 * Metre, 0 * Metre, r}),
       MovingJaw::unmoving);
@@ -644,14 +643,14 @@ TEST_F(ReferenceFrameTest, FrenetFrame) {
       jaw_to_handle_frame.ToThisFrameAtTime(t0_)(
           moving_jaw_degrees_of_freedom));
 
-  Vector<double, Handle> fixed_jaw_tangent =
+  Vector<double, Handle> const fixed_jaw_tangent =
       fixed_jaw_frenet_frame(Vector<double, Frenet<FixedJaw>>({1, 0, 0}));
-  Vector<double, Handle> fixed_jaw_normal =
+  Vector<double, Handle> const fixed_jaw_normal =
       fixed_jaw_frenet_frame(Vector<double, Frenet<FixedJaw>>({0, 1, 0}));
 
-  Vector<double, Handle> moving_jaw_tangent =
+  Vector<double, Handle> const moving_jaw_tangent =
       moving_jaw_frenet_frame(Vector<double, Frenet<FixedJaw>>({1, 0, 0}));
-  Vector<double, Handle> moving_jaw_normal =
+  Vector<double, Handle> const moving_jaw_normal =
       moving_jaw_frenet_frame(Vector<double, Frenet<FixedJaw>>({0, 1, 0}));
 
   Length const pitch = v * (2 * π * Radian / ω);

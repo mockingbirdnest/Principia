@@ -11,14 +11,12 @@
 #include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
 namespace physics {
 
-using ::testing::Return;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
@@ -27,7 +25,6 @@ using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 class DiscreteTrajectoryIteratorTest : public ::testing::Test {
@@ -65,18 +62,18 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
     }
   }
 
-  void Append(Segments::iterator const it,
-              Instant const& t,
-              DegreesOfFreedom<World> const& degrees_of_freedom) {
+  static void Append(Segments::iterator const it,
+                     Instant const& t,
+                     DegreesOfFreedom<World> const& degrees_of_freedom) {
     EXPECT_OK(it->Append(t, degrees_of_freedom));
   }
 
-  DiscreteTrajectoryIterator<World> MakeBegin(
+  static DiscreteTrajectoryIterator<World> MakeBegin(
       Segments::const_iterator const it) {
     return it->begin();
   }
 
-  DiscreteTrajectoryIterator<World> MakeEnd(
+  static DiscreteTrajectoryIterator<World> MakeEnd(
       Segments::const_iterator const it) {
     return it->end();
   }

@@ -48,7 +48,7 @@ using MatrixTypes =
 TYPED_TEST_SUITE(MatrixComputationsTest, MatrixTypes);
 
 TYPED_TEST(MatrixComputationsTest, CholeskyDecomposition) {
-  using UpperTriangularMatrix = typename std::tuple_element<2, TypeParam>::type;
+  using UpperTriangularMatrix = typename std::tuple_element_t<2, TypeParam>;
 
   UpperTriangularMatrix const hilbert4({1, 1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0,
                                            1.0 / 3.0, 1.0 / 4.0, 1.0 / 5.0,
@@ -65,8 +65,8 @@ TYPED_TEST(MatrixComputationsTest, CholeskyDecomposition) {
 }
 
 TYPED_TEST(MatrixComputationsTest, ᵗRDRDecomposition) {
-  using Vector = typename std::tuple_element<0, TypeParam>::type;
-  using UpperTriangularMatrix = typename std::tuple_element<2, TypeParam>::type;
+  using Vector = typename std::tuple_element_t<0, TypeParam>;
+  using UpperTriangularMatrix = typename std::tuple_element_t<2, TypeParam>;
 
   UpperTriangularMatrix const hilbert4({1, 1.0 / 2.0, 1.0 / 3.0, 1.0 / 4.0,
                                            1.0 / 3.0, 1.0 / 4.0, 1.0 / 5.0,
@@ -77,7 +77,7 @@ TYPED_TEST(MatrixComputationsTest, ᵗRDRDecomposition) {
                  1,         1, 9.0 / 10.0,
                             1,  3.0 / 2.0,
                                         1});
-  Vector d4_expected({1, 1.0 / 12.0, 1.0 / 180.0, 1.0 / 2800.0});
+  Vector const d4_expected({1, 1.0 / 12.0, 1.0 / 180.0, 1.0 / 2800.0});
 
   const auto [r4_actual, d4_actual] = ᵗRDRDecomposition<Vector>(hilbert4);
   EXPECT_THAT(d4_actual, AlmostEquals(d4_expected, 1615));
@@ -85,8 +85,8 @@ TYPED_TEST(MatrixComputationsTest, ᵗRDRDecomposition) {
 }
 
 TYPED_TEST(MatrixComputationsTest, BackSubstitution) {
-  using Vector = typename std::tuple_element<0, TypeParam>::type;
-  using UpperTriangularMatrix = typename std::tuple_element<2, TypeParam>::type;
+  using Vector = typename std::tuple_element_t<0, TypeParam>;
+  using UpperTriangularMatrix = typename std::tuple_element_t<2, TypeParam>;
 
   UpperTriangularMatrix const m4({1, 3, -2,  6,
                                      4,  7, -1,
@@ -100,8 +100,8 @@ TYPED_TEST(MatrixComputationsTest, BackSubstitution) {
 }
 
 TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
-  using Vector = typename std::tuple_element<0, TypeParam>::type;
-  using LowerTriangularMatrix = typename std::tuple_element<1, TypeParam>::type;
+  using Vector = typename std::tuple_element_t<0, TypeParam>;
+  using LowerTriangularMatrix = typename std::tuple_element_t<1, TypeParam>;
 
   LowerTriangularMatrix const m4({ 1,
                                    3, -2,
@@ -115,7 +115,7 @@ TYPED_TEST(MatrixComputationsTest, ForwardSubstitution) {
 }
 
 TYPED_TEST(MatrixComputationsTest, ClassicalGramSchmidt) {
-  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  using Matrix = typename std::tuple_element_t<3, TypeParam>;
   Matrix const m4({1, 2, 3, -4,
                    5, 6, 7, 8,
                    9, 8, -7, 6,
@@ -140,7 +140,7 @@ TYPED_TEST(MatrixComputationsTest, ClassicalGramSchmidt) {
 }
 
 TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt) {
-  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  using Matrix = typename std::tuple_element_t<3, TypeParam>;
   Matrix const m4({1, 2, 3, -4,
                    5, 6, 7, 8,
                    9, 8, -7, 6,
@@ -174,7 +174,7 @@ TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt) {
 }
 
 TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt_Singular) {
-  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  using Matrix = typename std::tuple_element_t<3, TypeParam>;
   Matrix const m4({1, 2, 0, -4,
                    5, 6, 0, 8,
                    9, 8, 0, 6,
@@ -208,7 +208,7 @@ TYPED_TEST(MatrixComputationsTest, UnitriangularGramSchmidt_Singular) {
 }
 
 TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
-  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  using Matrix = typename std::tuple_element_t<3, TypeParam>;
   Matrix const m4({1, 2, 3, -4,
                    5, 6, 7, 8,
                    9, 8, -7, 6,
@@ -241,7 +241,7 @@ TYPED_TEST(MatrixComputationsTest, HessenbergForm) {
 }
 
 TYPED_TEST(MatrixComputationsTest, RealSchurDecomposition) {
-  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  using Matrix = typename std::tuple_element_t<3, TypeParam>;
   Matrix const m4({ 5,  4, -1,  0,
                     8, -1,  9,  8,
                    -4, -7,  2, -7,
@@ -256,8 +256,8 @@ TYPED_TEST(MatrixComputationsTest, RealSchurDecomposition) {
 }
 
 TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {
-  using Vector = typename std::tuple_element<0, TypeParam>::type;
-  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  using Vector = typename std::tuple_element_t<0, TypeParam>;
+  using Matrix = typename std::tuple_element_t<3, TypeParam>;
 
   Matrix const m4({ 1, 0, -2, 3,
                     0, 4,  8, 1,
@@ -295,8 +295,8 @@ TYPED_TEST(MatrixComputationsTest, ClassicalJacobi) {
 }
 
 TYPED_TEST(MatrixComputationsTest, RayleighQuotient) {
-  using Vector = typename std::tuple_element<0, TypeParam>::type;
-  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  using Vector = typename std::tuple_element_t<0, TypeParam>;
+  using Matrix = typename std::tuple_element_t<3, TypeParam>;
 
   Matrix const m4({ 1, 0, -2, 3,
                    -4, 4,  1, 2,
@@ -309,8 +309,8 @@ TYPED_TEST(MatrixComputationsTest, RayleighQuotient) {
 }
 
 TYPED_TEST(MatrixComputationsTest, RayleighQuotientIteration) {
-  using Vector = typename std::tuple_element<0, TypeParam>::type;
-  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  using Vector = typename std::tuple_element_t<0, TypeParam>;
+  using Matrix = typename std::tuple_element_t<3, TypeParam>;
 
   Matrix const m4({ 1, 0, -2, 3,
                    -4, 4,  1, 2,
@@ -330,8 +330,8 @@ TYPED_TEST(MatrixComputationsTest, RayleighQuotientIteration) {
 }
 
 TYPED_TEST(MatrixComputationsTest, Solve) {
-  using Vector = typename std::tuple_element<0, TypeParam>::type;
-  using Matrix = typename std::tuple_element<3, TypeParam>::type;
+  using Vector = typename std::tuple_element_t<0, TypeParam>;
+  using Matrix = typename std::tuple_element_t<3, TypeParam>;
 
   Matrix const m4({ 1, 0, -2, 3,
                    -4, 4,  1, 2,

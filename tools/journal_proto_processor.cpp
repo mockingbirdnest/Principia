@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iterator>
 #include <map>
+#include <ranges>
 #include <set>
 #include <string>
 #include <string_view>
@@ -108,56 +109,38 @@ void JournalProtoProcessor::ProcessMessages() {
 
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterfaceMethodDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cs_interface_method_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector>(
+      std::views::values(cs_interface_method_declaration_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterfaceSymbolDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cs_interface_symbol_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector>(
+      std::views::values(cs_interface_symbol_declaration_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cs_interchange_type_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector>(
+      std::views::values(cs_interchange_type_declaration_));
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCsCustomMarshalerClasses()
     const {
-  std::vector<std::string> result;
-  for (auto const& pair : cs_custom_marshaler_class_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector>(
+      std::views::values(cs_custom_marshaler_class_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCxxInterfaceMethodDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cxx_interface_method_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector>(
+      std::views::values(cxx_interface_method_declaration_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCxxInterchangeTypeDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cxx_interchange_type_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector>(
+      std::views::values(cxx_interchange_type_declaration_));
 }
 
 std::vector<std::string>
@@ -179,19 +162,13 @@ JournalProtoProcessor::GetCxxInterchangeImplementations() const {
 
 std::vector<std::string>
 JournalProtoProcessor::GetCxxMethodImplementations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cxx_functions_implementation_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector>(
+      std::views::values(cxx_functions_implementation_));
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCxxMethodTypes() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cxx_toplevel_type_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector>(
+      std::views::values(cxx_toplevel_type_declaration_));
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCxxPlayStatements() const {
@@ -1142,11 +1119,11 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
         };
   }
   field_cxx_optional_assignment_fn_[descriptor] =
-      [](std::string const& expr, std::string const& stmt) {
+      [](std::string const& /*expr*/, std::string const& stmt) {
         return stmt;
       };
   field_cxx_optional_pointer_fn_[descriptor] =
-      [](std::string const& condition, std::string const& expr) {
+      [](std::string const& /*condition*/, std::string const& expr) {
         return expr;
       };
   field_cxx_serializer_fn_[descriptor] =
