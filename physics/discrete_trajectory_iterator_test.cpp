@@ -17,7 +17,6 @@
 namespace principia {
 namespace physics {
 
-using ::testing::Return;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
@@ -63,18 +62,18 @@ class DiscreteTrajectoryIteratorTest : public ::testing::Test {
     }
   }
 
-  void Append(Segments::iterator const it,
-              Instant const& t,
-              DegreesOfFreedom<World> const& degrees_of_freedom) {
+  static void Append(Segments::iterator const it,
+                     Instant const& t,
+                     DegreesOfFreedom<World> const& degrees_of_freedom) {
     EXPECT_OK(it->Append(t, degrees_of_freedom));
   }
 
-  DiscreteTrajectoryIterator<World> MakeBegin(
+  static DiscreteTrajectoryIterator<World> MakeBegin(
       Segments::const_iterator const it) {
     return it->begin();
   }
 
-  DiscreteTrajectoryIterator<World> MakeEnd(
+  static DiscreteTrajectoryIterator<World> MakeEnd(
       Segments::const_iterator const it) {
     return it->end();
   }

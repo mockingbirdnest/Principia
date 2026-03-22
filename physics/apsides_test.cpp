@@ -1,5 +1,6 @@
 #include "physics/apsides.hpp"
 
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <memory>
@@ -12,6 +13,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -27,6 +29,7 @@
 #include "physics/rotating_body.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -103,12 +106,12 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
               Ephemeris<World>::NewtonianMotionEquation>(),
           10 * Minute));
 
-  Displacement<World> r(
+  Displacement<World> const r(
       {1 * AstronomicalUnit, 2 * AstronomicalUnit, 3 * AstronomicalUnit});
   Length const r_norm = r.Norm();
-  Velocity<World> v({4 * Kilo(Metre) / Second,
-                     5 * Kilo(Metre) / Second,
-                     6 * Kilo(Metre) / Second});
+  Velocity<World> const v({4 * Kilo(Metre) / Second,
+                           5 * Kilo(Metre) / Second,
+                           6 * Kilo(Metre) / Second});
   Speed const v_norm = v.Norm();
 
   Time const T = 2 * π * Sqrt(-(Pow<3>(r_norm) * Pow<2>(μ) /
@@ -232,7 +235,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
 
   // The apsides do not oscillate in altitude because of the ill-conditioning,
   // so we give up.  This used to fail, see #3925.
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   const auto intervals = ComputeCollisionIntervals(body,
                                                    reference_trajectory,
                                                    vessel_trajectory,
@@ -297,7 +300,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
 
   // The celestial is infinite in the z direction and has four lobes in the x-y
   // plane.  Think of a LEGO® axle.
-  auto radius = [](Angle const& latitude, Angle const& longitude) {
+  auto radius = [](Angle const& /*latitude*/, Angle const& longitude) {
     return (Cos(4 * longitude) + 2) * Metre;
   };
 

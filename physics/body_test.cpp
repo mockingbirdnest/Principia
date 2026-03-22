@@ -32,7 +32,6 @@
 namespace principia {
 namespace physics {
 
-using ::testing::IsNull;
 using ::testing::NotNull;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
@@ -147,7 +146,8 @@ TEST_F(BodyTest, MasslessSerializationSuccess) {
 
   // Dispatching from `Body`.  Need two steps to add const and remove
   // `not_null`.
-  not_null<std::unique_ptr<Body const>> body = Body::ReadFromMessage(message);
+  not_null<std::unique_ptr<Body const>> const body =
+      Body::ReadFromMessage(message);
   cast_massless_body = dynamic_cast_not_null<MasslessBody const*>(body.get());
   EXPECT_THAT(cast_massless_body, NotNull());
 }
@@ -170,7 +170,7 @@ TEST_F(BodyTest, MassiveSerializationSuccess) {
             massive_body.gravitational_parameter());
 
   // Dispatching from `Body`.
-  not_null<std::unique_ptr<Body>> body = Body::ReadFromMessage(message);
+  not_null<std::unique_ptr<Body>> const body = Body::ReadFromMessage(message);
   cast_massive_body = dynamic_cast_not_null<MassiveBody*>(body.get());
   EXPECT_THAT(cast_massive_body, NotNull());
   EXPECT_EQ(massive_body_.gravitational_parameter(),
@@ -293,7 +293,7 @@ TEST_F(BodyTest, OblateSerializationCompatibility) {
                   serialization::RotatingBody::extension)->
                       MutableExtension(serialization::OblateBody::extension);
   oblate_body_extension->clear_reference_radius();
-  Degree2SphericalHarmonicCoefficient pre_διόφαντος_j2 =
+  Degree2SphericalHarmonicCoefficient const pre_διόφαντος_j2 =
       7 * si::Unit<Degree2SphericalHarmonicCoefficient>;
   pre_διόφαντος_j2.WriteToMessage(
       oblate_body_extension->mutable_pre_diophantos_j2());
@@ -349,7 +349,7 @@ TEST_F(BodyTest, AllFrames) {
 // Check that the rotation of the Earth gives the right solar noon.
 TEST_F(BodyTest, SolarNoon) {
   using SurfaceFrame = Frame<struct SurfaceFrameTag>;
-  SolarSystem<ICRS> solar_system_j2000(
+  SolarSystem<ICRS> const solar_system_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");

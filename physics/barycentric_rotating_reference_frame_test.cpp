@@ -1,7 +1,6 @@
 #include "physics/barycentric_rotating_reference_frame.hpp"
 
 #include <memory>
-#include <string_view>
 
 #include "astronomy/frames.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -20,6 +19,7 @@
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -34,8 +34,6 @@ namespace physics {
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
-using ::testing::Return;
-using ::testing::_;
 using namespace principia::astronomy::_frames;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
@@ -73,7 +71,7 @@ class BarycentricRotatingReferenceFrameTest : public ::testing::Test {
                               serialization::Frame::TEST>;
 
   BarycentricRotatingReferenceFrameTest()
-      : period_(10 * π * sqrt(5.0 / 7.0) * Second),
+      : period_(10 * π * Sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
                       SOLUTION_DIR / "astronomy" /

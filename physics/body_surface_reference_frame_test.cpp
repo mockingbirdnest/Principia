@@ -1,7 +1,6 @@
 #include "physics/body_surface_reference_frame.hpp"
 
 #include <memory>
-#include <string_view>
 
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
@@ -21,6 +20,7 @@
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -35,8 +35,6 @@ namespace physics {
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
-using ::testing::Return;
-using ::testing::_;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
@@ -75,7 +73,7 @@ class BodySurfaceReferenceFrameTest : public ::testing::Test {
                               serialization::Frame::TEST>;
 
   BodySurfaceReferenceFrameTest()
-      : period_(10 * π * sqrt(5.0 / 7.0) * Second),
+      : period_(10 * π * Sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
                       SOLUTION_DIR / "astronomy" /

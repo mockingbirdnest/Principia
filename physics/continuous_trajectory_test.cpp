@@ -4,13 +4,17 @@
 #include <functional>
 #include <limits>
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
+#include "absl/status/status.h"
+#include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/polynomial.hpp"
@@ -18,6 +22,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -147,7 +152,7 @@ class ContinuousTrajectoryTest : public testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-  void FillTrajectory(
+  static void FillTrajectory(
       int const number_of_steps,
       Time const& step,
       std::function<Position<World>(Instant const)> const& position_function,
@@ -158,7 +163,7 @@ class ContinuousTrajectoryTest : public testing::Test {
       // We use this way of computing the time (as opposed to consecutive
       // additions) because it results in a bit of jitter in the intervals,
       // which matters for continuity.
-      Instant ti = time + (i + 1) * step;
+      Instant const ti = time + (i + 1) * step;
       EXPECT_OK(
           trajectory.Append(ti,
                             DegreesOfFreedom<World>(position_function(ti),
@@ -167,7 +172,7 @@ class ContinuousTrajectoryTest : public testing::Test {
   }
 
   // Fills the pre-Grassmann fields and clear the post-Grassmann fields.
-  serialization::ContinuousTrajectory MakePreGrassmann(
+  static serialization::ContinuousTrajectory MakePreGrassmann(
       serialization::ContinuousTrajectory const& message,
       std::optional<Instant> const& checkpoint_time) {
     serialization::ContinuousTrajectory pre_grassmann = message;
@@ -188,7 +193,7 @@ class ContinuousTrajectoryTest : public testing::Test {
   }
 
   // Fills the pre-Gröbner fields and clear the post-Gröbner fields.
-  serialization::ContinuousTrajectory MakePreGröbner(
+  static serialization::ContinuousTrajectory MakePreGröbner(
       serialization::ContinuousTrajectory const& message) {
     serialization::ContinuousTrajectory pre_gröbner = message;
     for (int i = 0; i < pre_gröbner.instant_polynomial_pair_size(); ++i) {
@@ -204,7 +209,7 @@ class ContinuousTrajectoryTest : public testing::Test {
     return pre_gröbner;
   }
 
-  serialization::ContinuousTrajectory MakePreΚαραθεοδωρή(
+  static serialization::ContinuousTrajectory MakePreΚαραθεοδωρή(
       serialization::ContinuousTrajectory const& message) {
     serialization::ContinuousTrajectory pre_καραθεοδωρή = message;
     for (auto& pair : *pre_καραθεοδωρή.mutable_instant_polynomial_pair()) {
@@ -216,7 +221,7 @@ class ContinuousTrajectoryTest : public testing::Test {
     return pre_καραθεοδωρή;
   }
 
-  serialization::ContinuousTrajectory MakePreکاشانی(
+  static serialization::ContinuousTrajectory MakePreکاشانی(
       serialization::ContinuousTrajectory const& message) {
     serialization::ContinuousTrajectory pre_کاشانی = message;
     pre_کاشانی.clear_policy();
@@ -288,7 +293,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
     t += step;
     EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(5, trajectory->degree());
-    EXPECT_EQ(sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
+    EXPECT_EQ(Sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
   }
 
@@ -302,7 +307,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
     t += step;
     EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(5, trajectory->degree());
-    EXPECT_EQ(sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
+    EXPECT_EQ(Sqrt(4.01) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
   }
 
@@ -338,7 +343,7 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
     t += step;
     EXPECT_OK(trajectory->LockAndComputeBestNewhallApproximation(t, qvs));
     EXPECT_EQ(7, trajectory->degree());
-    EXPECT_EQ(sqrt(3.44) * Metre, trajectory->adjusted_tolerance());
+    EXPECT_EQ(Sqrt(3.44) * Metre, trajectory->adjusted_tolerance());
     EXPECT_TRUE(trajectory->is_unstable());
   }
 
@@ -448,7 +453,7 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
                                  (t - t0_) * (-2) * Metre / Second});
       };
   auto velocity_function =
-      [](Instant const t) {
+      [](Instant const /*t*/) {
         return Velocity<World>({3 * Metre / Second,
                                 5 * Metre / Second,
                                 -2 * Metre / Second});
@@ -651,7 +656,7 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
                                  (t - t1) * (-2) * Metre / Second});
       };
   auto velocity_function1 =
-      [](Instant const t) {
+      [](Instant const /*t*/) {
         return Velocity<World>({3 * Metre / Second,
                                 5 * Metre / Second,
                                 -2 * Metre / Second});
@@ -677,7 +682,7 @@ TEST_F(ContinuousTrajectoryTest, Prepend) {
                                     (t - t2) * 7 * Metre / Second});
       };
   auto velocity_function2 =
-      [](Instant const t) {
+      [](Instant const /*t*/) {
         return Velocity<World>({6 * Metre / Second,
                                 1.5 * Metre / Second,
                                 7 * Metre / Second});
@@ -733,7 +738,7 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
                                  (t - t0_) * (-2) * Metre / Second});
       };
   auto velocity_function =
-      [](Instant const t) {
+      [](Instant const /*t*/) {
         return Velocity<World>({3 * Metre / Second,
                                 5 * Metre / Second,
                                 -2 * Metre / Second});
@@ -806,7 +811,7 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
                                  (t - t0_) * (-2) * Metre / Second});
       };
   auto velocity_function =
-      [](Instant const t) {
+      [](Instant const /*t*/) {
         return Velocity<World>({3 * Metre / Second,
                                 5 * Metre / Second,
                                 -2 * Metre / Second});
@@ -832,8 +837,8 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
   //   T₀ - 2 * T₁ + 3 * T₂  + 4 * T₃.
   message.clear_instant_polynomial_pair();
   auto* const series = message.add_series();
-  Instant t_min = Instant() - 1 * Second;
-  Instant t_max = Instant() + 1 * Second;
+  Instant const t_min = Instant() - 1 * Second;
+  Instant const t_max = Instant() + 1 * Second;
   t_min.WriteToMessage(series->mutable_lower_bound());
   t_max.WriteToMessage(series->mutable_upper_bound());
   Displacement<World> const c0({1.0 * Metre, 1.0 * Metre, 1.0 * Metre});
@@ -886,7 +891,7 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
                                  (t - t0_) * (-2) * Metre / Second});
       };
   auto velocity_function =
-      [](Instant const t) {
+      [](Instant const /*t*/) {
         return Velocity<World>({3 * Metre / Second,
                                 5 * Metre / Second,
                                 -2 * Metre / Second});
@@ -957,7 +962,7 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
                                  (t - t0_) * (-2) * Metre / Second});
       };
   auto velocity_function =
-      [](Instant const t) {
+      [](Instant const /*t*/) {
         return Velocity<World>({3 * Metre / Second,
                                 5 * Metre / Second,
                                 -2 * Metre / Second});
@@ -1027,7 +1032,7 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
                                  (t - t0_) * (-2) * Metre / Second});
       };
   auto velocity_function =
-      [](Instant const t) {
+      [](Instant const /*t*/) {
         return Velocity<World>({3 * Metre / Second,
                                 5 * Metre / Second,
                                 -2 * Metre / Second});

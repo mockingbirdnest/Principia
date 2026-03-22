@@ -58,7 +58,7 @@ TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
   using DegreesOfFreedomBarycentreCalculator =
       BarycentreCalculator<DegreesOfFreedom<World>, Entropy>;
   EXPECT_DEATH({
-    DegreesOfFreedomBarycentreCalculator calculator;
+    DegreesOfFreedomBarycentreCalculator const calculator;
     calculator.Get();
   }, "Empty BarycentreCalculator");
 }
@@ -71,7 +71,7 @@ TEST_F(DegreesOfFreedomTest, Output) {\
     "{+1.00000000000000000e+01 m s^-1, "
     "+2.00000000000000000e+01 m s^-1, "
     "+3.00000000000000000e+01 m s^-1}}");
-  RelativeDegreesOfFreedom<World> relative_degrees_of_freedom = d1_ - d2_;
+  RelativeDegreesOfFreedom<World> const relative_degrees_of_freedom = d1_ - d2_;
   EXPECT_EQ(DebugString(relative_degrees_of_freedom),
     "{{-3.00000000000000000e+00 m, "
     "+7.00000000000000000e+00 m, "

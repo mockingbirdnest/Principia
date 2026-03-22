@@ -1,5 +1,8 @@
 #include "physics/discrete_trajectory.hpp"
 
+#include <iterator>
+#include <optional>
+#include <ranges>
 #include <utility>
 #include <vector>
 
@@ -8,6 +11,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
@@ -30,11 +34,9 @@
 namespace principia {
 namespace physics {
 
-using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
-using ::testing::Not;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_frame;
@@ -67,7 +69,7 @@ class DiscreteTrajectoryTest : public ::testing::Test {
 
   // Constructs a trajectory with three 5-second segments starting at `t0` and
   // the given `degrees_of_freedom`.
-  DiscreteTrajectory<World> MakeTrajectory(
+  static DiscreteTrajectory<World> MakeTrajectory(
       Instant const& t0,
       DegreesOfFreedom<World> const& degrees_of_freedom) {
     DiscreteTrajectory<World> trajectory;
@@ -178,8 +180,8 @@ TEST_F(DiscreteTrajectoryTest, IterateForward) {
 TEST_F(DiscreteTrajectoryTest, IterateBackward) {
   auto const trajectory = MakeTrajectory();
   std::vector<Instant> times;
-  for (auto it = trajectory.rbegin(); it != trajectory.rend(); ++it) {
-    times.push_back(it->time);
+  for (auto const& [time, _] : trajectory | std::views::reverse) {
+    times.push_back(time);
   }
   EXPECT_THAT(times,
               ElementsAre(t0_ + 14 * Second,
@@ -584,8 +586,8 @@ TEST_F(DiscreteTrajectoryTest, ForgetBefore) {
   }
   {
     std::vector<Instant> times;
-    for (auto it = trajectory.rbegin(); it != trajectory.rend(); ++it) {
-      times.push_back(it->time);
+    for (auto const& [time, _] : trajectory | std::views::reverse) {
+      times.push_back(time);
     }
     EXPECT_THAT(times,
                 ElementsAre(t0_ + 14 * Second,
@@ -835,7 +837,7 @@ TEST_F(DiscreteTrajectoryTest, SerializationRange) {
 }
 
 TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreHamiltonCompatibility) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   auto const serialized_message = ReadFromBinaryFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
   auto const message1 =

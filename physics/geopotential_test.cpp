@@ -1,6 +1,8 @@
 #include "physics/geopotential.hpp"
 
+#include <array>
 #include <memory>
+#include <optional>
 #include <random>
 #include <vector>
 
@@ -30,7 +32,6 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -70,7 +71,6 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
@@ -331,7 +331,7 @@ TEST_F(GeopotentialTest, TestVector) {
   auto const earth_reference_radius =
       ParseQuantity<Length>(earth_message.reference_radius());
   MassiveBody::Parameters const massive_body_parameters(earth_μ);
-  RotatingBody<ICRS>::Parameters rotating_body_parameters(
+  RotatingBody<ICRS>::Parameters const rotating_body_parameters(
       /*mean_radius=*/solar_system_2000.mean_radius("Earth"),
       /*reference_angle=*/0 * Radian,
       /*reference_instant=*/Instant(),
@@ -361,10 +361,10 @@ TEST_F(GeopotentialTest, TestVector) {
   Vector<Acceleration, ITRS> const actual_acceleration_f90 =
       AccelerationF90(displacement, earth);
 
-  EXPECT_THAT(RelativeError(actual_acceleration_cpp, expected_acceleration),
-              IsNear(1.3e-8_(1)));
-  EXPECT_THAT(RelativeError(actual_acceleration_f90, expected_acceleration),
-              IsNear(1.3e-8_(1)));
+  EXPECT_THAT(actual_acceleration_cpp,
+              RelativeErrorFrom(expected_acceleration, IsNear(1.3e-8_(1))));
+  EXPECT_THAT(actual_acceleration_f90,
+              RelativeErrorFrom(expected_acceleration, IsNear(1.3e-8_(1))));
   EXPECT_THAT(actual_acceleration_cpp,
               AlmostEquals(actual_acceleration_f90, 4, 8));
 }
@@ -407,7 +407,7 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   auto const earth_reference_radius =
       ParseQuantity<Length>(earth_message.reference_radius());
   MassiveBody::Parameters const massive_body_parameters(earth_μ);
-  RotatingBody<ICRS>::Parameters rotating_body_parameters(
+  RotatingBody<ICRS>::Parameters const rotating_body_parameters(
       /*mean_radius=*/solar_system_2000.mean_radius("Earth"),
       /*reference_angle=*/0 * Radian,
       /*reference_instant=*/Instant(),
@@ -560,7 +560,7 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
 }
 
 TEST_F(GeopotentialTest, DampedForces) {
-  SolarSystem<ICRS> solar_system_2000(
+  SolarSystem<ICRS> const solar_system_2000(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
@@ -570,7 +570,7 @@ TEST_F(GeopotentialTest, DampedForces) {
   auto const earth_reference_radius =
       ParseQuantity<Length>(earth_message.reference_radius());
   MassiveBody::Parameters const massive_body_parameters(earth_μ);
-  RotatingBody<ICRS>::Parameters rotating_body_parameters(
+  RotatingBody<ICRS>::Parameters const rotating_body_parameters(
       /*mean_radius=*/solar_system_2000.mean_radius("Earth"),
       /*reference_angle=*/0 * Radian,
       /*reference_instant=*/Instant(),
@@ -666,7 +666,7 @@ TEST_F(GeopotentialTest, DampedForces) {
       [&direction, &get_acceleration](Geopotential<ICRS> const& geopotential,
                                       Length const& r) {
         Vector<double, ICRS> const celestial_north({0, 0, 1});
-        Vector<double, ICRS> local_north =
+        Vector<double, ICRS> const local_north =
             celestial_north.OrthogonalizationAgainst(direction);
         return InnerProduct(get_acceleration(geopotential, r), local_north);
       };
@@ -675,7 +675,7 @@ TEST_F(GeopotentialTest, DampedForces) {
                                       Length const& r) {
         Vector<double, ICRS> const down = -direction;
         Bivector<double, ICRS> const north({0, 0, 1});
-        Vector<double, ICRS> local_east = down * north;
+        Vector<double, ICRS> const local_east = down * north;
         return InnerProduct(get_acceleration(geopotential, r), local_east);
       };
 
