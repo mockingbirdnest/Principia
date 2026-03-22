@@ -107,9 +107,8 @@ Permutation<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T>
-  requires(F::handedness == T::handedness)
-Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity() {
+Permutation<FromFrame, ToFrame> Permutation<FromFrame, ToFrame>::Identity()
+  requires(FromFrame::handedness == ToFrame::handedness) {
   return Permutation(EvenPermutation::XYZ);
 }
 

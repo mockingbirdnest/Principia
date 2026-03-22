@@ -54,10 +54,9 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::Forget() const {
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap_>
-template<typename F, typename T>
-  requires(F::handedness == T::handedness)
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>
-AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::Identity() {
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::Identity()
+  requires(FromFrame::handedness == ToFrame::handedness) {
   return AffineMap(Point<FromVector>(),
                    Point<ToVector>(),
                    LinearMap<FromFrame, ToFrame>::Identity());

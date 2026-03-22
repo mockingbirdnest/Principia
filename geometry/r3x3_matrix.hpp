@@ -70,9 +70,8 @@ class R3x3Matrix final {
   R3Element<Scalar> const& row_y() const;
   R3Element<Scalar> const& row_z() const;
 
-  template<typename S = Scalar>
-    requires(std::is_same_v<S, double>)
-  static R3x3Matrix<S> Identity();
+  static R3x3Matrix<Scalar> Identity()
+    requires(std::is_same_v<Scalar, double>);
 
   void WriteToMessage(not_null<serialization::R3x3Matrix*> message) const;
   static R3x3Matrix ReadFromMessage(serialization::R3x3Matrix const& message);
