@@ -185,12 +185,6 @@
     <ClInclude Include="bits_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="jthread.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="jthread_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="malloc_allocator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -231,6 +225,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="algebra_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stoppable_thread.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stoppable_thread_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -286,9 +286,6 @@
     <ClCompile Include="bits_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="jthread_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="macos_allocator_replacement_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -317,6 +314,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="algebra_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stoppable_thread_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
