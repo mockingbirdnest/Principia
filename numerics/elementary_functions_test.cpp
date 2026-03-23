@@ -14,7 +14,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -32,8 +32,8 @@ using namespace principia::quantities::_uk;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_vanishes_before;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class ElementaryFunctionsTest : public testing::Test {};
 
@@ -88,28 +88,28 @@ TEST_F(ElementaryFunctionsTest, PhysicalConstants) {
               AlmostEquals(VacuumPermittivity * VacuumPermeability, 0));
   // The Keplerian approximation for the mass of the Sun
   // is fairly accurate.
-  EXPECT_THAT(RelativeError(
-                  4 * Pow<2>(π) * Pow<3>(AstronomicalUnit) / Pow<2>(JulianYear),
-                  SolarGravitationalParameter),
-              Lt(4e-5));
-  EXPECT_THAT(RelativeError(1 * Parsec, 3.26156 * LightYear), Lt(2e-6));
+  EXPECT_THAT(SolarGravitationalParameter,
+              RelativeErrorFrom(4 * Pow<2>(π) * Pow<3>(AstronomicalUnit) /
+                                     Pow<2>(JulianYear),
+                                Lt(4e-5)));
+  EXPECT_THAT(1 * Parsec,
+              RelativeErrorFrom(3.26156 * LightYear, Lt(2e-6)));
   // The Keplerian approximation for the mass of the Earth
   // is pretty bad, but the error is still only 1%.
-  EXPECT_THAT(RelativeError(4 * Pow<2>(π) * Pow<3>(lunar_distance) /
-                                Pow<2>(27.321582 * Day),
-                            TerrestrialGravitationalParameter),
-              Lt(1e-2));
-  EXPECT_THAT(RelativeError(1 * SolarGravitationalParameter,
-                            1047 * JovianGravitationalParameter),
-              Lt(6e-4));
+  EXPECT_THAT(TerrestrialGravitationalParameter,
+              RelativeErrorFrom(4 * Pow<2>(π) * Pow<3>(lunar_distance) /
+                                     Pow<2>(27.321582 * Day),
+                                Lt(1e-2)));
+  EXPECT_THAT(1 * SolarGravitationalParameter,
+              RelativeErrorFrom(1047 * JovianGravitationalParameter, Lt(6e-4)));
   // Delambre & Méchain.
-  EXPECT_THAT(RelativeError(TerrestrialGravitationalParameter /
-                                Pow<2>(40 * Mega(Metre) / (2 * π)),
-                            StandardGravity),
-              Lt(4e-3));
+  EXPECT_THAT(StandardGravity,
+              RelativeErrorFrom(TerrestrialGravitationalParameter /
+                                     Pow<2>(40 * Mega(Metre) / (2 * π)),
+                                Lt(4e-3)));
   // Talleyrand.
-  EXPECT_THAT(RelativeError(π * Sqrt(1 * Metre / StandardGravity), 1 * Second),
-              Lt(4e-3));
+  EXPECT_THAT(π * Sqrt(1 * Metre / StandardGravity),
+              RelativeErrorFrom(1 * Second, Lt(4e-3)));
 }
 
 #pragma warning(default: 4566)

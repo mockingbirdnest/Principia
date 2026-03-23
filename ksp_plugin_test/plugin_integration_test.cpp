@@ -36,7 +36,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
@@ -73,7 +73,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_solar_system_factory;
 
 namespace {
@@ -164,12 +164,10 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   for (t += δt; t < initial_time + 10 * 45 * Minute; t += δt) {
     plugin_->AdvanceTime(t, planetarium_rotation);
   }
-  EXPECT_THAT(
-      RelativeError(
-          plugin_->CelestialFromParent(
-              SolarSystemFactory::Earth).displacement().Norm(),
-          1 * AstronomicalUnit),
-      Lt(0.01));
+  EXPECT_THAT(plugin_->CelestialFromParent(SolarSystemFactory::Earth)
+                  .displacement()
+                  .Norm(),
+              RelativeErrorFrom(1 * AstronomicalUnit, Lt(0.01)));
   serialization::Plugin plugin_message;
   plugin_->WriteToMessage(&plugin_message);
   plugin_ = nullptr;
@@ -179,12 +177,10 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   for (; t < initial_time + 20 * 45 * Minute; t += δt) {
     plugin_->AdvanceTime(t, planetarium_rotation);
   }
-  EXPECT_THAT(
-      RelativeError(
-          plugin_->CelestialFromParent(
-              SolarSystemFactory::Earth).displacement().Norm(),
-          1 * AstronomicalUnit),
-      Lt(0.01));
+  EXPECT_THAT(plugin_->CelestialFromParent(SolarSystemFactory::Earth)
+                  .displacement()
+                  .Norm(),
+              RelativeErrorFrom(1 * AstronomicalUnit, Lt(0.01)));
 }
 
 TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
@@ -388,9 +384,9 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     Position<World> const position = degrees_of_freedom.position();
     Length const satellite_earth = (position - earth_world_position).Norm();
     Length const satellite_moon = (position - moon_world_position).Norm();
-    EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
-    EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
-    EXPECT_THAT(RelativeError(satellite_moon, satellite_earth), Lt(0.148));
+    EXPECT_THAT(satellite_earth, RelativeErrorFrom(earth_moon, Lt(0.0907)));
+    EXPECT_THAT(satellite_moon, RelativeErrorFrom(earth_moon, Lt(0.131)));
+    EXPECT_THAT(satellite_earth, RelativeErrorFrom(satellite_moon, Lt(0.148)));
   }
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue
@@ -498,18 +494,18 @@ TEST_F(PluginIntegrationTestWithoutPlugin, Prediction) {
        it != rendered_prediction.end();
        ++it, ++index) {
     auto const& position = it->degrees_of_freedom.position();
-    EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
-                Lt(0.5 * Milli(Metre)));
+    EXPECT_THAT((position - World::origin).Norm(),
+                AbsoluteErrorFrom(1 * Metre, Lt(0.5 * Milli(Metre))));
     if (index >= 5) {
-      EXPECT_THAT(AbsoluteError((position - World::origin).Norm(), 1 * Metre),
-                  Gt(0.1 * Milli(Metre)));
+      EXPECT_THAT((position - World::origin).Norm(),
+                  AbsoluteErrorFrom(1 * Metre, Gt(0.1 * Milli(Metre))));
     }
   }
-  EXPECT_THAT(AbsoluteError(
-                  rendered_prediction.back().degrees_of_freedom.position(),
-                  Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
-                      World::origin),
-              IsNear(29_(1) * Milli(Metre)));
+  EXPECT_THAT(
+      rendered_prediction.back().degrees_of_freedom.position(),
+      AbsoluteErrorFrom(Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
+                            World::origin,
+                        IsNear(29_(1) * Milli(Metre))));
 }
 
 }  // namespace ksp_plugin
