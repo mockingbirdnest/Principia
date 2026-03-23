@@ -15,8 +15,8 @@
 #include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "base/algebra.hpp"
-#include "base/jthread.hpp"
 #include "base/map_util.hpp"
+#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
@@ -40,7 +40,6 @@ using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using namespace principia::astronomy::_epoch;
 using namespace principia::base::_algebra;
-using namespace principia::base::_jthread;
 using namespace principia::base::_map_util;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_r3_element;

@@ -9,7 +9,7 @@
 
 #include "base/algebra.hpp"
 #include "base/array.hpp"
-#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
+#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"

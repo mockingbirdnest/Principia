@@ -3,19 +3,17 @@
 #include <chrono>
 #include <functional>
 #include <optional>
+#include <thread>
 #include <utility>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
-#include "base/jthread.hpp"
 
 namespace principia {
 namespace base {
 namespace _recurring_thread {
 namespace internal {
-
-using namespace principia::base::_jthread;
 
 // A stoppable thread that supports cyclical execution of an action.  It is
 // connected to two monodirectional channels that can (optionally) hold a value
@@ -51,7 +49,7 @@ class BaseRecurringThread {
   std::chrono::milliseconds const period_;
 
   absl::Mutex jthread_lock_;
-  jthread jthread_ GUARDED_BY(jthread_lock_);
+  std::jthread jthread_ GUARDED_BY(jthread_lock_);
 };
 
 // A template for an action that returns a value.
