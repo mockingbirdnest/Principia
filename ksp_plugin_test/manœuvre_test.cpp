@@ -40,6 +40,7 @@
 #include "testing_utilities/make_not_null.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -78,6 +79,7 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_make_not_null;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class ManœuvreTest : public ::testing::Test {
  protected:
@@ -302,12 +304,12 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       total_vehicle_at_s_ivb_1st_90_percent_thrust,
       first_burn);
 
-  EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
-                            first_manœuvre.mass_flow()),
-              Lt(1e-4));
-  EXPECT_THAT(RelativeError(total_vehicle_at_s_ivb_1st_eco,
-                            first_manœuvre.final_mass()),
-              Lt(1e-3));
+  EXPECT_THAT(
+      first_manœuvre.mass_flow(),
+      RelativeErrorFrom(lox_flowrate_1st + fuel_flowrate_1st, Lt(1e-4)));
+  EXPECT_THAT(
+      first_manœuvre.final_mass(),
+      RelativeErrorFrom(total_vehicle_at_s_ivb_1st_eco, Lt(1e-3)));
   EXPECT_EQ(s_ivb_1st_eco, first_manœuvre.final_time());
 
   // Accelerations from Figure 4-4. Ascent Trajectory Acceleration Comparison.
@@ -351,12 +353,12 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       total_vehicle_at_s_ivb_2nd_90_percent_thrust,
       second_burn);
 
-  EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
-                            second_manœuvre.mass_flow()),
-              Lt(2e-4));
-  EXPECT_THAT(RelativeError(total_vehicle_at_s_ivb_2nd_eco,
-                            second_manœuvre.final_mass()),
-              Lt(2e-3));
+  EXPECT_THAT(
+      second_manœuvre.mass_flow(),
+      RelativeErrorFrom(lox_flowrate_2nd + fuel_flowrate_2nd, Lt(2e-4)));
+  EXPECT_THAT
+      (second_manœuvre.final_mass(),
+       RelativeErrorFrom(total_vehicle_at_s_ivb_2nd_eco, Lt(2e-3)));
   EXPECT_EQ(s_ivb_2nd_eco, second_manœuvre.final_time());
 
   // Accelerations from Figure 4-9. Injection Phase Acceleration Comparison.
@@ -393,9 +395,9 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
               IsNear(3.2_(1) * Kilo(Metre) / Second));
 
   // From the Apollo 8 flight journal.
-  EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second,
-                            second_manœuvre.Δv().Norm()),
-              Lt(20 * Metre / Second));
+  EXPECT_THAT(
+      second_manœuvre.Δv().Norm(),
+      AbsoluteErrorFrom(10'519.6 * Foot / Second, Lt(20 * Metre / Second)));
 }
 
 TEST_F(ManœuvreTest, Serialization) {
