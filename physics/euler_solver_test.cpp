@@ -29,7 +29,6 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -57,7 +56,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
@@ -523,8 +521,8 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       EXPECT_EQ(zeroes[i / 2], t);
     }
     if (it != all.begin()) {
-      EXPECT_THAT(RelativeError(quarter_period, t - *std::prev(it)),
-                  Lt(0.0023));
+      EXPECT_THAT(t - *std::prev(it),
+                  RelativeErrorFrom(quarter_period, Lt(0.0023)));
     }
   }
 

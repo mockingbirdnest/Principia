@@ -11,7 +11,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/serialization.hpp"
 
 namespace principia {
@@ -22,7 +22,7 @@ using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_serialization;
 
 class EllipticIntegralsTest : public ::testing::Test {};
@@ -91,7 +91,7 @@ TEST_F(EllipticIntegralsTest, Xelbdj) {
         auto const expected_value_b = expected_entry.value(0) * Radian;
         auto const expected_value_d = expected_entry.value(1) * Radian;
         auto const expected_value_j = expected_entry.value(2) * Radian;
-        EXPECT_THAT(RelativeError(expected_argument_n, nn), Lt(5e-6));
+        EXPECT_THAT(nn, RelativeErrorFrom(expected_argument_n, Lt(5e-6)));
         EXPECT_THAT(mm, AlmostEquals(expected_argument_m, 0));
         EXPECT_THAT(φ / (π * Radian),
                     AlmostEquals(expected_argument_φ_over_π, 0));

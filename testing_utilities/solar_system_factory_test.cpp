@@ -18,7 +18,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/quantities.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -35,7 +35,7 @@ using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_solar_system_factory;
 
 class SolarSystemFactoryTest : public testing::Test {
@@ -80,14 +80,12 @@ class SolarSystemFactoryTest : public testing::Test {
     KeplerOrbit<ICRS> const orbit{
         secondary_body, tertiary_body, tertiary_secondary, J2000};
     Vector<Length, ICRS> const& r = tertiary_secondary.displacement();
-    EXPECT_THAT(
-        RelativeError(eccentricity, *orbit.elements_at_epoch().eccentricity),
-        Lt(relative_error))
+    EXPECT_THAT(*orbit.elements_at_epoch().eccentricity,
+                RelativeErrorFrom(eccentricity, Lt(relative_error)))
         << message;
     if (relative_error > 1e-6) {
-      EXPECT_THAT(
-          RelativeError(eccentricity, *orbit.elements_at_epoch().eccentricity),
-          Ge(relative_error / 10.0))
+      EXPECT_THAT(*orbit.elements_at_epoch().eccentricity,
+                  RelativeErrorFrom(eccentricity, Ge(relative_error / 10.0)))
           << message;
     }
     if (primary_dof) {
