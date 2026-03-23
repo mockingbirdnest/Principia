@@ -109,37 +109,39 @@ void JournalProtoProcessor::ProcessMessages() {
 
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterfaceMethodDeclarations() const {
-  return std::ranges::to<std::vector>(
+  // Specifying `<std::string>` is necessary because of our alias templates for
+  // macOS.
+  return std::ranges::to<std::vector<std::string>>(
       std::views::values(cs_interface_method_declaration_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterfaceSymbolDeclarations() const {
-  return std::ranges::to<std::vector>(
+  return std::ranges::to<std::vector<std::string>>(
       std::views::values(cs_interface_symbol_declaration_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
-  return std::ranges::to<std::vector>(
+  return std::ranges::to<std::vector<std::string>>(
       std::views::values(cs_interchange_type_declaration_));
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCsCustomMarshalerClasses()
     const {
-  return std::ranges::to<std::vector>(
+  return std::ranges::to<std::vector<std::string>>(
       std::views::values(cs_custom_marshaler_class_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCxxInterfaceMethodDeclarations() const {
-  return std::ranges::to<std::vector>(
+  return std::ranges::to<std::vector<std::string>>(
       std::views::values(cxx_interface_method_declaration_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCxxInterchangeTypeDeclarations() const {
-  return std::ranges::to<std::vector>(
+  return std::ranges::to<std::vector<std::string>>(
       std::views::values(cxx_interchange_type_declaration_));
 }
 
@@ -162,12 +164,12 @@ JournalProtoProcessor::GetCxxInterchangeImplementations() const {
 
 std::vector<std::string>
 JournalProtoProcessor::GetCxxMethodImplementations() const {
-  return std::ranges::to<std::vector>(
+  return std::ranges::to<std::vector<std::string>>(
       std::views::values(cxx_functions_implementation_));
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCxxMethodTypes() const {
-  return std::ranges::to<std::vector>(
+  return std::ranges::to<std::vector<std::string>>(
       std::views::values(cxx_toplevel_type_declaration_));
 }
 

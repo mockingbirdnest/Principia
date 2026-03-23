@@ -3,6 +3,7 @@
 #include "geometry/sign.hpp"
 
 #include <cmath>
+#include <concepts>
 #include <string>
 
 #include "quantities/si.hpp"
@@ -27,8 +28,7 @@ template<typename Dimensions>
 Sign::Sign(Quantity<Dimensions> const& x)
     : Sign(x / si::Unit<Quantity<Dimensions>>) {}
 
-template<typename T>
-  requires(std::is_integral_v<T>)
+template<std::integral T>
 constexpr Sign Sign::OfNonZero(T x) {
   CONSTEXPR_CHECK(x != 0) << x;
   return Sign(/*negative=*/x < 0);

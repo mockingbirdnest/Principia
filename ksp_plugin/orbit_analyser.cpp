@@ -8,8 +8,8 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/synchronization/mutex.h"
-#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
+#include "base/stoppable_thread.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -21,6 +21,7 @@ namespace ksp_plugin {
 namespace _orbit_analyser {
 namespace internal {
 
+using namespace principia::base::_stoppable_thread;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
@@ -83,7 +84,7 @@ OrbitAnalyser::~OrbitAnalyser() {
 }
 
 void OrbitAnalyser::Interrupt() {
-  analyser_ = jthread();
+  analyser_ = std::jthread();
   // We are single-threaded here, no need to lock.
   analyser_idle_ = true;
 }
