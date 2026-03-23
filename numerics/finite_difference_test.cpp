@@ -8,7 +8,7 @@
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/statistics.hpp"
 
 namespace principia {
@@ -22,7 +22,7 @@ using namespace principia::numerics::_finite_difference;
 using namespace principia::quantities::_quantities;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_statistics;
 
 template<typename T>
@@ -80,8 +80,8 @@ TYPED_TEST(FiniteDifferenceTest, HighDegreePolynomial) {
     if constexpr (n == 1) {
       EXPECT_THAT(log_errors, Each(Infinity<double>));
     } else {
-      EXPECT_THAT(AbsoluteError(n - 1, Slope(log_steps, log_errors)),
-                  Lt(0.47))
+      EXPECT_THAT(Slope(log_steps, log_errors),
+                  AbsoluteErrorFrom(n - 1, Lt(0.47)))
           << "with n = " << n << ", j = " << j;
     }
   }

@@ -26,6 +26,7 @@
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace integrators {
@@ -53,6 +54,7 @@ using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_statistics;
 using namespace principia::testing_utilities::_vanishes_before;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 #define INSTANCE(integrator,                                             \
                  beginning_of_convergence,                               \
@@ -387,12 +389,10 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, TimeReversibility) {
     EXPECT_THAT(final_state.velocities[0].value,
                 VanishesBefore(v_amplitude, 0, 70));
   } else {
-    EXPECT_THAT(AbsoluteError(q_initial,
-                              final_state.positions[0].value),
-                Gt(1e-6 * Metre));
-    EXPECT_THAT(AbsoluteError(v_initial,
-                              final_state.velocities[0].value),
-                Gt(1e-6 * Metre / Second));
+    EXPECT_THAT(final_state.positions[0].value,
+                AbsoluteErrorFrom(q_initial, Gt(1e-6 * Metre)));
+    EXPECT_THAT(final_state.velocities[0].value,
+                AbsoluteErrorFrom(v_initial, Gt(1e-6 * Metre / Second)));
   }
 }
 
@@ -515,9 +515,9 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  EXPECT_THAT(AbsoluteError(static_cast<double>(GetParam().order),
-                            q_convergence_order),
-              Lt(0.10));
+  EXPECT_THAT(
+      q_convergence_order,
+      AbsoluteErrorFrom(static_cast<double>(GetParam().order), Lt(0.10)));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.993), Le(1)));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
@@ -527,9 +527,10 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
   // SPRKs with odd convergence order have a higher convergence order in p.
-  EXPECT_THAT(AbsoluteError(GetParam().order + (GetParam().order % 2),
-                            v_convergence_order),
-              Lt(0.16));
+  EXPECT_THAT(v_convergence_order,
+              AbsoluteErrorFrom(static_cast<double>(GetParam().order +
+                                                    (GetParam().order % 2)),
+                                Lt(0.16)));
   EXPECT_THAT(v_correlation, AllOf(Gt(0.994), Le(1)));
 #endif
 }

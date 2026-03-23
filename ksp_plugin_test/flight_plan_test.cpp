@@ -36,7 +36,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -71,7 +71,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace std::chrono_literals;
 
 class FlightPlanTest : public testing::Test {
@@ -244,7 +244,7 @@ TEST_F(FlightPlanTest, Singular) {
   auto const segment0 = flight_plan_->GetSegment(0);
   DiscreteTrajectory<Barycentric>::iterator back = segment0->end();
   --back;
-  EXPECT_THAT(AbsoluteError(singularity, back->time), Lt(1e-4 * Second));
+  EXPECT_THAT(back->time, AbsoluteErrorFrom(singularity, Lt(1e-4 * Second)));
   // Attempting to put a burn past the singularity fails.
   EXPECT_THAT(
       flight_plan_->Insert(

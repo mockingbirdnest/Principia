@@ -14,7 +14,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -31,7 +31,7 @@ using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class OrbitRecurrenceTest : public ::testing::Test {
  protected:
@@ -146,17 +146,17 @@ TEST_F(OrbitRecurrenceTest, ClosestRecurrence) {
 TEST_F(OrbitRecurrenceTest, EquatorialShift) {
   // Example 8.2: Метеор-3 № 7.
   OrbitRecurrence const метеор_3_7(13, +7, 71);
-  EXPECT_THAT(AbsoluteError(-27.48 * Degree, метеор_3_7.equatorial_shift()),
-              Lt(0.01 * Degree));
+  EXPECT_THAT(метеор_3_7.equatorial_shift(),
+              AbsoluteErrorFrom(-27.48 * Degree, Lt(0.01 * Degree)));
 }
 
 TEST_F(OrbitRecurrenceTest, GridInterval) {
   // Example 11.8: TOPEX/Poséidon.
   OrbitRecurrence const topex_poséidon(13, -3, 10);
-  EXPECT_THAT(AbsoluteError(2.8346 * Degree, topex_poséidon.grid_interval()),
-              Lt(0.0001 * Degree));
-  EXPECT_THAT(AbsoluteError(28.35 * Degree, topex_poséidon.base_interval()),
-              Lt(0.01 * Degree));
+  EXPECT_THAT(topex_poséidon.grid_interval(),
+              AbsoluteErrorFrom(2.8346 * Degree, Lt(0.0001 * Degree)));
+  EXPECT_THAT(topex_poséidon.base_interval(),
+              AbsoluteErrorFrom(28.35 * Degree, Lt(0.01 * Degree)));
 }
 
 TEST_F(OrbitRecurrenceTest, Subcycle) {
@@ -185,8 +185,8 @@ TEST_F(OrbitRecurrenceTest, RetrogradeRotation) {
                                          /*max_abs_Cᴛₒ=*/50);
   ASSERT_OK(status_or_magellan);
   auto const& magellan = status_or_magellan.value();
-  EXPECT_THAT(AbsoluteError(0.094526 * Degree, magellan.equatorial_shift()),
-              Lt(0.000001 * Degree));
+  EXPECT_THAT(magellan.equatorial_shift(),
+              AbsoluteErrorFrom(0.094526 * Degree, Lt(0.000001 * Degree)));
   // There are approximately 3807 orbits per sidereal day; this value of νₒ is
   // consistent with the low precession.
   EXPECT_THAT(magellan,
@@ -202,8 +202,8 @@ TEST_F(OrbitRecurrenceTest, RetrogradeRotation) {
                                          /*max_abs_Cᴛₒ=*/50);
   ASSERT_OK(status_or_triton_orbiter);
   auto const& triton_orbiter = status_or_triton_orbiter.value();
-  EXPECT_THAT(AbsoluteError(7.2 * Degree, triton_orbiter.equatorial_shift()),
-              Lt(0.1 * Degree));
+  EXPECT_THAT(triton_orbiter.equatorial_shift(),
+              AbsoluteErrorFrom(7.2 * Degree, Lt(0.1 * Degree)));
   EXPECT_THAT(triton_orbiter,
               AllOf(Property(&OrbitRecurrence::νₒ, -50),
                     Property(&OrbitRecurrence::Dᴛₒ, -1),
