@@ -18,7 +18,7 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace geometry {
@@ -36,7 +36,7 @@ using namespace principia::geometry::_space;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class AffineMapTest : public testing::Test {
  protected:
@@ -97,8 +97,9 @@ class AffineMapTest : public testing::Test {
 TEST_F(AffineMapTest, Cube) {
   Rot const rotate_left(π / 2 * Radian,
                         Bivector<Length, World>(upward_.coordinates()));
-  EXPECT_THAT(RelativeError(leftward_, rotate_left(forward_)),
-              Lt(2 * std::numeric_limits<double>::epsilon()));
+  EXPECT_THAT(rotate_left(forward_),
+              RelativeErrorFrom(
+                  leftward_, Lt(2 * std::numeric_limits<double>::epsilon())));
   RigidTransformation const map = RigidTransformation(back_right_bottom_,
                                                       front_right_bottom_,
                                                       rotate_left);

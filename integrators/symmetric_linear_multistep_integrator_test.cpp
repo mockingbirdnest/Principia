@@ -25,7 +25,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/statistics.hpp"
 
 namespace principia {
@@ -52,7 +52,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_integration;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_statistics;
 
 #define INSTANCE(integrator,                                          \
@@ -274,8 +274,8 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  EXPECT_THAT(RelativeError(GetParam().order, q_convergence_order),
-              Lt(0.02));
+  EXPECT_THAT(q_convergence_order,
+              RelativeErrorFrom(GetParam().order, Lt(0.02)));
   EXPECT_THAT(q_correlation, AllOf(Gt(0.9997), Le(1)));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
@@ -284,7 +284,7 @@ TEST_P(SymmetricLinearMultistepIntegratorTest, Convergence) {
   LOG(INFO) << "Convergence order in p : " << v_convergence_order;
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
-  EXPECT_THAT(RelativeError(GetParam().order, v_convergence_order), Lt(0.02));
+  EXPECT_THAT(v_convergence_order, RelativeError(GetParam().order, Lt(0.02)));
   CHECK_GE(1, v_correlation);
   EXPECT_THAT(v_correlation, AllOf(Gt(0.99993), Le(1)));
 #endif

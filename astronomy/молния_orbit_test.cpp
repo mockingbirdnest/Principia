@@ -29,12 +29,13 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/statistics.hpp"
 
 namespace principia {
 namespace astronomy {
 
+using ::testing::Lt;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
@@ -57,7 +58,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_statistics;
 
 class МолнияOrbitTest : public ::testing::Test {
@@ -162,10 +163,10 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
 
     // Check that the argument of the perigee remains roughly constant (modulo
     // the influence of the Moon).
-    EXPECT_LT(RelativeError(
-                  2.0 * π * Radian + *initial_elements.argument_of_periapsis,
-                  *actual_elements.argument_of_periapsis),
-              0.0026);
+    EXPECT_THAT(*actual_elements.argument_of_periapsis,
+                RelativeErrorFrom(
+                    2.0 * π * Radian + *initial_elements.argument_of_periapsis,
+                    Lt(0.0026)));
 
     logger.Append("ppaDisplacements",
                   relative_dof.displacement(),
@@ -193,9 +194,9 @@ TEST_F(МолнияOrbitTest, DISABLED_Satellite) {
   Angle const ΔΩ_per_period = -2.0 * π * Radian * earth_body->j2_over_μ() /
                               (semilatus_rectum * semilatus_rectum) *
                               (3.0 / 2.0) * Cos(initial_elements.inclination);
-  EXPECT_THAT(RelativeError(ΔΩ_per_period / (sidereal_day / 2.0),
-                            actual_precession_speed),
-              IsNear(0.076_(1)));
+  EXPECT_THAT(actual_precession_speed,
+              RelativeErrorFrom(ΔΩ_per_period / (sidereal_day / 2.0),
+                                IsNear(0.076_(1))));
 }
 
 #endif
