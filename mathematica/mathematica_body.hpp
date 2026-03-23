@@ -313,12 +313,12 @@ std::string ToMathematica(bool const b, OptionalExpressIn /*express_in*/) {
   return b ? "True" : "False";
 }
 
-template<typename T, typename, typename OptionalExpressIn>
+template<std::integral T, typename OptionalExpressIn>
 std::string ToMathematica(T const integer, OptionalExpressIn /*express_in*/) {
   return std::to_string(integer);
 }
 
-template<typename T, typename, typename OptionalExpressIn, typename>
+template<std::floating_point T, typename OptionalExpressIn>
 std::string ToMathematica(T const real,
                           OptionalExpressIn /*express_in*/,
                           std::int64_t const base) {
@@ -500,7 +500,8 @@ std::string ToMathematica(
           ToMathematica(relative_degrees_of_freedom.velocity(), express_in)});
 }
 
-template<typename Tuple, typename, typename OptionalExpressIn>
+template<typename Tuple, typename OptionalExpressIn>
+  requires(is_tuple_v<Tuple>)
 std::string ToMathematica(Tuple const& tuple, OptionalExpressIn express_in) {
   std::vector<std::string> expressions;
   expressions.reserve(std::tuple_size_v<Tuple>);

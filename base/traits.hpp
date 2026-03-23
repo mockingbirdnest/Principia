@@ -33,8 +33,8 @@ struct can_be_instantiated {
 };
 
 
-// `matches_instantiation<U, can_instantiate, T, Args...>` has a true `value`
-// member iff `U` is the same type as `T<Args...>`.  The parameter
+// `matches_instantiation<U, can_be_instantiated, T, Args...>` has a true
+// `value` member iff `U` is the same type as `T<Args...>`.  The parameter
 // `can_be_instantiated` must indicate whether `T<Args...>` is a valid
 // instantiation.
 template<typename U,

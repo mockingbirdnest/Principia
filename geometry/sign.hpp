@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <string>
 
 #include "base/not_null.hpp"
@@ -35,8 +36,7 @@ class Sign final {
   static constexpr Sign Positive();
   static constexpr Sign Negative();
 
-  template<typename T>
-    requires(std::is_integral_v<T>)
+  template<std::integral T>
   static constexpr Sign OfNonZero(T x);
 
   constexpr bool is_positive() const;
