@@ -27,7 +27,8 @@ RigidMotion<FromFrame, ToFrame>::RigidMotion(
       velocity_of_to_frame_origin_(velocity_of_to_frame_origin) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T, typename>
+template<typename F, typename T>
+  requires(!std::is_same_v<F, T>)
 RigidMotion<FromFrame, ToFrame>::RigidMotion(
     RigidTransformation<FromFrame, ToFrame> const& rigid_transformation,
     AngularVelocity<ToFrame> const& angular_velocity_of_from_frame,

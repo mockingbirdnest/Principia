@@ -1,6 +1,6 @@
 #pragma once
 
-#include <type_traits>
+#include <concepts>
 
 namespace principia {
 namespace numerics {
@@ -10,8 +10,7 @@ namespace internal {
 // A constexpr implementation of the IEEE 754:2008 logB function.
 // Uses sourceFormat as logBFormat, which makes it easy to cleanly handle NaN,
 // infinity, and 0.
-template<typename SourceFormat>
-  requires(std::is_floating_point_v<SourceFormat>)
+template<std::floating_point SourceFormat>
 constexpr SourceFormat LogB(SourceFormat x);
 
 }  // namespace internal

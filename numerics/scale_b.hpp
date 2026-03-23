@@ -1,6 +1,6 @@
 #pragma once
 
-#include <type_traits>
+#include <concepts>
 
 namespace principia {
 namespace numerics {
@@ -8,9 +8,7 @@ namespace _scale_b {
 namespace internal {
 
 // A constexpr implementation of the IEEE 754:2008 scaleB function.
-template<typename SourceFormat, typename LogBFormat>
-  requires(std::is_floating_point_v<SourceFormat> &&
-           std::is_integral_v<LogBFormat>)
+template<std::floating_point SourceFormat, std::integral LogBFormat>
 constexpr SourceFormat ScaleB(SourceFormat x, LogBFormat N);
 
 }  // namespace internal

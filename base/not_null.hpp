@@ -102,13 +102,13 @@ template<typename T>
 using remove_not_null_t = typename remove_not_null<T>::type;
 
 // Wrapper struct for pointers with move assigment compatible with not_null.
-template <typename Pointer, typename = void>
+template <typename Pointer>
 struct NotNullStorage;
 
 // Case: move assignment is equivalent to copy (raw pointer).
 template <typename P>
-struct NotNullStorage<
-    P, std::enable_if_t<std::is_trivially_move_assignable_v<P>>> {
+  requires(std::is_trivially_move_assignable_v<P>)
+struct NotNullStorage<P> {
   explicit NotNullStorage(P&& pointer) : pointer(std::move(pointer)) {}
   NotNullStorage(NotNullStorage const&) = default;
   NotNullStorage(NotNullStorage&&) = default;
@@ -120,8 +120,8 @@ struct NotNullStorage<
 
 // Case: move assignment is nontrivial (unique_ptr).
 template <typename P>
-struct NotNullStorage<
-    P, std::enable_if_t<!std::is_trivially_move_assignable_v<P>>> {
+  requires(!std::is_trivially_move_assignable_v<P>)
+struct NotNullStorage<P> {
   explicit NotNullStorage(P&& pointer) : pointer(std::move(pointer)) {}
   NotNullStorage(NotNullStorage const&) = default;
   NotNullStorage(NotNullStorage&&) = default;

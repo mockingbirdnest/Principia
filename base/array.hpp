@@ -1,9 +1,12 @@
 #pragma once
 
 #include <array>
+#include <concepts>
 #include <cstdint>
+#include <cstddef>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 namespace principia {
 namespace base {
@@ -20,8 +23,7 @@ struct Array final {
     requires(std::is_convertible_v<OtherElement*, Element*>)
   Array(Array<OtherElement> const& other);
   // No allocation of memory.
-  template<typename Size>
-    requires(std::is_integral_v<Size>)
+  template<std::integral Size>
   Array(Element* data, Size size);
 
   // Implicit conversion from strings, vectors, and the like.
@@ -61,12 +63,10 @@ struct UniqueArray final {
   // An object of size 0.
   UniqueArray();
   // Allocates memory for `size` elements.
-  template<typename Size>
-    requires(std::is_integral_v<Size>)
+  template<std::integral Size>
   explicit UniqueArray(Size size);
   // Takes ownership of an existing array.
-  template<typename Size,
-           typename = typename std::enable_if_t<std::is_integral_v<Size>>>
+  template<std::integral Size>
   UniqueArray(std::unique_ptr<Element[]> data, Size size);
 
   // Move it, move it!
@@ -122,27 +122,19 @@ class BoundedArray final {
 };
 
 // Deep comparisons.
-template<typename LeftElement,
-         typename RightElement,
-         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
-                                     std::is_integral_v<RightElement>>>
+template<std::integral LeftElement,
+         std::integral RightElement>
 bool operator==(Array<LeftElement> left, Array<RightElement> right);
-template<typename LeftElement,
-         typename RightElement,
-         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
-                                     std::is_integral_v<RightElement>>>
+template<std::integral LeftElement,
+         std::integral RightElement>
 bool operator==(Array<LeftElement> left,
                 UniqueArray<RightElement> const& right);
-template<typename LeftElement,
-         typename RightElement,
-         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
-                                     std::is_integral_v<RightElement>>>
+template<std::integral LeftElement,
+         std::integral RightElement>
 bool operator==(UniqueArray<LeftElement> const& left,
                 Array<RightElement> right);
-template<typename LeftElement,
-         typename RightElement,
-         typename = std::enable_if_t<std::is_integral_v<LeftElement> &&
-                                     std::is_integral_v<RightElement>>>
+template<std::integral LeftElement,
+         std::integral RightElement>
 bool operator==(UniqueArray<LeftElement> const& left,
                 UniqueArray<RightElement> const& right);
 

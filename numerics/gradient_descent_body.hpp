@@ -6,7 +6,7 @@
 #include <optional>
 
 #include "absl/status/status.h"
-#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
+#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"

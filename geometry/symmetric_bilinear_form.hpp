@@ -144,30 +144,33 @@ class SymmetricBilinearForm {
            typename R,
            typename F,
            template<typename, typename> typename M,
-           int rank,
-           typename>
-  friend _grassmann::Multivector<Product<L, R>, F, rank> operator*(
+           int r>
+    requires(std::is_same_v<M<double, F>,
+                            _grassmann::Multivector<double, F, r>>)
+  friend _grassmann::Multivector<Product<L, R>, F, r> operator*(
       SymmetricBilinearForm<L, F, M> const& left,
-      _grassmann::Multivector<R, F, rank> const& right);
+      _grassmann::Multivector<R, F, r> const& right);
 
   template<typename L,
            typename R,
            typename F,
            template<typename, typename> typename M,
-           int rank,
-           typename>
-  friend _grassmann::Multivector<Product<L, R>, F, rank> operator*(
-      _grassmann::Multivector<L, F, rank> const& left,
+           int r>
+    requires(std::is_same_v<M<double, F>,
+                            _grassmann::Multivector<double, F, r>>)
+  friend _grassmann::Multivector<Product<L, R>, F, r> operator*(
+      _grassmann::Multivector<L, F, r> const& left,
       SymmetricBilinearForm<R, F, M> const& right);
 
   template<typename L,
            typename R,
            typename F,
            template<typename, typename> typename M,
-           int rank,
-           typename>
-  friend _grassmann::Multivector<Quotient<L, R>, F, rank> operator/(
-      _grassmann::Multivector<L, F, rank> const& left,
+           int r>
+    requires(std::is_same_v<M<double, F>,
+                            _grassmann::Multivector<double, F, r>>)
+  friend _grassmann::Multivector<Quotient<L, R>, F, r> operator/(
+      _grassmann::Multivector<L, F, r> const& left,
       SymmetricBilinearForm<R, F, M> const& right);
 
   template<typename L, typename R, typename F>
@@ -242,17 +245,17 @@ SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame, Multivector> operator/(
 
 // NOTE(egg): An `operator*(SymmetricBilinearForm<L, F, M>, M<R, F>)` would fail
 // to deduce M, for reasons that I do not quite understand (they seem to have to
-// do with Vector not being the same thing as Multivector).  Instead we have
-// this `enable_if` mess.
+// do with Vector being an alias and not being the same thing as Multivector).
+// Instead we have this `requires` mess.  Note that the use of `_grassmann` is
+// needed to match the friend declarations.
 
 template<typename LScalar,
          typename RScalar,
          typename Frame,
          template<typename, typename> typename M,
-         int rank,
-         typename = std::enable_if_t<
-            std::is_same_v<M<double, Frame>,
-                           Multivector<double, Frame, rank>>>>
+         int rank>
+  requires(std::is_same_v<M<double, Frame>,
+                          _grassmann::Multivector<double, Frame, rank>>)
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     SymmetricBilinearForm<LScalar, Frame, M> const& left,
     Multivector<RScalar, Frame, rank> const& right);
@@ -261,10 +264,9 @@ template<typename LScalar,
          typename RScalar,
          typename Frame,
          template<typename, typename> typename M,
-         int rank,
-         typename = std::enable_if_t<
-             std::is_same_v<M<double, Frame>,
-                            Multivector<double, Frame, rank>>>>
+         int rank>
+  requires(std::is_same_v<M<double, Frame>,
+                          _grassmann::Multivector<double, Frame, rank>>)
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     Multivector<LScalar, Frame, rank> const& left,
     SymmetricBilinearForm<RScalar, Frame, M> const& right);
@@ -275,10 +277,9 @@ template<typename LScalar,
          typename RScalar,
          typename Frame,
          template<typename, typename> typename M,
-         int rank,
-         typename = std::enable_if_t<
-             std::is_same_v<M<double, Frame>,
-                            Multivector<double, Frame, rank>>>>
+         int rank>
+  requires(std::is_same_v<M<double, Frame>,
+                          _grassmann::Multivector<double, Frame, rank>>)
 Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
     Multivector<LScalar, Frame, rank> const& left,
     SymmetricBilinearForm<RScalar, Frame, M> const& right);
