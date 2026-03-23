@@ -313,14 +313,12 @@ std::string ToMathematica(bool const b, OptionalExpressIn /*express_in*/) {
   return b ? "True" : "False";
 }
 
-template<typename T, typename OptionalExpressIn>
-  requires(std::is_integral_v<T>)
+template<std::integral T, typename OptionalExpressIn>
 std::string ToMathematica(T const integer, OptionalExpressIn /*express_in*/) {
   return std::to_string(integer);
 }
 
-template<typename T, typename OptionalExpressIn>
-  requires(std::is_floating_point_v<T>)
+template<std::floating_point T, typename OptionalExpressIn>
 std::string ToMathematica(T const real,
                           OptionalExpressIn /*express_in*/,
                           std::int64_t const base) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <map>
 #include <string>
 #include <tuple>
@@ -170,15 +171,13 @@ template<typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(bool b,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename T,
+template<std::integral T,
          typename OptionalExpressIn = std::nullopt_t>
-  requires(std::is_integral_v<T>)
 std::string ToMathematica(T integer,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename T,
+template<std::floating_point T,
          typename OptionalExpressIn = std::nullopt_t>
-  requires(std::is_floating_point_v<T>)
 std::string ToMathematica(T real,
                           OptionalExpressIn express_in = std::nullopt,
                           std::int64_t base = 16);

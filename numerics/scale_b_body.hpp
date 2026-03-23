@@ -2,6 +2,7 @@
 
 #include "numerics/scale_b.hpp"
 
+#include <concepts>
 #include <limits>
 
 namespace principia {
@@ -9,9 +10,7 @@ namespace numerics {
 namespace _scale_b {
 namespace internal {
 
-template<typename SourceFormat, typename LogBFormat>
-  requires(std::is_floating_point_v<SourceFormat> &&
-           std::is_integral_v<LogBFormat>)
+template<std::floating_point SourceFormat, std::integral LogBFormat>
 constexpr SourceFormat ScaleB(SourceFormat const x, LogBFormat const N) {
   SourceFormat result = x;
   if (N < 0) {

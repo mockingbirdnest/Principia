@@ -2,6 +2,7 @@
 
 #include "base/array.hpp"
 
+#include <concepts>
 #include <memory>
 #include <utility>
 
@@ -19,8 +20,7 @@ Array<Element>::Array(Array<OtherElement> const& other)
     : data(other.data), size(other.size) {}
 
 template<typename Element>
-template<typename Size>
-  requires(std::is_integral_v<Size>)
+template<std::integral Size>
 Array<Element>::Array(Element* const data, Size const size)
     : data(data), size(static_cast<std::int64_t>(size)) {}
 
@@ -75,15 +75,13 @@ template<typename Element>
 UniqueArray<Element>::UniqueArray() : size(0) {}
 
 template<typename Element>
-template<typename Size>
-  requires(std::is_integral_v<Size>)
+template<std::integral Size>
 UniqueArray<Element>::UniqueArray(Size const size)
     : data(size == 0 ? nullptr : new Element[static_cast<std::size_t>(size)]),
       size(static_cast<std::int64_t>(size)) {}
 
 template<typename Element>
-template<typename Size>
-  requires(std::is_integral_v<Size>)
+template<std::integral Size>
 UniqueArray<Element>::UniqueArray(std::unique_ptr<Element[]> data,
                                   Size const size)
     : data(data.release()),
@@ -181,8 +179,7 @@ BoundedArray<Element, max_size>::size() const {
   return size_;
 }
 
-template<typename LeftElement, typename RightElement>
-  requires(std::is_integral_v<LeftElement> && std::is_integral_v<RightElement>)
+template<std::integral LeftElement, std::integral RightElement>
 bool operator==(Array<LeftElement> left, Array<RightElement> right) {
   if (left.size != right.size) {
     return false;
@@ -192,22 +189,19 @@ bool operator==(Array<LeftElement> left, Array<RightElement> right) {
                      static_cast<std::size_t>(right.size)) == 0;
 }
 
-template<typename LeftElement, typename RightElement>
-  requires(std::is_integral_v<LeftElement> && std::is_integral_v<RightElement>)
+template<std::integral LeftElement, std::integral RightElement>
 bool operator==(Array<LeftElement> left,
                 UniqueArray<RightElement> const& right) {
   return left == right.get();
 }
 
-template<typename LeftElement, typename RightElement>
-  requires(std::is_integral_v<LeftElement> && std::is_integral_v<RightElement>)
+template<std::integral LeftElement, std::integral RightElement>
 bool operator==(UniqueArray<LeftElement> const& left,
                 Array<RightElement> right) {
   return left.get() == right;
 }
 
-template<typename LeftElement, typename RightElement>
-  requires(std::is_integral_v<LeftElement> && std::is_integral_v<RightElement>)
+template<std::integral LeftElement, std::integral RightElement>
 bool operator==(UniqueArray<LeftElement> const& left,
                 UniqueArray<RightElement> const& right) {
   return left.get() == right.get();
