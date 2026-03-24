@@ -68,16 +68,14 @@ struct Frame : not_constructible {
 
   using Tag = FrameTag;
   static constexpr bool has_tag = std::is_enum_v<FrameTag>;
-  template<typename T = FrameTag>
-    requires(std::is_enum_v<T>)
-  static constexpr FrameTag tag();
+  static constexpr FrameTag tag()
+    requires(std::is_enum_v<FrameTag>);
 
   static void WriteToMessage(not_null<serialization::Frame*> message);
 
   // Checks that the `message` matches the current type.
-  template<typename T = FrameTag>
-    requires(google::protobuf::is_proto_enum<T>::value)
-  static void ReadFromMessage(serialization::Frame const& message);
+  static void ReadFromMessage(serialization::Frame const& message)
+    requires(google::protobuf::is_proto_enum<FrameTag>::value);
 };
 
 // Extracts enough information from the `message` to contruct a `Frame` type.

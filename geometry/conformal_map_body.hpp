@@ -34,10 +34,9 @@ ConformalMap<Scalar, FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename S>
-  requires(std::is_floating_point_v<S> || std::is_integral_v<S>)
 ConformalMap<Scalar, FromFrame, ToFrame>
-ConformalMap<Scalar, FromFrame, ToFrame>::Identity() {
+ConformalMap<Scalar, FromFrame, ToFrame>::Identity()
+  requires(std::is_floating_point_v<Scalar> || std::is_integral_v<Scalar>) {
   return ConformalMap(1, Quaternion(1));
 }
 

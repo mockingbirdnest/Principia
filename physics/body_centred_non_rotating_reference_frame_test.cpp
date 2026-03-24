@@ -25,7 +25,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -53,7 +53,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
@@ -140,14 +140,12 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, SmallBodyInBigFrame) {
         rotation_in_big_frame_at_t(initial_big_to_small.velocity()));
 
     auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
-    EXPECT_THAT(AbsoluteError(
-                    to_big_frame_at_t(small_in_inertial_frame_at_t).position(),
-                    small_in_big_frame_at_t.position()),
-                Lt(0.3 * Milli(Metre)));
-    EXPECT_THAT(AbsoluteError(
-                    to_big_frame_at_t(small_in_inertial_frame_at_t).velocity(),
-                    small_in_big_frame_at_t.velocity()),
-                Lt(4 * Milli(Metre) / Second));
+    EXPECT_THAT(to_big_frame_at_t(small_in_inertial_frame_at_t).position(),
+                AbsoluteErrorFrom(small_in_big_frame_at_t.position(),
+                                  Lt(0.3 * Milli(Metre))));
+    EXPECT_THAT(to_big_frame_at_t(small_in_inertial_frame_at_t).velocity(),
+                AbsoluteErrorFrom(small_in_big_frame_at_t.velocity(),
+                                  Lt(4 * Milli(Metre) / Second)));
   }
 }
 
@@ -197,12 +195,11 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, GeometricAcceleration) {
                   {0 * si::Unit<Acceleration>,
                    small_on_position + big_on_position - small_on_big,
                    0 * si::Unit<Acceleration>});
-    EXPECT_THAT(AbsoluteError(
-                    big_frame_->GeometricAcceleration(
-                        t0_,
-                        DegreesOfFreedom<Big>(position, Big::unmoving)),
-                    expected_acceleration),
-                Lt(1e-10 * si::Unit<Acceleration>));
+    EXPECT_THAT(big_frame_->GeometricAcceleration(
+                    t0_,
+                    DegreesOfFreedom<Big>(position, Big::unmoving)),
+                AbsoluteErrorFrom(expected_acceleration,
+                                  Lt(1e-10 * si::Unit<Acceleration>)));
   }
 }
 

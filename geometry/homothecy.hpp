@@ -48,9 +48,8 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
   template<template<typename, typename, typename> typename ConformalMap>
   ConformalMap<Scalar, FromFrame, ToFrame> Forget() const;
 
-  template<typename S = Scalar>
-    requires(std::is_floating_point_v<S> || std::is_integral_v<S>)
-  static Homothecy Identity();
+  static Homothecy Identity()
+    requires(std::is_floating_point_v<Scalar> || std::is_integral_v<Scalar>);
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   static Homothecy ReadFromMessage(serialization::LinearMap const& message)

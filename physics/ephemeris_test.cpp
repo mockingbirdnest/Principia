@@ -1,4 +1,3 @@
-#include "physics/ephemeris.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -1299,11 +1298,14 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     all_times.emplace(time1);
     Displacement<ICRS> const displacement =
         degrees_of_freedom1.position() - degrees_of_freedom2.position();
-    EXPECT_LT(AbsoluteError(displacement.Norm(), (1 + e) * a),
-              1.9e-5 * fitting_tolerance);
+    EXPECT_THAT(displacement.Norm(),
+                AbsoluteErrorFrom((1 + e) * a,
+                                  Lt(1.9e-5 * fitting_tolerance)));
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time1 - *previous_time, T),
-                0.11 * fitting_tolerance / v_apoapsis);
+      EXPECT_THAT(time1 - *previous_time,
+                  AbsoluteErrorFrom(T,
+                                    Lt(0.11 * fitting_tolerance /
+                                       v_apoapsis)));
     }
     previous_time = time1;
   }
@@ -1318,11 +1320,14 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     all_times.emplace(time1);
     Displacement<ICRS> const displacement =
         degrees_of_freedom1.position() - degrees_of_freedom2.position();
-    EXPECT_LT(AbsoluteError(displacement.Norm(), (1 - e) * a),
-              5.3e-3 * fitting_tolerance);
+    EXPECT_THAT(displacement.Norm(),
+                AbsoluteErrorFrom((1 - e) * a,
+                                  Lt(5.3e-3 * fitting_tolerance)));
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time1 - *previous_time, T),
-                2.1 * fitting_tolerance / v_periapsis);
+      EXPECT_THAT(time1 - *previous_time,
+                  AbsoluteErrorFrom(T,
+                                    Lt(2.1 * fitting_tolerance /
+                                       v_periapsis)));
     }
     previous_time = time1;
   }
@@ -1330,8 +1335,11 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   previous_time = std::nullopt;
   for (Instant const& time : all_times) {
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time - *previous_time, 0.5 * T),
-                2.3 * fitting_tolerance / (v_apoapsis + v_periapsis));
+      EXPECT_THAT(time - *previous_time,
+                  AbsoluteErrorFrom(
+                      0.5 * T,
+                      Lt(2.3 * fitting_tolerance /
+                         (v_apoapsis + v_periapsis))));
     }
     previous_time = time;
   }

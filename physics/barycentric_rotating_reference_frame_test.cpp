@@ -26,7 +26,7 @@
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace physics {
@@ -53,7 +53,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 namespace {
 
@@ -128,12 +128,12 @@ TEST_F(BarycentricRotatingReferenceFrameTest, ToBigSmallFrameAtTime) {
     // Check that the centre of mass is at the origin and doesn't move.
     DegreesOfFreedom<BigSmallFrame> const centre_of_mass_in_big_small_at_t =
         to_big_small_frame_at_t(centre_of_mass_initial_state_);
-    EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.position(),
-                              BigSmallFrame::origin),
-                Lt(1.0e-11 * Metre));
-    EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.velocity(),
-                              BigSmallFrame::unmoving),
-                Lt(1.1e-11 * Metre / Second));
+    EXPECT_THAT(centre_of_mass_in_big_small_at_t.position(),
+                AbsoluteErrorFrom(BigSmallFrame::origin,
+                                  Lt(1.0e-11 * Metre)));
+    EXPECT_THAT(centre_of_mass_in_big_small_at_t.velocity(),
+                AbsoluteErrorFrom(BigSmallFrame::unmoving,
+                                  Lt(1.1e-11 * Metre / Second)));
 
     // Check that the bodies don't move and are at the right locations.
     DegreesOfFreedom<ICRS> const big_in_inertial_frame_at_t =
@@ -146,24 +146,24 @@ TEST_F(BarycentricRotatingReferenceFrameTest, ToBigSmallFrameAtTime) {
         to_big_small_frame_at_t(big_in_inertial_frame_at_t);
     DegreesOfFreedom<BigSmallFrame> const small_in_big_small_at_t =
         to_big_small_frame_at_t(small_in_inertial_frame_at_t);
-    EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.position(),
-                              Displacement<BigSmallFrame>({
+    EXPECT_THAT(big_in_big_small_at_t.position(),
+                AbsoluteErrorFrom(Displacement<BigSmallFrame>({
                                   -10.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
-                                  0 * Kilo(Metre)}) + BigSmallFrame::origin),
-                Lt(1.0e-6 * Metre));
-    EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
-                              BigSmallFrame::unmoving),
-                Lt(1.0e-4 * Metre / Second));
-    EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
-                              Displacement<BigSmallFrame>({
+                                  0 * Kilo(Metre)}) + BigSmallFrame::origin,
+                                  Lt(1.0e-6 * Metre)));
+    EXPECT_THAT(big_in_big_small_at_t.velocity(),
+                AbsoluteErrorFrom(BigSmallFrame::unmoving,
+                                  Lt(1.0e-4 * Metre / Second)));
+    EXPECT_THAT(small_in_big_small_at_t.position(),
+                AbsoluteErrorFrom(Displacement<BigSmallFrame>({
                                   25.0 / 7.0 * Kilo(Metre),
                                   0 * Kilo(Metre),
-                                  0 * Kilo(Metre)}) + BigSmallFrame::origin),
-                Lt(1.0e-5 * Metre));
-    EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
-                              BigSmallFrame::unmoving),
-                Lt(1.0e-4 * Metre / Second));
+                                  0 * Kilo(Metre)}) + BigSmallFrame::origin,
+                                  Lt(1.0e-5 * Metre)));
+    EXPECT_THAT(small_in_big_small_at_t.velocity(),
+                AbsoluteErrorFrom(BigSmallFrame::unmoving,
+                                  Lt(1.0e-4 * Metre / Second)));
   }
 }
 
@@ -176,14 +176,12 @@ TEST_F(BarycentricRotatingReferenceFrameTest, Inverse) {
     auto const small_initial_state_transformed_and_back =
         from_big_small_frame_at_t(to_big_small_frame_at_t(
             small_initial_state_));
-    EXPECT_THAT(
-        AbsoluteError(small_initial_state_transformed_and_back.position(),
-                      small_initial_state_.position()),
-        Lt(1.0e-11 * Metre));
-    EXPECT_THAT(
-        AbsoluteError(small_initial_state_transformed_and_back.velocity(),
-                      small_initial_state_.velocity()),
-        Lt(1.0e-11 * Metre / Second));
+    EXPECT_THAT(small_initial_state_transformed_and_back.position(),
+                AbsoluteErrorFrom(small_initial_state_.position(),
+                                  Lt(1.0e-11 * Metre)));
+    EXPECT_THAT(small_initial_state_transformed_and_back.velocity(),
+                AbsoluteErrorFrom(small_initial_state_.velocity(),
+                                  Lt(1.0e-11 * Metre / Second)));
   }
 }
 
