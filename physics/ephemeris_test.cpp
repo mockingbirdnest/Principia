@@ -1,3 +1,4 @@
+#include "physics/ephemeris.hpp"
 
 #include <algorithm>
 #include <cmath>
