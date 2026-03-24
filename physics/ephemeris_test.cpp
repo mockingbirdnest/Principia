@@ -752,8 +752,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,
               AnyOf(IsNear(1.2e-34_(1) * Metre / Second / Second),
                     Eq(0 * Metre / Second / Second)));
-  EXPECT_LT(elephant_accelerations.back().coordinates().z,
-            RelativeErrorFrom(-9.832 * si::Unit<Acceleration>, 6.7e-6));
+  EXPECT_THAT(elephant_accelerations.back().coordinates().z,
+              RelativeErrorFrom(-9.832 * si::Unit<Acceleration>, Lt(6.7e-6)));
 }
 
 #if !defined(_DEBUG)
