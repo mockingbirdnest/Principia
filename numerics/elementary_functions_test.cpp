@@ -32,8 +32,8 @@ using namespace principia::quantities::_uk;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_vanishes_before;
 using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::testing_utilities::_vanishes_before;
 
 class ElementaryFunctionsTest : public testing::Test {};
 

@@ -43,10 +43,10 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/serialization.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
-#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -88,10 +88,10 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_serialization;
 using namespace principia::testing_utilities::_solar_system_factory;
 using namespace principia::testing_utilities::_vanishes_before;
-using namespace principia::testing_utilities::_numerics_matchers;
 
 namespace {
 

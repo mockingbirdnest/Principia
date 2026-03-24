@@ -24,9 +24,9 @@
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/statistics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
-#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace integrators {
@@ -52,9 +52,9 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_integration;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_statistics;
 using namespace principia::testing_utilities::_vanishes_before;
-using namespace principia::testing_utilities::_numerics_matchers;
 
 #define INSTANCE(integrator,                                             \
                  beginning_of_convergence,                               \
