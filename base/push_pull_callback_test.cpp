@@ -1,5 +1,8 @@
 #include "base/push_pull_callback.hpp"
 
+#include <cstdint>
+#include <functional>
+#include <optional>
 #include <utility>
 
 #include "gtest/gtest.h"
@@ -40,7 +43,7 @@ TEST(PushPullCallback, Test) {
 
 TEST(PushPullCallback, 4136) {
   auto task =
-      [](std::function<double(int const x)> const& f)
+      [](std::function<double(int const x)> const& /*f*/)
       -> std::optional<double> {
     return std::nullopt;
   };

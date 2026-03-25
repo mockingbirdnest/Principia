@@ -32,7 +32,7 @@ TEST_F(Base64Test, WellKnownData) {
       "LCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4";
 
   {
-    Array<std::uint8_t const> decoded_array(
+    Array<std::uint8_t const> const decoded_array(
         reinterpret_cast<std::uint8_t const*>(decoded_string.c_str()),
         decoded_string.size());
     auto const encoded_array = encoder_.Encode(decoded_array);
@@ -42,8 +42,8 @@ TEST_F(Base64Test, WellKnownData) {
     }
   }
   {
-    Array<char const> encoded_array(encoded_string.c_str(),
-                                    encoded_string.size());
+    Array<char const> const encoded_array(encoded_string.c_str(),
+                                          encoded_string.size());
     auto const decoded_array = encoder_.Decode(encoded_array);
     EXPECT_EQ(decoded_string.size(), encoder_.DecodedLength(encoded_array));
     for (std::int64_t i = 0; i < decoded_array.size; ++i) {

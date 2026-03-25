@@ -137,7 +137,7 @@ TEST_F(NotNullTest, CheckNotNull) {
   int* const constant_access_int = owner_int.get();
   not_null<int*> const constant_not_null_access_int =
       check_not_null(constant_access_int);
-  not_null<std::unique_ptr<int>> not_null_owner_int =
+  not_null<std::unique_ptr<int>> const not_null_owner_int =
       check_not_null(std::move(owner_int));
 }
 
@@ -250,7 +250,7 @@ TEST_F(NotNullTest, RValue) {
 #if PRINCIPIA_COMPILER_MSVC
   v2.push_back(not_null_int);
 #else
-  int* const temporary = not_null_int;
+  int const* const temporary = not_null_int;
   v2.push_back(temporary);
 #endif
   EXPECT_EQ(2, *v2[0]);

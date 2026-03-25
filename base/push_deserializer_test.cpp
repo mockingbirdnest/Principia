@@ -1,10 +1,13 @@
 #include "base/push_deserializer.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,6 +16,7 @@
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/serialization.hpp"
+#include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
@@ -31,8 +35,6 @@ using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
 using ::google::compression::Compressor;
-using ::std::placeholders::_1;
-using ::testing::ElementsAreArray;
 using namespace principia::base::_array;
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
@@ -110,7 +112,7 @@ class PushDeserializerTest : public ::testing::Test {
     strings.pop_front();
     CHECK(!strings.empty());
     std::string& front = strings.front();
-    return Array<std::uint8_t>(reinterpret_cast<std::uint8_t*>(&front[0]),
+    return Array<std::uint8_t>(reinterpret_cast<std::uint8_t*>(front.data()),
                  static_cast<std::int64_t>(front.size()));
   }
 
@@ -229,7 +231,7 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
         [&read_trajectory1](google::protobuf::Message const& read_trajectory) {
           read_trajectory1.CopyFrom(read_trajectory);
         });
-    Array<std::uint8_t> bytes(serialized_trajectory.get(), byte_size);
+    Array<std::uint8_t> const bytes(serialized_trajectory.get(), byte_size);
     push_deserializer_->Push(bytes, nullptr);
     push_deserializer_->Push(Array<std::uint8_t>(), nullptr);
 
@@ -267,8 +269,8 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
       for (int j = 0; j < compressed.size(); ++j) {
         compressed_chunks.back()[j] = compressed[j];
       }
-      Array<std::uint8_t> bytes(compressed_chunks.back().get(),
-                                compressed.size());
+      Array<std::uint8_t> const bytes(compressed_chunks.back().get(),
+                                      compressed.size());
       compressed_push_deserializer->Push(bytes, nullptr);
     }
     compressed_push_deserializer->Push(Array<std::uint8_t>(), nullptr);
@@ -327,8 +329,8 @@ TEST_F(PushDeserializerDeathTest, Stomp) {
       std::move(read_trajectory), &PushDeserializerTest::CheckSerialization);
     int left = byte_size;
     for (int i = 0; i < byte_size; i += stomp_chunk) {
-      Array<std::uint8_t> bytes(&serialized_trajectory[i],
-                                std::min(left, stomp_chunk));
+      Array<std::uint8_t> const bytes(&serialized_trajectory[i],
+                                      std::min(left, stomp_chunk));
       push_deserializer_->Push(
           bytes,
           std::bind(&PushDeserializerTest::Stomp,
