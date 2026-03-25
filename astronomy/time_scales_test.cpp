@@ -284,35 +284,35 @@ TEST_F(TimeScalesTest, UT1Continuity) {
   // as well as high errors (~20 ms), and TAI was synchronized with UT2 anyway,
   // so it's not going to get much better than 100 ms.
   EXPECT_THAT(
-      "1958-01-01T00:00:00"_TAI,
-      AbsoluteErrorFrom("1958-01-01T00:00:00"_UT1, Lt(100 * Milli(Second))));
+      "1958-01-01T00:00:00"_UT1,
+      AbsoluteErrorFrom("1958-01-01T00:00:00"_TAI, Lt(100 * Milli(Second))));
 
   // Continuity at the beginning of the EOP C02 series.
-  EXPECT_THAT("1961-12-31T23:59:58,967"_UTC,
-              AbsoluteErrorFrom("1961-12-31T23:59:59,000"_UT1,
+  EXPECT_THAT("1961-12-31T23:59:59,000"_UT1,
+              AbsoluteErrorFrom("1961-12-31T23:59:58,967"_UTC,
                                 Lt(0.5 * Milli(Second))));
-  EXPECT_THAT("1961-12-31T23:59:59,967"_UTC,
-              AbsoluteErrorFrom("1962-01-01T00:00:00,000"_UT1,
+  EXPECT_THAT("1962-01-01T00:00:00,000"_UT1,
+              AbsoluteErrorFrom("1961-12-31T23:59:59,967"_UTC,
                                 Lt(0.5 * Milli(Second))));
-  EXPECT_THAT("1962-01-01T00:00:00,000"_UTC,
-              AbsoluteErrorFrom("1962-01-01T00:00:00,033"_UT1,
+  EXPECT_THAT("1962-01-01T00:00:00,033"_UT1,
+              AbsoluteErrorFrom("1962-01-01T00:00:00,000"_UTC,
                                 Lt(0.5 * Milli(Second))));
-  EXPECT_THAT("1962-01-01T00:00:01,000"_UTC,
-              AbsoluteErrorFrom("1962-01-01T00:00:01,033"_UT1,
+  EXPECT_THAT("1962-01-01T00:00:01,033"_UT1,
+              AbsoluteErrorFrom("1962-01-01T00:00:01,000"_UTC,
                                 Lt(0.5 * Milli(Second))));
 
   // Continuity across a stretchy UTC leap.
-  EXPECT_THAT("1964-03-31T23:59:59,160"_UTC,
-              AbsoluteErrorFrom("1964-03-31T23:59:59,000"_UT1,
+  EXPECT_THAT("1964-03-31T23:59:59,000"_UT1,
+              AbsoluteErrorFrom("1964-03-31T23:59:59,160"_UTC,
                                 Lt(0.5 * Milli(Second))));
-  EXPECT_THAT("1964-03-31T23:59:60,060"_UTC,
-              AbsoluteErrorFrom("1964-03-31T23:59:59,900"_UT1,
+  EXPECT_THAT("1964-03-31T23:59:59,900"_UT1,
+              AbsoluteErrorFrom("1964-03-31T23:59:60,060"_UTC,
                                 Lt(0.5 * Milli(Second))));
-  EXPECT_THAT("1964-04-01T00:00:00,000"_UTC,
-              AbsoluteErrorFrom("1964-03-31T23:59:59,940"_UT1,
+  EXPECT_THAT("1964-03-31T23:59:59,940"_UT1,
+              AbsoluteErrorFrom("1964-04-01T00:00:00,000"_UTC,
                                 Lt(0.5 * Milli(Second))));
-  EXPECT_THAT("1964-04-01T00:00:00,060"_UTC,
-              AbsoluteErrorFrom("1964-04-01T00:00:00,000"_UT1,
+  EXPECT_THAT("1964-04-01T00:00:00,000"_UT1,
+              AbsoluteErrorFrom("1964-04-01T00:00:00,060"_UTC,
                                 Lt(0.5 * Milli(Second))));
 }
 
