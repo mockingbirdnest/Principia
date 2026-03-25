@@ -37,15 +37,27 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
+using World = Frame<serialization::Frame::TestTag,
+                    Inertial,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
+
 class PointTest : public testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      Inertial,
-                      Handedness::Right,
-                      serialization::Frame::TEST>;
-
   Instant const mjd0 = "MJD0"_TT;
 };
+
+PRINCIPIA_CHECK_ILL_FORMED_WITH_TYPES(
+    P::ReadFromMessage(message),
+    (typename F = Frame<struct FrameTag>,
+     typename P = Point<Vector<Length, F>>),
+    with_variable<serialization::Point>(message));
+
+PRINCIPIA_CHECK_WELL_FORMED_WITH_TYPES(
+    P::ReadFromMessage(message),
+    (typename F = World,
+     typename P = Point<Vector<Length, F>>),
+    with_variable<serialization::Point>(message));
 
 using PointDeathTest = PointTest;
 
@@ -109,12 +121,6 @@ TEST_F(PointTest, Ordering) {
   EXPECT_TRUE(t1 >= t2);
   EXPECT_TRUE(t1 >= t1);
 }
-
-PRINCIPIA_CHECK_ILL_FORMED_WITH_TYPES(
-    P::ReadFromMessage(message),
-    (typename F = Frame<struct FrameTag>,
-     typename P = Point<Vector<Length, F>>),
-    with_variable<serialization::Point>(message));
 
 TEST_F(PointDeathTest, SerializationError) {
   EXPECT_DEATH({
