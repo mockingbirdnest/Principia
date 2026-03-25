@@ -3,7 +3,7 @@ Checks:            '-*,bugprone-argument-comment,bugprone-assert-side-effect,bug
 CheckOptions:
   - key:             misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
     value:           '1'
-ExtraArgsBefore:         ['-std=c++23', '-stdlib=libc++', '-fno-char8_t', '-DCLANG_TIDY=1']
+ExtraArgsBefore:         ['-std=c++23', '-stdlib=libc++', '-fno-char8_t', '-DPRINCIPIA_CLANG_TIDY=1']
 WarningsAsErrors:  ''
 HeaderFilterRegex: '.*Principia.*\.hpp'
 ExcludeHeaderFilterRegex: '(.*\.(h|inc)$|.*Boost.*)'
