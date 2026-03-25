@@ -7,7 +7,6 @@
 #include <functional>
 #include <list>
 #include <memory>
-#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -68,7 +67,6 @@ class PushDeserializerTest : public ::testing::Test {
                                                number_of_chunks,
                                                /*compressor=*/nullptr)),
         stream_(std::bind(&PushDeserializerTest::OnEmpty,
-                          this,
                           std::ref(strings_))) {}
 
   static not_null<std::unique_ptr<DiscreteTrajectory const>> BuildTrajectory() {
@@ -108,7 +106,7 @@ class PushDeserializerTest : public ::testing::Test {
 
   // Returns the first string in the list.  Note that the very first string is
   // always discarded.
-  Array<std::uint8_t> OnEmpty(std::list<std::string>& strings) {
+  static Array<std::uint8_t> OnEmpty(std::list<std::string>& strings) {
     strings.pop_front();
     CHECK(!strings.empty());
     std::string& front = strings.front();

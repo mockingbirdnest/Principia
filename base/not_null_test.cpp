@@ -250,7 +250,7 @@ TEST_F(NotNullTest, RValue) {
 #if PRINCIPIA_COMPILER_MSVC
   v2.push_back(not_null_int);
 #else
-  int const* const temporary = not_null_int;
+  int* const temporary = not_null_int;
   v2.push_back(temporary);
 #endif
   EXPECT_EQ(2, *v2[0]);
