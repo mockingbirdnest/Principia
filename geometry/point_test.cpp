@@ -5,6 +5,7 @@
 #include "base/cpuid.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
@@ -15,6 +16,7 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/check_well_formedness.hpp"  // 🧙 For PRINCIPIA_CHECK_ILL_FORMED.
 
 namespace principia {
 namespace geometry {
@@ -25,6 +27,7 @@ using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_cpuid;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_space;
@@ -34,15 +37,27 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
+using World = Frame<serialization::Frame::TestTag,
+                    Inertial,
+                    Handedness::Right,
+                    serialization::Frame::TEST>;
+
 class PointTest : public testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      Inertial,
-                      Handedness::Right,
-                      serialization::Frame::TEST>;
-
   Instant const mjd0 = "MJD0"_TT;
 };
+
+PRINCIPIA_CHECK_ILL_FORMED_WITH_TYPES(
+    P::ReadFromMessage(message),
+    (typename F = Frame<struct FrameTag>,
+     typename P = Point<Vector<Length, F>>),
+    with_variable<serialization::Point>(message));
+
+PRINCIPIA_CHECK_WELL_FORMED_WITH_TYPES(
+    P::ReadFromMessage(message),
+    (typename F = World,
+     typename P = Point<Vector<Length, F>>),
+    with_variable<serialization::Point>(message));
 
 using PointDeathTest = PointTest;
 
@@ -106,16 +121,6 @@ TEST_F(PointTest, Ordering) {
   EXPECT_TRUE(t1 >= t2);
   EXPECT_TRUE(t1 >= t1);
 }
-
-// Uncomment to check that non-serializable frames are detected at compile-time.
-#if 0
-TEST_F(PointTest, SerializationCompilationError) {
-  using F = Frame<struct FrameTag>;
-  Point<Vector<Length, F>> p;
-  serialization::Point message;
-  p.WriteToMessage(&message);
-}
-#endif
 
 TEST_F(PointDeathTest, SerializationError) {
   EXPECT_DEATH({

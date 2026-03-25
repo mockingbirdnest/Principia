@@ -135,15 +135,6 @@ struct NotNullStorage<P> {
   P pointer;
 };
 
-// When `T` is not a reference, `_checked_not_null<T>` is `not_null<T>` if `T`
-// is not already an instance of `not_null`.  It fails otherwise.
-// `_checked_not_null` is invariant under application of reference or rvalue
-// reference to its template argument.
-template<typename Pointer>
-using _checked_not_null = std::enable_if_t<
-    !is_instance_of_v<not_null, std::remove_reference_t<Pointer>>,
-    not_null<std::remove_reference_t<Pointer>>>;
-
 // We cannot refer to the template `not_null` inside of `not_null`.
 template<typename Pointer>
 inline constexpr bool is_instance_of_not_null_v =
@@ -319,7 +310,8 @@ class not_null final {
   friend class not_null;
 
   template<typename P>
-  friend _checked_not_null<P> check_not_null(P pointer);
+    requires(!is_instance_of_not_null_v<std::remove_reference_t<P>>)
+  friend not_null<std::remove_reference_t<P>> check_not_null(P pointer);
   template<typename T, typename... Args>
   friend not_null<std::shared_ptr<T>> make_not_null_shared(Args&&... args);
   template<typename T, typename... Args>
@@ -343,7 +335,8 @@ class not_null<Pointer&&>;
 // Factory taking advantage of template argument deduction.  Returns a
 // `not_null<Pointer>` to `*pointer`.  `CHECK`s that `pointer` is not null.
 template<typename Pointer>
-_checked_not_null<Pointer> check_not_null(Pointer pointer);
+  requires(!is_instance_of_not_null_v<std::remove_reference_t<Pointer>>)
+not_null<std::remove_reference_t<Pointer>> check_not_null(Pointer pointer);
 
 template<typename T, typename... Args>
 not_null<std::shared_ptr<T>> make_not_null_shared(Args&&... args);
