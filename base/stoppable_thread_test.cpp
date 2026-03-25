@@ -1,7 +1,7 @@
 #include "base/stoppable_thread.hpp"
 
 #include <chrono>
-#include <ostream>
+#include <iostream>
 #include <thread>
 
 #include "gtest/gtest.h"

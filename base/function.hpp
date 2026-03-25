@@ -29,7 +29,7 @@ class function;
 template<typename Result, typename... Args>
 class function<Result(Args...)> {
  public:
-  function();
+  function() = default;
 
   template<typename F>
   function(F functor);

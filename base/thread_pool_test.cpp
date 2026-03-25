@@ -3,11 +3,13 @@
 #include <chrono>
 #include <cstdint>
 #include <future>
+#include <optional>
 #include <thread>
 #include <vector>
 
 #include "absl/synchronization/mutex.h"
 #include "absl/synchronization/notification.h"
+#include "absl/time/time.h"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 
@@ -38,6 +40,7 @@ TEST_F(ThreadPoolTest, ParallelExecution) {
   absl::Mutex lock;
   std::vector<std::int64_t> numbers;
   std::vector<std::future<void>> futures;
+  futures.reserve(number_of_calls);
   for (std::int64_t i = 0; i < number_of_calls; ++i) {
     futures.push_back(pool_.Add([i, &lock, &numbers]() {
       absl::MutexLock l(&lock);

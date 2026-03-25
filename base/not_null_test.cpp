@@ -137,7 +137,7 @@ TEST_F(NotNullTest, CheckNotNull) {
   int* const constant_access_int = owner_int.get();
   not_null<int*> const constant_not_null_access_int =
       check_not_null(constant_access_int);
-  not_null<std::unique_ptr<int>> not_null_owner_int =
+  not_null<std::unique_ptr<int>> const not_null_owner_int =
       check_not_null(std::move(owner_int));
 }
 

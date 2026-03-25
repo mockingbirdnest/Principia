@@ -38,11 +38,15 @@ class MallocAllocator {
 #else
     // On macOS, aligned_alloc returns null for small alignments; use malloc if
     // that is aligned enough.
+#  if PRINCIPIA_CLANG_TIDY
+    return nullptr;
+#  else
     if constexpr (alignof(T) > alignof(std::max_align_t)) {
       return static_cast<T*>(std::aligned_alloc(alignof(T), n * sizeof(T)));
     } else {
       return static_cast<T*>(std::malloc(n * sizeof(T)));
     }
+#  endif
 #endif
   }
 

@@ -1,6 +1,7 @@
 #include "base/array.hpp"
 
 #include <memory>
+#include <ranges>
 #include <string>
 #include <utility>
 
@@ -71,8 +72,8 @@ TEST(ArrayTest, BoundedArrayPushBack) {
 TEST(ArrayTest, BoundedArrayReverse) {
   BoundedArray<double, 3> a{};
   BoundedArray<double, 5> const b{1.0, 2.0, 3.0};
-  for (auto it = b.rbegin(); it != b.rend(); ++it) {
-    a.push_back(*it);
+  for (double const d : b | std::views::reverse) {
+    a.push_back(d);
   }
   EXPECT_THAT(a, ElementsAre(3.0, 2.0, 1.0));
 }
