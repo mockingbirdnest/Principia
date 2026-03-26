@@ -202,13 +202,22 @@ message Interval {
   required double max = 2;
 }
 
-message ClassicalElements {
+message PlottableElements {
   required double time = 1;
   required double semimajor_axis = 2;
   required double eccentricity = 3;
   required double inclination_in_degrees = 4;
   required double longitude_of_ascending_node_in_degrees = 5;
   required double argument_of_periapsis_in_degrees = 6;
+  required double periapsis_distance = 7;
+  required double apoapsis_distance = 8;
+  required double sin_squared_inclination = 9;
+  required double cos_squared_inclination = 10;
+  required double eccentricity_squared = 11;
+  required double one_minus_eccentricity_squared = 12;
+  required double sin_squared_argument_of_periapsis = 13;
+  required double lidov_c1 = 14;
+  required double lidov_c2 = 15;
 }
 
 message OrbitalElements {
@@ -1782,9 +1791,9 @@ message IteratorGetVesselGuid {
   optional Return return = 3;
 }
 
-message IteratorGetClassicalElements {
+message IteratorGetPlottableElements {
   extend Method {
-    optional IteratorGetClassicalElements extension = 5203;
+    optional IteratorGetPlottableElements extension = 5203;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
@@ -1792,7 +1801,7 @@ message IteratorGetClassicalElements {
                                    (is_subject) = true];
   }
   message Return {
-    required ClassicalElements result = 1;
+    required PlottableElements result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

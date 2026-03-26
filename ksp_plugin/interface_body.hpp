@@ -498,11 +498,15 @@ inline KeplerianElements ToKeplerianElements(
       .mean_anomaly = *keplerian_elements.mean_anomaly / Radian};
 }
 
-inline ClassicalElements ToClassicalElements(
+inline PlottableElements ToPlottableElements(
     Plugin const& plugin,
-    astronomy::_orbital_elements::OrbitalElements::
-                          ClassicalElements const&
+    astronomy::_orbital_elements::OrbitalElements::ClassicalElements const&
         elements) {
+  auto const [sin_i, cos_i] = SinCos(elements.inclination);
+  double const sin²_i = Pow<2>(sin_i);
+  double const cos²_i = Pow<2>(cos_i);
+  double const e² = Pow<2>(elements.eccentricity);
+  double const sin²_ω = Pow<2>(Sin(elements.argument_of_periapsis));
   return {
       .time = ToGameTime(plugin, elements.time),
       .semimajor_axis = elements.semimajor_axis / Metre,
@@ -512,6 +516,15 @@ inline ClassicalElements ToClassicalElements(
           elements.longitude_of_ascending_node / Degree,
       .argument_of_periapsis_in_degrees =
           elements.argument_of_periapsis / Degree,
+      .periapsis_distance = elements.periapsis_distance / Metre,
+      .apoapsis_distance = elements.apoapsis_distance / Metre,
+      .sin_squared_inclination = sin²_i,
+      .cos_squared_inclination = cos²_i,
+      .eccentricity_squared = e²,
+      .one_minus_eccentricity_squared = 1 - e²,
+      .sin_squared_argument_of_periapsis = sin²_ω,
+      .lidov_c1 = (1 - e²) * cos²_i,
+      .lidov_c2 = e² * (2.0 / 5.0 - sin²_i * sin²_ω),
   };
 }
 
