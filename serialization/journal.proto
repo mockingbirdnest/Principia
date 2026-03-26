@@ -218,6 +218,8 @@ message PlottableElements {
   required double sin_squared_argument_of_periapsis = 13;
   required double lidov_c1 = 14;
   required double lidov_c2 = 15;
+  required double eccentricity_cos_argument_of_periapsis = 16;
+  required double eccentricity_sin_argument_of_periapsis = 17;
 }
 
 message OrbitalElements {

@@ -503,10 +503,12 @@ inline PlottableElements ToPlottableElements(
     astronomy::_orbital_elements::OrbitalElements::ClassicalElements const&
         elements) {
   auto const [sin_i, cos_i] = SinCos(elements.inclination);
+  auto const [sin_ω, cos_ω] = SinCos(elements.argument_of_periapsis);
   double const sin²_i = Pow<2>(sin_i);
   double const cos²_i = Pow<2>(cos_i);
-  double const e² = Pow<2>(elements.eccentricity);
-  double const sin²_ω = Pow<2>(Sin(elements.argument_of_periapsis));
+  double const& e = elements.eccentricity;
+  double const e² = Pow<2>(e);
+  double const sin²_ω = Pow<2>(sin_ω);
   return {
       .time = ToGameTime(plugin, elements.time),
       .semimajor_axis = elements.semimajor_axis / Metre,
@@ -525,6 +527,8 @@ inline PlottableElements ToPlottableElements(
       .sin_squared_argument_of_periapsis = sin²_ω,
       .lidov_c1 = (1 - e²) * cos²_i,
       .lidov_c2 = e² * (2.0 / 5.0 - sin²_i * sin²_ω),
+      .eccentricity_cos_argument_of_periapsis = e * cos_ω,
+      .eccentricity_sin_argument_of_periapsis = e * sin_ω,
   };
 }
 
