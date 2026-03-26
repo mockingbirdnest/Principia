@@ -356,9 +356,9 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   EXPECT_THAT(
       second_manœuvre.mass_flow(),
       RelativeErrorFrom(lox_flowrate_2nd + fuel_flowrate_2nd, Lt(2e-4)));
-  EXPECT_THAT
-      (second_manœuvre.final_mass(),
-       RelativeErrorFrom(total_vehicle_at_s_ivb_2nd_eco, Lt(2e-3)));
+  EXPECT_THAT(
+      second_manœuvre.final_mass(),
+      RelativeErrorFrom(total_vehicle_at_s_ivb_2nd_eco, Lt(2e-3)));
   EXPECT_EQ(s_ivb_2nd_eco, second_manœuvre.final_time());
 
   // Accelerations from Figure 4-9. Injection Phase Acceleration Comparison.
