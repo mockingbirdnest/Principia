@@ -2367,11 +2367,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       var sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
       using (DisposablePlanetarium planetarium =
         GLLines.NewPlanetarium(plugin_, sun_world_position)) {
-        if (main_vessel_guid == null) {
-          return;
-        }
         int number_of_rendered_manœuvres = 0;
-        if (plugin_.FlightPlanExists(main_vessel_guid)) {
+        if (main_vessel_guid != null &&
+            plugin_.FlightPlanExists(main_vessel_guid)) {
           int number_of_anomalous_manœuvres =
               plugin_.FlightPlanNumberOfAnomalousManoeuvres(main_vessel_guid);
           int number_of_manœuvres =
@@ -2421,9 +2419,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             }
           }
         }
-        // This cleanup must occur even if there is no flight plan. In the
-        // tracking station, one may switch from a vessel with a plan to one
-        // without.
+        // This cleanup must occur even if there is no flight plan or no
+        // predicted vessel. In the tracking station, one may switch from a
+        // vessel with a plan to one without.  One may also delete a vessel.
         for (int i = number_of_rendered_manœuvres;
              i < manœuvre_marker_pool_.Count;
              ++i) {
