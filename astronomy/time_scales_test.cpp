@@ -375,10 +375,10 @@ TEST_F(TimeScalesTest, LunarEclipses) {
       "2000-01-21T04:43:30.6"_UT1,
       AbsoluteErrorFrom("2000-01-21T04:44:34.5"_TT, Lt(56 * Milli(Second))));
 
-  EXPECT_THAT("2048-01-01T06:52:23.6"_TT - "2048-01-01T06:53:54.8"_TT,
-              AlmostEquals(-91.2 * Second, 3e6, 4e6));
-  EXPECT_THAT("2048-01-01T06:56:48.6"_TT - "2048-01-01T06:58:19.8"_TT,
-              AlmostEquals(-91.2 * Second, 3e6, 4e6));
+  EXPECT_THAT("2048-01-01T06:53:54.8"_TT - "2048-01-01T06:52:23.6"_TT,
+              AlmostEquals(91.2 * Second, 3e6, 4e6));
+  EXPECT_THAT("2048-01-01T06:58:19.8"_TT - "2048-01-01T06:56:48.6"_TT,
+              AlmostEquals(91.2 * Second, 3e6, 4e6));
 }
 
 TEST_F(TimeScalesTest, JulianDate) {
