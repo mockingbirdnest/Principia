@@ -43,7 +43,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/serialization.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
@@ -88,7 +88,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_serialization;
 using namespace principia::testing_utilities::_solar_system_factory;
 using namespace principia::testing_utilities::_vanishes_before;
@@ -882,15 +882,12 @@ TEST_F(PluginTestWithoutPlugin, Navball) {
   Vector<double, World> const y_world({0, 1, 0});
   Vector<double, World> const z_world({1, 0, 0});
   auto const navball = plugin.NavballFrameField(World::origin);
-  EXPECT_THAT(
-      AbsoluteError(x_world, navball->FromThisFrame(World::origin)(x_navball)),
-      VanishesBefore(1, 1, 3));
-  EXPECT_THAT(
-      AbsoluteError(y_world, navball->FromThisFrame(World::origin)(y_navball)),
-      VanishesBefore(1, 0));
-  EXPECT_THAT(
-      AbsoluteError(z_world, navball->FromThisFrame(World::origin)(z_navball)),
-      VanishesBefore(1, 1, 3));
+  EXPECT_THAT(navball->FromThisFrame(World::origin)(x_navball),
+              AbsoluteErrorFrom(x_world, VanishesBefore(1, 1, 3)));
+  EXPECT_THAT(navball->FromThisFrame(World::origin)(y_navball),
+              AbsoluteErrorFrom(y_world, VanishesBefore(1, 0)));
+  EXPECT_THAT(navball->FromThisFrame(World::origin)(z_navball),
+              AbsoluteErrorFrom(z_world, VanishesBefore(1, 1, 3)));
 }
 
 TEST_F(PluginTestWithoutPlugin, NavballTargetVessel) {

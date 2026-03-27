@@ -25,7 +25,7 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -55,7 +55,7 @@ using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_astronomy;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class StandardProduct3Test : public ::testing::Test {
  protected:
@@ -404,12 +404,13 @@ TEST_P(StandardProduct3DynamicsTest, PerturbedKeplerian) {
             integrated_arc.back().degrees_of_freedom;
         DegreesOfFreedom<ICRS> expected =
             itrs_.FromThisFrameAtTime(it->time)(it->degrees_of_freedom);
-        EXPECT_THAT(AbsoluteError(expected.position(), actual.position()),
-                    Lt(25 * Metre))
+        EXPECT_THAT(actual.position(),
+                    AbsoluteErrorFrom(expected.position(), Lt(25 * Metre)))
             << "orbit of satellite " << satellite << " flowing from point "
             << i;
-        EXPECT_THAT(AbsoluteError(expected.velocity(), actual.velocity()),
-                    Lt(1 * Deci(Metre) / Second))
+        EXPECT_THAT(actual.velocity(),
+                    AbsoluteErrorFrom(expected.velocity(),
+                                      Lt(1 * Deci(Metre) / Second)))
             << "orbit of satellite " << satellite << " flowing from point "
             << i;
       }

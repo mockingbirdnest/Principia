@@ -22,6 +22,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace numerics {
@@ -41,6 +42,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 // The adapters wrap the result of the Newhall approximation so that they can be
 // used consistently in this test.
@@ -808,8 +810,9 @@ TEST_F(NewhallTest, NonConstantDegree) {
             Policy::AlwaysEstrin(),
             length_error_estimate);
 
-    EXPECT_THAT(RelativeError((*approximation)(t_min_),
-                              length_function_1_(t_min_)), IsNear(9e-13_(1)));
+    EXPECT_THAT(
+        (*approximation)(t_min_),
+        RelativeErrorFrom(length_function_1_(t_min_), IsNear(9e-13_(1))));
 }
 
 }  // namespace numerics

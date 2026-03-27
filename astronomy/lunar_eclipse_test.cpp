@@ -23,6 +23,7 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -44,6 +45,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 namespace {
 
@@ -123,9 +125,9 @@ class LunarEclipseTest : public ::testing::Test {
     // We are at the desired contact if the angle between Earth and Moon from
     // the apex of locus of the moon at that contact is the same value as the
     // half-aperture of the umbra (Earth-Sun cone).
-    EXPECT_THAT(AbsoluteError(umbral_half_aperture(current_time),
-                              earth_moon_angle(current_time)),
-                IsNear(angular_error))
+    EXPECT_THAT(earth_moon_angle(current_time),
+                AbsoluteErrorFrom(umbral_half_aperture(current_time),
+                                  IsNear(angular_error)))
         << NAMED(umbral_half_aperture(current_time)) << ", "
         << NAMED(earth_moon_angle(current_time)) << ", " << NAMED(current_time);
 
@@ -185,9 +187,9 @@ class LunarEclipseTest : public ::testing::Test {
     // We are at the desired contact if the angle between Earth and Moon from
     // the apex of locus of the moon at that contact is the same value as the
     // half-aperture of the penumbra.
-    EXPECT_THAT(AbsoluteError(penumbral_half_aperture(current_time),
-                              earth_moon_angle(current_time)),
-                IsNear(angular_error))
+    EXPECT_THAT(earth_moon_angle(current_time),
+                AbsoluteErrorFrom(penumbral_half_aperture(current_time),
+                                  IsNear(angular_error)))
         << NAMED(penumbral_half_aperture(current_time)) << ", "
         << NAMED(earth_moon_angle(current_time)) << ", " << NAMED(current_time);
 

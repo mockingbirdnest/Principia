@@ -54,7 +54,6 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -103,7 +102,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 using namespace std::chrono_literals;
@@ -746,8 +744,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
               IsNear(-9.8e-19_(1) * Metre));
   EXPECT_THAT(elephant_positions.back().coordinates().y,
               AnyOf(IsNear(6.0e-35_(1) * Metre), Eq(0 * Metre)));
-  EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
-                          TerrestrialPolarRadius), 8e-7);
+  EXPECT_THAT(elephant_positions.back().coordinates().z,
+              RelativeErrorFrom(TerrestrialPolarRadius, Lt(8e-7)));
 
   EXPECT_THAT(elephant_accelerations.size(), Eq(5));
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
@@ -755,8 +753,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,
               AnyOf(IsNear(1.2e-34_(1) * Metre / Second / Second),
                     Eq(0 * Metre / Second / Second)));
-  EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
-                          -9.832 * si::Unit<Acceleration>), 6.7e-6);
+  EXPECT_THAT(elephant_accelerations.back().coordinates().z,
+              RelativeErrorFrom(-9.832 * si::Unit<Acceleration>, Lt(6.7e-6)));
 }
 
 #if !defined(_DEBUG)
@@ -1301,11 +1299,14 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     all_times.emplace(time1);
     Displacement<ICRS> const displacement =
         degrees_of_freedom1.position() - degrees_of_freedom2.position();
-    EXPECT_LT(AbsoluteError(displacement.Norm(), (1 + e) * a),
-              1.9e-5 * fitting_tolerance);
+    EXPECT_THAT(displacement.Norm(),
+                AbsoluteErrorFrom((1 + e) * a,
+                                  Lt(1.9e-5 * fitting_tolerance)));
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time1 - *previous_time, T),
-                0.11 * fitting_tolerance / v_apoapsis);
+      EXPECT_THAT(time1 - *previous_time,
+                  AbsoluteErrorFrom(T,
+                                    Lt(0.11 * fitting_tolerance /
+                                       v_apoapsis)));
     }
     previous_time = time1;
   }
@@ -1320,11 +1321,14 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     all_times.emplace(time1);
     Displacement<ICRS> const displacement =
         degrees_of_freedom1.position() - degrees_of_freedom2.position();
-    EXPECT_LT(AbsoluteError(displacement.Norm(), (1 - e) * a),
-              5.3e-3 * fitting_tolerance);
+    EXPECT_THAT(displacement.Norm(),
+                AbsoluteErrorFrom((1 - e) * a,
+                                  Lt(5.3e-3 * fitting_tolerance)));
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time1 - *previous_time, T),
-                2.1 * fitting_tolerance / v_periapsis);
+      EXPECT_THAT(time1 - *previous_time,
+                  AbsoluteErrorFrom(T,
+                                    Lt(2.1 * fitting_tolerance /
+                                       v_periapsis)));
     }
     previous_time = time1;
   }
@@ -1332,8 +1336,11 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   previous_time = std::nullopt;
   for (Instant const& time : all_times) {
     if (previous_time) {
-      EXPECT_LT(AbsoluteError(time - *previous_time, 0.5 * T),
-                2.3 * fitting_tolerance / (v_apoapsis + v_periapsis));
+      EXPECT_THAT(time - *previous_time,
+                  AbsoluteErrorFrom(
+                      0.5 * T,
+                      Lt(2.3 * fitting_tolerance /
+                         (v_apoapsis + v_periapsis))));
     }
     previous_time = time;
   }
