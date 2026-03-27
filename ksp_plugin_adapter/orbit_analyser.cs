@@ -504,8 +504,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       ω_graph_ = new Graph(Width(10), Height(1));
       periapsis_graph_ = new Graph(Width(10), Height(1));
       apoapsis_graph_ = new Graph(Width(10), Height(1));
-      c1_graph_ = new Graph(Width(10), Height(3));
-      c2_graph_ = new Graph(Width(10), Height(4.8f));
+      лидов_graph_ = new Graph(Width(10), Height(10));
       eccentricity_vector_graph_ = new Graph(Width(10), Height(10));
     }
     Interval t_range = Interval.Empty;
@@ -531,16 +530,17 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     last_t_min_ = t_range.min;
     foreach (var distance_graph in new[]{a_graph_, periapsis_graph_, apoapsis_graph_}) {
       distance_graph.PrepareCanvas(
-          t_range, new Interval{min= elements.mean_periapsis_distance.min, max=elements.mean_periapsis_distance.max});
+          t_range, new Interval{min= elements.mean_periapsis_distance.min, max=elements.mean_apoapsis_distance.max});
     }
     e_graph_.PrepareCanvas(t_range, elements.mean_eccentricity);
     i_graph_.PrepareCanvas(t_range, elements.mean_inclination);
     Ω_graph_.PrepareCanvas(t_range, elements.mean_longitude_of_ascending_nodes);
     ω_graph_.PrepareCanvas(t_range, elements.mean_argument_of_periapsis);
-    c1_graph_.PrepareCanvas(t_range, new Interval{ min=0, max=1});
-    c2_graph_.PrepareCanvas(t_range, new Interval{ min=-3.0/5.0, max=1});
+    лидов_graph_.PrepareCanvas(new Interval{ min = -3.0/5.0, max=2.0/5.0}, new Interval{ min=0, max=1});
     eccentricity_vector_graph_.PrepareCanvas(e_cos_ω_range, e_sin_ω_range);
-    c2_graph_.PlotHorizontalLine(0, XKCDColors.White);
+    лидов_graph_.PlotVerticalLine(0, XKCDColors.White);
+    лидов_graph_.PlotFunction((c2) => 3.0 / 5.0 - 2 * Math.Sqrt(-3.0 / 5.0 * c2) - c2, new Interval{ min=-3.0/5.0, max=0}, XKCDColors.White);
+    лидов_graph_.PlotFunction((c2) => 1 - 5 * c2 / 2, new Interval{ min=0, max=2.0/5.0}, XKCDColors.White);
     eccentricity_vector_graph_.PlotHorizontalLine(0, XKCDColors.White);
     eccentricity_vector_graph_.PlotVerticalLine(0, XKCDColors.White);
     if (elements == null) {
@@ -558,13 +558,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       ω_graph_.PlotPoint(t, elements_at_t.argument_of_periapsis, XKCDColors.RoseRed);
       periapsis_graph_.PlotPoint(t, elements_at_t.periapsis_distance, XKCDColors.Sunflower);
       apoapsis_graph_.PlotPoint(t, elements_at_t.apoapsis_distance, XKCDColors.Sunflower);
-      c1_graph_.PlotPoint(t, elements_at_t.one_minus_eccentricity_squared, XKCDColors.Cornflower);
-      c1_graph_.PlotPoint(t, elements_at_t.cos_squared_inclination, XKCDColors.Lavender);
-      c1_graph_.PlotPoint(t, elements_at_t.lidov_c1, XKCDColors.Spearmint);
-      c2_graph_.PlotPoint(t, elements_at_t.eccentricity_squared, XKCDColors.Cornflower);
-      c2_graph_.PlotPoint(t, elements_at_t.sin_squared_inclination, XKCDColors.Lavender);
-      c2_graph_.PlotPoint(t, elements_at_t.sin_squared_argument_of_periapsis, XKCDColors.RoseRed);
-      c2_graph_.PlotPoint(t, elements_at_t.lidov_c2, XKCDColors.Spearmint);
+      лидов_graph_.PlotPoint(elements_at_t.lidov_c2, elements_at_t.lidov_c1, XKCDColors.Spearmint);
       eccentricity_vector_graph_.PlotPoint(
           elements_at_t.eccentricity_cos_argument_of_periapsis,
           elements_at_t.eccentricity_sin_argument_of_periapsis,
@@ -660,8 +654,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
         UnityEngine.GUILayout.Label("Eccentricity vector:");
         eccentricity_vector_graph_.Draw();
         UnityEngine.GUILayout.Label("Von Zeipel-Лидов-古在 analysis:");
-        c1_graph_.Draw();
-        c2_graph_.Draw();
+        лидов_graph_.Draw();
       }
     }
   }
@@ -795,6 +788,29 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       }
     }
 
+    public void PlotFunction(Func<double, double> f,
+                             Interval x_range,
+                             UnityEngine.Color colour) {
+      for (int i =
+               (int)(texture_.width *
+                     (x_range.min - x_range_.min) /
+                     x_range_.measure);
+           i <
+           (int)(texture_.width *
+                 (x_range.max - x_range_.min) /
+                 x_range_.measure);
+           ++i) {
+        texture_.SetPixel(i,
+                          (int)(texture_.height *
+                                (f.Invoke(
+                                     i * x_range_.measure / texture_.width +
+                                     x_range_.min) -
+                                 y_range_.min) /
+                                y_range_.measure),
+                          colour);
+      }
+    }
+
     public void PlotVerticalLine(double x, UnityEngine.Color colour) {
       if (!x_range_.Contains(x)) {
         return;
@@ -856,8 +872,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
   Graph ω_graph_;
   Graph periapsis_graph_;
   Graph apoapsis_graph_;
-  Graph c1_graph_;
-  Graph c2_graph_;
+  Graph лидов_graph_;
   Graph eccentricity_vector_graph_;
 
   protected IntPtr plugin => adapter_.Plugin();
