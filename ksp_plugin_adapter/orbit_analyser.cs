@@ -808,7 +808,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     }
 
     public void PlotHorizontalLine(double y, UnityEngine.Color colour) {
-      if (y_range_.Contains(y)) {
+      if (!y_range_.Contains(y)) {
         return;
       }
       for (int x = 0; x < texture_.width; ++x) {
