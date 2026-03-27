@@ -206,9 +206,9 @@ message PlottableElements {
   required double time = 1;
   required double semimajor_axis = 2;
   required double eccentricity = 3;
-  required double inclination_in_degrees = 4;
-  required double longitude_of_ascending_node_in_degrees = 5;
-  required double argument_of_periapsis_in_degrees = 6;
+  required double inclination = 4;
+  required double longitude_of_ascending_node = 5;
+  required double argument_of_periapsis = 6;
   required double periapsis_distance = 7;
   required double apoapsis_distance = 8;
   required double sin_squared_inclination = 9;

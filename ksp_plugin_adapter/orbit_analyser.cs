@@ -492,214 +492,83 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     UnityEngine.GUILayout.Label(altitude_warning,
                                 Style.Warning(UnityEngine.GUI.skin.label));
   }
-  
-  UnityEngine.Texture2D a_graph_;
-  UnityEngine.Texture2D e_graph_;
-  UnityEngine.Texture2D i_graph_;
-  UnityEngine.Texture2D Ω_graph_;
-  UnityEngine.Texture2D ω_graph_;
-  UnityEngine.Texture2D periapsis_graph_;
-  UnityEngine.Texture2D apoapsis_graph_;
-  UnityEngine.Texture2D c1_graph_;
-  UnityEngine.Texture2D c2_graph_;
-  UnityEngine.Texture2D eccentricity_vector_graph_;
+
   double last_t_min_ = double.PositiveInfinity;
 
   private void DrawElementGraphs(OrbitalElements elements) {
     if (a_graph_ == null) {
-      a_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
-      e_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
-      i_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
-      Ω_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
-      ω_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
-      periapsis_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
-      apoapsis_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(1));
-      c1_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(3));
-      c2_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(4.8f));
-      eccentricity_vector_graph_ = new UnityEngine.Texture2D((int)Width(10), (int)Height(10));
+      a_graph_ = new Graph(Width(10), Height(1));
+      e_graph_ = new Graph(Width(10), Height(1));
+      i_graph_ = new Graph(Width(10),   Height(1));
+      Ω_graph_ = new Graph(Width(10), Height(1));
+      ω_graph_ = new Graph(Width(10), Height(1));
+      periapsis_graph_ = new Graph(Width(10), Height(1));
+      apoapsis_graph_ = new Graph(Width(10), Height(1));
+      c1_graph_ = new Graph(Width(10), Height(3));
+      c2_graph_ = new Graph(Width(10), Height(4.8f));
+      eccentricity_vector_graph_ = new Graph(Width(10), Height(10));
     }
-    double t_min = double.PositiveInfinity;
-    double t_max = double.NegativeInfinity;
-    double min_e_cos_ω = double.PositiveInfinity;
-    double max_e_cos_ω = double.NegativeInfinity;
-    double min_e_sin_ω = double.PositiveInfinity;
-    double max_e_sin_ω = double.NegativeInfinity;
+    Interval t_range = Interval.Empty;
+    Interval e_cos_ω_range = Interval.Empty;
+    Interval e_sin_ω_range = Interval.Empty;
     if (elements != null) {
       if (!elements.mean_elements.IteratorAtEnd()) {
-        t_min = elements.mean_elements.IteratorGetPlottableElements().time;
+        t_range.min = elements.mean_elements.IteratorGetPlottableElements().time;
       }
-      if (t_min == last_t_min_) {
+      if (t_range.min == last_t_min_) {
         return;
       }
       for (;!elements.mean_elements.IteratorAtEnd();
            elements.mean_elements.IteratorIncrement()) {
         var elements_at_t =
             elements.mean_elements.IteratorGetPlottableElements();
-        t_max = elements_at_t.time;
-        min_e_cos_ω =
-            Math.Min(min_e_cos_ω,
-                     elements_at_t.eccentricity_cos_argument_of_periapsis);
-        max_e_cos_ω =
-            Math.Max(max_e_cos_ω,
-                     elements_at_t.eccentricity_cos_argument_of_periapsis);
-        min_e_sin_ω =
-            Math.Min(min_e_sin_ω,
-                     elements_at_t.eccentricity_sin_argument_of_periapsis);
-        max_e_sin_ω =
-            Math.Max(max_e_sin_ω,
-                     elements_at_t.eccentricity_sin_argument_of_periapsis);
+        t_range.max = elements_at_t.time;
+        e_cos_ω_range.Include(elements_at_t.eccentricity_cos_argument_of_periapsis);
+        e_sin_ω_range.Include(elements_at_t.eccentricity_sin_argument_of_periapsis);
       }
       elements.mean_elements.IteratorReset();
     }
-    double Δt = t_max - t_min;
-    last_t_min_ = t_min;
-    foreach (var graph in new[]{
-                 a_graph_, e_graph_, i_graph_, Ω_graph_, ω_graph_,
-                 periapsis_graph_, apoapsis_graph_, c1_graph_, c2_graph_,
-                 eccentricity_vector_graph_
-             }) {
-      for (int x = 0; x < graph.width; ++x) {
-        for (int y = 0; y < graph.height; ++y) {
-          graph.SetPixel(x, y, XKCDColors.Black);
-        }
-      }
+    last_t_min_ = t_range.min;
+    foreach (var distance_graph in new[]{a_graph_, periapsis_graph_, apoapsis_graph_}) {
+      distance_graph.PrepareCanvas(
+          t_range, new Interval{min= elements.mean_periapsis_distance.min, max=elements.mean_periapsis_distance.max});
     }
-    for (int x = 0; x < c2_graph_.width; ++x) {
-      c2_graph_.SetPixel(x, 3 * c2_graph_.height / 8, XKCDColors.White);
-    }
-    if (min_e_sin_ω < 0 && max_e_sin_ω > 0) {
-      for (int x = 0; x < eccentricity_vector_graph_.width; ++x) {
-        eccentricity_vector_graph_.SetPixel(x,
-                                            (int)(eccentricity_vector_graph_.
-                                                      height *
-                                                  -min_e_sin_ω /
-                                                  (max_e_sin_ω - min_e_sin_ω)),
-                                            XKCDColors.White);
-      }
-    }
-    if (min_e_cos_ω < 0 && max_e_cos_ω > 0) {
-      for (int y = 0; y < eccentricity_vector_graph_.height; ++y) {
-        eccentricity_vector_graph_.SetPixel(
-            (int)(eccentricity_vector_graph_.width *
-                  -min_e_cos_ω /
-                  (max_e_cos_ω - min_e_cos_ω)),
-            y,
-            XKCDColors.White);
-      }
-    }
+    e_graph_.PrepareCanvas(t_range, elements.mean_eccentricity);
+    i_graph_.PrepareCanvas(t_range, elements.mean_inclination);
+    Ω_graph_.PrepareCanvas(t_range, elements.mean_longitude_of_ascending_nodes);
+    ω_graph_.PrepareCanvas(t_range, elements.mean_argument_of_periapsis);
+    c1_graph_.PrepareCanvas(t_range, new Interval{ min=0, max=1});
+    c2_graph_.PrepareCanvas(t_range, new Interval{ min=-3.0/5.0, max=1});
+    eccentricity_vector_graph_.PrepareCanvas(e_cos_ω_range, e_sin_ω_range);
+    c2_graph_.PlotHorizontalLine(0, XKCDColors.White);
+    eccentricity_vector_graph_.PlotHorizontalLine(0, XKCDColors.White);
+    eccentricity_vector_graph_.PlotVerticalLine(0, XKCDColors.White);
     if (elements == null) {
-      foreach (var graph in new[]{
-                   a_graph_, e_graph_, i_graph_, Ω_graph_, ω_graph_,
-                   periapsis_graph_, apoapsis_graph_, c1_graph_, c2_graph_,
-                   eccentricity_vector_graph_
-               }) {
-        graph.Apply();
-      }
       return;
     }
     for (;
          !elements.mean_elements.IteratorAtEnd();
          elements.mean_elements.IteratorIncrement()) {
       var elements_at_t = elements.mean_elements.IteratorGetPlottableElements();
-      double x = a_graph_.width * (elements_at_t.time - t_min) / Δt ;
-      const double degree = Math.PI / 180;
-      a_graph_.SetPixel((int)x,
-                        (int)(a_graph_.height *
-                              (elements_at_t.semimajor_axis -
-                               elements.mean_periapsis_distance.min) /
-                              (elements.mean_apoapsis_distance.max -
-                               elements.mean_periapsis_distance.min)),
-                        XKCDColors.Sunflower);
-      e_graph_.SetPixel((int)x,
-                        (int)(e_graph_.height *
-                              (elements_at_t.eccentricity -
-                               elements.mean_eccentricity.min) /
-                              (elements.mean_eccentricity.max -
-                               elements.mean_eccentricity.min)),
-                        XKCDColors.Cornflower);
-      i_graph_.SetPixel((int)x,
-                        (int)(i_graph_.height *
-                              (elements_at_t.inclination_in_degrees * degree -
-                               elements.mean_inclination.min) /
-                              (elements.mean_inclination.max -
-                               elements.mean_inclination.min)),
-                        XKCDColors.Lavender);
-      Ω_graph_.SetPixel((int)x,
-                        (int)(Ω_graph_.height *
-                              (elements_at_t.
-                                   longitude_of_ascending_node_in_degrees *
-                               degree -
-                               elements.mean_longitude_of_ascending_nodes.min) /
-                              (elements.mean_longitude_of_ascending_nodes.max -
-                               elements.mean_longitude_of_ascending_nodes.min)),
-                        XKCDColors.LightPink);
-      ω_graph_.SetPixel((int)x,
-                        (int)(ω_graph_.height *
-                              (elements_at_t.argument_of_periapsis_in_degrees *
-                               degree -
-                               elements.mean_argument_of_periapsis.min) /
-                              (elements.mean_argument_of_periapsis.max -
-                               elements.mean_argument_of_periapsis.min)),
-                        XKCDColors.RoseRed);
-      periapsis_graph_.SetPixel((int)x,
-                        (int)(periapsis_graph_.height *
-                              (elements_at_t.periapsis_distance -
-                               elements.mean_periapsis_distance.min) /
-                              (elements.mean_apoapsis_distance.max -
-                               elements.mean_periapsis_distance.min)),
-                        XKCDColors.Sunflower);
-      apoapsis_graph_.SetPixel((int)x,
-                        (int)(apoapsis_graph_.height *
-                              (elements_at_t.apoapsis_distance -
-                               elements.mean_periapsis_distance.min) /
-                              (elements.mean_apoapsis_distance.max -
-                               elements.mean_periapsis_distance.min)),
-                        XKCDColors.Sunflower);
-      c1_graph_.SetPixel((int)x,
-                         (int)(c1_graph_.height * elements_at_t.one_minus_eccentricity_squared),
-                         XKCDColors.Cornflower);
-      c1_graph_.SetPixel((int)x,
-                         (int)(c1_graph_.height * elements_at_t.cos_squared_inclination),
-                         XKCDColors.Lavender);
-      c1_graph_.SetPixel((int)x,
-                         (int)(c1_graph_.height * elements_at_t.lidov_c1),
-                         XKCDColors.Spearmint);
-      c2_graph_.SetPixel((int)x,
-                         (int)(c2_graph_.height *
-                               (elements_at_t.eccentricity_squared + 3.0 / 5.0) /
-                               (1 + 3.0 / 5.0)),
-                         XKCDColors.Cornflower);
-      c2_graph_.SetPixel((int)x,
-                         (int)(c2_graph_.height *
-                               (elements_at_t.sin_squared_inclination + 3.0 / 5.0) /
-                               (1 + 3.0 / 5.0)),
-                         XKCDColors.Lavender);
-      c2_graph_.SetPixel((int)x,
-                         (int)(c2_graph_.height *
-                               (elements_at_t.sin_squared_argument_of_periapsis + 3.0 / 5.0) /
-                               (1 + 3.0 / 5.0)),
-                         XKCDColors.RoseRed);
-      c2_graph_.SetPixel((int)x,
-                         (int)(c2_graph_.height *
-                               (elements_at_t.lidov_c2 + 3.0 / 5.0) /
-                               (1 + 3.0 / 5.0)),
-                         XKCDColors.Spearmint);
-
-      eccentricity_vector_graph_.SetPixel(
-          (int)(eccentricity_vector_graph_.width *
-                (elements_at_t.eccentricity_cos_argument_of_periapsis - min_e_cos_ω) /
-                (max_e_cos_ω - min_e_cos_ω)),
-          (int)(eccentricity_vector_graph_.height *
-                (elements_at_t.eccentricity_sin_argument_of_periapsis - min_e_sin_ω) /
-                (max_e_sin_ω - min_e_sin_ω)),
+      double t = elements_at_t.time;
+      a_graph_.PlotPoint(t, elements_at_t.semimajor_axis, XKCDColors.Sunflower);
+      e_graph_.PlotPoint(t, elements_at_t.eccentricity, XKCDColors.Cornflower);
+      i_graph_.PlotPoint(t, elements_at_t.inclination, XKCDColors.Lavender);
+      Ω_graph_.PlotPoint(t, elements_at_t.longitude_of_ascending_node, XKCDColors.LightPink);
+      ω_graph_.PlotPoint(t, elements_at_t.argument_of_periapsis, XKCDColors.RoseRed);
+      periapsis_graph_.PlotPoint(t, elements_at_t.periapsis_distance, XKCDColors.Sunflower);
+      apoapsis_graph_.PlotPoint(t, elements_at_t.apoapsis_distance, XKCDColors.Sunflower);
+      c1_graph_.PlotPoint(t, elements_at_t.one_minus_eccentricity_squared, XKCDColors.Cornflower);
+      c1_graph_.PlotPoint(t, elements_at_t.cos_squared_inclination, XKCDColors.Lavender);
+      c1_graph_.PlotPoint(t, elements_at_t.lidov_c1, XKCDColors.Spearmint);
+      c2_graph_.PlotPoint(t, elements_at_t.eccentricity_squared, XKCDColors.Cornflower);
+      c2_graph_.PlotPoint(t, elements_at_t.sin_squared_inclination, XKCDColors.Lavender);
+      c2_graph_.PlotPoint(t, elements_at_t.sin_squared_argument_of_periapsis, XKCDColors.RoseRed);
+      c2_graph_.PlotPoint(t, elements_at_t.lidov_c2, XKCDColors.Spearmint);
+      eccentricity_vector_graph_.PlotPoint(
+          elements_at_t.eccentricity_cos_argument_of_periapsis,
+          elements_at_t.eccentricity_sin_argument_of_periapsis,
           XKCDColors.Cornflower);
-    }
-    foreach (var graph in new[]{
-                 a_graph_, e_graph_, i_graph_, Ω_graph_, ω_graph_,
-                 periapsis_graph_, apoapsis_graph_, c1_graph_, c2_graph_,
-                 eccentricity_vector_graph_
-             }) {
-      graph.Apply();
     }
   }
 
@@ -707,115 +576,93 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                                      CelestialBody primary) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       using (new UnityEngine.GUILayout.VerticalScope()) {
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
-        elements?.sidereal_period.FormatDuration());
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPeriod"),
-        elements?.nodal_period.FormatDuration());
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_AnomalisticPeriod"),
-        elements?.anomalistic_period.FormatDuration());
+        LabeledField(
+            L10N.CacheFormat(
+                "#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
+            elements?.sidereal_period.FormatDuration());
+        LabeledField(
+            L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPeriod"),
+            elements?.nodal_period.FormatDuration());
+        LabeledField(
+            L10N.CacheFormat(
+                "#Principia_OrbitAnalyser_Elements_AnomalisticPeriod"),
+            elements?.anomalistic_period.FormatDuration());
 
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-      LabeledField(
-          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
-          elements?.mean_semimajor_axis.FormatLengthInterval());
-      UnityEngine.GUILayout.Box("",
-                                GUILayoutWidth(10),
-                                GUILayoutHeight(1));
-      UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), a_graph_);
-    }
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Eccentricity"),
-        elements?.mean_eccentricity.FormatInterval());
-    UnityEngine.GUILayout.Box("",
-                              GUILayoutWidth(10),
-                              GUILayoutHeight(1));
-    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), e_graph_);
-    }
-        
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Inclination"),
-        elements?.mean_inclination.FormatAngleInterval());
-    UnityEngine.GUILayout.Box("",
-                              GUILayoutWidth(10),
-                              GUILayoutHeight(1));
-    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), i_graph_);
-    }
-        
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-    LabeledField(
-        L10N.CacheFormat(
-            "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
-        elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
-    UnityEngine.GUILayout.Box("",
-                              GUILayoutWidth(10),
-                              GUILayoutHeight(1));
-    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), Ω_graph_);
-    }
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPrecession"),
-        elements?.nodal_precession.FormatAngularFrequency());
-    string periapsis = L10N.CelestialString(
-        "#Principia_OrbitAnalyser_Elements_Periapsis",
-        new[]{primary});
-    string apoapsis = L10N.CelestialString(
-        "#Principia_OrbitAnalyser_Elements_Apoapsis",
-        new[]{primary});
-        
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-    LabeledField(
-        L10N.CacheFormat(
-            "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
-            periapsis),
-        elements?.mean_argument_of_periapsis.FormatAngleInterval());
-    UnityEngine.GUILayout.Box(ω_graph_,
-                              GUILayoutWidth(10),
-                              GUILayoutHeight(1));
-    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), ω_graph_);
-    }
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-    LabeledField(
-        L10N.CacheFormat(
-            "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude",
-            periapsis),
-        elements?.mean_periapsis_distance.FormatLengthInterval(primary.Radius));
-    UnityEngine.GUILayout.Box(ω_graph_,
-                              GUILayoutWidth(10),
-                              GUILayoutHeight(1));
-    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), periapsis_graph_);
-    }
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
-    LabeledField(
-        L10N.CacheFormat(
-            "#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude",
-            apoapsis),
-        elements?.mean_apoapsis_distance.FormatLengthInterval(primary.Radius));
-    UnityEngine.GUILayout.Box(ω_graph_,
-                              GUILayoutWidth(10),
-                              GUILayoutHeight(1));
-    UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), apoapsis_graph_);
-    }
-    }
-    using (new UnityEngine.GUILayout.VerticalScope()) {
-      UnityEngine.GUILayout.Label("Eccentricity vector:");
-      UnityEngine.GUILayout.Box("",
-                                GUILayoutWidth(10),
-                                GUILayoutHeight(10));
-      UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), eccentricity_vector_graph_);
-      UnityEngine.GUILayout.Label("Von Zeipel-Лидов-古在 analysis:");
-      UnityEngine.GUILayout.Box("",
-                                GUILayoutWidth(10),
-                                GUILayoutHeight(3));
-      UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), c1_graph_);
-      UnityEngine.GUILayout.Box("",
-                                GUILayoutWidth(10),
-                                GUILayoutHeight(4.8f));
-      UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(), c2_graph_);
-    }
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          LabeledField(
+              L10N.CacheFormat(
+                  "#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
+              elements?.mean_semimajor_axis.FormatLengthInterval());
+          a_graph_.Draw();
+        }
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          LabeledField(
+              L10N.CacheFormat(
+                  "#Principia_OrbitAnalyser_Elements_Eccentricity"),
+              elements?.mean_eccentricity.FormatInterval());
+          e_graph_.Draw();
+        }
+
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          LabeledField(
+              L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Inclination"),
+              elements?.mean_inclination.FormatAngleInterval());
+          i_graph_.Draw();
+        }
+
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          LabeledField(
+              L10N.CacheFormat(
+                  "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
+              elements?.mean_longitude_of_ascending_nodes.
+                  FormatAngleInterval());
+          Ω_graph_.Draw();
+        }
+        LabeledField(
+            L10N.CacheFormat(
+                "#Principia_OrbitAnalyser_Elements_NodalPrecession"),
+            elements?.nodal_precession.FormatAngularFrequency());
+        string periapsis =
+            L10N.CelestialString("#Principia_OrbitAnalyser_Elements_Periapsis",
+                                 new[]{ primary });
+        string apoapsis =
+            L10N.CelestialString("#Principia_OrbitAnalyser_Elements_Apoapsis",
+                                 new[]{ primary });
+
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          LabeledField(
+              L10N.CacheFormat(
+                  "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
+                  periapsis),
+              elements?.mean_argument_of_periapsis.FormatAngleInterval());
+          ω_graph_.Draw();
+        }
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          LabeledField(
+              L10N.CacheFormat(
+                  "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude",
+                  periapsis),
+              elements?.mean_periapsis_distance.FormatLengthInterval(
+                  primary.Radius));
+          periapsis_graph_.Draw();
+        }
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          LabeledField(
+              L10N.CacheFormat(
+                  "#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude",
+                  apoapsis),
+              elements?.mean_apoapsis_distance.FormatLengthInterval(
+                  primary.Radius));
+          apoapsis_graph_.Draw();
+        }
+      }
+      using (new UnityEngine.GUILayout.VerticalScope()) {
+        UnityEngine.GUILayout.Label("Eccentricity vector:");
+        eccentricity_vector_graph_.Draw();
+        UnityEngine.GUILayout.Label("Von Zeipel-Лидов-古在 analysis:");
+        c1_graph_.Draw();
+        c2_graph_.Draw();
+      }
     }
   }
 
@@ -929,6 +776,89 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                                       UnityEngine.GUI.skin.label));
     }
   }
+
+  private class Graph {
+    public Graph(float width, float height) {
+      texture_ = new UnityEngine.Texture2D((int)width, (int)height);
+    }
+
+    public void PrepareCanvas(
+        Interval x_range,
+        Interval y_range) {
+      x_range_ = x_range;
+      y_range_ = y_range;
+      dirty_ = true;
+      for (int x = 0; x < texture_.width; ++x) {
+        for (int y = 0; y < texture_.height; ++y) {
+          texture_.SetPixel(x, y, XKCDColors.Black);
+        }
+      }
+    }
+
+    public void PlotVerticalLine(double x, UnityEngine.Color colour) {
+      if (!x_range_.Contains(x)) {
+        return;
+      }
+      for (int y = 0; y < texture_.height; ++y) {
+        texture_.SetPixel(
+            (int)(texture_.width * (x - x_range_.min) / x_range_.measure),
+            y,
+            colour);
+      }
+    }
+
+    public void PlotHorizontalLine(double y, UnityEngine.Color colour) {
+      if (y_range_.Contains(y)) {
+        return;
+      }
+      for (int x = 0; x < texture_.width; ++x) {
+        texture_.SetPixel(x,
+                          (int)(texture_.height *
+                                (y - y_range_.min) /
+                                y_range_.measure),
+                          colour);
+      }
+    }
+
+    public void PlotPoint(double x, double y, UnityEngine.Color colour) {
+      dirty_ = true;
+      texture_.SetPixel(
+          (int)(texture_.width * (x - x_range_.min) / x_range_.measure),
+          (int)(texture_.height * (y - y_range_.min) / y_range_.measure),
+          colour);
+    }
+
+    public void Draw() {
+      if (dirty_) {
+        texture_.Apply();
+        dirty_ = false;
+      }
+      UnityEngine.GUILayout.Box("",
+                                UnityEngine.GUILayout.Width(texture_.width),
+                                UnityEngine.GUILayout.Height(texture_.height));
+      if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint) {
+        UnityEngine.GUI.DrawTexture(UnityEngine.GUILayoutUtility.GetLastRect(),
+                                    texture_);
+      }
+    }
+
+    private Interval x_range_;
+    private Interval y_range_;
+    private bool dirty_;
+
+    private UnityEngine.Texture2D texture_;
+  }
+  
+  Graph a_graph_;
+  Graph e_graph_;
+  Graph i_graph_;
+  Graph Ω_graph_;
+  Graph ω_graph_;
+  Graph periapsis_graph_;
+  Graph apoapsis_graph_;
+  Graph c1_graph_;
+  Graph c2_graph_;
+  Graph eccentricity_vector_graph_;
 
   protected IntPtr plugin => adapter_.Plugin();
 

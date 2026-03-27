@@ -81,6 +81,22 @@ internal partial struct WXYZ {
   }
 }
 
+internal partial struct Interval {
+  public static readonly Interval Empty = new Interval{ min = double.PositiveInfinity, max = double.NegativeInfinity };
+  public double measure => min > max ? 0 : max - min;
+  public void Include(double value) {
+    if (value < min) {
+      min = value;
+    }
+    if (value > max) {
+      max = value;
+    }
+  }
+  public bool Contains(double value) {
+    return value >= min && value <= max;
+  }
+}
+
 public enum FrameType {
   BARYCENTRIC_ROTATING = 6001,
   BODY_CENTRED_NON_ROTATING = 6000,

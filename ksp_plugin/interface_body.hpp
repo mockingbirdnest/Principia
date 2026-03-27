@@ -513,11 +513,10 @@ inline PlottableElements ToPlottableElements(
       .time = ToGameTime(plugin, elements.time),
       .semimajor_axis = elements.semimajor_axis / Metre,
       .eccentricity = elements.eccentricity,
-      .inclination_in_degrees = elements.inclination / Degree,
-      .longitude_of_ascending_node_in_degrees =
-          elements.longitude_of_ascending_node / Degree,
-      .argument_of_periapsis_in_degrees =
-          elements.argument_of_periapsis / Degree,
+      .inclination = elements.inclination / Radian,
+      .longitude_of_ascending_node =
+          elements.longitude_of_ascending_node / Radian,
+      .argument_of_periapsis = elements.argument_of_periapsis / Radian,
       .periapsis_distance = elements.periapsis_distance / Metre,
       .apoapsis_distance = elements.apoapsis_distance / Metre,
       .sin_squared_inclination = sin²_i,
