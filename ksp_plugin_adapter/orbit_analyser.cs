@@ -555,10 +555,10 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       e_graph_.PlotPoint(t, elements_at_t.eccentricity, XKCDColors.Cornflower);
       i_graph_.PlotPoint(t, elements_at_t.inclination, XKCDColors.Lavender);
       Ω_graph_.PlotPoint(t, elements_at_t.longitude_of_ascending_node, XKCDColors.LightPink);
-      ω_graph_.PlotPoint(t, elements_at_t.argument_of_periapsis, XKCDColors.RoseRed);
+      ω_graph_.PlotPoint(t, elements_at_t.argument_of_periapsis, XKCDColors.Cornflower);
       periapsis_graph_.PlotPoint(t, elements_at_t.periapsis_distance, XKCDColors.Sunflower);
       apoapsis_graph_.PlotPoint(t, elements_at_t.apoapsis_distance, XKCDColors.Sunflower);
-      лидов_graph_.PlotPoint(elements_at_t.lidov_c2, elements_at_t.lidov_c1, XKCDColors.Spearmint);
+      лидов_graph_.PlotPoint(elements_at_t.lidov_c2, elements_at_t.lidov_c1, XKCDColors.RoseRed);
       eccentricity_vector_graph_.PlotPoint(
           elements_at_t.eccentricity_cos_argument_of_periapsis,
           elements_at_t.eccentricity_sin_argument_of_periapsis,
@@ -795,7 +795,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
            i <= AbscissaToPixel(x_subrange.max);
            ++i) {
         // Honest plotting assuming f is monotone.
-        Interval pixel_range = PixelToAbscissa(i);
+        Interval pixel_range = PixelToAbscissa(i).IntersectedWith(x_subrange);
         double f_x_min = f.Invoke(pixel_range.min);
         double f_x_max = f.Invoke(pixel_range.max);
         double f_min;
@@ -826,8 +826,8 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       if (!y_range_.Contains(y)) {
         return;
       }
-      for (int j = 0; j < texture_.width; ++j) {
-        texture_.SetPixel(j, OrdinateToPixel(y), colour);
+      for (int i = 0; i < texture_.width; ++i) {
+        texture_.SetPixel(i, OrdinateToPixel(y), colour);
       }
     }
 

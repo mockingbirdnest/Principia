@@ -92,8 +92,14 @@ internal partial struct Interval {
       max = value;
     }
   }
+
   public bool Contains(double value) {
     return value >= min && value <= max;
+  }
+
+  public Interval IntersectedWith(Interval other) {
+    return new Interval
+        { min = Math.Max(min, other.min), max = Math.Min(max, other.max) };
   }
 }
 
