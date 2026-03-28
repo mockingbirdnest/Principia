@@ -789,25 +789,42 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     }
 
     public void PlotFunction(Func<double, double> f,
-                             Interval x_range,
+                             Interval x_subrange,
                              UnityEngine.Color colour) {
       for (int i =
                (int)(texture_.width *
-                     (x_range.min - x_range_.min) /
+                     (x_subrange.min - x_range_.min) /
                      x_range_.measure);
            i <
            (int)(texture_.width *
-                 (x_range.max - x_range_.min) /
+                 (x_subrange.max - x_range_.min) /
                  x_range_.measure);
            ++i) {
-        texture_.SetPixel(i,
-                          (int)(texture_.height *
-                                (f.Invoke(
-                                     i * x_range_.measure / texture_.width +
-                                     x_range_.min) -
-                                 y_range_.min) /
-                                y_range_.measure),
-                          colour);
+        // Honest plotting assuming f is monotone.
+        double f_x_min = f.Invoke(
+            (i - 0.5) * x_range_.measure / texture_.width +
+            x_range_.min);
+        double f_x_max = f.Invoke(
+            (i + 0.5) * x_range_.measure / texture_.width +
+            x_range_.min);
+        double f_min;
+        double f_max;
+        if (f_x_min <= f_x_max) {
+          f_min = f_x_min;
+          f_max = f_x_max;
+        } else {
+          f_min = f_x_max;
+          f_max = f_x_min;
+        }
+        for (int j =
+                 (int)(texture_.height *
+                       (f_min - y_range_.min) /
+                       y_range_.measure);
+             j <=
+             (int)(texture_.height * (f_max - y_range_.min) / y_range_.measure);
+             ++j) {
+          texture_.SetPixel(i, j, colour);
+        }
       }
     }
 
