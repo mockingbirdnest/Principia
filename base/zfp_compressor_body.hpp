@@ -93,7 +93,7 @@ template<typename Message>
 void ZfpCompressor::ReadVersion(Message const& message) {
   // We only read for the fun of checking, for now.
   CHECK_EQ(ZFP_CODEC, message.zfp().codec_version());
-  CHECK_EQ(ZFP_VERSION, message.zfp().library_version());
+  CHECK_GE(ZFP_VERSION, message.zfp().library_version());
 }
 
 template<int D>
