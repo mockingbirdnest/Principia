@@ -2,7 +2,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <utility>
+#include <functional>
+#include <optional>
 #include <vector>
 
 #include "base/algebra.hpp"
@@ -18,10 +19,10 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace numerics {
@@ -38,10 +39,10 @@ using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 // The adapters wrap the result of the Newhall approximation so that they can be
 // used consistently in this test.
@@ -177,8 +178,8 @@ class NewhallTest : public ::testing::Test {
   template<template<typename, int> typename Adapter,
            typename Value, int degree>
   void CheckNewhallApproximationErrors(
-      std::function<Value(Instant const)> length_function,
-      std::function<Variation<Value>(Instant const)> speed_function,
+      std::function<Value(Instant const)> const& length_function,
+      std::function<Variation<Value>(Instant const)> const& speed_function,
       ApproximateQuantity<Difference<Value>> const&
           expected_value_error_estimate,
       ApproximateQuantity<Difference<Value>> const&
@@ -783,7 +784,7 @@ TEST_F(NewhallTest, Affine) {
   auto instant_function = [](Instant const t) -> Instant {
     return t;
   };
-  auto double_function = [](Instant const t) -> double {
+  auto double_function = [](Instant const /*t*/) -> double {
     return 1;
   };
 
@@ -809,8 +810,9 @@ TEST_F(NewhallTest, NonConstantDegree) {
             Policy::AlwaysEstrin(),
             length_error_estimate);
 
-    EXPECT_THAT(RelativeError((*approximation)(t_min_),
-                              length_function_1_(t_min_)), IsNear(9e-13_(1)));
+    EXPECT_THAT(
+        (*approximation)(t_min_),
+        RelativeErrorFrom(length_function_1_(t_min_), IsNear(9e-13_(1))));
 }
 
 }  // namespace numerics

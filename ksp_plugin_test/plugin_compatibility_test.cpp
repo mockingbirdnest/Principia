@@ -1,15 +1,23 @@
 #include "ksp_plugin/plugin.hpp"
 
+#include <chrono>
 #include <map>
 #include <memory>
-#include <span>
+#include <optional>
 #include <string>
+#include <string_view>
+#include <thread>
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "astronomy/date_time.hpp"
 #include "astronomy/mercury_orbiter.hpp"
 #include "astronomy/time_scales.hpp"
+#include "base/macros.hpp"  // 🧙 For OS_LINUX.
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
 #include "glog/logging.h"
@@ -20,12 +28,12 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "ksp_plugin_test/plugin_io.hpp"
-#include "numerics/fma.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
-#include "serialization/ksp_plugin.pb.h"
+#include "serialization/physics.pb.h"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/serialization.hpp"
@@ -35,19 +43,13 @@ namespace principia {
 namespace interface {
 
 using ::testing::AllOf;
-using ::testing::Bool;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-using ::testing::Ge;
 using ::testing::HasSubstr;
-using ::testing::IsEmpty;
 using ::testing::Not;
-using ::testing::NotNull;
 using ::testing::Pair;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
-using ::testing::internal::CaptureStderr;
-using ::testing::internal::GetCapturedStderr;
 using namespace principia::astronomy::_date_time;
 using namespace principia::astronomy::_mercury_orbiter;
 using namespace principia::astronomy::_time_scales;
@@ -58,7 +60,6 @@ using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
-using namespace principia::numerics::_fma;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::quantities::_named_quantities;
@@ -70,8 +71,8 @@ using namespace principia::testing_utilities::_string_log_sink;
 
 using namespace std::chrono_literals;
 
-const char preferred_compressor[] = "gipfeli";
-const char preferred_encoder[] = "base64";
+constexpr std::string_view preferred_compressor = "gipfeli";
+constexpr std::string_view preferred_encoder = "base64";
 
 class PluginCompatibilityTest : public testing::Test {
  protected:
@@ -101,8 +102,8 @@ class PluginCompatibilityTest : public testing::Test {
 
     // Read the plugin from the new file to make sure that it's fine.
     return ReadPluginFromFile(TEMP_DIR / sanitized_name,
-                                      preferred_compressor,
-                                      preferred_encoder);
+                              preferred_compressor,
+                              preferred_encoder);
   }
 
   static void CheckSaveCompatibility(std::filesystem::path const& filename,
@@ -122,11 +123,11 @@ TEST_F(PluginCompatibilityTest, PreCartan) {
 }
 
 TEST_F(PluginCompatibilityTest, PreCohen) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   CheckSaveCompatibility(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3039.proto.hex",
       /*compressor=*/"",
-      /*decoder=*/"hexadecimal");
+      /*encoder=*/"hexadecimal");
   EXPECT_THAT(
       log_warning.string(),
       AllOf(
@@ -139,11 +140,11 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 #if !_DEBUG
 
 TEST_F(PluginCompatibilityTest, Reach) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
       /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+      /*encoder=*/"base64");
   plugin = WriteAndReadBack(std::move(plugin));
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Galileo"), Not(HasSubstr("pre-Frobenius"))));
@@ -174,6 +175,8 @@ TEST_F(PluginCompatibilityTest, Reach) {
   EXPECT_THAT(flight_plan.adaptive_step_parameters().max_steps(), Eq(16'000));
   EXPECT_THAT(flight_plan.number_of_manœuvres(), Eq(16));
   std::vector<std::pair<DateTime, Speed>> manœuvre_ignition_tt_seconds_and_Δvs;
+  manœuvre_ignition_tt_seconds_and_Δvs.reserve(
+      flight_plan.number_of_manœuvres());
   for (int i = 0; i < flight_plan.number_of_manœuvres(); ++i) {
     manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
         TTSecond(flight_plan.GetManœuvre(i).initial_time()),
@@ -243,8 +246,8 @@ TEST_F(PluginCompatibilityTest, Reach) {
       }
     }
   }
-  std::vector<std::pair<Instant, std::string>> flybys(flyby_map.begin(),
-                                                      flyby_map.end());
+  std::vector<std::pair<Instant, std::string>> const flybys(flyby_map.begin(),
+                                                            flyby_map.end());
 
 #if PRINCIPIA_COMPILER_MSVC
   EXPECT_THAT(
@@ -278,18 +281,16 @@ TEST_F(PluginCompatibilityTest, Reach) {
       ElementsAre(
           Pair(ResultOf(&TTSecond, "1970-12-23T07:16:42"_DateTime), "Venus"),
           Pair(ResultOf(&TTSecond, "1971-08-29T23:34:20"_DateTime), "Mars")));
-#else
-#error Unknown OS
 #endif
 }
 #endif
 
 TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\1119\1119.proto.b64)",
       /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+      /*encoder=*/"base64");
   plugin = WriteAndReadBack(std::move(plugin));
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Gröbner"))));
@@ -348,11 +349,11 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
 }
 
 TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
       /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+      /*encoder=*/"base64");
   plugin = WriteAndReadBack(std::move(plugin));
   EXPECT_THAT(log_warning.string(), HasSubstr("pre-Hamilton"));
 
@@ -413,11 +414,11 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
 }
 
 TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136b.proto.b64)",
       /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+      /*encoder=*/"base64");
   EXPECT_THAT(log_warning.string(), HasSubstr("pre-Hamilton"));
 
   auto& mutable_plugin = const_cast<Plugin&>(*plugin);
@@ -434,11 +435,11 @@ TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
 }
 
 TEST_F(PluginCompatibilityTest, PreHardy) {
-  StringLogSink log_warning(google::WARNING);
+  StringLogSink const log_warning(google::WARNING);
   CheckSaveCompatibility(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3244.proto.b64",
       /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+      /*encoder=*/"base64");
   // Regression test for #3244.
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Лефшец DiscreteTrajectorySegment"),
@@ -447,10 +448,10 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
 
 #if !_DEBUG
 TEST_F(PluginCompatibilityTest, 3273) {
-  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+  not_null<std::unique_ptr<Plugin const>> const plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3273.proto.b64",
       /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+      /*encoder=*/"base64");
   auto const& vessel =
       plugin->GetVessel("ae3aa35c-f33c-486e-a59c-aee43954dc30");
   vessel->ReadFlightPlanFromMessage();
@@ -473,10 +474,10 @@ TEST_F(PluginCompatibilityTest, 3273) {
 
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
-  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+  not_null<std::unique_ptr<Plugin const>> const plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\3203\wip.proto.b64)",
       /*compressor=*/"gipfeli",
-      /*decoder=*/"base64");
+      /*encoder=*/"base64");
 }
 
 }  // namespace interface

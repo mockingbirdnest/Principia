@@ -3,12 +3,17 @@
 #include "base/recurring_thread.hpp"
 
 #include <algorithm>
+#include <thread>
 #include <utility>
+
+#include "base/stoppable_thread.hpp"
 
 namespace principia {
 namespace base {
 namespace _recurring_thread {
 namespace internal {
+
+using namespace principia::base::_stoppable_thread;
 
 inline void BaseRecurringThread::Start() {
   absl::MutexLock l(&jthread_lock_);
@@ -20,12 +25,12 @@ inline void BaseRecurringThread::Start() {
 
 inline void BaseRecurringThread::Stop() {
   absl::MutexLock l(&jthread_lock_);
-  jthread_ = jthread();
+  jthread_ = std::jthread();
 }
 
 inline void BaseRecurringThread::Restart() {
   absl::MutexLock l(&jthread_lock_);
-  jthread_ = jthread();
+  jthread_ = std::jthread();
   jthread_ = MakeStoppableThread(
       [this]() { absl::Status const status = RepeatedlyRunAction(); });
 }

@@ -3,8 +3,6 @@
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/instant.hpp"
-#include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -28,8 +26,6 @@ using ::testing::MockFunction;
 using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_instant;
-using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;

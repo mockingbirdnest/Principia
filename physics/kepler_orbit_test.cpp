@@ -1,5 +1,7 @@
 #include "physics/kepler_orbit.hpp"
 
+#include <cstdint>
+
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
@@ -13,6 +15,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -20,10 +23,7 @@
 namespace principia {
 namespace physics {
 
-using ::testing::AllOf;
 using ::testing::Eq;
-using ::testing::Gt;
-using ::testing::Lt;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
@@ -288,7 +288,7 @@ class KeplerOrbitTest : public ::testing::Test {
 };
 
 TEST_F(KeplerOrbitTest, EarthMoon) {
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
@@ -320,7 +320,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   partial_elements.apoapsis_distance.reset();
   partial_elements.true_anomaly.reset();
   {
-    KeplerOrbit<ICRS> moon_orbit(*earth, *moon, partial_elements, date);
+    KeplerOrbit<ICRS> const moon_orbit(*earth, *moon, partial_elements, date);
     EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
                 AlmostEquals(expected_displacement, 15));
     EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
@@ -332,14 +332,14 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   partial_elements.semimajor_axis.reset();
   partial_elements.periapsis_distance = MoonElements().periapsis_distance;
   {
-    KeplerOrbit<ICRS> moon_orbit(*earth, *moon, partial_elements, date);
+    KeplerOrbit<ICRS> const moon_orbit(*earth, *moon, partial_elements, date);
     EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
                 AlmostEquals(expected_displacement, 13, 15));
     EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
                 AlmostEquals(expected_velocity, 23));
   }
 
-  KeplerOrbit<ICRS> moon_orbit(
+  KeplerOrbit<ICRS> const moon_orbit(
       *earth, *moon, {expected_displacement, expected_velocity}, date);
   EXPECT_THAT(*moon_orbit.elements_at_epoch().eccentricity,
               AlmostEquals(*MoonElements().eccentricity, 8));
@@ -366,7 +366,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
 }
 
 TEST_F(KeplerOrbitTest, Voyager1) {
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
@@ -389,7 +389,8 @@ TEST_F(KeplerOrbitTest, Voyager1) {
   partial_elements.periapsis_distance.reset();
   partial_elements.true_anomaly.reset();
   {
-    KeplerOrbit<ICRS> voyager_orbit(*sun, voyager1, partial_elements, date);
+    KeplerOrbit<ICRS> const voyager_orbit(
+        *sun, voyager1, partial_elements, date);
     EXPECT_THAT(voyager_orbit.StateVectors(date).displacement(),
                 AlmostEquals(expected_displacement, 37, 49));
     EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
@@ -401,14 +402,15 @@ TEST_F(KeplerOrbitTest, Voyager1) {
   partial_elements.semimajor_axis.reset();
   partial_elements.periapsis_distance = VoyagerElements().periapsis_distance;
   {
-    KeplerOrbit<ICRS> voyager_orbit(*sun, voyager1, partial_elements, date);
+    KeplerOrbit<ICRS> const voyager_orbit(
+        *sun, voyager1, partial_elements, date);
     EXPECT_THAT(voyager_orbit.StateVectors(date).displacement(),
                 AlmostEquals(expected_displacement, 31, 44));
     EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
                 AlmostEquals(expected_velocity, 27, 28));
   }
 
-  KeplerOrbit<ICRS> voyager_orbit(
+  KeplerOrbit<ICRS> const voyager_orbit(
       *sun, voyager1, {expected_displacement, expected_velocity}, date);
   EXPECT_THAT(*voyager_orbit.elements_at_epoch().eccentricity,
               AlmostEquals(*VoyagerElements().eccentricity, 2));

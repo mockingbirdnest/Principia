@@ -43,9 +43,8 @@ template<typename FrameTag,
          FrameMotion motion_, Handedness handedness_,
          std::conditional_t<std::is_enum_v<FrameTag>,
                             FrameTag, std::nullptr_t> tag_>
-template<typename T>
-  requires(std::is_enum_v<T>)
-constexpr FrameTag Frame<FrameTag, motion_, handedness_, tag_>::tag() {
+constexpr FrameTag Frame<FrameTag, motion_, handedness_, tag_>::tag()
+  requires(std::is_enum_v<FrameTag>) {
   return tag_;
 }
 
@@ -53,10 +52,9 @@ template<typename FrameTag,
          FrameMotion motion_, Handedness handedness_,
          std::conditional_t<std::is_enum_v<FrameTag>,
                             FrameTag, std::nullptr_t> tag_>
-template<typename T>
-  requires(google::protobuf::is_proto_enum<T>::value)
 void Frame<FrameTag, motion_, handedness_, tag_>::ReadFromMessage(
-  serialization::Frame const& message) {
+    serialization::Frame const& message)
+  requires(google::protobuf::is_proto_enum<FrameTag>::value) {
   static_assert(has_tag);
   std::string const& tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();

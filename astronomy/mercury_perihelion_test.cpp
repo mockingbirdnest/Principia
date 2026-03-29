@@ -20,6 +20,7 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -40,6 +41,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class MercuryPerihelionTest : public testing::Test {
  protected:
@@ -132,28 +134,28 @@ TEST_F(MercuryPerihelionTest, Year1950) {
       *sun_, *mercury_, relative_degrees_of_freedom, t_1950_);
   KeplerianElements<ICRS> const keplerian_elements = orbit.elements_at_epoch();
 
-  EXPECT_THAT(RelativeError(*keplerian_elements.eccentricity,
-                             *keplerian_elements_1950_.eccentricity),
-              IsNear(3.6e-13_(1)));
-  EXPECT_THAT(RelativeError(*keplerian_elements.semimajor_axis,
-                            *keplerian_elements_1950_.semimajor_axis),
-              IsNear(7.7e-14_(1)));
-  EXPECT_THAT(RelativeError(*keplerian_elements.mean_motion,
-                          *keplerian_elements_1950_.mean_motion),
-              IsNear(1.2e-13_(1)));
-  EXPECT_THAT(RelativeError(keplerian_elements.inclination,
-                          keplerian_elements_1950_.inclination),
-              IsNear(1.7e-14_(1)));
-  EXPECT_THAT(RelativeError(keplerian_elements.longitude_of_ascending_node,
-                           keplerian_elements_1950_.
-                               longitude_of_ascending_node),
-              IsNear(1.2e-14_(1)));
-  EXPECT_THAT(RelativeError(*keplerian_elements_1950_.argument_of_periapsis,
-                          *keplerian_elements.argument_of_periapsis),
-              IsNear(6.6e-14_(1)));
-  EXPECT_THAT(RelativeError(*keplerian_elements.mean_anomaly,
-                          *keplerian_elements_1950_.mean_anomaly),
-              IsNear(3.0e-14_(1)));
+  EXPECT_THAT(*keplerian_elements.eccentricity,
+              RelativeErrorFrom(*keplerian_elements_1950_.eccentricity,
+                                IsNear(3.6e-13_(1))));
+  EXPECT_THAT(*keplerian_elements.semimajor_axis,
+              RelativeErrorFrom(*keplerian_elements_1950_.semimajor_axis,
+                                IsNear(7.7e-14_(1))));
+  EXPECT_THAT(*keplerian_elements.mean_motion,
+              RelativeErrorFrom(*keplerian_elements_1950_.mean_motion,
+                                IsNear(1.2e-13_(1))));
+  EXPECT_THAT(keplerian_elements.inclination,
+              RelativeErrorFrom(keplerian_elements_1950_.inclination,
+                                IsNear(1.7e-14_(1))));
+  EXPECT_THAT(keplerian_elements.longitude_of_ascending_node,
+              RelativeErrorFrom(keplerian_elements_1950_.
+                                    longitude_of_ascending_node,
+                                IsNear(1.2e-14_(1))));
+  EXPECT_THAT(*keplerian_elements_1950_.argument_of_periapsis,
+              RelativeErrorFrom(*keplerian_elements.argument_of_periapsis,
+                                IsNear(6.6e-14_(1))));
+  EXPECT_THAT(*keplerian_elements.mean_anomaly,
+              RelativeErrorFrom(*keplerian_elements_1950_.mean_anomaly,
+                                IsNear(3.0e-14_(1))));
 }
 
 #if !defined(_DEBUG)
@@ -172,22 +174,22 @@ TEST_F(MercuryPerihelionTest, Year1960) {
       *sun_, *mercury_, relative_degrees_of_freedom, t_1960_);
   KeplerianElements<ICRS> const keplerian_elements = orbit.elements_at_epoch();
 
-  EXPECT_THAT(RelativeError(*keplerian_elements.eccentricity,
-                            *keplerian_elements_1960_.eccentricity),
-              IsNear(5.3e-7_(1)));
-  EXPECT_THAT(RelativeError(*keplerian_elements.semimajor_axis,
-                            *keplerian_elements_1960_.semimajor_axis),
-              IsNear(1.1e-7_(1)));
-  EXPECT_THAT(RelativeError(*keplerian_elements.mean_motion,
-                            *keplerian_elements_1960_.mean_motion),
-              IsNear(1.6e-7_(1)));
-  EXPECT_THAT(RelativeError(keplerian_elements.inclination,
-                            keplerian_elements_1960_.inclination),
-              IsNear(9.3e-10_(1)));
+  EXPECT_THAT(*keplerian_elements.eccentricity,
+              RelativeErrorFrom(*keplerian_elements_1960_.eccentricity,
+                                IsNear(5.3e-7_(1))));
+  EXPECT_THAT(*keplerian_elements.semimajor_axis,
+              RelativeErrorFrom(*keplerian_elements_1960_.semimajor_axis,
+                                IsNear(1.1e-7_(1))));
+  EXPECT_THAT(*keplerian_elements.mean_motion,
+              RelativeErrorFrom(*keplerian_elements_1960_.mean_motion,
+                                IsNear(1.6e-7_(1))));
+  EXPECT_THAT(keplerian_elements.inclination,
+              RelativeErrorFrom(keplerian_elements_1960_.inclination,
+                                IsNear(9.3e-10_(1))));
   EXPECT_THAT(
-      RelativeError(keplerian_elements.longitude_of_ascending_node,
-                    keplerian_elements_1960_.longitude_of_ascending_node),
-      IsNear(7.5e-9_(1)));
+      keplerian_elements.longitude_of_ascending_node,
+      RelativeErrorFrom(keplerian_elements_1960_.longitude_of_ascending_node,
+                        IsNear(7.5e-9_(1))));
   EXPECT_THAT(*keplerian_elements_1960_.argument_of_periapsis -
                   *keplerian_elements.argument_of_periapsis,
               IsNear(4.206_(1) * ArcSecond));
@@ -211,22 +213,22 @@ TEST_F(MercuryPerihelionTest, DISABLED_Year2050) {
       *sun_, *mercury_, relative_degrees_of_freedom, t_2050_);
   KeplerianElements<ICRS> const keplerian_elements = orbit.elements_at_epoch();
 
-  EXPECT_THAT(RelativeError(*keplerian_elements.eccentricity,
-                            *keplerian_elements_2050_.eccentricity),
-              IsNear(9.8e-8_(1)));
-  EXPECT_THAT(RelativeError(*keplerian_elements.semimajor_axis,
-                            *keplerian_elements_2050_.semimajor_axis),
-              IsNear(1.8e-8_(1)));
-  EXPECT_THAT(RelativeError(*keplerian_elements.mean_motion,
-                            *keplerian_elements_2050_.mean_motion),
-              IsNear(2.7e-8_(1)));
-  EXPECT_THAT(RelativeError(keplerian_elements.inclination,
-                            keplerian_elements_2050_.inclination),
-              IsNear(4.0e-9_(1)));
+  EXPECT_THAT(*keplerian_elements.eccentricity,
+              RelativeErrorFrom(*keplerian_elements_2050_.eccentricity,
+                                IsNear(9.8e-8_(1))));
+  EXPECT_THAT(*keplerian_elements.semimajor_axis,
+              RelativeErrorFrom(*keplerian_elements_2050_.semimajor_axis,
+                                IsNear(1.8e-8_(1))));
+  EXPECT_THAT(*keplerian_elements.mean_motion,
+              RelativeErrorFrom(*keplerian_elements_2050_.mean_motion,
+                                IsNear(2.7e-8_(1))));
+  EXPECT_THAT(keplerian_elements.inclination,
+              RelativeErrorFrom(keplerian_elements_2050_.inclination,
+                                IsNear(4.0e-9_(1))));
   EXPECT_THAT(
-      RelativeError(keplerian_elements.longitude_of_ascending_node,
-                    keplerian_elements_2050_.longitude_of_ascending_node),
-      IsNear(1.5e-7_(1)));
+      keplerian_elements.longitude_of_ascending_node,
+      RelativeErrorFrom(keplerian_elements_2050_.longitude_of_ascending_node,
+                        IsNear(1.5e-7_(1))));
   // The actual number is 42.98" on average, but there are other periodic
   // effects so your mileage will vary.  See [NW86].
   EXPECT_THAT(*keplerian_elements_2050_.argument_of_periapsis -

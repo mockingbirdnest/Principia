@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <limits>
-#include <memory>
 
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -11,9 +10,9 @@
 #include "numerics/apodization.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/poisson_series.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 #include "serialization/numerics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
@@ -33,7 +32,6 @@ using namespace principia::numerics::_apodization;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_piecewise_poisson_series;
 using namespace principia::numerics::_poisson_series;
-using namespace principia::numerics::_polynomial_evaluators;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -59,14 +57,14 @@ class PiecewisePoissonSeriesTest : public ::testing::Test {
            {{ω_,
              {.sin = Degree0::Series::PeriodicPolynomial({0.5}, t0_),
               .cos = Degree0::Series::PeriodicPolynomial({-1}, t0_)}}}),
-        pp_({t0_, t0_ + 1 * Second},
+        pp_({.min = t0_, .max = t0_ + 1 * Second},
             Degree0::Series(
                 Degree0::Series::AperiodicPolynomial({1}, t0_),
                 {{ω_,
                   {.sin = Degree0::Series::PeriodicPolynomial({-1}, t0_),
                    .cos = Degree0::Series::PeriodicPolynomial({0}, t0_)}}})) {
     pp_.Append(
-        {t0_ + 1 * Second, t0_ + 2 * Second},
+        {.min = t0_ + 1 * Second, .max = t0_ + 2 * Second},
         Degree0::Series(
             Degree0::Series::AperiodicPolynomial({0}, t0_),
             {{ω_,
@@ -229,10 +227,10 @@ TEST_F(PiecewisePoissonSeriesTest, InnerProductMultiorigin) {
 }
 
 TEST_F(PiecewisePoissonSeriesTest, Fourier) {
-  Degree0::Series::AperiodicPolynomial aperiodic_constant({1.0}, t0_);
-  Degree0::Series::PeriodicPolynomial periodic_constant({1.0}, t0_);
+  Degree0::Series::AperiodicPolynomial const aperiodic_constant({1.0}, t0_);
+  Degree0::Series::PeriodicPolynomial const periodic_constant({1.0}, t0_);
   AngularFrequency const ω = 4 * Radian / Second;
-  PoissonSeries<Displacement<World>, 0, 0> signal(
+  PoissonSeries<Displacement<World>, 0, 0> const signal(
       aperiodic_constant * Displacement<World>{},
       {{ω,
         {.sin = periodic_constant *
@@ -243,10 +241,10 @@ TEST_F(PiecewisePoissonSeriesTest, Fourier) {
   // (also known as midpoint) does the job.
   constexpr int segments = 100;
   PiecewisePoissonSeries<Displacement<World>, 0, 0> f(
-      {t0_, t0_ + π * Second / segments}, signal);
+      {.min = t0_, .max = t0_ + π * Second / segments}, signal);
   for (int k = 1; k < segments; ++k) {
-    f.Append({t0_ + k * π * Second / segments,
-              t0_ + (k + 1) * π * Second / segments},
+    f.Append({.min = t0_ + k * π * Second / segments,
+              .max = t0_ + (k + 1) * π * Second / segments},
              signal);
   }
   auto const f_fourier_transform = f.FourierTransform();

@@ -18,7 +18,7 @@ int __cdecl main(int argc, char const* argv[]) {
     std::cerr << "Usage: " << argv[0] << " command [arguments...]\n";
     return 1;
   }
-  std::string command = argv[1];
+  std::string const command = argv[1];
   if (command == "generate_configuration") {
     if (argc != 7) {
       // tools.exe generate_configuration \

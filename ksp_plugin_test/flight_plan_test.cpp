@@ -29,13 +29,14 @@
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -44,7 +45,6 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
-using ::testing::MockFunction;
 using namespace principia::astronomy::_epoch;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
@@ -71,7 +71,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace std::chrono_literals;
 
 class FlightPlanTest : public testing::Test {
@@ -90,7 +90,7 @@ class FlightPlanTest : public testing::Test {
             /*angular_frequency=*/1 * Radian / Second,
             /*right_ascension_of_pole=*/0 * Radian,
             /*declination_of_pole=*/0 * Radian)));
-    std::vector<DegreesOfFreedom<Barycentric>> initial_state{
+    std::vector<DegreesOfFreedom<Barycentric>> const initial_state{
         {Barycentric::origin, Barycentric::unmoving}};
     ephemeris_ = std::make_unique<Ephemeris<Barycentric>>(
         std::move(bodies),
@@ -244,7 +244,7 @@ TEST_F(FlightPlanTest, Singular) {
   auto const segment0 = flight_plan_->GetSegment(0);
   DiscreteTrajectory<Barycentric>::iterator back = segment0->end();
   --back;
-  EXPECT_THAT(AbsoluteError(singularity, back->time), Lt(1e-4 * Second));
+  EXPECT_THAT(back->time, AbsoluteErrorFrom(singularity, Lt(1e-4 * Second)));
   // Attempting to put a burn past the singularity fails.
   EXPECT_THAT(
       flight_plan_->Insert(
@@ -379,7 +379,7 @@ TEST_F(FlightPlanTest, Segments) {
 
   std::vector<Instant> times;
   int last_times_size = times.size();
-  Instant last_t = t0_ - 2 * π * Second;
+  Instant const last_t = t0_ - 2 * π * Second;
   for (int i = 0; i < flight_plan_->number_of_segments(); ++i) {
     auto const segment_i = flight_plan_->GetSegment(i);
     for (auto const& [t, _] : *segment_i) {
@@ -459,14 +459,14 @@ TEST_F(FlightPlanTest, GuidedBurn) {
   EXPECT_OK(flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second));
   auto unguided_burn = MakeFirstBurn();
   unguided_burn.thrust /= 10;
-  EXPECT_OK(flight_plan_->Insert(std::move(unguided_burn), 0));
+  EXPECT_OK(flight_plan_->Insert(unguided_burn, 0));
   auto const& trajectory = flight_plan_->GetAllSegments();
   Speed const unguided_final_speed =
       trajectory.back().degrees_of_freedom.velocity().Norm();
   auto guided_burn = MakeFirstBurn();
   guided_burn.thrust /= 10;
   guided_burn.is_inertially_fixed = false;
-  EXPECT_OK(flight_plan_->Replace(std::move(guided_burn), /*index=*/0));
+  EXPECT_OK(flight_plan_->Replace(guided_burn, /*index=*/0));
   Speed const guided_final_speed =
       trajectory.back().degrees_of_freedom.velocity().Norm();
   EXPECT_THAT(guided_final_speed, IsNear(1.40_(1) * unguided_final_speed));
@@ -559,7 +559,7 @@ TEST_F(FlightPlanTest, Serialization) {
       message.adaptive_step_parameters().has_speed_integration_tolerance());
   EXPECT_EQ(2, message.manoeuvre_size());
 
-  std::unique_ptr<FlightPlan> flight_plan_read =
+  std::unique_ptr<FlightPlan> const flight_plan_read =
       FlightPlan::ReadFromMessage(message, ephemeris_.get());
   EXPECT_EQ(t0_ - 2 * π * Second, flight_plan_read->initial_time());
   EXPECT_EQ(t0_ + 42 * Second, flight_plan_read->desired_final_time());

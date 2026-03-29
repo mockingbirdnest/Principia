@@ -8,6 +8,10 @@
 // necessary because Unity provides overrides of `new` and `delete` which have
 // terrible performance on macOS. It should be included via compiler argument.
 // Attempting to include it on non-macOS builds will result in an error.
+//
+// Beware! In modern C++ these aliases may cause trouble because deduction
+// guides are not applicable (the rules are unfathomable, but both compilers
+// agree, see https://godbolt.org/z/KEeKM8e68).
 
 #pragma once
 

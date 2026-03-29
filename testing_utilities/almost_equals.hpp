@@ -59,7 +59,7 @@ testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
 template<typename T>
 class AlmostEqualsMatcher final {
  public:
-  explicit AlmostEqualsMatcher(T const& expected,
+  explicit AlmostEqualsMatcher(T expected,
                                std::int64_t min_ulps,
                                std::int64_t max_ulps);
 

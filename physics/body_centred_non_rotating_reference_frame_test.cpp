@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -13,18 +12,20 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -34,7 +35,6 @@ using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
 using namespace principia::astronomy::_frames;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -42,6 +42,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
@@ -52,7 +53,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
@@ -75,7 +76,7 @@ class BodyCentredNonRotatingReferenceFrameTest : public ::testing::Test {
                       serialization::Frame::TEST1>;
 
   BodyCentredNonRotatingReferenceFrameTest()
-      : period_(10 * π * sqrt(5.0 / 7.0) * Second),
+      : period_(10 * π * Sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
                       SOLUTION_DIR / "astronomy" /
@@ -139,14 +140,12 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, SmallBodyInBigFrame) {
         rotation_in_big_frame_at_t(initial_big_to_small.velocity()));
 
     auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
-    EXPECT_THAT(AbsoluteError(
-                    to_big_frame_at_t(small_in_inertial_frame_at_t).position(),
-                    small_in_big_frame_at_t.position()),
-                Lt(0.3 * Milli(Metre)));
-    EXPECT_THAT(AbsoluteError(
-                    to_big_frame_at_t(small_in_inertial_frame_at_t).velocity(),
-                    small_in_big_frame_at_t.velocity()),
-                Lt(4 * Milli(Metre) / Second));
+    EXPECT_THAT(to_big_frame_at_t(small_in_inertial_frame_at_t).position(),
+                AbsoluteErrorFrom(small_in_big_frame_at_t.position(),
+                                  Lt(0.3 * Milli(Metre))));
+    EXPECT_THAT(to_big_frame_at_t(small_in_inertial_frame_at_t).velocity(),
+                AbsoluteErrorFrom(small_in_big_frame_at_t.velocity(),
+                                  Lt(4 * Milli(Metre) / Second)));
   }
 }
 
@@ -196,12 +195,11 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, GeometricAcceleration) {
                   {0 * si::Unit<Acceleration>,
                    small_on_position + big_on_position - small_on_big,
                    0 * si::Unit<Acceleration>});
-    EXPECT_THAT(AbsoluteError(
-                    big_frame_->GeometricAcceleration(
-                        t0_,
-                        DegreesOfFreedom<Big>(position, Big::unmoving)),
-                    expected_acceleration),
-                Lt(1e-10 * si::Unit<Acceleration>));
+    EXPECT_THAT(big_frame_->GeometricAcceleration(
+                    t0_,
+                    DegreesOfFreedom<Big>(position, Big::unmoving)),
+                AbsoluteErrorFrom(expected_acceleration,
+                                  Lt(1e-10 * si::Unit<Acceleration>)));
   }
 }
 

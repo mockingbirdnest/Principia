@@ -35,10 +35,8 @@ class AffineMap final {
   template<template<typename, typename> typename OtherAffineMap>
   OtherAffineMap<FromFrame, ToFrame> Forget() const;
 
-  template<typename F = FromFrame,
-           typename T = ToFrame>
-    requires(F::handedness == T::handedness)
-  static AffineMap Identity();
+  static AffineMap Identity()
+    requires(FromFrame::handedness == ToFrame::handedness);
 
   LinearMap<FromFrame, ToFrame> const& linear_map() const;
 

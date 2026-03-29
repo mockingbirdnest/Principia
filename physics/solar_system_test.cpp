@@ -6,6 +6,7 @@
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -14,7 +15,6 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
@@ -31,13 +31,12 @@ using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_numerics_matchers;
 
 class SolarSystemTest : public ::testing::Test {};
 
 TEST_F(SolarSystemTest, RealSolarSystem) {
-  SolarSystem<ICRS> solar_system(
+  SolarSystem<ICRS> const solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
@@ -108,7 +107,7 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
 TEST_F(SolarSystemTest, KSPSystem) {
   using KSP = Frame<struct KSPTag, Inertial>;
 
-  SolarSystem<KSP> solar_system(
+  SolarSystem<KSP> const solar_system(
       SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
 

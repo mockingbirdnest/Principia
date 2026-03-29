@@ -1,5 +1,6 @@
 #include "testing_utilities/algebra.hpp"
 
+#include <concepts>
 #include <functional>
 
 #include "base/algebra.hpp"

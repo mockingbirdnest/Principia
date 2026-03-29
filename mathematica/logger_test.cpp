@@ -1,9 +1,5 @@
 #include "mathematica/logger.hpp"
 
-#include <filesystem>
-#include <tuple>
-#include <vector>
-
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"

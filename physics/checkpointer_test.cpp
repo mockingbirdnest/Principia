@@ -1,8 +1,10 @@
 #include "physics/checkpointer.hpp"
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "gmock/gmock.h"
+#include "google/protobuf/repeated_field.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -12,10 +14,8 @@ namespace physics {
 
 using ::testing::ElementsAre;
 using ::testing::Field;
-using ::testing::InSequence;
 using ::testing::IsEmpty;
 using ::testing::MockFunction;
-using ::testing::Ref;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::base::_not_null;

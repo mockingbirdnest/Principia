@@ -15,7 +15,6 @@
 namespace principia {
 namespace physics {
 
-using ::testing::Return;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
@@ -58,7 +57,7 @@ class DiscreteTrajectorySegmentIteratorTest : public ::testing::Test {
     }
   }
 
-  DiscreteTrajectorySegmentIterator<World> MakeIterator(
+  static DiscreteTrajectorySegmentIterator<World> MakeIterator(
       not_null<Segments*> const segments,
       Segments::iterator const iterator) {
     return DiscreteTrajectorySegmentIterator<World>(segments, iterator);

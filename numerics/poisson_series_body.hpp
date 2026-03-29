@@ -84,8 +84,8 @@ AngularFrequencyPrimitive(
                                aperiodic_degree + 1, periodic_degree + 1>;
   using PeriodicPolynomial = typename Result::PeriodicPolynomial;
 
-  // Integration by parts.
-  typename Result::Polynomials const first_part{
+  // Integration by parts.  Not const to allow move.
+  typename Result::Polynomials first_part{
       .sin = PeriodicPolynomial(polynomials.cos / ω * Radian),
       .cos = PeriodicPolynomial(-polynomials.sin / ω * Radian)};
   if constexpr (periodic_degree == 0) {
@@ -313,7 +313,7 @@ Primitive() const {
   using Result =
       PoissonSeries<base::_algebra::Primitive<Value, Time>,
                     aperiodic_degree_ + 1, periodic_degree_ + 1>;
-  typename Result::AperiodicPolynomial aperiodic = aperiodic_.Primitive();
+  typename Result::AperiodicPolynomial const aperiodic = aperiodic_.Primitive();
   typename Result::PolynomialsByAngularFrequency periodic;
   periodic.reserve(periodic_.size());
   for (auto const& [ω, polynomials] : periodic_) {

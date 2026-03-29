@@ -1,5 +1,7 @@
 #include <immintrin.h>
 
+#include <cmath>
+
 #include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
 #include "numerics/cbrt.hpp"
 #include "numerics/elementary_functions.hpp"
@@ -7,6 +9,7 @@
 
 namespace principia {
 namespace nanobenchmarks {
+namespace {
 
 using namespace principia::numerics::_cbrt;
 using namespace principia::nanobenchmarks::_nanobenchmark;
@@ -48,5 +51,6 @@ NANOBENCHMARK(principia_sin_cos) {
       _mm_and_pd(_mm_set_sd(values.sin), _mm_set_sd(values.cos)));
 }
 
+}  // namespace
 }  // namespace nanobenchmarks
 }  // namespace principia

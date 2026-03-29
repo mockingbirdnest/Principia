@@ -1,6 +1,7 @@
 #include "physics/hierarchical_system.hpp"
 
 #include <algorithm>
+#include <iterator>
 #include <map>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"

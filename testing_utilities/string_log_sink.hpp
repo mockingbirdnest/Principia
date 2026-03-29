@@ -14,19 +14,19 @@ namespace internal {
 
 class StringLogSink : google::LogSink {
  public:
-  inline explicit StringLogSink(google::LogSeverity const minimal_severity);
+  explicit StringLogSink(google::LogSeverity minimal_severity);
 
-  inline ~StringLogSink();
+  ~StringLogSink() override;
 
-  inline void send(google::LogSeverity const severity,
-                   char const* const full_filename,
-                   char const* const base_filename,
-                   int const line,
-                   tm const* const tm_time,
-                   const char* const message,
-                   std::size_t const message_len) override;
+  void send(google::LogSeverity severity,
+            char const* full_filename,
+            char const* base_filename,
+            int line,
+            tm const* tm_time,
+            const char* message,
+            std::size_t message_len) override;
 
-  inline std::string& string();
+  std::string const& string() const;
 
  private:
   google::LogSeverity const minimal_severity_;

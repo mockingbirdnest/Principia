@@ -4,6 +4,7 @@
 
 namespace principia {
 namespace nanobenchmarks {
+namespace {
 
 using namespace principia::nanobenchmarks::_nanobenchmark;
 
@@ -28,7 +29,7 @@ NANOBENCHMARK(add_16_times) {
 }
 
 NANOBENCHMARK(square_root) {
-  __m128d x_0 = _mm_set_sd(x);
+  __m128d const x_0 = _mm_set_sd(x);
   return _mm_cvtsd_f64(_mm_sqrt_sd(x_0, x_0));
 }
 
@@ -39,9 +40,10 @@ NANOBENCHMARK(sqrt_sqrt) {
 }
 
 NANOBENCHMARK(square_root_division) {
-  __m128d x_0 = _mm_set_sd(x);
+  __m128d const x_0 = _mm_set_sd(x);
   return _mm_cvtsd_f64(_mm_div_sd(x_0, _mm_sqrt_sd(x_0, x_0)));
 }
 
+}  // namespace
 }  // namespace nanobenchmarks
 }  // namespace principia

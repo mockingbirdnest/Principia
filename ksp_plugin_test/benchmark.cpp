@@ -1,10 +1,10 @@
 #include "ksp_plugin/plugin.hpp"
 
-#include <string>
+#include <cstdint>
+#include <cstring>
 #include <vector>
 
 #include "base/pull_serializer.hpp"
-#include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
 #include "benchmark/benchmark.h"
 #include "gtest/gtest.h"
@@ -23,6 +23,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace _benchmark {
 namespace internal {
+namespace {
 
 using interface::principia__AdvanceTime;
 using interface::principia__FutureCatchUpVessel;
@@ -30,7 +31,6 @@ using interface::principia__FutureWaitForVesselToCatchUp;
 using interface::principia__IteratorDelete;
 using interface::principia__SerializePlugin;
 using namespace principia::base::_pull_serializer;
-using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_iterators;
@@ -61,6 +61,7 @@ void BM_PluginIntegrationBenchmark(benchmark::State& state) {
         (plugin->CurrentTime() + step - plugin->GameEpoch()) / Second,
         /*planetarium_rotation=*/45);
     std::vector<PileUpFuture*> futures;
+    futures.reserve(vessel_guids.size());
     for (GUID const& vessel_guid : vessel_guids) {
       futures.push_back(
           principia__FutureCatchUpVessel(plugin.get(), vessel_guid.c_str()));
@@ -130,6 +131,7 @@ TEST(PluginBenchmark, DISABLED_All) {
   benchmark::RunSpecifiedBenchmarks();
 }
 
+}  // namespace
 }  // namespace internal
 }  // namespace _benchmark
 }  // namespace ksp_plugin

@@ -61,7 +61,7 @@ void LocalErrorAnalyser<Frame>::WriteLocalErrors(
                t = t0 + granularity;
        t < solar_system_->epoch() + duration;
        t0 = t, t += granularity) {
-    std::unique_ptr<Ephemeris<Frame>> refined_ephemeris =
+    std::unique_ptr<Ephemeris<Frame>> const refined_ephemeris =
         ForkEphemeris(*reference_ephemeris, t0, fine_integrator, fine_step);
     CHECK_OK(reference_ephemeris->Prolong(t));
     CHECK_OK(refined_ephemeris->Prolong(t));

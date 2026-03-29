@@ -20,9 +20,6 @@ Result ConcreteFunctor<F, Result, Args...>::Call(Args&&... args) {
 }
 
 template<typename Result, typename... Args>
-function<Result(Args...)>::function() {}
-
-template<typename Result, typename... Args>
 template<typename F>
 function<Result(Args...)>::function(F functor)
     : functor_(std::make_unique<ConcreteFunctor<F, Result, Args...>>(

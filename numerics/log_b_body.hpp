@@ -2,6 +2,7 @@
 
 #include "numerics/log_b.hpp"
 
+#include <concepts>
 #include <limits>
 
 namespace principia {
@@ -9,8 +10,7 @@ namespace numerics {
 namespace _log_b {
 namespace internal {
 
-template<typename SourceFormat>
-  requires(std::is_floating_point_v<SourceFormat>)
+template<std::floating_point SourceFormat>
 constexpr SourceFormat LogB(SourceFormat const x) {
   if (x != x) {
     return x;

@@ -30,10 +30,10 @@ class HarmonicDampingTest : public ::testing::Test {
 };
 
 TEST_F(HarmonicDampingTest, AccelerationQuantities) {
-  HarmonicDamping σ(1 * Metre);
+  HarmonicDamping const σ(1 * Metre);
   EXPECT_THAT(σ.inner_threshold(), Eq(1 * Metre));
   EXPECT_THAT(σ.outer_threshold(), Eq(3 * Metre));
-  Vector<double, World> x({1, 0, 0});
+  Vector<double, World> const x({1, 0, 0});
   Inverse<Square<Length>> const ℜ_over_r = 5 / Pow<2>(Metre);
   Inverse<Square<Length>> const ℜʹ = 17 / Pow<2>(Metre);
   Inverse<Square<Length>> σℜ_over_r;

@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
-#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -21,13 +20,14 @@
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace physics {
@@ -35,10 +35,7 @@ namespace physics {
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
-using ::testing::Return;
-using ::testing::_;
 using namespace principia::astronomy::_frames;
-using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -58,7 +55,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 namespace {
 
@@ -76,7 +73,7 @@ class BodySurfaceReferenceFrameTest : public ::testing::Test {
                               serialization::Frame::TEST>;
 
   BodySurfaceReferenceFrameTest()
-      : period_(10 * π * sqrt(5.0 / 7.0) * Second),
+      : period_(10 * π * Sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
                       SOLUTION_DIR / "astronomy" /
@@ -107,7 +104,7 @@ class BodySurfaceReferenceFrameTest : public ::testing::Test {
                     /*reference_angle=*/0 * Radian,
                     /*reference_instant=*/t0_,
                     /*angular_frequency=*/10 * Radian / Second,
-                    /*ascension_of_pole=*/0 * Radian,
+                    /*right_ascension_of_pole=*/0 * Radian,
                     /*declination_of_pole=*/π / 2 * Radian)),
         massive_centre_(&centre_) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
@@ -151,21 +148,21 @@ TEST_F(BodySurfaceReferenceFrameTest, ToBigSmallFrameAtTime) {
         to_big_frame_at_t(big_in_inertial_frame_at_t);
     DegreesOfFreedom<BigSmallFrame> const small_in_big_small_at_t =
         to_big_frame_at_t(small_in_inertial_frame_at_t);
-    EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.position(),
-                              BigSmallFrame::origin),
-                Lt(1.0e-6 * Metre));
-    EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
-                              BigSmallFrame::unmoving),
-                Lt(1.0e-4 * Metre / Second));
-    EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
-                              Displacement<BigSmallFrame>({
-                                  0 * Kilo(Metre),
-                                  5.0 * Kilo(Metre),
-                                  0 * Kilo(Metre)}) + BigSmallFrame::origin),
-                Lt(2.7e-4 * Metre));
-    EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
-                              BigSmallFrame::unmoving),
-                Lt(4.0e-3 * Metre / Second));
+    EXPECT_THAT(big_in_big_small_at_t.position(),
+                AbsoluteErrorFrom(BigSmallFrame::origin,
+                                  Lt(1.0e-6 * Metre)));
+    EXPECT_THAT(big_in_big_small_at_t.velocity(),
+                AbsoluteErrorFrom(BigSmallFrame::unmoving,
+                                  Lt(1.0e-4 * Metre / Second)));
+    EXPECT_THAT(small_in_big_small_at_t.position(),
+                AbsoluteErrorFrom(Displacement<BigSmallFrame>({
+                                      0 * Kilo(Metre),
+                                      5.0 * Kilo(Metre),
+                                      0 * Kilo(Metre)}) + BigSmallFrame::origin,
+                                  Lt(2.7e-4 * Metre)));
+    EXPECT_THAT(small_in_big_small_at_t.velocity(),
+                AbsoluteErrorFrom(BigSmallFrame::unmoving,
+                                  Lt(4.0e-3 * Metre / Second)));
   }
 }
 
@@ -178,14 +175,12 @@ TEST_F(BodySurfaceReferenceFrameTest, Inverse) {
     auto const small_initial_state_transformed_and_back =
         from_big_frame_at_t(to_big_frame_at_t(
             small_initial_state_));
-    EXPECT_THAT(
-        AbsoluteError(small_initial_state_transformed_and_back.position(),
-                      small_initial_state_.position()),
-        Lt(1.0e-11 * Metre));
-    EXPECT_THAT(
-        AbsoluteError(small_initial_state_transformed_and_back.velocity(),
-                      small_initial_state_.velocity()),
-        Lt(1.0e-11 * Metre / Second));
+    EXPECT_THAT(small_initial_state_transformed_and_back.position(),
+                AbsoluteErrorFrom(small_initial_state_.position(),
+                                  Lt(1.0e-11 * Metre)));
+    EXPECT_THAT(small_initial_state_transformed_and_back.velocity(),
+                AbsoluteErrorFrom(small_initial_state_.velocity(),
+                                  Lt(1.0e-11 * Metre / Second)));
   }
 }
 

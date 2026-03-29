@@ -10,7 +10,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/jthread.hpp"  // 🧙 For RETURN_IF_STOPPED.
+#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/sign.hpp"
 #include "glog/logging.h"
 #include "integrators/methods.hpp"  // 🧙 For _methods.

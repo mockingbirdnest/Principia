@@ -1,7 +1,9 @@
 #include "ksp_plugin/pile_up.hpp"
 
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
 #include <limits>
-#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -12,15 +14,12 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
-#include "geometry/r3x3_matrix.hpp"
-#include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
+#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
-#include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
-#include "integrators/mock_integrators.hpp"  // 🧙 For mock integrators.
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -31,7 +30,7 @@
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
+#include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
@@ -40,17 +39,12 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 
-using ::testing::ByMove;
 using ::testing::DoAll;
-using ::testing::ElementsAre;
-using ::testing::Eq;
 using ::testing::IsEmpty;
-using ::testing::Matcher;
 using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::_;
@@ -59,11 +53,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3_element;
-using namespace principia::geometry::_r3x3_matrix;
-using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
-using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::ksp_plugin::_frames;
@@ -76,6 +67,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
@@ -84,7 +76,6 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_vanishes_before;
 
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
@@ -286,306 +277,6 @@ class PileUpTest : public testing::Test {
   Part p2_;
 };
 
-#if 0
-
-// Exercises the entire lifecycle of a `PileUp` that is subject to an intrinsic
-// force.
-TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
-  MockEphemeris<Barycentric> ephemeris;
-  p1_.apply_intrinsic_force(
-      Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
-  p2_.apply_intrinsic_force(
-      Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
-  EXPECT_CALL(deletion_callback_, Call()).Times(1);
-  TestablePileUp pile_up({&p1_, &p2_},
-                         astronomy::J2000,
-                         DefaultPsychohistoryParameters(),
-                         DefaultHistoryParameters(),
-                         &ephemeris,
-                         deletion_callback_.AsStdFunction());
-  EXPECT_THAT(pile_up.intrinsic_force(),
-              AlmostEquals(Vector<Force, Barycentric>(
-                  {12 * Newton, 23 * Newton, 34 * Newton}), 0));
-
-  CheckPreDeformPileUpInvariants(pile_up);
-
-  pile_up.DeformPileUpIfNeeded(astronomy::J2000 + 1 * Second);
-
-  CheckPreAdvanceTimeInvariants(pile_up);
-
-  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _))
-      .WillOnce(DoAll(
-          AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(
-              Barycentric::origin +
-                  Displacement<Barycentric>({1.0 * Metre,
-                                             14.0 * Metre,
-                                             31.0 / 3.0 * Metre}),
-              Velocity<Barycentric>({10.0 * Metre / Second,
-                                     140.0 * Metre / Second,
-                                     310.0 / 3.0 * Metre / Second}))),
-          Return(absl::OkStatus())));
-  pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
-
-  EXPECT_EQ(++p1_.history_begin(), p1_.history_end());
-  EXPECT_EQ(p1_.psychohistory_begin(), p1_.psychohistory_end());
-  EXPECT_THAT(
-      p1_.history_begin()->degrees_of_freedom,
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({-25.0 / 9.0 * Metre,
-                                                      40.0 / 3.0 * Metre,
-                                                      101.0 / 9.0 * Metre}),
-                       69),
-          AlmostEquals(Velocity<Barycentric>({-250.0 / 9.0 * Metre / Second,
-                                              400.0 / 3.0 * Metre / Second,
-                                              1010.0 / 9.0 * Metre / Second}),
-                       88)));
-  EXPECT_EQ(++p2_.history_begin(), p2_.history_end());
-  EXPECT_EQ(p2_.psychohistory_begin(), p2_.psychohistory_end());
-  EXPECT_THAT(
-      p2_.history_begin()->degrees_of_freedom,
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({26.0 / 9.0 * Metre,
-                                                      43.0 / 3.0 * Metre,
-                                                      89.0 / 9.0 * Metre}),
-                       35),
-          AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
-                                              430.0 / 3.0 * Metre / Second,
-                                              890.0 / 9.0 * Metre / Second}),
-                       43)));
-  EXPECT_EQ(1, pile_up.psychohistory()->Size());
-  EXPECT_THAT(
-      pile_up.psychohistory()->back().degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {1.0 * Metre,
-                                          14.0 * Metre,
-                                          31.0 / 3.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {10.0 * Metre / Second,
-                                      140.0 * Metre / Second,
-                                      310.0 / 3.0 * Metre / Second}), 0)));
-
-  pile_up.NudgeParts();
-
-  EXPECT_THAT(
-      p1_.degrees_of_freedom(),
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({-25.0 / 9.0 * Metre,
-                                                      40.0 / 3.0 * Metre,
-                                                      101.0 / 9.0 * Metre}),
-                       69),
-          AlmostEquals(Velocity<Barycentric>({-250.0 / 9.0 * Metre / Second,
-                                              400.0 / 3.0 * Metre / Second,
-                                              1010.0 / 9.0 * Metre / Second}),
-                       82)));
-  EXPECT_THAT(
-      p2_.degrees_of_freedom(),
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({26.0 / 9.0 * Metre,
-                                                      43.0 / 3.0 * Metre,
-                                                      89.0 / 9.0 * Metre}),
-                       35),
-          AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
-                                              430.0 / 3.0 * Metre / Second,
-                                              890.0 / 9.0 * Metre / Second}),
-                       46)));
-}
-
-// Same as above, but without an intrinsic force.
-TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
-  MockEphemeris<Barycentric> ephemeris;
-  EXPECT_CALL(deletion_callback_, Call()).Times(1);
-  TestablePileUp pile_up({&p1_, &p2_},
-                         astronomy::J2000,
-                         DefaultPsychohistoryParameters(),
-                         DefaultHistoryParameters(),
-                         &ephemeris,
-                         deletion_callback_.AsStdFunction());
-  EXPECT_THAT(pile_up.intrinsic_force(),
-              AlmostEquals(Vector<Force, Barycentric>(), 0));
-
-  CheckPreDeformPileUpInvariants(pile_up);
-
-  pile_up.DeformPileUpIfNeeded(astronomy::J2000 + 1 * Second);
-
-  CheckPreAdvanceTimeInvariants(pile_up);
-
-  auto history = pile_up.psychohistory()->parent();
-  auto instance = make_not_null_unique<MockFixedStepSizeIntegrator<
-      Ephemeris<Barycentric>::NewtonianMotionEquation>::MockInstance>();
-  EXPECT_CALL(ephemeris,
-              NewInstance(ElementsAre(history), _, _))
-      .WillOnce(Return(ByMove(std::move(instance))));
-  EXPECT_CALL(ephemeris, FlowWithFixedStep(_, _))
-      .WillOnce(DoAll(
-          AppendToDiscreteTrajectory(
-              &history,
-              astronomy::J2000 + 0.4 * Second,
-              DegreesOfFreedom<Barycentric>(
-                  Barycentric::origin +
-                      Displacement<Barycentric>(
-                          {1.1 * Metre, 14.1 * Metre, 31.1 / 3.0 * Metre}),
-                  Velocity<Barycentric>({10.1 * Metre / Second,
-                                         140.1 * Metre / Second,
-                                         310.1 / 3.0 * Metre / Second}))),
-          AppendToDiscreteTrajectory(
-              &history,
-              astronomy::J2000 + 0.8 * Second,
-              DegreesOfFreedom<Barycentric>(
-                  Barycentric::origin +
-                      Displacement<Barycentric>(
-                          {1.2 * Metre, 14.2 * Metre, 31.2 / 3.0 * Metre}),
-                  Velocity<Barycentric>({10.2 * Metre / Second,
-                                         140.2 * Metre / Second,
-                                         310.2 / 3.0 * Metre / Second}))),
-          Return(absl::OkStatus())));
-  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _))
-      .WillOnce(DoAll(
-          AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(
-              Barycentric::origin +
-                  Displacement<Barycentric>({1.0 * Metre,
-                                             14.0 * Metre,
-                                             31.0 / 3.0 * Metre}),
-              Velocity<Barycentric>({10.0 * Metre / Second,
-                                     140.0 * Metre / Second,
-                                     310.0 / 3.0 * Metre / Second}))),
-          Return(absl::OkStatus())));
-  pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
-
-  EXPECT_EQ(++(++p1_.history_begin()), p1_.history_end());
-  EXPECT_EQ(++p1_.psychohistory_begin(), p1_.psychohistory_end());
-  EXPECT_THAT(
-      p1_.history_begin()->degrees_of_freedom,
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({-24.1 / 9.0 * Metre,
-                                                      40.3 / 3.0 * Metre,
-                                                      101.3 / 9.0 * Metre}),
-                       69),
-          AlmostEquals(Velocity<Barycentric>({-249.1 / 9.0 * Metre / Second,
-                                              400.3 / 3.0 * Metre / Second,
-                                              1010.3 / 9.0 * Metre / Second}),
-                       86)));
-  EXPECT_THAT(
-      (++p1_.history_begin())->degrees_of_freedom,
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({-23.2 / 9.0 * Metre,
-                                                      40.6 / 3.0 * Metre,
-                                                      101.6 / 9.0 * Metre}),
-                       69),
-          AlmostEquals(Velocity<Barycentric>({-248.2 / 9.0 * Metre / Second,
-                                              400.6 / 3.0 * Metre / Second,
-                                              1010.6 / 9.0 * Metre / Second}),
-                       88)));
-  EXPECT_THAT(
-      p1_.psychohistory_begin()->degrees_of_freedom,
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({-25.0 / 9.0 * Metre,
-                                                      40.0 / 3.0 * Metre,
-                                                      101.0 / 9.0 * Metre}),
-                       69),
-          AlmostEquals(Velocity<Barycentric>({-250.0 / 9.0 * Metre / Second,
-                                              400.0 / 3.0 * Metre / Second,
-                                              1010.0 / 9.0 * Metre / Second}),
-                       88)));
-  EXPECT_EQ(++(++p2_.history_begin()), p2_.history_end());
-  EXPECT_EQ(++p2_.psychohistory_begin(), p2_.psychohistory_end());
-  EXPECT_THAT(
-      p2_.history_begin()->degrees_of_freedom,
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({26.9 / 9.0 * Metre,
-                                                      43.3 / 3.0 * Metre,
-                                                      89.3 / 9.0 * Metre}),
-                       35),
-          AlmostEquals(Velocity<Barycentric>({260.9 / 9.0 * Metre / Second,
-                                              430.3 / 3.0 * Metre / Second,
-                                              890.3 / 9.0 * Metre / Second}),
-                       44)));
-  EXPECT_THAT(
-      (++p2_.history_begin())->degrees_of_freedom,
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({27.8 / 9.0 * Metre,
-                                                      43.6 / 3.0 * Metre,
-                                                      89.6 / 9.0 * Metre}),
-                       35),
-          AlmostEquals(Velocity<Barycentric>({261.8 / 9.0 * Metre / Second,
-                                              430.6 / 3.0 * Metre / Second,
-                                              890.6 / 9.0 * Metre / Second}),
-                       42)));
-  EXPECT_THAT(
-      p2_.psychohistory_begin()->degrees_of_freedom,
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({26.0 / 9.0 * Metre,
-                                                      43.0 / 3.0 * Metre,
-                                                      89.0 / 9.0 * Metre}),
-                       35),
-          AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
-                                              430.0 / 3.0 * Metre / Second,
-                                              890.0 / 9.0 * Metre / Second}),
-                       43)));
-  EXPECT_EQ(2, pile_up.psychohistory()->Size());
-  EXPECT_THAT(
-      pile_up.psychohistory()->front().degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {1.2 * Metre,
-                                          14.2 * Metre,
-                                          31.2 / 3.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {10.2 * Metre / Second,
-                                      140.2 * Metre / Second,
-                                      310.2 / 3.0 * Metre / Second}), 0)));
-  EXPECT_THAT(
-      pile_up.psychohistory()->back().degrees_of_freedom,
-      Componentwise(AlmostEquals(Barycentric::origin +
-                                     Displacement<Barycentric>(
-                                         {1.0 * Metre,
-                                          14.0 * Metre,
-                                          31.0 / 3.0 * Metre}), 0),
-                    AlmostEquals(Velocity<Barycentric>(
-                                     {10.0 * Metre / Second,
-                                      140.0 * Metre / Second,
-                                      310.0 / 3.0 * Metre / Second}), 0)));
-
-  pile_up.NudgeParts();
-
-  EXPECT_THAT(
-      p1_.degrees_of_freedom(),
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({-25.0 / 9.0 * Metre,
-                                                      40.0 / 3.0 * Metre,
-                                                      101.0 / 9.0 * Metre}),
-                       69),
-          AlmostEquals(Velocity<Barycentric>({-250.0 / 9.0 * Metre / Second,
-                                              400.0 / 3.0 * Metre / Second,
-                                              1010.0 / 9.0 * Metre / Second}),
-                       82)));
-  EXPECT_THAT(
-      p2_.degrees_of_freedom(),
-      Componentwise(
-          AlmostEquals(Barycentric::origin +
-                           Displacement<Barycentric>({26.0 / 9.0 * Metre,
-                                                      43.0 / 3.0 * Metre,
-                                                      89.0 / 9.0 * Metre}),
-                       35),
-          AlmostEquals(Velocity<Barycentric>({260.0 / 9.0 * Metre / Second,
-                                              430.0 / 3.0 * Metre / Second,
-                                              890.0 / 9.0 * Metre / Second}),
-                       46)));
-}
-
-#endif
-
 TEST_F(PileUpTest, MidStepIntrinsicForce) {
   // An empty ephemeris; the parameters don't matter, since there are no bodies
   // to integrate.
@@ -593,7 +284,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
   // want to be empty.  We put a tiny one very far.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   bodies.emplace_back(make_not_null_unique<MassiveBody>(1 * Kilogram));
-  std::vector<DegreesOfFreedom<Barycentric>> initial_state{
+  std::vector<DegreesOfFreedom<Barycentric>> const initial_state{
       DegreesOfFreedom<Barycentric>{
           Barycentric::origin +
               Displacement<Barycentric>(
@@ -612,12 +303,12 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
           1 * Second}};
 
   Time const fixed_step = 10 * Second;
-  Ephemeris<Barycentric>::FixedStepParameters fixed_parameters{
+  Ephemeris<Barycentric>::FixedStepParameters const fixed_parameters{
       SymplecticRungeKuttaNyströmIntegrator<
           BlanesMoan2002SRKN6B,
           Ephemeris<Barycentric>::NewtonianMotionEquation>(),
       fixed_step};
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_parameters{
+  Ephemeris<Barycentric>::AdaptiveStepParameters const adaptive_parameters{
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
           DormandالمكاوىPrince1986RKN434FM,
           Ephemeris<Barycentric>::NewtonianMotionEquation>(),
@@ -659,12 +350,12 @@ TEST_F(PileUpTest, Serialization) {
   p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
-  TestablePileUp pile_up({&p1_, &p2_},
-                         J2000,
-                         DefaultPsychohistoryParameters(),
-                         DefaultHistoryParameters(),
-                         &ephemeris,
-                         deletion_callback_.AsStdFunction());
+  TestablePileUp const pile_up({&p1_, &p2_},
+                               J2000,
+                               DefaultPsychohistoryParameters(),
+                               DefaultHistoryParameters(),
+                               &ephemeris,
+                               deletion_callback_.AsStdFunction());
 
   serialization::PileUp message;
   pile_up.WriteToMessage(&message);
@@ -705,12 +396,12 @@ TEST_F(PileUpTest, SerializationCompatibility) {
   p2_.apply_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
-  TestablePileUp pile_up({&p1_, &p2_},
-                         J2000,
-                         DefaultPsychohistoryParameters(),
-                         DefaultHistoryParameters(),
-                         &ephemeris,
-                         deletion_callback_.AsStdFunction());
+  TestablePileUp const pile_up({&p1_, &p2_},
+                               J2000,
+                               DefaultPsychohistoryParameters(),
+                               DefaultHistoryParameters(),
+                               &ephemeris,
+                               deletion_callback_.AsStdFunction());
 
   serialization::PileUp message;
   pile_up.WriteToMessage(&message);

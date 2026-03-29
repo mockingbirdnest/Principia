@@ -90,7 +90,8 @@ SimilarMotion<FromFrame, ToFrame>::DilatationAboutOrigin(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename, typename, typename>
+template<typename F, typename T>
+  requires(F::handedness == T::handedness && F::motion <= T::motion)
 SimilarMotion<FromFrame, ToFrame>
 SimilarMotion<FromFrame, ToFrame>::Identity() {
   return SimilarMotion(Similarity<FromFrame, ToFrame>::Identity(),

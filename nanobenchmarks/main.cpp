@@ -169,6 +169,7 @@ double CalibrateOverhead(TSCCalibration const& calibration,
                               static_cast<std::string const&>(result.Row())));
   }
   std::vector<double> overheads_cycles;
+  overheads_cycles.reserve(reference_cycle_counts.size());
   for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
     overheads_cycles.push_back(reference_measurements[nanobenchmark].min() -
                               cycles);

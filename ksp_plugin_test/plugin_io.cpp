@@ -1,13 +1,18 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 
+#include <cstdint>
+#include <cstring>
+#include <filesystem>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
 #include "base/file.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "glog/logging.h"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "testing_utilities/serialization.hpp"
 
@@ -16,8 +21,8 @@ namespace ksp_plugin_test {
 namespace _plugin_io {
 namespace internal {
 
-const char preferred_compressor[] = "gipfeli";
-const char preferred_encoder[] = "base64";
+constexpr std::string_view preferred_compressor = "gipfeli";
+constexpr std::string_view preferred_encoder = "base64";
 
 using interface::principia__DeletePlugin;
 using interface::principia__DeleteString;
@@ -80,8 +85,8 @@ void WritePluginToFile(std::filesystem::path const& filename,
 }
 
 void WritePluginToFile(std::filesystem::path const& filename,
-                       std::string_view const compressor,
-                       std::string_view const encoder,
+                       std::string_view const /*compressor*/,
+                       std::string_view const /*encoder*/,
                        not_null<std::unique_ptr<Plugin const>> plugin,
                        std::int64_t& bytes_processed) {
   OFStream file(filename);
@@ -93,8 +98,8 @@ void WritePluginToFile(std::filesystem::path const& filename,
   for (;;) {
     b64 = principia__SerializePlugin(plugin.get(),
                                      &serializer,
-                                     preferred_compressor,
-                                     preferred_encoder);
+                                     preferred_compressor.data(),
+                                     preferred_encoder.data());
     if (b64 == nullptr) {
       break;
     }

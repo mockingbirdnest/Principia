@@ -45,7 +45,7 @@ class Nanobenchmark {
   std::string const& name() const;
 
  protected:
-  virtual Value NanobenchmarkCase(Argument argument) const = 0;
+  virtual inline Value NanobenchmarkCase(Argument argument) const = 0;
 
   void SetFunction(BenchmarkedFunction function);
   void SetName(std::string_view name);
@@ -98,7 +98,7 @@ class NanobenchmarkRegistry {
     }                                                                      \
                                                                            \
    protected:                                                              \
-    Value NanobenchmarkCase(Argument x) const override;                    \
+    inline Value NanobenchmarkCase(Argument x) const override;             \
   };
 
 #define NANOBENCHMARK_DECLARE_FIXTURE3(BaseClass, Method, f)               \
@@ -111,35 +111,36 @@ class NanobenchmarkRegistry {
     }                                                                      \
                                                                            \
    protected:                                                              \
-    Value NanobenchmarkCase(Argument x) const override;                    \
+    inline Value NanobenchmarkCase(Argument x) const override;             \
   };
 
-#define NANOBENCHMARK_DECLARE(Function)                 \
-  class NANOBENCHMARK_CONCAT_NAME(Function)             \
-      : public Nanobenchmark<double, double> {          \
-   public:                                              \
-    NANOBENCHMARK_CONCAT_NAME(Function)() {             \
-      SetName(#Function);                               \
-    }                                                   \
-                                                        \
-   protected:                                           \
-    Value NanobenchmarkCase(Argument x) const override; \
-  };
-
-#define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)        \
-  class NANOBENCHMARK_CONCAT_NAME(line)                        \
+#define NANOBENCHMARK_DECLARE(Function)                        \
+  class NANOBENCHMARK_CONCAT_NAME(Function)                    \
       : public Nanobenchmark<double, double> {                 \
    public:                                                     \
-    NANOBENCHMARK_CONCAT_NAME(line)() {                        \
-      SetFunction(&Function);                                  \
+    NANOBENCHMARK_CONCAT_NAME(Function)() {                    \
       SetName(#Function);                                      \
     }                                                          \
                                                                \
    protected:                                                  \
-    Value NanobenchmarkCase(Argument const x) const override { \
-      return Function(x);                                      \
-    }                                                          \
+    inline Value NanobenchmarkCase(Argument x) const override; \
   };
+
+#define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)               \
+  class NANOBENCHMARK_CONCAT_NAME(line)                               \
+      : public Nanobenchmark<double, double> {                        \
+   public:                                                            \
+    NANOBENCHMARK_CONCAT_NAME(line)() {                               \
+      SetFunction(&Function);                                         \
+      SetName(#Function);                                             \
+    }                                                                 \
+                                                                      \
+   protected:                                                         \
+    inline Value NanobenchmarkCase(Argument const x) const override { \
+      return Function(x);                                             \
+    }                                                                 \
+  };
+
 #define NANOBENCHMARK_DECLARE_FUNCTION(line, Function) \
   NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)
 

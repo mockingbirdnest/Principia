@@ -5,6 +5,7 @@
 #include <print>
 #include <utility>
 #include <string_view>
+#include <tuple>
 
 #include "absl/flags/flag.h"
 #include "base/macros.hpp"  // 🧙 For OS_WIN.
@@ -187,8 +188,9 @@ WindowsPerformanceSettingsController::~WindowsPerformanceSettingsController() {
   }
 }
 
-void WindowsPerformanceSettingsController::NotifyPowerSetting(DWORD type,
-                                                              PVOID setting) {
+void WindowsPerformanceSettingsController::NotifyPowerSetting(
+    DWORD /*type*/,
+    PVOID /*setting*/) {
   SYSTEM_POWER_STATUS power_status;
   CHECK(GetSystemPowerStatus(&power_status));
   if (ac_line_status_ != power_status.ACLineStatus) {

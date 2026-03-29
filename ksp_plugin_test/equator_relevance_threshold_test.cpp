@@ -3,7 +3,6 @@
 #include <memory>
 #include <string>
 
-#include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -18,7 +17,6 @@
 namespace principia {
 namespace ksp_plugin {
 
-using namespace principia::astronomy::_frames;
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_equator_relevance_threshold;
 using namespace principia::ksp_plugin::_frames;

@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/orbit_recurrence.hpp"
@@ -86,7 +88,7 @@ class OrbitAnalyserTest : public testing::Test {
   StandardProduct3 topex_poséidon_;
 
  private:
-  SolarSystem<Barycentric> RemoveAllButEarth(
+  static SolarSystem<Barycentric> RemoveAllButEarth(
       SolarSystem<Barycentric> solar_system) {
     std::vector<std::string> const names = solar_system.names();
     for (auto const& name : names) {

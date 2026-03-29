@@ -186,7 +186,8 @@ constexpr T Pow(T x) {
   } else {
     static_assert(exponent < 32);
     auto const y = Pow<exponent / 2>(x);
-    auto const y² = y * y;
+    // Not const to allow move.
+    auto y² = y * y;
     if constexpr (exponent % 2 == 1) {
       return y² * x;
     } else {
