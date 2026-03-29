@@ -32,10 +32,7 @@
   git merge Ketchup
   git push -f
 ```
-- [ ] Cleanup and squash some of the commits.
-```powershell
-  git branch -d Ketchup
-```
+- [ ] Squash some of the commits on the `master` branch if needed.  Leave the `Ketchup` branch alone for future referenc.
 
 ## Notes
 
