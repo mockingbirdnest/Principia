@@ -84,7 +84,7 @@ class PluginCompatibilityTest : public testing::Test {
     google::SetStderrLogging(stderrthreshold_);
   }
 
-  static void WriteAndReadBack(
+  static not_null<std::unique_ptr<Plugin const>> WriteAndReadBack(
       not_null<std::unique_ptr<Plugin const>> plugin1) {
     // There may be solidi in the path due to parameterized tests, so we remove
     // them.
@@ -100,7 +100,7 @@ class PluginCompatibilityTest : public testing::Test {
                       std::move(plugin1));
 
     // Read the plugin from the new file to make sure that it's fine.
-    auto plugin2 = ReadPluginFromFile(TEMP_DIR / sanitized_name,
+    return ReadPluginFromFile(TEMP_DIR / sanitized_name,
                                       preferred_compressor,
                                       preferred_encoder);
   }
@@ -144,6 +144,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
+  plugin = WriteAndReadBack(std::move(plugin));
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Galileo"), Not(HasSubstr("pre-Frobenius"))));
   auto const test = plugin->GetVessel("f2d77873-4776-4809-9dfb-de9e7a0620a6");
@@ -280,9 +281,6 @@ TEST_F(PluginCompatibilityTest, Reach) {
 #else
 #error Unknown OS
 #endif
-
-  // Make sure that we can upgrade, save, and reload.
-  WriteAndReadBack(std::move(plugin));
 }
 #endif
 
@@ -292,6 +290,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
       R"(P:\Public Mockingbird\Principia\Saves\1119\1119.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
+  plugin = WriteAndReadBack(std::move(plugin));
   EXPECT_THAT(log_warning.string(),
               AllOf(HasSubstr("pre-Hamilton"), Not(HasSubstr("pre-Gröbner"))));
   auto const& orbiter =
@@ -346,9 +345,6 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
   EXPECT_THAT((it->degrees_of_freedom.position() -
                mercury.trajectory().EvaluatePosition(it->time)).Norm(),
               IsNear(19'163_(1) * Kilo(Metre)));
-
-  // Make sure that we can upgrade, save, and reload.
-  WriteAndReadBack(std::move(plugin));
 }
 
 TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
@@ -357,6 +353,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
       /*compressor=*/"gipfeli",
       /*decoder=*/"base64");
+  plugin = WriteAndReadBack(std::move(plugin));
   EXPECT_THAT(log_warning.string(), HasSubstr("pre-Hamilton"));
 
   // The vessel with the longest history.
@@ -413,9 +410,6 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
     EXPECT_THAT(*history, SizeIs(435'927));
     EXPECT_THAT(*psychohistory, SizeIs(3));
   }
-
-  // Make sure that we can upgrade, save, and reload.
-  WriteAndReadBack(std::move(plugin));
 }
 
 TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
