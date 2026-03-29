@@ -32,7 +32,7 @@
   git merge Ketchup
   git push -f
 ```
-- [ ] Squash some of the commits on the `master` branch if needed.  Leave the `Ketchup` branch alone for future referenc.
+- [ ] Squash some of the commits on the `master` branch if needed.  Leave the `Ketchup` branch alone for future reference.
 
 ## Notes
 
