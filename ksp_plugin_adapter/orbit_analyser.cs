@@ -326,12 +326,23 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                                   multiline_style,
                                   UnityEngine.GUILayout.Height(five_lines));
       Style.HorizontalLine();
-      RenderLowestAltitude(elements, primary);
-      Style.HorizontalLine();
-      UnityEngine.GUILayout.Label(
-          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_MeanElements"));
       DrawElementGraphs(elements);
-      RenderOrbitalElements(elements, primary);
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        using (new UnityEngine.GUILayout.VerticalScope()) {
+          RenderLowestAltitude(elements, primary);
+          Style.HorizontalLine();
+          UnityEngine.GUILayout.Label(
+              L10N.CacheFormat(
+                  "#Principia_OrbitAnalyser_Elements_MeanElements"));
+          RenderOrbitalElements(elements, primary);
+        }
+        using (new UnityEngine.GUILayout.VerticalScope()) {
+          UnityEngine.GUILayout.Label("Eccentricity vector:");
+          eccentricity_vector_graph_.Draw();
+          UnityEngine.GUILayout.Label("Лидов parameters:");
+          лидов_graph_.Draw();
+        }
+      }
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(12))) {
           Style.HorizontalLine();
@@ -504,8 +515,8 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       ω_graph_ = new Graph(Width(10), Height(1));
       periapsis_graph_ = new Graph(Width(10), Height(1));
       apoapsis_graph_ = new Graph(Width(10), Height(1));
-      лидов_graph_ = new Graph(Width(10), Height(10));
-      eccentricity_vector_graph_ = new Graph(Width(10), Height(10));
+      лидов_graph_ = new Graph(Width(8), Height(8));
+      eccentricity_vector_graph_ = new Graph(Width(8), Height(8));
     }
     Interval t_range = Interval.Empty;
     Interval e_cos_ω_range = Interval.Empty;
@@ -540,7 +551,45 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     eccentricity_vector_graph_.PrepareCanvas(e_cos_ω_range, e_sin_ω_range);
     лидов_graph_.PlotVerticalLine(0, XKCDColors.White);
     лидов_graph_.PlotFunction((c2) => 3.0 / 5.0 - 2 * Math.Sqrt(-3.0 / 5.0 * c2) - c2, new Interval{ min=-3.0/5.0, max=0}, XKCDColors.White);
-    лидов_graph_.PlotFunction((c2) => 1 - 5 * c2 / 2, new Interval{ min=0, max=2.0/5.0}, XKCDColors.White);
+    // Made redundant by i_max=0.
+    // лидов_graph_.PlotFunction((c2) => 1 - 5 * c2 / 2, new Interval{ min=0, max=2.0/5.0}, XKCDColors.White);
+    for (int ten_e_max = 1; ten_e_max <= 10; ++ten_e_max) {
+      double e_max = ten_e_max / 10.0;
+      double e_max_squared = e_max * e_max;
+      лидов_graph_.PlotFunction(
+          (c2) =>
+              c2 * (1 / e_max_squared - 1) - 3.0 / 5.0 * (e_max_squared - 1),
+          new Interval{
+              min = - 3 * e_max_squared * e_max_squared / 5,
+              max = 2.0 / 5.0 * e_max_squared
+          },
+          XKCDColors.Cornflower);
+    }
+    double i_critical = Math.Acos(Math.Sqrt(3.0 / 5.0));
+    for (int i_min_degrees = 0; i_min_degrees <= 80; i_min_degrees += 10) {
+      const double degree = Math.PI / 180;
+      double i_min = i_min_degrees * degree;
+      double cos_i_min = Math.Cos(i_min);
+      double cos_squared_i_min = cos_i_min * cos_i_min;
+      double cos_2_i_min = 2 * cos_squared_i_min - 1;
+      double cos_squared_2_i_min = cos_2_i_min * cos_2_i_min;
+      double cos_4_i_min = 2 * cos_squared_2_i_min - 1;
+      лидов_graph_.PlotFunction(
+          (c2) =>
+              cos_squared_i_min *
+              (5 * cos_squared_i_min - 5 * c2 - 3) /
+              (5 * cos_squared_i_min - 3),
+          i_min > i_critical
+              ? new Interval{
+                  min = (5 * cos_squared_i_min - 3) / 5,
+                  max = (20 * cos_2_i_min - 25 * cos_4_i_min - 27) / 120
+              }
+              : new Interval{
+                  min = 0,
+                  max = (5 * cos_squared_i_min - 3) / 5
+              },
+          XKCDColors.Lavender);
+    }
     eccentricity_vector_graph_.PlotHorizontalLine(0, XKCDColors.White);
     eccentricity_vector_graph_.PlotVerticalLine(0, XKCDColors.White);
     if (elements == null) {
@@ -568,94 +617,78 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
   private void RenderOrbitalElements(OrbitalElements elements,
                                      CelestialBody primary) {
+    LabeledField(
+        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
+        elements?.sidereal_period.FormatDuration());
+    LabeledField(
+        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPeriod"),
+        elements?.nodal_period.FormatDuration());
+    LabeledField(
+        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_AnomalisticPeriod"),
+        elements?.anomalistic_period.FormatDuration());
+
     using (new UnityEngine.GUILayout.HorizontalScope()) {
-      using (new UnityEngine.GUILayout.VerticalScope()) {
-        LabeledField(
-            L10N.CacheFormat(
-                "#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
-            elements?.sidereal_period.FormatDuration());
-        LabeledField(
-            L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPeriod"),
-            elements?.nodal_period.FormatDuration());
-        LabeledField(
-            L10N.CacheFormat(
-                "#Principia_OrbitAnalyser_Elements_AnomalisticPeriod"),
-            elements?.anomalistic_period.FormatDuration());
+      LabeledField(
+          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
+          elements?.mean_semimajor_axis.FormatLengthInterval());
+      a_graph_.Draw();
+    }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Eccentricity"),
+          elements?.mean_eccentricity.FormatInterval());
+      e_graph_.Draw();
+    }
 
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          LabeledField(
-              L10N.CacheFormat(
-                  "#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
-              elements?.mean_semimajor_axis.FormatLengthInterval());
-          a_graph_.Draw();
-        }
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          LabeledField(
-              L10N.CacheFormat(
-                  "#Principia_OrbitAnalyser_Elements_Eccentricity"),
-              elements?.mean_eccentricity.FormatInterval());
-          e_graph_.Draw();
-        }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Inclination"),
+          elements?.mean_inclination.FormatAngleInterval());
+      i_graph_.Draw();
+    }
 
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          LabeledField(
-              L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Inclination"),
-              elements?.mean_inclination.FormatAngleInterval());
-          i_graph_.Draw();
-        }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat(
+              "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
+          elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
+      Ω_graph_.Draw();
+    }
+    LabeledField(
+        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPrecession"),
+        elements?.nodal_precession.FormatAngularFrequency());
+    string periapsis =
+        L10N.CelestialString("#Principia_OrbitAnalyser_Elements_Periapsis",
+                             new[]{ primary });
+    string apoapsis =
+        L10N.CelestialString("#Principia_OrbitAnalyser_Elements_Apoapsis",
+                             new[]{ primary });
 
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          LabeledField(
-              L10N.CacheFormat(
-                  "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
-              elements?.mean_longitude_of_ascending_nodes.
-                  FormatAngleInterval());
-          Ω_graph_.Draw();
-        }
-        LabeledField(
-            L10N.CacheFormat(
-                "#Principia_OrbitAnalyser_Elements_NodalPrecession"),
-            elements?.nodal_precession.FormatAngularFrequency());
-        string periapsis =
-            L10N.CelestialString("#Principia_OrbitAnalyser_Elements_Periapsis",
-                                 new[]{ primary });
-        string apoapsis =
-            L10N.CelestialString("#Principia_OrbitAnalyser_Elements_Apoapsis",
-                                 new[]{ primary });
-
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          LabeledField(
-              L10N.CacheFormat(
-                  "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
-                  periapsis),
-              elements?.mean_argument_of_periapsis.FormatAngleInterval());
-          ω_graph_.Draw();
-        }
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          LabeledField(
-              L10N.CacheFormat(
-                  "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude",
-                  periapsis),
-              elements?.mean_periapsis_distance.FormatLengthInterval(
-                  primary.Radius));
-          periapsis_graph_.Draw();
-        }
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          LabeledField(
-              L10N.CacheFormat(
-                  "#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude",
-                  apoapsis),
-              elements?.mean_apoapsis_distance.FormatLengthInterval(
-                  primary.Radius));
-          apoapsis_graph_.Draw();
-        }
-      }
-      using (new UnityEngine.GUILayout.VerticalScope()) {
-        UnityEngine.GUILayout.Label("Eccentricity vector:");
-        eccentricity_vector_graph_.Draw();
-        UnityEngine.GUILayout.Label("Von Zeipel-Лидов-古在 analysis:");
-        лидов_graph_.Draw();
-      }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat(
+              "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
+              periapsis),
+          elements?.mean_argument_of_periapsis.FormatAngleInterval());
+      ω_graph_.Draw();
+    }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat(
+              "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude",
+              periapsis),
+          elements?.mean_periapsis_distance.FormatLengthInterval(
+              primary.Radius));
+      periapsis_graph_.Draw();
+    }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat(
+              "#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude",
+              apoapsis),
+          elements?.mean_apoapsis_distance.FormatLengthInterval(
+              primary.Radius));
+      apoapsis_graph_.Draw();
     }
   }
 
