@@ -26,6 +26,11 @@
   git checkout Ketchup
   git rebase master
 ```
+- [ ] At this point, check that the project compiles *all* the files and that the tests run.  More likely than not, some changes will be needed:
+    * Update the `props` file for the project (and possibly dependents) to use the right language dialect.
+    * Add new projects.  If there is a need to generate GUIDs, use https://guidgenerator.com/.
+    * Remove unnecessary projects.
+    * Update the contents of the projects.  Some solutions have a handy script `build_projects_helper.ps1` to help generate the XML for Visual Studio.  Make sure that the script gets updated to reflect the latest state of the files, including any handling of "exceptional" files (files that don't match a pattern and require special care).
 - [ ] Update our `master`:
 ```powershell
   git checkout master
