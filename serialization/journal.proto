@@ -286,7 +286,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5203.
+  extensions 5000 to 5999;  // Last used: 5204.
 }
 
 message ActivatePlayer {
@@ -1439,6 +1439,64 @@ message GetVersion {
     required string platform = 3;  // Added in Lebesgue.
   }
   optional Out out = 2;
+}
+
+message GraphLidovMinimalInclinationLine {
+  extend Method {
+    optional GraphLidovMinimalInclinationLine extension = 5204;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalInclinationLineC2Range {
+  extend Method {
+    optional GraphLidovMinimalInclinationLineC2Range extension = 5205;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalEccentricityLine {
+  extend Method {
+    optional GraphLidovMaximalEccentricityLine extension = 5206;
+  }
+  message In {
+    required double eccentricity = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalEccentricityLineC2Range {
+  extend Method {
+    optional GraphLidovMaximalEccentricityLineC2Range extension = 5207;
+  }
+  message In {
+    required double eccentricity = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message HasEncounteredApocalypse {
