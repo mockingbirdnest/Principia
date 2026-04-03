@@ -342,19 +342,27 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
             }
             Style.VerticallLine();
             using (new UnityEngine.GUILayout.VerticalScope()) {
-              UnityEngine.GUILayout.Label("Eccentricity vector:");
+              UnityEngine.GUILayout.Label(
+                  L10N.CacheFormat(
+                      "#Principia_OrbitAnalyser_Elements_Graphs_EccentricityVector"));
               eccentricity_vector_graph_.Render(this);
             }
           }
           RenderOrbitalElements(elements, primary);
         }
         using (new UnityEngine.GUILayout.VerticalScope()) {
-          UnityEngine.GUILayout.Label("Лидов parameters:");
+          UnityEngine.GUILayout.Label(
+              L10N.CacheFormat(
+                  "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters"));
           лидов_graph_.Render(this);
           UnityEngine.GUILayout.Space(Height(1));
-          UnityEngine.GUILayout.Label("Show lines:");
-          if (UnityEngine.GUILayout.Toggle(show_max_e_min_i_lines_,
-                                           "max eccentricity, min inclination") !=
+          UnityEngine.GUILayout.Label(
+              L10N.CacheFormat(
+                  "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_ShowLines"));
+          if (UnityEngine.GUILayout.Toggle(
+                  show_max_e_min_i_lines_,
+                  L10N.CacheFormat(
+                      "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MinEMaxI")) !=
               show_max_e_min_i_lines_) {
             show_max_e_min_i_lines_ = !show_max_e_min_i_lines_;
             if (show_max_e_min_i_lines_) {
@@ -362,8 +370,10 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
             }
             must_redraw_graphs_ = true;
           }
-          if (UnityEngine.GUILayout.Toggle(show_min_e_max_i_lines_,
-                                           "max eccentricity, max inclination") !=
+          if (UnityEngine.GUILayout.Toggle(
+                  show_min_e_max_i_lines_,
+                  L10N.CacheFormat(
+                      "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MaxEMinI")) !=
               show_min_e_max_i_lines_) {
             show_min_e_max_i_lines_ = !show_min_e_max_i_lines_;
             if (show_min_e_max_i_lines_) {
