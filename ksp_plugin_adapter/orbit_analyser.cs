@@ -578,6 +578,16 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     i_graph_.PrepareCanvas(t_range, elements.mean_inclination);
     Ω_graph_.PrepareCanvas(t_range, elements.mean_longitude_of_ascending_nodes);
     ω_graph_.PrepareCanvas(t_range, elements.mean_argument_of_periapsis);
+    // Show a square region of the eccentricity vector space.
+    if (e_cos_ω_range.measure > e_sin_ω_range.measure) {
+      double midpoint = e_sin_ω_range.midpoint;
+      e_sin_ω_range.min = midpoint - e_cos_ω_range.measure / 2;
+      e_sin_ω_range.max = midpoint + e_cos_ω_range.measure / 2;
+    } else {
+      double midpoint = e_cos_ω_range.midpoint;
+      e_cos_ω_range.min = midpoint - e_sin_ω_range.measure / 2;
+      e_cos_ω_range.max = midpoint + e_sin_ω_range.measure / 2;
+    }
     eccentricity_vector_graph_.PrepareCanvas(e_cos_ω_range, e_sin_ω_range);
     eccentricity_vector_graph_.PlotHorizontalLine(0, XKCDColors.White);
     eccentricity_vector_graph_.PlotVerticalLine(0, XKCDColors.White);
@@ -642,7 +652,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
             Interface.GraphLidovMaximalInclinationLineC2Range(i_max_degrees),
             XKCDColors.Lavender);
       }
-      for (int ten_e_min = 3; ten_e_min <= 9; ++ten_e_min) {
+      for (int ten_e_min = 4; ten_e_min <= 9; ++ten_e_min) {
         double e_min = ten_e_min / 10.0;
         Interval c2 = Interface.GraphLidovMinimalEccentricityLeftLineC2Range(e_min);
         лидов_graph_.AddLabel(c2.min,
@@ -651,7 +661,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                               XKCDColors.Cornflower,
                               UnityEngine.TextAnchor.UpperCenter);
       }
-      for (int ten_e_min = 4; ten_e_min <= 9; ++ten_e_min) {
+      for (int ten_e_min = 6; ten_e_min <= 9; ++ten_e_min) {
         double e_min = ten_e_min / 10.0;
         Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(e_min, out double c2, out double _);
         лидов_graph_.AddLabel(c2,
@@ -687,6 +697,15 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                               $" .{ten_e}",
                               XKCDColors.Cornflower,
                               UnityEngine.TextAnchor.MiddleLeft);
+      }
+    } else {
+      // Plot the boundaries of the (c₂, c₁) space that are normally covered by
+      // the coloured lines.
+      foreach (int i_degrees in new[]{ 0, 90 }) {
+        лидов_graph_.PlotFunction(
+            c2 => Interface.GraphLidovMaximalInclinationLine(i_degrees, c2),
+            Interface.GraphLidovMaximalInclinationLineC2Range(i_degrees),
+            XKCDColors.White);
       }
     }
     if (elements == null) {

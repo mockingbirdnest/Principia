@@ -84,6 +84,7 @@ internal partial struct WXYZ {
 internal partial struct Interval {
   public static readonly Interval Empty = new Interval{ min = double.PositiveInfinity, max = double.NegativeInfinity };
   public double measure => min > max ? 0 : max - min;
+  public double midpoint => min > max ? double.NaN : min + measure / 2;
   public void Include(double value) {
     if (value < min) {
       min = value;
