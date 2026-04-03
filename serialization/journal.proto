@@ -1441,30 +1441,15 @@ message GetVersion {
   optional Out out = 2;
 }
 
-message GraphLidovMinimalInclinationLine {
+message GraphLidovFrozenLine {
   extend Method {
-    optional GraphLidovMinimalInclinationLine extension = 5204;
+    optional GraphLidovFrozenLine extension = 5208;
   }
   message In {
-    required double inclination_in_degrees = 1;
-    required double c2 = 2;
+    required double c2 = 1;
   }
   message Return {
     required double result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message GraphLidovMinimalInclinationLineC2Range {
-  extend Method {
-    optional GraphLidovMinimalInclinationLineC2Range extension = 5205;
-  }
-  message In {
-    required double inclination_in_degrees = 1;
-  }
-  message Return {
-    required Interval result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1491,6 +1476,108 @@ message GraphLidovMaximalEccentricityLineC2Range {
   }
   message In {
     required double eccentricity = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalInclinationLine {
+  extend Method {
+    optional GraphLidovMaximalInclinationLine extension = 5209;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalInclinationLineC2Range {
+  extend Method {
+    optional GraphLidovMaximalInclinationLineC2Range extension = 5210;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalEccentricityLeftLine {
+  extend Method {
+    optional GraphLidovMinimalEccentricityLeftLine extension = 5211;
+  }
+  message In {
+    required double eccentricity = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalEccentricityLeftLineC2Range {
+  extend Method {
+    optional GraphLidovMinimalEccentricityLeftLineC2Range extension = 5213;
+  }
+  message In {
+    required double eccentricity = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalEccentricityRightLineC2AndC1Max {
+  extend Method {
+    optional GraphLidovMinimalEccentricityRightLineC2AndC1Max extension = 5214;
+  }
+  message In {
+    required double eccentricity = 1;
+  }
+  message Out {
+    required double c2 = 1;
+    required double c1_max = 2;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message GraphLidovMinimalInclinationLine {
+  extend Method {
+    optional GraphLidovMinimalInclinationLine extension = 5204;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalInclinationLineC2Range {
+  extend Method {
+    optional GraphLidovMinimalInclinationLineC2Range extension = 5205;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
   }
   message Return {
     required Interval result = 1;
