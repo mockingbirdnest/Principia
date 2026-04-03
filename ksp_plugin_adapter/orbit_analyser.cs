@@ -691,7 +691,10 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       }
       for (int ten_e = 2; ten_e <= 9; ++ten_e) {
         double e = ten_e / 10.0;
-        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(e, out double c2, out double c1);
+        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(
+            e,
+            out double c2,
+            out double c1);
         лидов_graph_.AddLabel(c2,
                               c1,
                               $" .{ten_e}",
@@ -707,9 +710,6 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
             Interface.GraphLidovMaximalInclinationLineC2Range(i_degrees),
             XKCDColors.White);
       }
-    }
-    if (elements == null) {
-      return;
     }
     for (;
          !elements.mean_elements.IteratorAtEnd();
