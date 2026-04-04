@@ -3,8 +3,10 @@
 #include <utility>
 
 #include "glog/logging.h"
-#include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
+#include "numerics/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace interface {
