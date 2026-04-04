@@ -215,12 +215,15 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                                            orbit_description_.Substring(1);
 
   protected override void RenderWindowContents(int window_id) {
+    if (graph_icon_ == null) {
+      PrincipiaPluginAdapter.LoadTextureOrDie(out graph_icon_, "graph.png");
+    }
     string vessel_guid = predicted_vessel?.id.ToString();
     if (vessel_guid == null) {
       return;
     }
 
-    using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(32))) {
+    using (new UnityEngine.GUILayout.VerticalScope()) {
       if (should_request_analysis) {
         mission_duration_.Render(enabled : true);
         // If the main window is hidden, make sure that the orbit analyser
@@ -335,51 +338,62 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
               Style.HorizontalLine();
               RenderLowestAltitude(elements, primary);
               Style.HorizontalLine();
-              UnityEngine.GUILayout.Label(
-                  L10N.CacheFormat(
-                      "#Principia_OrbitAnalyser_Elements_MeanElements"));
+              using (new UnityEngine.GUILayout.HorizontalScope()) {
+                UnityEngine.GUILayout.Label(
+                    L10N.CacheFormat(
+                        "#Principia_OrbitAnalyser_Elements_MeanElements"));
+                if (UnityEngine.GUILayout.Button(graph_icon_,
+                                                 GUILayoutWidth(1))) {
+                  show_graphs_ = !show_graphs_;
+                  ScheduleShrink();
+                }
+              }
               RenderPeriods(elements);
             }
-            Style.VerticallLine();
-            using (new UnityEngine.GUILayout.VerticalScope()) {
-              UnityEngine.GUILayout.Label(
-                  L10N.CacheFormat(
-                      "#Principia_OrbitAnalyser_Elements_Graphs_EccentricityVector"));
-              eccentricity_vector_graph_.Render(this);
+            if (show_graphs_) {
+              Style.VerticallLine();
+              using (new UnityEngine.GUILayout.VerticalScope()) {
+                UnityEngine.GUILayout.Label(
+                    L10N.CacheFormat(
+                        "#Principia_OrbitAnalyser_Elements_Graphs_EccentricityVector"));
+                eccentricity_vector_graph_.Render(this);
+              }
             }
           }
           RenderOrbitalElements(elements, primary);
         }
-        using (new UnityEngine.GUILayout.VerticalScope()) {
-          UnityEngine.GUILayout.Label(
-              L10N.CacheFormat(
-                  "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters"));
-          лидов_graph_.Render(this);
-          UnityEngine.GUILayout.Space(Height(1));
-          UnityEngine.GUILayout.Label(
-              L10N.CacheFormat(
-                  "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_ShowLines"));
-          if (UnityEngine.GUILayout.Toggle(
-                  show_max_e_min_i_lines_,
-                  L10N.CacheFormat(
-                      "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MinEMaxI")) !=
-              show_max_e_min_i_lines_) {
-            show_max_e_min_i_lines_ = !show_max_e_min_i_lines_;
-            if (show_max_e_min_i_lines_) {
-              show_min_e_max_i_lines_ = false;
+        if (show_graphs_) {
+          using (new UnityEngine.GUILayout.VerticalScope()) {
+            UnityEngine.GUILayout.Label(
+                L10N.CacheFormat(
+                    "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters"));
+            лидов_graph_.Render(this);
+            UnityEngine.GUILayout.Space(Height(1));
+            UnityEngine.GUILayout.Label(
+                L10N.CacheFormat(
+                    "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_ShowLines"));
+            if (UnityEngine.GUILayout.Toggle(
+                    show_max_e_min_i_lines_,
+                    L10N.CacheFormat(
+                        "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MinEMaxI")) !=
+                show_max_e_min_i_lines_) {
+              show_max_e_min_i_lines_ = !show_max_e_min_i_lines_;
+              if (show_max_e_min_i_lines_) {
+                show_min_e_max_i_lines_ = false;
+              }
+              must_redraw_graphs_ = true;
             }
-            must_redraw_graphs_ = true;
-          }
-          if (UnityEngine.GUILayout.Toggle(
-                  show_min_e_max_i_lines_,
-                  L10N.CacheFormat(
-                      "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MaxEMinI")) !=
-              show_min_e_max_i_lines_) {
-            show_min_e_max_i_lines_ = !show_min_e_max_i_lines_;
-            if (show_min_e_max_i_lines_) {
-              show_max_e_min_i_lines_ = false;
+            if (UnityEngine.GUILayout.Toggle(
+                    show_min_e_max_i_lines_,
+                    L10N.CacheFormat(
+                        "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MaxEMinI")) !=
+                show_min_e_max_i_lines_) {
+              show_min_e_max_i_lines_ = !show_min_e_max_i_lines_;
+              if (show_min_e_max_i_lines_) {
+                show_max_e_min_i_lines_ = false;
+              }
+              must_redraw_graphs_ = true;
             }
-            must_redraw_graphs_ = true;
           }
         }
       }
@@ -759,23 +773,29 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       LabeledField(
           L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
           elements?.mean_semimajor_axis.FormatLengthInterval());
-      Style.VerticalLineSpacing();
-      a_graph_.Render(this);
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        a_graph_.Render(this);
+      }
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       LabeledField(
           L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Eccentricity"),
           elements?.mean_eccentricity.FormatInterval());
-      Style.VerticalLineSpacing();
-      e_graph_.Render(this);
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        e_graph_.Render(this);
+      }
     }
 
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       LabeledField(
           L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Inclination"),
           elements?.mean_inclination.FormatAngleInterval());
-      Style.VerticalLineSpacing();
-      i_graph_.Render(this);
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        i_graph_.Render(this);
+      }
     }
 
     using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -783,8 +803,10 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
           L10N.CacheFormat(
               "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
           elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
-      Style.VerticalLineSpacing();
-      Ω_graph_.Render(this);
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        Ω_graph_.Render(this);
+      }
     }
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPrecession"),
@@ -802,8 +824,10 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
               "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
               periapsis),
           elements?.mean_argument_of_periapsis.FormatAngleInterval());
-      Style.VerticalLineSpacing();
-      ω_graph_.Render(this);
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        ω_graph_.Render(this);
+      }
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       LabeledField(
@@ -812,8 +836,10 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
               periapsis),
           elements?.mean_periapsis_distance.FormatLengthInterval(
               primary.Radius));
-      Style.VerticalLineSpacing();
-      periapsis_graph_.Render(this);
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        periapsis_graph_.Render(this);
+      }
     }
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       LabeledField(
@@ -822,8 +848,10 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
               apoapsis),
           elements?.mean_apoapsis_distance.FormatLengthInterval(
               primary.Radius));
-      Style.VerticalLineSpacing();
-      apoapsis_graph_.Render(this);
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        apoapsis_graph_.Render(this);
+      }
     }
   }
 
@@ -1115,19 +1143,6 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
     private UnityEngine.Texture2D texture_;
   }
-  
-  Graph a_graph_;
-  Graph e_graph_;
-  Graph i_graph_;
-  Graph Ω_graph_;
-  Graph ω_graph_;
-  Graph periapsis_graph_;
-  Graph apoapsis_graph_;
-  Graph лидов_graph_;
-  Graph eccentricity_vector_graph_;
-  bool must_redraw_graphs_ = false;
-  bool show_max_e_min_i_lines_ = true;
-  bool show_min_e_max_i_lines_ = false;
 
   protected IntPtr plugin => adapter_.Plugin();
 
@@ -1167,6 +1182,21 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
   private string orbit_description_ = null;
   private DateTime? last_background_analysis_time_ = null;
+
+  private UnityEngine.Texture graph_icon_;
+  private bool show_graphs_;
+  private Graph a_graph_;
+  private Graph e_graph_;
+  private Graph i_graph_;
+  private Graph Ω_graph_;
+  private Graph ω_graph_;
+  private Graph periapsis_graph_;
+  private Graph apoapsis_graph_;
+  private Graph лидов_graph_;
+  private Graph eccentricity_vector_graph_;
+  private bool must_redraw_graphs_ = false;
+  private bool show_max_e_min_i_lines_ = true;
+  private bool show_min_e_max_i_lines_ = false;
 }
 
 internal class CurrentOrbitAnalyser : OrbitAnalyser {
