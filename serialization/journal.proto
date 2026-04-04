@@ -211,11 +211,6 @@ message PlottableElements {
   required double argument_of_periapsis = 6;
   required double periapsis_distance = 7;
   required double apoapsis_distance = 8;
-  required double sin_squared_inclination = 9;
-  required double cos_squared_inclination = 10;
-  required double eccentricity_squared = 11;
-  required double one_minus_eccentricity_squared = 12;
-  required double sin_squared_argument_of_periapsis = 13;
   required double lidov_c1 = 14;
   required double lidov_c2 = 15;
   required double eccentricity_cos_argument_of_periapsis = 16;
