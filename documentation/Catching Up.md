@@ -37,7 +37,10 @@
   git merge Ketchup
   git push -f
 ```
-- [ ] Squash some of the commits on the `master` branch if needed.  Leave the `Ketchup` branch alone for future reference.
+- [ ] Squash some of the commits on the `master` branch if needed.  Leave the `Ketchup` branch alone for future reference:
+```powershel
+  get rebase -i <commit>
+```
 
 ## Notes
 
