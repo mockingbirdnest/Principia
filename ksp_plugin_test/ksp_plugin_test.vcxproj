@@ -30,6 +30,7 @@
     <ClCompile Include="..\ksp_plugin\interface_collision.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_future.cpp" />
+    <ClCompile Include="..\ksp_plugin\interface_graph.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_iterator.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_monitor.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_part.cpp" />
