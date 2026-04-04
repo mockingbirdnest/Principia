@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "glog/logging.h"
+#include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
@@ -11,6 +12,7 @@
 namespace principia {
 namespace interface {
 
+using namespace principia::journal::_method;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_quantities;
 using namespace principia::numerics::_elementary_functions;
