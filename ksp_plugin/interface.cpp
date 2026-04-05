@@ -24,6 +24,7 @@
 #include <psapi.h>
 #endif
 
+#include "absl/log/initialize.h"
 #include "absl/status/status.h"
 #include "base/array.hpp"
 #include "base/base64.hpp"
@@ -738,7 +739,7 @@ void __cdecl principia__InitGoogleLogging() {
     google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
     google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
     google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
-    google::InitGoogleLogging("Principia");
+    absl::InitializeLog();
 
     google::protobuf::SetLogHandler(
         [](google::protobuf::LogLevel const level,

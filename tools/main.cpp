@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+#include "absl/log/initialize.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "tools/generate_configuration.hpp"  // 🧙 For _generate_configuration.
@@ -13,7 +14,7 @@ using namespace principia::tools::_generate_profiles;
 
 int __cdecl main(int argc, char const* argv[]) {
   google::SetLogFilenameExtension(".log");
-  google::InitGoogleLogging(argv[0]);
+  absl::InitializeLog();
   google::LogToStderr();
   if (argc < 2) {
     std::cerr << "Usage: " << argv[0] << " command [arguments...]\n";
