@@ -1396,7 +1396,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   serialization::DiscreteTrajectory message;
   trajectory1.WriteToMessage(&message, /*tracked=*/{}, /*exact=*/{});
   std::string uncompressed;
-  message.SerializePartialToString(&uncompressed);
+  CHECK(message.SerializePartialToString(&uncompressed));
   EXPECT_THAT(uncompressed.size(),
               AnyOf(21'596,    // ZFP 85: Windows, Ubuntu, macOS AVX.
                     21'597,    // ZFP 4112: Windows.

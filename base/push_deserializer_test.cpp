@@ -221,8 +221,8 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
   {
     auto const serialized_trajectory =
         std::make_unique<std::uint8_t[]>(byte_size);
-    written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
-                                                byte_size);
+    CHECK(written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
+                                                      byte_size));
 
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
     push_deserializer_->Start(
@@ -292,8 +292,8 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
     push_deserializer_ = std::make_unique<PushDeserializer>(
         deserializer_chunk_size, number_of_chunks, /*compressor=*/nullptr);
 
-    written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
-                                                byte_size);
+    CHECK(written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
+                                                      byte_size));
     push_deserializer_->Start(
       std::move(read_trajectory), &PushDeserializerTest::CheckSerialization);
     Array<std::uint8_t> bytes(serialized_trajectory.get(), byte_size);
@@ -323,7 +323,8 @@ TEST_F(PushDeserializerDeathTest, Stomp) {
     int const byte_size = trajectory->ByteSize();
     auto serialized_trajectory =
         std::make_unique<std::uint8_t[]>(byte_size);
-    trajectory->SerializePartialToArray(&serialized_trajectory[0], byte_size);
+    CHECK(trajectory->SerializePartialToArray(&serialized_trajectory[0],
+                                              byte_size));
     push_deserializer_->Start(
       std::move(read_trajectory), &PushDeserializerTest::CheckSerialization);
     int left = byte_size;

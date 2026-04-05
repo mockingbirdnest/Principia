@@ -186,8 +186,8 @@ TEST_F(PullSerializerTest, SerializationThreading) {
   int const byte_size = trajectory->ByteSize();
   auto expected_serialized_trajectory =
       std::make_unique<std::uint8_t[]>(byte_size);
-  trajectory->SerializePartialToArray(&expected_serialized_trajectory[0],
-                                      byte_size);
+  CHECK(trajectory->SerializePartialToArray(&expected_serialized_trajectory[0],
+                                            byte_size));
 
   // Run this test repeatedly to detect threading issues (it will flake in case
   // of problems).
