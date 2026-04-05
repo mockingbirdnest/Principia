@@ -152,7 +152,7 @@ inline bool NaNIndependentEq(double const left, double const right) {
 
 template<typename T>
 std::unique_ptr<T> TakeOwnership(T** const pointer) {
-  CHECK_NOTNULL(pointer);
+  CHECK(pointer != nullptr);
   std::unique_ptr<T> owned_pointer(*pointer);
   *pointer = nullptr;
   return owned_pointer;
@@ -160,7 +160,7 @@ std::unique_ptr<T> TakeOwnership(T** const pointer) {
 
 template<typename T>
 std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer) {
-  CHECK_NOTNULL(pointer);
+  CHECK(pointer != nullptr);
   std::unique_ptr<T[]> owned_pointer(*pointer);
   *pointer = nullptr;
   return owned_pointer;
@@ -610,8 +610,8 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
 inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     Plugin const& plugin,
     PlottingFrameParameters const& parameters) {
-  CHECK_NOTNULL(parameters.primary_index);
-  CHECK_NOTNULL(parameters.secondary_index);
+  CHECK(parameters.primary_index != nullptr);
+  CHECK(parameters.secondary_index != nullptr);
   switch (parameters.extension) {
     case serialization::RotatingPulsatingReferenceFrame::
         kExtensionFieldNumber: {

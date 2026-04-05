@@ -15,7 +15,7 @@ using namespace principia::quantities::_si;
 XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,
                                       char const* const vessel_guid) {
   journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToXYZ(plugin->VesselBinormal(vessel_guid)));
 }
 
@@ -26,7 +26,7 @@ QP __cdecl principia__VesselFromParent(Plugin const* const plugin,
                                        char const* const vessel_guid) {
   journal::Method<journal::VesselFromParent> m(
       {plugin, parent_index, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToQP(plugin->VesselFromParent(parent_index, vessel_guid)));
 }
 
@@ -41,7 +41,7 @@ OrbitAnalysis* __cdecl principia__VesselGetAnalysis(
                                                  revolutions_per_cycle,
                                                  days_per_cycle,
                                                  ground_track_revolution});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
   vessel.RefreshOrbitAnalysis();
   not_null<OrbitAnalysis*> const analysis =
@@ -60,7 +60,7 @@ principia__VesselGetPredictionAdaptiveStepParameters(
     char const* const vessel_guid) {
   journal::Method<journal::VesselGetPredictionAdaptiveStepParameters> m(
       {plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToAdaptiveStepParameters(
       plugin->GetVessel(vessel_guid)->prediction_adaptive_step_parameters()));
 }
@@ -68,7 +68,7 @@ principia__VesselGetPredictionAdaptiveStepParameters(
 XYZ __cdecl principia__VesselNormal(Plugin const* const plugin,
                                     char const* const vessel_guid) {
   journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid)));
 }
 
@@ -77,7 +77,7 @@ void __cdecl principia__VesselRequestAnalysis(Plugin* const plugin,
                                               double const mission_duration) {
   journal::Method<journal::VesselRequestAnalysis> m(
       {plugin, vessel_guid, mission_duration});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
   plugin->ClearOrbitAnalysersOfVesselsOtherThan(vessel);
   vessel.RequestOrbitAnalysis(mission_duration * Second);
@@ -90,7 +90,7 @@ void __cdecl principia__VesselSetPredictionAdaptiveStepParameters(
     AdaptiveStepParameters const adaptive_step_parameters) {
   journal::Method<journal::VesselSetPredictionAdaptiveStepParameters> m(
       {plugin, vessel_guid, adaptive_step_parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->SetPredictionAdaptiveStepParameters(
       vessel_guid, FromAdaptiveStepParameters(adaptive_step_parameters));
   return m.Return();
@@ -99,14 +99,14 @@ void __cdecl principia__VesselSetPredictionAdaptiveStepParameters(
 XYZ __cdecl principia__VesselTangent(Plugin const* const plugin,
                                      char const* const vessel_guid) {
   journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToXYZ(plugin->VesselTangent(vessel_guid)));
 }
 
 XYZ __cdecl principia__VesselVelocity(Plugin const* const plugin,
                                       char const* const vessel_guid) {
   journal::Method<journal::VesselVelocity> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid)));
 }
 

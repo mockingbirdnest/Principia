@@ -402,7 +402,7 @@ void __cdecl principia__AdvanceTime(Plugin* const plugin,
                                     double const t,
                                     double const planetarium_rotation) {
   journal::Method<journal::AdvanceTime> m({plugin, t, planetarium_rotation});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->AdvanceTime(FromGameTime(*plugin, t), planetarium_rotation * Degree);
   return m.Return();
 }
@@ -412,7 +412,7 @@ void __cdecl principia__CatchUpLaggingVessels(
     Iterator** const collided_vessels) {
   journal::Method<journal::CatchUpLaggingVessels> m({plugin},
                                                     {collided_vessels});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   VesselSet collided_vessel_set;
   plugin->CatchUpLaggingVessels(collided_vessel_set);
   *collided_vessels =
@@ -425,7 +425,7 @@ void __cdecl principia__CatchUpLaggingVessels(
 QP __cdecl principia__CelestialFromParent(Plugin const* const plugin,
                                           int const celestial_index) {
   journal::Method<journal::CelestialFromParent> m({plugin, celestial_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToQP(plugin->CelestialFromParent(celestial_index)));
 }
 
@@ -434,14 +434,14 @@ double __cdecl principia__CelestialInitialRotationInDegrees(
     int const celestial_index) {
   journal::Method<journal::CelestialInitialRotationInDegrees> m(
       {plugin, celestial_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(plugin->CelestialInitialRotation(celestial_index) / Degree);
 }
 
 WXYZ __cdecl principia__CelestialRotation(Plugin const* const plugin,
                                           int const index) {
   journal::Method<journal::CelestialRotation> m({plugin, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToWXYZ(plugin->CelestialRotation(index).quaternion()));
 }
 
@@ -450,13 +450,13 @@ double __cdecl principia__CelestialRotationPeriod(
     int const celestial_index) {
   journal::Method<journal::CelestialRotationPeriod> m(
       {plugin, celestial_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(plugin->CelestialRotationPeriod(celestial_index) / Second);
 }
 
 WXYZ __cdecl principia__CelestialSphereRotation(Plugin const* const plugin) {
   journal::Method<journal::CelestialSphereRotation> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToWXYZ(plugin->CelestialSphereRotation().quaternion()));
 }
 
@@ -466,7 +466,7 @@ QP __cdecl principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
                                                      double const time) {
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
       {plugin, index, origin, time});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToQP(
       plugin->CelestialWorldDegreesOfFreedom(
           index,
@@ -490,21 +490,21 @@ void __cdecl principia__ClearFlags() {
 void __cdecl principia__ClearWorldRotationalReferenceFrame(
     Plugin* const plugin) {
   journal::Method<journal::ClearWorldRotationalReferenceFrame> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->ClearWorldRotationalReferenceFrame();
   return m.Return();
 }
 
 double __cdecl principia__CurrentTime(Plugin const* const plugin) {
   journal::Method<journal::CurrentTime> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToGameTime(*plugin, plugin->CurrentTime()));
 }
 
 void __cdecl principia__DeleteInterchange(void const** const native_pointer) {
   journal::Method<journal::DeleteInterchange> m({native_pointer},
                                                 {native_pointer});
-  CHECK_NOTNULL(native_pointer);
+  CHECK(native_pointer != nullptr);
   ::operator delete(const_cast<void*>(*native_pointer));
   *native_pointer = nullptr;
   return m.Return();
@@ -514,7 +514,7 @@ void __cdecl principia__DeleteInterchange(void const** const native_pointer) {
 // `plugin` must not be null.  No transfer of ownership of `*plugin`, takes
 // ownership of `**plugin`.
 void __cdecl principia__DeletePlugin(Plugin const** const plugin) {
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   journal::Method<journal::DeletePlugin> m({plugin}, {plugin});
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
@@ -562,9 +562,9 @@ void __cdecl principia__DeserializePlugin(
                                                  encoder},
                                                 {deserializer,
                                                  plugin});
-  CHECK_NOTNULL(serialization);
-  CHECK_NOTNULL(deserializer);
-  CHECK_NOTNULL(plugin);
+  CHECK(serialization != nullptr);
+  CHECK(deserializer != nullptr);
+  CHECK(plugin != nullptr);
 
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
@@ -572,7 +572,7 @@ void __cdecl principia__DeserializePlugin(
     *deserializer = new PushDeserializer(chunk_size,
                                          number_of_chunks,
                                          NewCompressor(compressor));
-    CHECK_NOTNULL(arena);
+    CHECK(arena != nullptr);
     not_null<serialization::Plugin*> const message =
         Arena::CreateMessage<serialization::Plugin>(arena);
     (*deserializer)->Start(
@@ -603,14 +603,14 @@ void __cdecl principia__DeserializePlugin(
 // `plugin` must not be null.  No transfer of ownership.
 void __cdecl principia__EndInitialization(Plugin* const plugin) {
   journal::Method<journal::EndInitialization> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->EndInitialization();
   return m.Return();
 }
 
 int __cdecl principia__EquipotentialCount(Plugin* const plugin) {
   journal::Method<journal::EquipotentialCount> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->geometric_potential_plotter().RefreshEquipotentials();
   auto const* equipotentials =
       plugin->geometric_potential_plotter().equipotentials();
@@ -645,7 +645,7 @@ void __cdecl principia__FreeVesselsAndPartsAndCollectPileUps(
     double const delta_t) {
   journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m(
       {plugin, delta_t});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->FreeVesselsAndPartsAndCollectPileUps(delta_t * Second);
   return m.Return();
 }
@@ -686,9 +686,9 @@ void __cdecl principia__GetVersion(
     char const** const version,
     char const** const platform) {
   journal::Method<journal::GetVersion> m({build_date, version, platform});
-  *CHECK_NOTNULL(build_date) = BuildDate;
-  *CHECK_NOTNULL(version) = Version;
-  *CHECK_NOTNULL(platform) = platform_with_cpu_features;
+  *ABSL_DIE_IF_NULL(build_date) = BuildDate;
+  *ABSL_DIE_IF_NULL(version) = Version;
+  *ABSL_DIE_IF_NULL(platform) = platform_with_cpu_features;
   return m.Return();
 }
 
@@ -699,20 +699,20 @@ bool __cdecl principia__HasEncounteredApocalypse(
   // Ownership will be transfered to the marshmallow.
   std::string details_string;
   bool const has_encountered_apocalypse =
-      CHECK_NOTNULL(plugin)->HasEncounteredApocalypse(&details_string);
+      ABSL_DIE_IF_NULL(plugin)->HasEncounteredApocalypse(&details_string);
   UniqueArray<char> allocated_details(details_string.size() + 1);
   std::memcpy(allocated_details.data.get(),
               details_string.data(),
               details_string.size() + 1);
-  *CHECK_NOTNULL(details) = allocated_details.data.release();
+  *ABSL_DIE_IF_NULL(details) = allocated_details.data.release();
   return m.Return(has_encountered_apocalypse);
 }
 
 bool __cdecl principia__HasVessel(Plugin* const plugin,
                                   char const* const vessel_guid) {
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(vessel_guid);
+  CHECK(plugin != nullptr);
+  CHECK(vessel_guid != nullptr);
   return m.Return(plugin->HasVessel(vessel_guid));
 }
 
@@ -776,7 +776,7 @@ void __cdecl principia__InitializeDownsamplingParameters(
     ConfigurationDownsamplingParameters const& downsampling_parameters) {
   journal::Method<journal::InitializeDownsamplingParameters> m(
       {plugin, downsampling_parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InitializeDownsamplingParameters(
       MakeDownsamplingParameters(downsampling_parameters));
   return m.Return();
@@ -788,7 +788,7 @@ void __cdecl principia__InitializeEphemerisParameters(
     ConfigurationFixedStepParameters const& fixed_step_parameters) {
   journal::Method<journal::InitializeEphemerisParameters> m(
       {plugin, accuracy_parameters, fixed_step_parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InitializeEphemerisParameters(
       MakeAccuracyParameters(accuracy_parameters),
       MakeFixedStepParameters(fixed_step_parameters));
@@ -800,7 +800,7 @@ void __cdecl principia__InitializeHistoryParameters(
     ConfigurationFixedStepParameters const& fixed_step_parameters) {
   journal::Method<journal::InitializeHistoryParameters> m(
       {plugin, fixed_step_parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InitializeHistoryParameters(
       MakeFixedStepParameters(fixed_step_parameters));
   return m.Return();
@@ -811,7 +811,7 @@ void __cdecl principia__InitializePsychohistoryParameters(
     ConfigurationAdaptiveStepParameters const& parameters) {
   journal::Method<journal::InitializePsychohistoryParameters> m(
       {plugin, parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InitializePsychohistoryParameters(
       MakeAdaptiveStepParameters(parameters));
   return m.Return();
@@ -835,7 +835,7 @@ void __cdecl principia__InsertCelestialAbsoluteCartesian(
        body_parameters,
        x, y, z,
        vx, vy, vz});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   serialization::InitialState::Cartesian::Body initial_state;
   initial_state.set_name(body_parameters.name);
   initial_state.set_x(x);
@@ -865,7 +865,7 @@ void __cdecl principia__InsertCelestialJacobiKeplerian(
        parent_index,
        body_parameters,
        keplerian_elements});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   serialization::InitialState::Keplerian::Body initial_state;
   initial_state.set_name(body_parameters.name);
   if (keplerian_elements != nullptr) {
@@ -908,7 +908,7 @@ void __cdecl principia__InsertOrKeepVessel(Plugin* const plugin,
                                            bool* inserted) {
   journal::Method<journal::InsertOrKeepVessel> m(
       {plugin, vessel_guid, vessel_name, parent_index, loaded}, {inserted});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   CHECK(vessel_guid != nullptr)
       << "name: "
       << (vessel_name == nullptr ? "null" : std::string_view(vessel_name));
@@ -955,7 +955,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
        part_rotation,
        part_angular_velocity,
        delta_t});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
 
   // We build the inertia tensor in the principal axes and then transform it to
   // RigidPart.
@@ -1008,7 +1008,7 @@ void __cdecl principia__InsertUnloadedPart(Plugin* const plugin,
                                            QP const from_parent) {
   journal::Method<journal::InsertUnloadedPart> m(
       {plugin, part_id, name, vessel_guid, from_parent});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InsertUnloadedPart(
       part_id,
       name,
@@ -1059,7 +1059,7 @@ WXYZ __cdecl principia__NavballOrientation(
   journal::Method<journal::NavballOrientation> m({plugin,
                                                   sun_world_position,
                                                   ship_world_position});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const frame_field = plugin->NavballFrameField(
       FromXYZ<Position<World>>(sun_world_position));
   return m.Return(ToWXYZ(
@@ -1087,14 +1087,14 @@ Plugin* __cdecl principia__NewPlugin(
 
 void __cdecl principia__PrepareToReportCollisions(Plugin* const plugin) {
   journal::Method<journal::PrepareToReportCollisions> m({plugin});
-  CHECK_NOTNULL(plugin)->PrepareToReportCollisions();
+  ABSL_DIE_IF_NULL(plugin)->PrepareToReportCollisions();
   return m.Return();
 }
 
 void __cdecl principia__ReportGroundCollision(Plugin const* const plugin,
                                               uint32_t const part_id) {
   journal::Method<journal::ReportGroundCollision> m({plugin, part_id});
-  CHECK_NOTNULL(plugin)->ReportGroundCollision(part_id);
+  ABSL_DIE_IF_NULL(plugin)->ReportGroundCollision(part_id);
   return m.Return();
 }
 
@@ -1102,7 +1102,7 @@ void __cdecl principia__ReportPartCollision(Plugin const* const plugin,
                                             PartId const part1_id,
                                             PartId const part2_id) {
   journal::Method<journal::ReportPartCollision> m({plugin, part1_id, part2_id});
-  CHECK_NOTNULL(plugin)->ReportPartCollision(part1_id, part2_id);
+  ABSL_DIE_IF_NULL(plugin)->ReportPartCollision(part1_id, part2_id);
   return m.Return();
 }
 
@@ -1140,8 +1140,8 @@ char const* __cdecl principia__SerializePlugin(
                                                compressor,
                                                encoder},
                                               {serializer});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(serializer);
+  CHECK(plugin != nullptr);
+  CHECK(serializer != nullptr);
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
@@ -1168,7 +1168,7 @@ char const* __cdecl principia__SerializePlugin(
                                  &verification_plugin,
                                  compressor,
                                  encoder);
-    CHECK_NOTNULL(verification_plugin);
+    CHECK(verification_plugin != nullptr);
     LOG(INFO) << "Deleting verification plugin";
     delete verification_plugin;
     verification_plugin = nullptr;
@@ -1216,7 +1216,7 @@ void __cdecl principia__SetFlag(char const* const name,
 
 void __cdecl principia__SetMainBody(Plugin* const plugin, int const index) {
   journal::Method<journal::SetMainBody> m({plugin, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->SetMainBody(index);
   return m.Return();
 }
@@ -1249,7 +1249,7 @@ void __cdecl principia__SetVerboseLogging(int const level) {
 void __cdecl principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
                                                          int const index) {
   journal::Method<journal::SetWorldRotationalReferenceFrame> m({plugin, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->SetWorldRotationalReferenceFrame(index);
   return m.Return();
 }
@@ -1257,7 +1257,7 @@ void __cdecl principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
 XYZ __cdecl principia__UnmanageableVesselVelocity(Plugin const* const plugin,
                                                   QP const degrees_of_freedom,
                                                   int const parent_index) {
-  return ToXYZ(CHECK_NOTNULL(plugin)->UnmanageableVesselVelocity(
+  return ToXYZ(ABSL_DIE_IF_NULL(plugin)->UnmanageableVesselVelocity(
       FromQP<RelativeDegreesOfFreedom<AliceSun>>(degrees_of_freedom),
       parent_index));
 }
@@ -1270,7 +1270,7 @@ void __cdecl principia__UpdateCelestialHierarchy(Plugin const* const plugin,
   journal::Method<journal::UpdateCelestialHierarchy> m({plugin,
                                                         celestial_index,
                                                         parent_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->UpdateCelestialHierarchy(celestial_index, parent_index);
   return m.Return();
 }
@@ -1279,7 +1279,7 @@ void __cdecl principia__UpdatePrediction(
     Plugin const* const plugin,
     char const* const* const vessel_guids) {
   journal::Method<journal::UpdatePrediction> m({plugin, vessel_guids});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   std::vector<GUID> guids;
   for (char const* const* c = vessel_guids;
        *c != nullptr;

@@ -153,13 +153,13 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
     principia__DeletePlugin(nullptr);
-  }, "non NULL");
+  }, "!= nullptr");
   EXPECT_DEATH({
     principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     bool inserted;
     principia__InsertOrKeepVessel(plugin,
@@ -168,20 +168,20 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
                                   parent_index,
                                   /*loaded=*/false,
                                   &inserted);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__InsertUnloadedPart(plugin,
                                   part_id,
                                   part_name,
                                   vessel_guid,
                                   parent_relative_degrees_of_freedom);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__VesselFromParent(plugin, celestial_index, vessel_guid);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__CelestialFromParent(plugin, celestial_index);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__LogFatal("a file", 1729, "a fatal error");
   }, "a file:1729.*a fatal error");

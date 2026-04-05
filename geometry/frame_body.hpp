@@ -104,7 +104,7 @@ inline void ReadFrameFromMessage(
       break;
     }
   }
-  CHECK_NOTNULL(enum_value_descriptor);
+  CHECK(enum_value_descriptor != nullptr);
   is_inertial = message.is_inertial();
 }
 

@@ -201,7 +201,7 @@ static_assert(bytes_per_code_point == 3,
 template<bool null_terminated>
 void Base32768Encoder<null_terminated>::Encode(Array<std::uint8_t const> input,
                                                Array<char16_t> output) {
-  CHECK_NOTNULL(input.data);
+  CHECK(input.data != nullptr);
   CHECK(input.size == 0 || output.data != nullptr);
 
   std::uint8_t const* const input_end = input.data + input.size;
@@ -282,7 +282,7 @@ std::int64_t Base32768Encoder<null_terminated>::EncodedLength(
 template<bool null_terminated>
 void Base32768Encoder<null_terminated>::Decode(Array<char16_t const> input,
                                                Array<std::uint8_t> output) {
-  CHECK_NOTNULL(input.data);
+  CHECK(input.data != nullptr);
   CHECK(input.size == 0 || output.data != nullptr);
 
   char16_t const* const input_end = input.data + input.size;

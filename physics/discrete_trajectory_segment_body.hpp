@@ -623,7 +623,7 @@ Hermite3<Position<Frame>, Instant> const&
 DiscreteTrajectorySegment<Frame>::get_hermite3(
     typename Timeline::const_iterator const upper) const {
   CHECK(upper != timeline_.cbegin());
-  CHECK_NOTNULL(upper->interpolation);
+  CHECK(upper->interpolation != nullptr);
   return upper->interpolation->hermite3;
 }
 

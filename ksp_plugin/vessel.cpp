@@ -371,7 +371,7 @@ void Vessel::StartFlightPlanOptimizationDriver(
   CHECK(has_deserialized_flight_plan());
   auto const& driver = std::get<OptimizableFlightPlan>(selected_flight_plan())
                            .optimization_driver;
-  CHECK_NOTNULL(driver);
+  CHECK(driver != nullptr);
   driver->RequestOptimization(parameters);
 }
 

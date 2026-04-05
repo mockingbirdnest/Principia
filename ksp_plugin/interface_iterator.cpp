@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "absl/log/die_if_null.h"
 #include "base/not_null.hpp"
 #include "geometry/rp2_point.hpp"
 #include "absl/log/check.h"
@@ -30,7 +31,7 @@ using namespace principia::quantities::_quantities;
 
 bool __cdecl principia__IteratorAtEnd(Iterator const* const iterator) {
   journal::Method<journal::IteratorAtEnd> m({iterator});
-  return m.Return(CHECK_NOTNULL(iterator)->AtEnd());
+  return m.Return(ABSL_DIE_IF_NULL(iterator)->AtEnd());
 }
 
 void __cdecl principia__IteratorDelete(Iterator** const iterator) {
@@ -42,7 +43,7 @@ void __cdecl principia__IteratorDelete(Iterator** const iterator) {
 QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDiscreteTrajectoryQP> m({iterator});
-  CHECK_NOTNULL(iterator);
+  CHECK(iterator != nullptr);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<QP>(
@@ -54,7 +55,7 @@ QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(
 double __cdecl principia__IteratorGetDiscreteTrajectoryTime(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDiscreteTrajectoryTime> m({iterator});
-  CHECK_NOTNULL(iterator);
+  CHECK(iterator != nullptr);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   auto const plugin = typed_iterator->plugin();
@@ -67,7 +68,7 @@ double __cdecl principia__IteratorGetDiscreteTrajectoryTime(
 XYZ __cdecl principia__IteratorGetDiscreteTrajectoryXYZ(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDiscreteTrajectoryXYZ> m({iterator});
-  CHECK_NOTNULL(iterator);
+  CHECK(iterator != nullptr);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<XYZ>(
@@ -79,7 +80,7 @@ XYZ __cdecl principia__IteratorGetDiscreteTrajectoryXYZ(
 QP __cdecl principia__IteratorGetDistinguishedPointsQP(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDistinguishedPointsQP> m({iterator});
-  CHECK_NOTNULL(iterator);
+  CHECK(iterator != nullptr);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DistinguishedPoints<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<QP>(
@@ -92,7 +93,7 @@ QP __cdecl principia__IteratorGetDistinguishedPointsQP(
 double __cdecl principia__IteratorGetDistinguishedPointsTime(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetDistinguishedPointsTime> m({iterator});
-  CHECK_NOTNULL(iterator);
+  CHECK(iterator != nullptr);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DistinguishedPoints<World>> const*>(iterator));
   auto const* const plugin = typed_iterator->plugin();
@@ -105,7 +106,7 @@ double __cdecl principia__IteratorGetDistinguishedPointsTime(
 
 Node __cdecl principia__IteratorGetNode(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetNode> m({iterator});
-  CHECK_NOTNULL(iterator);
+  CHECK(iterator != nullptr);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<std::vector<Renderer::Node>> const*>(
           iterator));
@@ -117,7 +118,7 @@ Node __cdecl principia__IteratorGetNode(Iterator const* const iterator) {
 Iterator* __cdecl principia__IteratorGetRP2LinesIterator(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetRP2LinesIterator> m({iterator});
-  CHECK_NOTNULL(iterator);
+  CHECK(iterator != nullptr);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<RP2Lines<Length, Camera>> const*>(iterator));
   return m.Return(typed_iterator->Get<Iterator*>(
@@ -129,7 +130,7 @@ Iterator* __cdecl principia__IteratorGetRP2LinesIterator(
 
 XY __cdecl principia__IteratorGetRP2LineXY(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetRP2LineXY> m({iterator});
-  CHECK_NOTNULL(iterator);
+  CHECK(iterator != nullptr);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<RP2Line<Length, Camera>> const*>(iterator));
   return m.Return(typed_iterator->Get<XY>(
@@ -151,19 +152,19 @@ char const* __cdecl principia__IteratorGetVesselGuid(
 
 void __cdecl principia__IteratorIncrement(Iterator* const iterator) {
   journal::Method<journal::IteratorIncrement> m({iterator});
-  CHECK_NOTNULL(iterator)->Increment();
+  ABSL_DIE_IF_NULL(iterator)->Increment();
   return m.Return();
 }
 
 void __cdecl principia__IteratorReset(Iterator* const iterator) {
   journal::Method<journal::IteratorReset> m({iterator});
-  CHECK_NOTNULL(iterator)->Reset();
+  ABSL_DIE_IF_NULL(iterator)->Reset();
   return m.Return();
 }
 
 int __cdecl principia__IteratorSize(Iterator const* const iterator) {
   journal::Method<journal::IteratorSize> m({iterator});
-  return m.Return(CHECK_NOTNULL(iterator)->Size());
+  return m.Return(ABSL_DIE_IF_NULL(iterator)->Size());
 }
 
 }  // namespace interface

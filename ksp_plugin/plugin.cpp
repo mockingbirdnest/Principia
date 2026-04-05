@@ -253,7 +253,7 @@ void Plugin::EndInitialization() {
       sun_ = celestial.get();
     }
   }
-  CHECK_NOTNULL(sun_);
+  CHECK(sun_ != nullptr);
   main_body_ = sun_->body();
 
   UpdatePlanetariumRotation();
@@ -285,7 +285,7 @@ void Plugin::EndInitialization() {
 }
 
 bool Plugin::HasEncounteredApocalypse(std::string* const details) const {
-  CHECK_NOTNULL(details);
+  CHECK(details != nullptr);
   auto const status = ephemeris_->last_severe_integration_status();
   if (absl::IsInvalidArgument(status)) {
     *details = status.message();
@@ -1702,7 +1702,7 @@ void Plugin::InitializeIndices(std::string const& name,
 void Plugin::UpdatePlanetariumRotation() {
   using PlanetariumFrame = Frame<struct PlanetariumFrameTag>;
 
-  CHECK_NOTNULL(main_body_);
+  CHECK(main_body_ != nullptr);
   Rotation<Barycentric, PlanetariumFrame> const to_planetarium =
       main_body_->ToCelestialFrame<PlanetariumFrame>();
   cached_planetarium_rotation_ =

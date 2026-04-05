@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "absl/log/die_if_null.h"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -60,7 +61,7 @@ Planetarium* __cdecl principia__PlanetariumCreate(
                                                  inverse_scale_factor,
                                                  angular_resolution,
                                                  scaled_space_origin});
-  Renderer const& renderer = CHECK_NOTNULL(plugin)->renderer();
+  Renderer const& renderer = ABSL_DIE_IF_NULL(plugin)->renderer();
 
   Multivector<double, World, 1> const opengl_camera_x_in_world(
       FromXYZ(xyz_opengl_camera_x_in_world));
@@ -116,7 +117,7 @@ Planetarium* __cdecl principia__PlanetariumCreate(
 void __cdecl principia__PlanetariumDelete(
     Planetarium const** const planetarium) {
   journal::Method<journal::PlanetariumDelete> m({planetarium}, {planetarium});
-  CHECK_NOTNULL(planetarium);
+  CHECK(planetarium != nullptr);
   TakeOwnership(planetarium);
   return m.Return();
 }
@@ -136,8 +137,8 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   journal::Method<journal::PlanetariumPlotFlightPlanSegment> m(
       {planetarium, plugin, vessel_guid, index, t_max, vertices, vertices_size},
       {vertex_count});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
+  CHECK(plugin != nullptr);
+  CHECK(planetarium != nullptr);
   *vertex_count = 0;
 
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
@@ -177,8 +178,8 @@ void __cdecl principia__PlanetariumPlotPrediction(
   journal::Method<journal::PlanetariumPlotPrediction> m(
       {planetarium, plugin, vessel_guid, t_max, vertices, vertices_size},
       {vertex_count});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
+  CHECK(plugin != nullptr);
+  CHECK(planetarium != nullptr);
   *vertex_count = 0;
 
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
@@ -217,8 +218,8 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
        vertices,
        vertices_size},
       {vertex_count});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
+  CHECK(plugin != nullptr);
+  CHECK(planetarium != nullptr);
   *vertex_count = 0;
 
   // Do not plot the psychohistory when there is a target vessel as it is
@@ -273,8 +274,8 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
        vertices,
        vertices_size},
       {minimal_distance_from_camera, vertex_count});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
+  CHECK(plugin != nullptr);
+  CHECK(planetarium != nullptr);
   *vertex_count = 0;
 
   // Do not plot the past when there is a target vessel as it is misleading.
@@ -331,8 +332,8 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
        vertices,
        vertices_size},
       {minimal_distance_from_camera, vertex_count});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
+  CHECK(plugin != nullptr);
+  CHECK(planetarium != nullptr);
   *vertex_count = 0;
 
   // Do not plot the past when there is a target vessel as it is misleading.
@@ -380,12 +381,12 @@ void __cdecl principia__PlanetariumPlotEquipotential(
   journal::Method<journal::PlanetariumPlotEquipotential> m(
       {planetarium, plugin, index, vertices, vertices_size},
       {vertex_count});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(planetarium);
+  CHECK(plugin != nullptr);
+  CHECK(planetarium != nullptr);
   *vertex_count = 0;
 
   auto const& equipotentials =
-      *CHECK_NOTNULL(plugin->geometric_potential_plotter().equipotentials());
+      *ABSL_DIE_IF_NULL(plugin->geometric_potential_plotter().equipotentials());
   CHECK_GE(index, 0);
   CHECK_LT(index, equipotentials.lines.size());
   DiscreteTrajectory<Navigation> const& equipotential =
