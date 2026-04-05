@@ -12,7 +12,8 @@
 
 #include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
 #include "geometry/sign.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "integrators/methods.hpp"  // 🧙 For _methods.
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"

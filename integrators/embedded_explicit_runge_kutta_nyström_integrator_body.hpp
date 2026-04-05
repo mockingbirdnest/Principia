@@ -11,7 +11,8 @@
 #include <vector>
 
 #include "geometry/sign.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 

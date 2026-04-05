@@ -20,7 +20,8 @@
 #include "base/macros.hpp"  // 🧙 For OS_LINUX.
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"

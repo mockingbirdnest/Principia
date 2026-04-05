@@ -17,7 +17,8 @@
 #include "base/multiprecision.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "functions/multiprecision.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/logger.hpp"

@@ -8,7 +8,8 @@
 #include <utility>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 
 namespace principia {
 namespace base {

@@ -6,7 +6,8 @@
 
 #include "astronomy/frames.hpp"
 #include "base/map_util.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/angle_reduction.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"

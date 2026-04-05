@@ -9,7 +9,8 @@
 
 #include "absl/flags/flag.h"
 #include "base/macros.hpp"  // 🧙 For OS_WIN.
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 
 #if OS_WIN
 #include <windows.h>

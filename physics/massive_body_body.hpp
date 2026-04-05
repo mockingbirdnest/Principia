@@ -7,7 +7,8 @@
 #include <utility>
 
 #include "geometry/frame.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "google/protobuf/descriptor.h"
 #include "physics/rotating_body.hpp"
 #include "quantities/constants.hpp"

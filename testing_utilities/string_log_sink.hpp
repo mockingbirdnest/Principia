@@ -5,7 +5,8 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/synchronization/mutex.h"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 
 namespace principia {
 namespace testing_utilities {

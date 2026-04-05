@@ -16,7 +16,8 @@
 #include "base/cpuid.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "mathematica/logger.hpp"
 #include "nanobenchmarks/dependencies.hpp"
 #include "nanobenchmarks/flag_parsing.hpp"  // 🧙 For std::vector-valued flags.

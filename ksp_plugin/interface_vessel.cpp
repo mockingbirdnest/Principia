@@ -1,6 +1,7 @@
 #include "ksp_plugin/interface.hpp"
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "quantities/si.hpp"

@@ -1,5 +1,6 @@
 #include "benchmark/benchmark.h"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 
 int __cdecl main(int argc, char* argv[]) {
   google::SetLogFilenameExtension(".log");

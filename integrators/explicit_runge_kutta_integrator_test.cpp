@@ -5,7 +5,8 @@
 
 #include "absl/status/status.h"
 #include "geometry/instant.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"

@@ -7,7 +7,8 @@
 
 #include "base/not_constructible.hpp"
 #include "base/traits.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 
 // This file defines a pointer wrapper `not_null` that statically ensures
 // non-nullness where possible, and performs runtime checks at the point of

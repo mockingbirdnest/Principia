@@ -10,7 +10,8 @@
 #include <type_traits>
 
 #include "geometry/barycentre_calculator.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 

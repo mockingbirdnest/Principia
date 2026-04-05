@@ -8,7 +8,8 @@
 #include <utility>
 
 #include "base/sink_source.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "google/protobuf/io/coded_stream_inl.h"
 
 namespace principia {

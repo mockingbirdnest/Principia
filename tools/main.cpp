@@ -1,7 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "tools/generate_configuration.hpp"  // 🧙 For _generate_configuration.
 #include "tools/generate_kopernicus.hpp"  // 🧙 for _generate_kopernicus.
 #include "tools/generate_profiles.hpp"  // 🧙 For _generate_profiles.

@@ -6,7 +6,8 @@
 #include <string>
 #include <utility>
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/elementary_functions.hpp"
 
 namespace principia {

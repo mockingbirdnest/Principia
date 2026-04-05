@@ -9,7 +9,8 @@
 #include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
 #include "base/tags.hpp"
 #include "geometry/barycentre_calculator.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/newhall_matrices.mathematica.h"

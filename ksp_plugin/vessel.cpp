@@ -23,7 +23,8 @@
 #include "base/map_util.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/barycentre_calculator.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "ksp_plugin/integrators.hpp"
 #include "quantities/named_quantities.hpp"
 #include "testing_utilities/make_not_null.hpp"

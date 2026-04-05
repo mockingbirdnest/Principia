@@ -18,7 +18,8 @@
 #include "base/for_all_of.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
 #include "geometry/interval.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/lattices.hpp"

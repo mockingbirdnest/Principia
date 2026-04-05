@@ -9,7 +9,8 @@
 #include "absl/status/status.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.

@@ -13,7 +13,8 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space_transformations.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"

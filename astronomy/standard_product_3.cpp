@@ -17,7 +17,8 @@
 #include "astronomy/time_scales.hpp"
 #include "base/map_util.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/finite_difference.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"

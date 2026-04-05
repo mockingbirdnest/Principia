@@ -8,7 +8,8 @@
 #include "core-math/cos.h"
 #include "core-math/sin.h"
 #include "functions/multiprecision.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"  // 🧙 For π.

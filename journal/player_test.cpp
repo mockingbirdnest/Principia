@@ -7,7 +7,8 @@
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "benchmark/benchmark.h"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.

@@ -12,7 +12,8 @@
 #include "base/file.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "testing_utilities/serialization.hpp"
 
