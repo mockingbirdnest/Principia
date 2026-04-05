@@ -167,9 +167,9 @@ class BarycentricRotatingReferenceFrame
   // the frequent case where properties of the frame are repeatedly requested
   // for the same time.
   mutable CachedDerivatives last_evaluated_primary_derivatives_
-      GUARDED_BY(lock_);
+      ABSL_GUARDED_BY(lock_);
   mutable CachedDerivatives last_evaluated_secondary_derivatives_
-      GUARDED_BY(lock_);
+      ABSL_GUARDED_BY(lock_);
 };
 
 }  // namespace internal

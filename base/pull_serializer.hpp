@@ -133,12 +133,12 @@ class PullSerializer final {
   // handed over to the caller by `Pull` it stays in the queue until the next
   // call to `Pull`, to make sure that the pointer is not reused while the
   // caller processes it.
-  std::queue<Array<std::uint8_t>> queue_ GUARDED_BY(lock_);
+  std::queue<Array<std::uint8_t>> queue_ ABSL_GUARDED_BY(lock_);
 
   // The `free_` queue contains the start addresses of chunks that are not yet
   // ready to be returned by `Pull`.  That includes the chunk currently being
   // filled by the stream.
-  std::queue<not_null<std::uint8_t*>> free_ GUARDED_BY(lock_);
+  std::queue<not_null<std::uint8_t*>> free_ ABSL_GUARDED_BY(lock_);
 };
 
 }  // namespace internal

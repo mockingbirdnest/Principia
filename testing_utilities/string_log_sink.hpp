@@ -31,7 +31,7 @@ class StringLogSink : google::LogSink {
  private:
   google::LogSeverity const minimal_severity_;
   absl::Mutex mutex_;
-  std::string string_ GUARDED_BY(mutex_);
+  std::string string_ ABSL_GUARDED_BY(mutex_);
 };
 
 }  // namespace internal

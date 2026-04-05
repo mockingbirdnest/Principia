@@ -134,8 +134,8 @@ class PushDeserializer final {
   // two queues are out of step: an element is removed from `queue_` by `Pull`
   // when it returns a chunk to the stream, but the corresponding callback is
   // removed from `done_` (and executed) when `Pull` returns.
-  std::queue<Array<std::uint8_t>> queue_ GUARDED_BY(lock_);
-  std::queue<std::function<void()>> done_ GUARDED_BY(lock_);
+  std::queue<Array<std::uint8_t>> queue_ ABSL_GUARDED_BY(lock_);
+  std::queue<std::function<void()>> done_ ABSL_GUARDED_BY(lock_);
 };
 
 }  // namespace internal

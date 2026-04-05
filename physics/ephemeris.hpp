@@ -323,7 +323,7 @@ class Ephemeris {
  private:
   // Checkpointing support.
   void WriteToCheckpointIfNeeded(Instant const& time) const
-      SHARED_LOCKS_REQUIRED(lock_);
+      ABSL_SHARED_LOCKS_REQUIRED(lock_);
   Checkpointer<serialization::Ephemeris>::Writer MakeCheckpointerWriter();
   Checkpointer<serialization::Ephemeris>::Reader MakeCheckpointerReader();
 
@@ -551,12 +551,12 @@ class Ephemeris {
   mutable absl::Mutex lock_;
 
   // Parameter passed to the last call to `RequestReanimation`, if any.
-  std::optional<Instant> last_desired_t_min_ GUARDED_BY(lock_);
+  std::optional<Instant> last_desired_t_min_ ABSL_GUARDED_BY(lock_);
 
   std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
-      instance_ GUARDED_BY(lock_);
+      instance_ ABSL_GUARDED_BY(lock_);
 
-  absl::Status last_severe_integration_status_ GUARDED_BY(lock_);
+  absl::Status last_severe_integration_status_ ABSL_GUARDED_BY(lock_);
 };
 
 }  // namespace internal

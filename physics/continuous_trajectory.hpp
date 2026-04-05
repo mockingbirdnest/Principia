@@ -219,16 +219,16 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // Initially set to the construction parameters, and then adjusted when we
   // choose the degree.
-  Length adjusted_tolerance_ GUARDED_BY(lock_);
-  bool is_unstable_ GUARDED_BY(lock_);
+  Length adjusted_tolerance_ ABSL_GUARDED_BY(lock_);
+  bool is_unstable_ ABSL_GUARDED_BY(lock_);
 
   // The degree of the approximation and its age in number of Newhall
   // approximations.
-  int degree_ GUARDED_BY(lock_);
-  int degree_age_ GUARDED_BY(lock_);
+  int degree_ ABSL_GUARDED_BY(lock_);
+  int degree_age_ ABSL_GUARDED_BY(lock_);
 
   // The polynomials are in increasing time order.
-  InstantPolynomialPairs polynomials_ GUARDED_BY(lock_);
+  InstantPolynomialPairs polynomials_ ABSL_GUARDED_BY(lock_);
   Policy polynomial_evaluator_policy_;
 
   // Lookups into `polynomials_` are expensive because they entail a binary
@@ -244,16 +244,16 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // polynomials at different indices, but by and large the threads progress in
   // parallel, and benchmarks show that there is no adverse performance effects.
   // Any value in the range of `polynomials_` or 0 is correct.
-  mutable std::int64_t last_accessed_polynomial_ GUARDED_BY(lock_) = 0;
+  mutable std::int64_t last_accessed_polynomial_ ABSL_GUARDED_BY(lock_) = 0;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
-  std::optional<Instant> first_time_ GUARDED_BY(lock_);
+  std::optional<Instant> first_time_ ABSL_GUARDED_BY(lock_);
 
   // The points that have not yet been incorporated in a polynomial.  Nonempty
   // for a nonempty trajectory.
   // `last_points_.begin()->first == polynomials_.back().t_max`
   std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_
-      GUARDED_BY(lock_);
+      ABSL_GUARDED_BY(lock_);
 
   friend class TestableContinuousTrajectory<Frame>;
 };

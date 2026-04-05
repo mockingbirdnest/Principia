@@ -62,11 +62,11 @@ class FlightPlanOptimizationDriver {
 
   mutable absl::Mutex lock_;
   std::jthread optimizer_;
-  bool optimizer_idle_ GUARDED_BY(lock_) = true;
-  std::optional<Parameters> last_parameters_ GUARDED_BY(lock_);
+  bool optimizer_idle_ ABSL_GUARDED_BY(lock_) = true;
+  std::optional<Parameters> last_parameters_ ABSL_GUARDED_BY(lock_);
 
   // The last flight plan evaluated by the optimizer.
-  not_null<std::shared_ptr<FlightPlan>> last_flight_plan_ GUARDED_BY(lock_);
+  not_null<std::shared_ptr<FlightPlan>> last_flight_plan_ ABSL_GUARDED_BY(lock_);
 };
 
 }  // namespace internal
