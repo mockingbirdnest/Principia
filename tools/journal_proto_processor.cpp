@@ -1135,17 +1135,13 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
         return expr;
       };
 
-  switch (descriptor->label()) {
-    case FieldDescriptor::LABEL_OPTIONAL:
-      ProcessOptionalField(descriptor);
-      break;
-    case FieldDescriptor::LABEL_REPEATED:
-      ProcessRepeatedField(descriptor);
-      break;
-    case FieldDescriptor::LABEL_REQUIRED:
-      ProcessRequiredField(descriptor);
-      break;
-    }
+  if (descriptor->is_repeated()) {
+    ProcessRepeatedField(descriptor);
+  } else if (descriptor->is_required()) {
+    ProcessRequiredField(descriptor);
+  } else {
+    ProcessOptionalField(descriptor);
+  }
 }
 
 void JournalProtoProcessor::ProcessAddressOfSizeOf(
@@ -1155,7 +1151,7 @@ void JournalProtoProcessor::ProcessAddressOfSizeOf(
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     FieldOptions const& options = field_descriptor->options();
     if (options.HasExtension(journal::serialization::address_of)) {
-      CHECK_EQ(field_descriptor->label(), FieldDescriptor::LABEL_REQUIRED)
+      CHECK(field_descriptor->is_required())
           << field_descriptor->full_name()
           << " must be a required field to have the (address_of) option";
       CHECK_EQ(field_descriptor->type(), FieldDescriptor::TYPE_FIXED64)
@@ -1173,7 +1169,7 @@ void JournalProtoProcessor::ProcessAddressOfSizeOf(
       field_cxx_address_of_[field_descriptor] = address_of_field;
       field_cxx_address_[address_of_field] = field_descriptor;
     } else if (options.HasExtension(journal::serialization::size_of)) {
-      CHECK_EQ(field_descriptor->label(), FieldDescriptor::LABEL_REQUIRED)
+      CHECK(field_descriptor->is_required())
           << field_descriptor->full_name()
           << " must be a required field to have the (size_of) option";
       CHECK_EQ(field_descriptor->type(), FieldDescriptor::TYPE_INT32)
@@ -1260,7 +1256,7 @@ void JournalProtoProcessor::ProcessInOut(
                 std::back_inserter(cxx_run_arguments_[descriptor]));
 
       if (out_.contains(field_descriptor)) {
-        CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
+        CHECK(field_descriptor->is_required())
             << field_descriptor->full_name() << " must be required";
         cxx_run_body_prolog_[descriptor] +=
             "  " + field_cxx_type_[field_descriptor] + " " +
@@ -1292,8 +1288,8 @@ void JournalProtoProcessor::ProcessInOut(
         std::string deserialize_field;
         if (field_cxx_size_.contains(field_descriptor)) {
           std::string const cxx_run_size_field_getter =
-              ToLower(name) + "." + field_cxx_size_[field_descriptor]->name() +
-              "()";
+              ToLower(name) + "." +
+              std::string(field_cxx_size_[field_descriptor]->name()) + "()";
           deserialize_field = field_cxx_deserializer_fn_[field_descriptor](
               cxx_run_size_field_getter);
         } else {
@@ -1360,7 +1356,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   FieldDescriptor const* result_field_descriptor = nullptr;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
-    CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
+    CHECK(field_descriptor->is_required())
         << field_descriptor->full_name() << " must be required";
     return_.insert(field_descriptor);
     ProcessField(field_descriptor);
