@@ -2,20 +2,25 @@ $ErrorActionPreference = "Stop"
 
 $msbuild = &".\Principia\find_msbuild.ps1"
 
-$dependencies = @(".\Google\glog\msvc\glog.sln",
-                  ".\Google\googletest\googletest\msvc\gtest.sln",
-                  ".\Google\googletest\googlemock\msvc\gmock.sln",
-                  ".\Google\protobuf\vsprojects\protobuf.sln",
-                  ".\Google\benchmark\msvc\google-benchmark.sln",
-                  ".\Google\gipfeli\msvc\gipfeli.sln",
-                  ".\Google\abseil-cpp\msvc\abseil-cpp.sln",
+$dependencies = @(".\Google\abseil-cpp\msvc\abseil-cpp.slnf",
+                  ".\Google\benchmark\msvc\benchmark.slnf",
+                  ".\Google\gipfeli\msvc\gipfeli.slnf",
+                  ".\Google\googletest\googlemock\msvc\gmock.slnf",
+                  ".\Google\googletest\googletest\msvc\gtest.slnf",
+                  ".\Google\protobuf\msvc\protobuf.slnf",
+                  ".\Google\re2\msvc\re2.slnf",
                   ".\Inria\core-math\msvc\core-math.sln",
                   ".\LLNL\zfp\msvc\zfp.sln")
 
 foreach ($directory_and_repositories in @(
-         @("Boost",  @("config", "multiprecision")),
-         @("Google", @("glog", "googletest", "protobuf", "benchmark",
-                       "gipfeli", "abseil-cpp", "chromium")),
+         @("Boost",  @("config", `
+                       "multiprecision")),
+         @("Google", @("abseil-cpp", `
+                       "benchmark", `
+                       "gipfeli", `
+                       "googletest", `
+                       "protobuf", `
+                       "re2")),
          @("Inria",  @("core-math")),
          @("LLNL",   @("zfp")))) {
   $directory, $repositories = $directory_and_repositories
