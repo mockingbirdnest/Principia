@@ -6,7 +6,6 @@
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "gmock/gmock.h"
-#include "google/protobuf/stubs/logging.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/astronomy.hpp"
@@ -120,19 +119,11 @@ TEST_F(QuantitiesTest, SerializationSuccess) {
   EXPECT_EQ(SpeedOfLight, speed_of_light);
 }
 
-// This check verifies that setting a log handler causes the protobuf library to
-// report its errors using glog.  It doesn't have much too do with quantities,
-// except that it's a convenient protobuf for this test.
+// This check verifies that sthe protobuf library correctly reports its errors.
+// It doesn't have much too do with quantities, except that it's a convenient
+// protobuf for this test.
 TEST_F(QuantitiesDeathTest, SerializationLogHandler) {
   EXPECT_DEATH({
-    google::protobuf::SetLogHandler(
-        [](google::protobuf::LogLevel const level,
-           char const* const filename,
-           int const line,
-           std::string const& message) {
-          LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] "
-                              << message;
-        });
     serialization::Quantity message;
     message.set_magnitude(1.0);
     message.CheckInitialized();
