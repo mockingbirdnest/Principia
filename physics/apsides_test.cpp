@@ -15,6 +15,7 @@
 #include "geometry/space.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/log/scoped_mock_log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -39,7 +40,6 @@
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/string_log_sink.hpp"
 
 namespace principia {
 namespace physics {
@@ -76,7 +76,6 @@ using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_string_log_sink;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -236,14 +235,18 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
 
   // The apsides do not oscillate in altitude because of the ill-conditioning,
   // so we give up.  This used to fail, see #3925.
-  StringLogSink const log_warning(google::WARNING);
+  absl::ScopedMockLog log;
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  testing::_,
+                  HasSubstr("Anomalous apsides")));  // NOLINT
+  log.StartCapturingLogs();
   const auto intervals = ComputeCollisionIntervals(body,
                                                    reference_trajectory,
                                                    vessel_trajectory,
                                                    apoapsides,
                                                    periapsides);
   EXPECT_THAT(intervals, IsEmpty());
-  EXPECT_THAT(log_warning.string(), HasSubstr("Anomalous apsides"));  // NOLINT
 }
 
 #endif

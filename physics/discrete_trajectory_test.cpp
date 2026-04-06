@@ -13,6 +13,7 @@
 #include "geometry/space.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/log/scoped_mock_log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
@@ -30,7 +31,6 @@
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/serialization.hpp"
-#include "testing_utilities/string_log_sink.hpp"
 
 namespace principia {
 namespace physics {
@@ -38,6 +38,7 @@ namespace physics {
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
+using ::testing::_;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_serialization;
 using namespace principia::geometry::_frame;
@@ -58,7 +59,6 @@ using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_serialization;
-using namespace principia::testing_utilities::_string_log_sink;
 
 class DiscreteTrajectoryTest : public ::testing::Test {
  protected:
@@ -838,7 +838,11 @@ TEST_F(DiscreteTrajectoryTest, SerializationRange) {
 }
 
 TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreHamiltonCompatibility) {
-  StringLogSink const log_warning(google::WARNING);
+  absl::ScopedMockLog log;
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")));
+  log.StartCapturingLogs();
+
   auto const serialized_message = ReadFromBinaryFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
   auto const message1 =
@@ -846,8 +850,6 @@ TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreHamiltonCompatibility) {
   DiscreteTrajectory<World>::SegmentIterator psychohistory;
   auto const history = DiscreteTrajectory<World>::ReadFromMessage(
       message1, /*tracked=*/{&psychohistory});
-  EXPECT_THAT(log_warning.string(),  // NOLINT(build/include_what_you_use)
-              HasSubstr("pre-Hamilton"));
 
   // Note that the sizes don't have the same semantics as pre-Hamilton.  The
   // history now counts all segments.  The psychohistory has a duplicated point

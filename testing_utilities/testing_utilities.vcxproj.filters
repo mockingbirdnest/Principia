@@ -101,12 +101,6 @@
     <ClInclude Include="discrete_trajectory_factories_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="string_log_sink.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="string_log_sink_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="optimization_test_functions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

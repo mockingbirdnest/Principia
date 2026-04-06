@@ -45,6 +45,7 @@ namespace principia {
 namespace interface {
 
 using ::testing::AllOf;
+using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
@@ -122,7 +123,8 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
-                  HasSubstr("pre-Cohen ContinuousTrajectory")));
+                  HasSubstr("pre-Cohen ContinuousTrajectory"))).
+      Times(AtLeast(1));
   // The save is even older.
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
@@ -148,7 +150,8 @@ TEST_F(PluginCompatibilityTest, Reach) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
-                  HasSubstr("pre-Galileo")));
+                  HasSubstr("pre-Galileo"))).
+      Times(AtLeast(1));
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
@@ -470,7 +473,8 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
-                  HasSubstr("pre-Лефшец DiscreteTrajectorySegment")));
+                  HasSubstr("pre-Лефшец DiscreteTrajectorySegment"))).
+      Times(AtLeast(1));
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
