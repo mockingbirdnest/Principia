@@ -103,6 +103,9 @@ class FlightPlanOptimizerTest : public testing::Test {
       }
     }
     LOG(FATAL) << "No celestial named " << name;
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
+    std::abort();
+#endif
   }
 
   static void ComputeFlyby(

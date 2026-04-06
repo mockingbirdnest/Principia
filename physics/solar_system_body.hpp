@@ -598,6 +598,9 @@ SolarSystem<Frame>::MakeMassiveBodyParameters(
       LOG(FATAL) << body.name();
   }
   LOG(FATAL) << body.name();
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
+  std::abort();
+#endif
 }
 
 template<typename Frame>

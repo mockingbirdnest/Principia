@@ -114,6 +114,9 @@ class OrbitalElementsTest : public ::testing::Test {
       }
     }
     LOG(FATAL) << "Ephemeris has no Earth";
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
+    std::abort();
+#endif
   }
 };
 
