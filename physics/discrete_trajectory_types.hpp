@@ -47,6 +47,11 @@ template<typename Frame>
 struct value_type {
   value_type(Instant const& time,
              DegreesOfFreedom<Frame> const& degrees_of_freedom);
+  // Not for use by clients.
+  value_type(Instant const& time,
+             DegreesOfFreedom<Frame> const& degrees_of_freedom,
+             std::unique_ptr<Interpolation<Frame>> interpolation);
+
   // The field ordering is chosen to minimize the size of `value_type`.  This
   // struct decomposes as `[time, degrees_of_freedom]` through structured
   // bindings (see `get` below).

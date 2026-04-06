@@ -12,6 +12,15 @@ value_type<Frame>::value_type(Instant const& time,
     : degrees_of_freedom(degrees_of_freedom), time(time) {}
 
 template<typename Frame>
+value_type<Frame>::value_type(
+    Instant const& time,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    std::unique_ptr<Interpolation<Frame>> interpolation)
+    : degrees_of_freedom(degrees_of_freedom),
+      time(time),
+      interpolation(std::move(interpolation)) {}
+
+template<typename Frame>
 template<std::size_t i, typename Self>
 constexpr auto&& value_type<Frame>::get(this Self&& self) {
   if constexpr (i == 0) {

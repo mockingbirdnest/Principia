@@ -405,7 +405,9 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
     typename Timeline::const_iterator const end) {
   timeline_.erase(timeline_.cbegin(), end);
   if (!timeline_.empty()) {
-    timeline_.begin()->interpolation = nullptr;
+    auto nh = timeline_.extract(timeline_.cbegin());
+    nh.value().interpolation = nullptr;
+    timeline_.insert(timeline_.cbegin(), std::move(nh));
   }
 }
 
@@ -464,13 +466,14 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     // our new point.
     auto const lower = last;
     auto hermite3 = MakeHermite3(lower, t, degrees_of_freedom);
-    auto const it =
-        timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
     // There is no error because the points being interpolated are consecutive,
     // so the interpolation exactly matches their positions and velocities.
     downsampling_error_ = Length{};
-    it->interpolation =
-        NewInterpolation(std::move(hermite3), downsampling_error_);
+    timeline_.emplace_hint(
+        timeline_.cend(),
+        t,
+        degrees_of_freedom,
+        NewInterpolation(std::move(hermite3), downsampling_error_));
   }
 
   return absl::OkStatus();
@@ -584,7 +587,9 @@ void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
   auto const lower = std::prev(upper);
   auto const& [lower_time, lower_degrees_of_freedom] = *lower;
   auto const& [upper_time, upper_degrees_of_freedom] = *upper;
-  upper->interpolation =
+  auto const hint = std::next(upper);
+  auto nh = timeline_.extract(upper);
+  nh.value().interpolation =
       NewInterpolation(Hermite3<Position<Frame>, Instant>(
                            std::pair{lower_time, upper_time},
                            std::pair{lower_degrees_of_freedom.position(),
@@ -592,6 +597,7 @@ void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
                            std::pair{lower_degrees_of_freedom.velocity(),
                                      upper_degrees_of_freedom.velocity()}),
                        /*error=*/Length{});
+  timeline_.insert(hint, std::move(nh));
 }
 
 template<typename Frame>
