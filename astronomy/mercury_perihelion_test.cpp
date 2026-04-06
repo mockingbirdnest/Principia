@@ -5,6 +5,7 @@
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -47,7 +48,7 @@ using namespace principia::testing_utilities::_numerics_matchers;
 class MercuryPerihelionTest : public testing::Test {
  protected:
   static void SetUpTestCase() {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},

@@ -1,6 +1,7 @@
 #include "base/cpuid.hpp"
 
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -17,7 +18,7 @@ using namespace principia::base::_cpuid;
 class CPUIDTest : public Test {
  protected:
   CPUIDTest() {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   }
 };
 

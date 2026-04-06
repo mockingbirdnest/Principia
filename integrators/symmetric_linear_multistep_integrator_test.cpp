@@ -12,6 +12,7 @@
 
 #include "geometry/instant.hpp"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -147,7 +148,7 @@ class SymmetricLinearMultistepIntegratorTest
     : public ::testing::TestWithParam<SimpleHarmonicMotionTestInstance> {
  public:
   SymmetricLinearMultistepIntegratorTest() {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   }
 };
 

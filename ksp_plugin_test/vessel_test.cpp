@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/globals.h"
 #include "absl/status/status.h"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
@@ -987,7 +988,7 @@ TEST_F(VesselTest, TailSerialization) {
 }
 
 TEST_F(VesselTest, Reanimator) {
-  google::LogToStderr();
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   not_null<std::unique_ptr<Plugin const>> const plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "reanimation test.proto.b64",
       /*compressor=*/"gipfeli",

@@ -5,6 +5,7 @@
 #include "astronomy/stabilize_ksp.hpp"
 #include "geometry/frame.hpp"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -31,7 +32,7 @@ class KSPFingerprintTest : public ::testing::Test {
       : solar_system_(
             SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt") {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   }
 
   SolarSystem<Barycentric> solar_system_;

@@ -16,6 +16,7 @@
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -204,7 +205,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
 
 #if !defined(_DEBUG)
 TEST_F(KSPSystemTest, KerbalSystem) {
-  google::LogToStderr();
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   Logger logger(TEMP_DIR / "ksp_system.generated.wl",
                 /*make_unique=*/false);
 
@@ -363,7 +364,7 @@ Logger* KSPSystemConvergenceTest::logger_ = nullptr;
 
 // This takes 2 minutes to run.
 TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
-  google::LogToStderr();
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
 
   Time const integration_duration = 1 * JulianYear;
 

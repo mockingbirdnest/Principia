@@ -18,6 +18,7 @@
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "functions/multiprecision.hpp"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -51,8 +52,8 @@ using namespace principia::testing_utilities::_numerics_matchers;
 class AccurateTableGeneratorTest : public ::testing::Test {
  protected:
   AccurateTableGeneratorTest() {
-    FLAGS_v = 0;
-    google::LogToStderr();
+    absl::SetGlobalVLogLevel(0);
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   }
 
   template<std::int64_t zeroes, bool above, bool below>

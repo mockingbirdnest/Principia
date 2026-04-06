@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/globals.h"
 #include "astronomy/date_time.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
@@ -93,14 +94,6 @@ using namespace principia::testing_utilities::_numerics;
 
 class FlightPlanOptimizerTest : public testing::Test {
  protected:
-  FlightPlanOptimizerTest() {
-    google::SetStderrLogging(google::INFO);
-  }
-
-  ~FlightPlanOptimizerTest() override {
-    google::SetStderrLogging(FLAGS_stderrthreshold);
-  }
-
   static Celestial const& FindCelestialByName(std::string_view const name,
                                               Plugin const& plugin) {
     for (Index index = 0; plugin.HasCelestial(index); ++index) {
@@ -205,6 +198,8 @@ class FlightPlanOptimizerTest : public testing::Test {
     }
   }
 
+  absl::ScopedStderrThreshold scoped_stderr_threshold_{
+      absl::LogSeverityAtLeast::kInfo};
   std::unique_ptr<Plugin const> plugin_;
   FlightPlan* flight_plan_ = nullptr;
 };

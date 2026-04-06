@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+#include "absl/log/globals.h"
 #include "absl/log/initialize.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
@@ -13,9 +14,11 @@ using namespace principia::tools::_generate_kopernicus;
 using namespace principia::tools::_generate_profiles;
 
 int __cdecl main(int argc, char const* argv[]) {
+#ifdef HAS_ABSL_FILE_SINK
   google::SetLogFilenameExtension(".log");
+#endif
   absl::InitializeLog();
-  google::LogToStderr();
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   if (argc < 2) {
     std::cerr << "Usage: " << argv[0] << " command [arguments...]\n";
     return 1;

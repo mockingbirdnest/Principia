@@ -191,18 +191,6 @@ TEST_F(InterfaceTest, InitGoogleLogging1) {
   principia__InitGoogleLogging();
 }
 
-TEST_F(InterfaceDeathTestWithoutPlugin, InitGoogleLogging2) {
-  // We use EXPECT_EXIT in this test to avoid interfering with the execution of
-  // the other tests.
-  int const exit_code = 66;
-
-  EXPECT_EXIT({
-    google::ShutdownGoogleLogging();
-    principia__InitGoogleLogging();
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), "");
-}
-
 TEST_F(InterfaceDeathTestWithoutPlugin, ActivateRecorder) {
   EXPECT_DEATH({
     Recorder::Deactivate();

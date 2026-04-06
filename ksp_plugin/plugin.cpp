@@ -32,7 +32,6 @@
 #include "geometry/space_transformations.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
-#include "glog/stl_logging.h"
 #include "google/protobuf/repeated_field.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"
@@ -54,7 +53,6 @@ namespace ksp_plugin {
 namespace _plugin {
 namespace internal {
 
-using ::operator<<;
 using namespace principia::astronomy::_solar_system_fingerprints;
 using namespace principia::astronomy::_stabilize_ksp;
 using namespace principia::astronomy::_time_scales;

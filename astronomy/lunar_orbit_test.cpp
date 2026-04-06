@@ -19,6 +19,7 @@
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -151,7 +152,7 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
             solar_system_2000_.massive_body(*ephemeris_, "Moon"))),
         lunar_frame_(ephemeris_.get(), moon_),
         selenocentre_(Selenocentric::origin, Selenocentric::unmoving) {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   }
 
   // This Moon-centred, Moon-fixed reference frame has the x axis pointing

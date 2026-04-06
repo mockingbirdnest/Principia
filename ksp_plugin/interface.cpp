@@ -24,7 +24,10 @@
 #include <psapi.h>
 #endif
 
+#include "absl/log/die_if_null.h"
 #include "absl/log/initialize.h"
+#include "absl/log/internal/globals.h"
+#include "absl/log/internal/log_message.h"
 #include "absl/status/status.h"
 #include "base/array.hpp"
 #include "base/base64.hpp"
@@ -35,7 +38,6 @@
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"  // 🧙 For NAMED.
 #include "base/not_null.hpp"
-#include "base/optional_logging.hpp"  // 🧙 For logging.
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
@@ -50,9 +52,9 @@
 #include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/stubs/logging.h"
 #include "integrators/integrators.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
@@ -214,16 +216,16 @@ serialization::OblateBody::Geopotential MakeGeopotential(
 
 serialization::GravityModel::Body MakeGravityModel(
     BodyParameters const& body_parameters) {
+  static constexpr char const nullopt[] = "nullopt";
   // Logging operators would dereference a null C string.
   auto const make_optional_c_string = [](char const* const c_string) {
-    return (c_string == nullptr) ? std::nullopt
-                                 : std::make_optional(c_string);
+    return (c_string == nullptr) ? nullopt : c_string;
   };
   auto const make_optional_geopotential_size =
       [](BodyGeopotentialElement const* const* const geopotential)
-      -> std::optional<std::int64_t> {
+      -> std::string {
     if (geopotential == nullptr) {
-      return std::nullopt;
+      return nullopt;
     } else {
       std::int64_t size = 0;
       for (BodyGeopotentialElement const* const* e = geopotential;
@@ -231,7 +233,7 @@ serialization::GravityModel::Body MakeGravityModel(
            ++e) {
         ++size;
       }
-      return size;
+      return absl::StrCat(size);
     }
   };
   LOG(INFO)
@@ -653,17 +655,20 @@ void __cdecl principia__FreeVesselsAndPartsAndCollectPileUps(
 
 int __cdecl principia__GetBufferDuration() {
   journal::Method<journal::GetBufferDuration> m;
-  return m.Return(FLAGS_logbufsecs);
+  LOG(FATAL) << "NYI";
+  return m.Return(0);
 }
 
 int __cdecl principia__GetBufferedLogging() {
   journal::Method<journal::GetBufferedLogging> m;
-  return m.Return(FLAGS_logbuflevel);
+  LOG(FATAL) << "NYI";
+  return m.Return(0);
 }
 
 int __cdecl principia__GetStderrLogging() {
   journal::Method<journal::GetStderrLogging> m;
-  return m.Return(FLAGS_stderrthreshold);
+  return m.Return(static_cast<int>(absl::StderrThreshold()));
+  ;
 }
 
 void __cdecl principia__GetCPUIDFeatureFlags(bool* const has_avx,
@@ -674,12 +679,13 @@ void __cdecl principia__GetCPUIDFeatureFlags(bool* const has_avx,
 
 int __cdecl principia__GetSuppressedLogging() {
   journal::Method<journal::GetSuppressedLogging> m;
-  return m.Return(FLAGS_minloglevel);
+  return m.Return(static_cast<int>(absl::MinLogLevel()));
 }
 
 int __cdecl principia__GetVerboseLogging() {
   journal::Method<journal::GetVerboseLogging> m;
-  return m.Return(FLAGS_v);
+  LOG(FATAL) << "NYI";
+  return m.Return(0);
 }
 
 void __cdecl principia__GetVersion(
@@ -725,7 +731,7 @@ bool __cdecl principia__HasVessel(Plugin* const plugin,
 // "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
 void __cdecl principia__InitGoogleLogging() {
-  if (google::IsGoogleLoggingInitialized()) {
+  if (absl::log_internal::IsInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
 #ifdef _MSC_VER
@@ -734,21 +740,14 @@ void __cdecl principia__InitGoogleLogging() {
 #else
     std::freopen("stderr.log", "w", stderr);
 #endif
+#ifdef ABSL_LOG_IS_COMPLETE
     google::SetLogFilenameExtension(".log");
     google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
     google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
     google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
     google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
+#endif
     absl::InitializeLog();
-
-    google::protobuf::SetLogHandler(
-        [](google::protobuf::LogLevel const level,
-           char const* const filename,
-           int const line,
-           std::string const& message) {
-          LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] "
-                              << message;
-        });
 
     LOG(ERROR) << "Initialized Google logging for Principia";
     LOG(ERROR) << "Principia version " << Version
@@ -1025,7 +1024,9 @@ void __cdecl principia__LogError(char const* const file,
                                  int const line,
                                  char const* const text) {
   journal::Method<journal::LogError> m({file, line, text});
-  google::LogMessage(file, line, google::ERROR).stream() << text;
+  absl::log_internal::LogMessage(
+      file, line, absl::log_internal::LogMessage::ErrorTag{})
+      << text;
   return m.Return();
 }
 
@@ -1033,7 +1034,7 @@ void __cdecl principia__LogFatal(char const* const file,
                                  int const line,
                                  char const* const text) {
   journal::Method<journal::LogFatal> m({file, line, text});
-  google::LogMessageFatal(file, line).stream() << text;
+  absl::log_internal::LogMessageFatal(file, line) << text;
   return m.Return();
 }
 
@@ -1041,7 +1042,9 @@ void __cdecl principia__LogInfo(char const* const file,
                                 int const line,
                                 char const* const text) {
   journal::Method<journal::LogInfo> m({file, line, text});
-  google::LogMessage(file, line).stream() << text;
+  absl::log_internal::LogMessage(
+      file, line, absl::log_internal::LogMessage::InfoTag{})
+      << text;
   return m.Return();
 }
 
@@ -1049,7 +1052,9 @@ void __cdecl principia__LogWarning(char const* const file,
                                    int const line,
                                    char const* const text) {
   journal::Method<journal::LogWarning> m({file, line, text});
-  google::LogMessage(file, line, google::WARNING).stream() << text;
+  absl::log_internal::LogMessage(
+      file, line, absl::log_internal::LogMessage::WarningTag{})
+      << text;
   return m.Return();
 }
 
@@ -1196,7 +1201,7 @@ char const* __cdecl principia__SerializePlugin(
 // Sets the maximum number of seconds which logs may be buffered for.
 void __cdecl principia__SetBufferDuration(int const seconds) {
   journal::Method<journal::SetBufferDuration> m({seconds});
-  FLAGS_logbufsecs = seconds;
+  LOG(FATAL) << "NYI";
   return m.Return();
 }
 
@@ -1204,7 +1209,7 @@ void __cdecl principia__SetBufferDuration(int const seconds) {
 // Log messages at a higher level are flushed immediately.
 void __cdecl principia__SetBufferedLogging(int const max_severity) {
   journal::Method<journal::SetBufferedLogging> m({max_severity});
-  FLAGS_logbuflevel = max_severity;
+  LOG(FATAL) << "NYI";
   return m.Return();
 }
 
@@ -1228,7 +1233,7 @@ void __cdecl principia__SetStderrLogging(int const min_severity) {
   journal::Method<journal::SetStderrLogging> m({min_severity});
   // NOTE(egg): We could use `FLAGS_stderrthreshold` instead, the difference
   // seems to be a mutex.
-  google::SetStderrLogging(min_severity);
+  absl::SetStderrThreshold(static_cast<absl::LogSeverity>(min_severity));
   return m.Return();
 }
 
@@ -1236,14 +1241,14 @@ void __cdecl principia__SetStderrLogging(int const min_severity) {
 // suppressed.
 void __cdecl principia__SetSuppressedLogging(int const min_severity) {
   journal::Method<journal::SetSuppressedLogging> m({min_severity});
-  FLAGS_minloglevel = min_severity;
+  absl::SetMinLogLevel(static_cast<absl::LogSeverityAtLeast>(min_severity));
   return m.Return();
 }
 
 // Show all VLOG(m) messages for `m <= level`.
 void __cdecl principia__SetVerboseLogging(int const level) {
   journal::Method<journal::SetVerboseLogging> m({level});
-  FLAGS_v = level;
+  absl::SetGlobalVLogLevel(level);
   return m.Return();
 }
 

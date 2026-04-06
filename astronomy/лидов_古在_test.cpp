@@ -12,6 +12,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -83,14 +84,10 @@ class Лидов古在Test : public ::testing::Test {
                     Ephemeris<ICRS>::NewtonianMotionEquation>(),
                 /*step=*/10 * Minute))),
         mercury_(*solar_system_1950_.massive_body(*ephemeris_, "Mercury")),
-        mercury_frame_(ephemeris_.get(), &mercury_) {
-    google::SetStderrLogging(google::INFO);
-  }
+        mercury_frame_(ephemeris_.get(), &mercury_) {}
 
-  ~Лидов古在Test() override {
-    google::SetStderrLogging(FLAGS_stderrthreshold);
-  }
-
+  absl::ScopedStderrThreshold scoped_stderr_threshold_{
+      absl::LogSeverityAtLeast::kInfo};
   SolarSystem<ICRS> solar_system_1950_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> ephemeris_;
   MassiveBody const& mercury_;
