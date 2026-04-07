@@ -583,7 +583,7 @@ void __cdecl principia__DeserializePlugin(
                                          NewCompressor(compressor));
     CHECK(arena != nullptr);
     not_null<serialization::Plugin*> const message =
-        Arena::CreateMessage<serialization::Plugin>(arena);
+        Arena::Create<serialization::Plugin>(arena);
     (*deserializer)->Start(
         message,
         [plugin](google::protobuf::Message const& message) {
@@ -1162,7 +1162,7 @@ char const* __cdecl principia__SerializePlugin(
                                      number_of_chunks,
                                      NewCompressor(compressor));
     not_null<serialization::Plugin*> const message =
-        Arena::CreateMessage<serialization::Plugin>(arena);
+        Arena::Create<serialization::Plugin>(arena);
     plugin->WriteToMessage(message);
     (*serializer)->Start(message);
   }
