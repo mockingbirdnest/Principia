@@ -26,6 +26,7 @@
     <ClInclude Include="encoder.hpp" />
     <ClInclude Include="file.hpp" />
     <ClInclude Include="file_body.hpp" />
+    <ClInclude Include="file_log_sink.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
     <ClInclude Include="flags.hpp" />
     <ClInclude Include="for_all_of.hpp" />
@@ -90,6 +91,8 @@
     <ClCompile Include="cpuid.cpp" />
     <ClCompile Include="cpuid_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
+    <ClCompile Include="file_log_sink.cpp" />
+    <ClCompile Include="file_log_sink_test.cpp" />
     <ClCompile Include="flags.cpp" />
     <ClCompile Include="flags_test.cpp" />
     <ClCompile Include="for_all_of_test.cpp" />
