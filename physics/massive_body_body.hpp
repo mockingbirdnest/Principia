@@ -110,7 +110,7 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 // This macro is a bit ugly, but trust me, it's better than the alternatives.
 #define ROTATING_BODY_TAG_VALUE_CASE(value)                   \
   case serialization::Frame::value:                           \
-    CHECK(rotating_body_extension != nullptr);                   \
+    CHECK(rotating_body_extension != nullptr);                \
     return RotatingBody<Frame<Tag,                            \
                               Inertial,                       \
                               Handedness::Right,              \
