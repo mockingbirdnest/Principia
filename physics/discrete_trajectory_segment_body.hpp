@@ -405,9 +405,9 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
     typename Timeline::const_iterator const end) {
   timeline_.erase(timeline_.cbegin(), end);
   if (!timeline_.empty()) {
-    auto nh = timeline_.extract(timeline_.cbegin());
-    nh.value().interpolation = nullptr;
-    timeline_.insert(timeline_.cbegin(), std::move(nh));
+    auto extracted = timeline_.extract(timeline_.cbegin());
+    extracted.value().interpolation = nullptr;
+    timeline_.insert(timeline_.cbegin(), std::move(extracted));
   }
 }
 
@@ -587,9 +587,12 @@ void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
   auto const lower = std::prev(upper);
   auto const& [lower_time, lower_degrees_of_freedom] = *lower;
   auto const& [upper_time, upper_degrees_of_freedom] = *upper;
-  auto const hint = std::next(upper);
-  auto nh = timeline_.extract(upper);
-  nh.value().interpolation =
+  // Beware! extracting from a btree_set invalidates all iterators, not only the
+  // one denoting the extracted node.  We must use the special entry point
+  // `extract_and_get_next` to get the iterator that we'll use as a hint for
+  // reinsertion.
+  auto [extracted, next] = timeline_.extract_and_get_next(upper);
+  extracted.value().interpolation =
       NewInterpolation(Hermite3<Position<Frame>, Instant>(
                            std::pair{lower_time, upper_time},
                            std::pair{lower_degrees_of_freedom.position(),
@@ -597,7 +600,7 @@ void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
                            std::pair{lower_degrees_of_freedom.velocity(),
                                      upper_degrees_of_freedom.velocity()}),
                        /*error=*/Length{});
-  timeline_.insert(hint, std::move(nh));
+  timeline_.insert(next, std::move(extracted));
 }
 
 template<typename Frame>
