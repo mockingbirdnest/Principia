@@ -1,12 +1,12 @@
 #include <cstdint>
 #include <ios>
 
-#include "astronomy/solar_system_fingerprints.hpp"
-#include "astronomy/stabilize_ksp.hpp"
-#include "geometry/frame.hpp"
 #include "absl/log/check.h"
 #include "absl/log/globals.h"
 #include "absl/log/log.h"
+#include "astronomy/solar_system_fingerprints.hpp"
+#include "astronomy/stabilize_ksp.hpp"
+#include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/solar_system.hpp"

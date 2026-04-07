@@ -5,9 +5,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/array.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/array.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

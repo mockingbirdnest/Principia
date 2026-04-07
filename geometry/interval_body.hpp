@@ -4,9 +4,9 @@
 
 #include <algorithm>
 
-#include "base/multiprecision.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/multiprecision.hpp"
 
 namespace principia {
 namespace geometry {

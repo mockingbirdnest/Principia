@@ -5,9 +5,9 @@
 #include <optional>
 #include <utility>
 
-#include "base/push_pull_callback.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/push_pull_callback.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"

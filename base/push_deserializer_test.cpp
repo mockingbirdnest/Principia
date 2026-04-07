@@ -11,14 +11,14 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/array.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/serialization.hpp"
 #include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "google/protobuf/message.h"
 #include "gtest/gtest.h"

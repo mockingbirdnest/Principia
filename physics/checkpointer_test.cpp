@@ -7,8 +7,8 @@
 #include "google/protobuf/repeated_field.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
-#include "testing_utilities/matchers.hpp"
 #include "serialization/testing_utilities.pb.h"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace physics {

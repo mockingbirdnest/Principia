@@ -3,6 +3,8 @@
 #include <optional>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/time_scales.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "benchmark/benchmark.h"
@@ -10,8 +12,6 @@
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/frames.hpp"

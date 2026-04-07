@@ -6,9 +6,9 @@
 #include <string>
 #include <utility>
 
-#include "geometry/frame.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "geometry/frame.hpp"
 #include "google/protobuf/descriptor.h"
 #include "physics/rotating_body.hpp"
 #include "quantities/constants.hpp"

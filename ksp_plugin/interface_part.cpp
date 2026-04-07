@@ -3,10 +3,10 @@
 #include <cstdint>
 #include <optional>
 
-#include "geometry/grassmann.hpp"
-#include "absl/log/die_if_null.h"
 #include "absl/log/check.h"
+#include "absl/log/die_if_null.h"
 #include "absl/log/log.h"
+#include "geometry/grassmann.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/identification.hpp"

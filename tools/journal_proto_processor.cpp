@@ -12,9 +12,9 @@
 #include <string_view>
 #include <vector>
 
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "google/protobuf/descriptor.pb.h"
 #include "serialization/journal.pb.h"
 

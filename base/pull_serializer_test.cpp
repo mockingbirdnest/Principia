@@ -10,12 +10,12 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/array.hpp"
 #include "base/not_null.hpp"
 #include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "serialization/geometry.pb.h"

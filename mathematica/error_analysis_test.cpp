@@ -8,10 +8,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/not_null.hpp"
 #include "absl/log/check.h"
 #include "absl/log/globals.h"
 #include "absl/log/log.h"
+#include "base/not_null.hpp"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
 #include "ksp_plugin/frames.hpp"

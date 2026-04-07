@@ -7,11 +7,11 @@
 #include <string_view>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_join.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "base/not_null.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 
 #if PRINCIPIA_COMPILER_MSVC
 #include <intrin.h>

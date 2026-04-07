@@ -10,7 +10,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
 #include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "astronomy/date_time.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
@@ -19,8 +21,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"

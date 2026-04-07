@@ -4,10 +4,10 @@
 #include <map>
 #include <string>
 
-#include "astronomy/frames.hpp"
-#include "base/map_util.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "astronomy/frames.hpp"
+#include "base/map_util.hpp"
 #include "numerics/angle_reduction.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"

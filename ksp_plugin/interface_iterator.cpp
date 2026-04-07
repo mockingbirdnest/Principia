@@ -2,11 +2,11 @@
 
 #include <vector>
 
+#include "absl/log/check.h"
 #include "absl/log/die_if_null.h"
+#include "absl/log/log.h"
 #include "base/not_null.hpp"
 #include "geometry/rp2_point.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"

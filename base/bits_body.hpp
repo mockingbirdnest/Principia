@@ -2,9 +2,9 @@
 
 #include "base/bits.hpp"
 
-#include "base/macros.hpp"  // 🧙 For CONSTEXPR_DCHECK.
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/macros.hpp"  // 🧙 For CONSTEXPR_DCHECK.
 
 namespace principia {
 namespace base {

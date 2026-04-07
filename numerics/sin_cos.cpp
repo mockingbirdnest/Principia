@@ -6,12 +6,12 @@
 #include <limits>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/macros.hpp"  // 🧙 For FORCE_INLINE.
 #include "base/tags.hpp"
 #include "core-math/cos.h"
 #include "core-math/sin.h"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/m128d.hpp"

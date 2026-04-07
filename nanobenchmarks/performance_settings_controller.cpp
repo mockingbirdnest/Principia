@@ -8,9 +8,9 @@
 #include <tuple>
 
 #include "absl/flags/flag.h"
-#include "base/macros.hpp"  // 🧙 For OS_WIN.
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/macros.hpp"  // 🧙 For OS_WIN.
 
 #if OS_WIN
 #include <windows.h>

@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "base/algebra.hpp"
@@ -22,8 +24,6 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
 #include "gipfeli/gipfeli.h"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"

@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
-#include "base/zfp_compressor.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/zfp_compressor.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

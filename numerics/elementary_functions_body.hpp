@@ -6,9 +6,9 @@
 
 #include <cmath>
 
-#include "base/traits.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/traits.hpp"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"

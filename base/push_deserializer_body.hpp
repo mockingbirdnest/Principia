@@ -7,9 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/sink_source.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/sink_source.hpp"
 #include "google/protobuf/io/coded_stream.h"
 
 namespace principia {

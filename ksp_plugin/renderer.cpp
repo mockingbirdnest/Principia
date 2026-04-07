@@ -5,11 +5,11 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/ranges.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/permutation.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 
 namespace principia {

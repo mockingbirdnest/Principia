@@ -9,10 +9,10 @@
 #include <optional>
 #include <vector>
 
-#include "base/for_all_of.hpp"
-#include "geometry/sign.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/for_all_of.hpp"
+#include "geometry/sign.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"

@@ -5,10 +5,10 @@
 #include <list>
 #include <utility>
 
-#include "absl/status/status.h"
-#include "absl/time/time.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "absl/status/status.h"
+#include "absl/time/time.h"
 
 namespace principia {
 namespace base {

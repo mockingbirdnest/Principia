@@ -8,6 +8,9 @@
 #include <string_view>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
@@ -18,9 +21,6 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
-#include "absl/log/check.h"
-#include "absl/log/globals.h"
-#include "absl/log/log.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"

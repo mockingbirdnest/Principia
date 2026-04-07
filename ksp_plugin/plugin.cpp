@@ -17,6 +17,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
@@ -30,8 +32,6 @@
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 #include "geometry/space_transformations.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "google/protobuf/repeated_field.h"
 #include "ksp_plugin/equator_relevance_threshold.hpp"
 #include "ksp_plugin/integrators.hpp"

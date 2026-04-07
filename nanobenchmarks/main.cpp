@@ -13,11 +13,11 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/cpuid.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "mathematica/logger.hpp"
 #include "nanobenchmarks/dependencies.hpp"
 #include "nanobenchmarks/flag_parsing.hpp"  // 🧙 For std::vector-valued flags.

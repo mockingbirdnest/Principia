@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "absl/flags/flag.h"
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "nanobenchmarks/dependencies.hpp"
 
 #if PRINCIPIA_COMPILER_MSVC

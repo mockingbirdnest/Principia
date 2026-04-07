@@ -7,9 +7,9 @@
 #include <system_error>
 #include <utility>
 
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 
 namespace principia {
 namespace base {

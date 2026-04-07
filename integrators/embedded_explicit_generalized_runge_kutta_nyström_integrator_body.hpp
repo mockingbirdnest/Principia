@@ -10,10 +10,10 @@
 #include <utility>
 #include <vector>
 
-#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
-#include "geometry/sign.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
+#include "geometry/sign.hpp"
 #include "integrators/methods.hpp"  // 🧙 For _methods.
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"

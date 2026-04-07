@@ -7,6 +7,9 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
@@ -17,9 +20,6 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
-#include "absl/log/check.h"
-#include "absl/log/globals.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"

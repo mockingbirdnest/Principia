@@ -12,9 +12,9 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/bits.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/bits.hpp"
 
 namespace principia {
 namespace base {

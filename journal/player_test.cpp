@@ -5,11 +5,11 @@
 #include <string>
 #include <thread>
 
-#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "benchmark/benchmark.h"
 #include "absl/log/check.h"
 #include "absl/log/globals.h"
 #include "absl/log/log.h"
+#include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
+#include "benchmark/benchmark.h"
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.

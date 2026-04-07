@@ -11,15 +11,15 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/strip.h"
 #include "base/multiprecision.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "functions/multiprecision.hpp"
-#include "absl/log/check.h"
-#include "absl/log/globals.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/logger.hpp"

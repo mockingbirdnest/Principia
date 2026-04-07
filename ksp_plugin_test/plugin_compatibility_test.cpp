@@ -10,7 +10,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
 #include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "absl/log/scoped_mock_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
@@ -22,8 +24,6 @@
 #include "base/macros.hpp"  // 🧙 For OS_LINUX.
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"

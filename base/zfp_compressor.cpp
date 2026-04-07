@@ -7,9 +7,9 @@
 #include <string>
 #include <string_view>
 
-#include "base/array.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/array.hpp"
 
 namespace principia {
 namespace base {

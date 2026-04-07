@@ -9,9 +9,9 @@
 #include <vector>
 #include <type_traits>
 
-#include "geometry/barycentre_calculator.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "geometry/barycentre_calculator.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 

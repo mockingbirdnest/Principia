@@ -3,15 +3,15 @@
 #include <algorithm>
 #include <limits>
 
+#include "absl/log/check.h"
 #include "absl/log/die_if_null.h"
+#include "absl/log/log.h"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space_transformations.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"

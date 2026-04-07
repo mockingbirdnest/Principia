@@ -16,6 +16,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
@@ -30,8 +32,6 @@
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"

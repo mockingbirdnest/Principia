@@ -4,12 +4,12 @@
 #include <limits>
 #include <random>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/multiprecision.hpp"
 #include "core-math/cos.h"
 #include "core-math/sin.h"
 #include "functions/multiprecision.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"  // 🧙 For π.

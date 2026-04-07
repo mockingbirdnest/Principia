@@ -5,10 +5,10 @@
 #include <string>
 #include <utility>
 
-#include "base/not_constructible.hpp"
-#include "geometry/grassmann.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "base/not_constructible.hpp"
+#include "geometry/grassmann.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 

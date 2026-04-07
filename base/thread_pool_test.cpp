@@ -7,11 +7,11 @@
 #include <thread>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/synchronization/notification.h"
 #include "absl/time/time.h"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "gtest/gtest.h"
 
 namespace principia {

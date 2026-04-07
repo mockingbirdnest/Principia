@@ -3,8 +3,8 @@
 #include <utility>
 #include <vector>
 
-#include "absl/log/die_if_null.h"
 #include "absl/log/check.h"
+#include "absl/log/die_if_null.h"
 #include "absl/log/log.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.

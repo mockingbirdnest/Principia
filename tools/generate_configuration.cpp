@@ -10,11 +10,11 @@
 #include <string>
 #include <string_view>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/serialization.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/text_format.h"
 #include "numerics/elementary_functions.hpp"

@@ -10,9 +10,9 @@
 #include <utility>
 #include <vector>
 
-#include "geometry/sign.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "geometry/sign.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 

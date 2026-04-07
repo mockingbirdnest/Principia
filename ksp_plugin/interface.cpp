@@ -24,10 +24,13 @@
 #include <psapi.h>
 #endif
 
+#include "absl/log/check.h"
 #include "absl/log/die_if_null.h"
+#include "absl/log/globals.h"
 #include "absl/log/initialize.h"
 #include "absl/log/internal/globals.h"
 #include "absl/log/internal/log_message.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "base/array.hpp"
 #include "base/base64.hpp"
@@ -51,9 +54,6 @@
 #include "geometry/rotation.hpp"
 #include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
-#include "absl/log/check.h"
-#include "absl/log/globals.h"
-#include "absl/log/log.h"
 #include "google/protobuf/arena.h"
 #include "integrators/integrators.hpp"
 #include "journal/method.hpp"

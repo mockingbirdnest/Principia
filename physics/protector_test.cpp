@@ -1,8 +1,8 @@
 #include "physics/protector.hpp"
 
-#include "geometry/instant.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"

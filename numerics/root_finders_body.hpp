@@ -7,10 +7,10 @@
 #include <limits>
 #include <vector>
 
-#include "geometry/barycentre_calculator.hpp"
-#include "geometry/sign.hpp"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
+#include "geometry/barycentre_calculator.hpp"
+#include "geometry/sign.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
 #include "quantities/si.hpp"

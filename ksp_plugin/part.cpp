@@ -8,13 +8,13 @@
 #include <string>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space_transformations.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"

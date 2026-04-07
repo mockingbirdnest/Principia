@@ -6,13 +6,13 @@
 #include <memory>
 #include <string>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/strings/match.h"
 #include "base/array.hpp"
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/version.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 
 #define PRINCIPIA_PLAYER_ALLOW_PLATFORM_MISMATCH 0

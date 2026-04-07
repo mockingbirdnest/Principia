@@ -3,6 +3,8 @@
 #include <concepts>
 #include <tuple>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/log/scoped_mock_log.h"
 #include "base/algebra.hpp"
 #include "base/for_all_of.hpp"
@@ -11,8 +13,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/polynomial.hpp"

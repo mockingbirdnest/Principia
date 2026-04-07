@@ -15,6 +15,8 @@
 #include <variant>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "base/file.hpp"
 #include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
@@ -24,8 +26,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/explicit_runge_kutta_integrator.hpp"
