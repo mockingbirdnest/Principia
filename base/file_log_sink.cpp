@@ -23,11 +23,13 @@ FileLogSink::FileLogSink(std::filesystem::path path, std::string extension)
 
 void FileLogSink::Send(const absl::LogEntry& entry) {
   entry.log_severity();
-  for (int severity = static_cast<int>(absl::LogSeverity::kInfo);
-       severity <= static_cast<int>(entry.log_severity());
-       ++severity) {
-    if (!file_[severity].is_open()) {
-      file_[severity].open(
+  for (auto const severity : absl::LogSeverities()) {
+    if (severity < entry.log_severity()) {
+      break;
+    }
+    auto& file = files_[static_cast<int>(severity)];
+    if (!file.is_open()) {
+      file.open(
           std::filesystem::path(path_)
               .concat(absl::LogSeverityName(
                   static_cast<absl::LogSeverity>(severity)))
@@ -35,12 +37,12 @@ void FileLogSink::Send(const absl::LogEntry& entry) {
               .concat(absl::FormatTime(
                   "%Y%m%d%ET%H%M%SZ", entry.timestamp(), absl::UTCTimeZone()))
               .concat(extension_));
-      if (!file_[severity].good()) {
+      if (!file.good()) {
         std::cerr << "Failed To create log file for:\n";
         PrintTo(entry, &std::cerr);
         std::terminate();
       }
-      file_[severity] << "Log file created at: "
+      file << "Log file created at: "
                       << absl::FormatTime("%Y%m%d%ET%H%M%SZ",
                                           entry.timestamp(),
                                           absl::UTCTimeZone())
@@ -58,17 +60,28 @@ void FileLogSink::Send(const absl::LogEntry& entry) {
       }
       computer_name = buf.nodename;
 #endif
-      file_[severity] << "Running on machine: " << computer_name << "\n";
-      file_[severity] << "Log line format: [IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg\n";
+      file << "Running on machine: " << computer_name << "\n";
+      file << "Log line format: [IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg\n";
     }
-    file_[severity] << entry.text_message_with_prefix_and_newline();
+    file << entry.text_message_with_prefix_and_newline();
+    if (severity > buffered_level_) {
+      file.flush();
+    }
   }
 }
 
 void FileLogSink::Flush() {
-  for (auto& file : file_) {
+  for (auto& file : files_) {
     file.flush();
   }
+}
+
+absl::LogSeverity FileLogSink::buffered_level() const {
+  return buffered_level_;
+}
+
+void FileLogSink::set_buffered_level(absl::LogSeverity severity) {
+  buffered_level_ = severity;
 }
 
 }  // namespace file_log_sink

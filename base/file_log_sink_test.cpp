@@ -31,9 +31,9 @@ TEST_F(FileLogSinkTest, RelativePath) {
   absl::Time const j2000 =
       absl::FromDateTime(2000, 1, 1, 11, 58, 55, absl::UTCTimeZone()) +
       absl::Milliseconds(816);
-  LOG(INFO).WithTimestamp(j2000) << "info";
-  LOG(WARNING).WithTimestamp(j2000) << "warning";
-  LOG(ERROR).WithTimestamp(j2000) << "error";
+  LOG(INFO).WithTimestamp(j2000).WithThreadID(1729) << "info";
+  LOG(WARNING).WithTimestamp(j2000).WithThreadID(1729) << "warning";
+  LOG(ERROR).WithTimestamp(j2000).WithThreadID(1729) << "error";
 }
 
 }}

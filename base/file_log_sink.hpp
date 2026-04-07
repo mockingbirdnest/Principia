@@ -17,10 +17,17 @@ class FileLogSink : public absl::LogSink {
   void Send(const absl::LogEntry& entry) override;
   void Flush() override;
 
+  // Files for this severity and lower are not immediately flushed.
+  // This can be set to values for which there is no enumerator:
+  // set_buffered_level(-1) causes INFO (severity=0) logs to be flushed.
+  absl::LogSeverity buffered_level() const;
+  void set_buffered_level(absl::LogSeverity severity);
+
  private:
-  std::array<std::ofstream, absl::LogSeverities().size()> file_;
+  std::array<std::ofstream, absl::LogSeverities().size()> files_;
   std::filesystem::path const path_;
   std::string const extension_;
+  absl::LogSeverity buffered_level_ = absl::LogSeverity::kInfo;
 };
 
 }  // namespace file_log_sink
