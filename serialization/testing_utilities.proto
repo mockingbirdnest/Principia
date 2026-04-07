@@ -1,5 +1,7 @@
 syntax = "proto2";
 
+import "serialization/geometry.proto";
+
 package principia.serialization;
 
 // An auxiliary message used to represent tabulated data.  Useful for tests that
@@ -11,4 +13,14 @@ message TabulatedData {
     repeated double value = 2;
   }
   repeated Entry entry = 1;
+}
+
+// An auxiliary message that can be checkpointed.  Useful for testing the
+// checkpointing machinery.
+message CheckpointerTestMessage {
+  message Checkpoint {
+    optional Point time = 1;
+    optional int32 payload = 2;
+  }
+  repeated Checkpoint checkpoint = 1;
 }

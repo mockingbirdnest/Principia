@@ -8,14 +8,15 @@
 #include "gtest/gtest.h"
 #include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "serialization/testing_utilities.pb.h"
 
 namespace principia {
 namespace physics {
 
 using ::testing::ElementsAre;
-using ::testing::Field;
 using ::testing::IsEmpty;
 using ::testing::MockFunction;
+using ::testing::Property;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::base::_not_null;
@@ -25,29 +26,13 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_matchers;
 
 ACTION_P(SetPayload, payload) {
-  arg0->payload = payload;
+  arg0->set_payload(payload);
 }
-
-struct Message {
-  class Checkpoint {
-   public:
-    serialization::Point* mutable_time() {
-      return &time_;
-    }
-    const serialization::Point& time() const {
-      return time_;
-    }
-
-    int payload = 0;
-
-   private:
-    serialization::Point time_;
-  };
-  google::protobuf::RepeatedPtrField<Checkpoint> checkpoint;
-};
 
 class CheckpointerTest : public ::testing::Test {
  protected:
+  using Message = serialization::CheckpointerTestMessage;
+
   CheckpointerTest()
       : checkpointer_(writer_.AsStdFunction(),
                       reader_.AsStdFunction()) {}
@@ -179,13 +164,13 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAtOrBefore) {
       checkpointer_.ReadFromCheckpointAtOrBefore(Instant() + 1 * Second),
       StatusIs(absl::StatusCode::kNotFound));
 
-  EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 1)));
+  EXPECT_CALL(reader_, Call(Property(&Message::Checkpoint::payload, 1)));
   EXPECT_OK(checkpointer_.ReadFromCheckpointAtOrBefore(t1));
 
-  EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 2)));
+  EXPECT_CALL(reader_, Call(Property(&Message::Checkpoint::payload, 2)));
   EXPECT_OK(checkpointer_.ReadFromCheckpointAtOrBefore(t2 + 1 * Second));
 
-  EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)))
+  EXPECT_CALL(reader_, Call(Property(&Message::Checkpoint::payload, 3)))
       .WillOnce(Return(absl::CancelledError()));
   EXPECT_THAT(checkpointer_.ReadFromCheckpointAtOrBefore(t3),
               StatusIs(absl::StatusCode::kCancelled));
@@ -208,10 +193,10 @@ TEST_F(CheckpointerTest, ReadFromCheckpointAt) {
                                                  reader_.AsStdFunction()),
               StatusIs(absl::StatusCode::kNotFound));
 
-  EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 2)));
+  EXPECT_CALL(reader_, Call(Property(&Message::Checkpoint::payload, 2)));
   EXPECT_OK(checkpointer_.ReadFromCheckpointAt(t2, reader_.AsStdFunction()));
 
-  EXPECT_CALL(reader_, Call(Field(&Message::Checkpoint::payload, 3)))
+  EXPECT_CALL(reader_, Call(Property(&Message::Checkpoint::payload, 3)))
       .WillOnce(Return(absl::CancelledError()));
   EXPECT_THAT(checkpointer_.ReadFromCheckpointAt(t3, reader_.AsStdFunction()),
               StatusIs(absl::StatusCode::kCancelled));
@@ -225,15 +210,15 @@ TEST_F(CheckpointerTest, Serialization) {
   checkpointer_.WriteToCheckpoint(t);
 
   Message m;
-  checkpointer_.WriteToMessage(&m.checkpoint);
-  EXPECT_EQ(2, m.checkpoint.size());
-  EXPECT_EQ(10, m.checkpoint[0].time().scalar().magnitude());
-  EXPECT_EQ(23, m.checkpoint[1].time().scalar().magnitude());
+  checkpointer_.WriteToMessage(m.mutable_checkpoint());
+  EXPECT_EQ(2, m.checkpoint().size());
+  EXPECT_EQ(10, m.checkpoint()[0].time().scalar().magnitude());
+  EXPECT_EQ(23, m.checkpoint()[1].time().scalar().magnitude());
 
   auto const checkpointer =
       Checkpointer<Message>::ReadFromMessage(writer_.AsStdFunction(),
                                              reader_.AsStdFunction(),
-                                             m.checkpoint);
+                                             m.checkpoint());
   EXPECT_EQ(Instant() + 10 * Second, checkpointer->oldest_checkpoint());
 }
 
