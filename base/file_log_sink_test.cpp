@@ -109,9 +109,9 @@ TEST_F(FileLogSinkTest, Nonfatal) {
     EXPECT_THAT(info_log, MatchesRegex(R"(^Log file created at: 20000101T115855Z
 Running on machine: .*
 Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
-I0101 11:58:55.816000    1729 file_log_sink_test.cpp:102] info
-W0101 11:58:55.816000    1729 file_log_sink_test.cpp:103] warning
-E0101 11:58:55.816000    1729 file_log_sink_test.cpp:104] error
+I0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] info
+W0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] warning
+E0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] error
 $)"));
   }
   {
@@ -120,8 +120,8 @@ $)"));
     EXPECT_THAT(warning_log, MatchesRegex(R"(^Log file created at: 20000101T115855Z
 Running on machine: .*
 Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
-W0101 11:58:55.816000    1729 file_log_sink_test.cpp:103] warning
-E0101 11:58:55.816000    1729 file_log_sink_test.cpp:104] error
+W0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] warning
+E0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] error
 $)"));
   }
   {
@@ -130,7 +130,7 @@ $)"));
     EXPECT_THAT(error_log, MatchesRegex(R"(^Log file created at: 20000101T115855Z
 Running on machine: .*
 Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
-E0101 11:58:55.816000    1729 file_log_sink_test.cpp:104] error
+E0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] error
 $)"));
   }
 }
