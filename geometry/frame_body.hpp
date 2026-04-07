@@ -3,6 +3,7 @@
 #include "geometry/frame.hpp"
 
 #include <string>
+#include <string_view>
 
 #include "base/fingerprint2011.hpp"
 #include "google/protobuf/descriptor.h"
@@ -14,9 +15,12 @@ namespace internal {
 
 using namespace principia::base::_fingerprint2011;
 
-// Utility for fingerprinting.
+// Utilities for fingerprinting.
 inline uint32_t Fingerprint(std::string const& s) {
   return Fingerprint2011(s.c_str(), s.size()) & 0xFFFFFFFF;
+}
+inline uint32_t Fingerprint(std::string_view const s) {
+  return Fingerprint2011(s.data(), s.size()) & 0xFFFFFFFF;
 }
 
 template<typename FrameTag,
@@ -27,7 +31,7 @@ void Frame<FrameTag, motion_, handedness_, tag_>::WriteToMessage(
   not_null<serialization::Frame*> const message) {
   if constexpr (google::protobuf::is_proto_enum<FrameTag>::value) {
     static_assert(has_tag);
-    std::string const& tag_type_full_name =
+    std::string_view const tag_type_full_name =
         google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
     message->set_tag_type_fingerprint(Fingerprint(tag_type_full_name));
@@ -56,7 +60,7 @@ void Frame<FrameTag, motion_, handedness_, tag_>::ReadFromMessage(
     serialization::Frame const& message)
   requires(google::protobuf::is_proto_enum<FrameTag>::value) {
   static_assert(has_tag);
-  std::string const& tag_type_full_name =
+  std::string_view const tag_type_full_name =
       google::protobuf::GetEnumDescriptor<Tag>()->full_name();
 
   CHECK_EQ(Fingerprint(tag_type_full_name), message.tag_type_fingerprint())
@@ -97,7 +101,7 @@ inline void ReadFrameFromMessage(
   for (int i = 0; i < frame_descriptor->enum_type_count(); ++i) {
     const google::protobuf::EnumDescriptor* enum_type_descriptor =
         frame_descriptor->enum_type(i);
-    std::string const& enum_type_full_name = enum_type_descriptor->full_name();
+    auto const enum_type_full_name = enum_type_descriptor->full_name();
     if (Fingerprint(enum_type_full_name) == message.tag_type_fingerprint()) {
       enum_value_descriptor =
           enum_type_descriptor->FindValueByNumber(message.tag());
