@@ -66,7 +66,8 @@ class FlightPlanOptimizationDriver {
   std::optional<Parameters> last_parameters_ ABSL_GUARDED_BY(lock_);
 
   // The last flight plan evaluated by the optimizer.
-  not_null<std::shared_ptr<FlightPlan>> last_flight_plan_ ABSL_GUARDED_BY(lock_);
+  not_null<std::shared_ptr<FlightPlan>> last_flight_plan_
+      ABSL_GUARDED_BY(lock_);
 };
 
 }  // namespace internal
