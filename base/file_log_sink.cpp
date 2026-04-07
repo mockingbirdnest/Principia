@@ -24,7 +24,7 @@ FileLogSink::FileLogSink(std::filesystem::path path, std::string extension)
 void FileLogSink::Send(const absl::LogEntry& entry) {
   entry.log_severity();
   for (auto const severity : absl::LogSeverities()) {
-    if (severity < entry.log_severity()) {
+    if (severity > entry.log_severity()) {
       break;
     }
     auto& file = files_[static_cast<int>(severity)];
@@ -63,7 +63,13 @@ void FileLogSink::Send(const absl::LogEntry& entry) {
       file << "Running on machine: " << computer_name << "\n";
       file << "Log line format: [IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg\n";
     }
-    file << entry.text_message_with_prefix_and_newline();
+    // FATAL messages are sent twice, first without and then with the
+    // stacktrace.  Log the message only once.
+    if (entry.stacktrace().empty()) {
+      file << entry.text_message_with_prefix_and_newline();
+    } else {
+      file << entry.stacktrace();
+    }
     if (severity > buffered_level_) {
       file.flush();
     }
