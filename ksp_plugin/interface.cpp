@@ -29,7 +29,6 @@
 #include "absl/log/globals.h"
 #include "absl/log/initialize.h"
 #include "absl/log/internal/globals.h"
-#include "absl/log/internal/vlog_config.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "base/array.hpp"
@@ -689,7 +688,7 @@ int __cdecl principia__GetSuppressedLogging() {
 
 int __cdecl principia__GetVerboseLogging() {
   journal::Method<journal::GetVerboseLogging> m;
-  int const v = absl::log_internal::UpdateGlobalVLogLevel(0);
+  int const v = absl::SetGlobalVLogLevel(0);
   absl::SetGlobalVLogLevel(v);
   return m.Return(v);
 }
