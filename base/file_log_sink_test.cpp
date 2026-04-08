@@ -10,6 +10,7 @@
 namespace principia {
 namespace base {
 
+using ::testing::ContainsRegex;
 using ::testing::HasSubstr;
 using ::testing::MatchesRegex;
 using ::testing::Not;
@@ -94,6 +95,69 @@ TEST_F(FileLogSinkDeathTest, SetBufferedLevel) {
   }
 }
 
+TEST_F(FileLogSinkDeathTest, Fatal) {
+  EXPECT_DEATH(
+      {
+        absl::InitializeLog();
+        static FileLogSink* sink = new FileLogSink("FileLogSinkTest.", ".log");
+        absl::AddLogSink(sink);
+        LOG(INFO).WithTimestamp(j2000_).WithThreadID(1729) << "info";
+        LOG(WARNING).WithTimestamp(j2000_).WithThreadID(1729) << "warning";
+        LOG(ERROR).WithTimestamp(j2000_).WithThreadID(1729) << "error";
+        LOG(FATAL).WithTimestamp(j2000_).WithThreadID(1729) << "fatal";
+      },
+      "fatal");
+  {
+    std::ifstream info_file("FileLogSinkTest.INFO.20000101T115855Z.log");
+    std::string const info_log{std::istreambuf_iterator(info_file), {}};
+    EXPECT_THAT(info_log, ContainsRegex(R"(^Log file created at: 20000101T115855Z
+Running on machine: .*
+Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
+I0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] info
+W0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] warning
+E0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] error
+F0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
+\*\*\* Check failure stack trace: \*\*\*
+)"));
+  }
+  {
+    std::ifstream warning_file("FileLogSinkTest.WARNING.20000101T115855Z.log");
+    std::string const warning_log{std::istreambuf_iterator(warning_file), {}};
+    EXPECT_THAT(warning_log, ContainsRegex(R"(^Log file created at: 20000101T115855Z
+Running on machine: .*
+Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
+W0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] warning
+E0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] error
+F0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
+\*\*\* Check failure stack trace: \*\*\*
+    @   [0-9A-F]{16}  principia::base::FileLogSinkDeathTest_Fatal_Test::TestBody
+)"));
+  }
+  {
+    std::ifstream error_file("FileLogSinkTest.ERROR.20000101T115855Z.log");
+    std::string const error_log{std::istreambuf_iterator(error_file), {}};
+    EXPECT_THAT(error_log, ContainsRegex(R"(^Log file created at: 20000101T115855Z
+Running on machine: .*
+Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
+E0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] error
+F0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
+\*\*\* Check failure stack trace: \*\*\*
+    @   [0-9A-F]{16}  principia::base::FileLogSinkDeathTest_Fatal_Test::TestBody
+)"));
+  }
+  {
+    std::ifstream fatal_file("FileLogSinkTest.FATAL.20000101T115855Z.log");
+    std::string const fatal_log{std::istreambuf_iterator(fatal_file), {}};
+    EXPECT_THAT(fatal_log, ContainsRegex(R"(^Log file created at: 20000101T115855Z
+Running on machine: .*
+Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
+F0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
+\*\*\* Check failure stack trace: \*\*\*
+    @   [0-9A-F]{16}  principia::base::FileLogSinkDeathTest_Fatal_Test::TestBody
+)"));
+  }
+}
+
 TEST_F(FileLogSinkTest, Nonfatal) {
   absl::InitializeLog();
   static FileLogSink* sink =
@@ -106,32 +170,32 @@ TEST_F(FileLogSinkTest, Nonfatal) {
   {
     std::ifstream info_file("FileLogSinkTest.INFO.20000101T115855Z.log");
     std::string const info_log{std::istreambuf_iterator(info_file), {}};
-    EXPECT_THAT(info_log, MatchesRegex(R"(^Log file created at: 20000101T115855Z
+    EXPECT_THAT(info_log, MatchesRegex(R"(Log file created at: 20000101T115855Z
 Running on machine: .*
 Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
 I0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] info
 W0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] warning
 E0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] error
-$)"));
+)"));
   }
   {
     std::ifstream warning_file("FileLogSinkTest.WARNING.20000101T115855Z.log");
     std::string const warning_log{std::istreambuf_iterator(warning_file), {}};
-    EXPECT_THAT(warning_log, MatchesRegex(R"(^Log file created at: 20000101T115855Z
+    EXPECT_THAT(warning_log, MatchesRegex(R"(Log file created at: 20000101T115855Z
 Running on machine: .*
 Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
 W0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] warning
 E0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] error
-$)"));
+)"));
   }
   {
     std::ifstream error_file("FileLogSinkTest.ERROR.20000101T115855Z.log");
     std::string const error_log{std::istreambuf_iterator(error_file), {}};
-    EXPECT_THAT(error_log, MatchesRegex(R"(^Log file created at: 20000101T115855Z
+    EXPECT_THAT(error_log, MatchesRegex(R"(Log file created at: 20000101T115855Z
 Running on machine: .*
 Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
 E0101 11:58:55.816000    1729 file_log_sink_test.cpp:\d+] error
-$)"));
+)"));
   }
 }
 
