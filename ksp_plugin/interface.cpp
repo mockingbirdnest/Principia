@@ -690,7 +690,7 @@ int __cdecl principia__GetSuppressedLogging() {
 int __cdecl principia__GetVerboseLogging() {
   journal::Method<journal::GetVerboseLogging> m;
   int const v = absl::log_internal::UpdateGlobalVLogLevel(0);
-  absl::log_internal::UpdateGlobalVLogLevel(v);
+  absl::SetGlobalVLogLevel(v);
   return m.Return(v);
 }
 
