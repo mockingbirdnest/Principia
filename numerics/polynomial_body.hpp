@@ -66,9 +66,6 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
       return ReadFromMessage<HornerWithoutFMA>(message);
     default:
       LOG(FATAL) << "Unexpected evaluator " << message.DebugString();
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-      std::abort();
-#endif
   }
 }
 
@@ -113,9 +110,6 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
     PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(24);
     default:
       LOG(FATAL) << "Unexpected degree " << message.degree();
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-      std::abort();
-#endif
   }
 }
 
