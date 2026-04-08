@@ -673,7 +673,6 @@ int __cdecl principia__GetBufferedLogging() {
 int __cdecl principia__GetStderrLogging() {
   journal::Method<journal::GetStderrLogging> m;
   return m.Return(static_cast<int>(absl::StderrThreshold()));
-  ;
 }
 
 void __cdecl principia__GetCPUIDFeatureFlags(bool* const has_avx,
