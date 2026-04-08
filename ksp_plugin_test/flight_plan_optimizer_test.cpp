@@ -10,6 +10,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "astronomy/date_time.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
@@ -18,7 +21,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -92,14 +94,6 @@ using namespace principia::testing_utilities::_numerics;
 
 class FlightPlanOptimizerTest : public testing::Test {
  protected:
-  FlightPlanOptimizerTest() {
-    google::SetStderrLogging(google::INFO);
-  }
-
-  ~FlightPlanOptimizerTest() override {
-    google::SetStderrLogging(FLAGS_stderrthreshold);
-  }
-
   static Celestial const& FindCelestialByName(std::string_view const name,
                                               Plugin const& plugin) {
     for (Index index = 0; plugin.HasCelestial(index); ++index) {
@@ -109,6 +103,9 @@ class FlightPlanOptimizerTest : public testing::Test {
       }
     }
     LOG(FATAL) << "No celestial named " << name;
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
+    std::abort();
+#endif
   }
 
   static void ComputeFlyby(
@@ -204,6 +201,8 @@ class FlightPlanOptimizerTest : public testing::Test {
     }
   }
 
+  absl::ScopedStderrThreshold scoped_stderr_threshold_{
+      absl::LogSeverityAtLeast::kInfo};
   std::unique_ptr<Plugin const> plugin_;
   FlightPlan* flight_plan_ = nullptr;
 };

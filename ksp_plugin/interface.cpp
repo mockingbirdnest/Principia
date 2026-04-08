@@ -24,6 +24,12 @@
 #include <psapi.h>
 #endif
 
+#include "absl/log/check.h"
+#include "absl/log/die_if_null.h"
+#include "absl/log/globals.h"
+#include "absl/log/initialize.h"
+#include "absl/log/internal/globals.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "base/array.hpp"
 #include "base/base64.hpp"
@@ -34,7 +40,6 @@
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"  // 🧙 For NAMED.
 #include "base/not_null.hpp"
-#include "base/optional_logging.hpp"  // 🧙 For logging.
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
@@ -48,9 +53,7 @@
 #include "geometry/rotation.hpp"
 #include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
-#include "glog/logging.h"
 #include "google/protobuf/arena.h"
-#include "google/protobuf/stubs/logging.h"
 #include "integrators/integrators.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
@@ -212,16 +215,16 @@ serialization::OblateBody::Geopotential MakeGeopotential(
 
 serialization::GravityModel::Body MakeGravityModel(
     BodyParameters const& body_parameters) {
+  static constexpr char const nullopt[] = "nullopt";
   // Logging operators would dereference a null C string.
   auto const make_optional_c_string = [](char const* const c_string) {
-    return (c_string == nullptr) ? std::nullopt
-                                 : std::make_optional(c_string);
+    return (c_string == nullptr) ? nullopt : c_string;
   };
   auto const make_optional_geopotential_size =
       [](BodyGeopotentialElement const* const* const geopotential)
-      -> std::optional<std::int64_t> {
+      -> std::string {
     if (geopotential == nullptr) {
-      return std::nullopt;
+      return nullopt;
     } else {
       std::int64_t size = 0;
       for (BodyGeopotentialElement const* const* e = geopotential;
@@ -229,7 +232,7 @@ serialization::GravityModel::Body MakeGravityModel(
            ++e) {
         ++size;
       }
-      return size;
+      return absl::StrCat(size);
     }
   };
   LOG(INFO)
@@ -309,6 +312,9 @@ std::unique_ptr<google::compression::Compressor> NewCompressor(
     return google::compression::NewGipfeliCompressor();
   } else {
     LOG(FATAL) << "Unknown compressor " << compressor;
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
+    std::abort();
+#endif
   }
 }
 
@@ -324,6 +330,9 @@ NewEncoder(std::string_view const encoder) {
     return encoder;
   } else {
     LOG(FATAL) << "Unknown encoder " << encoder;
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
+    std::abort();
+#endif
   }
 }
 
@@ -401,7 +410,7 @@ void __cdecl principia__AdvanceTime(Plugin* const plugin,
                                     double const t,
                                     double const planetarium_rotation) {
   journal::Method<journal::AdvanceTime> m({plugin, t, planetarium_rotation});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->AdvanceTime(FromGameTime(*plugin, t), planetarium_rotation * Degree);
   return m.Return();
 }
@@ -411,7 +420,7 @@ void __cdecl principia__CatchUpLaggingVessels(
     Iterator** const collided_vessels) {
   journal::Method<journal::CatchUpLaggingVessels> m({plugin},
                                                     {collided_vessels});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   VesselSet collided_vessel_set;
   plugin->CatchUpLaggingVessels(collided_vessel_set);
   *collided_vessels =
@@ -424,7 +433,7 @@ void __cdecl principia__CatchUpLaggingVessels(
 QP __cdecl principia__CelestialFromParent(Plugin const* const plugin,
                                           int const celestial_index) {
   journal::Method<journal::CelestialFromParent> m({plugin, celestial_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToQP(plugin->CelestialFromParent(celestial_index)));
 }
 
@@ -433,14 +442,14 @@ double __cdecl principia__CelestialInitialRotationInDegrees(
     int const celestial_index) {
   journal::Method<journal::CelestialInitialRotationInDegrees> m(
       {plugin, celestial_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(plugin->CelestialInitialRotation(celestial_index) / Degree);
 }
 
 WXYZ __cdecl principia__CelestialRotation(Plugin const* const plugin,
                                           int const index) {
   journal::Method<journal::CelestialRotation> m({plugin, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToWXYZ(plugin->CelestialRotation(index).quaternion()));
 }
 
@@ -449,13 +458,13 @@ double __cdecl principia__CelestialRotationPeriod(
     int const celestial_index) {
   journal::Method<journal::CelestialRotationPeriod> m(
       {plugin, celestial_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(plugin->CelestialRotationPeriod(celestial_index) / Second);
 }
 
 WXYZ __cdecl principia__CelestialSphereRotation(Plugin const* const plugin) {
   journal::Method<journal::CelestialSphereRotation> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToWXYZ(plugin->CelestialSphereRotation().quaternion()));
 }
 
@@ -465,7 +474,7 @@ QP __cdecl principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
                                                      double const time) {
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
       {plugin, index, origin, time});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToQP(
       plugin->CelestialWorldDegreesOfFreedom(
           index,
@@ -489,21 +498,21 @@ void __cdecl principia__ClearFlags() {
 void __cdecl principia__ClearWorldRotationalReferenceFrame(
     Plugin* const plugin) {
   journal::Method<journal::ClearWorldRotationalReferenceFrame> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->ClearWorldRotationalReferenceFrame();
   return m.Return();
 }
 
 double __cdecl principia__CurrentTime(Plugin const* const plugin) {
   journal::Method<journal::CurrentTime> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToGameTime(*plugin, plugin->CurrentTime()));
 }
 
 void __cdecl principia__DeleteInterchange(void const** const native_pointer) {
   journal::Method<journal::DeleteInterchange> m({native_pointer},
                                                 {native_pointer});
-  CHECK_NOTNULL(native_pointer);
+  CHECK(native_pointer != nullptr);
   ::operator delete(const_cast<void*>(*native_pointer));
   *native_pointer = nullptr;
   return m.Return();
@@ -513,7 +522,7 @@ void __cdecl principia__DeleteInterchange(void const** const native_pointer) {
 // `plugin` must not be null.  No transfer of ownership of `*plugin`, takes
 // ownership of `**plugin`.
 void __cdecl principia__DeletePlugin(Plugin const** const plugin) {
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   journal::Method<journal::DeletePlugin> m({plugin}, {plugin});
   LOG(INFO) << "Destroying Principia plugin";
   // We want to log before and after destroying the plugin since it is a pretty
@@ -561,9 +570,9 @@ void __cdecl principia__DeserializePlugin(
                                                  encoder},
                                                 {deserializer,
                                                  plugin});
-  CHECK_NOTNULL(serialization);
-  CHECK_NOTNULL(deserializer);
-  CHECK_NOTNULL(plugin);
+  CHECK(serialization != nullptr);
+  CHECK(deserializer != nullptr);
+  CHECK(plugin != nullptr);
 
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
@@ -571,9 +580,9 @@ void __cdecl principia__DeserializePlugin(
     *deserializer = new PushDeserializer(chunk_size,
                                          number_of_chunks,
                                          NewCompressor(compressor));
-    CHECK_NOTNULL(arena);
+    CHECK(arena != nullptr);
     not_null<serialization::Plugin*> const message =
-        Arena::CreateMessage<serialization::Plugin>(arena);
+        Arena::Create<serialization::Plugin>(arena);
     (*deserializer)->Start(
         message,
         [plugin](google::protobuf::Message const& message) {
@@ -602,14 +611,14 @@ void __cdecl principia__DeserializePlugin(
 // `plugin` must not be null.  No transfer of ownership.
 void __cdecl principia__EndInitialization(Plugin* const plugin) {
   journal::Method<journal::EndInitialization> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->EndInitialization();
   return m.Return();
 }
 
 int __cdecl principia__EquipotentialCount(Plugin* const plugin) {
   journal::Method<journal::EquipotentialCount> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->geometric_potential_plotter().RefreshEquipotentials();
   auto const* equipotentials =
       plugin->geometric_potential_plotter().equipotentials();
@@ -644,24 +653,26 @@ void __cdecl principia__FreeVesselsAndPartsAndCollectPileUps(
     double const delta_t) {
   journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m(
       {plugin, delta_t});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->FreeVesselsAndPartsAndCollectPileUps(delta_t * Second);
   return m.Return();
 }
 
 int __cdecl principia__GetBufferDuration() {
   journal::Method<journal::GetBufferDuration> m;
-  return m.Return(FLAGS_logbufsecs);
+  LOG(FATAL) << "NYI";
+  return m.Return(0);
 }
 
 int __cdecl principia__GetBufferedLogging() {
   journal::Method<journal::GetBufferedLogging> m;
-  return m.Return(FLAGS_logbuflevel);
+  LOG(FATAL) << "NYI";
+  return m.Return(0);
 }
 
 int __cdecl principia__GetStderrLogging() {
   journal::Method<journal::GetStderrLogging> m;
-  return m.Return(FLAGS_stderrthreshold);
+  return m.Return(static_cast<int>(absl::StderrThreshold()));
 }
 
 void __cdecl principia__GetCPUIDFeatureFlags(bool* const has_avx,
@@ -672,12 +683,14 @@ void __cdecl principia__GetCPUIDFeatureFlags(bool* const has_avx,
 
 int __cdecl principia__GetSuppressedLogging() {
   journal::Method<journal::GetSuppressedLogging> m;
-  return m.Return(FLAGS_minloglevel);
+  return m.Return(static_cast<int>(absl::MinLogLevel()));
 }
 
 int __cdecl principia__GetVerboseLogging() {
   journal::Method<journal::GetVerboseLogging> m;
-  return m.Return(FLAGS_v);
+  int const v = absl::SetGlobalVLogLevel(0);
+  absl::SetGlobalVLogLevel(v);
+  return m.Return(v);
 }
 
 void __cdecl principia__GetVersion(
@@ -685,9 +698,9 @@ void __cdecl principia__GetVersion(
     char const** const version,
     char const** const platform) {
   journal::Method<journal::GetVersion> m({build_date, version, platform});
-  *CHECK_NOTNULL(build_date) = BuildDate;
-  *CHECK_NOTNULL(version) = Version;
-  *CHECK_NOTNULL(platform) = platform_with_cpu_features;
+  *ABSL_DIE_IF_NULL(build_date) = BuildDate;
+  *ABSL_DIE_IF_NULL(version) = Version;
+  *ABSL_DIE_IF_NULL(platform) = platform_with_cpu_features;
   return m.Return();
 }
 
@@ -698,20 +711,20 @@ bool __cdecl principia__HasEncounteredApocalypse(
   // Ownership will be transfered to the marshmallow.
   std::string details_string;
   bool const has_encountered_apocalypse =
-      CHECK_NOTNULL(plugin)->HasEncounteredApocalypse(&details_string);
+      ABSL_DIE_IF_NULL(plugin)->HasEncounteredApocalypse(&details_string);
   UniqueArray<char> allocated_details(details_string.size() + 1);
   std::memcpy(allocated_details.data.get(),
               details_string.data(),
               details_string.size() + 1);
-  *CHECK_NOTNULL(details) = allocated_details.data.release();
+  *ABSL_DIE_IF_NULL(details) = allocated_details.data.release();
   return m.Return(has_encountered_apocalypse);
 }
 
 bool __cdecl principia__HasVessel(Plugin* const plugin,
                                   char const* const vessel_guid) {
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(vessel_guid);
+  CHECK(plugin != nullptr);
+  CHECK(vessel_guid != nullptr);
   return m.Return(plugin->HasVessel(vessel_guid));
 }
 
@@ -723,7 +736,7 @@ bool __cdecl principia__HasVessel(Plugin* const plugin,
 // "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
 void __cdecl principia__InitGoogleLogging() {
-  if (google::IsGoogleLoggingInitialized()) {
+  if (absl::log_internal::IsInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
 #ifdef _MSC_VER
@@ -732,21 +745,14 @@ void __cdecl principia__InitGoogleLogging() {
 #else
     std::freopen("stderr.log", "w", stderr);
 #endif
+#ifdef ABSL_LOG_IS_COMPLETE
     google::SetLogFilenameExtension(".log");
     google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
     google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
     google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
     google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
-    google::InitGoogleLogging("Principia");
-
-    google::protobuf::SetLogHandler(
-        [](google::protobuf::LogLevel const level,
-           char const* const filename,
-           int const line,
-           std::string const& message) {
-          LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] "
-                              << message;
-        });
+#endif
+    absl::InitializeLog();
 
     LOG(ERROR) << "Initialized Google logging for Principia";
     LOG(ERROR) << "Principia version " << Version
@@ -775,7 +781,7 @@ void __cdecl principia__InitializeDownsamplingParameters(
     ConfigurationDownsamplingParameters const& downsampling_parameters) {
   journal::Method<journal::InitializeDownsamplingParameters> m(
       {plugin, downsampling_parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InitializeDownsamplingParameters(
       MakeDownsamplingParameters(downsampling_parameters));
   return m.Return();
@@ -787,7 +793,7 @@ void __cdecl principia__InitializeEphemerisParameters(
     ConfigurationFixedStepParameters const& fixed_step_parameters) {
   journal::Method<journal::InitializeEphemerisParameters> m(
       {plugin, accuracy_parameters, fixed_step_parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InitializeEphemerisParameters(
       MakeAccuracyParameters(accuracy_parameters),
       MakeFixedStepParameters(fixed_step_parameters));
@@ -799,7 +805,7 @@ void __cdecl principia__InitializeHistoryParameters(
     ConfigurationFixedStepParameters const& fixed_step_parameters) {
   journal::Method<journal::InitializeHistoryParameters> m(
       {plugin, fixed_step_parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InitializeHistoryParameters(
       MakeFixedStepParameters(fixed_step_parameters));
   return m.Return();
@@ -810,7 +816,7 @@ void __cdecl principia__InitializePsychohistoryParameters(
     ConfigurationAdaptiveStepParameters const& parameters) {
   journal::Method<journal::InitializePsychohistoryParameters> m(
       {plugin, parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InitializePsychohistoryParameters(
       MakeAdaptiveStepParameters(parameters));
   return m.Return();
@@ -834,7 +840,7 @@ void __cdecl principia__InsertCelestialAbsoluteCartesian(
        body_parameters,
        x, y, z,
        vx, vy, vz});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   serialization::InitialState::Cartesian::Body initial_state;
   initial_state.set_name(body_parameters.name);
   initial_state.set_x(x);
@@ -864,7 +870,7 @@ void __cdecl principia__InsertCelestialJacobiKeplerian(
        parent_index,
        body_parameters,
        keplerian_elements});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   serialization::InitialState::Keplerian::Body initial_state;
   initial_state.set_name(body_parameters.name);
   if (keplerian_elements != nullptr) {
@@ -907,7 +913,7 @@ void __cdecl principia__InsertOrKeepVessel(Plugin* const plugin,
                                            bool* inserted) {
   journal::Method<journal::InsertOrKeepVessel> m(
       {plugin, vessel_guid, vessel_name, parent_index, loaded}, {inserted});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   CHECK(vessel_guid != nullptr)
       << "name: "
       << (vessel_name == nullptr ? "null" : std::string_view(vessel_name));
@@ -954,7 +960,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
        part_rotation,
        part_angular_velocity,
        delta_t});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
 
   // We build the inertia tensor in the principal axes and then transform it to
   // RigidPart.
@@ -1007,7 +1013,7 @@ void __cdecl principia__InsertUnloadedPart(Plugin* const plugin,
                                            QP const from_parent) {
   journal::Method<journal::InsertUnloadedPart> m(
       {plugin, part_id, name, vessel_guid, from_parent});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->InsertUnloadedPart(
       part_id,
       name,
@@ -1023,7 +1029,7 @@ void __cdecl principia__LogError(char const* const file,
                                  int const line,
                                  char const* const text) {
   journal::Method<journal::LogError> m({file, line, text});
-  google::LogMessage(file, line, google::ERROR).stream() << text;
+  LOG(ERROR).AtLocation(file, line) << text;
   return m.Return();
 }
 
@@ -1031,7 +1037,7 @@ void __cdecl principia__LogFatal(char const* const file,
                                  int const line,
                                  char const* const text) {
   journal::Method<journal::LogFatal> m({file, line, text});
-  google::LogMessageFatal(file, line).stream() << text;
+  LOG(FATAL).AtLocation(file, line) << text;
   return m.Return();
 }
 
@@ -1039,7 +1045,7 @@ void __cdecl principia__LogInfo(char const* const file,
                                 int const line,
                                 char const* const text) {
   journal::Method<journal::LogInfo> m({file, line, text});
-  google::LogMessage(file, line).stream() << text;
+  LOG(INFO).AtLocation(file, line) << text;
   return m.Return();
 }
 
@@ -1047,7 +1053,7 @@ void __cdecl principia__LogWarning(char const* const file,
                                    int const line,
                                    char const* const text) {
   journal::Method<journal::LogWarning> m({file, line, text});
-  google::LogMessage(file, line, google::WARNING).stream() << text;
+  LOG(WARNING).AtLocation(file, line) << text;
   return m.Return();
 }
 
@@ -1058,7 +1064,7 @@ WXYZ __cdecl principia__NavballOrientation(
   journal::Method<journal::NavballOrientation> m({plugin,
                                                   sun_world_position,
                                                   ship_world_position});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const frame_field = plugin->NavballFrameField(
       FromXYZ<Position<World>>(sun_world_position));
   return m.Return(ToWXYZ(
@@ -1086,14 +1092,14 @@ Plugin* __cdecl principia__NewPlugin(
 
 void __cdecl principia__PrepareToReportCollisions(Plugin* const plugin) {
   journal::Method<journal::PrepareToReportCollisions> m({plugin});
-  CHECK_NOTNULL(plugin)->PrepareToReportCollisions();
+  ABSL_DIE_IF_NULL(plugin)->PrepareToReportCollisions();
   return m.Return();
 }
 
 void __cdecl principia__ReportGroundCollision(Plugin const* const plugin,
                                               uint32_t const part_id) {
   journal::Method<journal::ReportGroundCollision> m({plugin, part_id});
-  CHECK_NOTNULL(plugin)->ReportGroundCollision(part_id);
+  ABSL_DIE_IF_NULL(plugin)->ReportGroundCollision(part_id);
   return m.Return();
 }
 
@@ -1101,7 +1107,7 @@ void __cdecl principia__ReportPartCollision(Plugin const* const plugin,
                                             PartId const part1_id,
                                             PartId const part2_id) {
   journal::Method<journal::ReportPartCollision> m({plugin, part1_id, part2_id});
-  CHECK_NOTNULL(plugin)->ReportPartCollision(part1_id, part2_id);
+  ABSL_DIE_IF_NULL(plugin)->ReportPartCollision(part1_id, part2_id);
   return m.Return();
 }
 
@@ -1139,8 +1145,8 @@ char const* __cdecl principia__SerializePlugin(
                                                compressor,
                                                encoder},
                                               {serializer});
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(serializer);
+  CHECK(plugin != nullptr);
+  CHECK(serializer != nullptr);
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
@@ -1149,7 +1155,7 @@ char const* __cdecl principia__SerializePlugin(
                                      number_of_chunks,
                                      NewCompressor(compressor));
     not_null<serialization::Plugin*> const message =
-        Arena::CreateMessage<serialization::Plugin>(arena);
+        Arena::Create<serialization::Plugin>(arena);
     plugin->WriteToMessage(message);
     (*serializer)->Start(message);
   }
@@ -1167,7 +1173,7 @@ char const* __cdecl principia__SerializePlugin(
                                  &verification_plugin,
                                  compressor,
                                  encoder);
-    CHECK_NOTNULL(verification_plugin);
+    CHECK(verification_plugin != nullptr);
     LOG(INFO) << "Deleting verification plugin";
     delete verification_plugin;
     verification_plugin = nullptr;
@@ -1194,7 +1200,7 @@ char const* __cdecl principia__SerializePlugin(
 // Sets the maximum number of seconds which logs may be buffered for.
 void __cdecl principia__SetBufferDuration(int const seconds) {
   journal::Method<journal::SetBufferDuration> m({seconds});
-  FLAGS_logbufsecs = seconds;
+  LOG(FATAL) << "NYI";
   return m.Return();
 }
 
@@ -1202,7 +1208,7 @@ void __cdecl principia__SetBufferDuration(int const seconds) {
 // Log messages at a higher level are flushed immediately.
 void __cdecl principia__SetBufferedLogging(int const max_severity) {
   journal::Method<journal::SetBufferedLogging> m({max_severity});
-  FLAGS_logbuflevel = max_severity;
+  LOG(FATAL) << "NYI";
   return m.Return();
 }
 
@@ -1215,7 +1221,7 @@ void __cdecl principia__SetFlag(char const* const name,
 
 void __cdecl principia__SetMainBody(Plugin* const plugin, int const index) {
   journal::Method<journal::SetMainBody> m({plugin, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->SetMainBody(index);
   return m.Return();
 }
@@ -1226,7 +1232,7 @@ void __cdecl principia__SetStderrLogging(int const min_severity) {
   journal::Method<journal::SetStderrLogging> m({min_severity});
   // NOTE(egg): We could use `FLAGS_stderrthreshold` instead, the difference
   // seems to be a mutex.
-  google::SetStderrLogging(min_severity);
+  absl::SetStderrThreshold(static_cast<absl::LogSeverity>(min_severity));
   return m.Return();
 }
 
@@ -1234,21 +1240,21 @@ void __cdecl principia__SetStderrLogging(int const min_severity) {
 // suppressed.
 void __cdecl principia__SetSuppressedLogging(int const min_severity) {
   journal::Method<journal::SetSuppressedLogging> m({min_severity});
-  FLAGS_minloglevel = min_severity;
+  absl::SetMinLogLevel(static_cast<absl::LogSeverityAtLeast>(min_severity));
   return m.Return();
 }
 
 // Show all VLOG(m) messages for `m <= level`.
 void __cdecl principia__SetVerboseLogging(int const level) {
   journal::Method<journal::SetVerboseLogging> m({level});
-  FLAGS_v = level;
+  absl::SetGlobalVLogLevel(level);
   return m.Return();
 }
 
 void __cdecl principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
                                                          int const index) {
   journal::Method<journal::SetWorldRotationalReferenceFrame> m({plugin, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->SetWorldRotationalReferenceFrame(index);
   return m.Return();
 }
@@ -1256,7 +1262,7 @@ void __cdecl principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
 XYZ __cdecl principia__UnmanageableVesselVelocity(Plugin const* const plugin,
                                                   QP const degrees_of_freedom,
                                                   int const parent_index) {
-  return ToXYZ(CHECK_NOTNULL(plugin)->UnmanageableVesselVelocity(
+  return ToXYZ(ABSL_DIE_IF_NULL(plugin)->UnmanageableVesselVelocity(
       FromQP<RelativeDegreesOfFreedom<AliceSun>>(degrees_of_freedom),
       parent_index));
 }
@@ -1269,7 +1275,7 @@ void __cdecl principia__UpdateCelestialHierarchy(Plugin const* const plugin,
   journal::Method<journal::UpdateCelestialHierarchy> m({plugin,
                                                         celestial_index,
                                                         parent_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->UpdateCelestialHierarchy(celestial_index, parent_index);
   return m.Return();
 }
@@ -1278,7 +1284,7 @@ void __cdecl principia__UpdatePrediction(
     Plugin const* const plugin,
     char const* const* const vessel_guids) {
   journal::Method<journal::UpdatePrediction> m({plugin, vessel_guids});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   std::vector<GUID> guids;
   for (char const* const* c = vessel_guids;
        *c != nullptr;

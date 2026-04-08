@@ -7,9 +7,10 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/tags.hpp"
 #include "geometry/barycentre_calculator.hpp"
-#include "glog/logging.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/чебышёв_lobatto.hpp"

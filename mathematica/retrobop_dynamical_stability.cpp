@@ -9,6 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "astronomy/stabilize_ksp.hpp"
 #include "base/bundle.hpp"
@@ -20,7 +22,6 @@
 #include "geometry/instant.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "integrators/integrators.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"

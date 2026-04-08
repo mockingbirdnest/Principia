@@ -2,8 +2,9 @@
 
 #include "base/bits.hpp"
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/macros.hpp"  // 🧙 For CONSTEXPR_DCHECK.
-#include "glog/logging.h"
 
 namespace principia {
 namespace base {

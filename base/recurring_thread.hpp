@@ -49,7 +49,7 @@ class BaseRecurringThread {
   std::chrono::milliseconds const period_;
 
   absl::Mutex jthread_lock_;
-  std::jthread jthread_ GUARDED_BY(jthread_lock_);
+  std::jthread jthread_ ABSL_GUARDED_BY(jthread_lock_);
 };
 
 // A template for an action that returns a value.
@@ -79,8 +79,8 @@ class RecurringThread : public BaseRecurringThread {
   Action const action_;
 
   absl::Mutex input_output_lock_;
-  std::optional<Input> input_ GUARDED_BY(input_output_lock_);
-  std::optional<Output> output_ GUARDED_BY(input_output_lock_);
+  std::optional<Input> input_ ABSL_GUARDED_BY(input_output_lock_);
+  std::optional<Output> output_ ABSL_GUARDED_BY(input_output_lock_);
 };
 
 // A template for an action that returns no value.
@@ -106,7 +106,7 @@ class RecurringThread<Input, void> : public BaseRecurringThread {
   Action const action_;
 
   absl::Mutex input_lock_;
-  std::optional<Input> input_ GUARDED_BY(input_lock_);
+  std::optional<Input> input_ ABSL_GUARDED_BY(input_lock_);
 };
 
 }  // namespace internal

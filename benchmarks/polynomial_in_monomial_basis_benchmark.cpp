@@ -4,13 +4,14 @@
 #include <random>
 #include <tuple>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/frames.hpp"
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"
 #include "quantities/concepts.hpp"

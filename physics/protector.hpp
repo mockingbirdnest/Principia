@@ -39,8 +39,8 @@ class Protector {
 
  private:
   absl::Mutex lock_;
-  std::multimap<Instant, Callback> callbacks_ GUARDED_BY(lock_);
-  std::multiset<Instant> protection_start_times_ GUARDED_BY(lock_);
+  std::multimap<Instant, Callback> callbacks_ ABSL_GUARDED_BY(lock_);
+  std::multiset<Instant> protection_start_times_ ABSL_GUARDED_BY(lock_);
 };
 
 }  // namespace internal

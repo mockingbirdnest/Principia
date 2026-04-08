@@ -8,8 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "base/not_null.hpp"
-#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -38,7 +40,7 @@ using namespace principia::quantities::_quantities;
 class ErrorAnalysisTest : public ::testing::Test {
  protected:
   ErrorAnalysisTest() {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   }
 };
 
@@ -70,12 +72,12 @@ TEST_F(ErrorAnalysisTest,
 
 TEST_F(ErrorAnalysisTest,
        DISABLED_RetrobopDynamicalStability_StatisticallyAnalyseStability) {
-  google::LogToStderr();
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   StatisticallyAnalyseStability();
 }
 
 TEST_F(ErrorAnalysisTest, DISABLED_SECULAR_LocalErrorAnalysis) {
-  google::LogToStderr();
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   ::std::vector<std::string> argv = ::testing::internal::GetArgvs();
   std::map<std::string, std::optional<std::string>> flags;
   for (int i = 2; i < argv.size(); ++i) {

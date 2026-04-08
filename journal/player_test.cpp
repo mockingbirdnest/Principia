@@ -5,9 +5,11 @@
 #include <string>
 #include <thread>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "benchmark/benchmark.h"
-#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
@@ -130,7 +132,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
     ++count;
     // Reset logging after each method so as to output all messages irrespective
     // of what the game did.
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverity::kInfo);
     LOG_IF(ERROR, (count % 100'000) == 0) << count
                                           << " journal entries replayed";
   }

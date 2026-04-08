@@ -550,6 +550,9 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     default:
       LOG(FATAL) << message.DebugString();
   }
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
+  std::abort();
+#endif
 }
 
 #undef PRINCIPIA_READ_FSS_INTEGRATOR_INSTANCE_ELMS

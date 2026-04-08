@@ -9,9 +9,10 @@
 #include <random>
 #include <string>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/array.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

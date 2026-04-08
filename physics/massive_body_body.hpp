@@ -6,8 +6,9 @@
 #include <string>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "geometry/frame.hpp"
-#include "glog/logging.h"
 #include "google/protobuf/descriptor.h"
 #include "physics/rotating_body.hpp"
 #include "quantities/constants.hpp"
@@ -109,7 +110,7 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 // This macro is a bit ugly, but trust me, it's better than the alternatives.
 #define ROTATING_BODY_TAG_VALUE_CASE(value)                   \
   case serialization::Frame::value:                           \
-    CHECK_NOTNULL(rotating_body_extension);                   \
+    CHECK(rotating_body_extension != nullptr);                \
     return RotatingBody<Frame<Tag,                            \
                               Inertial,                       \
                               Handedness::Right,              \

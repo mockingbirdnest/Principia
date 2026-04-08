@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "astronomy/stabilize_ksp.hpp"
 #include "base/macros.hpp"  // 🧙 For MSVC_ONLY_TEST.
 #include "base/not_null.hpp"
@@ -13,7 +16,6 @@
 #include "geometry/instant.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -83,7 +85,7 @@ class KSPResonanceTest : public ::testing::Test {
             SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt") {
     // This test is mostly a tool for investigating orbit stability, so we want
     // logging.
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   }
 
   not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris() {

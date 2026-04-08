@@ -2,12 +2,14 @@
 #include <memory>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_UNICODE_PATH.
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
-#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -64,7 +66,7 @@ using namespace principia::testing_utilities::_statistics;
 class МолнияOrbitTest : public ::testing::Test {
  protected:
   static void SetUpTestCase() {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
     ephemeris_ = solar_system_2000_.MakeEphemeris(
         /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},

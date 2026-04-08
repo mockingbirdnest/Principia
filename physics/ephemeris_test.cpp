@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "base/algebra.hpp"
@@ -22,7 +24,6 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/space.hpp"
 #include "gipfeli/gipfeli.h"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
@@ -1395,7 +1396,7 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   serialization::DiscreteTrajectory message;
   trajectory1.WriteToMessage(&message, /*tracked=*/{}, /*exact=*/{});
   std::string uncompressed;
-  message.SerializePartialToString(&uncompressed);
+  CHECK(message.SerializePartialToString(&uncompressed));
   EXPECT_THAT(uncompressed.size(),
               AnyOf(21'596,    // ZFP 85: Windows, Ubuntu, macOS AVX.
                     21'597,    // ZFP 4112: Windows.

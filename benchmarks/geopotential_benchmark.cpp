@@ -4,6 +4,8 @@
 #include <random>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"  // 🧙 For fortran_astrodynamics_toolkit_.  // NOLINT
 #include "astronomy/frames.hpp"
 #include "base/algebra.hpp"
@@ -13,7 +15,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/legendre_normalization_factor.mathematica.h"

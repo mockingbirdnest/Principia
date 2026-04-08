@@ -7,6 +7,9 @@
 #include <tuple>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
@@ -17,7 +20,6 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -96,7 +98,7 @@ class SolarSystemDynamicsTest : public ::testing::Test {
   };
 
   SolarSystemDynamicsTest() {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
     for (int primary = 0; primary <= SolarSystemFactory::LastBody; ++primary) {
       for (int i = SolarSystemFactory::Sun + 1;
            i <= SolarSystemFactory::LastBody;
@@ -629,7 +631,7 @@ Logger* SolarSystemDynamicsConvergenceTest::logger_ = nullptr;
 
 // This takes 7-8 minutes to run.
 TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
-  google::LogToStderr();
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   Time const integration_duration = 1 * JulianYear;
 
   SolarSystem<ICRS> const solar_system_at_j2000(

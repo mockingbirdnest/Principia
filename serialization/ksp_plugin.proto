@@ -150,7 +150,7 @@ message Plugin {
   reserved "prolongation_integrator", "prediction_integrator";
   // Pre-Bourbaki.
   reserved 2;
-  reserved "/*celestial*/";
+  reserved "__celestial__";
   // Pre-Erdős.
   reserved 14;
   reserved "prediction_parameters";
@@ -185,7 +185,7 @@ message Vessel {
 
   // Pre-Буняковский.
   reserved 2, 3, 5;
-  reserved "/*prediction*/", "history_and_prolongation", "owned_prolongation";
+  reserved "__prediction__", "history_and_prolongation", "owned_prolongation";
   // Pre-Cardano.
   reserved 6, 7, 8, 9, 11, 12;
   reserved "prolongation_adaptive_step_parameters",

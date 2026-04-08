@@ -74,12 +74,6 @@
     <ClInclude Include="get_line_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="optional_logging.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="optional_logging_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="version.generated.h">
       <Filter>Header Files</Filter>
     </ClInclude>

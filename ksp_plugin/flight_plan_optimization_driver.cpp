@@ -5,10 +5,11 @@
 #include <thread>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/stoppable_thread.hpp"
-#include "glog/logging.h"
 
 namespace principia {
 namespace ksp_plugin {

@@ -10,11 +10,12 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/array.hpp"
 #include "base/not_null.hpp"
 #include "gipfeli/compression.h"
 #include "gipfeli/gipfeli.h"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "serialization/geometry.pb.h"
@@ -185,8 +186,8 @@ TEST_F(PullSerializerTest, SerializationThreading) {
   int const byte_size = trajectory->ByteSize();
   auto expected_serialized_trajectory =
       std::make_unique<std::uint8_t[]>(byte_size);
-  trajectory->SerializePartialToArray(&expected_serialized_trajectory[0],
-                                      byte_size);
+  CHECK(trajectory->SerializePartialToArray(&expected_serialized_trajectory[0],
+                                            byte_size));
 
   // Run this test repeatedly to detect threading issues (it will flake in case
   // of problems).

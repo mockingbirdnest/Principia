@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
@@ -16,7 +18,6 @@
 #include "base/serialization.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
@@ -152,13 +153,13 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
     principia__DeletePlugin(nullptr);
-  }, "non NULL");
+  }, "!= nullptr");
   EXPECT_DEATH({
     principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     bool inserted;
     principia__InsertOrKeepVessel(plugin,
@@ -167,20 +168,20 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
                                   parent_index,
                                   /*loaded=*/false,
                                   &inserted);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__InsertUnloadedPart(plugin,
                                   part_id,
                                   part_name,
                                   vessel_guid,
                                   parent_relative_degrees_of_freedom);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__VesselFromParent(plugin, celestial_index, vessel_guid);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__CelestialFromParent(plugin, celestial_index);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__LogFatal("a file", 1729, "a fatal error");
   }, "a file:1729.*a fatal error");
@@ -188,18 +189,6 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
 
 TEST_F(InterfaceTest, InitGoogleLogging1) {
   principia__InitGoogleLogging();
-}
-
-TEST_F(InterfaceDeathTestWithoutPlugin, InitGoogleLogging2) {
-  // We use EXPECT_EXIT in this test to avoid interfering with the execution of
-  // the other tests.
-  int const exit_code = 66;
-
-  EXPECT_EXIT({
-    google::ShutdownGoogleLogging();
-    principia__InitGoogleLogging();
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), "");
 }
 
 TEST_F(InterfaceDeathTestWithoutPlugin, ActivateRecorder) {

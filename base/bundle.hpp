@@ -27,27 +27,27 @@ class Bundle final {
 
   // If a `task` returns an erroneous `absl::Status`, `Join` returns that
   // status.
-  void Add(Task task) LOCKS_EXCLUDED(lock_);
+  void Add(Task task) ABSL_LOCKS_EXCLUDED(lock_);
 
   // Returns the first non-OK status encountered, or OK.  All worker threads are
   // joined; no calls to member functions may follow this call.
-  absl::Status Join() LOCKS_EXCLUDED(lock_, status_lock_);
+  absl::Status Join() ABSL_LOCKS_EXCLUDED(lock_, status_lock_);
   // Same as above, but returns a `kDeadlineExceeded` status if it fails to
   // complete within the given interval.
   absl::Status JoinWithin(std::chrono::steady_clock::duration Δt)
-      LOCKS_EXCLUDED(lock_, status_lock_);
+      ABSL_LOCKS_EXCLUDED(lock_, status_lock_);
   // Same as above with absolute time.
   absl::Status JoinBefore(std::chrono::system_clock::time_point t)
-      LOCKS_EXCLUDED(lock_, status_lock_);
+      ABSL_LOCKS_EXCLUDED(lock_, status_lock_);
 
  private:
   // Run on a separate thread to execute task and record its status.
-  void Toil(Task const& task) LOCKS_EXCLUDED(lock_, status_lock_);
+  void Toil(Task const& task) ABSL_LOCKS_EXCLUDED(lock_, status_lock_);
 
-  void JoinAll() LOCKS_EXCLUDED(lock_);
+  void JoinAll() ABSL_LOCKS_EXCLUDED(lock_);
 
   absl::Mutex status_lock_;
-  absl::Status status_ GUARDED_BY(status_lock_);
+  absl::Status status_ ABSL_GUARDED_BY(status_lock_);
 
   absl::Mutex lock_;
 
@@ -59,7 +59,7 @@ class Bundle final {
   // The number of workers currently executing.  Can only be incremented when
   // `joining_` is false.
   std::atomic_int number_of_active_workers_ = 0;
-  std::list<std::thread> workers_ GUARDED_BY(lock_);
+  std::list<std::thread> workers_ ABSL_GUARDED_BY(lock_);
 
   static_assert(std::atomic_bool::is_always_lock_free, "bool not lock-free");
   static_assert(std::atomic_int::is_always_lock_free, "int not lock-free");

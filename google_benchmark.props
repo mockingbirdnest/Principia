@@ -7,7 +7,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)..\Google\benchmark\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>google-benchmark.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>benchmark.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Google\benchmark\msvc\$(PrincipiaDependencyConfiguration)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

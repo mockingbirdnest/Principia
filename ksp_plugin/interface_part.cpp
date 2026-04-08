@@ -3,8 +3,10 @@
 #include <cstdint>
 #include <optional>
 
+#include "absl/log/check.h"
+#include "absl/log/die_if_null.h"
+#include "absl/log/log.h"
 #include "geometry/grassmann.hpp"
-#include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/identification.hpp"
@@ -26,7 +28,7 @@ void __cdecl principia__PartApplyIntrinsicForce(
     XYZ const force_in_kilonewtons) {
   journal::Method<journal::PartApplyIntrinsicForce> m(
       {plugin, part_id, force_in_kilonewtons});
-  CHECK_NOTNULL(plugin)->ApplyPartIntrinsicForce(
+  ABSL_DIE_IF_NULL(plugin)->ApplyPartIntrinsicForce(
       part_id,
       Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)));
   return m.Return();
@@ -42,7 +44,7 @@ void __cdecl principia__PartApplyIntrinsicForceAtPosition(
        part_id,
        force_in_kilonewtons,
        lever_arm});
-  CHECK_NOTNULL(plugin)->ApplyPartIntrinsicForceAtPosition(
+  ABSL_DIE_IF_NULL(plugin)->ApplyPartIntrinsicForceAtPosition(
       part_id,
       Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)),
       Displacement<World>(FromXYZ(lever_arm) * Metre));
@@ -55,7 +57,7 @@ void __cdecl principia__PartApplyIntrinsicTorque(
     XYZ const torque_in_kilonewton_metre) {
   journal::Method<journal::PartApplyIntrinsicTorque> m(
       {plugin, part_id, torque_in_kilonewton_metre});
-  CHECK_NOTNULL(plugin)->ApplyPartIntrinsicTorque(
+  ABSL_DIE_IF_NULL(plugin)->ApplyPartIntrinsicTorque(
       part_id,
       Bivector<Torque, World>(FromXYZ(torque_in_kilonewton_metre) *
                               Kilo(Newton) * Metre * Radian));
@@ -68,7 +70,7 @@ QPRW __cdecl principia__PartGetActualRigidMotion(
     Origin const origin) {
   journal::Method<journal::PartGetActualRigidMotion> m(
       {plugin, part_id, origin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   RigidMotion<EccentricPart, World> const part_motion =
       plugin->GetPartActualMotion(
           part_id,
@@ -95,7 +97,7 @@ bool __cdecl principia__PartIsTruthful(
     Plugin const* const plugin,
     uint32_t const part_id) {
   journal::Method<journal::PartIsTruthful> m({plugin, part_id});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(plugin->PartIsTruthful(part_id));
 }
 
@@ -111,7 +113,7 @@ void __cdecl principia__PartSetApparentRigidMotion(
        degrees_of_freedom,
        rotation,
        angular_velocity});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->SetPartApparentRigidMotion(
       part_id,
       MakePartApparentRigidMotion(

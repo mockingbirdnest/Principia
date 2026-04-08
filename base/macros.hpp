@@ -167,7 +167,7 @@ char const* const Architecture = "x86-64";
 #  define PRINCIPIA_UNICODE_PATH(x) u8 ## x
 #endif
 
-#define NAMED(expression) u8 ## #expression << ": " << (expression)
+#define NAMED(expression) #expression << ": " << (expression)
 
 // Needed to circumvent lint warnings in constexpr functions where CHECK_LT and
 // friends cannot be used.

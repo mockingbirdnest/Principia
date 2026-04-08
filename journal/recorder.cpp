@@ -3,10 +3,11 @@
 #include <filesystem>
 #include <ios>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/serialization.hpp"
-#include "glog/logging.h"
 #include "ksp_plugin/interface.hpp"  // 🧙 For principia__GetVersion.
 
 namespace principia {

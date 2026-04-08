@@ -2,11 +2,12 @@
 
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_replace.h"
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"

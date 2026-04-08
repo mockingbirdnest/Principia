@@ -3,7 +3,9 @@
 #include <utility>
 #include <vector>
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/die_if_null.h"
+#include "absl/log/log.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/iterators.hpp"
@@ -21,11 +23,11 @@ using namespace principia::physics::_apsides;
 namespace {
 
 Renderer& GetRenderer(Plugin* const plugin) {
-  return CHECK_NOTNULL(plugin)->renderer();
+  return ABSL_DIE_IF_NULL(plugin)->renderer();
 }
 
 [[maybe_unused]] Renderer const& GetRenderer(Plugin const* const plugin) {
-  return CHECK_NOTNULL(plugin)->renderer();
+  return ABSL_DIE_IF_NULL(plugin)->renderer();
 }
 
 }  // namespace
@@ -53,7 +55,7 @@ void __cdecl principia__RenderedPredictionApsides(
        sun_world_position,
        max_points},
       {apoapsides, periapsides});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   DistinguishedPoints<World> rendered_apoapsides;
   DistinguishedPoints<World> rendered_periapsides;
@@ -84,7 +86,7 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
   journal::Method<journal::RenderedPredictionClosestApproaches> m(
       {plugin, vessel_guid, sun_world_position, max_points},
       {closest_approaches});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   DistinguishedPoints<World> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
@@ -110,7 +112,7 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
   journal::Method<journal::RenderedPredictionNodes> m(
       {plugin, vessel_guid, t_max, sun_world_position, max_points},
       {ascending, descending});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
   std::vector<Renderer::Node> rendered_ascending;
   std::vector<Renderer::Node> rendered_descending;
@@ -144,14 +146,14 @@ void __cdecl principia__SetTargetVessel(Plugin* const plugin,
                                         int const reference_body_index) {
   journal::Method<journal::SetTargetVessel> m(
       {plugin, vessel_guid, reference_body_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->SetTargetVessel(vessel_guid, reference_body_index);
   return m.Return();
 }
 
 WXYZ __cdecl principia__CameraReferenceRotation(Plugin* const plugin) {
   journal::Method<journal::CameraReferenceRotation> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(
       ToWXYZ(GetRenderer(plugin)
                  .CameraReferenceRotation(plugin->CurrentTime(),
@@ -162,7 +164,7 @@ WXYZ __cdecl principia__CameraReferenceRotation(Plugin* const plugin) {
 
 double __cdecl principia__CameraScale(Plugin* const plugin) {
   journal::Method<journal::CameraScale> m({plugin});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(GetRenderer(plugin)
                       .BarycentricToPlotting(plugin->CurrentTime())
                       .conformal_map()

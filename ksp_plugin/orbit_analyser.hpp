@@ -193,10 +193,10 @@ class OrbitAnalyser {
   //   stop executing.
   // If it is joined once idle (and joinable), it will not attempt to acquire
   // `lock_`.
-  bool analyser_idle_ GUARDED_BY(lock_) = true;
+  bool analyser_idle_ ABSL_GUARDED_BY(lock_) = true;
   // `next_analysis_` is set by the `analyser_` thread; it is read and cleared
   // by the main thread.
-  std::optional<Analysis> next_analysis_ GUARDED_BY(lock_);
+  std::optional<Analysis> next_analysis_ ABSL_GUARDED_BY(lock_);
   // `progress_of_next_analysis_` is set by the `analyser_` thread; it tracks
   // progress in computing `next_analysis_`.
   std::atomic<double> progress_of_next_analysis_ = 0;

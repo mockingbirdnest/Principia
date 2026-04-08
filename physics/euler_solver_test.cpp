@@ -8,6 +8,8 @@
 #include <set>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
@@ -17,7 +19,6 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"

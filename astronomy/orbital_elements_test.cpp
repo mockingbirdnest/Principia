@@ -4,13 +4,14 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -113,6 +114,9 @@ class OrbitalElementsTest : public ::testing::Test {
       }
     }
     LOG(FATAL) << "Ephemeris has no Earth";
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
+    std::abort();
+#endif
   }
 };
 

@@ -6,9 +6,11 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "geometry/instant.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -137,7 +139,7 @@ class ExplicitLinearMultistepIntegratorTest
       : public ::testing::TestWithParam<IntegratorTestParam> {
  public:
   ExplicitLinearMultistepIntegratorTest() {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   }
 };
 

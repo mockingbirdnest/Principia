@@ -6,12 +6,13 @@
 #include <random>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/strings/str_cat.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_REPEAT.
 #include "base/tags.hpp"
 #include "benchmark/benchmark.h"
 #include "benchmarks/metric.hpp"
-#include "glog/logging.h"
 #include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"

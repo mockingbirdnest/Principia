@@ -129,7 +129,7 @@ class Checkpointer {
       absl::btree_map<Instant, typename Message::Checkpoint>;
 
   void WriteToCheckpointLocked(Instant const& t)
-      EXCLUSIVE_LOCKS_REQUIRED(lock_);
+      ABSL_EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   mutable absl::Mutex lock_;
   Writer const writer_;

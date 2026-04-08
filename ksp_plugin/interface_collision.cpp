@@ -5,8 +5,9 @@
 #include <optional>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/push_pull_callback.hpp"
-#include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
@@ -35,7 +36,7 @@ NewExecutor(Plugin const* const plugin,
             XYZ const sun_world_position,
             int const max_points,
             TrajectoryLike const& vessel_trajectory) {
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
 
   auto task = [celestial_index,
                max_points,
@@ -69,7 +70,7 @@ bool __cdecl principia__CollisionDeleteExecutor(
     TQP* const collision) {
   journal::Method<journal::CollisionDeleteExecutor> m{{plugin, executor},
                                                       {executor, collision}};
-  CHECK_NOTNULL(executor);
+  CHECK(executor != nullptr);
   auto const maybe_collision = (*executor)->get();
   {
     TakeOwnership(executor);
@@ -93,7 +94,7 @@ bool __cdecl principia__CollisionGetLatitudeLongitude(
       {executor},
       {latitude_in_degrees,
        longitude_in_degrees}};
-  CHECK_NOTNULL(executor);
+  CHECK(executor != nullptr);
 
   Angle latitude;
   Angle longitude;
@@ -118,7 +119,7 @@ PushPullExecutor<
        sun_world_position,
        max_points,
        vessel_guid}};
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
   return m.Return(NewExecutor(plugin,
                               celestial_index,
@@ -142,7 +143,7 @@ PushPullExecutor<
        sun_world_position,
        max_points,
        vessel_guid}};
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   not_null<Vessel*> const vessel = plugin->GetVessel(vessel_guid);
   return m.Return(NewExecutor(plugin,
                               celestial_index,
@@ -159,7 +160,7 @@ void __cdecl principia__CollisionSetRadius(
   journal::Method<journal::CollisionSetRadius> m{
       {executor,
        radius}};
-  CHECK_NOTNULL(executor);
+  CHECK(executor != nullptr);
   executor->callback().Push(radius * Metre);
   return m.Return();
 }

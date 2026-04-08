@@ -7,6 +7,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
@@ -19,7 +21,6 @@
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
