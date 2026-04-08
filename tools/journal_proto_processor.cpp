@@ -2062,6 +2062,19 @@ std::string JournalProtoProcessor::MarshalAs(
     return "MarshalAs(" + it_predefined->second + ")";
   }
   LOG(FATAL) << "Bad marshaler for " << descriptor->name();
+#if PRINCIPIA_COMPILER_MSVC && \
+    (_MSC_FULL_VER == 193'933'523 || \
+     _MSC_FULL_VER == 194'033'813 || \
+     _MSC_FULL_VER == 194'134'123 || \
+     _MSC_FULL_VER == 194'234'435 || \
+     _MSC_FULL_VER == 194'334'809 || \
+     _MSC_FULL_VER == 194'435'211 || \
+     _MSC_FULL_VER == 194'435'213 || \
+     _MSC_FULL_VER == 194'435'221 || \
+     _MSC_FULL_VER == 194'435'222 || \
+     _MSC_FULL_VER == 194'435'224)
+  std::abort();
+#endif
 }
 
 }  // namespace internal
