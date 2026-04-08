@@ -1,5 +1,9 @@
 #pragma once
+
 #include "physics/discrete_trajectory_types.hpp"
+
+#include <memory>
+#include <utility>
 
 namespace principia {
 namespace physics {
