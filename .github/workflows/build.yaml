@@ -94,13 +94,6 @@ jobs:
         configuration: ${{ matrix.configuration }}
         directory: Google
 
-    - name: Download glog artifact
-      uses: mockingbirdnest/actions/windows/download_artifact@main
-      with:
-        name: glog
-        configuration: ${{ matrix.configuration }}
-        directory: Google
-
     - name: Download googletest artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
       with:
