@@ -29,7 +29,6 @@
 #include "absl/log/globals.h"
 #include "absl/log/initialize.h"
 #include "absl/log/internal/globals.h"
-#include "absl/log/internal/log_message.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "base/array.hpp"
@@ -313,9 +312,6 @@ std::unique_ptr<google::compression::Compressor> NewCompressor(
     return google::compression::NewGipfeliCompressor();
   } else {
     LOG(FATAL) << "Unknown compressor " << compressor;
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-    std::abort();
-#endif
   }
 }
 
@@ -331,9 +327,6 @@ NewEncoder(std::string_view const encoder) {
     return encoder;
   } else {
     LOG(FATAL) << "Unknown encoder " << encoder;
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-    std::abort();
-#endif
   }
 }
 
@@ -674,7 +667,6 @@ int __cdecl principia__GetBufferedLogging() {
 int __cdecl principia__GetStderrLogging() {
   journal::Method<journal::GetStderrLogging> m;
   return m.Return(static_cast<int>(absl::StderrThreshold()));
-  ;
 }
 
 void __cdecl principia__GetCPUIDFeatureFlags(bool* const has_avx,
@@ -690,8 +682,9 @@ int __cdecl principia__GetSuppressedLogging() {
 
 int __cdecl principia__GetVerboseLogging() {
   journal::Method<journal::GetVerboseLogging> m;
-  LOG(FATAL) << "NYI";
-  return m.Return(0);
+  int const v = absl::SetGlobalVLogLevel(0);
+  absl::SetGlobalVLogLevel(v);
+  return m.Return(v);
 }
 
 void __cdecl principia__GetVersion(
@@ -1030,9 +1023,7 @@ void __cdecl principia__LogError(char const* const file,
                                  int const line,
                                  char const* const text) {
   journal::Method<journal::LogError> m({file, line, text});
-  absl::log_internal::LogMessage(
-      file, line, absl::log_internal::LogMessage::ErrorTag{})
-      << text;
+  LOG(ERROR).AtLocation(file, line) << text;
   return m.Return();
 }
 
@@ -1040,7 +1031,7 @@ void __cdecl principia__LogFatal(char const* const file,
                                  int const line,
                                  char const* const text) {
   journal::Method<journal::LogFatal> m({file, line, text});
-  absl::log_internal::LogMessageFatal(file, line) << text;
+  LOG(FATAL).AtLocation(file, line) << text;
   return m.Return();
 }
 
@@ -1048,9 +1039,7 @@ void __cdecl principia__LogInfo(char const* const file,
                                 int const line,
                                 char const* const text) {
   journal::Method<journal::LogInfo> m({file, line, text});
-  absl::log_internal::LogMessage(
-      file, line, absl::log_internal::LogMessage::InfoTag{})
-      << text;
+  LOG(INFO).AtLocation(file, line) << text;
   return m.Return();
 }
 
@@ -1058,9 +1047,7 @@ void __cdecl principia__LogWarning(char const* const file,
                                    int const line,
                                    char const* const text) {
   journal::Method<journal::LogWarning> m({file, line, text});
-  absl::log_internal::LogMessage(
-      file, line, absl::log_internal::LogMessage::WarningTag{})
-      << text;
+  LOG(WARNING).AtLocation(file, line) << text;
   return m.Return();
 }
 

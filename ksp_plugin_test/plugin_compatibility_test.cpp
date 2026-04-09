@@ -130,8 +130,8 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
               Log(absl::LogSeverity::kWarning,
                   _,
                   HasSubstr("pre-Cauchy")));
- // But not *that* old.
- EXPECT_CALL(log,
+  // But not *that* old.
+  EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
                   HasSubstr("pre-Cartan"))).Times(0);

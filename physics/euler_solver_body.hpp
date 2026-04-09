@@ -364,7 +364,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::AttitudeAt(
     }
     default:
       LOG(FATAL) << "Unexpected formula " << static_cast<int>(formula_);
-  };
+  }
 
   switch (region_) {
     case Region::e₁: {
