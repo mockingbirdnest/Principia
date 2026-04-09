@@ -13,6 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  PRINCIPIA_MSVC: .
   PRINCIPIA_SOLUTION: principia.sln
   PRINCIPIA_KSP_ASSEMBLIES_VERSION: 1.12.5
 
@@ -141,7 +142,7 @@ jobs:
       uses: mockingbirdnest/actions/windows/restore@main
       with:
         configuration: ${{ matrix.configuration }}
-        solution_glob: ${{ env.PRINCIPIA_SOLUTION }}
+        solution_directory: ${{ env.PRINCIPIA_MSVC }}
 
     - name: Rebuild ${{ matrix.configuration }}
       uses: mockingbirdnest/actions/windows/rebuild@main
