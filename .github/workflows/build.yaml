@@ -60,6 +60,11 @@ jobs:
     - name: Checkout re2 source files
       uses: mockingbirdnest/actions/windows/checkout_re2@main
 
+    - name: Initialize build environment
+      uses: mockingbirdnest/actions/windows/initialize_build@main
+      with:
+        configuration: ${{ matrix.configuration }}
+
     - name: Download abseil artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
       with:
@@ -150,11 +155,6 @@ jobs:
       with:
         secret_directory: ${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}
         ksp_version: ${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}
-
-    - name: Initialize build environment
-      uses: mockingbirdnest/actions/windows/initialize_build@main
-      with:
-        configuration: ${{ matrix.configuration }}
 
     - name: Restore ${{ matrix.configuration }}
       uses: mockingbirdnest/actions/windows/restore@main
