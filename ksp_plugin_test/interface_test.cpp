@@ -675,13 +675,6 @@ TEST_F(InterfaceDeathTestWithoutPlugin, SettersAndGetters) {
   }, ExitedWithCode(exit_code), exit_message);
 
   EXPECT_EXIT({
-    principia__SetBufferDuration(101);
-    ASSERT_EQ(101, principia__GetBufferDuration());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-
-  EXPECT_EXIT({
     principia__SetSuppressedLogging(102);
     ASSERT_EQ(102, principia__GetSuppressedLogging());
     std::cerr << exit_message;

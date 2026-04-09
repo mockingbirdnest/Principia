@@ -1339,16 +1339,6 @@ message FutureWaitForVesselToCatchUp {
   optional Out out = 2;
 }
 
-message GetBufferDuration {
-  extend Method {
-    optional GetBufferDuration extension = 5005;
-  }
-  message Return {
-    required int32 result = 1;
-  }
-  optional Return return = 3;
-}
-
 message GetBufferedLogging {
   extend Method {
     optional GetBufferedLogging extension = 5006;
@@ -2333,16 +2323,6 @@ message SerializePlugin {
   optional In in = 1;
   optional Out out = 2;
   optional Return return = 3;
-}
-
-message SetBufferDuration {
-  extend Method {
-    optional SetBufferDuration extension = 5014;
-  }
-  message In {
-    required int32 seconds = 1;
-  }
-  optional In in = 1;
 }
 
 message SetBufferedLogging {
