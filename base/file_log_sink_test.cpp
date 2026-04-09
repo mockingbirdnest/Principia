@@ -2,7 +2,6 @@
 
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
-#include "re2/regexp.h"
 #include "absl/log/log_sink_registry.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
