@@ -360,9 +360,6 @@ MayHaveRealRootsOrDie(Value const error_estimate) const {
     return B₀ >= abs_a₀ - error_estimate;
   } else {
     LOG(FATAL) << "Real roots only meaningful for scalar-valued polynomials";
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-    std::abort();
-#endif
   }
 }
 
@@ -392,9 +389,6 @@ RealRootsOrDie(double const ε) const {
     return real_roots;
   } else {
     LOG(FATAL) << "Real roots only meaningful for scalar-valued polynomials";
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-    std::abort();
-#endif
   }
 }
 

@@ -318,9 +318,6 @@ NewhallApproximationInMonomialBasis(int degree,
     PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(17);
     default:
       LOG(FATAL) << "Unexpected degree " << degree;
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-      std::abort();
-#endif
   }
 }
 

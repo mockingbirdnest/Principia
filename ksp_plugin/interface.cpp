@@ -312,9 +312,6 @@ std::unique_ptr<google::compression::Compressor> NewCompressor(
     return google::compression::NewGipfeliCompressor();
   } else {
     LOG(FATAL) << "Unknown compressor " << compressor;
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-    std::abort();
-#endif
   }
 }
 
@@ -330,9 +327,6 @@ NewEncoder(std::string_view const encoder) {
     return encoder;
   } else {
     LOG(FATAL) << "Unknown encoder " << encoder;
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-    std::abort();
-#endif
   }
 }
 

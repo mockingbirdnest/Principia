@@ -153,9 +153,6 @@ Policy::WithEvaluator(
     }
   }
   LOG(FATAL) << "Unexpected policy " << kind_;
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 194'435'224)
-  std::abort();
-#endif
 }
 
 constexpr Policy Policy::AlwaysEstrin() {
