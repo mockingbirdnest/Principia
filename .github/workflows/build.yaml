@@ -48,17 +48,11 @@ jobs:
               && format('refs/pull/{0}/merge', github.event.number)
               || '' }}
 
-    - name: Checkout abseil source files
-      uses: mockingbirdnest/actions/windows/checkout_abseil@main
-
-    - name: Checkout benchmark source files
-      uses: mockingbirdnest/actions/windows/checkout_benchmark@main
-
-    - name: Checkout googletest source files
-      uses: mockingbirdnest/actions/windows/checkout_googletest@main
-
-    - name: Checkout re2 source files
-      uses: mockingbirdnest/actions/windows/checkout_re2@main
+    - name: Download KSP assemblies
+      uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
+      with:
+        secret_directory: ${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}
+        ksp_version: ${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}
 
     - name: Initialize build environment
       uses: mockingbirdnest/actions/windows/initialize_build@main
@@ -150,12 +144,6 @@ jobs:
         configuration: ${{ matrix.configuration }}
         directory: 'LLNL'
 
-    - name: Download KSP assemblies
-      uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
-      with:
-        secret_directory: ${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}
-        ksp_version: ${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}
-
     - name: Restore ${{ matrix.configuration }}
       uses: mockingbirdnest/actions/windows/restore@main
       with:
@@ -195,4 +183,3 @@ jobs:
         client_id: ${{ secrets.PRINCIPIA_BUILD_CLIENT_ID }}
         tenant_id: ${{ secrets.PRINCIPIA_BUILD_TENANT_ID }}
         subscription_id: ${{ secrets.PRINCIPIA_BUILD_SUBSCRIPTION_ID }}
-
