@@ -36,7 +36,7 @@ class FileLogSinkTest : public ::testing::Test {
   }
 
   std::filesystem::path UniqueLogFile(absl::LogSeverity const severity) {
-    const std::string prefix =
+    std::string const prefix =
         std::string("FileLogSinkTest.") + absl::LogSeverityName(severity);
     std::vector<std::filesystem::path> candidates;
     for (auto const& entry : std::filesystem::directory_iterator(".")) {
