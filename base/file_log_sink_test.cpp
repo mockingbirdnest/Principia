@@ -30,7 +30,7 @@ class FileLogSinkTest : public ::testing::Test {
     RemoveAllLogFiles();
   }
 
-  void RemoveAllLogFiles() {
+  static void RemoveAllLogFiles() {
     for (auto const& entry : std::filesystem::directory_iterator(".")) {
       if (entry.is_regular_file() &&
           entry.path().filename().string().starts_with("FileLogSinkTest.") &&
@@ -40,7 +40,7 @@ class FileLogSinkTest : public ::testing::Test {
     }
   }
 
-  std::filesystem::path UniqueLogFile(absl::LogSeverity const severity) {
+  static std::filesystem::path UniqueLogFile(absl::LogSeverity const severity) {
     std::string const prefix =
         std::string("FileLogSinkTest.") + absl::LogSeverityName(severity);
     std::vector<std::filesystem::path> candidates;
