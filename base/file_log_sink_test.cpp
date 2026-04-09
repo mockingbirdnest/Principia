@@ -3,6 +3,7 @@
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
 #include "absl/log/log_sink_registry.h"
+#include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -15,12 +16,17 @@ using ::testing::MatchesRegex;
 using ::testing::Not;
 using ::testing::SizeIs;
 using namespace principia::base::_file_log_sink;
+using namespace principia::base::_not_null;
 
 class FileLogSinkTest : public ::testing::Test {
  protected:
   FileLogSinkTest()
       : j2000_(absl::FromDateTime(2000, 1, 1, 11, 58, 55, absl::UTCTimeZone()) +
                absl::Milliseconds(816)) {
+    RemoveAllLogFiles();
+  }
+
+  ~FileLogSinkTest() {
     RemoveAllLogFiles();
   }
 
@@ -180,9 +186,9 @@ F0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
 }
 
 TEST_F(FileLogSinkTest, Nonfatal) {
-  static FileLogSink* sink =
-      new FileLogSink("FileLogSinkTest.", ".log");
-  absl::AddLogSink(sink);
+  auto const sink =
+      make_not_null_unique<FileLogSink>("FileLogSinkTest.", ".log");
+  absl::AddLogSink(sink.get());
   LOG(INFO).WithTimestamp(j2000_).WithThreadID(1729) << "info";
   LOG(WARNING).WithTimestamp(j2000_).WithThreadID(1729) << "warning";
   LOG(ERROR).WithTimestamp(j2000_).WithThreadID(1729) << "error";
@@ -217,6 +223,7 @@ Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
 E0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] error
 )"));
   }
+  absl::RemoveLogSink(sink.get());
 }
 
 }  // namespace base
