@@ -48,16 +48,17 @@ jobs:
               && format('refs/pull/{0}/merge', github.event.number)
               || '' }}
 
-    - name: Download KSP assemblies
-      uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
-      with:
-        secret_directory: ${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}
-        ksp_version: ${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}
+    - name: Checkout abseil source files
+      uses: mockingbirdnest/actions/windows/checkout_abseil@main
 
-    - name: Initialize build environment
-      uses: mockingbirdnest/actions/windows/initialize_build@main
-      with:
-        configuration: ${{ matrix.configuration }}
+    - name: Checkout benchmark source files
+      uses: mockingbirdnest/actions/windows/checkout_benchmark@main
+
+    - name: Checkout googletest source files
+      uses: mockingbirdnest/actions/windows/checkout_googletest@main
+
+    - name: Checkout re2 source files
+      uses: mockingbirdnest/actions/windows/checkout_re2@main
 
     - name: Download abseil artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
@@ -130,12 +131,30 @@ jobs:
         configuration: Release
         directory: Google
 
+    - name: Download re2 artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: re2
+        configuration: ${{ matrix.configuration }}
+        directory: Google
+
     - name: Download zfp artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
       with:
         name: zfp
         configuration: ${{ matrix.configuration }}
         directory: 'LLNL'
+
+    - name: Download KSP assemblies
+      uses: mockingbirdnest/actions/windows/download_ksp_assemblies@main
+      with:
+        secret_directory: ${{ secrets.PRINCIPIA_KSP_ASSEMBLIES_DIRECTORY }}
+        ksp_version: ${{ env.PRINCIPIA_KSP_ASSEMBLIES_VERSION }}
+
+    - name: Initialize build environment
+      uses: mockingbirdnest/actions/windows/initialize_build@main
+      with:
+        configuration: ${{ matrix.configuration }}
 
     - name: Restore ${{ matrix.configuration }}
       uses: mockingbirdnest/actions/windows/restore@main
