@@ -668,6 +668,7 @@ TEST_F(InterfaceDeathTestWithoutPlugin, SettersAndGetters) {
   char const exit_message[] = "Exiting";
 
   EXPECT_EXIT({
+    principia__InitGoogleLogging();
     principia__SetBufferedLogging(100);
     ASSERT_EQ(100, principia__GetBufferedLogging());
     std::cerr << exit_message;
@@ -675,6 +676,7 @@ TEST_F(InterfaceDeathTestWithoutPlugin, SettersAndGetters) {
   }, ExitedWithCode(exit_code), exit_message);
 
   EXPECT_EXIT({
+    principia__InitGoogleLogging();
     principia__SetSuppressedLogging(102);
     ASSERT_EQ(102, principia__GetSuppressedLogging());
     std::cerr << exit_message;
@@ -682,6 +684,7 @@ TEST_F(InterfaceDeathTestWithoutPlugin, SettersAndGetters) {
   }, ExitedWithCode(exit_code), exit_message);
 
   EXPECT_EXIT({
+    principia__InitGoogleLogging();
     principia__SetVerboseLogging(103);
     ASSERT_EQ(103, principia__GetVerboseLogging());
     std::cerr << exit_message;
@@ -689,6 +692,7 @@ TEST_F(InterfaceDeathTestWithoutPlugin, SettersAndGetters) {
   }, ExitedWithCode(exit_code), exit_message);
 
   EXPECT_EXIT({
+    principia__InitGoogleLogging();
     principia__SetStderrLogging(2);
     ASSERT_EQ(2, principia__GetStderrLogging());
     std::cerr << exit_message;
