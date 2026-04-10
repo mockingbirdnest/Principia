@@ -26,7 +26,7 @@ class FileLogSinkTest : public ::testing::Test {
     RemoveAllLogFiles();
   }
 
-  ~FileLogSinkTest() {
+  ~FileLogSinkTest() override {
     RemoveAllLogFiles();
   }
 

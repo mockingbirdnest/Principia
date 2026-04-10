@@ -5,18 +5,19 @@
 #include "absl/log/globals.h"
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
+#include "absl/log/log_sink_registry.h"
+#include "base/file_log_sink.hpp"
 #include "tools/generate_configuration.hpp"  // 🧙 For _generate_configuration.
 #include "tools/generate_kopernicus.hpp"  // 🧙 for _generate_kopernicus.
 #include "tools/generate_profiles.hpp"  // 🧙 For _generate_profiles.
 
+using namespace principia::base::_file_log_sink;
 using namespace principia::tools::_generate_configuration;
 using namespace principia::tools::_generate_kopernicus;
 using namespace principia::tools::_generate_profiles;
 
 int __cdecl main(int argc, char const* argv[]) {
-#ifdef HAS_ABSL_FILE_SINK
-  google::SetLogFilenameExtension(".log");
-#endif
+  absl::AddLogSink(new FileLogSink("principia.tools.", ".log"));
   absl::InitializeLog();
   absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   if (argc < 2) {

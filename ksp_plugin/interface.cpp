@@ -137,7 +137,7 @@ constexpr char hexadecimal_encoder[] = "hexadecimal";
 constexpr int chunk_size = 64 << 10;
 constexpr int number_of_chunks = 8;
 
-static FileLogSink* file_log_sink;
+static FileLogSink* file_log_sink = nullptr;
 
 not_null<Arena*> arena = []() {
   ArenaOptions options;
