@@ -1,6 +1,8 @@
 #include "base/file_log_sink.hpp"
 
 #include <iostream>
+#include <string>
+#include <utility>
 
 #include "absl/log/check.h"
 #include "absl/time/time.h"
@@ -64,7 +66,8 @@ void FileLogSink::Send(absl::LogEntry const& entry) {
       std::string_view const computer_name = buf.nodename;
 #endif
       file << "Running on machine: " << computer_name << "\n";
-      file << "Log line format: [IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg\n";
+      file << "Log line format: [IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] "
+              "msg\n";
     }
     // FATAL messages are sent twice, first without and then with the
     // stacktrace.  Log the message only once.
