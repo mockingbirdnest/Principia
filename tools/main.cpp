@@ -6,7 +6,7 @@
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
 #include "absl/log/log_sink_registry.h"
-#include "base/file_log_sink.hpp"
+#include "base/file_log_sink.hpp"  // 🧙 For _file_log_sink.
 #include "tools/generate_configuration.hpp"  // 🧙 For _generate_configuration.
 #include "tools/generate_kopernicus.hpp"  // 🧙 for _generate_kopernicus.
 #include "tools/generate_profiles.hpp"  // 🧙 For _generate_profiles.
