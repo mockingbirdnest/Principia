@@ -3,6 +3,7 @@
 #include <array>
 #include <filesystem>
 #include <fstream>
+#include <string>
 
 #include "absl/log/log_sink.h"
 

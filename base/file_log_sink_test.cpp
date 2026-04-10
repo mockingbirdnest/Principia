@@ -1,5 +1,9 @@
 #include "base/file_log_sink.hpp"
 
+#include <fstream>
+#include <string>
+#include <vector>
+
 #include "absl/log/initialize.h"
 #include "absl/log/log.h"
 #include "absl/log/log_sink_registry.h"
