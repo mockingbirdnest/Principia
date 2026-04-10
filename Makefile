@@ -79,7 +79,7 @@ TEST_LIBS     := \
 	$(DEPS_DIRECTORY)benchmark/src/libbenchmark.a \
 	$(DEPS_DIRECTORY)protobuf/src/.libs/libprotobuf.a
 ABSL_LIBS     := \
-	$(DEPS_DIRECTORY)abseil-cpp/lib/libabsl_*.a
+	$(DEPS_DIRECTORY)abseil-cpp/install/lib/libabsl_*.a
 ifeq ($(UNAME_S),Linux)
     ABSL_GROUP_LIBS = -Wl,--start-group $(ABSL_LIBS) -Wl,--end-group
 else
