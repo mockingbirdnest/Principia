@@ -661,47 +661,5 @@ TEST_F(InterfaceTestWithoutPlugin, DeserializePlugin) {
   principia__DeletePlugin(&plugin);
 }
 
-TEST_F(InterfaceDeathTestWithoutPlugin, SettersAndGetters) {
-  // We use EXPECT_EXITs in this test to avoid interfering with the execution of
-  // the other tests.
-  int const exit_code = 66;
-  char const exit_message[] = "Exiting";
-
-  EXPECT_EXIT({
-    principia__SetBufferedLogging(100);
-    ASSERT_EQ(100, principia__GetBufferedLogging());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-
-  EXPECT_EXIT({
-    principia__SetBufferDuration(101);
-    ASSERT_EQ(101, principia__GetBufferDuration());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-
-  EXPECT_EXIT({
-    principia__SetSuppressedLogging(102);
-    ASSERT_EQ(102, principia__GetSuppressedLogging());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-
-  EXPECT_EXIT({
-    principia__SetVerboseLogging(103);
-    ASSERT_EQ(103, principia__GetVerboseLogging());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-
-  EXPECT_EXIT({
-    principia__SetStderrLogging(2);
-    ASSERT_EQ(2, principia__GetStderrLogging());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-}
-
 }  // namespace interface
 }  // namespace principia

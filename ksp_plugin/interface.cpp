@@ -30,11 +30,13 @@
 #include "absl/log/initialize.h"
 #include "absl/log/internal/globals.h"
 #include "absl/log/log.h"
+#include "absl/log/log_sink_registry.h"
 #include "absl/status/status.h"
 #include "base/array.hpp"
 #include "base/base64.hpp"
 #include "base/cpuid.hpp"
 #include "base/encoder.hpp"
+#include "base/file_log_sink.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/flags.hpp"
 #include "base/hexadecimal.hpp"
@@ -87,6 +89,7 @@ using namespace principia::base::_array;
 using namespace principia::base::_base64;
 using namespace principia::base::_cpuid;
 using namespace principia::base::_encoder;
+using namespace principia::base::_file_log_sink;
 using namespace principia::base::_fingerprint2011;
 using namespace principia::base::_flags;
 using namespace principia::base::_hexadecimal;
@@ -133,6 +136,8 @@ constexpr char hexadecimal_encoder[] = "hexadecimal";
 
 constexpr int chunk_size = 64 << 10;
 constexpr int number_of_chunks = 8;
+
+static FileLogSink* file_log_sink = nullptr;
 
 not_null<Arena*> arena = []() {
   ArenaOptions options;
@@ -652,16 +657,9 @@ void __cdecl principia__FreeVesselsAndPartsAndCollectPileUps(
   return m.Return();
 }
 
-int __cdecl principia__GetBufferDuration() {
-  journal::Method<journal::GetBufferDuration> m;
-  LOG(FATAL) << "NYI";
-  return m.Return(0);
-}
-
 int __cdecl principia__GetBufferedLogging() {
   journal::Method<journal::GetBufferedLogging> m;
-  LOG(FATAL) << "NYI";
-  return m.Return(0);
+  return m.Return(static_cast<int>(file_log_sink->buffered_level()));
 }
 
 int __cdecl principia__GetStderrLogging() {
@@ -739,13 +737,8 @@ void __cdecl principia__InitGoogleLogging() {
 #else
     std::freopen("stderr.log", "w", stderr);
 #endif
-#ifdef ABSL_LOG_IS_COMPLETE
-    google::SetLogFilenameExtension(".log");
-    google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
-    google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
-    google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");
-    google::SetLogDestination(google::INFO, "glog/Principia/INFO.");
-#endif
+    file_log_sink = new FileLogSink("glog/Principia/", ".log");
+    absl::AddLogSink(file_log_sink);
     absl::InitializeLog();
 
     LOG(ERROR) << "Initialized Google logging for Principia";
@@ -1191,18 +1184,12 @@ char const* __cdecl principia__SerializePlugin(
   return m.Return(hexadecimal.data.release());
 }
 
-// Sets the maximum number of seconds which logs may be buffered for.
-void __cdecl principia__SetBufferDuration(int const seconds) {
-  journal::Method<journal::SetBufferDuration> m({seconds});
-  LOG(FATAL) << "NYI";
-  return m.Return();
-}
-
 // Log messages at a level `<= max_severity` are buffered.
 // Log messages at a higher level are flushed immediately.
 void __cdecl principia__SetBufferedLogging(int const max_severity) {
   journal::Method<journal::SetBufferedLogging> m({max_severity});
-  LOG(FATAL) << "NYI";
+  file_log_sink->set_buffered_level(
+      static_cast<absl::LogSeverityAtMost>(max_severity));
   return m.Return();
 }
 

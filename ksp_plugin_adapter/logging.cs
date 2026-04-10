@@ -29,14 +29,6 @@ internal static class Log {
     return Interface.GetBufferedLogging();
   }
 
-  internal static void SetBufferDuration(int seconds) {
-    Interface.SetBufferDuration(seconds);
-  }
-
-  internal static int GetBufferDuration() {
-    return Interface.GetBufferDuration();
-  }
-
   internal static void SetSuppressedLogging(int min_severity) {
     Interface.SetSuppressedLogging(min_severity);
   }
