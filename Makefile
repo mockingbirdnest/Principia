@@ -78,7 +78,7 @@ endif
 TEST_LIBS     := \
 	$(DEPS_DIRECTORY)benchmark/src/libbenchmark.a \
 	$(DEPS_DIRECTORY)protobuf/libprotobuf.a \
-	$(DEPS_DIRECTORY)third_party/utf8_range/libutf8*.a
+	$(DEPS_DIRECTORY)protobuf/third_party/utf8_range/libutf8*.a
 ABSL_LIBS     := \
 	$(DEPS_DIRECTORY)abseil-cpp/install/lib/libabsl_*.a
 ifeq ($(UNAME_S),Linux)
@@ -88,7 +88,7 @@ else
 endif
 LIBS          := \
 	$(DEPS_DIRECTORY)protobuf/libprotobuf.a \
-	$(DEPS_DIRECTORY)third_party/utf8_range/libutf8*.a \
+	$(DEPS_DIRECTORY)protobuf/third_party/utf8_range/libutf8*.a \
 	$(DEPS_DIRECTORY)gipfeli/libgipfeli.a \
 	$(ABSL_GROUP_LIBS) \
 	$(DEPS_DIRECTORY)re2/libre2.a \
@@ -139,7 +139,9 @@ SHARED_ARGS   := \
 	-Wno-gnu-zero-variadic-macro-arguments                        \
 	-Wno-mathematical-notation-identifier-extension               \
 	-Wno-nested-anon-types                                        \
+	-Wno-nullability-extension                                    \
 	-Wno-unknown-pragmas                                          \
+	-Wno-unused-command-line-argument                             \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
