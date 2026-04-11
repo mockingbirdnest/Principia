@@ -77,7 +77,8 @@ endif
 
 TEST_LIBS     := \
 	$(DEPS_DIRECTORY)benchmark/src/libbenchmark.a \
-	$(DEPS_DIRECTORY)protobuf/libprotobuf.a
+	$(DEPS_DIRECTORY)protobuf/libprotobuf.a \
+	$(DEPS_DIRECTORY)third_party/utf8_range/libutf8*.a
 ABSL_LIBS     := \
 	$(DEPS_DIRECTORY)abseil-cpp/install/lib/libabsl_*.a
 ifeq ($(UNAME_S),Linux)
@@ -85,7 +86,9 @@ ifeq ($(UNAME_S),Linux)
 else
     ABSL_GROUP_LIBS = $(ABSL_LIBS)
 endif
-LIBS          := $(DEPS_DIRECTORY)protobuf/libprotobuf.a \
+LIBS          := \
+	$(DEPS_DIRECTORY)protobuf/libprotobuf.a \
+	$(DEPS_DIRECTORY)third_party/utf8_range/libutf8*.a
 	$(DEPS_DIRECTORY)gipfeli/libgipfeli.a \
 	$(ABSL_GROUP_LIBS) \
 	$(DEPS_DIRECTORY)re2/libre2.a \
