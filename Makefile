@@ -88,7 +88,7 @@ else
 endif
 LIBS          := \
 	$(DEPS_DIRECTORY)protobuf/libprotobuf.a \
-	$(DEPS_DIRECTORY)third_party/utf8_range/libutf8*.a
+	$(DEPS_DIRECTORY)third_party/utf8_range/libutf8*.a \
 	$(DEPS_DIRECTORY)gipfeli/libgipfeli.a \
 	$(ABSL_GROUP_LIBS) \
 	$(DEPS_DIRECTORY)re2/libre2.a \
