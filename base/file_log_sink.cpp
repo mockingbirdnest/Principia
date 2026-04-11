@@ -1,5 +1,6 @@
 #include "base/file_log_sink.hpp"
 
+#include <exception>
 #include <iostream>
 #include <string>
 #include <utility>
