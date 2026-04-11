@@ -100,6 +100,7 @@ TEST_INCLUDES := \
 	-I$(DEPS_DIRECTORY)benchmark/include
 INCLUDES      := -I. \
 	-I$(DEPS_DIRECTORY)protobuf/src \
+	-I$(DEPS_DIRECTORY)protobuf/third_party/utf8_range \
 	-I$(DEPS_DIRECTORY)gipfeli/include \
 	-I$(DEPS_DIRECTORY)abseil-cpp/install/include \
 	-I$(DEPS_DIRECTORY)re2 \
@@ -140,6 +141,7 @@ SHARED_ARGS   := \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DPLATFORM_WITH_CPU_FEATURES='"$(PRINCIPIA_PLATFORM)"'        \
+	-DGTEST_HAS_ABSL                                              \
 	-DNDEBUG
 
 ifdef PRINCIPIA_SANITIZER
