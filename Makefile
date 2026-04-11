@@ -100,6 +100,7 @@ TEST_INCLUDES := \
 	-I$(DEPS_DIRECTORY)benchmark/include
 INCLUDES      := -I. \
 	-I$(DEPS_DIRECTORY)protobuf/src \
+	-I$(DEPS_DIRECTORY)protobuf/third_party/utf8_range \
 	-I$(DEPS_DIRECTORY)gipfeli/include \
 	-I$(DEPS_DIRECTORY)abseil-cpp/install/include \
 	-I$(DEPS_DIRECTORY)re2 \
@@ -140,6 +141,7 @@ SHARED_ARGS   := \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DPLATFORM_WITH_CPU_FEATURES='"$(PRINCIPIA_PLATFORM)"'        \
+	-DGTEST_HAS_ABSL                                              \
 	-DNDEBUG
 
 ifdef PRINCIPIA_SANITIZER
@@ -237,7 +239,9 @@ $(VERSION_TRANSLATION_UNIT): .git
 # We don't do dependency resolution on the protos; we compile them all at once.
 $(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
 	$(DEPS_DIRECTORY)/protobuf/protoc \
-	-I $(DEPS_DIRECTORY)/protobuf/src/ -I . $^ --cpp_out=.
+	-I $(DEPS_DIRECTORY)/protobuf/src/ \
+	-I $(DEPS_DIRECTORY)/protobuf/third_party/utf8_range \
+	-I . $^ --cpp_out=.
 
 $(GENERATED_PROFILES) : $(TOOLS_BIN)
 	$^ generate_profiles
