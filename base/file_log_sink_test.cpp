@@ -134,7 +134,7 @@ R"(\*\*\* Check failure stack trace: \*\*\*
 )";
 #else
 R"(\*\*\* Check failure stack trace: \*\*\*
-    @   [0-9A-F]{16}  .*";
+    @ +0x[0-9A-Fa-f]{1,16}  .*";
 )";
 #endif
   EXPECT_DEATH(
