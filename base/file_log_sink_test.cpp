@@ -127,6 +127,16 @@ TEST_F(FileLogSinkDeathTest, SetBufferedLevel) {
 }
 
 TEST_F(FileLogSinkDeathTest, Fatal) {
+  std::string const stack_trace_regex =
+#ifdef _MSC_FULL_VER
+R"(\*\*\* Check failure stack trace: \*\*\*
+    @   [0-9A-F]{16}  .* \(.*\.(cc|cpp):\d+\)
+)";
+#else
+R"(\*\*\* Check failure stack trace: \*\*\*
+    @ +0x[0-9A-Fa-f]{1,16}  .*";
+)";
+#endif
   EXPECT_DEATH(
       {
         static FileLogSink* sink = new FileLogSink("FileLogSinkTest.", ".log");
@@ -147,9 +157,7 @@ I0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] info
 W0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] warning
 E0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] error
 F0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
-\*\*\* Check failure stack trace: \*\*\*
-    @   [0-9A-F]{16}  .* \(.*\.(cc|cpp):\d+\)
-)"));
+)" + stack_trace_regex));
   }
   {
     std::ifstream warning_file(UniqueLogFile(absl::LogSeverity::kWarning));
@@ -160,9 +168,7 @@ Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
 W0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] warning
 E0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] error
 F0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
-\*\*\* Check failure stack trace: \*\*\*
-    @   [0-9A-F]{16}  .* \(.*\.(cc|cpp):\d+\)
-)"));
+)" + stack_trace_regex));
   }
   {
     std::ifstream error_file(UniqueLogFile(absl::LogSeverity::kError));
@@ -172,9 +178,7 @@ Running on machine: .*
 Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
 E0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] error
 F0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
-\*\*\* Check failure stack trace: \*\*\*
-    @   [0-9A-F]{16}  .* \(.*\.(cc|cpp):\d+\)
-)"));
+)" + stack_trace_regex));
   }
   {
     std::ifstream fatal_file(UniqueLogFile(absl::LogSeverity::kFatal));
@@ -183,9 +187,7 @@ F0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
 Running on machine: .*
 Log line format: \[IWEF]mmdd hh:mm:ss.μμμμμμ threadid file:line] msg
 F0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] fatal
-\*\*\* Check failure stack trace: \*\*\*
-    @   [0-9A-F]{16}  .* \(.*\.(cc|cpp):\d+\)
-)"));
+)" + stack_trace_regex));
   }
 }
 
