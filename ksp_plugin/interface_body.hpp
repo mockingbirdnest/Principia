@@ -43,6 +43,11 @@ using namespace principia::physics::_rigid_motion;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
+// OrbitalElements is hidden by an interface type, and the fully-qualified name
+// is very long.
+using ClassicalElements =
+    astronomy::_orbital_elements::OrbitalElements::ClassicalElements;
+
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.
 
@@ -500,8 +505,7 @@ inline KeplerianElements ToKeplerianElements(
 
 inline PlottableElements ToPlottableElements(
     Plugin const& plugin,
-    astronomy::_orbital_elements::OrbitalElements::ClassicalElements const&
-        elements) {
+    ClassicalElements const& elements) {
   auto const [sin_i, cos_i] = SinCos(elements.inclination);
   auto const [sin_ω, cos_ω] = SinCos(elements.argument_of_periapsis);
   double const sin²_i = Pow<2>(sin_i);
@@ -764,9 +768,8 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .first_collision_risk_time =
             to_double_ptr(vessel_analysis->first_collision_risk()),
         .first_reentry_time = to_double_ptr(vessel_analysis->first_reentry()),
-        .mean_elements =
-            new TypedIterator<std::vector<astronomy::_orbital_elements::OrbitalElements::ClassicalElements>>(
-                elements.mean_elements(), &plugin),
+        .mean_elements = new TypedIterator<std::vector<ClassicalElements>>(
+            elements.mean_elements(), &plugin),
     };
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {

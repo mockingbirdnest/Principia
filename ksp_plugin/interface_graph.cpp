@@ -2,7 +2,7 @@
 
 #include <utility>
 
-#include "glog/logging.h"
+#include "absl/log/log.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "numerics/elementary_functions.hpp"
