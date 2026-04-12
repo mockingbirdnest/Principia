@@ -1400,7 +1400,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   EXPECT_THAT(uncompressed.size(),
               AnyOf(21'596,    // ZFP 85: Windows, Ubuntu, macOS AVX.
                     21'597,    // ZFP 4112: Windows.
-                    21'588));  // ZFP 85: macOS SSE.
+                    21'588,    // ZFP 85: macOS SSE.
+                    21'589));  // ZFP 4112: macOS SSE.
 
   std::string compressed;
   auto compressor = google::compression::NewGipfeliCompressor();
@@ -1409,7 +1410,8 @@ TEST(EphemerisTestNoFixture, DiscreteTrajectoryCompression) {
   EXPECT_THAT(compressed.size(),
               AnyOf(20'331,    // ZFP 85: Windows, Ubuntu, macOS AVX.
                     20'332,    // ZFP 4112: Windows.
-                    20'323));  // ZFP 85: macOS SSE.
+                    20'323,    // ZFP 85: macOS SSE.
+                    20'324));  // ZFP 4112: macOS SSE.
 
   auto const trajectory2 =
       DiscreteTrajectory<ICRS>::ReadFromMessage(message, /*tracked=*/{});
