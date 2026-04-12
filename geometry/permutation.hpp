@@ -91,10 +91,8 @@ class Permutation : public LinearMap<Permutation<FromFrame, ToFrame>,
   template<template<typename, typename, typename> typename ConformalMap>
   ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
-  template<typename F = FromFrame,
-           typename T = ToFrame>
-    requires(F::handedness == T::handedness)
-  static Permutation Identity();
+  static Permutation Identity()
+    requires(FromFrame::handedness == ToFrame::handedness);
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   static Permutation ReadFromMessage(serialization::LinearMap const& message)

@@ -21,13 +21,13 @@ TEST_F(FunctionTest, MovableFunction) {
     ++*i;
     observe_i = *i;
   };
-  function<void()> f = std::move(λ);
+  function<void()> const f = std::move(λ);
   f();
   EXPECT_THAT(observe_i, Eq(1));
   f();
   EXPECT_THAT(observe_i, Eq(2));
 
-  function<std::unique_ptr<int>(std::unique_ptr<int>)> μ =
+  function<std::unique_ptr<int>(std::unique_ptr<int>)> const μ =
       [i = std::make_unique<int>()](std::unique_ptr<int> p) {
     ++*i;
     *p += *i;

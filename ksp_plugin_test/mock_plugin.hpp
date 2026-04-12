@@ -163,5 +163,11 @@ class MockPlugin : public Plugin {
 using internal::MockPlugin;
 
 }  // namespace _plugin
+
+namespace _mock_plugin = _plugin;
+
 }  // namespace ksp_plugin
+
+namespace ksp_plugin_test = ksp_plugin;
+
 }  // namespace principia

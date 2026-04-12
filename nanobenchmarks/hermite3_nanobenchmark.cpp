@@ -1,4 +1,3 @@
-#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "nanobenchmarks/dependencies.hpp"
@@ -9,8 +8,8 @@
 
 namespace principia {
 namespace nanobenchmarks {
+namespace {
 
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::nanobenchmarks::_dependencies;
@@ -70,5 +69,6 @@ NANOBENCHMARK_FIXTURE(Hermite3RelativeDegreesOfFreedomNanobenchmark,
   return RelativeDegreesOfFreedom<World>(d, v);
 }
 
+}  // namespace
 }  // namespace nanobenchmarks
 }  // namespace principia

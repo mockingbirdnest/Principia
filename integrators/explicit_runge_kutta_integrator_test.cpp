@@ -3,9 +3,11 @@
 #include <cmath>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "geometry/instant.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
@@ -18,6 +20,7 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/statistics.hpp"
 
 namespace principia {
@@ -34,6 +37,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_statistics;
 
 using ODE =
@@ -42,7 +46,7 @@ using ODE =
 class ExplicitRungeKuttaIntegratorTest : public ::testing::Test {
  public:
   ExplicitRungeKuttaIntegratorTest() {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   }
 };
 
@@ -130,9 +134,10 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  EXPECT_THAT(AbsoluteError(static_cast<double>(methods::Kutta1901Vσ1::order),
-                            q_convergence_order),
-              IsNear(0.15_(1)));
+  EXPECT_THAT(
+      q_convergence_order,
+      AbsoluteErrorFrom(static_cast<double>(methods::Kutta1901Vσ1::order),
+                        IsNear(0.15_(1))));
   EXPECT_THAT(q_correlation, IsNear(0.9996_(1)));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
@@ -141,8 +146,10 @@ TEST_F(ExplicitRungeKuttaIntegratorTest, Convergence) {
   LOG(INFO) << "Convergence order in p : " << v_convergence_order;
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
-  EXPECT_THAT(AbsoluteError(methods::Kutta1901Vσ1::order, v_convergence_order),
-              IsNear(0.19_(1)));
+  EXPECT_THAT(
+      v_convergence_order,
+      AbsoluteErrorFrom(static_cast<double>(methods::Kutta1901Vσ1::order),
+                        IsNear(0.19_(1))));
   EXPECT_THAT(v_correlation, IsNear(0.9992_(1)));
 #endif
 }

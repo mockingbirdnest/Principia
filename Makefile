@@ -77,29 +77,24 @@ endif
 
 TEST_LIBS     := \
 	$(DEPS_DIRECTORY)benchmark/src/libbenchmark.a \
-	$(DEPS_DIRECTORY)protobuf/src/.libs/libprotobuf.a
+	$(DEPS_DIRECTORY)protobuf/libprotobuf.a \
+	$(DEPS_DIRECTORY)protobuf/third_party/utf8_range/libutf8*.a
 ABSL_LIBS     := \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/base/libabsl_*.a \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/container/libabsl_*.a \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/debugging/libabsl_*.a \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/flags/libabsl_*.a \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/hash/libabsl_*.a \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/numeric/libabsl_*.a \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/status/libabsl_*.a \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/strings/libabsl_*.a \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
-	$(DEPS_DIRECTORY)abseil-cpp/absl/time/libabsl_*.a
+	$(DEPS_DIRECTORY)abseil-cpp/install/lib/libabsl_*.a
 ifeq ($(UNAME_S),Linux)
     ABSL_GROUP_LIBS = -Wl,--start-group $(ABSL_LIBS) -Wl,--end-group
 else
     ABSL_GROUP_LIBS = $(ABSL_LIBS)
 endif
-LIBS          := $(DEPS_DIRECTORY)protobuf/src/.libs/libprotobuf.a \
+LIBS          := \
+	$(DEPS_DIRECTORY)protobuf/libprotobuf.a \
+	$(DEPS_DIRECTORY)protobuf/third_party/utf8_range/libutf8*.a \
 	$(DEPS_DIRECTORY)gipfeli/libgipfeli.a \
 	$(ABSL_GROUP_LIBS) \
+	$(DEPS_DIRECTORY)re2/libre2.a \
 	$(DEPS_DIRECTORY)core-math/libcore-math.a \
 	$(DEPS_DIRECTORY)zfp/build/lib/libzfp.a \
-	$(DEPS_DIRECTORY)glog/.libs/libglog.a -lpthread -lc++abi
+	-lpthread -lc++abi
 TEST_INCLUDES := \
 	-I$(DEPS_DIRECTORY)googletest/googlemock/include \
 	-I$(DEPS_DIRECTORY)googletest/googletest/include \
@@ -107,10 +102,11 @@ TEST_INCLUDES := \
 	-I$(DEPS_DIRECTORY)googletest/googletest/ \
 	-I$(DEPS_DIRECTORY)benchmark/include
 INCLUDES      := -I. \
-	-I$(DEPS_DIRECTORY)glog/src \
 	-I$(DEPS_DIRECTORY)protobuf/src \
+	-I$(DEPS_DIRECTORY)protobuf/third_party/utf8_range \
 	-I$(DEPS_DIRECTORY)gipfeli/include \
-	-I$(DEPS_DIRECTORY)abseil-cpp \
+	-I$(DEPS_DIRECTORY)abseil-cpp/install/include \
+	-I$(DEPS_DIRECTORY)re2 \
 	-I$(DEPS_DIRECTORY)core-math/include \
 	-I$(DEPS_DIRECTORY)zfp/include \
 	-I$(DEPS_DIRECTORY)config/include \
@@ -121,7 +117,6 @@ SHARED_ARGS   := \
 	--system-header-prefix=absl/                                  \
 	--system-header-prefix=benchmark/                             \
 	--system-header-prefix=google/                                \
-	--system-header-prefix=glog/                                  \
 	--system-header-prefix=gtest/                                 \
 	--system-header-prefix=gmock/                                 \
 	--system-header-prefix=zfp/                                   \
@@ -144,11 +139,14 @@ SHARED_ARGS   := \
 	-Wno-gnu-zero-variadic-macro-arguments                        \
 	-Wno-mathematical-notation-identifier-extension               \
 	-Wno-nested-anon-types                                        \
+	-Wno-nullability-extension                                    \
 	-Wno-unknown-pragmas                                          \
+	-Wno-unused-command-line-argument                             \
 	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'       \
 	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'     \
 	-DTEMP_DIR='std::filesystem::path("/tmp")'                    \
 	-DPLATFORM_WITH_CPU_FEATURES='"$(PRINCIPIA_PLATFORM)"'        \
+	-DGTEST_HAS_ABSL                                              \
 	-DNDEBUG
 
 ifdef PRINCIPIA_SANITIZER
@@ -245,7 +243,7 @@ $(VERSION_TRANSLATION_UNIT): .git
 
 # We don't do dependency resolution on the protos; we compile them all at once.
 $(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
-	$(DEPS_DIRECTORY)/protobuf/src/protoc \
+	$(DEPS_DIRECTORY)/protobuf/protoc \
 	-I $(DEPS_DIRECTORY)/protobuf/src/ -I . $^ --cpp_out=.
 
 $(GENERATED_PROFILES) : $(TOOLS_BIN)
@@ -378,7 +376,7 @@ PRINCIPIA_BENCHMARK_BIN := $(BIN_DIRECTORY)benchmark
 
 $(PRINCIPIA_BENCHMARK_BIN) : $(BENCHMARK_OBJECTS) $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(FUNCTIONS_LIB_OBJECTS) $(CORE_MATH_OBJECTS) $(NUMERICS_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS) $(ASTRONOMY_LIB_OBJECTS) $(GEOMETRY_LIB_OBJECTS) $(PLUGIN_TEST_LIB_OBJECTS) $(TESTING_UTILITIES_LIB_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) $(LIBS) -lpthread -o $@
 
 benchmark: $(PRINCIPIA_BENCHMARK_BIN)
 	-$^

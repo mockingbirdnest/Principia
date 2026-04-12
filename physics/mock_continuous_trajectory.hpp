@@ -29,5 +29,8 @@ class MockContinuousTrajectory : public ContinuousTrajectory<Frame> {
 using internal::MockContinuousTrajectory;
 
 }  // namespace _continuous_trajectory
+
+namespace _mock_continuous_trajectory = _continuous_trajectory;
+
 }  // namespace physics
 }  // namespace principia

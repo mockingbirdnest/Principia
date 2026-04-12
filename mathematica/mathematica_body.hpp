@@ -240,7 +240,7 @@ inline Symbol::Symbol(std::string_view const name) : name_(name) {}
 template<typename... Ts>
   requires(!is_instance_of_v<ExpressIn, tail_t<Ts...>>)
 std::string Symbol::operator[](Ts... ts) {
-  std::vector<std::string> const strings{ToMathematica(ts)...};
+  std::vector<std::string> const strings{ToMathematica(std::move(ts))...};
   return absl::StrCat(name_, "[", absl::StrJoin(strings, ", "), "]");
 }
 
@@ -265,7 +265,7 @@ template<typename T, typename OptionalExpressIn>
 std::string Apply(std::string const& name,
                   T const& right,
                   OptionalExpressIn express_in) {
-  return RawApply("Apply", {name, ToMathematica(right, express_in)});
+  return RawApply("Apply", {name, ToMathematica(right, std::move(express_in))});
 }
 
 inline std::string Evaluate(std::string const& expression) {
@@ -276,14 +276,15 @@ template<typename T, typename OptionalExpressIn>
 std::string Rule(std::string const& name,
                  T const& right,
                  OptionalExpressIn express_in) {
-  return RawApply("Rule", {name, ToMathematica(right, express_in)});
+  return RawApply("Rule", {name, ToMathematica(right, std::move(express_in))});
 }
 
 template<typename T, typename OptionalExpressIn>
 std::string Set(std::string const& name,
                 T const& right,
                 OptionalExpressIn express_in) {
-  return RawApply("Set", {name, ToMathematica(right, express_in)}) + ";\n";
+  return RawApply("Set", {name, ToMathematica(right, std::move(express_in))}) +
+         ";\n";
 }
 
 template<typename T, typename OptionalExpressIn>
@@ -312,12 +313,12 @@ std::string ToMathematica(bool const b, OptionalExpressIn /*express_in*/) {
   return b ? "True" : "False";
 }
 
-template<typename T, typename, typename OptionalExpressIn>
+template<std::integral T, typename OptionalExpressIn>
 std::string ToMathematica(T const integer, OptionalExpressIn /*express_in*/) {
   return std::to_string(integer);
 }
 
-template<typename T, typename, typename OptionalExpressIn, typename>
+template<std::floating_point T, typename OptionalExpressIn>
 std::string ToMathematica(T const real,
                           OptionalExpressIn /*express_in*/,
                           std::int64_t const base) {
@@ -366,6 +367,7 @@ template<typename T, std::int64_t size, typename OptionalExpressIn>
 std::string ToMathematica(FixedVector<T, size> const& fixed_vector,
                           OptionalExpressIn express_in) {
   std::vector<std::string> expressions;
+  expressions.reserve(size);
   for (std::int64_t i = 0; i < size; ++i) {
     expressions.emplace_back(ToMathematica(fixed_vector[i], express_in));
   }
@@ -405,7 +407,7 @@ std::string ToMathematica(R3x3Matrix<T> const& r3x3_matrix,
   rows.push_back(r3x3_matrix.row_x());
   rows.push_back(r3x3_matrix.row_y());
   rows.push_back(r3x3_matrix.row_z());
-  return ToMathematica(rows, express_in);
+  return ToMathematica(rows, std::move(express_in));
 }
 
 template<typename D, typename... Qs>
@@ -449,13 +451,13 @@ std::string ToMathematica(Vector<S, F> const& vector,
 template<typename S, typename F, typename OptionalExpressIn>
 std::string ToMathematica(Bivector<S, F> const& bivector,
                           OptionalExpressIn express_in) {
-  return ToMathematica(bivector.coordinates(), express_in);
+  return ToMathematica(bivector.coordinates(), std::move(express_in));
 }
 
 template<typename V, typename OptionalExpressIn>
 std::string ToMathematica(Point<V> const& point,
                           OptionalExpressIn express_in) {
-  return ToMathematica(point - Point<V>(), express_in);
+  return ToMathematica(point - Point<V>(), std::move(express_in));
 }
 
 template<typename S, typename F,
@@ -463,7 +465,7 @@ template<typename S, typename F,
          typename OptionalExpressIn>
 std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
                           OptionalExpressIn express_in) {
-  return ToMathematica(form.coordinates(), express_in);
+  return ToMathematica(form.coordinates(), std::move(express_in));
 }
 
 template<typename OptionalExpressIn, typename... T>
@@ -498,7 +500,8 @@ std::string ToMathematica(
           ToMathematica(relative_degrees_of_freedom.velocity(), express_in)});
 }
 
-template<typename Tuple, typename, typename OptionalExpressIn>
+template<typename Tuple, typename OptionalExpressIn>
+  requires(is_tuple_v<Tuple>)
 std::string ToMathematica(Tuple const& tuple, OptionalExpressIn express_in) {
   std::vector<std::string> expressions;
   expressions.reserve(std::tuple_size_v<Tuple>);
@@ -634,7 +637,8 @@ template<typename V, typename A, int d,
 std::string ToMathematica(
     PolynomialInMonomialBasis<V, A, d, E> const& polynomial,
     OptionalExpressIn express_in) {
-  return RawApply("Function", {ToMathematicaBody(polynomial, express_in)});
+  return RawApply("Function",
+                  {ToMathematicaBody(polynomial, std::move(express_in))});
 }
 
 template<typename V, typename A, int d,
@@ -649,8 +653,9 @@ std::string ToMathematicaBody(
       "Divide",
       {RawApply("Subtract", {"#", ToMathematica(midpoint, express_in)}),
        ToMathematica((b - a) / 2.0, express_in)});
-  std::vector<std::string> terms;
   auto const& coefficients = polynomial.coefficients_;
+  std::vector<std::string> terms;
+  terms.reserve(coefficients.size());
   for (int i = 0; i < coefficients.size(); ++i) {
     terms.push_back(RawApply(
         "Times",
@@ -665,21 +670,24 @@ template<typename V, typename A, int d,
 std::string ToMathematica(
     PolynomialInЧебышёвBasis<V, A, d> const& polynomial,
     OptionalExpressIn express_in) {
-  return RawApply("Function", {ToMathematicaBody(polynomial, express_in)});
+  return RawApply("Function",
+                  {ToMathematicaBody(polynomial, std::move(express_in))});
 }
 
 template<typename V, int ad, int pd,
          typename OptionalExpressIn>
 std::string ToMathematica(PoissonSeries<V, ad, pd> const& series,
                           OptionalExpressIn express_in) {
-  return RawApply("Function", {ToMathematicaBody(series, express_in)});
+  return RawApply("Function",
+                  {ToMathematicaBody(series, std::move(express_in))});
 }
 
 template<typename V, int ad, int pd,
          typename OptionalExpressIn>
 std::string ToMathematica(PiecewisePoissonSeries<V, ad, pd> const& series,
                           OptionalExpressIn express_in) {
-  return RawApply("Function", {ToMathematicaBody(series, express_in)});
+  return RawApply("Function",
+                  {ToMathematicaBody(series, std::move(express_in))});
 }
 
 template<typename OptionalExpressIn>

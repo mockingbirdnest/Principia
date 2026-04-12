@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/internal/container.h"
 #include "geometry/interval.hpp"
-#include "glog/stl_logging.h"
 #include "numerics/fma.hpp"
 #include "numerics/newhall.hpp"
 #include "numerics/poisson_series.hpp"

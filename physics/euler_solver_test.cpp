@@ -2,14 +2,16 @@
 
 #include <algorithm>
 #include <array>
+#include <iterator>
 #include <limits>
 #include <random>
 #include <set>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -28,19 +30,16 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
 
-using ::testing::Le;
 using ::testing::Lt;
 using ::testing::Matcher;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -58,7 +57,6 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
 using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
@@ -80,7 +78,7 @@ class EulerSolverTest : public ::testing::Test {
 
   // Checks that the angular momentum transformed by the attitude to the
   // inertial frame satisfies the given matcher.
-  void CheckAngularMomentumConservation(
+  static void CheckAngularMomentumConservation(
       std::vector<Bivector<AngularMomentum, PrincipalAxes>> const&
           angular_momenta,
       std::vector<Solver::AttitudeRotation> const& attitudes,
@@ -95,7 +93,7 @@ class EulerSolverTest : public ::testing::Test {
 
   // Checks that the kinetic energy computed using the attitude has the right
   // value.
-  void CheckPoinsotConstruction(
+  static void CheckPoinsotConstruction(
       Solver const& solver,
       std::vector<Bivector<AngularMomentum, PrincipalAxes>> const&
           angular_momenta,
@@ -148,7 +146,7 @@ TEST_F(EulerSolverTest, InitialStateRandom) {
         randoms[1] * si::Unit<MomentOfInertia>,
         randoms[2] * si::Unit<MomentOfInertia>};
 
-    Bivector<AngularMomentum, PrincipalAxes>
+    Bivector<AngularMomentum, PrincipalAxes> const
         initial_angular_momentum(
             {angular_momentum_distribution(random) * si::Unit<AngularMomentum>,
              angular_momentum_distribution(random) * si::Unit<AngularMomentum>,
@@ -188,7 +186,7 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
       3 * si::Unit<MomentOfInertia>};
 
   for (int i = 0; i < 100; ++i) {
-    Bivector<AngularMomentum, PrincipalAxes>
+    Bivector<AngularMomentum, PrincipalAxes> const
         initial_angular_momentum(
             {angular_momentum_distribution(random) * si::Unit<AngularMomentum>,
              angular_momentum_distribution(random) * si::Unit<AngularMomentum>,
@@ -260,7 +258,7 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       if (i % 2 == 0) {
         mz = -mz;
       }
-      Bivector<AngularMomentum, PrincipalAxes>
+      Bivector<AngularMomentum, PrincipalAxes> const
           initial_angular_momentum({mx, si::Unit<AngularMomentum>, mz});
       Solver const solver(moments_of_inertia,
                           identity_attitude_(initial_angular_momentum),
@@ -282,7 +280,7 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       if (i % 2 == 0) {
         mz = -mz;
       }
-      Bivector<AngularMomentum, PrincipalAxes>
+      Bivector<AngularMomentum, PrincipalAxes> const
           initial_angular_momentum({mx, si::Unit<AngularMomentum>, mz});
       Solver const solver(moments_of_inertia,
                           identity_attitude_(initial_angular_momentum),
@@ -307,7 +305,7 @@ TEST_F(EulerSolverTest, InitialStateFormulæ) {
       if (i % 2 == 0) {
         mz = -mz;
       }
-      Bivector<AngularMomentum, PrincipalAxes>
+      Bivector<AngularMomentum, PrincipalAxes> const
           initial_angular_momentum({mx, si::Unit<AngularMomentum>, mz});
       Solver const solver(moments_of_inertia,
                           identity_attitude_(initial_angular_momentum),
@@ -338,9 +336,9 @@ TEST_F(EulerSolverTest, ShortFatSymmetricTopPrecession) {
   Solver::AttitudeRotation const initial_attitude = identity_attitude_;
 
   // Correspondence with the referential of lecture 19: x = e1, y = e2, z = e3.
-  AngularFrequency Ω = initial_angular_momentum.coordinates().z *
-                       (moments_of_inertia[0] - moments_of_inertia[2]) /
-                       (moments_of_inertia[0] * moments_of_inertia[2]);
+  AngularFrequency const Ω = initial_angular_momentum.coordinates().z *
+                             (moments_of_inertia[0] - moments_of_inertia[2]) /
+                             (moments_of_inertia[0] * moments_of_inertia[2]);
 
   Solver const solver(moments_of_inertia,
                       initial_attitude(initial_angular_momentum),
@@ -394,9 +392,9 @@ TEST_F(EulerSolverTest, TallSkinnySymmetricTopPrecession) {
   Solver::AttitudeRotation const initial_attitude = identity_attitude_;
 
   // Correspondence with the referential of lecture 19:  x = e3, y = e1, z = e2.
-  AngularFrequency Ω = initial_angular_momentum.coordinates().x *
-                       (moments_of_inertia[1] - moments_of_inertia[0]) /
-                       (moments_of_inertia[1] * moments_of_inertia[0]);
+  AngularFrequency const Ω = initial_angular_momentum.coordinates().x *
+                             (moments_of_inertia[1] - moments_of_inertia[0]) /
+                             (moments_of_inertia[1] * moments_of_inertia[0]);
 
   Solver const solver(moments_of_inertia,
                       initial_attitude(initial_angular_momentum),
@@ -524,8 +522,8 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
       EXPECT_EQ(zeroes[i / 2], t);
     }
     if (it != all.begin()) {
-      EXPECT_THAT(RelativeError(quarter_period, t - *std::prev(it)),
-                  Lt(0.0023));
+      EXPECT_THAT(t - *std::prev(it),
+                  RelativeErrorFrom(quarter_period, Lt(0.0023)));
     }
   }
 

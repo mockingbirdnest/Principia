@@ -1,24 +1,30 @@
 #include <iostream>
 #include <string>
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/initialize.h"
+#include "absl/log/log.h"
+#include "absl/log/log_sink_registry.h"
+#include "base/file_log_sink.hpp"  // 🧙 For _file_log_sink.
 #include "tools/generate_configuration.hpp"  // 🧙 For _generate_configuration.
 #include "tools/generate_kopernicus.hpp"  // 🧙 for _generate_kopernicus.
 #include "tools/generate_profiles.hpp"  // 🧙 For _generate_profiles.
 
+using namespace principia::base::_file_log_sink;
 using namespace principia::tools::_generate_configuration;
 using namespace principia::tools::_generate_kopernicus;
 using namespace principia::tools::_generate_profiles;
 
 int __cdecl main(int argc, char const* argv[]) {
-  google::SetLogFilenameExtension(".log");
-  google::InitGoogleLogging(argv[0]);
-  google::LogToStderr();
+  absl::AddLogSink(new FileLogSink("principia.tools.", ".log"));
+  absl::InitializeLog();
+  absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
   if (argc < 2) {
     std::cerr << "Usage: " << argv[0] << " command [arguments...]\n";
     return 1;
   }
-  std::string command = argv[1];
+  std::string const command = argv[1];
   if (command == "generate_configuration") {
     if (argc != 7) {
       // tools.exe generate_configuration \

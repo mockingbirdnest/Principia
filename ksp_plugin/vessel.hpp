@@ -354,7 +354,7 @@ class Vessel {
   // the reanimation reached `desired_t_min`, or if the vessel is fully
   // reanimated.
   bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min)
-      SHARED_LOCKS_REQUIRED(lock_);
+      ABSL_SHARED_LOCKS_REQUIRED(lock_);
 
   // Runs the integrator to compute the `prognostication_` based on the given
   // parameters.
@@ -416,7 +416,7 @@ class Vessel {
 
   // Vessels that are constructed de novo won't ever need reanimation, so all
   // the checkpoints are animate at birth.
-  Instant oldest_reanimated_checkpoint_ GUARDED_BY(lock_) = InfinitePast;
+  Instant oldest_reanimated_checkpoint_ ABSL_GUARDED_BY(lock_) = InfinitePast;
 
   // The techniques and terminology follow [Lov22].
   RecurringThread<Instant> reanimator_;
@@ -428,7 +428,7 @@ class Vessel {
   // The trajectories that have been reanimated are put in this queue by
   // ReanimateOneCheckpoint and consumed by RequestReanimation.
   std::queue<DiscreteTrajectory<Barycentric>> reanimated_trajectories_
-      GUARDED_BY(lock_);
+      ABSL_GUARDED_BY(lock_);
 
   // The last (most recent) segment of the `history_` prior to the
   // `psychohistory_`.  May be identical to `history_`.  Always identical to

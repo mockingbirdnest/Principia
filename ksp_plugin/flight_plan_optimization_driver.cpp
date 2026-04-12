@@ -2,16 +2,21 @@
 
 #include <memory>
 #include <optional>
+#include <thread>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
-#include "glog/logging.h"
+#include "base/stoppable_thread.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace _flight_plan_optimization_driver {
 namespace internal {
+
+using namespace principia::base::_stoppable_thread;
 
 FlightPlanOptimizationDriver::FlightPlanOptimizationDriver(
     not_null<std::shared_ptr<FlightPlan>> const& flight_plan,
@@ -42,7 +47,7 @@ bool FlightPlanOptimizationDriver::done() const {
 }
 
 void FlightPlanOptimizationDriver::Interrupt() {
-  optimizer_ = jthread();
+  optimizer_ = std::jthread();
   // We are single-threaded here, no need to lock.
   optimizer_idle_ = true;
 }

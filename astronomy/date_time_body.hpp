@@ -6,9 +6,10 @@
 #include <iomanip>
 #include <limits>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/macros.hpp"  // 🧙 For CONSTEXPR_CHECK.
 #include "base/mod.hpp"
-#include "glog/logging.h"
 
 namespace principia {
 namespace astronomy {

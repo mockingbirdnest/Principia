@@ -1,5 +1,6 @@
 #include "numerics/davenport_q_method.hpp"
 
+#include <cstdint>
 #include <random>
 #include <vector>
 
@@ -63,6 +64,7 @@ TEST_F(DavenportQMethodTest, FarFromIdentity) {
   Rotation<World1, World2> const rotation(normalized_q);
 
   std::vector<Vector<double, World2>> vectors2;
+  vectors2.reserve(vectors1_.size());
   for (auto const& vector1 : vectors1_) {
     vectors2.push_back(rotation(vector1));
   }

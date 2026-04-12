@@ -19,10 +19,9 @@ Sign OrthogonalMap<FromFrame, ToFrame>::Determinant() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T>
-  requires(F::handedness == T::handedness)
-Rotation<FromFrame, ToFrame>
-OrthogonalMap<FromFrame, ToFrame>::AsRotation() const {
+Rotation<FromFrame, ToFrame> OrthogonalMap<FromFrame, ToFrame>::
+AsRotation() const
+  requires(FromFrame::handedness == ToFrame::handedness) {
   return Rotation<FromFrame, ToFrame>(quaternion_);
 }
 
@@ -84,10 +83,8 @@ OrthogonalMap<FromFrame, ToFrame>::Forget() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename F, typename T>
-  requires(F::handedness == T::handedness)
-OrthogonalMap<FromFrame, ToFrame>
-OrthogonalMap<FromFrame, ToFrame>::Identity() {
+OrthogonalMap<FromFrame, ToFrame> OrthogonalMap<FromFrame, ToFrame>::Identity()
+  requires(FromFrame::handedness == ToFrame::handedness) {
   return OrthogonalMap(Quaternion(1));
 }
 

@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <array>
-#include <fstream>
 #include <list>
 #include <map>
 #include <memory>
@@ -10,12 +9,14 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
+#include "absl/status/status.h"
 #include "astronomy/stabilize_ksp.hpp"
-#include "base/array.hpp"
 #include "base/bundle.hpp"
 #include "base/file.hpp"
-#include "base/get_line.hpp"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -36,6 +37,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -46,10 +48,8 @@ namespace _retrobop_dynamical_stability {
 namespace internal {
 
 using namespace principia::astronomy::_stabilize_ksp;
-using namespace principia::base::_array;
 using namespace principia::base::_bundle;
 using namespace principia::base::_file;
-using namespace principia::base::_get_line;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
@@ -461,7 +461,7 @@ void AnalyseGlobalError() {
                         BlanesMoan2002SRKN14A,
                         Ephemeris<Barycentric>::NewtonianMotionEquation>(),
                     step / 2);
-  std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
+  std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>> const
       perturbed_ephemerides = MakePerturbedEphemerides(
           100,
           SymplecticRungeKuttaNyströmIntegrator<

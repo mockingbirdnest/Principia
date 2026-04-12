@@ -1,5 +1,9 @@
 #pragma once
+
 #include "physics/discrete_trajectory_types.hpp"
+
+#include <memory>
+#include <utility>
 
 namespace principia {
 namespace physics {
@@ -10,6 +14,15 @@ template<typename Frame>
 value_type<Frame>::value_type(Instant const& time,
                               DegreesOfFreedom<Frame> const& degrees_of_freedom)
     : degrees_of_freedom(degrees_of_freedom), time(time) {}
+
+template<typename Frame>
+value_type<Frame>::value_type(
+    Instant const& time,
+    DegreesOfFreedom<Frame> const& degrees_of_freedom,
+    std::unique_ptr<Interpolation<Frame>> interpolation)
+    : degrees_of_freedom(degrees_of_freedom),
+      time(time),
+      interpolation(std::move(interpolation)) {}
 
 template<typename Frame>
 template<std::size_t i, typename Self>

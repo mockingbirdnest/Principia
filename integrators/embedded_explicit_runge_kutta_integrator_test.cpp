@@ -24,7 +24,7 @@
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace integrators {
@@ -48,7 +48,7 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_integration;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 using ODE =
     ExplicitFirstOrderOrdinaryDifferentialEquation<Instant, Length, Speed>;
@@ -138,10 +138,11 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
   }
   {
     auto const& [positions, velocities] = solution.back().y;
-    EXPECT_THAT(AbsoluteError(x_initial, positions.value),
-                IsNear(7.5e-2_(1) * Metre));
-    EXPECT_THAT(AbsoluteError(v_initial, velocities.value),
-                IsNear(6.8e-2_(1) * Metre / Second));
+    EXPECT_THAT(positions.value,
+                AbsoluteErrorFrom(x_initial, IsNear(7.5e-2_(1) * Metre)));
+    EXPECT_THAT(
+        velocities.value,
+        AbsoluteErrorFrom(v_initial, IsNear(6.8e-2_(1) * Metre / Second)));
     EXPECT_EQ(t_final, solution.back().s.value);
     EXPECT_EQ(steps_forward, solution.size());
     EXPECT_EQ(1 + (1 + initial_rejections) * 6 +
@@ -173,10 +174,11 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest,
   }
   {
     auto const& [positions, velocities] = solution.back().y;
-    EXPECT_THAT(AbsoluteError(x_initial, positions.value),
-                IsNear(2.1e-1_(1) * Metre));
-    EXPECT_THAT(AbsoluteError(v_initial, velocities.value),
-                IsNear(6.8e-2_(1) * Metre / Second));
+    EXPECT_THAT(positions.value,
+                AbsoluteErrorFrom(x_initial, IsNear(2.1e-1_(1) * Metre)));
+    EXPECT_THAT(
+        velocities.value,
+        AbsoluteErrorFrom(v_initial, IsNear(6.8e-2_(1) * Metre / Second)));
     EXPECT_EQ(t_initial, solution.back().s.value);
     EXPECT_EQ(steps_backward, solution.size() - steps_forward);
     EXPECT_EQ(1 + (1 + initial_rejections) * 6 +
@@ -237,15 +239,14 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
   auto const& [positions, velocities] = solution.back().y;
   EXPECT_THAT(outcome,
               StatusIs(termination_condition::ReachedMaximalStepCount));
-  EXPECT_THAT(AbsoluteError(
+  EXPECT_THAT(positions.value,
+              AbsoluteErrorFrom(
                   x_initial * Cos(ω * (solution.back().s.value - t_initial)),
-                  positions.value),
-              IsNear(5.9e-2_(1) * Metre));
-  EXPECT_THAT(AbsoluteError(
-                  -v_amplitude *
-                      Sin(ω * (solution.back().s.value - t_initial)),
-                  velocities.value),
-              IsNear(5.6e-2_(1) * Metre / Second));
+                  IsNear(5.9e-2_(1) * Metre)));
+  EXPECT_THAT(velocities.value,
+              AbsoluteErrorFrom(
+                  -v_amplitude * Sin(ω * (solution.back().s.value - t_initial)),
+                  IsNear(5.6e-2_(1) * Metre / Second)));
   EXPECT_THAT(solution.back().s.value, Lt(t_final));
   EXPECT_EQ(40, solution.size());
 
@@ -266,10 +267,11 @@ TEST_F(EmbeddedExplicitRungeKuttaIntegratorTest, MaxSteps) {
     auto const outcome = instance->Solve(t_final);
     auto const& [positions, velocities] = solution.back().y;
     EXPECT_THAT(outcome, StatusIs(termination_condition::Done));
-    EXPECT_THAT(AbsoluteError(x_initial, positions.value),
-                IsNear(7.5e-2_(1) * Metre));
-    EXPECT_THAT(AbsoluteError(v_initial, velocities.value),
-                IsNear(6.8e-2_(1) * Metre / Second));
+    EXPECT_THAT(positions.value,
+                AbsoluteErrorFrom(x_initial, IsNear(7.5e-2_(1) * Metre)));
+    EXPECT_THAT(
+        velocities.value,
+        AbsoluteErrorFrom(v_initial, IsNear(6.8e-2_(1) * Metre / Second)));
     EXPECT_EQ(t_final, solution.back().s.value);
     EXPECT_EQ(steps_forward, solution.size());
   }

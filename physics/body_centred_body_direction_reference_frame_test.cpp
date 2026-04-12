@@ -3,7 +3,6 @@
 #include <memory>
 
 #include "astronomy/frames.hpp"
-#include "base/algebra.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -22,13 +21,14 @@
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -37,10 +37,7 @@ namespace physics {
 using ::testing::IsNull;
 using ::testing::Lt;
 using ::testing::Not;
-using ::testing::Return;
-using ::testing::_;
 using namespace principia::astronomy::_frames;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -61,7 +58,7 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_vanishes_before;
 
 namespace {
@@ -80,7 +77,7 @@ class BodyCentredBodyDirectionReferenceFrameTest : public ::testing::Test {
                               serialization::Frame::TEST>;
 
   BodyCentredBodyDirectionReferenceFrameTest()
-      : period_(10 * π * sqrt(5.0 / 7.0) * Second),
+      : period_(10 * π * Sqrt(5.0 / 7.0) * Second),
         solar_system_(SOLUTION_DIR / "astronomy" /
                           "test_gravity_model_two_bodies.proto.txt",
                       SOLUTION_DIR / "astronomy" /
@@ -142,21 +139,21 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ToBigSmallFrameAtTime) {
         to_big_small_frame_at_t(big_in_inertial_frame_at_t);
     DegreesOfFreedom<BigSmallFrame> const small_in_big_small_at_t =
         to_big_small_frame_at_t(small_in_inertial_frame_at_t);
-    EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.position(),
-                              BigSmallFrame::origin),
-                Lt(1.0e-6 * Metre));
-    EXPECT_THAT(AbsoluteError(big_in_big_small_at_t.velocity(),
-                              BigSmallFrame::unmoving),
-                Lt(1.0e-4 * Metre / Second));
-    EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.position(),
-                              Displacement<BigSmallFrame>({
-                                  5.0 * Kilo(Metre),
-                                  0 * Kilo(Metre),
-                                  0 * Kilo(Metre)}) + BigSmallFrame::origin),
-                Lt(1.0e-5 * Metre));
-    EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
-                              BigSmallFrame::unmoving),
-                Lt(1.0e-4 * Metre / Second));
+    EXPECT_THAT(big_in_big_small_at_t.position(),
+                AbsoluteErrorFrom(BigSmallFrame::origin,
+                                  Lt(1.0e-6 * Metre)));
+    EXPECT_THAT(big_in_big_small_at_t.velocity(),
+                AbsoluteErrorFrom(BigSmallFrame::unmoving,
+                                  Lt(1.0e-4 * Metre / Second)));
+    EXPECT_THAT(small_in_big_small_at_t.position(),
+                AbsoluteErrorFrom(Displacement<BigSmallFrame>({
+                                      5.0 * Kilo(Metre),
+                                      0 * Kilo(Metre),
+                                      0 * Kilo(Metre)}) + BigSmallFrame::origin,
+                                  Lt(1.0e-5 * Metre)));
+    EXPECT_THAT(small_in_big_small_at_t.velocity(),
+                AbsoluteErrorFrom(BigSmallFrame::unmoving,
+                                  Lt(1.0e-4 * Metre / Second)));
   }
 }
 
@@ -169,14 +166,12 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Inverse) {
     auto const small_initial_state_transformed_and_back =
         from_big_small_frame_at_t(to_big_small_frame_at_t(
             small_initial_state_));
-    EXPECT_THAT(
-        AbsoluteError(small_initial_state_transformed_and_back.position(),
-                      small_initial_state_.position()),
-        Lt(1.0e-11 * Metre));
-    EXPECT_THAT(
-        AbsoluteError(small_initial_state_transformed_and_back.velocity(),
-                      small_initial_state_.velocity()),
-        Lt(1.0e-11 * Metre / Second));
+    EXPECT_THAT(small_initial_state_transformed_and_back.position(),
+                AbsoluteErrorFrom(small_initial_state_.position(),
+                                  Lt(1.0e-11 * Metre)));
+    EXPECT_THAT(small_initial_state_transformed_and_back.velocity(),
+                AbsoluteErrorFrom(small_initial_state_.velocity(),
+                                  Lt(1.0e-11 * Metre / Second)));
   }
 }
 
@@ -243,12 +238,12 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ConstructFromOneBody) {
                 VanishesBefore(1 * Kilo(Metre) / Second, 0, 50));
     EXPECT_OK(barycentre_trajectory.Append(t0_ + t, barycentre));
   }
-  BodyCentredBodyDirectionReferenceFrame<ICRS, BigSmallFrame>
+  BodyCentredBodyDirectionReferenceFrame<ICRS, BigSmallFrame> const
       barycentric_from_discrete{
           ephemeris_.get(),
           [&t = barycentre_trajectory]() -> auto& { return t; },
           small_};
-  BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>
+  BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame> const
       barycentric_from_both_bodies{ephemeris_.get(), big_, small_};
   for (Time t = period_ / 32; t <= period_ / 2; t += period_ / 32) {
     auto const dof_from_discrete =

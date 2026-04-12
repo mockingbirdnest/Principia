@@ -1,9 +1,13 @@
 #include "physics/lagrange_equipotentials.hpp"
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -131,7 +135,7 @@ TEST_F(LagrangeEquipotentialsTest,
       Barycentre({q_earth, q_moon}, {1.0, 1.0}) +
       (q_earth - q_moon).Norm() * Vector<double, World>({0, Sqrt(3) / 2, 0});
   using MEO = Frame<struct MEOTag, Arbitrary>;
-  BodyCentredBodyDirectionReferenceFrame<Barycentric, MEO> meo(
+  BodyCentredBodyDirectionReferenceFrame<Barycentric, MEO> const meo(
       ephemeris_.get(), moon, earth);
   // The initial states for four trajectories:
   // [0]: initially stationary in the rotating-pulsating frame near L3;

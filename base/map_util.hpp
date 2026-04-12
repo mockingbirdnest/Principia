@@ -37,7 +37,8 @@
 // from google3/util/gtl/map_util.h
 // Author: Anton Carver
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 
 namespace principia {
 namespace base {

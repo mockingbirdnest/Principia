@@ -54,9 +54,9 @@ class ThreadPool final {
   void DequeueCallAndExecute();
 
   absl::Mutex lock_;
-  bool shutdown_ GUARDED_BY(lock_) = false;
-  std::deque<Call> calls_ GUARDED_BY(lock_);
-  std::int64_t busy_threads_ GUARDED_BY(lock_) = 0;
+  bool shutdown_ ABSL_GUARDED_BY(lock_) = false;
+  std::deque<Call> calls_ ABSL_GUARDED_BY(lock_);
+  std::int64_t busy_threads_ ABSL_GUARDED_BY(lock_) = 0;
 
   std::list<std::thread> threads_;
 };

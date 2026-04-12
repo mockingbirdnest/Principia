@@ -10,9 +10,9 @@
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
@@ -42,9 +42,9 @@ class Hermite3Test : public ::testing::Test {
 };
 
 TEST_F(Hermite3Test, Precomputed) {
-  Hermite3<Length, Instant> h({t0_ + 1 * Second, t0_ + 2 * Second},
-                              {33 * Metre, 40 * Metre},
-                              {-5 * Metre / Second, 6 * Metre / Second});
+  Hermite3<Length, Instant> const h({t0_ + 1 * Second, t0_ + 2 * Second},
+                                    {33 * Metre, 40 * Metre},
+                                    {-5 * Metre / Second, 6 * Metre / Second});
 
   EXPECT_EQ(33 * Metre, h(t0_ + 1 * Second));
   EXPECT_EQ(33.109375 * Metre, h(t0_ + 1.25 * Second));
@@ -60,11 +60,11 @@ TEST_F(Hermite3Test, Precomputed) {
   EXPECT_EQ(6 * Metre / Second, h.EvaluateDerivative(t0_ + 2 * Second));
 
   EXPECT_THAT(h.FindExtrema(),
-              ElementsAre(t0_ + ((64.0 - sqrt(430.0)) / 39.0) * Second));
+              ElementsAre(t0_ + ((64.0 - Sqrt(430.0)) / 39.0) * Second));
 }
 
 TEST_F(Hermite3Test, Quadratic) {
-  Hermite3<Length, Instant> near_quadratic(
+  Hermite3<Length, Instant> const near_quadratic(
       {t0_ + 1 * Second, t0_ + 2 * Second},
       {0x1p-53 * Metre, 0 * Metre},
       {-1 * Metre / Second, 1 * Metre / Second});
@@ -72,7 +72,7 @@ TEST_F(Hermite3Test, Quadratic) {
   EXPECT_THAT(
       near_quadratic.FindExtrema(),
       ElementsAre(t0_ + 1.5 * Second));
-  Hermite3<Length, Instant> quadratic(
+  Hermite3<Length, Instant> const quadratic(
       {t0_ + 1 * Second, t0_ + 2 * Second},
       {0 * Metre, 0 * Metre},
       {-1 * Metre / Second, 1 * Metre / Second});
@@ -82,9 +82,10 @@ TEST_F(Hermite3Test, Quadratic) {
 
 TEST_F(Hermite3Test, Typed) {
   // Just here to check that the types work in the presence of affine spaces.
-  Hermite3<Position<World>, Instant> h({t0_ + 1 * Second, t0_ + 2 * Second},
-                                       {World::origin, World::origin},
-                                       {World::unmoving, World::unmoving});
+  Hermite3<Position<World>, Instant> const h(
+      {t0_ + 1 * Second, t0_ + 2 * Second},
+      {World::origin, World::origin},
+      {World::unmoving, World::unmoving});
 
   EXPECT_EQ(World::origin, h(t0_ + 1.3 * Second));
   EXPECT_EQ(Velocity<World>(), h.EvaluateDerivative(t0_ + 1.7 * Second));
@@ -94,7 +95,7 @@ TEST_F(Hermite3Test, Typed) {
 // the end of the interpolation interval is different from the expected one.
 // In particular, the computed position is negative at both ends.
 TEST_F(Hermite3Test, Conditioning) {
-  Hermite3<Length, Instant> h(
+  Hermite3<Length, Instant> const h(
       {t0_ + 19418861.806896236 * Second, t0_ + 19418869.842261545 * Second},
       {-2.1383610158805017e-12 * Metre, 0 * Metre},
       {2.3308208035605881e-12 * Metre / Second,

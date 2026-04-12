@@ -1,5 +1,6 @@
 #include "testing_utilities/statistics.hpp"
 
+#include <cstddef>
 #include <vector>
 
 #include "base/algebra.hpp"
@@ -55,14 +56,14 @@ TEST_F(StatisticsTest, UniformPerfectlyCorrelated) {
 }
 
 TEST_F(StatisticsTest, Uncorrelated) {
-  std::vector<Time> t   = {0 * Second, 1 * Second, 1 * Second, 0 * Second};
-  std::vector<Length> x = {0 * Metre, 0 * Metre, 1 * Metre, 1 * Metre};
+  std::vector<Time> const t = {0 * Second, 1 * Second, 1 * Second, 0 * Second};
+  std::vector<Length> const x = {0 * Metre, 0 * Metre, 1 * Metre, 1 * Metre};
   EXPECT_THAT(PearsonProductMomentCorrelationCoefficient(t, x), Eq(0));
 }
 
 TEST_F(StatisticsTest, NegativelyCorrelated) {
-  std::vector<Time> t   = {0 * Second, 1 * Second, 1 * Second};
-  std::vector<Length> x = {1 * Metre, 0 * Metre, 1 * Metre};
+  std::vector<Time> const t   = {0 * Second, 1 * Second, 1 * Second};
+  std::vector<Length> const x = {1 * Metre, 0 * Metre, 1 * Metre};
   EXPECT_THAT(PearsonProductMomentCorrelationCoefficient(t, x),
               AlmostEquals(-0.5, 1));
 }

@@ -7,9 +7,10 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/tags.hpp"
 #include "geometry/direct_sum.hpp"
-#include "glog/logging.h"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/combinatorics.hpp"
 #include "numerics/elementary_functions.hpp"

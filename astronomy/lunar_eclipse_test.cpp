@@ -1,13 +1,15 @@
 #include <memory>
 #include <string_view>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/macros.hpp"  // 🧙 For NAMED.
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/sign.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -23,6 +25,7 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -44,6 +47,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 namespace {
 
@@ -59,7 +63,7 @@ constexpr std::string_view arrow = "-------------------> ";
 class LunarEclipseTest : public ::testing::Test {
  protected:
   static void SetUpTestCase() {
-    google::LogToStderr();
+    absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},
@@ -123,9 +127,9 @@ class LunarEclipseTest : public ::testing::Test {
     // We are at the desired contact if the angle between Earth and Moon from
     // the apex of locus of the moon at that contact is the same value as the
     // half-aperture of the umbra (Earth-Sun cone).
-    EXPECT_THAT(AbsoluteError(umbral_half_aperture(current_time),
-                              earth_moon_angle(current_time)),
-                IsNear(angular_error))
+    EXPECT_THAT(earth_moon_angle(current_time),
+                AbsoluteErrorFrom(umbral_half_aperture(current_time),
+                                  IsNear(angular_error)))
         << NAMED(umbral_half_aperture(current_time)) << ", "
         << NAMED(earth_moon_angle(current_time)) << ", " << NAMED(current_time);
 
@@ -185,9 +189,9 @@ class LunarEclipseTest : public ::testing::Test {
     // We are at the desired contact if the angle between Earth and Moon from
     // the apex of locus of the moon at that contact is the same value as the
     // half-aperture of the penumbra.
-    EXPECT_THAT(AbsoluteError(penumbral_half_aperture(current_time),
-                              earth_moon_angle(current_time)),
-                IsNear(angular_error))
+    EXPECT_THAT(earth_moon_angle(current_time),
+                AbsoluteErrorFrom(penumbral_half_aperture(current_time),
+                                  IsNear(angular_error)))
         << NAMED(penumbral_half_aperture(current_time)) << ", "
         << NAMED(earth_moon_angle(current_time)) << ", " << NAMED(current_time);
 

@@ -110,7 +110,6 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
     PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(24);
     default:
       LOG(FATAL) << "Unexpected degree " << message.degree();
-      break;
   }
 }
 

@@ -5,21 +5,25 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
-#include "glog/logging.h"
+#include "base/stoppable_thread.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace _geometric_potential_plotter {
 namespace internal {
 
+using namespace principia::base::_stoppable_thread;
+
 GeometricPotentialPlotter::GeometricPotentialPlotter(
     not_null<Ephemeris<Barycentric>*> const ephemeris)
     : ephemeris_(ephemeris) {}
 
 void GeometricPotentialPlotter::Interrupt() {
-  plotter_ = jthread();
+  plotter_ = std::jthread();
   // We are single-threaded here, no need to lock.
   plotter_idle_ = true;
 }

@@ -26,6 +26,7 @@
     <ClInclude Include="encoder.hpp" />
     <ClInclude Include="file.hpp" />
     <ClInclude Include="file_body.hpp" />
+    <ClInclude Include="file_log_sink.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
     <ClInclude Include="flags.hpp" />
     <ClInclude Include="for_all_of.hpp" />
@@ -38,8 +39,6 @@
     <ClInclude Include="graveyard_body.hpp" />
     <ClInclude Include="hexadecimal.hpp" />
     <ClInclude Include="hexadecimal_body.hpp" />
-    <ClInclude Include="jthread.hpp" />
-    <ClInclude Include="jthread_body.hpp" />
     <ClInclude Include="macos_allocator_replacement.hpp" />
     <ClInclude Include="macros.hpp" />
     <ClInclude Include="malloc_allocator.hpp" />
@@ -51,8 +50,6 @@
     <ClInclude Include="multiprecision.hpp" />
     <ClInclude Include="not_null.hpp" />
     <ClInclude Include="not_null_body.hpp" />
-    <ClInclude Include="optional_logging.hpp" />
-    <ClInclude Include="optional_logging_body.hpp" />
     <ClInclude Include="optional_serialization.hpp" />
     <ClInclude Include="pull_serializer.hpp" />
     <ClInclude Include="pull_serializer_body.hpp" />
@@ -70,6 +67,8 @@
     <ClInclude Include="sink_source_body.hpp" />
     <ClInclude Include="not_constructible.hpp" />
     <ClInclude Include="status_utilities.hpp" />
+    <ClInclude Include="stoppable_thread.hpp" />
+    <ClInclude Include="stoppable_thread_body.hpp" />
     <ClInclude Include="tags.hpp" />
     <ClInclude Include="thread_pool.hpp" />
     <ClInclude Include="thread_pool_body.hpp" />
@@ -92,12 +91,13 @@
     <ClCompile Include="cpuid.cpp" />
     <ClCompile Include="cpuid_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
+    <ClCompile Include="file_log_sink.cpp" />
+    <ClCompile Include="file_log_sink_test.cpp" />
     <ClCompile Include="flags.cpp" />
     <ClCompile Include="flags_test.cpp" />
     <ClCompile Include="for_all_of_test.cpp" />
     <ClCompile Include="function_test.cpp" />
     <ClCompile Include="hexadecimal_test.cpp" />
-    <ClCompile Include="jthread_test.cpp" />
     <ClCompile Include="macos_allocator_replacement_test.cpp" />
     <ClCompile Include="malloc_allocator_test.cpp" />
     <ClCompile Include="multiprecision_test.cpp" />
@@ -106,6 +106,7 @@
     <ClCompile Include="push_deserializer_test.cpp" />
     <ClCompile Include="push_pull_callback_test.cpp" />
     <ClCompile Include="recurring_thread_test.cpp" />
+    <ClCompile Include="stoppable_thread_test.cpp" />
     <ClCompile Include="thread_pool_test.cpp" />
     <ClCompile Include="traits_test.cpp" />
     <ClCompile Include="version.generated.cc" />

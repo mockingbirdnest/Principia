@@ -11,8 +11,9 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/zfp_compressor.hpp"
-#include "glog/logging.h"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -404,7 +405,9 @@ void DiscreteTrajectorySegment<Frame>::ForgetBefore(
     typename Timeline::const_iterator const end) {
   timeline_.erase(timeline_.cbegin(), end);
   if (!timeline_.empty()) {
-    timeline_.begin()->interpolation = nullptr;
+    auto extracted = timeline_.extract(timeline_.cbegin());
+    extracted.value().interpolation = nullptr;
+    timeline_.insert(timeline_.cbegin(), std::move(extracted));
   }
 }
 
@@ -463,13 +466,14 @@ absl::Status DiscreteTrajectorySegment<Frame>::Append(
     // our new point.
     auto const lower = last;
     auto hermite3 = MakeHermite3(lower, t, degrees_of_freedom);
-    auto const it =
-        timeline_.emplace_hint(timeline_.cend(), t, degrees_of_freedom);
     // There is no error because the points being interpolated are consecutive,
     // so the interpolation exactly matches their positions and velocities.
     downsampling_error_ = Length{};
-    it->interpolation =
-        NewInterpolation(std::move(hermite3), downsampling_error_);
+    timeline_.emplace_hint(
+        timeline_.cend(),
+        t,
+        degrees_of_freedom,
+        NewInterpolation(std::move(hermite3), downsampling_error_));
   }
 
   return absl::OkStatus();
@@ -583,7 +587,12 @@ void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
   auto const lower = std::prev(upper);
   auto const& [lower_time, lower_degrees_of_freedom] = *lower;
   auto const& [upper_time, upper_degrees_of_freedom] = *upper;
-  upper->interpolation =
+  // Beware! extracting from a btree_set invalidates all iterators, not only the
+  // one denoting the extracted node.  We must use the special entry point
+  // `extract_and_get_next` to get the iterator that we'll use as a hint for
+  // reinsertion.
+  auto [extracted, next] = timeline_.extract_and_get_next(upper);
+  extracted.value().interpolation =
       NewInterpolation(Hermite3<Position<Frame>, Instant>(
                            std::pair{lower_time, upper_time},
                            std::pair{lower_degrees_of_freedom.position(),
@@ -591,6 +600,7 @@ void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
                            std::pair{lower_degrees_of_freedom.velocity(),
                                      upper_degrees_of_freedom.velocity()}),
                        /*error=*/Length{});
+  timeline_.insert(next, std::move(extracted));
 }
 
 template<typename Frame>
@@ -622,7 +632,7 @@ Hermite3<Position<Frame>, Instant> const&
 DiscreteTrajectorySegment<Frame>::get_hermite3(
     typename Timeline::const_iterator const upper) const {
   CHECK(upper != timeline_.cbegin());
-  CHECK_NOTNULL(upper->interpolation);
+  CHECK(upper->interpolation != nullptr);
   return upper->interpolation->hermite3;
 }
 

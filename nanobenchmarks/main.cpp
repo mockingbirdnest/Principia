@@ -13,10 +13,11 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/cpuid.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "mathematica/logger.hpp"
 #include "nanobenchmarks/dependencies.hpp"
 #include "nanobenchmarks/flag_parsing.hpp"  // 🧙 For std::vector-valued flags.
@@ -169,6 +170,7 @@ double CalibrateOverhead(TSCCalibration const& calibration,
                               static_cast<std::string const&>(result.Row())));
   }
   std::vector<double> overheads_cycles;
+  overheads_cycles.reserve(reference_cycle_counts.size());
   for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
     overheads_cycles.push_back(reference_measurements[nanobenchmark].min() -
                               cycles);

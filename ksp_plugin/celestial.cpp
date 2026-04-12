@@ -1,6 +1,7 @@
 #include "ksp_plugin/celestial.hpp"
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 
 namespace principia {
 namespace ksp_plugin {

@@ -11,6 +11,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/fingerprint2011.hpp"
@@ -20,7 +22,6 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
 #include "quantities/parser.hpp"

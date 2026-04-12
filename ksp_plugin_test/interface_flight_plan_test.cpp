@@ -4,8 +4,8 @@
 #include <string>
 #include <utility>
 
+#include "absl/status/status.h"
 #include "base/not_null.hpp"
-#include "geometry/identity.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
@@ -15,30 +15,26 @@
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
-#include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
-#include "ksp_plugin/manœuvre.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "ksp_plugin/renderer.hpp"
-#include "ksp_plugin/vessel.hpp"
-#include "ksp_plugin_test/mock_flight_plan.hpp"  // 🧙 For MockFlightPlan.
-#include "ksp_plugin_test/mock_manœuvre.hpp"  // 🧙 For MockManœuvre.
-#include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
-#include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
-#include "ksp_plugin_test/mock_vessel.hpp"  // 🧙 For MockVessel.
+#include "ksp_plugin_test/mock_flight_plan.hpp"
+#include "ksp_plugin_test/mock_manœuvre.hpp"
+#include "ksp_plugin_test/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_renderer.hpp"
+#include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
-#include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/mock_continuous_trajectory.hpp"
+#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
 namespace interface {
@@ -46,17 +42,13 @@ namespace interface {
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
-using ::testing::DoAll;
-using ::testing::Invoke;
 using ::testing::Property;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
-using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_identity;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
@@ -64,17 +56,20 @@ using namespace principia::geometry::_rotation;
 using namespace principia::integrators::_embedded_explicit_generalized_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
-using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
-using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_renderer;
-using namespace principia::ksp_plugin::_vessel;
+using namespace principia::ksp_plugin_test::_mock_flight_plan;
+using namespace principia::ksp_plugin_test::_mock_manœuvre;
+using namespace principia::ksp_plugin_test::_mock_plugin;
+using namespace principia::ksp_plugin_test::_mock_renderer;
+using namespace principia::ksp_plugin_test::_mock_vessel;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
-using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_continuous_trajectory;
+using namespace principia::physics::_mock_ephemeris;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;
@@ -83,8 +78,8 @@ using namespace principia::testing_utilities::_almost_equals;
 
 namespace {
 
-char const vessel_guid[] = "123-456";
-Index const celestial_index = 1;
+constexpr char vessel_guid[] = "123-456";
+constexpr Index celestial_index = 1;
 
 MATCHER_P(HasThrust, thrust, "") {
   return arg.thrust == thrust;
@@ -144,12 +139,12 @@ class InterfaceFlightPlanTest : public ::testing::Test {
 
 TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   Burn interface_burn = {
-      /*thrust_in_kilonewtons=*/1,
-      /*specific_impulse_in_seconds_g0=*/2,
-      /*frame=*/{/*extension=*/6000, /*centre=*/celestial_index},
-      /*initial_time=*/3,
-      /*delta_v=*/{4, 5, 6},
-      /*is_inertially_fixed=*/true};
+      .thrust_in_kilonewtons = 1,
+      .specific_impulse_in_seconds_g0 = 2,
+      .frame = {.extension = 6000, .centre_index = celestial_index},
+      .initial_time = 3,
+      .delta_v = {4, 5, 6},
+      .is_inertially_fixed = true};
   StrictMock<MockVessel> vessel;
 
   EXPECT_CALL(*plugin_, HasVessel(vessel_guid))
@@ -228,7 +223,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillOnce(ReturnRef(adaptive_step_parameters_));
   EXPECT_CALL(flight_plan_, generalized_adaptive_step_parameters())
       .WillOnce(ReturnRef(generalized_adaptive_step_parameters_));
-  FlightPlanAdaptiveStepParameters expected_adaptive_step_parameters = {
+  FlightPlanAdaptiveStepParameters const expected_adaptive_step_parameters = {
       /*integrator_kind=*/1,
       /*generalized_integrator_kind=*/2,
       /*max_step=*/111,
@@ -365,8 +360,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
               Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
           World::unmoving)));
   DiscreteTrajectory<Barycentric> segment;
-  DegreesOfFreedom<Barycentric> immobile_origin{Barycentric::origin,
-                                                Barycentric::unmoving};
+  DegreesOfFreedom<Barycentric> const immobile_origin{Barycentric::origin,
+                                                      Barycentric::unmoving};
   EXPECT_OK(segment.Append(t0_, immobile_origin));
   EXPECT_OK(segment.Append(t0_ + 1 * Second, immobile_origin));
   EXPECT_OK(segment.Append(t0_ + 2 * Second, immobile_origin));

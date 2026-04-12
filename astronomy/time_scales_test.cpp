@@ -11,7 +11,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -29,7 +29,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 constexpr Instant j2000_week = "1999-W52-6T12:00:00"_TT;
 
@@ -129,9 +129,8 @@ TEST_F(TimeScalesTest, ReferenceDates) {
   // Besselian epochs.
   constexpr Instant B1900 = "1899-12-31T00:00:00"_TT + 0.8135 * Day;
   Instant const JD2415020_3135 = "JD2415020.3135"_TT;
-  EXPECT_THAT(B1900, AlmostEquals(JD2415020_3135, 1));
-  EXPECT_THAT(AbsoluteError(JD2415020_3135, B1900),
-              IsNear(0.5_(1) * Micro(Second)));
+  EXPECT_THAT(JD2415020_3135,
+              AbsoluteErrorFrom(B1900, IsNear(0.5_(1) * Micro(Second))));
 
   constexpr Instant B1950 = "1949-12-31T00:00:00"_TT + 0.9235 * Day;
   Instant const JD2433282_4235 = "JD2433282.4235"_TT;
@@ -171,75 +170,85 @@ TEST_F(TimeScalesTest, LeapSecond) {
 // based exclusively on https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history,
 // so this provides some sort of cross-checking.
 TEST_F(TimeScalesTest, StretchyLeaps) {
-  EXPECT_THAT(AbsoluteError("1961-07-31T24:00:00,000"_UTC - 0.050 * Second,
-                            "1961-07-31T23:59:59,900"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1961-08-01T00:00:00"_UTC, "1961-08-01T00:00:01,648"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1961-07-31T24:00:00,000"_UTC - 0.050 * Second,
+      AbsoluteErrorFrom("1961-07-31T23:59:59,900"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1961-08-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1961-08-01T00:00:01,648"_TAI,
+                        Lt(0.5 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1963-10-31T24:00:00,000"_UTC - 0.100 * Second,
-                            "1963-10-31T23:59:60,000"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1963-11-01T00:00:00"_UTC, "1963-11-01T00:00:02,697"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1963-10-31T24:00:00,000"_UTC - 0.100 * Second,
+      AbsoluteErrorFrom("1963-10-31T23:59:60,000"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1963-11-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1963-11-01T00:00:02,697"_TAI,
+                        Lt(0.5 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1964-03-31T24:00:00,000"_UTC - 0.100 * Second,
-                            "1964-03-31T23:59:60,000"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1964-04-01T00:00:00"_UTC, "1964-04-01T00:00:02,984"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1964-03-31T24:00:00,000"_UTC - 0.100 * Second,
+      AbsoluteErrorFrom("1964-03-31T23:59:60,000"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1964-04-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1964-04-01T00:00:02,984"_TAI,
+                        Lt(0.5 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1964-08-31T24:00:00,000"_UTC - 0.100 * Second,
-                            "1964-08-31T23:59:60,000"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1964-09-01T00:00:00"_UTC, "1964-09-01T00:00:03,282"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1964-08-31T24:00:00,000"_UTC - 0.100 * Second,
+      AbsoluteErrorFrom("1964-08-31T23:59:60,000"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1964-09-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1964-09-01T00:00:03,282"_TAI,
+                        Lt(0.5 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1964-12-31T24:00:00,000"_UTC - 0.100 * Second,
-                            "1964-12-31T23:59:60,000"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1965-01-01T00:00:00"_UTC, "1965-01-01T00:00:03,540"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1964-12-31T24:00:00,000"_UTC - 0.100 * Second,
+      AbsoluteErrorFrom("1964-12-31T23:59:60,000"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1965-01-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1965-01-01T00:00:03,540"_TAI,
+                        Lt(0.5 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1965-02-28T24:00:00,000"_UTC - 0.100 * Second,
-                            "1965-02-28T23:59:60,000"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1965-03-01T00:00:00"_UTC, "1965-03-01T00:00:03,717"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1965-02-28T24:00:00,000"_UTC - 0.100 * Second,
+      AbsoluteErrorFrom("1965-02-28T23:59:60,000"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1965-03-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1965-03-01T00:00:03,717"_TAI,
+                        Lt(0.5 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1965-06-30T24:00:00,000"_UTC - 0.100 * Second,
-                            "1965-06-30T23:59:60,000"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1965-07-01T00:00:00"_UTC, "1965-07-01T00:00:03,975"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1965-06-30T24:00:00,000"_UTC - 0.100 * Second,
+      AbsoluteErrorFrom("1965-06-30T23:59:60,000"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1965-07-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1965-07-01T00:00:03,975"_TAI,
+                        Lt(0.5 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1965-08-31T24:00:00,000"_UTC - 0.100 * Second,
-                            "1965-08-31T23:59:60,000"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1965-09-01T00:00:00"_UTC, "1965-09-01T00:00:04,155"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1965-08-31T24:00:00,000"_UTC - 0.100 * Second,
+      AbsoluteErrorFrom("1965-08-31T23:59:60,000"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1965-09-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1965-09-01T00:00:04,155"_TAI,
+                        Lt(0.5 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1968-01-31T24:00:00,000"_UTC - 0.100 * Second,
-                            "1968-01-31T23:59:59,800"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1968-02-01T00:00:00"_UTC, "1968-02-01T00:00:06,186"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1968-01-31T24:00:00,000"_UTC - 0.100 * Second,
+      AbsoluteErrorFrom("1968-01-31T23:59:59,800"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1968-02-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1968-02-01T00:00:06,186"_TAI,
+                        Lt(0.5 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1971-12-31T24:00:00,000"_UTC - 0.107'7580 * Second,
-                            "1971-12-31T23:59:60,000"_UTC),
-              Lt(1 * Micro(Second)));
   EXPECT_THAT(
-      AbsoluteError("1972-01-01T00:00:00"_UTC, "1972-01-01T00:00:10,000"_TAI),
-      Lt(0.5 * Milli(Second)));
+      "1971-12-31T24:00:00,000"_UTC - 0.107'7580 * Second,
+      AbsoluteErrorFrom("1971-12-31T23:59:60,000"_UTC, Lt(1 * Micro(Second))));
+  EXPECT_THAT(
+      "1972-01-01T00:00:00"_UTC,
+      AbsoluteErrorFrom("1972-01-01T00:00:10,000"_TAI,
+                        Lt(0.5 * Milli(Second))));
 }
 
 TEST_F(TimeScalesTest, StretchyRates) {
@@ -283,88 +292,88 @@ TEST_F(TimeScalesTest, UT1Continuity) {
   // as well as high errors (~20 ms), and TAI was synchronized with UT2 anyway,
   // so it's not going to get much better than 100 ms.
   EXPECT_THAT(
-      AbsoluteError("1958-01-01T00:00:00"_UT1, "1958-01-01T00:00:00"_TAI),
-      Lt(100 * Milli(Second)));
+      "1958-01-01T00:00:00"_UT1,
+      AbsoluteErrorFrom("1958-01-01T00:00:00"_TAI, Lt(100 * Milli(Second))));
 
   // Continuity at the beginning of the EOP C02 series.
-  EXPECT_THAT(AbsoluteError("1961-12-31T23:59:59,000"_UT1,
-                            "1961-12-31T23:59:58,967"_UTC),
-              Lt(0.5 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1962-01-01T00:00:00,000"_UT1,
-                            "1961-12-31T23:59:59,967"_UTC),
-              Lt(0.5 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1962-01-01T00:00:00,033"_UT1,
-                            "1962-01-01T00:00:00,000"_UTC),
-              Lt(0.5 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1962-01-01T00:00:01,033"_UT1,
-                            "1962-01-01T00:00:01,000"_UTC),
-              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT("1961-12-31T23:59:59,000"_UT1,
+              AbsoluteErrorFrom("1961-12-31T23:59:58,967"_UTC,
+                                Lt(0.5 * Milli(Second))));
+  EXPECT_THAT("1962-01-01T00:00:00,000"_UT1,
+              AbsoluteErrorFrom("1961-12-31T23:59:59,967"_UTC,
+                                Lt(0.5 * Milli(Second))));
+  EXPECT_THAT("1962-01-01T00:00:00,033"_UT1,
+              AbsoluteErrorFrom("1962-01-01T00:00:00,000"_UTC,
+                                Lt(0.5 * Milli(Second))));
+  EXPECT_THAT("1962-01-01T00:00:01,033"_UT1,
+              AbsoluteErrorFrom("1962-01-01T00:00:01,000"_UTC,
+                                Lt(0.5 * Milli(Second))));
 
   // Continuity across a stretchy UTC leap.
-  EXPECT_THAT(AbsoluteError("1964-03-31T23:59:59,000"_UT1,
-                            "1964-03-31T23:59:59,160"_UTC),
-              Lt(0.5 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1964-03-31T23:59:59,900"_UT1,
-                            "1964-03-31T23:59:60,060"_UTC),
-              Lt(0.5 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1964-03-31T23:59:59,940"_UT1,
-                            "1964-04-01T00:00:00,000"_UTC),
-              Lt(0.5 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1964-04-01T00:00:00,000"_UT1,
-                            "1964-04-01T00:00:00,060"_UTC),
-              Lt(0.5 * Milli(Second)));
+  EXPECT_THAT("1964-03-31T23:59:59,000"_UT1,
+              AbsoluteErrorFrom("1964-03-31T23:59:59,160"_UTC,
+                                Lt(0.5 * Milli(Second))));
+  EXPECT_THAT("1964-03-31T23:59:59,900"_UT1,
+              AbsoluteErrorFrom("1964-03-31T23:59:60,060"_UTC,
+                                Lt(0.5 * Milli(Second))));
+  EXPECT_THAT("1964-03-31T23:59:59,940"_UT1,
+              AbsoluteErrorFrom("1964-04-01T00:00:00,000"_UTC,
+                                Lt(0.5 * Milli(Second))));
+  EXPECT_THAT("1964-04-01T00:00:00,000"_UT1,
+              AbsoluteErrorFrom("1964-04-01T00:00:00,060"_UTC,
+                                Lt(0.5 * Milli(Second))));
 }
 
 // Check the times of the lunar eclipses in LunarEclipseTest.
 TEST_F(TimeScalesTest, LunarEclipses) {
-  EXPECT_THAT(AbsoluteError("1950-04-02T20:44:34.0"_TT,
-                            "1950-04-02T20:44:04.8"_UT1),
-              Lt(14 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1950-04-02T20:49:16.7"_TT,
-                            "1950-04-02T20:48:47.5"_UT1),
-              Lt(14 * Milli(Second)));
+  EXPECT_THAT(
+      "1950-04-02T20:44:04.8"_UT1,
+      AbsoluteErrorFrom("1950-04-02T20:44:34.0"_TT, Lt(14 * Milli(Second))));
+  EXPECT_THAT(
+      "1950-04-02T20:48:47.5"_UT1,
+      AbsoluteErrorFrom("1950-04-02T20:49:16.7"_TT, Lt(14 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1950-09-26T04:17:11.4"_TT,
-                            "1950-09-26T04:16:42.1"_UT1),
-              Lt(86 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1950-09-26T04:21:55.5"_TT,
-                            "1950-09-26T04:21:26.1"_UT1),
-              Lt(16 * Milli(Second)));
+  EXPECT_THAT(
+      "1950-09-26T04:16:42.1"_UT1,
+      AbsoluteErrorFrom("1950-09-26T04:17:11.4"_TT, Lt(86 * Milli(Second))));
+  EXPECT_THAT(
+      "1950-09-26T04:21:26.1"_UT1,
+      AbsoluteErrorFrom("1950-09-26T04:21:55.5"_TT, Lt(16 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1951-03-23T10:37:33.2"_TT,
-                            "1951-03-23T10:37:03.7"_UT1),
-              Lt(92 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1951-03-23T10:50:16.8"_TT,
-                            "1951-03-23T10:49:47.3"_UT1),
-              Lt(92 * Milli(Second)));
+  EXPECT_THAT(
+      "1951-03-23T10:37:03.7"_UT1,
+      AbsoluteErrorFrom("1951-03-23T10:37:33.2"_TT, Lt(92 * Milli(Second))));
+  EXPECT_THAT(
+      "1951-03-23T10:49:47.3"_UT1,
+      AbsoluteErrorFrom("1951-03-23T10:50:16.8"_TT, Lt(92 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1951-09-15T12:27:06.3"_TT,
-                            "1951-09-15T12:26:36.6"_UT1),
-              Lt(100 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1951-09-15T12:38:51.5"_TT,
-                            "1951-09-15T12:38:21.8"_UT1),
-              Lt(100 * Milli(Second)));
+  EXPECT_THAT(
+      "1951-09-15T12:26:36.6"_UT1,
+      AbsoluteErrorFrom("1951-09-15T12:27:06.3"_TT, Lt(100 * Milli(Second))));
+  EXPECT_THAT(
+      "1951-09-15T12:38:21.8"_UT1,
+      AbsoluteErrorFrom("1951-09-15T12:38:51.5"_TT, Lt(100 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1952-02-11T00:28:39.9"_TT,
-                            "1952-02-11T00:28:10.0"_UT1),
-              Lt(70 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1952-02-11T00:39:47.6"_TT,
-                            "1952-02-11T00:39:17.7"_UT1),
-              Lt(70 * Milli(Second)));
+  EXPECT_THAT(
+      "1952-02-11T00:28:10.0"_UT1,
+      AbsoluteErrorFrom("1952-02-11T00:28:39.9"_TT, Lt(70 * Milli(Second))));
+  EXPECT_THAT(
+      "1952-02-11T00:39:17.7"_UT1,
+      AbsoluteErrorFrom("1952-02-11T00:39:47.6"_TT, Lt(70 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("1952-08-05T19:40:29.4"_TT,
-                            "1952-08-05T19:39:59.3"_UT1),
-              Lt(57 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("1952-08-05T19:47:54.8"_TT,
-                            "1952-08-05T19:47:24.7"_UT1),
-              Lt(57 * Milli(Second)));
+  EXPECT_THAT(
+      "1952-08-05T19:39:59.3"_UT1,
+      AbsoluteErrorFrom("1952-08-05T19:40:29.4"_TT, Lt(57 * Milli(Second))));
+  EXPECT_THAT(
+      "1952-08-05T19:47:24.7"_UT1,
+      AbsoluteErrorFrom("1952-08-05T19:47:54.8"_TT, Lt(57 * Milli(Second))));
 
-  EXPECT_THAT(AbsoluteError("2000-01-21T04:41:30.5"_TT,
-                            "2000-01-21T04:40:26.7"_UT1),
-              Lt(45 * Milli(Second)));
-  EXPECT_THAT(AbsoluteError("2000-01-21T04:44:34.5"_TT,
-                            "2000-01-21T04:43:30.6"_UT1),
-              Lt(56 * Milli(Second)));
+  EXPECT_THAT(
+      "2000-01-21T04:40:26.7"_UT1,
+      AbsoluteErrorFrom("2000-01-21T04:41:30.5"_TT, Lt(45 * Milli(Second))));
+  EXPECT_THAT(
+      "2000-01-21T04:43:30.6"_UT1,
+      AbsoluteErrorFrom("2000-01-21T04:44:34.5"_TT, Lt(56 * Milli(Second))));
 
   EXPECT_THAT("2048-01-01T06:53:54.8"_TT - "2048-01-01T06:52:23.6"_TT,
               AlmostEquals(91.2 * Second, 3e6, 4e6));

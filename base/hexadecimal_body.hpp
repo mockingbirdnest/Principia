@@ -6,7 +6,8 @@
 #include <cstring>
 #include <string_view>
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 
 namespace principia {
 namespace base {
@@ -43,8 +44,8 @@ template<bool null_terminated>
 void HexadecimalEncoder<null_terminated>::Encode(
     Array<std::uint8_t const> input,
     Array<char> output) {
-  CHECK_NOTNULL(input.data);
-  CHECK_NOTNULL(output.data);
+  CHECK(input.data != nullptr);
+  CHECK(output.data != nullptr);
   // We iterate backward.
   // `input <= &output[1]` is still valid because we write two bytes of output
   // from reading one byte of input, so output[1] and output[0] are written
@@ -91,8 +92,8 @@ std::int64_t HexadecimalEncoder<null_terminated>::EncodedLength(
 template<bool null_terminated>
 void HexadecimalEncoder<null_terminated>::Decode(Array<char const> input,
                                                  Array<std::uint8_t> output) {
-  CHECK_NOTNULL(input.data);
-  CHECK_NOTNULL(output.data);
+  CHECK(input.data != nullptr);
+  CHECK(output.data != nullptr);
   input.size &= ~1;
   // `output <= &input[1]` is still valid because we write one byte of output
   // from reading two bytes of input, so output[0] is written after reading

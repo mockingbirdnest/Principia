@@ -1,9 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <thread>
 
 #include "absl/synchronization/mutex.h"
-#include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/flight_plan_optimizer.hpp"
@@ -14,7 +14,6 @@ namespace ksp_plugin {
 namespace _flight_plan_optimization_driver {
 namespace internal {
 
-using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimizer;
@@ -62,12 +61,13 @@ class FlightPlanOptimizationDriver {
   FlightPlanOptimizer flight_plan_optimizer_;
 
   mutable absl::Mutex lock_;
-  jthread optimizer_;
-  bool optimizer_idle_ GUARDED_BY(lock_) = true;
-  std::optional<Parameters> last_parameters_ GUARDED_BY(lock_);
+  std::jthread optimizer_;
+  bool optimizer_idle_ ABSL_GUARDED_BY(lock_) = true;
+  std::optional<Parameters> last_parameters_ ABSL_GUARDED_BY(lock_);
 
   // The last flight plan evaluated by the optimizer.
-  not_null<std::shared_ptr<FlightPlan>> last_flight_plan_ GUARDED_BY(lock_);
+  not_null<std::shared_ptr<FlightPlan>> last_flight_plan_
+      ABSL_GUARDED_BY(lock_);
 };
 
 }  // namespace internal

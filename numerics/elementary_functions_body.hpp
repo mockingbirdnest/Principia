@@ -6,8 +6,9 @@
 
 #include <cmath>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/traits.hpp"
-#include "glog/logging.h"
 #include "numerics/cbrt.hpp"
 #include "numerics/fma.hpp"
 #include "numerics/next.hpp"
@@ -186,7 +187,8 @@ constexpr T Pow(T x) {
   } else {
     static_assert(exponent < 32);
     auto const y = Pow<exponent / 2>(x);
-    auto const y² = y * y;
+    // Not const to allow move.
+    auto y² = y * y;
     if constexpr (exponent % 2 == 1) {
       return y² * x;
     } else {

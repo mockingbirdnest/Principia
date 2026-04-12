@@ -10,7 +10,7 @@ namespace internal {
 UniqueArray<std::uint8_t> SerializeAsBytes(
     google::protobuf::MessageLite const& message) {
   UniqueArray<std::uint8_t> bytes(message.ByteSizeLong());
-  message.SerializeToArray(bytes.data.get(), bytes.size);
+  CHECK(message.SerializeToArray(bytes.data.get(), bytes.size));
   return bytes;
 }
 

@@ -1,10 +1,18 @@
 #include "ksp_plugin/flight_plan_optimizer.hpp"
 
 #include <algorithm>
+#include <array>
+#include <cstdint>
+#include <functional>
 #include <memory>
+#include <random>
+#include <string_view>
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/globals.h"
+#include "absl/log/log.h"
 #include "astronomy/date_time.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
@@ -41,15 +49,12 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
-#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 
 using ::testing::AnyOf;
 using ::testing::Eq;
-using ::testing::Ge;
-using ::testing::Le;
 using ::testing::Matcher;
 using ::testing::ResultOf;
 using namespace principia::astronomy::_date_time;
@@ -86,18 +91,9 @@ using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
-using namespace principia::testing_utilities::_numerics_matchers;
 
 class FlightPlanOptimizerTest : public testing::Test {
  protected:
-  FlightPlanOptimizerTest() {
-    google::SetStderrLogging(google::INFO);
-  }
-
-  ~FlightPlanOptimizerTest() override {
-    google::SetStderrLogging(FLAGS_stderrthreshold);
-  }
-
   static Celestial const& FindCelestialByName(std::string_view const name,
                                               Plugin const& plugin) {
     for (Index index = 0; plugin.HasCelestial(index); ++index) {
@@ -173,7 +169,7 @@ class FlightPlanOptimizerTest : public testing::Test {
     plugin_ = ReadPluginFromFile(
         SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
         /*compressor=*/"gipfeli",
-        /*decoder=*/"base64");
+        /*encoder=*/"base64");
 
     auto const ifnity =
         plugin_->GetVessel("29142a79-7acd-47a9-a34d-f9f2a8e1b4ed");
@@ -193,6 +189,8 @@ class FlightPlanOptimizerTest : public testing::Test {
     EXPECT_THAT(flight_plan_->number_of_manœuvres(), Eq(16));
     std::vector<std::pair<DateTime, Speed>>
         manœuvre_ignition_tt_seconds_and_Δvs;
+    manœuvre_ignition_tt_seconds_and_Δvs.reserve(
+        flight_plan_->number_of_manœuvres());
     for (int i = 0; i < flight_plan_->number_of_manœuvres(); ++i) {
       manœuvre_ignition_tt_seconds_and_Δvs.emplace_back(
           TTSecond(flight_plan_->GetManœuvre(i).initial_time()),
@@ -200,6 +198,8 @@ class FlightPlanOptimizerTest : public testing::Test {
     }
   }
 
+  absl::ScopedStderrThreshold scoped_stderr_threshold_{
+      absl::LogSeverityAtLeast::kInfo};
   std::unique_ptr<Plugin const> plugin_;
   FlightPlan* flight_plan_ = nullptr;
 };

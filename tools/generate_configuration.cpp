@@ -10,10 +10,11 @@
 #include <string>
 #include <string_view>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/serialization.hpp"
-#include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/text_format.h"
 #include "numerics/elementary_functions.hpp"
@@ -55,7 +56,7 @@ std::string NormalizeLength(std::string const& s) {
   if (s.find('R') == std::string::npos) {
     return s;
   } else {
-    Length const length = ParseQuantity<Length>(s);
+    auto const length = ParseQuantity<Length>(s);
     std::ostringstream stream;
     stream << std::scientific
            << std::setprecision(std::numeric_limits<double>::max_digits10)

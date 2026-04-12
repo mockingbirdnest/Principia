@@ -9,11 +9,12 @@
 #include <vector>
 
 #include "absl/container/btree_map.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/cpuid.hpp"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_CLANG.
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "nanobenchmarks/dependencies.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/si.hpp"

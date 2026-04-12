@@ -1,18 +1,20 @@
 #include "physics/apsides.hpp"
 
+#include <cstdint>
 #include <limits>
 #include <map>
 #include <memory>
 #include <optional>
-#include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
+#include "absl/log/scoped_mock_log.h"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
-#include "geometry/interval.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -29,6 +31,7 @@
 #include "physics/rotating_body.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -37,7 +40,6 @@
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/string_log_sink.hpp"
 
 namespace principia {
 namespace physics {
@@ -51,7 +53,6 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_interval;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
@@ -75,7 +76,6 @@ using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_string_log_sink;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -87,7 +87,7 @@ class ApsidesTest : public ::testing::Test {
 TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   Instant const t0;
   GravitationalParameter const μ = SolarGravitationalParameter;
-  auto const b = new MassiveBody(μ);
+  auto const* const b = new MassiveBody(μ);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;
@@ -106,12 +106,12 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
               Ephemeris<World>::NewtonianMotionEquation>(),
           10 * Minute));
 
-  Displacement<World> r(
+  Displacement<World> const r(
       {1 * AstronomicalUnit, 2 * AstronomicalUnit, 3 * AstronomicalUnit});
   Length const r_norm = r.Norm();
-  Velocity<World> v({4 * Kilo(Metre) / Second,
-                     5 * Kilo(Metre) / Second,
-                     6 * Kilo(Metre) / Second});
+  Velocity<World> const v({4 * Kilo(Metre) / Second,
+                           5 * Kilo(Metre) / Second,
+                           6 * Kilo(Metre) / Second});
   Speed const v_norm = v.Norm();
 
   Time const T = 2 * π * Sqrt(-(Pow<3>(r_norm) * Pow<2>(μ) /
@@ -235,14 +235,18 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
 
   // The apsides do not oscillate in altitude because of the ill-conditioning,
   // so we give up.  This used to fail, see #3925.
-  StringLogSink log_warning(google::WARNING);
+  absl::ScopedMockLog log;
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  testing::_,
+                  HasSubstr("Anomalous apsides")));  // NOLINT
+  log.StartCapturingLogs();
   const auto intervals = ComputeCollisionIntervals(body,
                                                    reference_trajectory,
                                                    vessel_trajectory,
                                                    apoapsides,
                                                    periapsides);
   EXPECT_THAT(intervals, IsEmpty());
-  EXPECT_THAT(log_warning.string(), HasSubstr("Anomalous apsides"));
 }
 
 #endif
@@ -300,7 +304,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
 
   // The celestial is infinite in the z direction and has four lobes in the x-y
   // plane.  Think of a LEGO® axle.
-  auto radius = [](Angle const& latitude, Angle const& longitude) {
+  auto radius = [](Angle const& /*latitude*/, Angle const& longitude) {
     return (Cos(4 * longitude) + 2) * Metre;
   };
 
@@ -336,7 +340,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                             reference_trajectory,
                             vessel_trajectory,
                             intervals[0],
-                            /*max_error=*/2e-4 * Metre,
+                            /*max_collision_error=*/2e-4 * Metre,
                             radius);
   auto const& [collision_time, collision_degrees_of_freedom] =
       maybe_collision.value();
@@ -359,7 +363,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
 TEST_F(ApsidesTest, ComputeNodes) {
   Instant const t0;
   GravitationalParameter const μ = SolarGravitationalParameter;
-  auto const b = new MassiveBody(μ);
+  auto const* const b = new MassiveBody(μ);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<World>> initial_state;
@@ -550,7 +554,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisBelowMaxRadius) {
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, IsEmpty());
@@ -591,7 +595,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisAboveMaxRadius) {
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, IsEmpty());
@@ -628,7 +632,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, NoPeriapsis) {
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, IsEmpty());
@@ -678,7 +682,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisBelowMaxRadius) {
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, SizeIs(1));
@@ -731,7 +735,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisAboveMaxRadius) {
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, SizeIs(1));
@@ -788,7 +792,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, SizeIs(1));
@@ -845,7 +849,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, SizeIs(1));
@@ -901,7 +905,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisOneApoapsis) {
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, SizeIs(1));
@@ -942,7 +946,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, InitialApoapsisOnePeriapsis) {
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, IsEmpty());
@@ -983,7 +987,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisFinalApoapsis) {
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
                  /*t_max=*/InfiniteFuture,
-                 /*max_point=*/10,
+                 /*max_points=*/10,
                  apoapsides,
                  periapsides);
   EXPECT_THAT(apoapsides, IsEmpty());

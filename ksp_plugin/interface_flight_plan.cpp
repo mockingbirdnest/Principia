@@ -4,10 +4,11 @@
 #include <vector>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
-#include "glog/logging.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/flight_plan.hpp"
@@ -171,7 +172,7 @@ NavigationManoeuvre* ToNewInterfaceNavigationManoeuvre(
 int __cdecl principia__FlightPlanCount(Plugin const* const plugin,
                                        char const* const vessel_guid) {
   journal::Method<journal::FlightPlanCount> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(plugin->GetVessel(vessel_guid)->flight_plan_count());
 }
 
@@ -183,7 +184,7 @@ void __cdecl principia__FlightPlanCreate(Plugin const* const plugin,
                                                 vessel_guid,
                                                 final_time,
                                                 mass_in_tonnes});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->CreateFlightPlan(vessel_guid,
                            FromGameTime(*plugin, final_time),
                            mass_in_tonnes * Tonne);
@@ -193,7 +194,7 @@ void __cdecl principia__FlightPlanCreate(Plugin const* const plugin,
 void __cdecl principia__FlightPlanDelete(Plugin const* const plugin,
                                          char const* const vessel_guid) {
   journal::Method<journal::FlightPlanDelete> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->GetVessel(vessel_guid)->DeleteFlightPlan();
   return m.Return();
 }
@@ -201,7 +202,7 @@ void __cdecl principia__FlightPlanDelete(Plugin const* const plugin,
 void __cdecl principia__FlightPlanDuplicate(Plugin const* const plugin,
                                             char const* const vessel_guid) {
   journal::Method<journal::FlightPlanDuplicate> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->GetVessel(vessel_guid)->DuplicateFlightPlan();
   return m.Return();
 }
@@ -210,7 +211,7 @@ bool __cdecl principia__FlightPlanExists(
     Plugin const* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanExists> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(plugin->GetVessel(vessel_guid)->has_flight_plan());
 }
 
@@ -230,7 +231,7 @@ principia__FlightPlanGetAdaptiveStepParameters(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetAdaptiveStepParameters> m(
       {plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const& flight_plan = GetFlightPlan(*plugin, vessel_guid);
   return m.Return(ToFlightPlanAdaptiveStepParameters(
                       flight_plan.adaptive_step_parameters(),
@@ -242,7 +243,7 @@ Status* __cdecl principia__FlightPlanGetAnomalousStatus(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetAnomalousStatus> m(
       {plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(
       ToNewStatus(GetFlightPlan(*plugin, vessel_guid).anomalous_status()));
 }
@@ -261,7 +262,7 @@ OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
        days_per_cycle,
        ground_track_revolution,
        index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
   auto const analysis =
       NewOrbitAnalysis(flight_plan.analysis(index),
@@ -278,7 +279,7 @@ double __cdecl principia__FlightPlanGetDesiredFinalTime(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetDesiredFinalTime> m(
       {plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(
       ToGameTime(*plugin,
                  GetFlightPlan(*plugin, vessel_guid).desired_final_time()));
@@ -289,7 +290,7 @@ XYZ __cdecl principia__FlightPlanGetGuidance(Plugin const* const plugin,
                                              int const index) {
   journal::Method<journal::FlightPlanGetGuidance> m(
       {plugin, vessel_guid, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const& manœuvre = GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index);
   Vector<double, World> result;
   if (manœuvre.is_inertially_fixed()) {
@@ -312,7 +313,7 @@ double __cdecl principia__FlightPlanGetInitialTime(
     Plugin const* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetInitialTime> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(
       ToGameTime(*plugin,
                  GetFlightPlan(*plugin, vessel_guid).initial_time()));
@@ -325,7 +326,7 @@ NavigationManoeuvre* __cdecl principia__FlightPlanGetManoeuvre(
   journal::Method<journal::FlightPlanGetManoeuvre> m({plugin,
                                                       vessel_guid,
                                                       index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(ToNewInterfaceNavigationManoeuvre(
                       *plugin,
                       GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index)));
@@ -337,7 +338,7 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
                                                  int const index) {
   journal::Method<journal::FlightPlanGetManoeuvreFrenetTrihedron> m(
       {plugin, vessel_guid, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
 
   NavigationManœuvre const& manœuvre =
       GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index);
@@ -362,7 +363,7 @@ XYZ __cdecl principia__FlightPlanGetManoeuvreInitialPlottedVelocity(
     int const index) {
   journal::Method<journal::FlightPlanGetManoeuvreInitialPlottedVelocity> m(
       {plugin, vessel_guid, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
 
   auto const& [t, dof] =
       GetFlightPlan(*plugin, vessel_guid).GetSegment(2 * index)->back();
@@ -378,7 +379,7 @@ Status* __cdecl principia__FlightPlanInsert(Plugin const* const plugin,
                                             int const index) {
   journal::Method<journal::FlightPlanInsert> m(
       {plugin, vessel_guid, burn, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const status = GetFlightPlan(*plugin, vessel_guid)
                           .Insert(FromInterfaceBurn(*plugin, burn), index);
   plugin->ExtendPredictionForFlightPlan(vessel_guid);
@@ -391,7 +392,7 @@ int __cdecl principia__FlightPlanNumberOfAnomalousManoeuvres(
   journal::Method<journal::FlightPlanNumberOfAnomalousManoeuvres> m(
       {plugin,
        vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(GetFlightPlan(*plugin, vessel_guid).
                       number_of_anomalous_manœuvres());
 }
@@ -401,7 +402,7 @@ int __cdecl principia__FlightPlanNumberOfManoeuvres(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfManoeuvres> m({plugin,
                                                             vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_manœuvres());
 }
 
@@ -409,7 +410,7 @@ int __cdecl principia__FlightPlanNumberOfSegments(
     Plugin const* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanNumberOfSegments> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(GetFlightPlan(*plugin, vessel_guid).number_of_segments());
 }
 
@@ -418,7 +419,7 @@ int __cdecl principia__FlightPlanOptimizationDriverInProgress(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanOptimizationDriverInProgress> m(
       {plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto& vessel = *plugin->GetVessel(vessel_guid);
   auto const maybe_parameters = vessel.FlightPlanOptimizationDriverInProgress();
   if (maybe_parameters.has_value()) {
@@ -442,7 +443,7 @@ void __cdecl principia__FlightPlanOptimizationDriverMake(
        inclination_in_degrees,
        celestial_index,
        navigation_frame_parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto& vessel = *plugin->GetVessel(vessel_guid);
   const auto& celestial = plugin->GetCelestial(celestial_index);
 
@@ -476,7 +477,7 @@ void __cdecl principia__FlightPlanOptimizationDriverStart(
       {plugin,
        vessel_guid,
        manœuvre_index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto& vessel = *plugin->GetVessel(vessel_guid);
 
   vessel.StartFlightPlanOptimizationDriver(
@@ -491,7 +492,7 @@ Status* __cdecl principia__FlightPlanRebase(Plugin const* const plugin,
                                          double const mass_in_tonnes) {
   journal::Method<journal::FlightPlanRebase> m(
       {plugin, vessel_guid, mass_in_tonnes});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const status =
       plugin->GetVessel(vessel_guid)->RebaseFlightPlan(mass_in_tonnes * Tonne);
   plugin->ExtendPredictionForFlightPlan(vessel_guid);
@@ -502,7 +503,7 @@ Status* __cdecl principia__FlightPlanRemove(Plugin const* const plugin,
                                             char const* const vessel_guid,
                                             int const index) {
   journal::Method<journal::FlightPlanRemove> m({plugin, vessel_guid, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const status = GetFlightPlan(*plugin, vessel_guid).Remove(index);
   plugin->ExtendPredictionForFlightPlan(vessel_guid);
   return m.Return(ToNewStatus(status));
@@ -525,7 +526,7 @@ void __cdecl principia__FlightPlanRenderedApsides(
        sun_world_position,
        max_points},
       {apoapsides, periapsides});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
   DistinguishedPoints<World> rendered_apoapsides;
@@ -563,7 +564,7 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
   journal::Method<journal::FlightPlanRenderedClosestApproaches> m(
       {plugin, vessel_guid, sun_world_position, max_points},
       {closest_approaches});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
   DistinguishedPoints<World> rendered_closest_approaches;
@@ -594,7 +595,7 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
   journal::Method<journal::FlightPlanRenderedNodes> m(
       {plugin, vessel_guid, t_max, sun_world_position, max_points},
       {ascending, descending});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
   std::vector<Renderer::Node> rendered_ascending;
@@ -634,7 +635,7 @@ Iterator* __cdecl principia__FlightPlanRenderedSegment(
                                                          vessel_guid,
                                                          sun_world_position,
                                                          index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
 
   // This might force a (partial) recomputation of the flight plan to avoid a
   // deadline, and a change of the anomalous status that will be noticed by the
@@ -670,7 +671,7 @@ Status* __cdecl principia__FlightPlanReplace(Plugin const* const plugin,
                                                  vessel_guid,
                                                  burn,
                                                  index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const status = GetFlightPlan(*plugin, vessel_guid)
                           .Replace(FromInterfaceBurn(*plugin, burn), index);
   plugin->ExtendPredictionForFlightPlan(vessel_guid);
@@ -681,7 +682,7 @@ void __cdecl principia__FlightPlanSelect(Plugin const* const plugin,
                                          char const* const vessel_guid,
                                          int const index) {
   journal::Method<journal::FlightPlanSelect> m({plugin, vessel_guid, index});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   plugin->GetVessel(vessel_guid)->SelectFlightPlan(index);
   return m.Return();
 }
@@ -689,7 +690,7 @@ void __cdecl principia__FlightPlanSelect(Plugin const* const plugin,
 int __cdecl principia__FlightPlanSelected(Plugin const* const plugin,
                                           char const* const vessel_guid) {
   journal::Method<journal::FlightPlanSelected> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(plugin->GetVessel(vessel_guid)->selected_flight_plan_index());
 }
 
@@ -700,7 +701,7 @@ Status* __cdecl principia__FlightPlanSetAdaptiveStepParameters(
         flight_plan_adaptive_step_parameters) {
   journal::Method<journal::FlightPlanSetAdaptiveStepParameters> m(
       {plugin, vessel_guid, flight_plan_adaptive_step_parameters});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const parameters = FromFlightPlanAdaptiveStepParameters(
       flight_plan_adaptive_step_parameters);
   auto const status =
@@ -717,7 +718,7 @@ Status* __cdecl principia__FlightPlanSetDesiredFinalTime(
   journal::Method<journal::FlightPlanSetDesiredFinalTime> m({plugin,
                                                              vessel_guid,
                                                              final_time});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   auto const status =
       GetFlightPlan(*plugin, vessel_guid)
           .SetDesiredFinalTime(FromGameTime(*plugin, final_time));
@@ -730,7 +731,7 @@ bool __cdecl principia__FlightPlanUpdateFromOptimization(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanUpdateFromOptimization> m(
       {plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
+  CHECK(plugin != nullptr);
   return m.Return(
       plugin->GetVessel(vessel_guid)->UpdateFlightPlanFromOptimization());
 }

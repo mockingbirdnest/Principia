@@ -234,7 +234,7 @@ std::array<Series, sizeof...(indices)> PeriodicSeriesGenerator<
 template<typename Series, int degree, int dimension, std::size_t... indices>
 std::array<PoissonSeriesSubspace, sizeof...(indices)> PeriodicSeriesGenerator<
     Series, degree, dimension,
-    std::index_sequence<indices...>>::Subspaces(AngularFrequency const& ω) {
+    std::index_sequence<indices...>>::Subspaces(AngularFrequency const& /*ω*/) {
   return {
       PoissonSeriesSubspace{
           static_cast<PoissonSeriesSubspace::Coordinate>(indices % dimension),

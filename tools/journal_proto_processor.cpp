@@ -6,13 +6,15 @@
 #include <iostream>
 #include <iterator>
 #include <map>
+#include <ranges>
 #include <set>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
-#include "glog/logging.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "serialization/journal.pb.h"
 
@@ -72,7 +74,7 @@ void JournalProtoProcessor::ProcessMessages() {
   // Process all the messages in that file.
   for (int i = 0; i < file_descriptor->message_type_count(); ++i) {
     Descriptor const* message_descriptor = file_descriptor->message_type(i);
-    std::string const message_descriptor_name = message_descriptor->name();
+    auto const message_descriptor_name = message_descriptor->name();
     if (message_descriptor->extension_range_count() > 0) {
       // Only the `Method` message should have a range.  Don't generate any code
       // for it.
@@ -108,56 +110,40 @@ void JournalProtoProcessor::ProcessMessages() {
 
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterfaceMethodDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cs_interface_method_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  // Specifying `<std::string>` is necessary because of our alias templates for
+  // macOS.
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cs_interface_method_declaration_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterfaceSymbolDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cs_interface_symbol_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cs_interface_symbol_declaration_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cs_interchange_type_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cs_interchange_type_declaration_));
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCsCustomMarshalerClasses()
     const {
-  std::vector<std::string> result;
-  for (auto const& pair : cs_custom_marshaler_class_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cs_custom_marshaler_class_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCxxInterfaceMethodDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cxx_interface_method_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cxx_interface_method_declaration_));
 }
 
 std::vector<std::string>
 JournalProtoProcessor::GetCxxInterchangeTypeDeclarations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cxx_interchange_type_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cxx_interchange_type_declaration_));
 }
 
 std::vector<std::string>
@@ -179,19 +165,13 @@ JournalProtoProcessor::GetCxxInterchangeImplementations() const {
 
 std::vector<std::string>
 JournalProtoProcessor::GetCxxMethodImplementations() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cxx_functions_implementation_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cxx_functions_implementation_));
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCxxMethodTypes() const {
-  std::vector<std::string> result;
-  for (auto const& pair : cxx_toplevel_type_declaration_) {
-    result.push_back(pair.second);
-  }
-  return result;
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cxx_toplevel_type_declaration_));
 }
 
 std::vector<std::string> JournalProtoProcessor::GetCxxPlayStatements() const {
@@ -240,7 +220,7 @@ void JournalProtoProcessor::ProcessRepeatedNonStringField(
   field_cxx_assignment_fn_[descriptor] =
       [this, descriptor](
           std::string const& prefix, std::string const& expr) {
-        std::string const& descriptor_name = descriptor->name();
+        std::string const descriptor_name(descriptor->name());
         return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
                 " = " + expr + "; " +
                 descriptor_name + " != nullptr && "
@@ -255,7 +235,7 @@ void JournalProtoProcessor::ProcessRepeatedNonStringField(
   // While the proto API does expose pointers to individual scalar values of a
   // repeated scalar field, that array is not null-terminated.  So we copy the
   // pointers to auxiliary storage.
-  std::string const storage_name = descriptor->name() + "_storage";
+  std::string const storage_name = std::string(descriptor->name()) + "_storage";
   field_cxx_deserialization_storage_name_[descriptor] = storage_name;
   field_cxx_deserializer_fn_[descriptor] =
       [cxx_type, storage_name](
@@ -316,7 +296,7 @@ void JournalProtoProcessor::ProcessRepeatedUint32Field(
 void JournalProtoProcessor::ProcessRepeatedMessageField(
     FieldDescriptor const* descriptor) {
   Descriptor const* message_type = descriptor->message_type();
-  std::string const& message_type_name = message_type->name();
+  std::string const message_type_name(message_type->name());
   ProcessRepeatedNonStringField(
       descriptor,
       /*cs_unboxed_type=*/message_type_name,
@@ -325,7 +305,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   field_cxx_assignment_fn_[descriptor] =
       [this, descriptor](
           std::string const& prefix, std::string const& expr) {
-        std::string const& descriptor_name = descriptor->name();
+        std::string const descriptor_name(descriptor->name());
         return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
                " = " + expr + "; " +
                descriptor_name + " != nullptr && "
@@ -337,7 +317,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                "  }\n";
       };
 
-  std::string const storage_name = descriptor->name() + "_storage";
+  std::string const storage_name = std::string(descriptor->name()) + "_storage";
   field_cxx_deserialization_storage_name_[descriptor] = storage_name;
   field_cxx_deserializer_fn_[descriptor] =
       [message_type_name, storage_name](
@@ -383,7 +363,7 @@ void JournalProtoProcessor::ProcessRepeatedStringField(
   field_cxx_assignment_fn_[descriptor] =
       [this, descriptor](
           std::string const& prefix, std::string const& expr) {
-        std::string const& descriptor_name = descriptor->name();
+        std::string const descriptor_name(descriptor->name());
         return "  for (" + field_cxx_type_[descriptor] + " " + descriptor_name +
                " = " + expr + "; " +
                descriptor_name + " != nullptr && "
@@ -394,7 +374,7 @@ void JournalProtoProcessor::ProcessRepeatedStringField(
                ";\n"
                "  }\n";
       };
-  std::string const storage_name = descriptor->name() + "_storage";
+  std::string const storage_name = std::string(descriptor->name()) + "_storage";
   field_cxx_deserialization_storage_name_[descriptor] = storage_name;
   field_cxx_deserializer_fn_[descriptor] =
       [storage_name](
@@ -501,7 +481,7 @@ void JournalProtoProcessor::ProcessOptionalScalarField(
   // What we would want is a reference to a scalar field of a proto, but this
   // is not exposed by the proto API.  Instead, we copy the field in a variable
   // and use the address of that variable.
-  std::string const storage_name = descriptor->name() + "_storage";
+  std::string const storage_name = std::string(descriptor->name()) + "_storage";
   field_cxx_deserialization_storage_name_[descriptor] = storage_name;
   field_cxx_deserializer_fn_[descriptor] =
       [cxx_type, storage_name](
@@ -563,14 +543,14 @@ void JournalProtoProcessor::ProcessOptionalUint32Field(
 void JournalProtoProcessor::ProcessOptionalMessageField(
     FieldDescriptor const* descriptor) {
   Descriptor const* message_type = descriptor->message_type();
-  std::string const& message_type_name = message_type->name();
+  std::string const message_type_name(message_type->name());
   ProcessOptionalNonStringField(
       descriptor,
       /*cs_boxed_type=*/"Boxed" + message_type_name,
       /*cs_unboxed_type=*/message_type_name,
       /*cxx_type=*/message_type_name);
 
-  std::string const storage_name = descriptor->name() + "_storage";
+  std::string const storage_name = std::string(descriptor->name()) + "_storage";
 
   // Storage that may be needed for deserializing, e.g., the optional fields of
   // the message.
@@ -761,12 +741,13 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     CHECK(field_cxx_size_.contains(descriptor))
         << descriptor->full_name() << " must be designated by a (size_of) "
         << "option because it has the (is_csharp_owned) option";
-    std::string const storage_name = descriptor->name() + "_storage";
+    std::string const storage_name =
+        std::string(descriptor->name()) + "_storage";
     field_cxx_deserialization_storage_name_[descriptor] = storage_name;
     field_cxx_deserialization_storage_type_[descriptor] =
         "std::vector<" +
         options.GetExtension(journal::serialization::pointer_to) + ">";
-    std::string const size_field_name = field_cxx_size_[descriptor]->name();
+    std::string const size_field_name(field_cxx_size_[descriptor]->name());
     // Note that in this lambda `expr` is the size field, not the address field:
     // the latter was allocated in C# and never inserted in our pointer map, so
     // it's mostly useless.
@@ -798,7 +779,7 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
   Descriptor const* message_type = descriptor->message_type();
-  std::string const& message_type_name = message_type->name();
+  std::string const message_type_name(message_type->name());
   field_cs_type_[descriptor] = message_type_name;
   field_cxx_type_[descriptor] = message_type_name;
 
@@ -934,12 +915,12 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 void JournalProtoProcessor::ProcessSingleMessageField(
     FieldDescriptor const* descriptor) {
   Descriptor const* message_type = descriptor->message_type();
-  std::string const& message_type_name = message_type->name();
+  std::string const message_type_name(message_type->name());
 
   field_cxx_assignment_fn_[descriptor] =
       [this, descriptor](std::string const& prefix,
                          std::string const& expr) {
-        return "  *" + prefix + "mutable_" + descriptor->name() +
+        return "  *" + prefix + "mutable_" + std::string(descriptor->name()) +
                "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
       };
   field_cxx_serializer_fn_[descriptor] =
@@ -1118,7 +1099,7 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
       };
   field_cxx_assignment_fn_[descriptor] =
       [this, descriptor](std::string const& prefix, std::string const& expr) {
-        return "  " + prefix + "set_" + descriptor->name() + "(" +
+        return "  " + prefix + "set_" + std::string(descriptor->name()) + "(" +
                field_cxx_serializer_fn_[descriptor](expr) + ");\n";
       };
   field_cxx_indirect_member_get_fn_[descriptor] =
@@ -1142,11 +1123,11 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
         };
   }
   field_cxx_optional_assignment_fn_[descriptor] =
-      [](std::string const& expr, std::string const& stmt) {
+      [](std::string const& /*expr*/, std::string const& stmt) {
         return stmt;
       };
   field_cxx_optional_pointer_fn_[descriptor] =
-      [](std::string const& condition, std::string const& expr) {
+      [](std::string const& /*condition*/, std::string const& expr) {
         return expr;
       };
   field_cxx_serializer_fn_[descriptor] =
@@ -1154,17 +1135,13 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
         return expr;
       };
 
-  switch (descriptor->label()) {
-    case FieldDescriptor::LABEL_OPTIONAL:
-      ProcessOptionalField(descriptor);
-      break;
-    case FieldDescriptor::LABEL_REPEATED:
-      ProcessRepeatedField(descriptor);
-      break;
-    case FieldDescriptor::LABEL_REQUIRED:
-      ProcessRequiredField(descriptor);
-      break;
-    }
+  if (descriptor->is_repeated()) {
+    ProcessRepeatedField(descriptor);
+  } else if (descriptor->is_required()) {
+    ProcessRequiredField(descriptor);
+  } else {
+    ProcessOptionalField(descriptor);
+  }
 }
 
 void JournalProtoProcessor::ProcessAddressOfSizeOf(
@@ -1174,7 +1151,7 @@ void JournalProtoProcessor::ProcessAddressOfSizeOf(
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     FieldOptions const& options = field_descriptor->options();
     if (options.HasExtension(journal::serialization::address_of)) {
-      CHECK_EQ(field_descriptor->label(), FieldDescriptor::LABEL_REQUIRED)
+      CHECK(field_descriptor->is_required())
           << field_descriptor->full_name()
           << " must be a required field to have the (address_of) option";
       CHECK_EQ(field_descriptor->type(), FieldDescriptor::TYPE_FIXED64)
@@ -1192,7 +1169,7 @@ void JournalProtoProcessor::ProcessAddressOfSizeOf(
       field_cxx_address_of_[field_descriptor] = address_of_field;
       field_cxx_address_[address_of_field] = field_descriptor;
     } else if (options.HasExtension(journal::serialization::size_of)) {
-      CHECK_EQ(field_descriptor->label(), FieldDescriptor::LABEL_REQUIRED)
+      CHECK(field_descriptor->is_required())
           << field_descriptor->full_name()
           << " must be a required field to have the (size_of) option";
       CHECK_EQ(field_descriptor->type(), FieldDescriptor::TYPE_INT32)
@@ -1216,7 +1193,7 @@ void JournalProtoProcessor::ProcessAddressOfSizeOf(
 void JournalProtoProcessor::ProcessInOut(
   Descriptor const* descriptor,
   std::vector<FieldDescriptor const*>* field_descriptors) {
-  std::string const& name = descriptor->name();
+  std::string const name(descriptor->name());
   ProcessAddressOfSizeOf(descriptor);
 
   std::string cxx_message_prefix;
@@ -1248,7 +1225,7 @@ void JournalProtoProcessor::ProcessInOut(
   cxx_nested_type_declaration_[descriptor] = "  struct " + name + " final {\n";
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
-    std::string const& field_descriptor_name = field_descriptor->name();
+    std::string const field_descriptor_name(field_descriptor->name());
     if (field_descriptors != nullptr) {
       field_descriptors->push_back(field_descriptor);
     }
@@ -1279,7 +1256,7 @@ void JournalProtoProcessor::ProcessInOut(
                 std::back_inserter(cxx_run_arguments_[descriptor]));
 
       if (out_.contains(field_descriptor)) {
-        CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
+        CHECK(field_descriptor->is_required())
             << field_descriptor->full_name() << " must be required";
         cxx_run_body_prolog_[descriptor] +=
             "  " + field_cxx_type_[field_descriptor] + " " +
@@ -1311,8 +1288,8 @@ void JournalProtoProcessor::ProcessInOut(
         std::string deserialize_field;
         if (field_cxx_size_.contains(field_descriptor)) {
           std::string const cxx_run_size_field_getter =
-              ToLower(name) + "." + field_cxx_size_[field_descriptor]->name() +
-              "()";
+              ToLower(name) + "." +
+              std::string(field_cxx_size_[field_descriptor]->name()) + "()";
           deserialize_field = field_cxx_deserializer_fn_[field_descriptor](
               cxx_run_size_field_getter);
         } else {
@@ -1379,7 +1356,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   FieldDescriptor const* result_field_descriptor = nullptr;
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
-    CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
+    CHECK(field_descriptor->is_required())
         << field_descriptor->full_name() << " must be required";
     return_.insert(field_descriptor);
     ProcessField(field_descriptor);
@@ -1406,11 +1383,12 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
           "message->mutable_return_()->",
           field_cxx_indirect_member_get_fn_[result_field_descriptor]("result"));
   std::string const cxx_field_getter =
-      "message.return_()." + result_field_descriptor->name() + "()";
+      "message.return_()." + std::string(result_field_descriptor->name()) +
+      "()";
   if (cxx_insert_definition_.contains(
           result_field_descriptor->message_type())) {
     Descriptor const* message_type = result_field_descriptor->message_type();
-    std::string const& message_type_name = message_type->name();
+    std::string const message_type_name(message_type->name());
     cxx_run_body_epilog_[descriptor] += "  Insert" + message_type_name + "(" +
                                         cxx_field_getter +
                                         ", *result, pointer_map);\n";
@@ -1448,7 +1426,8 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
             field_cxx_indirect_member_get_fn_[address_field_descriptor](
                 "result"));
     std::string const cxx_field_getter =
-        "message.return_()." + address_field_descriptor->name() + "()";
+        "message.return_()." + std::string(address_field_descriptor->name()) +
+        "()";
     if (field_cxx_inserter_fn_.contains(address_field_descriptor)) {
       cxx_run_body_epilog_[descriptor] +=
           field_cxx_inserter_fn_[address_field_descriptor](cxx_field_getter,
@@ -1471,7 +1450,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
 
 void JournalProtoProcessor::ProcessInterchangeMessage(
     Descriptor const* descriptor) {
-  std::string const& name = descriptor->name();
+  std::string const name(descriptor->name());
   std::string const& parameter_name = ToLower(name);
   std::string const& proto_parameter_name = ToLower(name) + "_proto";
   std::string const& object_parameter_name = ToLower(name) + "_object";
@@ -1540,7 +1519,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   for (int i = 0; i < descriptor->field_count(); ++i) {
     FieldDescriptor const* field_descriptor = descriptor->field(i);
     FieldOptions const& field_options = field_descriptor->options();
-    std::string const& field_descriptor_name = field_descriptor->name();
+    std::string const field_descriptor_name(field_descriptor->name());
 
     // If the field needs extra storage for deserialization, generate it now.
     if (field_cxx_deserialization_storage_name_.contains(field_descriptor)) {
@@ -1586,7 +1565,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     // use the field addressed by that field.
     std::string const addressed_field_descriptor_name =
         field_cxx_address_of_.contains(field_descriptor)
-            ? field_cxx_address_of_[field_descriptor]->name()
+            ? std::string(field_cxx_address_of_[field_descriptor]->name())
             : field_descriptor_name;
 
     std::string const deserialize_field_checker =
@@ -1794,7 +1773,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 void JournalProtoProcessor::ProcessMethodExtension(
     Descriptor const* descriptor) {
   MessageOptions const& options = descriptor->options();
-  std::string const& name = descriptor->name();
+  std::string const name(descriptor->name());
   bool has_in = false;
   bool has_out = false;
   bool has_return = false;
@@ -1804,7 +1783,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   std::vector<FieldDescriptor const*> field_descriptors;
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
-    const std::string& nested_name = nested_descriptor->name();
+    std::string const nested_name(nested_descriptor->name());
     if (nested_name == in_message_name) {
       has_in = true;
       std::vector<FieldDescriptor const*> in_field_descriptors;
@@ -1868,7 +1847,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
     Descriptor const* nested_descriptor = descriptor->nested_type(i);
-    const std::string& nested_name = nested_descriptor->name();
+    std::string const nested_name(nested_descriptor->name());
     if (nested_name == in_message_name) {
       ProcessInOut(nested_descriptor, /*field_descriptors=*/nullptr);
       if (needs_journaling_support) {

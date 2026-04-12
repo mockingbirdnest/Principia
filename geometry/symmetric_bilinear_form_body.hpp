@@ -347,8 +347,9 @@ template<typename LScalar,
          typename RScalar,
          typename Frame,
          template<typename, typename> typename M,
-         int rank,
-         typename>
+         int rank>
+  requires(std::is_same_v<M<double, Frame>,
+                          _grassmann::Multivector<double, Frame, rank>>)
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     SymmetricBilinearForm<LScalar, Frame, M> const& left,
     Multivector<RScalar, Frame, rank> const& right) {
@@ -360,8 +361,9 @@ template<typename LScalar,
          typename RScalar,
          typename Frame,
          template<typename, typename> typename M,
-         int rank,
-         typename>
+         int rank>
+  requires(std::is_same_v<M<double, Frame>,
+                          _grassmann::Multivector<double, Frame, rank>>)
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     Multivector<LScalar, Frame, rank> const& left,
     SymmetricBilinearForm<RScalar, Frame, M> const& right) {
@@ -373,8 +375,9 @@ template<typename LScalar,
          typename RScalar,
          typename Frame,
          template<typename, typename> typename M,
-         int rank,
-         typename>
+         int rank>
+  requires(std::is_same_v<M<double, Frame>,
+                          _grassmann::Multivector<double, Frame, rank>>)
 Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
     Multivector<LScalar, Frame, rank> const& left,
     SymmetricBilinearForm<RScalar, Frame, M> const& right) {

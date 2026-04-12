@@ -12,8 +12,9 @@
 #include <type_traits>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/bits.hpp"
-#include "glog/logging.h"
 
 namespace principia {
 namespace base {
@@ -200,7 +201,7 @@ static_assert(bytes_per_code_point == 3,
 template<bool null_terminated>
 void Base32768Encoder<null_terminated>::Encode(Array<std::uint8_t const> input,
                                                Array<char16_t> output) {
-  CHECK_NOTNULL(input.data);
+  CHECK(input.data != nullptr);
   CHECK(input.size == 0 || output.data != nullptr);
 
   std::uint8_t const* const input_end = input.data + input.size;
@@ -236,7 +237,7 @@ void Base32768Encoder<null_terminated>::Encode(Array<std::uint8_t const> input,
         repertoire = &seven_bits;
       }
     }
-    std::int32_t code_point = (data & mask) >> shift;
+    std::int32_t const code_point = (data & mask) >> shift;
     CHECK_LE(0, code_point);
     CHECK_LT(code_point, 1 << bits_per_code_point);
     output.data[0] = repertoire->Encode(code_point);
@@ -281,7 +282,7 @@ std::int64_t Base32768Encoder<null_terminated>::EncodedLength(
 template<bool null_terminated>
 void Base32768Encoder<null_terminated>::Decode(Array<char16_t const> input,
                                                Array<std::uint8_t> output) {
-  CHECK_NOTNULL(input.data);
+  CHECK(input.data != nullptr);
   CHECK(input.size == 0 || output.data != nullptr);
 
   char16_t const* const input_end = input.data + input.size;

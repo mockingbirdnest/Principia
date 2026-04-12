@@ -2,6 +2,8 @@
 #include <limits>
 #include <memory>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "astronomy/frames.hpp"
 #include "astronomy/standard_product_3.hpp"
@@ -9,7 +11,6 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -28,7 +29,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
-#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -56,7 +57,7 @@ using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
-using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 
 class GeodesyTest : public ::testing::Test {
  protected:
@@ -169,18 +170,18 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
       secondary_lageos2_trajectory.back().degrees_of_freedom);
 
   // Absolute error in position.
-  EXPECT_THAT(AbsoluteError(primary_actual_final_dof.position(),
-                            expected_final_dof.position()),
-              IsNear(191_(1) * Kilo(Metre)));
+  EXPECT_THAT(primary_actual_final_dof.position(),
+              AbsoluteErrorFrom(expected_final_dof.position(),
+                                IsNear(191_(1) * Kilo(Metre))));
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(primary_actual_final_dof.position() - ITRS::origin,
                            expected_final_dof.position() - ITRS::origin),
               IsNear(53_(1) * ArcMinute));
   // Radial error at the geocentre.
   EXPECT_THAT(
-      AbsoluteError((primary_actual_final_dof.position() - ITRS::origin).Norm(),
-                    (expected_final_dof.position() - ITRS::origin).Norm()),
-      IsNear(0.89_(1) * Kilo(Metre)));
+      (primary_actual_final_dof.position() - ITRS::origin).Norm(),
+      AbsoluteErrorFrom((expected_final_dof.position() - ITRS::origin).Norm(),
+                        IsNear(0.89_(1) * Kilo(Metre))));
 
   // Errors in orbital elements.
   KeplerianElements<ICRS> const expected_elements =
@@ -198,40 +199,40 @@ TEST_F(GeodesyTest, DISABLED_LAGEOS2) {
               earth_trajectory_.EvaluateDegreesOfFreedom(final_time),
           final_time).elements_at_epoch();
 
-  EXPECT_THAT(AbsoluteError(*actual_elements.periapsis_distance,
-                            *expected_elements.periapsis_distance),
-              IsNear(42_(1) * Metre));
-  EXPECT_THAT(AbsoluteError(*actual_elements.apoapsis_distance,
-                            *expected_elements.apoapsis_distance),
-              IsNear(9.5_(1) * Metre));
-  EXPECT_THAT(AbsoluteError(actual_elements.longitude_of_ascending_node,
-                            expected_elements.longitude_of_ascending_node),
-              IsNear(17_(1) * ArcSecond));
-  EXPECT_THAT(AbsoluteError(actual_elements.inclination,
-                            expected_elements.inclination),
-              IsNear(1.1_(1) * ArcSecond));
-  EXPECT_THAT(AbsoluteError(*actual_elements.argument_of_periapsis,
-                            *expected_elements.argument_of_periapsis),
-              IsNear(217_(1) * ArcSecond));
-  EXPECT_THAT(AbsoluteError(*actual_elements.mean_anomaly,
-                            *expected_elements.mean_anomaly),
-              IsNear(58_(1) * ArcMinute));
+  EXPECT_THAT(*actual_elements.periapsis_distance,
+              AbsoluteErrorFrom(*expected_elements.periapsis_distance,
+                                IsNear(42_(1) * Metre)));
+  EXPECT_THAT(*actual_elements.apoapsis_distance,
+              AbsoluteErrorFrom(*expected_elements.apoapsis_distance,
+                                IsNear(9.5_(1) * Metre)));
+  EXPECT_THAT(actual_elements.longitude_of_ascending_node,
+              AbsoluteErrorFrom(expected_elements.longitude_of_ascending_node,
+                                IsNear(17_(1) * ArcSecond)));
+  EXPECT_THAT(actual_elements.inclination,
+              AbsoluteErrorFrom(expected_elements.inclination,
+                                IsNear(1.1_(1) * ArcSecond)));
+  EXPECT_THAT(*actual_elements.argument_of_periapsis,
+              AbsoluteErrorFrom(*expected_elements.argument_of_periapsis,
+                                IsNear(217_(1) * ArcSecond)));
+  EXPECT_THAT(*actual_elements.mean_anomaly,
+              AbsoluteErrorFrom(*expected_elements.mean_anomaly,
+                                IsNear(58_(1) * ArcMinute)));
 
   // Error arising from uncertainty in the initial state, estimated as the
   // difference between the primary and secondary ILRS products.
   // Absolute error in position.
-  EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
-                            primary_actual_final_dof.position()),
-              AnyOf(IsNear(283_(1) * Metre)));  // Windows.
+  EXPECT_THAT(secondary_actual_final_dof.position(),
+              AbsoluteErrorFrom(primary_actual_final_dof.position(),
+                                AnyOf(IsNear(283_(1) * Metre))));  // Windows.
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
                            primary_actual_final_dof.position() - ITRS::origin),
               AnyOf(IsNear(4.7_(1) * ArcSecond)));  // Windows.
   // Radial error at the geocentre.
-  EXPECT_THAT(AbsoluteError(
-                  (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
-                  (primary_actual_final_dof.position() - ITRS::origin).Norm()),
-              AnyOf(IsNear(115_(1) * Centi(Metre))));  // Windows.
+  EXPECT_THAT((secondary_actual_final_dof.position() - ITRS::origin).Norm(),
+              AbsoluteErrorFrom(
+                  (primary_actual_final_dof.position() - ITRS::origin).Norm(),
+                  AnyOf(IsNear(115_(1) * Centi(Metre)))));  // Windows.
 }
 
 #endif

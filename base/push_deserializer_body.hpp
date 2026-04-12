@@ -7,9 +7,10 @@
 #include <memory>
 #include <utility>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/sink_source.hpp"
-#include "glog/logging.h"
-#include "google/protobuf/io/coded_stream_inl.h"
+#include "google/protobuf/io/coded_stream.h"
 
 namespace principia {
 namespace base {

@@ -7,8 +7,9 @@
 #include <string>
 #include <type_traits>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
-#include "glog/logging.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
 #include "quantities/serialization.hpp"

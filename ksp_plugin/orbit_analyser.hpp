@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <optional>
+#include <thread>
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -9,7 +10,6 @@
 #include "astronomy/orbit_ground_track.hpp"
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
-#include "base/jthread.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -30,7 +30,6 @@ namespace internal {
 using namespace principia::astronomy::_orbit_ground_track;
 using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::astronomy::_orbital_elements;
-using namespace principia::base::_jthread;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
@@ -187,17 +186,17 @@ class OrbitAnalyser {
   std::optional<Analysis> analysis_;
 
   mutable absl::Mutex lock_;
-  jthread analyser_;
+  std::jthread analyser_;
   // The `analyser_` is idle:
   // — if it is not joinable, e.g. because it was stopped by `Interrupt()`, or
   // — if it is done computing `next_analysis_` and has stopped or is about to
   //   stop executing.
   // If it is joined once idle (and joinable), it will not attempt to acquire
   // `lock_`.
-  bool analyser_idle_ GUARDED_BY(lock_) = true;
+  bool analyser_idle_ ABSL_GUARDED_BY(lock_) = true;
   // `next_analysis_` is set by the `analyser_` thread; it is read and cleared
   // by the main thread.
-  std::optional<Analysis> next_analysis_ GUARDED_BY(lock_);
+  std::optional<Analysis> next_analysis_ ABSL_GUARDED_BY(lock_);
   // `progress_of_next_analysis_` is set by the `analyser_` thread; it tracks
   // progress in computing `next_analysis_`.
   std::atomic<double> progress_of_next_analysis_ = 0;

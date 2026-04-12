@@ -47,5 +47,11 @@ class MockPlanetarium : public Planetarium {
 using internal::MockPlanetarium;
 
 }  // namespace _planetarium
+
+namespace _mock_planetarium = _planetarium;
+
 }  // namespace ksp_plugin
+
+namespace ksp_plugin_test = ksp_plugin;
+
 }  // namespace principia

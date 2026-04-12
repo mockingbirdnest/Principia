@@ -8,11 +8,16 @@
 
 #include "ksp_plugin/planetarium.hpp"
 
+#include <algorithm>
+#include <cstdint>
+#include <functional>
 #include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_COMPILER_MSVC.
 #include "base/not_null.hpp"
 #include "base/serialization.hpp"
@@ -27,6 +32,7 @@
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/methods.hpp"
@@ -34,21 +40,21 @@
 #include "ksp_plugin/frames.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/quadrature.hpp"
-#include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/equipotential.hpp"
 #include "physics/lagrange_equipotentials.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_continuous_trajectory.hpp"  // 🧙 For MockContinuousTrajectory.  // NOLINT
-#include "physics/mock_ephemeris.hpp"  // 🧙 For MockEphemeris.
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
+#include "physics/mock_continuous_trajectory.hpp"
+#include "physics/mock_ephemeris.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -90,13 +96,15 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_quadrature;
-using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_lagrange_equipotentials;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_mock_continuous_trajectory;
+using namespace principia::physics::_mock_ephemeris;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
@@ -287,11 +295,11 @@ class PlanetariumTest : public ::testing::Test {
                   .coordinates());
         };
 
-    Planetarium planetarium(planetarium_parameters,
-                            perspective,
-                            ephemeris_.get(),
-                            &plotting_frame,
-                            plotting_to_scaled_space);
+    Planetarium const planetarium(planetarium_parameters,
+                                  perspective,
+                                  ephemeris_.get(),
+                                  &plotting_frame,
+                                  plotting_to_scaled_space);
 
     // Compute over 30 days.
     for (int i = 0; i < 30; ++i) {
@@ -309,7 +317,7 @@ class PlanetariumTest : public ::testing::Test {
     return plotted_trajectories;
   }
 
-  Length ComputePlottedLinesDistance(
+  static Length ComputePlottedLinesDistance(
       DiscreteTrajectory<Navigation> const& trajectory1,
       DiscreteTrajectory<Navigation> const& trajectory2) {
     CHECK_EQ(trajectory1.t_min(), trajectory2.t_min());
@@ -323,7 +331,7 @@ class PlanetariumTest : public ::testing::Test {
                     trajectory1.t_min(),
                     trajectory2.t_max(),
                     /*max_relative_error=*/1.0e-6,
-                    /*max_point=*/1000) /
+                    /*max_points=*/1000) /
                 (trajectory1.t_max() - trajectory1.t_min()));
   }
 
@@ -353,15 +361,15 @@ TEST_F(PlanetariumTest, PlotMethod0) {
                            /*to=*/discrete_trajectory);
 
   // No dark area, infinite acuity, wide field of view.
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters const parameters(
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0 * Degree,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
-                          perspective_,
-                          &mock_ephemeris_,
-                          &plotting_frame_,
-                          plotting_to_scaled_space_);
+  Planetarium const planetarium(parameters,
+                                perspective_,
+                                &mock_ephemeris_,
+                                &plotting_frame_,
+                                plotting_to_scaled_space_);
   auto const rp2_lines =
       planetarium.PlotMethod0(discrete_trajectory,
                               discrete_trajectory.begin(),
@@ -402,15 +410,15 @@ TEST_F(PlanetariumTest, PlotMethod1) {
                            /*to=*/discrete_trajectory);
 
   // No dark area, human visual acuity, wide field of view.
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters const parameters(
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
-                          perspective_,
-                          &mock_ephemeris_,
-                          &plotting_frame_,
-                          plotting_to_scaled_space_);
+  Planetarium const planetarium(parameters,
+                                perspective_,
+                                &mock_ephemeris_,
+                                &plotting_frame_,
+                                plotting_to_scaled_space_);
   auto const rp2_lines =
       planetarium.PlotMethod1(discrete_trajectory,
                               discrete_trajectory.begin(),
@@ -441,15 +449,15 @@ TEST_F(PlanetariumTest, PlotMethod2) {
                            /*to=*/discrete_trajectory);
 
   // No dark area, human visual acuity, wide field of view.
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters const parameters(
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(parameters,
-                          perspective_,
-                          &mock_ephemeris_,
-                          &plotting_frame_,
-                          plotting_to_scaled_space_);
+  Planetarium const planetarium(parameters,
+                                perspective_,
+                                &mock_ephemeris_,
+                                &plotting_frame_,
+                                plotting_to_scaled_space_);
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory,
                               discrete_trajectory.begin(),
@@ -496,11 +504,11 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 
   EXPECT_EQ(23423, discrete_trajectory.size());
 
-  Planetarium::Parameters parameters(
+  Planetarium::Parameters const parameters(
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(
+  Planetarium const planetarium(
       parameters,
       Perspective<Navigation, Camera>(rigid_transformation.Forget<Similarity>(),
                                       /*focal=*/1 * Metre),
@@ -521,7 +529,7 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
 
 TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
   // Human visual acuity.
-  Angle reference_angular_resolution = 0.4 * ArcMinute;
+  Angle const reference_angular_resolution = 0.4 * ArcMinute;
 
   auto const lagrange_equipotentials = ComputeLagrangeEquipotentials();
 
@@ -619,12 +627,14 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
         EXPECT_EQ(26565, number_of_points);
         EXPECT_THAT(max_distance, IsNear(1.48_(1) * Centi(Metre)));
         break;
+      default:
+        LOG(FATAL) << "Unexpected value " << i;
     }
   }
 }
 
 TEST_F(PlanetariumTest, PlotMethod4_Equipotentials_AngularResolution) {
-  Angle reference_angular_resolution = 0.25 * ArcMinute;
+  Angle const reference_angular_resolution = 0.25 * ArcMinute;
 
   auto const lagrange_equipotentials = ComputeLagrangeEquipotentials();
 
@@ -722,6 +732,8 @@ TEST_F(PlanetariumTest, PlotMethod4_Equipotentials_AngularResolution) {
         EXPECT_EQ(28959, number_of_points);
         EXPECT_THAT(max_distance, IsNear(1.37_(1) * Centi(Metre)));
         break;
+      default:
+        LOG(FATAL) << "Unexpected value " << i;
     }
   }
 }

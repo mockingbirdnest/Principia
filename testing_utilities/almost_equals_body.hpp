@@ -2,13 +2,13 @@
 
 #include "testing_utilities/almost_equals.hpp"
 
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 #include <cstdint>
-
-#include <algorithm>
 #include <limits>
 #include <string>
+#include <utility>
 
 #include "gmock/gmock.h"
 #include "numerics/ulp_distance.hpp"
@@ -50,10 +50,10 @@ testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
 }
 
 template<typename T>
-AlmostEqualsMatcher<T>::AlmostEqualsMatcher(T const& expected,
+AlmostEqualsMatcher<T>::AlmostEqualsMatcher(T expected,
                                             std::int64_t const min_ulps,
                                             std::int64_t const max_ulps)
-    : expected_(expected),
+    : expected_(std::move(expected)),
       min_ulps_(min_ulps),
       max_ulps_(max_ulps) {}
 

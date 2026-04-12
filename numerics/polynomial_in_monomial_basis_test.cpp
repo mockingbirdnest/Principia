@@ -1,8 +1,11 @@
 #include "numerics/polynomial_in_monomial_basis.hpp"
 
-#include <string>
+#include <concepts>
 #include <tuple>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
+#include "absl/log/scoped_mock_log.h"
 #include "base/algebra.hpp"
 #include "base/for_all_of.hpp"
 #include "base/multiprecision.hpp"
@@ -10,6 +13,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/polynomial.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -23,7 +27,6 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/check_well_formedness.hpp"  // 🧙 For PRINCIPIA_CHECK_ILL_FORMED.
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/string_log_sink.hpp"
 
 #define PRINCIPIA_USE_IACA 0
 #if PRINCIPIA_USE_IACA
@@ -33,8 +36,8 @@
 namespace principia {
 namespace numerics {
 
-using ::testing::EndsWith;
 using ::testing::Eq;
+using ::testing::_;
 using namespace principia::base::_algebra;
 using namespace principia::base::_for_all_of;
 using namespace principia::base::_multiprecision;
@@ -52,7 +55,6 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_algebra;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_string_log_sink;
 
 class PolynomialInMonomialBasisTest : public ::testing::Test {
  public:
@@ -108,21 +110,21 @@ TEST_F(PolynomialInMonomialBasisTest, ℤⳆnℤOfX) {
                                       IntegerModulo<2>,
                                       /*degree=*/2,
                                       EstrinWithoutFMA>;
-  P p({1, 0, 1});
+  P const p({1, 0, 1});
   EXPECT_THAT(p(0), Eq(IntegerModulo<2>(1)));
   EXPECT_THAT(p(1), Eq(IntegerModulo<2>(0)));
   using Q = PolynomialInMonomialBasis<IntegerModulo<2>,
                                       IntegerModulo<2>,
                                       /*degree=*/2,
                                       HornerWithoutFMA>;
-  Q q({0, 1, 1});
+  Q const q({0, 1, 1});
   EXPECT_THAT(q(0), Eq(IntegerModulo<2>(0)));
   EXPECT_THAT(q(1), Eq(IntegerModulo<2>(0)));
   using R = PolynomialInMonomialBasis<IntegerModulo<4>,
                                       IntegerModulo<4>,
                                       /*degree=*/2,
                                       EstrinWithoutFMA>;
-  R r({1, 2, 3});
+  R const r({1, 2, 3});
   EXPECT_THAT(r(1), Eq(IntegerModulo<4>(2)));
 }
 
@@ -593,7 +595,7 @@ TEST_F(PolynomialInMonomialBasisTest, Boost) {
 // Check that polynomials may be serialized.
 TEST_F(PolynomialInMonomialBasisTest, Serialization) {
   {
-    P2V p2v(coefficients_);
+    P2V const p2v(coefficients_);
     serialization::Polynomial message;
     p2v.WriteToMessage(&message);
     EXPECT_EQ(2, message.degree());
@@ -619,7 +621,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
     EXPECT_THAT(message2, EqualsProto(message));
   }
   {
-    P2A p2a(coefficients_, Instant());
+    P2A const p2a(coefficients_, Instant());
     serialization::Polynomial message;
     p2a.WriteToMessage(&message);
     EXPECT_EQ(2, message.degree());
@@ -656,7 +658,7 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
   }
   {
     P17::Coefficients const coefficients;
-    P17 p17(coefficients);
+    P17 const p17(coefficients);
     serialization::Polynomial message;
     p17.WriteToMessage(&message);
     EXPECT_EQ(17, message.degree());
@@ -689,40 +691,57 @@ TEST_F(PolynomialInMonomialBasisTest, Serialization) {
 }
 
 TEST_F(PolynomialInMonomialBasisTest, Output) {
-  P2V p2v(coefficients_);
-  P2A p2a(coefficients_, Instant());
+  P2V const p2v(coefficients_);
+  P2A const p2a(coefficients_, Instant());
   P17::Coefficients const coefficients;
-  P17 p17(coefficients);
-  StringLogSink log_error(google::ERROR);
-  LOG(ERROR) << p2v;
-  EXPECT_THAT(
-      log_error.string(),
-      EndsWith(
-          "] {+0.00000000000000000e+00 m, +0.00000000000000000e+00 m, "
-          "+1.00000000000000000e+00 m}"
-          " + {+0.00000000000000000e+00 m s^-1,"
-          " +1.00000000000000000e+00 m s^-1, +0.00000000000000000e+00 m s^-1}"
-          " * (T - +0.00000000000000000e+00 s)"
-          " + {+1.00000000000000000e+00 m s^-2,"
-          " +0.00000000000000000e+00 m s^-2, +0.00000000000000000e+00 m s^-2}"
-          " * (T - +0.00000000000000000e+00 s)^2"));
-  LOG(ERROR) << p2a;
-  EXPECT_THAT(
-      log_error.string(),
-      EndsWith(
-          "] {+0.00000000000000000e+00 m, +0.00000000000000000e+00 m, "
-          "+1.00000000000000000e+00 m}"
-          " + {+0.00000000000000000e+00 m s^-1,"
-          " +1.00000000000000000e+00 m s^-1, +0.00000000000000000e+00 m s^-1}"
-          " * (T - J2000+0.00000000000000000e+00 s (TT))"
-          " + {+1.00000000000000000e+00 m s^-2,"
-          " +0.00000000000000000e+00 m s^-2, +0.00000000000000000e+00 m s^-2}"
-          " * (T - J2000+0.00000000000000000e+00 s (TT))^2"));
-  LOG(ERROR) << p17;
-  EXPECT_THAT(log_error.string(),
-              EndsWith("] {+0.00000000000000000e+00 m, "
-                       "+0.00000000000000000e+00 m, "
-                       "+0.00000000000000000e+00 m}"));
+  P17 const p17(coefficients);
+  {
+    absl::ScopedMockLog log;
+    EXPECT_CALL(
+        log,
+        Log(absl::LogSeverity::kError,
+            _,
+            "{+0.00000000000000000e+00 m, +0.00000000000000000e+00 m, "
+            "+1.00000000000000000e+00 m}"
+            " + {+0.00000000000000000e+00 m s^-1,"
+            " +1.00000000000000000e+00 m s^-1, +0.00000000000000000e+00 "
+            "m s^-1}"
+            " * (T - +0.00000000000000000e+00 s)"
+            " + {+1.00000000000000000e+00 m s^-2,"
+            " +0.00000000000000000e+00 m s^-2, +0.00000000000000000e+00 "
+            "m s^-2}"
+            " * (T - +0.00000000000000000e+00 s)^2"));
+    log.StartCapturingLogs();
+    LOG(ERROR) << p2v;
+  }
+  {
+    absl::ScopedMockLog log;
+    EXPECT_CALL(
+        log,
+        Log(absl::LogSeverity::kError,
+            _,
+            "{+0.00000000000000000e+00 m, +0.00000000000000000e+00 m, "
+            "+1.00000000000000000e+00 m}"
+            " + {+0.00000000000000000e+00 m s^-1,"
+            " +1.00000000000000000e+00 m s^-1, +0.00000000000000000e+00 m s^-1}"
+            " * (T - J2000+0.00000000000000000e+00 s (TT))"
+            " + {+1.00000000000000000e+00 m s^-2,"
+            " +0.00000000000000000e+00 m s^-2, +0.00000000000000000e+00 m s^-2}"
+            " * (T - J2000+0.00000000000000000e+00 s (TT))^2"));
+    log.StartCapturingLogs();
+    LOG(ERROR) << p2a;
+  }
+  {
+    absl::ScopedMockLog log;
+    EXPECT_CALL(log,
+                Log(absl::LogSeverity::kError,
+                    _,
+                    "{+0.00000000000000000e+00 m, "
+                    "+0.00000000000000000e+00 m, "
+                    "+0.00000000000000000e+00 m}"));
+    log.StartCapturingLogs();
+    LOG(ERROR) << p17;
+  }
 }
 
 }  // namespace numerics

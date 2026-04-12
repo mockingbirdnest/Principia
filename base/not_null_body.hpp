@@ -6,7 +6,8 @@
 #include <memory>
 #include <utility>
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 
 namespace principia {
 namespace base {
@@ -186,10 +187,9 @@ constexpr not_null<Pointer>::not_null(pointer other, unchecked_tag const)
     : storage_(std::move(other)) {}
 
 template<typename Pointer>
-_checked_not_null<Pointer> check_not_null(Pointer pointer) {
-  if constexpr (!is_instance_of_not_null_v<Pointer>) {
-    CHECK(pointer != nullptr);
-  }
+  requires(!is_instance_of_not_null_v<std::remove_reference_t<Pointer>>)
+not_null<std::remove_reference_t<Pointer>> check_not_null(Pointer pointer) {
+  CHECK(pointer != nullptr);
   return not_null<std::remove_reference_t<Pointer>>(
       std::move(pointer),
       not_null<Pointer>::unchecked_tag_);

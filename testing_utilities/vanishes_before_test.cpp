@@ -3,11 +3,11 @@
 #include <limits>
 #include <sstream>
 
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/bipm.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"  // 🧙 For e.
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -36,7 +36,7 @@ TEST_F(VanishesBeforeTest, Dimensionless) {
 }
 
 TEST_F(VanishesBeforeTest, Quantity) {
-  Speed v1 = 1 * Knot;
+  Speed const v1 = 1 * Knot;
   Speed const v2 = 3 * v1 * std::numeric_limits<double>::epsilon();
   EXPECT_THAT(v2, VanishesBefore(v1, 3));
   EXPECT_THAT(2 * v2, Not(VanishesBefore(v1, 3)));
@@ -53,7 +53,7 @@ TEST_F(VanishesBeforeTest, Quantity) {
 }
 
 TEST_F(VanishesBeforeTest, Describe) {
-  Speed v1 = 1 * si::Unit<Speed>;
+  Speed const v1 = 1 * si::Unit<Speed>;
   {
     std::ostringstream out;
     VanishesBefore(v1, 2, 6).impl().DescribeTo(&out);

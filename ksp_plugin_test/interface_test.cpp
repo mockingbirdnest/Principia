@@ -1,21 +1,22 @@
 #include "ksp_plugin/interface.hpp"
 
-#include <limits>
+#include <array>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "astronomy/time_scales.hpp"
-#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
-#include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
-#include "geometry/orthogonal_map.hpp"
-#include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "google/protobuf/text_format.h"
@@ -23,22 +24,14 @@
 #include "journal/recorder.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
-#include "ksp_plugin/manœuvre.hpp"
-#include "ksp_plugin/part.hpp"
 #include "ksp_plugin/plugin.hpp"
-#include "ksp_plugin/renderer.hpp"
-#include "ksp_plugin/vessel.hpp"
-#include "ksp_plugin_test/mock_plugin.hpp"  // 🧙 For MockPlugin.
-#include "ksp_plugin_test/mock_renderer.hpp"  // 🧙 For MockRenderer.
-#include "numerics/elementary_functions.hpp"
+#include "ksp_plugin_test/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_renderer.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
-#include "physics/mock_rigid_reference_frame.hpp"  // 🧙 For MockRigidReferenceFrame.  // NOLINT
-#include "physics/rigid_motion.hpp"
+#include "physics/mock_rigid_reference_frame.hpp"
 #include "physics/rigid_reference_frame.hpp"
-#include "quantities/astronomy.hpp"
-#include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -48,18 +41,13 @@
 namespace principia {
 namespace interface {
 
-using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
-using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::ExitedWithCode;
-using ::testing::Invoke;
 using ::testing::IsNull;
 using ::testing::NotNull;
-using ::testing::Pointee;
 using ::testing::Pointer;
-using ::testing::Property;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -68,32 +56,23 @@ using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 using namespace principia::astronomy::_time_scales;
-using namespace principia::base::_file;
 using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_serialization;
-using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_orthogonal_map;
-using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::journal::_recorder;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
-using namespace principia::ksp_plugin::_manœuvre;
-using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_plugin;
-using namespace principia::ksp_plugin::_renderer;
-using namespace principia::ksp_plugin::_vessel;
-using namespace principia::numerics::_elementary_functions;
+using namespace principia::ksp_plugin_test::_mock_plugin;
+using namespace principia::ksp_plugin_test::_mock_renderer;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_massive_body;
-using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_mock_rigid_reference_frame;
 using namespace principia::physics::_rigid_reference_frame;
-using namespace principia::quantities::_astronomy;
-using namespace principia::quantities::_constants;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -102,22 +81,23 @@ using namespace principia::testing_utilities::_serialization;
 
 namespace {
 
-char const part_name[] = "Picard's chair";
-char const vessel_guid[] = "123-456";
-char const vessel_name[] = "NCC-1701-D";
+constexpr char part_name[] = "Picard's chair";
+constexpr char vessel_guid[] = "123-456";
+constexpr char vessel_name[] = "NCC-1701-D";
 
-Index const celestial_index = 1;
-Index const parent_index = 2;
-Index const unused = 666;
+constexpr Index celestial_index = 1;
+constexpr Index parent_index = 2;
+constexpr Index unused = 666;
 
-PartId const part_id = 42;
+constexpr PartId part_id = 42;
 
-double const planetarium_rotation = 10;
-double const time = 11;
+constexpr double planetarium_rotation = 10;
+constexpr double time = 11;
 
 XYZ parent_position = {4, 5, 6};
 XYZ parent_velocity = {7, 8, 9};
-QP parent_relative_degrees_of_freedom = {parent_position, parent_velocity};
+QP parent_relative_degrees_of_freedom = {.q = parent_position,
+                                         .p = parent_velocity};
 
 }  // namespace
 
@@ -173,13 +153,13 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
   Plugin* plugin = nullptr;
   EXPECT_DEATH({
     principia__DeletePlugin(nullptr);
-  }, "non NULL");
+  }, "!= nullptr");
   EXPECT_DEATH({
     principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     bool inserted;
     principia__InsertOrKeepVessel(plugin,
@@ -188,20 +168,20 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
                                   parent_index,
                                   /*loaded=*/false,
                                   &inserted);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__InsertUnloadedPart(plugin,
                                   part_id,
                                   part_name,
                                   vessel_guid,
                                   parent_relative_degrees_of_freedom);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__VesselFromParent(plugin, celestial_index, vessel_guid);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__CelestialFromParent(plugin, celestial_index);
-  }, "plugin.*non NULL");
+  }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__LogFatal("a file", 1729, "a fatal error");
   }, "a file:1729.*a fatal error");
@@ -209,18 +189,6 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
 
 TEST_F(InterfaceTest, InitGoogleLogging1) {
   principia__InitGoogleLogging();
-}
-
-TEST_F(InterfaceDeathTestWithoutPlugin, InitGoogleLogging2) {
-  // We use EXPECT_EXIT in this test to avoid interfering with the execution of
-  // the other tests.
-  int const exit_code = 66;
-
-  EXPECT_EXIT({
-    google::ShutdownGoogleLogging();
-    principia__InitGoogleLogging();
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), "");
 }
 
 TEST_F(InterfaceDeathTestWithoutPlugin, ActivateRecorder) {
@@ -238,10 +206,10 @@ TEST_F(InterfaceTest, Log) {
 }
 
 TEST_F(InterfaceTestWithoutPlugin, NewPlugin) {
-  std::unique_ptr<Plugin> plugin(principia__NewPlugin(
-                                     "MJD1",
-                                     "MJD2",
-                                     planetarium_rotation));
+  std::unique_ptr<Plugin> const plugin(principia__NewPlugin(
+                                           "MJD1",
+                                           "MJD2",
+                                           planetarium_rotation));
   EXPECT_THAT(plugin, Not(IsNull()));
 }
 
@@ -551,17 +519,19 @@ TEST_F(InterfaceTest, CelestialFromParent) {
 TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
 
-  int const* const celestial_index_array[2] = {&celestial_index, nullptr};
-  int const* const parent_index_array[2] = {&parent_index, nullptr};
+  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
+                                                           nullptr};
+  std::array<int const*, 2> const parent_index_array = {&parent_index,
+                                                        nullptr};
   PlottingFrameParameters parameters = {
-      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
-      unused,
-      &celestial_index_array[0],
-      &parent_index_array[0]};
+      .extension = serialization::BarycentricRotatingReferenceFrame::
+          kExtensionFieldNumber,
+      .centre_index = unused,
+      .primary_index = celestial_index_array.data(),
+      .secondary_index = parent_index_array.data()};
   {
-    StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
-        mock_navigation_frame =
-            new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
+    auto* const mock_navigation_frame =
+        new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBarycentricRotatingNavigationFrame(celestial_index,
                                                       parent_index))
@@ -577,9 +547,8 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
       kExtensionFieldNumber;
   parameters.centre_index = celestial_index;
   {
-    StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
-        mock_navigation_frame =
-            new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
+    auto* const mock_navigation_frame =
+        new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
                 NewBodyCentredNonRotatingNavigationFrame(celestial_index))
         .WillOnce(Return(ByMove(
@@ -592,9 +561,8 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
-  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
+  auto* const mock_navigation_frame =
+      new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
               NewBarycentricRotatingNavigationFrame(celestial_index,
                                                     parent_index))
@@ -602,19 +570,22 @@ TEST_F(InterfaceTest, NavballOrientation) {
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  int const* const celestial_index_array[2] = {&celestial_index, nullptr};
-  int const* const parent_index_array[2] = {&parent_index, nullptr};
-  PlottingFrameParameters parameters = {
-      serialization::BarycentricRotatingReferenceFrame::kExtensionFieldNumber,
-      unused,
-      &celestial_index_array[0],
-      &parent_index_array[0]};
+  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
+                                                           nullptr};
+  std::array<int const*, 2> const parent_index_array = {&parent_index,
+                                                        nullptr};
+  PlottingFrameParameters const parameters = {
+      .extension = serialization::BarycentricRotatingReferenceFrame::
+          kExtensionFieldNumber,
+      .centre_index = unused,
+      .primary_index = celestial_index_array.data(),
+      .secondary_index = parent_index_array.data()};
 
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), parameters);
 
-  Position<World> sun_position =
+  Position<World> const sun_position =
       World::origin + Displacement<World>(
                           {1 * si::Unit<Length>,
                            2 * si::Unit<Length>,
@@ -622,9 +593,9 @@ TEST_F(InterfaceTest, NavballOrientation) {
   EXPECT_CALL(*plugin_, NavballFrameField(sun_position))
       .WillOnce(Return(
           ByMove(std::make_unique<CoordinateFrameField<World, Navball>>())));
-  WXYZ q = principia__NavballOrientation(plugin_.get(),
-                                         {1, 2, 3},
-                                         {2, 3, 5});
+  WXYZ const q = principia__NavballOrientation(plugin_.get(),
+                                               {1, 2, 3},
+                                               {2, 3, 5});
   EXPECT_EQ(q.w, 1);
   EXPECT_EQ(q.x, 0);
   EXPECT_EQ(q.y, 0);
@@ -688,48 +659,6 @@ TEST_F(InterfaceTestWithoutPlugin, DeserializePlugin) {
                                "hexadecimal");
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
-}
-
-TEST_F(InterfaceDeathTestWithoutPlugin, SettersAndGetters) {
-  // We use EXPECT_EXITs in this test to avoid interfering with the execution of
-  // the other tests.
-  int const exit_code = 66;
-  char const exit_message[] = "Exiting";
-
-  EXPECT_EXIT({
-    principia__SetBufferedLogging(100);
-    ASSERT_EQ(100, principia__GetBufferedLogging());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-
-  EXPECT_EXIT({
-    principia__SetBufferDuration(101);
-    ASSERT_EQ(101, principia__GetBufferDuration());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-
-  EXPECT_EXIT({
-    principia__SetSuppressedLogging(102);
-    ASSERT_EQ(102, principia__GetSuppressedLogging());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-
-  EXPECT_EXIT({
-    principia__SetVerboseLogging(103);
-    ASSERT_EQ(103, principia__GetVerboseLogging());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
-
-  EXPECT_EXIT({
-    principia__SetStderrLogging(2);
-    ASSERT_EQ(2, principia__GetStderrLogging());
-    std::cerr << exit_message;
-    exit(exit_code);
-  }, ExitedWithCode(exit_code), exit_message);
 }
 
 }  // namespace interface

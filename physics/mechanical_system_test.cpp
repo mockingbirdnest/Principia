@@ -1,6 +1,5 @@
 #include "physics/mechanical_system.hpp"
 
-#include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/identity.hpp"
@@ -22,7 +21,6 @@ namespace principia {
 namespace physics {
 
 using ::testing::Eq;
-using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_identity;
@@ -56,7 +54,7 @@ TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
   constexpr Speed v = 3 * Metre / Second;
 
   using M1 = Frame<struct M1Tag>;
-  RigidMotion<M1, InertialFrame> m1_motion(
+  RigidMotion<M1, InertialFrame> const m1_motion(
       RigidTransformation<M1, InertialFrame>(
           M1::origin,
           InertialFrame::origin,
@@ -67,7 +65,7 @@ TEST_F(MechanicalSystemTest, RigidTwoPointMasses) {
       m1_motion, m1, SymmetricBilinearForm<MomentOfInertia, M1, Bivector>{});
 
   using M2 = Frame<struct M2Tag>;
-  RigidMotion<M2, InertialFrame> m2_motion(
+  RigidMotion<M2, InertialFrame> const m2_motion(
       RigidTransformation<M2, InertialFrame>(
           M2::origin,
           InertialFrame::origin +
@@ -126,7 +124,7 @@ TEST_F(MechanicalSystemTest, RigidTwoCubes) {
           {cube_mass * Pow<2>(cube_side) / 6,
            cube_mass * Pow<2>(cube_side) / 6,
            cube_mass * Pow<2>(cube_side) / 6}));
-  AngularVelocity<InertialFrame> ω(
+  AngularVelocity<InertialFrame> const ω(
       {0 * Radian / Second, 0 * Radian / Second, 1 * Radian / Second});
 
   system_.AddRigidBody(RigidMotion<Cube, InertialFrame>(
@@ -178,7 +176,7 @@ TEST_F(MechanicalSystemTest, NonRigidTwoCubes) {
           {cube_mass * Pow<2>(cube_side) / 6,
            cube_mass * Pow<2>(cube_side) / 6,
            cube_mass * Pow<2>(cube_side) / 6}));
-  AngularVelocity<InertialFrame> ω(
+  AngularVelocity<InertialFrame> const ω(
       {1 * Radian / Second, 0 * Radian / Second, 0 * Radian / Second});
 
   system_.AddRigidBody(RigidMotion<Cube, InertialFrame>(

@@ -2,7 +2,8 @@
 
 #include <cmath>
 
-#include "glog/logging.h"
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/elliptic_integrals.hpp"
 #include "numerics/polynomial_in_monomial_basis.hpp"

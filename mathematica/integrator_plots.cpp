@@ -1,24 +1,31 @@
 #include "mathematica/integrator_plots.hpp"
 
 #include <algorithm>
-#include <fstream>   // NOLINT(readability/streams)
+#include <cmath>
+#include <cstdint>
+#include <functional>
+#include <future>
 #include <iostream>  // NOLINT(readability/streams)
 #include <limits>
+#include <optional>
 #include <string>
+#include <thread>
+#include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "base/file.hpp"
-#include "base/not_null.hpp"
+#include "base/status_utilities.hpp"  // 🧙 For CHECK_OK.
 #include "base/thread_pool.hpp"
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/direct_sum.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
-#include "glog/logging.h"
 #include "integrators/embedded_explicit_runge_kutta_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/explicit_runge_kutta_integrator.hpp"
@@ -26,7 +33,6 @@
 #include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "numerics/double_precision.hpp"
@@ -135,9 +141,7 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using namespace principia::base::_file;
-using namespace principia::base::_not_null;
 using namespace principia::base::_thread_pool;
-using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_direct_sum;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -150,7 +154,6 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::integrators::_symplectic_partitioned_runge_kutta_integrator;  // NOLINT
 using namespace principia::integrators::_symplectic_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_double_precision;
@@ -205,8 +208,6 @@ struct PlottedIntegrator final {
 // 5. author names;
 // 6. method name.
 std::vector<PlottedIntegrator> Methods() {
-  PlottedIntegrator meow =
-      SRKN_INTEGRATOR(BlanesMoan2002SRKN6B);
   return {// Order 2
           SPRK_INTEGRATOR_FSAL(NewtonDelambreStørmerVerletLeapfrog),
           SPRK_INTEGRATOR(McLachlanAtela1992Order2Optimal),
@@ -399,7 +400,8 @@ class WorkErrorGraphGenerator {
           std::vector<Vector<Acceleration, World>> acceleration{
               Vector<Acceleration, World>{}};
           auto const& [q, v] = y;
-          auto const status = compute_accelerations_(
+          // Not const to allow move.
+          auto status = compute_accelerations_(
               s, {q}, acceleration, &number_of_evaluations);
           yʹ = {v, acceleration[0]};
           return status;
@@ -472,8 +474,8 @@ class WorkErrorGraphGenerator {
             problem,
             append_state,
             /*tolerance_to_error_ratio=*/
-            [tolerance](Time const& current_step_size,
-                        SecondOrderODE::State const& state,
+            [tolerance](Time const& /*current_step_size*/,
+                        SecondOrderODE::State const& /*state*/,
                         SecondOrderODE::State::Error const& error) {
               return tolerance / error.position_error[0].Norm();
             },
@@ -522,8 +524,8 @@ class WorkErrorGraphGenerator {
             first_order_problem,
             append_first_order_state,
             /*tolerance_to_error_ratio=*/
-            [tolerance](Time const& current_step_size,
-                        FirstOrderODE::State const& state,
+            [tolerance](Time const& /*current_step_size*/,
+                        FirstOrderODE::State const& /*state*/,
                         FirstOrderODE::State::Error const& error) {
               auto const& [position_error, _] = error;
               return tolerance / position_error.Norm();
@@ -652,19 +654,20 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
   auto const compute_error = [q_amplitude, v_amplitude, ω, m, k, t0](
       SecondOrderODE::State const& state) {
     return WorkErrorGraphGenerator<Energy>::Errors{
-        AbsoluteError(
+        .q_error = AbsoluteError(
             q_amplitude * Vector<double, World>(
                               {Cos(ω * (state.time.value - t0)), 0, 0}) +
                 World::origin,
             state.positions[0].value),
-        AbsoluteError(
+        .v_error = AbsoluteError(
             -v_amplitude *
                 Vector<double, World>({Sin(ω * (state.time.value - t0)), 0, 0}),
             state.velocities[0].value),
-        AbsoluteError(0.5 * Joule,
-                      (m * state.velocities[0].value.Norm²() +
-                       k * (state.positions[0].value - World::origin).Norm²()) /
-                          2)};
+        .e_error = AbsoluteError(
+            0.5 * Joule,
+            (m * state.velocities[0].value.Norm²() +
+             k * (state.positions[0].value - World::origin).Norm²()) /
+                2)};
   };
   WorkErrorGraphGenerator<Energy> generator(
       ComputeHarmonicOscillatorAcceleration3D<World>,
@@ -685,8 +688,8 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   SecondOrderODE::State initial_state;
   Instant const t0;
   GravitationalParameter const μ = si::Unit<GravitationalParameter>;
-  MassiveBody b1(μ);
-  MasslessBody b2;
+  MassiveBody const b1(μ);
+  MasslessBody const b2;
 
   KeplerianElements<World> elements;
   elements.semimajor_axis = 1 * Metre;
@@ -715,13 +718,14 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
 
   auto const compute_error = [&orbit, μ, initial_specific_energy](
       SecondOrderODE::State const& state) {
-    Displacement<World> r = state.positions[0].value - World::origin;
-    Velocity<World> v = state.velocities[0].value;
+    Displacement<World> const r = state.positions[0].value - World::origin;
+    Velocity<World> const v = state.velocities[0].value;
     auto const expected_dof = orbit.StateVectors(state.time.value);
-    return WorkErrorGraphGenerator<SpecificEnergy>::Errors{
-        AbsoluteError(expected_dof.displacement(), r),
-        AbsoluteError(expected_dof.velocity(), v),
-        AbsoluteError(initial_specific_energy, v.Norm²() / 2 - μ / r.Norm())};
+        return WorkErrorGraphGenerator<SpecificEnergy>::Errors{
+            .q_error = AbsoluteError(expected_dof.displacement(), r),
+            .v_error = AbsoluteError(expected_dof.velocity(), v),
+            .e_error = AbsoluteError(initial_specific_energy,
+                                     v.Norm²() / 2 - μ / r.Norm())};
   };
 
   WorkErrorGraphGenerator<SpecificEnergy> generator(

@@ -1,11 +1,13 @@
 #include "base/hexadecimal.hpp"
 
 #include <cstdint>
+#include <cstring>
 #include <memory>
 #include <vector>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/array.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -46,7 +48,7 @@ TEST_F(HexadecimalTest, EncodeAndDecode) {
   encoder_.Encode(bytes_, digits_.get());
   EXPECT_EQ(uppercase_digits_, digits_);
   EXPECT_EQ(uppercase_digits_.size, encoder_.EncodedLength(bytes_));
-  UniqueArray<std::uint8_t> bytes(byte_count);
+  UniqueArray<std::uint8_t> const bytes(byte_count);
   encoder_.Decode(digits_.get(), bytes.get());
   EXPECT_EQ(bytes_, bytes.get());
   EXPECT_EQ(bytes_.size, encoder_.DecodedLength(digits_.get()));
@@ -61,7 +63,7 @@ TEST_F(HexadecimalTest, UniqueEncodeAndDecode) {
 
 TEST_F(HexadecimalTest, InPlace) {
   auto const buffer = std::make_unique<std::uint8_t[]>(digit_count);
-  auto const buffer_characters = reinterpret_cast<char*>(buffer.get());
+  auto* const buffer_characters = reinterpret_cast<char*>(buffer.get());
   std::memcpy(&buffer[1], bytes_.data, byte_count);
   encoder_.Encode({&buffer[1], byte_count},
                   {&buffer_characters[0], digit_count});
@@ -89,7 +91,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
                                         &digits.data[digits_size]),
               Each('X'));
   std::int64_t const bytes_size = byte_count + 42;
-  UniqueArray<std::uint8_t> bytes(bytes_size);
+  UniqueArray<std::uint8_t> const bytes(bytes_size);
   std::memset(bytes.data.get(), 'Y', bytes_size);
   encoder_.Decode(uppercase_digits_, bytes.get());
   EXPECT_EQ(bytes_, Array<std::uint8_t>(bytes.data.get(), byte_count));
@@ -101,7 +103,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
 TEST_F(HexadecimalTest, Adjacent) {
   auto const buffer =
       std::make_unique<std::uint8_t[]>(digit_count + byte_count);
-  auto const buffer_characters = reinterpret_cast<char*>(buffer.get());
+  auto* const buffer_characters = reinterpret_cast<char*>(buffer.get());
   std::memcpy(&buffer[0], bytes_.data, byte_count);
   encoder_.Encode({&buffer[0], byte_count},
                   {&buffer_characters[byte_count], digit_count});
@@ -119,7 +121,7 @@ TEST_F(HexadecimalTest, Adjacent) {
 TEST_F(HexadecimalDeathTest, Overlap) {
   auto const buffer =
       std::make_unique<std::uint8_t[]>(digit_count + byte_count - 1);
-  auto const buffer_characters = reinterpret_cast<char*>(buffer.get());
+  auto* const buffer_characters = reinterpret_cast<char*>(buffer.get());
   EXPECT_DEATH({
     encoder_.Encode({&buffer[digit_count - 1], byte_count},
                     {&buffer_characters[0], digit_count});

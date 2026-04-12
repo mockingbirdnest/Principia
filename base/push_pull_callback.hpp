@@ -7,7 +7,7 @@
 #include <tuple>
 
 #include "absl/synchronization/mutex.h"
-#include "base/macros.hpp"  // 🧙 For GUARDED_BY.
+#include "base/macros.hpp"  // 🧙 For ABSL_GUARDED_BY.
 
 namespace principia {
 namespace base {
@@ -52,9 +52,9 @@ class PushPullCallback {
   std::unique_ptr<absl::MutexLock> WaitUntilHasResultAndLock();
 
   absl::Mutex lock_;
-  std::optional<std::tuple<Arguments...>> arguments_ GUARDED_BY(lock_);
-  std::optional<Result> result_ GUARDED_BY(lock_);
-  bool shutdown_ GUARDED_BY(lock_) = false;
+  std::optional<std::tuple<Arguments...>> arguments_ ABSL_GUARDED_BY(lock_);
+  std::optional<Result> result_ ABSL_GUARDED_BY(lock_);
+  bool shutdown_ ABSL_GUARDED_BY(lock_) = false;
 };
 
 // A helper class to execute a task that takes a callback from unmanaged code to
@@ -81,7 +81,7 @@ class PushPullExecutor {
  private:
   PushPullCallback<Result, Arguments...> callback_;
   mutable absl::Mutex lock_;
-  std::optional<T> result_ GUARDED_BY(lock_);
+  std::optional<T> result_ ABSL_GUARDED_BY(lock_);
 
   // This must come last as it references the other member variables, see #4136.
   std::thread thread_;

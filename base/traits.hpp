@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <utility>
 
 namespace principia {
 namespace base {
@@ -32,8 +33,8 @@ struct can_be_instantiated {
 };
 
 
-// `matches_instantiation<U, can_instantiate, T, Args...>` has a true `value`
-// member iff `U` is the same type as `T<Args...>`.  The parameter
+// `matches_instantiation<U, can_be_instantiated, T, Args...>` has a true
+// `value` member iff `U` is the same type as `T<Args...>`.  The parameter
 // `can_be_instantiated` must indicate whether `T<Args...>` is a valid
 // instantiation.
 template<typename U,
@@ -103,7 +104,7 @@ template<typename T, typename... Ts>
 struct tail<T, Ts...> {
   using type = typename tail<Ts...>::type;
   static constexpr type value(T, Ts... ts) {
-    return tail<Ts...>::value(ts...);
+    return tail<Ts...>::value(std::move(ts)...);
   }
 };
 

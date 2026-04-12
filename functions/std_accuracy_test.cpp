@@ -4,9 +4,10 @@
 #include <limits>
 #include <random>
 
+#include "absl/log/check.h"
+#include "absl/log/log.h"
 #include "base/multiprecision.hpp"
 #include "functions/multiprecision.hpp"
-#include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/numbers.hpp"  // 🧙 For π.

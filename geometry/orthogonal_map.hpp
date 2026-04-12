@@ -66,10 +66,8 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
  public:
   Sign Determinant() const;
 
-  template<typename F = FromFrame,
-           typename T = ToFrame>
-    requires(F::handedness == T::handedness)
-  Rotation<FromFrame, ToFrame> AsRotation() const;
+  Rotation<FromFrame, ToFrame> AsRotation() const
+    requires(FromFrame::handedness == ToFrame::handedness);
 
   OrthogonalMap<ToFrame, FromFrame> Inverse() const;
 
@@ -98,10 +96,8 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
   template<template<typename, typename, typename> typename ConformalMap>
   ConformalMap<double, FromFrame, ToFrame> Forget() const;
 
-  template<typename F = FromFrame,
-           typename T = ToFrame>
-    requires(F::handedness == T::handedness)
-  static OrthogonalMap Identity();
+  static OrthogonalMap Identity()
+    requires(FromFrame::handedness == ToFrame::handedness);
 
   void WriteToMessage(not_null<serialization::LinearMap*> message) const;
   static OrthogonalMap ReadFromMessage(serialization::LinearMap const& message)
