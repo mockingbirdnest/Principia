@@ -7,8 +7,9 @@ $dependencies = @(".\Google\abseil-cpp\msvc\abseil-cpp.slnf",
                   ".\Google\gipfeli\msvc\gipfeli.slnf",
                   ".\Google\googletest\googlemock\msvc\gmock.slnf",
                   ".\Google\googletest\googletest\msvc\gtest.slnf",
-                  ".\Google\protobuf\msvc\protobuf.slnf",
                   ".\Google\re2\msvc\re2.slnf",
+                  # Protobuf depends on re2 for its tests, via gtest.
+                  ".\Google\protobuf\msvc\protobuf.slnf",
                   ".\Inria\core-math\msvc\core-math.sln",
                   ".\LLNL\zfp\msvc\zfp.sln")
 
