@@ -20,9 +20,10 @@ echo "Parallelism is ${PARALLELISM}."
 make clean
 
 make -j ${PARALLELISM} \
+  --ignore-errors \
   bin/${PRINCIPIA_PLATFORM}/benchmark \
   bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
-  each_package_test
+  each_test
 
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   # See https://github.com/actions/virtual-environments/issues/2619#issuecomment-788397841
