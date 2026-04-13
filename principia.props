@@ -138,7 +138,6 @@
         -Xclang --system-header-prefix=benchmark/
         -Xclang --system-header-prefix=boost/
         -Xclang --system-header-prefix=google/
-        -Xclang --system-header-prefix=glog/
         -Xclang --system-header-prefix=gtest/
         -Xclang --system-header-prefix=gmock/
         -Xclang --system-header-prefix=zfp/
@@ -206,7 +205,6 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(SolutionDir)..\Google\abseil-cpp\msvc\portability_macros.props" />
     <Import Project="$(SolutionDir)..\Google\gipfeli\msvc\portability_macros.props" />
-    <Import Project="$(SolutionDir)..\Google\glog\msvc\portability_macros.props" />
     <Import Project="$(SolutionDir)..\Google\protobuf\msvc\portability_macros.props" />
     <Import Project="$(SolutionDir)boost_config.props" />
     <Import Project="$(SolutionDir)boost_multiprecision.props" />
