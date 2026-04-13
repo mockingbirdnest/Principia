@@ -15,7 +15,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Property Sheets", "
 		generate_version_translation_unit.props = generate_version_translation_unit.props
 		google_benchmark.props = google_benchmark.props
 		google_gipfeli.props = google_gipfeli.props
-		google_glog.props = google_glog.props
 		google_googlemock_main.props = google_googlemock_main.props
 		google_googletest.props = google_googletest.props
 		google_protobuf.props = google_protobuf.props
