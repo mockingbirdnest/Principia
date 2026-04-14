@@ -123,18 +123,14 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
-                  HasSubstr("pre-Cohen ContinuousTrajectory"))).
-      Times(AtLeast(1));
+                  HasSubstr("pre-Cohen ContinuousTrajectory")))
+      .Times(AtLeast(1));
   // The save is even older.
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Cauchy")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Cauchy")));
   // But not *that* old.
-  EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Cartan"))).Times(0);
+  EXPECT_CALL(log, Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Cartan")))
+      .Times(0);
   log.StartCapturingLogs();
 
   CheckSaveCompatibility(
@@ -148,14 +144,11 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 TEST_F(PluginCompatibilityTest, Reach) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Galileo"))).
-      Times(AtLeast(1));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Galileo")))
+      .Times(AtLeast(1));
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Frobenius"))).Times(0);
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Frobenius")))
+      .Times(0);
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
@@ -303,13 +296,11 @@ TEST_F(PluginCompatibilityTest, Reach) {
 TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(AtLeast(1));
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Gröbner"))).Times(0);
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Gröbner")))
+      .Times(0);
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
@@ -374,9 +365,13 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
 TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(AtLeast(1));
+  // We use this save to check compatibility with pre-Hamilton
+  // DiscreteTrajectory, but it is much older.
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Fatou")))
+      .Times(AtLeast(1));
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
@@ -444,9 +439,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
 TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(AtLeast(1));
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
@@ -473,12 +467,11 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
-                  HasSubstr("pre-Лефшец DiscreteTrajectorySegment"))).
-      Times(AtLeast(1));
+                  HasSubstr("pre-Лефшец DiscreteTrajectorySegment")))
+      .Times(AtLeast(1));
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton"))).Times(0);
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(0);
   log.StartCapturingLogs();
 
   CheckSaveCompatibility(
