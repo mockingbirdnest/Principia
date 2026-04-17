@@ -844,7 +844,7 @@ TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreHamiltonCompatibility) {
   log.StartCapturingLogs();
 
   auto const serialized_message = ReadFromBinaryFile(
-      R"(C:\Users\phl.bastiani\Downloads\trajectory_3136.proto.bin)");  // NOLINT
+      R"(P:\Public Mockingbird\Principia\Saves\3136\trajectory_3136.proto.bin)");  // NOLINT
   auto const message1 =
       ParseFromBytes<serialization::DiscreteTrajectory>(serialized_message);
   DiscreteTrajectory<World>::SegmentIterator psychohistory;
@@ -856,11 +856,6 @@ TEST_F(DiscreteTrajectoryTest, DISABLED_SerializationPreHamiltonCompatibility) {
   // at the beginning.
   EXPECT_EQ(435'929, history.size());
   EXPECT_EQ(3, psychohistory->size());
-
-  for (auto const& [t, dof] : *psychohistory) {
-    LOG(ERROR)<<"t: "<<t;
-    LOG(ERROR)<<"dof: "<<dof;
-  }
 
   // Evaluate a point in each of the two segments.
   EXPECT_THAT(
