@@ -166,6 +166,7 @@ DiscreteTrajectorySegment<Frame>::EvaluateDegreesOfFreedom(
     return it->degrees_of_freedom;
   }
   auto const& interpolation = get_hermite3(it);
+  LOG(ERROR)<<"Hermite3: "<<interpolation;
   return {interpolation(t), interpolation.EvaluateDerivative(t)};
 }
 

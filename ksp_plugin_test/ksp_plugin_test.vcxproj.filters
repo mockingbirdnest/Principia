@@ -17,35 +17,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="plugin_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\plugin.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="interface_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vessel_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="part_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="celestial_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="plugin_integration_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\flight_plan.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="flight_plan_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp">
       <Filter>Source Files</Filter>
@@ -62,9 +41,6 @@
     <ClCompile Include="..\ksp_plugin\pile_up.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pile_up_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\part.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -80,20 +56,11 @@
     <ClCompile Include="..\ksp_plugin\integrators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="interface_flight_plan_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="interface_renderer_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\interface_renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\renderer.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="renderer_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="interface_renderer_test.cpp">
       <Filter>Test Files</Filter>
@@ -109,15 +76,9 @@
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\renderer.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="planetarium_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\planetarium.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="interface_planetarium_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\interface_planetarium.cpp">
       <Filter>Source Files</Filter>
@@ -128,23 +89,11 @@
     <ClCompile Include="..\ksp_plugin\interface_monitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="benchmark.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="manœuvre_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="fake_plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="equator_relevance_threshold_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\equator_relevance_threshold.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="orbit_analyser_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\orbit_analyser.cpp">
       <Filter>Source Files</Filter>
@@ -160,9 +109,6 @@
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\geometric_potential_plotter.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="flight_plan_optimizer_test.cpp">
-      <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\flight_plan_optimizer.cpp">
       <Filter>Source Files</Filter>

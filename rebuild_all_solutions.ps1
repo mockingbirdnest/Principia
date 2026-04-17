@@ -62,4 +62,4 @@ function build_solutions($solutions, $platforms) {
 }
 
 build_solutions -solutions $dependencies -platforms @("x64")
-build_solutions -solutions @(".\Principia\Principia.sln") -platforms @("x64", "x64_AVX_FMA")
+#build_solutions -solutions @(".\Principia\Principia.sln") -platforms @("x64", "x64_AVX_FMA")

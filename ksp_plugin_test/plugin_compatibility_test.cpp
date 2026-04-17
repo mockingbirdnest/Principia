@@ -375,7 +375,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
+      R"(C:\Users\phl.bastiani\Downloads\3136.proto.b64)",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
   plugin = WriteAndReadBack(std::move(plugin));
@@ -389,6 +389,11 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   EXPECT_THAT(trajectory, SizeIs(435'929));
   EXPECT_THAT(*history, SizeIs(435'927));
   EXPECT_THAT(*psychohistory, SizeIs(3));
+  for (auto const& [t, dof] : *psychohistory) {
+    LOG(ERROR)<<"t: "<<t;
+    LOG(ERROR)<<"dof: "<<dof;
+  }
+
 
   // Evaluate a point in each of the two segments.
   EXPECT_THAT(trajectory.EvaluateDegreesOfFreedom("1957-10-04T19:28:34"_TT),
