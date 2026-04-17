@@ -109,6 +109,9 @@ class Hermite3 final {
   template<affine V, affine A>
   friend Hermite3<Difference<V>, A> operator-(Hermite3<V, A> const& left,
                                               Hermite3<V, A> const& right);
+  template<affine V, affine A>
+  friend std::ostream& operator<<(std::ostream& out,
+                                  Hermite3<V, A> const& hermite3);
 };
 
 // Additive group.
@@ -129,6 +132,10 @@ template<affine Value, affine Argument>
 Hermite3<Difference<Value>, Argument> operator-(
     Hermite3<Value, Argument> const& left,
     Hermite3<Value, Argument> const& right);
+
+template<affine Value, affine Argument>
+std::ostream& operator<<(std::ostream& out,
+                         Hermite3<Value, Argument> const& hermite3);
 
 }  // namespace internal
 

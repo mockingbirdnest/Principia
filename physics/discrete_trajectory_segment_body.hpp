@@ -586,7 +586,12 @@ void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
   CHECK(upper != timeline_.cbegin());
   auto const lower = std::prev(upper);
   auto const& [lower_time, lower_degrees_of_freedom] = *lower;
-  auto const& [upper_time, upper_degrees_of_freedom] = *upper;
+
+  // This needs to be copied because the element designated by `upper` is going
+  // to be extracted from the set, which invalidates `upper`.
+  auto const upper_time = upper->time;
+  auto const upper_degrees_of_freedom = upper->degrees_of_freedom;
+
   // Beware! extracting from a btree_set invalidates all iterators, not only the
   // one denoting the extracted node.  We must use the special entry point
   // `extract_and_get_next` to get the iterator that we'll use as a hint for
