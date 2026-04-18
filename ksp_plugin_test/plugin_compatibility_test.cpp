@@ -48,7 +48,9 @@ using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Gt;
 using ::testing::HasSubstr;
+using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Pair;
 using ::testing::ResultOf;
@@ -555,8 +557,11 @@ TEST_F(PluginCompatibilityTest, 4490) {
   std::int64_t bytes_written;
   std::int64_t bytes_read;
   WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
-  EXPECT_EQ(bytes_written, 26'967'685);
-  EXPECT_EQ(bytes_read, 26'967'685);
+  // Various asynchronous activities may happen in the plugin between the time
+  // it is read and the time it is written, so the size of the new save is not
+  // deterministic.
+  EXPECT_THAT(bytes_written, AllOf(Gt(26'967'000), Lt(26'967'999)));
+  EXPECT_EQ(bytes_read, bytes_written);
 }
 #endif
 
