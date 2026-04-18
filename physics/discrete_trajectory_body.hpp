@@ -537,6 +537,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
   absl::flat_hash_set<
       DiscreteTrajectorySegment<Frame> const*> intersecting_segments;
   bool intersect_range = false;
+  std::int32_t number_of_leading_empty_segments = 0;
 
   // The position of a segment in the repeated field `segment`.
   int segment_position = 0;
@@ -566,8 +567,16 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
 
     // Note that we execute this call for the segments that precede the
     // intersection in order to write the correct structure of (empty) segments.
-    sit->WriteToMessage(
-        message->add_segment(), begin_time_it, end_time_it, exact);
+    // It's important to somehow record the leading empty segments, as we will
+    // need to reconstruct the proper segment structure when deserializing.  We
+    // don't want to write the segments themselves, though, as there may be many
+    // of them in case of many small burns.
+    if (intersect_range) {
+      sit->WriteToMessage(
+          message->add_segment(), begin_time_it, end_time_it, exact);
+    } else {
+      ++number_of_leading_empty_segments;
+    }
 
     const auto [position_begin, position_end] =
         segment_to_position.equal_range(&*sit);
@@ -579,6 +588,8 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
       message->set_tracked_position(position_it->second, segment_position);
     }
   }
+  message->set_number_of_leading_empty_segments(
+      number_of_leading_empty_segments);
 
   // Write the left endpoints by scanning them in parallel with the segments.
   std::optional<Instant> last_left_endpoint;
@@ -622,9 +633,12 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
   DiscreteTrajectory trajectory(uninitialized);
 
   bool const is_pre_hamilton = message.segment_size() == 0;
+  bool const is_pre_leibniz = !message.has_number_of_leading_empty_segments();
+  LOG_IF(WARNING, is_pre_leibniz)
+      << "Reading pre-" << (is_pre_hamilton ? "Hamilton" : "Leibniz")
+      << " DiscreteTrajectory";
+
   if (is_pre_hamilton) {
-    LOG_IF(WARNING, is_pre_hamilton)
-        << "Reading pre-Hamilton DiscreteTrajectory";
     ReadFromPreHamiltonMessage(
         message, tracked, /*fork_point=*/nullptr, trajectory);
     CHECK_OK(trajectory.ConsistencyStatus());
@@ -632,9 +646,21 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
   }
 
   // First restore the segments themselves.  `segment_iterators` will be used to
-  // restore the tracked segments.
+  // restore the tracked segments.  We must start with the empty segments if
+  // this is a pre-Leibniz message, but we don't need to set their downsampling
+  // parameters.
   std::vector<SegmentIterator> segment_iterators;
-  segment_iterators.reserve(message.segment_size());
+  segment_iterators.reserve(message.number_of_leading_empty_segments() +
+                            message.segment_size());
+  for (std::int64_t i = 0;
+       i < message.number_of_leading_empty_segments();
+       ++i) {
+    trajectory.segments_->emplace_back();
+    auto const sit = --trajectory.segments_->end();
+    auto const self = SegmentIterator(trajectory.segments_.get(), sit);
+    *sit = DiscreteTrajectorySegment<Frame>::(serialized_segment, self);
+    segment_iterators.push_back(self);
+  }
   for (auto const& serialized_segment : message.segment()) {
     trajectory.segments_->emplace_back();
     auto const sit = --trajectory.segments_->end();

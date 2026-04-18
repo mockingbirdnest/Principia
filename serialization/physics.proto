@@ -123,6 +123,8 @@ message DiscreteTrajectory {
     required Point left_endpoint = 1;
     required int32 segment = 2;
   }
+  // Added in Leibniz.
+  optional int32 number_of_leading_empty_segments = 10;
   repeated DiscreteTrajectorySegment segment = 7;
   repeated SegmentByLeftEndpoint segment_by_left_endpoint = 8;
   repeated int32 tracked_position = 9;
