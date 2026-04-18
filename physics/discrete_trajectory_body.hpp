@@ -658,7 +658,7 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
     trajectory.segments_->emplace_back();
     auto const sit = --trajectory.segments_->end();
     auto const self = SegmentIterator(trajectory.segments_.get(), sit);
-    *sit = DiscreteTrajectorySegment<Frame>::(serialized_segment, self);
+    *sit = DiscreteTrajectorySegment<Frame>(self);
     segment_iterators.push_back(self);
   }
   for (auto const& serialized_segment : message.segment()) {
