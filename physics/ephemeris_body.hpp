@@ -871,12 +871,14 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
         Checkpointer<serialization::Ephemeris>::ReadFromMessage(
             ephemeris->MakeCheckpointerWriter(),
             ephemeris->MakeCheckpointerReader(),
+            /*rewriter=*/nullptr,
             serialized_ephemeris.checkpoint());
   } else {
     ephemeris->checkpointer_ =
         Checkpointer<serialization::Ephemeris>::ReadFromMessage(
             ephemeris->MakeCheckpointerWriter(),
             ephemeris->MakeCheckpointerReader(),
+            /*rewriter=*/nullptr,
             message.checkpoint());
   }
 

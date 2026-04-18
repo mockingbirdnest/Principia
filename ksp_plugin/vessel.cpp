@@ -14,8 +14,10 @@
 #include <variant>
 #include <vector>
 
+#include "absl/base/log_severity.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/check.h"
+#include "absl/log/globals.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -850,10 +852,44 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                      &vessel->prediction_});
     vessel->is_collapsible_ = message.is_collapsible();
 
+    auto rewriter = [](serialization::Vessel::Checkpoint const& checkpoint) {
+      if (checkpoint.non_collapsible_segment()
+              .has_number_of_leading_empty_segments()) {
+        return checkpoint;
+      } else {
+        DiscreteTrajectorySegmentIterator<Barycentric> backstory;
+        DiscreteTrajectory<Barycentric> non_collapsible_segment;
+        {
+          // The read would emit "pre-Leibniz" warnings for each checkpoint, and
+          // there may be many.  Just silence these warnings locally.
+          absl::log_internal::ScopedMinLogLevel scoped_min_log_level(
+              absl::LogSeverityAtLeast::kError);
+          non_collapsible_segment =
+              DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                  checkpoint.non_collapsible_segment(),
+                  /*tracked=*/{&backstory});
+        }
+        serialization::Vessel::Checkpoint rewritten = checkpoint;
+        rewritten.clear_non_collapsible_segment();
+        non_collapsible_segment.WriteToMessage(
+            rewritten.mutable_non_collapsible_segment(),
+            backstory->begin(),
+            backstory->end(),
+            /*tracked=*/{backstory},
+            /*exact=*/{});
+        LOG_EVERY_N_SEC(WARNING, 1)
+            << "Rewriting pre-Leibniz Vessel::Checkpoint, size before "
+            << checkpoint.ByteSizeLong() << "B, size after "
+            << rewritten.ByteSizeLong() << "B";
+        return rewritten;
+      }
+    };
+
     vessel->checkpointer_ =
         Checkpointer<serialization::Vessel>::ReadFromMessage(
             vessel->MakeCheckpointerWriter(),
             vessel->MakeCheckpointerReader(),
+            rewriter,
             message.checkpoint());
     if (message.has_downsampling_parameters()) {
       vessel->downsampling_parameters_ =

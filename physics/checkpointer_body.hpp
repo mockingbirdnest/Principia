@@ -211,13 +211,18 @@ not_null<std::unique_ptr<Checkpointer<Message>>>
 Checkpointer<Message>::ReadFromMessage(
     Writer writer,
     Reader reader,
+    Rewriter rewriter,
     google::protobuf::RepeatedPtrField<typename Message::Checkpoint> const&
         message) {
   auto checkpointer =
       std::make_unique<Checkpointer>(std::move(writer), std::move(reader));
   for (auto const& checkpoint : message) {
     Instant const time = Instant::ReadFromMessage(checkpoint.time());
-    checkpointer->checkpoints_.emplace(time, checkpoint);
+    if (rewriter == nullptr) {
+      checkpointer->checkpoints_.emplace(time, checkpoint);
+    } else {
+      checkpointer->checkpoints_.emplace(time, rewriter(checkpoint));
+    }
   }
   return std::move(checkpointer);
 }

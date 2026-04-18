@@ -555,8 +555,8 @@ TEST_F(PluginCompatibilityTest, 4490) {
   std::int64_t bytes_written;
   std::int64_t bytes_read;
   WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
-  EXPECT_EQ(bytes_written, 1'000'000);
-  EXPECT_EQ(bytes_read, 1'000'000);
+  EXPECT_EQ(bytes_written, 26'967'685);
+  EXPECT_EQ(bytes_read, 26'967'685);
 }
 #endif
 
