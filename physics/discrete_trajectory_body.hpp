@@ -632,8 +632,8 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
   requires serializable<Frame> {
   DiscreteTrajectory trajectory(uninitialized);
 
-  bool const is_pre_hamilton = message.segment_size() == 0;
   bool const is_pre_leibniz = !message.has_number_of_leading_empty_segments();
+  bool const is_pre_hamilton = is_pre_leibniz && message.segment_size() == 0;
   LOG_IF(WARNING, is_pre_leibniz)
       << "Reading pre-" << (is_pre_hamilton ? "Hamilton" : "Leibniz")
       << " DiscreteTrajectory";
