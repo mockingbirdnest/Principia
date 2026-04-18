@@ -797,8 +797,8 @@ void Ephemeris<Frame>::WriteToMessage(
       message->mutable_fixed_step_parameters());
   accuracy_parameters_.WriteToMessage(
       message->mutable_accuracy_parameters());
-  LOG(INFO) << NAMED(message->SpaceUsed());
-  LOG(INFO) << NAMED(message->ByteSize());
+  LOG(INFO) << NAMED(message->SpaceUsedLong());
+  LOG(INFO) << NAMED(message->ByteSizeLong());
 }
 
 template<typename Frame>

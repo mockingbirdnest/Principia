@@ -747,8 +747,8 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   message->set_selected_flight_plan_index(selected_flight_plan_index_);
   message->set_is_collapsible(is_collapsible_);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
-  LOG(INFO) << name_ << " " << NAMED(message->SpaceUsed()) << " "
-            << NAMED(message->ByteSize());
+  LOG(INFO) << name_ << " " << NAMED(message->SpaceUsedLong()) << " "
+            << NAMED(message->ByteSizeLong());
 }
 
 not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
