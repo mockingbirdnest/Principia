@@ -146,7 +146,8 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   // are past-the-end iff they were past-the-end at serialization time.
   static DiscreteTrajectory ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<SegmentIterator*> const& tracked)
+      std::vector<SegmentIterator*> const& tracked,
+      bool quiet = false)
     requires serializable<Frame>;
 
  private:
