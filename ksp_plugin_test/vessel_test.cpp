@@ -639,21 +639,25 @@ TEST_F(VesselTest, CheckpointsWithoutDownsampling) {
   {
     auto const& checkpoint = message.checkpoint(1);
     EXPECT_EQ(25, checkpoint.time().scalar().magnitude());
-    EXPECT_EQ(5, checkpoint.non_collapsible_segment().segment_size());
+    EXPECT_EQ(
+        1, checkpoint.non_collapsible_segment().leading_empty_segments_size());
+    auto const& segments0 =
+        checkpoint.non_collapsible_segment().leading_empty_segments(0);
+    EXPECT_EQ(1, segments0.count());
+    EXPECT_FALSE(segments0.has_downsampling_parameters());
+    EXPECT_EQ(4, checkpoint.non_collapsible_segment().segment_size());
     auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
-    EXPECT_EQ(0, segment0.zfp().timeline_size());
+    EXPECT_EQ(1, segment0.zfp().timeline_size());
+    EXPECT_EQ(10, segment0.exact(0).instant().scalar().magnitude());
     auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
-    EXPECT_EQ(1, segment1.zfp().timeline_size());
+    EXPECT_EQ(16, segment1.zfp().timeline_size());
     EXPECT_EQ(10, segment1.exact(0).instant().scalar().magnitude());
     auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
-    EXPECT_EQ(16, segment2.zfp().timeline_size());
-    EXPECT_EQ(10, segment2.exact(0).instant().scalar().magnitude());
+    EXPECT_EQ(1, segment2.zfp().timeline_size());
+    EXPECT_EQ(25, segment2.exact(0).instant().scalar().magnitude());
     auto const& segment3 = checkpoint.non_collapsible_segment().segment(3);
     EXPECT_EQ(1, segment3.zfp().timeline_size());
     EXPECT_EQ(25, segment3.exact(0).instant().scalar().magnitude());
-    auto const& segment4 = checkpoint.non_collapsible_segment().segment(4);
-    EXPECT_EQ(1, segment4.zfp().timeline_size());
-    EXPECT_EQ(25, segment4.exact(0).instant().scalar().magnitude());
     EXPECT_EQ(
         2,
         checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
