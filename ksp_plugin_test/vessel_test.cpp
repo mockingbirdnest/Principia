@@ -639,21 +639,25 @@ TEST_F(VesselTest, CheckpointsWithoutDownsampling) {
   {
     auto const& checkpoint = message.checkpoint(1);
     EXPECT_EQ(25, checkpoint.time().scalar().magnitude());
-    EXPECT_EQ(5, checkpoint.non_collapsible_segment().segment_size());
+    EXPECT_EQ(
+        1, checkpoint.non_collapsible_segment().leading_empty_segments_size());
+    auto const& segments0 =
+        checkpoint.non_collapsible_segment().leading_empty_segments(0);
+    EXPECT_EQ(1, segments0.count());
+    EXPECT_FALSE(segments0.has_downsampling_parameters());
+    EXPECT_EQ(4, checkpoint.non_collapsible_segment().segment_size());
     auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
-    EXPECT_EQ(0, segment0.zfp().timeline_size());
+    EXPECT_EQ(1, segment0.zfp().timeline_size());
+    EXPECT_EQ(10, segment0.exact(0).instant().scalar().magnitude());
     auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
-    EXPECT_EQ(1, segment1.zfp().timeline_size());
+    EXPECT_EQ(16, segment1.zfp().timeline_size());
     EXPECT_EQ(10, segment1.exact(0).instant().scalar().magnitude());
     auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
-    EXPECT_EQ(16, segment2.zfp().timeline_size());
-    EXPECT_EQ(10, segment2.exact(0).instant().scalar().magnitude());
+    EXPECT_EQ(1, segment2.zfp().timeline_size());
+    EXPECT_EQ(25, segment2.exact(0).instant().scalar().magnitude());
     auto const& segment3 = checkpoint.non_collapsible_segment().segment(3);
     EXPECT_EQ(1, segment3.zfp().timeline_size());
     EXPECT_EQ(25, segment3.exact(0).instant().scalar().magnitude());
-    auto const& segment4 = checkpoint.non_collapsible_segment().segment(4);
-    EXPECT_EQ(1, segment4.zfp().timeline_size());
-    EXPECT_EQ(25, segment4.exact(0).instant().scalar().magnitude());
     EXPECT_EQ(
         2,
         checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
@@ -805,21 +809,25 @@ TEST_F(VesselTest, CheckpointsWithDownsampling) {
   {
     auto const& checkpoint = message.checkpoint(1);
     EXPECT_EQ(25, checkpoint.time().scalar().magnitude());
-    EXPECT_EQ(5, checkpoint.non_collapsible_segment().segment_size());
+    EXPECT_EQ(
+        1, checkpoint.non_collapsible_segment().leading_empty_segments_size());
+    auto const& segments0 =
+        checkpoint.non_collapsible_segment().leading_empty_segments(0);
+    EXPECT_EQ(1, segments0.count());
+    EXPECT_TRUE(segments0.has_downsampling_parameters());
+    EXPECT_EQ(4, checkpoint.non_collapsible_segment().segment_size());
     auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
-    EXPECT_EQ(0, segment0.zfp().timeline_size());
+    EXPECT_EQ(1, segment0.zfp().timeline_size());
+    EXPECT_EQ(10, segment0.exact(0).instant().scalar().magnitude());
     auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
-    EXPECT_EQ(1, segment1.zfp().timeline_size());
+    EXPECT_EQ(3, segment1.zfp().timeline_size());
     EXPECT_EQ(10, segment1.exact(0).instant().scalar().magnitude());
     auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
-    EXPECT_EQ(3, segment2.zfp().timeline_size());
-    EXPECT_EQ(10, segment2.exact(0).instant().scalar().magnitude());
+    EXPECT_EQ(1, segment2.zfp().timeline_size());
+    EXPECT_EQ(25, segment2.exact(0).instant().scalar().magnitude());
     auto const& segment3 = checkpoint.non_collapsible_segment().segment(3);
     EXPECT_EQ(1, segment3.zfp().timeline_size());
     EXPECT_EQ(25, segment3.exact(0).instant().scalar().magnitude());
-    auto const& segment4 = checkpoint.non_collapsible_segment().segment(4);
-    EXPECT_EQ(1, segment4.zfp().timeline_size());
-    EXPECT_EQ(25, segment4.exact(0).instant().scalar().magnitude());
     EXPECT_EQ(
         2,
         checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
@@ -953,30 +961,32 @@ TEST_F(VesselTest, TailSerialization) {
   vessel_.WriteToMessage(&message,
                          serialization_index_for_pile_up.AsStdFunction());
 
-  EXPECT_EQ(4, message.history().segment_size());
+  EXPECT_EQ(1, message.history().leading_empty_segments_size());
   {
     // Non-collapsible segment of the history, entirely excluded.
-    auto const& segment0 = message.history().segment(0);
-    EXPECT_EQ(0, segment0.zfp().timeline_size());
+    auto const& segments0 = message.history().leading_empty_segments(0);
+    EXPECT_EQ(1, segments0.count());
+    EXPECT_TRUE(segments0.has_downsampling_parameters());
   }
+  EXPECT_EQ(3, message.history().segment_size());
   {
     // Collapsible segment of the history (backstory), truncated to the left.
-    auto const& segment1 = message.history().segment(1);
+    auto const& segment0 = message.history().segment(0);
     EXPECT_EQ("2000-01-02T04:40:12"_TT,
-              Instant::ReadFromMessage(segment1.exact(0).instant()));
+              Instant::ReadFromMessage(segment0.exact(0).instant()));
     EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
-              Instant::ReadFromMessage(segment1.exact(1).instant()));
-    EXPECT_EQ(20'000, segment1.zfp().timeline_size());
+              Instant::ReadFromMessage(segment0.exact(1).instant()));
+    EXPECT_EQ(20'000, segment0.zfp().timeline_size());
   }
   {
     // Psychohistory, only one point.
-    auto const& segment2 = message.history().segment(2);
-    EXPECT_EQ(1, segment2.zfp().timeline_size());
+    auto const& segment1 = message.history().segment(1);
+    EXPECT_EQ(1, segment1.zfp().timeline_size());
   }
   {
     // Prediction, excluded except for its first point.
-    auto const& segment3 = message.history().segment(3);
-    EXPECT_EQ(1, segment3.zfp().timeline_size());
+    auto const& segment2 = message.history().segment(2);
+    EXPECT_EQ(1, segment2.zfp().timeline_size());
   }
 
   auto const v = Vessel::ReadFromMessage(

@@ -747,8 +747,8 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   message->set_selected_flight_plan_index(selected_flight_plan_index_);
   message->set_is_collapsible(is_collapsible_);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
-  LOG(INFO) << name_ << " " << NAMED(message->SpaceUsed()) << " "
-            << NAMED(message->ByteSize());
+  LOG(INFO) << name_ << " " << NAMED(message->SpaceUsedLong()) << " "
+            << NAMED(message->ByteSizeLong());
 }
 
 not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
@@ -850,10 +850,40 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                      &vessel->prediction_});
     vessel->is_collapsible_ = message.is_collapsible();
 
+    auto rewriter = [](serialization::Vessel::Checkpoint const& checkpoint) {
+      if (checkpoint.non_collapsible_segment()
+              .has_leibniz_trajectory_marker()) {
+        return checkpoint;
+      } else {
+        DiscreteTrajectorySegmentIterator<Barycentric> backstory;
+        // The read would emit "pre-Leibniz" warnings for each checkpoint, and
+        // there may be many.  Just silence these warnings.
+        DiscreteTrajectory<Barycentric> const non_collapsible_segment =
+            DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                checkpoint.non_collapsible_segment(),
+                /*tracked=*/{&backstory},
+                /*quiet=*/true);
+        serialization::Vessel::Checkpoint rewritten = checkpoint;
+        rewritten.clear_non_collapsible_segment();
+        non_collapsible_segment.WriteToMessage(
+            rewritten.mutable_non_collapsible_segment(),
+            backstory->begin(),
+            backstory->end(),
+            /*tracked=*/{backstory},
+            /*exact=*/{});
+        LOG_EVERY_N_SEC(WARNING, 1)
+            << "Rewriting pre-Leibniz Vessel::Checkpoint, size before "
+            << checkpoint.ByteSizeLong() << "B, size after "
+            << rewritten.ByteSizeLong() << "B";
+        return rewritten;
+      }
+    };
+
     vessel->checkpointer_ =
         Checkpointer<serialization::Vessel>::ReadFromMessage(
             vessel->MakeCheckpointerWriter(),
             vessel->MakeCheckpointerReader(),
+            rewriter,
             message.checkpoint());
     if (message.has_downsampling_parameters()) {
       vessel->downsampling_parameters_ =

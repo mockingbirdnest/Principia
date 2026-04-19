@@ -49,6 +49,14 @@ class Checkpointer {
   using Reader =
       std::function<absl::Status(typename Message::Checkpoint const&)>;
 
+// Saves produced by [Лефшец, Leibniz[ had a ton of empty segments at the
+// beginning of the non-collapsible part of their checkpoints, causing storage
+// to explode: we saw a vessel with 1.8 million checkpoints, about 10'000 of
+// which were non-empty. To fix these saves, we rewrite the checkpoints.  That's
+// what we get for writing quadratic code.
+  using Rewriter = std::function<typename Message::Checkpoint(
+      typename Message::Checkpoint const&)>;
+
   Checkpointer(Writer writer, Reader reader);
 
   // Returns the oldest checkpoint in this object, or +∞ if no checkpoint was
@@ -118,9 +126,11 @@ class Checkpointer {
   void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<
                           typename Message::Checkpoint>*> message) const
       EXCLUDES(lock_);
+  // `rewriter` may be null, in which case checkpoints are used as-is.
   static not_null<std::unique_ptr<Checkpointer>> ReadFromMessage(
       Writer writer,
       Reader reader,
+      Rewriter rewriter,
       google::protobuf::RepeatedPtrField<typename Message::Checkpoint> const&
           message);
 

@@ -797,8 +797,8 @@ void Ephemeris<Frame>::WriteToMessage(
       message->mutable_fixed_step_parameters());
   accuracy_parameters_.WriteToMessage(
       message->mutable_accuracy_parameters());
-  LOG(INFO) << NAMED(message->SpaceUsed());
-  LOG(INFO) << NAMED(message->ByteSize());
+  LOG(INFO) << NAMED(message->SpaceUsedLong());
+  LOG(INFO) << NAMED(message->ByteSizeLong());
 }
 
 template<typename Frame>
@@ -871,12 +871,14 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
         Checkpointer<serialization::Ephemeris>::ReadFromMessage(
             ephemeris->MakeCheckpointerWriter(),
             ephemeris->MakeCheckpointerReader(),
+            /*rewriter=*/nullptr,
             serialized_ephemeris.checkpoint());
   } else {
     ephemeris->checkpointer_ =
         Checkpointer<serialization::Ephemeris>::ReadFromMessage(
             ephemeris->MakeCheckpointerWriter(),
             ephemeris->MakeCheckpointerReader(),
+            /*rewriter=*/nullptr,
             message.checkpoint());
   }
 

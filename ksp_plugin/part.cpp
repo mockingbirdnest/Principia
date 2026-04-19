@@ -261,14 +261,18 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
       is_pre_fréchet || (message.has_pre_frenet_inertia_tensor() &&
                          !message.has_intrinsic_torque());
   bool const is_pre_galileo = !message.has_centre_of_mass();
-  bool const is_pre_hamilton = message.prehistory().segment_size() == 0;
-  LOG_IF(WARNING, is_pre_hamilton)
-      << "Reading pre-"
-      << (is_pre_cesàro    ? "Cesàro"
-          : is_pre_fréchet ? "Fréchet"
-          : is_pre_frenet  ? "Frenet"
-          : is_pre_galileo ? "Galileo"
-                           : "Hamilton") << " Part";
+  bool const is_pre_leibniz =
+      !message.prehistory().has_leibniz_trajectory_marker();
+  bool const is_pre_hamilton =
+      is_pre_leibniz && message.prehistory().segment_size() == 0;
+  LOG_IF(WARNING, is_pre_leibniz) << "Reading pre-"
+                                  << (is_pre_cesàro     ? "Cesàro"
+                                      : is_pre_fréchet  ? "Fréchet"
+                                      : is_pre_frenet   ? "Frenet"
+                                      : is_pre_galileo  ? "Galileo"
+                                      : is_pre_hamilton ? "Hamilton"
+                                                        : "Leibniz")
+                                  << " Part";
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {

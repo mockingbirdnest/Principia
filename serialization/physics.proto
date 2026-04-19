@@ -1,5 +1,6 @@
 syntax = "proto2";
 
+import "serialization/base.proto";
 import "serialization/geometry.proto";
 import "serialization/integrators.proto";
 import "serialization/numerics.proto";
@@ -126,6 +127,20 @@ message DiscreteTrajectory {
   repeated DiscreteTrajectorySegment segment = 7;
   repeated SegmentByLeftEndpoint segment_by_left_endpoint = 8;
   repeated int32 tracked_position = 9;
+
+  // Added in Leibniz.
+  repeated DiscreteTrajectoryEmptySegments leading_empty_segments = 10;
+  optional VersionMarker leibniz_trajectory_marker = 11;
+}
+
+// Represents a sequence of empty `DiscreteTrajectorySegment` all having the
+// same downsampling parameters.
+message DiscreteTrajectoryEmptySegments {
+  message DownsamplingParameters {
+    required Quantity tolerance = 1;
+  }
+  required int32 count = 1;
+  optional DownsamplingParameters downsampling_parameters = 2;
 }
 
 // Added in Hamilton.  Note that some nested messages are shared with the
