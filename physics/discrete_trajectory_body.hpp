@@ -736,7 +736,7 @@ void DiscreteTrajectory<Frame>::EmptySegments::WriteToMessage(
   CHECK_LT(0, count);
   message->set_count(count);
   if (downsampling_parameters.has_value()) {
-    downsampling_parameters->WriteToMessage<
+    downsampling_parameters->template WriteToMessage<
         serialization::DiscreteTrajectoryEmptySegments::DownsamplingParameters>(
         message->mutable_downsampling_parameters());
   }
@@ -996,7 +996,7 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     if (message.has_downsampling()) {
       auto const downsampling_parameters =
           DownsamplingParameters::ReadFromMessage(message.downsampling());
-      downsampling_parameters.WriteToMessage<
+      downsampling_parameters.template WriteToMessage<
           serialization::DiscreteTrajectorySegment::DownsamplingParameters>(
           serialized_segment.mutable_downsampling_parameters());
     }
