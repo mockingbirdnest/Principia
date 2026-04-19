@@ -670,7 +670,7 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     std::int64_t const timeline_size,
     std::vector<iterator> const& exact) const {
   if (downsampling_parameters_.has_value()) {
-    downsampling_parameters_->WriteToMessage<
+    downsampling_parameters_->template WriteToMessage<
         serialization::DiscreteTrajectorySegment::DownsamplingParameters>(
         message->mutable_downsampling_parameters());
   }
