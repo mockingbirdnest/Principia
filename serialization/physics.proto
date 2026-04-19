@@ -1,5 +1,6 @@
 syntax = "proto2";
 
+import "serialization/base.proto";
 import "serialization/geometry.proto";
 import "serialization/integrators.proto";
 import "serialization/numerics.proto";
@@ -129,7 +130,7 @@ message DiscreteTrajectory {
 
   // Added in Leibniz.
   repeated DiscreteTrajectoryEmptySegments leading_empty_segments = 10;
-  optional bool is_leibniz_trajectory = 11;
+  optional VersionMarker leibniz_trajectory_marker = 11;
 }
 
 // Represents a sequence of empty `DiscreteTrajectorySegment` all having the

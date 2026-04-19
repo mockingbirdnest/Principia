@@ -852,7 +852,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 
     auto rewriter = [](serialization::Vessel::Checkpoint const& checkpoint) {
       if (checkpoint.non_collapsible_segment()
-              .has_is_leibniz_trajectory()) {
+              .has_leibniz_trajectory_marker()) {
         return checkpoint;
       } else {
         DiscreteTrajectorySegmentIterator<Barycentric> backstory;

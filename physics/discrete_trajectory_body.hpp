@@ -505,7 +505,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     iterator const end,
     std::vector<SegmentIterator> const& tracked,
     std::vector<iterator> const& exact) const {
-  message->set_is_leibniz_trajectory(true);
+  message->mutable_leibniz_trajectory_marker();
 
   // Construct a map to efficiently find if a segment must be tracked.  The
   // keys are pointers to segments in `tracked`, the values are the
@@ -647,7 +647,7 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
   requires serializable<Frame> {
   DiscreteTrajectory trajectory(uninitialized);
 
-  bool const is_pre_leibniz = !message.has_is_leibniz_trajectory();
+  bool const is_pre_leibniz = !message.has_leibniz_trajectory_marker();
   bool const is_pre_hamilton = is_pre_leibniz && message.segment_size() == 0;
   LOG_IF(WARNING, !quiet && is_pre_leibniz)
       << "Reading pre-" << (is_pre_hamilton ? "Hamilton" : "Leibniz")
