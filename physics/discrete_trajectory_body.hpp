@@ -10,7 +10,6 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "base/status_utilities.hpp"  // 🧙 For RETURN_IF_ERROR.
-#include "physics/discrete_trajectory_segment.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -18,7 +17,6 @@ namespace physics {
 namespace _discrete_trajectory {
 namespace internal {
 
-using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::quantities::_quantities;
 
 template<typename Frame>
@@ -507,6 +505,8 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     iterator const end,
     std::vector<SegmentIterator> const& tracked,
     std::vector<iterator> const& exact) const {
+  message->set_is_leibniz_trajectory(true);
+
   // Construct a map to efficiently find if a segment must be tracked.  The
   // keys are pointers to segments in `tracked`, the values are the
   // corresponding indices.  Note that multiple tracked segments may turn out to
@@ -537,7 +537,7 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
   absl::flat_hash_set<
       DiscreteTrajectorySegment<Frame> const*> intersecting_segments;
   bool intersect_range = false;
-  std::int32_t number_of_leading_empty_segments = 0;
+  EmptySegments leading_empty_segments;
 
   // The position of a segment in the repeated field `segment`.
   int segment_position = 0;
@@ -568,14 +568,28 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     // Note that we execute this call for the segments that precede the
     // intersection in order to write the correct structure of (empty) segments.
     // It's important to somehow record the leading empty segments, as we will
-    // need to reconstruct the proper segment structure when deserializing.  We
-    // don't want to write the segments themselves, though, as there may be many
-    // of them in case of many small burns.
+    // need to reconstruct the proper segment structure when deserializing.
     if (intersect_range) {
       sit->WriteToMessage(
           message->add_segment(), begin_time_it, end_time_it, exact);
     } else {
-      ++number_of_leading_empty_segments;
+      // We don't want to write the empty segments themselves, as there may be
+      // many of them in checkpoints for many small burns.
+      if (sit->downsampling_parameters_ !=
+          leading_empty_segments.downsampling_parameters) {
+        if (leading_empty_segments.count > 0) {
+          leading_empty_segments.WriteToMessage(
+              message->add_leading_empty_segments());
+        }
+        leading_empty_segments = {
+            .count = 0,
+            .downsampling_parameters = sit->downsampling_parameters_};
+      }
+      ++leading_empty_segments.count;
+    }
+    if (leading_empty_segments.count > 0) {
+      leading_empty_segments.WriteToMessage(
+          message->add_leading_empty_segments());
     }
 
     const auto [position_begin, position_end] =
@@ -588,8 +602,6 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
       message->set_tracked_position(position_it->second, segment_position);
     }
   }
-  message->set_number_of_leading_empty_segments(
-      number_of_leading_empty_segments);
 
   // Write the left endpoints by scanning them in parallel with the segments.
   std::optional<Instant> last_left_endpoint;
@@ -633,7 +645,7 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
   requires serializable<Frame> {
   DiscreteTrajectory trajectory(uninitialized);
 
-  bool const is_pre_leibniz = !message.has_number_of_leading_empty_segments();
+  bool const is_pre_leibniz = !message.has_is_leibniz_trajectory();
   bool const is_pre_hamilton = is_pre_leibniz && message.segment_size() == 0;
   LOG_IF(WARNING, !quiet && is_pre_leibniz)
       << "Reading pre-" << (is_pre_hamilton ? "Hamilton" : "Leibniz")
@@ -647,21 +659,30 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
   }
 
   // First restore the segments themselves.  `segment_iterators` will be used to
-  // restore the tracked segments.  We must start with the empty segments if
-  // this is a pre-Leibniz message, but we don't need to set their downsampling
-  // parameters.
+  // restore the tracked segments.
   std::vector<SegmentIterator> segment_iterators;
-  segment_iterators.reserve(message.number_of_leading_empty_segments() +
+  segment_iterators.reserve(message.leading_empty_segments_size() +
                             message.segment_size());
-  for (std::int64_t i = 0;
-       i < message.number_of_leading_empty_segments();
-       ++i) {
-    trajectory.segments_->emplace_back();
-    auto const sit = --trajectory.segments_->end();
-    auto const self = SegmentIterator(trajectory.segments_.get(), sit);
-    *sit = DiscreteTrajectorySegment<Frame>(self);
-    segment_iterators.push_back(self);
+
+  // We must start with the empty segments if there are any, setting their
+  // downsampling parameters as needed.
+  for (auto const& leading_empty_segments : message.leading_empty_segments()) {
+    auto const empty_segments =
+        EmptySegments::ReadFromMessage(leading_empty_segments);
+    for (std::int32_t i = 0; i < empty_segments.count; ++i) {
+      trajectory.segments_->emplace_back();
+      auto const sit = --trajectory.segments_->end();
+      auto const self = SegmentIterator(trajectory.segments_.get(), sit);
+      *sit = DiscreteTrajectorySegment<Frame>(self);
+      if (empty_segments.downsampling_parameters.has_value()) {
+        sit->SetDownsamplingUnconditionally(
+            *empty_segments.downsampling_parameters);
+      }
+      segment_iterators.push_back(self);
+    }
   }
+
+  // Now the non-empty segments.
   for (auto const& serialized_segment : message.segment()) {
     trajectory.segments_->emplace_back();
     auto const sit = --trajectory.segments_->end();
@@ -700,6 +721,33 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
 
   CHECK_OK(trajectory.ConsistencyStatus());
   return trajectory;
+}
+
+template<typename Frame>
+void DiscreteTrajectory<Frame>::EmptySegments::WriteToMessage(
+    not_null<serialization::DiscreteTrajectoryEmptySegments*> const message)
+    const {
+  CHECK_LT(0, count);
+  message->set_count(count);
+  if (downsampling_parameters.has_value()) {
+    downsampling_parameters->WriteToMessage<
+        serialization::DiscreteTrajectoryEmptySegments::DownsamplingParameters>(
+        message->mutable_downsampling_parameters());
+  }
+}
+
+template<typename Frame>
+DiscreteTrajectory<Frame>::EmptySegments
+DiscreteTrajectory<Frame>::EmptySegments::ReadFromMessage(
+    serialization::DiscreteTrajectoryEmptySegments const& message) {
+  if (message.has_downsampling_parameters()) {
+    return EmptySegments{
+        .count = message.count(),
+        .downsampling_parameters = DownsamplingParameters::ReadFromMessage(
+            message.downsampling_parameters())};
+  } else {
+    return EmptySegments{.count = message.count()};
+  }
 }
 
 template<typename Frame>
@@ -881,13 +929,6 @@ void DiscreteTrajectory<Frame>::AdjustAfterSplicing(
 }
 
 template<typename Frame>
-void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
-    serialization::DiscreteTrajectory::Downsampling const& message,
-    DownsamplingParameters& downsampling_parameters) {
-  downsampling_parameters = DownsamplingParameters::ReadFromMessage(message);
-}
-
-template<typename Frame>
 DiscreteTrajectorySegmentIterator<Frame>
 DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory::Brood const& message,
@@ -933,9 +974,8 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
                       instantaneous_dof.degrees_of_freedom())).IgnoreError();
     }
     if (message.has_downsampling()) {
-      DownsamplingParameters downsampling_parameters;
       sit->SetDownsamplingUnconditionally(
-          DownsamplingParameters::ReadFromMessage(message.downsampling));
+          DownsamplingParameters::ReadFromMessage(message.downsampling()));
     }
   } else {
     // Starting with Frobenius we use ZFP so the easiest is to build a
@@ -947,9 +987,10 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     *serialized_segment.mutable_exact() = message.exact();
 
     if (message.has_downsampling()) {
-      DownsamplingParameters const downsampling_parameters =
-          ReadFromPreHamiltonMessage(message.downsampling());
-      downsampling_parameters.WriteToMessage(
+      auto const downsampling_parameters =
+          DownsamplingParameters::ReadFromMessage(message.downsampling());
+      downsampling_parameters.WriteToMessage<
+          serialization::DiscreteTrajectorySegment::DownsamplingParameters>(
           serialized_segment.mutable_downsampling_parameters());
     }
     *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,

@@ -261,8 +261,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
       is_pre_fréchet || (message.has_pre_frenet_inertia_tensor() &&
                          !message.has_intrinsic_torque());
   bool const is_pre_galileo = !message.has_centre_of_mass();
-  bool const is_pre_leibniz =
-      !message.prehistory().has_number_of_leading_empty_segments();
+  bool const is_pre_leibniz = !message.prehistory().has_is_leibniz_trajectory();
   bool const is_pre_hamilton =
       is_pre_leibniz && message.prehistory().segment_size() == 0;
   LOG_IF(WARNING, is_pre_leibniz) << "Reading pre-"

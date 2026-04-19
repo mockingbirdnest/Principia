@@ -15,6 +15,7 @@
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
@@ -32,6 +33,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_iterator;
+using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory;
@@ -156,6 +158,21 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   using Segments = _discrete_trajectory_types::Segments<Frame>;
   using SegmentByLeftEndpoint =
       absl::btree_map<Instant, typename Segments::iterator>;
+
+  // Represents a sequence of empty segments with the given downsampling
+  // parameters.
+  struct EmptySegments {
+    std::int32_t count = 0;
+    std::optional<
+        typename DiscreteTrajectorySegment<Frame>::DownsamplingParameters>
+        downsampling_parameters;
+
+    void WriteToMessage(
+        not_null<serialization::DiscreteTrajectoryEmptySegments*> message)
+        const;
+    static EmptySegments ReadFromMessage(
+        serialization::DiscreteTrajectoryEmptySegments const& message);
+  };
 
   // This constructor leaves the list of segments empty (but allocated) as well
   // as the time-to-segment mapping.

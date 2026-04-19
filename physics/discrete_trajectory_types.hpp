@@ -36,8 +36,11 @@ using namespace principia::quantities::_quantities;
 struct DownsamplingParameters {
   Length tolerance;
 
+  friend bool operator==(DownsamplingParameters const&,
+                         DownsamplingParameters const&) = default;
+
   template<typename Message>
-  void WriteToMessage(not_null<Message*> message);
+  void WriteToMessage(not_null<Message*> message) const;
   template<typename Message>
   static DownsamplingParameters ReadFromMessage(Message const& message);
 };

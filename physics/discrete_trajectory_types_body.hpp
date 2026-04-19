@@ -11,7 +11,7 @@ namespace _discrete_trajectory_types {
 namespace internal {
 
 template<typename Message>
-void DownsamplingParameters::WriteToMessage(not_null<Message*> message) {
+void DownsamplingParameters::WriteToMessage(not_null<Message*> message) const {
   tolerance.WriteToMessage(message->mutable_tolerance());
 }
 
