@@ -560,7 +560,7 @@ TEST_F(PluginCompatibilityTest, 4490) {
   // Various asynchronous activities may happen in the plugin between the time
   // it is read and the time it is written, so the size of the new save is not
   // deterministic.
-  EXPECT_THAT(bytes_written, AllOf(Gt(26'967'000), Lt(26'967'999)));
+  EXPECT_THAT(bytes_written, AllOf(Gt(27'026'000), Lt(27'028'000)));
   EXPECT_EQ(bytes_read, bytes_written);
 }
 #endif

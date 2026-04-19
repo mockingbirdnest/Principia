@@ -587,10 +587,6 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
       }
       ++leading_empty_segments.count;
     }
-    if (leading_empty_segments.count > 0) {
-      leading_empty_segments.WriteToMessage(
-          message->add_leading_empty_segments());
-    }
 
     const auto [position_begin, position_end] =
         segment_to_position.equal_range(&*sit);
@@ -601,6 +597,10 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
       // Its value is the position of a tracked segment in the field `segment`.
       message->set_tracked_position(position_it->second, segment_position);
     }
+  }
+  if (leading_empty_segments.count > 0) {
+    leading_empty_segments.WriteToMessage(
+        message->add_leading_empty_segments());
   }
 
   // Write the left endpoints by scanning them in parallel with the segments.
@@ -661,7 +661,11 @@ DiscreteTrajectory<Frame>::ReadFromMessage(
   // First restore the segments themselves.  `segment_iterators` will be used to
   // restore the tracked segments.
   std::vector<SegmentIterator> segment_iterators;
-  segment_iterators.reserve(message.leading_empty_segments_size() +
+  std::int32_t total_leading_empty_segments = 0;
+  for (auto const& leading_empty_segments : message.leading_empty_segments()) {
+    total_leading_empty_segments += leading_empty_segments.count();
+  }
+  segment_iterators.reserve(total_leading_empty_segments +
                             message.segment_size());
 
   // We must start with the empty segments if there are any, setting their
@@ -746,7 +750,8 @@ DiscreteTrajectory<Frame>::EmptySegments::ReadFromMessage(
         .downsampling_parameters = DownsamplingParameters::ReadFromMessage(
             message.downsampling_parameters())};
   } else {
-    return EmptySegments{.count = message.count()};
+    return EmptySegments{.count = message.count(),
+                         .downsampling_parameters = std::nullopt};
   }
 }
 
