@@ -58,7 +58,7 @@ for repo in googletest abseil-cpp benchmark config gipfeli multiprecision protob
     # https://eli.thegreenplace.net/2011/09/06/stack-frame-layout-on-x86-64/ for
     # details.  This is incompatible with frame pointer omission, which is the
     # default for -O2 and above.
-    C_FLAGS="${PRINCIPIA_C_FLAGS?} -m64 -fno-omit-frame-pointer"
+    C_FLAGS="${PRINCIPIA_C_FLAGS?} -m64 -msse4.1 -fno-omit-frame-pointer"
     CXX_FLAGS="${PRINCIPIA_CXX_FLAGS?}"
     export OSX_DEPLOYMENT_TARGET="UNUSED"
   else
