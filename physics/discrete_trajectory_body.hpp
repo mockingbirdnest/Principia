@@ -577,6 +577,8 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
       // many of them in checkpoints for many small burns.
       if (sit->downsampling_parameters_ !=
           leading_empty_segments.downsampling_parameters) {
+        // Write a `DiscreteTrajectoryEmptySegments` if the downsampling
+        // parameters change.
         if (leading_empty_segments.count > 0) {
           leading_empty_segments.WriteToMessage(
               message->add_leading_empty_segments());
