@@ -309,9 +309,8 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
 
   // Finally, restore the downsampling information.
   if (message.has_downsampling_parameters()) {
-    segment.downsampling_parameters_ = DownsamplingParameters{
-        .tolerance = Length::ReadFromMessage(
-            message.downsampling_parameters().tolerance())};
+    segment.downsampling_parameters_ = DownsamplingParameters::ReadFromMessage(
+        message.downsampling_parameters());
   }
 
   return segment;
@@ -671,10 +670,8 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     std::int64_t const timeline_size,
     std::vector<iterator> const& exact) const {
   if (downsampling_parameters_.has_value()) {
-    auto* const serialized_downsampling_parameters =
-        message->mutable_downsampling_parameters();
-    downsampling_parameters_->tolerance.WriteToMessage(
-        serialized_downsampling_parameters->mutable_tolerance());
+    downsampling_parameters_->WriteToMessage(
+        message->mutable_downsampling_parameters());
   }
 
   // Convert the `exact` vector into a set, and add the extremities.  This

@@ -10,6 +10,18 @@ namespace physics {
 namespace _discrete_trajectory_types {
 namespace internal {
 
+template<typename Message>
+void DownsamplingParameters::WriteToMessage(not_null<Message*> message) {
+  tolerance.WriteToMessage(message->mutable_tolerance());
+}
+
+template<typename Message>
+DownsamplingParameters DownsamplingParameters::ReadFromMessage(
+    Message const& message) {
+  return DownsamplingParameters{
+      .tolerance = Length::ReadFromMessage(message.tolerance())};
+}
+
 template<typename Frame>
 value_type<Frame>::value_type(Instant const& time,
                               DegreesOfFreedom<Frame> const& degrees_of_freedom)

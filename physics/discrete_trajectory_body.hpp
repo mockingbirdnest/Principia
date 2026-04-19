@@ -884,8 +884,7 @@ template<typename Frame>
 void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     serialization::DiscreteTrajectory::Downsampling const& message,
     DownsamplingParameters& downsampling_parameters) {
-  downsampling_parameters = {
-      .tolerance = Length::ReadFromMessage(message.tolerance())};
+  downsampling_parameters = DownsamplingParameters::ReadFromMessage(message);
 }
 
 template<typename Frame>
@@ -935,9 +934,8 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     }
     if (message.has_downsampling()) {
       DownsamplingParameters downsampling_parameters;
-      ReadFromPreHamiltonMessage(message.downsampling(),
-                                 downsampling_parameters);
-      sit->SetDownsamplingUnconditionally(downsampling_parameters);
+      sit->SetDownsamplingUnconditionally(
+          DownsamplingParameters::ReadFromMessage(message.downsampling));
     }
   } else {
     // Starting with Frobenius we use ZFP so the easiest is to build a
@@ -948,14 +946,11 @@ void DiscreteTrajectory<Frame>::ReadFromPreHamiltonMessage(
     *serialized_segment.mutable_zfp() = message.zfp();
     *serialized_segment.mutable_exact() = message.exact();
 
-    DownsamplingParameters downsampling_parameters;
     if (message.has_downsampling()) {
-      ReadFromPreHamiltonMessage(message.downsampling(),
-                                 downsampling_parameters);
-      auto* const serialized_downsampling_parameters =
-          serialized_segment.mutable_downsampling_parameters();
-      downsampling_parameters.tolerance.WriteToMessage(
-          serialized_downsampling_parameters->mutable_tolerance());
+      DownsamplingParameters const downsampling_parameters =
+          ReadFromPreHamiltonMessage(message.downsampling());
+      downsampling_parameters.WriteToMessage(
+          serialized_segment.mutable_downsampling_parameters());
     }
     *sit = DiscreteTrajectorySegment<Frame>::ReadFromMessage(serialized_segment,
                                                              self);

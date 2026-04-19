@@ -183,12 +183,6 @@ class DiscreteTrajectory : public Trajectory<Frame> {
       DiscreteTrajectory& to,
       typename Segments::iterator to_segments_begin);
 
-  // Reads a pre-Hamilton downsampling message and return the downsampling
-  // parameters.
-  static void ReadFromPreHamiltonMessage(
-      serialization::DiscreteTrajectory::Downsampling const& message,
-      DownsamplingParameters& downsampling_parameters);
-
   // Reads a set of pre-Hamilton children.  Checks that there is only one child,
   // and that it is at the end of the preceding segment.  Append a segment to
   // the trajectory and returns an iterator to that segment.

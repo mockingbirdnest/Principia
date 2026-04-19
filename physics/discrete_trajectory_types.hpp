@@ -6,6 +6,7 @@
 
 #include "absl/container/btree_set.h"
 #include "base/macros.hpp"  // 🧙 For forward declarations.
+#include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "numerics/hermite3.hpp"
@@ -25,6 +26,7 @@ FORWARD_DECLARE(TEMPLATE(typename Frame) class,
 namespace _discrete_trajectory_types {
 namespace internal {
 
+using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_hermite3;
@@ -33,6 +35,11 @@ using namespace principia::quantities::_quantities;
 
 struct DownsamplingParameters {
   Length tolerance;
+
+  template<typename Message>
+  void WriteToMessage(not_null<Message*> message);
+  template<typename Message>
+  static DownsamplingParameters ReadFromMessage(Message const& message);
 };
 
 // The `error` is an upper bound on the interpolation error after `hermite3` has
