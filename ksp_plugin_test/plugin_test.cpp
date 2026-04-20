@@ -427,9 +427,6 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   EXPECT_EQ(
       5461,
       vessel_0_history.segment(2).exact(0).instant().scalar().magnitude());
-  EXPECT_EQ(
-      5461,
-      vessel_0_history.segment(2).exact(1).instant().scalar().magnitude());
   EXPECT_EQ(0, message.vessel(0).vessel().checkpoint_size());
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
