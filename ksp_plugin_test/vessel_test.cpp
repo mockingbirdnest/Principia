@@ -954,7 +954,7 @@ TEST_F(VesselTest, TailSerialization) {
   {
     // Collapsible segment of the history (backstory), truncated to the left.
     auto const& segment0 = message.history().segment(0);
-    EXPECT_EQ("2000-01-02T04:40:12"_TT,
+    EXPECT_EQ("2000-01-02T04:40:06"_TT,
               Instant::ReadFromMessage(segment0.exact(0).instant()));
     EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
               Instant::ReadFromMessage(segment0.exact(1).instant()));
@@ -975,7 +975,7 @@ TEST_F(VesselTest, TailSerialization) {
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
   EXPECT_TRUE(v->trajectory().segments().begin()->empty());
   auto const backstory = std::next(v->trajectory().segments().begin());
-  EXPECT_EQ("2000-01-02T04:40:12"_TT, backstory->front().time);
+  EXPECT_EQ("2000-01-02T04:40:06"_TT, backstory->front().time);
   EXPECT_EQ(t0_ + (number_of_points - 1) * Second, backstory->back().time);
 }
 
