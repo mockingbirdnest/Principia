@@ -197,7 +197,7 @@ void Vessel::DetectCollapsibilityChange() {
       downsampling_parameters_.has_value() && backstory_->size() <= 2;
 
   if (collapsibility_changes &&
-      (is_collapsible_ || segment_is_potentially_extensible)) {
+      (is_collapsible_ || !segment_is_potentially_extensible)) {
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
 
@@ -756,6 +756,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   message->set_is_collapsible(is_collapsible_);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
   LOG(INFO) << name_ << " " << NAMED(message->SpaceUsedLong()) << " "
+            << NAMED(message->checkpoint().SpaceUsedExcludingSelfLong()) << " "
             << NAMED(message->ByteSizeLong());
 }
 
