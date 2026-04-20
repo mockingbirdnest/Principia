@@ -532,8 +532,7 @@ TEST_F(VesselTest, CheckpointsWithoutDownsampling) {
   p1_->set_containing_pile_up(pile_up);
   p2_->set_containing_pile_up(pile_up);
 
-  // Free-fall trajectory.  This creates a checkpoint because the history is not
-  // collapsible at the beginning.
+  // Free-fall trajectory.
   AppendTrajectoryTimeline<Barycentric>(
       NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
                                                /*Δt=*/1 * Second,
@@ -553,6 +552,9 @@ TEST_F(VesselTest, CheckpointsWithoutDownsampling) {
         p2_->AppendToHistory(time, degrees_of_freedom);
       });
 
+  // The backstory here has a single point at `t0_` and is not collapsible.  A
+  // checkpoint is created because downsampling is disabled.  The next segment
+  // (the free fall) will be its own, collapsible segment.
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
 
@@ -580,11 +582,12 @@ TEST_F(VesselTest, CheckpointsWithoutDownsampling) {
         p2_->AppendToHistory(time, degrees_of_freedom);
       });
 
+  // This closes the (collapsible) second segment.  A new segment is created to
+  // hold the burn, which will not be collapsible.
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
 
-  // Remove the force.  This creates a checkpoint because we closed a non-
-  // collapsible segment.
+  // Remove the force.
   p1_->clear_intrinsic_force();
   AppendTrajectoryTimeline<Barycentric>(
       NewLinearTrajectoryTimeline<Barycentric>(p1_dof_,
@@ -605,6 +608,8 @@ TEST_F(VesselTest, CheckpointsWithoutDownsampling) {
         p2_->AppendToHistory(time, degrees_of_freedom);
       });
 
+  // This closes the (non-collapsible) third segment.  Since downsampling is
+  // disabled, a new checkpoint is created.
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
 
@@ -692,7 +697,6 @@ TEST_F(VesselTest, CheckpointsWithDownsampling) {
               FlowWithAdaptiveStep(_, _, t0_ + 30 * Second, _, _))
       .Times(AnyNumber());
 
-  vessel_.CreateTrajectoryIfNeeded(t0_);
 
   auto const pile_up =
       std::make_shared<PileUp>(/*parts=*/std::list<not_null<Part*>>{p1_, p2_},
@@ -703,6 +707,8 @@ TEST_F(VesselTest, CheckpointsWithDownsampling) {
                                 /*deletion_callback=*/nullptr);
   p1_->set_containing_pile_up(pile_up);
   p2_->set_containing_pile_up(pile_up);
+
+  vessel_.CreateTrajectoryIfNeeded(t0_);
 
   // Free-fall trajectory.
   AppendTrajectoryTimeline<Barycentric>(
@@ -724,6 +730,9 @@ TEST_F(VesselTest, CheckpointsWithDownsampling) {
         p2_->AppendToHistory(time, degrees_of_freedom);
       });
 
+  // The backstory here has a single point at `t0_` and is not collapsible.  No
+  // checkpoint is created because it is so short, and the next segment (the
+  // free fall) will be merged into the non-collapsible first segment.
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
 
@@ -751,6 +760,11 @@ TEST_F(VesselTest, CheckpointsWithDownsampling) {
         p2_->AppendToHistory(time, degrees_of_freedom);
       });
 
+  // The first segment is not collapsible and now covers 10 seconds with 3
+  // points (3 points is because the parts are at the same location at `t0_` and
+  // `t0_ + 1 * Second`, so the first Hermite polynomial only covers these two
+  // times).  Because of the force, the new segment won't be collapsible either
+  // so this is not a collapsibility change.
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
 
@@ -775,6 +789,9 @@ TEST_F(VesselTest, CheckpointsWithDownsampling) {
         p2_->AppendToHistory(time, degrees_of_freedom);
       });
 
+  // The first (non-collapsible) segment now covers 25 seconds with 5 points.
+  // The new free fall will be collapsible, so we are going to create a
+  // checkpoint.
   vessel_.DetectCollapsibilityChange();
   vessel_.AdvanceTime();
 
@@ -783,65 +800,30 @@ TEST_F(VesselTest, CheckpointsWithDownsampling) {
                          serialization_index_for_pile_up.AsStdFunction());
   EXPECT_TRUE(message.has_is_collapsible());
   EXPECT_TRUE(message.is_collapsible());
-  EXPECT_EQ(2, message.checkpoint_size());
-  {
-    auto const& checkpoint = message.checkpoint(0);
-    EXPECT_EQ(0, checkpoint.time().scalar().magnitude());
-    EXPECT_EQ(3, checkpoint.non_collapsible_segment().segment_size());
-    auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
-    EXPECT_EQ(1, segment0.zfp().timeline_size());
-    EXPECT_EQ(0, segment0.exact(0).instant().scalar().magnitude());
-    auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
-    EXPECT_EQ(1, segment1.zfp().timeline_size());
-    EXPECT_EQ(0, segment1.exact(0).instant().scalar().magnitude());
-    auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
-    EXPECT_EQ(1, segment2.zfp().timeline_size());
-    EXPECT_EQ(0, segment2.exact(0).instant().scalar().magnitude());
-    EXPECT_EQ(
-        1,
-        checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
-    auto const& segment_by_left_endpoint0 =
-        checkpoint.non_collapsible_segment().segment_by_left_endpoint(0);
-    EXPECT_EQ(
-        0, segment_by_left_endpoint0.left_endpoint().scalar().magnitude());
-    EXPECT_EQ(2, segment_by_left_endpoint0.segment());
-  }
-  {
-    auto const& checkpoint = message.checkpoint(1);
-    EXPECT_EQ(25, checkpoint.time().scalar().magnitude());
-    EXPECT_EQ(
-        1, checkpoint.non_collapsible_segment().leading_empty_segments_size());
-    auto const& segments0 =
-        checkpoint.non_collapsible_segment().leading_empty_segments(0);
-    EXPECT_EQ(1, segments0.count());
-    EXPECT_TRUE(segments0.has_downsampling_parameters());
-    EXPECT_EQ(4, checkpoint.non_collapsible_segment().segment_size());
-    auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
-    EXPECT_EQ(1, segment0.zfp().timeline_size());
-    EXPECT_EQ(10, segment0.exact(0).instant().scalar().magnitude());
-    auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
-    EXPECT_EQ(3, segment1.zfp().timeline_size());
-    EXPECT_EQ(10, segment1.exact(0).instant().scalar().magnitude());
-    auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
-    EXPECT_EQ(1, segment2.zfp().timeline_size());
-    EXPECT_EQ(25, segment2.exact(0).instant().scalar().magnitude());
-    auto const& segment3 = checkpoint.non_collapsible_segment().segment(3);
-    EXPECT_EQ(1, segment3.zfp().timeline_size());
-    EXPECT_EQ(25, segment3.exact(0).instant().scalar().magnitude());
-    EXPECT_EQ(
-        2,
-        checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
-    auto const& segment_by_left_endpoint0 =
-        checkpoint.non_collapsible_segment().segment_by_left_endpoint(0);
-    EXPECT_EQ(
-        10, segment_by_left_endpoint0.left_endpoint().scalar().magnitude());
-    EXPECT_EQ(2, segment_by_left_endpoint0.segment());
-    auto const& segment_by_left_endpoint1 =
-        checkpoint.non_collapsible_segment().segment_by_left_endpoint(1);
-    EXPECT_EQ(
-        25, segment_by_left_endpoint1.left_endpoint().scalar().magnitude());
-    EXPECT_EQ(4, segment_by_left_endpoint1.segment());
-  }
+  EXPECT_EQ(1, message.checkpoint_size());
+
+  auto const& checkpoint = message.checkpoint(0);
+  EXPECT_EQ(25, checkpoint.time().scalar().magnitude());
+  EXPECT_EQ(3, checkpoint.non_collapsible_segment().segment_size());
+  auto const& segment0 = checkpoint.non_collapsible_segment().segment(0);
+  EXPECT_EQ(5, segment0.zfp().timeline_size());
+  EXPECT_EQ(0, segment0.exact(0).instant().scalar().magnitude());
+  auto const& segment1 = checkpoint.non_collapsible_segment().segment(1);
+  EXPECT_EQ(1, segment1.zfp().timeline_size());
+  EXPECT_EQ(25, segment1.exact(0).instant().scalar().magnitude());
+  auto const& segment2 = checkpoint.non_collapsible_segment().segment(2);
+  EXPECT_EQ(1, segment2.zfp().timeline_size());
+  EXPECT_EQ(25, segment2.exact(0).instant().scalar().magnitude());
+  EXPECT_EQ(
+      2, checkpoint.non_collapsible_segment().segment_by_left_endpoint_size());
+  auto const& segment_by_left_endpoint0 =
+      checkpoint.non_collapsible_segment().segment_by_left_endpoint(0);
+  EXPECT_EQ(0, segment_by_left_endpoint0.left_endpoint().scalar().magnitude());
+  EXPECT_EQ(0, segment_by_left_endpoint0.segment());
+  auto const& segment_by_left_endpoint1 =
+      checkpoint.non_collapsible_segment().segment_by_left_endpoint(1);
+  EXPECT_EQ(25, segment_by_left_endpoint1.left_endpoint().scalar().magnitude());
+  EXPECT_EQ(2, segment_by_left_endpoint1.segment());
 }
 
 TEST_F(VesselTest, SerializationSuccess) {
@@ -972,7 +954,7 @@ TEST_F(VesselTest, TailSerialization) {
   {
     // Collapsible segment of the history (backstory), truncated to the left.
     auto const& segment0 = message.history().segment(0);
-    EXPECT_EQ("2000-01-02T04:40:12"_TT,
+    EXPECT_EQ("2000-01-02T04:40:06"_TT,
               Instant::ReadFromMessage(segment0.exact(0).instant()));
     EXPECT_EQ(t0_ + (number_of_points - 1) * Second,
               Instant::ReadFromMessage(segment0.exact(1).instant()));
@@ -993,7 +975,7 @@ TEST_F(VesselTest, TailSerialization) {
       message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
   EXPECT_TRUE(v->trajectory().segments().begin()->empty());
   auto const backstory = std::next(v->trajectory().segments().begin());
-  EXPECT_EQ("2000-01-02T04:40:12"_TT, backstory->front().time);
+  EXPECT_EQ("2000-01-02T04:40:06"_TT, backstory->front().time);
   EXPECT_EQ(t0_ + (number_of_points - 1) * Second, backstory->back().time);
 }
 

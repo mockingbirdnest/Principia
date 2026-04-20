@@ -186,10 +186,28 @@ void Vessel::DetectCollapsibilityChange() {
 
   // It is always correct to mark as non-collapsible a collapsible segment or to
   // append collapsible points to a non-collapsible segment (but not
-  // vice-versa).
+  // vice-versa).  Therefore, two decisions are made here: whether to create a
+  // checkpoint, and whether to create a new segment.  A new segment is always
+  // created when closing a collapsible segment, because that new
+  // (non-collapsible) segment may have to go in a checkpoint.  A checkpoint is
+  // only ever created when closing a non-collapsible segment; in that case a
+  // new segment is created too to hold the next collapsible segment which won't
+  // go in a checkpoint.
+  //
+  // However, if downsampling is enabled, and the (non-collapsible) segment
+  // being closed has no more than two points, it is reasonable to assume that
+  // the Hermite polynomial is quite close to the trajectory over that segment,
+  // so downsampling might be able to extend that polynomial to cover more
+  // times.  In that case we don't create a checkpoint, we don't create a new
+  // segment, and we will just append future collapsible points to the
+  // non-collapsible segment.  This is expected to save storage when we have a
+  // sequence of very short segments, e.g., because of an RCS burn.
   bool const collapsibility_changes = is_collapsible_ != will_be_collapsible;
+  bool const segment_is_potentially_extensible =
+      downsampling_parameters_.has_value() && backstory_->size() <= 2;
 
-  if (collapsibility_changes) {
+  if (collapsibility_changes &&
+      (is_collapsible_ || !segment_is_potentially_extensible)) {
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
 
@@ -748,6 +766,7 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   message->set_is_collapsible(is_collapsible_);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
   LOG(INFO) << name_ << " " << NAMED(message->SpaceUsedLong()) << " "
+            << NAMED(message->checkpoint().SpaceUsedExcludingSelfLong()) << " "
             << NAMED(message->ByteSizeLong());
 }
 
