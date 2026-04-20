@@ -186,10 +186,18 @@ void Vessel::DetectCollapsibilityChange() {
 
   // It is always correct to mark as non-collapsible a collapsible segment or to
   // append collapsible points to a non-collapsible segment (but not
-  // vice-versa).
+  // vice-versa).  If downsampling is enabled, and the (non-collapsible) segment
+  // being closed has no more than two points, it is reasonable to assume that
+  // the Hermite polynomial is quite close to the trajectory over that segment,
+  // so downsampling might be able to extend that polynomial to cover more
+  // times.  This happens when we have a sequence of very short segments, e.g.,
+  // because of an RCS burn.
   bool const collapsibility_changes = is_collapsible_ != will_be_collapsible;
+  bool const segment_is_potentially_extensible =
+      downsampling_parameters_.has_value() && backstory_->size() <= 2;
 
-  if (collapsibility_changes) {
+  if (collapsibility_changes &&
+      (is_collapsible_ || segment_is_potentially_extensible)) {
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
 
