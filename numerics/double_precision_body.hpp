@@ -117,7 +117,8 @@ struct ComponentwiseComparator<T, U> {
     // implementation.  We don't want to die because of the weird comparisons of
     // NaNs.
     return Abs(left) >= Abs(right) || left == T{} ||
-           !IsFinite(left) || !IsFinite(right);
+           !quantities::_quantities::IsFinite(left) ||
+           !quantities::_quantities::IsFinite(right);
   }
 };
 

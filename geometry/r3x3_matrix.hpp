@@ -41,6 +41,11 @@ class R3x3Matrix final {
   friend bool operator!=(R3x3Matrix const& left,
                          R3x3Matrix const& right) = default;
 
+  template<typename Scalar>
+  bool IsFinite(R3x3Matrix<Scalar> const& r3x3_matrix) {
+    return false;
+  }
+
   Scalar operator()(int r, int c) const;
   Scalar& operator()(int r, int c);
 
@@ -124,6 +129,9 @@ class R3x3Matrix final {
                                                 RS const& right);
 
   template<typename S>
+  friend bool IsFinite(R3x3Matrix<S> const& r3x3_matrix);
+
+  template<typename S>
   friend std::string DebugString(R3x3Matrix<S> const& r3x3_matrix);
 #endif
 };
@@ -180,6 +188,9 @@ bool operator==(R3x3Matrix<Scalar> const& left,
 template<typename Scalar>
 bool operator!=(R3x3Matrix<Scalar> const& left,
                 R3x3Matrix<Scalar> const& right);
+
+template<typename Scalar>
+bool IsFinite(R3x3Matrix<Scalar> const& r3x3_matrix);
 
 template<typename Scalar>
 std::string DebugString(R3x3Matrix<Scalar> const& r3x3_matrix);
