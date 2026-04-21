@@ -64,10 +64,13 @@ Quaternion operator/(Quaternion const& left, double right);
 
 Quaternion Normalize(Quaternion const& quaternion);
 
+bool IsFinite(Quaternion const& quaternion);
+
 std::ostream& operator<<(std::ostream& out, Quaternion const& quaternion);
 
 }  // namespace internal
 
+using internal::IsFinite;
 using internal::Normalize;
 using internal::Quaternion;
 

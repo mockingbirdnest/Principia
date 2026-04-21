@@ -526,6 +526,11 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
 }
 
 template<typename T>
+bool IsFinite(DoublePrecision<T> const& double_precision) {
+  return IsFinite(double_precision.value) && IsFinite(double_precision.error);
+}
+
+template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision) {
   // We use `DebugString` to get all digits when `T` is `double`.  In that case
   // ADL will not find it, so we need the `using`.  For some values of `T`,

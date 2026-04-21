@@ -323,6 +323,9 @@ FusedNegatedMultiplySubtract(
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
 
 template<typename Scalar, typename Frame, int rank>
+bool IsFinite(Multivector<Scalar, Frame, rank> const& multivector);
+
+template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector);
 
 template<typename Scalar, typename Frame, int rank>
