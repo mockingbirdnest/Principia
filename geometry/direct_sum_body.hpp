@@ -215,6 +215,15 @@ constexpr auto InnerProduct(DirectSum<T...> const& left,
   return product;
 }
 
+template<affine ...T>
+bool IsFinite(DirectSum<T...> const& direct_sum) {
+  bool is_finite = true;
+  for_all_of(direct_sum).loop([&is_finite](auto const& component) {
+    is_finite &= IsFinite(component);
+  });
+  return is_finite;
+}
+
 template<affine... T>
 std::string DebugString(DirectSum<T...> const& direct_sum) {
   std::vector<std::string> strings;

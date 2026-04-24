@@ -1,5 +1,7 @@
 #pragma once
 
+#include "geometry/affine_map.hpp"
+
 #include <utility>
 
 namespace principia {
@@ -104,6 +106,15 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
       /*to_origin=*/left.to_origin_ +
           left.linear_map_(right.to_origin_ - left.from_origin_),
       /*linear_map=*/left.linear_map_ * right.linear_map_);
+}
+
+template<typename FromFrame, typename ToFrame, typename Scalar,
+         template<typename, typename> class LinearMap>
+bool IsFinite(
+    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& affine_map) {
+  return IsFinite(affine_map.from_origin_) &&
+         IsFinite(affine_map.to_origin_) &&
+         IsFinite(affine_map.linear_map_);
 }
 
 template<typename FromFrame, typename ToFrame, typename Scalar,

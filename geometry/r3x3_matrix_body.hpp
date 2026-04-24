@@ -391,6 +391,16 @@ R3x3Matrix<Product<LScalar, RScalar>> KroneckerProduct(
 }
 
 template<typename Scalar>
+bool IsFinite(R3x3Matrix<Scalar> const& r3x3_matrix) {
+  constexpr auto X = R3x3Matrix<Scalar>::X;
+  constexpr auto Y = R3x3Matrix<Scalar>::Y;
+  constexpr auto Z = R3x3Matrix<Scalar>::Z;
+  return IsFinite(r3x3_matrix.rows_[X]) &&
+         IsFinite(r3x3_matrix.rows_[Y]) &&
+         IsFinite(r3x3_matrix.rows_[Z]);
+}
+
+template<typename Scalar>
 std::string DebugString(R3x3Matrix<Scalar> const& r3x3_matrix) {
   constexpr auto X = R3x3Matrix<Scalar>::X;
   constexpr auto Y = R3x3Matrix<Scalar>::Y;

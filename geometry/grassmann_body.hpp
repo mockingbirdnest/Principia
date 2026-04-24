@@ -546,6 +546,11 @@ FusedNegatedMultiplySubtract(
 }
 
 template<typename Scalar, typename Frame, int rank>
+bool IsFinite(Multivector<Scalar, Frame, rank> const& multivector) {
+  return IsFinite(multivector.coordinates());
+}
+
+template<typename Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector) {
   // This `using` is required for the `Trivector`, whose `DebugString(Scalar)`
   // will not be found by ADL if `Scalar` is `double`.
