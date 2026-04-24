@@ -12,10 +12,14 @@
 #include "absl/log/log.h"
 #include "absl/status/status.h"
 #include "astronomy/epoch.hpp"
+#include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -30,6 +34,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/euler_solver.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
@@ -50,10 +55,14 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::astronomy::_epoch;
+using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
@@ -67,6 +76,7 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_euler_solver;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rigid_motion;
@@ -439,6 +449,76 @@ TEST_F(PileUpTest, SerializationCompatibility) {
                                      310.0 / 3.0 * Metre / Second}))),
           Return(absl::OkStatus())));
   EXPECT_OK(p->DeformAndAdvanceTime(J2000 + 1 * Second));
+}
+
+TEST(PileUpTestWithoutFixture, PhysXExponentialDecay) {
+  Instant const t0;
+  Time const Δt = 20 * Milli(Second);
+
+  InertiaTensor<Barycentric> const inertia_tensor(
+      {{
+           10.0 * si::Unit<MomentOfInertia>,
+           -5.5 * si::Unit<MomentOfInertia>,
+           2.0 * si::Unit<MomentOfInertia>,
+       },
+       {
+           -5.5 * si::Unit<MomentOfInertia>,
+           14.0 * si::Unit<MomentOfInertia>,
+           -6.0 * si::Unit<MomentOfInertia>,
+       },
+       {
+           2.0 * si::Unit<MomentOfInertia>,
+           -6.0 * si::Unit<MomentOfInertia>,
+           7.0 * si::Unit<MomentOfInertia>,
+       }});
+
+  using PrincipalAxes = Frame<serialization::Frame::TestTag,
+                              Arbitrary,
+                              Handedness::Right,
+                              serialization::Frame::TEST>;
+  auto const eigensystem = inertia_tensor.Diagonalize<PrincipalAxes>();
+  EXPECT_THAT(
+      eigensystem.form.coordinates().Diagonal(),
+      AlmostEquals(R3Element<MomentOfInertia>(
+                       {3.32030832353663583474 * si::Unit<MomentOfInertia>,
+                        7.0799313792826743057 * si::Unit<MomentOfInertia>,
+                        20.5997602971806898595 * si::Unit<MomentOfInertia>}),
+                   4));
+
+  Rotation<PrincipalAxes, Barycentric> const initial_attitude(
+      Normalize(Quaternion(3.0, {4.0, -5.0, 6.0})));
+
+  AngularVelocity<Barycentric> const angular_velocity(
+      {1 * Radian / Second, -2 * Radian / Second, 0.5 * Radian / Second});
+
+  Inverse<Time> const angular_drag = 10 / Second;
+  Bivector<Torque, Barycentric> const intrinsic_torque =
+      -angular_drag * inertia_tensor * angular_velocity +
+      Commutator(angular_velocity, inertia_tensor * angular_velocity) / Radian;
+
+  Bivector<AngularMomentum, Barycentric> angular_momentum =
+      inertia_tensor * angular_velocity;
+  angular_momentum += intrinsic_torque * Δt;
+  EulerSolver<Barycentric, PrincipalAxes> const euler_solver(
+      eigensystem.form.coordinates().Diagonal(),
+      angular_momentum,
+      initial_attitude,
+      t0);
+
+  Bivector<AngularMomentum, PrincipalAxes> const angular_momentum_after =
+      euler_solver.AngularMomentumAt(t0 + Δt);
+  Rotation<PrincipalAxes, Barycentric> const attitude_after =
+      euler_solver.AttitudeAt(angular_momentum_after, t0 + Δt);
+  AngularVelocity<PrincipalAxes> const angular_velocity_after =
+      euler_solver.AngularVelocityFor(angular_momentum_after);
+
+  LOG(ERROR) << angular_momentum << " " << angular_momentum.Norm();
+  LOG(ERROR) << attitude_after(angular_momentum_after) << " "
+             << attitude_after(angular_momentum_after).Norm();
+  LOG(ERROR) << angular_velocity << " " << angular_velocity.Norm();
+  LOG(ERROR) << angular_velocity * angular_drag * Δt;
+  LOG(ERROR) << attitude_after(angular_velocity_after) << " "
+             << attitude_after(angular_velocity_after).Norm();
 }
 
 }  // namespace ksp_plugin
