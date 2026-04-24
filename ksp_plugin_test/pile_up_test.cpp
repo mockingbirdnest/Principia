@@ -1,5 +1,6 @@
 #include "ksp_plugin/pile_up.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
@@ -15,8 +16,8 @@
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
-#include "geometry/instant.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
