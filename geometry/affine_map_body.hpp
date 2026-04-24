@@ -1,7 +1,8 @@
 #pragma once
 
-#include <utility>
 #include "affine_map.hpp"
+
+#include <utility>
 
 namespace principia {
 namespace geometry {

@@ -41,11 +41,6 @@ class R3x3Matrix final {
   friend bool operator!=(R3x3Matrix const& left,
                          R3x3Matrix const& right) = default;
 
-  template<typename Scalar>
-  bool IsFinite(R3x3Matrix<Scalar> const& r3x3_matrix) {
-    return false;
-  }
-
   Scalar operator()(int r, int c) const;
   Scalar& operator()(int r, int c);
 
