@@ -235,18 +235,18 @@ AcceleratedRigidMotion<FromFrame, ToFrame>::acceleration_of_origin_of() const {
 template<typename FromFrame, typename ToFrame>
 bool IsFinite(RigidMotion<FromFrame, ToFrame> const& rigid_motion) {
   return IsFinite(rigid_motion.rigid_transformation()) &&
-         IsFinite(rigid_motion.angular_velocity_of<ToFrame>()) &&
-         IsFinite(rigid_motion.velocity_of_origin_of<ToFrame>());
+         IsFinite(rigid_motion.template angular_velocity_of<ToFrame>()) &&
+         IsFinite(rigid_motion.template velocity_of_origin_of<ToFrame>());
 }
 
 template<typename FromFrame, typename ToFrame>
 bool IsFinite(AcceleratedRigidMotion<FromFrame, ToFrame> const&
                   accelerated_rigid_motion) {
   return IsFinite(accelerated_rigid_motion.rigid_motion()) &&
-         IsFinite(
-             accelerated_rigid_motion.angular_acceleration_of<ToFrame>()) &&
-         IsFinite(
-             accelerated_rigid_motion.acceleration_of_origin_of<ToFrame>());
+         IsFinite(accelerated_rigid_motion
+                      .template angular_acceleration_of<ToFrame>()) &&
+         IsFinite(accelerated_rigid_motion
+                      .template acceleration_of_origin_of<ToFrame>());
 }
 
 template<typename FromFrame, typename ToFrame>
