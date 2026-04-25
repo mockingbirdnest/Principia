@@ -248,6 +248,15 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
 template<typename Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
+bool SymmetricBilinearForm<Scalar, Frame, Multivector>::IsDiagonalized() const {
+  return matrix_.IsDiagonalMatrix() &&
+         matrix_(0, 0) <= matrix_(1, 1) &&
+         matrix_(1, 1) <= matrix_(2, 2);
+}
+
+template<typename Scalar,
+         typename Frame,
+         template<typename, typename> typename Multivector>
 void SymmetricBilinearForm<Scalar, Frame, Multivector>::WriteToMessage(
     not_null<serialization::SymmetricBilinearForm*> message) const {
   Frame::WriteToMessage(message->mutable_frame());

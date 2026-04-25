@@ -7,6 +7,7 @@
 #include "base/algebra.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/quaternion.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space_transformations.hpp"
 #include "numerics/elementary_functions.hpp"
@@ -22,6 +23,7 @@ namespace internal {
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_quaternion;
+using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::numerics::_elementary_functions;
@@ -31,11 +33,11 @@ using namespace principia::quantities::_si;
 
 template<typename InertialFrame, typename PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
-    R3Element<MomentOfInertia> const& moments_of_inertia,
+    InertiaTensor<PrincipalAxesFrame> const& inertia_tensor,
     Bivector<AngularMomentum, InertialFrame> const& initial_angular_momentum,
     AttitudeRotation const& initial_attitude,
     Instant const& initial_time)
-    : moments_of_inertia_(moments_of_inertia),
+    : moments_of_inertia_(inertia_tensor.coordinates().Diagonal()),
       serialized_initial_angular_momentum_(initial_angular_momentum),
       initial_attitude_(initial_attitude),
       initial_time_(initial_time),
@@ -43,6 +45,8 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
       ℛ_(Rotation<ℬʹ, InertialFrame>::Identity()),
       𝒮_(Signature<PrincipalAxesFrame,
                    PreferredPrincipalAxesFrame>::Identity()) {
+  CHECK(inertia_tensor.IsDiagonalized()) << inertia_tensor;
+
   // Do not use `initial_angular_momentum` after this point.
   auto const initial_angular_momentum_in_principal_axes =
       initial_attitude_.Inverse()(initial_angular_momentum);
@@ -444,7 +448,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>
 EulerSolver<InertialFrame, PrincipalAxesFrame>::ReadFromMessage(
     serialization::EulerSolver const& message) {
   return EulerSolver(
-      R3Element<MomentOfInertia>::ReadFromMessage(message.moments_of_inertia()),
+      InertiaTensor<PrincipalAxesFrame>(
+          R3x3Matrix<MomentOfInertia>::DiagonalMatrix(
+              R3Element<MomentOfInertia>::ReadFromMessage(
+                  message.moments_of_inertia()))),
       Bivector<AngularMomentum, InertialFrame>::ReadFromMessage(
           message.initial_angular_momentum()),
       AttitudeRotation::ReadFromMessage(message.initial_attitude()),
