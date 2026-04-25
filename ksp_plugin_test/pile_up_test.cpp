@@ -522,6 +522,24 @@ TEST(PileUpTestWithoutFixture, PhysXExponentialDecay) {
       initial_attitude,
       t0);
 
+  Bivector<AngularMomentum, PrincipalAxes> const angular_momentum_before =
+      euler_solver.AngularMomentumAt(t0);
+  Rotation<PrincipalAxes, Barycentric> const attitude_before =
+      euler_solver.AttitudeAt(angular_momentum_before, t0);
+  AngularVelocity<PrincipalAxes> const angular_velocity_before =
+      euler_solver.AngularVelocityFor(angular_momentum_before);
+
+  AngularVelocity<Barycentric> const expected_angular_velocity_before =
+      angular_velocity * (1 - angular_drag * Δt);
+  AngularVelocity<Barycentric> const actual_angular_velocity_before =
+      attitude_before(angular_velocity_before);
+  EXPECT_THAT(actual_angular_velocity_before.Norm(),
+              RelativeErrorFrom(expected_angular_velocity_before.Norm(),
+                                IsNear(1.1e-3_(1))));
+  EXPECT_THAT(AngleBetween(actual_angular_velocity_before,
+                           expected_angular_velocity_before),
+              IsNear(6.4e-3_(1) * Radian));
+
   Bivector<AngularMomentum, PrincipalAxes> const angular_momentum_after =
       euler_solver.AngularMomentumAt(t0 + Δt);
   Rotation<PrincipalAxes, Barycentric> const attitude_after =
@@ -529,14 +547,15 @@ TEST(PileUpTestWithoutFixture, PhysXExponentialDecay) {
   AngularVelocity<PrincipalAxes> const angular_velocity_after =
       euler_solver.AngularVelocityFor(angular_momentum_after);
 
-  AngularVelocity<Barycentric> const expected_angular_velocity =
+  AngularVelocity<Barycentric> const expected_angular_velocity_after =
       angular_velocity * (1 - angular_drag * Δt);
-  AngularVelocity<Barycentric> const actual_angular_velocity =
+  AngularVelocity<Barycentric> const actual_angular_velocity_after =
       attitude_after(angular_velocity_after);
-  EXPECT_THAT(actual_angular_velocity.Norm(),
-              RelativeErrorFrom(expected_angular_velocity.Norm(),
+  EXPECT_THAT(actual_angular_velocity_after.Norm(),
+              RelativeErrorFrom(expected_angular_velocity_after.Norm(),
                                 IsNear(7.1e-4_(1))));
-  EXPECT_THAT(AngleBetween(actual_angular_velocity, expected_angular_velocity),
+  EXPECT_THAT(AngleBetween(actual_angular_velocity_after,
+                           expected_angular_velocity_after),
               IsNear(4.1e-3_(1) * Radian));
 }
 
