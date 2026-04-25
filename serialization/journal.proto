@@ -297,23 +297,6 @@ message AdvanceTime {
   optional In in = 1;
 }
 
-message AngularMomentumFromAngularVelocity {
-  extend Method {
-    optional AngularMomentumFromAngularVelocity extension = 5174;
-  }
-  message In {
-    required XYZ world_angular_velocity = 1;
-    required XYZ moments_of_inertia_in_tonnes = 2;
-    required WXYZ principal_axes_rotation = 3;
-    required WXYZ part_rotation = 4;
-  }
-  message Return {
-    required XYZ result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message CameraReferenceRotation {
   extend Method {
     optional CameraReferenceRotation extension = 5163;
@@ -1907,6 +1890,23 @@ message NewPlugin {
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Plugin",
                                  (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PartAngularMomentumFromAngularVelocity {
+  extend Method {
+    optional PartAngularMomentumFromAngularVelocity extension = 5174;
+  }
+  message In {
+    required XYZ world_angular_velocity = 1;
+    required XYZ moments_of_inertia_in_tonnes = 2;
+    required WXYZ principal_axes_rotation = 3;
+    required WXYZ part_rotation = 4;
+  }
+  message Return {
+    required XYZ result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

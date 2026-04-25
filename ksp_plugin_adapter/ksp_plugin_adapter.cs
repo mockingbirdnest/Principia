@@ -1759,7 +1759,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             // To quote ferram4, “consider it all cursed”.
             Vector3d Δω_world = part.rb.angularVelocity - old_angular_velocity;
             var ΔL_world =
-                (Vector3d)Interface.AngularMomentumFromAngularVelocity(
+                (Vector3d)Interface.PartAngularMomentumFromAngularVelocity(
                     world_angular_velocity: (XYZ)Δω_world,
                     moments_of_inertia_in_tonnes:
                     (XYZ)part.rb.inertiaTensor,

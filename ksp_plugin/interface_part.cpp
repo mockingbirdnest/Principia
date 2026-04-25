@@ -7,9 +7,11 @@
 #include "absl/log/die_if_null.h"
 #include "absl/log/log.h"
 #include "geometry/grassmann.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/identification.hpp"
+#include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -17,10 +19,48 @@ namespace principia {
 namespace interface {
 
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_identification;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
+
+XYZ __cdecl principia__PartAngularMomentumFromAngularVelocity(
+    XYZ world_angular_velocity,
+    XYZ moments_of_inertia_in_tonnes,
+    WXYZ principal_axes_rotation,
+    WXYZ part_rotation) {
+  journal::Method<journal::PartAngularMomentumFromAngularVelocity> m(
+      {world_angular_velocity,
+       moments_of_inertia_in_tonnes,
+       principal_axes_rotation,
+       part_rotation});
+  auto const angular_velocity =
+      FromXYZ<AngularVelocity<World>>(world_angular_velocity);
+
+  static constexpr MomentOfInertia zero;
+  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
+      {.x = moments_of_inertia_in_tonnes.x,
+       .y = moments_of_inertia_in_tonnes.y,
+       .z = moments_of_inertia_in_tonnes.z});
+  InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_princial_axes(
+      R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
+                                  {zero, moments_of_inertia.y, zero},
+                                  {zero, zero, moments_of_inertia.z}));
+
+  Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
+      FromWXYZ(principal_axes_rotation));
+  Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
+
+  InertiaTensor<World> const inertia_tensor =
+      part_to_world(principal_axes_to_part(inertia_tensor_in_princial_axes));
+
+  Bivector<AngularMomentum, World> const angular_momentum =
+      inertia_tensor * angular_velocity;
+
+  return m.Return(ToXYZ(angular_momentum));
+}
 
 void __cdecl principia__PartApplyIntrinsicForce(
     Plugin* const plugin,
