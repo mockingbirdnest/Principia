@@ -117,7 +117,8 @@ struct ComponentwiseComparator<T, U> {
     // implementation.  We don't want to die because of the weird comparisons of
     // NaNs.
     return Abs(left) >= Abs(right) || left == T{} ||
-           !IsFinite(left) || !IsFinite(right);
+           !quantities::_quantities::IsFinite(left) ||
+           !quantities::_quantities::IsFinite(right);
   }
 };
 
@@ -523,6 +524,11 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
        z * right.error) /
       (right.value + right.error);
   return QuickTwoSum(z, zz);
+}
+
+template<typename T>
+bool IsFinite(DoublePrecision<T> const& double_precision) {
+  return IsFinite(double_precision.value) && IsFinite(double_precision.error);
 }
 
 template<typename T>

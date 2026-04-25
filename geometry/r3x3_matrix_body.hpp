@@ -94,6 +94,13 @@ R3x3Matrix<Scalar> R3x3Matrix<Scalar>::DiagonalMatrix(
 }
 
 template<typename Scalar>
+bool R3x3Matrix<Scalar>::IsDiagonalMatrix() const {
+  return rows_[X].y == Scalar{} && rows_[X].z == Scalar{} &&
+             rows_[Y].x == Scalar{} && rows_[Y].z == Scalar{} &&
+             rows_[Z].x == Scalar{} && rows_[Z].y == Scalar{};
+}
+
+template<typename Scalar>
 R3Element<Scalar> R3x3Matrix<Scalar>::Diagonal() const {
   return {rows_[X].x, rows_[Y].y, rows_[Z].z};
 }
@@ -388,6 +395,16 @@ R3x3Matrix<Product<LScalar, RScalar>> KroneckerProduct(
   return R3x3Matrix<Product<LScalar, RScalar>>(left.x * right,
                                                left.y * right,
                                                left.z * right);
+}
+
+template<typename Scalar>
+bool IsFinite(R3x3Matrix<Scalar> const& r3x3_matrix) {
+  constexpr auto X = R3x3Matrix<Scalar>::X;
+  constexpr auto Y = R3x3Matrix<Scalar>::Y;
+  constexpr auto Z = R3x3Matrix<Scalar>::Z;
+  return IsFinite(r3x3_matrix.rows_[X]) &&
+         IsFinite(r3x3_matrix.rows_[Y]) &&
+         IsFinite(r3x3_matrix.rows_[Z]);
 }
 
 template<typename Scalar>

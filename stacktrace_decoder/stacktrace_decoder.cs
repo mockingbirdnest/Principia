@@ -165,7 +165,7 @@ class StackTraceDecoder {
         comment($"Using Principia base address {principia_base_address:X}"));
     var stack_regex = new Regex(
         unity_crash ? @"0x([0-9A-F]+) .*"
-                    : @"@\s+[0-9A-F]+\s+.* \[0x([0-9A-F]+)(\+[0-9]+)?\]");
+                    : @"    @\s+([0-9A-F]+)\s+.*");
     if (unity_crash) {
       Match stack_start_match;
       do {
@@ -204,8 +204,13 @@ class StackTraceDecoder {
          stack_match.Success ||
          (unity_crash &&
           !Regex.IsMatch(log_line,
-          "={10} END OF STACKTRACE ={10}|Stacks for Running Threads:"));
-         log_line = stream.ReadLine(), stack_match = stack_regex.Match(log_line)) {
+                         "={10} END OF STACKTRACE ={10}|Stacks for Running Threads:"));
+         log_line = stream.ReadLine()) {
+      if (log_line == null) {
+        // End of stream.
+        break;
+      }
+      stack_match = stack_regex.Match(log_line);
       if (!stack_match.Success) {
         continue;
       }

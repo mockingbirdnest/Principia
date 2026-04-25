@@ -183,31 +183,6 @@ RigidMotion<FromFrame, ToFrame> operator*(
 }
 
 template<typename FromFrame, typename ToFrame>
-std::ostream& operator<<(std::ostream& out,
-                         RigidMotion<FromFrame, ToFrame> const& rigid_motion) {
-  return out << "{transformation: " << rigid_motion.rigid_transformation()
-             << ", angular velocity: "
-             << rigid_motion.template angular_velocity_of<ToFrame>()
-             << ", velocity: "
-             << rigid_motion.template velocity_of_origin_of<ToFrame>()
-             << "}";
-}
-
-template<typename FromFrame, typename ToFrame>
-std::ostream& operator<<(std::ostream& out,
-                         AcceleratedRigidMotion<FromFrame, ToFrame> const&
-                             accelerated_rigid_motion) {
-  return out
-         << "{motion: " << accelerated_rigid_motion.rigid_motion()
-         << ", angular acceleration: "
-         << accelerated_rigid_motion.template angular_acceleration_of<ToFrame>()
-         << ", acceleration: "
-         << accelerated_rigid_motion
-                .template acceleration_of_origin_of<ToFrame>()
-         << "}";
-}
-
-template<typename FromFrame, typename ToFrame>
 AcceleratedRigidMotion<FromFrame, ToFrame>::AcceleratedRigidMotion(
     RigidMotion<FromFrame, ToFrame> const& rigid_motion,
     Bivector<AngularAcceleration, FromFrame> const&
@@ -255,6 +230,48 @@ AcceleratedRigidMotion<FromFrame, ToFrame>::acceleration_of_origin_of() const {
     static_assert(std::is_same_v<F, ToFrame> || std::is_same_v<F, FromFrame>,
                   "Nonsensical frame");
   }
+}
+
+template<typename FromFrame, typename ToFrame>
+bool IsFinite(RigidMotion<FromFrame, ToFrame> const& rigid_motion) {
+  return IsFinite(rigid_motion.rigid_transformation()) &&
+         IsFinite(rigid_motion.angular_velocity_of<ToFrame>()) &&
+         IsFinite(rigid_motion.velocity_of_origin_of<ToFrame>());
+}
+
+template<typename FromFrame, typename ToFrame>
+bool IsFinite(AcceleratedRigidMotion<FromFrame, ToFrame> const&
+                  accelerated_rigid_motion) {
+  return IsFinite(accelerated_rigid_motion.rigid_motion()) &&
+         IsFinite(
+             accelerated_rigid_motion.angular_acceleration_of<ToFrame>()) &&
+         IsFinite(
+             accelerated_rigid_motion.acceleration_of_origin_of<ToFrame>());
+}
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         RigidMotion<FromFrame, ToFrame> const& rigid_motion) {
+  return out << "{transformation: " << rigid_motion.rigid_transformation()
+             << ", angular velocity: "
+             << rigid_motion.template angular_velocity_of<ToFrame>()
+             << ", velocity: "
+             << rigid_motion.template velocity_of_origin_of<ToFrame>()
+             << "}";
+}
+
+template<typename FromFrame, typename ToFrame>
+std::ostream& operator<<(std::ostream& out,
+                         AcceleratedRigidMotion<FromFrame, ToFrame> const&
+                             accelerated_rigid_motion) {
+  return out
+         << "{motion: " << accelerated_rigid_motion.rigid_motion()
+         << ", angular acceleration: "
+         << accelerated_rigid_motion.template angular_acceleration_of<ToFrame>()
+         << ", acceleration: "
+         << accelerated_rigid_motion
+                .template acceleration_of_origin_of<ToFrame>()
+         << "}";
 }
 
 }  // namespace internal

@@ -162,6 +162,9 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
                                           DoublePrecision<U> const& right);
 
 template<typename T>
+bool IsFinite(DoublePrecision<T> const& double_precision);
+
+template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision);
 
 template<typename T>

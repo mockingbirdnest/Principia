@@ -646,6 +646,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         vessel.parts.All(part => !PartIsFaithful(part))) {
       reasons.Add("vessel is completely unfaithful");
     }
+    if (vessel.orbit.pos == Vector3d.zero) {
+      reasons.Add("vessel is at the centre of the star");
+    }
     if (reasons.Count == 0) {
       return null;
     } else {
