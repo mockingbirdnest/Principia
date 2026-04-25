@@ -517,7 +517,7 @@ TEST(PileUpTestWithoutFixture, PhysXExponentialDecay) {
   Bivector<AngularMomentum, Barycentric> const updated_angular_momentum =
       initial_angular_momentum + intrinsic_torque * Δt;
   EulerSolver<Barycentric, PrincipalAxes> const euler_solver(
-      eigensystem.form.coordinates().Diagonal(),
+      eigensystem.form,
       updated_angular_momentum,
       initial_attitude,
       t0);
