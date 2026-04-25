@@ -174,14 +174,15 @@ TEST(PartTestWithoutFixture, PhysXExponentialDecay) {
 
   Bivector<AngularMomentum, PartPrincipalAxes> const angular_momentum_before =
       euler_solver.AngularMomentumAt(t0);
-  Rotation<PartPrincipalAxes, Barycentric> const attitude_before =
+  Rotation<PartPrincipalAxes, RigidPart> const attitude_before =
+      alice_barycentric_to_rigid_part *
       euler_solver.AttitudeAt(angular_momentum_before, t0);
   AngularVelocity<PartPrincipalAxes> const angular_velocity_before =
       euler_solver.AngularVelocityFor(angular_momentum_before);
 
-  AngularVelocity<Barycentric> const expected_angular_velocity_before =
+  AngularVelocity<RigidPart> const expected_angular_velocity_before =
       angular_velocity * (1 - angular_drag * Δt);
-  AngularVelocity<Barycentric> const actual_angular_velocity_before =
+  AngularVelocity<RigidPart> const actual_angular_velocity_before =
       attitude_before(angular_velocity_before);
   EXPECT_THAT(actual_angular_velocity_before.Norm(),
               RelativeErrorFrom(expected_angular_velocity_before.Norm(),
@@ -190,16 +191,17 @@ TEST(PartTestWithoutFixture, PhysXExponentialDecay) {
                            expected_angular_velocity_before),
               IsNear(6.4e-3_(1) * Radian));
 
-  Bivector<AngularMomentum, PrincipalAxes> const angular_momentum_after =
+  Bivector<AngularMomentum, PartPrincipalAxes> const angular_momentum_after =
       euler_solver.AngularMomentumAt(t0 + Δt);
-  Rotation<PrincipalAxes, Barycentric> const attitude_after =
+  Rotation<PartPrincipalAxes, RigidPart> const attitude_after =
+      alice_barycentric_to_rigid_part *
       euler_solver.AttitudeAt(angular_momentum_after, t0 + Δt);
-  AngularVelocity<PrincipalAxes> const angular_velocity_after =
+  AngularVelocity<PartPrincipalAxes> const angular_velocity_after =
       euler_solver.AngularVelocityFor(angular_momentum_after);
 
-  AngularVelocity<Barycentric> const expected_angular_velocity_after =
+  AngularVelocity<RigidPart> const expected_angular_velocity_after =
       angular_velocity * (1 - angular_drag * Δt);
-  AngularVelocity<Barycentric> const actual_angular_velocity_after =
+  AngularVelocity<RigidPart> const actual_angular_velocity_after =
       attitude_after(angular_velocity_after);
   EXPECT_THAT(actual_angular_velocity_after.Norm(),
               RelativeErrorFrom(expected_angular_velocity_after.Norm(),
