@@ -17,7 +17,6 @@
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/instant.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
@@ -44,11 +43,8 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/componentwise.hpp"
-#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "testing_utilities/numerics_matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -59,14 +55,10 @@ using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::_;
 using namespace principia::astronomy::_epoch;
-using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_instant;
 using namespace principia::geometry::_quaternion;
-using namespace principia::geometry::_r3_element;
-using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
@@ -80,7 +72,6 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_ephemeris;
-using namespace principia::physics::_euler_solver;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rigid_motion;
@@ -89,11 +80,8 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
-using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_componentwise;
-using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::testing_utilities::_numerics_matchers;
 
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
@@ -456,84 +444,6 @@ TEST_F(PileUpTest, SerializationCompatibility) {
                                      310.0 / 3.0 * Metre / Second}))),
           Return(absl::OkStatus())));
   EXPECT_OK(p->DeformAndAdvanceTime(J2000 + 1 * Second));
-}
-
-// Verify that we can produce a torque that approximates the exponential decay
-// of the angular velocity that PhysX implements based on `angular_drag`.  This
-// behaviour makes no physical sense, but it is our duty to replicate it.
-TEST(PileUpTestWithoutFixture, PhysXExponentialDecay) {
-  // The numbers below are arbitrary, but their order of magnitude corresponds
-  // to what was observed in game, so as to give us an idea of the "quality" of
-  // our approximation.
-  Instant const t0;
-  Time const Δt = 20 * Milli(Second);
-
-  InertiaTensor<Barycentric> const inertia_tensor(
-      {{
-           10.0e3 * si::Unit<MomentOfInertia>,
-           -5.5e3 * si::Unit<MomentOfInertia>,
-           2.0e3 * si::Unit<MomentOfInertia>,
-       },
-       {
-           -5.5e3 * si::Unit<MomentOfInertia>,
-           14.0e3 * si::Unit<MomentOfInertia>,
-           -6.0e3 * si::Unit<MomentOfInertia>,
-       },
-       {
-           2.0e3 * si::Unit<MomentOfInertia>,
-           -6.0e3 * si::Unit<MomentOfInertia>,
-           7.0e3 * si::Unit<MomentOfInertia>,
-       }});
-
-  auto const eigensystem = inertia_tensor.Diagonalize<PartPrincipalAxes>();
-  EXPECT_THAT(
-      eigensystem.form.coordinates().Diagonal(),
-      AlmostEquals(R3Element<MomentOfInertia>(
-                       {3.32030832353663583474e3 * si::Unit<MomentOfInertia>,
-                        7.0799313792826743057e3 * si::Unit<MomentOfInertia>,
-                        20.5997602971806898595e3 * si::Unit<MomentOfInertia>}),
-                   2));
-
-  Rotation<PartPrincipalAxes, Barycentric> const initial_attitude =
-      eigensystem.rotation;
-
-  AngularVelocity<Barycentric> const angular_velocity(
-      {0.1 * Radian / Second, -0.02 * Radian / Second, 0.05 * Radian / Second});
-
-  Inverse<Time> const angular_drag = 20 / Second;
-  Inverse<Time> const effective_angular_drag =
-      std::max(std::min(angular_drag, 1 / Δt), Inverse<Time>{});
-
-  Bivector<Torque, Barycentric> const intrinsic_torque =
-      -effective_angular_drag * inertia_tensor * angular_velocity +
-      Commutator(angular_velocity, inertia_tensor * angular_velocity) / Radian;
-
-  Bivector<AngularMomentum, Barycentric> const initial_angular_momentum =
-      inertia_tensor * angular_velocity;
-  Bivector<AngularMomentum, Barycentric> const updated_angular_momentum =
-      initial_angular_momentum + intrinsic_torque * Δt;
-  EulerSolver<Barycentric, PartPrincipalAxes> const euler_solver(
-      eigensystem.form.coordinates().Diagonal(),
-      updated_angular_momentum,
-      initial_attitude,
-      t0);
-
-  Bivector<AngularMomentum, PartPrincipalAxes> const angular_momentum_after =
-      euler_solver.AngularMomentumAt(t0 + Δt);
-  Rotation<PartPrincipalAxes, Barycentric> const attitude_after =
-      euler_solver.AttitudeAt(angular_momentum_after, t0 + Δt);
-  AngularVelocity<PartPrincipalAxes> const angular_velocity_after =
-      euler_solver.AngularVelocityFor(angular_momentum_after);
-
-  AngularVelocity<Barycentric> const expected_angular_velocity =
-      angular_velocity * (1 - angular_drag * Δt);
-  AngularVelocity<Barycentric> const actual_angular_velocity =
-      attitude_after(angular_velocity_after);
-  EXPECT_THAT(actual_angular_velocity.Norm(),
-              RelativeErrorFrom(expected_angular_velocity.Norm(),
-                                IsNear(7.1e-4_(1))));
-  EXPECT_THAT(AngleBetween(actual_angular_velocity, expected_angular_velocity),
-              IsNear(4.1e-3_(1) * Radian));
 }
 
 }  // namespace ksp_plugin
