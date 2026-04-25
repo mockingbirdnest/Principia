@@ -150,12 +150,11 @@ TEST(PartTestWithoutFixture, PhysXExponentialDecay) {
       {0.1 * Radian / Second, -0.02 * Radian / Second, 0.05 * Radian / Second});
 
   Inverse<Time> const angular_drag = 20 / Second;
-  Inverse<Time> const effective_angular_drag =
-      std::max(std::min(angular_drag, 1 / Δt), Inverse<Time>{});
 
+  // This is the code being tested.
   Bivector<Torque, RigidPart> const intrinsic_torque =
-      -effective_angular_drag * inertia_tensor * angular_velocity +
-      Commutator(angular_velocity, inertia_tensor * angular_velocity) / Radian;
+      Part::DragTorqueFromAngularVelocity(
+          angular_drag, Δt, angular_velocity, inertia_tensor);
 
   Bivector<AngularMomentum, RigidPart> const initial_angular_momentum =
       inertia_tensor * angular_velocity;
