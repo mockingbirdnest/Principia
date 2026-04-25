@@ -132,6 +132,18 @@ struct XYZConverter<Bivector<AngularMomentum, Frame>> {
   }
 };
 
+template<typename Frame>
+struct XYZConverter<Bivector<Torque, Frame>> {
+  static constexpr Torque mts_unit =
+      Pow<2>(Metre) * Tonne * Radian/ Pow<2>(Second);
+  static Bivector<Torque, Frame> FromXYZ(XYZ const& xyz) {
+    return Bivector<Torque, Frame>(interface::FromXYZ(xyz) * mts_unit);
+  }
+  static XYZ ToXYZ(Bivector<Torque, Frame> const& torque) {
+    return interface::ToXYZ(torque.coordinates() / mts_unit);
+  }
+};
+
 template<>
 struct XYZConverter<R3Element<MomentOfInertia>> {
   static constexpr MomentOfInertia mts_unit = Pow<2>(Metre) * Tonne;
@@ -565,6 +577,10 @@ inline XYZ ToXYZ(Velocity<World> const& velocity) {
 inline XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum) {
   return XYZConverter<Bivector<AngularMomentum, World>>::ToXYZ(
       angular_momentum);
+}
+
+inline XYZ ToXYZ(Bivector<Torque, World> const& torque) {
+  return XYZConverter<Bivector<Torque, World>>::ToXYZ(torque);
 }
 
 template<typename T>
