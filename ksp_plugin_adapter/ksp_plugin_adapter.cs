@@ -1795,8 +1795,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     // We fetch the forces from stock aerodynamics, which does not use
     // `Part.AddForce` etc.
     if (PluginRunning()) {
+      double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(
-          v => is_manageable(v) && !v.packed)) {
+                   v => is_manageable(v) && !v.packed)) {
         foreach (Part part in vessel.parts.Where(PartIsFaithful)) {
           if (part.atmDensity <= 0) {
             continue;
@@ -1839,14 +1840,28 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   });
           }
 
-          // KSP sets `part.rb.angularDrag` and lets Unity/PhysX compute a
-          // dampening torque.  However, it doesn't tell us about it so we end
-          // up with uncontrolled oscillations.  Therefore, we must create that
-          // torque out of thin air here.  Note that in FAR
-          // `part.rb.angularDrag` is 0 and we are properly given the torque
-          // through `Part.AddTorque` so this code has no effect.  See #3697 and
-          // https://documentation.help/NVIDIA-PhysX-SDK-Guide/RigidDynamics.html#damping.
-          var drag_torque = -part.rb.angularDrag * part.rb.angularVelocity;
+          // KSP sets `part.rb.angularDrag` and lets Unity/PhysX compute
+          // dampening.  However, it doesn't tell us about it so we end up with
+          // uncontrolled oscillations.  Therefore, we must create that torque
+          // out of thin air here.  Note that in FAR `part.rb.angularDrag` is 0
+          // and we are properly given the torque through `Part.AddTorque` so
+          // this code has no effect.
+          // The documentation in https://documentation.help/NVIDIA-PhysX-SDK-Guide/RigidDynamics.html#damping.
+          // is wrong because `angularDrag * angularVelocity` is not physically
+          // a torque, it represents an exponential decay of the angular
+          // velocity as is clear from the code at https://github.com/NVIDIAGameWorks/PhysX-3.4/blob/5e42a5f112351a223c19c17bb331e6c55037b8eb/PhysX_3.4/Source/LowLevelDynamics/src/DyBodyCoreIntegrator.h#L72-L75.
+          // This is entirely nonphysical, but we endeavour to preserve the KSP
+          // aerodynamics, so we compute a torque the effect of which is the
+          // expected exponential decay.
+          // See #3697 and #4166.
+          var drag_torque =
+              (UnityEngine.Vector3)Interface.PartDragTorqueFromAngularVelocity(
+                  angular_drag: part.rb.angularDrag,
+                  delta_t: Δt,
+                  world_angular_velocity: (XYZ)part.rb.angularVelocity,
+                  moments_of_inertia_in_tonnes: (XYZ)part.rb.inertiaTensor,
+                  principal_axes_rotation: (WXYZ)part.rb.inertiaTensorRotation,
+                  part_rotation: (WXYZ)part.rb.rotation);
           if (drag_torque != UnityEngine.Vector3.zero) {
             if (part_id_to_intrinsic_torque_.ContainsKey(
                     physical_parent.flightID)) {
