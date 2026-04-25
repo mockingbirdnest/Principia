@@ -951,11 +951,6 @@ void __cdecl principia__InsertOrKeepLoadedPart(
 
   // We build the inertia tensor in the principal axes and then transform it to
   // RigidPart.
-  using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
-                                  Arbitrary,
-                                  Handedness::Left,
-                                  serialization::Frame::PRINCIPAL_AXES>;
-
   static constexpr MomentOfInertia zero;
 
   auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(

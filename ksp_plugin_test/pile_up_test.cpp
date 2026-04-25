@@ -485,11 +485,7 @@ TEST(PileUpTestWithoutFixture, PhysXExponentialDecay) {
            7.0e3 * si::Unit<MomentOfInertia>,
        }});
 
-  using PrincipalAxes = Frame<serialization::Frame::TestTag,
-                              Arbitrary,
-                              Handedness::Right,
-                              serialization::Frame::TEST>;
-  auto const eigensystem = inertia_tensor.Diagonalize<PrincipalAxes>();
+  auto const eigensystem = inertia_tensor.Diagonalize<PartPrincipalAxes>();
   EXPECT_THAT(
       eigensystem.form.coordinates().Diagonal(),
       AlmostEquals(R3Element<MomentOfInertia>(
@@ -498,7 +494,7 @@ TEST(PileUpTestWithoutFixture, PhysXExponentialDecay) {
                         20.5997602971806898595e3 * si::Unit<MomentOfInertia>}),
                    2));
 
-  Rotation<PrincipalAxes, Barycentric> const initial_attitude =
+  Rotation<PartPrincipalAxes, Barycentric> const initial_attitude =
       eigensystem.rotation;
 
   AngularVelocity<Barycentric> const angular_velocity(
@@ -516,17 +512,17 @@ TEST(PileUpTestWithoutFixture, PhysXExponentialDecay) {
       inertia_tensor * angular_velocity;
   Bivector<AngularMomentum, Barycentric> const updated_angular_momentum =
       initial_angular_momentum + intrinsic_torque * Δt;
-  EulerSolver<Barycentric, PrincipalAxes> const euler_solver(
+  EulerSolver<Barycentric, PartPrincipalAxes> const euler_solver(
       eigensystem.form.coordinates().Diagonal(),
       updated_angular_momentum,
       initial_attitude,
       t0);
 
-  Bivector<AngularMomentum, PrincipalAxes> const angular_momentum_after =
+  Bivector<AngularMomentum, PartPrincipalAxes> const angular_momentum_after =
       euler_solver.AngularMomentumAt(t0 + Δt);
-  Rotation<PrincipalAxes, Barycentric> const attitude_after =
+  Rotation<PartPrincipalAxes, Barycentric> const attitude_after =
       euler_solver.AttitudeAt(angular_momentum_after, t0 + Δt);
-  AngularVelocity<PrincipalAxes> const angular_velocity_after =
+  AngularVelocity<PartPrincipalAxes> const angular_velocity_after =
       euler_solver.AngularVelocityFor(angular_momentum_after);
 
   AngularVelocity<Barycentric> const expected_angular_velocity =
