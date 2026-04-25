@@ -47,9 +47,9 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
                    PreferredPrincipalAxesFrame>::Identity()) {
   CHECK(inertia_tensor.IsDiagonalized()) << inertia_tensor;
 
-  // Do not use initial_angular_momentum after this point.
+  // Do not use `initial_angular_momentum` after this point.
   auto const initial_angular_momentum_in_principal_axes =
-      initial_attitude.Inverse()(initial_angular_momentum);
+      initial_attitude_.Inverse()(initial_angular_momentum);
 
   auto const& I₁ = moments_of_inertia_.x;
   auto const& I₂ = moments_of_inertia_.y;
@@ -156,7 +156,7 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
   // Now that 𝒮_ has been computed we can use it to adjust m and to compute ℛ_.
   initial_angular_momentum_ = 𝒮_(initial_angular_momentum_in_principal_axes);
   m = initial_angular_momentum_.coordinates();
-  ℛ_ = [this, initial_attitude]() -> Rotation<ℬʹ, InertialFrame> {
+  ℛ_ = [this]() -> Rotation<ℬʹ, InertialFrame> {
     auto const 𝒴ₜ₀⁻¹ = Rotation<ℬʹ, ℬₜ>::Identity();
     auto const 𝒫ₜ₀⁻¹ = Compute𝒫ₜ(initial_angular_momentum_).Inverse();
     auto const 𝒮⁻¹ = 𝒮_.Inverse().template Forget<Rotation>();
@@ -166,10 +166,10 @@ EulerSolver<InertialFrame, PrincipalAxesFrame>::EulerSolver(
     // (initial) principal axes frame.
     Rotation<ℬʹ, PrincipalAxesFrame> const ℛ = 𝒮⁻¹ * 𝒫ₜ₀⁻¹ * 𝒴ₜ₀⁻¹;
 
-    // The multiplication by initial_attitude makes up for the loss of
+    // The multiplication by `initial_attitude_` makes up for the loss of
     // generality due to the assumptions in the third paragraph of section
     // 2.3 of [CFSZ07].
-    return initial_attitude * ℛ;
+    return initial_attitude_ * ℛ;
   }();
 
   switch (formula_) {
