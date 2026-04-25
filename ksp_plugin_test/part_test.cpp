@@ -2,7 +2,9 @@
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/identity.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
@@ -20,6 +22,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "serialization/geometry.pb.h"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
@@ -34,7 +37,9 @@ using ::testing::MockFunction;
 using namespace principia::astronomy::_epoch;
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_identity;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
@@ -98,6 +103,14 @@ class PartTest : public testing::Test {
 // of the angular velocity that PhysX implements based on `angular_drag`.  This
 // behaviour makes no physical sense, but it is our duty to replicate it.
 TEST(PartTestWithoutFixture, PhysXExponentialDecay) {
+  // We need a non-rotating frame to construct a solver, but the frames that
+  // come from the game like `RigidPart` are left-handed.  Let's have a
+  // left-handed inertial frame just for this test.
+  using AliceBarycentric = Frame<serialization::Frame::TestTag,
+                                 Inertial,
+                                 Handedness::Left,
+                                 serialization::Frame::TEST>;
+
   // The numbers below are arbitrary, but their order of magnitude corresponds
   // to what was observed in game, so as to give us an idea of the "quality" of
   // our approximation.
@@ -149,29 +162,22 @@ TEST(PartTestWithoutFixture, PhysXExponentialDecay) {
   Bivector<AngularMomentum, RigidPart> const updated_angular_momentum =
       initial_angular_momentum + intrinsic_torque * Δt;
 
-  MechanicalSystem<Barycentric, Barycentric> ms;
-  ms.AddRigidBody(
-      RigidMotion<RigidPart, Barycentric>(
-          RigidTransformation<RigidPart, Barycentric>(
-              RigidPart::origin,
-              Barycentric::origin,
-              Permutation<RigidPart, Barycentric>(OddPermutation::XZY)
-                  .Forget<OrthogonalMap>()),
-          angular_velocity,
-          Velocity<RigidPart>{}),
-      Mass{},
-      inertia_tensor);
+  Rotation<RigidPart, AliceBarycentric> const rigid_part_to_alice_barycentric =
+      Rotation<RigidPart, AliceBarycentric>::Identity();
+  Rotation<AliceBarycentric, RigidPart> const alice_barycentric_to_rigid_part =
+      rigid_part_to_alice_barycentric.Inverse();
 
-  EulerSolver<Barycentric, PartPrincipalAxes> const euler_solver(
-      eigensystem.form.coordinates().Diagonal(),
-      updated_angular_momentum,
-      initial_attitude,
+  EulerSolver<AliceBarycentric, PartPrincipalAxes> const euler_solver(
+      eigensystem.form,
+      rigid_part_to_alice_barycentric(updated_angular_momentum),
+      rigid_part_to_alice_barycentric * initial_attitude,
       t0);
 
   Bivector<AngularMomentum, PartPrincipalAxes> const angular_momentum_after =
       euler_solver.AngularMomentumAt(t0 + Δt);
   Rotation<PartPrincipalAxes, RigidPart> const attitude_after =
-      euler_solver.AttitudeAt(angular_momentum_after, t0 + Δt);
+      alice_barycentric_to_rigid_part *
+          euler_solver.AttitudeAt(angular_momentum_after, t0 + Δt);
   AngularVelocity<PartPrincipalAxes> const angular_velocity_after =
       euler_solver.AngularVelocityFor(angular_momentum_after);
 

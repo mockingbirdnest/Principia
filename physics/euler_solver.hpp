@@ -86,14 +86,20 @@ class EulerSolver {
   static EulerSolver ReadFromMessage(serialization::EulerSolver const& message);
 
  private:
-  using ℬₜ = Frame<struct ℬₜTag>;
-  using ℬʹ = Frame<struct ℬʹTag>;
+  using ℬₜ = Frame<struct ℬₜTag,
+                  InertialFrame::motion,
+                  InertialFrame::handedness>;
+  using ℬʹ = Frame<struct ℬʹTag,
+                   InertialFrame::motion,
+                   InertialFrame::handedness>;
 
-  // A frame which is rotated from PrincipalAxesFrame such that the coordinates
-  // of m along which we project is positive.  Used for all internal
-  // computations.
+  // A frame which is rotated from `PrincipalAxesFrame` such that the
+  // coordinates of `m along which we project is positive.  Used for all
+  // internal computations.
   using PreferredPrincipalAxesFrame =
-      Frame<struct PreferredPrincipalAxesFrameTag>;
+      Frame<struct PreferredPrincipalAxesFrameTag,
+            PrincipalAxesFrame::motion,
+            PrincipalAxesFrame::handedness>;
 
   using PreferredAngularMomentumBivector =
       Bivector<AngularMomentum, PreferredPrincipalAxesFrame>;
