@@ -51,7 +51,7 @@ class R3x3Matrix final {
   R3x3Matrix& operator/=(double right);
 
   static R3x3Matrix DiagonalMatrix(R3Element<Scalar> const& diagonal);
-
+  bool IsDiagonalMatrix() const;
   R3Element<Scalar> Diagonal() const;
 
   Scalar Trace() const;
