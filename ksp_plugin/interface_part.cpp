@@ -13,6 +13,7 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/identification.hpp"
+#include "ksp_plugin/part.hpp"
 #include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -25,6 +26,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_identification;
+using namespace principia::ksp_plugin::_part;
 using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
@@ -118,14 +120,14 @@ void __cdecl principia__PartApplyIntrinsicTorque(
 }
 
 XYZ __cdecl principia__PartDragTorqueFromAngularVelocity(
-    double const angular_drag,
+    double const angular_drag_per_second,
     double const delta_t,
     XYZ const world_angular_velocity,
     XYZ const moments_of_inertia_in_tonnes,
     WXYZ const principal_axes_rotation,
     WXYZ const part_rotation) {
   journal::Method<journal::PartDragTorqueFromAngularVelocity> m(
-      {angular_drag,
+      {angular_drag_per_second,
        delta_t,
        world_angular_velocity,
        moments_of_inertia_in_tonnes,
@@ -134,24 +136,18 @@ XYZ __cdecl principia__PartDragTorqueFromAngularVelocity(
   Time const Δt = delta_t * Second;
   // The type of the angular drag coefficient is given by its use in PhysX, see
   // https://github.com/NVIDIAGameWorks/PhysX-3.4/blob/5e42a5f112351a223c19c17bb331e6c55037b8eb/PhysX_3.4/Source/LowLevelDynamics/src/DyBodyCoreIntegrator.h#L72-L75.
-  // The clamping is critical to make sure that the angular velocity decreases
-  // in norm and doesn't change sign, see #4166.
-  Inverse<Time> const effective_angular_drag =
-      std::max(std::min(angular_drag / Second, 1 / Δt), Inverse<Time>{});
+  Inverse<Time> const angular_drag = angular_drag_per_second / Second;
 
   Rotation<RigidPart, World> const part_to_world(FromWXYZ(part_rotation));
   Rotation<World, RigidPart> const world_to_part = part_to_world.Inverse();
 
   AngularVelocity<RigidPart> const angular_velocity =
       world_to_part(FromXYZ<AngularVelocity<World>>(world_angular_velocity));
-
   InertiaTensor<RigidPart> const inertia_tensor = FromMomentsOfInertia(
       moments_of_inertia_in_tonnes, principal_axes_rotation);
-  Bivector<Torque, RigidPart> const intrinsic_torque =
-      -effective_angular_drag * inertia_tensor * angular_velocity +
-      Commutator(angular_velocity, inertia_tensor * angular_velocity) / Radian;
 
-  return m.Return(ToXYZ(part_to_world(intrinsic_torque)));
+  return m.Return(ToXYZ(part_to_world(Part::DragTorqueFromAngularVelocity(
+      angular_drag, Δt, angular_velocity, inertia_tensor))));
 }
 
 QPRW __cdecl principia__PartGetActualRigidMotion(

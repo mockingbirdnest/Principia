@@ -1954,7 +1954,7 @@ message PartDragTorqueFromAngularVelocity {
     optional PartDragTorqueFromAngularVelocity extension = 5203;
   }
   message In {
-    required double angular_drag = 1;
+    required double angular_drag_per_second = 1;
     required double delta_t = 2;
     required XYZ world_angular_velocity = 3;
     required XYZ moments_of_inertia_in_tonnes = 4;

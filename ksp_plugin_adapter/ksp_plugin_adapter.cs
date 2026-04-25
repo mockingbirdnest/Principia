@@ -1842,10 +1842,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
           // KSP sets `part.rb.angularDrag` and lets Unity/PhysX compute
           // dampening.  However, it doesn't tell us about it so we end up with
-          // uncontrolled oscillations.  Therefore, we must create that torque
-          // out of thin air here.  Note that in FAR `part.rb.angularDrag` is 0
-          // and we are properly given the torque through `Part.AddTorque` so
-          // this code has no effect.
+          // uncontrolled oscillations.  Therefore, we must create the damping
+          // torque out of thin air here.  Note that in FAR
+          // `part.rb.angularDrag` is 0 and we are properly given the torque
+          // through `Part.AddTorque` so this code has no effect.
           // The documentation in https://documentation.help/NVIDIA-PhysX-SDK-Guide/RigidDynamics.html#damping.
           // is wrong because `angularDrag * angularVelocity` is not physically
           // a torque, it represents an exponential decay of the angular
@@ -1856,7 +1856,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           // See #3697 and #4166.
           var drag_torque =
               (UnityEngine.Vector3)Interface.PartDragTorqueFromAngularVelocity(
-                  angular_drag: part.rb.angularDrag,
+                  angular_drag_per_second: part.rb.angularDrag,
                   delta_t: Δt,
                   world_angular_velocity: (XYZ)part.rb.angularVelocity,
                   moments_of_inertia_in_tonnes: (XYZ)part.rb.inertiaTensor,
