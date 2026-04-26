@@ -908,7 +908,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
        delta_t});
   CHECK(plugin != nullptr);
   VLOG(1) << "InsertOrKeepLoadedPart: " << name << " " << part_id << " "
-          << moments_of_inertia_in_tonnes << " "
+          << FromXYZ(moments_of_inertia_in_tonnes) << " "
           << FromWXYZ(principal_axes_rotation);
 
   InertiaTensor<RigidPart> const inertia_tensor_in_rigid_part =
