@@ -171,8 +171,8 @@ class Part final {
 
   // Computes the torque that implements the bogus PhysX exponential decay of
   // the angular velocity.  It is here for ease of testing.  It cannot be a
-  // method of `Part` because this is computed before the `Part` has been
-  // constructed/updated.
+  // nonstatic member function of `Part` because this is computed before the
+  // `Part` has been constructed/updated.
   static Bivector<Torque, RigidPart> DragTorqueFromAngularVelocity(
       Inverse<Time> const& angular_drag,
       Time const& Δt,
