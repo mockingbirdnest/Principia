@@ -12,6 +12,7 @@
 #include "absl/strings/str_split.h"
 #include "base/array.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space_transformations.hpp"
@@ -23,6 +24,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/tensors.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -30,6 +32,7 @@ namespace interface {
 
 using namespace principia::base::_array;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space_transformations;
@@ -40,6 +43,7 @@ using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_tensors;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 
@@ -388,6 +392,25 @@ FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
           length_integration_tolerance,
           speed_integration_tolerance);
   return {adaptive_step_parameters, generalized_adaptive_step_parameters};
+}
+
+inline InertiaTensor<RigidPart> FromMomentsOfInertia(
+    XYZ const& moments_of_inertia_in_tonnes,
+    WXYZ const& principal_axes_rotation) {
+  static constexpr MomentOfInertia zero;
+  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
+      {.x = moments_of_inertia_in_tonnes.x,
+       .y = moments_of_inertia_in_tonnes.y,
+       .z = moments_of_inertia_in_tonnes.z});
+  InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_principal_axes(
+      R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
+                                  {zero, moments_of_inertia.y, zero},
+                                  {zero, zero, moments_of_inertia.z}));
+
+  Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
+      FromWXYZ(principal_axes_rotation));
+
+  return principal_axes_to_part(inertia_tensor_in_principal_axes);
 }
 
 inline Renderer::Node FromNode(Plugin const& plugin,

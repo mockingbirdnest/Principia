@@ -31,29 +31,6 @@ using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
-namespace {
-
-InertiaTensor<RigidPart> FromMomentsOfInertia(
-    XYZ const& moments_of_inertia_in_tonnes,
-    WXYZ const& principal_axes_rotation) {
-  static constexpr MomentOfInertia zero;
-  auto const moments_of_inertia = FromXYZ<R3Element<MomentOfInertia>>(
-      {.x = moments_of_inertia_in_tonnes.x,
-       .y = moments_of_inertia_in_tonnes.y,
-       .z = moments_of_inertia_in_tonnes.z});
-  InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_principal_axes(
-      R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
-                                  {zero, moments_of_inertia.y, zero},
-                                  {zero, zero, moments_of_inertia.z}));
-
-  Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
-      FromWXYZ(principal_axes_rotation));
-
-  return principal_axes_to_part(inertia_tensor_in_principal_axes);
-}
-
-}  // namespace
-
 XYZ __cdecl principia__PartAngularMomentumFromAngularVelocity(
     XYZ world_angular_velocity,
     XYZ moments_of_inertia_in_tonnes,
