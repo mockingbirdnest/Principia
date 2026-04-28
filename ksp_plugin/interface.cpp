@@ -349,13 +349,19 @@ void __cdecl principia__ActivatePlayer() {
 void __cdecl principia__ActivateRecorder(bool const activate) {
   if (activate && !Recorder::IsActivated()) {
     // Build a name somewhat similar to that of the log files.
-    auto const now = std::chrono::system_clock::now();
-    std::time_t const time = std::chrono::system_clock::to_time_t(now);
-    std::tm const* const localtime = std::localtime(&time);
-    std::stringstream name;
-    name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
-    auto* const recorder = new Recorder(
-        std::filesystem::path("glog") / "Principia" / name.str());
+#if OS_WIN
+    std::int32_t const pid = _getpid();
+#else
+    std::int32_t const pid = getpid();
+#endif
+    auto const path =
+        std::filesystem::path("glog/Principia/")
+            .concat("JOURNAL.")
+            .concat(absl::FormatTime(
+                "%Y%m%d-%H%M%S", absl::Now(), absl::LocalTimeZone()))
+            .concat(".")
+            .concat(std::to_string(pid));
+    auto* const recorder = new Recorder(path);
     Vessel::MakeSynchronous();
     Recorder::Activate(recorder);
   } else if (!activate && Recorder::IsActivated()) {
