@@ -238,7 +238,7 @@ message OrbitalElements {
   required fixed64 first_collision_time_address = 16 [(address_of) = "first_collision_time"];
   required fixed64 first_collision_risk_time_address = 17 [(address_of) = "first_collision_risk_time"];
   required fixed64 first_reentry_time_address = 18 [(address_of) = "first_reentry_time"];
-  // Added in Lehmer.
+  // Added in Leibniz.
   required fixed64 mean_elements = 19 [(pointer_to) = "Iterator",
                                        (disposable) = "DisposableIterator",
                                        (is_produced) = true];
