@@ -564,7 +564,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     if (a_graph_ == null) {
       a_graph_ = new Graph(Width(10), Height(1));
       e_graph_ = new Graph(Width(10), Height(1));
-      i_graph_ = new Graph(Width(10),   Height(1));
+      i_graph_ = new Graph(Width(10), Height(1));
       Ω_graph_ = new Graph(Width(10), Height(1));
       ω_graph_ = new Graph(Width(10), Height(1));
       periapsis_graph_ = new Graph(Width(10), Height(1));
@@ -577,26 +577,35 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     Interval e_sin_ω_range = Interval.Empty;
     if (elements != null) {
       if (!elements.mean_elements.IteratorAtEnd()) {
-        t_range.min = elements.mean_elements.IteratorGetPlottableElements().time;
+        t_range.min =
+            elements.mean_elements.IteratorGetPlottableElements().time;
       }
       if (t_range.min == last_t_min_ && !must_redraw_graphs_) {
         return;
       }
       must_redraw_graphs_ = false;
-      for (;!elements.mean_elements.IteratorAtEnd();
+      for (;
+           !elements.mean_elements.IteratorAtEnd();
            elements.mean_elements.IteratorIncrement()) {
         var elements_at_t =
             elements.mean_elements.IteratorGetPlottableElements();
         t_range.max = elements_at_t.time;
-        e_cos_ω_range.Include(elements_at_t.eccentricity_cos_argument_of_periapsis);
-        e_sin_ω_range.Include(elements_at_t.eccentricity_sin_argument_of_periapsis);
+        e_cos_ω_range.Include(elements_at_t.
+                                  eccentricity_cos_argument_of_periapsis);
+        e_sin_ω_range.Include(elements_at_t.
+                                  eccentricity_sin_argument_of_periapsis);
       }
       elements.mean_elements.IteratorReset();
     }
     last_t_min_ = t_range.min;
-    foreach (var distance_graph in new[]{a_graph_, periapsis_graph_, apoapsis_graph_}) {
-      distance_graph.PrepareCanvas(
-          t_range, new Interval{min= elements.mean_periapsis_distance.min, max=elements.mean_apoapsis_distance.max});
+    foreach (var distance_graph in new[]
+                 { a_graph_, periapsis_graph_, apoapsis_graph_ }) {
+      distance_graph.PrepareCanvas(t_range,
+                                   new Interval{
+                                       min =
+                                           elements.mean_periapsis_distance.min,
+                                       max = elements.mean_apoapsis_distance.max
+                                   });
     }
     e_graph_.PrepareCanvas(t_range, elements.mean_eccentricity);
     i_graph_.PrepareCanvas(t_range, elements.mean_inclination);
@@ -622,10 +631,11 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     лидов_graph_.PlotFunction(Interface.GraphLidovFrozenLine,
                               new Interval{ min = -3.0 / 5.0, max = 0 },
                               XKCDColors.White);
-      if (show_max_e_min_i_lines_) {
+    if (show_max_e_min_i_lines_) {
       for (int ten_e_max = 1; ten_e_max <= 10; ++ten_e_max) {
         double e_max = ten_e_max / 10.0;
-        Interval c2_range = Interface.GraphLidovMaximalEccentricityLineC2Range(e_max);
+        Interval c2_range =
+            Interface.GraphLidovMaximalEccentricityLineC2Range(e_max);
         лидов_graph_.PlotFunction(
             c2 => Interface.GraphLidovMaximalEccentricityLine(e_max, c2),
             c2_range,
@@ -659,16 +669,19 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     if (show_min_e_max_i_lines_) {
       for (int ten_e_min = 1; ten_e_min <= 9; ++ten_e_min) {
         double e_min = ten_e_min / 10.0;
-        Interval c2_range = Interface.GraphLidovMinimalEccentricityLeftLineC2Range(e_min);
+        Interval c2_range =
+            Interface.GraphLidovMinimalEccentricityLeftLineC2Range(e_min);
         лидов_graph_.PlotFunction(
             c2 => Interface.GraphLidovMinimalEccentricityLeftLine(e_min, c2),
             c2_range,
             XKCDColors.Cornflower);
-        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(e_min, out double c2_right, out double c1_max);
-        лидов_graph_.PlotVerticalLine(
-            c2_right,
-            XKCDColors.Cornflower,
-            new Interval{ min=0, max=c1_max });
+        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(
+            e_min,
+            out double c2_right,
+            out double c1_max);
+        лидов_graph_.PlotVerticalLine(c2_right,
+                                      XKCDColors.Cornflower,
+                                      new Interval{ min = 0, max = c1_max });
       }
       for (int i_max_degrees = 0; i_max_degrees <= 90; i_max_degrees += 10) {
         лидов_graph_.PlotFunction(
@@ -678,7 +691,8 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       }
       for (int ten_e_min = 4; ten_e_min <= 9; ++ten_e_min) {
         double e_min = ten_e_min / 10.0;
-        Interval c2 = Interface.GraphLidovMinimalEccentricityLeftLineC2Range(e_min);
+        Interval c2 =
+            Interface.GraphLidovMinimalEccentricityLeftLineC2Range(e_min);
         лидов_graph_.AddLabel(c2.min,
                               0,
                               $".{ten_e_min}",
@@ -687,7 +701,10 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       }
       for (int ten_e_min = 6; ten_e_min <= 9; ++ten_e_min) {
         double e_min = ten_e_min / 10.0;
-        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(e_min, out double c2, out double _);
+        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(
+            e_min,
+            out double c2,
+            out double _);
         лидов_graph_.AddLabel(c2,
                               0,
                               $".{ten_e_min}",
@@ -743,11 +760,21 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       a_graph_.PlotPoint(t, elements_at_t.semimajor_axis, XKCDColors.Sunflower);
       e_graph_.PlotPoint(t, elements_at_t.eccentricity, XKCDColors.Cornflower);
       i_graph_.PlotPoint(t, elements_at_t.inclination, XKCDColors.Lavender);
-      Ω_graph_.PlotPoint(t, elements_at_t.longitude_of_ascending_node, XKCDColors.LightPink);
-      ω_graph_.PlotPoint(t, elements_at_t.argument_of_periapsis, XKCDColors.Cornflower);
-      periapsis_graph_.PlotPoint(t, elements_at_t.periapsis_distance, XKCDColors.Sunflower);
-      apoapsis_graph_.PlotPoint(t, elements_at_t.apoapsis_distance, XKCDColors.Sunflower);
-      лидов_graph_.PlotPoint(elements_at_t.lidov_c2, elements_at_t.lidov_c1, XKCDColors.RoseRed);
+      Ω_graph_.PlotPoint(t,
+                         elements_at_t.longitude_of_ascending_node,
+                         XKCDColors.LightPink);
+      ω_graph_.PlotPoint(t,
+                         elements_at_t.argument_of_periapsis,
+                         XKCDColors.Cornflower);
+      periapsis_graph_.PlotPoint(t,
+                                 elements_at_t.periapsis_distance,
+                                 XKCDColors.Sunflower);
+      apoapsis_graph_.PlotPoint(t,
+                                elements_at_t.apoapsis_distance,
+                                XKCDColors.Sunflower);
+      лидов_graph_.PlotPoint(elements_at_t.lidov_c2,
+                             elements_at_t.lidov_c1,
+                             XKCDColors.RoseRed);
       eccentricity_vector_graph_.PlotPoint(
           elements_at_t.eccentricity_cos_argument_of_periapsis,
           elements_at_t.eccentricity_sin_argument_of_periapsis,
