@@ -624,7 +624,10 @@ void __cdecl principia__FreeVesselsAndPartsAndCollectPileUps(
 
 int __cdecl principia__GetBufferedLogging() {
   journal::Method<journal::GetBufferedLogging> m;
-  return m.Return(static_cast<int>(file_log_sink->buffered_level()));
+  // `file_log_sink` is null when replaying journals.
+  return m.Return(static_cast<int>(file_log_sink == nullptr
+                                       ? absl::LogSeverityAtMost::kInfo
+                                       : file_log_sink->buffered_level()));
 }
 
 int __cdecl principia__GetStderrLogging() {
@@ -1134,8 +1137,11 @@ char const* __cdecl principia__SerializePlugin(
 // Log messages at a higher level are flushed immediately.
 void __cdecl principia__SetBufferedLogging(int const max_severity) {
   journal::Method<journal::SetBufferedLogging> m({max_severity});
-  file_log_sink->set_buffered_level(
-      static_cast<absl::LogSeverityAtMost>(max_severity));
+  // `file_log_sink` is null when replaying journals.
+  if (file_log_sink != nullptr) {
+    file_log_sink->set_buffered_level(
+        static_cast<absl::LogSeverityAtMost>(max_severity));
+  }
   return m.Return();
 }
 
