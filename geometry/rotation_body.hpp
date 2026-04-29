@@ -379,6 +379,11 @@ Rotation<FromFrame, ToFrame> operator*(
 }
 
 template<typename FromFrame, typename ToFrame>
+bool IsFinite(Rotation<FromFrame, ToFrame> const& rotation) {
+  return IsFinite(rotation.quaternion_);
+}
+
+template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          Rotation<FromFrame, ToFrame> const& rotation) {
   return out << rotation.quaternion_;

@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package principia.serialization;
+
+option cc_enable_arenas = true;
+
+// A marker used to indicate that a message was written at or after a particular
+// version.
+message VersionMarker {}

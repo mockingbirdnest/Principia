@@ -140,6 +140,11 @@ constexpr Point<Vector> NextDown(Point<Vector> const x) {
 }
 
 template<typename Vector>
+bool IsFinite(Point<Vector> const& point) {
+  return IsFinite(point.coordinates_);
+}
+
+template<typename Vector>
 std::string DebugString(Point<Vector> const& point) {
   using quantities::_quantities::DebugString;
   return DebugString(point.coordinates_);

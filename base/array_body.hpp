@@ -67,8 +67,8 @@ constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
                 "reinterpret_cast is unsafe");
   if (characters[size] != 0) {
     LOG(FATAL) << "Array constructed with a character array terminated by the "
-                  "non-null 0x"
-               << std::hex << static_cast<uint32_t>(characters[size]);
+               << "non-null 0x" << std::noshowbase << std::hex << std::uppercase
+               << static_cast<uint32_t>(characters[size]);
   }
 }
 

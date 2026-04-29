@@ -281,7 +281,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5204.
+  extensions 5000 to 5999;  // Last used: 5212.
 }
 
 message ActivatePlayer {
@@ -314,23 +314,6 @@ message AdvanceTime {
     required double planetarium_rotation = 3;
   }
   optional In in = 1;
-}
-
-message AngularMomentumFromAngularVelocity {
-  extend Method {
-    optional AngularMomentumFromAngularVelocity extension = 5174;
-  }
-  message In {
-    required XYZ world_angular_velocity = 1;
-    required XYZ moments_of_inertia_in_tonnes = 2;
-    required WXYZ principal_axes_rotation = 3;
-    required WXYZ part_rotation = 4;
-  }
-  message Return {
-    required XYZ result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
 }
 
 message CameraReferenceRotation {
@@ -1925,7 +1908,7 @@ message IteratorGetVesselGuid {
 
 message IteratorGetPlottableElements {
   extend Method {
-    optional IteratorGetPlottableElements extension = 5203;
+    optional IteratorGetPlottableElements extension = 5212;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
@@ -2092,6 +2075,23 @@ message NewPlugin {
   optional Return return = 3;
 }
 
+message PartAngularMomentumFromAngularVelocity {
+  extend Method {
+    optional PartAngularMomentumFromAngularVelocity extension = 5174;
+  }
+  message In {
+    required XYZ world_angular_velocity = 1;
+    required XYZ moments_of_inertia_in_tonnes = 2;
+    required WXYZ principal_axes_rotation = 3;
+    required WXYZ part_rotation = 4;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message PartApplyIntrinsicForce {
   extend Method {
     optional PartApplyIntrinsicForce extension = 5114;
@@ -2127,6 +2127,25 @@ message PartApplyIntrinsicTorque {
     required XYZ torque_in_kilonewton_metre = 3;
   }
   optional In in = 1;
+}
+
+message PartDragTorqueFromAngularVelocity {
+  extend Method {
+    optional PartDragTorqueFromAngularVelocity extension = 5203;
+  }
+  message In {
+    required double angular_drag_per_second = 1;
+    required double delta_t = 2;
+    required XYZ world_angular_velocity = 3;
+    required XYZ moments_of_inertia_in_tonnes = 4;
+    required WXYZ principal_axes_rotation = 5;
+    required WXYZ part_rotation = 6;
+  }
+  message Return {
+    required XYZ torque_in_kilonewton_metre = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message PartGetActualRigidMotion {

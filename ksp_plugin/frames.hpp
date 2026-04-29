@@ -152,6 +152,13 @@ using RigidPart = Frame<serialization::Frame::PluginTag,
                         Handedness::Left,
                         serialization::Frame::RIGID_PART>;
 
+// A frame rotated from `RigidPart` whose axes are the principal axes of the
+// part in the order defined by `RigidBody.inertiaTensor`.
+using PartPrincipalAxes = Frame<serialization::Frame::PhysicsTag,
+                                Arbitrary,
+                                Handedness::Left,
+                                serialization::Frame::PRINCIPAL_AXES>;
+
 // The body-centred non-rotating frame for the current main body.
 using MainBodyCentred = Frame<serialization::Frame::PluginTag,
                               NonRotating,
@@ -185,6 +192,7 @@ using internal::Navball;
 using internal::Navigation;
 using internal::NavigationFrame;
 using internal::NavigationManœuvre;
+using internal::PartPrincipalAxes;
 using internal::PlottingFrame;
 using internal::RigidPart;
 using internal::World;

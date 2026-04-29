@@ -48,7 +48,9 @@ using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Gt;
 using ::testing::HasSubstr;
+using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Pair;
 using ::testing::ResultOf;
@@ -80,7 +82,9 @@ constexpr std::string_view preferred_encoder = "base64";
 class PluginCompatibilityTest : public testing::Test {
  protected:
   static not_null<std::unique_ptr<Plugin const>> WriteAndReadBack(
-      not_null<std::unique_ptr<Plugin const>> plugin1) {
+      not_null<std::unique_ptr<Plugin const>> plugin1,
+      std::int64_t& bytes_written,
+      std::int64_t& bytes_read) {
     // There may be solidi in the path due to parameterized tests, so we remove
     // them.
     std::string const sanitized_name = absl::StrCat(
@@ -92,21 +96,26 @@ class PluginCompatibilityTest : public testing::Test {
     WritePluginToFile(TEMP_DIR / sanitized_name,
                       preferred_compressor,
                       preferred_encoder,
-                      std::move(plugin1));
+                      std::move(plugin1),
+                      bytes_written);
 
     // Read the plugin from the new file to make sure that it's fine.
     return ReadPluginFromFile(TEMP_DIR / sanitized_name,
                               preferred_compressor,
-                              preferred_encoder);
+                              preferred_encoder,
+                              bytes_read);
   }
 
   static void CheckSaveCompatibility(std::filesystem::path const& filename,
                                      std::string_view const compressor,
                                      std::string_view const encoder) {
+    std::int64_t bytes_written;
+    std::int64_t bytes_read;
+
     // Read a plugin from the given file.
     auto plugin = ReadPluginFromFile(filename, compressor, encoder);
 
-    WriteAndReadBack(std::move(plugin));
+    WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
   }
 
   absl::ScopedStderrThreshold scoped_stderr_threshold_{
@@ -123,18 +132,14 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
-                  HasSubstr("pre-Cohen ContinuousTrajectory"))).
-      Times(AtLeast(1));
+                  HasSubstr("pre-Cohen ContinuousTrajectory")))
+      .Times(AtLeast(1));
   // The save is even older.
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Cauchy")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Cauchy")));
   // But not *that* old.
-  EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Cartan"))).Times(0);
+  EXPECT_CALL(log, Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Cartan")))
+      .Times(0);
   log.StartCapturingLogs();
 
   CheckSaveCompatibility(
@@ -148,21 +153,20 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 TEST_F(PluginCompatibilityTest, Reach) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Galileo"))).
-      Times(AtLeast(1));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Galileo")))
+      .Times(AtLeast(1));
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Frobenius"))).Times(0);
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Frobenius")))
+      .Times(0);
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
-  plugin = WriteAndReadBack(std::move(plugin));
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  plugin = WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
   auto const test = plugin->GetVessel("f2d77873-4776-4809-9dfb-de9e7a0620a6");
   EXPECT_THAT(test->name(), Eq("TEST"));
   EXPECT_THAT(TTSecond(test->trajectory().front().time),
@@ -303,20 +307,20 @@ TEST_F(PluginCompatibilityTest, Reach) {
 TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(AtLeast(1));
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Gröbner"))).Times(0);
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Gröbner")))
+      .Times(0);
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\1119\1119.proto.b64)",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
-  plugin = WriteAndReadBack(std::move(plugin));
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  plugin = WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
   auto const& orbiter =
       *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
   EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));
@@ -374,16 +378,22 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
 TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(AtLeast(1));
+  // We use this save to check compatibility with pre-Hamilton
+  // DiscreteTrajectory, but it is much older.
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Fatou")))
+      .Times(AtLeast(1));
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
-  plugin = WriteAndReadBack(std::move(plugin));
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  plugin = WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
 
   // The vessel with the longest history.
   auto const& vessel =
@@ -444,9 +454,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
 TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(AtLeast(1));
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
@@ -464,7 +473,9 @@ TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
   mutable_plugin.CatchUpVessel("1e07aaa2-d1f8-4f6d-8b32-495b46109d98");
 
   // Make sure that we can upgrade, save, and reload.
-  WriteAndReadBack(std::move(plugin));
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
 }
 
 TEST_F(PluginCompatibilityTest, PreHardy) {
@@ -473,12 +484,11 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
-                  HasSubstr("pre-Лефшец DiscreteTrajectorySegment"))).
-      Times(AtLeast(1));
+                  HasSubstr("pre-Лефшец DiscreteTrajectorySegment")))
+      .Times(AtLeast(1));
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton"))).Times(0);
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(0);
   log.StartCapturingLogs();
 
   CheckSaveCompatibility(
@@ -510,6 +520,48 @@ TEST_F(PluginCompatibilityTest, 3273) {
   double const κ = nd / (Ωʹᴛ - Ωʹ);
   EXPECT_THAT(vessel->flight_plan().analysis(2)->recurrence(),
               Eq(std::nullopt));
+}
+
+TEST_F(PluginCompatibilityTest, DISABLED_4490) {
+  absl::ScopedMockLog log;
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("pre-Leibniz DiscreteTrajectory")))
+      .Times(AtLeast(1));
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("pre-Leibniz Part")))
+      .Times(AtLeast(1));
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("pre-Hamilton DiscreteTrajectory")))
+      .Times(0);
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("pre-Hamilton Part")))
+      .Times(0);
+  log.StartCapturingLogs();
+
+  std::int64_t bytes_processed;
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      R"(P:\Public Mockingbird\Principia\Saves\4490\4490a.proto.b64)",
+      /*compressor=*/"gipfeli",
+      /*encoder=*/"base64",
+      bytes_processed);
+  EXPECT_EQ(bytes_processed, 114'345'631);
+
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
+  // Various asynchronous activities may happen in the plugin between the time
+  // it is read and the time it is written, so the size of the new save is not
+  // deterministic.
+  EXPECT_THAT(bytes_written, AllOf(Gt(27'026'000), Lt(27'028'000)));
+  EXPECT_EQ(bytes_read, bytes_written);
 }
 #endif
 

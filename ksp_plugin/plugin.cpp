@@ -188,8 +188,8 @@ void Plugin::EndInitialization() {
   // Check if this is the stock KSP system in which case it needs to be
   // stabilized.
   system_fingerprint_ = solar_system.Fingerprint();
-  LOG(INFO) << "System fingerprint is 0x" << std::hex << std::uppercase
-            << system_fingerprint_;
+  LOG(INFO) << "System fingerprint is 0x" << std::noshowbase << std::hex
+            << std::uppercase << system_fingerprint_;
 
   bool is_well_known = false;
   for (auto const ksp_version : {KSP122, KSP191PreLegendre, KSP191}) {
@@ -197,8 +197,9 @@ void Plugin::EndInitialization() {
       LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
       StabilizeKSP(solar_system);
       system_fingerprint_ = solar_system.Fingerprint();
-      LOG(INFO) << "System fingerprint after stabilization is 0x" << std::hex
-                << std::uppercase << system_fingerprint_;
+      LOG(INFO) << "System fingerprint after stabilization is 0x"
+                << std::noshowbase << std::hex << std::uppercase
+                << system_fingerprint_;
       CHECK_EQ(KSPStabilizedSystemFingerprints[ksp_version],
                system_fingerprint_)
           << "Attempt at stabilizing the KSP system failed!\n"
@@ -1551,8 +1552,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
         break;
       }
     }
-    LOG(INFO) << "System has fingerprint 0x" << std::hex << std::uppercase
-              << plugin->system_fingerprint_ << "; " << details;
+    LOG(INFO) << "System has fingerprint 0x" << std::noshowbase << std::hex
+              << std::uppercase << plugin->system_fingerprint_ << "; "
+              << details;
   }
 
   plugin->game_epoch_ = Instant::ReadFromMessage(message.game_epoch());

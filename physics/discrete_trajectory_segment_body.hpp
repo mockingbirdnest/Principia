@@ -309,9 +309,8 @@ DiscreteTrajectorySegment<Frame>::ReadFromMessage(
 
   // Finally, restore the downsampling information.
   if (message.has_downsampling_parameters()) {
-    segment.downsampling_parameters_ = DownsamplingParameters{
-        .tolerance = Length::ReadFromMessage(
-            message.downsampling_parameters().tolerance())};
+    segment.downsampling_parameters_ = DownsamplingParameters::ReadFromMessage(
+        message.downsampling_parameters());
   }
 
   return segment;
@@ -586,7 +585,12 @@ void DiscreteTrajectorySegment<Frame>::UpdateInterpolation(
   CHECK(upper != timeline_.cbegin());
   auto const lower = std::prev(upper);
   auto const& [lower_time, lower_degrees_of_freedom] = *lower;
-  auto const& [upper_time, upper_degrees_of_freedom] = *upper;
+
+  // This needs to be copied because the element designated by `upper` is going
+  // to be extracted from the set, which invalidates `upper`.
+  auto const upper_time = upper->time;
+  auto const upper_degrees_of_freedom = upper->degrees_of_freedom;
+
   // Beware! extracting from a btree_set invalidates all iterators, not only the
   // one denoting the extracted node.  We must use the special entry point
   // `extract_and_get_next` to get the iterator that we'll use as a hint for
@@ -666,10 +670,9 @@ void DiscreteTrajectorySegment<Frame>::WriteToMessage(
     std::int64_t const timeline_size,
     std::vector<iterator> const& exact) const {
   if (downsampling_parameters_.has_value()) {
-    auto* const serialized_downsampling_parameters =
-        message->mutable_downsampling_parameters();
-    downsampling_parameters_->tolerance.WriteToMessage(
-        serialized_downsampling_parameters->mutable_tolerance());
+    downsampling_parameters_->template WriteToMessage<
+        serialization::DiscreteTrajectorySegment::DownsamplingParameters>(
+        message->mutable_downsampling_parameters());
   }
 
   // Convert the `exact` vector into a set, and add the extremities.  This

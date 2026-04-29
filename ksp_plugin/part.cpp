@@ -1,5 +1,6 @@
 #include "ksp_plugin/part.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <iterator>
@@ -261,14 +262,18 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
       is_pre_fréchet || (message.has_pre_frenet_inertia_tensor() &&
                          !message.has_intrinsic_torque());
   bool const is_pre_galileo = !message.has_centre_of_mass();
-  bool const is_pre_hamilton = message.prehistory().segment_size() == 0;
-  LOG_IF(WARNING, is_pre_hamilton)
-      << "Reading pre-"
-      << (is_pre_cesàro    ? "Cesàro"
-          : is_pre_fréchet ? "Fréchet"
-          : is_pre_frenet  ? "Frenet"
-          : is_pre_galileo ? "Galileo"
-                           : "Hamilton") << " Part";
+  bool const is_pre_leibniz =
+      !message.prehistory().has_leibniz_trajectory_marker();
+  bool const is_pre_hamilton =
+      is_pre_leibniz && message.prehistory().segment_size() == 0;
+  LOG_IF(WARNING, is_pre_leibniz) << "Reading pre-"
+                                  << (is_pre_cesàro     ? "Cesàro"
+                                      : is_pre_fréchet  ? "Fréchet"
+                                      : is_pre_frenet   ? "Frenet"
+                                      : is_pre_galileo  ? "Galileo"
+                                      : is_pre_hamilton ? "Hamilton"
+                                                        : "Leibniz")
+                                  << " Part";
 
   std::unique_ptr<Part> part;
   if (is_pre_fréchet) {
@@ -371,6 +376,21 @@ std::string Part::ShortDebugString() const {
   HexadecimalEncoder</*null_terminated=*/true> encoder;
   auto const hex_id = encoder.Encode(id_bytes);
   return name_ + " (" + hex_id.data.get() + ")";
+}
+
+Bivector<Torque, RigidPart> Part::DragTorqueFromAngularVelocity(
+    Inverse<Time> const& angular_drag,
+    Time const& Δt,
+    AngularVelocity<RigidPart> const& angular_velocity,
+    InertiaTensor<RigidPart> const& inertia_tensor) {
+  // The clamping is critical to make sure that the angular velocity decreases
+  // in norm and doesn't change sign, see #4166.
+  Inverse<Time> const effective_angular_drag =
+      std::max(std::min(angular_drag, 1 / Δt), Inverse<Time>{});
+
+  return -effective_angular_drag * inertia_tensor * angular_velocity +
+         Commutator(angular_velocity, inertia_tensor * angular_velocity) /
+             Radian;
 }
 
 Part::Part(PartId const part_id,

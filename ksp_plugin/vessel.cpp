@@ -186,10 +186,28 @@ void Vessel::DetectCollapsibilityChange() {
 
   // It is always correct to mark as non-collapsible a collapsible segment or to
   // append collapsible points to a non-collapsible segment (but not
-  // vice-versa).
+  // vice-versa).  Therefore, two decisions are made here: whether to create a
+  // checkpoint, and whether to create a new segment.  A new segment is always
+  // created when closing a collapsible segment, because that new
+  // (non-collapsible) segment may have to go in a checkpoint.  A checkpoint is
+  // only ever created when closing a non-collapsible segment; in that case a
+  // new segment is created too to hold the next collapsible segment which won't
+  // go in a checkpoint.
+  //
+  // However, if downsampling is enabled, and the (non-collapsible) segment
+  // being closed has no more than two points, it is reasonable to assume that
+  // the Hermite polynomial is quite close to the trajectory over that segment,
+  // so downsampling might be able to extend that polynomial to cover more
+  // times.  In that case we don't create a checkpoint, we don't create a new
+  // segment, and we will just append future collapsible points to the
+  // non-collapsible segment.  This is expected to save storage when we have a
+  // sequence of very short segments, e.g., because of an RCS burn.
   bool const collapsibility_changes = is_collapsible_ != will_be_collapsible;
+  bool const segment_is_potentially_extensible =
+      downsampling_parameters_.has_value() && backstory_->size() <= 2;
 
-  if (collapsibility_changes) {
+  if (collapsibility_changes &&
+      (is_collapsible_ || !segment_is_potentially_extensible)) {
     // If collapsibility changes, we create a new history segment.  This ensures
     // that downsampling does not change collapsibility boundaries.
 
@@ -747,8 +765,9 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
   message->set_selected_flight_plan_index(selected_flight_plan_index_);
   message->set_is_collapsible(is_collapsible_);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
-  LOG(INFO) << name_ << " " << NAMED(message->SpaceUsed()) << " "
-            << NAMED(message->ByteSize());
+  LOG(INFO) << name_ << " " << NAMED(message->SpaceUsedLong()) << " "
+            << NAMED(message->checkpoint().SpaceUsedExcludingSelfLong()) << " "
+            << NAMED(message->ByteSizeLong());
 }
 
 not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
@@ -850,10 +869,40 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                      &vessel->prediction_});
     vessel->is_collapsible_ = message.is_collapsible();
 
+    auto rewriter = [](serialization::Vessel::Checkpoint const& checkpoint) {
+      if (checkpoint.non_collapsible_segment()
+              .has_leibniz_trajectory_marker()) {
+        return checkpoint;
+      } else {
+        DiscreteTrajectorySegmentIterator<Barycentric> backstory;
+        // The read would emit "pre-Leibniz" warnings for each checkpoint, and
+        // there may be many.  Just silence these warnings.
+        DiscreteTrajectory<Barycentric> const non_collapsible_segment =
+            DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                checkpoint.non_collapsible_segment(),
+                /*tracked=*/{&backstory},
+                /*quiet=*/true);
+        serialization::Vessel::Checkpoint rewritten = checkpoint;
+        rewritten.clear_non_collapsible_segment();
+        non_collapsible_segment.WriteToMessage(
+            rewritten.mutable_non_collapsible_segment(),
+            backstory->begin(),
+            backstory->end(),
+            /*tracked=*/{backstory},
+            /*exact=*/{});
+        LOG_EVERY_N_SEC(WARNING, 1)
+            << "Rewriting pre-Leibniz Vessel::Checkpoint, size before "
+            << checkpoint.ByteSizeLong() << "B, size after "
+            << rewritten.ByteSizeLong() << "B";
+        return rewritten;
+      }
+    };
+
     vessel->checkpointer_ =
         Checkpointer<serialization::Vessel>::ReadFromMessage(
             vessel->MakeCheckpointerWriter(),
             vessel->MakeCheckpointerReader(),
+            rewriter,
             message.checkpoint());
     if (message.has_downsampling_parameters()) {
       vessel->downsampling_parameters_ =

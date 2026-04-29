@@ -12,7 +12,10 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 #include "testing_utilities/serialization.hpp"
 
 namespace principia {
@@ -25,7 +28,10 @@ using namespace principia::numerics::_elliptic_integrals;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics;
+using namespace principia::testing_utilities::_numerics_matchers;
 using namespace principia::testing_utilities::_serialization;
 
 class EllipticFunctionsTest : public ::testing::Test {};
@@ -109,6 +115,23 @@ TEST_F(EllipticFunctionsTest, Mathematica) {
     EXPECT_THAT(actual_value_a, AlmostEquals(expected_value_a, 0, 22074))
         << argument_u << " " << argument_m;
   }
+}
+
+TEST_F(EllipticFunctionsTest, LargeArgumentReduction) {
+  Angle const u = -20171088911.704613 * Radian;
+  double const mc = 0.99998808836160413;
+
+  double actual_value_s;
+  double actual_value_c;
+  double actual_value_d;
+  JacobiSNCNDN(u, mc, actual_value_s, actual_value_c, actual_value_d);
+
+  EXPECT_THAT(actual_value_s,
+              RelativeErrorFrom(0.9981213878030822832, IsNear(3.7e-7_(1))));
+  EXPECT_THAT(actual_value_c,
+              RelativeErrorFrom(-0.0612674074043371423, IsNear(9.8e-5_(1))));
+  EXPECT_THAT(actual_value_d,
+              RelativeErrorFrom(0.9999940665195289649, IsNear(4.4e-12_(1))));
 }
 
 #if !defined(_DEBUG)

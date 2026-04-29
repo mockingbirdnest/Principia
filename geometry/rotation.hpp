@@ -278,6 +278,9 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
                                       Rotation<From, Through> const& right);
 
   template<typename From, typename To>
+  friend bool IsFinite(Rotation<From, To> const& rotation);
+
+  template<typename From, typename To>
   friend std::ostream& operator<<(std::ostream& out,
                                   Rotation<From, To> const& rotation);
 };
@@ -290,6 +293,9 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 Rotation<FromFrame, ToFrame> operator*(
     Rotation<ThroughFrame, ToFrame> const& left,
     Rotation<FromFrame, ThroughFrame> const& right);
+
+template<typename FromFrame, typename ToFrame>
+bool IsFinite(Rotation<FromFrame, ToFrame> const& rotation);
 
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,

@@ -4,13 +4,17 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "absl/container/btree_set.h"
+#include "base/thread_pool.hpp"
 
 namespace principia {
 namespace physics {
 namespace _checkpointer {
 namespace internal {
+
+using namespace principia::base::_thread_pool;
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)
@@ -211,13 +215,32 @@ not_null<std::unique_ptr<Checkpointer<Message>>>
 Checkpointer<Message>::ReadFromMessage(
     Writer writer,
     Reader reader,
+    Rewriter rewriter,
     google::protobuf::RepeatedPtrField<typename Message::Checkpoint> const&
         message) {
   auto checkpointer =
       std::make_unique<Checkpointer>(std::move(writer), std::move(reader));
-  for (auto const& checkpoint : message) {
-    Instant const time = Instant::ReadFromMessage(checkpoint.time());
-    checkpointer->checkpoints_.emplace(time, checkpoint);
+  if (rewriter == nullptr) {
+    for (auto const& checkpoint : message) {
+      Instant const time = Instant::ReadFromMessage(checkpoint.time());
+      checkpointer->checkpoints_.emplace(time, checkpoint);
+    }
+  } else {
+    // For large checkpoints, rewriting is expensive, so we do it using multiple
+    // threads.
+    ThreadPool<typename Message::Checkpoint> rewrite_pool(
+        std::thread::hardware_concurrency());
+    std::vector<std::future<typename Message::Checkpoint>> rewrite_futures;
+    rewrite_futures.reserve(message.size());
+    for (auto const& checkpoint : message) {
+      rewrite_futures.push_back(rewrite_pool.Add(
+          [&checkpoint, &rewriter]() { return rewriter(checkpoint); }));
+    }
+    for (std::int64_t i = 0; i < message.size(); ++i) {
+      auto const& checkpoint = message[i];
+      Instant const time = Instant::ReadFromMessage(checkpoint.time());
+      checkpointer->checkpoints_.emplace(time, rewrite_futures[i].get());
+    }
   }
   return std::move(checkpointer);
 }

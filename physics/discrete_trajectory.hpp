@@ -15,6 +15,7 @@
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
+#include "physics/discrete_trajectory_segment.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
@@ -32,6 +33,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_iterator;
+using namespace principia::physics::_discrete_trajectory_segment;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory;
@@ -146,7 +148,8 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   // are past-the-end iff they were past-the-end at serialization time.
   static DiscreteTrajectory ReadFromMessage(
       serialization::DiscreteTrajectory const& message,
-      std::vector<SegmentIterator*> const& tracked)
+      std::vector<SegmentIterator*> const& tracked,
+      bool quiet = false)
     requires serializable<Frame>;
 
  private:
@@ -155,6 +158,21 @@ class DiscreteTrajectory : public Trajectory<Frame> {
   using Segments = _discrete_trajectory_types::Segments<Frame>;
   using SegmentByLeftEndpoint =
       absl::btree_map<Instant, typename Segments::iterator>;
+
+  // Represents a sequence of empty segments with the given downsampling
+  // parameters.
+  struct EmptySegments {
+    std::int32_t count = 0;
+    std::optional<
+        typename DiscreteTrajectorySegment<Frame>::DownsamplingParameters>
+        downsampling_parameters;
+
+    void WriteToMessage(
+        not_null<serialization::DiscreteTrajectoryEmptySegments*> message)
+        const;
+    static EmptySegments ReadFromMessage(
+        serialization::DiscreteTrajectoryEmptySegments const& message);
+  };
 
   // This constructor leaves the list of segments empty (but allocated) as well
   // as the time-to-segment mapping.
@@ -181,12 +199,6 @@ class DiscreteTrajectory : public Trajectory<Frame> {
       DiscreteTrajectory& from,
       DiscreteTrajectory& to,
       typename Segments::iterator to_segments_begin);
-
-  // Reads a pre-Hamilton downsampling message and return the downsampling
-  // parameters.
-  static void ReadFromPreHamiltonMessage(
-      serialization::DiscreteTrajectory::Downsampling const& message,
-      DownsamplingParameters& downsampling_parameters);
 
   // Reads a set of pre-Hamilton children.  Checks that there is only one child,
   // and that it is at the end of the preceding segment.  Append a segment to
