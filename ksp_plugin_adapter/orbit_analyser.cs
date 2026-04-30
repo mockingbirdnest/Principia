@@ -576,26 +576,26 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     Interval e_cos_ω_range = Interval.Empty;
     Interval e_sin_ω_range = Interval.Empty;
     if (elements != null) {
-      if (!elements.mean_elements.IteratorAtEnd()) {
+      if (!elements.plottable_elements.IteratorAtEnd()) {
         t_range.min =
-            elements.mean_elements.IteratorGetPlottableElements().time;
+            elements.plottable_elements.IteratorGetPlottableElements().time;
       }
       if (t_range.min == last_t_min_ && !must_redraw_graphs_) {
         return;
       }
       must_redraw_graphs_ = false;
       for (;
-           !elements.mean_elements.IteratorAtEnd();
-           elements.mean_elements.IteratorIncrement()) {
+           !elements.plottable_elements.IteratorAtEnd();
+           elements.plottable_elements.IteratorIncrement()) {
         var elements_at_t =
-            elements.mean_elements.IteratorGetPlottableElements();
+            elements.plottable_elements.IteratorGetPlottableElements();
         t_range.max = elements_at_t.time;
         e_cos_ω_range.Include(elements_at_t.
                                   eccentricity_cos_argument_of_periapsis);
         e_sin_ω_range.Include(elements_at_t.
                                   eccentricity_sin_argument_of_periapsis);
       }
-      elements.mean_elements.IteratorReset();
+      elements.plottable_elements.IteratorReset();
     }
     last_t_min_ = t_range.min;
     foreach (var distance_graph in new[]
@@ -753,9 +753,9 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       }
     }
     for (;
-         !elements.mean_elements.IteratorAtEnd();
-         elements.mean_elements.IteratorIncrement()) {
-      var elements_at_t = elements.mean_elements.IteratorGetPlottableElements();
+         !elements.plottable_elements.IteratorAtEnd();
+         elements.plottable_elements.IteratorIncrement()) {
+      var elements_at_t = elements.plottable_elements.IteratorGetPlottableElements();
       double t = elements_at_t.time;
       a_graph_.PlotPoint(t, elements_at_t.semimajor_axis, XKCDColors.Sunflower);
       e_graph_.PlotPoint(t, elements_at_t.eccentricity, XKCDColors.Cornflower);

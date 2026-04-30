@@ -275,6 +275,25 @@ inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
          left.recurrence == right.recurrence;
 }
 
+inline bool operator==(PlottableElements const& left,
+                       PlottableElements const& right) {
+  return NaNIndependentEq(left.semimajor_axis, right.semimajor_axis) &&
+         NaNIndependentEq(left.eccentricity, right.eccentricity) &&
+         NaNIndependentEq(left.inclination, right.inclination) &&
+         NaNIndependentEq(left.longitude_of_ascending_node,
+                          right.longitude_of_ascending_node) &&
+         NaNIndependentEq(left.argument_of_periapsis,
+                          right.argument_of_periapsis) &&
+         NaNIndependentEq(left.periapsis_distance, right.periapsis_distance) &&
+         NaNIndependentEq(left.apoapsis_distance, right.apoapsis_distance) &&
+         NaNIndependentEq(left.lidov_c1, right.lidov_c1) &&
+         NaNIndependentEq(left.lidov_c2, right.lidov_c2) &&
+         NaNIndependentEq(left.eccentricity_cos_argument_of_periapsis,
+                          right.eccentricity_cos_argument_of_periapsis) &&
+         NaNIndependentEq(left.eccentricity_sin_argument_of_periapsis,
+                          right.eccentricity_sin_argument_of_periapsis);
+}
+
 inline bool operator==(EquatorialCrossings const& left,
                        EquatorialCrossings const& right) {
   return left.longitudes_reduced_to_ascending_pass ==
@@ -807,8 +826,13 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .first_collision_risk_time =
             to_double_ptr(vessel_analysis->first_collision_risk()),
         .first_reentry_time = to_double_ptr(vessel_analysis->first_reentry()),
-        .mean_elements = new TypedIterator<std::vector<ClassicalElements>>(
-            elements.mean_elements(), &plugin),
+        .plottable_elements = new TypedIterator<std::vector<PlottableElements>>(
+            elements.mean_elements()
+                | std::ranges::views::transform([&plugin](auto const& elements) {
+                    return ToPlottableElements(plugin, elements);
+                  })
+                | std::ranges::to<std::vector<PlottableElements>>(),
+            &plugin),
     };
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {

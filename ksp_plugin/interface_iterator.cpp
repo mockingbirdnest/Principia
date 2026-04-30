@@ -153,14 +153,9 @@ char const* __cdecl principia__IteratorGetVesselGuid(
 PlottableElements __cdecl principia__IteratorGetPlottableElements(
     Iterator const* const iterator) {
   journal::Method<journal::IteratorGetPlottableElements> m({iterator});
-  using Elements =
-      astronomy::_orbital_elements::OrbitalElements::ClassicalElements;
   auto const typed_iterator = check_not_null(
-      dynamic_cast<TypedIterator<std::vector<Elements>> const*>(iterator));
-  return m.Return(typed_iterator->Get<PlottableElements>(
-      [typed_iterator](Elements const& elements) -> PlottableElements {
-        return ToPlottableElements(*typed_iterator->plugin(), elements);
-      }));
+      dynamic_cast<TypedIterator<std::vector<PlottableElements>> const*>(iterator));
+  return m.Return(typed_iterator->Get<PlottableElements>(std::identity{}));
 }
 
 void __cdecl principia__IteratorIncrement(Iterator* const iterator) {
