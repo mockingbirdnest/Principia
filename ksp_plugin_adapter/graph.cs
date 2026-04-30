@@ -90,7 +90,7 @@ internal class Graph : ScalingRenderer {
                        UnityEngine.TextAnchor anchor) {
     labels_.Add(new Label{
         x_pixels = AbscissaToPixel(x), y_pixels = OrdinateToPixel(y),
-        text = text,  colour = colour, anchor = anchor,
+        text = text, colour = colour, anchor = anchor,
     });
   }
 
