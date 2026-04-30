@@ -796,6 +796,9 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
   private void RenderOrbitalElements(OrbitalElements elements,
                                      CelestialBody primary) {
+    // If we `show_graphs_`, elements that have an associated plot have that
+    // plot to the right of the element range LabeledField, hence the
+    // `HorizontalScope`s.
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       LabeledField(
           L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
