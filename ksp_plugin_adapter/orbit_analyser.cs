@@ -716,7 +716,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     // and min lines (because the inclination is frozen there); it is easiest to
     // position them based on the maximal inclination lines (because they are
     // then at the minimal c₂ for the line, instead of at either end of the c₂
-    // interval depending on the inclination.  Likewise the eccentricity labels
+    // interval depending on the inclination).  Likewise the eccentricity labels
     // on the equatorial curve are the for both max and min e.
     if (show_max_e_min_i_lines_ || show_min_e_max_i_lines_) {
       for (int i_degrees = 10; i_degrees <= 60; i_degrees += 10) {
