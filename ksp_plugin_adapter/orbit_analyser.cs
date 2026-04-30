@@ -223,40 +223,44 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       return;
     }
 
+    var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
+    float two_lines = multiline_style.CalcHeight(
+        new UnityEngine.GUIContent("1一\n2二"),
+        Width(1));
+    float five_lines = multiline_style.CalcHeight(
+        new UnityEngine.GUIContent("1一\n2二\n3三\n4四\n5五"),
+        Width(1));
+
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      if (should_request_analysis) {
-        mission_duration_.Render(enabled : true);
-        // If the main window is hidden, make sure that the orbit analyser
-        // refreshes (not at a reduced rate).
-        last_background_analysis_time_ = null;
-        RequestAnalysis();
-      }
-      var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
-      float two_lines = multiline_style.CalcHeight(
-          new UnityEngine.GUIContent("1一\n2二"),
-          Width(1));
-      float five_lines = multiline_style.CalcHeight(
-          new UnityEngine.GUIContent("1一\n2二\n3三\n4四\n5五"),
-          Width(1));
-      UnityEngine.GUILayout.Label(AnalysingText(),
-                                  multiline_style,
-                                  UnityEngine.GUILayout.Height(two_lines));
+      OrbitAnalysis analysis;
+      using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(12))) {
+        if (should_request_analysis) {
+          mission_duration_.Render(enabled : true);
+          // If the main window is hidden, make sure that the orbit analyser
+          // refreshes (not at a reduced rate).
+          last_background_analysis_time_ = null;
+          RequestAnalysis();
+        }
+        UnityEngine.GUILayout.Label(AnalysingText(),
+                                    multiline_style,
+                                    UnityEngine.GUILayout.Height(two_lines));
 
-      OrbitAnalysis analysis = GetAnalysis();
+        analysis = GetAnalysis();
 
-      if (autodetect_recurrence_ &&
-          analysis.recurrence.HasValue &&
-          analysis.recurrence.Value.number_of_revolutions != 0 &&
-          analysis.recurrence.Value.cto != 0) {
-        revolutions_per_cycle_ =
-            analysis.recurrence.Value.number_of_revolutions;
-        days_per_cycle_ = analysis.recurrence.Value.cto;
+        if (autodetect_recurrence_ &&
+            analysis.recurrence.HasValue &&
+            analysis.recurrence.Value.number_of_revolutions != 0 &&
+            analysis.recurrence.Value.cto != 0) {
+          revolutions_per_cycle_ =
+              analysis.recurrence.Value.number_of_revolutions;
+          days_per_cycle_ = analysis.recurrence.Value.cto;
+        }
+        UnityEngine.GUILayout.HorizontalScrollbar(
+            value      : 0,
+            size       : (float)analysis.progress_of_next_analysis,
+            leftValue  : 0,
+            rightValue : 1);
       }
-      UnityEngine.GUILayout.HorizontalScrollbar(
-          value      : 0,
-          size       : (float)analysis.progress_of_next_analysis,
-          leftValue  : 0,
-          rightValue : 1);
 
       OrbitalElements elements = analysis.elements;
       DrawElementGraphs(elements);
