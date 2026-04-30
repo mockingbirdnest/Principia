@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -214,47 +215,55 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                                            orbit_description_.Substring(1);
 
   protected override void RenderWindowContents(int window_id) {
+    if (graph_icon_ == null) {
+      PrincipiaPluginAdapter.LoadTextureOrDie(out graph_icon_, "graph.png");
+    }
     string vessel_guid = predicted_vessel?.id.ToString();
     if (vessel_guid == null) {
       return;
     }
 
-    using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(12))) {
-      if (should_request_analysis) {
-        mission_duration_.Render(enabled : true);
-        // If the main window is hidden, make sure that the orbit analyser
-        // refreshes (not at a reduced rate).
-        last_background_analysis_time_ = null;
-        RequestAnalysis();
-      }
-      var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
-      float two_lines = multiline_style.CalcHeight(
-          new UnityEngine.GUIContent("1一\n2二"),
-          Width(1));
-      float five_lines = multiline_style.CalcHeight(
-          new UnityEngine.GUIContent("1一\n2二\n3三\n4四\n5五"),
-          Width(1));
-      UnityEngine.GUILayout.Label(AnalysingText(),
-                                  multiline_style,
-                                  UnityEngine.GUILayout.Height(two_lines));
+    var multiline_style = Style.Multiline(UnityEngine.GUI.skin.label);
+    float two_lines = multiline_style.CalcHeight(
+        new UnityEngine.GUIContent("1一\n2二"),
+        Width(1));
+    float five_lines = multiline_style.CalcHeight(
+        new UnityEngine.GUIContent("1一\n2二\n3三\n4四\n5五"),
+        Width(1));
 
-      OrbitAnalysis analysis = GetAnalysis();
+    using (new UnityEngine.GUILayout.VerticalScope()) {
+      OrbitAnalysis analysis;
+      using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(12))) {
+        if (should_request_analysis) {
+          mission_duration_.Render(enabled : true);
+          // If the main window is hidden, make sure that the orbit analyser
+          // refreshes (not at a reduced rate).
+          last_background_analysis_time_ = null;
+          RequestAnalysis();
+        }
+        UnityEngine.GUILayout.Label(AnalysingText(),
+                                    multiline_style,
+                                    UnityEngine.GUILayout.Height(two_lines));
 
-      if (autodetect_recurrence_ &&
-          analysis.recurrence.HasValue &&
-          analysis.recurrence.Value.number_of_revolutions != 0 &&
-          analysis.recurrence.Value.cto != 0) {
-        revolutions_per_cycle_ =
-            analysis.recurrence.Value.number_of_revolutions;
-        days_per_cycle_ = analysis.recurrence.Value.cto;
+        analysis = GetAnalysis();
+
+        if (autodetect_recurrence_ &&
+            analysis.recurrence.HasValue &&
+            analysis.recurrence.Value.number_of_revolutions != 0 &&
+            analysis.recurrence.Value.cto != 0) {
+          revolutions_per_cycle_ =
+              analysis.recurrence.Value.number_of_revolutions;
+          days_per_cycle_ = analysis.recurrence.Value.cto;
+        }
+        UnityEngine.GUILayout.HorizontalScrollbar(
+            value      : 0,
+            size       : (float)analysis.progress_of_next_analysis,
+            leftValue  : 0,
+            rightValue : 1);
       }
-      UnityEngine.GUILayout.HorizontalScrollbar(
-          value      : 0,
-          size       : (float)analysis.progress_of_next_analysis,
-          leftValue  : 0,
-          rightValue : 1);
 
       OrbitalElements elements = analysis.elements;
+      DrawElementGraphs(elements);
       OrbitRecurrence? recurrence = analysis.recurrence;
       EquatorialCrossings? equatorial_crossings =
           analysis.ground_track_equatorial_crossings;
@@ -321,24 +330,90 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                   primary.Name(),
                   mission_duration.FormatDuration(show_seconds: false),
                   duration_in_revolutions);
-
-      UnityEngine.GUILayout.Label(analysis_description,
-                                  multiline_style,
-                                  UnityEngine.GUILayout.Height(five_lines));
-      Style.HorizontalLine();
-      RenderLowestAltitude(elements, primary);
-      Style.HorizontalLine();
-      UnityEngine.GUILayout.Label(
-          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_MeanElements"));
-      RenderOrbitalElements(elements, primary);
-      Style.HorizontalLine();
-      UnityEngine.GUILayout.Label(
-          L10N.CacheFormat("#Principia_OrbitAnalyser_GroundTrack"));
-      RenderOrbitRecurrence(recurrence, primary);
-      Style.LineSpacing();
-      RenderEquatorialCrossings(equatorial_crossings, primary);
-      Style.LineSpacing();
-      RenderNodeMeanSolarTimes(solar_times_of_nodes);
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        using (new UnityEngine.GUILayout.VerticalScope()) {
+          using (new UnityEngine.GUILayout.HorizontalScope()) {
+            using (new UnityEngine.GUILayout.VerticalScope(
+                       GUILayoutWidth(12))) {
+              UnityEngine.GUILayout.Label(analysis_description,
+                                          multiline_style,
+                                          UnityEngine.GUILayout.Height(
+                                              five_lines));
+              Style.HorizontalLine();
+              RenderLowestAltitude(elements, primary);
+              Style.HorizontalLine();
+              using (new UnityEngine.GUILayout.HorizontalScope()) {
+                UnityEngine.GUILayout.Label(
+                    L10N.CacheFormat(
+                        "#Principia_OrbitAnalyser_Elements_MeanElements"));
+                if (UnityEngine.GUILayout.Button(graph_icon_,
+                                                 GUILayoutWidth(1))) {
+                  show_graphs_ = !show_graphs_;
+                  ScheduleShrink();
+                }
+              }
+              RenderPeriods(elements);
+            }
+            if (show_graphs_) {
+              Style.VerticallLine();
+              using (new UnityEngine.GUILayout.VerticalScope()) {
+                UnityEngine.GUILayout.Label(
+                    L10N.CacheFormat(
+                        "#Principia_OrbitAnalyser_Elements_Graphs_EccentricityVector"));
+                eccentricity_vector_graph_.Render();
+              }
+            }
+          }
+          RenderOrbitalElements(elements, primary);
+        }
+        if (show_graphs_) {
+          using (new UnityEngine.GUILayout.VerticalScope()) {
+            UnityEngine.GUILayout.Label(
+                L10N.CacheFormat(
+                    "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters"));
+            лидов_graph_.Render();
+            UnityEngine.GUILayout.Space(Height(1));
+            UnityEngine.GUILayout.Label(
+                L10N.CacheFormat(
+                    "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_ShowLines"));
+            if (UnityEngine.GUILayout.Toggle(
+                    show_max_e_min_i_lines_,
+                    L10N.CacheFormat(
+                        "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MinEMaxI")) !=
+                show_max_e_min_i_lines_) {
+              show_max_e_min_i_lines_ = !show_max_e_min_i_lines_;
+              if (show_max_e_min_i_lines_) {
+                show_min_e_max_i_lines_ = false;
+              }
+              must_redraw_graphs_ = true;
+            }
+            if (UnityEngine.GUILayout.Toggle(
+                    show_min_e_max_i_lines_,
+                    L10N.CacheFormat(
+                        "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MaxEMinI")) !=
+                show_min_e_max_i_lines_) {
+              show_min_e_max_i_lines_ = !show_min_e_max_i_lines_;
+              if (show_min_e_max_i_lines_) {
+                show_max_e_min_i_lines_ = false;
+              }
+              must_redraw_graphs_ = true;
+            }
+          }
+        }
+      }
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        using (new UnityEngine.GUILayout.VerticalScope(GUILayoutWidth(12))) {
+          Style.HorizontalLine();
+          UnityEngine.GUILayout.Label(
+              L10N.CacheFormat("#Principia_OrbitAnalyser_GroundTrack"));
+          RenderOrbitRecurrence(recurrence, primary);
+          Style.LineSpacing();
+          RenderEquatorialCrossings(equatorial_crossings, primary);
+          Style.LineSpacing();
+          RenderNodeMeanSolarTimes(solar_times_of_nodes);
+        }
+        // TODO(egg): Show the ground track?
+      }
     }
     UnityEngine.GUI.DragWindow();
   }
@@ -487,8 +562,231 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                                 Style.Warning(UnityEngine.GUI.skin.label));
   }
 
-  private void RenderOrbitalElements(OrbitalElements elements,
-                                     CelestialBody primary) {
+  double last_t_min_ = double.PositiveInfinity;
+
+  private void DrawElementGraphs(OrbitalElements elements) {
+    if (a_graph_ == null) {
+      a_graph_ = new Graph(Width(10), Height(1));
+      e_graph_ = new Graph(Width(10), Height(1));
+      i_graph_ = new Graph(Width(10), Height(1));
+      Ω_graph_ = new Graph(Width(10), Height(1));
+      ω_graph_ = new Graph(Width(10), Height(1));
+      periapsis_graph_ = new Graph(Width(10), Height(1));
+      apoapsis_graph_ = new Graph(Width(10), Height(1));
+      лидов_graph_ = new Graph(Width(10), Height(10));
+      eccentricity_vector_graph_ = new Graph(Width(10), Height(10));
+    }
+    Interval t_range = Interval.Empty;
+    Interval e_cos_ω_range = Interval.Empty;
+    Interval e_sin_ω_range = Interval.Empty;
+    if (elements != null) {
+      if (!elements.plottable_elements.IteratorAtEnd()) {
+        t_range.min =
+            elements.plottable_elements.IteratorGetPlottableElements().time;
+      }
+      if (t_range.min == last_t_min_ && !must_redraw_graphs_) {
+        return;
+      }
+      must_redraw_graphs_ = false;
+      for (;
+           !elements.plottable_elements.IteratorAtEnd();
+           elements.plottable_elements.IteratorIncrement()) {
+        var elements_at_t =
+            elements.plottable_elements.IteratorGetPlottableElements();
+        t_range.max = elements_at_t.time;
+        e_cos_ω_range.Include(elements_at_t.
+                                  eccentricity_cos_argument_of_periapsis);
+        e_sin_ω_range.Include(elements_at_t.
+                                  eccentricity_sin_argument_of_periapsis);
+      }
+      elements.plottable_elements.IteratorReset();
+    }
+    last_t_min_ = t_range.min;
+    foreach (var distance_graph in new[]
+                 { a_graph_, periapsis_graph_, apoapsis_graph_ }) {
+      distance_graph.PrepareCanvas(t_range,
+                                   new Interval{
+                                       min =
+                                           elements.mean_periapsis_distance.min,
+                                       max = elements.mean_apoapsis_distance.max
+                                   });
+    }
+    e_graph_.PrepareCanvas(t_range, elements.mean_eccentricity);
+    i_graph_.PrepareCanvas(t_range, elements.mean_inclination);
+    Ω_graph_.PrepareCanvas(t_range, elements.mean_longitude_of_ascending_nodes);
+    ω_graph_.PrepareCanvas(t_range, elements.mean_argument_of_periapsis);
+    // Show a square region of the eccentricity vector space.
+    if (e_cos_ω_range.measure > e_sin_ω_range.measure) {
+      double midpoint = e_sin_ω_range.midpoint;
+      e_sin_ω_range.min = midpoint - e_cos_ω_range.measure / 2;
+      e_sin_ω_range.max = midpoint + e_cos_ω_range.measure / 2;
+    } else {
+      double midpoint = e_cos_ω_range.midpoint;
+      e_cos_ω_range.min = midpoint - e_sin_ω_range.measure / 2;
+      e_cos_ω_range.max = midpoint + e_sin_ω_range.measure / 2;
+    }
+    eccentricity_vector_graph_.PrepareCanvas(e_cos_ω_range, e_sin_ω_range);
+    eccentricity_vector_graph_.PlotHorizontalLine(0, XKCDColors.White);
+    eccentricity_vector_graph_.PlotVerticalLine(0, XKCDColors.White);
+    лидов_graph_.PrepareCanvas(
+        new Interval{ min = -3.0 / 5.0, max = 2.0 / 5.0 },
+        new Interval{ min = 0, max = 1 });
+    лидов_graph_.PlotVerticalLine(0, XKCDColors.White);
+    лидов_graph_.PlotFunction(Interface.GraphLidovFrozenLine,
+                              new Interval{ min = -3.0 / 5.0, max = 0 },
+                              XKCDColors.White);
+    if (show_max_e_min_i_lines_) {
+      for (int ten_e_max = 1; ten_e_max <= 10; ++ten_e_max) {
+        double e_max = ten_e_max / 10.0;
+        Interval c2_range =
+            Interface.GraphLidovMaximalEccentricityLineC2Range(e_max);
+        лидов_graph_.PlotFunction(
+            c2 => Interface.GraphLidovMaximalEccentricityLine(e_max, c2),
+            c2_range,
+            XKCDColors.Cornflower);
+      }
+      for (int i_min_degrees = 0; i_min_degrees <= 80; i_min_degrees += 10) {
+        лидов_graph_.PlotFunction(
+            c2 => Interface.GraphLidovMinimalInclinationLine(i_min_degrees, c2),
+            Interface.GraphLidovMinimalInclinationLineC2Range(i_min_degrees),
+            XKCDColors.Lavender);
+      }
+      for (int i_min_degrees = 10; i_min_degrees <= 30; i_min_degrees += 10) {
+        Interval c2 =
+            Interface.GraphLidovMinimalInclinationLineC2Range(i_min_degrees);
+        лидов_graph_.AddLabel(c2.max,
+                              0,
+                              $"{i_min_degrees}°",
+                              XKCDColors.Lavender,
+                              UnityEngine.TextAnchor.UpperCenter);
+      }
+      for (int i_min_degrees = 40; i_min_degrees <= 80; i_min_degrees += 10) {
+        Interval c2 =
+            Interface.GraphLidovMinimalInclinationLineC2Range(i_min_degrees);
+        лидов_graph_.AddLabel(c2.min,
+                              0,
+                              $"{i_min_degrees}°",
+                              XKCDColors.Lavender,
+                              UnityEngine.TextAnchor.UpperCenter);
+      }
+    }
+    if (show_min_e_max_i_lines_) {
+      for (int ten_e_min = 1; ten_e_min <= 9; ++ten_e_min) {
+        double e_min = ten_e_min / 10.0;
+        Interval c2_range =
+            Interface.GraphLidovMinimalEccentricityLeftLineC2Range(e_min);
+        лидов_graph_.PlotFunction(
+            c2 => Interface.GraphLidovMinimalEccentricityLeftLine(e_min, c2),
+            c2_range,
+            XKCDColors.Cornflower);
+        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(
+            e_min,
+            out double c2_right,
+            out double c1_max);
+        лидов_graph_.PlotVerticalLine(c2_right,
+                                      XKCDColors.Cornflower,
+                                      new Interval{ min = 0, max = c1_max });
+      }
+      for (int i_max_degrees = 0; i_max_degrees <= 90; i_max_degrees += 10) {
+        лидов_graph_.PlotFunction(
+            c2 => Interface.GraphLidovMaximalInclinationLine(i_max_degrees, c2),
+            Interface.GraphLidovMaximalInclinationLineC2Range(i_max_degrees),
+            XKCDColors.Lavender);
+      }
+      for (int ten_e_min = 4; ten_e_min <= 9; ++ten_e_min) {
+        double e_min = ten_e_min / 10.0;
+        Interval c2 =
+            Interface.GraphLidovMinimalEccentricityLeftLineC2Range(e_min);
+        лидов_graph_.AddLabel(c2.min,
+                              0,
+                              $".{ten_e_min}",
+                              XKCDColors.Cornflower,
+                              UnityEngine.TextAnchor.UpperCenter);
+      }
+      for (int ten_e_min = 6; ten_e_min <= 9; ++ten_e_min) {
+        double e_min = ten_e_min / 10.0;
+        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(
+            e_min,
+            out double c2,
+            out double _);
+        лидов_graph_.AddLabel(c2,
+                              0,
+                              $".{ten_e_min}",
+                              XKCDColors.Cornflower,
+                              UnityEngine.TextAnchor.UpperCenter);
+      }
+    }
+    // The inclination labels on the frozen curve are the same for both the max
+    // and min lines (because the inclination is frozen there); it is easiest to
+    // position them based on the maximal inclination lines (because they are
+    // then at the minimal c₂ for the line, instead of at either end of the c₂
+    // interval depending on the inclination).  Likewise the eccentricity labels
+    // on the equatorial curve are the for both max and min e.
+    if (show_max_e_min_i_lines_ || show_min_e_max_i_lines_) {
+      for (int i_degrees = 10; i_degrees <= 60; i_degrees += 10) {
+        Interval c2 =
+            Interface.GraphLidovMaximalInclinationLineC2Range(i_degrees);
+        double c1 =
+            Interface.GraphLidovMaximalInclinationLine(i_degrees, c2.min);
+        лидов_graph_.AddLabel(c2.min,
+                              c1,
+                              $"{i_degrees}°",
+                              XKCDColors.Lavender,
+                              UnityEngine.TextAnchor.MiddleRight);
+      }
+      for (int ten_e = 2; ten_e <= 9; ++ten_e) {
+        double e = ten_e / 10.0;
+        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(
+            e,
+            out double c2,
+            out double c1);
+        лидов_graph_.AddLabel(c2,
+                              c1,
+                              $" .{ten_e}",
+                              XKCDColors.Cornflower,
+                              UnityEngine.TextAnchor.MiddleLeft);
+      }
+    } else {
+      // Plot the boundaries of the (c₂, c₁) space that are normally covered by
+      // the coloured lines.
+      foreach (int i_degrees in new[]{ 0, 90 }) {
+        лидов_graph_.PlotFunction(
+            c2 => Interface.GraphLidovMaximalInclinationLine(i_degrees, c2),
+            Interface.GraphLidovMaximalInclinationLineC2Range(i_degrees),
+            XKCDColors.White);
+      }
+    }
+    for (;
+         !elements.plottable_elements.IteratorAtEnd();
+         elements.plottable_elements.IteratorIncrement()) {
+      var elements_at_t = elements.plottable_elements.IteratorGetPlottableElements();
+      double t = elements_at_t.time;
+      a_graph_.PlotPoint(t, elements_at_t.semimajor_axis, XKCDColors.Sunflower);
+      e_graph_.PlotPoint(t, elements_at_t.eccentricity, XKCDColors.Cornflower);
+      i_graph_.PlotPoint(t, elements_at_t.inclination, XKCDColors.Lavender);
+      Ω_graph_.PlotPoint(t,
+                         elements_at_t.longitude_of_ascending_node,
+                         XKCDColors.LightPink);
+      ω_graph_.PlotPoint(t,
+                         elements_at_t.argument_of_periapsis,
+                         XKCDColors.Cornflower);
+      periapsis_graph_.PlotPoint(t,
+                                 elements_at_t.periapsis_distance,
+                                 XKCDColors.Sunflower);
+      apoapsis_graph_.PlotPoint(t,
+                                elements_at_t.apoapsis_distance,
+                                XKCDColors.Sunflower);
+      лидов_graph_.PlotPoint(elements_at_t.lidov_c2,
+                             elements_at_t.lidov_c1,
+                             XKCDColors.RoseRed);
+      eccentricity_vector_graph_.PlotPoint(
+          elements_at_t.eccentricity_cos_argument_of_periapsis,
+          elements_at_t.eccentricity_sin_argument_of_periapsis,
+          XKCDColors.Cornflower);
+    }
+  }
+
+  private void RenderPeriods(OrbitalElements elements) {
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SiderealPeriod"),
         elements?.sidereal_period.FormatDuration());
@@ -498,43 +796,97 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_AnomalisticPeriod"),
         elements?.anomalistic_period.FormatDuration());
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
-        elements?.mean_semimajor_axis.FormatLengthInterval());
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Eccentricity"),
-        elements?.mean_eccentricity.FormatInterval());
-    LabeledField(
-        L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Inclination"),
-        elements?.mean_inclination.FormatAngleInterval());
-    LabeledField(
-        L10N.CacheFormat(
-            "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
-        elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
+  }
+
+  private void RenderOrbitalElements(OrbitalElements elements,
+                                     CelestialBody primary) {
+    // If we `show_graphs_`, elements that have an associated plot have that
+    // plot to the right of the element range LabeledField, hence the
+    // `HorizontalScope`s.
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_SemimajorAxis"),
+          elements?.mean_semimajor_axis.FormatLengthInterval());
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        a_graph_.Render();
+      }
+    }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Eccentricity"),
+          elements?.mean_eccentricity.FormatInterval());
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        e_graph_.Render();
+      }
+    }
+
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_Inclination"),
+          elements?.mean_inclination.FormatAngleInterval());
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        i_graph_.Render();
+      }
+    }
+
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat(
+              "#Principia_OrbitAnalyser_Elements_LongitudeOfAscendingNode"),
+          elements?.mean_longitude_of_ascending_nodes.FormatAngleInterval());
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        Ω_graph_.Render();
+      }
+    }
     LabeledField(
         L10N.CacheFormat("#Principia_OrbitAnalyser_Elements_NodalPrecession"),
         elements?.nodal_precession.FormatAngularFrequency());
-    string periapsis = L10N.CelestialString(
-        "#Principia_OrbitAnalyser_Elements_Periapsis",
-        new[]{primary});
-    string apoapsis = L10N.CelestialString(
-        "#Principia_OrbitAnalyser_Elements_Apoapsis",
-        new[]{primary});
-    LabeledField(
-        L10N.CacheFormat(
-            "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
-            periapsis),
-        elements?.mean_argument_of_periapsis.FormatAngleInterval());
-    LabeledField(
-        L10N.CacheFormat(
-            "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude",
-            periapsis),
-        elements?.mean_periapsis_distance.FormatLengthInterval(primary.Radius));
-    LabeledField(
-        L10N.CacheFormat(
-            "#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude",
-            apoapsis),
-        elements?.mean_apoapsis_distance.FormatLengthInterval(primary.Radius));
+    string periapsis =
+        L10N.CelestialString("#Principia_OrbitAnalyser_Elements_Periapsis",
+                             new[]{ primary });
+    string apoapsis =
+        L10N.CelestialString("#Principia_OrbitAnalyser_Elements_Apoapsis",
+                             new[]{ primary });
+
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat(
+              "#Principia_OrbitAnalyser_Elements_ArgumentOfPeriapsis",
+              periapsis),
+          elements?.mean_argument_of_periapsis.FormatAngleInterval());
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        ω_graph_.Render();
+      }
+    }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat(
+              "#Principia_OrbitAnalyser_Elements_MeanPeriapsisAltitude",
+              periapsis),
+          elements?.mean_periapsis_distance.FormatLengthInterval(
+              primary.Radius));
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        periapsis_graph_.Render();
+      }
+    }
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      LabeledField(
+          L10N.CacheFormat(
+              "#Principia_OrbitAnalyser_Elements_MeanApoapsisAltitude",
+              apoapsis),
+          elements?.mean_apoapsis_distance.FormatLengthInterval(
+              primary.Radius));
+      if (show_graphs_) {
+        Style.VerticalLineSpacing();
+        apoapsis_graph_.Render();
+      }
+    }
   }
 
   private void RenderOrbitRecurrence(OrbitRecurrence? recurrence,
@@ -640,7 +992,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
   }
 
   private void LabeledField(string label, string value) {
-    using (new UnityEngine.GUILayout.HorizontalScope()) {
+    using (new UnityEngine.GUILayout.HorizontalScope(GUILayoutWidth(12))) {
       UnityEngine.GUILayout.Label(label);
       UnityEngine.GUILayout.Label(value ?? em_dash,
                                   Style.RightAligned(
@@ -686,6 +1038,21 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
   private string orbit_description_ = null;
   private DateTime? last_background_analysis_time_ = null;
+
+  private UnityEngine.Texture graph_icon_;
+  private bool show_graphs_;
+  private Graph a_graph_;
+  private Graph e_graph_;
+  private Graph i_graph_;
+  private Graph Ω_graph_;
+  private Graph ω_graph_;
+  private Graph periapsis_graph_;
+  private Graph apoapsis_graph_;
+  private Graph лидов_graph_;
+  private Graph eccentricity_vector_graph_;
+  private bool must_redraw_graphs_ = false;
+  private bool show_max_e_min_i_lines_ = true;
+  private bool show_min_e_max_i_lines_ = false;
 }
 
 internal class CurrentOrbitAnalyser : OrbitAnalyser {

@@ -75,6 +75,7 @@
     <ClCompile Include="interface_collision.cpp" />
     <ClCompile Include="interface_flight_plan.cpp" />
     <ClCompile Include="interface_future.cpp" />
+    <ClCompile Include="interface_graph.cpp" />
     <ClCompile Include="interface_iterator.cpp" />
     <ClCompile Include="interface_monitor.cpp" />
     <ClCompile Include="interface_part.cpp" />
