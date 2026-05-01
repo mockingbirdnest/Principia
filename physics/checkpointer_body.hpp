@@ -217,7 +217,6 @@ Checkpointer<Message>::ReadFromMessage(
       std::make_unique<Checkpointer>(std::move(writer), std::move(reader));
   for (auto const& checkpoint : message) {
     Instant const time = Instant::ReadFromMessage(checkpoint.time());
-    LOG(ERROR)<<time<<"\n"<<checkpoint;
     checkpointer->checkpoints_.emplace(time, checkpoint);
   }
   return std::move(checkpointer);

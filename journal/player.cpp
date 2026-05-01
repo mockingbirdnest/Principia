@@ -16,7 +16,7 @@
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 
 #define PRINCIPIA_PLAYER_ALLOW_PLATFORM_MISMATCH 0
-#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 0
+#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 1
 
 namespace principia {
 namespace journal {

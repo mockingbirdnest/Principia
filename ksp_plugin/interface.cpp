@@ -659,7 +659,9 @@ void __cdecl principia__FreeVesselsAndPartsAndCollectPileUps(
 
 int __cdecl principia__GetBufferedLogging() {
   journal::Method<journal::GetBufferedLogging> m;
-  return m.Return(static_cast<int>(file_log_sink->buffered_level()));
+  return m.Return(static_cast<int>(file_log_sink == nullptr
+                                       ? absl::LogSeverityAtMost::kInfo
+                                       : file_log_sink->buffered_level()));
 }
 
 int __cdecl principia__GetStderrLogging() {

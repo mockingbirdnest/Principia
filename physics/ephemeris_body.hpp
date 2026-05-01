@@ -991,7 +991,6 @@ absl::Status Ephemeris<Frame>::Reanimate(Instant const& desired_t_min) {
            t_final = following_checkpoint.value(),
            t_initial = checkpoint](
               serialization::Ephemeris::Checkpoint const& message) {
-            LOG(ERROR)<<t_initial<<" "<<t_final;//<<"\n"<<message;
             if constexpr (serializable<Frame>) {
               return ReanimateOneCheckpoint(message, t_initial, t_final);
             } else {

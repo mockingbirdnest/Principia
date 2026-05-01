@@ -125,7 +125,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // `method_out_return` protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string const path =
-      R"(P:\Public Mockingbird\Principia\Issues\3872\JOURNAL.20240210-173425)";  // NOLINT
+      R"(C:\Users\Public\Public Mockingbird\Principia\Issues\4547\JOURNAL.20260430-203904)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -141,27 +141,31 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
              << player.last_method_in().DebugString();
   LOG(ERROR) << "Last successful method out/return: \n"
              << player.last_method_out_return().DebugString();
-  std::this_thread::sleep_for(10s);
+  //std::this_thread::sleep_for(10s);
 
-#if 0
+#if 1
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::CollisionDeleteExecutor::extension);
+        serialization::PlanetariumPlotCelestialPastTrajectory::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(2237555212240);
-    in->set_executor(2237561081696);
+    in->set_planetarium(1375152930400);
+    in->set_plugin(1434437437440);
+    in->set_celestial_index(9);
+    in->set_max_history_length(604800);
+    in->set_vertices(1385506160672);
+    in->set_vertices_size(10000);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::CollisionDeleteExecutor::extension);
+        serialization::PlanetariumPlotCelestialPastTrajectory::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<CollisionDeleteExecutor>(
+  CHECK(RunIfAppropriate<PlanetariumPlotCelestialPastTrajectory>(
       method_in, method_out_return, player));
 #endif
-#if 0
+#if 1
   std::this_thread::sleep_for(10s);
 #endif
 }
