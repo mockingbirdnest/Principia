@@ -1406,6 +1406,10 @@ void Plugin::RequestReanimation(Instant const& desired_t_min) const {
   ephemeris_->RequestReanimation(desired_t_min);
 }
 
+void Plugin::AwaitReanimation(Instant const& desired_t_min) const {
+  ephemeris_->AwaitReanimation(desired_t_min);
+}
+
 Instant Plugin::GameEpoch() const {
   return game_epoch_;
 }

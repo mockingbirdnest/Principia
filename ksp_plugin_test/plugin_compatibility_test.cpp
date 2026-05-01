@@ -19,6 +19,7 @@
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "astronomy/date_time.hpp"
+#include "astronomy/epoch.hpp"
 #include "astronomy/mercury_orbiter.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/macros.hpp"  // 🧙 For OS_LINUX.
@@ -55,6 +56,7 @@ using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::_;
 using namespace principia::astronomy::_date_time;
+using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_mercury_orbiter;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
@@ -516,9 +518,17 @@ TEST_F(PluginCompatibilityTest, 3273) {
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
   not_null<std::unique_ptr<Plugin const>> const plugin = ReadPluginFromFile(
-      R"(P:\Public Mockingbird\Principia\Saves\3203\wip.proto.b64)",
+      R"(C:\Users\Public\Public Mockingbird\Principia\Issues\4547\4547.proto.b64)",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
+  LOG(ERROR)<<plugin->CurrentTime()<<" "<<plugin->GameEpoch();
+  LOG(ERROR)<<J2000 - 1562327400 * Second;
+  //plugin->AwaitReanimation("1950-06-30T00:10:00"_TT);
+  std::int64_t const max_history_length = 604800;
+  plugin->AwaitReanimation(plugin->CurrentTime() - max_history_length * Second);
+  LOG(ERROR)<<plugin->CurrentTime()<<" "<<plugin->GameEpoch();
+  plugin->AwaitReanimation("1949-01-01T00:00:00"_TT);
+  LOG(ERROR)<<plugin->CurrentTime()<<" "<<plugin->GameEpoch();
 }
 
 }  // namespace interface
