@@ -64,6 +64,10 @@ template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const& scale,
                                      DoublePrecision<U> const& right);
 
+// [Mul+10] algorithm 4.6.  `xl` has `s` digits in its mantissa.
+template<std::int64_t s, typename T>
+constexpr void VeltkampSplitting(T const& x, T& xh, T& xl);
+
 // Returns the exact product of its arguments.
 template<FMAPresence fma_presence, typename T, typename U>
 DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
