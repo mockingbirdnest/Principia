@@ -37,7 +37,14 @@ Player::Player(std::filesystem::path const& path)
   CHECK(!stream_.fail()) << path;
 }
 
+bool trace = false;
+int idx = 0;
+
 bool Player::Play(int const index) {
+  if (index > 587390) {
+    trace = true;
+    idx = index;
+  }
   return Process(/*method_in=*/Read(), index, /*play=*/true);
 }
 
@@ -58,11 +65,17 @@ std::unique_ptr<serialization::Method> Player::Read() {
   if (line.empty()) {
     return nullptr;
   }
+  LOG_IF(ERROR, trace)<<idx<<": "<<line;
 
   static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
   auto const bytes = encoder->Decode({line.c_str(), strlen(line.c_str())});
+  CHECK(line.size() % 2 == 0)<<line;
   auto method = std::make_unique<serialization::Method>();
-  CHECK(method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size)));
+  if (!method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size))) {
+    auto b =
+        method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size));
+    LOG(FATAL) << bytes.size;
+  }
 
   return method;
 }

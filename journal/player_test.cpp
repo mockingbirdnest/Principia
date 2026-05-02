@@ -125,7 +125,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // `method_out_return` protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string const path =
-      R"(C:\Users\Public\Public Mockingbird\Principia\Issues\4547\JOURNAL.20260430-203904)";  // NOLINT
+      R"(C:\Users\Public\Public Mockingbird\Principia\Issues\4547\JOURNAL.20260502-124323)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -133,7 +133,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
     // Reset logging after each method so as to output all messages irrespective
     // of what the game did.
     absl::SetStderrThreshold(absl::LogSeverity::kInfo);
-    LOG_IF(ERROR, (count % 100'000) == 0) << count
+    LOG_IF(ERROR, (count % 100) == 0) << count
                                           << " journal entries replayed";
   }
   LOG(ERROR) << count << " journal entries in total";
@@ -141,9 +141,11 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
              << player.last_method_in().DebugString();
   LOG(ERROR) << "Last successful method out/return: \n"
              << player.last_method_out_return().DebugString();
-  //std::this_thread::sleep_for(10s);
-
 #if 1
+  std::this_thread::sleep_for(10s);
+#endif
+
+#if 0
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
@@ -165,7 +167,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   CHECK(RunIfAppropriate<PlanetariumPlotCelestialPastTrajectory>(
       method_in, method_out_return, player));
 #endif
-#if 1
+#if 0
   std::this_thread::sleep_for(10s);
 #endif
 }
