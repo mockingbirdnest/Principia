@@ -125,7 +125,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Scan) {
 // `method_out_return` protocol buffers.
 TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   std::string const path =
-      R"(C:\Users\Public\Public Mockingbird\Principia\Issues\4547\JOURNAL.20260502-124323)";  // NOLINT
+      R"(C:\Users\Public\Public Mockingbird\Principia\Issues\4547\JOURNAL.20260503-133752)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play(count)) {
@@ -141,7 +141,7 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
              << player.last_method_in().DebugString();
   LOG(ERROR) << "Last successful method out/return: \n"
              << player.last_method_out_return().DebugString();
-#if 1
+#if 0
   std::this_thread::sleep_for(10s);
 #endif
 
@@ -149,22 +149,21 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::PlanetariumPlotCelestialPastTrajectory::extension);
+        serialization::PlanetariumPlotEquipotential::extension);
     auto* in = extension->mutable_in();
-    in->set_planetarium(1375152930400);
-    in->set_plugin(1434437437440);
-    in->set_celestial_index(9);
-    in->set_max_history_length(604800);
-    in->set_vertices(1385506160672);
-    in->set_vertices_size(10000);
+    //in->set_planetarium(2306721055840);
+    //in->set_plugin(2318133570560);
+    //in->set_index(3);
+    //in->set_vertices(2319576502304);
+    //in->set_vertices_size(10000);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::PlanetariumPlotCelestialPastTrajectory::extension);
+        serialization::PlanetariumPlotEquipotential::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<PlanetariumPlotCelestialPastTrajectory>(
+  CHECK(RunIfAppropriate<PlanetariumPlotEquipotential>(
       method_in, method_out_return, player));
 #endif
 #if 0

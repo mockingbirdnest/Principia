@@ -41,9 +41,10 @@ class RecorderTest : public testing::Test {
       std::filesystem::path const& path) {
     std::vector<serialization::Method> methods;
     Player player(path);
-    for (std::unique_ptr<serialization::Method> method = player.Read();
+    int index = 0;
+    for (std::unique_ptr<serialization::Method> method = player.Read(index++);
          method != nullptr;
-         method = player.Read()) {
+         method = player.Read(index++)) {
       methods.push_back(*method);
     }
     return methods;

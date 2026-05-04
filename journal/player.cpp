@@ -37,19 +37,12 @@ Player::Player(std::filesystem::path const& path)
   CHECK(!stream_.fail()) << path;
 }
 
-bool trace = false;
-int idx = 0;
-
 bool Player::Play(int const index) {
-  if (index > 587390) {
-    trace = true;
-    idx = index;
-  }
-  return Process(/*method_in=*/Read(), index, /*play=*/true);
+  return Process(/*method_in=*/Read(index), index, /*play=*/true);
 }
 
 bool Player::Scan(int const index) {
-  return Process(/*method_in=*/Read(), index, /*play=*/false);
+  return Process(/*method_in=*/Read(index), index, /*play=*/false);
 }
 
 serialization::Method const& Player::last_method_in() const {
@@ -60,16 +53,16 @@ serialization::Method const& Player::last_method_out_return() const {
   return *last_method_out_return_;
 }
 
-std::unique_ptr<serialization::Method> Player::Read() {
+std::unique_ptr<serialization::Method> Player::Read(int const index) {
   std::string const line = GetLine(stream_);
   if (line.empty()) {
     return nullptr;
   }
-  LOG_IF(ERROR, trace)<<idx<<": "<<line;
 
   static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
-  auto const bytes = encoder->Decode({line.c_str(), strlen(line.c_str())});
-  CHECK(line.size() % 2 == 0)<<line;
+  auto const bytes = encoder->Decode({line.c_str(), line.size()});
+  CHECK(line.size() % 2 == 0)
+      << "Index: " << index << " Line: " << line << " Size: " << line.size();
   auto method = std::make_unique<serialization::Method>();
   if (!method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size))) {
     auto b =
@@ -86,7 +79,7 @@ bool Player::Process(std::unique_ptr<serialization::Method> method_in,
     // End of input file.
     return false;
   }
-  std::unique_ptr<serialization::Method> method_out_return = Read();
+  std::unique_ptr<serialization::Method> method_out_return = Read(index);
   if (method_out_return == nullptr) {
     LOG(ERROR) << "Unpaired method:\n" << method_in->DebugString();
     return false;
@@ -125,8 +118,8 @@ bool Player::Process(std::unique_ptr<serialization::Method> method_in,
       << method_in->ShortDebugString() << "\n"
       << method_out_return->ShortDebugString();
 #endif
-#if 0
-  LOG_IF(ERROR, index > 3170000) << "index: " << index << "\n"
+#if 1
+  LOG_IF(ERROR, index > 300760) << "index: " << index << "\n"
                                  << method_in->ShortDebugString() << "\n"
                                  << method_out_return->ShortDebugString();
 #endif

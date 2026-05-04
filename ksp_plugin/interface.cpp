@@ -1190,8 +1190,10 @@ char const* __cdecl principia__SerializePlugin(
 // Log messages at a higher level are flushed immediately.
 void __cdecl principia__SetBufferedLogging(int const max_severity) {
   journal::Method<journal::SetBufferedLogging> m({max_severity});
-  file_log_sink->set_buffered_level(
-      static_cast<absl::LogSeverityAtMost>(max_severity));
+  if (file_log_sink != nullptr) {
+    file_log_sink->set_buffered_level(
+        static_cast<absl::LogSeverityAtMost>(max_severity));
+  }
   return m.Return();
 }
 
