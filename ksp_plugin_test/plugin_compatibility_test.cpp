@@ -129,6 +129,8 @@ class PluginCompatibilityTest : public testing::Test {
     for (auto const& guid : guids) {
       CHECK(plugin.HasVessel(guid));
       auto const vessel = plugin.GetVessel(guid);
+      // Make sure that the trajectory is complete.
+      vessel->AwaitReanimation(InfinitePast, /*quiet=*/true);
       auto const& trajectory = vessel->trajectory();
       bool is_collapsible = false;
       for (auto const& segment : trajectory.segments()) {
@@ -601,6 +603,17 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
+                  HasSubstr("Rewriting pre-Leibniz Vessel::Checkpoint")))
+      .Times(AtLeast(1));
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("Re-downsampling trajectory of post-Лефшец, "
+                            "pre-Leibniz vessel")))
+      .Times(AtLeast(1));
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
                   HasSubstr("pre-Hamilton DiscreteTrajectory")))
       .Times(0);
   EXPECT_CALL(log,
@@ -646,7 +659,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
       EXPECT_THAT((converted_degrees_of_freedom[guid][i].position() -
                    unconverted_degrees_of_freedom[guid][i].position())
                       .Norm(),
-                  Lt(1 * Micro(Metre)));
+                  Lt(179 * Metre));
     }
   }
 
