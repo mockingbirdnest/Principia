@@ -309,6 +309,8 @@ class Vessel {
   static void MakeAsynchronous();
   static void MakeSynchronous();
 
+  static bool disallow_leibniz_conversion_for_testing_;
+
  protected:
   // For mocking.
   Vessel();

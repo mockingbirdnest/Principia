@@ -830,7 +830,9 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         Checkpointer<serialization::Vessel>::ReadFromMessage(
             vessel->MakeCheckpointerWriterFromPileUp(),
             vessel->MakeCheckpointerReader(),
-            is_pre_leibniz ? pre_leibniz_rewriter : nullptr,
+            is_pre_leibniz && !disallow_leibniz_conversion_for_testing_
+                ? pre_leibniz_rewriter
+                : nullptr,
             message.checkpoint());
     if (message.has_downsampling_parameters()) {
       vessel->downsampling_parameters_ =
@@ -904,7 +906,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   // then constructs a new trajectory by appending all the points in the
   // history.  The downsampling and merging of segments happen anew, so that we
   // end up with reasonably-sized data structures.
-  if (!is_pre_лефшец && is_pre_leibniz && !vessel->trajectory_.empty()) {
+  if (!is_pre_лефшец && is_pre_leibniz && !vessel->trajectory_.empty() &&
+      !disallow_leibniz_conversion_for_testing_) {
     vessel->AwaitReanimation(InfinitePast, /*quiet=*/true);
     auto psychohistory =
         vessel->trajectory_.DetachSegments(vessel->psychohistory_);
@@ -1470,6 +1473,8 @@ std::atomic_bool Vessel::synchronous_(true);
 #else
 std::atomic_bool Vessel::synchronous_(false);
 #endif
+
+bool Vessel::disallow_leibniz_conversion_for_testing_ = false;
 
 }  // namespace internal
 }  // namespace _vessel
