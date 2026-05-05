@@ -29,6 +29,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/apsides.hpp"
@@ -64,6 +65,7 @@ using namespace principia::base::_serialization;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::physics::_apsides;
@@ -82,7 +84,7 @@ constexpr std::string_view preferred_encoder = "base64";
 class PluginCompatibilityTest : public testing::Test {
  protected:
   static not_null<std::unique_ptr<Plugin const>> WriteAndReadBack(
-      not_null<std::unique_ptr<Plugin const>> plugin1,
+      not_null<std::unique_ptr<Plugin const>> plugin,
       std::int64_t& bytes_written,
       std::int64_t& bytes_read) {
     // There may be solidi in the path due to parameterized tests, so we remove
@@ -96,7 +98,7 @@ class PluginCompatibilityTest : public testing::Test {
     WritePluginToFile(TEMP_DIR / sanitized_name,
                       preferred_compressor,
                       preferred_encoder,
-                      std::move(plugin1),
+                      std::move(plugin),
                       bytes_written);
 
     // Read the plugin from the new file to make sure that it's fine.
@@ -554,9 +556,47 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
       bytes_processed);
   EXPECT_EQ(bytes_processed, 114'345'631);
 
+  std::vector<GUID> const guids = {"12f4d71a-bfeb-4725-8f93-34e575422b47",
+                                   "35a40848-d91d-4b5d-8f76-6c7625e941ac",
+                                   "404ed131-15f7-4d06-9452-6dfba0ccaf04",
+                                   "48d772d7-1873-403d-87da-af02d5a6b485",
+                                   "4a94bcff-56e7-440a-8d85-a71ee7a1757f",
+                                   "5703104d-3401-48f9-b4cf-090dd75f7d55",
+                                   "67253c53-36a9-46c6-89a9-cfb683bdcda8",
+                                   "721fe779-1491-40e7-83e0-6760dd92b963",
+                                   "802b8755-05f1-467e-87da-da2551eb5c9b",
+                                   "e83cf1ad-ea98-4eb8-85f7-1a2302d5450a",
+                                   "eed936ef-1f7a-4062-92a6-8c109ec2bc1a",
+                                   "f742f404-cea5-4f01-ae87-127fafe963fe",
+                                   "fb5b9add-6ae8-4583-94bc-4a6633f95ce9"};
+
+  absl::flat_hash_map<GUID, std::vector<Instant>>
+      starts_of_non_collapsible_segments_before;
+  absl::flat_hash_map<GUID, std::vector<DegreesOfFreedom<Barycentric>>>
+      degrees_of_freedom_before;
+
+  for (auto const& guid : guids) {
+    CHECK(plugin->HasVessel(guid));
+    auto const vessel = plugin->GetVessel(guid);
+    auto const& trajectory = vessel->trajectory();
+    bool is_collapsible = false;
+    for (auto const& segment : trajectory.segments()) {
+      if (!is_collapsible) {
+        starts_of_non_collapsible_segments_before[guid].push_back(
+            segment.front().time);
+      }
+    }
+    for (Instant t = trajectory.front().time; t <= trajectory.back().time;
+         t += 10 * Second) {
+      degrees_of_freedom_before[guid].push_back(
+          trajectory.EvaluateDegreesOfFreedom(t));
+    }
+  }
+
   std::int64_t bytes_written;
   std::int64_t bytes_read;
-  WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
+  auto const new_plugin =
+      WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
   // Various asynchronous activities may happen in the plugin between the time
   // it is read and the time it is written, so the size of the new save is not
   // deterministic.

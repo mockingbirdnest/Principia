@@ -493,7 +493,7 @@ class Plugin {
       std::function<void(bool will_be_slow)> expected_performance_callback =
           nullptr);
 
-// private:
+ private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
   using IndexToOwnedCelestial =
       std::map<Index, not_null<std::unique_ptr<Celestial>>>;
