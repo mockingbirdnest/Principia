@@ -120,6 +120,32 @@ class PluginCompatibilityTest : public testing::Test {
     WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
   }
 
+  static void AnalyseVessels(
+      Plugin const& plugin,
+      std::vector<GUID> const& guids,
+      absl::flat_hash_map<GUID, std::vector<Instant>>& start_of_segments,
+      absl::flat_hash_map<GUID, std::vector<DegreesOfFreedom<Barycentric>>>&
+          degrees_of_freedom) {
+    for (auto const& guid : guids) {
+      CHECK(plugin.HasVessel(guid));
+      auto const vessel = plugin.GetVessel(guid);
+      auto const& trajectory = vessel->trajectory();
+      bool is_collapsible = false;
+      for (auto const& segment : trajectory.segments()) {
+        if (!is_collapsible) {
+          start_of_segments[guid].push_back(segment.front().time);
+        }
+        is_collapsible = !is_collapsible;
+      }
+      for (Instant t = trajectory.front().time;
+           t <= trajectory.back().time;
+           t += 10 * Second) {
+        degrees_of_freedom[guid].push_back(
+            trajectory.EvaluateDegreesOfFreedom(t));
+      }
+    }
+  }
+
   absl::ScopedStderrThreshold scoped_stderr_threshold_{
       absl::LogSeverityAtLeast::kInfo};
 };
@@ -525,6 +551,42 @@ TEST_F(PluginCompatibilityTest, 3273) {
 }
 
 TEST_F(PluginCompatibilityTest, DISABLED_4490) {
+  std::vector<GUID> const guids = {"12f4d71a-bfeb-4725-8f93-34e575422b47",
+                                   "35a40848-d91d-4b5d-8f76-6c7625e941ac",
+                                   "404ed131-15f7-4d06-9452-6dfba0ccaf04",
+                                   "48d772d7-1873-403d-87da-af02d5a6b485",
+                                   "4a94bcff-56e7-440a-8d85-a71ee7a1757f",
+                                   "5703104d-3401-48f9-b4cf-090dd75f7d55",
+                                   "67253c53-36a9-46c6-89a9-cfb683bdcda8",
+                                   "721fe779-1491-40e7-83e0-6760dd92b963",
+                                   "802b8755-05f1-467e-87da-da2551eb5c9b",
+                                   "e83cf1ad-ea98-4eb8-85f7-1a2302d5450a",
+                                   "eed936ef-1f7a-4062-92a6-8c109ec2bc1a",
+                                   "f742f404-cea5-4f01-ae87-127fafe963fe",
+                                   "fb5b9add-6ae8-4583-94bc-4a6633f95ce9"};
+  std::int64_t bytes_processed;
+
+  // The plugin that we would have gotten without the conversions done in
+  // Leibniz.
+  absl::flat_hash_map<GUID, std::vector<Instant>> unconverted_start_of_segments;
+  absl::flat_hash_map<GUID, std::vector<DegreesOfFreedom<Barycentric>>>
+      unconverted_degrees_of_freedom;
+  {
+    LOG(INFO) << "*** Reading plugin without conversion";
+    Vessel::disallow_leibniz_conversion_for_testing_ = true;
+    not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+        R"(C:\Users\Public\Public Mockingbird\Principia\Issues\4490\4490a.proto.b64)",
+        /*compressor=*/"gipfeli",
+        /*encoder=*/"base64",
+        bytes_processed);
+    Vessel::disallow_leibniz_conversion_for_testing_ = false;
+
+    AnalyseVessels(*plugin,
+                   guids,
+                   unconverted_start_of_segments,
+                   unconverted_degrees_of_freedom);
+  }
+
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
@@ -548,7 +610,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
       .Times(0);
   log.StartCapturingLogs();
 
-  std::int64_t bytes_processed;
+  LOG(INFO) << "*** Reading plugin with conversion";
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\4490\4490a.proto.b64)",
       /*compressor=*/"gipfeli",
@@ -556,43 +618,39 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
       bytes_processed);
   EXPECT_EQ(bytes_processed, 114'345'631);
 
-  std::vector<GUID> const guids = {"12f4d71a-bfeb-4725-8f93-34e575422b47",
-                                   "35a40848-d91d-4b5d-8f76-6c7625e941ac",
-                                   "404ed131-15f7-4d06-9452-6dfba0ccaf04",
-                                   "48d772d7-1873-403d-87da-af02d5a6b485",
-                                   "4a94bcff-56e7-440a-8d85-a71ee7a1757f",
-                                   "5703104d-3401-48f9-b4cf-090dd75f7d55",
-                                   "67253c53-36a9-46c6-89a9-cfb683bdcda8",
-                                   "721fe779-1491-40e7-83e0-6760dd92b963",
-                                   "802b8755-05f1-467e-87da-da2551eb5c9b",
-                                   "e83cf1ad-ea98-4eb8-85f7-1a2302d5450a",
-                                   "eed936ef-1f7a-4062-92a6-8c109ec2bc1a",
-                                   "f742f404-cea5-4f01-ae87-127fafe963fe",
-                                   "fb5b9add-6ae8-4583-94bc-4a6633f95ce9"};
-
-  absl::flat_hash_map<GUID, std::vector<Instant>>
-      starts_of_non_collapsible_segments_before;
+  absl::flat_hash_map<GUID, std::vector<Instant>> converted_start_of_segments;
   absl::flat_hash_map<GUID, std::vector<DegreesOfFreedom<Barycentric>>>
-      degrees_of_freedom_before;
+      converted_degrees_of_freedom;
+  AnalyseVessels(*plugin,
+                 guids,
+                 converted_start_of_segments,
+                 converted_degrees_of_freedom);
 
+  LOG(INFO) << "*** Checking conversion consistency";
   for (auto const& guid : guids) {
-    CHECK(plugin->HasVessel(guid));
-    auto const vessel = plugin->GetVessel(guid);
-    auto const& trajectory = vessel->trajectory();
-    bool is_collapsible = false;
-    for (auto const& segment : trajectory.segments()) {
-      if (!is_collapsible) {
-        starts_of_non_collapsible_segments_before[guid].push_back(
-            segment.front().time);
-      }
-    }
-    for (Instant t = trajectory.front().time; t <= trajectory.back().time;
-         t += 10 * Second) {
-      degrees_of_freedom_before[guid].push_back(
-          trajectory.EvaluateDegreesOfFreedom(t));
+    // The start of a non-collapsible segment in the converted trajectory must
+    // have been the start of a non-collapsible segment in the unconverted
+    // trajectory.  (The reverse is not true, that's the point of the
+    // conversion.)
+    EXPECT_TRUE(std::includes(unconverted_start_of_segments[guid].begin(),
+                              unconverted_start_of_segments[guid].end(),
+                              converted_start_of_segments[guid].begin(),
+                              converted_start_of_segments[guid].end()));
+
+    // The trajectories must be close to each other.
+    EXPECT_EQ(unconverted_degrees_of_freedom[guid].size(),
+              converted_degrees_of_freedom[guid].size());
+    for (std::int64_t i = 0;
+         i < converted_degrees_of_freedom[guid].size();
+         ++i) {
+      EXPECT_THAT((converted_degrees_of_freedom[guid][i].position() -
+                   unconverted_degrees_of_freedom[guid][i].position())
+                      .Norm(),
+                  Lt(1 * Micro(Metre)));
     }
   }
 
+  LOG(INFO) << "*** Writing and reading back after conversion";
   std::int64_t bytes_written;
   std::int64_t bytes_read;
   auto const new_plugin =
@@ -611,9 +669,6 @@ TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
       R"(P:\Public Mockingbird\Principia\Saves\3203\wip.proto.b64)",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
-  for (auto const& [guid, _] : plugin->vessels_) {
-std::cout<<guid<<"\n";
-  }
 }
 
 }  // namespace interface
