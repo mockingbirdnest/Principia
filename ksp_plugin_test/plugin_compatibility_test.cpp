@@ -571,6 +571,9 @@ TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
       R"(P:\Public Mockingbird\Principia\Saves\3203\wip.proto.b64)",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
+  for (auto const& [guid, _] : plugin->vessels_) {
+std::cout<<guid<<"\n";
+  }
 }
 
 }  // namespace interface
