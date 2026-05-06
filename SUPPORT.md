@@ -31,6 +31,11 @@ misbehaviours) and requesting new features or improvements.  GitHub is *not*
 suitable for questions on how to use the mod ("how do I go to the Moon from Cape
 Canaveral?", for instance).  Please use Discord for those.
 
+*There is no support whatsoever for older versions.  Before opening an issue,
+you must upgrade, verify that the problem reproduces with the latest version, and
+give us logs and other information related to that version.  Issues for
+older versions will be systematically closed.*
+
 ### Crashes
 
 There are two kinds of crashes that may be caused by Principia: crashes of 
