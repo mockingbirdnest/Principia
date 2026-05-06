@@ -150,6 +150,15 @@ char const* __cdecl principia__IteratorGetVesselGuid(
       }));
 }
 
+PlottableElements __cdecl principia__IteratorGetPlottableElements(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetPlottableElements> m({iterator});
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<std::vector<PlottableElements>> const*>(
+          iterator));
+  return m.Return(typed_iterator->Get<PlottableElements>(std::identity{}));
+}
+
 void __cdecl principia__IteratorIncrement(Iterator* const iterator) {
   journal::Method<journal::IteratorIncrement> m({iterator});
   ABSL_DIE_IF_NULL(iterator)->Increment();

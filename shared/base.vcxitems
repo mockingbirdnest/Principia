@@ -18,6 +18,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\base\cpuid.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\base\file_log_sink.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\base\flags.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\base\string_log_sink.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\base\version.generated.cc" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\base\zfp_compressor.cpp" />
   </ItemGroup>

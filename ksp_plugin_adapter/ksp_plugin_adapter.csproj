@@ -131,6 +131,7 @@
     <Compile Include="event_void_holder.cs" />
     <Compile Include="flight_planner.cs" />
     <Compile Include="gl_lines.cs" />
+    <Compile Include="graph.cs" />
     <Compile Include="interface.generated.cs" />
     <Compile Include="ksp_plugin_adapter.cs" />
     <Compile Include="interface.cs" />
@@ -142,6 +143,7 @@
     <Compile Include="manœuvre_marker.cs" />
     <Compile Include="map_node_pool.cs" />
     <Compile Include="marshalers.generated.cs" />
+    <Compile Include="migration_monitor.cs" />
     <Compile Include="ownership_transfer_marshaler.cs" />
     <Compile Include="plotter.cs" />
     <Compile Include="repeated_marshaler.cs" />
@@ -189,6 +191,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\navball_target.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="assets\graph.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="assets\pinned.png">

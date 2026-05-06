@@ -58,6 +58,7 @@
     <ClInclude Include="planetarium_body.hpp" />
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
+    <ClInclude Include="plugin_reader.hpp" />
     <ClInclude Include="renderer.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="vessel.hpp" />
@@ -75,6 +76,7 @@
     <ClCompile Include="interface_collision.cpp" />
     <ClCompile Include="interface_flight_plan.cpp" />
     <ClCompile Include="interface_future.cpp" />
+    <ClCompile Include="interface_graph.cpp" />
     <ClCompile Include="interface_iterator.cpp" />
     <ClCompile Include="interface_monitor.cpp" />
     <ClCompile Include="interface_part.cpp" />
@@ -87,6 +89,7 @@
     <ClCompile Include="pile_up.cpp" />
     <ClCompile Include="planetarium.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="plugin_reader.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="vessel.cpp" />
   </ItemGroup>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using UnityEngine.Profiling;
 using static principia.ksp_plugin_adapter.FrameType;
 
@@ -74,6 +75,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       HighLogic.LoadedScene == GameScenes.MAINMENU;
 
   private IntPtr plugin_ = IntPtr.Zero;
+  private IntPtr plugin_reader_ = IntPtr.Zero;
 
   internal IntPtr Plugin() {
     return plugin_;
@@ -272,6 +274,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   [KSPField(isPersistant = true)]
   private readonly Dialog bad_installation_dialog_ =
       new Dialog(persist_state: false);
+  private MigrationMonitor migration_monitor_ = null;
 
   // The game windows.
   [KSPField(isPersistant = true)]
@@ -881,6 +884,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   public override void OnSave(ConfigNode node) {
     base.OnSave(node);
+    if (plugin_reader_ != IntPtr.Zero) {
+      Log.Fatal("Attempted to save while plugin reader is still running; terminating to avoid save corruption.");
+    }
     if (PluginRunning()) {
       IntPtr serializer = IntPtr.Zero;
       int chunks = 0;
@@ -914,15 +920,21 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       foreach (string serialization in serializations) {
         Interface.DeserializePlugin(serialization,
                                     ref deserializer,
-                                    ref plugin_,
+                                    ref plugin_reader_,
                                     serialization_compression_,
                                     serialization_encoding_);
       }
       Interface.DeserializePlugin("",
                                   ref deserializer,
-                                  ref plugin_,
+                                  ref plugin_reader_,
                                   serialization_compression_,
                                   serialization_encoding_);
+      if (plugin_reader_.PluginReaderWillBeSlow()) {
+        migration_monitor_ = new MigrationMonitor(plugin_reader_);
+        KeepPaused();
+      } else {
+        plugin_ = Interface.PluginReaderAwait(ref plugin_reader_);
+      }
       if (serialization_compression_ == "") {
         serialization_compression_ = "gipfeli";
       }
@@ -948,6 +960,24 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private void OnGUI() {
     if (is_bad_installation_ || in_main_menu_) {
       bad_installation_dialog_.RenderWindow();
+      return;
+    }
+    if (plugin_reader_ != IntPtr.Zero) {
+      if (UnityEngine.Event.current.type == UnityEngine.EventType.Layout) {
+        plugin_ = Interface.PluginReaderGet(ref plugin_reader_);
+        if (plugin_ == IntPtr.Zero) {
+          KeepPaused();
+        } else {
+          FlightDriver.SetPause(pauseState: false);
+          migration_monitor_.Hide();
+          migration_monitor_ = null;
+          LockClearing();
+        }
+      }
+    }
+    if (migration_monitor_ != null) {
+      migration_monitor_.Show();
+      migration_monitor_.RenderWindow();
       return;
     }
 
@@ -987,6 +1017,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void LateUpdate() {
+    if (!PluginRunning()) {
+      return;
+    }
     string main_vessel_guid = PredictedVessel()?.id.ToString();
     RenderTrajectoryCollisions(main_vessel_guid,
                                out prediction_collision_,
@@ -1008,12 +1041,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
 
     // Orient the celestial bodies.
-    if (PluginRunning()) {
-      foreach (var body in FlightGlobals.Bodies) {
-        body.scaledBody.transform.rotation =
-            (UnityEngine.QuaternionD)plugin_.CelestialRotation(
-                body.flightGlobalsIndex);
-      }
+    foreach (var body in FlightGlobals.Bodies) {
+      body.scaledBody.transform.rotation =
+          (UnityEngine.QuaternionD)plugin_.CelestialRotation(
+              body.flightGlobalsIndex);
     }
 
     // Handle clicks on planets.
@@ -1645,6 +1676,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void Precalc() {
+    if (!PluginRunning()) {
+      return;
+    }
     if (FlightGlobals.ActiveVessel?.situation == Vessel.Situations.PRELAUNCH &&
         FlightGlobals.ActiveVessel?.orbitDriver?.lastMode ==
         OrbitDriver.UpdateMode.TRACK_Phys &&
@@ -2698,6 +2732,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void UpdatePlottingFrame(PlottingFrameParameters frame_parameters,
                                    Vessel target_vessel) {
+    if (!PluginRunning()) {
+      return;
+    }
     if (target_vessel != null) {
       // TODO(egg): We should use the analyser to pick the reference body.
       plugin_.SetTargetVessel(
@@ -2889,6 +2926,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void RemoveBuggyTidalLocking() {
     ApplyToBodyTree(body => body.tidallyLocked = false);
+  }
+
+  private void KeepPaused() {
+    if (FlightDriver.Pause) {
+      return;
+    }
+    FlightDriver.SetPause(pauseState: true);
   }
 }
 

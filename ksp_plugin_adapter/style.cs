@@ -165,6 +165,28 @@ internal static class Style {
     UnityEngine.GUILayout.Label("", line_spacing_style_);
   }
 
+  public static void VerticallLine() {
+    if (vertical_line_style_ == null ||
+        !vertical_line_style_.normal.background) {
+      vertical_line_style_ =
+          new UnityEngine.GUIStyle(UnityEngine.GUI.skin.verticalSlider);
+      vertical_line_style_.fixedWidth /= 5;
+      vertical_line_style_.normal.background = ultra_cool_grey_texture;
+    }
+    UnityEngine.GUILayout.Label(
+        "", vertical_line_style_,
+        UnityEngine.GUILayout.ExpandHeight(true));
+  }
+
+  public static void VerticalLineSpacing() {
+    if (vertical_line_spacing_style_ == null) {
+      vertical_line_spacing_style_ = 
+          new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
+      vertical_line_spacing_style_.fixedWidth /= 5;
+    }
+    UnityEngine.GUILayout.Label("", vertical_line_spacing_style_);
+  }
+
   private static UnityEngine.Texture2D dark_grey_texture {
     get {
       var texture = new UnityEngine.Texture2D(width: 4, height: 4);
@@ -199,7 +221,9 @@ internal static class Style {
   // local variables at the place of use, the stupid Unity ends up burning 9 kiB
   // for each horizontal line we display.  See #3064.
   private static UnityEngine.GUIStyle horizontal_line_style_;
+  private static UnityEngine.GUIStyle vertical_line_style_;
   private static UnityEngine.GUIStyle line_spacing_style_;
+  private static UnityEngine.GUIStyle vertical_line_spacing_style_;
   private static UnityEngine.GUIStyle window_background_style_;
 }
 

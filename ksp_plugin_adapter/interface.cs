@@ -81,6 +81,32 @@ internal partial struct WXYZ {
   }
 }
 
+internal partial struct Interval {
+  public static readonly Interval Empty =
+      new Interval
+          { min = double.PositiveInfinity, max = double.NegativeInfinity };
+  public double measure => min > max ? 0 : max - min;
+  public double midpoint => min > max ? double.NaN : min + measure / 2;
+
+  public void Include(double value) {
+    if (value < min) {
+      min = value;
+    }
+    if (value > max) {
+      max = value;
+    }
+  }
+
+  public bool Contains(double value) {
+    return value >= min && value <= max;
+  }
+
+  public Interval IntersectedWith(Interval other) {
+    return new Interval
+        { min = Math.Max(min, other.min), max = Math.Min(max, other.max) };
+  }
+}
+
 public enum FrameType {
   BARYCENTRIC_ROTATING = 6001,
   BODY_CENTRED_NON_ROTATING = 6000,

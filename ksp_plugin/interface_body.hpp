@@ -2,6 +2,7 @@
 
 #include "ksp_plugin/interface.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 #include <memory>
@@ -46,6 +47,11 @@ using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_tensors;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
+
+// OrbitalElements is hidden by an interface type, and the fully-qualified name
+// is very long.
+using ClassicalElements =
+    astronomy::_orbital_elements::OrbitalElements::ClassicalElements;
 
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.
@@ -268,6 +274,25 @@ inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
          left.primary_index == right.primary_index &&
          left.progress_of_next_analysis == right.progress_of_next_analysis &&
          left.recurrence == right.recurrence;
+}
+
+inline bool operator==(PlottableElements const& left,
+                       PlottableElements const& right) {
+  return NaNIndependentEq(left.semimajor_axis, right.semimajor_axis) &&
+         NaNIndependentEq(left.eccentricity, right.eccentricity) &&
+         NaNIndependentEq(left.inclination, right.inclination) &&
+         NaNIndependentEq(left.longitude_of_ascending_node,
+                          right.longitude_of_ascending_node) &&
+         NaNIndependentEq(left.argument_of_periapsis,
+                          right.argument_of_periapsis) &&
+         NaNIndependentEq(left.periapsis_distance, right.periapsis_distance) &&
+         NaNIndependentEq(left.apoapsis_distance, right.apoapsis_distance) &&
+         NaNIndependentEq(left.lidov_c1, right.lidov_c1) &&
+         NaNIndependentEq(left.lidov_c2, right.lidov_c2) &&
+         NaNIndependentEq(left.eccentricity_cos_argument_of_periapsis,
+                          right.eccentricity_cos_argument_of_periapsis) &&
+         NaNIndependentEq(left.eccentricity_sin_argument_of_periapsis,
+                          right.eccentricity_sin_argument_of_periapsis);
 }
 
 inline bool operator==(EquatorialCrossings const& left,
@@ -533,6 +558,33 @@ inline KeplerianElements ToKeplerianElements(
       .mean_anomaly = *keplerian_elements.mean_anomaly / Radian};
 }
 
+inline PlottableElements ToPlottableElements(
+    Plugin const& plugin,
+    ClassicalElements const& elements) {
+  auto const [sin_i, cos_i] = SinCos(elements.inclination);
+  auto const [sin_ω, cos_ω] = SinCos(elements.argument_of_periapsis);
+  double const sin²_i = Pow<2>(sin_i);
+  double const cos²_i = Pow<2>(cos_i);
+  double const& e = elements.eccentricity;
+  double const e² = Pow<2>(e);
+  double const sin²_ω = Pow<2>(sin_ω);
+  return {
+      .time = ToGameTime(plugin, elements.time),
+      .semimajor_axis = elements.semimajor_axis / Metre,
+      .eccentricity = elements.eccentricity,
+      .inclination = elements.inclination / Radian,
+      .longitude_of_ascending_node =
+          elements.longitude_of_ascending_node / Radian,
+      .argument_of_periapsis = elements.argument_of_periapsis / Radian,
+      .periapsis_distance = elements.periapsis_distance / Metre,
+      .apoapsis_distance = elements.apoapsis_distance / Metre,
+      .lidov_c1 = (1 - e²) * cos²_i,
+      .lidov_c2 = e² * (2.0 / 5.0 - sin²_i * sin²_ω),
+      .eccentricity_cos_argument_of_periapsis = e * cos_ω,
+      .eccentricity_sin_argument_of_periapsis = e * sin_ω,
+  };
+}
+
 inline Node ToNode(Plugin const& plugin,
                    Renderer::Node const& node) {
   return Node{
@@ -775,6 +827,13 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .first_collision_risk_time =
             to_double_ptr(vessel_analysis->first_collision_risk()),
         .first_reentry_time = to_double_ptr(vessel_analysis->first_reentry()),
+        .plottable_elements = new TypedIterator<std::vector<PlottableElements>>(
+            elements.mean_elements()
+            | std::ranges::views::transform([&plugin](auto const& elements) {
+                return ToPlottableElements(plugin, elements);
+              })
+            | std::ranges::to<std::vector<PlottableElements>>(),
+            &plugin),
     };
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {

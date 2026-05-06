@@ -340,6 +340,9 @@ class Ephemeris {
       Instant const& t_initial,
       Instant const& t_final) EXCLUDES(lock_);
 
+  bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min)
+      REQUIRES_SHARED(lock_);
+
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
       typename NewtonianMotionEquation::State const& state)
@@ -534,11 +537,9 @@ class Ephemeris {
   not_null<
       std::unique_ptr<Checkpointer<serialization::Ephemeris>>> checkpointer_;
 
-  // This member must only be accessed by the `reanimator_` thread, or before
-  // the `reanimator_` thread is started.  An ephemeris that is constructed de
-  // novo won't ever need reanimation, so all the checkpoints are animate at
-  // birth.
-  Instant oldest_reanimated_checkpoint_ = InfinitePast;
+  // An ephemeris that is constructed de novo won't ever need reanimation, so
+  // all the checkpoints are animate at birth.
+  Instant oldest_reanimated_checkpoint_ ABSL_GUARDED_BY(lock_) = InfinitePast;
 
   // The techniques and terminology follow [Lov22].
   RecurringThread<Instant> reanimator_;

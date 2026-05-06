@@ -524,35 +524,44 @@ void __cdecl principia__DeleteU16String(char16_t const** const native_string) {
 void __cdecl principia__DeserializePlugin(
     char const* const serialization,
     PushDeserializer** const deserializer,
-    Plugin const** const plugin,
+    PluginReader** const plugin_reader,
     char const* const compressor,
     char const* const encoder) {
   journal::Method<journal::DeserializePlugin> m({serialization,
                                                  deserializer,
-                                                 plugin,
+                                                 plugin_reader,
                                                  compressor,
                                                  encoder},
                                                 {deserializer,
-                                                 plugin});
+                                                 plugin_reader});
   CHECK(serialization != nullptr);
   CHECK(deserializer != nullptr);
-  CHECK(plugin != nullptr);
+  CHECK(plugin_reader != nullptr);
 
-  // Create and start a deserializer if the caller didn't provide one.
+  // Create and start a deserializer and an arena if the caller didn't provide
+  // one.
   if (*deserializer == nullptr) {
     LOG(INFO) << "Begin plugin deserialization";
     *deserializer = new PushDeserializer(chunk_size,
                                          number_of_chunks,
                                          NewCompressor(compressor));
-    CHECK(arena != nullptr);
+    // The ownership of this arena will be transferred to the `PushDeserializer`
+    // (via the `done` callback), and then by the `done` callback to the
+    // `PluginReader`.
+    auto arena = make_not_null_unique<Arena>(ArenaOptions{
+        .max_block_size = 16 * chunk_size,
+        .initial_block_size = chunk_size,
+    });
     not_null<serialization::Plugin*> const message =
-        Arena::Create<serialization::Plugin>(arena);
-    (*deserializer)->Start(
-        message,
-        [plugin](google::protobuf::Message const& message) {
-          *plugin = Plugin::ReadFromMessage(
-              static_cast<serialization::Plugin const&>(message)).release();
-        });
+        Arena::Create<serialization::Plugin>(arena.get());
+    (*deserializer)
+        ->Start(message,
+                [plugin_reader, arena = std::move(arena)](
+                    google::protobuf::Message const& message) mutable {
+                  *plugin_reader = new PluginReader(
+                      static_cast<serialization::Plugin const&>(message),
+                      std::move(arena));
+                });
   }
 
   // Decode the representation.
@@ -562,11 +571,10 @@ void __cdecl principia__DeserializePlugin(
   (*deserializer)->Push(std::move(bytes));
 
   // If the data was empty, delete the deserializer.  This ensures that
-  // `*plugin` is filled.
+  // `*plugin_reader` is filled.
   if (bytes_size == 0) {
     LOG(INFO) << "End plugin deserialization";
     TakeOwnership(deserializer);
-    arena->Reset();
   }
   return m.Return();
 }
@@ -1024,6 +1032,40 @@ Plugin* __cdecl principia__NewPlugin(
                                    planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
   return m.Return(result.release());
+}
+
+Plugin* __cdecl principia__PluginReaderAwait(PluginReader** const reader) {
+  journal::Method<journal::PluginReaderGet> m({reader}, {reader});
+  CHECK(reader != nullptr);
+  CHECK(*reader != nullptr);
+  auto result = (*reader)->Await();
+  TakeOwnership(reader);
+  return m.Return(result.release());
+}
+
+Plugin* __cdecl principia__PluginReaderGet(PluginReader** const reader) {
+  journal::Method<journal::PluginReaderGet> m({reader}, {reader});
+  CHECK(reader != nullptr);
+  CHECK(*reader != nullptr);
+  auto result = (*reader)->get();
+  if (result != nullptr) {
+    TakeOwnership(reader);
+  }
+  return m.Return(result.release());
+}
+
+char const* __cdecl principia__PluginReaderLogs(
+  PluginReader* const reader) {
+  journal::Method<journal::PluginReaderLogs> m({reader});
+  CHECK(reader != nullptr);
+  return m.Return({reader->logs().c_str()});
+}
+
+bool __cdecl principia__PluginReaderWillBeSlow(
+  PluginReader const* const reader) {
+  journal::Method<journal::PluginReaderWillBeSlow> m({reader});
+  CHECK(reader != nullptr);
+  return m.Return({reader->WillBeSlow()});
 }
 
 void __cdecl principia__PrepareToReportCollisions(Plugin* const plugin) {

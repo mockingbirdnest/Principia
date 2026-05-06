@@ -1521,7 +1521,8 @@ void Plugin::WriteToMessage(
 }
 
 not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
-    serialization::Plugin const& message) {
+    serialization::Plugin const& message,
+    std::function<void(bool will_be_slow)> expected_performance_callback) {
   LOG(INFO) << __FUNCTION__;
 
   auto const history_parameters =
@@ -1580,18 +1581,32 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                              plugin->celestials_,
                              plugin->name_to_index_);
 
+  // Deserialization of vessels may be slow because of the Лефшец-to-Leibniz
+  // migration, let's use all the cores.
+  ThreadPool<not_null<std::unique_ptr<Vessel>>> vessel_deserialization_pool(
+      std::thread::hardware_concurrency());
+  std::vector<std::future<not_null<std::unique_ptr<Vessel>>>> vessel_futures;
+  vessel_futures.reserve(message.vessel_size());
   for (auto const& vessel_message : message.vessel()) {
     not_null<Celestial const*> const parent =
         FindOrDie(plugin->celestials_, vessel_message.parent_index()).get();
-    not_null<std::unique_ptr<Vessel>> vessel = Vessel::ReadFromMessage(
-        vessel_message.vessel(),
-        parent,
-        plugin->ephemeris_.get(),
-        [&part_id_to_vessel = plugin->part_id_to_vessel_](
-            PartId const part_id) {
-          CHECK_NE(part_id_to_vessel.erase(part_id), 0) << part_id;
-        });
+    vessel_futures.push_back(vessel_deserialization_pool.Add(
+        [expected_performance_callback, parent, &plugin, &vessel_message]() {
+          return Vessel::ReadFromMessage(
+              vessel_message.vessel(),
+              parent,
+              plugin->ephemeris_.get(),
+              [&part_id_to_vessel =
+                   plugin->part_id_to_vessel_](PartId const part_id) {
+                CHECK_NE(part_id_to_vessel.erase(part_id), 0) << part_id;
+              },
+              expected_performance_callback);
+        }));
+  }
 
+  for (std::int64_t i = 0; i < message.vessel_size(); ++i) {
+    auto const& vessel_message = message.vessel(i);
+    auto vessel = vessel_futures[i].get();
     if (vessel_message.loaded()) {
       plugin->loaded_vessels_.insert(vessel.get());
     }

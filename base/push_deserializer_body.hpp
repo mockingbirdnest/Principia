@@ -127,40 +127,48 @@ inline PushDeserializer::~PushDeserializer() {
   }
 }
 
-inline void PushDeserializer::Start(
+template<DeserializerDoneCallback F>
+void PushDeserializer::Start(
     not_null<std::unique_ptr<google::protobuf::Message>> message,
-    std::function<void(google::protobuf::Message const&)> done) {
+    F done) {
   owned_message_ = std::move(message);
   Start(owned_message_.get(), std::move(done));
 }
 
-inline void PushDeserializer::Start(
-    not_null<google::protobuf::Message*> const message,
-    std::function<void(google::protobuf::Message const&)> done) {
+template<DeserializerDoneCallback F>
+void PushDeserializer::Start(not_null<google::protobuf::Message*> const message,
+                             F done) {
   CHECK(thread_ == nullptr);
   message_ = message;
-  thread_ = std::make_unique<std::thread>([this, done = std::move(done)]() {
-    // It is a well-known annoyance that, in order to set the total byte limit,
-    // we have to copy code from MessageLite::ParseFromZeroCopyStream.  Blame
-    // Kenton.
-    google::protobuf::io::CodedInputStream decoder(&stream_);
-    CHECK(message_->ParseFromCodedStream(&decoder));
-    CHECK(decoder.ConsumedEntireMessage());
+  thread_ =
+      std::make_unique<std::thread>([this, done = std::move(done)]() mutable {
+        // It is a well-known annoyance that, in order to set the total byte
+        // limit, we have to copy code from
+        // MessageLite::ParseFromZeroCopyStream.  Blame Kenton.
+        google::protobuf::io::CodedInputStream decoder(&stream_);
+        CHECK(message_->ParseFromCodedStream(&decoder));
+        CHECK(decoder.ConsumedEntireMessage());
 
-    // Run any remainining chunk callback.
-    absl::MutexLock l(&lock_);
-    CHECK_EQ(1, done_.size());
-    auto const done_front = done_.front();
-    if (done_front != nullptr) {
-      done_front();
-    }
-    done_.pop();
+        // Run any remainining chunk callback.
+        absl::MutexLock l(&lock_);
+        CHECK_EQ(1, done_.size());
+        auto const done_front = done_.front();
+        if (done_front != nullptr) {
+          done_front();
+        }
+        done_.pop();
 
-    // Run the final callback.
-    if (done != nullptr) {
-      done(*message_);
-    }
-  });
+        // Run the final callback.
+        if constexpr (std::invocable<F, google::protobuf::Message const&>) {
+          if constexpr (std::equality_comparable_with<F, nullptr_t>) {
+            if (done != nullptr) {
+              done(*message_);
+            }
+          } else {
+            done(*message_);
+          }
+        }
+      });
 }
 
 inline void PushDeserializer::Push(Array<std::uint8_t> const bytes,

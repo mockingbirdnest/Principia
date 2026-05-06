@@ -16,7 +16,7 @@ namespace internal {
 template<typename Function, typename... Args>
 std::jthread MakeStoppableThread(Function&& f, Args&&... args) {
   return std::jthread(
-      [f](std::stop_token const& st, Args&&... args) {
+      [f = std::move(f)](std::stop_token const& st, Args&&... args) mutable {
         // This assignment happens on the thread of the jthread.
         this_stoppable_thread::stop_token_ = st;
         f(std::forward<Args>(args)...);
