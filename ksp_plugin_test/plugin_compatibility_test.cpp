@@ -554,7 +554,7 @@ TEST_F(PluginCompatibilityTest, 3273) {
 
 TEST_F(PluginCompatibilityTest, DISABLED_4490) {
   std::filesystem::path const path =
-      R"(P:\Public Mockingbird\Principia\Saves\4490\4490a.proto.b64)",
+      R"(P:\Public Mockingbird\Principia\Saves\4490\4490a.proto.b64)";
   std::vector<GUID> const guids = {"12f4d71a-bfeb-4725-8f93-34e575422b47",
                                    "35a40848-d91d-4b5d-8f76-6c7625e941ac",
                                    "404ed131-15f7-4d06-9452-6dfba0ccaf04",
