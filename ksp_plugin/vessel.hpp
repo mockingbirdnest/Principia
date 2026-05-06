@@ -309,6 +309,8 @@ class Vessel {
   static void MakeAsynchronous();
   static void MakeSynchronous();
 
+  static bool disallow_leibniz_conversion_for_testing_;
+
  protected:
   // For mocking.
   Vessel();
@@ -369,12 +371,6 @@ class Vessel {
       Instant const& t_initial,
       Instant const& t_final,
       bool quiet) EXCLUDES(lock_);
-
-  // Merges any reanimated trajectories found in the queue and returns true if
-  // the reanimation reached `desired_t_min`, or if the vessel is fully
-  // reanimated.
-  bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min)
-      ABSL_SHARED_LOCKS_REQUIRED(lock_);
 
   // Runs the integrator to compute the `prognostication_` based on the given
   // parameters.

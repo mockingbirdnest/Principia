@@ -410,14 +410,10 @@ void Vessel::RequestReanimation(Instant const& desired_t_min,
         last_desired_t_min_.has_value() &&
         checkpointer_->checkpoint_at_or_before(last_desired_t_min_.value()) <
             checkpointer_->checkpoint_at_or_before(allowable_desired_t_min);
-    LOG_IF(WARNING, must_restart)
+    LOG_IF_EVERY_N_SEC(WARNING, must_restart, 1)
         << "Restarting reanimator because desired t_min went from "
         << last_desired_t_min_.value() << " to " << allowable_desired_t_min;
     last_desired_t_min_ = allowable_desired_t_min;
-
-    if (DesiredTMinReachedOrFullyReanimated(allowable_desired_t_min)) {
-      return;
-    }
   }
 
   if (must_restart) {
@@ -430,14 +426,28 @@ void Vessel::RequestReanimation(Instant const& desired_t_min,
 
 void Vessel::AwaitReanimation(Instant const& desired_t_min,
                               bool const quiet) {
-  auto desired_t_min_reached_or_fully_reanimated = [this, desired_t_min]() {
-    return DesiredTMinReachedOrFullyReanimated(desired_t_min);
+  auto has_reanimated_trajectories = [this] {
+    lock_.AssertReaderHeld();
+    return !reanimated_trajectories_.empty();
   };
 
   Client const me(desired_t_min, reanimator_clientele_);
   RequestReanimation(desired_t_min, quiet);
-  absl::ReaderMutexLock l(&lock_);
-  lock_.Await(absl::Condition(&desired_t_min_reached_or_fully_reanimated));
+
+  absl::MutexLock l(&lock_);
+  while (desired_t_min < trajectory_.t_min() &&
+         oldest_reanimated_checkpoint_ != checkpointer_->oldest_checkpoint()) {
+    lock_.Await(absl::Condition(&has_reanimated_trajectories));
+
+    // Consume the reanimated trajectories and merge them into this trajectory.
+    // This is the only place where the reanimation becomes externally visible,
+    // thereby ensuring that the trajectory doesn't change, say, while clients
+    // iterate over it.
+    while (!reanimated_trajectories_.empty()) {
+      trajectory_.Merge(std::move(reanimated_trajectories_.front()));
+      reanimated_trajectories_.pop();
+    }
+  }
 }
 
 void Vessel::CreateFlightPlan(
@@ -830,7 +840,9 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
         Checkpointer<serialization::Vessel>::ReadFromMessage(
             vessel->MakeCheckpointerWriterFromPileUp(),
             vessel->MakeCheckpointerReader(),
-            is_pre_leibniz ? pre_leibniz_rewriter : nullptr,
+            is_pre_leibniz && !disallow_leibniz_conversion_for_testing_
+                ? pre_leibniz_rewriter
+                : nullptr,
             message.checkpoint());
     if (message.has_downsampling_parameters()) {
       vessel->downsampling_parameters_ =
@@ -904,7 +916,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   // then constructs a new trajectory by appending all the points in the
   // history.  The downsampling and merging of segments happen anew, so that we
   // end up with reasonably-sized data structures.
-  if (!is_pre_лефшец && is_pre_leibniz && !vessel->trajectory_.empty()) {
+  if (!is_pre_лефшец && is_pre_leibniz && !vessel->trajectory_.empty() &&
+      !disallow_leibniz_conversion_for_testing_) {
     vessel->AwaitReanimation(InfinitePast, /*quiet=*/true);
     auto psychohistory =
         vessel->trajectory_.DetachSegments(vessel->psychohistory_);
@@ -914,7 +927,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->trajectory_ = {};
     vessel->backstory_ = vessel->trajectory_.segments().begin();
     vessel->is_collapsible_ = false;
-    vessel->oldest_reanimated_checkpoint_ = InfinitePast;
+    vessel->oldest_reanimated_checkpoint_ = InfiniteFuture;
 
     // We will create checkpoints but the pile-up is not known yet, so we'll get
     // the parameters from the first checkpoint.
@@ -1178,22 +1191,6 @@ absl::StatusOr<Instant> Vessel::ReanimateOneCheckpoint(
   }
 
   return reanimated_trajectory_t_initial;
-}
-
-bool Vessel::DesiredTMinReachedOrFullyReanimated(
-    Instant const& desired_t_min) {
-  lock_.AssertReaderHeld();
-
-  // Consume the reanimated trajectories and merge them into this trajectory.
-  // This is the only place where the reanimation becomes externally visible,
-  // thereby ensuring that the trajectory doesn't change, say, while clients
-  // iterate over it.
-  while (!reanimated_trajectories_.empty()) {
-    trajectory_.Merge(std::move(reanimated_trajectories_.front()));
-    reanimated_trajectories_.pop();
-  }
-  return trajectory_.t_min() <= desired_t_min ||
-         oldest_reanimated_checkpoint_ == checkpointer_->oldest_checkpoint();
 }
 
 absl::StatusOr<DiscreteTrajectory<Barycentric>> Vessel::FlowPrognostication(
@@ -1470,6 +1467,8 @@ std::atomic_bool Vessel::synchronous_(true);
 #else
 std::atomic_bool Vessel::synchronous_(false);
 #endif
+
+bool Vessel::disallow_leibniz_conversion_for_testing_ = false;
 
 }  // namespace internal
 }  // namespace _vessel

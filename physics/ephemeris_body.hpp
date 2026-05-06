@@ -283,14 +283,10 @@ void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
     must_restart = last_desired_t_min_.has_value() &&
                    last_desired_t_min_.value() + max_time_between_checkpoints <
                        allowable_desired_t_min;
-    LOG_IF(WARNING, must_restart)
+    LOG_IF_EVERY_N_SEC(WARNING, must_restart, 1)
         << "Restarting reanimator because desired t_min went from "
         << last_desired_t_min_.value() << " to " << allowable_desired_t_min;
     last_desired_t_min_ = allowable_desired_t_min;
-
-    if (DesiredTMinReachedOrFullyReanimated(allowable_desired_t_min)) {
-      return;
-    }
   }
 
   // Don't hold the lock while restarting, the reanimator needs it.
