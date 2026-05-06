@@ -120,7 +120,7 @@ class PluginCompatibilityTest : public testing::Test {
     WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
   }
 
-  static void AnalyseVessels(
+  static void AnalyzeVessels(
       Plugin const& plugin,
       std::vector<GUID> const& guids,
       absl::flat_hash_map<GUID, std::vector<Instant>>& start_of_segments,
@@ -585,7 +585,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
         bytes_processed);
     Vessel::disallow_leibniz_conversion_for_testing_ = false;
 
-    AnalyseVessels(*plugin,
+    AnalyzeVessels(*plugin,
                    guids,
                    unconverted_start_of_segments,
                    unconverted_degrees_of_freedom);
@@ -636,7 +636,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
   absl::flat_hash_map<GUID, std::vector<Instant>> converted_start_of_segments;
   absl::flat_hash_map<GUID, std::vector<DegreesOfFreedom<Barycentric>>>
       converted_degrees_of_freedom;
-  AnalyseVessels(*plugin,
+  AnalyzeVessels(*plugin,
                  guids,
                  converted_start_of_segments,
                  converted_degrees_of_freedom);
@@ -668,8 +668,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
   LOG(INFO) << "*** Writing and reading back after conversion";
   std::int64_t bytes_written;
   std::int64_t bytes_read;
-  auto const new_plugin =
-      WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
+  WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
   // Various asynchronous activities may happen in the plugin between the time
   // it is read and the time it is written, so the size of the new save is not
   // deterministic.

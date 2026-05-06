@@ -434,7 +434,6 @@ void Vessel::AwaitReanimation(Instant const& desired_t_min,
   Client const me(desired_t_min, reanimator_clientele_);
   RequestReanimation(desired_t_min, quiet);
 
-  // Exclusive lock because we will this object.
   absl::MutexLock l(&lock_);
   while (desired_t_min < trajectory_.t_min() &&
          oldest_reanimated_checkpoint_ != checkpointer_->oldest_checkpoint()) {
