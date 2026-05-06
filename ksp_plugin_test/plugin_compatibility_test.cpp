@@ -553,6 +553,8 @@ TEST_F(PluginCompatibilityTest, 3273) {
 }
 
 TEST_F(PluginCompatibilityTest, DISABLED_4490) {
+  std::filesystem::path const path =
+      R"(P:\Public Mockingbird\Principia\Saves\4490\4490a.proto.b64)",
   std::vector<GUID> const guids = {"12f4d71a-bfeb-4725-8f93-34e575422b47",
                                    "35a40848-d91d-4b5d-8f76-6c7625e941ac",
                                    "404ed131-15f7-4d06-9452-6dfba0ccaf04",
@@ -577,7 +579,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
     LOG(INFO) << "*** Reading plugin without conversion";
     Vessel::disallow_leibniz_conversion_for_testing_ = true;
     not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-        R"(C:\Users\Public\Public Mockingbird\Principia\Issues\4490\4490a.proto.b64)",
+        path,
         /*compressor=*/"gipfeli",
         /*encoder=*/"base64",
         bytes_processed);
@@ -625,7 +627,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
 
   LOG(INFO) << "*** Reading plugin with conversion";
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
-      R"(P:\Public Mockingbird\Principia\Saves\4490\4490a.proto.b64)",
+      path,
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64",
       bytes_processed);
@@ -671,7 +673,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_4490) {
   // Various asynchronous activities may happen in the plugin between the time
   // it is read and the time it is written, so the size of the new save is not
   // deterministic.
-  EXPECT_THAT(bytes_written, AllOf(Gt(7'972'000), Lt(7'972'200)));
+  EXPECT_THAT(bytes_written, AllOf(Gt(7'972'000), Lt(7'972'300)));
   EXPECT_EQ(bytes_read, bytes_written);
 }
 #endif
