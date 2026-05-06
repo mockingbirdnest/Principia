@@ -45,7 +45,7 @@ class FileLogSinkTest : public ::testing::Test {
   }
 
   static std::filesystem::path UniqueLogFile(absl::LogSeverity const severity,
-                                             bool check_first_line = true) {
+                                             bool check_file_name = true) {
     std::string const prefix =
         std::string("FileLogSinkTest.") + absl::LogSeverityName(severity);
     std::vector<std::filesystem::path> candidates;
@@ -57,7 +57,7 @@ class FileLogSinkTest : public ::testing::Test {
       }
     }
     EXPECT_THAT(candidates, SizeIs(1));
-    if (check_first_line) {
+    if (check_file_name) {
       EXPECT_THAT(
           candidates.front().filename().string(),
           MatchesRegex(
@@ -247,7 +247,7 @@ TEST_F(FileLogSinkTest, DISABLED_TimeZoneManual) {
   absl::FlushLogSinks();
 
   std::filesystem::path const path =
-      UniqueLogFile(absl::LogSeverity::kInfo, /*check_first_line=*/false);
+      UniqueLogFile(absl::LogSeverity::kInfo, /*check_file_name=*/false);
   std::cout << "Path: " << path << "\n";
   std::ifstream info_file(path);
   std::string const info_log{std::istreambuf_iterator(info_file), {}};
