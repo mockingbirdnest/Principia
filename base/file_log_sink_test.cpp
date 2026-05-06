@@ -44,7 +44,9 @@ class FileLogSinkTest : public ::testing::Test {
     }
   }
 
-  static std::filesystem::path UniqueLogFile(absl::LogSeverity const severity) {
+  static std::filesystem::path UniqueLogFile(
+      absl::LogSeverity const severity,
+      bool const check_file_name = true) {
     std::string const prefix =
         std::string("FileLogSinkTest.") + absl::LogSeverityName(severity);
     std::vector<std::filesystem::path> candidates;
@@ -56,10 +58,12 @@ class FileLogSinkTest : public ::testing::Test {
       }
     }
     EXPECT_THAT(candidates, SizeIs(1));
-    EXPECT_THAT(
-        candidates.front().filename().string(),
-        MatchesRegex(
-            R"(FileLogSinkTest\.(INFO|WARNING|ERROR|FATAL)\.20000101-\d\d\d855\.\d+\.log)"));
+    if (check_file_name) {
+      EXPECT_THAT(
+          candidates.front().filename().string(),
+          MatchesRegex(
+              R"(FileLogSinkTest\.(INFO|WARNING|ERROR|FATAL)\.20000101-\d\d\d855\.\d+\.log)"));
+    }
     return candidates.front();
   }
 
@@ -230,6 +234,25 @@ E0101 \d\d:\d8:55.816000    1729 file_log_sink_test.cpp:\d+] error
 )"));
   }
   absl::RemoveLogSink(sink.get());
+}
+
+// Used to check the time zone manually.
+TEST_F(FileLogSinkTest, DISABLED_TimeZoneManual) {
+  auto const now = absl::Now();
+  auto const sink =
+      make_not_null_unique<FileLogSink>("FileLogSinkTest.", ".log");
+  absl::AddLogSink(sink.get());
+  LOG(INFO).WithTimestamp(now).WithThreadID(1729) << "info";
+  LOG(WARNING).WithTimestamp(now).WithThreadID(1729) << "warning";
+  LOG(ERROR).WithTimestamp(now).WithThreadID(1729) << "error";
+  absl::FlushLogSinks();
+
+  std::filesystem::path const path =
+      UniqueLogFile(absl::LogSeverity::kInfo, /*check_file_name=*/false);
+  std::cout << "Path: " << path << "\n";
+  std::ifstream info_file(path);
+  std::string const info_log{std::istreambuf_iterator(info_file), {}};
+  std::cout << "Contents:\n" << info_log << "\n";
 }
 
 }  // namespace base
