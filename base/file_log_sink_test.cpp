@@ -44,8 +44,9 @@ class FileLogSinkTest : public ::testing::Test {
     }
   }
 
-  static std::filesystem::path UniqueLogFile(absl::LogSeverity const severity,
-                                             bool check_file_name = true) {
+  static std::filesystem::path UniqueLogFile(
+      absl::LogSeverity const severity,
+      bool const check_file_name = true) {
     std::string const prefix =
         std::string("FileLogSinkTest.") + absl::LogSeverityName(severity);
     std::vector<std::filesystem::path> candidates;
