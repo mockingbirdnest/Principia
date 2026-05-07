@@ -372,6 +372,9 @@ class Vessel {
       Instant const& t_final,
       bool quiet) EXCLUDES(lock_);
 
+  bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min)
+      REQUIRES_SHARED(lock_);
+
   // Runs the integrator to compute the `prognostication_` based on the given
   // parameters.
   absl::StatusOr<DiscreteTrajectory<Barycentric>>
