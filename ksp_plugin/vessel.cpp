@@ -420,8 +420,21 @@ void Vessel::RequestReanimation(Instant const& desired_t_min,
     reanimator_.Restart();
   }
 
-  reanimator_.Put({.desired_t_min = allowable_desired_t_min,
-                   .quiet = quiet});
+  {
+    absl::ReaderMutexLock l(&lock_);
+
+    // It is important for correctness that we *don't* enqueue a reanimation
+    // request if the desired time has already been reached.  When called from
+    // `AwaitReanimation`, there will be no waiting in that case.  If we
+    // enqueued a reanimation it would proceed asynchronously without anyone
+    // waiting, and this could cause a race if the trajectory being reanimated
+    // was destroyed soon thereafter, as can happen as part of the
+    // Лефшец-to-Leibniz migration.
+    if (!DesiredTMinReachedOrFullyReanimated(allowable_desired_t_min)) {
+      reanimator_.Put(
+          {.desired_t_min = allowable_desired_t_min, .quiet = quiet});
+    }
+  }
 }
 
 void Vessel::AwaitReanimation(Instant const& desired_t_min,
@@ -435,8 +448,7 @@ void Vessel::AwaitReanimation(Instant const& desired_t_min,
   RequestReanimation(desired_t_min, quiet);
 
   absl::MutexLock l(&lock_);
-  while (desired_t_min < trajectory_.t_min() &&
-         oldest_reanimated_checkpoint_ != checkpointer_->oldest_checkpoint()) {
+  while (!DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
     lock_.Await(absl::Condition(&has_reanimated_trajectories));
 
     // Consume the reanimated trajectories and merge them into this trajectory.
@@ -1191,6 +1203,12 @@ absl::StatusOr<Instant> Vessel::ReanimateOneCheckpoint(
   }
 
   return reanimated_trajectory_t_initial;
+}
+
+bool Vessel::DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min) {
+  lock_.AssertReaderHeld();
+  return trajectory_.t_min() <= desired_t_min ||
+         oldest_reanimated_checkpoint_ == checkpointer_->oldest_checkpoint();
 }
 
 absl::StatusOr<DiscreteTrajectory<Barycentric>> Vessel::FlowPrognostication(
