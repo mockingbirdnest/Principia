@@ -294,20 +294,6 @@ TEST_F(DoublePrecisionTest, Product) {
                            0));
 }
 
-//REMOVE BEFORE FLIGHT
-TEST_F(DoublePrecisionTest, Product2) {
-  std::mt19937_64 random(666);
-  std::uniform_real_distribution<> uniformly_at(0.0, 10.0);
-  for (std::int64_t i = 0; i < 1e9; ++i) {
-    Mass const a = uniformly_at(random) * Kilogram;
-    Speed const b = uniformly_at(random) * Metre / Second;
-    DoublePrecision<Momentum> const c = TwoProduct<FMAPresence::Present>(a, b);
-    DoublePrecision<Momentum> const d = VeltkampDekkerProduct(a, b);
-    EXPECT_THAT(c.value, AlmostEquals(d.value, 0));
-    EXPECT_THAT(c.error, AlmostEquals(d.error, 0));
-  }
-}
-
 TEST_F(DoublePrecisionTest, LongProduct) {
   DoublePrecision<Length> a(3 * Metre);
   a.Increment(474 * ε * Metre);
