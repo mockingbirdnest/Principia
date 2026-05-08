@@ -86,6 +86,7 @@
     <ClInclude Include="next.hpp" />
     <ClInclude Include="next_body.hpp" />
     <ClInclude Include="osaca.hpp" />
+    <ClInclude Include="payne_hanek.mathematica.h" />
     <ClInclude Include="piecewise_poisson_series.hpp" />
     <ClInclude Include="piecewise_poisson_series_body.hpp" />
     <ClInclude Include="poisson_series.hpp" />
