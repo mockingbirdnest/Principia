@@ -31,6 +31,12 @@ constexpr Angle one_π;
 template<typename Angle>
 constexpr Angle two_π;
 
+//TODO(phl)comment
+template<std::int64_t precision>
+void PayneHanek(Angle const& x,
+                DoublePrecision<Angle>& x_reduced,
+                std::int64_t& quadrant);
+
 // If [fractional_part_lower_bound, fractional_part_upper_bound] covers 2π or
 // more, the reduction is modulo 2π.  If it covers only π, the reduction is
 // modulo π.
@@ -51,6 +57,7 @@ Angle ReduceAngle(Angle const& θ);
 
 }  // namespace internal
 
+using internal::PayneHanek;
 using internal::ReduceAngle;
 
 }  // namespace _angle_reduction

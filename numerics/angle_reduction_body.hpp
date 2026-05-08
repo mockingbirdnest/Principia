@@ -2,9 +2,12 @@
 
 #include "numerics/angle_reduction.hpp"
 
+#include <cmath>
 #include <limits>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
+#include "numerics/double_precision.hpp"
+#include "numerics/payne_hanek.mathematica.h"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -12,6 +15,8 @@ namespace numerics {
 namespace _angle_reduction {
 namespace internal {
 
+using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_payne_hanek;
 using namespace principia::quantities::_si;
 
 // A somewhat arbitrary value above which we fail argument reduction.
@@ -145,6 +150,55 @@ class AngleReduction<Angle, -2 * π, 2 * π> {
     return true;
   }
 };
+
+template<std::int64_t precision>
+void PayneHanek(Angle const& x,
+                DoublePrecision<Angle>& x_reduced,
+                std::int64_t& quadrant) {
+  // This implementation follows [Mul97, section 8.4].
+  static_assert(std::numeric_limits<double>::radix == 2);
+  constexpr std::int64_t p = precision;
+  constexpr std::int64_t n = std::numeric_limits<double>::digits;
+
+  int e;
+  double X = std::frexp(x / Radian, &e);
+  // Correct the mantissa and exponent to match [Mul97, p. 155].
+  e--;
+  X = std::scalbn(X, n);
+  CHECK_GE(e, -1);
+
+  // Split `X` so that the multiplications below are exact.
+  double Xh;
+  double Xl;
+  VeltkampSplitting<PayneHanekBitsPerChunk>(X, Xh, Xl);
+
+  // Converts the bit numbering of [Mul97, p. 155] into our index in
+  // `PayneHanekChunks`.
+  auto bit_to_index = [](std::int64_t const b) {
+    return -b / PayneHanekBitsPerChunk;
+  };
+
+  // `Medium(e, p)` is made of the chunks with indices [medium_first,
+  // medium_last].
+  std::int64_t const medium_first = bit_to_index(n - e + 1);
+  std::int64_t const medium_last = bit_to_index(-n - e - 1 - p);
+
+  DoublePrecision<double> h;
+  double h_quadrant = 0.0;
+  for (std::int64_t i = medium_last; i >= medium_first; --i) {
+    double const chunk = std::scalbn(PayneHanekChunks[i], n + e + 1 + p);
+    double const Xl_chunk = Xl * chunk;
+    double const Xh_chunk = Xh * chunk;
+    h_quadrant += std::remainder(Xl_chunk, 4.0) + std::remainder(Xh_chunk, 4.0);
+    h += Xl_chunk;
+    h += Xh_chunk;
+  }
+
+  h -= std::trunc(h.value);
+  h -= std::trunc(h.value);
+  quadrant = static_cast<std::int64_t>(h_quadrant) % 4;
+  x_reduced = Scale(Radian, h);
+}
 
 template<DoubleWrapper fractional_part_lower_bound,
          DoubleWrapper fractional_part_upper_bound,

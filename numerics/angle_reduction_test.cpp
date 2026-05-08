@@ -6,6 +6,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/numerics_matchers.hpp"
 
 // The test is in the `internal` namespace to get visibility to `one_π` and
 // `two_π`.
@@ -14,15 +15,45 @@ namespace numerics {
 namespace _angle_reduction {
 namespace internal {
 
-using namespace principia::numerics::_double_precision;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+using namespace principia::quantities::_quantities;
+using namespace principia::numerics::_double_precision;
 using namespace principia::testing_utilities::_almost_equals;
+using namespace principia::testing_utilities::_numerics_matchers;
+using ::testing::Lt;
 
 template<typename T>
 class AngleReductionTest : public testing::Test {};
 
 TYPED_TEST_SUITE_P(AngleReductionTest);
+
+TEST(AngleReductionTest, PayneHanek) {
+  {
+    // [Mul97, Example 11].
+    Angle const x = 0x1.8p200 * Radian;
+    DoublePrecision<Angle> x_reduced;
+    std::int64_t quadrant;
+    PayneHanek<20>(x, x_reduced, quadrant);
+    EXPECT_THAT(
+        x_reduced.value,
+        RelativeErrorFrom(
+            0.00000000000000000046871659242546276111225828019638843989495393958823 *
+                Radian,
+            Lt(1.0e-20)));
+  }
+  {
+    Angle const x = 6381956970095103.0 * 0x1.0p797 * Radian;
+    DoublePrecision<Angle> x_reduced;
+    std::int64_t quadrant;
+    PayneHanek<61>(x, x_reduced, quadrant);
+    EXPECT_THAT(
+        x_reduced.value,
+        RelativeErrorFrom(
+            0.00000000000000000046871659242546276111225828019638843989495393958823 *
+                Radian,
+            Lt(1.0e-20)));
+  }
+}
 
 // This test is not type-parameterized because the reduction algorithm only
 // works for `Angle`.
