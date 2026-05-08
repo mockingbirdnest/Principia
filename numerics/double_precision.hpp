@@ -184,6 +184,7 @@ using internal::TwoDifference;
 using internal::TwoProduct;
 using internal::TwoSum;
 using internal::VeltkampDekkerProduct;
+using internal::VeltkampSplitting;
 
 }  // namespace _double_precision
 }  // namespace numerics
