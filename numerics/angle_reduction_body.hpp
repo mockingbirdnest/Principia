@@ -191,20 +191,42 @@ void PayneHanek(Angle const& x,
   std::int64_t const medium_last = bit_to_index(-n - e - 1 - p);
 
   DoublePrecision<double> h;
-  double h_quadrant = 0.0;
   for (std::int64_t i = medium_last; i >= medium_first; --i) {
-    double const chunk = std::scalbn(PayneHanekChunks[i], e - n + 1);
-    double const Xl_chunk = std::remainder(Xl * chunk, 8.0);
-    double const Xh_chunk = std::remainder(Xh * chunk, 8.0);
-    h_quadrant += Xl_chunk + Xh_chunk;
-    h += Xl_chunk;
-    h += Xh_chunk;
+    double chunk = PayneHanekChunks[i];
+    if (i == medium_first) {
+      // The most significant chunk has extra bits that we don't need because
+      // they are part of `Left(e, p)`.  Drop them: the first bit that is
+      // preserved here is the one numbered n - e + 1.
+      chunk = std::remainder(chunk, std::scalbn(1.0, n - e + 2));
+    }
+    // The bits of the chunks must be scaled up by 2^(n + e + 1 + p) to make
+    // `Medium(e, p)` an integer.  The computation of `h` then involves a
+    // multiplication by 2^(-2n -p).  All together, this results in the scaling
+    // below for the chunk.
+    double const schunk = std::scalbn(chunk, e - n + 1);
+    // The products are exact by construction of the chunks.
+    double Xl_schunk = Xl * schunk;
+    double Xh_schunk = Xh * schunk;
+    // `h` as defined in [Mul97] may be as large as 2^(n + 3).  Since we have
+    // at most 2n bits in our `DoublePrecision` result, this would give us at
+    // most n - 3 bits, which is not sufficient for all argument reductions.  We
+    // reduce the largest product modulo 8 before doing the additions, so the
+    // largest products (corresponding to `Xl` for `medium_first` and `Xh` for
+    // `medium_first + 1`) are smaller by 26 bits (the size of a chunk) and
+    // therefore `h` is only as large as 2^(n - 23) giving us n + 23 bits of
+    // accuracy.
+    if (i == medium_first) {
+      Xh_schunk = std::remainder(Xh_schunk, 8.0);
+    }
+    h += Xl_schunk;
+    h += Xh_schunk;
   }
 
-  h -= std::trunc(h.value);
-  h -= std::trunc(h.value);
-  quadrant = static_cast<std::int64_t>(h_quadrant) % 8;///TODO(phl)fix
-  x_reduced = h * π_over_4;
+  // Because of the bound on `h` above, the fractional point is sure to be in
+  // the `value`.
+  double const trunc_h = std::trunc(h.value);
+  quadrant = static_cast<std::int64_t>(trunc_h) % 8;  /// TODO(phl)fix
+  x_reduced = (h - trunc_h) * π_over_4;
 }
 
 template<DoubleWrapper fractional_part_lower_bound,
