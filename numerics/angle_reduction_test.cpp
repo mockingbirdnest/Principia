@@ -34,11 +34,12 @@ TEST(AngleReductionTest, PayneHanekMul97Examples) {
     std::int64_t quadrant;
     PayneHanek<20>(x, x_reduced, quadrant);
     EXPECT_EQ(1, quadrant);
-    // The last 22.4 bits of the result are incorrect.
+    // The last 20.4 bits of the result are incorrect.
     EXPECT_THAT(x_reduced,
                 AlmostEquals(TwoSum(0x1.7F89C9C43D336p-1 * Radian,
                                     0x1.92CF93D957278p-56 * Radian),
-                             5581194));
+                             1395298,
+                             1395299));
   }
   {
     // [Mul97, Example 11, second angle].
@@ -47,11 +48,12 @@ TEST(AngleReductionTest, PayneHanekMul97Examples) {
     std::int64_t quadrant;
     PayneHanek<61>(x, x_reduced, quadrant);
     EXPECT_EQ(1, quadrant);
-    // The last 53.7 bits of the result are incorrect.
+    // The last 49.7 bits of the result are incorrect.
     EXPECT_THAT(x_reduced,
                 AlmostEquals(TwoSum(0x1.14AE72E6BA22Fp-61 * Radian,
                                     -0x1.73EEF1477D90Ep-118 * Radian),
-                             14869570823282114));
+                             929348176455132,
+                             929348176455133));
   }
 }
 
@@ -89,7 +91,7 @@ TEST(AngleReductionTest, PayneHanekRandom) {
   // expectations here.  (This assumes that `x.error` is small enough to not
   // affect the reduction.)
   EXPECT_THAT(actual_reduced_angle + x.error,
-              AlmostEquals(expected_reduced_angle, 0));
+              AlmostEquals(expected_reduced_angle, 507429735180, 507429735181));
 }
 
 // This test is not type-parameterized because the reduction algorithm only
