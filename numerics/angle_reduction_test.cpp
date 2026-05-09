@@ -24,34 +24,36 @@ class AngleReductionTest : public testing::Test {};
 
 TYPED_TEST_SUITE_P(AngleReductionTest);
 
-TEST(AngleReductionTest, PayneHanek) {
+TEST(AngleReductionTest, PayneHanekMul97Examples) {
   {
-    // [Mul97, Example 11].
+    // [Mul97, Example 11, first angle].
     Angle const x = 0x1.8p200 * Radian;
     DoublePrecision<Angle> x_reduced;
     std::int64_t quadrant;
     PayneHanek<20>(x, x_reduced, quadrant);
     EXPECT_EQ(1, quadrant);
-    // The last 42.8 bits of the result are incorrect.
+    // The last 22.4 bits of the result are incorrect.
     EXPECT_THAT(x_reduced,
                 AlmostEquals(TwoSum(0x1.7F89C9C43D336p-1 * Radian,
                                     0x1.92CF93D957278p-56 * Radian),
-                             7918160907874));
+                             5581194));
   }
-#if 0
   {
+    // [Mul97, Example 11, second angle].
     Angle const x = 6381956970095103.0 * 0x1.0p797 * Radian;
     DoublePrecision<Angle> x_reduced;
     std::int64_t quadrant;
     PayneHanek<61>(x, x_reduced, quadrant);
-    EXPECT_THAT(
-        x_reduced.value,
-        RelativeErrorFrom(
-            0.00000000000000000046871659242546276111225828019638843989495393958823 *
-                Radian,
-            Lt(1.0e-20)));
+    EXPECT_EQ(1, quadrant);
+    // The last 53.7 bits of the result are incorrect.
+    EXPECT_THAT(x_reduced,
+                AlmostEquals(TwoSum(0x1.14AE72E6BA22Fp-61 * Radian,
+                                    -0x1.73EEF1477D90Ep-118 * Radian),
+                             14869570823282114));
   }
-#endif
+}
+
+TEST(AngleReductionTest, PayneHanekRandom) {
 }
 
 // This test is not type-parameterized because the reduction algorithm only

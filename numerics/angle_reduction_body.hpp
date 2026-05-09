@@ -192,6 +192,9 @@ void PayneHanek(Angle const& x,
   // medium_last].
   std::int64_t const medium_first = bit_to_index(n - e + 1);
   std::int64_t const medium_last = bit_to_index(-n - e - 1 - p);
+  // This is not in [Mul97].  The bit numbered 2 - e is the smallest one that
+  // can contribute to `h mod 8`.
+  std::int64_t const medium_mod_8 = bit_to_index(2 - e);
 
   DoublePrecision<double> h;
   for (std::int64_t i = medium_last; i >= medium_first; --i) {
@@ -212,14 +215,17 @@ void PayneHanek(Angle const& x,
     double Xh_schunk = Xh * schunk;
     // `h` as defined in [Mul97] may be as large as 2^(n + 3).  Since we have
     // at most 2n bits in our `DoublePrecision` result, this would give us at
-    // most n - 3 bits, which is not sufficient for all argument reductions.  We
-    // reduce the largest product modulo 8 before doing the additions, so the
-    // largest products (corresponding to `Xl` for `medium_first` and `Xh` for
-    // `medium_first + 1`) are smaller by 26 bits (the size of a chunk) and
-    // therefore `h` is only as large as 2^(n - 23) giving us n + 23 bits of
-    // accuracy.
-    if (i == medium_first) {
+    // most n - 3 bits after the fractional point, which is not sufficient for
+    // all argument reductions.  We reduce the products that can contribute to
+    // `h mod 8` before doing the additions.  There are approximately n / 26
+    // chunks that can contribute to `h mod 8`, so that gives us an upper bound
+    // of roughly 0.308 n for `h`.
+    if (i <= medium_mod_8) {
+      Xl_schunk = std::remainder(Xl_schunk, 8.0);
       Xh_schunk = std::remainder(Xh_schunk, 8.0);
+    } else {
+      DCHECK_LE(Xl_schunk, 8.0);
+      DCHECK_LE(Xh_schunk, 8.0);
     }
     h += Xl_schunk;
     h += Xh_schunk;
@@ -232,7 +238,7 @@ void PayneHanek(Angle const& x,
   // Because of the bound on `h` above, the fractional point is sure to be in
   // the `value`.
   double const round_h = std::round(h.value);
-  quadrant = static_cast<std::int64_t>(round_h) % 4;
+  quadrant = static_cast<std::int64_t>(round_h) & 0b11;
   x_reduced = (h - round_h) * π_over_2;
 }
 
