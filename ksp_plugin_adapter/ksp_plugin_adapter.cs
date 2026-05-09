@@ -885,7 +885,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   public override void OnSave(ConfigNode node) {
     base.OnSave(node);
     if (plugin_reader_ != IntPtr.Zero) {
-      Log.Fatal("Attempted to save while plugin reader is still running; terminating to avoid save corruption.");
+      throw new Exception(
+          "Attempted to save while plugin reader is still running; " +
+          "throwing exception to cancel the save and avoid save corruption.");
     }
     if (PluginRunning()) {
       IntPtr serializer = IntPtr.Zero;
@@ -931,6 +933,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                   serialization_encoding_);
       if (plugin_reader_.PluginReaderWillBeSlow()) {
         migration_monitor_ = new MigrationMonitor(plugin_reader_);
+        FlightAutoSave.fetch.bypassAutoSave = true;
         KeepPaused();
       } else {
         plugin_ = Interface.PluginReaderAwait(ref plugin_reader_);
@@ -971,6 +974,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           FlightDriver.SetPause(pauseState: false);
           migration_monitor_.Hide();
           migration_monitor_ = null;
+          FlightAutoSave.fetch.bypassAutoSave = false;
           LockClearing();
         }
       }
@@ -2929,9 +2933,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void KeepPaused() {
-    if (FlightDriver.Pause) {
-      return;
-    }
+    // If the game is paused in OnLoad while loading a quicksave, some of the
+    // systems don’t get the message and the game continues in a half-paused
+    // state.
+    // Forcefully pause at every OnGUI call, regardless of whether the game is
+    // paused according to FlightDriver.Pause, so as to ensure that it quickly
+    // gets properly paused (and stays paused).
     FlightDriver.SetPause(pauseState: true);
   }
 }
