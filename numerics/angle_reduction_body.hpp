@@ -46,6 +46,13 @@ inline constexpr DoublePrecision<Angle> two_π<DoublePrecision<Angle>> = []() {
   return result;
 }();
 
+inline constexpr DoublePrecision<Angle> π_over_4 = []() {
+  DoublePrecision<Angle> result;
+  result.value = 0x1.921FB54442D18p-1 * Radian;
+  result.error = 0x1.1A62633145C07p-55 * Radian;
+  return result;
+}();
+
 template<typename T>
 std::int64_t StaticCastToInt64(T const& t);
 
@@ -187,9 +194,9 @@ void PayneHanek(Angle const& x,
   double h_quadrant = 0.0;
   for (std::int64_t i = medium_last; i >= medium_first; --i) {
     double const chunk = std::scalbn(PayneHanekChunks[i], e - n + 1);
-    double const Xl_chunk = Xl * chunk;
-    double const Xh_chunk = Xh * chunk;
-    h_quadrant += std::remainder(Xl_chunk, 8.0) + std::remainder(Xh_chunk, 8.0);
+    double const Xl_chunk = std::remainder(Xl * chunk, 8.0);
+    double const Xh_chunk = std::remainder(Xh * chunk, 8.0);
+    h_quadrant += Xl_chunk + Xh_chunk;
     h += Xl_chunk;
     h += Xh_chunk;
   }
@@ -197,7 +204,7 @@ void PayneHanek(Angle const& x,
   h -= std::trunc(h.value);
   h -= std::trunc(h.value);
   quadrant = static_cast<std::int64_t>(h_quadrant) % 8;///TODO(phl)fix
-  x_reduced = h * (π / 4 * Radian);
+  x_reduced = h * π_over_4;
 }
 
 template<DoubleWrapper fractional_part_lower_bound,
