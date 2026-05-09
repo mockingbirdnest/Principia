@@ -31,7 +31,7 @@ TEST(AngleReductionTest, PayneHanek) {
     DoublePrecision<Angle> x_reduced;
     std::int64_t quadrant;
     PayneHanek<20>(x, x_reduced, quadrant);
-    EXPECT_EQ(2, quadrant);
+    EXPECT_EQ(1, quadrant);
     // The last 42.8 bits of the result are incorrect.
     EXPECT_THAT(x_reduced,
                 AlmostEquals(TwoSum(0x1.7F89C9C43D336p-1 * Radian,

@@ -46,10 +46,10 @@ inline constexpr DoublePrecision<Angle> two_π<DoublePrecision<Angle>> = []() {
   return result;
 }();
 
-inline constexpr DoublePrecision<Angle> π_over_4 = []() {
+inline constexpr DoublePrecision<Angle> π_over_2 = []() {
   DoublePrecision<Angle> result;
-  result.value = 0x1.921FB54442D18p-1 * Radian;
-  result.error = 0x1.1A62633145C07p-55 * Radian;
+  result.value = 0x1.921FB54442D18p0 * Radian;
+  result.error = 0x1.1A62633145C07p-54 * Radian;
   return result;
 }();
 
@@ -162,7 +162,10 @@ template<std::int64_t precision>
 void PayneHanek(Angle const& x,
                 DoublePrecision<Angle>& x_reduced,
                 std::int64_t& quadrant) {
-  // This implementation follows [Mul97, section 8.4].
+  // This implementation follows [Mul97, section 8.4].  For our purposes it
+  // would be a bit more direct to perform a multiplication with 2 / π, but that
+  // would require fiddling with the bit indices all over the place.  It's
+  // simpler to just follow the book and adjust the result at the end.
   static_assert(std::numeric_limits<double>::radix == 2);
   constexpr std::int64_t p = precision;
   constexpr std::int64_t n = std::numeric_limits<double>::digits;
@@ -222,11 +225,15 @@ void PayneHanek(Angle const& x,
     h += Xh_schunk;
   }
 
+  // This is where we diverge from [Mul97]: we really want x * (2 / π) with
+  // rounding, not x * (4 / π) with truncation.
+  h = Scale(0.5, h);
+
   // Because of the bound on `h` above, the fractional point is sure to be in
   // the `value`.
-  double const trunc_h = std::trunc(h.value);
-  quadrant = static_cast<std::int64_t>(trunc_h) % 8;  /// TODO(phl)fix
-  x_reduced = (h - trunc_h) * π_over_4;
+  double const round_h = std::round(h.value);
+  quadrant = static_cast<std::int64_t>(round_h) % 4;
+  x_reduced = (h - round_h) * π_over_2;
 }
 
 template<DoubleWrapper fractional_part_lower_bound,
