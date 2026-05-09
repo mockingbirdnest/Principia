@@ -1,5 +1,7 @@
 #include "numerics/angle_reduction.hpp"
 
+#include <random>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/double_precision.hpp"
@@ -54,6 +56,40 @@ TEST(AngleReductionTest, PayneHanekMul97Examples) {
 }
 
 TEST(AngleReductionTest, PayneHanekRandom) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> reduced_angle(-π / 4, π / 4);
+  std::uniform_int_distribution<> quadrant(0, 3);
+  std::uniform_int_distribution<> count(0, 10);
+  std::uniform_int_distribution<> magnitude(0, 30);
+  std::uniform_int_distribution<> sign(0, 1);
+  // First, pick a reduced angle.
+  DoublePrecision<Angle> const expected_reduced_angle(reduced_angle(random) *
+                                                      Radian);
+  std::int64_t const expected_quadrant = quadrant(random);
+  // Then move it to a different quadrant by adding a multiple of  π / 2.
+  DoublePrecision<Angle> x =
+      expected_reduced_angle +
+      expected_quadrant * Scale(0.5, one_π<DoublePrecision<Angle>>);
+  // Now add a signed multiple of 2π.
+  std::int64_t const loop_count = count(random);
+  for (std::int64_t i = 0; i < loop_count; ++i) {
+    auto const multiple_of_2π = Scale(std::scalbn(1.0, magnitude(random)),
+                                      two_π<DoublePrecision<Angle>>);
+    auto const signed_multiple_of_2π =
+        (sign(random) * 2 - 1.0) * multiple_of_2π;
+    x += signed_multiple_of_2π;
+  }
+
+  DoublePrecision<Angle> actual_reduced_angle;
+  std::int64_t actual_quadrant;
+  PayneHanek<61>(x.value, actual_reduced_angle, actual_quadrant);
+
+  EXPECT_EQ(expected_quadrant, actual_quadrant);
+  // We dropped `x.error` when calling `PayneHanek`, so we need to adjust our
+  // expectations here.  (This assumes that `x.error` is small enough to not
+  // affect the reduction.)
+  EXPECT_THAT(actual_reduced_angle + x.error,
+              AlmostEquals(expected_reduced_angle, 0));
 }
 
 // This test is not type-parameterized because the reduction algorithm only
