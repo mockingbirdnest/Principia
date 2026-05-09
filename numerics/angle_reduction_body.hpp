@@ -186,18 +186,18 @@ void PayneHanek(Angle const& x,
   DoublePrecision<double> h;
   double h_quadrant = 0.0;
   for (std::int64_t i = medium_last; i >= medium_first; --i) {
-    double const chunk = std::scalbn(PayneHanekChunks[i], n + e + 1 + p);
+    double const chunk = std::scalbn(PayneHanekChunks[i], e - n + 1);
     double const Xl_chunk = Xl * chunk;
     double const Xh_chunk = Xh * chunk;
-    h_quadrant += std::remainder(Xl_chunk, 4.0) + std::remainder(Xh_chunk, 4.0);
+    h_quadrant += std::remainder(Xl_chunk, 8.0) + std::remainder(Xh_chunk, 8.0);
     h += Xl_chunk;
     h += Xh_chunk;
   }
 
   h -= std::trunc(h.value);
   h -= std::trunc(h.value);
-  quadrant = static_cast<std::int64_t>(h_quadrant) % 4;
-  x_reduced = Scale(Radian, h);
+  quadrant = static_cast<std::int64_t>(h_quadrant) % 8;///TODO(phl)fix
+  x_reduced = h * (π / 4 * Radian);
 }
 
 template<DoubleWrapper fractional_part_lower_bound,

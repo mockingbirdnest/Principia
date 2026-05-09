@@ -13,7 +13,7 @@
 
 
 (* ::Input:: *)
-(*BaseForm[N[\[Alpha],15],2]*)
+(*BaseForm[N[\[Alpha],100],2]*)
 
 
 (* ::Text:: *)
