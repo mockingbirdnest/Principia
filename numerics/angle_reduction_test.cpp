@@ -64,7 +64,7 @@ TEST(AngleReductionTest, PayneHanekRandom) {
   std::uniform_int_distribution<> count(0, 10);
   std::uniform_int_distribution<> magnitude(0, 30);
   std::uniform_int_distribution<> sign(0, 1);
-  for (std::int64_t i = 0; i < 10; ++i) {
+  for (std::int64_t i = 0; i < 1000; ++i) {
     // First, pick a reduced angle.
     DoublePrecision<Angle> const expected_reduced_angle(reduced_angle(random) *
                                                         Radian);
@@ -89,11 +89,16 @@ TEST(AngleReductionTest, PayneHanekRandom) {
 
     EXPECT_EQ(expected_quadrant, actual_quadrant);
     // We dropped `x.error` when calling `PayneHanek`, so we need to adjust our
-    // expectations here.  (This assumes that `x.error` is small enough to not
-    // affect the reduction.)
-    EXPECT_THAT(
-        actual_reduced_angle + x.error,
-        AlmostEquals(expected_reduced_angle, 507429735180, 507429735181));
+    // expectations here.
+    // The last 49.9 bits of the result may be incorrect, for
+    // x = +1.68662971306440473e+09 rad|-5.42639714097227698e-08 rad, which has
+    // a cancellation of 40.9 bits.  The fact that the error is so large is
+    // because of the rounding errors on `x.error`, not because of the angle
+    // reduction per se.
+    EXPECT_THAT(actual_reduced_angle + x.error,
+                AlmostEquals(expected_reduced_angle, 0, 1041371082701288))
+        << "Expected reduced: " << expected_reduced_angle.value
+        << " Reduction argument: " << x;
   }
 }
 

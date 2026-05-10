@@ -331,13 +331,17 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
       std::scalbn(error_distance,
                   std::numeric_limits<double>::digits +
                       error_exponent - value_exponent);
+  bool total_distance_is_integral =
+      total_distance == std::trunc(total_distance);
 
   bool const matches =
       min_ulps_ <= total_distance && total_distance <= max_ulps_;
   if (!matches) {
     *listener << "the error is not within " << min_ulps_ << " to " << max_ulps_
               << " ULPs: it differs by the following numbers of ULPs: "
-              << DebugString(total_distance);
+              << (total_distance_is_integral
+                      ? std::to_string(static_cast<int64_t>(total_distance))
+                      : DebugString(total_distance));
   }
   return matches;
 }
