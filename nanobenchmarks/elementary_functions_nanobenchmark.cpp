@@ -3,17 +3,23 @@
 #include <cmath>
 
 #include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
+#include "numerics/angle_reduction.hpp"
 #include "numerics/cbrt.hpp"
+#include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace nanobenchmarks {
 namespace {
 
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_cbrt;
+using namespace principia::numerics::_double_precision;
 using namespace principia::nanobenchmarks::_nanobenchmark;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 NANOBENCHMARK_FUNCTION(Cbrt);
@@ -49,6 +55,13 @@ NANOBENCHMARK(principia_sin_cos) {
   // price of an extra `and` (1 cycle).
   return _mm_cvtsd_f64(
       _mm_and_pd(_mm_set_sd(values.sin), _mm_set_sd(values.cos)));
+}
+
+NANOBENCHMARK(payne_hanek) {
+  DoublePrecision<Angle> x_reduced;
+  std::int64_t quadrant;
+  PayneHanek<61>(x * Radian, x_reduced, quadrant);
+  return x_reduced.value / Radian;
 }
 
 }  // namespace
