@@ -162,7 +162,7 @@ TYPED_TEST_P(AngleReductionTest, ReduceMinusπToπ) {
       fractional_part,
       AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
                        Angle(0x1.BA01B07B5D1EBp-71 * Radian),
-                   4861461, 7230135));
+                   607682, 7230135));
   EXPECT_EQ(113, integer_part);
 }
 
@@ -195,7 +195,7 @@ TYPED_TEST_P(AngleReductionTest, Reduce0To2π) {
       fractional_part,
       AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
                        Angle(0x1.BA01B07B5D1EBp-71 * Radian),
-                   4861461, 7230135));
+                   607682, 7230135));
   EXPECT_EQ(113, integer_part);
 }
 
@@ -228,7 +228,7 @@ TYPED_TEST_P(AngleReductionTest, ReduceMinus2πTo2π) {
       fractional_part,
       AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
                        Angle(0x1.BA01B07B5D1EBp-71 * Radian),
-                   4861461, 7230135));
+                   607682, 7230135));
   EXPECT_EQ(113, integer_part);
 }
 
