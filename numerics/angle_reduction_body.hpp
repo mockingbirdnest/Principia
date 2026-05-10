@@ -7,7 +7,6 @@
 #include <limits>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
-#include "numerics/double_precision.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/payne_hanek.mathematica.h"
 #include "quantities/si.hpp"
@@ -17,7 +16,6 @@ namespace numerics {
 namespace _angle_reduction {
 namespace internal {
 
-using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_payne_hanek;
 using namespace principia::quantities::_si;

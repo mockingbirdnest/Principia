@@ -12,7 +12,6 @@
 
 #include "gmock/gmock.h"
 #include "numerics/ulp_distance.hpp"
-#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -22,7 +21,6 @@ namespace _almost_equals {
 namespace internal {
 
 using namespace principia::numerics::_ulp_distance;
-using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
 

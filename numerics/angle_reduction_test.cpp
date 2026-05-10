@@ -16,9 +16,9 @@ namespace numerics {
 namespace _angle_reduction {
 namespace internal {
 
-using namespace principia::quantities::_si;
-using namespace principia::quantities::_quantities;
 using namespace principia::numerics::_double_precision;
+using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
 template<typename T>
