@@ -85,6 +85,8 @@ internal static class Loader {
         // our mind and load the x64_AVX_FMA DLL.  It's necessary to unload the
         // DLL, otherwise the base address reported by `InitGoogleLogging` might
         // (incorrectly) be the one of the `x64` DLL.
+        // ETA: For some reason unloading has no effect starting in April 2026:
+        // we can call `SayHello` after the unloading.
         string error_unload = UnloadPrincipiaDll(platform: "x64");
         if (error_unload != null) {
           return error_unload;
@@ -99,6 +101,7 @@ internal static class Loader {
       }
       loaded_principia_dll = true;
       Log.InitGoogleLogging();
+      Log.Info("Base address is " + principia_dll_.ToString("X16"));
       Log.Info("Processor " +
                (has_avx ? "has" : "does not have") +
                " AVX support and " +
