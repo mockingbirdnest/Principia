@@ -31,7 +31,9 @@ constexpr Angle one_π;
 template<typename Angle>
 constexpr Angle two_π;
 
-//TODO(phl)comment
+// Performs Payne-Hanek reduction of `x`.  `x_reduced` is in [-π / 4, π / 4],
+// and the `quadrant` ranges from 0 to 3.  0 is a quadrant centered on the
+// positive x axis, 1 on the positive y axis, and so on.
 template<std::int64_t precision>
 void PayneHanek(Angle const& x,
                 DoublePrecision<Angle>& x_reduced,
