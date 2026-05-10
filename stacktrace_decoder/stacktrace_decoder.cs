@@ -159,7 +159,7 @@ class StackTraceDecoder {
         unity_crash,
         @"(?i)GameData\\Principia\\x64\\principia.dll:principia.dll " +
         @"\(([0-9A-F]+)\)",
-        "interface\\.cpp",
+        @"(?:interface\.cpp|loader\.cs)",
         stream);
     Console.Write(
         comment($"Using Principia base address {principia_base_address:X}"));
