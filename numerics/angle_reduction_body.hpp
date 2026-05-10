@@ -2,11 +2,13 @@
 
 #include "numerics/angle_reduction.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/payne_hanek.mathematica.h"
 #include "quantities/si.hpp"
 
@@ -16,6 +18,7 @@ namespace _angle_reduction {
 namespace internal {
 
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_payne_hanek;
 using namespace principia::quantities::_si;
 
@@ -175,7 +178,12 @@ void PayneHanek(Angle const& x,
   // Correct the mantissa and exponent to match [Mul97, p. 155].
   e--;
   X = std::scalbn(X, n);
-  CHECK_GE(e, -1);
+  if (e < -1) {
+    DCHECK_LT(Abs(x), 0.5 * Radian);
+    x_reduced = DoublePrecision<Angle>(x);
+    quadrant = 0;
+    return;
+  }
 
   // Split `X` so that the multiplications below are exact.
   double Xh;
@@ -185,7 +193,7 @@ void PayneHanek(Angle const& x,
   // Converts the bit numbering of [Mul97, p. 155] into our index in
   // `PayneHanekChunks`.
   auto bit_to_index = [](std::int64_t const b) {
-    return -b / PayneHanekBitsPerChunk;
+    return std::max(INT64_C(0), -b / PayneHanekBitsPerChunk);
   };
 
   // `Medium(e, p)` is made of the chunks with indices [medium_first,
@@ -235,8 +243,8 @@ void PayneHanek(Angle const& x,
   // rounding, not x * (4 / π) with truncation.
   h = Scale(0.5, h);
 
-  // Because of the bound on `h` above, the fractional point is sure to be in
-  // the `value`.
+  // Because of the bound on `h` above, the fractional point cannot be in the
+  // `error`.
   double const round_h = std::round(h.value);
   quadrant = static_cast<std::int64_t>(round_h) & 0b11;
   x_reduced = (h - round_h) * π_over_2;
