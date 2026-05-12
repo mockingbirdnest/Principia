@@ -245,8 +245,7 @@ void PayneHanek(Angle const& x,
   // `error`.
   double const round_h = std::round(h.value);
   quadrant = static_cast<std::int64_t>(round_h) & 0b11;
-  x_reduced =
-      (h - round_h) * (π_over_2<DoublePrecision<Angle>> * si::Unit<Radian>);
+  x_reduced = (h - round_h) * (π_over_2 * si::Unit<Angle>);
 }
 
 template<DoubleWrapper fractional_part_lower_bound,

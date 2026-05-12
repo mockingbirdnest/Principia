@@ -13,6 +13,7 @@
 #include "core-math/cos.h"
 #include "core-math/sin.h"
 #include "numerics/accurate_tables.mathematica.h"
+#include "numerics/angle_reduction.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/m128d.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
@@ -28,6 +29,7 @@ namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::numerics::_accurate_tables;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_polynomial_evaluators;
@@ -317,8 +319,15 @@ FORCE_INLINE void Reduce(Argument const x,
       return;
     }
   }
-  x_reduced.value = m128d::zero;
-  x_reduced.error = m128d::quiet_NaN;
+  // A large or difficult reduction.  It seems complicated to implement Payne-
+  // Hanek for `M128D` because of the floating-point helpers that it uses.
+  {
+    auto const x_double = static_cast<double>(x);
+    DoublePrecision<double> x_reduced_double;
+    PayneHanek<61>(x_double, x_reduced_double, quadrant);
+    x_reduced.value = M128D(x_reduced_double.value);
+    x_reduced.error = M128D(x_reduced_double.error);
+  }
 }
 
 template<FMAPresence fma_presence>
