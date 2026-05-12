@@ -9,6 +9,7 @@
 #include "base/macros.hpp"  // 🧙 For PRINCIPIA_USE_SSE3_INTRINSICS.
 #include "numerics/elementary_functions.hpp"
 #include "numerics/payne_hanek.mathematica.h"
+#include "numerics/sin_cos.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -20,144 +21,12 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_payne_hanek;
 using namespace principia::quantities::_si;
 
-// A somewhat arbitrary value above which we fail argument reduction.
-// TODO(phl): We *really* need a proper angle reduction.
-double const reduction_threshold =
-    static_cast<double>(std::numeric_limits<std::int64_t>::max() / 2);
-
-template<>
-inline constexpr Angle one_π<Angle> = π * Radian;
-
-template<>
-inline constexpr DoublePrecision<Angle> one_π<DoublePrecision<Angle>> = []() {
-  DoublePrecision<Angle> result;
-  result.value = 0x1.921FB54442D18p1 * Radian;
-  result.error = 0x1.1A62633145C07p-53 * Radian;
-  return result;
-}();
-
-template<>
-inline constexpr Angle two_π<Angle> = 2 * π * Radian;
-
-template<>
-inline constexpr DoublePrecision<Angle> two_π<DoublePrecision<Angle>> = []() {
-  DoublePrecision<Angle> result;
-  result.value = 0x1.921FB54442D18p2 * Radian;
-  result.error = 0x1.1A62633145C07p-52 * Radian;
-  return result;
-}();
-
 inline constexpr DoublePrecision<double> π_over_2 = []() {
   DoublePrecision<double> result;
   result.value = 0x1.921FB54442D18p0;
   result.error = 0x1.1A62633145C07p-54;
   return result;
 }();
-
-template<typename T>
-std::int64_t StaticCastToInt64(T const& t);
-
-template<>
-inline std::int64_t StaticCastToInt64<double>(double const& t) {
-  return static_cast<std::int64_t>(t);
-}
-
-template<>
-inline std::int64_t StaticCastToInt64<DoublePrecision<double>>(
-    DoublePrecision<double> const& t) {
-  return static_cast<std::int64_t>(t.value + t.error);
-}
-
-template<typename Angle,
-         DoubleWrapper fractional_part_lower_bound,
-         DoubleWrapper fractional_part_upper_bound>
-class AngleReduction;
-
-// TODO(phl): This is extremely imprecise near large multiples of π.  Use a
-// better algorithm (Payne-Hanek?).
-template<>
-class AngleReduction<Angle, -π / 2, π / 2> {
- public:
-  // Argument reduction: angle = fractional_part + integer_part * π where
-  // fractional_part is in [-π/2, π/2].
-  static bool Reduce(Angle const& θ,
-                     Angle& fractional_part,
-                     std::int64_t& integer_part) {
-    if (θ > reduction_threshold * one_π<Angle> ||
-        θ < -reduction_threshold * one_π<Angle>) {
-      return false;
-    }
-    double const θ_in_half_cycles = θ / (π * Radian);
-    double reduced_in_half_cycles;
-#if PRINCIPIA_USE_SSE3_INTRINSICS
-    auto const& x = θ_in_half_cycles;
-    __m128d const x_128d = _mm_set_sd(x);
-    integer_part = _mm_cvtsd_si64(x_128d);
-    reduced_in_half_cycles = _mm_cvtsd_f64(
-        _mm_sub_sd(x_128d, _mm_cvtsi64_sd(__m128d{}, integer_part)));
-#else
-    integer_part = static_cast<std::int64_t>(std::nearbyint(θ_in_half_cycles));
-    reduced_in_half_cycles = θ_in_half_cycles - integer_part;
-#endif
-    fractional_part = reduced_in_half_cycles * π * Radian;
-    return true;
-  }
-};
-
-template<typename Angle>
-class AngleReduction<Angle, -π, π> {
- public:
-  static bool Reduce(Angle const& θ,
-                     Angle& fractional_part,
-                     std::int64_t& integer_part) {
-    if (!AngleReduction<Angle, 0.0, 2 * π>::Reduce(
-            θ, fractional_part, integer_part)) {
-      return false;
-    }
-    if (fractional_part > one_π<Angle>) {
-      fractional_part -= two_π<Angle>;
-      ++integer_part;
-    }
-    return true;
-  }
-};
-
-template<typename Angle>
-class AngleReduction<Angle, 0.0, 2 * π> {
- public:
-  static bool Reduce(Angle const& θ,
-                     Angle& fractional_part,
-                     std::int64_t& integer_part) {
-    if (!AngleReduction<Angle, -2 * π, 2 * π>::Reduce(
-            θ, fractional_part, integer_part)) {
-      return false;
-    }
-    if (fractional_part < Angle{}) {
-      fractional_part += two_π<Angle>;
-      --integer_part;
-    }
-    return true;
-  }
-};
-
-template<typename Angle>
-class AngleReduction<Angle, -2 * π, 2 * π> {
- public:
-  static bool Reduce(Angle const& θ,
-                     Angle& fractional_part,
-                     std::int64_t& integer_part) {
-    if (θ > reduction_threshold * one_π<Angle> ||
-        θ < -reduction_threshold * one_π<Angle>) {
-      return false;
-    }
-    // This has the same semantics as fmod.
-    auto const θ_over_2π = θ / two_π<Angle>;
-    integer_part = StaticCastToInt64(θ_over_2π);
-    fractional_part =
-        θ - two_π<Angle> * static_cast<decltype(θ_over_2π)>(integer_part);
-    return true;
-  }
-};
 
 template<std::int64_t precision, typename Angle>
 void PayneHanek(Angle const& x,
@@ -248,29 +117,64 @@ void PayneHanek(Angle const& x,
   x_reduced = (h - round_h) * (π_over_2 * si::Unit<Angle>);
 }
 
-template<DoubleWrapper fractional_part_lower_bound,
-         DoubleWrapper fractional_part_upper_bound>
-bool ReduceAngle(Angle const& θ,
-                 Angle& fractional_part,
-                 std::int64_t& integer_part) {
-  return AngleReduction<Angle,
-                        fractional_part_lower_bound,
-                        fractional_part_upper_bound>::Reduce(θ,
-                                                             fractional_part,
-                                                             integer_part);
+template<>
+bool ReduceAngle<-π / 2, π / 2>(Angle const& θ,
+                                Angle& fractional_part,
+                                std::int64_t& integer_part) {}
+template<>
+bool ReduceAngle<-π, π>(Angle const& θ,
+                        Angle& fractional_part,
+                        std::int64_t& integer_part) {}
+template<>
+bool ReduceAngle<0.0, 2 * π>(Angle const& θ,
+                             Angle& fractional_part,
+                             std::int64_t& integer_part) {}
+
+// angle = fractional_part + k * π where fractional_part
+// is in [-π/2, π/2].
+template<>
+Angle ReduceAngle<-π / 2, π / 2>(Angle const& θ) {
+  double θ_reduced;
+  std::int64_t quadrant;
+  _sin_cos::Reduce(θ / Radian, θ_reduced, quadrant);
+  if (quadrant == 1 || quadrant == 3) {
+    if (θ_reduced < 0.0) {
+      θ_reduced += π / 2;
+    } else {
+      θ_reduced -= π / 2;
+    }
+  }
+  return θ_reduced * Radian;
 }
 
-template<DoubleWrapper fractional_part_lower_bound,
-         DoubleWrapper fractional_part_upper_bound>
-Angle ReduceAngle(Angle const& θ) {
-  Angle fractional_part;
-  std::int64_t integer_part;
-  CHECK((AngleReduction<Angle,
-                        fractional_part_lower_bound,
-                        fractional_part_upper_bound>::Reduce(θ,
-                                                             fractional_part,
-                                                             integer_part)));
-  return fractional_part;
+template<>
+Angle ReduceAngle<-π, π>(Angle const& θ) {
+  double θ_reduced;
+  std::int64_t quadrant;
+  _sin_cos::Reduce(θ / Radian, θ_reduced, quadrant);
+  if (quadrant == 1) {
+    θ_reduced += π / 2;
+  } else if (quadrant == 3) {
+    θ_reduced -= π / 2;
+  } else if (quadrant == 2) {
+    θ_reduced += π;
+  }
+  return θ_reduced * Radian;
+}
+
+template<>
+Angle ReduceAngle<0.0, 2 * π>(Angle const& θ) {
+  double θ_reduced;
+  std::int64_t quadrant;
+  _sin_cos::Reduce(θ / Radian, θ_reduced, quadrant);
+  if (quadrant == 1) {
+    θ_reduced += π / 2;
+  } else if (quadrant == 3) {
+    θ_reduced += 3 * π / 2;
+  } else if (quadrant == 2) {
+    θ_reduced += 2 * π;
+  }
+  return θ_reduced * Radian;
 }
 
 }  // namespace internal

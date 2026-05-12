@@ -21,6 +21,34 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
+template<typename Angle>
+constexpr Angle one_π;
+
+template<>
+inline constexpr Angle one_π<Angle> = π * Radian;
+
+template<>
+inline constexpr DoublePrecision<Angle> one_π<DoublePrecision<Angle>> = []() {
+  DoublePrecision<Angle> result;
+  result.value = 0x1.921FB54442D18p1 * Radian;
+  result.error = 0x1.1A62633145C07p-53 * Radian;
+  return result;
+}();
+
+template<typename Angle>
+constexpr Angle two_π;
+
+template<>
+inline constexpr Angle two_π<Angle> = 2 * π * Radian;
+
+template<>
+inline constexpr DoublePrecision<Angle> two_π<DoublePrecision<Angle>> = []() {
+  DoublePrecision<Angle> result;
+  result.value = 0x1.921FB54442D18p2 * Radian;
+  result.error = 0x1.1A62633145C07p-52 * Radian;
+  return result;
+}();
+
 class AngleReductionTest : public testing::Test {};
 
 TEST_F(AngleReductionTest, PayneHanekMul97Examples) {
