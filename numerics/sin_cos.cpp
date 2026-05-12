@@ -13,6 +13,7 @@
 #include "core-math/cos.h"
 #include "core-math/sin.h"
 #include "numerics/accurate_tables.mathematica.h"
+#include "numerics/double_precision.hpp"
 #include "numerics/m128d.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
@@ -27,6 +28,7 @@ namespace internal {
 
 using namespace principia::base::_tags;
 using namespace principia::numerics::_accurate_tables;
+using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_polynomial_evaluators;
 
@@ -499,13 +501,10 @@ SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
 }  // namespace
 
 template<FMAPresence fma_presence, bool preserve_sign>
-void Reduce(double const x,
-            DoublePrecision<double>& x_reduced,
-            std::int64_t& quadrant) {
+void Reduce(double const x, double& x_reduced, std::int64_t& quadrant) {
   DoublePrecision<M128D> x_reduced_m128d;
   Reduce<fma_presence, preserve_sign>(M128D(x), x_reduced_m128d, quadrant);
-  x_reduced.value = static_cast<double>(x_reduced_m128d.value);
-  x_reduced.error = static_cast<double>(x_reduced_m128d.error);
+  x_reduced = static_cast<double>(x_reduced_m128d.value);
 }
 
 template<FMAPresence fma_presence>

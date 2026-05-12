@@ -2,7 +2,6 @@
 
 #include <functional>
 
-#include "numerics/double_precision.hpp"
 #include "numerics/fma.hpp"
 
 namespace principia {
@@ -10,18 +9,17 @@ namespace numerics {
 namespace _sin_cos {
 namespace internal {
 
-using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fma;
 
 using SlowPathCallback = std::function<void(double θ)>;
 
 // It would be inconvenient to move angle reduction to `angle_reduction.hpp`
-// because of the entanglement with OSACA.  It would also be unpleasan to
+// because of the entanglement with OSACA.  It would also be unpleasant to
 // duplicate the code.  Let's just expose it for use by `angle_reduction.hpp`.
+// Note that we don't return a `DoublePrecision` as that would cause circular
+// dependencies.
 template<FMAPresence fma_presence, bool preserve_sign>
-void Reduce(double x,
-            DoublePrecision<double>& x_reduced,
-            std::int64_t& quadrant);
+void Reduce(double x, double& x_reduced, std::int64_t& quadrant);
 
 template<FMAPresence fma_presence>
 double __cdecl Sin(double x);
