@@ -14,8 +14,9 @@ and provide guidance on getting started with the mod.
 
 The Discord channel is *not* suitable for reporting bugs.  A post like 
 "when I do X it crashes" will likely not been seen by the developers, and 
-therefore the underlying bug won’t be fixed.  Don't post logs on Discord, they
-are just spam which is going to annoy every user.
+therefore the underlying bug won’t be fixed.  
+
+*Do not post logs on Discord, they are just spam.*
 
 ## Forum
 
