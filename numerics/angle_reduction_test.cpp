@@ -21,12 +21,9 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
-template<typename T>
 class AngleReductionTest : public testing::Test {};
 
-TYPED_TEST_SUITE_P(AngleReductionTest);
-
-TEST(AngleReductionTest, PayneHanekMul97Examples) {
+TEST_F(AngleReductionTest, PayneHanekMul97Examples) {
   {
     // [Mul97, Example 11, first angle].
     Angle const x = 0x1.8p200 * Radian;
@@ -57,7 +54,7 @@ TEST(AngleReductionTest, PayneHanekMul97Examples) {
   }
 }
 
-TEST(AngleReductionTest, PayneHanekRandom) {
+TEST_F(AngleReductionTest, PayneHanekRandom) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> reduced_angle(-π / 4, π / 4);
   std::uniform_int_distribution<> quadrant(0, 3);
@@ -104,7 +101,7 @@ TEST(AngleReductionTest, PayneHanekRandom) {
 
 // This test is not type-parameterized because the reduction algorithm only
 // works for `Angle`.
-TEST(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
+TEST_F(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
   Angle fractional_part;
   std::int64_t integer_part;
 
@@ -134,8 +131,7 @@ TEST(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
   EXPECT_EQ(113, integer_part);
 }
 
-TYPED_TEST_P(AngleReductionTest, ReduceMinusπToπ) {
-  using Angle = TypeParam;
+TEST_F(AngleReductionTest, ReduceMinusπToπ) {
   Angle fractional_part;
   std::int64_t integer_part;
 
@@ -166,8 +162,7 @@ TYPED_TEST_P(AngleReductionTest, ReduceMinusπToπ) {
   EXPECT_EQ(113, integer_part);
 }
 
-TYPED_TEST_P(AngleReductionTest, Reduce0To2π) {
-  using Angle = TypeParam;
+TEST_F(AngleReductionTest, Reduce0To2π) {
   Angle fractional_part;
   std::int64_t integer_part;
 
@@ -199,8 +194,7 @@ TYPED_TEST_P(AngleReductionTest, Reduce0To2π) {
   EXPECT_EQ(113, integer_part);
 }
 
-TYPED_TEST_P(AngleReductionTest, ReduceMinus2πTo2π) {
-  using Angle = TypeParam;
+TEST_F(AngleReductionTest, ReduceMinus2πTo2π) {
   Angle fractional_part;
   std::int64_t integer_part;
 
@@ -231,16 +225,6 @@ TYPED_TEST_P(AngleReductionTest, ReduceMinus2πTo2π) {
                    607682, 7230135));
   EXPECT_EQ(113, integer_part);
 }
-
-REGISTER_TYPED_TEST_SUITE_P(AngleReductionTest,
-                            ReduceMinusπToπ,
-                            Reduce0To2π,
-                            ReduceMinus2πTo2π);
-
-using AngleTypes = ::testing::Types<Angle, DoublePrecision<Angle>>;
-INSTANTIATE_TYPED_TEST_SUITE_P(AllAngleReductionTests,
-                               AngleReductionTest,
-                               AngleTypes);
 
 }  // namespace internal
 }  // namespace _angle_reduction

@@ -249,8 +249,7 @@ void PayneHanek(Angle const& x,
 }
 
 template<DoubleWrapper fractional_part_lower_bound,
-         DoubleWrapper fractional_part_upper_bound,
-         typename Angle>
+         DoubleWrapper fractional_part_upper_bound>
 bool ReduceAngle(Angle const& θ,
                  Angle& fractional_part,
                  std::int64_t& integer_part) {
@@ -262,8 +261,7 @@ bool ReduceAngle(Angle const& θ,
 }
 
 template<DoubleWrapper fractional_part_lower_bound,
-         DoubleWrapper fractional_part_upper_bound,
-         typename Angle>
+         DoubleWrapper fractional_part_upper_bound>
 Angle ReduceAngle(Angle const& θ) {
   Angle fractional_part;
   std::int64_t integer_part;

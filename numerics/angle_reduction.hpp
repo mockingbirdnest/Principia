@@ -45,16 +45,14 @@ void PayneHanek(Angle const& x,
 
 // Return false if the argument is too large.
 template<DoubleWrapper fractional_part_lower_bound,
-         DoubleWrapper fractional_part_upper_bound,
-         typename Angle>
+         DoubleWrapper fractional_part_upper_bound>
 bool ReduceAngle(Angle const& θ,
                  Angle& fractional_part,
                  std::int64_t& integer_part);
 
 // Fails if the argument is too large.
 template<DoubleWrapper fractional_part_lower_bound,
-         DoubleWrapper fractional_part_upper_bound,
-         typename Angle>
+         DoubleWrapper fractional_part_upper_bound>
 Angle ReduceAngle(Angle const& θ);
 
 }  // namespace internal
