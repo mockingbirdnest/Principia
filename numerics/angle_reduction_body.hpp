@@ -47,10 +47,10 @@ inline constexpr DoublePrecision<Angle> two_π<DoublePrecision<Angle>> = []() {
   return result;
 }();
 
-inline constexpr DoublePrecision<Angle> π_over_2 = []() {
-  DoublePrecision<Angle> result;
-  result.value = 0x1.921FB54442D18p0 * Radian;
-  result.error = 0x1.1A62633145C07p-54 * Radian;
+inline constexpr DoublePrecision<double> π_over_2 = []() {
+  DoublePrecision<double> result;
+  result.value = 0x1.921FB54442D18p0;
+  result.error = 0x1.1A62633145C07p-54;
   return result;
 }();
 
@@ -159,7 +159,7 @@ class AngleReduction<Angle, -2 * π, 2 * π> {
   }
 };
 
-template<std::int64_t precision>
+template<std::int64_t precision, typename Angle>
 void PayneHanek(Angle const& x,
                 DoublePrecision<Angle>& x_reduced,
                 std::int64_t& quadrant) {
@@ -172,12 +172,12 @@ void PayneHanek(Angle const& x,
   constexpr std::int64_t n = std::numeric_limits<double>::digits;
 
   int e;
-  double X = std::frexp(x / Radian, &e);
+  double X = std::frexp(x / si::Unit<Angle>, &e);
   // Correct the mantissa and exponent to match [Mul97, p. 155].
   e--;
   X = std::scalbn(X, n);
   if (e < -1) {
-    DCHECK_LT(Abs(x), 0.5 * Radian);
+    DCHECK_LT(Abs(x), 0.5 * si::Unit<Angle>);
     x_reduced = DoublePrecision<Angle>(x);
     quadrant = 0;
     return;
@@ -245,7 +245,8 @@ void PayneHanek(Angle const& x,
   // `error`.
   double const round_h = std::round(h.value);
   quadrant = static_cast<std::int64_t>(round_h) & 0b11;
-  x_reduced = (h - round_h) * π_over_2;
+  x_reduced =
+      (h - round_h) * (π_over_2<DoublePrecision<Angle>> * si::Unit<Radian>);
 }
 
 template<DoubleWrapper fractional_part_lower_bound,

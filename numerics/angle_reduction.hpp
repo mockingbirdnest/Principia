@@ -33,8 +33,9 @@ constexpr Angle two_π;
 
 // Performs Payne-Hanek reduction of `x`.  `x_reduced` is in [-π / 4, π / 4],
 // and the `quadrant` ranges from 0 to 3.  0 is a quadrant centered on the
-// positive x axis, 1 on the positive y axis, and so on.
-template<std::int64_t precision>
+// positive x axis, 1 on the positive y axis, and so on.  This function is
+// usable with types `Angle` and `double`.
+template<std::int64_t precision, typename Angle>
 void PayneHanek(Angle const& x,
                 DoublePrecision<Angle>& x_reduced,
                 std::int64_t& quadrant);
