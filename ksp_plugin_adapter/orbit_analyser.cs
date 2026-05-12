@@ -912,7 +912,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
           if (UnityEngine.GUILayout.Toggle(
                   show_max_e_min_i_lines_,
                   L10N.CacheFormat(
-                      "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MinEMaxI")) !=
+                      "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MaxEMinI")) !=
               show_max_e_min_i_lines_) {
             show_max_e_min_i_lines_ = !show_max_e_min_i_lines_;
             if (show_max_e_min_i_lines_) {
@@ -923,7 +923,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
           if (UnityEngine.GUILayout.Toggle(
                   show_min_e_max_i_lines_,
                   L10N.CacheFormat(
-                      "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MaxEMinI")) !=
+                      "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MinEMaxI")) !=
               show_min_e_max_i_lines_) {
             show_min_e_max_i_lines_ = !show_min_e_max_i_lines_;
             if (show_min_e_max_i_lines_) {

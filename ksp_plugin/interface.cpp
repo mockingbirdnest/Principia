@@ -18,11 +18,6 @@
 #include <string_view>
 #include <utility>
 #include <vector>
-#define MICROSOFT_WINDOWS_WINBASE_H_DEFINE_INTERLOCKED_CPLUSPLUS_OVERLOADS 0
-#if OS_WIN
-#include <windows.h>
-#include <psapi.h>
-#endif
 
 #include "absl/log/check.h"
 #include "absl/log/die_if_null.h"
@@ -727,15 +722,6 @@ void __cdecl principia__InitGoogleLogging() {
     LOG(ERROR) << "Running on " << ProcessorBrandString() << " ("
                << CPUVendorIdentificationString() << ")";
     LOG(ERROR) << "with " << CPUFeatures();
-#if OS_WIN
-  MODULEINFO module_info;
-  memset(&module_info, 0, sizeof(module_info));
-  CHECK(GetModuleInformation(GetCurrentProcess(),
-                             GetModuleHandle(TEXT("principia")),
-                             &module_info,
-                             sizeof(module_info)));
-  LOG(ERROR) << "Base address is " << module_info.lpBaseOfDll;
-#endif
   }
 }
 
