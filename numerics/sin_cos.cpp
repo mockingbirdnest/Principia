@@ -509,10 +509,15 @@ SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
 
 }  // namespace
 
-template<FMAPresence fma_presence, bool preserve_sign>
 void Reduce(double const x, double& x_reduced, std::int64_t& quadrant) {
   DoublePrecision<M128D> x_reduced_m128d;
-  Reduce<fma_presence, preserve_sign>(M128D(x), x_reduced_m128d, quadrant);
+  if (CanUseHardwareFMA) {
+    Reduce<FMAPresence::Present, /*preserve_sign=*/true>(
+        M128D(x), x_reduced_m128d, quadrant);
+  } else {
+    Reduce<FMAPresence::Absent, /*preserve_sign=*/true>(
+        M128D(x), x_reduced_m128d, quadrant);
+  }
   x_reduced = static_cast<double>(x_reduced_m128d.value);
 }
 

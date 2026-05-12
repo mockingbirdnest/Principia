@@ -18,7 +18,6 @@ using SlowPathCallback = std::function<void(double θ)>;
 // duplicate the code.  Let's just expose it for use by `angle_reduction.hpp`.
 // Note that we don't return a `DoublePrecision` as that would cause circular
 // dependencies.
-template<FMAPresence fma_presence, bool preserve_sign>
 void Reduce(double x, double& x_reduced, std::int64_t& quadrant);
 
 template<FMAPresence fma_presence>
