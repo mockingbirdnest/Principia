@@ -2,6 +2,8 @@
 
 #include <cmath>
 
+#include "core-math/cos.h"
+#include "core-math/sin.h"
 #include "nanobenchmarks/nanobenchmark.hpp"  // 🧙 For NANOBENCHMARK_*.
 #include "numerics/angle_reduction.hpp"
 #include "numerics/cbrt.hpp"
@@ -37,12 +39,20 @@ NANOBENCHMARK(std_sin) {
   return std::sin(x);
 }
 
+NANOBENCHMARK(cr_sin) {
+  return cr_sin(x);
+}
+
 NANOBENCHMARK(principia_sin) {
   return Sin(x * Radian);
 }
 
 NANOBENCHMARK(std_cos) {
   return std::cos(x);
+}
+
+NANOBENCHMARK(cr_cos) {
+  return cr_cos(x);
 }
 
 NANOBENCHMARK(principia_cos) {
