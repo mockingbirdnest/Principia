@@ -131,7 +131,7 @@ TEST_F(AngleReductionTest, PayneHanekRandom) {
 // works for `Angle`.
 TEST_F(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
   Angle fractional_part;
-  std::int64_t integer_part;
+  double integer_part;
 
   ReduceAngle<-π / 2, π / 2>(Angle(1 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part, AlmostEquals(1 * Radian, 1));
@@ -160,7 +160,7 @@ TEST_F(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
 
 TEST_F(AngleReductionTest, ReduceMinusπToπ) {
   Angle fractional_part;
-  std::int64_t integer_part;
+  double integer_part;
 
   ReduceAngle<-π, π>(Angle(1 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 1));
@@ -190,7 +190,7 @@ TEST_F(AngleReductionTest, ReduceMinusπToπ) {
 
 TEST_F(AngleReductionTest, Reduce0To2π) {
   Angle fractional_part;
-  std::int64_t integer_part;
+  double integer_part;
 
   ReduceAngle<0.0, 2 * π>(Angle(1 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 1));

@@ -167,10 +167,9 @@ inline Angle ReduceAngle<0.0, 2 * π>(Angle const& θ) {
 template<>
 inline void ReduceAngle<-π / 2, π / 2>(Angle const& θ,
                                        Angle& fractional_part,
-                                       std::int64_t& integer_part) {
+                                       double& integer_part) {
   fractional_part = ReduceAngle<-π / 2, π / 2>(θ);
-  integer_part = static_cast<std::int64_t>(
-      std::round((θ - fractional_part) / (π * Radian)));
+  integer_part = std::round((θ - fractional_part) / (π * Radian));
 }
 
 // θ = fractional_part + integer_part * 2 * π where fractional_part is in
@@ -178,10 +177,9 @@ inline void ReduceAngle<-π / 2, π / 2>(Angle const& θ,
 template<>
 inline void ReduceAngle<-π, π>(Angle const& θ,
                                Angle& fractional_part,
-                               std::int64_t& integer_part) {
+                               double& integer_part) {
   fractional_part = ReduceAngle<-π, π>(θ);
-  integer_part = static_cast<std::int64_t>(
-      std::round((θ - fractional_part) / (2 * π * Radian)));
+  integer_part = std::round((θ - fractional_part) / (2 * π * Radian));
 }
 
 // θ = fractional_part + integer_part * 2 * π where fractional_part is in
@@ -189,10 +187,9 @@ inline void ReduceAngle<-π, π>(Angle const& θ,
 template<>
 inline void ReduceAngle<0.0, 2 * π>(Angle const& θ,
                                     Angle& fractional_part,
-                                    std::int64_t& integer_part) {
+                                    double& integer_part) {
   fractional_part = ReduceAngle<0.0, 2 * π>(θ);
-  integer_part = static_cast<std::int64_t>(
-      std::round((θ - fractional_part) / (2 * π * Radian)));
+  integer_part = std::round((θ - fractional_part) / (2 * π * Radian));
 }
 
 }  // namespace internal

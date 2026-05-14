@@ -22,18 +22,17 @@ void PayneHanek(Angle const& x,
 
 // If [fractional_part_lower_bound, fractional_part_upper_bound] covers 2π or
 // more, the reduction is modulo 2π.  If it covers only π, the reduction is
-// modulo π.
+// modulo π.  The `integer_part` is a double to account for very large angles.
 
 template<double fractional_part_lower_bound,
          double fractional_part_upper_bound>
 Angle ReduceAngle(Angle const& θ);
 
-//TODO(phl)What if integer_part is large?
 template<double fractional_part_lower_bound,
          double fractional_part_upper_bound>
 void ReduceAngle(Angle const& θ,
                  Angle& fractional_part,
-                 std::int64_t& integer_part);
+                 double& integer_part);
 
 }  // namespace internal
 

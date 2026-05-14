@@ -1812,7 +1812,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   // [Fuk12b] A.1: Reduction of amplitude.
   if (φ < 0 * Radian || φ > π / 2 * Radian) {
     Angle φ_reduced{uninitialized};
-    std::int64_t j;
+    double j;
     ReduceAngle<-π / 2, π / 2>(φ, φ_reduced, j);
     Angle const abs_φ_reduced = Abs(φ_reduced);
 
