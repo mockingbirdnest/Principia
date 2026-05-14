@@ -118,22 +118,7 @@ void PayneHanek(Angle const& x,
 }
 
 template<>
-bool ReduceAngle<-π / 2, π / 2>(Angle const& θ,
-                                Angle& fractional_part,
-                                std::int64_t& integer_part) {}
-template<>
-bool ReduceAngle<-π, π>(Angle const& θ,
-                        Angle& fractional_part,
-                        std::int64_t& integer_part) {}
-template<>
-bool ReduceAngle<0.0, 2 * π>(Angle const& θ,
-                             Angle& fractional_part,
-                             std::int64_t& integer_part) {}
-
-// angle = fractional_part + k * π where fractional_part
-// is in [-π/2, π/2].
-template<>
-Angle ReduceAngle<-π / 2, π / 2>(Angle const& θ) {
+inline Angle ReduceAngle<-π / 2, π / 2>(Angle const& θ) {
   double θ_reduced;
   std::int64_t quadrant;
   _sin_cos::Reduce(θ / Radian, θ_reduced, quadrant);
@@ -148,7 +133,7 @@ Angle ReduceAngle<-π / 2, π / 2>(Angle const& θ) {
 }
 
 template<>
-Angle ReduceAngle<-π, π>(Angle const& θ) {
+inline Angle ReduceAngle<-π, π>(Angle const& θ) {
   double θ_reduced;
   std::int64_t quadrant;
   _sin_cos::Reduce(θ / Radian, θ_reduced, quadrant);
@@ -163,7 +148,7 @@ Angle ReduceAngle<-π, π>(Angle const& θ) {
 }
 
 template<>
-Angle ReduceAngle<0.0, 2 * π>(Angle const& θ) {
+inline Angle ReduceAngle<0.0, 2 * π>(Angle const& θ) {
   double θ_reduced;
   std::int64_t quadrant;
   _sin_cos::Reduce(θ / Radian, θ_reduced, quadrant);
@@ -175,6 +160,39 @@ Angle ReduceAngle<0.0, 2 * π>(Angle const& θ) {
     θ_reduced += 2 * π;
   }
   return θ_reduced * Radian;
+}
+
+// θ = fractional_part + integer_part * π where fractional_part is in
+// [-π/2, π/2].
+template<>
+inline void ReduceAngle<-π / 2, π / 2>(Angle const& θ,
+                                       Angle& fractional_part,
+                                       std::int64_t& integer_part) {
+  fractional_part = ReduceAngle<-π / 2, π / 2>(θ);
+  integer_part = static_cast<std::int64_t>(
+      std::round((θ - fractional_part) / (π * Radian)));
+}
+
+// θ = fractional_part + integer_part * 2 * π where fractional_part is in
+// [-π, π].
+template<>
+inline void ReduceAngle<-π, π>(Angle const& θ,
+                               Angle& fractional_part,
+                               std::int64_t& integer_part) {
+  fractional_part = ReduceAngle<-π, π>(θ);
+  integer_part = static_cast<std::int64_t>(
+      std::round((θ - fractional_part) / (2 * π * Radian)));
+}
+
+// θ = fractional_part + integer_part * 2 * π where fractional_part is in
+// [0, 2 * π].
+template<>
+inline void ReduceAngle<0.0, 2 * π>(Angle const& θ,
+                                    Angle& fractional_part,
+                                    std::int64_t& integer_part) {
+  fractional_part = ReduceAngle<0.0, 2 * π>(θ);
+  integer_part = static_cast<std::int64_t>(
+      std::round((θ - fractional_part) / (2 * π * Radian)));
 }
 
 }  // namespace internal

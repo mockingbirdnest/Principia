@@ -26,13 +26,14 @@ void PayneHanek(Angle const& x,
 
 template<double fractional_part_lower_bound,
          double fractional_part_upper_bound>
-bool ReduceAngle(Angle const& θ,
-                 Angle& fractional_part,
-                 std::int64_t& integer_part);
+Angle ReduceAngle(Angle const& θ);
 
+//TODO(phl)What if integer_part is large?
 template<double fractional_part_lower_bound,
          double fractional_part_upper_bound>
-Angle ReduceAngle(Angle const& θ);
+void ReduceAngle(Angle const& θ,
+                 Angle& fractional_part,
+                 std::int64_t& integer_part);
 
 }  // namespace internal
 
