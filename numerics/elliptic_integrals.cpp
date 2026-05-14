@@ -1893,7 +1893,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 
   // [Fuk12b] A.3: Reduction of characteristics.
-  // NOTE(phl): Special case n == 1 as at leads to NaN in the normal algorithm
+  // NOTE(phl): Special case n == 1 as it leads to NaN in the normal algorithm
   // and to infinite recursion in the n > 1 branch below.
   if constexpr (should_compute<ThirdKind>) {
     if (n == 1) {

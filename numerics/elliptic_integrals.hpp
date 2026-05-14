@@ -17,7 +17,7 @@ using namespace principia::quantities::_quantities;
 // — the complete integral B is introduced in the re-edition [JE38];
 // — the incomplete B is introduced by [Bul65], generalizing [JEL60];
 // — the name “associate elliptic integral of the 2nd kind” is from [Fuk11b];
-// — the integral J is introduced in [Fuk11c].
+// — the integral J is introduced in [Fuk12b].
 void FukushimaEllipticBDJ(Angle const& φ,
                           double n,
                           double mc,
