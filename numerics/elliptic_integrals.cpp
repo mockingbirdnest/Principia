@@ -1201,13 +1201,16 @@ Angle BulirschCel(double kc, double const nc, double a, double b) {
   // non-const parameters to mimic [Bul69].
   double p = nc;
   if (kc == 0.0) {
+    // See [Bul69], text after equation (1.2.4a) for a discussion of this case.
     if (b == 0.0) {
       kc = kc_nearly_0;
     } else {
       // "If in this case b ≠ 0 then cel is undefined."
+      // Mathematica shows that when kc tends towards 0, the dominant term of
+      // this function is -Log(kc) / nc.
       DLOG(ERROR) << "kc = " << kc << " nc = " << nc << " a = " << a
                   << " b = " << b;
-      return NaN<Angle>;
+      return Infinity<Angle> * std::copysign(1.0, nc);
     }
   }
   kc = Abs(kc);

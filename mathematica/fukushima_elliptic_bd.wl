@@ -138,3 +138,7 @@
 
 (* ::Input:: *)
 (*fukushimaJ[\[Phi]_,n_,m_]:=(EllipticPi[n,\[Phi],m]-EllipticF[\[Phi],m])/n*)
+
+
+(* ::Input:: *)
+(*Series[bulirschCel[kc,nc,0,1],{kc,0,1},Assumptions->{kc\[Element]Reals,kc>0,nc\[Element]Reals,nc>0,nc<=1}]*)
