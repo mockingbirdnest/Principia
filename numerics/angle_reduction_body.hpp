@@ -211,14 +211,16 @@ void PayneHanek(Angle const& x,
   // below for the chunk.
   double const scale = std::scalbn(1.0, e - n + 1);
 
+  // The most significant chunk has extra bits that we don't need because they
+  // are part of `Left(e, p)`.  Drop them: the first bit that is preserved here
+  // is the one numbered n - e + 1.
+  double const medium_first_mod = std::scalbn(1.0, n - e + 2);
+
   DoublePrecision<double> h;
   for (std::int64_t i = medium_last; i >= medium_first; --i) {
     double chunk = PayneHanekChunks[i];
     if (i == medium_first) {
-      // The most significant chunk has extra bits that we don't need because
-      // they are part of `Left(e, p)`.  Drop them: the first bit that is
-      // preserved here is the one numbered n - e + 1.
-      chunk = std::remainder(chunk, std::scalbn(1.0, n - e + 2));
+      chunk = std::remainder(chunk, medium_first_mod);
     }
     double const schunk = scale * chunk;
     // The products are exact by construction of the chunks.
