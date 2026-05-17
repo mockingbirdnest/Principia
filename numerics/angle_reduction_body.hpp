@@ -143,7 +143,11 @@ inline Angle ReduceAngle<-π, π>(Angle const& θ) {
   } else if (quadrant == 3) {
     θ_reduced -= π / 2;
   } else if (quadrant == 2) {
-    θ_reduced += π;
+    if (θ_reduced < 0.0) {
+      θ_reduced += π;
+    } else {
+      θ_reduced -= π;
+    }
   }
   return θ_reduced * Radian;
 }
@@ -158,7 +162,12 @@ inline Angle ReduceAngle<0.0, 2 * π>(Angle const& θ) {
   } else if (quadrant == 3) {
     θ_reduced += 3 * π / 2;
   } else if (quadrant == 2) {
-    θ_reduced += 2 * π;
+    θ_reduced += π;
+  } else {
+    // `quadrant == 0`.
+    if (θ_reduced < 0.0) {
+      θ_reduced += 2 * π;
+    }
   }
   return θ_reduced * Radian;
 }

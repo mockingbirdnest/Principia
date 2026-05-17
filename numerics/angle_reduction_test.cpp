@@ -170,6 +170,11 @@ TEST_F(AngleReductionTest, ReduceMinusπToπ) {
   EXPECT_THAT(fractional_part, AlmostEquals(Angle(-1 * Radian), 1));
   EXPECT_EQ(0, integer_part);
 
+  ReduceAngle<-π, π>(Angle(3.5 * Radian), fractional_part, integer_part);
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(Angle(3.5 * Radian) - two_π<Angle>, 0));
+  EXPECT_EQ(1, integer_part);
+
   ReduceAngle<-π, π>(Angle(4 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
               AlmostEquals(Angle(4 * Radian) - two_π<Angle>, 0));
@@ -196,6 +201,10 @@ TEST_F(AngleReductionTest, Reduce0To2π) {
   EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 1));
   EXPECT_EQ(0, integer_part);
 
+  ReduceAngle<0.0, 2 * π>(Angle(3.5 * Radian), fractional_part, integer_part);
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(3.5 * Radian), 0));
+  EXPECT_EQ(0, integer_part);
+
   ReduceAngle<0.0, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part, AlmostEquals(Angle(4 * Radian), 0));
   EXPECT_EQ(0, integer_part);
@@ -203,6 +212,11 @@ TEST_F(AngleReductionTest, Reduce0To2π) {
   ReduceAngle<0.0, 2 * π>(Angle(-1 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
               AlmostEquals(two_π<Angle> + Angle(-1 * Radian), 0));
+  EXPECT_EQ(-1, integer_part);
+
+  ReduceAngle<0.0, 2 * π>(Angle(-0.5 * Radian), fractional_part, integer_part);
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(two_π<Angle> + Angle(-0.5 * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
   ReduceAngle<0.0, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
