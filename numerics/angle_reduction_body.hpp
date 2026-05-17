@@ -19,6 +19,7 @@ namespace internal {
 
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_payne_hanek;
+using namespace principia::numerics::_sin_cos;
 using namespace principia::quantities::_si;
 
 inline constexpr DoublePrecision<double> π_over_2 = []() {
@@ -121,7 +122,7 @@ template<>
 inline Angle ReduceAngle<-π / 2, π / 2>(Angle const& θ) {
   double θ_reduced;
   std::int64_t quadrant;
-  _sin_cos::Reduce(θ / Radian, θ_reduced, quadrant);
+  Reduce(θ / Radian, θ_reduced, quadrant);
   if (quadrant == 1 || quadrant == 3) {
     if (θ_reduced < 0.0) {
       θ_reduced += π / 2;
@@ -136,7 +137,7 @@ template<>
 inline Angle ReduceAngle<-π, π>(Angle const& θ) {
   double θ_reduced;
   std::int64_t quadrant;
-  _sin_cos::Reduce(θ / Radian, θ_reduced, quadrant);
+  Reduce(θ / Radian, θ_reduced, quadrant);
   if (quadrant == 1) {
     θ_reduced += π / 2;
   } else if (quadrant == 3) {
@@ -151,7 +152,7 @@ template<>
 inline Angle ReduceAngle<0.0, 2 * π>(Angle const& θ) {
   double θ_reduced;
   std::int64_t quadrant;
-  _sin_cos::Reduce(θ / Radian, θ_reduced, quadrant);
+  Reduce(θ / Radian, θ_reduced, quadrant);
   if (quadrant == 1) {
     θ_reduced += π / 2;
   } else if (quadrant == 3) {
