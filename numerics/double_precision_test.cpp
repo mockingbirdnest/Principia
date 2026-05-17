@@ -324,6 +324,25 @@ TEST_F(DoublePrecisionTest, LongQuotient) {
               AlmostEquals(-7352815717686216.0 * std::pow(0.5, 110), 0));
 }
 
+TEST_F(DoublePrecisionTest, TruncFrac) {
+  EXPECT_THAT(Trunc(TwoSum(1.0e20, 1.3)),
+              AlmostEquals(TwoSum(1.0e20, 1.0), 0));
+  EXPECT_THAT(Trunc(TwoSum(1.0e20, -1.3)),
+              AlmostEquals(TwoSum(1.0e20, -2.0), 0));
+  EXPECT_THAT(Trunc(TwoSum(-1.0e20, 1.3)),
+              AlmostEquals(TwoSum(-1.0e20, 2.0), 0));
+  EXPECT_THAT(Trunc(TwoSum(-1.0e20, -1.3)),
+              AlmostEquals(TwoSum(-1.0e20, -1.0), 0));
+  EXPECT_THAT(Frac(TwoSum(1.0e20, 1.25)),
+              AlmostEquals(DoublePrecision<double>(0.25), 0));
+  EXPECT_THAT(Frac(TwoSum(1.0e20, -1.25)),
+              AlmostEquals(DoublePrecision<double>(0.75), 0));
+  EXPECT_THAT(Frac(TwoSum(-1.0e20, 1.25)),
+              AlmostEquals(DoublePrecision<double>(-0.75), 0));
+  EXPECT_THAT(Frac(TwoSum(-1.0e20, -1.25)),
+              AlmostEquals(DoublePrecision<double>(-0.25), 0));
+}
+
 }  // namespace numerics
 }  // namespace principia
 

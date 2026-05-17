@@ -1,16 +1,17 @@
 #pragma once
 
-#include "numerics/fixed_arrays.hpp"
+#include <array>
+#include <cstdint>
 
 namespace principia {
 namespace numerics {
 namespace _payne_hanek {
 namespace internal {
 
-using namespace principia::numerics::_fixed_arrays;
+constexpr std::int64_t PayneHanekBitsPerChunk = 26;
 
 // Chunks of 26 bits of 4/π, up to exponent -1074.
-constexpr FixedVector<double, 43> PayneHanekChunks{
+constexpr std::array<double, 43> PayneHanekChunks{
     0x28b'e60d.0p-25,
     0x2e4'e441.0p-51,
     0x14a'7f09.0p-77,
@@ -57,6 +58,7 @@ constexpr FixedVector<double, 43> PayneHanekChunks{
 
 }  // namespace internal
 
+using internal::PayneHanekBitsPerChunk;
 using internal::PayneHanekChunks;
 
 }  // namespace _payne_hanek

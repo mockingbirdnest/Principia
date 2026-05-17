@@ -1,5 +1,7 @@
 #include "numerics/angle_reduction.hpp"
 
+#include <random>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/double_precision.hpp"
@@ -23,6 +25,82 @@ template<typename T>
 class AngleReductionTest : public testing::Test {};
 
 TYPED_TEST_SUITE_P(AngleReductionTest);
+
+TEST(AngleReductionTest, PayneHanekMul97Examples) {
+  {
+    // [Mul97, Example 11, first angle].
+    Angle const x = 0x1.8p200 * Radian;
+    DoublePrecision<Angle> x_reduced;
+    std::int64_t quadrant;
+    PayneHanek<20>(x, x_reduced, quadrant);
+    EXPECT_EQ(1, quadrant);
+    // The last 20.4 bits of the result are incorrect.
+    EXPECT_THAT(x_reduced,
+                AlmostEquals(TwoSum(0x1.7F89C9C43D336p-1 * Radian,
+                                    0x1.92CF93D957278p-56 * Radian),
+                             1395298,
+                             1395299));
+  }
+  {
+    // [Mul97, Example 11, second angle].
+    Angle const x = 6381956970095103.0 * 0x1.0p797 * Radian;
+    DoublePrecision<Angle> x_reduced;
+    std::int64_t quadrant;
+    PayneHanek<61>(x, x_reduced, quadrant);
+    EXPECT_EQ(1, quadrant);
+    // The last 49.7 bits of the result are incorrect.
+    EXPECT_THAT(x_reduced,
+                AlmostEquals(TwoSum(0x1.14AE72E6BA22Fp-61 * Radian,
+                                    -0x1.73EEF1477D90Ep-118 * Radian),
+                             929348176455132,
+                             929348176455133));
+  }
+}
+
+TEST(AngleReductionTest, PayneHanekRandom) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> reduced_angle(-π / 4, π / 4);
+  std::uniform_int_distribution<> quadrant(0, 3);
+  std::uniform_int_distribution<> count(0, 10);
+  std::uniform_int_distribution<> magnitude(0, 30);
+  std::uniform_int_distribution<> sign(0, 1);
+  for (std::int64_t i = 0; i < 1000; ++i) {
+    // First, pick a reduced angle.
+    DoublePrecision<Angle> const expected_reduced_angle(reduced_angle(random) *
+                                                        Radian);
+    std::int64_t const expected_quadrant = quadrant(random);
+    // Then move it to a different quadrant by adding a multiple of  π / 2.
+    DoublePrecision<Angle> x =
+        expected_reduced_angle +
+        expected_quadrant * Scale(0.5, one_π<DoublePrecision<Angle>>);
+    // Now add a signed multiple of 2π.
+    std::int64_t const loop_count = count(random);
+    for (std::int64_t i = 0; i < loop_count; ++i) {
+      auto const multiple_of_2π = Scale(std::scalbn(1.0, magnitude(random)),
+                                        two_π<DoublePrecision<Angle>>);
+      auto const signed_multiple_of_2π =
+          (sign(random) * 2 - 1.0) * multiple_of_2π;
+      x += signed_multiple_of_2π;
+    }
+
+    DoublePrecision<Angle> actual_reduced_angle;
+    std::int64_t actual_quadrant;
+    PayneHanek<61>(x.value, actual_reduced_angle, actual_quadrant);
+
+    EXPECT_EQ(expected_quadrant, actual_quadrant);
+    // We dropped `x.error` when calling `PayneHanek`, so we need to adjust our
+    // expectations here.
+    // The last 49.9 bits of the result may be incorrect, for
+    // x = +1.68662971306440473e+09 rad|-5.42639714097227698e-08 rad, which has
+    // a cancellation of 40.9 bits.  The fact that the error is so large is
+    // because of the rounding errors on `x.error`, not because of the angle
+    // reduction per se.
+    EXPECT_THAT(actual_reduced_angle + x.error,
+                AlmostEquals(expected_reduced_angle, 0, 1041371082701288))
+        << "Expected reduced: " << expected_reduced_angle.value
+        << " Reduction argument: " << x;
+  }
+}
 
 // This test is not type-parameterized because the reduction algorithm only
 // works for `Angle`.
@@ -84,7 +162,7 @@ TYPED_TEST_P(AngleReductionTest, ReduceMinusπToπ) {
       fractional_part,
       AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
                        Angle(0x1.BA01B07B5D1EBp-71 * Radian),
-                   4861461, 7230135));
+                   607682, 7230135));
   EXPECT_EQ(113, integer_part);
 }
 
@@ -117,7 +195,7 @@ TYPED_TEST_P(AngleReductionTest, Reduce0To2π) {
       fractional_part,
       AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
                        Angle(0x1.BA01B07B5D1EBp-71 * Radian),
-                   4861461, 7230135));
+                   607682, 7230135));
   EXPECT_EQ(113, integer_part);
 }
 
@@ -150,7 +228,7 @@ TYPED_TEST_P(AngleReductionTest, ReduceMinus2πTo2π) {
       fractional_part,
       AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
                        Angle(0x1.BA01B07B5D1EBp-71 * Radian),
-                   4861461, 7230135));
+                   607682, 7230135));
   EXPECT_EQ(113, integer_part);
 }
 

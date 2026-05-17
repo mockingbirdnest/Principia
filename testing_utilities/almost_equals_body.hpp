@@ -12,6 +12,7 @@
 
 #include "gmock/gmock.h"
 #include "numerics/ulp_distance.hpp"
+#include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -20,6 +21,7 @@ namespace _almost_equals {
 namespace internal {
 
 using namespace principia::numerics::_ulp_distance;
+using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_numerics;
 
 // Make sure that this matcher treats all NaNs as almost equal to 0 ULPs.
@@ -305,23 +307,39 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
-  std::int64_t const value_distance =
-      NormalizedNaNULPDistance(DoubleValue(actual.value),
-                               DoubleValue(expected_.value));
-  if (value_distance != 0) {
-    *listener << "the values differ by the following number of ULPs: "
-              << value_distance;
-    return false;
+
+  // The number of ULPs is computed assuming a 106-bit mantissa aligned on the
+  // `value` component.  if the `error` component floats to the right, the error
+  // may not be an integral number of ULPs and you'll need to use the 2-argument
+  // constructor.
+  int value_exponent;
+  int error_exponent;
+  std::frexp(expected_.value / si::Unit<S>, &value_exponent);
+  if (expected_.error == S{}) {
+    std::frexp(actual.error / si::Unit<S>, &error_exponent);
+  } else {
+    std::frexp(expected_.error / si::Unit<S>, &error_exponent);
   }
-  std::int64_t const error_distance =
-      NormalizedNaNULPDistance(DoubleValue(actual.error),
-                               DoubleValue(expected_.error));
+  std::int64_t const value_distance = NormalizedNaNULPDistance(
+      DoubleValue(actual.value), DoubleValue(expected_.value));
+  std::int64_t const error_distance = NormalizedNaNULPDistance(
+      DoubleValue(actual.error), DoubleValue(expected_.error));
+  double const total_distance =
+      std::scalbn(value_distance, std::numeric_limits<double>::digits) +
+      std::scalbn(error_distance,
+                  std::numeric_limits<double>::digits +
+                      error_exponent - value_exponent);
+  bool total_distance_is_integral =
+      total_distance == std::trunc(total_distance);
+
   bool const matches =
-      min_ulps_ <= error_distance && error_distance <= max_ulps_;
+      min_ulps_ <= total_distance && total_distance <= max_ulps_;
   if (!matches) {
     *listener << "the error is not within " << min_ulps_ << " to " << max_ulps_
               << " ULPs: it differs by the following numbers of ULPs: "
-              << error_distance;
+              << (total_distance_is_integral
+                      ? std::to_string(static_cast<int64_t>(total_distance))
+                      : DebugString(total_distance));
   }
   return matches;
 }
