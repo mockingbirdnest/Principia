@@ -198,24 +198,31 @@ void PayneHanek(Angle const& x,
   // medium_last].
   std::int64_t const medium_first = bit_to_index(n - e + 1);
   std::int64_t const medium_last = bit_to_index(-n - e - 1 - p);
-  // This is not in [Mul97].  The bit numbered 2 - e is the smallest one that
-  // can contribute to `h mod 8`.
+  // This is not in [Mul97].  The bit numbered 2 - e can only contribute a value
+  // sligtly smaller than 8 to `h`.  However, if this bit is 1 and some bits
+  // with lower number of the same chunk are 1, then the contribution to `h` can
+  // exceed 8.  Therefore, bit 2 - e must be taken into account when computing
+  // `h mod 8`.
   std::int64_t const medium_mod_8 = bit_to_index(2 - e);
+
+  // The bits of the chunks must be scaled up by 2^(n + e + 1 + p) to make
+  // `Medium(e, p)` an integer.  The computation of `h` then involves a
+  // multiplication by 2^(-2n -p).  All together, this results in the scaling
+  // below for the chunk.
+  double const scale = std::scalbn(1.0, e - n + 1);
+
+  // The most significant chunk has extra bits that we don't need because they
+  // are part of `Left(e, p)`.  Drop them: the first bit that is preserved here
+  // is the one numbered n - e + 1.
+  double const medium_first_mod = std::scalbn(1.0, n - e + 2);
 
   DoublePrecision<double> h;
   for (std::int64_t i = medium_last; i >= medium_first; --i) {
     double chunk = PayneHanekChunks[i];
     if (i == medium_first) {
-      // The most significant chunk has extra bits that we don't need because
-      // they are part of `Left(e, p)`.  Drop them: the first bit that is
-      // preserved here is the one numbered n - e + 1.
-      chunk = std::remainder(chunk, std::scalbn(1.0, n - e + 2));
+      chunk = std::remainder(chunk, medium_first_mod);
     }
-    // The bits of the chunks must be scaled up by 2^(n + e + 1 + p) to make
-    // `Medium(e, p)` an integer.  The computation of `h` then involves a
-    // multiplication by 2^(-2n -p).  All together, this results in the scaling
-    // below for the chunk.
-    double const schunk = std::scalbn(chunk, e - n + 1);
+    double const schunk = scale * chunk;
     // The products are exact by construction of the chunks.
     double Xl_schunk = Xl * schunk;
     double Xh_schunk = Xh * schunk;
@@ -227,7 +234,11 @@ void PayneHanek(Angle const& x,
     // chunks that can contribute to `h mod 8`, so that gives us an upper bound
     // of roughly 0.308 n for `h`.
     if (i <= medium_mod_8) {
-      Xl_schunk = std::remainder(Xl_schunk, 8.0);
+      if (i < medium_mod_8) {
+        Xl_schunk = std::remainder(Xl_schunk, 8.0);
+      } else {
+        DCHECK_LE(Xl_schunk, 8.0);
+      }
       Xh_schunk = std::remainder(Xh_schunk, 8.0);
     } else {
       DCHECK_LE(Xl_schunk, 8.0);
