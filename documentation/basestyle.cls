@@ -22,7 +22,7 @@
 % Language.
 \RequirePackage{polyglossia}
 \setdefaultlanguage[variant=british]{english}
-\setotherlanguages{greek,german,russian,french}
+\setotherlanguages{greek,german,russian,french,chinese}
 % We use the english/american quote style, i.e., outer double quotes and inner
 % single quotes, but british typographic rules (punctuation after the quotation
 % marks).
@@ -31,9 +31,7 @@
 
 \newcommand{\foreign}{\emph}
 
-\RequirePackage{xeCJK}
-\makexeCJKinactive
-\newcommand{\chinese}[1]{{\makexeCJKactive\cjkfont#1\makexeCJKinactive}}
+\renewcommand{\chinese}[1]{{\cjkfont\textchinese{#1}}}
 
 % Font definitions.
 
@@ -75,7 +73,6 @@
             ]{Linux Biolinum O}
 
 \newfontfamily\cjkfont{BabelStoneHan.ttf}
-\setCJKmainfont{BabelStoneHan.ttf}
 
 \newfontfamily\xsuxfont{Nabuninuaihsus.otf}
 
@@ -109,7 +106,6 @@
 \renewcommand{\maketitlehooka}{\textdisplay}
 
 % Miscellaneous.
-\XeTeXdashbreakstate=0
 \RequirePackage{soul}
 \RequirePackage[iso, english]{isodate} 
 \RequirePackage[iso]{datetime}
@@ -170,8 +166,10 @@
 }
 
 \RequirePackage{hyperref}
-
 \RequirePackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true,labelalpha=true]{biblatex}
+\DefineBibliographyExtras{british}{%
+  \renewcommand*{\finalandcomma}{\addcomma\addspace}
+}
 
 % Allow breaking in numbers and after lower and upper case letters in bibliography
 % URLs, see https://tex.stackexchange.com/a/134281.
