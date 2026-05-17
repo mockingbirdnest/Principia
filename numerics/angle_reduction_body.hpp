@@ -33,6 +33,12 @@ template<std::int64_t precision, typename Angle>
 void PayneHanek(Angle const& x,
                 DoublePrecision<Angle>& x_reduced,
                 std::int64_t& quadrant) {
+  if (x != x) {
+    x_reduced = DoublePrecision<Angle>(x);
+    quadrant = 0;
+    return;
+  }
+
   // This implementation follows [Mul97, section 8.4].  For our purposes it
   // would be a bit more direct to perform a multiplication with 2 / π, but that
   // would require fiddling with the bit indices all over the place.  It's
