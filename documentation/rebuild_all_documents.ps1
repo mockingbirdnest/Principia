@@ -13,7 +13,7 @@ foreach ($f in ls *.tex) {
      biber $f.basename
      if (-not $?) { return $? }
     }
-    xelatex $f.basename
+    lualatex $f.basename
     if (-not $?) { return $? }
   }
 }
