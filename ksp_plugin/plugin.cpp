@@ -1788,7 +1788,8 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
                      std::string const& name,
                      Args&&... args) {
   auto const [_, inserted] = part_id_to_vessel_.emplace(part_id, vessel);
-  CHECK(inserted) << NAMED(part_id);
+  CHECK(inserted) << "Vessel: " << vessel->ShortDebugString() << ", "
+                  << NAMED(part_id) << ", " << NAMED(name);
   auto deletion_callback = [part_id, &map = part_id_to_vessel_] {
     // This entails a lookup, but iterators are not stable in `flat_hash_map`.
     map.erase(part_id);
