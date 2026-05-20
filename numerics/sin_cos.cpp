@@ -121,6 +121,7 @@ M128D const quiet_NaN(std::numeric_limits<double>::quiet_NaN());
 M128D const zero(0.0);
 
 // Argument reduction.
+// TODO(phl): Is this value correct, in particular when used with a power of 2?
 M128D const mantissa_reduce_shifter(
     static_cast<double>(1LL << (std::numeric_limits<double>::digits - 1)));
 M128D const two_over_π(2.0 / π);
@@ -244,10 +245,13 @@ Value DetectDangerousRounding(Value const y, Value const δy) {
   }
 }
 
-template<FMAPresence fma_presence, bool preserve_sign>
-FORCE_INLINE void Reduce(Argument const x,
-                         DoublePrecision<Argument>& x_reduced,
-                         std::int64_t& quadrant) {
+// This is the reduction technique described in [Mul+10], section 10.1.1, with
+// either 2 or 3 terms for approximating π / 2.  See also
+// `documentation/Sin Cos.pdf`.  Note that we cannot use FMA in this code.
+template<bool preserve_sign>
+FORCE_INLINE void CodyWaiteReduction(Argument const x,
+                                     DoublePrecision<Argument>& x_reduced,
+                                     std::int64_t& quadrant) {
   Argument const abs_x = Abs(x);
   OSACA_IF(abs_x < π / 4) {
     x_reduced.value = x;
@@ -261,8 +265,7 @@ FORCE_INLINE void Reduce(Argument const x,
     // of the quadrant.
     M128D const sign = Sign(x);
     M128D n_double =
-        MaybeFusedMultiplyAdd<fma_presence>(
-            abs_x, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+        (abs_x * m128d::two_over_π + m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
     // Don't move the computation of `n` after the if, it generates some extra
@@ -272,11 +275,10 @@ FORCE_INLINE void Reduce(Argument const x,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, x);
+      y = x - n_double * m128d::C₁;
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(
-          n_double, m128d::C₁, abs_x);
+      y = abs_x - n_double * m128d::C₁;
     }
 
     Argument const δy = n_double * m128d::δC₁;
@@ -290,8 +292,7 @@ FORCE_INLINE void Reduce(Argument const x,
     // Same code as above.
     M128D const sign = Sign(x);
     M128D n_double =
-        MaybeFusedMultiplyAdd<fma_presence>(
-            abs_x, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+        (abs_x * m128d::two_over_π + m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
     Argument y;
@@ -299,11 +300,10 @@ FORCE_INLINE void Reduce(Argument const x,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, x);
+      y = x - n_double * m128d::C₂;
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(
-          n_double, m128d::C₂, abs_x);
+      y = abs_x - n_double * m128d::C₂;
     }
 
     Argument const yʹ = n_double * m128d::Cʹ₂;
@@ -324,6 +324,18 @@ FORCE_INLINE void Reduce(Argument const x,
     PayneHanek<61>(x_double, x_reduced_double, quadrant);
     x_reduced.value = M128D(x_reduced_double.value);
     x_reduced.error = M128D(x_reduced_double.error);
+  }
+}
+
+template<FMAPresence fma_presence, bool preserve_sign>
+FORCE_INLINE void Reduce(Argument const x,
+                         DoublePrecision<Argument>& x_reduced,
+                         std::int64_t& quadrant) {
+  static_assert(fma_presence != FMAPresence::Unknown);
+  if constexpr (fma_presence == FMAPresence::Present) {
+    CodyWaiteReduction<preserve_sign>(x, x_reduced, quadrant);
+  } else {
+    CodyWaiteReduction<preserve_sign>(x, x_reduced, quadrant);
   }
 }
 
