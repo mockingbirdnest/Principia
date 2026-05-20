@@ -125,6 +125,7 @@ M128D const zero(0.0);
 M128D const mantissa_reduce_shifter(
     static_cast<double>(1LL << (std::numeric_limits<double>::digits - 1)));
 M128D const two_over_π(2.0 / π);
+
 M128D const C₁(internal::C₁);
 M128D const δC₁(internal::δC₁);
 M128D const C₂(internal::C₂);
@@ -245,6 +246,39 @@ Value DetectDangerousRounding(Value const y, Value const δy) {
   }
 }
 
+// This is the reduction technique described in [BDL09].  We are using the
+// notation from [Mul16], section 11.2.2.
+FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
+                                         DoublePrecision<Argument>& x_reduced,
+                                         std::int64_t& quadrant) {
+  static M128D const threshold(0x1.921F'B53D'FA52'Ap30);
+  static M128D const addend(0x1.8000'0000'0000'0p52);
+  static M128D const R(0x1.45F3'06DC'9C88'3p-1);
+  static M128D const C₁(0x1.921F'B544'42D1'8p0);
+  static M128D const C₂(0x1.1A62'6331'45C0'0p-54);
+  Argument const abs_x = Abs(x);
+  OSACA_IF(abs_x <= threshold) {
+    M128D const k = FusedMultiplyAdd(R, x, addend) - addend;
+    M128D const u = FusedNegatedMultiplyAdd(k, C₁, x);
+    x_reduced.value = FusedNegatedMultiplyAdd(k, C₂, u);
+    M128D const ρh = k * C₂;
+    M128D const ρl = FusedMultiplySubtract(k, C₂, ρh);
+    DoublePrecision<M128D> const t = QuickTwoDifference(u, ρh);
+    x_reduced.error = ((t.value - x_reduced.value) + t.error) - ρl;
+    quadrant = 0;///NONONO
+    return;
+  }
+  // A large or difficult reduction.  It seems complicated to implement Payne-
+  // Hanek for `M128D` because of the floating-point helpers that it uses.
+  {
+    auto const x_double = static_cast<double>(x);
+    DoublePrecision<double> x_reduced_double;
+    PayneHanek<61>(x_double, x_reduced_double, quadrant);
+    x_reduced.value = M128D(x_reduced_double.value);
+    x_reduced.error = M128D(x_reduced_double.error);
+  }
+}
+
 // This is the reduction technique described in [Mul+10], section 10.1.1, with
 // either 2 or 3 terms for approximating π / 2.  See also
 // `documentation/Sin Cos.pdf`.  Note that we cannot use FMA in this code.
@@ -253,12 +287,7 @@ FORCE_INLINE void CodyWaiteReduction(Argument const x,
                                      DoublePrecision<Argument>& x_reduced,
                                      std::int64_t& quadrant) {
   Argument const abs_x = Abs(x);
-  OSACA_IF(abs_x < π / 4) {
-    x_reduced.value = x;
-    x_reduced.error = m128d::zero;
-    quadrant = 0;
-    return;
-  } OSACA_ELSE_IF(abs_x <= two_term_x_threshold) {
+  OSACA_IF(abs_x <= two_term_x_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
@@ -332,10 +361,19 @@ FORCE_INLINE void Reduce(Argument const x,
                          DoublePrecision<Argument>& x_reduced,
                          std::int64_t& quadrant) {
   static_assert(fma_presence != FMAPresence::Unknown);
-  if constexpr (fma_presence == FMAPresence::Present) {
-    CodyWaiteReduction<preserve_sign>(x, x_reduced, quadrant);
-  } else {
-    CodyWaiteReduction<preserve_sign>(x, x_reduced, quadrant);
+  Argument const abs_x = Abs(x);
+  OSACA_IF(abs_x < π / 4) {
+    x_reduced.value = x;
+    x_reduced.error = m128d::zero;
+    quadrant = 0;
+    return;
+  }
+  else {
+    if constexpr (fma_presence == FMAPresence::Present) {
+      BoldoDaumasLiReduction(x, x_reduced, quadrant);
+    } else {
+      CodyWaiteReduction<preserve_sign>(x, x_reduced, quadrant);
+    }
   }
 }
 
