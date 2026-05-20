@@ -246,9 +246,23 @@ Value DetectDangerousRounding(Value const y, Value const δy) {
   }
 }
 
+// A large or difficult reduction.  It seems complicated to implement Payne-
+// Hanek for `M128D` because of the floating-point helpers that it uses.
+void PayneHanekReduction(Argument const x,
+                         DoublePrecision<Argument>& x_reduced,
+                         std::int64_t& quadrant) {
+  auto const x_double = static_cast<double>(x);
+  DoublePrecision<double> x_reduced_double;
+  _angle_reduction::PayneHanekReduction<61>(
+      x_double, x_reduced_double, quadrant);
+  x_reduced.value = M128D(x_reduced_double.value);
+  x_reduced.error = M128D(x_reduced_double.error);
+}
+
 // This is the reduction technique described in [BDL09].  We are using the
 // notation from [Mul16], section 11.2.2.
 FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
+                                         Argument const abs_x,
                                          DoublePrecision<Argument>& x_reduced,
                                          std::int64_t& quadrant) {
   static M128D const threshold(0x1.921F'B53D'FA52'Ap30);
@@ -256,7 +270,6 @@ FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
   static M128D const R(0x1.45F3'06DC'9C88'3p-1);
   static M128D const C₁(0x1.921F'B544'42D1'8p0);
   static M128D const C₂(0x1.1A62'6331'45C0'0p-54);
-  Argument const abs_x = Abs(x);
   OSACA_IF(abs_x <= threshold) {
     M128D const k = FusedMultiplyAdd(R, x, addend) - addend;
     M128D const u = FusedNegatedMultiplyAdd(k, C₁, x);
@@ -269,15 +282,7 @@ FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
     quadrant = k_int & 0b11;
     return;
   }
-  // A large or difficult reduction.  It seems complicated to implement Payne-
-  // Hanek for `M128D` because of the floating-point helpers that it uses.
-  {
-    auto const x_double = static_cast<double>(x);
-    DoublePrecision<double> x_reduced_double;
-    PayneHanek<61>(x_double, x_reduced_double, quadrant);
-    x_reduced.value = M128D(x_reduced_double.value);
-    x_reduced.error = M128D(x_reduced_double.error);
-  }
+  PayneHanekReduction(x, x_reduced, quadrant);
 }
 
 // This is the reduction technique described in [Mul+10], section 10.1.1, with
@@ -285,9 +290,9 @@ FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
 // `documentation/Sin Cos.pdf`.  Note that we cannot use FMA in this code.
 template<bool preserve_sign>
 FORCE_INLINE void CodyWaiteReduction(Argument const x,
+                                     Argument const abs_x,
                                      DoublePrecision<Argument>& x_reduced,
                                      std::int64_t& quadrant) {
-  Argument const abs_x = Abs(x);
   OSACA_IF(abs_x <= two_term_x_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
@@ -346,15 +351,7 @@ FORCE_INLINE void CodyWaiteReduction(Argument const x,
       return;
     }
   }
-  // A large or difficult reduction.  It seems complicated to implement Payne-
-  // Hanek for `M128D` because of the floating-point helpers that it uses.
-  {
-    auto const x_double = static_cast<double>(x);
-    DoublePrecision<double> x_reduced_double;
-    PayneHanek<61>(x_double, x_reduced_double, quadrant);
-    x_reduced.value = M128D(x_reduced_double.value);
-    x_reduced.error = M128D(x_reduced_double.error);
-  }
+  PayneHanekReduction(x, x_reduced, quadrant);
 }
 
 template<FMAPresence fma_presence, bool preserve_sign>
@@ -371,9 +368,9 @@ FORCE_INLINE void Reduce(Argument const x,
   }
   else {
     if constexpr (fma_presence == FMAPresence::Present) {
-      BoldoDaumasLiReduction(x, x_reduced, quadrant);
+      BoldoDaumasLiReduction(x, abs_x, x_reduced, quadrant);
     } else {
-      CodyWaiteReduction<preserve_sign>(x, x_reduced, quadrant);
+      CodyWaiteReduction<preserve_sign>(x, abs_x, x_reduced, quadrant);
     }
   }
 }
