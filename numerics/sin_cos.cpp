@@ -116,7 +116,7 @@ M128D const cos_1(0x1.5555'547D'C144'Bp-5);
 namespace boldo_daumas_li {
 
 // These constants must be `constexpr` (and therefore `double`) to be used in
-// the `OSACA_` macros.
+// the `OSACA_` macros.  See `boldo_daumas_li.wl` for their computation.
 constexpr double threshold = 0x1.921F'B53D'FA52'Ap30;
 constexpr double addend = 0x1.8000'0000'0000'0p52;
 constexpr double R = 0x1.45F3'06DC'9C88'3p-1;
@@ -124,11 +124,11 @@ constexpr double C₁ = 0x1.921F'B544'42D1'8p0;
 constexpr double C₂ = 0x1.1A62'6331'45C0'0p-54;
 
 namespace m128d {
-M128D const threshold(0x1.921F'B53D'FA52'Ap30);
-M128D const addend(0x1.8000'0000'0000'0p52);
-M128D const R(0x1.45F3'06DC'9C88'3p-1);
-M128D const C₁(0x1.921F'B544'42D1'8p0);
-M128D const C₂(0x1.1A62'6331'45C0'0p-54);
+M128D const threshold(boldo_daumas_li::threshold);
+M128D const addend(boldo_daumas_li::addend);
+M128D const R(boldo_daumas_li::R);
+M128D const C₁(boldo_daumas_li::C₁);
+M128D const C₂(boldo_daumas_li::C₂);
 }  // namespace m128d
 }  // namespace boldo_daumas_li
 
@@ -388,8 +388,7 @@ FORCE_INLINE void Reduce(Argument const x,
     x_reduced.error = m128d::zero;
     quadrant = 0;
     return;
-  }
-  else {
+  } else {
     if constexpr (fma_presence == FMAPresence::Present) {
       BoldoDaumasLiReduction(x, abs_x, x_reduced, quadrant);
     } else {
