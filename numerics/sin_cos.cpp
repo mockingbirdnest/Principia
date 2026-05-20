@@ -265,7 +265,8 @@ FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
     M128D const ρl = FusedMultiplySubtract(k, C₂, ρh);
     DoublePrecision<M128D> const t = QuickTwoDifference(u, ρh);
     x_reduced.error = ((t.value - x_reduced.value) + t.error) - ρl;
-    quadrant = 0;///NONONO
+    std::int64_t k_int = _mm_cvtsd_si64(static_cast<__m128d>(k));
+    quadrant = k_int & 0b11;
     return;
   }
   // A large or difficult reduction.  It seems complicated to implement Payne-
