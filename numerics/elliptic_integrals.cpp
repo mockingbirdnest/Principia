@@ -1849,8 +1849,6 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 
   // [Fuk11b] B.2, [Fuk12b] A.2: Reduction of parameter.
-  // NOTE(phl): Not implementing the special values mc = 0, etc. on the
-  // assumption that the normal implementation will work.
   double const sin_φ = Sin(φ);
   if (mc == 0) {  // m == 1
     double const cos_φ = Cos(φ);
