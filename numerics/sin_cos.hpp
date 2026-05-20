@@ -13,6 +13,13 @@ using namespace principia::numerics::_fma;
 
 using SlowPathCallback = std::function<void(double θ)>;
 
+// It would be inconvenient to move angle reduction to `angle_reduction.hpp`
+// because of the entanglement with OSACA.  It would also be unpleasant to
+// duplicate the code.  Let's just expose it for use by `angle_reduction.hpp`.
+// Note that we don't return a `DoublePrecision` as that would cause circular
+// dependencies.
+void Reduce(double x, double& x_reduced, std::int64_t& quadrant);
+
 template<FMAPresence fma_presence>
 double __cdecl Sin(double x);
 extern template double __cdecl Sin<FMAPresence::Absent>(double x);
@@ -42,6 +49,7 @@ void SetSlowPathsCallbacks(SlowPathCallback sin_cb,
 
 using internal::Cos;
 using internal::SetSlowPathsCallbacks;
+using internal::Reduce;
 using internal::Sin;
 using internal::SinCos;
 

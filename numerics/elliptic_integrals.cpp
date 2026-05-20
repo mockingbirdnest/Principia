@@ -1811,18 +1811,9 @@ void FukushimaEllipticBDJ(Angle const& φ,
 
   // [Fuk12b] A.1: Reduction of amplitude.
   if (φ < 0 * Radian || φ > π / 2 * Radian) {
-    // TODO(phl): This is extremely imprecise near large multiples of π.  Use a
-    // better algorithm (Payne-Hanek?).
     Angle φ_reduced{uninitialized};
-    std::int64_t j;
-    if (!ReduceAngle<-π / 2, π / 2>(φ, φ_reduced, j)) {
-      B_φǀm = NaN<Angle>;
-      D_φǀm = NaN<Angle>;
-      if constexpr (should_compute<ThirdKind>) {
-        J_φ_nǀm = NaN<ThirdKind>;
-      }
-      return;
-    }
+    double j;
+    ReduceAngle<-π / 2, π / 2>(φ, φ_reduced, j);
     Angle const abs_φ_reduced = Abs(φ_reduced);
 
     FukushimaEllipticBDJ(abs_φ_reduced, n, mc, B_φǀm, D_φǀm, J_φ_nǀm);
@@ -1902,7 +1893,7 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 
   // [Fuk12b] A.3: Reduction of characteristics.
-  // NOTE(phl): Special case n == 1 as at leads to NaN in the normal algorithm
+  // NOTE(phl): Special case n == 1 as it leads to NaN in the normal algorithm
   // and to infinite recursion in the n > 1 branch below.
   if constexpr (should_compute<ThirdKind>) {
     if (n == 1) {

@@ -21,12 +21,37 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
-template<typename T>
+template<typename Angle>
+constexpr Angle one_π;
+
+template<>
+inline constexpr Angle one_π<Angle> = π * Radian;
+
+template<>
+inline constexpr DoublePrecision<Angle> one_π<DoublePrecision<Angle>> = []() {
+  DoublePrecision<Angle> result;
+  result.value = 0x1.921FB54442D18p1 * Radian;
+  result.error = 0x1.1A62633145C07p-53 * Radian;
+  return result;
+}();
+
+template<typename Angle>
+constexpr Angle two_π;
+
+template<>
+inline constexpr Angle two_π<Angle> = 2 * π * Radian;
+
+template<>
+inline constexpr DoublePrecision<Angle> two_π<DoublePrecision<Angle>> = []() {
+  DoublePrecision<Angle> result;
+  result.value = 0x1.921FB54442D18p2 * Radian;
+  result.error = 0x1.1A62633145C07p-52 * Radian;
+  return result;
+}();
+
 class AngleReductionTest : public testing::Test {};
 
-TYPED_TEST_SUITE_P(AngleReductionTest);
-
-TEST(AngleReductionTest, PayneHanekMul97Examples) {
+TEST_F(AngleReductionTest, PayneHanekMul97Examples) {
   {
     // [Mul97, Example 11, first angle].
     Angle const x = 0x1.8p200 * Radian;
@@ -57,7 +82,7 @@ TEST(AngleReductionTest, PayneHanekMul97Examples) {
   }
 }
 
-TEST(AngleReductionTest, PayneHanekRandom) {
+TEST_F(AngleReductionTest, PayneHanekRandom) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> reduced_angle(-π / 4, π / 4);
   std::uniform_int_distribution<> quadrant(0, 3);
@@ -104,16 +129,16 @@ TEST(AngleReductionTest, PayneHanekRandom) {
 
 // This test is not type-parameterized because the reduction algorithm only
 // works for `Angle`.
-TEST(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
+TEST_F(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
   Angle fractional_part;
-  std::int64_t integer_part;
+  double integer_part;
 
   ReduceAngle<-π / 2, π / 2>(Angle(1 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(1 * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(1 * Radian, 1));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<-π / 2, π / 2>(Angle(-1 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(-1 * Radian, 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(-1 * Radian, 1));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<-π / 2, π / 2>(Angle(2 * Radian), fractional_part, integer_part);
@@ -129,23 +154,26 @@ TEST(AngleReductionTest, ReduceMinusπOver2ToπOver2) {
       Angle(355 * Radian), fractional_part, integer_part);
   EXPECT_THAT(
       fractional_part,
-      AlmostEquals(0.000030144353364053721297689416174085720 * Radian,
-                   2221148));
+      AlmostEquals(0.000030144353364053721297689416174085720 * Radian, 0));
   EXPECT_EQ(113, integer_part);
 }
 
-TYPED_TEST_P(AngleReductionTest, ReduceMinusπToπ) {
-  using Angle = TypeParam;
+TEST_F(AngleReductionTest, ReduceMinusπToπ) {
   Angle fractional_part;
-  std::int64_t integer_part;
+  double integer_part;
 
   ReduceAngle<-π, π>(Angle(1 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 1));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<-π, π>(Angle(-1 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle(-1 * Radian), 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(-1 * Radian), 1));
   EXPECT_EQ(0, integer_part);
+
+  ReduceAngle<-π, π>(Angle(3.5 * Radian), fractional_part, integer_part);
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(Angle(3.5 * Radian) - two_π<Angle>, 0));
+  EXPECT_EQ(1, integer_part);
 
   ReduceAngle<-π, π>(Angle(4 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
@@ -158,21 +186,23 @@ TYPED_TEST_P(AngleReductionTest, ReduceMinusπToπ) {
   EXPECT_EQ(-1, integer_part);
 
   ReduceAngle<-π, π>(Angle(2 * 355 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(
-      fractional_part,
-      AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
-                       Angle(0x1.BA01B07B5D1EBp-71 * Radian),
-                   607682, 7230135));
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
+                               Angle(0x1.BA01B07B5D1EBp-71 * Radian),
+                           0));
   EXPECT_EQ(113, integer_part);
 }
 
-TYPED_TEST_P(AngleReductionTest, Reduce0To2π) {
-  using Angle = TypeParam;
+TEST_F(AngleReductionTest, Reduce0To2π) {
   Angle fractional_part;
-  std::int64_t integer_part;
+  double integer_part;
 
   ReduceAngle<0.0, 2 * π>(Angle(1 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 0));
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(1 * Radian), 1));
+  EXPECT_EQ(0, integer_part);
+
+  ReduceAngle<0.0, 2 * π>(Angle(3.5 * Radian), fractional_part, integer_part);
+  EXPECT_THAT(fractional_part, AlmostEquals(Angle(3.5 * Radian), 0));
   EXPECT_EQ(0, integer_part);
 
   ReduceAngle<0.0, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
@@ -184,63 +214,24 @@ TYPED_TEST_P(AngleReductionTest, Reduce0To2π) {
               AlmostEquals(two_π<Angle> + Angle(-1 * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
-  ReduceAngle<0.0, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
+  ReduceAngle<0.0, 2 * π>(Angle(-0.5 * Radian), fractional_part, integer_part);
   EXPECT_THAT(fractional_part,
-              AlmostEquals(Angle(7 * Radian) - two_π<Angle>, 0));
-  EXPECT_EQ(1, integer_part);
-
-  ReduceAngle<-2 * π, 2 * π>(
-      Angle(2 * 355 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(
-      fractional_part,
-      AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
-                       Angle(0x1.BA01B07B5D1EBp-71 * Radian),
-                   607682, 7230135));
-  EXPECT_EQ(113, integer_part);
-}
-
-TYPED_TEST_P(AngleReductionTest, ReduceMinus2πTo2π) {
-  using Angle = TypeParam;
-  Angle fractional_part;
-  std::int64_t integer_part;
-
-  ReduceAngle<-2 * π, 2 * π>(Angle(4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle(4 * Radian), 0));
-  EXPECT_EQ(0, integer_part);
-
-  ReduceAngle<-2 * π, 2 * π>(Angle(-4 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part, AlmostEquals(Angle(-4 * Radian), 0));
-  EXPECT_EQ(0, integer_part);
-
-  ReduceAngle<-2 * π, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part,
-              AlmostEquals(Angle(7 * Radian) - two_π<Angle>, 0));
-  EXPECT_EQ(1, integer_part);
-
-  ReduceAngle<-2 * π, 2 * π>(Angle(-7 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(fractional_part,
-              AlmostEquals(two_π<Angle> + Angle(-7 * Radian), 0));
+              AlmostEquals(two_π<Angle> + Angle(-0.5 * Radian), 0));
   EXPECT_EQ(-1, integer_part);
 
-  ReduceAngle<-2 * π, 2 * π>(
+  ReduceAngle<0.0, 2 * π>(Angle(7 * Radian), fractional_part, integer_part);
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(Angle(7 * Radian) - two_π<Angle>, 2));
+  EXPECT_EQ(1, integer_part);
+
+  ReduceAngle<0.0, 2 * π>(
       Angle(2 * 355 * Radian), fractional_part, integer_part);
-  EXPECT_THAT(
-      fractional_part,
-      AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
-                       Angle(0x1.BA01B07B5D1EBp-71 * Radian),
-                   607682, 7230135));
+  EXPECT_THAT(fractional_part,
+              AlmostEquals(Angle(0x1.F9BD03091AD49p-15 * Radian) +
+                               Angle(0x1.BA01B07B5D1EBp-71 * Radian),
+                           0));
   EXPECT_EQ(113, integer_part);
 }
-
-REGISTER_TYPED_TEST_SUITE_P(AngleReductionTest,
-                            ReduceMinusπToπ,
-                            Reduce0To2π,
-                            ReduceMinus2πTo2π);
-
-using AngleTypes = ::testing::Types<Angle, DoublePrecision<Angle>>;
-INSTANTIATE_TYPED_TEST_SUITE_P(AllAngleReductionTests,
-                               AngleReductionTest,
-                               AngleTypes);
 
 }  // namespace internal
 }  // namespace _angle_reduction

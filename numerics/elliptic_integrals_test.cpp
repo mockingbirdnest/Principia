@@ -205,9 +205,12 @@ TEST_F(EllipticIntegralsTest, Issue4070) {
                        actual_value_d,
                        actual_value_j);
 
-  EXPECT_FALSE(IsFinite(actual_value_b));
-  EXPECT_FALSE(IsFinite(actual_value_d));
-  EXPECT_FALSE(IsFinite(actual_value_j));
+  // Mathematica has trouble computing the limit of B when m -> 1⁻, but a series
+  // near that point has terms of the form Log(1 - m) (1 - m)^k which tend
+  // toward 0, yielding the result below.
+  EXPECT_THAT(actual_value_b, AlmostEquals(6.2294272720354081e+22 * Radian, 1));
+  EXPECT_FALSE(IsFinite(actual_value_d)) << actual_value_d;
+  EXPECT_FALSE(IsFinite(actual_value_j)) << actual_value_j;
 }
 
 }  // namespace numerics
