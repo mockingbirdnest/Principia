@@ -48,8 +48,8 @@ using namespace principia::numerics::_polynomial_evaluators;
     /* From argument reduction. */                                           \
     constexpr double abs_x = x > 0 ? x : -x;                                 \
     constexpr std::int64_t n = static_cast<std::int64_t>(x * (2 / π) + 0.5); \
-    constexpr double reduction_value = x - n * C₁;                           \
-    constexpr double reduction_error = n * δC₁;                              \
+    constexpr double reduction_value = x - n * cody_waite::C₁;               \
+    constexpr double reduction_error = n * cody_waite::δC₁;                  \
     /* Used to determine whether a better argument reduction is needed. */   \
     constexpr DoublePrecision<double> x_reduced =                            \
         TwoDifference(reduction_value, reduction_error);                     \
@@ -79,11 +79,60 @@ namespace {
 using Argument = M128D;
 using Value = M128D;
 
+SlowPathCallback slow_path_sin_callback = nullptr;
+SlowPathCallback slow_path_cos_callback = nullptr;
+
 constexpr std::int64_t table_spacing_bits = 9;
 constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
 constexpr double table_spacing = 1.0 / table_spacing_reciprocal;
 constexpr double sin_near_zero_cutoff =
     (table_spacing + 7.0 * table_spacing / 32.0) / 2.0;
+
+constexpr double e_sin_near_zero = 0x1.0000'D28F'8E40'4p0;  // 2^-70.281.
+constexpr double e_sin = 0x1.0001'94C0'D077'2p0;  // 2^-69.339.
+constexpr double e_cos = 0x1.0001'58B5'12B3'2p0;  // 2^-69.570.
+
+namespace m128d {
+
+M128D const quiet_NaN(std::numeric_limits<double>::quiet_NaN());
+M128D const zero(0.0);
+
+// Accurate table index.
+M128D const mantissa_index_bits =
+    M128D::MakeFromBits(UINT64_C(0x0000'0000'0000'01ff));
+M128D const accurate_table_index_addend(static_cast<double>(
+    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1)));
+
+// Polynomials.
+M128D const sin_0(-0x1.5555'5555'5555'4p-3);
+M128D const sin_1(0x1.1111'1094'7803'6p-7);
+M128D const sin_near_zero_0(-0x1.5555'5555'5555'4p-3);
+M128D const sin_near_zero_1(0x1.1111'1071'144E'2p-7);
+M128D const cos_0(-0x1.FFFF'FFFF'FFFF'Cp-2);
+M128D const cos_1(0x1.5555'547D'C144'Bp-5);
+
+}  // namespace m128d
+
+namespace boldo_daumas_li {
+
+// These constants must be `constexpr` (and therefore `double`) to be used in
+// the `OSACA_` macros.
+constexpr double threshold = 0x1.921F'B53D'FA52'Ap30;
+constexpr double addend = 0x1.8000'0000'0000'0p52;
+constexpr double R = 0x1.45F3'06DC'9C88'3p-1;
+constexpr double C₁ = 0x1.921F'B544'42D1'8p0;
+constexpr double C₂ = 0x1.1A62'6331'45C0'0p-54;
+
+namespace m128d {
+M128D const threshold(0x1.921F'B53D'FA52'Ap30);
+M128D const addend(0x1.8000'0000'0000'0p52);
+M128D const R(0x1.45F3'06DC'9C88'3p-1);
+M128D const C₁(0x1.921F'B544'42D1'8p0);
+M128D const C₂(0x1.1A62'6331'45C0'0p-54);
+}  // namespace m128d
+}  // namespace boldo_daumas_li
+
+namespace cody_waite {
 
 constexpr std::int64_t κ₁ = 8;
 constexpr std::int64_t κʹ₁ = 5;
@@ -108,45 +157,19 @@ constexpr double three_term_x_reduced_threshold =
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
      2);
 
-constexpr double e_sin_near_zero = 0x1.0000'D28F'8E40'4p0;  // 2^-70.281.
-constexpr double e_sin = 0x1.0001'94C0'D077'2p0;  // 2^-69.339.
-constexpr double e_cos = 0x1.0001'58B5'12B3'2p0;  // 2^-69.570.
-
-SlowPathCallback slow_path_sin_callback = nullptr;
-SlowPathCallback slow_path_cos_callback = nullptr;
-
 namespace m128d {
-
-M128D const quiet_NaN(std::numeric_limits<double>::quiet_NaN());
-M128D const zero(0.0);
-
-// Argument reduction.
 // TODO(phl): Is this value correct, in particular when used with a power of 2?
 M128D const mantissa_reduce_shifter(
     static_cast<double>(1LL << (std::numeric_limits<double>::digits - 1)));
 M128D const two_over_π(2.0 / π);
 
-M128D const C₁(internal::C₁);
-M128D const δC₁(internal::δC₁);
-M128D const C₂(internal::C₂);
-M128D const Cʹ₂(internal::Cʹ₂);
-M128D const δC₂(internal::δC₂);
-
-// Accurate table index.
-M128D const mantissa_index_bits =
-    M128D::MakeFromBits(UINT64_C(0x0000'0000'0000'01ff));
-M128D const accurate_table_index_addend(static_cast<double>(
-    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1)));
-
-// Polynomials.
-M128D const sin_0(-0x1.5555'5555'5555'4p-3);
-M128D const sin_1(0x1.1111'1094'7803'6p-7);
-M128D const sin_near_zero_0(-0x1.5555'5555'5555'4p-3);
-M128D const sin_near_zero_1(0x1.1111'1071'144E'2p-7);
-M128D const cos_0(-0x1.FFFF'FFFF'FFFF'Cp-2);
-M128D const cos_1(0x1.5555'547D'C144'Bp-5);
-
+M128D const C₁(cody_waite::C₁);
+M128D const δC₁(cody_waite::δC₁);
+M128D const C₂(cody_waite::C₂);
+M128D const Cʹ₂(cody_waite::Cʹ₂);
+M128D const δC₂(cody_waite::δC₂);
 }  // namespace m128d
+}  // namespace cody_waite
 
 template<FMAPresence fma_presence>
 M128D MaybeFusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
@@ -265,17 +288,15 @@ FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
                                          Argument const abs_x,
                                          DoublePrecision<Argument>& x_reduced,
                                          std::int64_t& quadrant) {
-  static M128D const threshold(0x1.921F'B53D'FA52'Ap30);
-  static M128D const addend(0x1.8000'0000'0000'0p52);
-  static M128D const R(0x1.45F3'06DC'9C88'3p-1);
-  static M128D const C₁(0x1.921F'B544'42D1'8p0);
-  static M128D const C₂(0x1.1A62'6331'45C0'0p-54);
+  using namespace boldo_daumas_li;
+  namespace m128d = boldo_daumas_li::m128d;
   OSACA_IF(abs_x <= threshold) {
-    M128D const k = FusedMultiplyAdd(R, x, addend) - addend;
-    M128D const u = FusedNegatedMultiplyAdd(k, C₁, x);
-    x_reduced.value = FusedNegatedMultiplyAdd(k, C₂, u);
-    M128D const ρh = k * C₂;
-    M128D const ρl = FusedMultiplySubtract(k, C₂, ρh);
+    M128D const k =
+        FusedMultiplyAdd(m128d::R, x, m128d::addend) - m128d::addend;
+    M128D const u = FusedNegatedMultiplyAdd(k, m128d::C₁, x);
+    x_reduced.value = FusedNegatedMultiplyAdd(k, m128d::C₂, u);
+    M128D const ρh = k * m128d::C₂;
+    M128D const ρl = FusedMultiplySubtract(k, m128d::C₂, ρh);
     DoublePrecision<M128D> const t = QuickTwoDifference(u, ρh);
     x_reduced.error = ((t.value - x_reduced.value) + t.error) - ρl;
     std::int64_t k_int = _mm_cvtsd_si64(static_cast<__m128d>(k));
@@ -293,6 +314,8 @@ FORCE_INLINE void CodyWaiteReduction(Argument const x,
                                      Argument const abs_x,
                                      DoublePrecision<Argument>& x_reduced,
                                      std::int64_t& quadrant) {
+  using namespace cody_waite;
+  namespace m128d = cody_waite::m128d;
   OSACA_IF(abs_x <= two_term_x_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
