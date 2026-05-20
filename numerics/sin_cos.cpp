@@ -227,9 +227,6 @@ inline std::int64_t AccurateTableIndex(Argument const abs_x) {
 // negative.
 template<FMAPresence fma_presence, double e>
 Value DetectDangerousRounding(Value const y, Value const δy) {
-  // We don't check that `δy` is not NaN because that's how we trigger fallback
-  // to the slow path.
-  DCHECK(y == y);
   DoublePrecision<M128D> const sum = QuickTwoSum(y, δy);
   auto const& value = sum.value;
   auto const& error = sum.error;

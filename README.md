@@ -1,8 +1,11 @@
 # Principia
 
-**&lrm;[Lehmer](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#lehmer), the April version of Principia, is available, with a bug fix.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/lehmer).**
+**&lrm;[Leibniz](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#leibniz), the May version of Principia, is available, with improved orbit analysis and numerous bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/l3ibniz).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Lehmer for 1.8.1—1.12.5](https://share.weiyun.com/YSIF4HNV).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Leibniz for 1.8.1—1.12.5](https://share.weiyun.com/7qsAt4tB).**
+
+> [!CAUTION]
+> *Please read [the change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#leibniz) for important information about the upgrade to Leibniz.*
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -18,4 +21,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/lehmer).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Lehmer](https://github.com/mockingbirdnest/Principia/releases/tag/2026041712-Lehmer) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/l3ibniz).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Leibniz](https://github.com/mockingbirdnest/Principia/releases/tag/2026051620-Leibniz) release.
