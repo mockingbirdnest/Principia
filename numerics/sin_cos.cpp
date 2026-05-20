@@ -295,10 +295,10 @@ FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
         FusedMultiplyAdd(m128d::R, x, m128d::addend) - m128d::addend;
     M128D const u = FusedNegatedMultiplyAdd(k, m128d::C₁, x);
     x_reduced.value = FusedNegatedMultiplyAdd(k, m128d::C₂, u);
-    M128D const ρh = k * m128d::C₂;
-    M128D const ρl = FusedMultiplySubtract(k, m128d::C₂, ρh);
-    DoublePrecision<M128D> const t = QuickTwoDifference(u, ρh);
-    x_reduced.error = ((t.value - x_reduced.value) + t.error) - ρl;
+    M128D const ρₕ = k * m128d::C₂;
+    M128D const ρₗ = FusedMultiplySubtract(k, m128d::C₂, ρₕ);
+    DoublePrecision<M128D> const t = QuickTwoDifference(u, ρₕ);
+    x_reduced.error = ((t.value - x_reduced.value) + t.error) - ρₗ;
     std::int64_t k_int = _mm_cvtsd_si64(static_cast<__m128d>(k));
     quadrant = k_int & 0b11;
     return;
