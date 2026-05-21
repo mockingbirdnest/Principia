@@ -49,6 +49,7 @@ using namespace principia::numerics::_polynomial_evaluators;
     constexpr double abs_x = x > 0 ? x : -x;                                 \
     constexpr std::int64_t n = static_cast<std::int64_t>(x * (2 / π) + 0.5); \
     constexpr double k = n;                                                  \
+    constexpr double abs_k = k > 0 ? k : -k;                                 \
     constexpr double reduction_value = x - n * cody_waite::C₁;               \
     constexpr double reduction_error = n * cody_waite::δC₁;                  \
     /* Used to determine whether a better argument reduction is needed. */   \
@@ -57,7 +58,7 @@ using namespace principia::numerics::_polynomial_evaluators;
     constexpr double abs_x_reduced_value =                                   \
         x_reduced.value > 0 ? x_reduced.value : -x_reduced.value;            \
     constexpr double x_reduced_threshold =                                   \
-        k * boldo_daumas_li::x_reduced_threshold_multiplier;                 \
+        abs_k * boldo_daumas_li::x_reduced_threshold_multiplier;             \
     /* Used in Sin to detect the near-0 case. */                             \
     constexpr double abs_x̃ =                                                 \
         x_reduced.value > 0 ? x_reduced.value : -x_reduced.value;            \
@@ -302,7 +303,8 @@ FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
   OSACA_IF(abs_x <= threshold) {
     M128D const k =
         FusedMultiplyAdd(m128d::R, x, m128d::addend) - m128d::addend;
-    M128D x_reduced_threshold = k * m128d::x_reduced_threshold_multiplier;
+    M128D const abs_k = Abs(k);
+    M128D x_reduced_threshold = abs_k * m128d::x_reduced_threshold_multiplier;
     M128D const u = FusedNegatedMultiplyAdd(k, m128d::C₁, x);
     x_reduced.value = FusedNegatedMultiplyAdd(k, m128d::C₂, u);
     M128D const abs_x_reduced_value = Abs(x_reduced.value);
