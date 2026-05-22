@@ -82,9 +82,24 @@ We ignore the exponent bias, overflow and underflow as they play no role in this
 
 Finally, for error analysis we use the accuracy model of \cite{Higham2002}, equation (2.4): everywhere they appear, the quantities $\gd_i$ represent a roundoff factor such that $\abs{\gd_i} < u = \ULP\of{\frac{1}{2}} = 2^{-M}$ (see pages 37 and 38).  We also use $\gq_n$ and $\gg_n$ with the same meaning as in \cite{Higham2002}, lemma 3.1.
 
-\section*{Approximation of $\frac{\Pi}{2}$}
+\section*{Argument Reduction}
 
-To perform argument reduction, we need to build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
+Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\red x, \gd \red x}$ such that:
+\[
+\begin{dcases}
+\red x + \gd \red x \cong x \pmod{\frac{\Pi}{2}} \\
+\red x \;\text{is approximately in}\; \intclos{-\frac{\Pi}{4}}{\frac{\Pi}{4}} \\
+\abs{\gd \red x} \leq \frac{1}{2} \ULP\of{\red x} 
+\end{dcases}
+\]
+
+\subsection*{Argument Reduction for Small Angles}
+
+If $\abs x < \round{\frac{\Pi}{4}}$ then $\red x = x$ and $\gd \red x = 0$.
+
+\subsection*{Cody-Waite Argument Reduction}
+
+On machines that do not have a Fused-Multiply Add (FMA) instruction, we use the Cody-Waite reduction algorithm as described in \cite[379-381]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}.  This algorithm requires that we build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
 
 Let $z \geq 0$.  We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
 \[
@@ -113,7 +128,7 @@ which can be made more precise by noting that the function $\ULP$ is always a po
 \label{eqnulptr}
 \end{equation}
 
-\subsubsection*{Two-Term Approximation}
+\subsubsection*{Two-Term Approximation of $\frac{\Pi}{2}$}
 
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of two floating-point numbers:
 \[
@@ -151,7 +166,7 @@ From this we derive the following upper bound for $\gd C_1$:
  
 This scheme gives a representation with a significand that has effectively $2 M - \gk'_1$ bits and is such that multiplying $C_1$ by an integer less than or equal to $2^{\gk_1}$ is exact.
 
-\subsubsection*{Three-Term Approximation}
+\subsubsection*{Three-Term Approximation of $\frac{\Pi}{2}$}
 
 In this scheme we approximate $\frac{\Pi}{2}$ as the sum of three floating-point numbers:
 \[
@@ -206,22 +221,7 @@ and the following upper bound for $\gd C_2$:
  
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
-\section*{Argument Reduction}
-
-Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\red x, \gd \red x}$ such that:
-\[
-\begin{dcases}
-\red x + \gd \red x \cong x \pmod{\frac{\Pi}{2}} \\
-\red x \;\text{is approximately in}\; \intclos{-\frac{\Pi}{4}}{\frac{\Pi}{4}} \\
-\abs{\gd \red x} \leq \frac{1}{2} \ULP\of{\red x} 
-\end{dcases}
-\]
-
-\subsection*{Argument Reduction for Small Angles}
-
-If $\abs x < \round{\frac{\Pi}{4}}$ then $\red x = x$ and $\gd \red x = 0$.
-
-\subsection*{Argument Reduction Using the Two-Term Approximation}
+\subsubsection*{Cody-Waite Argument Reduction Using the Two-Term Approximation}
 
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -337,7 +337,7 @@ which leads to the following condition on the reduced angle:
 
 The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.
 
-\subsection*{Argument Reduction Using the Three-Term Approximation}
+\subsubsection*{Cody-Waite Argument Reduction Using the Three-Term Approximation}
 
 If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -392,7 +392,7 @@ If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ 
 
 \subsection*{Fallback}
 
-If any of the conditions above is not met, we fall back on the CORE-MATH implementation.
+If any of the conditions above is not met, we fall back to the Payne-Hanek argument reduction algorithm as described in \cite[154-157]{Muller1997}.
 
 \section*{Accurate Tables and Their Generation}
 
