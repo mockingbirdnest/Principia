@@ -392,7 +392,19 @@ If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ 
 
 \subsection*{Boldo-Daumas-Li Argument Reduction}
 
-On machines that have an FMA instruction, we use the Boldo-Daumas-Li reduction algorithm as described in \cite{} and \cite{}.
+On machines that have an FMA instruction, we use the Boldo-Daumas-Li reduction algorithm as described in \cite{BoldoDaumasLi2009} and \cite[204-206]{Muller2016}.  Using our notation, this algorithm proceeds as follows:
+\[
+\begin{dcases}
+n &= \round{\round{3 \cdot 2^{M - 2} + R \; x} - 3 \cdot 2^{M - 2}} \\
+u &= \round{x - n \; C_1} \\
+\red x &= \round{u - n \; C_2} \\
+\gr_h &= \round{n \; C_2} \\
+\gr_l &= \round{n \; C_2 - \gr_h} \\
+\pa{t, \gd t} &= \quicktwodifference\of{u, \gr_h} \\
+\gd \red x &= \round{\round{\round{t - \red x} + \gd t} - \gr_l}
+\end{dcases}
+\]
+where $R$, $C_1$, and $C_2$ are carefully constructed constants based on $C$, the modulo of the reduction.  In our case $C = \frac{\Pi}{2}$ and \cite[1141]{BoldoDaumasLi2009} prove (theorem 3) that $\abs{R \; x - n} \leq 1/2$.  Since $R = \round{\frac{2}{\Pi}}$, we obtain $n = \iround{\round{\frac{2}{\Pi}} \; x}$ which is similar to the definition we used in the Cody-Waite reduction above.
 
 \subsection*{Fallback}
 
