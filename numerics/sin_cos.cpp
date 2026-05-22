@@ -123,6 +123,7 @@ namespace boldo_daumas_li {
 
 // These constants must be `constexpr` (and therefore `double`) to be used in
 // the `OSACA_` macros.  See `boldo_daumas_li.wl` for their computation.
+//TODO(phl)This is too large.
 constexpr double threshold =
     π / 2 * ((1LL << (std::numeric_limits<double>::digits - 4 - κ₃)) - 1);
 constexpr double x_reduced_threshold_multiplier =
