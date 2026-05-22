@@ -22,6 +22,7 @@
 \DeclareMathOperator{\twosum}{\StandardSymbol{TwoSum}}
 \DeclareMathOperator{\quicktwosum}{\StandardSymbol{QuickTwoSum}}
 \DeclareMathOperator{\dwplusfp}{\StandardSymbol{DWPlusFP}}
+\DeclareMathOperator{\dwminusfp}{\StandardSymbol{DWMinusFP}}
 \DeclareMathOperator{\twodifference}{\StandardSymbol{TwoDifference}}
 \DeclareMathOperator{\quicktwodifference}{\StandardSymbol{QuickTwoDifference}}
 \DeclareMathOperator{\cmod}{\StandardSymbol{cmod}}
@@ -221,7 +222,7 @@ and the following upper bound for $\gd C_2$:
  
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
-\subsubsection*{Cody-Waite Argument Reduction Using the Two-Term Approximation}
+\subsubsection*{Cody-Waite Argument Reduction Using a Two-Term Approximation}
 
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -337,7 +338,7 @@ which leads to the following condition on the reduced angle:
 
 The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.
 
-\subsubsection*{Cody-Waite Argument Reduction Using the Three-Term Approximation}
+\subsubsection*{Cody-Waite Argument Reduction Using a Three-Term Approximation}
 
 If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -392,7 +393,11 @@ If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ 
 
 \subsection*{Boldo-Daumas-Li Argument Reduction}
 
-On machines that have an FMA instruction, we use the Boldo-Daumas-Li reduction algorithm as described in \cite{BoldoDaumasLi2009} and \cite[204-206]{Muller2016}.  Using our notation, this algorithm proceeds as follows:
+On machines that have an FMA instruction, we use the Boldo-Daumas-Li reduction algorithm as described in \cite{BoldoDaumasLi2009} and \cite[204-206]{Muller2016}.  
+
+\subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Two-Term Approximation}
+
+In this scheme we use a two-term approximation of the modulus as $\pa{C_1, C_2}$.  Using our notation, the algorithm proceeds as follows:
 \[
 \begin{dcases}
 n &= \round{\round{3 \cdot 2^{M - 2} + R \; x} - 3 \cdot 2^{M - 2}} \\
@@ -404,7 +409,53 @@ u &= \round{x - n \; C_1} \\
 \gd \red x &= \round{\round{\round{t - \red x} + \gd t} - \gr_l}
 \end{dcases}
 \]
-where $R$, $C_1$, and $C_2$ are carefully constructed constants based on $C$, the modulo of the reduction.  In our case $C = \frac{\Pi}{2}$ and \cite[1141]{BoldoDaumasLi2009} prove (theorem 3) that $\abs{R \; x - n} \leq 1/2$.  Since $R = \round{\frac{2}{\Pi}}$, we obtain $n = \iround{\round{\frac{2}{\Pi}} \; x}$ which is similar to the definition we used in the Cody-Waite reduction above.
+where $R$, $C_1$, and $C_2$ are carefully constructed constants based on $C$, the modulo of the reduction\footnote{These constants are distinct from those used for Cody-Waite reduction.}.  In our case $C = \frac{\Pi}{2}$ and \cite[1141]{BoldoDaumasLi2009} prove (theorem 3) that $\abs{R \; x - n} \leq 1/2$.  Since $R = \round{\frac{2}{\Pi}}$, this leads to $n = \iround{\round{\frac{2}{\Pi}} \; x}$, a definition similar to the one we used in the Cody-Waite reduction above.
+
+The key result of \cite{BoldoDaumasLi2009} is that:
+\[
+\red x + \gd \red x = x - n \pa{C_1 + C_2}
+\]
+\cite[205]{Muller2016} notes that:
+\[
+\abs{\frac{\Pi}{2} - C_1 - C_2} \leq 2^{-M + 3} \ULP\of{C_1} \leq 2^{-2 M + 4}
+\]
+where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus that $\ULP\of{C_1} = 2^{-M + 1}$.  The absolute error on the reduction is therefore less than:
+\[
+\abs{n} \; 2^{-M + 3} \ULP\of{C_1} = \abs{n} 2^{-2 M + 4}
+\]
+
+As before, the reduction guarantees $\gk_3$ extra bits of accuracy if this error is less than $2^{-\gk_3 - 1} \ULP\of{\red x}$:
+\[
+\abs{n} \; 2^{-2 M + 4} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
+\]
+A sufficient condition for this is:
+\[
+\abs{\red x} \geq \abs{n} \; 2^{\gk_3 - M + 4}
+\]
+
+//TODO(phl) Threshold
+
+\subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Three-Term Approximation}
+
+If the condition above on $\abs{\red x}$ is not met, we extend the algorithm as suggested by \cite[1139]{BoldoDaumasLi2009} and \cite[205]{Muller2016}:
+\[
+\begin{dcases}
+w &= \round{n \; C_3} \\
+\pa{\red x, \gd \red x} &= \dwminusfp\of{\pa{\red x, \gd \red x}, w}
+\end{dcases}
+\]
+where $C_3 = \round{\frac{\Pi}{2} - C_1 - C_2} \leq 2^{-2 M + 4} \pa{1 + \gd_1}$.
+
+Let $\gz$ be the relative error introduced by $\dwminusfp$.  Theorem 2.2 of \cite{MullerRideau2022} indicates that $\abs{\gz} < 2^{1 - 2 M}$.  The result of the above computation is:
+\[
+\dwminusfp\of{\pa{\red x, \gd \red x}, w} = \pa{1 + \gz}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3}
+\]
+and the absolute error on the reduction is the difference between this quantity and $x - n \frac{\Pi}{2}$:
+\begin{align*}
+\mathscr{E}_{abs} &= \pa{1 + \gz}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3} - \pa{x - n \frac{\Pi}{2}}
+\end{align*}
+
+//TODO(phl) Error
 
 \subsection*{Fallback}
 
