@@ -397,7 +397,7 @@ On machines that have an FMA instruction, we use the Boldo-Daumas-Li reduction a
 
 \subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Two-Term Approximation}
 
-In this scheme we use a two-term approximation of the modulus as $\pa{C_1, C_2}$.  Using our notation, the algorithm proceeds as follows:
+In this scheme we use a two-term approximation of the modulus as $C_1 + C_2$.  Using our notation, the algorithm proceeds as follows:
 \[
 \begin{dcases}
 n &= \round{\round{3 \cdot 2^{M - 2} + R \; x} - 3 \cdot 2^{M - 2}} \\
@@ -425,6 +425,8 @@ where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus
 \]
 
 As before, the reduction guarantees $\gk_3$ extra bits of accuracy if this error is less than $2^{-\gk_3 - 1} \ULP\of{\red x}$:
+
+//TODO(phl) delta x
 \[
 \abs{n} \; 2^{-2 M + 4} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \]
@@ -444,7 +446,10 @@ w &= \round{n \; C_3} \\
 \pa{\red x, \gd \red x} &= \dwminusfp\of{\pa{\red x, \gd \red x}, w}
 \end{dcases}
 \]
-where $C_3 = \round{\frac{\Pi}{2} - C_1 - C_2} \leq 2^{-2 M + 4} \pa{1 + \gd_1}$.
+where:
+\[
+C_3 = \round{\frac{\Pi}{2} - C_1 - C_2} = \pa{\frac{\Pi}{2} - C_1 - C_2} \pa{1 + \gd_1}
+\]
 
 Let $\gz$ be the relative error introduced by $\dwminusfp$.  Theorem 2.2 of \cite{MullerRideau2022} indicates that $\abs{\gz} < 2^{1 - 2 M}$.  The result of the above computation is:
 \[
@@ -452,7 +457,15 @@ Let $\gz$ be the relative error introduced by $\dwminusfp$.  Theorem 2.2 of \cit
 \]
 and the absolute error on the reduction is the difference between this quantity and $x - n \frac{\Pi}{2}$:
 \begin{align*}
-\mathscr{E}_{abs} &= \pa{1 + \gz}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3} - \pa{x - n \frac{\Pi}{2}}
+\mathscr{E}_{abs} &= \pa{1 + \gz}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3} - \pa{x - n \frac{\Pi}{2}} \\
+&= n \pa{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3}} - n \; \gd_1 \; C_3 + \gz \pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3}
+\end{align*}
+Now we have the inequalities:
+\begin{align*}
+\abs{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3}} &\leq \gd_1 \; 2^{-2 M + 4} = 2^{-3 M + 4} \\
+\gd_1 \; C_3 &= \gd_1 \pa{1 + \gd_1} \pa{\frac{\Pi}{2} - C_1 - C_2} \leq \gd_1 \pa{1 + \gd_1} 2^{-2 M + 4} \\
+\gz \pa{1 + \gd_1} C_3 &\leq \gz \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \\
+\gz \pa{x - n \pa{C_1 + C_2}} &= \gz \pa{\red x + \gd \red x}
 \end{align*}
 
 //TODO(phl) Error
