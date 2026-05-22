@@ -390,6 +390,10 @@ and it is therefore sufficient to have:
 
 If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ and $\gk''_2 = 15$.  Therefore, the desired accuracy is obtained as long as $\abs{\red x} \geq 33 \times 2^{-39} \simeq 6.0 \times 10^{-11}$.
 
+\subsection*{Boldo-Daumas-Li Argument Reduction}
+
+On machines that have an FMA instruction, we use the Boldo-Daumas-Li reduction algorithm as described in \cite{} and \cite{}.
+
 \subsection*{Fallback}
 
 If any of the conditions above is not met, we fall back to the Payne-Hanek argument reduction algorithm as described in \cite[154-157]{Muller1997}.
