@@ -32,7 +32,7 @@
 \newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
 \newcommand{\roundTowardPositive}[1]{\doubleSquareBrackets{#1}_+}
 \newcommand{\roundTowardNegative}[1]{\doubleSquareBrackets{#1}_-}
-\newcommand{\roundAll}[1]{\doubleSquareBrackets{#1}_⋯}
+\newcommand{\roundAll}[1]{\doubleSquareBrackets{#1}_\textellipsis}
 \newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
 \newcommand{\bin}[1]{{_{2}}\mathrm{#1}}
 \newcommand{\red}[1]{\tilde{#1}}
@@ -211,7 +211,7 @@ This scheme gives a representation with a significand that has effectively $3 M 
 Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\red x, \gd \red x}$ such that:
 \[
 \begin{dcases}
-\red x + \gd \red x ≅ x \pmod{\frac{\Pi}{2}} \\
+\red x + \gd \red x \cong x \pmod{\frac{\Pi}{2}} \\
 \red x \;\text{is approximately in}\; \intclos{-\frac{\Pi}{4}}{\frac{\Pi}{4}} \\
 \abs{\gd \red x} \leq \frac{1}{2} \ULP\of{\red x} 
 \end{dcases}
