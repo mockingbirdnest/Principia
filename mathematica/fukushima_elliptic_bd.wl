@@ -65,6 +65,10 @@
 
 
 (* ::Input:: *)
+(*fukushimaBm1[\[Phi]_]:=Limit[Series[fukushimaB[\[Phi],mm],{mm,1,4},Assumptions->{mm\[Element]Reals,mm<1}],mm->1]*)
+
+
+(* ::Input:: *)
 (*Series[fukushimaDstar0[mc],{mc,0,5}]*)
 
 
@@ -122,3 +126,19 @@
 
 (* ::Input:: *)
 (*CoefficientList[Series[fukushimaBstarX[mc],{mc,0,8}],mc]*)
+
+
+(* ::Section:: *)
+(*Fukushima "Precise and fast computation of a general incomplete elliptic integral of the third kind by half and double argument transformations"*)
+
+
+(* ::Input:: *)
+(*bulirschCel[kc_,p_,a_,b_]:=Integrate[((a Cos[\[Theta]]^2+b Sin[\[Theta]]^2)/(Cos[\[Theta]]^2+p Sin[\[Theta]]^2))/Sqrt[Cos[\[Theta]]^2+kc^2 Sin[\[Theta]]^2],{\[Theta],0,\[Pi]/2}]*)
+
+
+(* ::Input:: *)
+(*fukushimaJ[\[Phi]_,n_,m_]:=(EllipticPi[n,\[Phi],m]-EllipticF[\[Phi],m])/n*)
+
+
+(* ::Input:: *)
+(*Series[bulirschCel[kc,nc,0,1],{kc,0,1},Assumptions->{kc\[Element]Reals,kc>0,nc\[Element]Reals,nc>0,nc<=1}]*)

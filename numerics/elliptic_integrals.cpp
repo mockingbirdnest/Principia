@@ -1201,13 +1201,16 @@ Angle BulirschCel(double kc, double const nc, double a, double b) {
   // non-const parameters to mimic [Bul69].
   double p = nc;
   if (kc == 0.0) {
+    // See [Bul69], text after equation (1.2.4a) for a discussion of this case.
     if (b == 0.0) {
       kc = kc_nearly_0;
     } else {
       // "If in this case b ≠ 0 then cel is undefined."
+      // Mathematica shows that when kc tends towards 0, the dominant term of
+      // this function is -Log(kc) / nc.
       DLOG(ERROR) << "kc = " << kc << " nc = " << nc << " a = " << a
                   << " b = " << b;
-      return NaN<Angle>;
+      return Infinity<Angle> * std::copysign(1.0, nc);
     }
   }
   kc = Abs(kc);
@@ -1353,7 +1356,8 @@ void FukushimaEllipticBDJ(double const nc,
   // According to [Fuk12b], A.1, the Bulirsch function will work for all values
   // of m and n.
   if constexpr (should_compute<ThirdKind>) {
-    // See [Bul69], special examples after equation (1.2.2).
+    // See [Bul69], special examples after equation (1.2.2) and [Fuk12b],
+    // equation 29.
     double const kc = Sqrt(mc);
     J_n_m = BulirschCel(kc, nc, /*a=*/0.0, /*b=*/1.0);
   }
@@ -1845,11 +1849,25 @@ void FukushimaEllipticBDJ(Angle const& φ,
   }
 
   // [Fuk11b] B.2, [Fuk12b] A.2: Reduction of parameter.
-  // NOTE(phl): Not implementing the special values mc = 0, etc. on the
-  // assumption that the normal implementation will work.
-  if (mc < 0) {  // m > 1
+  double const sin_φ = Sin(φ);
+  if (mc == 0) {  // m == 1
+    double const cos_φ = Cos(φ);
+    B_φǀm = sin_φ * Radian;
+    D_φǀm = (std::log((1 + sin_φ) / cos_φ) - sin_φ) * Radian;
+    if (n == 1) {
+      if constexpr (should_compute<ThirdKind>) {
+        J_φ_nǀm = 0.5 * (sin_φ / Pow<2>(cos_φ) * Radian - ArcTanh(sin_φ));
+      }
+    } else {
+      if constexpr (should_compute<ThirdKind>) {
+        double const nc = 1 - n;
+        J_φ_nǀm = (ArcTanh(sin_φ) - FukushimaT(sin_φ, -n)) / nc;
+      }
+    }
+    return;
+  } else if (mc < 0) {  // m > 1
     double const m = 1 - mc;
-    Angle const φR = ArcSin(Sqrt(m) * Sin(φ));
+    Angle const φR = ArcSin(Sqrt(m) * sin_φ);
     double const nR = n / m;
     double const mR = 1 / m;
     double const mcR = -mc / m;
@@ -1868,7 +1886,6 @@ void FukushimaEllipticBDJ(Angle const& φ,
     return;
   } else if (mc > 1) {  // m < 0
     double const m = 1 - mc;
-    double const sin_φ = Sin(φ);
     Angle const φN = ArcSin(Sqrt(mc / (1 - m * Pow<2>(sin_φ))) * sin_φ);
     double const nN = (n - m) / mc;
     double const mN = -m / mc;
