@@ -81,6 +81,8 @@ class Point final {
   friend constexpr Point<V> NextDown(Point<V> x);
 
   template<typename V>
+  friend bool IsFinite(Point<V> const& point);
+  template<typename V>
   friend std::string DebugString(Point<V> const& point);
 };
 
@@ -101,6 +103,9 @@ template<convertible_to_quantity Vector>
 constexpr Point<Vector> NextUp(Point<Vector> x);
 template<convertible_to_quantity Vector>
 constexpr Point<Vector> NextDown(Point<Vector> x);
+
+template<typename Vector>
+bool IsFinite(Point<Vector> const& point);
 
 template<typename Vector>
 std::string DebugString(Point<Vector> const& point);

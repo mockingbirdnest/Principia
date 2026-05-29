@@ -134,6 +134,9 @@ constexpr auto InnerProduct(DirectSum<T...> const& left,
                             DirectSum<T...> const& right);
 
 template<affine... T>
+bool IsFinite(DirectSum<T...> const& direct_sum);
+
+template<affine... T>
 std::string DebugString(DirectSum<T...> const& direct_sum);
 
 template<affine... T>

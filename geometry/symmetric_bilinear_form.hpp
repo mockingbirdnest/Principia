@@ -85,6 +85,10 @@ class SymmetricBilinearForm {
   template<typename Eigenframe>
   Eigensystem<Eigenframe> Diagonalize() const;
 
+  // Returns true if the form is the result of a diagonalization: its matrix is
+  // diagonal and the diagonal elements are increasing.
+  bool IsDiagonalized() const;
+
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
   static SymmetricBilinearForm ReadFromMessage(

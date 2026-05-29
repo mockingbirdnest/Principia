@@ -188,8 +188,7 @@ TEST_F(EllipticIntegralsTest, MathematicaTrivariate) {
   }
 }
 
-// There is no good way to do argument reduction for such a large angle, but at
-// least we should not die with an infinite recursion.
+// This used to die with an infinite recursion.
 TEST_F(EllipticIntegralsTest, Issue4070) {
   Angle const argument_φ = 9.7851614769491724e+22 * Radian;
   double const argument_n = -1.3509565896317132e-17;
@@ -205,9 +204,12 @@ TEST_F(EllipticIntegralsTest, Issue4070) {
                        actual_value_d,
                        actual_value_j);
 
-  EXPECT_FALSE(IsFinite(actual_value_b));
-  EXPECT_FALSE(IsFinite(actual_value_d));
-  EXPECT_FALSE(IsFinite(actual_value_j));
+  // Mathematica has trouble computing the limit of B when m -> 1⁻, but a series
+  // near that point has terms of the form Log(1 - m) (1 - m)^k which tend
+  // toward 0, yielding the result below.
+  EXPECT_THAT(actual_value_b, AlmostEquals(6.2294272720354081e+22 * Radian, 1));
+  EXPECT_EQ(actual_value_d, Infinity<Angle>) << actual_value_d;
+  EXPECT_EQ(actual_value_j, Infinity<Angle>) << actual_value_j;
 }
 
 }  // namespace numerics

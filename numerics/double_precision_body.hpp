@@ -4,6 +4,7 @@
 
 #include <array>
 #include <cmath>
+#include <concepts>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -117,7 +118,8 @@ struct ComponentwiseComparator<T, U> {
     // implementation.  We don't want to die because of the weird comparisons of
     // NaNs.
     return Abs(left) >= Abs(right) || left == T{} ||
-           !IsFinite(left) || !IsFinite(right);
+           !quantities::_quantities::IsFinite(left) ||
+           !quantities::_quantities::IsFinite(right);
   }
 };
 
@@ -240,6 +242,43 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
   return result;
 }
 
+template<std::floating_point T>
+DoublePrecision<T> Trunc(DoublePrecision<T> const& a) {
+  // The fractional point cannot be in both `value` and `error`.  It is
+  // important to round both elements consistently based on the sign of `value`,
+  // so we cannot use `trunc`.
+  DoublePrecision<T> result(uninitialized);
+  result.value = a.value > 0.0 ? std::floor(a.value) : std::ceil(a.value);
+  result.error = a.value > 0.0 ? std::floor(a.error) : std::ceil(a.error);
+  return result;
+}
+
+template<std::floating_point T>
+DoublePrecision<T> Frac(DoublePrecision<T> const& a) {
+  return a - Trunc(a);
+}
+
+template<std::int64_t s, typename T>
+constexpr void VeltkampSplitting(T const& x, T& xh, T& xl) {
+  // We used to have a bug where this constant was just `1 << s`.
+  // [Dek71, p. 234] gives counter examples where this does not work when the
+  // number of mantissa bits is even, or when C < 0, but it's unclear in what
+  // cases our mistake would have caused incorrect results.
+  constexpr double C = (1 << s) + 1;
+  T γ;
+  if constexpr (real_vector_space<T>) {
+    γ = C * x;
+  } else if constexpr (ring<T>) {
+    T const Ct(C);
+    γ = Ct * x;
+  } else {
+    static_assert(false);
+  }
+  T const δ = x - γ;
+  xh = γ + δ;
+  xl = x - xh;
+}
+
 template<typename T, typename U>
 constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
                                                                U const& b) {
@@ -250,29 +289,13 @@ constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
   auto& zz = result.error;
   // Split x and y as in mul12 from [Dek71, p. 241]; see also [Dek71, p. 235].
   constexpr std::int64_t t = std::numeric_limits<double>::digits;
-  constexpr double c = 1 << (t - t / 2);
-  T px;
-  if constexpr (real_vector_space<T>) {
-    px = x * c;
-  } else if constexpr (ring<T>) {
-    T const ct(c);
-    px = x * ct;
-  } else {
-    static_assert(false);
-  }
-  T const hx = x - px + px;
-  T const tx = x - hx;
-  U py;
-  if constexpr (real_vector_space<T>) {
-    py = y * c;
-  } else if constexpr (ring<T>) {
-    U const cu(c);
-    py = y * cu;
-  } else {
-    static_assert(false);
-  }
-  U const hy = y - py + py;
-  U const ty = y - hy;
+  constexpr std::int64_t s = t - t / 2;
+  T hx;
+  T tx;
+  VeltkampSplitting<s>(x, hx, tx);
+  U hy;
+  U ty;
+  VeltkampSplitting<s>(y, hy, ty);
   // Veltkamp’s 1968 algorithm, as given in [Dek71, p. 234].
   // See also exactmul in [Lin81, p. 278].
   z = x * y;
@@ -523,6 +546,11 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
        z * right.error) /
       (right.value + right.error);
   return QuickTwoSum(z, zz);
+}
+
+template<typename T>
+bool IsFinite(DoublePrecision<T> const& double_precision) {
+  return IsFinite(double_precision.value) && IsFinite(double_precision.error);
 }
 
 template<typename T>

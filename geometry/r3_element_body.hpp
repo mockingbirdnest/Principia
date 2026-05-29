@@ -538,6 +538,13 @@ R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element) {
 }
 
 template<typename Scalar>
+bool IsFinite(R3Element<Scalar> const& r3_element) {
+  return quantities::_quantities::IsFinite(r3_element.x) &&
+         quantities::_quantities::IsFinite(r3_element.y) &&
+         quantities::_quantities::IsFinite(r3_element.z);
+}
+
+template<typename Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element) {
   using quantities::_quantities::DebugString;
   std::string result = "{";

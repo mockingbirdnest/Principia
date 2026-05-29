@@ -158,6 +158,11 @@ OrthogonalMap<FromFrame, ToFrame> operator*(
 }
 
 template<typename FromFrame, typename ToFrame>
+bool IsFinite(OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map) {
+  return IsFinite(orthogonal_map.quaternion_);
+}
+
+template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(
     std::ostream& out,
     OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map) {

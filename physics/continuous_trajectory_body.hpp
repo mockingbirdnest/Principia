@@ -546,12 +546,14 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
         Checkpointer<serialization::ContinuousTrajectory>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerWriter(),
             continuous_trajectory->MakeCheckpointerReader(),
+            /*rewriter=*/nullptr,
             serialized_continuous_trajectory.checkpoint());
   } else {
     continuous_trajectory->checkpointer_ =
         Checkpointer<serialization::ContinuousTrajectory>::ReadFromMessage(
             continuous_trajectory->MakeCheckpointerWriter(),
             continuous_trajectory->MakeCheckpointerReader(),
+            /*rewriter=*/nullptr,
             message.checkpoint());
   }
 

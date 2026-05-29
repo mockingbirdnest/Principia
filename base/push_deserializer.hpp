@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -57,6 +58,12 @@ class DelegatingArrayInputStream
 std::ostream& operator<<(std::ostream& out,
                          DelegatingArrayInputStream const& stream);
 
+
+template<typename F>
+concept DeserializerDoneCallback =
+    std::invocable<F, google::protobuf::Message const&> ||
+    std::same_as<F, std::nullptr_t>;
+
 // This class support deserialization which is "pushed" by the client.  That is,
 // the client creates a `PushDeserializer` object, calls `Start` to start the
 // deserialization process, repeatedly calls `Push` to send chunks of data for
@@ -80,10 +87,12 @@ class PushDeserializer final {
   // object.  The `done` callback is called once deserialization has completed
   // (which only happens once the client has called `Push` with a chunk of size
   // 0).
+  template<DeserializerDoneCallback F>
   void Start(not_null<std::unique_ptr<google::protobuf::Message>> message,
-             std::function<void(google::protobuf::Message const&)> done);
+             F done);
+  template<DeserializerDoneCallback F>
   void Start(not_null<google::protobuf::Message*> message,
-             std::function<void(google::protobuf::Message const&)> done);
+             F done);
 
   // Pushes in the internal queue chunks of data that will be extracted by
   // `Pull`.  Splits `bytes` into chunks of at most `chunk_size`.  May block to

@@ -2,7 +2,7 @@
 
 #include "base/graveyard.hpp"
 
-#include <memory>
+#include <utility>
 
 namespace principia {
 namespace base {
@@ -12,13 +12,11 @@ namespace internal {
 inline Graveyard::Graveyard(std::int64_t const number_of_threads)
     : gravedigger_(number_of_threads) {}
 
-template<typename T>
-void Graveyard::Bury(std::unique_ptr<T> t) {
-  // TODO(egg): Investigate the possibility of a mutable lambda with
-  // std::packaged_task in the ThreadPool instead of std::function.
-  gravedigger_.Add([coffin = t.release()]() {
-    delete coffin;
-  });
+template<std::movable T>
+void Graveyard::Bury(T t) {
+  // TODO(egg): Investigate the possibility of a std::move_only_function in the
+  // ThreadPool instead of std::function.
+  gravedigger_.Add([coffin = new T(std::move(t))]() { delete coffin; });
 }
 
 }  // namespace internal

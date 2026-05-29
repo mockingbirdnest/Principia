@@ -79,9 +79,8 @@ Q Abs(Q const& x);
 template<convertible_to_quantity Q>
 Q Abs(Q const& x);
 
-// Returns a value between zero and `modulus`.
 template<typename Q>
-Q Mod(Q const& argument, Q const& modulus);
+Q FMod(Q const& argument, Q const& modulus);
 
 // Equivalent to `std::sqrt(x)`.
 template<typename Q>
@@ -157,11 +156,11 @@ using internal::ConfigureElementaryFunctions;
 using internal::Cos;
 using internal::Cosh;
 using internal::ElementaryFunctionsConfigurationSaver;
+using internal::FMod;
 using internal::FusedMultiplyAdd;
 using internal::FusedMultiplySubtract;
 using internal::FusedNegatedMultiplyAdd;
 using internal::FusedNegatedMultiplySubtract;
-using internal::Mod;
 using internal::NextDown;
 using internal::NextUp;
 using internal::Pow;

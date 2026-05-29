@@ -147,6 +147,11 @@ inline Quaternion Normalize(Quaternion const& quaternion) {
   return quaternion / quaternion.Norm();
 }
 
+inline bool IsFinite(Quaternion const& quaternion) {
+  return quantities::_quantities::IsFinite(quaternion.real_part()) &&
+         IsFinite(quaternion.imaginary_part());
+}
+
 inline std::ostream& operator<<(std::ostream& out,
                                 Quaternion const& quaternion) {
   double const w = quaternion.real_part();

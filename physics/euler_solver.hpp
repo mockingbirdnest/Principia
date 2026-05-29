@@ -12,6 +12,7 @@
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/physics.pb.h"
@@ -31,6 +32,7 @@ using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_rigid_motion;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -44,11 +46,11 @@ class EulerSolver {
   using AttitudeRotation = Rotation<PrincipalAxesFrame, InertialFrame>;
 
   // Constructs a solver for a body with the given moments_of_inertia in its
-  // principal axes frame.  The moments must be in increasing order.  At
-  // initial_time the angular momentum is initial_angular_momentum and the
-  // attitude initial_attitude.
+  // principal axes frame.  The tensor must be diagonal with the moments in
+  // increasing order.  At initial_time the angular momentum is
+  // `initial_angular_momentum` and the attitude `initial_attitude`.
   EulerSolver(
-      R3Element<MomentOfInertia> const& moments_of_inertia,
+      InertiaTensor<PrincipalAxesFrame> const& inertia_tensor,
       Bivector<AngularMomentum, InertialFrame> const& initial_angular_momentum,
       AttitudeRotation const& initial_attitude,
       Instant const& initial_time);
@@ -84,14 +86,20 @@ class EulerSolver {
   static EulerSolver ReadFromMessage(serialization::EulerSolver const& message);
 
  private:
-  using ℬₜ = Frame<struct ℬₜTag>;
-  using ℬʹ = Frame<struct ℬʹTag>;
+  using ℬₜ = Frame<struct ℬₜTag,
+                  InertialFrame::motion,
+                  InertialFrame::handedness>;
+  using ℬʹ = Frame<struct ℬʹTag,
+                   InertialFrame::motion,
+                   InertialFrame::handedness>;
 
-  // A frame which is rotated from PrincipalAxesFrame such that the coordinates
-  // of m along which we project is positive.  Used for all internal
-  // computations.
+  // A frame which is rotated from `PrincipalAxesFrame` such that the
+  // coordinates of `m along which we project is positive.  Used for all
+  // internal computations.
   using PreferredPrincipalAxesFrame =
-      Frame<struct PreferredPrincipalAxesFrameTag>;
+      Frame<struct PreferredPrincipalAxesFrameTag,
+            PrincipalAxesFrame::motion,
+            PrincipalAxesFrame::handedness>;
 
   using PreferredAngularMomentumBivector =
       Bivector<AngularMomentum, PreferredPrincipalAxesFrame>;

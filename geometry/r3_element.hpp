@@ -212,6 +212,9 @@ template<typename Scalar>
 R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element);
 
 template<typename Scalar>
+bool IsFinite(R3Element<Scalar> const& r3_element);
+
+template<typename Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element);
 
 template<typename Scalar>

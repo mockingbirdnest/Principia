@@ -411,7 +411,7 @@ void PileUp::MakeEulerSolver(
     InertiaTensor<NonRotatingPileUp> const& inertia_tensor,
     Instant const& t) {
   auto const eigensystem = inertia_tensor.Diagonalize<PileUpPrincipalAxes>();
-  euler_solver_.emplace(eigensystem.form.coordinates().Diagonal(),
+  euler_solver_.emplace(eigensystem.form,
                         angular_momentum_,
                         eigensystem.rotation,
                         t);
@@ -525,11 +525,10 @@ void PileUp::DeformPileUpIfNeeded(Instant const& t) {
   // other things, on the attitude and angular velocity, and the Euler solver
   // changing attitude and angular velocity according to Euler’s equations.
   angular_momentum_ += intrinsic_torque_ * Δt + angular_momentum_change_;
-  euler_solver_.emplace(
-      apparent_inertia_eigensystem.form.coordinates().Diagonal(),
-      angular_momentum_,
-      initial_attitude,
-      t0);
+  euler_solver_.emplace(apparent_inertia_eigensystem.form,
+                        angular_momentum_,
+                        initial_attitude,
+                        t0);
 
   // This is where we compute our half of the splitting.
   RigidMotion<PileUpPrincipalAxes, NonRotatingPileUp> const

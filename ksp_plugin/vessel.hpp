@@ -215,11 +215,13 @@ class Vessel {
   // Asks the reanimator thread to asynchronously reconstruct the past so that
   // the `t_min()` of the vessel ultimately ends up at or before
   // `desired_t_min`.
-  void RequestReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
+  void RequestReanimation(Instant const& desired_t_min,
+                          bool quiet = false) EXCLUDES(lock_);
 
   // Same as `RequestReanimation`, but synchronous.  This function blocks until
   // the `t_min()` of the vessel is at or before `desired_t_min`.
-  void AwaitReanimation(Instant const& desired_t_min) EXCLUDES(lock_);
+  void AwaitReanimation(Instant const& desired_t_min,
+                        bool quiet = false) EXCLUDES(lock_);
 
   // Creates a flight plan at the end of history using the given parameters;
   // selects that flight plan, which is the last one in `flight_plans_`.
@@ -296,7 +298,9 @@ class Vessel {
       serialization::Vessel const& message,
       not_null<Celestial const*> parent,
       not_null<Ephemeris<Barycentric>*> ephemeris,
-      std::function<void(PartId)> const& deletion_callback);
+      std::function<void(PartId)> const& deletion_callback,
+      std::function<void(bool will_be_slow)> expected_performance_callback =
+          nullptr);
   void FillContainingPileUpsFromMessage(
       serialization::Vessel const& message,
       PileUp::PileUpForSerializationIndex const&
@@ -304,6 +308,8 @@ class Vessel {
 
   static void MakeAsynchronous();
   static void MakeSynchronous();
+
+  static bool disallow_leibniz_conversion_for_testing_;
 
  protected:
   // For mocking.
@@ -317,6 +323,11 @@ class Vessel {
   };
   friend bool operator!=(PrognosticatorParameters const& left,
                          PrognosticatorParameters const& right);
+
+  struct ReanimatorParameters {
+    Instant desired_t_min;
+    bool quiet;
+  };
 
   using TrajectoryIterator =
       DiscreteTrajectory<Barycentric>::iterator (Part::*)();
@@ -334,12 +345,22 @@ class Vessel {
 
   // Return functions that can be passed to a `Checkpointer` to write this
   // vessel to a checkpoint or read it back.
+  Checkpointer<serialization::Vessel>::Writer MakeCheckpointerWriter(
+      std::function<Ephemeris<Barycentric>::FixedStepParameters()> const&
+          fixed_step_parameters);
+
   Checkpointer<serialization::Vessel>::Writer
-  MakeCheckpointerWriter();
+  MakeCheckpointerWriterFromCheckpoint(
+      serialization::Vessel::Checkpoint const& checkpoint);
+
+  Checkpointer<serialization::Vessel>::Writer
+  MakeCheckpointerWriterFromPileUp();
+
   Checkpointer<serialization::Vessel>::Reader
   static MakeCheckpointerReader();
 
-  absl::Status Reanimate(Instant desired_t_min) EXCLUDES(lock_);
+  absl::Status Reanimate(ReanimatorParameters const& reanimator_parameters)
+      EXCLUDES(lock_);
 
   // `t_initial` is the time of the checkpoint, which is the end of the non-
   // collapsible segment.  `t_final` is the start of the trajectory or of the
@@ -348,13 +369,11 @@ class Vessel {
   absl::StatusOr<Instant> ReanimateOneCheckpoint(
       serialization::Vessel::Checkpoint const& message,
       Instant const& t_initial,
-      Instant const& t_final) EXCLUDES(lock_);
+      Instant const& t_final,
+      bool quiet) EXCLUDES(lock_);
 
-  // Merges any reanimated trajectories found in the queue and returns true if
-  // the reanimation reached `desired_t_min`, or if the vessel is fully
-  // reanimated.
   bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min)
-      ABSL_SHARED_LOCKS_REQUIRED(lock_);
+      REQUIRES_SHARED(lock_);
 
   // Runs the integrator to compute the `prognostication_` based on the given
   // parameters.
@@ -376,6 +395,10 @@ class Vessel {
   // A vessel is collapsible if it is alone in its pile-up and is in inertial
   // motion.
   bool IsCollapsible() const;
+
+  // Performs the management of checkpoints and segments based on whether the
+  // collapsibility changes.
+  void EnactCollapsibilityChange(bool will_be_collapsible);
 
   // Returns true if this object holds a non-null deserialized flight plan.
   bool has_deserialized_flight_plan() const;
@@ -419,11 +442,11 @@ class Vessel {
   Instant oldest_reanimated_checkpoint_ ABSL_GUARDED_BY(lock_) = InfinitePast;
 
   // The techniques and terminology follow [Lov22].
-  RecurringThread<Instant> reanimator_;
+  RecurringThread<ReanimatorParameters> reanimator_;
   Clientele<Instant> reanimator_clientele_;
 
   // Parameter passed to the last call to `RequestReanimation`, if any.
-  std::optional<Instant> last_desired_t_min_;
+  std::optional<Instant> last_desired_t_min_ ABSL_GUARDED_BY(lock_);
 
   // The trajectories that have been reanimated are put in this queue by
   // ReanimateOneCheckpoint and consumed by RequestReanimation.

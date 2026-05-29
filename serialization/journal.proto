@@ -202,6 +202,21 @@ message Interval {
   required double max = 2;
 }
 
+message PlottableElements {
+  required double time = 1;
+  required double semimajor_axis = 2;
+  required double eccentricity = 3;
+  required double inclination = 4;
+  required double longitude_of_ascending_node = 5;
+  required double argument_of_periapsis = 6;
+  required double periapsis_distance = 7;
+  required double apoapsis_distance = 8;
+  required double lidov_c1 = 14;
+  required double lidov_c2 = 15;
+  required double eccentricity_cos_argument_of_periapsis = 16;
+  required double eccentricity_sin_argument_of_periapsis = 17;
+}
+
 message OrbitalElements {
   required double sidereal_period = 1;
   required double nodal_period = 2;
@@ -223,6 +238,10 @@ message OrbitalElements {
   required fixed64 first_collision_time_address = 16 [(address_of) = "first_collision_time"];
   required fixed64 first_collision_risk_time_address = 17 [(address_of) = "first_collision_risk_time"];
   required fixed64 first_reentry_time_address = 18 [(address_of) = "first_reentry_time"];
+  // Added in Leibniz.
+  required fixed64 plottable_elements = 19 [(pointer_to) = "Iterator",
+                                            (disposable) = "DisposableIterator",
+                                            (is_produced) = true];
 }
 
 message OrbitRecurrence {
@@ -262,7 +281,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5202.
+  extensions 5000 to 5999;  // Last used: 5218.
 }
 
 message ActivatePlayer {
@@ -295,23 +314,6 @@ message AdvanceTime {
     required double planetarium_rotation = 3;
   }
   optional In in = 1;
-}
-
-message AngularMomentumFromAngularVelocity {
-  extend Method {
-    optional AngularMomentumFromAngularVelocity extension = 5174;
-  }
-  message In {
-    required XYZ world_angular_velocity = 1;
-    required XYZ moments_of_inertia_in_tonnes = 2;
-    required WXYZ principal_axes_rotation = 3;
-    required WXYZ part_rotation = 4;
-  }
-  message Return {
-    required XYZ result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
 }
 
 message CameraReferenceRotation {
@@ -674,7 +676,7 @@ message DeserializePlugin {
     required fixed64 deserializer = 2
         [(pointer_to) = "PushDeserializer",
          (is_consumed_if) = "std::string_view(serialization).empty()"];
-    required fixed64 plugin = 3 [(pointer_to) = "Plugin const"];
+    required fixed64 plugin_reader = 3 [(pointer_to) = "PluginReader"];
     required string compressor = 4;
     required string encoder = 5;
   }
@@ -682,8 +684,8 @@ message DeserializePlugin {
     required fixed64 deserializer = 1
         [(pointer_to) = "PushDeserializer",
          (is_produced_if) = "!std::string_view(serialization).empty()"];
-    required fixed64 plugin = 2 [(pointer_to) = "Plugin const",
-                                 (is_produced) = true];
+    required fixed64 plugin_reader = 2 [(pointer_to) = "PluginReader",
+                                        (is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -1407,6 +1409,151 @@ message GetVersion {
   optional Out out = 2;
 }
 
+message GraphLidovFrozenLine {
+  extend Method {
+    optional GraphLidovFrozenLine extension = 5208;
+  }
+  message In {
+    required double c2 = 1;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalEccentricityLine {
+  extend Method {
+    optional GraphLidovMaximalEccentricityLine extension = 5206;
+  }
+  message In {
+    required double eccentricity = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalEccentricityLineC2Range {
+  extend Method {
+    optional GraphLidovMaximalEccentricityLineC2Range extension = 5207;
+  }
+  message In {
+    required double eccentricity = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalInclinationLine {
+  extend Method {
+    optional GraphLidovMaximalInclinationLine extension = 5209;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMaximalInclinationLineC2Range {
+  extend Method {
+    optional GraphLidovMaximalInclinationLineC2Range extension = 5210;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalEccentricityLeftLine {
+  extend Method {
+    optional GraphLidovMinimalEccentricityLeftLine extension = 5211;
+  }
+  message In {
+    required double eccentricity = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalEccentricityLeftLineC2Range {
+  extend Method {
+    optional GraphLidovMinimalEccentricityLeftLineC2Range extension = 5213;
+  }
+  message In {
+    required double eccentricity = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalEccentricityRightLineC2AndC1Max {
+  extend Method {
+    optional GraphLidovMinimalEccentricityRightLineC2AndC1Max extension = 5214;
+  }
+  message In {
+    required double eccentricity = 1;
+  }
+  message Out {
+    required double c2 = 1;
+    required double c1_max = 2;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message GraphLidovMinimalInclinationLine {
+  extend Method {
+    optional GraphLidovMinimalInclinationLine extension = 5204;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+    required double c2 = 2;
+  }
+  message Return {
+    required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message GraphLidovMinimalInclinationLineC2Range {
+  extend Method {
+    optional GraphLidovMinimalInclinationLineC2Range extension = 5205;
+  }
+  message In {
+    required double inclination_in_degrees = 1;
+  }
+  message Return {
+    required Interval result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message HasEncounteredApocalypse {
   extend Method {
     optional HasEncounteredApocalypse extension = 5102;
@@ -1759,6 +1906,22 @@ message IteratorGetVesselGuid {
   optional Return return = 3;
 }
 
+message IteratorGetPlottableElements {
+  extend Method {
+    optional IteratorGetPlottableElements extension = 5212;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required PlottableElements result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message IteratorIncrement {
   extend Method {
     optional IteratorIncrement extension = 5086;
@@ -1912,6 +2075,23 @@ message NewPlugin {
   optional Return return = 3;
 }
 
+message PartAngularMomentumFromAngularVelocity {
+  extend Method {
+    optional PartAngularMomentumFromAngularVelocity extension = 5174;
+  }
+  message In {
+    required XYZ world_angular_velocity = 1;
+    required XYZ moments_of_inertia_in_tonnes = 2;
+    required WXYZ principal_axes_rotation = 3;
+    required WXYZ part_rotation = 4;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message PartApplyIntrinsicForce {
   extend Method {
     optional PartApplyIntrinsicForce extension = 5114;
@@ -1947,6 +2127,25 @@ message PartApplyIntrinsicTorque {
     required XYZ torque_in_kilonewton_metre = 3;
   }
   optional In in = 1;
+}
+
+message PartDragTorqueFromAngularVelocity {
+  extend Method {
+    optional PartDragTorqueFromAngularVelocity extension = 5203;
+  }
+  message In {
+    required double angular_drag_per_second = 1;
+    required double delta_t = 2;
+    required XYZ world_angular_velocity = 3;
+    required XYZ moments_of_inertia_in_tonnes = 4;
+    required WXYZ principal_axes_rotation = 5;
+    required WXYZ part_rotation = 6;
+  }
+  message Return {
+    required XYZ torque_in_kilonewton_metre = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message PartGetActualRigidMotion {
@@ -2171,6 +2370,74 @@ message PlanetariumPlotPsychohistory {
   }
   optional In in = 1;
   optional Out out = 2;
+}
+
+message PluginReaderAwait {
+  extend Method {
+    optional PluginReaderAwait extension = 5218;
+  }
+  message In {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader",
+                                 (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader"];
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Plugin",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message PluginReaderGet {
+  extend Method {
+    optional PluginReaderGet extension = 5215;
+  }
+  message In {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader",
+                                  (is_consumed_if) = "result != nullptr"];
+  }
+  message Out {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader"];
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Plugin",
+                                 (is_produced_if) = "result != nullptr"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message PluginReaderLogs {
+  extend Method {
+    optional PluginReaderLogs extension = 5216;
+  }
+  message In {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader", (is_subject) = true];
+  }
+  message Return {
+    required string result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PluginReaderWillBeSlow {
+  extend Method {
+    optional PluginReaderWillBeSlow extension = 5217;
+  }
+  message In {
+    required fixed64 reader = 1 [(pointer_to) = "PluginReader const", (is_subject) = true];
+  }
+  message Return {
+    required bool result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message PrepareToReportCollisions {

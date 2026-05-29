@@ -69,6 +69,7 @@
     <ClInclude Include="status_utilities.hpp" />
     <ClInclude Include="stoppable_thread.hpp" />
     <ClInclude Include="stoppable_thread_body.hpp" />
+    <ClInclude Include="string_log_sink.hpp" />
     <ClInclude Include="tags.hpp" />
     <ClInclude Include="thread_pool.hpp" />
     <ClInclude Include="thread_pool_body.hpp" />
@@ -107,6 +108,7 @@
     <ClCompile Include="push_pull_callback_test.cpp" />
     <ClCompile Include="recurring_thread_test.cpp" />
     <ClCompile Include="stoppable_thread_test.cpp" />
+    <ClCompile Include="string_log_sink.cpp" />
     <ClCompile Include="thread_pool_test.cpp" />
     <ClCompile Include="traits_test.cpp" />
     <ClCompile Include="version.generated.cc" />

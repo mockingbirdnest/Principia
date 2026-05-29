@@ -126,15 +126,21 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
     SubdivisionPredicate<Value<Argument, Function>, Argument> const& subdivide,
     TerminationPredicate<Value<Argument, Function>, Argument> const& stop,
     Difference<Value<Argument, Function>>* const error_estimate) {
+  CHECK_LT((Difference<Value<Argument, Function>>{}), max_error);
+  auto const midpoint = Barycentre({lower_bound, upper_bound});
+
   // Try to build an interpolation over the entire interval.
   Difference<Value<Argument, Function>> full_error_estimate;
   auto full_interpolant = ЧебышёвPolynomialInterpolant<max_degree>(
       f, lower_bound, upper_bound, max_error, &full_error_estimate);
   if (full_error_estimate <= max_error ||
+      midpoint == lower_bound ||
+      midpoint == upper_bound ||
       !subdivide(*full_interpolant, full_error_estimate)) {
     // If the interpolant over the entire interval is within the desired error
     // bound, return it.  Same thing if `subdivide` tells us that we should not
-    // subdivide the interval.
+    // subdivide the interval or if the interval covers only 1 or 2 machine
+    // numbers.
     VLOG(1) << "Degree " << full_interpolant->degree() << " interpolant over ["
             << lower_bound << " (" << f(lower_bound) << "), " << upper_bound
             << " (" << f(upper_bound) << ")] has error " << full_error_estimate;
@@ -150,7 +156,6 @@ bool StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation(
             << full_error_estimate;
     Difference<Value<Argument, Function>> upper_error_estimate;
     Difference<Value<Argument, Function>> lower_error_estimate;
-    auto const midpoint = Barycentre({lower_bound, upper_bound});
     bool const lower_interpolants_stop =
         StreamingAdaptiveЧебышёвPolynomialInterpolantImplementation<max_degree>(
             f,

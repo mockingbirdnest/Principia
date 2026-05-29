@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <string>
 
 #include "base/algebra.hpp"
@@ -63,6 +64,18 @@ struct DoublePrecision final {
 template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const& scale,
                                      DoublePrecision<U> const& right);
+
+// Trunc(2.9) = 2.0, Trunc(-2.9) = -2.0.
+template<std::floating_point T>
+DoublePrecision<T> Trunc(DoublePrecision<T> const& a);
+
+// Frac(2.9) = 0.9, Frac(-2.9) = -0.9.
+template<std::floating_point T>
+DoublePrecision<T> Frac(DoublePrecision<T> const& a);
+
+// [Mul+10] algorithm 4.6.  `xl` has `s` digits in its mantissa.
+template<std::int64_t s, typename T>
+constexpr void VeltkampSplitting(T const& x, T& xh, T& xl);
 
 // Returns the exact product of its arguments.
 template<FMAPresence fma_presence, typename T, typename U>
@@ -162,6 +175,9 @@ DoublePrecision<Quotient<T, U>> operator/(DoublePrecision<T> const& left,
                                           DoublePrecision<U> const& right);
 
 template<typename T>
+bool IsFinite(DoublePrecision<T> const& double_precision);
+
+template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision);
 
 template<typename T>
@@ -171,12 +187,15 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal
 
 using internal::DoublePrecision;
+using internal::Frac;
 using internal::QuickTwoDifference;
 using internal::QuickTwoSum;
+using internal::Trunc;
 using internal::TwoDifference;
 using internal::TwoProduct;
 using internal::TwoSum;
 using internal::VeltkampDekkerProduct;
+using internal::VeltkampSplitting;
 
 }  // namespace _double_precision
 }  // namespace numerics

@@ -154,8 +154,8 @@ void JacobiSNCNDNWithK(Angle const& u,
     Angle const two_k = 2.0 * k;
     Angle const three_k = 3.0 * k;
     Angle const four_k = 4.0 * k;
-    abs_u =
-        abs_u - four_k * static_cast<double>(static_cast<int>(abs_u / four_k));
+    abs_u = FMod(abs_u, four_k);
+    CHECK_LE(abs_u, four_k);
     if (abs_u < 0.5 * k) {
       JacobiSNCNDNReduced(abs_u, mc, s, c, d);
     } else if (abs_u < k) {

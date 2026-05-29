@@ -126,7 +126,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 
       // This can happen for instance if the square distance is stationary.
       // Safer to give up.
-      if (!IsFinite(apsis_time - Instant{})) {
+      if (!IsFinite(apsis_time)) {
         break;
       }
 

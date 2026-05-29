@@ -230,6 +230,9 @@
     <ClInclude Include="file_log_sink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="string_log_sink.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -321,6 +324,9 @@
     </ClCompile>
     <ClCompile Include="file_log_sink_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="string_log_sink.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

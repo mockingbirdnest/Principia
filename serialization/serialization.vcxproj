@@ -21,6 +21,13 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CustomBuild Include="base.proto">
+      <FileType>Document</FileType>
+      <AdditionalInputs>$(Protoc)</AdditionalInputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
+    </CustomBuild>
     <CustomBuild Include="geometry.proto">
       <FileType>Document</FileType>
       <AdditionalInputs>$(Protoc)</AdditionalInputs>
@@ -89,6 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="astronomy.pb.h" />
+    <ClInclude Include="base.pb.h" />
     <ClInclude Include="geometry.pb.h" />
     <ClInclude Include="integrators.pb.h" />
     <ClInclude Include="journal.pb.h" />
@@ -101,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="astronomy.pb.cc" />
+    <ClCompile Include="base.pb.cc" />
     <ClCompile Include="geometry.pb.cc" />
     <ClCompile Include="integrators.pb.cc" />
     <ClCompile Include="journal.pb.cc" />

@@ -413,7 +413,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
   ComputeFlyby(*flight_plan_, moon, *moon_frame, flyby_time, flyby_inclination);
   EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:09:20"_DateTime));
   EXPECT_THAT(flyby_inclination, IsNear(90.23_(1) * Degree));
-  EXPECT_EQ(25, number_of_evaluations);
+  EXPECT_EQ(24, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre5.burn(), /*index=*/5));
@@ -442,15 +442,15 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
 
   EXPECT_THAT(
       manœuvre7.initial_time() - flight_plan_->GetManœuvre(7).initial_time(),
-      IsNear(0.46_(1) * Milli(Second)));
+      IsNear(0.57_(1) * Milli(Second)));
   EXPECT_THAT(
       (manœuvre7.Δv() - flight_plan_->GetManœuvre(7).Δv()).Norm(),
       IsNear(12.7_(1) * Metre / Second));
 
   ComputeFlyby(*flight_plan_, moon, *moon_frame, flyby_time, flyby_inclination);
-  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:08:39"_DateTime));
+  EXPECT_THAT(flyby_time, ResultOf(&TTSecond, "1972-03-27T01:08:40"_DateTime));
   EXPECT_THAT(flyby_inclination, IsNear(90.00_(1) * Degree));
-  EXPECT_EQ(54, number_of_evaluations);
+  EXPECT_EQ(60, number_of_evaluations);
   number_of_evaluations = 0;
 
   CHECK_OK(flight_plan_->Replace(manœuvre7.burn(), /*index=*/7));
@@ -710,8 +710,8 @@ INSTANTIATE_TEST_SUITE_P(
                             MetricTest::earth_celestial(),
                             MetricTest::frame(),
                             45 * Degree),
-                        AnyOf(IsNear(1.6e-11_(1)), IsNear(7.8e-11_(1))),
-                        AnyOf(IsNear(3.0e-11_(1)), IsNear(1.4e-10_(1)))),
+                        IsNear(1.4e-11_(1)),
+                        IsNear(2.5e-11_(1))),
         MetricTestParam(FlightPlanOptimizer::ForΔv(),
                         IsNear(2.6e-3_(1)),
                         IsNear(2.6e-3_(1))),

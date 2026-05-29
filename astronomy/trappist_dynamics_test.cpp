@@ -1125,7 +1125,7 @@ class TrappistDynamicsTest : public ::testing::Test {
       }
     }
 
-    graveyard->Bury<Ephemeris<Sky>>(std::move(ephemeris));
+    graveyard->Bury(std::move(ephemeris));
 
     std::string χ²_info;
     double const χ² = Transitsχ²(observations, computations, χ²_info);

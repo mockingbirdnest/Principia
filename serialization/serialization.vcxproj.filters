@@ -11,6 +11,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="base.proto" />
     <CustomBuild Include="geometry.proto" />
     <CustomBuild Include="quantities.proto" />
     <CustomBuild Include="physics.proto" />
@@ -52,6 +53,9 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="base.pb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="geometry.pb.cc">
@@ -79,6 +83,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testing_utilities.pb.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base.pb.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -13,7 +13,7 @@ internal class ScalingRenderer {
     unit_ = 25 * scale_;
   }
 
-  protected UnityEngine.GUILayoutOption GUILayoutHeight(int units) {
+  protected UnityEngine.GUILayoutOption GUILayoutHeight(float units) {
     return UnityEngine.GUILayout.Height(unit_ * units);
   }
 

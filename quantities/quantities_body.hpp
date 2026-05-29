@@ -145,6 +145,10 @@ __m256d ToM256D(Quantity<Dimensions> const x) {
   return _mm256_set1_pd(x.magnitude_);
 }
 
+inline bool IsFinite(double const x) {
+  return std::isfinite(x);
+}
+
 template<typename Q>
 constexpr bool IsFinite(Q const& x) {
   return std::isfinite(x / SIUnit<Q>());

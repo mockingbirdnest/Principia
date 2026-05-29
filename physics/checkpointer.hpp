@@ -9,6 +9,7 @@
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/repeated_field.h"
 #include "quantities/quantities.hpp"
 
@@ -49,7 +50,22 @@ class Checkpointer {
   using Reader =
       std::function<absl::Status(typename Message::Checkpoint const&)>;
 
+// Saves produced by [Лефшец, Leibniz[ had a ton of empty segments at the
+// beginning of the non-collapsible part of their checkpoints, causing storage
+// to explode: we saw a vessel with 1.8 million checkpoints, about 10'000 of
+// which were non-empty. To fix these saves, we rewrite the checkpoints.  That's
+// what we get for writing quadratic code.
+  using Rewriter = std::function<typename Message::Checkpoint(
+      typename Message::Checkpoint const&)>;
+
   Checkpointer(Writer writer, Reader reader);
+
+  // Updates the writer of this object.
+  void set_writer(Writer writer) EXCLUDES(lock_);
+
+  // The number of checkpoints held by this object.  Only use for debugging and
+  // logging.
+  std::int64_t size() const EXCLUDES(lock_);
 
   // Returns the oldest checkpoint in this object, or +∞ if no checkpoint was
   // ever created.
@@ -118,26 +134,33 @@ class Checkpointer {
   void WriteToMessage(not_null<google::protobuf::RepeatedPtrField<
                           typename Message::Checkpoint>*> message) const
       EXCLUDES(lock_);
+  // `rewriter` may be null, in which case checkpoints are used as-is.
   static not_null<std::unique_ptr<Checkpointer>> ReadFromMessage(
       Writer writer,
       Reader reader,
+      Rewriter rewriter,
       google::protobuf::RepeatedPtrField<typename Message::Checkpoint> const&
           message);
 
  private:
-  using CheckpointsByTime =
-      absl::btree_map<Instant, typename Message::Checkpoint>;
+  using CheckpointsByTime = absl::btree_map<
+      Instant,
+      google::protobuf::Arena::UniquePtr<typename Message::Checkpoint>>;
 
   void WriteToCheckpointLocked(Instant const& t)
       ABSL_EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
   mutable absl::Mutex lock_;
-  Writer const writer_;
+  Writer writer_;
   Reader const reader_;
 
   // The time field of the Checkpoint message may or may not be set.  The map
   // key is the source of truth.
   CheckpointsByTime checkpoints_;
+
+  // The checkpoints held in the `checkpoints_` map are all allocated in this
+  // arena.
+  google::protobuf::Arena arena_;
 };
 
 }  // namespace internal

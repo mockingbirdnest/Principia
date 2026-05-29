@@ -266,6 +266,7 @@ void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
   reanimator_.Start();
 
   bool must_restart;
+  Instant allowable_desired_t_min;
   {
     absl::MutexLock l(&lock_);
 
@@ -277,12 +278,12 @@ void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
     // we must not move the desired t_min beyond the point where there are
     // clients waiting for reanimation (e.g., vessels) as they would never
     // succeed.
-    Instant const allowable_desired_t_min =
+    allowable_desired_t_min =
         std::min(desired_t_min, reanimator_clientele_.first());
     must_restart = last_desired_t_min_.has_value() &&
                    last_desired_t_min_.value() + max_time_between_checkpoints <
                        allowable_desired_t_min;
-    LOG_IF(WARNING, must_restart)
+    LOG_IF_EVERY_N_SEC(WARNING, must_restart, 1)
         << "Restarting reanimator because desired t_min went from "
         << last_desired_t_min_.value() << " to " << allowable_desired_t_min;
     last_desired_t_min_ = allowable_desired_t_min;
@@ -292,7 +293,7 @@ void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
   if (must_restart) {
     reanimator_.Restart();
   }
-  reanimator_.Put(last_desired_t_min_.value());
+  reanimator_.Put(allowable_desired_t_min);
 }
 
 template<typename Frame>
@@ -797,8 +798,8 @@ void Ephemeris<Frame>::WriteToMessage(
       message->mutable_fixed_step_parameters());
   accuracy_parameters_.WriteToMessage(
       message->mutable_accuracy_parameters());
-  LOG(INFO) << NAMED(message->SpaceUsed());
-  LOG(INFO) << NAMED(message->ByteSize());
+  LOG(INFO) << NAMED(message->SpaceUsedLong());
+  LOG(INFO) << NAMED(message->ByteSizeLong());
 }
 
 template<typename Frame>
@@ -871,12 +872,14 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
         Checkpointer<serialization::Ephemeris>::ReadFromMessage(
             ephemeris->MakeCheckpointerWriter(),
             ephemeris->MakeCheckpointerReader(),
+            /*rewriter=*/nullptr,
             serialized_ephemeris.checkpoint());
   } else {
     ephemeris->checkpointer_ =
         Checkpointer<serialization::Ephemeris>::ReadFromMessage(
             ephemeris->MakeCheckpointerWriter(),
             ephemeris->MakeCheckpointerReader(),
+            /*rewriter=*/nullptr,
             message.checkpoint());
   }
 
@@ -1055,6 +1058,14 @@ absl::Status Ephemeris<Frame>::ReanimateOneCheckpoint(
   }
 
   return absl::OkStatus();
+}
+
+template<typename Frame>
+bool Ephemeris<Frame>::DesiredTMinReachedOrFullyReanimated(
+    Instant const& desired_t_min) {
+  lock_.AssertReaderHeld();
+  return t_min_locked() <= desired_t_min ||
+         oldest_reanimated_checkpoint_ == checkpointer_->oldest_checkpoint();
 }
 
 template<typename Frame>

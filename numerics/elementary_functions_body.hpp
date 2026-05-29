@@ -130,14 +130,8 @@ FORCE_INLINE Q Abs(Q const& x) {
 }
 
 template<typename Q>
-Q Mod(Q const& argument, Q const& modulus) {
-  double const result =
-      std::fmod(argument / si::Unit<Q>, modulus / si::Unit<Q>);
-  if (result > 0.0) {
-    return result * si::Unit<Q>;
-  } else {
-    return result * si::Unit<Q> + modulus;
-  }
+Q FMod(Q const& argument, Q const& modulus) {
+  return std::fmod(argument / si::Unit<Q>, modulus / si::Unit<Q>) * si::Unit<Q>;
 }
 
 template<typename Q>

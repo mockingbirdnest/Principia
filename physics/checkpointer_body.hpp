@@ -4,18 +4,34 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "absl/container/btree_set.h"
+#include "base/thread_pool.hpp"
 
 namespace principia {
 namespace physics {
 namespace _checkpointer {
 namespace internal {
 
+using namespace principia::base::_thread_pool;
+
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)
     : writer_(std::move(writer)),
       reader_(std::move(reader)) {}
+
+template<typename Message>
+void Checkpointer<Message>::set_writer(Writer writer) {
+  absl::MutexLock l(&lock_);
+  writer_ = std::move(writer);
+}
+
+template<typename Message>
+std::int64_t Checkpointer<Message>::size() const {
+  absl::ReaderMutexLock l(&lock_);
+  return checkpoints_.size();
+}
 
 template<typename Message>
 Instant Checkpointer<Message>::oldest_checkpoint() const {
@@ -139,7 +155,7 @@ absl::Status Checkpointer<Message>::ReadFromOldestCheckpoint() const {
     if (checkpoints_.empty()) {
       return absl::NotFoundError("No checkpoint");
     }
-    checkpoint = &checkpoints_.cbegin()->second;
+    checkpoint = checkpoints_.cbegin()->second.get();
   }
   return reader_(*checkpoint);
 }
@@ -152,7 +168,7 @@ absl::Status Checkpointer<Message>::ReadFromNewestCheckpoint() const {
     if (checkpoints_.empty()) {
       return absl::NotFoundError("No checkpoint");
     }
-    checkpoint = &checkpoints_.crbegin()->second;
+    checkpoint = checkpoints_.crbegin()->second.get();
   }
   return reader_(*checkpoint);
 }
@@ -168,7 +184,7 @@ absl::Status Checkpointer<Message>::ReadFromCheckpointAtOrBefore(
     if (it == checkpoints_.cbegin()) {
       return absl::NotFoundError("No checkpoint");
     }
-    checkpoint = &std::prev(it)->second;
+    checkpoint = std::prev(it)->second.get();
   }
   return reader_(*checkpoint);
 }
@@ -185,7 +201,7 @@ absl::Status Checkpointer<Message>::ReadFromCheckpointAt(
       return absl::NotFoundError("No checkpoint found");
     }
   }
-  return reader(it->second);
+  return reader(*it->second);
 }
 
 template<typename Message>
@@ -201,7 +217,7 @@ void Checkpointer<Message>::WriteToMessage(
   absl::ReaderMutexLock l(&lock_);
   for (auto const& [time, checkpoint] : checkpoints_) {
     typename Message::Checkpoint* const message_checkpoint = message->Add();
-    *message_checkpoint = checkpoint;
+    *message_checkpoint = *checkpoint;
     time.WriteToMessage(message_checkpoint->mutable_time());
   }
 }
@@ -211,13 +227,38 @@ not_null<std::unique_ptr<Checkpointer<Message>>>
 Checkpointer<Message>::ReadFromMessage(
     Writer writer,
     Reader reader,
+    Rewriter rewriter,
     google::protobuf::RepeatedPtrField<typename Message::Checkpoint> const&
         message) {
   auto checkpointer =
       std::make_unique<Checkpointer>(std::move(writer), std::move(reader));
-  for (auto const& checkpoint : message) {
-    Instant const time = Instant::ReadFromMessage(checkpoint.time());
-    checkpointer->checkpoints_.emplace(time, checkpoint);
+  if (rewriter == nullptr) {
+    for (auto const& checkpoint : message) {
+      Instant const time = Instant::ReadFromMessage(checkpoint.time());
+      checkpointer->checkpoints_.emplace(
+          time,
+          google::protobuf::Arena::MakeUnique<typename Message::Checkpoint>(
+              &checkpointer->arena_, checkpoint));
+    }
+  } else {
+    // For large checkpoints, rewriting is expensive, so we do it using multiple
+    // threads.
+    ThreadPool<typename Message::Checkpoint> rewrite_pool(
+        std::thread::hardware_concurrency());
+    std::vector<std::future<typename Message::Checkpoint>> rewrite_futures;
+    rewrite_futures.reserve(message.size());
+    for (auto const& checkpoint : message) {
+      rewrite_futures.push_back(rewrite_pool.Add(
+          [&checkpoint, &rewriter]() { return rewriter(checkpoint); }));
+    }
+    for (std::int64_t i = 0; i < message.size(); ++i) {
+      auto const& checkpoint = message[i];
+      Instant const time = Instant::ReadFromMessage(checkpoint.time());
+      checkpointer->checkpoints_.emplace(
+          time,
+          google::protobuf::Arena::MakeUnique<typename Message::Checkpoint>(
+              &checkpointer->arena_, rewrite_futures[i].get()));
+    }
   }
   return std::move(checkpointer);
 }
@@ -227,9 +268,12 @@ void Checkpointer<Message>::WriteToCheckpointLocked(Instant const& t) {
   lock_.AssertHeld();
   CHECK(!checkpoints_.contains(t)) << t;
   auto const it = checkpoints_.emplace_hint(
-      checkpoints_.end(), t, typename Message::Checkpoint());
+      checkpoints_.end(),
+      t,
+      google::protobuf::Arena::MakeUnique<typename Message::Checkpoint>(
+          &arena_));
   lock_.Unlock();
-  writer_(&it->second);
+  writer_(it->second.get());
   lock_.Lock();
 }
 

@@ -97,6 +97,7 @@
     <ClInclude Include="frames.hpp" />
     <ClInclude Include="fortran_astrodynamics_toolkit_body.hpp" />
     <ClInclude Include="mercury_orbiter.hpp" />
+    <ClInclude Include="лидов.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="date_time_test.cpp" />

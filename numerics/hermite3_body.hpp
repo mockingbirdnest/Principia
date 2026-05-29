@@ -298,6 +298,14 @@ Hermite3<Difference<Value>, Argument> operator-(
       right.lower_, std::min(left.upper_, right.upper_), left.p_ - right.p_);
 }
 
+template<affine Value, affine Argument>
+std::ostream& operator<<(std::ostream& out,
+                         Hermite3<Value, Argument> const& hermite3) {
+  out << "[" << hermite3.lower_ << ", " << hermite3.upper_
+      << "]: " << hermite3.p_;
+  return out;
+}
+
 }  // namespace internal
 }  // namespace _hermite3
 }  // namespace numerics

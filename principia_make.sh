@@ -22,7 +22,6 @@ echo "Parallelism is ${PARALLELISM}."
 make clean
 
 make -j ${PARALLELISM} \
-  --ignore-errors \
   bin/${PRINCIPIA_PLATFORM}/benchmark \
   bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
   ${TARGET}

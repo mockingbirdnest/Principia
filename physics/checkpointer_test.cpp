@@ -218,6 +218,7 @@ TEST_F(CheckpointerTest, Serialization) {
   auto const checkpointer =
       Checkpointer<Message>::ReadFromMessage(writer_.AsStdFunction(),
                                              reader_.AsStdFunction(),
+                                             /*rewriter=*/nullptr,
                                              m.checkpoint());
   EXPECT_EQ(Instant() + 10 * Second, checkpointer->oldest_checkpoint());
 }

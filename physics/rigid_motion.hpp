@@ -150,6 +150,13 @@ class AcceleratedRigidMotion final {
 };
 
 template<typename FromFrame, typename ToFrame>
+bool IsFinite(RigidMotion<FromFrame, ToFrame> const& rigid_motion);
+
+template<typename FromFrame, typename ToFrame>
+bool IsFinite(
+    AcceleratedRigidMotion<FromFrame, ToFrame> const& accelerated_rigid_motion);
+
+template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(std::ostream& out,
                          RigidMotion<FromFrame, ToFrame> const& rigid_motion);
 

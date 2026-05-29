@@ -56,6 +56,9 @@ class AffineMap final {
       AffineMap<From, Through, S, Map> const& right);
   template<typename From, typename To, typename S,
            template<typename, typename> class Map>
+  friend bool IsFinite(AffineMap<From, To, S, Map> const& affine_map);
+  template<typename From, typename To, typename S,
+           template<typename, typename> class Map>
   friend std::ostream& operator<<(
       std::ostream& out,
       AffineMap<From, To, S, Map> const& affine_map);
@@ -66,6 +69,11 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame,
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
     AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
     AffineMap<FromFrame, ThroughFrame, Scalar, LinearMap> const& right);
+
+template<typename FromFrame, typename ToFrame, typename Scalar,
+         template<typename, typename> class LinearMap>
+bool IsFinite(
+    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& affine_map);
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>

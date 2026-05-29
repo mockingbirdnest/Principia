@@ -646,19 +646,23 @@ TEST_F(InterfaceTest, SerializePlugin) {
 
 TEST_F(InterfaceTestWithoutPlugin, DeserializePlugin) {
   PushDeserializer* deserializer = nullptr;
-  Plugin const* plugin = nullptr;
+  PluginReader* plugin_reader = nullptr;
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
                                &deserializer,
-                               &plugin,
+                               &plugin_reader,
                                /*compressor=*/"",
                                "hexadecimal");
   principia__DeserializePlugin("",
                                &deserializer,
-                               &plugin,
+                               &plugin_reader,
                                /*compressor=*/"",
                                "hexadecimal");
+  EXPECT_THAT(plugin_reader, NotNull());
+  Plugin const* plugin = principia__PluginReaderAwait(&plugin_reader);
   EXPECT_THAT(plugin, NotNull());
+  EXPECT_THAT(plugin_reader, IsNull());
   principia__DeletePlugin(&plugin);
+  EXPECT_THAT(plugin, IsNull());
 }
 
 }  // namespace interface

@@ -143,6 +143,9 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
       OrthogonalMap<From, Through> const& right);
 
   template<typename From, typename To>
+  friend bool IsFinite(OrthogonalMap<From, To> const& orthogonal_map);
+
+  template<typename From, typename To>
   friend std::ostream& operator<<(
       std::ostream& out,
       OrthogonalMap<From, To> const& orthogonal_map);
@@ -155,6 +158,9 @@ template<typename FromFrame, typename ThroughFrame, typename ToFrame>
 OrthogonalMap<FromFrame, ToFrame> operator*(
     OrthogonalMap<ThroughFrame, ToFrame> const& left,
     OrthogonalMap<FromFrame, ThroughFrame> const& right);
+
+template<typename FromFrame, typename ToFrame>
+bool IsFinite(OrthogonalMap<FromFrame, ToFrame> const& orthogonal_map);
 
 template<typename FromFrame, typename ToFrame>
 std::ostream& operator<<(

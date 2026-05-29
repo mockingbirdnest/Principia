@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include "base/algebra.hpp"
 #include "base/disjoint_sets.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -29,6 +30,7 @@ namespace ksp_plugin {
 namespace _part {
 namespace internal {
 
+using namespace principia::base::_algebra;
 using namespace principia::base::_disjoint_sets;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
@@ -166,6 +168,16 @@ class Part final {
 
   // Returns "part name (part ID)".
   std::string ShortDebugString() const;
+
+  // Computes the torque that implements the bogus PhysX exponential decay of
+  // the angular velocity.  It is here for ease of testing.  It cannot be a
+  // nonstatic member function of `Part` because this is computed before the
+  // `Part` has been constructed/updated.
+  static Bivector<Torque, RigidPart> DragTorqueFromAngularVelocity(
+      Inverse<Time> const& angular_drag,
+      Time const& Δt,
+      AngularVelocity<RigidPart> const& angular_velocity,
+      InertiaTensor<RigidPart> const& inertia_tensor);
 
  private:
   Part(PartId part_id,

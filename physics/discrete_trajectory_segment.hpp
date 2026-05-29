@@ -93,7 +93,6 @@ class DiscreteTrajectorySegment : public Trajectory<Frame> {
   reverse_iterator rbegin() const;
   reverse_iterator rend() const;
 
-  // TODO(phl): We probably don't want empty segments.
   bool empty() const;
   std::int64_t size() const;
 
