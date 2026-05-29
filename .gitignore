@@ -33,6 +33,7 @@ ipch/
 [Dd]ebug*/
 [Rr]elease*/
 .vs/
+/ksp_plugin_adapter/Properties/AssemblyInfo.cs
 
 # Clang output
 *.o
