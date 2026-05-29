@@ -1,8 +1,10 @@
 $OutputEncoding = [console]::InputEncoding = [console]::OutputEncoding =
     New-Object System.Text.UTF8Encoding
 $solutiondir = resolve-path $args[0]
-$assemblyinfopath = (join-path $solutiondir "ksp_plugin_adapter\Properties\AssemblyInfo.cs")
-$mainwindowpath = (join-path $solutiondir "ksp_plugin_adapter\main_window.cs")
+$projectdir = (join-path $solutiondir "ksp_plugin_adapter")
+$propertiesdir = (join-path $projectdir "Properties")
+$assemblyinfopath = (join-path $propertiesdir "AssemblyInfo.cs")
+$mainwindowpath = (join-path $projectdir "main_window.cs")
 
 $datetime = (select-string -path $mainwindowpath -pattern ".*\((20[0-9]{2})[^0-9]*([0-9]{1,2})[^0-9]*([0-9]{1,2}).*")
 $yyyy = $datetime.Matches.Groups[1].value
@@ -42,6 +44,7 @@ for(;;) {
 for(;;) {
   try {
     echo "Updating ksp_plugin_adapter\Properties\AssemblyInfo.cs, version is $yyyy.$mm.$dd.*"
+    new-item -Path $projectdir -Name "Properties" -ItemType "Directory"
     [system.io.file]::writealltext(
           $assemblyinfopath,
           $assemblyinfotext,

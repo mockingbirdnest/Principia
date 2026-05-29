@@ -252,4 +252,7 @@
     <Move SourceFiles="$(OutDir)$(TargetName).pdb" DestinationFiles="$(OutDir)$(ProjectName).pdb" />
     <Message Text="Renamed $(OutDir)$(TargetName).pdb to $(OutDir)$(ProjectName).pdb" Importance="high" />
   </Target>
+  <PropertyGroup>
+    <PreBuildEvent>&amp;$(SolutionDir)generate_assembly_info.ps1 $(SolutionDir).</PreBuildEvent>
+  </PropertyGroup>
 </Project>
