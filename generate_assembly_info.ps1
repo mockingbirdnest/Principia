@@ -2,9 +2,12 @@ $OutputEncoding = [console]::InputEncoding = [console]::OutputEncoding =
     New-Object System.Text.UTF8Encoding
 $solutiondir = resolve-path $args[0]
 $assemblyinfopath = (join-path $solutiondir "ksp_plugin_adapter\Properties\AssemblyInfo.cs")
+$mainwindowpath = (join-path $solutiondir "ksp_plugin_adapter\main_window.cs")
 
-$datetime = (select-string -path $assemblyinfopath -pattern ".*\((20[0-9]{2}).*([0-9]{1,2}).*([0-9]{1,2}).*")
-$datetime.Matches.Length
+$datetime = (select-string -path $mainwindowpath -pattern ".*\((20[0-9]{2})[^0-9]*([0-9]{1,2})[^0-9]*([0-9]{1,2}).*")
+$yyyy = $datetime.Matches.Groups[1].value
+$mm = $datetime.Matches.Groups[2].value
+$dd = $datetime.Matches.Groups[3].value
 
 $assemblyinfotext = [string]::format(
     "using System.Reflection;`n" +
@@ -14,15 +17,14 @@ $assemblyinfotext = [string]::format(
     "[assembly: AssemblyConfiguration(`"`")]`n" +
     "[assembly: AssemblyCompany(`"`")]`n" +
     "[assembly: AssemblyProduct(`"ksp_plugin_adapter`")]`n" +
-    "[assembly: AssemblyCopyright(`"Copyright ©  2014`")]`n" +
-    "[assembly: AssemblyTrademark("")]`n" +
-    "[assembly: AssemblyCulture("")]`n" +
+    "[assembly: AssemblyCopyright(`"Copyright © 2014-{0}`")]`n" +
+    "[assembly: AssemblyTrademark(`"`")]`n" +
+    "[assembly: AssemblyCulture(`"`")]`n" +
     "[assembly: ComVisible(false)]`n" +
     "[assembly: Guid(`"8e665b76-03f8-473f-89fc-b07d08df7fe6`")]`n" +
-    "[assembly: AssemblyVersion(`"`")]`n" +
-    "[assembly: AssemblyFileVersion(`"`")]`n",
-        $newdate.ToUniversalTime(),
-        $newversion)
+    "[assembly: AssemblyVersion(`"{0}.{1}.{2}.*`")]`n" +
+    "[assembly: AssemblyFileVersion(`"{0}.{1}.{2}.*`")]`n",
+    $yyyy, $mm, $dd)
 
 for(;;) {
   try {
@@ -39,7 +41,7 @@ for(;;) {
 
 for(;;) {
   try {
-    echo "Updating ksp_plugin_adapter\Properties\AssemblyInfo.cs, version is $datetime"
+    echo "Updating ksp_plugin_adapter\Properties\AssemblyInfo.cs, version is $yyyy.$mm.$dd.*"
     [system.io.file]::writealltext(
           $assemblyinfopath,
           $assemblyinfotext,
