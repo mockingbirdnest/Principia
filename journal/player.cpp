@@ -16,7 +16,7 @@
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 
 #define PRINCIPIA_PLAYER_ALLOW_PLATFORM_MISMATCH 0
-#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 1
+#define PRINCIPIA_PLAYER_ALLOW_VERSION_MISMATCH 0
 
 namespace principia {
 namespace journal {
@@ -61,13 +61,12 @@ std::unique_ptr<serialization::Method> Player::Read(int const index) {
 
   static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
   auto const bytes = encoder->Decode({line.c_str(), line.size()});
-  CHECK(line.size() % 2 == 0)
-      << "Index: " << index << " Line: " << line << " Size: " << line.size();
+  CHECK(line.size() % 2 == 0) << "Corrupted record at index: " << index
+                              << " Line: " << line << " Size: " << line.size();
   auto method = std::make_unique<serialization::Method>();
   if (!method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size))) {
-    auto b =
-        method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size));
-    LOG(FATAL) << bytes.size;
+    LOG(FATAL) << "Unparseable record at index: " << index << " Line: " << line
+               << " Size: " << line.size();
   }
 
   return method;
@@ -118,8 +117,8 @@ bool Player::Process(std::unique_ptr<serialization::Method> method_in,
       << method_in->ShortDebugString() << "\n"
       << method_out_return->ShortDebugString();
 #endif
-#if 1
-  LOG_IF(ERROR, index > 300760) << "index: " << index << "\n"
+#if 0
+  LOG_IF(ERROR, index > 3170000) << "index: " << index << "\n"
                                  << method_in->ShortDebugString() << "\n"
                                  << method_out_return->ShortDebugString();
 #endif

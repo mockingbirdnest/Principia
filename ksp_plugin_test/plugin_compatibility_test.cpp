@@ -19,7 +19,6 @@
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 #include "astronomy/date_time.hpp"
-#include "astronomy/epoch.hpp"
 #include "astronomy/mercury_orbiter.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/macros.hpp"  // 🧙 For OS_LINUX.
@@ -30,6 +29,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For interface functions.
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/apsides.hpp"
@@ -49,14 +49,15 @@ using ::testing::AllOf;
 using ::testing::AtLeast;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Gt;
 using ::testing::HasSubstr;
+using ::testing::Lt;
 using ::testing::Not;
 using ::testing::Pair;
 using ::testing::ResultOf;
 using ::testing::SizeIs;
 using ::testing::_;
 using namespace principia::astronomy::_date_time;
-using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_mercury_orbiter;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
@@ -64,6 +65,7 @@ using namespace principia::base::_serialization;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::physics::_apsides;
@@ -82,7 +84,9 @@ constexpr std::string_view preferred_encoder = "base64";
 class PluginCompatibilityTest : public testing::Test {
  protected:
   static not_null<std::unique_ptr<Plugin const>> WriteAndReadBack(
-      not_null<std::unique_ptr<Plugin const>> plugin1) {
+      not_null<std::unique_ptr<Plugin const>> plugin,
+      std::int64_t& bytes_written,
+      std::int64_t& bytes_read) {
     // There may be solidi in the path due to parameterized tests, so we remove
     // them.
     std::string const sanitized_name = absl::StrCat(
@@ -94,21 +98,54 @@ class PluginCompatibilityTest : public testing::Test {
     WritePluginToFile(TEMP_DIR / sanitized_name,
                       preferred_compressor,
                       preferred_encoder,
-                      std::move(plugin1));
+                      std::move(plugin),
+                      bytes_written);
 
     // Read the plugin from the new file to make sure that it's fine.
     return ReadPluginFromFile(TEMP_DIR / sanitized_name,
                               preferred_compressor,
-                              preferred_encoder);
+                              preferred_encoder,
+                              bytes_read);
   }
 
   static void CheckSaveCompatibility(std::filesystem::path const& filename,
                                      std::string_view const compressor,
                                      std::string_view const encoder) {
+    std::int64_t bytes_written;
+    std::int64_t bytes_read;
+
     // Read a plugin from the given file.
     auto plugin = ReadPluginFromFile(filename, compressor, encoder);
 
-    WriteAndReadBack(std::move(plugin));
+    WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
+  }
+
+  static void AnalyzeVessels(
+      Plugin const& plugin,
+      std::vector<GUID> const& guids,
+      absl::flat_hash_map<GUID, std::vector<Instant>>& start_of_segments,
+      absl::flat_hash_map<GUID, std::vector<DegreesOfFreedom<Barycentric>>>&
+          degrees_of_freedom) {
+    for (auto const& guid : guids) {
+      CHECK(plugin.HasVessel(guid));
+      auto const vessel = plugin.GetVessel(guid);
+      // Make sure that the trajectory is complete.
+      vessel->AwaitReanimation(InfinitePast, /*quiet=*/true);
+      auto const& trajectory = vessel->trajectory();
+      bool is_collapsible = false;
+      for (auto const& segment : trajectory.segments()) {
+        if (!is_collapsible) {
+          start_of_segments[guid].push_back(segment.front().time);
+        }
+        is_collapsible = !is_collapsible;
+      }
+      for (Instant t = trajectory.front().time;
+           t <= trajectory.back().time;
+           t += 10 * Second) {
+        degrees_of_freedom[guid].push_back(
+            trajectory.EvaluateDegreesOfFreedom(t));
+      }
+    }
   }
 
   absl::ScopedStderrThreshold scoped_stderr_threshold_{
@@ -125,18 +162,14 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
-                  HasSubstr("pre-Cohen ContinuousTrajectory"))).
-      Times(AtLeast(1));
+                  HasSubstr("pre-Cohen ContinuousTrajectory")))
+      .Times(AtLeast(1));
   // The save is even older.
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Cauchy")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Cauchy")));
   // But not *that* old.
-  EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Cartan"))).Times(0);
+  EXPECT_CALL(log, Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Cartan")))
+      .Times(0);
   log.StartCapturingLogs();
 
   CheckSaveCompatibility(
@@ -150,21 +183,20 @@ TEST_F(PluginCompatibilityTest, PreCohen) {
 TEST_F(PluginCompatibilityTest, Reach) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Galileo"))).
-      Times(AtLeast(1));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Galileo")))
+      .Times(AtLeast(1));
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Frobenius"))).Times(0);
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Frobenius")))
+      .Times(0);
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       SOLUTION_DIR / "ksp_plugin_test" / "saves" / "3072.proto.b64",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
-  plugin = WriteAndReadBack(std::move(plugin));
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  plugin = WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
   auto const test = plugin->GetVessel("f2d77873-4776-4809-9dfb-de9e7a0620a6");
   EXPECT_THAT(test->name(), Eq("TEST"));
   EXPECT_THAT(TTSecond(test->trajectory().front().time),
@@ -305,20 +337,20 @@ TEST_F(PluginCompatibilityTest, Reach) {
 TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(AtLeast(1));
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Gröbner"))).Times(0);
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Gröbner")))
+      .Times(0);
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\1119\1119.proto.b64)",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
-  plugin = WriteAndReadBack(std::move(plugin));
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  plugin = WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
   auto const& orbiter =
       *plugin->GetVessel("e180ca12-492f-45bf-a194-4c5255aec8a0");
   EXPECT_THAT(orbiter.name(), Eq("Mercury Orbiter 1"));
@@ -376,16 +408,22 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
 TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(AtLeast(1));
+  // We use this save to check compatibility with pre-Hamilton
+  // DiscreteTrajectory, but it is much older.
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Fatou")))
+      .Times(AtLeast(1));
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
       R"(P:\Public Mockingbird\Principia\Saves\3136\3136.proto.b64)",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
-  plugin = WriteAndReadBack(std::move(plugin));
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  plugin = WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
 
   // The vessel with the longest history.
   auto const& vessel =
@@ -446,9 +484,8 @@ TEST_F(PluginCompatibilityTest, DISABLED_Lpg) {
 TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
   absl::ScopedMockLog log;
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton")));
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(AtLeast(1));
   log.StartCapturingLogs();
 
   not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
@@ -466,7 +503,9 @@ TEST_F(PluginCompatibilityTest, DISABLED_Egg) {
   mutable_plugin.CatchUpVessel("1e07aaa2-d1f8-4f6d-8b32-495b46109d98");
 
   // Make sure that we can upgrade, save, and reload.
-  WriteAndReadBack(std::move(plugin));
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
 }
 
 TEST_F(PluginCompatibilityTest, PreHardy) {
@@ -475,12 +514,11 @@ TEST_F(PluginCompatibilityTest, PreHardy) {
   EXPECT_CALL(log,
               Log(absl::LogSeverity::kWarning,
                   _,
-                  HasSubstr("pre-Лефшец DiscreteTrajectorySegment"))).
-      Times(AtLeast(1));
+                  HasSubstr("pre-Лефшец DiscreteTrajectorySegment")))
+      .Times(AtLeast(1));
   EXPECT_CALL(log,
-              Log(absl::LogSeverity::kWarning,
-                  _,
-                  HasSubstr("pre-Hamilton"))).Times(0);
+              Log(absl::LogSeverity::kWarning, _, HasSubstr("pre-Hamilton")))
+      .Times(0);
   log.StartCapturingLogs();
 
   CheckSaveCompatibility(
@@ -513,22 +551,138 @@ TEST_F(PluginCompatibilityTest, 3273) {
   EXPECT_THAT(vessel->flight_plan().analysis(2)->recurrence(),
               Eq(std::nullopt));
 }
+
+TEST_F(PluginCompatibilityTest, DISABLED_4490) {
+  std::filesystem::path const path =
+      R"(P:\Public Mockingbird\Principia\Saves\4490\4490a.proto.b64)";
+  std::vector<GUID> const guids = {"12f4d71a-bfeb-4725-8f93-34e575422b47",
+                                   "35a40848-d91d-4b5d-8f76-6c7625e941ac",
+                                   "404ed131-15f7-4d06-9452-6dfba0ccaf04",
+                                   "48d772d7-1873-403d-87da-af02d5a6b485",
+                                   "4a94bcff-56e7-440a-8d85-a71ee7a1757f",
+                                   "5703104d-3401-48f9-b4cf-090dd75f7d55",
+                                   "67253c53-36a9-46c6-89a9-cfb683bdcda8",
+                                   "721fe779-1491-40e7-83e0-6760dd92b963",
+                                   "802b8755-05f1-467e-87da-da2551eb5c9b",
+                                   "e83cf1ad-ea98-4eb8-85f7-1a2302d5450a",
+                                   "eed936ef-1f7a-4062-92a6-8c109ec2bc1a",
+                                   "f742f404-cea5-4f01-ae87-127fafe963fe",
+                                   "fb5b9add-6ae8-4583-94bc-4a6633f95ce9"};
+  std::int64_t bytes_processed;
+
+  // The plugin that we would have gotten without the conversions done in
+  // Leibniz.
+  absl::flat_hash_map<GUID, std::vector<Instant>> unconverted_start_of_segments;
+  absl::flat_hash_map<GUID, std::vector<DegreesOfFreedom<Barycentric>>>
+      unconverted_degrees_of_freedom;
+  {
+    LOG(INFO) << "*** Reading plugin without conversion";
+    Vessel::disallow_leibniz_conversion_for_testing_ = true;
+    not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+        path,
+        /*compressor=*/"gipfeli",
+        /*encoder=*/"base64",
+        bytes_processed);
+    Vessel::disallow_leibniz_conversion_for_testing_ = false;
+
+    AnalyzeVessels(*plugin,
+                   guids,
+                   unconverted_start_of_segments,
+                   unconverted_degrees_of_freedom);
+  }
+
+  absl::ScopedMockLog log;
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("pre-Leibniz DiscreteTrajectory")))
+      .Times(AtLeast(1));
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("pre-Leibniz Part")))
+      .Times(AtLeast(1));
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("Rewriting pre-Leibniz Vessel::Checkpoint")))
+      .Times(AtLeast(1));
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("Re-downsampling trajectory of post-Лефшец, "
+                            "pre-Leibniz vessel")))
+      .Times(AtLeast(1));
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("pre-Hamilton DiscreteTrajectory")))
+      .Times(0);
+  EXPECT_CALL(log,
+              Log(absl::LogSeverity::kWarning,
+                  _,
+                  HasSubstr("pre-Hamilton Part")))
+      .Times(0);
+  log.StartCapturingLogs();
+
+  LOG(INFO) << "*** Reading plugin with conversion";
+  not_null<std::unique_ptr<Plugin const>> plugin = ReadPluginFromFile(
+      path,
+      /*compressor=*/"gipfeli",
+      /*encoder=*/"base64",
+      bytes_processed);
+  EXPECT_EQ(bytes_processed, 114'345'631);
+
+  absl::flat_hash_map<GUID, std::vector<Instant>> converted_start_of_segments;
+  absl::flat_hash_map<GUID, std::vector<DegreesOfFreedom<Barycentric>>>
+      converted_degrees_of_freedom;
+  AnalyzeVessels(*plugin,
+                 guids,
+                 converted_start_of_segments,
+                 converted_degrees_of_freedom);
+
+  LOG(INFO) << "*** Checking conversion consistency";
+  for (auto const& guid : guids) {
+    // The start of a non-collapsible segment in the converted trajectory must
+    // have been the start of a non-collapsible segment in the unconverted
+    // trajectory.  (The reverse is not true, that's the point of the
+    // conversion.)
+    EXPECT_TRUE(std::includes(unconverted_start_of_segments[guid].begin(),
+                              unconverted_start_of_segments[guid].end(),
+                              converted_start_of_segments[guid].begin(),
+                              converted_start_of_segments[guid].end()));
+
+    // The trajectories must be close to each other.
+    EXPECT_EQ(unconverted_degrees_of_freedom[guid].size(),
+              converted_degrees_of_freedom[guid].size());
+    for (std::int64_t i = 0;
+         i < converted_degrees_of_freedom[guid].size();
+         ++i) {
+      EXPECT_THAT((converted_degrees_of_freedom[guid][i].position() -
+                   unconverted_degrees_of_freedom[guid][i].position())
+                      .Norm(),
+                  Lt(179 * Metre));
+    }
+  }
+
+  LOG(INFO) << "*** Writing and reading back after conversion";
+  std::int64_t bytes_written;
+  std::int64_t bytes_read;
+  WriteAndReadBack(std::move(plugin), bytes_written, bytes_read);
+  // Various asynchronous activities may happen in the plugin between the time
+  // it is read and the time it is written, so the size of the new save is not
+  // deterministic.
+  EXPECT_THAT(bytes_written, AllOf(Gt(7'971'900), Lt(7'972'300)));
+  EXPECT_EQ(bytes_read, bytes_written);
+}
 #endif
 
 // Use for debugging saves given by users.
 TEST_F(PluginCompatibilityTest, DISABLED_SECULAR_Debug) {
   not_null<std::unique_ptr<Plugin const>> const plugin = ReadPluginFromFile(
-      R"(C:\Users\Public\Public Mockingbird\Principia\Issues\4547\4547.proto.b64)",
+      R"(P:\Public Mockingbird\Principia\Saves\3203\wip.proto.b64)",
       /*compressor=*/"gipfeli",
       /*encoder=*/"base64");
-  LOG(ERROR)<<plugin->CurrentTime()<<" "<<plugin->GameEpoch();
-  LOG(ERROR)<<J2000 - 1562327400 * Second;
-  //plugin->AwaitReanimation("1950-06-30T00:10:00"_TT);
-  std::int64_t const max_history_length = 604800;
-  plugin->AwaitReanimation(plugin->CurrentTime() - max_history_length * Second);
-  LOG(ERROR)<<plugin->CurrentTime()<<" "<<plugin->GameEpoch();
-  plugin->AwaitReanimation("1949-01-01T00:00:00"_TT);
-  LOG(ERROR)<<plugin->CurrentTime()<<" "<<plugin->GameEpoch();
 }
 
 }  // namespace interface

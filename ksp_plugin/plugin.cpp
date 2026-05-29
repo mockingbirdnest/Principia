@@ -188,8 +188,8 @@ void Plugin::EndInitialization() {
   // Check if this is the stock KSP system in which case it needs to be
   // stabilized.
   system_fingerprint_ = solar_system.Fingerprint();
-  LOG(INFO) << "System fingerprint is 0x" << std::hex << std::uppercase
-            << system_fingerprint_;
+  LOG(INFO) << "System fingerprint is 0x" << std::noshowbase << std::hex
+            << std::uppercase << system_fingerprint_;
 
   bool is_well_known = false;
   for (auto const ksp_version : {KSP122, KSP191PreLegendre, KSP191}) {
@@ -197,8 +197,9 @@ void Plugin::EndInitialization() {
       LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
       StabilizeKSP(solar_system);
       system_fingerprint_ = solar_system.Fingerprint();
-      LOG(INFO) << "System fingerprint after stabilization is 0x" << std::hex
-                << std::uppercase << system_fingerprint_;
+      LOG(INFO) << "System fingerprint after stabilization is 0x"
+                << std::noshowbase << std::hex << std::uppercase
+                << system_fingerprint_;
       CHECK_EQ(KSPStabilizedSystemFingerprints[ksp_version],
                system_fingerprint_)
           << "Attempt at stabilizing the KSP system failed!\n"
@@ -1406,10 +1407,6 @@ void Plugin::RequestReanimation(Instant const& desired_t_min) const {
   ephemeris_->RequestReanimation(desired_t_min);
 }
 
-void Plugin::AwaitReanimation(Instant const& desired_t_min) const {
-  ephemeris_->AwaitReanimation(desired_t_min);
-}
-
 Instant Plugin::GameEpoch() const {
   return game_epoch_;
 }
@@ -1524,7 +1521,8 @@ void Plugin::WriteToMessage(
 }
 
 not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
-    serialization::Plugin const& message) {
+    serialization::Plugin const& message,
+    std::function<void(bool will_be_slow)> expected_performance_callback) {
   LOG(INFO) << __FUNCTION__;
 
   auto const history_parameters =
@@ -1555,8 +1553,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
         break;
       }
     }
-    LOG(INFO) << "System has fingerprint 0x" << std::hex << std::uppercase
-              << plugin->system_fingerprint_ << "; " << details;
+    LOG(INFO) << "System has fingerprint 0x" << std::noshowbase << std::hex
+              << std::uppercase << plugin->system_fingerprint_ << "; "
+              << details;
   }
 
   plugin->game_epoch_ = Instant::ReadFromMessage(message.game_epoch());
@@ -1582,18 +1581,32 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                              plugin->celestials_,
                              plugin->name_to_index_);
 
+  // Deserialization of vessels may be slow because of the Лефшец-to-Leibniz
+  // migration, let's use all the cores.
+  ThreadPool<not_null<std::unique_ptr<Vessel>>> vessel_deserialization_pool(
+      std::thread::hardware_concurrency());
+  std::vector<std::future<not_null<std::unique_ptr<Vessel>>>> vessel_futures;
+  vessel_futures.reserve(message.vessel_size());
   for (auto const& vessel_message : message.vessel()) {
     not_null<Celestial const*> const parent =
         FindOrDie(plugin->celestials_, vessel_message.parent_index()).get();
-    not_null<std::unique_ptr<Vessel>> vessel = Vessel::ReadFromMessage(
-        vessel_message.vessel(),
-        parent,
-        plugin->ephemeris_.get(),
-        [&part_id_to_vessel = plugin->part_id_to_vessel_](
-            PartId const part_id) {
-          CHECK_NE(part_id_to_vessel.erase(part_id), 0) << part_id;
-        });
+    vessel_futures.push_back(vessel_deserialization_pool.Add(
+        [expected_performance_callback, parent, &plugin, &vessel_message]() {
+          return Vessel::ReadFromMessage(
+              vessel_message.vessel(),
+              parent,
+              plugin->ephemeris_.get(),
+              [&part_id_to_vessel =
+                   plugin->part_id_to_vessel_](PartId const part_id) {
+                CHECK_NE(part_id_to_vessel.erase(part_id), 0) << part_id;
+              },
+              expected_performance_callback);
+        }));
+  }
 
+  for (std::int64_t i = 0; i < message.vessel_size(); ++i) {
+    auto const& vessel_message = message.vessel(i);
+    auto vessel = vessel_futures[i].get();
     if (vessel_message.loaded()) {
       plugin->loaded_vessels_.insert(vessel.get());
     }

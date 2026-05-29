@@ -739,38 +739,6 @@ TEST_F(PlanetariumTest, PlotMethod4_Equipotentials_AngularResolution) {
 }
 #endif
 
-TEST_F(PlanetariumTest, PlotMethod4_Reverse) {
-  // A quarter of a circular trajectory around the origin, with many small
-  // segments.
-  DiscreteTrajectory<Barycentric> discrete_trajectory;
-  AppendTrajectoryTimeline(/*from=*/NewCircularTrajectoryTimeline<Barycentric>(
-                                        /*period=*/100'000 * Second,
-                                        /*r=*/10 * Metre,
-                                        /*Δt=*/1 * Second,
-                                        /*t1=*/t0_,
-                                        /*t2=*/t0_ + 25'000 * Second),
-                           /*to=*/discrete_trajectory);
-
-  // No dark area, human visual acuity, wide field of view.
-  Planetarium::Parameters const parameters(
-      /*sphere_radius_multiplier=*/1,
-      /*angular_resolution=*/0.4 * ArcMinute,
-      /*field_of_view=*/90 * Degree);
-  Planetarium const planetarium(parameters,
-                                perspective_,
-                                &mock_ephemeris_,
-                                &plotting_frame_,
-                                plotting_to_scaled_space_);
-
-  planetarium.PlotMethod4(
-      discrete_trajectory,
-      discrete_trajectory.front().time,
-      discrete_trajectory.back().time,
-      /*reverse=*/true,
-      [](ScaledSpacePoint const&) {},
-      /*max_points=*/std::numeric_limits<int>::max());
-}
-
 }  // namespace ksp_plugin
 }  // namespace principia
 

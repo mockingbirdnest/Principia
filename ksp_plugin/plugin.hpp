@@ -467,7 +467,6 @@ class Plugin {
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
   void RequestReanimation(Instant const& desired_t_min) const;
-  void AwaitReanimation(Instant const& desired_t_min) const;
 
   virtual Instant GameEpoch() const;
 
@@ -490,7 +489,9 @@ class Plugin {
   // Must be called after initialization.
   virtual void WriteToMessage(not_null<serialization::Plugin*> message) const;
   static not_null<std::unique_ptr<Plugin>> ReadFromMessage(
-      serialization::Plugin const& message);
+      serialization::Plugin const& message,
+      std::function<void(bool will_be_slow)> expected_performance_callback =
+          nullptr);
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;

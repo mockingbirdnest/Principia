@@ -42,9 +42,10 @@ class RecorderTest : public testing::Test {
     std::vector<serialization::Method> methods;
     Player player(path);
     int index = 0;
-    for (std::unique_ptr<serialization::Method> method = player.Read(index++);
+    for (std::unique_ptr<serialization::Method> method = player.Read(index);
          method != nullptr;
-         method = player.Read(index++)) {
+         method = player.Read(index)) {
+      ++index;
       methods.push_back(*method);
     }
     return methods;
