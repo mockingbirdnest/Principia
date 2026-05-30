@@ -1410,6 +1410,20 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             Log.Info("Regenerating the part ID of " + vessel.name + ": " +
                      part.flightID + " (was " + old_id + ")");
           }
+          // For reasons that are even more unclear, the comet spawning code
+          // sometimes generates a zero flightID; when that happens, we
+          // regenerate the flightID (#4574).
+          if (vessel.vesselType == VesselType.SpaceObject &&
+              parts.Count == 1 &&
+              parts[0].partName == "PotatoComet" &&
+              parts[0].flightID == 0) {
+            var part = parts[0];
+            uint old_id = part.flightID;
+            part.flightID = ShipConstruction.GetUniqueFlightID(
+                HighLogic.CurrentGame.flightState);
+            Log.Info("Regenerating the part ID of " + vessel.name + ": " +
+                     part.flightID + " (was " + old_id + ")");
+          }
           foreach (ProtoPartSnapshot part in parts) {
             plugin_.InsertUnloadedPart(part.flightID,
                                        part.partName,
