@@ -4,6 +4,7 @@
 
 #include <array>
 #include <cmath>
+#include <concepts>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -239,6 +240,22 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
   result.value = right.value * scale;
   result.error = right.error * scale;
   return result;
+}
+
+template<std::floating_point T>
+DoublePrecision<T> Trunc(DoublePrecision<T> const& a) {
+  // The fractional point cannot be in both `value` and `error`.  It is
+  // important to round both elements consistently based on the sign of `value`,
+  // so we cannot use `trunc`.
+  DoublePrecision<T> result(uninitialized);
+  result.value = a.value > 0.0 ? std::floor(a.value) : std::ceil(a.value);
+  result.error = a.value > 0.0 ? std::floor(a.error) : std::ceil(a.error);
+  return result;
+}
+
+template<std::floating_point T>
+DoublePrecision<T> Frac(DoublePrecision<T> const& a) {
+  return a - Trunc(a);
 }
 
 template<std::int64_t s, typename T>

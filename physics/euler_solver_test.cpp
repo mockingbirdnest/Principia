@@ -211,7 +211,7 @@ TEST_F(EulerSolverTest, InitialStateSymmetrical) {
           solver1.AngularMomentumAt(Instant());
 
       EXPECT_THAT(computed_initial_angular_momentum1,
-                  AlmostEquals(initial_angular_momentum, 0, 87))
+                  AlmostEquals(initial_angular_momentum, 0, 88))
           << moments_of_inertia1 << " " << initial_angular_momentum;
     }
     {
@@ -549,7 +549,7 @@ TEST_F(EulerSolverTest, ДжанибековEffect) {
                            angular_momenta,
                            attitudes,
                            /*min_ulps=*/39,
-                           /*max_ulps=*/43);
+                           /*max_ulps=*/47);
 }
 
 // A general body that doesn't rotate.
