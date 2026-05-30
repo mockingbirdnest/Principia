@@ -2393,6 +2393,12 @@ message PluginReaderAwait {
 }
 
 message PluginReaderGet {
+  // If the call to `get` in the journal returned `nullptr`, do the same and
+  // don't call `get`, it would consume the plugin too early.  If the call to
+  // `get` in the journal returned a bona fide Plugin, call the entry point that
+  // awaits the result to make sure that deserialization has completed.
+  option (run_using) =
+    "[&message](PluginReader** reader) -> Plugin* {\n    if (message.return_().result() == 0) {\n      return nullptr;\n    } else {\n      return interface::principia__PluginReaderAwait(reader);\n    }\n  }";
   extend Method {
     optional PluginReaderGet extension = 5215;
   }
@@ -2942,5 +2948,9 @@ extend google.protobuf.MessageOptions {
   // If set, the struct used for journaling is not generated.  Useful for
   // methods for which we need interfacing but for which journaling would be
   // incorrect.
-  optional bool omit_journaling = 50017;
+  optional bool omit_journaling = 50018;
+  // A callable (e.g., a lambda or a function name) that is used instead of the
+  // normal interface function in the Run method.  This is useful is
+  // synchronization is needed based on the expected output of the Method.
+  optional string run_using = 50019;
 }
