@@ -10,6 +10,7 @@ $datetime = (select-string -path $mainwindowpath -pattern ".*\((20[0-9]{2})[^0-9
 $yyyy = $datetime.Matches.Groups[1].value
 $mm = $datetime.Matches.Groups[2].value
 $dd = $datetime.Matches.Groups[3].value
+$dayofyear = (get-date).dayofyear
 
 $assemblyinfotext = [string]::format(
     "using System.Reflection;`n" +
@@ -26,8 +27,8 @@ $assemblyinfotext = [string]::format(
     "[assembly: Guid(`"8e665b76-03f8-473f-89fc-b07d08df7fe6`")]`n" +
     "#pragma warning disable CS7035`n" +
     "[assembly: AssemblyVersion(`"{0}.{1}.{2}.*`")]`n" +
-    "[assembly: AssemblyFileVersion(`"{0}.{1}.{2}.*`")]`n",
-    $yyyy, $mm, $dd)
+    "[assembly: AssemblyFileVersion(`"{0}.{1}.{2}.{3}`")]`n",
+    $yyyy, $mm, $dd, $dayofyear)
 
 for(;;) {
   try {
@@ -44,7 +45,7 @@ for(;;) {
 
 for(;;) {
   try {
-    echo "Updating ksp_plugin_adapter\Properties\AssemblyInfo.cs, version is $yyyy.$mm.$dd.*"
+    echo "Updating ksp_plugin_adapter\Properties\AssemblyInfo.cs, version is $yyyy.$mm.$dd.$dayofyear"
     new-item -Path $projectdir -Name "Properties" -ItemType "Directory" -Force
     [system.io.file]::writealltext(
           $assemblyinfopath,
