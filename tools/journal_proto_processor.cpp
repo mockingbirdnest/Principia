@@ -1840,6 +1840,10 @@ void JournalProtoProcessor::ProcessMethodExtension(
     CHECK(options.GetExtension(journal::serialization::omit_journaling));
     needs_journaling_support = false;
   }
+  std::string run_using;
+  if (options.HasExtension(journal::serialization::run_using)) {
+    run_using = options.GetExtension(journal::serialization::run_using);
+  }
 
   if (needs_journaling_support) {
     cxx_toplevel_type_declaration_[descriptor] =
@@ -1968,9 +1972,15 @@ void JournalProtoProcessor::ProcessMethodExtension(
     } else {
       cxx_functions_implementation_[descriptor] += "  ";
     }
-    cxx_functions_implementation_[descriptor] +=
-        "interface::principia__" + name + "(" +
-        Join(cxx_run_arguments, /*joiner=*/", ") + ");\n";
+    std::string const joined_cxx_run_arguments =
+        "(" + Join(cxx_run_arguments, /*joiner=*/", ") + ")";
+    if (run_using.empty()) {
+      cxx_functions_implementation_[descriptor] +=
+          "interface::principia__" + name + joined_cxx_run_arguments + ";\n";
+    } else {
+      cxx_functions_implementation_[descriptor] +=
+          run_using + joined_cxx_run_arguments + ";\n";
+    }
     if (!run_conditional_compilation_symbol.empty()) {
       cxx_functions_implementation_[descriptor] += "#endif\n";
     }
