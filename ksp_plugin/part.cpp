@@ -383,14 +383,31 @@ Bivector<Torque, RigidPart> Part::DragTorqueFromAngularVelocity(
     Time const& Δt,
     AngularVelocity<RigidPart> const& angular_velocity,
     InertiaTensor<RigidPart> const& inertia_tensor) {
+  // This function implements our interpretation of angular drag.
+
+  // PhysX wants the angular velocity to evolve as follows:
+  //   ω(t + Δt) = ω(t) (1 − α Δt)
+  // where α is `angular_drag` suitably clamped.  Note that this a discrete time
+  // approximation to an exponential decay:
+  //   ̇ω(t) = −α ω(t)
+  // Also note that, when α = 0 (which happens in the presence of FAR and in
+  // space) this keeps ω(t) constant, which is a well-known "invariant" of the
+  // PhysX view of the world.
+  //
+  // We want to compute a torque that implements angular drag based on α.
+  // Euler's equation becomes, taking the exponential decay into account:
+  //   τ = I ̇ω + ω × (I ω) = −α I ω + ω × (I ω)
+  // The second term is nonzero when α = 0 and would introduce nonphysical
+  // effects (see #4580).  The first term, on the other hand, vanishes when
+  // α = 0 and suitably represents a torque opposed to the angular velocity.
+  // This is the term that is returned by this function.
+
   // The clamping is critical to make sure that the angular velocity decreases
   // in norm and doesn't change sign, see #4166.
   Inverse<Time> const effective_angular_drag =
       std::max(std::min(angular_drag, 1 / Δt), Inverse<Time>{});
 
-  return -effective_angular_drag * inertia_tensor * angular_velocity +
-         Commutator(angular_velocity, inertia_tensor * angular_velocity) /
-             Radian;
+  return -effective_angular_drag * inertia_tensor * angular_velocity;
 }
 
 Part::Part(PartId const part_id,
