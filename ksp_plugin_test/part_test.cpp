@@ -9,7 +9,9 @@
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
+#include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
@@ -18,6 +20,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/euler_solver.hpp"
 #include "physics/mechanical_system.hpp"
@@ -47,7 +50,9 @@ using namespace principia::geometry::_identity;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
+using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
@@ -55,6 +60,7 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_euler_solver;
 using namespace principia::physics::_mechanical_system;
@@ -213,6 +219,42 @@ TEST(PartTestWithoutFixture, PhysXExponentialDecay) {
   EXPECT_THAT(AngleBetween(actual_angular_velocity_after,
                            expected_angular_velocity_after),
               IsNear(4.1e-3_(1) * Radian));
+}
+
+// Even if the angular drag is 0, there is a residual torque because in the
+// cheesy PhysX physics the angular velocity, not the angular momentum, is
+// preserved.  The numbers are excerpted from the journal given in #4580.
+TEST(PartTestWithoutFixture, NoAngularDrag) {
+  Time const Δt = 0.04 * Second;
+  Inverse<Time> const angular_drag = 0.0 / Second;
+
+  Rotation<RigidPart, World> const part_to_world(Normalize(Quaternion{
+      -0.028773561120033264,
+      {0.659433126449585, -0.551525354385376, 0.51003903150558472}}));
+  Rotation<World, RigidPart> const world_to_part = part_to_world.Inverse();
+
+  AngularVelocity<RigidPart> const angular_velocity = world_to_part(
+      AngularVelocity<World>({2.3573663989691843e+18 * Radian / Second,
+                              -3.8605491523540746e+18 * Radian / Second,
+                              -2.967780482655191e+17 * Radian / Second}));
+
+  R3Element<MomentOfInertia> const moments_of_inertia(
+      0.029878305271267891 * Pow<2>(Metre) * Tonne,
+      0.027988545596599579 * Pow<2>(Metre) * Tonne,
+      0.029878335073590279 * Pow<2>(Metre) * Tonne);
+  MomentOfInertia const zero;
+  InertiaTensor<PartPrincipalAxes> const inertia_tensor_in_principal_axes(
+      R3x3Matrix<MomentOfInertia>({moments_of_inertia.x, zero, zero},
+                                  {zero, moments_of_inertia.y, zero},
+                                  {zero, zero, moments_of_inertia.z}));
+  Rotation<PartPrincipalAxes, RigidPart> const principal_axes_to_part(
+      Normalize(Quaternion{1, {2.6898635496763745e-07, 0, 0}}));
+  InertiaTensor<RigidPart> const inertia_tensor =
+      principal_axes_to_part(inertia_tensor_in_principal_axes);
+
+  auto const torque = part_to_world(Part::DragTorqueFromAngularVelocity(
+      angular_drag, Δt, angular_velocity, inertia_tensor));
+  EXPECT_EQ(3.27694304241172469e+35 * si::Unit<Torque>, torque.Norm());
 }
 
 TEST_F(PartTest, Serialization) {

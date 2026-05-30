@@ -388,6 +388,7 @@ Bivector<Torque, RigidPart> Part::DragTorqueFromAngularVelocity(
   Inverse<Time> const effective_angular_drag =
       std::max(std::min(angular_drag, 1 / Δt), Inverse<Time>{});
 
+  // This is Euler's equation with ̇ω = -effective_angular_drag * ω.
   return -effective_angular_drag * inertia_tensor * angular_velocity +
          Commutator(angular_velocity, inertia_tensor * angular_velocity) /
              Radian;
