@@ -196,10 +196,10 @@ TEST(PartTestWithoutFixture, PhysXExponentialDecay) {
       attitude_before(angular_velocity_before);
   EXPECT_THAT(actual_angular_velocity_before.Norm(),
               RelativeErrorFrom(expected_angular_velocity_before.Norm(),
-                                IsNear(1.1e-3_(1))));
+                                IsNear(4.1e-16_(1))));
   EXPECT_THAT(AngleBetween(actual_angular_velocity_before,
                            expected_angular_velocity_before),
-              IsNear(6.4e-3_(1) * Radian));
+              IsNear(2.0e-15_(1) * Radian));
 
   Bivector<AngularMomentum, PartPrincipalAxes> const angular_momentum_after =
       euler_solver.AngularMomentumAt(t0 + Δt);
@@ -215,15 +215,16 @@ TEST(PartTestWithoutFixture, PhysXExponentialDecay) {
       attitude_after(angular_velocity_after);
   EXPECT_THAT(actual_angular_velocity_after.Norm(),
               RelativeErrorFrom(expected_angular_velocity_after.Norm(),
-                                IsNear(7.1e-4_(1))));
+                                IsNear(4.1e-4_(1))));
   EXPECT_THAT(AngleBetween(actual_angular_velocity_after,
                            expected_angular_velocity_after),
-              IsNear(4.1e-3_(1) * Radian));
+              IsNear(2.3e-3_(1) * Radian));
 }
 
-// Even if the angular drag is 0, there is a residual torque because in the
-// cheesy PhysX physics the angular velocity, not the angular momentum, is
-// preserved.  The numbers are excerpted from the journal given in #4580.
+// In a previous implementation of the cheesy PhysX physics, there was a
+// residual torque even if the angular drag was 0, because the angular velocity,
+// not the angular momentum, was preserved .  The numbers are excerpted from the
+// journal given in #4580.
 TEST(PartTestWithoutFixture, NoAngularDrag) {
   Time const Δt = 0.04 * Second;
   Inverse<Time> const angular_drag = 0.0 / Second;
@@ -254,7 +255,7 @@ TEST(PartTestWithoutFixture, NoAngularDrag) {
 
   auto const torque = part_to_world(Part::DragTorqueFromAngularVelocity(
       angular_drag, Δt, angular_velocity, inertia_tensor));
-  EXPECT_EQ(3.27694304241172469e+35 * si::Unit<Torque>, torque.Norm());
+  EXPECT_EQ(Torque{}, torque.Norm());
 }
 
 TEST_F(PartTest, Serialization) {
