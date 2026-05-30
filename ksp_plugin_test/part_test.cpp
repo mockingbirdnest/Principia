@@ -225,7 +225,7 @@ TEST(PartTestWithoutFixture, PhysXExponentialDecay) {
 // residual torque even if the angular drag was 0, because the angular velocity,
 // not the angular momentum, was preserved .  The numbers are excerpted from the
 // journal given in #4580.
-TEST(PartTestWithoutFixture, NoAngularDrag) {
+TEST(PartTestWithoutFixture, 4580) {
   Time const Δt = 0.04 * Second;
   Inverse<Time> const angular_drag = 0.0 / Second;
 

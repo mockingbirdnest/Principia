@@ -387,7 +387,7 @@ Bivector<Torque, RigidPart> Part::DragTorqueFromAngularVelocity(
 
   // PhysX wants the angular velocity to evolve as follows:
   //   ω(t + Δt) = ω(t) (1 − α Δt)
-  // where α is `angular_drag` suitably clamped. Note that this a discrete time
+  // where α is `angular_drag` suitably clamped.  Note that this a discrete time
   // approximation to an exponential decay:
   //   ̇ω(t) = −α ω(t)
   // Also note that, when α = 0 (which happens in the presence of FAR and in
