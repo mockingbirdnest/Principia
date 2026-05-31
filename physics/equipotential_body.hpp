@@ -256,6 +256,7 @@ auto Equipotential<InertialFrame, Frame>::ComputeLines(
               it = peak_delineations[j].indistinct_wells.erase(it);
               candidate_has_created_delineation = true;
               if (expected_delineated_well.has_value() &&
+                  it != peak_delineations[j].indistinct_wells.end() &&
                   *it == *expected_delineated_well) {
                 has_performed_expected_delineation = true;
               }

@@ -141,8 +141,9 @@ TEST_F(PlayerTest, DISABLED_SECULAR_Debug) {
              << player.last_method_in().DebugString();
   LOG(ERROR) << "Last successful method out/return: \n"
              << player.last_method_out_return().DebugString();
+#if 0
   std::this_thread::sleep_for(10s);
-
+#endif
 #if 0
   serialization::Method method_in;
   {

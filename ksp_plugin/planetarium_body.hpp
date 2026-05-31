@@ -201,6 +201,12 @@ void Planetarium::PlotMethod4(
       Δt *= 0.9 * Sqrt(parameters_.angular_resolution_ / rms_apparent_distance);
     estimate_tan²_error:
       t = previous_time + Δt;
+      if (t == previous_time) {
+        LOG(ERROR) << "At time " << t
+                   << ", step size is effectively zero.  Singularity or "
+                      "stiff system suspected.";
+        return;
+      }
       if (direction * (t - final_time) > Time{}) {
         t = final_time;
         Δt = t - previous_time;
