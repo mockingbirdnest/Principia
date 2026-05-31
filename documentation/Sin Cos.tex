@@ -381,7 +381,7 @@ To compute the overall error on argument reduction, first remember that, from eq
 \[
 C_2 + C'_2 + \gd C_2 = \frac{\Pi}{2} + \gz_1 \quad \text{with} \quad \abs{\gz_1} \leq 2^{\gk'_2 + \gk''_2 - 2 M - 1} \ULP\of{\frac{\Pi}{2}}
 \]
-Let $\gz_2$ be the relative error introduced by $\dwplusfp$.  Theorem 2.2 of \cite{MullerRideau2022} indicates that $\abs{\gz_2} < 2^{1 - 2 M}$.  The error computation proceeds as follows:
+Let $\gz_2$ be the relative error introduced by $\dwplusfp$.  Theorem 2.2 of \cite{MullerRideau2022} indicates that $\abs{\gz_2} \leq 2^{1 - 2 M}$.  The error computation proceeds as follows:
 \begin{align*}
 y - y' - \gd y &= \pa{x - n \; C_2 - n \; C'_2 - n \; \gd C_2 \pa{1 + \gd_4}} \pa{1 + \gz_2} \\
 &= \pa{x - n \frac{\Pi}{2} - n \pa{\gz_1 + \gd C_2 \; \gd_4}} \pa{1 + \gz_2} \\
@@ -434,7 +434,7 @@ The key result of \cite{BoldoDaumasLi2009} is that:
 \]
 \cite[205]{Muller2016} notes that:
 \[
-\abs{\frac{\Pi}{2} - C_1 - C_2} \leq 2^{-M + 3} \ULP\of{C_1} \leq 2^{-2 M + 4}
+\abs{\frac{\Pi}{2} - \pa{C_1 + C_2}} \leq 2^{-M + 3} \ULP\of{C_1} \leq 2^{-2 M + 4}
 \]
 where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus that $\ULP\of{C_1} = 2^{-M + 1}$.  The absolute error on the reduction is therefore less than:
 \[
@@ -443,14 +443,15 @@ where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus
 
 As before, the reduction guarantees $\gk_3$ extra bits of accuracy if this error is less than $2^{-\gk_3 - 1} \ULP\of{\red x}$:
 
-\todo{Include $\gd \red x$ in this analysis.}
+\todo{Include $\gd \red x$ in this analysis and do the same for Cody-Waite.}
 \[
 \abs{n} \; 2^{-2 M + 4} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \]
 A sufficient condition for this is:
-\[
+\begin{equation}
 \abs{\red x} \geq \abs{n} \; 2^{\gk_3 - M + 4}
-\]
+\label{eqnboldo2}
+\end{equation}
 \todo{Threshold above which this reduction cannot be used.}
 
 \subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Three-Term Approximation}
@@ -464,10 +465,10 @@ w &= \round{n \; C_3} \\
 \]
 where:
 \[
-C_3 = \round{\frac{\Pi}{2} - C_1 - C_2} = \pa{\frac{\Pi}{2} - C_1 - C_2} \pa{1 + \gd_1}
+C_3 = \round{\frac{\Pi}{2} - \pa{C_1 + C_2}} = \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}} \pa{1 + \gd_1}
 \]
 
-Let $\gz$ be the relative error introduced by $\dwminusfp$.  Theorem 2.2 of \cite{MullerRideau2022} indicates that $\abs{\gz} < 2^{1 - 2 M}$.  The result of the above computation is:
+Let $\gz$ be the relative error introduced by $\dwminusfp$.  Theorem 2.2 of \cite{MullerRideau2022} indicates that $\abs{\gz} \leq 2^{1 - 2 M}$.  The result of the above computation is:
 \[
 \dwminusfp\of{\pa{\red x, \gd \red x}, w} = \pa{1 + \gz}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3}
 \]
@@ -476,13 +477,19 @@ and the absolute error on the reduction is the difference between this quantity 
 \mathscr{E}_{abs} &= \pa{1 + \gz}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3} - \pa{x - n \frac{\Pi}{2}} \\
 &= n \pa{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3}} - n \; \gd_1 \; C_3 + \gz \pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3}
 \end{align*}
-Now we have the inequalities:
+The following inequalities hold for the various terms of the right-hand side:
 \begin{align*}
-\abs{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3}} &\leq \gd_1 \; 2^{-2 M + 4} = 2^{-3 M + 4} \\
-\gd_1 \; C_3 &= \gd_1 \pa{1 + \gd_1} \pa{\frac{\Pi}{2} - C_1 - C_2} \leq \gd_1 \pa{1 + \gd_1} 2^{-2 M + 4} \\
-\gz \pa{1 + \gd_1} C_3 &\leq \gz \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \\
-\gz \pa{x - n \pa{C_1 + C_2}} &= \gz \pa{\red x + \gd \red x}
+\abs{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3}} &= \gd_1 \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}} \leq \gd_1 \; 2^{-2 M + 4} \leq 2^{-3 M + 4} \\
+\gd_1 \; C_3 &= \gd_1 \pa{1 + \gd_1} \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}} \leq \gd_1 \pa{1 + \gd_1} 2^{-2 M + 4} \leq 2^{-3 M + 5} \\
+\gz \pa{1 + \gd_1} C_3 &\leq \gz \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \leq 2^{-4 M + 6}\\
+\gz \abs{x - n \pa{C_1 + C_2}} &= \gz \abs{\red x + \gd \red x} \leq \abs{n} 2^{\gk_3 - 3 M + 5}
 \end{align*}
+Where the last inequality is derived from the fact that we only use a three-term approximation when \ref{eqnboldo2} does not hold.
+
+Putting all these inequalities together we obtain the following bound for the absolute error:
+\[
+\abs{\mathscr{E}_{abs}} \leq \abs{n} \pa{2^{-3 M + 4} + 2^{-3 M + 5} + 2^{-4 M + 6} + 2^{\gk_3 - 3 M + 5}}
+\]
 \todo{Complete the error analysis.}
 
 \subsection*{Fallback}
