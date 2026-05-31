@@ -86,6 +86,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{B0F4
 	ProjectSection(SolutionItems) = preProject
 		debug_and_release_in_parallel.xml = debug_and_release_in_parallel.xml
 		find_msbuild.ps1 = find_msbuild.ps1
+		generate_assembly_info.ps1 = generate_assembly_info.ps1
 		generate_version_translation_unit.ps1 = generate_version_translation_unit.ps1
 		include_what_you_using_all_the_things.ps1 = include_what_you_using_all_the_things.ps1
 		install_deps.sh = install_deps.sh
