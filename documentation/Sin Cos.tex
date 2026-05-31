@@ -8,6 +8,7 @@
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 \counterwithout{equation}{section}
+\usepackage{todonotes}
 
 % Must come last.
 \usepackage{siunitx}
@@ -48,6 +49,7 @@
 \begin{sloppypar}
 \noindent
 This document describes the implementation of functions \texttt{Sin} and \texttt{Cos} in Principia.  The goals of that implementation are to be portable (including to machines that do not have a fused multiply-add instruction), achieve good performance, and ensure correct rounding.
+\todo{Revise all the places that assume Cody-Waite.}
 \end{sloppypar}
 
 \section*{Overview}
@@ -441,7 +443,7 @@ where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus
 
 As before, the reduction guarantees $\gk_3$ extra bits of accuracy if this error is less than $2^{-\gk_3 - 1} \ULP\of{\red x}$:
 
-//TODO(phl) delta x
+\todo{Include $\gd \red x$ in this analysis.}
 \[
 \abs{n} \; 2^{-2 M + 4} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \]
@@ -449,8 +451,7 @@ A sufficient condition for this is:
 \[
 \abs{\red x} \geq \abs{n} \; 2^{\gk_3 - M + 4}
 \]
-
-//TODO(phl) Threshold
+\todo{Threshold above which this reduction cannot be used.}
 
 \subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Three-Term Approximation}
 
@@ -482,8 +483,7 @@ Now we have the inequalities:
 \gz \pa{1 + \gd_1} C_3 &\leq \gz \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \\
 \gz \pa{x - n \pa{C_1 + C_2}} &= \gz \pa{\red x + \gd \red x}
 \end{align*}
-
-//TODO(phl) Error
+\todo{Complete the error analysis.}
 
 \subsection*{Fallback}
 
