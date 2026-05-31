@@ -16,7 +16,6 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::geometry::_interval;
 using namespace principia::numerics::_elementary_functions;
-using ::testing::Eq;
 
 class GraphTest : public ::testing::Test {};
 
