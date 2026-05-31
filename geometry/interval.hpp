@@ -31,6 +31,9 @@ struct Interval {
 
   // Extends this interval so that it contains x.
   void Include(T const& x);
+
+  // The intersection of `*this` with `other`, which is also an interval.
+  Interval IntersectedWith(Interval const& other) const;
 };
 
 template<typename T>

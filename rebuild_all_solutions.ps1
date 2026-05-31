@@ -22,7 +22,8 @@ foreach ($directory_and_repositories in @(
                        "protobuf", `
                        "re2")),
          @("Inria",  @("core-math")),
-         @("LLNL",   @("zfp")))) {
+         @("LLNL",   @("zfp")),
+         @("Lode", @("lodepng")))) {
   $directory, $repositories = $directory_and_repositories
   New-Item -ItemType Directory -Force -Path $directory
   Push-Location -Path $directory

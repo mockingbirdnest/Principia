@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Property Sheets", "
 		google_protobuf.props = google_protobuf.props
 		include_solution.props = include_solution.props
 		llnl_zfp.props = llnl_zfp.props
+		lode_lodepng.props = lode_lodepng.props
 		principia.props = principia.props
 		profiling.props = profiling.props
 		suppress_useless_warnings.props = suppress_useless_warnings.props
@@ -201,6 +202,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nanobenchmarks", "nanobenchmarks\nanobenchmarks.vcxproj", "{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "functions", "shared\functions\functions.vcxitems", "{680F2F63-5CE1-4F32-8332-83F2E3D7B920}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "graphics", "graphics\graphics.vcxproj", "{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -582,6 +585,22 @@ Global
 		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release|x64.Build.0 = Release|x64
 		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release|x64_AVX_FMA.ActiveCfg = Release_AVX_FMA|x64
 		{1C6654C0-14E2-4A9E-B0E6-508B84FA8A0E}.Release|x64_AVX_FMA.Build.0 = Release_AVX_FMA|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Debug|x64.ActiveCfg = Debug|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Debug|x64.Build.0 = Debug|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Debug|x64_AVX_FMA.ActiveCfg = Debug|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Debug|x64_AVX_FMA.Build.0 = Debug|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release KSP 1.7.3|x64.ActiveCfg = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release KSP 1.7.3|x64.Build.0 = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release KSP 1.7.3|x64_AVX_FMA.ActiveCfg = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release KSP 1.7.3|x64_AVX_FMA.Build.0 = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release_LLVM|x64.ActiveCfg = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release_LLVM|x64.Build.0 = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release_LLVM|x64_AVX_FMA.ActiveCfg = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release_LLVM|x64_AVX_FMA.Build.0 = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release|x64.ActiveCfg = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release|x64.Build.0 = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release|x64_AVX_FMA.ActiveCfg = Release|x64
+		{20C9D292-5155-4E8A-9C6C-FFB761EA2C5D}.Release|x64_AVX_FMA.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -608,6 +627,8 @@ Global
 		shared\numerics.vcxitems*{0fd08cdf-228c-48c6-8690-cf0a72cf6c69}*SharedItemsImports = 4
 		shared\base.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{1c6654c0-14e2-4a9e-b0e6-508b84fa8a0e}*SharedItemsImports = 4
+		shared\base.vcxitems*{20c9d292-5155-4e8a-9c6c-ffb761ea2c5d}*SharedItemsImports = 4
+		shared\numerics.vcxitems*{20c9d292-5155-4e8a-9c6c-ffb761ea2c5d}*SharedItemsImports = 4
 		shared\base.vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
 		shared\numerics.vcxitems*{273987f9-5e73-43e6-868e-e9d3c137f01a}*SharedItemsImports = 4
 		shared\base.vcxitems*{2e28828e-8364-4962-a9ff-c20a72eb884c}*SharedItemsImports = 4
