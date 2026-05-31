@@ -433,13 +433,12 @@ The two-term reduction guarantees $\gk_3$ extra bits of accuracy if this error i
 \[
 \abs{n} \; 2^{-2 M + 4} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \]
-A sufficient condition for this is:
+A sufficient condition for this is\footnote{Note that the error bound is fundamentally different from the one we obtained for the Cody-Waite reduction.  For Cody-Waite we have to choose upfront an upper bound on $\abs{n}$ (and therefore $\abs{x}$) based on the number of zeroes at the end of the mantissa of $C_1$ (resp. $C_2$).  This is necessary so that the product $n \; C_1$ (resp. $n \; C_2$) be exact.  Here we don't need an \emph{a priori} upper bound because \cite{BoldoDaumasLi2009} always yields an exact value.  So we can apply the algorithm to any argument and check \emph{post hoc} if the reduced argument is large enough.  Most of the time it will be, unless the input argument is extremely large or extremely close to a multiple of $\frac{\Pi}{2}$.  This means that the Boldo-Daumas-Li reduction is usable over a much larger range that the Cody-Waite reduction.}:
 \begin{equation}
 \abs{\red x} \geq \abs{n} \; 2^{\gk_3 - M + 4}
 \label{eqnboldo2}
 \end{equation}
 If $\gk_3 = 18$ the numeric value of the multiplier $2^{\gk_3 - M + 4}$ is $2^{-31} \simeq 4.7 \times 10^{-10}$.
-\todo{Also use $n$ for Cody-Waite.}
 
 \subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Three-Term Approximation}
 
@@ -501,7 +500,7 @@ If $\gk_3 = 18$ the numeric value of the multiplier is $524291 \times 2^{-84} \s
 
 \subsubsection*{Applicability of the Boldo-Daumas-Li Argument Reduction}
 
-If $\abs{n}$ is too large (that is, if $\abs{x}$ is too large) the right-hand side of (\ref{eqnboldo2}) and (\ref{eqnboldo3}) becomes so large that no reduced angle $\red x$ is acceptable: this happens if the right-hand side reaches $\frac{\Pi}{4}$.  When deciding for which angles it is worthwhile to attempt the Boldo-Daumas-Li reduction, it is important to note that all the work done for the two-term reduction is reused by the three-term reduction, since the latter just performs more operations on the result obtained by the former.  This differs from the Cody-Waite reduction, where the result of the two-term reduction is not easily usable by the three-term reduction.  Therefore, there is not much harm in trying the two-term Boldo-Daumas-Li if there is a good probability that, if it fails, the three-term reduction will succeed.
+If $\abs{n}$ is too large (that is, if $\abs{x}$ is too large) the right-hand side of (\ref{eqnboldo2}) and (\ref{eqnboldo3}) becomes so large that no reduced angle $\red x$ is acceptable: this happens if the right-hand side is larger than $\frac{\Pi}{4}$.  When deciding for which angles it is worthwhile to attempt the Boldo-Daumas-Li reduction, it is important to note that all the work done for the two-term reduction is reused by the three-term reduction, since the latter just performs more operations on the result obtained by the former.  This differs from the Cody-Waite reduction, where the result of the two-term reduction is not easily usable by the three-term reduction.  Therefore, there is not much harm in trying the two-term Boldo-Daumas-Li if there is a good probability that, if it fails, the three-term reduction will succeed.
 
 In our implementation we choose to perform the Boldo-Daumas-Li reduction if there is a possibility that it succeeds with two terms according to (\ref{eqnboldo2}), that is if:
 \[
@@ -518,7 +517,7 @@ For the largest value of $\abs{n}$ the right-hand side of (\ref{eqnboldo3}) is:
 \[
 \Pi \; 2^{-M - 2} \; \pa{3 + 2^{\gk_3 + 1}}
 \]
-whose numerical value is approximately $4.6 \times 10^{-11}$.  There is therefore a high probability that, even if the two-term reduction fails, the three-term reduction will succeed and therefore the work done by the two-term reduction will not be wasted.
+whose numerical value is approximately $4.6 \times 10^{-11}$.  There is therefore a high probability that, even if the two-term reduction fails, the three-term reduction will succeed and the work done by the two-term reduction will not be wasted.
 
 \subsection*{Fallback}
 
@@ -898,7 +897,7 @@ The relative error of the entire computation is:
 \[
 r\of{\red x, \gd \red x} \DefineAs \frac{y + \gd y}{\sin\of{\red x + \gd \red x + \gz_0 \; \red x}} - 1
 \]
-The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows\marginnote{TODO(phl): See if this can be proven rigourously.} that this function reaches its extrema at the corners of the domain, which is logical because we expect the minimax polynomial to reach its largest errors on the bounds of the optimization interval.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.281}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'D28F'8E40'4p0}.$\marginnote{TODO(phl): $\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
+The function $r$ can be computed using \textit{Mathematica} interval arithmetic over the triangular domain $\abs{\red x} \le \gD$, $\abs{\gd \red x} \le 2^{-M} \abs{\red x}$.  Plotting shows\todo{See if this can be proven rigourously.} that this function reaches its extrema at the corners of the domain, which is logical because we expect the minimax polynomial to reach its largest errors on the bounds of the optimization interval.  In practice we find that $\abs{r\of{\red x, \gd \red x}} < 2^{-70.281}$ (as expected, this is a bit worse than the error originating from the angle reduction).  The rounding test must be done with $e = \texttt{0x1.0000'D28F'8E40'4p0}.$\todo{$\gk_3 = 19$ would gain 0.7 bits.  Worthwhile?}
 
 As mentioned above (see \nameref{overview}), in these steps we do not compute the terms ${\red x}^n \; \gd \red x$ for $n > 0$.  The largest such term is for $n = 2$ and the relative error that it induces is:
 \[
