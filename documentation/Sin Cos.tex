@@ -224,21 +224,6 @@ and the following upper bound for $\gd C_2$:
  
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
-\section*{Argument Reduction}
-
-Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\red x, \gd \red x}$ such that:
-\[
-\begin{dcases}
-\red x + \gd \red x ≅ x \pmod{\frac{\Pi}{2}} \\
-\red x \;\text{is approximately in}\; \intclos{-\frac{\Pi}{4}}{\frac{\Pi}{4}} \\
-\abs{\gd \red x} \leq \frac{1}{2} \ULP\of{\red x} 
-\end{dcases}
-\]
-
-\subsection*{Argument Reduction for Small Angles}
-
-If $\abs x < \round{\frac{\Pi}{4}}$ then $\red x = x$ and $\gd \red x = 0$.
-
 \subsubsection*{Cody-Waite Argument Reduction Using a Two-Term Approximation}
 
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
@@ -414,7 +399,7 @@ On machines that have an FMA instruction, we use the Boldo-Daumas-Li reduction a
 
 \subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Two-Term Approximation}
 
-In this scheme we use a two-term approximation of the modulus as $C_1 + C_2$.  Using our notation, the algorithm proceeds as follows:
+In this scheme we use a two-term approximation $C_1 + C_2$ of the modulus.  Using our notation, the algorithm proceeds as follows:
 \[
 \begin{dcases}
 n &= \round{\round{3 \cdot 2^{M - 2} + R \; x} - 3 \cdot 2^{M - 2}} \\
@@ -433,15 +418,16 @@ The key result of \cite{BoldoDaumasLi2009} is that:
 \red x + \gd \red x = x - n \pa{C_1 + C_2}
 \]
 \cite[205]{Muller2016} notes that:
-\[
+\begin{equation}
 \abs{\frac{\Pi}{2} - \pa{C_1 + C_2}} \leq 2^{-M + 3} \ULP\of{C_1} \leq 2^{-2 M + 4}
-\]
-where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus that $\ULP\of{C_1} = 2^{-M + 1}$.  The absolute error on the reduction is therefore less than:
+\label{eqnmullermodulo}
+\end{equation}
+where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus that $\ULP\of{C_1} = 2^{-M + 1}$.  Furthermore, the absolute error on the reduction is such that:
 \[
-\abs{n} \; 2^{-M + 3} \ULP\of{C_1} = \abs{n} 2^{-2 M + 4}
+\abs{\mathscr{E}} \leq \abs{n} \; 2^{-M + 3} \ULP\of{C_1} = \abs{n} 2^{-2 M + 4}
 \]
 
-As before, the reduction guarantees $\gk_3$ extra bits of accuracy if this error is less than $2^{-\gk_3 - 1} \ULP\of{\red x}$:
+The two-term reduction guarantees $\gk_3$ extra bits of accuracy if this error is less than $2^{-\gk_3 - 1} \ULP\of{\red x}$:
 
 \todo{Include $\gd \red x$ in this analysis and do the same for Cody-Waite.}
 \[
@@ -452,11 +438,12 @@ A sufficient condition for this is:
 \abs{\red x} \geq \abs{n} \; 2^{\gk_3 - M + 4}
 \label{eqnboldo2}
 \end{equation}
-\todo{Threshold above which this reduction cannot be used.}
+If $\gk_3 = 18$ the numeric value of the multiplier $2^{\gk_3 - M + 4}$ is $2^{-31} \simeq 4.7 \times 10^{-10}$.
+\todo{Also use $n$ for Cody-Waite.}
 
 \subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Three-Term Approximation}
 
-If the condition above on $\abs{\red x}$ is not met, we extend the algorithm as suggested by \cite[1139]{BoldoDaumasLi2009} and \cite[205]{Muller2016}:
+If the condition (\ref{eqnboldo2}) is not met, we extend the algorithm as suggested by \cite[1139]{BoldoDaumasLi2009} and \cite[205]{Muller2016}:
 \[
 \begin{dcases}
 w &= \round{n \; C_3} \\
@@ -468,29 +455,70 @@ where:
 C_3 = \round{\frac{\Pi}{2} - \pa{C_1 + C_2}} = \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}} \pa{1 + \gd_1}
 \]
 
-Let $\gz$ be the relative error introduced by $\dwminusfp$.  Theorem 2.2 of \cite{MullerRideau2022} indicates that $\abs{\gz} \leq 2^{1 - 2 M}$.  The result of the above computation is:
+Let $\gz_1$ be the relative error introduced by $\dwminusfp$.  Theorem 2.2 of \cite{MullerRideau2022} indicates that $\abs{\gz_1} \leq 2^{1 - 2 M}$.  The result of the above computation is:
 \[
-\dwminusfp\of{\pa{\red x, \gd \red x}, w} = \pa{1 + \gz}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3}
+\dwminusfp\of{\pa{\red x, \gd \red x}, w} = \pa{1 + \gz_1}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3}
 \]
 and the absolute error on the reduction is the difference between this quantity and $x - n \frac{\Pi}{2}$:
 \begin{align*}
-\mathscr{E}_{abs} &= \pa{1 + \gz}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3} - \pa{x - n \frac{\Pi}{2}} \\
-&= n \pa{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3}} - n \; \gd_1 \; C_3 + \gz \pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3}
+\mathscr{E} &= \pa{1 + \gz_1}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3} - \pa{x - n \frac{\Pi}{2}} \\
+&= n \pa{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_1 \; C_3} + \gz_1 \; \pa{x - n \pa{C_1 + C_2}} - \gz_1 \; \pa{1 + \gd_1} \; n \; C_3
 \end{align*}
-The following inequalities hold for the various terms of the right-hand side:
+The first term may be simplified by noting that:
 \begin{align*}
-\abs{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3}} &= \gd_1 \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}} \leq \gd_1 \; 2^{-2 M + 4} \leq 2^{-3 M + 4} \\
-\gd_1 \; C_3 &= \gd_1 \pa{1 + \gd_1} \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}} \leq \gd_1 \pa{1 + \gd_1} 2^{-2 M + 4} \leq 2^{-3 M + 5} \\
-\gz \pa{1 + \gd_1} C_3 &\leq \gz \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \leq 2^{-4 M + 6}\\
-\gz \abs{x - n \pa{C_1 + C_2}} &= \gz \abs{\red x + \gd \red x} \leq \abs{n} 2^{\gk_3 - 3 M + 5}
+\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} &= -\gd_1 \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}} \\
+\gd_1 \; C_3 &= \gd_1 \pa{1 + \gd_1} \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}}
 \end{align*}
-Where the last inequality is derived from the fact that we only use a three-term approximation when \ref{eqnboldo2} does not hold.
+and therefore:
+\[
+\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_1 \; C_3 = -\gd_1 \pa{2 + \gd_1} \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}}
+\]
+
+From this we deduce the following bounds for the terms of $\mathscr{E}$, using (\ref{eqnmullermodulo}) and the fact that, when we use a three-term approximation, (\ref{eqnboldo2}) does not hold:
+\begin{align*}
+\abs{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_1 \; C_3} &\leq \gd_1 \pa{2 + \gd_1} \; 2^{-2 M + 4} \\
+\abs{\gz_1 \; \pa{x - n \pa{C_1 + C_2}}} &= \gz_1 \; \abs{\red x + \gd \red x} \leq \abs{n} \; 2^{\gk_3 - 3 M + 5} \\
+\abs{\gz_1 \; \pa{1 + \gd_1} \; C_3} &\leq \gz_1 \; \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \leq \pa{1 + \gd_1}^2 \; 2^{-4 M + 5}
+\end{align*}
 
 Putting all these inequalities together we obtain the following bound for the absolute error:
+\begin{align*}
+\abs{\mathscr{E}} &\leq \abs{n} \; \pa{\gd_1 \pa{2 + \gd_1 + \frac{\pa{1 + \gd_1}^2}{\gd_1} 2^{-2 M + 1}} \; 2^{-2 M + 4} + 2^{\gk_3 - 3 M + 5}} \\
+&\leq \abs{n} \; \pa{3 \times 2^{-3 M + 4} + 2^{\gk_3 - 3 M + 5}} = 2^{-3 M + 4} \pa{3 + 2^{\gk_3 + 1}}
+\end{align*}
+where we have used the fact that, the inner term of the first line is less than $3$.
+
+As before, the three-term reduction guarantees $\gk_3$ extra bits of accuracy if:
 \[
-\abs{\mathscr{E}_{abs}} \leq \abs{n} \pa{2^{-3 M + 4} + 2^{-3 M + 5} + 2^{-4 M + 6} + 2^{\gk_3 - 3 M + 5}}
+\abs{\mathscr{E}} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \]
-\todo{Complete the error analysis.}
+which is satisfied if:
+\begin{equation}
+\abs{\red x} \geq \abs{n} \; 2^{\gk_3 - 2 M + 4} \pa{3 + 2^{\gk_3 + 1}}
+\label{eqnboldo3}
+\end{equation}
+If $\gk_3 = 18$ the numeric value of the multiplier is $524291 \times 2^{-84} \simeq 2.7 \times 10^{-20}$.
+
+\subsubsection*{Applicability of the Boldo-Daumas-Li Argument Reduction}
+
+If $\abs{n}$ is too large (that is, if $\abs{x}$ is too large) the right-hand side of (\ref{eqnboldo2}) and (\ref{eqnboldo3}) becomes so large that no reduced angle $\red x$ is acceptable: this happens if the right-hand side reaches $\frac{\Pi}{4}$.  When deciding for which angles it is worthwhile to attempt the Boldo-Daumas-Li reduction, it is important to note that all the work done for the two-term reduction is reused by the three-term reduction, since the latter just performs more operations on the result obtained by the former.  This differs from the Cody-Waite reduction, where the result of the two-term reduction is not easily usable by the three-term reduction.  Therefore, there is not much harm in trying the two-term Boldo-Daumas-Li if there is a good probability that, if it fails, the three-term reduction will succeed.
+
+In our implementation we choose to perform the Boldo-Daumas-Li reduction if there is a possibility that it succeeds with two terms according to (\ref{eqnboldo2}), that is if:
+\[
+\abs{n} < \frac{\Pi}{4} \; 2^{M - \gk_3 - 4}
+\]
+or equivalently if:
+\[
+\abs{x} < \Pi^2 \; 2^{M - \gk_3 - 7}
+\]
+
+The numerical value of this threshold is approximately $2.6 \times 10^9$, large enough for practical purposes.
+
+For the largest value of $\abs{n}$ the right-hand side of (\ref{eqnboldo3}) is:
+\[
+\Pi \; 2^{-M - 2} \; \pa{3 + 2^{\gk_3 + 1}}
+\]
+whose numerical value is approximately $4.6 \times 10^{-11}$.  There is therefore a high probability that, even if the two-term reduction fails, the three-term reduction will succeed and therefore the work done by the two-term reduction will not be wasted.
 
 \subsection*{Fallback}
 
