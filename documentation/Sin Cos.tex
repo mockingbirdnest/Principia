@@ -33,7 +33,7 @@
 \newcommand{\roundTowardZero}[1]{\doubleSquareBrackets{#1}_0}
 \newcommand{\roundTowardPositive}[1]{\doubleSquareBrackets{#1}_+}
 \newcommand{\roundTowardNegative}[1]{\doubleSquareBrackets{#1}_-}
-\newcommand{\roundAll}[1]{\doubleSquareBrackets{#1}_\unicodecdots}
+\newcommand{\roundAll}[1]{\doubleSquareBrackets{#1}_⋯}
 \newcommand{\hex}[1]{{_{16}}\mathrm{#1}}
 \newcommand{\bin}[1]{{_{2}}\mathrm{#1}}
 \newcommand{\red}[1]{\tilde{#1}}
@@ -221,6 +221,21 @@ and the following upper bound for $\gd C_2$:
 \end{equation}
  
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
+
+\section*{Argument Reduction}
+
+Given an argument $x$, the purpose of argument reduction is to compute a pair of floating-point numbers $\pa{\red x, \gd \red x}$ such that:
+\[
+\begin{dcases}
+\red x + \gd \red x ≅ x \pmod{\frac{\Pi}{2}} \\
+\red x \;\text{is approximately in}\; \intclos{-\frac{\Pi}{4}}{\frac{\Pi}{4}} \\
+\abs{\gd \red x} \leq \frac{1}{2} \ULP\of{\red x} 
+\end{dcases}
+\]
+
+\subsection*{Argument Reduction for Small Angles}
+
+If $\abs x < \round{\frac{\Pi}{4}}$ then $\red x = x$ and $\gd \red x = 0$.
 
 \subsubsection*{Cody-Waite Argument Reduction Using a Two-Term Approximation}
 
