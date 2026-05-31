@@ -6,7 +6,7 @@
 #include "quantities/si.hpp"
 #include "quantities/numbers.hpp"
 #include "numerics/elementary_functions.hpp"
-#include "testing_utilities/golden_graphs.hpp"
+#include "testing_utilities/golden_graphs.hpp"  // 🧙 for EXPECT_GOLDEN_GRAPH.
 
 namespace principia {
 namespace graphics {
