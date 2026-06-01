@@ -56,8 +56,8 @@ This document describes the implementation of functions \texttt{Sin} and \texttt
 
 The implementation follows the ideas described by \cite{GalBachelis1991} and uses accurate tables produced by the method presented in \cite{StehléZimmermann2005}.  It guarantees correct rounding with a high probability.  In circumstances where it cannot guarantee correct rounding, it falls back to the (slower but correct) implementation provided by the CORE-MATH project \cite{SibidanovZimmermannGlondu2022} \cite{ZimmermannSibidanovGlondu2024}.  More precisely, the algorithm proceeds through the following steps:
 \begin{itemize}[nosep]
-\item perform argument reduction using Cody and Waite's algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010});
-\item if argument reduction loses too many bits (\idest, the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
+\item perform argument reduction using the Cody-Waite or Boldo-Daumas-Li algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}, \cite[204]{Muller2016});
+\item if the argument is too large, or if argument reduction loses too many bits (\idest, the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to Payne-Hanek reduction;
 \item otherwise, uses accurate tables and polynomial approximations to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
 \item if the result fails Muller's rounding test (\cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise return the rounded result of the preceding computation.
@@ -479,13 +479,14 @@ From this we deduce the following bounds for the terms of $\mathscr{E}$, using (
 \abs{\gz_1 \; \pa{x - n \pa{C_1 + C_2}}} &= \gz_1 \; \abs{\red x + \gd \red x} \leq \abs{n} \; 2^{\gk_3 - 3 M + 5} \\
 \abs{\gz_1 \; \pa{1 + \gd_1} \; C_3} &\leq \gz_1 \; \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \leq \pa{1 + \gd_1}^2 \; 2^{-4 M + 5}
 \end{align*}
+\todo{$1 + u/2$.}
 
 Putting all these inequalities together we obtain the following bound for the absolute error:
 \begin{align*}
 \abs{\mathscr{E}} &\leq \abs{n} \; \pa{\gd_1 \pa{2 + \gd_1 + \frac{\pa{1 + \gd_1}^2}{\gd_1} 2^{-2 M + 1}} \; 2^{-2 M + 4} + 2^{\gk_3 - 3 M + 5}} \\
 &\leq \abs{n} \; \pa{3 \times 2^{-3 M + 4} + 2^{\gk_3 - 3 M + 5}} = 2^{-3 M + 4} \pa{3 + 2^{\gk_3 + 1}}
 \end{align*}
-where we have used the fact that, the inner term of the first line is less than $3$.
+where we have used the fact that the inner term of the first line is less than $3$.
 
 As before, the three-term reduction guarantees $\gk_3$ extra bits of accuracy if:
 \[
@@ -500,7 +501,7 @@ If $\gk_3 = 18$ the numeric value of the multiplier is $524291 \times 2^{-84} \s
 
 \subsubsection*{Applicability of the Boldo-Daumas-Li Argument Reduction}
 
-If $\abs{n}$ is too large (that is, if $\abs{x}$ is too large) the right-hand side of (\ref{eqnboldo2}) and (\ref{eqnboldo3}) becomes so large that no reduced angle $\red x$ is acceptable: this happens if the right-hand side is larger than $\frac{\Pi}{4}$.  When deciding for which angles it is worthwhile to attempt the Boldo-Daumas-Li reduction, it is important to note that all the work done for the two-term reduction is reused by the three-term reduction, since the latter just performs more operations on the result obtained by the former.  This differs from the Cody-Waite reduction, where the result of the two-term reduction is not easily usable by the three-term reduction.  Therefore, there is not much harm in trying the two-term Boldo-Daumas-Li if there is a good probability that, if it fails, the three-term reduction will succeed.
+If $\abs{n}$ is too large (that is, if $\abs{x}$ is too large) the right-hand side of (\ref{eqnboldo2}) and (\ref{eqnboldo3}) becomes so large that no reduced angle $\red x$ is acceptable: this happens if the right-hand side is larger than $\frac{\Pi}{4}$.  When deciding for which angles it is worthwhile to attempt the Boldo-Daumas-Li reduction, it is important to note that all the work done for the two-term reduction is reused by the three-term reduction, since the latter just performs more operations on the result obtained by the former.  This differs from the Cody-Waite reduction, where the result of the two-term reduction is not usable by the three-term reduction.  Therefore, there is not much harm in trying the two-term Boldo-Daumas-Li reduction if there is a good probability that, if it fails, the three-term reduction will succeed.
 
 In our implementation we choose to perform the Boldo-Daumas-Li reduction if there is a possibility that it succeeds with two terms according to (\ref{eqnboldo2}), that is if:
 \[
@@ -1118,10 +1119,10 @@ The computation of $h'$ is going to round the most significand $M$ bits of that 
 The following picture represents the significand of $s_k + c_k h$, with the least significant bit on the right.  The leftmost $M$ bits are the part that is rounded (either up or down).  The rightmost $M + 1$ bits are the ones that contribute to $\gz_1$.  We consider different cases based on the values of bits $b_1$ and $b_2$.
 \begin{center}
 \begin{tikzpicture}
-  \draw [pattern=north east lines] (0, 0) rectangle node[above=10] {$M$ bits} (4, 0.5);
-  \draw (4, 0) rectangle node {$b_1$} node[above=10] {$1$ bit} (4.5, 0.5);
-  \draw [pattern=north east lines] (4.5, 0) rectangle node[fill=white] {$B$} node[above=10] {$M - 1$ bits} (8, 0.5);
-  \draw (8, 0) rectangle node {$b_2$} node[above=10] {$1$ bit} (8.5, 0.5);
+  \draw [pattern=north east lines] (0, 0) rectangle node[above=5mm] {$M$ bits} (4, 0.5);
+  \draw (4, 0) rectangle node {$b_1$} node[above=5mm] {$1$ bit} (4.5, 0.5);
+  \draw [pattern=north east lines] (4.5, 0) rectangle node[fill=white] {$B$} node[above=5mm] {$M - 1$ bits} (8, 0.5);
+  \draw (8, 0) rectangle node {$b_2$} node[above=5mm] {$1$ bit} (8.5, 0.5);
 \end{tikzpicture}
 \end{center}
 
