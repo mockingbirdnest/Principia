@@ -49,7 +49,6 @@
 \begin{sloppypar}
 \noindent
 This document describes the implementation of functions \texttt{Sin} and \texttt{Cos} in Principia.  The goals of that implementation are to be portable (including to machines that do not have a fused multiply-add instruction), achieve good performance, and ensure correct rounding.
-\todo{Revise all the places that assume Cody-Waite.}
 \end{sloppypar}
 
 \section*{Overview}
@@ -58,7 +57,7 @@ The implementation follows the ideas described by \cite{GalBachelis1991} and use
 \begin{itemize}[nosep]
 \item perform argument reduction using the Cody-Waite or Boldo-Daumas-Li algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}, \cite[204]{Muller2016});
 \item if the argument is too large, or if argument reduction loses too many bits (\idest, the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to Payne-Hanek reduction;
-\item otherwise, uses accurate tables and polynomial approximations to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
+\item use accurate tables and polynomial approximations to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
 \item if the result fails Muller's rounding test (\cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise return the rounded result of the preceding computation.
 \end{itemize}
@@ -328,7 +327,7 @@ The exact $\twodifference$ yields a pair such that $\abs{\gd \red x} \le \frac{\
 \]
 The accurate tables must be constructed so that the last interval covers angles misrounded in that manner\footnote{In practice this is not a stringent constraint because the distance between accurate table entries is much larger than this quantity.}.
 
-In the computation of the trigonometric functions, we need $\red x + \gd \red x$ to provide enough accuracy that the final result is correctly rounded most of the time.  The above error bound shows that, if $\red x$ is very small (\idest, if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\red x + \gd \red x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result:
+In the computation of the trigonometric functions, we need $\red x + \gd \red x$ to provide enough accuracy that the final result is correctly rounded most of the time.  The above error bound shows that, if $\red x$ is very small (\idest, if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\red x + \gd \red x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result\footnote{We can ignore $\gd \red x$ in this bound because $\round{\red x + \gd \red x} = \red x$ by construction, and therefore $\ULP\of{\red x + \gd \red x} = \ULP\of{\red x}$}:
 \begin{equation}
 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \label{eqnreductionbound}
@@ -429,7 +428,6 @@ where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus
 
 The two-term reduction guarantees $\gk_3$ extra bits of accuracy if this error is less than $2^{-\gk_3 - 1} \ULP\of{\red x}$:
 
-\todo{Include $\gd \red x$ in this analysis and do the same for Cody-Waite.}
 \[
 \abs{n} \; 2^{-2 M + 4} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \]
@@ -476,17 +474,19 @@ and therefore:
 From this we deduce the following bounds for the terms of $\mathscr{E}$, using (\ref{eqnmullermodulo}) and the fact that, when we use a three-term approximation, (\ref{eqnboldo2}) does not hold:
 \begin{align*}
 \abs{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_1 \; C_3} &\leq \gd_1 \pa{2 + \gd_1} \; 2^{-2 M + 4} \\
-\abs{\gz_1 \; \pa{x - n \pa{C_1 + C_2}}} &= \gz_1 \; \abs{\red x + \gd \red x} \leq \abs{n} \; 2^{\gk_3 - 3 M + 5} \\
+\abs{\gz_1 \; \pa{x - n \pa{C_1 + C_2}}} &= \gz_1 \; \abs{\red x + \gd \red x} = \gz_1 \; \abs{\red x} \pa{1 + \gd_2} \leq \abs{n} \pa{1 + \gd_2} 2^{\gk_3 - 3 M + 5} \\
 \abs{\gz_1 \; \pa{1 + \gd_1} \; C_3} &\leq \gz_1 \; \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \leq \pa{1 + \gd_1}^2 \; 2^{-4 M + 5}
 \end{align*}
-\todo{$1 + u/2$.}
 
 Putting all these inequalities together we obtain the following bound for the absolute error:
 \begin{align*}
-\abs{\mathscr{E}} &\leq \abs{n} \; \pa{\gd_1 \pa{2 + \gd_1 + \frac{\pa{1 + \gd_1}^2}{\gd_1} 2^{-2 M + 1}} \; 2^{-2 M + 4} + 2^{\gk_3 - 3 M + 5}} \\
-&\leq \abs{n} \; \pa{3 \times 2^{-3 M + 4} + 2^{\gk_3 - 3 M + 5}} = 2^{-3 M + 4} \pa{3 + 2^{\gk_3 + 1}}
+\abs{\mathscr{E}} &\leq \abs{n} \; \pa{\pa{\gd_1 \pa{2 + \gd_1} + \pa{1 + \gd_1}^2 2^{-2 M + 1} + \gd_2 \; 2^{\gk_3 - M + 1}} \; 2^{-2 M + 4} + 2^{\gk_3 - 3 M + 5}} \\
+&< \abs{n} \; \pa{3 \times 2^{-3 M + 4} + 2^{\gk_3 - 3 M + 5}} = \abs{n} \; 2^{-3 M + 4} \pa{3 + 2^{\gk_3 + 1}}
 \end{align*}
-where we have used the fact that the inner term of the first line is less than $3$.
+where we have used:
+\[
+\gd_1 \pa{2 + \gd_1} + \pa{1 + \gd_1}^2 2^{-2 M + 1} + \gd_2 \; 2^{\gk_3 - M + 1} < 3 \times 2^{-M}
+\]
 
 As before, the three-term reduction guarantees $\gk_3$ extra bits of accuracy if:
 \[
