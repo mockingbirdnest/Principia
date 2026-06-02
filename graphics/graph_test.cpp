@@ -34,6 +34,11 @@ TEST_F(GraphTest, Sinusoid) {
              {.red = 255, .green = 0, .blue = 0});
   graph.Plot(
       Cos, {-π * Radian, π * Radian}, {.red = 0, .green = 0, .blue = 255});
+  graph.ListPointPlot(
+      std::views::iota(-24, 12) | std::views::transform([](double const x) {
+        return std::pair{(x / 6) * Radian, Sin((x / 6 + 2) * Radian)};
+      }),
+      {.red = 0, .green = 255, .blue = 0});
   EXPECT_GOLDEN_GRAPH(graph, "sinusoids");
 }
 

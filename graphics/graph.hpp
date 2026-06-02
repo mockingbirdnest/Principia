@@ -35,7 +35,8 @@ class Graph {
         RGBA32 background);
 
   template<std::ranges::range Points>
-  void ListLinePlot(Points const& points, RGB24 colour);
+  void ListPointPlot(Points const& points, RGB24 colour);
+
   void Plot(std::function<Ordinate(Abscissa)> const& f,
             Interval<Abscissa> range,
             RGB24 colour);

@@ -22,8 +22,14 @@ Graph<Abscissa, Ordinate>::Graph(int const width,
 
 template<affine Abscissa, affine Ordinate>
 template<std::ranges::range Points>
-void Graph<Abscissa, Ordinate>::ListLinePlot(Points const& points,
-                                             RGB24 colour) {}
+void Graph<Abscissa, Ordinate>::ListPointPlot(Points const& points,
+                                             RGB24 colour) {
+  for (auto const& [x, y] : points) {
+    SetPixel(AbscissaToPixel(x),
+             OrdinateToPixel(y),
+             {.colour = colour, .alpha = 255});
+  }
+}
 
 template<affine Abscissa, affine Ordinate>
 void Graph<Abscissa, Ordinate>::Plot(std::function<Ordinate(Abscissa)> const& f,
