@@ -15,6 +15,7 @@
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/m128d.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
@@ -31,6 +32,7 @@ using namespace principia::base::_tags;
 using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_polynomial_evaluators;
 
@@ -124,23 +126,30 @@ namespace boldo_daumas_li {
 // These constants must be `constexpr` (and therefore `double`) to be used in
 // the `OSACA_` macros.  See `boldo_daumas_li.wl` for their computation.
 //TODO(phl)This is too large.
-constexpr double threshold =
-    π / 2 * ((1LL << (std::numeric_limits<double>::digits - 4 - κ₃)) - 1);
-constexpr double x_reduced_threshold_multiplier =
+constexpr double applicability_threshold =
+    Pow<2>(π) * (1LL << (std::numeric_limits<double>::digits - κ₃ - 7));
+constexpr double two_term_x_reduced_threshold_multiplier =
     1.0 / (1LL << (std::numeric_limits<double>::digits - 4 - κ₃));
+constexpr double three_term_x_reduced_threshold_multiplier =
+    (3.0 + (1LL << (κ₃ + 1))) /
+    (1LL << (std::numeric_limits<double>::digits - 4 - κ₃));
 constexpr double addend = 0x1.8000'0000'0000'0p52;
 constexpr double R = 0x1.45F3'06DC'9C88'3p-1;
 constexpr double C₁ = 0x1.921F'B544'42D1'8p0;
 constexpr double C₂ = 0x1.1A62'6331'45C0'0p-54;
+constexpr double C₃ = 0x1.B839'A252'049C'1p-104;
 
 namespace m128d {
-M128D const threshold(boldo_daumas_li::threshold);
-M128D const x_reduced_threshold_multiplier(
-    boldo_daumas_li::x_reduced_threshold_multiplier);
+M128D const applicability_threshold(boldo_daumas_li::applicability_threshold);
+M128D const two_term_x_reduced_threshold_multiplier(
+    boldo_daumas_li::two_term_x_reduced_threshold_multiplier);
+M128D const three_term_x_reduced_threshold_multiplier(
+    boldo_daumas_li::three_term_x_reduced_threshold_multiplier);
 M128D const addend(boldo_daumas_li::addend);
 M128D const R(boldo_daumas_li::R);
 M128D const C₁(boldo_daumas_li::C₁);
 M128D const C₂(boldo_daumas_li::C₂);
+M128D const C₃(boldo_daumas_li::C₃);
 }  // namespace m128d
 }  // namespace boldo_daumas_li
 
@@ -293,30 +302,40 @@ void PayneHanekReduction(Argument const x,
   x_reduced.error = M128D(x_reduced_double.error);
 }
 
-// This is the reduction technique described in [BDL09].  We are using the
-// notation from [Mul16], section 11.2.2.
+// This is the reduction technique described in [BDL09].  We are following
+// [Mul16], section 11.2.2.
 FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
                                          Argument const abs_x,
                                          DoublePrecision<Argument>& x_reduced,
                                          std::int64_t& quadrant) {
   using namespace boldo_daumas_li;
   namespace m128d = boldo_daumas_li::m128d;
-  OSACA_IF(abs_x <= threshold) {
-    M128D const k =
+  OSACA_IF(abs_x <= applicability_threshold) {
+    M128D const n =
         FusedMultiplyAdd(m128d::R, x, m128d::addend) - m128d::addend;
-    M128D const abs_k = Abs(k);
-    M128D x_reduced_threshold = abs_k * m128d::x_reduced_threshold_multiplier;
-    M128D const u = FusedNegatedMultiplyAdd(k, m128d::C₁, x);
-    x_reduced.value = FusedNegatedMultiplyAdd(k, m128d::C₂, u);
+    M128D const abs_n = Abs(n);
+    M128D two_term_x_reduced_threshold =
+        abs_n * m128d::two_term_x_reduced_threshold_multiplier;
+    M128D const u = FusedNegatedMultiplyAdd(n, m128d::C₁, x);
+    x_reduced.value = FusedNegatedMultiplyAdd(n, m128d::C₂, u);
     M128D const abs_x_reduced_value = Abs(x_reduced.value);
-    OSACA_IF(abs_x_reduced_value >= x_reduced_threshold) {
-      M128D const ρₕ = k * m128d::C₂;
-      M128D const ρₗ = FusedMultiplySubtract(k, m128d::C₂, ρₕ);
-      DoublePrecision<M128D> const t = QuickTwoDifference(u, ρₕ);
-      x_reduced.error = ((t.value - x_reduced.value) + t.error) - ρₗ;
-      std::int64_t k_int = _mm_cvtsd_si64(static_cast<__m128d>(k));
-      quadrant = k_int & 0b11;
+    M128D const ρₕ = n * m128d::C₂;
+    M128D const ρₗ = FusedMultiplySubtract(n, m128d::C₂, ρₕ);
+    DoublePrecision<M128D> const t = QuickTwoDifference(u, ρₕ);
+    x_reduced.error = ((t.value - x_reduced.value) + t.error) - ρₗ;
+    std::int64_t k_int = _mm_cvtsd_si64(static_cast<__m128d>(n));
+    quadrant = k_int & 0b11;
+    OSACA_IF(abs_x_reduced_value >= two_term_x_reduced_threshold) {
       return;
+    } else {
+      M128D three_term_x_reduced_threshold =
+          abs_n * m128d::three_term_x_reduced_threshold_multiplier;
+      M128D const w = n * m128d::C₃;
+      x_reduced -= w;
+      M128D const abs_x_reduced_value = Abs(x_reduced.value);
+      OSACA_IF(abs_x_reduced_value >= three_term_x_reduced_threshold) {
+        return;
+      }
     }
   }
   PayneHanekReduction(x, x_reduced, quadrant);
