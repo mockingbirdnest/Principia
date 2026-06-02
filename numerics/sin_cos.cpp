@@ -59,8 +59,10 @@ using namespace principia::numerics::_polynomial_evaluators;
         TwoDifference(reduction_value, reduction_error);                     \
     constexpr double abs_x_reduced_value =                                   \
         x_reduced.value > 0 ? x_reduced.value : -x_reduced.value;            \
-    constexpr double x_reduced_threshold =                                   \
-        abs_k * boldo_daumas_li::x_reduced_threshold_multiplier;             \
+    constexpr double two_term_x_reduced_threshold =                          \
+        abs_k * boldo_daumas_li::two_term_x_reduced_threshold_multiplier;    \
+    constexpr double three_term_x_reduced_threshold =                        \
+        abs_k * boldo_daumas_li::three_term_x_reduced_threshold_multiplier;  \
     /* Used in Sin to detect the near-0 case. */                             \
     constexpr double abs_x̃ =                                                 \
         x_reduced.value > 0 ? x_reduced.value : -x_reduced.value;            \
@@ -125,7 +127,6 @@ namespace boldo_daumas_li {
 
 // These constants must be `constexpr` (and therefore `double`) to be used in
 // the `OSACA_` macros.  See `boldo_daumas_li.wl` for their computation.
-//TODO(phl)This is too large.
 constexpr double applicability_threshold =
     Pow<2>(π) * (1LL << (std::numeric_limits<double>::digits - κ₃ - 7));
 constexpr double two_term_x_reduced_threshold_multiplier =
