@@ -385,8 +385,8 @@ DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a, U const& b) {
 #if _DEBUG
   using quantities::_quantities::DebugString;
   using Comparator = DaumasRideauThéryComparator<T, U>;
-  if (!Comparator::ProperlyOrdered(a, b))
-     LOG(FATAL) << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
+  CHECK(Comparator::ProperlyOrdered(a, b))
+      << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
 #endif
   // [HLB07], Algorithm 3.
   DoublePrecision<Sum<T, U>> result(uninitialized);
