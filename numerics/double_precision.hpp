@@ -86,13 +86,13 @@ template<typename T, typename U>
 constexpr DoublePrecision<Product<T, U>> VeltkampDekkerProduct(T const& a,
                                                                U const& b);
 
-// Computes the exact sum of a and b.  The arguments must be such that
-// |a| >= |b| or a == 0.
+// Computes the exact sum of a and b.  The arguments must roughly be such that
+// |a| >= |b|, although we use the more precise check from [DRT01].
 template<typename T, typename U>
 constexpr DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
 
-// Computes the exact difference of a and b.  The arguments must be such that
-// |a| >= |b| or a == 0.
+// Computes the exact difference of a and b.  The arguments must roughly be such
+// that |a| >= |b|, although we use the more precise check from [DRT01].
 template<typename T, typename U>
 constexpr DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a,
                                                                U const& b);

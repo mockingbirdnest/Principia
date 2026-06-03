@@ -51,6 +51,8 @@ using World = Frame<struct WorldTag>;
 
 class DoublePrecisionTest : public ::testing::Test {};
 
+using DoublePrecisionDeathTest = DoublePrecisionTest;
+
 #if PRINCIPIA_USE_IACA
 // A convenient skeleton for analysing code with IACA.
 TEST_F(DoublePrecisionTest, DISABLED_IACA) {
@@ -76,6 +78,37 @@ TEST_F(DoublePrecisionTest, AlgebraConcepts) {
 
   static_assert(real_affine_space<DoublePrecision<Position<World>>>);
   static_assert(!real_vector_space<DoublePrecision<Position<World>>>);
+}
+
+TEST_F(DoublePrecisionTest, QuickTwoSumSuccess) {
+  // These tests have a `biggish` that looks smaller than `smallish`, but still
+  // the [DRT01] check passes.
+  QuickTwoSum(/*biggish=*/0x1p53-2, /*smallish=*/0x1p53);
+  QuickTwoSum(/*biggish=*/2, /*smallish=*/0x1p53);
+  QuickTwoSum(/*biggish=*/0x1p53 - 2, /*smallish=*/0x1p54 - 2);
+  QuickTwoSum(/*biggish=*/2, /*smallish=*/0x1p54 - 2);
+}
+
+TEST_F(DoublePrecisionDeathTest, QuickTwoSumFailures) {
+  // These tests have a `biggish` that looks smaller than `smallish`, and indeed
+  // the [DRT01] check fails.
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/0x1p53 - 1, /*smallish=*/0x1p53); },
+      "Comparator::ProperlyOrdered");
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/3, /*smallish=*/0x1p53); },
+      "Comparator::ProperlyOrdered");
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/0x1p53 - 1, /*smallish=*/0x1p54 - 2); },
+      "Comparator::ProperlyOrdered");
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/1, /*smallish=*/0x1p54 - 2); },
+      "Comparator::ProperlyOrdered");
+  // Technically this one would work because of the rounding, but the [DRT01]
+  // check fails.
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/1, /*smallish=*/0x1p53); },
+      "Comparator::ProperlyOrdered");
 }
 
 TEST_F(DoublePrecisionTest, CompensatedSummationIncrement) {
