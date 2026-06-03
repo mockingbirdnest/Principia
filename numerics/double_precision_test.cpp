@@ -49,7 +49,20 @@ constexpr double ε⁴ = ε³ * ε;
 
 using World = Frame<struct WorldTag>;
 
-class DoublePrecisionTest : public ::testing::Test {};
+class DoublePrecisionTest : public ::testing::Test {
+ protected:
+  void CheckQuickTwoDifference(double const biggish, double const smallish) {
+    EXPECT_THAT(QuickTwoDifference(biggish, smallish),
+                AlmostEquals(TwoDifference(biggish, smallish), 0));
+  }
+
+  void CheckQuickTwoSum(double const biggish, double const smallish) {
+    EXPECT_THAT(QuickTwoSum(biggish, smallish),
+                AlmostEquals(TwoSum(biggish, smallish), 0));
+  }
+};
+
+using DoublePrecisionDeathTest = DoublePrecisionTest;
 
 #if PRINCIPIA_USE_IACA
 // A convenient skeleton for analysing code with IACA.
@@ -77,6 +90,45 @@ TEST_F(DoublePrecisionTest, AlgebraConcepts) {
   static_assert(real_affine_space<DoublePrecision<Position<World>>>);
   static_assert(!real_vector_space<DoublePrecision<Position<World>>>);
 }
+
+TEST_F(DoublePrecisionTest, QuickTwoSumSuccess) {
+  // These tests have a `biggish` that looks smaller than `smallish`, but still
+  // the [DRT01] check passes.
+  CheckQuickTwoSum(/*biggish=*/0x1p53-2, /*smallish=*/0x1p53);
+  CheckQuickTwoSum(/*biggish=*/2, /*smallish=*/0x1p53);
+  CheckQuickTwoSum(/*biggish=*/0x1p53 - 2, /*smallish=*/0x1p54 - 2);
+  CheckQuickTwoSum(/*biggish=*/2, /*smallish=*/0x1p54 - 2);
+
+  // Real values observed in argument reduction.
+  CheckQuickTwoDifference(/*biggish=*/-1.7763568394002505e-15,
+                          /*smallish=*/1.8982025386783948e-15);
+  CheckQuickTwoDifference(/*biggish=*/-1.7763568394002505e-15,
+                          /*smallish=*/3.6127080574846869e-15);
+}
+
+#if _DEBUG
+TEST_F(DoublePrecisionDeathTest, QuickTwoSumFailures) {
+  // These tests have a `biggish` that looks smaller than `smallish`, and indeed
+  // the [DRT01] check fails.
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/0x1p53 - 1, /*smallish=*/0x1p53); },
+      "Comparator::ProperlyOrdered");
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/3, /*smallish=*/0x1p53); },
+      "Comparator::ProperlyOrdered");
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/0x1p53 - 1, /*smallish=*/0x1p54 - 2); },
+      "Comparator::ProperlyOrdered");
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/1, /*smallish=*/0x1p54 - 2); },
+      "Comparator::ProperlyOrdered");
+  // Technically this one would work because of the rounding, but the [DRT01]
+  // check fails.
+  EXPECT_DEATH(
+      { QuickTwoSum(/*biggish=*/1, /*smallish=*/0x1p53); },
+      "Comparator::ProperlyOrdered");
+}
+#endif
 
 TEST_F(DoublePrecisionTest, CompensatedSummationIncrement) {
   Position<World> const initial =
