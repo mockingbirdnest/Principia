@@ -87,8 +87,15 @@ TEST_F(DoublePrecisionTest, QuickTwoSumSuccess) {
   QuickTwoSum(/*biggish=*/2, /*smallish=*/0x1p53);
   QuickTwoSum(/*biggish=*/0x1p53 - 2, /*smallish=*/0x1p54 - 2);
   QuickTwoSum(/*biggish=*/2, /*smallish=*/0x1p54 - 2);
+
+  // Real values observed in argument reduction.
+  QuickTwoDifference(/*biggish=*/-1.7763568394002505e-15,
+                     /*smallish=*/1.8982025386783948e-15);
+  QuickTwoDifference(/*biggish=*/-1.7763568394002505e-15,
+                     /*smallish=*/3.6127080574846869e-15);
 }
 
+#if _DEBUG
 TEST_F(DoublePrecisionDeathTest, QuickTwoSumFailures) {
   // These tests have a `biggish` that looks smaller than `smallish`, and indeed
   // the [DRT01] check fails.
@@ -110,6 +117,7 @@ TEST_F(DoublePrecisionDeathTest, QuickTwoSumFailures) {
       { QuickTwoSum(/*biggish=*/1, /*smallish=*/0x1p53); },
       "Comparator::ProperlyOrdered");
 }
+#endif
 
 TEST_F(DoublePrecisionTest, CompensatedSummationIncrement) {
   Position<World> const initial =

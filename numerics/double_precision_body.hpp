@@ -42,7 +42,8 @@ using namespace principia::quantities::_si;
 // bounded floating point number in the sense of [DRT01], section 2.2 and
 // hypothesis `pGivesBound`.  Essentially this corresponts to a bounded
 // (integral) mantissa not required to be normalized (thus, larger exponents are
-// acceptable if the mantissa has trailing zeroes).
+// acceptable if the mantissa has trailing zeroes).  This function is expensive,
+// but it's only used in tests.
 inline Interval<int> ExponentInterval(double const x) {
   static constexpr int M = std::numeric_limits<double>::digits;
   int exponent;
