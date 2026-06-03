@@ -87,9 +87,87 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
       fill_osculating_equinoctial_elements);
 }
 
+template<typename T>
+Graph<Instant, T> OrbitalElements::PlotTimeSeries(
+    T OrbitalElements::ClassicalElements::* element,
+    int width,
+    int height,
+    RGBA32 background,
+    RGB24 line_colour) const {
+  Interval<T> ordinate_range;
+  if constexpr (std::is_same_v<T, Length>) {
+    ordinate_range = {mean_periapsis_distance_interval().min,
+                      mean_apoapsis_distance_interval().max};
+  } else if constexpr (std::is_same_v<T, double>) {
+    CHECK_EQ(element, &ClassicalElements::eccentricity);
+    ordinate_range = mean_eccentricity_interval();
+  } else {
+    auto element_interval =
+        (element == &ClassicalElements::inclination
+             ? &OrbitalElements::mean_inclination_interval_
+         : element == &ClassicalElements::longitude_of_ascending_node
+             ? &OrbitalElements::mean_longitude_of_ascending_node_interval_
+         : element == &ClassicalElements::argument_of_periapsis
+             ? &OrbitalElements::mean_argument_of_periapsis_interval_
+             : nullptr);
+    CHECK_NE(element_interval, nullptr);
+    ordinate_range = this->*element_interval;
+  }
+  Graph<Instant, T> graph(width,
+                          height,
+                          {mean_classical_elements_.front().time,
+                           mean_classical_elements_.back().time},
+                          ordinate_range,
+                          background);
+  graph.ListPointPlot(
+      mean_classical_elements_ |
+          std::views::transform([element](ClassicalElements const& elements) {
+            return std::pair{elements.time, elements.*element};
+          }),
+      line_colour);
+  return graph;
+}
+
 inline std::vector<OrbitalElements::ClassicalElements> const&
 OrbitalElements::mean_elements() const {
   return mean_classical_elements_;
+}
+
+inline Graph<double, double> OrbitalElements::PlotEccentricityVector(
+    int width,
+    int height,
+    RGBA32 background,
+    RGB24 axis_colour,
+    RGB24 line_colour) const {
+  double const aspect_ratio =
+      static_cast<double>(width) / static_cast<double>(height);
+  std::vector<std::pair<double, double>> eccentricity_vector;
+  Interval<double> e_cos_ω_range;
+  Interval<double> e_sin_ω_range;
+  for (ClassicalElements const& elements : mean_classical_elements_) {
+    auto const [sin_ω, cos_ω] = SinCos(elements.argument_of_periapsis);
+    auto const& e = elements.eccentricity;
+    eccentricity_vector.emplace_back(e * cos_ω, e * sin_ω);
+    e_cos_ω_range.Include(eccentricity_vector.back().first);
+    e_sin_ω_range.Include(eccentricity_vector.back().second);
+  }
+  if (e_cos_ω_range.measure() / width > e_sin_ω_range.measure() / height) {
+    double midpoint = e_sin_ω_range.midpoint();
+    e_sin_ω_range.min = midpoint - e_cos_ω_range.measure() / aspect_ratio / 2;
+    e_sin_ω_range.max = midpoint + e_cos_ω_range.measure() / aspect_ratio / 2;
+  } else {
+    double midpoint = e_cos_ω_range.midpoint();
+    e_cos_ω_range.min =
+        midpoint - width * e_sin_ω_range.measure() * aspect_ratio / 2;
+    e_cos_ω_range.max =
+        midpoint + width * e_sin_ω_range.measure() * aspect_ratio / 2;
+  }
+  Graph<double, double> graph(
+      width, height, e_cos_ω_range, e_sin_ω_range, background);
+  graph.PlotHorizontalLine(0, axis_colour);
+  graph.PlotVerticalLine(0, axis_colour);
+  graph.ListPointPlot(eccentricity_vector, line_colour);
+  return graph;
 }
 
 inline Time OrbitalElements::sidereal_period() const {

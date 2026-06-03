@@ -69,6 +69,8 @@ class Graph {
 }  // namespace internal
 
 using internal::Graph;
+using internal::RGBA32;
+using internal::RGB24;
 
 }  // namespace _graph
 }  // namespace graphics

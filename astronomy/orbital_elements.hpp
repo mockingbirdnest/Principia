@@ -11,6 +11,7 @@
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
+#include "graphics/graph.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -25,6 +26,7 @@ using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
+using namespace principia::graphics::_graph;
 
 class OrbitalElements {
  public:
@@ -69,6 +71,24 @@ class OrbitalElements {
   // Mean element time series.  These elements are free of short-period
   // variations, i.e., variations whose period is the orbital period.
   std::vector<ClassicalElements> const& mean_elements() const;
+
+  // Returns a graph of the given `element` over `mean_elements()`.
+  // `element` must not be `&ClassicalElements::time` nor
+  // `&ClassicalElements::mean_anomaly`.
+  template<typename T>
+  Graph<Instant, T> PlotTimeSeries(T ClassicalElements::* element,
+                                   int width,
+                                   int height,
+                                   RGBA32 background,
+                                   RGB24 line_colour) const;
+
+  // Returns a graph of the locus of the eccentricity vector (e cos ω, e sin ω)
+  // over the `mean_elements()`.
+  Graph<double, double> PlotEccentricityVector(int width,
+                                               int height,
+                                               RGBA32 background,
+                                               RGB24 axis_colour,
+                                               RGB24 line_colour) const;
 
   // The period of the (osculating) mean longitude λ = Ω + ω + M.
   // Note that since our mean elements are filtered by integration over this

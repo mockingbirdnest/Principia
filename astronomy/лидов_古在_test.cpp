@@ -30,6 +30,7 @@
 #include "testing_utilities/approximate_quantity.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
+#include "testing_utilities/golden_graphs.hpp"  // 🧙 For EXPECT_GOLDEN_GRAPH.
 
 #if PRINCIPIA_LOG_TO_MATHEMATICA
 #include "mathematica/logger.hpp"
@@ -178,6 +179,29 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().max,
               IsNear(129_(1) * Degree));
 
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::eccentricity,
+                              200,
+                              50,
+                              {{}, 255},
+                              {255, 0, 0}),
+      "mercury_orbiter_e");
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::inclination,
+                              200,
+                              50,
+                              {{}, 255},
+                              {255, 0, 0}),
+      "mercury_orbiter_i");
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::argument_of_periapsis,
+          200,
+          50,
+          {{}, 255},
+          {255, 0, 0}),
+      "mercury_orbiter_ω");
+
   // The conservation of the “тривиального интеграла a = const” [Лид61, p. 25]
   // is excellent: while the sun is nudging and deforming the orbit, it is not
   // pumping energy into nor out of it.  The true values are 14'910.01 and
@@ -191,6 +215,14 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
               AnyOf(IsNear(14'910.27_(1) * Kilo(Metre)),  // Windows, macOS AVX.
                     IsNear(14'910.29_(1) * Kilo(Metre)),    // Ubuntu.
                     IsNear(14'910.31_(1) * Kilo(Metre))));  // macOS SSE.
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::semimajor_axis,
+          200,
+          50,
+          {{}, 255},
+          {255, 0, 0}),
+      "mercury_orbiter_a");
 
   // The integral c₁ is preserved quite well: we have an exchange between
   // inclination and eccentricity.

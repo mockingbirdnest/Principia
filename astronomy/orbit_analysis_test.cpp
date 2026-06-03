@@ -40,6 +40,7 @@
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics_matchers.hpp"
+#include "testing_utilities/golden_graphs.hpp"  // 🧙 For EXPECT_GOLDEN_GRAPH.
 
 namespace principia {
 namespace astronomy {
@@ -679,6 +680,10 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
                                 IsNear(98.9_(1) * Degree),      // Ubuntu SSE.
                                 IsNear(99.9_(1) * Degree),      // Ubuntu AVX.
                                 IsNear(98.8_(1) * Degree)))));  // macOS.
+
+  EXPECT_GOLDEN_GRAPH(elements.PlotEccentricityVector(
+                          200, 150, {{}, 255}, {255, 255, 255}, {0, 0, 255}),
+                      "topex_poséidon_eccentricity_vector");
 
   // Nominal longitude of the equatorial crossing of the first ascending pass
   // East of the ITRF zero-meridian (pass 135), as given in section 2 of
