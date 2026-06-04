@@ -63,6 +63,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::graphics::_colours;
 
 // A test that showcases the eccentricity-inclination exchange mechanism
 // described in [Лид61] and [Koz62].  We follow the treatment in [Лид61].
@@ -183,23 +184,23 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
       elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::eccentricity,
                               200,
                               50,
-                              {{}, 255},
-                              {255, 0, 0}),
+                              Opaque(xkcd::black),
+                              xkcd::cornflower),
       "mercury_orbiter_e");
   EXPECT_GOLDEN_GRAPH(
       elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::inclination,
                               200,
                               50,
-                              {{}, 255},
-                              {255, 0, 0}),
+                              Opaque(xkcd::black),
+                              xkcd::lavender),
       "mercury_orbiter_i");
   EXPECT_GOLDEN_GRAPH(
       elements.PlotTimeSeries(
           &OrbitalElements::ClassicalElements::argument_of_periapsis,
           200,
           50,
-          {{}, 255},
-          {255, 0, 0}),
+          Opaque(xkcd::black),
+          xkcd::cornflower),
       "mercury_orbiter_ω");
 
   // The conservation of the “тривиального интеграла a = const” [Лид61, p. 25]
@@ -220,8 +221,8 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
           &OrbitalElements::ClassicalElements::semimajor_axis,
           200,
           50,
-          {{}, 255},
-          {255, 0, 0}),
+          Opaque(xkcd::black),
+          xkcd::sunflower),
       "mercury_orbiter_a");
 
   // The integral c₁ is preserved quite well: we have an exchange between

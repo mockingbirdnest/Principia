@@ -5,6 +5,7 @@
 
 #include "base/algebra.hpp"
 #include "geometry/interval.hpp"
+#include "graphics/colours.hpp"
 
 namespace principia {
 namespace graphics {
@@ -13,17 +14,7 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_interval;
-
-struct RGB24 {
-  std::uint8_t red;
-  std::uint8_t green;
-  std::uint8_t blue;
-};
-
-struct RGBA32 {
-  RGB24 colour;
-  std::uint8_t alpha;
-};
+using namespace principia::graphics::_colours;
 
 template<affine Abscissa, affine Ordinate>
 class Graph {

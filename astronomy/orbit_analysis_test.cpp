@@ -79,6 +79,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics_matchers;
+using namespace principia::graphics::_colours;
 
 namespace {
 
@@ -681,9 +682,10 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
                                 IsNear(99.9_(1) * Degree),      // Ubuntu AVX.
                                 IsNear(98.8_(1) * Degree)))));  // macOS.
 
-  EXPECT_GOLDEN_GRAPH(elements.PlotEccentricityVector(
-                          200, 150, {{}, 255}, {255, 255, 255}, {0, 0, 255}),
-                      "topex_poséidon_eccentricity_vector");
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotEccentricityVector(
+          200, 150, Opaque(xkcd::black), xkcd::white, xkcd::cornflower),
+      "topex_poséidon_eccentricity_vector");
 
   // Nominal longitude of the equatorial crossing of the first ascending pass
   // East of the ITRF zero-meridian (pass 135), as given in section 2 of

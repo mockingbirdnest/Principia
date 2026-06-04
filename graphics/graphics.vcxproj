@@ -10,6 +10,7 @@
   <ItemGroup>
     <ClInclude Include="graph.hpp" />
     <ClInclude Include="graph_body.hpp" />
+    <ClInclude Include="colours.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="graph_test.cpp" />
