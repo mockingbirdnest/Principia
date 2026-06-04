@@ -216,6 +216,7 @@
     <Import Project="$(SolutionDir)include_solution.props" />
     <Import Project="$(SolutionDir)inria_core-math.props" />
     <Import Project="$(SolutionDir)llnl_zfp.props" />
+    <Import Project="$(SolutionDir)lode_lodepng.props" />
     <Import Project="$(SolutionDir)profiling.props" />
     <Import Project="$(SolutionDir)suppress_useless_warnings.props" />
   </ImportGroup>
