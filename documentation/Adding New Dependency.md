@@ -30,3 +30,19 @@
 * Run `Add > Existing Item...` for all header/source files and the various projects.  If there are many, consider writing a script `Bar/foo/build_projects_helper.ps1`.  (See `abseil-cpp` for an example.)
 * Make it compile.  This might require to ignore some warnings (change `foo.props`) or change the code.  The symbol `PRINCIPIA` is defined to condition the code changes if needed.
 * Make it link.  This requires to add dependencies in the test and benchmark projects to link with the `foo` project's library.
+* On the solution, `Save As Solution Filter`, name `msvc\foo.slnf`.
+* On `Solution Items`, `Add > Existing Item...`, add the `msvc\foo.slnf` file.
+* Edit `msvc\foo.slnf` to remove all the non-production projects (benchmarks, tests, etc.).
+* In `Principia\Bar\foo` run `mkdir .github\workflows`.
+* Create `build.yaml` in `.github\workflows`.  The simplest is to copy it from another project (e.g., `Google\re2`) and adapt it:
+  * Change the `env` variables to have the correct name and to denote the right locations.
+  * Change the artifact name to be `foo`.
+* In the `build.yaml` file for Principia, add a step to download the `foo` artifact:
+```
+    - name: Download foo artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: foo
+        configuration: ${{ matrix.configuration }}
+        directory: Bar
+```
