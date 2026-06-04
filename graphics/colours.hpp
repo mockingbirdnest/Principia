@@ -26,6 +26,7 @@ namespace xkcd {
 // " " ↦ "_";
 // "'" ↦ "";
 // "/" ↦ "_slash_".
+// See also https://xkcd.com/color/rgb/.
 // License: https://creativecommons.org/publicdomain/zero/1.0/
 constexpr RGB24 cloudy_blue{0xac, 0xc2, 0xd9};
 constexpr RGB24 dark_pastel_green{0x56, 0xae, 0x57};
