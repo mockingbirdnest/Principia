@@ -46,3 +46,10 @@
         configuration: ${{ matrix.configuration }}
         directory: Bar
 ```
+* Add variables `PRINCIPIA_HEADERS_FOO` and `PRINCIPIA_MSVC_FOO` to the `Principia` variable group in DevOps.
+* Clone existing pipelines for Windows, Ubuntu and macOS:
+  * In the `Get sources` step change the repository and the default branch names.
+  * In the `Publish Build Artifacts` step change the `CopyArtifactsContents` and `PublishArtifactName` parameters.
+* Adjust the Windows pipeline until it works satisfactorily.  You'll need to do the same adjustements for Ubuntu and macOS.
+* Create `foo\principia_make.sh` and `foo\principia_variable_overrides.sh` to build the component on Ubuntu and macOS.
+* In the pipelines for Principia Ubuntu and Principia macOS, add a step to download the `foo` artifact (the easiest is to clone an existing step).
