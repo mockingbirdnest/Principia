@@ -230,4 +230,8 @@
 
 \bibliography{bibliography}
 
+% From https://tex.stackexchange.com/a/313605:
+% Suppress CreationDate, ModDate, and ID.
+\pdfvariable suppressoptionalinfo \numexpr32+64+512\relax
+
 \AtEndDocument{\printbibliography}
