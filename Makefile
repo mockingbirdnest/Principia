@@ -78,6 +78,7 @@ endif
 TEST_LIBS     := \
 	$(DEPS_DIRECTORY)benchmark/src/libbenchmark.a \
 	$(DEPS_DIRECTORY)protobuf/libprotobuf.a \
+	$(DEPS_DIRECTORY)lodepng/liblodepng.a \
 	$(DEPS_DIRECTORY)protobuf/third_party/utf8_range/libutf8*.a
 ABSL_LIBS     := \
 	$(DEPS_DIRECTORY)abseil-cpp/install/lib/libabsl_*.a
@@ -100,6 +101,7 @@ TEST_INCLUDES := \
 	-I$(DEPS_DIRECTORY)googletest/googletest/include \
 	-I$(DEPS_DIRECTORY)googletest/googlemock/ \
 	-I$(DEPS_DIRECTORY)googletest/googletest/ \
+	-I$(DEPS_DIRECTORY)lodepng/.. \
 	-I$(DEPS_DIRECTORY)benchmark/include
 INCLUDES      := -I. \
 	-I$(DEPS_DIRECTORY)protobuf/src \
