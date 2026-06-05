@@ -117,8 +117,7 @@ void Graph<Abscissa, Ordinate>::SetPixel(int const column,
   pixels_[row * width_ + column] = pixel;
 }
 
-}
+}  // namespace internal
 }  // namespace _graph
 }  // namespace graphics
 }  // namespace principia
-
