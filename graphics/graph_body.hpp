@@ -2,6 +2,7 @@
 #include "graphics/graph.hpp"
 
 #include <optional>
+#include <vector>
 
 namespace principia {
 namespace graphics {
