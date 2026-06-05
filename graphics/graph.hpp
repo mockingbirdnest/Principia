@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <ranges>
+#include <vector>
 
 #include "base/algebra.hpp"
 #include "geometry/interval.hpp"

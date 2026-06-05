@@ -1,5 +1,7 @@
 #include "graphics/graph.hpp"
 
+#include <algorithm>
+
 #include "geometry/interval.hpp"
 #include "gmock/gmock.h"
 #include "graphics/colours.hpp"
