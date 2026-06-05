@@ -8,6 +8,7 @@ namespace base {
 
 #define STRINGIFY(X) #X
 #define STRINGIFY_EXPANSION(X) STRINGIFY(X)
+#define EXPANSION(X) X
 
 #define PRINCIPIA_CONCATENATE_SENTINEL(X) X##0x4C##45##4E##49##54##4E##45##53
 // True if X is #defined to nothing, false if X is #defined to an identifier or
@@ -284,6 +285,14 @@ char const* const Architecture = "x86-64";
     using internal::declared_name;                                          \
   }                                                                         \
   USING_DIRECTIVES_INTO(from_package_name, __VA_ARGS__)
+
+#define U16_STRING_LITERAL(X) u##X
+
+#if OS_WIN
+#  define FILESYSTEM_STRING(X) U16_STRING_LITERAL(X)
+#else
+#  define FILESYSTEM_STRING(X) X
+#endif
 
 }  // namespace base
 }  // namespace principia

@@ -6,6 +6,7 @@
 #include <vector>
 #include <string_view>
 
+#include "base/macros.hpp"  // 🧙 For FILESYSTEM_STRING.
 #include "gmock/gmock.h"
 #include "graphics/graph.hpp"
 #include "gtest/gtest.h"
@@ -13,7 +14,7 @@
 
 #define EXPECT_GOLDEN_GRAPH(graph, suffix)                            \
   (::principia::testing_utilities::_golden_graphs::ExpectGoldenGraph( \
-      (graph), (suffix), __FILE__))
+      (graph), FILESYSTEM_STRING(suffix), FILESYSTEM_STRING(__FILE__)))
 namespace principia {
 namespace testing_utilities {
 namespace _golden_graphs {
@@ -22,10 +23,10 @@ namespace internal {
 using namespace principia::graphics::_graph;
 using ::testing::Eq;
 
-template<typename Abscissa, typename Ordinate>
+template<typename Abscissa, typename Ordinate, typename Character>
 void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
-                       std::string_view suffix,
-                       std::string_view test_file) {
+                       Character const* const suffix,
+                       Character const* const test_file) {
   auto const image_path = std::filesystem::path(test_file)
                               .replace_extension()
                               .concat("_")
