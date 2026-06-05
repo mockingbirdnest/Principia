@@ -35,7 +35,7 @@ class Player final {
 
  private:
   // Reads one message from the stream.  Returns a `nullptr` at end of stream.
-  std::unique_ptr<serialization::Method> Read();
+  std::unique_ptr<serialization::Method> Read(int index);
 
   // Implementation of `Play` and `Scan`.
   bool Process(std::unique_ptr<serialization::Method> method_in,

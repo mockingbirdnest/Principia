@@ -102,6 +102,13 @@ jobs:
         configuration: ${{ matrix.configuration }}
         directory: Google
 
+    - name: Download lodepng artifact
+      uses: mockingbirdnest/actions/windows/download_artifact@main
+      with:
+        name: lodepng
+        configuration: ${{ matrix.configuration }}
+        directory: Lode
+
     - name: Download multiprecision artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
       with:

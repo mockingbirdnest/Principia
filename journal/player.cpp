@@ -38,11 +38,11 @@ Player::Player(std::filesystem::path const& path)
 }
 
 bool Player::Play(int const index) {
-  return Process(/*method_in=*/Read(), index, /*play=*/true);
+  return Process(/*method_in=*/Read(index), index, /*play=*/true);
 }
 
 bool Player::Scan(int const index) {
-  return Process(/*method_in=*/Read(), index, /*play=*/false);
+  return Process(/*method_in=*/Read(index), index, /*play=*/false);
 }
 
 serialization::Method const& Player::last_method_in() const {
@@ -53,16 +53,21 @@ serialization::Method const& Player::last_method_out_return() const {
   return *last_method_out_return_;
 }
 
-std::unique_ptr<serialization::Method> Player::Read() {
+std::unique_ptr<serialization::Method> Player::Read(int const index) {
   std::string const line = GetLine(stream_);
   if (line.empty()) {
     return nullptr;
   }
 
   static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
-  auto const bytes = encoder->Decode({line.c_str(), strlen(line.c_str())});
+  auto const bytes = encoder->Decode({line.c_str(), line.size()});
+  CHECK(line.size() % 2 == 0) << "Corrupted record at index: " << index
+                              << " Line: " << line << " Size: " << line.size();
   auto method = std::make_unique<serialization::Method>();
-  CHECK(method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size)));
+  if (!method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size))) {
+    LOG(FATAL) << "Unparseable record at index: " << index << " Line: " << line
+               << " Size: " << line.size();
+  }
 
   return method;
 }
@@ -73,7 +78,7 @@ bool Player::Process(std::unique_ptr<serialization::Method> method_in,
     // End of input file.
     return false;
   }
-  std::unique_ptr<serialization::Method> method_out_return = Read();
+  std::unique_ptr<serialization::Method> method_out_return = Read(index);
   if (method_out_return == nullptr) {
     LOG(ERROR) << "Unpaired method:\n" << method_in->DebugString();
     return false;

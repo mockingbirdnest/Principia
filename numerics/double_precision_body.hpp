@@ -3,6 +3,7 @@
 #include "numerics/double_precision.hpp"
 
 #include <array>
+#include <bit>
 #include <cmath>
 #include <concepts>
 #include <cstring>
@@ -12,6 +13,7 @@
 
 #include "base/not_constructible.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/interval.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/serialization.hpp"
@@ -27,6 +29,7 @@ namespace internal {
 
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_interval;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_serialization;
@@ -35,91 +38,124 @@ using namespace principia::numerics::_m128d;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_si;
 
+// This returns the possible exponent interval for representing `x` as a
+// bounded floating point number in the sense of [DRT01], section 2.2 and
+// hypothesis `pGivesBound`.  Essentially this corresponts to a bounded
+// (integral) mantissa not required to be normalized (thus, larger exponents are
+// acceptable if the mantissa has trailing zeroes).  This function is expensive,
+// but it's only used in tests.
+inline Interval<int> ExponentInterval(double const x) {
+  static constexpr int M = std::numeric_limits<double>::digits;
+  int exponent;
+  double const double_mantissa = std::abs(std::frexp(x, &exponent));
+  DCHECK_LE(0.5, double_mantissa);
+  DCHECK_LT(double_mantissa, 1.0);
+  std::uint64_t const integer_mantissa =
+      static_cast<std::uint64_t>(double_mantissa * (1LL << M));
+  DCHECK_LE(1LL << (M - 1), integer_mantissa);
+  DCHECK_LT(integer_mantissa, 1LL << M);
+  return {.min = exponent - M,
+          .max = exponent - M + std::countr_zero(integer_mantissa)};
+}
+
 // A helper to check that the preconditions of QuickTwoSum are met.  Annoyingly
 // complicated as it needs to peel off all of our abstractions until it reaches
 // doubles.
 template<typename T, typename U, typename = void>
-struct ComponentwiseComparator;
+struct DaumasRideauThéryComparator;
 
 template<typename T, typename U>
-struct ComponentwiseComparator<DoublePrecision<T>, DoublePrecision<U>> {
-  static bool GreaterThanOrEqualOrZero(DoublePrecision<T> const& left,
-                                       DoublePrecision<U> const& right) {
+struct DaumasRideauThéryComparator<DoublePrecision<T>, DoublePrecision<U>> {
+  static bool ProperlyOrdered(DoublePrecision<T> const& biggish,
+                              DoublePrecision<U> const& smallish) {
     // This check is incomplete: it doesn't compare the errors component.  To
     // the best of my understanding this code is only used in tests.
-    return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(left.value,
-                                                                   right.value);
+    return DaumasRideauThéryComparator<T, U>::ProperlyOrdered(biggish.value,
+                                                              smallish.value);
   }
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<Point<T>, U> : not_constructible {
-  static bool GreaterThanOrEqualOrZero(Point<T> const& left,
-                                       U const& right) {
+struct DaumasRideauThéryComparator<Point<T>, U> : not_constructible {
+  static bool ProperlyOrdered(Point<T> const& biggish, U const& smallish) {
     // We only care about the coordinates, the geometric structure is
     // irrelevant.
-    return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
-        left - Point<T>{}, right);
+    return DaumasRideauThéryComparator<T, U>::ProperlyOrdered(
+        biggish - Point<T>{}, smallish);
   }
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<T, Point<U>> : not_constructible {
-  static bool GreaterThanOrEqualOrZero(T const& left,
-                                       Point<U> const& right) {
+struct DaumasRideauThéryComparator<T, Point<U>> : not_constructible {
+  static bool ProperlyOrdered(T const& biggish, Point<U> const& smallish) {
     // We only care about the coordinates, the geometric structure is
     // irrelevant.
-    return ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
-        left, right - Point<U>{});
+    return DaumasRideauThéryComparator<T, U>::ProperlyOrdered(
+        biggish, smallish - Point<U>{});
   }
 };
 
 template<typename T, typename TFrame, int trank,
          typename U, typename UFrame, int urank>
-struct ComponentwiseComparator<Multivector<T, TFrame, trank>,
-                               Multivector<U, UFrame, urank>>
+struct DaumasRideauThéryComparator<Multivector<T, TFrame, trank>,
+                                   Multivector<U, UFrame, urank>>
     : not_constructible {
-  static bool GreaterThanOrEqualOrZero(
-      Multivector<T, TFrame, trank> const& left,
-      Multivector<U, UFrame, urank> const& right) {
+  static bool ProperlyOrdered(Multivector<T, TFrame, trank> const& biggish,
+                              Multivector<U, UFrame, urank> const& smallish) {
     // This doesn't handle trivectors.
-    return ComponentwiseComparator<R3Element<T>, R3Element<U>>::
-        GreaterThanOrEqualOrZero(left.coordinates(), right.coordinates());
+    return DaumasRideauThéryComparator<R3Element<T>, R3Element<U>>::
+        ProperlyOrdered(biggish.coordinates(), smallish.coordinates());
   }
 };
 
 template<typename T, typename U>
-struct ComponentwiseComparator<R3Element<T>, R3Element<U>> : not_constructible {
-  static bool GreaterThanOrEqualOrZero(R3Element<T> const& left,
-                                       R3Element<U> const& right) {
+struct DaumasRideauThéryComparator<R3Element<T>, R3Element<U>>
+    : not_constructible {
+  static bool ProperlyOrdered(R3Element<T> const& biggish,
+                              R3Element<U> const& smallish) {
     bool result = true;
     for (int i = 0; i < 3; ++i) {
-      result &= ComponentwiseComparator<T, U>::GreaterThanOrEqualOrZero(
-          left[i], right[i]);
+      result &= DaumasRideauThéryComparator<T, U>::ProperlyOrdered(biggish[i],
+                                                                   smallish[i]);
     }
     return result;
   }
 };
 
 template<>
-struct ComponentwiseComparator<M128D, M128D> {
-  static bool GreaterThanOrEqualOrZero(M128D const& left, M128D const& right) {
-    static M128D const zero(0.0);
-    return Abs(left) >= Abs(right) || left == zero ||
-           left != left || right != right;
+struct DaumasRideauThéryComparator<double, double> {
+  static bool ProperlyOrdered(double const biggish, double const smallish) {
+    // In the elementary functions, we use NaN to fall back to the CORE-MATH
+    // implementation.  We don't want to die because of the weird comparisons of
+    // NaNs.
+    if (biggish == 0.0 || smallish == 0.0 ||
+        biggish != biggish || smallish != smallish) {
+      return true;
+    } else {
+      // We don't use the classical check `|biggish| >= |smallish|` because the
+      // Boldo- Daumas-Li reduction needs the more precise check from [DRT01],
+      // section 6.1, p. 179.
+      auto const biggish_exponent_interval = ExponentInterval(biggish);
+      auto const smallish_exponent_interval = ExponentInterval(smallish);
+      return smallish_exponent_interval.min <= biggish_exponent_interval.max;
+    }
+  }
+};
+
+template<>
+struct DaumasRideauThéryComparator<M128D, M128D> {
+  static bool ProperlyOrdered(M128D const& biggish, M128D const& smallish) {
+    return DaumasRideauThéryComparator<double, double>::ProperlyOrdered(
+        static_cast<double>(biggish), static_cast<double>(smallish));
   }
 };
 
 template<typename T, typename U>
   requires convertible_to_quantity<T> && convertible_to_quantity<U>
-struct ComponentwiseComparator<T, U> {
-  static bool GreaterThanOrEqualOrZero(T const& left, U const& right) {
-    // In the elementary functions, we use NaN to fall back to the CORE-MATH
-    // implementation.  We don't want to die because of the weird comparisons of
-    // NaNs.
-    return Abs(left) >= Abs(right) || left == T{} ||
-           !quantities::_quantities::IsFinite(left) ||
-           !quantities::_quantities::IsFinite(right);
+struct DaumasRideauThéryComparator<T, U> {
+  static bool ProperlyOrdered(T const& biggish, U const& smallish) {
+    return DaumasRideauThéryComparator<double, double>::ProperlyOrdered(
+        biggish / si::Unit<T>, smallish / si::Unit<U>);
   }
 };
 
@@ -330,11 +366,11 @@ FORCE_INLINE constexpr
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
 #if _DEBUG
   using quantities::_quantities::DebugString;
-  using Comparator = ComponentwiseComparator<T, U>;
-  CHECK(Comparator::GreaterThanOrEqualOrZero(a, b))
+  using Comparator = DaumasRideauThéryComparator<T, U>;
+  CHECK(Comparator::ProperlyOrdered(a, b))
       << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
 #endif
-  // [HLB07].
+  // [HLB07], Algorithm 3.
   DoublePrecision<Sum<T, U>> result(uninitialized);
   auto& s = result.value;
   auto& e = result.error;
@@ -348,11 +384,11 @@ FORCE_INLINE constexpr
 DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a, U const& b) {
 #if _DEBUG
   using quantities::_quantities::DebugString;
-  using Comparator = ComponentwiseComparator<T, U>;
-  CHECK(Comparator::GreaterThanOrEqualOrZero(a, b))
+  using Comparator = DaumasRideauThéryComparator<T, U>;
+  CHECK(Comparator::ProperlyOrdered(a, b))
       << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
 #endif
-  // [HLB07].
+  // [HLB07], Algorithm 3.
   DoublePrecision<Sum<T, U>> result(uninitialized);
   auto& s = result.value;
   auto& e = result.error;
@@ -363,7 +399,7 @@ DoublePrecision<Difference<T, U>> QuickTwoDifference(T const& a, U const& b) {
 
 template<typename T, typename U>
 constexpr DoublePrecision<Sum<T, U>> TwoSum(T const& a, U const& b) {
-  // [HLB07].
+  // [HLB07], Algorithm 4.
   DoublePrecision<Sum<T, U>> result(uninitialized);
   auto& s = result.value;
   auto& e = result.error;
@@ -378,6 +414,7 @@ template<typename T, typename U, typename>
   requires(!std::is_same_v<U, Difference<U>>)
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b) {
+  // [HLB07], Algorithm 4.
   static_assert(std::is_same_v<T, U>,
                 "Template metaprogramming went wrong");
   using Point = T;
@@ -396,6 +433,7 @@ constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
 template<typename T, typename U, typename>
 constexpr DoublePrecision<Difference<T, U>> TwoDifference(T const& a,
                                                           U const& b) {
+  // [HLB07], Algorithm 4.
   DoublePrecision<Sum<T, U>> result(uninitialized);
   auto& s = result.value;
   auto& e = result.error;
