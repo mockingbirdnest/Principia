@@ -1,23 +1,23 @@
 #include "graphics/graph.hpp"
 
-#include "gtest/gtest.h"
+#include "geometry/interval.hpp"
 #include "gmock/gmock.h"
+#include "graphics/colours.hpp"
+#include "gtest/gtest.h"
+#include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "quantities/numbers.hpp"
-#include "numerics/elementary_functions.hpp"
 #include "testing_utilities/golden_graphs.hpp"  // 🧙 for EXPECT_GOLDEN_GRAPH.
-#include "graphics/colours.hpp"
 
 namespace principia {
 namespace graphics {
 namespace _graph {
 
+using namespace principia::geometry::_interval;
+using namespace principia::graphics::_colours;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::geometry::_interval;
-using namespace principia::numerics::_elementary_functions;
-using namespace principia::graphics::_colours;
 
 class GraphTest : public ::testing::Test {};
 

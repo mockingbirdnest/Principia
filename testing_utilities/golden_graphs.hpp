@@ -6,9 +6,9 @@
 #include <vector>
 #include <string_view>
 
-#include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "graphics/graph.hpp"
+#include "gtest/gtest.h"
 #include "lodepng/lodepng.h"
 
 #define EXPECT_GOLDEN_GRAPH(graph, suffix)                            \

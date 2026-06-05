@@ -17,6 +17,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "gmock/gmock.h"
+#include "graphics/colours.hpp"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -37,10 +38,10 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/golden_graphs.hpp"  // 🧙 For EXPECT_GOLDEN_GRAPH.
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics_matchers.hpp"
-#include "testing_utilities/golden_graphs.hpp"  // 🧙 For EXPECT_GOLDEN_GRAPH.
 
 namespace principia {
 namespace astronomy {
@@ -59,6 +60,7 @@ using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
+using namespace principia::graphics::_colours;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
@@ -79,7 +81,6 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_numerics_matchers;
-using namespace principia::graphics::_colours;
 
 namespace {
 

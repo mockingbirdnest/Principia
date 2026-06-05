@@ -121,3 +121,4 @@ void Graph<Abscissa, Ordinate>::SetPixel(int const column,
 }  // namespace _graph
 }  // namespace graphics
 }  // namespace principia
+
