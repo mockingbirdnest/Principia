@@ -5,13 +5,13 @@
 #include "absl/status/statusor.h"
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
+#include "graphics/graph.hpp"
 #include "physics/body.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
-#include "graphics/graph.hpp"
 
 namespace principia {
 namespace astronomy {
@@ -20,13 +20,13 @@ namespace internal {
 
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
+using namespace principia::graphics::_graph;
 using namespace principia::physics::_body;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
-using namespace principia::graphics::_graph;
 
 class OrbitalElements {
  public:
