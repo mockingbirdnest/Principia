@@ -48,6 +48,9 @@
     Extension      = .ttf,
     Path           = ../../Fonts/,
     UprightFont    = consola.ttf,
+    BoldFont       = consolab.ttf,
+    ItalicFont     = consolai.ttf,
+    BoldItalicFont = consolaz.ttf,
     Scale          = MatchLowercase]{Consolas}
 
 % TODO(egg): rename to something else.
