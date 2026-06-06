@@ -291,11 +291,11 @@ Value DetectDangerousRounding(Value const y, Value const δy) {
 
 // A large or difficult reduction.  It seems complicated to implement Payne-
 // Hanek for `M128D` because of the floating-point helpers that it uses.
-void PayneHanekReduction(Argument const x,
-                         DoublePrecision<Argument>& x_reduced,
-                         std::int64_t& quadrant) {
+FORCE_INLINE void PayneHanekReduction(Argument const x,
+                                      DoublePrecision<Argument>& x_reduced,
+                                      std::int64_t& quadrant) {
   auto const x_double = static_cast<double>(x);
-  DoublePrecision<double> x_reduced_double;
+  DoublePrecision<double> x_reduced_double{uninitialized};
   _angle_reduction::PayneHanekReduction<61>(
       x_double, x_reduced_double, quadrant);
   x_reduced.value = M128D(x_reduced_double.value);
@@ -492,13 +492,14 @@ Value SinImplementation(DoublePrecision<Argument> const x_reduced) {
         TwoProductAdd<fma_presence>(signed_cos_xₖ, h, signed_sin_xₖ);
     auto const h² = h * h;
     auto const h³ = h² * h;
-    auto const h_plus_δx̃² = h * ((signed_δx̃ + signed_δx̃) + h);
+    auto const h_plus_δx̃² = (signed_δx̃ + signed_δx̃) + h;
     auto const polynomial_term =
         MaybeFusedMultiplyAdd<fma_presence>(
             signed_cos_xₖ,
             MaybeFusedMultiplyAdd<fma_presence>(
                 h³, SinPolynomial<fma_presence>(h²), signed_δx̃),
-            (signed_sin_xₖ * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
+            ((signed_sin_xₖ * h) * h_plus_δx̃²) *
+                CosPolynomial<fma_presence>(h²)) +
         sin_xₖ_plus_h_cos_xₖ.error;
     return DetectDangerousRounding<fma_presence, e_sin>(
         sin_xₖ_plus_h_cos_xₖ.value, polynomial_term);
@@ -529,13 +530,13 @@ Value CosImplementation(DoublePrecision<Argument> const x_reduced) {
       TwoProductNegatedAdd<fma_presence>(sin_xₖ, h, cos_xₖ);
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const h_plus_δx̃² = h * ((signed_δx̃ + signed_δx̃) + h);
+  auto const h_plus_δx̃² = (signed_δx̃ + signed_δx̃) + h;
   auto const polynomial_term =
       MaybeFusedNegatedMultiplyAdd<fma_presence>(
           sin_xₖ,
           MaybeFusedMultiplyAdd<fma_presence>(
               h³, SinPolynomial<fma_presence>(h²), signed_δx̃),
-          (cos_xₖ * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
+          ((cos_xₖ * h) * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
       cos_xₖ_minus_h_sin_xₖ.error;
   return DetectDangerousRounding<fma_presence, e_cos>(
       cos_xₖ_minus_h_sin_xₖ.value, polynomial_term);
@@ -574,12 +575,12 @@ SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
       TwoProductNegatedAdd<fma_presence>(sin_xₖ, h, cos_xₖ);
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const h_plus_δx̃² = h * ((signed_δx̃ + signed_δx̃) + h);
+  auto const h_plus_δx̃² = (signed_δx̃ + signed_δx̃) + h;
 
   auto const h³_sin_polynomial = MaybeFusedMultiplyAdd<fma_presence>(
       h³, SinPolynomial<fma_presence>(h²), signed_δx̃);
   auto const h_plus_e²_cos_polynomial =
-      h_plus_δx̃² * CosPolynomial<fma_presence>(h²);
+      h_plus_δx̃² * (h * CosPolynomial<fma_presence>(h²));
 
   auto const sin_polynomial_term =
       MaybeFusedMultiplyAdd<fma_presence>(
