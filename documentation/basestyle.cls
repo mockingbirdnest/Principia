@@ -44,7 +44,11 @@
   SmallCapsFeatures={Letters=SmallCaps},
   Contextuals=WordFinal,
             ]{Linux Libertine O}
-\setmonofont[Scale=MatchLowercase]{Consolas}
+\setmonofont[
+    Extension      = .ttf,
+    Path           = ../../Fonts/,
+    UprightFont    = consola.ttf,
+    Scale          = MatchLowercase]{Consolas}
 
 % TODO(egg): rename to something else.
 \RequirePackage{savesym}
@@ -74,7 +78,7 @@
 
 \newfontfamily\cjkfont{BabelStoneHan.ttf}
 
-\newfontfamily\xsuxfont{Nabuninuaihsus.otf}
+\newfontfamily\xsuxfont[Path=../../Fonts/,Extension=.ttf]{Nabuninuaihsus}
 
 % Layout.
 
