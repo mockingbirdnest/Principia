@@ -20,17 +20,17 @@ using namespace principia::graphics::_colours;
 template<affine Abscissa, affine Ordinate>
 class Graph {
  public:
-  Graph(int width,
-        int height,
-        Interval<Abscissa> x_range,
-        Interval<Ordinate> y_range,
+  Graph(std::int64_t width,
+        std::int64_t height,
+        Interval<Abscissa> const& x_range,
+        Interval<Ordinate> const& y_range,
         RGBA32 background);
 
   template<std::ranges::range Points>
   void ListPointPlot(Points const& points, RGB24 colour);
 
   void Plot(std::function<Ordinate(Abscissa)> const& f,
-            Interval<Abscissa> range,
+            Interval<Abscissa> const& range,
             RGB24 colour);
   void PlotVerticalLine(
       Abscissa x,
@@ -39,22 +39,26 @@ class Graph {
   void PlotHorizontalLine(Ordinate y, RGB24 colour);
 
   std::vector<RGBA32> const& pixels() const;
-  int width() const;
-  int height() const;
+  std::int64_t width() const;
+  std::int64_t height() const;
 
  private:
-  int AbscissaToPixel(Abscissa x) const;
-  Interval<Abscissa> PixelToAbscissa(int i) const;
-  int OrdinateToPixel(Ordinate y) const;
+  std::int64_t abscissa_to_pixel(Abscissa x) const;
+  Interval<Abscissa> pixel_to_abscissa(std::int64_t i) const;
+  std::int64_t ordinate_to_pixel(Ordinate y) const;
 
-  void SetPixel(int column, int row, RGBA32 pixel);
+  void SetPixel(std::int64_t column, std::int64_t row, RGBA32 pixel);
 
 
-  Interval<Abscissa> x_range_;
-  Interval<Ordinate> y_range_;
+  Interval<Abscissa> const x_range_;
+  Interval<Ordinate> const y_range_;
 
-  int width_;
-  int height_;
+  std::int64_t const width_;
+  std::int64_t const height_;
+  Difference<Abscissa> const pixel_width_ = x_range_.measure() / width_;
+  Difference<Ordinate> const pixel_height_ = y_range_.measure() / height_;
+  Inverse<Difference<Abscissa>> const inverse_pixel_width_ = 1 / pixel_width_;
+  Inverse<Difference<Ordinate>> const inverse_pixel_height_ = 1 / pixel_height_;
   std::vector<RGBA32> pixels_;
 };
 

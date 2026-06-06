@@ -77,15 +77,15 @@ class OrbitalElements {
   // `&ClassicalElements::mean_anomaly`.
   template<typename T>
   Graph<Instant, T> PlotTimeSeries(T ClassicalElements::* element,
-                                   int width,
-                                   int height,
+                                   std::int64_t width,
+                                   std::int64_t height,
                                    RGBA32 background,
                                    RGB24 line_colour) const;
 
   // Returns a graph of the locus of the eccentricity vector (e cos ω, e sin ω)
   // over the `mean_elements()`.
-  Graph<double, double> PlotEccentricityVector(int width,
-                                               int height,
+  Graph<double, double> PlotEccentricityVector(std::int64_t width,
+                                               std::int64_t height,
                                                RGBA32 background,
                                                RGB24 axis_colour,
                                                RGB24 line_colour) const;

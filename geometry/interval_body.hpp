@@ -42,8 +42,9 @@ void Interval<T>::Include(T const& x) {
 }
 
 template<typename T>
-Interval<T> Interval<T>::IntersectedWith(Interval const& other) const {
-  return {.min = std::max(min, other.min), .max = std::min(max, other.max)};
+Interval<T> Intersection(Interval<T> const& left, Interval<T> const& right) {
+  return {.min = std::max(left.min, right.min),
+          .max = std::min(left.max, right.max)};
 }
 
 template<typename T>

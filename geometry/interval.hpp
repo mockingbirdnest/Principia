@@ -31,10 +31,11 @@ struct Interval {
 
   // Extends this interval so that it contains x.
   void Include(T const& x);
-
-  // The intersection of `*this` with `other`, which is also an interval.
-  Interval IntersectedWith(Interval const& other) const;
 };
+
+// The intersection of `left` and `right`, which is also an interval.
+template<typename T>
+Interval<T> Intersection(Interval<T> const& left, Interval<T> const& right);
 
 template<typename T>
 std::ostream& operator<<(std::ostream& out, Interval<T> const& interval);
@@ -42,6 +43,7 @@ std::ostream& operator<<(std::ostream& out, Interval<T> const& interval);
 }  // namespace internal
 
 using internal::Interval;
+using internal::Intersection;
 
 }  // namespace _interval
 }  // namespace geometry

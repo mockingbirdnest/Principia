@@ -90,8 +90,8 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
 template<typename T>
 Graph<Instant, T> OrbitalElements::PlotTimeSeries(
     T OrbitalElements::ClassicalElements::* element,
-    int width,
-    int height,
+    std::int64_t width,
+    std::int64_t height,
     RGBA32 background,
     RGB24 line_colour) const {
   Interval<T> ordinate_range;
@@ -102,7 +102,7 @@ Graph<Instant, T> OrbitalElements::PlotTimeSeries(
     CHECK_EQ(element, &ClassicalElements::eccentricity);
     ordinate_range = mean_eccentricity_interval();
   } else {
-    auto element_interval =
+    Interval<T> OrbitalElements::* const element_interval =
         (element == &ClassicalElements::inclination
              ? &OrbitalElements::mean_inclination_interval_
          : element == &ClassicalElements::longitude_of_ascending_node
@@ -134,8 +134,8 @@ OrbitalElements::mean_elements() const {
 }
 
 inline Graph<double, double> OrbitalElements::PlotEccentricityVector(
-    int width,
-    int height,
+    std::int64_t width,
+    std::int64_t height,
     RGBA32 background,
     RGB24 axis_colour,
     RGB24 line_colour) const {
@@ -152,11 +152,11 @@ inline Graph<double, double> OrbitalElements::PlotEccentricityVector(
     e_sin_ω_range.Include(eccentricity_vector.back().second);
   }
   if (e_cos_ω_range.measure() / width > e_sin_ω_range.measure() / height) {
-    double midpoint = e_sin_ω_range.midpoint();
+    double const midpoint = e_sin_ω_range.midpoint();
     e_sin_ω_range.min = midpoint - e_cos_ω_range.measure() / aspect_ratio / 2;
     e_sin_ω_range.max = midpoint + e_cos_ω_range.measure() / aspect_ratio / 2;
   } else {
-    double midpoint = e_cos_ω_range.midpoint();
+    double const midpoint = e_cos_ω_range.midpoint();
     e_cos_ω_range.min =
         midpoint - width * e_sin_ω_range.measure() * aspect_ratio / 2;
     e_cos_ω_range.max =

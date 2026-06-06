@@ -183,25 +183,25 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
 
   EXPECT_GOLDEN_GRAPH(
       elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::eccentricity,
-                              200,
-                              50,
-                              Opaque(xkcd::black),
-                              xkcd::cornflower),
+                              /*width=*/200,
+                              /*height=*/50,
+                              /*background=*/Opaque(xkcd::black),
+                              /*line_colour=*/xkcd::cornflower),
       "mercury_orbiter_e");
   EXPECT_GOLDEN_GRAPH(
       elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::inclination,
-                              200,
-                              50,
-                              Opaque(xkcd::black),
-                              xkcd::lavender),
+                              /*width=*/200,
+                              /*height=*/50,
+                              /*background=*/Opaque(xkcd::black),
+                              /*line_colour=*/xkcd::lavender),
       "mercury_orbiter_i");
   EXPECT_GOLDEN_GRAPH(
       elements.PlotTimeSeries(
           &OrbitalElements::ClassicalElements::argument_of_periapsis,
-          200,
-          50,
-          Opaque(xkcd::black),
-          xkcd::cornflower),
+          /*width=*/200,
+          /*height=*/50,
+          /*background=*/Opaque(xkcd::black),
+          /*line_colour=*/xkcd::cornflower),
       "mercury_orbiter_ω");
 
   // The conservation of the “тривиального интеграла a = const” [Лид61, p. 25]
@@ -217,14 +217,13 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
               AnyOf(IsNear(14'910.27_(1) * Kilo(Metre)),  // Windows, macOS AVX.
                     IsNear(14'910.29_(1) * Kilo(Metre)),    // Ubuntu.
                     IsNear(14'910.31_(1) * Kilo(Metre))));  // macOS SSE.
-  EXPECT_GOLDEN_GRAPH(
-      elements.PlotTimeSeries(
-          &OrbitalElements::ClassicalElements::semimajor_axis,
-          200,
-          50,
-          Opaque(xkcd::black),
-          xkcd::sunflower),
-      "mercury_orbiter_a");
+  EXPECT_GOLDEN_GRAPH(elements.PlotTimeSeries(
+                          &OrbitalElements::ClassicalElements::semimajor_axis,
+                          /*width=*/200,
+                          /*height=*/50,
+                          /*background=*/Opaque(xkcd::black),
+                          /*line_colour=*/xkcd::sunflower),
+                      "mercury_orbiter_a");
 
   // The integral c₁ is preserved quite well: we have an exchange between
   // inclination and eccentricity.

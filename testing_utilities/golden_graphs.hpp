@@ -23,6 +23,10 @@ namespace internal {
 using namespace principia::graphics::_graph;
 using ::testing::Eq;
 
+// This is templatized on the character type because it needs to
+// platform-appropriate for paths (UTF-16 on Windows, UTF-8 on *nix).  We take
+// pointers rather than `basic_string_view<Character>` so that we can deduce
+// `Character` from the literals.
 template<typename Abscissa, typename Ordinate, typename Character>
 void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
                        Character const* const suffix,
@@ -35,11 +39,12 @@ void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
   std::vector<std::uint8_t> golden;
   std::ifstream in(image_path, std::ios::binary | std::ios::in);
   while (in.good()) {
-    in.read(reinterpret_cast<char*>(&golden.emplace_back()), 1);
+    char byte;
+    in.read(&byte, 1);
     if (in.eof()) {
-      golden.pop_back();
       break;
     }
+    golden.push_back(byte);
   }
   std::vector<std::uint8_t> actual;
   lodepng::encode(actual,
