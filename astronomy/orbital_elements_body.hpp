@@ -90,10 +90,10 @@ absl::StatusOr<OrbitalElements> OrbitalElements::ForTrajectory(
 template<typename T>
 Graph<Instant, T> OrbitalElements::PlotTimeSeries(
     T OrbitalElements::ClassicalElements::* element,
-    std::int64_t width,
-    std::int64_t height,
-    RGBA32 background,
-    RGB24 line_colour) const {
+    std::int64_t const width,
+    std::int64_t const height,
+    RGBA32 const background,
+    RGB24 const line_colour) const {
   Interval<T> ordinate_range;
   if constexpr (std::is_same_v<T, Length>) {
     ordinate_range = {mean_periapsis_distance_interval().min,
@@ -134,11 +134,11 @@ OrbitalElements::mean_elements() const {
 }
 
 inline Graph<double, double> OrbitalElements::PlotEccentricityVector(
-    std::int64_t width,
-    std::int64_t height,
-    RGBA32 background,
-    RGB24 axis_colour,
-    RGB24 line_colour) const {
+    std::int64_t const width,
+    std::int64_t const height,
+    RGBA32 const background,
+    RGB24 const axis_colour,
+    RGB24 const line_colour) const {
   double const aspect_ratio =
       static_cast<double>(width) / static_cast<double>(height);
   std::vector<std::pair<double, double>> eccentricity_vector;

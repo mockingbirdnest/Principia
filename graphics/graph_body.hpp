@@ -24,6 +24,7 @@ Graph<Abscissa, Ordinate>::Graph(std::int64_t const width,
 
 template<affine Abscissa, affine Ordinate>
 template<std::ranges::range Points>
+  requires graph_point<std::ranges::range_value_t<Points>, Abscissa, Ordinate>
 void Graph<Abscissa, Ordinate>::ListPointPlot(Points const& points,
                                               RGB24 const colour) {
   for (auto const& [x, y] : points) {
@@ -63,6 +64,8 @@ void Graph<Abscissa, Ordinate>::PlotVerticalLine(
     Abscissa const x,
     RGB24 const colour,
     std::optional<Interval<Ordinate>> const y_range) {
+  // Note that the lower bound corresponds to `y_range->max` because
+  // `ordinate_to_pixel` is decreasing.
   for (std::int64_t j = y_range.has_value() ? ordinate_to_pixel(y_range->max)
                                             : 0;
        j < (y_range.has_value() ? ordinate_to_pixel(y_range->min) : height_);

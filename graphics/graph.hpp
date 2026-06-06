@@ -17,6 +17,12 @@ using namespace principia::base::_algebra;
 using namespace principia::geometry::_interval;
 using namespace principia::graphics::_colours;
 
+template<typename Point, typename Abscissa, typename Ordinate>
+concept graph_point =
+    (std::tuple_size_v<Point> == 2) &&
+    std::convertible_to<std::tuple_element_t<0, Point>, Abscissa> &&
+    std::convertible_to<std::tuple_element_t<1, Point>, Ordinate>;
+
 template<affine Abscissa, affine Ordinate>
 class Graph {
  public:
@@ -27,6 +33,7 @@ class Graph {
         RGBA32 background);
 
   template<std::ranges::range Points>
+    requires graph_point<std::ranges::range_value_t<Points>, Abscissa, Ordinate>
   void ListPointPlot(Points const& points, RGB24 colour);
 
   void Plot(std::function<Ordinate(Abscissa)> const& f,
@@ -45,6 +52,7 @@ class Graph {
  private:
   std::int64_t abscissa_to_pixel(Abscissa x) const;
   Interval<Abscissa> pixel_to_abscissa(std::int64_t i) const;
+  // This function is decreasing: `y_range_.max` maps to 0.
   std::int64_t ordinate_to_pixel(Ordinate y) const;
 
   void SetPixel(std::int64_t column, std::int64_t row, RGBA32 pixel);

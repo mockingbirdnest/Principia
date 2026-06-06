@@ -289,9 +289,9 @@ char const* const Architecture = "x86-64";
 #define U16_STRING_LITERAL(X) u##X
 
 #if OS_WIN
-#  define FILESYSTEM_STRING(X) U16_STRING_LITERAL(X)
+#  define FILESYSTEM_STRING_VIEW(X) std::u16string_view(U16_STRING_LITERAL(X))
 #else
-#  define FILESYSTEM_STRING(X) X
+#  define FILESYSTEM_STRING_VIEW(X) std::string_view(X)
 #endif
 
 }  // namespace base

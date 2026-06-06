@@ -14,7 +14,9 @@
 
 #define EXPECT_GOLDEN_GRAPH(graph, suffix)                            \
   (::principia::testing_utilities::_golden_graphs::ExpectGoldenGraph( \
-      (graph), FILESYSTEM_STRING(suffix), FILESYSTEM_STRING(__FILE__)))
+      (graph),                                                        \
+      FILESYSTEM_STRING_VIEW(suffix),                                 \
+      FILESYSTEM_STRING_VIEW(__FILE__)))
 namespace principia {
 namespace testing_utilities {
 namespace _golden_graphs {
@@ -29,8 +31,8 @@ using ::testing::Eq;
 // `Character` from the literals.
 template<typename Abscissa, typename Ordinate, typename Character>
 void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
-                       Character const* const suffix,
-                       Character const* const test_file) {
+                       std::basic_string_view<Character> const suffix,
+                       std::basic_string_view<Character> const test_file) {
   auto const image_path = std::filesystem::path(test_file)
                               .replace_extension()
                               .concat("_")
