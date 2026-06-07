@@ -21,6 +21,7 @@
     <ClInclude Include="discrete_trajectory_factories.hpp" />
     <ClInclude Include="discrete_trajectory_factories_body.hpp" />
     <ClInclude Include="golden_graphs.hpp" />
+    <ClInclude Include="golden_graphs_body.hpp" />
     <ClInclude Include="numerics_matchers.hpp" />
     <ClInclude Include="numerics_matchers_body.hpp" />
     <ClInclude Include="integration.hpp" />

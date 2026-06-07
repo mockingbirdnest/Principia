@@ -110,6 +110,9 @@
     <ClInclude Include="golden_graphs.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="golden_graphs_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="almost_equals_test.cpp">
