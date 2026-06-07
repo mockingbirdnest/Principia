@@ -1,5 +1,7 @@
 #pragma once
 
+#include "testing_utilities/golden_graphs.hpp"
+
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
