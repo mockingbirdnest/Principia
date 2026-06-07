@@ -56,7 +56,7 @@ This document describes the implementation of functions \texttt{Sin} and \texttt
 The implementation follows the ideas described by \cite{GalBachelis1991} and uses accurate tables produced by the method presented in \cite{StehléZimmermann2005}.  It guarantees correct rounding with a high probability.  In circumstances where it cannot guarantee correct rounding, it falls back to the (slower but correct) implementation provided by the CORE-MATH project \cite{SibidanovZimmermannGlondu2022} \cite{ZimmermannSibidanovGlondu2024}.  More precisely, the algorithm proceeds through the following steps:
 \begin{itemize}[nosep]
 \item perform argument reduction using the Cody--Waite or Boldo--Daumas--Li algorithm in double precision (see \cite[379]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}, \cite[204]{Muller2016});
-\item if the argument is too large, or if argument reduction loses too many bits (\idest, the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to Payne-Hanek reduction;
+\item if the argument is too large, or if argument reduction loses too many bits (\idest, the argument is close to a multiple of $\frac{\Pi}{2}$), fall back to Payne--Hanek reduction;
 \item use accurate tables and polynomial approximations to compute \texttt{Sin} or \texttt{Cos} with extra accuracy;
 \item if the result fails Muller's rounding test (\cite[397-400]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}), fall back to \texttt{cr\_sin} or \texttt{cr\_cos};
 \item otherwise return the rounded result of the preceding computation.
