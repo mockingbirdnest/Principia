@@ -9,7 +9,6 @@
 #include <span>
 #include <string_view>
 
-#include "base/macros.hpp"  // 🧙 For FILESYSTEM_STRING.
 #include "gtest/gtest.h"
 #include "lodepng/lodepng.h"
 
