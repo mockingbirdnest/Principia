@@ -99,7 +99,7 @@ Given an argument $x$, the purpose of argument reduction is to compute a pair of
 
 If $\abs x < \round{\frac{\Pi}{4}}$ then $\red x = x$ and $\gd \red x = 0$.
 
-\subsection*{Cody-Waite Argument Reduction}
+\subsection*{Cody--Waite Argument Reduction}
 
 On machines that do not have a Fused Multiply-Add (FMA) instruction, we use the Cody--Waite reduction algorithm as described in \cite[379-381]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}.  This algorithm requires that we build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
 
@@ -394,9 +394,9 @@ If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ 
 
 \subsection*{Boldo--Daumas--Li Argument Reduction}
 
-On machines that have an FMA instruction, we use the Boldo-Daumas-Li reduction algorithm as described in \cite{BoldoDaumasLi2009} and \cite[204-206]{Muller2016}.  
+On machines that have an FMA instruction, we use the Boldo--Daumas--Li reduction algorithm as described in \cite{BoldoDaumasLi2009} and \cite[204-206]{Muller2016}.  
 
-\subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Two-Term Approximation}
+\subsubsection*{Boldo--Daumas--Li Argument Reduction Using a Two-Term Approximation}
 
 In this scheme we use a two-term approximation $C_1 + C_2$ of the modulus.  Using our notation, the algorithm proceeds as follows:
 \[
@@ -410,7 +410,7 @@ u &= \round{x - n \; C_1} \\
 \gd \red x &= \round{\round{\round{t - \red x} + \gd t} - \gr_l}
 \end{dcases}
 \]
-where $R$, $C_1$, and $C_2$ are carefully constructed constants based on $C$, the modulo of the reduction\footnote{These constants are distinct from those used for Cody-Waite reduction.}.  In our case $C = \frac{\Pi}{2}$ and \cite[1141]{BoldoDaumasLi2009} prove (theorem 3) that $\abs{R \; x - n} \leq 1/2$.  Since $R = \round{\frac{2}{\Pi}}$, this leads to $n = \iround{\round{\frac{2}{\Pi}} \; x}$, a definition similar to the one we used in the Cody-Waite reduction above.
+where $R$, $C_1$, and $C_2$ are carefully constructed constants based on $C$, the modulo of the reduction\footnote{These constants are distinct from those used for Cody--Waite reduction.}.  In our case $C = \frac{\Pi}{2}$ and \cite[1141]{BoldoDaumasLi2009} prove (theorem 3) that $\abs{R \; x - n} \leq 1/2$.  Since $R = \round{\frac{2}{\Pi}}$, this leads to $n = \iround{\round{\frac{2}{\Pi}} \; x}$, a definition similar to the one we used in the Cody--Waite reduction above.
 
 The key result of \cite{BoldoDaumasLi2009} is that:
 \[
@@ -431,14 +431,14 @@ The two-term reduction guarantees $\gk_3$ extra bits of accuracy if this error i
 \[
 \abs{n} \; 2^{-2 M + 4} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \]
-A sufficient condition for this is\footnote{Note that the error bound is fundamentally different from the one we obtained for the Cody-Waite reduction.  For Cody-Waite we have to choose upfront an upper bound on $\abs{n}$ (and therefore $\abs{x}$) based on the number of zeroes at the end of the mantissa of $C_1$ (resp. $C_2$).  This is necessary so that the product $n \; C_1$ (resp. $n \; C_2$) be exact.  Here we don't need an \emph{a priori} upper bound because \cite{BoldoDaumasLi2009} always yields an exact value.  So we can apply the algorithm to any argument and check \emph{post hoc} if the reduced argument is large enough.  Most of the time it will be, unless the input argument is extremely large or extremely close to a multiple of $\frac{\Pi}{2}$.  This means that the Boldo-Daumas-Li reduction is usable over a much larger range that the Cody-Waite reduction.}:
+A sufficient condition for this is\footnote{Note that the error bound is fundamentally different from the one we obtained for the Cody--Waite reduction.  For Cody--Waite we have to choose upfront an upper bound on $\abs{n}$ (and therefore $\abs{x}$) based on the number of zeroes at the end of the mantissa of $C_1$ (resp. $C_2$).  This is necessary so that the product $n \; C_1$ (resp. $n \; C_2$) be exact.  Here we don't need an \emph{a priori} upper bound because \cite{BoldoDaumasLi2009} always yields an exact value.  So we can apply the algorithm to any argument and check \emph{post hoc} if the reduced argument is large enough.  Most of the time it will be, unless the input argument is extremely large or extremely close to a multiple of $\frac{\Pi}{2}$.  This means that the Boldo--Daumas--Li reduction is usable over a much larger range that the Cody--Waite reduction.}:
 \begin{equation}
 \abs{\red x} \geq \abs{n} \; 2^{\gk_3 - M + 4}
 \label{eqnboldo2}
 \end{equation}
 If $\gk_3 = 18$ the numeric value of the multiplier $2^{\gk_3 - M + 4}$ is $2^{-31} \simeq 4.7 \times 10^{-10}$.
 
-\subsubsection*{Boldo-Daumas-Li Argument Reduction Using a Three-Term Approximation}
+\subsubsection*{Boldo--Daumas--Li Argument Reduction Using a Three-Term Approximation}
 
 If the condition (\ref{eqnboldo2}) is not met, we extend the algorithm as suggested by \cite[1139]{BoldoDaumasLi2009} and \cite[205]{Muller2016}:
 \[
@@ -499,11 +499,11 @@ which is satisfied if:
 \end{equation}
 If $\gk_3 = 18$ the numeric value of the multiplier is $524291 \times 2^{-84} \simeq 2.7 \times 10^{-20}$.
 
-\subsubsection*{Applicability of the Boldo-Daumas-Li Argument Reduction}
+\subsubsection*{Applicability of the Boldo--Daumas--Li Argument Reduction}
 
-If $\abs{n}$ is too large (that is, if $\abs{x}$ is too large) the right-hand side of (\ref{eqnboldo2}) and (\ref{eqnboldo3}) becomes so large that no reduced angle $\red x$ is acceptable: this happens if the right-hand side is larger than $\frac{\Pi}{4}$.  When deciding for which angles it is worthwhile to attempt the Boldo-Daumas-Li reduction, it is important to note that all the work done for the two-term reduction is reused by the three-term reduction, since the latter just performs more operations on the result obtained by the former.  This differs from the Cody-Waite reduction, where the result of the two-term reduction is not usable by the three-term reduction.  Therefore, there is not much harm in trying the two-term Boldo-Daumas-Li reduction if there is a good probability that, if it fails, the three-term reduction will succeed.
+If $\abs{n}$ is too large (that is, if $\abs{x}$ is too large) the right-hand side of (\ref{eqnboldo2}) and (\ref{eqnboldo3}) becomes so large that no reduced angle $\red x$ is acceptable: this happens if the right-hand side is larger than $\frac{\Pi}{4}$.  When deciding for which angles it is worthwhile to attempt the Boldo--Daumas--Li reduction, it is important to note that all the work done for the two-term reduction is reused by the three-term reduction, since the latter just performs more operations on the result obtained by the former.  This differs from the Cody--Waite reduction, where the result of the two-term reduction is not usable by the three-term reduction.  Therefore, there is not much harm in trying the two-term Boldo--Daumas--Li reduction if there is a good probability that, if it fails, the three-term reduction will succeed.
 
-In our implementation we choose to perform the Boldo-Daumas-Li reduction if there is a possibility that it succeeds with two terms according to (\ref{eqnboldo2}), that is if:
+In our implementation we choose to perform the Boldo--Daumas--Li reduction if there is a possibility that it succeeds with two terms according to (\ref{eqnboldo2}), that is if:
 \[
 \abs{n} < \frac{\Pi}{4} \; 2^{M - \gk_3 - 4}
 \]
