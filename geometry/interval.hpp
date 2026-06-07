@@ -33,12 +33,17 @@ struct Interval {
   void Include(T const& x);
 };
 
+// The intersection of `left` and `right`, which is also an interval.
+template<typename T>
+Interval<T> Intersection(Interval<T> const& left, Interval<T> const& right);
+
 template<typename T>
 std::ostream& operator<<(std::ostream& out, Interval<T> const& interval);
 
 }  // namespace internal
 
 using internal::Interval;
+using internal::Intersection;
 
 }  // namespace _interval
 }  // namespace geometry

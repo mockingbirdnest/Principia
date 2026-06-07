@@ -6,6 +6,7 @@
     --project:benchmarks `
     --project:functions `
     --project:geometry `
+    --project:graphics `
     --project:integrators `
     --project:journal `
     --project:ksp_plugin `

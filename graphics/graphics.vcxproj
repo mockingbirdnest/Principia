@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{20c9d292-5155-4e8a-9c6c-ffb761ea2c5d}</ProjectGuid>
+    <RootNamespace>graphics</RootNamespace>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile />
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="graph.hpp" />
+    <ClInclude Include="graph_body.hpp" />
+    <ClInclude Include="colours.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="graph_test.cpp" />
+  </ItemGroup>
+  <Import Project="$(SolutionDir)principia.props" />
+  <ImportGroup Label="Shared">
+    <Import Project="..\shared\base.vcxitems" Label="Shared" />
+    <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
+  </ImportGroup>
+</Project>

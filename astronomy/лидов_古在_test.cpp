@@ -15,6 +15,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "gmock/gmock.h"
+#include "graphics/colours.hpp"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -28,6 +29,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/golden_graphs.hpp"  // 🧙 For EXPECT_GOLDEN_GRAPH.
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
@@ -49,6 +51,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
+using namespace principia::graphics::_colours;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::numerics::_elementary_functions;
@@ -178,6 +181,29 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().max,
               IsNear(129_(1) * Degree));
 
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::eccentricity,
+                              /*width=*/200,
+                              /*height=*/50,
+                              /*background=*/Opaque(xkcd::black),
+                              /*line_colour=*/xkcd::cornflower),
+      "mercury_orbiter_e");
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::inclination,
+                              /*width=*/200,
+                              /*height=*/50,
+                              /*background=*/Opaque(xkcd::black),
+                              /*line_colour=*/xkcd::lavender),
+      "mercury_orbiter_i");
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::argument_of_periapsis,
+          /*width=*/200,
+          /*height=*/50,
+          /*background=*/Opaque(xkcd::black),
+          /*line_colour=*/xkcd::cornflower),
+      "mercury_orbiter_ω");
+
   // The conservation of the “тривиального интеграла a = const” [Лид61, p. 25]
   // is excellent: while the sun is nudging and deforming the orbit, it is not
   // pumping energy into nor out of it.  The true values are 14'910.01 and
@@ -191,6 +217,13 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
               AnyOf(IsNear(14'910.27_(1) * Kilo(Metre)),  // Windows, macOS AVX.
                     IsNear(14'910.29_(1) * Kilo(Metre)),    // Ubuntu.
                     IsNear(14'910.31_(1) * Kilo(Metre))));  // macOS SSE.
+  EXPECT_GOLDEN_GRAPH(elements.PlotTimeSeries(
+                          &OrbitalElements::ClassicalElements::semimajor_axis,
+                          /*width=*/200,
+                          /*height=*/50,
+                          /*background=*/Opaque(xkcd::black),
+                          /*line_colour=*/xkcd::sunflower),
+                      "mercury_orbiter_a");
 
   // The integral c₁ is preserved quite well: we have an exchange between
   // inclination and eccentricity.

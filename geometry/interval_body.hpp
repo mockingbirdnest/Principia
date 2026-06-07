@@ -42,6 +42,12 @@ void Interval<T>::Include(T const& x) {
 }
 
 template<typename T>
+Interval<T> Intersection(Interval<T> const& left, Interval<T> const& right) {
+  return {.min = std::max(left.min, right.min),
+          .max = std::min(left.max, right.max)};
+}
+
+template<typename T>
 std::ostream& operator<<(std::ostream& out, Interval<T> const& interval) {
   return out << interval.midpoint() << " ± " << interval.measure() / 2;
 }
