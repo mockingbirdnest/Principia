@@ -101,7 +101,7 @@ If $\abs x < \round{\frac{\Pi}{4}}$ then $\red x = x$ and $\gd \red x = 0$.
 
 \subsection*{Cody-Waite Argument Reduction}
 
-On machines that do not have a Fused-Multiply Add (FMA) instruction, we use the Cody-Waite reduction algorithm as described in \cite[379-381]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}.  This algorithm requires that we build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
+On machines that do not have a Fused Multiply-Add (FMA) instruction, we use the Cody--Waite reduction algorithm as described in \cite[379-381]{MullerBrisebarreDeDinechinJeannerodLefevreMelquiondRevolStehleTorres2010}.  This algorithm requires that we build approximations of $\frac{\Pi}{2}$ with extra accuracy and analyse the circumstances under which they may be used and the errors that they entail on the reduced argument.
 
 Let $z \geq 0$.  We start by defining the truncation function $\truncate\of{\gk, z}$ which clears the last $\gk$ bits of the significand of $z$:
 \[
@@ -223,7 +223,7 @@ and the following upper bound for $\gd C_2$:
  
 This scheme gives a representation with a significand that has effectively $3 M - \gk'_2 - \gk''_2$ bits and is such that multiplying $C_2$ and $C'_2$ by an integer less than or equal to $2^{\gk_2}$ is exact.
 
-\subsubsection*{Cody-Waite Argument Reduction Using a Two-Term Approximation}
+\subsubsection*{Cody--Waite Argument Reduction Using a Two-Term Approximation}
 
 If $\abs x \leq 2^{\gk_1} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -327,7 +327,7 @@ The exact $\twodifference$ yields a pair such that $\abs{\gd \red x} \le \frac{\
 \]
 The accurate tables must be constructed so that the last interval covers angles misrounded in that manner\footnote{In practice this is not a stringent constraint because the distance between accurate table entries is much larger than this quantity.}.
 
-In the computation of the trigonometric functions, we need $\red x + \gd \red x$ to provide enough accuracy that the final result is correctly rounded most of the time.  The above error bound shows that, if $\red x$ is very small (\idest, if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\red x + \gd \red x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result\footnote{We can ignore $\gd \red x$ in this bound because $\round{\red x + \gd \red x} = \red x$ by construction, and therefore $\ULP\of{\red x + \gd \red x} = \ULP\of{\red x}$}:
+In the computation of the trigonometric functions, we need $\red x + \gd \red x$ to provide enough accuracy that the final result is correctly rounded most of the time.  The above error bound shows that, if $\red x$ is very small (\idest, if $x$ is very close to a multiple of $\frac{\Pi}{2}$), the two-term approximation may not provide enough correct bits.  Formally, say that we want to have $M + \gk_3$ correct bits in the mantissa of $\red x + \gd \red x$.  The error must be less than $2^{-\gk_3}$ half-units of the last place of the result\footnote{We can ignore $\gd \red x$ in this bound because $\round{\red x + \gd \red x} = \red x$ by construction, and therefore $\ULP\of{\red x + \gd \red x} = \ULP\of{\red x}$.}:
 \begin{equation}
 2^{\gk_1 + \gk'_1 - M + 1} \ULP\of{\frac{\Pi}{2}} \leq 2^{-\gk_3 - 1} \ULP\of{\red x} \leq 2^{-\gk_3 - M} \abs{\red x}
 \label{eqnreductionbound}
@@ -339,7 +339,7 @@ which leads to the following condition on the reduced angle:
 
 The rest of the implementation assumes that $\gk_3 = 18$ to achieve correct rounding with high probability.  If we choose $\gk_1 = 8$ we find that $\gk'_1 = 5$ (because there are three consecutive zeroes at this location in the significand of $\frac{\Pi}{2}$) and the desired accuracy is obtained as long as $\abs{\red x} \geq 2^{-20} \simeq 9.5 \times 10^{-7}$.
 
-\subsubsection*{Cody-Waite Argument Reduction Using a Three-Term Approximation}
+\subsubsection*{Cody--Waite Argument Reduction Using a Three-Term Approximation}
 
 If $\abs x \leq 2^{\gk_2} \round{\frac{\Pi}{2}}$ we compute:
 \[
@@ -392,7 +392,7 @@ and it is therefore sufficient to have:
 
 If we choose $\gk_3 = 18$ as above, and $\gk_2 = 18$ we find that $\gk'_2 = 14$ and $\gk''_2 = 15$.  Therefore, the desired accuracy is obtained as long as $\abs{\red x} \geq 33 \times 2^{-39} \simeq 6.0 \times 10^{-11}$.
 
-\subsection*{Boldo-Daumas-Li Argument Reduction}
+\subsection*{Boldo--Daumas--Li Argument Reduction}
 
 On machines that have an FMA instruction, we use the Boldo-Daumas-Li reduction algorithm as described in \cite{BoldoDaumasLi2009} and \cite[204-206]{Muller2016}.  
 
@@ -522,7 +522,7 @@ whose numerical value is approximately $4.6 \times 10^{-11}$.  There is therefor
 
 \subsection*{Fallback}
 
-If any of the conditions above is not met, we fall back to the Payne-Hanek argument reduction algorithm as described in \cite[154-157]{Muller1997}.
+If any of the conditions above is not met, we fall back to the Payne--Hanek argument reduction algorithm as described in \cite[154-157]{Muller1997}.
 
 \section*{Accurate Tables and Their Generation}
 
