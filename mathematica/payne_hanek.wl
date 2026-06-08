@@ -59,7 +59,7 @@
 
 
 (* ::Input:: *)
-(*chunks=Table[chunk[\[Alpha],bitsPerChunk,-bitsPerChunk i],{i,0,Ceiling[smallestExponent/bitsPerChunk]}]*)
+(*chunks=Table[chunk[\[Alpha],bitsPerChunk,-bitsPerChunk i],{i,0,Floor[smallestExponent/bitsPerChunk]}]*)
 
 
 (* ::Input:: *)
