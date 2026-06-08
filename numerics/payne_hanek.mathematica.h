@@ -11,7 +11,7 @@ namespace internal {
 constexpr std::int64_t PayneHanekBitsPerChunk = 26;
 
 // Chunks of 26 bits of 4/π, up to exponent -1074.
-constexpr std::array<double, 43> PayneHanekChunks{
+constexpr std::array<double, 42> PayneHanekChunks{
     0x28b'e60d.0p-25,
     0x2e4'e441.0p-51,
     0x14a'7f09.0p-77,
@@ -53,8 +53,7 @@ constexpr std::array<double, 43> PayneHanekChunks{
     0x1fa'f97c.0p-1013,
     0x17b'3d07.0p-1039,
     0x0e7'de29.0p-1065,
-    0x129'2ea6.0p-1091,
-    0x2fe'd7ec.0p-1117};
+    0x129'2ea6.0p-1091};
 
 }  // namespace internal
 
