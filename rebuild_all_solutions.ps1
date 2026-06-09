@@ -11,7 +11,7 @@ $dependencies = @(".\Google\abseil-cpp\msvc\abseil-cpp.slnf",
                   ".\Google\re2\msvc\re2.slnf",
                   ".\Inria\core-math\msvc\core-math.sln",
                   ".\LLNL\zfp\msvc\zfp.sln",
-                  ".\Lode\lodepng\msvc\lonepng.slnf")
+                  ".\Lode\lodepng\msvc\lodepng.slnf")
 
 foreach ($directory_and_repositories in @(
          @("Boost",  @("config", `
