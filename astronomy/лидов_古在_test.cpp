@@ -188,6 +188,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
                               /*background=*/Opaque(xkcd::black),
                               /*line_colour=*/xkcd::cornflower),
       "mercury_orbiter_e");
+#if OS_WIN
   EXPECT_GOLDEN_GRAPH(
       elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::inclination,
                               /*width=*/200,
@@ -195,6 +196,15 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
                               /*background=*/Opaque(xkcd::black),
                               /*line_colour=*/xkcd::lavender),
       "mercury_orbiter_i");
+#else
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::inclination,
+                              /*width=*/200,
+                              /*height=*/50,
+                              /*background=*/Opaque(xkcd::black),
+                              /*line_colour=*/xkcd::lavender),
+      "mercury_orbiter_i_linux");
+#endif
   EXPECT_GOLDEN_GRAPH(
       elements.PlotTimeSeries(
           &OrbitalElements::ClassicalElements::argument_of_periapsis,
@@ -217,6 +227,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
               AnyOf(IsNear(14'910.27_(1) * Kilo(Metre)),  // Windows, macOS AVX.
                     IsNear(14'910.29_(1) * Kilo(Metre)),    // Ubuntu.
                     IsNear(14'910.31_(1) * Kilo(Metre))));  // macOS SSE.
+#if OS_WIN
   EXPECT_GOLDEN_GRAPH(elements.PlotTimeSeries(
                           &OrbitalElements::ClassicalElements::semimajor_axis,
                           /*width=*/200,
@@ -224,6 +235,15 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
                           /*background=*/Opaque(xkcd::black),
                           /*line_colour=*/xkcd::sunflower),
                       "mercury_orbiter_a");
+#else
+  EXPECT_GOLDEN_GRAPH(elements.PlotTimeSeries(
+                          &OrbitalElements::ClassicalElements::semimajor_axis,
+                          /*width=*/200,
+                          /*height=*/50,
+                          /*background=*/Opaque(xkcd::black),
+                          /*line_colour=*/xkcd::sunflower),
+                      "mercury_orbiter_a_linux");
+#endif
 
   // The integral c₁ is preserved quite well: we have an exchange between
   // inclination and eccentricity.
