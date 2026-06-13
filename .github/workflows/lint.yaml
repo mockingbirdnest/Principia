@@ -99,7 +99,7 @@ jobs:
         exit $errors.Length
 
   check-iwyu:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
     - uses: actions/checkout@v4
     - name: Restore Release
