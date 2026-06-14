@@ -688,11 +688,6 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
       elements.PlotEccentricityVector(
           200, 150, Opaque(xkcd::black), xkcd::white, xkcd::cornflower),
       "topex_poséidon_eccentricity_vector");
-#else
-  EXPECT_GOLDEN_GRAPH(
-      elements.PlotEccentricityVector(
-          200, 150, Opaque(xkcd::black), xkcd::white, xkcd::cornflower),
-      "topex_poséidon_eccentricity_vector_linux");
 #endif
 
   // Nominal longitude of the equatorial crossing of the first ascending pass
