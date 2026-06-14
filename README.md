@@ -1,8 +1,8 @@
 # Principia
 
-**&lrm;[Leibniz](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#leibniz), the May version of Principia, is available, with improved orbit analysis and numerous bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/l3ibniz).**
+**&lrm;[Lejeune Dirichlet](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#lejeune-dirichlet), the June version of Principia, is available, with bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/d1r1chl3t).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Leibniz for 1.8.1—1.12.5](https://share.weiyun.com/7qsAt4tB).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Lejeune Dirichlet for 1.8.1—1.12.5](https://share.weiyun.com/GExUIp5m).**
 
 > [!CAUTION]
 > *Please read [the change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#leibniz) for important information about the upgrade to Leibniz.*
@@ -21,4 +21,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/l3ibniz).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Leibniz](https://github.com/mockingbirdnest/Principia/releases/tag/2026051620-Leibniz) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/d1r1chl3t).  Or, if you don't trust our binary, [build the mod](https://github.com/mockingbirdnest/Principia/blob/master/documentation/Setup.md) from the [Lejeune Dirichlet](https://github.com/mockingbirdnest/Principia/releases/tag/2026061503-Lejeune%C2%A0Dirichlet) release.
