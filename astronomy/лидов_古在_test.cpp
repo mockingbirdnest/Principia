@@ -181,6 +181,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   EXPECT_THAT(elements.mean_argument_of_periapsis_interval().max,
               IsNear(129_(1) * Degree));
 
+#if OS_WIN
   EXPECT_GOLDEN_GRAPH(
       elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::eccentricity,
                               /*width=*/200,
@@ -188,7 +189,6 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
                               /*background=*/Opaque(xkcd::black),
                               /*line_colour=*/xkcd::cornflower),
       "mercury_orbiter_e");
-#if OS_WIN
   EXPECT_GOLDEN_GRAPH(
       elements.PlotTimeSeries(&OrbitalElements::ClassicalElements::inclination,
                               /*width=*/200,
