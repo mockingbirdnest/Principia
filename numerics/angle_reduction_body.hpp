@@ -30,9 +30,9 @@ inline constexpr DoublePrecision<double> π_over_2 = []() {
 }();
 
 template<std::int64_t precision, typename Angle>
-void PayneHanek(Angle const& x,
-                DoublePrecision<Angle>& x_reduced,
-                std::int64_t& quadrant) {
+void PayneHanekReduction(Angle const& x,
+                         DoublePrecision<Angle>& x_reduced,
+                         std::int64_t& quadrant) {
   if (x != x) {
     x_reduced = DoublePrecision<Angle>(x);
     quadrant = 0;
