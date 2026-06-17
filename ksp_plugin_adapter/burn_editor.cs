@@ -404,14 +404,16 @@ class BurnEditor : ScalingRenderer {
     // NOTE(egg): NathanKell informs me that in >= 1.0.5, RCS has a useZaxis
     // property, that controls whether they thrust -up or -forward.  The madness
     // keeps piling up.
-    double[] thrusts = (from engine in active_rcs
-                        select engine.thrusterPower *
-                               (from transform in engine.thrusterTransforms
-                                where transform.gameObject.activeInHierarchy
-                                select Math.Max(0,
-                                                Vector3d.Dot(
-                                                    reference_direction,
-                                                    -transform.up))).Sum()).
+    double[] thrusts =
+        (from engine in active_rcs
+         select engine.thrusterPower *
+                (from transform in engine.thrusterTransforms
+                 where transform.gameObject.activeInHierarchy
+                 select Math.Max(0,
+                                 Vector3d.Dot(reference_direction,
+                                              engine.useZaxis
+                                                  ? -transform.forward
+                                                  : -transform.up))).Sum()).
         ToArray();
     thrust_in_kilonewtons_ = thrusts.Sum();
 
