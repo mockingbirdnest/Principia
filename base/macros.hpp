@@ -57,16 +57,16 @@ char const* const CompilerVersion = __VERSION__;
 
 #if defined(__APPLE__)
 #define OS_MACOSX 1
-char const* const OperatingSystem = "macOS";
+constexpr char const* OperatingSystem = "macOS";
 #elif defined(__linux__)
 #define OS_LINUX 1
-char const* const OperatingSystem = "Linux";
+constexpr char const* OperatingSystem = "Linux";
 #elif defined(__FreeBSD__)
 #define OS_FREEBSD 1
-char const* const OperatingSystem = "FreeBSD";
+constexpr char const* OperatingSystem = "FreeBSD";
 #elif defined(_WIN32)
 #define OS_WIN 1
-char const* const OperatingSystem = "Windows";
+constexpr char const* OperatingSystem = "Windows";
 #else
 #error "Try OS/360."
 #endif
