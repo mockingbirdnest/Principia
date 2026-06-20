@@ -32,6 +32,7 @@ using namespace principia::numerics::_fma;
     }
     result.push_back(byte);
   }
+  return result;
 }
 
 template<typename Abscissa, typename Ordinate, typename Character>
@@ -66,18 +67,18 @@ void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
                                          actual_data + actual_size,
                                          primary_golden.begin(),
                                          primary_golden.end());
-  if (matches_primary) {
+  if (matches_primary && platform_image_path != image_path) {
     EXPECT_EQ(platform_specific_golden.size(), 0)
         << image_path << " matches, platform-specific override "
         << platform_image_path << " should be removed";
     std::filesystem::remove(platform_image_path);
   } else {
-    bool const maches_platform_specific =
+    bool const matches_platform_specific =
         std::equal(actual_data,
                    actual_data + actual_size,
                    platform_specific_golden.begin(),
                    platform_specific_golden.end());
-    EXPECT_TRUE(maches_platform_specific)
+    EXPECT_TRUE(matches_platform_specific)
         << platform_image_path
         << " has changed; golden size: " << platform_specific_golden.size()
         << " B, actual size: " << actual_size << " B";
