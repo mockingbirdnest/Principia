@@ -61,7 +61,7 @@ void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
                    reinterpret_cast<std::uint8_t const*>(graph.pixels().data()),
                    graph.width(),
                    graph.height());
-  bool const maches_primary = std::equal(actual_data,
+  bool const matches_primary = std::equal(actual_data,
                                          actual_data + actual_size,
                                          primary_golden.begin(),
                                          primary_golden.end());
