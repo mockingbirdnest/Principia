@@ -57,7 +57,7 @@ char const* const CompilerVersion = __VERSION__;
 
 #if defined(__APPLE__)
 #define OS_MACOSX 1
-char const* const OperatingSystem = "OS X";
+char const* const OperatingSystem = "macOS";
 #elif defined(__linux__)
 #define OS_LINUX 1
 char const* const OperatingSystem = "Linux";

@@ -9,13 +9,30 @@
 #include <span>
 #include <string_view>
 
+#include "absl/strings/ascii.h"
 #include "gtest/gtest.h"
 #include "lodepng/lodepng.h"
+#include "numerics/fma.hpp"
 
 namespace principia {
 namespace testing_utilities {
 namespace _golden_graphs {
 namespace internal {
+
+using namespace principia::numerics::_fma;
+
+ std::vector<std::uint8_t> ReadFile(std::filesystem::path const& path) {
+  std::vector<std::uint8_t> result;
+  std::ifstream in(path, std::ios::binary | std::ios::in);
+  while (in.good()) {
+    char byte;
+    in.read(&byte, 1);
+    if (in.eof()) {
+      break;
+    }
+    result.push_back(byte);
+  }
+}
 
 template<typename Abscissa, typename Ordinate, typename Character>
 void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
@@ -26,16 +43,17 @@ void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
                               .concat("_")
                               .concat(suffix)
                               .replace_extension(".png");
-  std::vector<std::uint8_t> golden;
-  std::ifstream in(image_path, std::ios::binary | std::ios::in);
-  while (in.good()) {
-    char byte;
-    in.read(&byte, 1);
-    if (in.eof()) {
-      break;
-    }
-    golden.push_back(byte);
-  }
+  auto const platform_image_path =
+      OS_WIN && CanUseHardwareFMA
+          ? image_path
+          : std::filesystem::path(image_path)
+                .replace_extension()
+                .concat("_")
+                .concat(absl::AsciiStrToLower(base::OperatingSystem))
+                .concat(CanUseHardwareFMA ? "_fma" : "")
+                .replace_extension(".png");
+  auto const primary_golden = ReadFile(image_path);
+  auto const platform_specific_golden = ReadFile(platform_image_path);
   std::uint8_t* actual_data;
   std::size_t actual_size;
   lodepng_encode32(&actual_data,
@@ -43,13 +61,29 @@ void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
                    reinterpret_cast<std::uint8_t const*>(graph.pixels().data()),
                    graph.width(),
                    graph.height());
-  EXPECT_TRUE(std::equal(
-      actual_data, actual_data + actual_size, golden.begin(), golden.end()))
-      << image_path << " has changed; golden size: " << golden.size()
-      << " B, actual size: " << actual_size << " B";
-  std::ofstream(image_path, std::ios::binary | std::ios::out)
-      .write(reinterpret_cast<char const*>(actual_data), actual_size);
-  std::free(actual_data);
+  bool const maches_primary = std::equal(actual_data,
+                                         actual_data + actual_size,
+                                         primary_golden.begin(),
+                                         primary_golden.end());
+  if (matches_primary) {
+    EXPECT_EQ(platform_specific_golden.size(), 0)
+        << image_path << " matches, platform-specific override "
+        << platform_image_path << " should be removed";
+    std::filesystem::remove(platform_image_path);
+  } else {
+    bool const maches_platform_specific =
+        std::equal(actual_data,
+                   actual_data + actual_size,
+                   platform_specific_golden.begin(),
+                   platform_specific_golden.end());
+    EXPECT_TRUE(maches_platform_specific)
+        << platform_image_path
+        << " has changed; golden size: " << platform_specific_golden.size()
+        << " B, actual size: " << actual_size << " B";
+    std::ofstream(platform_image_path, std::ios::binary | std::ios::out)
+        .write(reinterpret_cast<char const*>(actual_data), actual_size);
+    std::free(actual_data);
+  }
 }
 
 }  // namespace internal
