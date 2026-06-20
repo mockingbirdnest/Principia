@@ -43,13 +43,14 @@ void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
                               .concat("_")
                               .concat(suffix)
                               .replace_extension(".png");
+  constexpr std::string_view os = base::OperatingSystem;
   auto const platform_image_path =
-      OS_WIN && CanUseHardwareFMA
+      os == "Windows" && CanUseHardwareFMA
           ? image_path
           : std::filesystem::path(image_path)
                 .replace_extension()
                 .concat("_")
-                .concat(absl::AsciiStrToLower(base::OperatingSystem))
+                .concat(absl::AsciiStrToLower(os))
                 .concat(CanUseHardwareFMA ? "_fma" : "")
                 .replace_extension(".png");
   auto const primary_golden = ReadFile(image_path);
