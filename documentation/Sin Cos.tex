@@ -42,7 +42,7 @@
 %%%% Title and authors.
 
 \title{An Implementation of Sin and Cos Using Gal's Accurate Tables}
-\date{\printdate{2025-10-05}}
+\date{\printdate{2026-06-22}}
 \author{Pascal~Leroy (phl)}
 \begin{document}
 \maketitle
@@ -398,7 +398,7 @@ On machines that have an FMA instruction, we use the Boldo--Daumas--Li reduction
 
 \subsubsection*{Boldo--Daumas--Li Argument Reduction Using a Two-Term Approximation}
 
-In this scheme we use a two-term approximation $C_1 + C_2$ of the modulus.  Using our notation, the algorithm proceeds as follows:
+In this scheme we use a two-term approximation $C_1 + C_2$ of the modulus $C$.  Let $R \DefineAs \round{\frac{1}{C}}$.  Using our notation, the algorithm proceeds as follows:
 \[
 \begin{dcases}
 n &= \round{\round{3 \cdot 2^{M - 2} + R \; x} - 3 \cdot 2^{M - 2}} \\
@@ -410,7 +410,7 @@ u &= \round{x - n \; C_1} \\
 \gd \red x &= \round{\round{\round{t - \red x} + \gd t} - \gr_l}
 \end{dcases}
 \]
-where $R$, $C_1$, and $C_2$ are carefully constructed constants based on $C$, the modulo of the reduction\footnote{These constants are distinct from those used for Cody--Waite reduction.}.  In our case $C = \frac{\Pi}{2}$ and \cite[1141]{BoldoDaumasLi2009} prove (theorem 3) that $\abs{R \; x - n} \leq 1/2$.  Since $R = \round{\frac{2}{\Pi}}$, this leads to $n = \iround{\round{\frac{2}{\Pi}} \; x}$, a definition similar to the one we used in the Cody--Waite reduction above.
+where $C_1$, and $C_2$ are carefully constructed constants\footnote{These constants are distinct from those used for Cody--Waite reduction.} based on $C$.  In our case $C = \frac{\Pi}{2}$ and $R = \round{\frac{2}{\Pi}}$. \cite[1141]{BoldoDaumasLi2009} prove (theorem 3) that $\abs{R \; x - n} \leq 1/2$.  This leads to $n = \iround{\round{\frac{2}{\Pi}} \; x}$, a definition similar to the one we used in the Cody--Waite reduction above.
 
 The key result of \cite{BoldoDaumasLi2009} is that:
 \[
@@ -421,7 +421,7 @@ The key result of \cite{BoldoDaumasLi2009} is that:
 \abs{\frac{\Pi}{2} - \pa{C_1 + C_2}} \leq 2^{-M + 3} \ULP\of{C_1} \leq 2^{-2 M + 4}
 \label{eqnmullermodulo}
 \end{equation}
-where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus that $\ULP\of{C_1} = 2^{-M + 1}$.  Furthermore, the absolute error on the reduction is such that:
+where we have used the fact that $C_1$ is very close to $\frac{\Pi}{2}$ and thus that $\ULP\of{C_1} = 2^{-M + 1}$.  Furthermore, the absolute error $\mathscr E$ on the reduction is such that:
 \[
 \abs{\mathscr{E}} \leq \abs{n} \; 2^{-M + 3} \ULP\of{C_1} = \abs{n} 2^{-2 M + 4}
 \]
@@ -456,7 +456,7 @@ Let $\gz_1$ be the relative error introduced by $\dwminusfp$.  Theorem 2.2 of \c
 \[
 \dwminusfp\of{\pa{\red x, \gd \red x}, w} = \pa{1 + \gz_1}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3}
 \]
-and the absolute error on the reduction is the difference between this quantity and $x - n \frac{\Pi}{2}$:
+and the absolute error $\mathscr{E}$ on the reduction is the difference between this quantity and $x - n \frac{\Pi}{2}$:
 \begin{align*}
 \mathscr{E} &= \pa{1 + \gz_1}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3} - \pa{x - n \frac{\Pi}{2}} \\
 &= n \pa{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_1 \; C_3} + \gz_1 \; \pa{x - n \pa{C_1 + C_2}} - \gz_1 \; \pa{1 + \gd_1} \; n \; C_3
@@ -474,18 +474,18 @@ and therefore:
 From this we deduce the following bounds for the terms of $\mathscr{E}$, using (\ref{eqnmullermodulo}) and the fact that, when we use a three-term approximation, (\ref{eqnboldo2}) does not hold:
 \begin{align*}
 \abs{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_1 \; C_3} &\leq \gd_1 \pa{2 + \gd_1} \; 2^{-2 M + 4} \\
-\abs{\gz_1 \; \pa{x - n \pa{C_1 + C_2}}} &= \gz_1 \; \abs{\red x + \gd \red x} = \gz_1 \; \abs{\red x} \pa{1 + \gd_2} \leq \abs{n} \pa{1 + \gd_2} 2^{\gk_3 - 3 M + 5} \\
+\abs{\gz_1 \; \pa{x - n \pa{C_1 + C_2}}} &= \gz_1 \; \abs{\red x + \gd \red x} = \gz_1 \; \abs{\red x} \pa{1 + \gd_3} \leq \abs{n} \pa{1 + \gd_3} 2^{\gk_3 - 3 M + 5} \\
 \abs{\gz_1 \; \pa{1 + \gd_1} \; C_3} &\leq \gz_1 \; \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \leq \pa{1 + \gd_1}^2 \; 2^{-4 M + 5}
 \end{align*}
 
 Putting all these inequalities together we obtain the following bound for the absolute error:
 \begin{align*}
-\abs{\mathscr{E}} &\leq \abs{n} \; \pa{\pa{\gd_1 \pa{2 + \gd_1} + \pa{1 + \gd_1}^2 2^{-2 M + 1} + \gd_2 \; 2^{\gk_3 - M + 1}} \; 2^{-2 M + 4} + 2^{\gk_3 - 3 M + 5}} \\
+\abs{\mathscr{E}} &\leq \abs{n} \; \pa{\pa{\gd_1 \pa{2 + \gd_1} + \pa{1 + \gd_1}^2 2^{-2 M + 1} + \gd_3 \; 2^{\gk_3 - M + 1}} \; 2^{-2 M + 4} + 2^{\gk_3 - 3 M + 5}} \\
 &< \abs{n} \; \pa{3 \times 2^{-3 M + 4} + 2^{\gk_3 - 3 M + 5}} = \abs{n} \; 2^{-3 M + 4} \pa{3 + 2^{\gk_3 + 1}}
 \end{align*}
 where we have used:
 \[
-\gd_1 \pa{2 + \gd_1} + \pa{1 + \gd_1}^2 2^{-2 M + 1} + \gd_2 \; 2^{\gk_3 - M + 1} < 3 \times 2^{-M}
+\gd_1 \pa{2 + \gd_1} + \pa{1 + \gd_1}^2 2^{-2 M + 1} + \gd_3 \; 2^{\gk_3 - M + 1} < 3 \times 2^{-M}
 \]
 
 As before, the three-term reduction guarantees $\gk_3$ extra bits of accuracy if:
