@@ -454,38 +454,38 @@ C_3 = \round{\frac{\Pi}{2} - \pa{C_1 + C_2}} = \pa{\frac{\Pi}{2} - \pa{C_1 + C_2
 
 Let $\gz_1$ be the relative error introduced by $\dwminusfp$.  Theorem 2.2 of \cite{MullerRideau2022} indicates that $\abs{\gz_1} \leq 2^{1 - 2 M}$.  The result of the above computation is:
 \[
-\dwminusfp\of{\pa{\red x, \gd \red x}, w} = \pa{1 + \gz_1}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3}
+\dwminusfp\of{\pa{\red x, \gd \red x}, w} = \pa{1 + \gz_1}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_2} \; n \; C_3}
 \]
 and the absolute error $\mathscr{E}$ on the reduction is the difference between this quantity and $x - n \frac{\Pi}{2}$:
 \begin{align*}
-\mathscr{E} &= \pa{1 + \gz_1}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_1} \; n \; C_3} - \pa{x - n \frac{\Pi}{2}} \\
-&= n \pa{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_1 \; C_3} + \gz_1 \; \pa{x - n \pa{C_1 + C_2}} - \gz_1 \; \pa{1 + \gd_1} \; n \; C_3
+\mathscr{E} &= \pa{1 + \gz_1}\pa{x - n \pa{C_1 + C_2} - \pa{1 + \gd_2} \; n \; C_3} - \pa{x - n \frac{\Pi}{2}} \\
+&= n \pa{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_2 \; C_3} + \gz_1 \; \pa{x - n \pa{C_1 + C_2}} - \gz_1 \; \pa{1 + \gd_2} \; n \; C_3
 \end{align*}
 The first term may be simplified by noting that:
 \begin{align*}
 \frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} &= -\gd_1 \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}} \\
-\gd_1 \; C_3 &= \gd_1 \pa{1 + \gd_1} \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}}
+\gd_2 \; C_3 &= \gd_2 \pa{1 + \gd_1} \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}}
 \end{align*}
 and therefore:
 \[
-\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_1 \; C_3 = -\gd_1 \pa{2 + \gd_1} \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}}
+\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_2 \; C_3 = -\pa{\gd_1 + \gd_1 \gd_2 + \gd_2} \pa{\frac{\Pi}{2} - \pa{C_1 + C_2}}
 \]
 
 From this we deduce the following bounds for the terms of $\mathscr{E}$, using (\ref{eqnmullermodulo}) and the fact that, when we use a three-term approximation, (\ref{eqnboldo2}) does not hold:
 \begin{align*}
-\abs{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_1 \; C_3} &\leq \gd_1 \pa{2 + \gd_1} \; 2^{-2 M + 4} \\
+\abs{\frac{\Pi}{2} - \pa{C_1 + C_2 + C_3} - \gd_2 \; C_3} &\leq \pa{\gd_1 + \gd_1 \gd_2 + \gd_2} \; 2^{-2 M + 4} \\
 \abs{\gz_1 \; \pa{x - n \pa{C_1 + C_2}}} &= \gz_1 \; \abs{\red x + \gd \red x} = \gz_1 \; \abs{\red x} \pa{1 + \gd_3} \leq \abs{n} \pa{1 + \gd_3} 2^{\gk_3 - 3 M + 5} \\
-\abs{\gz_1 \; \pa{1 + \gd_1} \; C_3} &\leq \gz_1 \; \pa{1 + \gd_1}^2 \; 2^{-2 M + 4} \leq \pa{1 + \gd_1}^2 \; 2^{-4 M + 5}
+\abs{\gz_1 \; \pa{1 + \gd_2} \; C_3} &\leq \gz_1 \; \pa{1 + \gd_1}\pa{1 + \gd_2} \; 2^{-2 M + 4} \leq \pa{1 + \gd_1}\pa{1 + \gd_2} \; 2^{-4 M + 5}
 \end{align*}
 
 Putting all these inequalities together we obtain the following bound for the absolute error:
 \begin{align*}
-\abs{\mathscr{E}} &\leq \abs{n} \; \pa{\pa{\gd_1 \pa{2 + \gd_1} + \pa{1 + \gd_1}^2 2^{-2 M + 1} + \gd_3 \; 2^{\gk_3 - M + 1}} \; 2^{-2 M + 4} + 2^{\gk_3 - 3 M + 5}} \\
+\abs{\mathscr{E}} &\leq \abs{n} \; \pa{\pa{\pa{\gd_1 + \gd_1 \gd_2 + \gd_2} + \pa{1 + \gd_1}\pa{1 + \gd_2} 2^{-2 M + 1} + \gd_3 \; 2^{\gk_3 - M + 1}} \; 2^{-2 M + 4} + 2^{\gk_3 - 3 M + 5}} \\
 &< \abs{n} \; \pa{3 \times 2^{-3 M + 4} + 2^{\gk_3 - 3 M + 5}} = \abs{n} \; 2^{-3 M + 4} \pa{3 + 2^{\gk_3 + 1}}
 \end{align*}
 where we have used:
 \[
-\gd_1 \pa{2 + \gd_1} + \pa{1 + \gd_1}^2 2^{-2 M + 1} + \gd_3 \; 2^{\gk_3 - M + 1} < 3 \times 2^{-M}
+\pa{\gd_1 + \gd_1 \gd_2 + \gd_2} + \pa{1 + \gd_1}\pa{1 + \gd_2} 2^{-2 M + 1} + \gd_3 \; 2^{\gk_3 - M + 1} < 3 \times 2^{-M}
 \]
 
 As before, the three-term reduction guarantees $\gk_3$ extra bits of accuracy if:
