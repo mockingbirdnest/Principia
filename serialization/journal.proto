@@ -35,15 +35,23 @@ message XYZ {
   required double z = 3;
 }
 
+// For spherical coordinates below the naming convention is as follows.  Given
+// an orthonormal frame, the suffix of the identifier is the direction of the
+// polar axis.  The latitude is the angle measured from the plane perpendicular
+// to the polar axis, counted positively towards the polar axis.  The longitude
+// is the angle measured in that plane, counted from the axis that immediately
+// follows the polar axis (in circular order).
 enum CoordinateSystem {
   // The barycentric frame.
-  CARTESIAN_INERTIAL = 1;
+  CARTESIAN_XYZ = 1;
+  SPHERICAL_X = 2;
+  SPHERICAL_Y = 3;
+  SPHERICAL_Z = 4;
   // The Frenet frame.
-  CARTESIAN_TNB = 2;
-  // Spherical coordinate system with the polar axis along T, N, or B.
-  SPHERICAL_T = 3;
-  SPHERICAL_N = 4;
-  SPHERICAL_B = 5;
+  CARTESIAN_TNB = 5;
+  SPHERICAL_T = 6;
+  SPHERICAL_N = 7;
+  SPHERICAL_B = 8;
 }
 
 message DeltaV {
