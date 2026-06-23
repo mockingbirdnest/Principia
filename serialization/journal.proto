@@ -10,7 +10,7 @@ enum Encoding {
   UTF_16 = 2;  // Represented as "char16_t const*" in C++ code.
 }
 
-// These two messages must come first because the other interchange messages use
+// These messages must come first because the other interchange messages use
 // them and we need to generate the structs in the correct order.
 message NavigationFrameParameters {
   option (is_class) = true;
@@ -21,12 +21,41 @@ message NavigationFrameParameters {
   required int32 secondary_index = 4 [(is_private) = true];
 }
 
+message SphericalCoordinates {
+    option (is_public) = true;
+  required double r = 1;
+  required double latitude_in_degrees = 2;
+  required double longitude_in_degrees = 3;
+}
+
 message XYZ {
   option (is_public) = true;
   required double x = 1;
   required double y = 2;
   required double z = 3;
 }
+
+enum CoordinateSystem {
+  // The barycentric frame.
+  CARTESIAN_INERTIAL = 1;
+  // The Frenet frame.
+  CARTESIAN_TNB = 2;
+  // Spherical coordinate system with the polar axis along T, N, or B.
+  SPHERICAL_T = 3;
+  SPHERICAL_N = 4;
+  SPHERICAL_B = 5;
+}
+
+message DeltaV {
+  required CoordinateSystem coordinate_system = 1;
+  // NOTE(phl): This could be a `oneof`, but adding `oneof`s to the proto
+  // processor looks like a lot of work, and this is the only occurrence, so we
+  // can live with explicit presence check for now.
+  optional XYZ xyz = 2;  // CARTESIAN_INERTIAL or CARTESIAN_TNB.
+  optional SphericalCoordinates spherical_coordinates = 3;  // SPHERICAL_...
+}
+
+// These messages should be in alphabetical order.
 
 message AdaptiveStepParameters {
   // Corresponds to AdaptiveStepSizeIntegrator.Kind.
@@ -67,8 +96,9 @@ message Burn {
   required double specific_impulse_in_seconds_g0 = 2;
   required NavigationFrameParameters frame = 3;
   required double initial_time = 4;
-  required XYZ delta_v = 5;
-  required bool is_inertially_fixed = 6;
+  optional XYZ legacy_delta_v = 5;  // Pre-Leray.
+  optional bool is_inertially_fixed = 6;  // Pre-Leray.
+  optional DeltaV delta_v = 7;
 }
 
 message ConfigurationAccuracyParameters {
