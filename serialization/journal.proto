@@ -1,14 +1,8 @@
 ﻿syntax = "proto2";
 
-import "google/protobuf/descriptor.proto";
+import "serialization/options.proto";
 
 package principia.journal.serialization;
-
-// Encoding of string-like fields.
-enum Encoding {
-  UTF_8 = 1;  // Represented as "char const*" in C++ code.
-  UTF_16 = 2;  // Represented as "char16_t const*" in C++ code.
-}
 
 // These messages must come first because the other interchange messages use
 // them and we need to generate the structs in the correct order.
@@ -2919,76 +2913,4 @@ message VesselVelocity{
   }
   optional In in = 1;
   optional Return return = 3;
-}
-
-extend google.protobuf.FieldOptions {
-  // For a fixed64 field (which is used to represent a pointer), gives the C++
-  // designated type of the pointer.
-  optional string pointer_to = 50000;
-
-  // For a fixed64 field, indicates whether the corresponding pointer is
-  // consumed (deleted or has its ownership transferred) or produced (allocated)
-  // by the C++ side.
-  optional bool is_consumed = 50002;
-  optional bool is_produced = 50003;
-
-  // Same as above, but the consumption/production is conditional on some state
-  // of the parameters.
-  optional string is_consumed_if = 50004;
-  optional string is_produced_if = 50005;
-
-  // For a fixed64 field (which is used to represent a pointer), indicates that
-  // it should be the subject in C# methods.
-  optional bool is_subject = 50006;
-
-  // For the (single) field of a return message, indicates that the actual
-  // result should not be checked against the expected result.  Should only be
-  // used when debugging issues with the replay.
-  optional bool omit_check = 50007;
-
-  // For a fixed64 field that is produced and denotes a string, indicates the
-  // encoding and the representation.
-  optional Encoding encoding = 50008;
-
-  // For a fixed64 field that is not consumed, indicates that it should follow
-  // the Dispose pattern and gives the name of the disposable class.
-  optional string disposable = 50009;
-
-  // For a produced field that is returned by reference, this option is attached
-  // to the field that contains the address of the returned field.
-  optional string address_of = 50010;
-
-  // For a fixed64 field used to represent the address of an object allocated by
-  // C#, this option is attached to the field that contains the size of the C#
-  // object.
-  optional string size_of = 50014;
-
-  // For a fixed64 field used to represent an addresse, indicates that the
-  // object is owned by C# and not by C++.  There must be a field with a
-  // (size_of) option designating this field.
-  optional bool is_csharp_owned = 50015;
-
-  // For a field of an interchange message, specifies whether the generated C#
-  // field should be private (the default is public).
-  optional bool is_private = 50017;
-}
-
-extend google.protobuf.MessageOptions {
-  // For an interchange message, specifies that a class should be generated
-  // instead of a struct in the C# code.
-  optional bool is_class = 50016;
-  // For an interchange message, specifies whether the generated C# struct
-  // should be public (the default is internal).
-  optional bool is_public = 50012;
-  // If set, the body of the Run method is wrapped into an #ifdef for the given
-  // symbol.  Useful for selectively skipping replay of some methods.
-  optional string run_conditional_compilation_symbol = 50013;
-  // If set, the struct used for journaling is not generated.  Useful for
-  // methods for which we need interfacing but for which journaling would be
-  // incorrect.
-  optional bool omit_journaling = 50018;
-  // A callable (e.g., a lambda or a function name) that is used instead of the
-  // normal interface function in the Run method.  This is useful is
-  // synchronization is needed based on the expected output of the Method.
-  optional string run_using = 50019;
 }
