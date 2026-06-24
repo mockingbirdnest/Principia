@@ -1503,8 +1503,9 @@ void JournalProtoProcessor::ProcessInterchangeEnum(
     EnumDescriptor const* const descriptor) {
   std::string const name(descriptor->name());
   cs_interchange_enum_declaration_[descriptor] =
-      "internal enum " + name + " {\n";
-  cxx_interchange_enum_declaration_[descriptor] = "enum class " + name + " {\n";
+      "internal enum " + name + " : byte {\n";
+  cxx_interchange_enum_declaration_[descriptor] =
+      "enum class " + name + " : unsigned char {\n";
   for (int i = 0; i < descriptor->value_count(); ++i) {
     EnumValueDescriptor const* const value_descriptor = descriptor->value(i);
     std::string const value_name(value_descriptor->name());
@@ -1516,7 +1517,9 @@ void JournalProtoProcessor::ProcessInterchangeEnum(
         std::to_string(value_descriptor->number()) + ",\n";
   }
   cs_interchange_enum_declaration_[descriptor] += "}\n\n";
-  cxx_interchange_enum_declaration_[descriptor] += "};\n\n";
+  cxx_interchange_enum_declaration_[descriptor] +=
+      "};\n\nstatic_assert(std::is_pod<" + name +
+      ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 }
 
 void JournalProtoProcessor::ProcessInterchangeMessage(

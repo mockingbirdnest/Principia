@@ -17,7 +17,7 @@ message NavigationFrameParameters {
 
 message SphericalCoordinates {
     option (is_public) = true;
-  required double r = 1;
+  required double radius = 1;
   required double latitude_in_degrees = 2;
   required double longitude_in_degrees = 3;
 }
