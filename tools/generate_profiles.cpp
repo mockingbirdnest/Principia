@@ -63,6 +63,10 @@ void GenerateProfiles() {
   std::ofstream interface_generated_h(ksp_plugin / "interface.generated.h");
   CHECK(interface_generated_h.good());
   interface_generated_h << warning;
+  for (auto const& cxx_interface_enum_declaration :
+           processor.GetCxxInterchangeEnumDeclarations()) {
+    interface_generated_h << cxx_interface_enum_declaration;
+  }
   for (auto const& cxx_interface_type_declaration :
            processor.GetCxxInterchangeTypeDeclarations()) {
     interface_generated_h << cxx_interface_type_declaration;
@@ -80,6 +84,10 @@ void GenerateProfiles() {
   interface_generated_cs << "using System.Runtime.InteropServices;\n\n";
   interface_generated_cs << "namespace principia {\n";
   interface_generated_cs << "namespace ksp_plugin_adapter {\n\n";
+  for (auto const& cs_interface_enum_declaration :
+           processor.GetCsInterchangeEnumDeclarations()) {
+    interface_generated_cs << cs_interface_enum_declaration;
+  }
   for (auto const& cs_interface_type_declaration :
            processor.GetCsInterchangeTypeDeclarations()) {
     interface_generated_cs << cs_interface_type_declaration;

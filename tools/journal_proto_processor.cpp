@@ -925,8 +925,23 @@ void JournalProtoProcessor::ProcessRequiredDoubleField(
 
 void JournalProtoProcessor::ProcessRequiredEnumField(
     FieldDescriptor const* descriptor) {
-  field_cs_type_[descriptor] = "double";
-  field_cxx_type_[descriptor] = "double";
+  EnumDescriptor const* enum_type = descriptor->enum_type();
+  std::string const enum_type_name(enum_type->name());
+  field_cs_type_[descriptor] = enum_type_name;
+  field_cs_predefined_marshaler_[descriptor] = "UnmanagedType.U1";
+  field_cs_private_type_[descriptor] = "byte";
+  field_cs_private_getter_fn_[descriptor] =
+      [enum_type_name](std::vector<std::string> const& identifiers) {
+        CHECK_EQ(1, identifiers.size());
+        return "get { return (" + enum_type_name + ")" + identifiers[0] + "; }";
+      };
+  field_cs_private_setter_fn_[descriptor] =
+      [](std::vector<std::string> const& identifiers) {
+        CHECK_EQ(1, identifiers.size());
+        return "set { " + identifiers[0] + " = (byte)value; }";
+      };
+
+  field_cxx_type_[descriptor] = enum_type_name;
 }
 
 void JournalProtoProcessor::ProcessRequiredInt32Field(
