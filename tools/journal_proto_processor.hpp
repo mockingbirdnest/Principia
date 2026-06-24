@@ -27,6 +27,7 @@ class JournalProtoProcessor final {
   // ksp_plugin_adapter/interface.generated.cs
   std::vector<std::string> GetCsInterfaceMethodDeclarations() const;
   std::vector<std::string> GetCsInterfaceSymbolDeclarations() const;
+  std::vector<std::string> GetCsInterchangeEnumDeclarations() const;
   std::vector<std::string> GetCsInterchangeTypeDeclarations() const;
 
   // ksp_plugin_adapter/marshalers.generated.cs
@@ -34,6 +35,7 @@ class JournalProtoProcessor final {
 
   // ksp_plugin/interface.generated.h
   std::vector<std::string> GetCxxInterfaceMethodDeclarations() const;
+  std::vector<std::string> GetCxxInterchangeEnumDeclarations() const;
   std::vector<std::string> GetCxxInterchangeTypeDeclarations() const;
 
   // journal/profiles.generated.{h,cc}

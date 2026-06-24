@@ -130,6 +130,12 @@ JournalProtoProcessor::GetCsInterfaceSymbolDeclarations() const {
 }
 
 std::vector<std::string>
+JournalProtoProcessor::GetCsInterchangeEnumDeclarations() const {
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cs_interchange_enum_declaration_));
+}
+
+std::vector<std::string>
 JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
   return std::ranges::to<std::vector<std::string>>(
       std::views::values(cs_interchange_type_declaration_));
@@ -145,6 +151,12 @@ std::vector<std::string>
 JournalProtoProcessor::GetCxxInterfaceMethodDeclarations() const {
   return std::ranges::to<std::vector<std::string>>(
       std::views::values(cxx_interface_method_declaration_));
+}
+
+std::vector<std::string>
+JournalProtoProcessor::GetCxxInterchangeEnumDeclarations() const {
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cxx_interchange_enum_declaration_));
 }
 
 std::vector<std::string>
@@ -1493,8 +1505,8 @@ void JournalProtoProcessor::ProcessInterchangeEnum(
         "  " + value_name + " = " +
         std::to_string(value_descriptor->number()) + ",\n";
   }
-  cs_interchange_enum_declaration_[descriptor] += "}\n";
-  cxx_interchange_enum_declaration_[descriptor] += "};\n";
+  cs_interchange_enum_declaration_[descriptor] += "}\n\n";
+  cxx_interchange_enum_declaration_[descriptor] += "};\n\n";
 }
 
 void JournalProtoProcessor::ProcessInterchangeMessage(
