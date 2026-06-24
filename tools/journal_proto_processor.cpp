@@ -941,6 +941,14 @@ void JournalProtoProcessor::ProcessRequiredEnumField(
         return "set { " + identifiers[0] + " = (byte)value; }";
       };
 
+  field_cxx_deserializer_fn_[descriptor] =
+    [enum_type_name](std::string const& expr) {
+      return "static_cast<" + enum_type_name + ">(" + expr + ")";
+    };
+  field_cxx_serializer_fn_[descriptor] =
+    [enum_type_name](std::string const& expr) {
+    return "static_cast<serialization::" + enum_type_name + ">(" + expr + ")";
+    };
   field_cxx_type_[descriptor] = enum_type_name;
 }
 
