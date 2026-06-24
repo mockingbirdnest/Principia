@@ -71,9 +71,16 @@ void JournalProtoProcessor::ProcessMessages() {
       journal::serialization::Method::descriptor();
   FileDescriptor const* file_descriptor = method_descriptor->file();
 
+  // Process all the enums in that file.
+  for (int i = 0; i < file_descriptor->enum_type_count(); ++i) {
+    EnumDescriptor const* const enum_descriptor = file_descriptor->enum_type(i);
+    ProcessInterchangeEnum(enum_descriptor);
+  }
+
   // Process all the messages in that file.
   for (int i = 0; i < file_descriptor->message_type_count(); ++i) {
-    Descriptor const* message_descriptor = file_descriptor->message_type(i);
+    Descriptor const* const message_descriptor =
+        file_descriptor->message_type(i);
     auto const message_descriptor_name = message_descriptor->name();
     if (message_descriptor->extension_range_count() > 0) {
       // Only the `Method` message should have a range.  Don't generate any code
@@ -500,6 +507,16 @@ void JournalProtoProcessor::ProcessOptionalScalarField(
       };
 }
 
+void JournalProtoProcessor::ProcessOptionalBoolField(
+    FieldDescriptor const* descriptor) {
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedBool",
+      /*cs_unboxed_type=*/"bool",
+      /*cxx_type=*/"bool");
+  ProcessOptionalScalarField(descriptor, "bool");
+}
+
 void JournalProtoProcessor::ProcessOptionalDoubleField(
     FieldDescriptor const* descriptor) {
   ProcessOptionalNonStringField(
@@ -894,6 +911,12 @@ void JournalProtoProcessor::ProcessRequiredDoubleField(
   field_cxx_type_[descriptor] = "double";
 }
 
+void JournalProtoProcessor::ProcessRequiredEnumField(
+    FieldDescriptor const* descriptor) {
+  field_cs_type_[descriptor] = "double";
+  field_cxx_type_[descriptor] = "double";
+}
+
 void JournalProtoProcessor::ProcessRequiredInt32Field(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "int";
@@ -962,6 +985,9 @@ void JournalProtoProcessor::ProcessOptionalField(
         return condition + " ? " + expr + " : nullptr";
       };
   switch (descriptor->type()) {
+    case FieldDescriptor::TYPE_BOOL:
+      ProcessOptionalBoolField(descriptor);
+      break;
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessOptionalDoubleField(descriptor);
       break;
@@ -1024,6 +1050,9 @@ void JournalProtoProcessor::ProcessRequiredField(
       break;
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessRequiredDoubleField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_ENUM:
+      ProcessRequiredEnumField(descriptor);
       break;
     case FieldDescriptor::TYPE_FIXED32:
       ProcessRequiredFixed32Field(descriptor);
@@ -1448,8 +1477,28 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       "  using Return = " + cxx_interface_return_type_[descriptor] + ";\n";
 }
 
+void JournalProtoProcessor::ProcessInterchangeEnum(
+    EnumDescriptor const* const descriptor) {
+  std::string const name(descriptor->name());
+  cs_interchange_enum_declaration_[descriptor] =
+      "internal enum " + name + " {\n";
+  cxx_interchange_enum_declaration_[descriptor] = "enum class " + name + " {\n";
+  for (int i = 0; i < descriptor->value_count(); ++i) {
+    EnumValueDescriptor const* const value_descriptor = descriptor->value(i);
+    std::string const value_name(value_descriptor->name());
+    cs_interchange_enum_declaration_[descriptor] +=
+        "  " + value_name + " = " +
+        std::to_string(value_descriptor->number()) + ",\n";
+    cxx_interchange_enum_declaration_[descriptor] +=
+        "  " + value_name + " = " +
+        std::to_string(value_descriptor->number()) + ",\n";
+  }
+  cs_interchange_enum_declaration_[descriptor] += "}\n";
+  cxx_interchange_enum_declaration_[descriptor] += "};\n";
+}
+
 void JournalProtoProcessor::ProcessInterchangeMessage(
-    Descriptor const* descriptor) {
+    Descriptor const* const descriptor) {
   std::string const name(descriptor->name());
   std::string const& parameter_name = ToLower(name);
   std::string const& proto_parameter_name = ToLower(name) + "_proto";

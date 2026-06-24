@@ -14,6 +14,8 @@ namespace _journal_proto_processor {
 namespace internal {
 
 using ::google::protobuf::Descriptor;
+using ::google::protobuf::EnumDescriptor;
+using ::google::protobuf::EnumValueDescriptor;
 using ::google::protobuf::FieldDescriptor;
 using ::google::protobuf::FieldOptions;
 using ::google::protobuf::FileDescriptor;
@@ -61,6 +63,7 @@ class JournalProtoProcessor final {
                                      std::string const& cxx_type);
   void ProcessOptionalScalarField(FieldDescriptor const* descriptor,
                                   std::string const& cxx_type);
+  void ProcessOptionalBoolField(FieldDescriptor const* descriptor);
   void ProcessOptionalDoubleField(FieldDescriptor const* descriptor);
   void ProcessOptionalInt32Field(FieldDescriptor const* descriptor);
   void ProcessOptionalInt64Field(FieldDescriptor const* descriptor);
@@ -73,6 +76,7 @@ class JournalProtoProcessor final {
   void ProcessRequiredBoolField(FieldDescriptor const* descriptor);
   void ProcessRequiredBytesField(FieldDescriptor const* descriptor);
   void ProcessRequiredDoubleField(FieldDescriptor const* descriptor);
+  void ProcessRequiredEnumField(FieldDescriptor const* descriptor);
   void ProcessRequiredInt32Field(FieldDescriptor const* descriptor);
   void ProcessRequiredInt64Field(FieldDescriptor const* descriptor);
   void ProcessRequiredUint32Field(FieldDescriptor const* descriptor);
@@ -92,6 +96,7 @@ class JournalProtoProcessor final {
                     std::vector<FieldDescriptor const*>* field_descriptors);
   void ProcessReturn(Descriptor const* descriptor);
 
+  void ProcessInterchangeEnum(EnumDescriptor const* descriptor);
   void ProcessInterchangeMessage(Descriptor const* descriptor);
   void ProcessMethodExtension(Descriptor const* descriptor);
 
@@ -320,6 +325,12 @@ class JournalProtoProcessor final {
   // The interchange messages that are represented by a class (as opposed to a
   // struct) in the C# code.
   std::set<Descriptor const*> cs_interchange_classes_;
+
+  // The C#/C++ definition of a type corresponding to an interchange enum.  The
+  // key is a descriptor for an interchange enum.
+  std::map<EnumDescriptor const*, std::string> cs_interchange_enum_declaration_;
+  std::map<EnumDescriptor const*, std::string>
+      cxx_interchange_enum_declaration_;
 
   // The C#/C++ definition of a type corresponding to an interchange message.
   // The key is a descriptor for an interchange message.
