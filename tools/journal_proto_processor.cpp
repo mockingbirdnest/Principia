@@ -519,16 +519,6 @@ void JournalProtoProcessor::ProcessOptionalScalarField(
       };
 }
 
-void JournalProtoProcessor::ProcessOptionalBoolField(
-    FieldDescriptor const* descriptor) {
-  ProcessOptionalNonStringField(
-      descriptor,
-      /*cs_boxed_type=*/"BoxedBool",
-      /*cs_unboxed_type=*/"bool",
-      /*cxx_type=*/"bool");
-  ProcessOptionalScalarField(descriptor, "bool");
-}
-
 void JournalProtoProcessor::ProcessOptionalDoubleField(
     FieldDescriptor const* descriptor) {
   ProcessOptionalNonStringField(
@@ -1020,9 +1010,6 @@ void JournalProtoProcessor::ProcessOptionalField(
         return condition + " ? " + expr + " : nullptr";
       };
   switch (descriptor->type()) {
-    case FieldDescriptor::TYPE_BOOL:
-      ProcessOptionalBoolField(descriptor);
-      break;
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessOptionalDoubleField(descriptor);
       break;

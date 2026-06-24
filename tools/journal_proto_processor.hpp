@@ -65,7 +65,6 @@ class JournalProtoProcessor final {
                                      std::string const& cxx_type);
   void ProcessOptionalScalarField(FieldDescriptor const* descriptor,
                                   std::string const& cxx_type);
-  void ProcessOptionalBoolField(FieldDescriptor const* descriptor);
   void ProcessOptionalDoubleField(FieldDescriptor const* descriptor);
   void ProcessOptionalInt32Field(FieldDescriptor const* descriptor);
   void ProcessOptionalInt64Field(FieldDescriptor const* descriptor);
