@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "base/flags.hpp"
 #include "base/thread_pool.hpp"
 
 namespace principia {
@@ -14,7 +15,27 @@ namespace physics {
 namespace _checkpointer {
 namespace internal {
 
+using namespace principia::base::_flags;
 using namespace principia::base::_thread_pool;
+
+inline std::int64_t NumberOfThreadsForCheckpointerDeserialization() {
+  static std::int64_t const number_of_threads_for_checkpointer_deserialization =
+      []() {
+        std::string_view const name =
+            "number_of_threads_for_checkpointer_deserialization";
+        if (Flags::IsPresent(name)) {
+          auto const values = Flags::Values(name);
+          CHECK_EQ(1, values.size());
+          return std::max(INT64_C(1), std::min<std::int64_t>(
+              std::thread::hardware_concurrency(),
+              std::stoul(
+                  values.begin()->c_str())));
+        } else {
+          return static_cast<std::int64_t>(std::thread::hardware_concurrency());
+        }
+      }();
+  return number_of_threads_for_checkpointer_deserialization;
+}
 
 template<typename Message>
 Checkpointer<Message>::Checkpointer(Writer writer, Reader reader)
@@ -244,7 +265,7 @@ Checkpointer<Message>::ReadFromMessage(
     // For large checkpoints, rewriting is expensive, so we do it using multiple
     // threads.
     ThreadPool<typename Message::Checkpoint> rewrite_pool(
-        std::thread::hardware_concurrency());
+        NumberOfThreadsForCheckpointerDeserialization());
     std::vector<std::future<typename Message::Checkpoint>> rewrite_futures;
     rewrite_futures.reserve(message.size());
     for (auto const& checkpoint : message) {
