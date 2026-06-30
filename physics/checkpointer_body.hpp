@@ -2,6 +2,7 @@
 
 #include "physics/checkpointer.hpp"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
