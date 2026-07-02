@@ -20,18 +20,35 @@ using namespace principia::physics::_rigid_motion;
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Intensity::Intensity(
     R3Element<Speed> const& Δv_cartesian_coordinates)
-    : Δv_coordinates_(Δv_cartesian_coordinates) {}
+    : Δv_coordinates_(Δv_cartesian_coordinates),
+      Δv_(Δv_cartesian_coordinates),
+      direction_(NormalizeOrZero(Δv_)) {}
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Intensity::Intensity(
     EvenPermutation permutation,
     SphericalCoordinates<Speed> const& Δv_spherical_coordinates)
     : Δv_coordinates_(
-          SphericalIntensity{permutation, Δv_spherical_coordinates}) {}
+          SphericalIntensity{permutation, Δv_spherical_coordinates}),
+      Δv_(Permutation(permutation)(
+          Velocity<Frenet<Frame>>(Δv_spherical_coordinates.ToCartesian()))),
+      direction_(NormalizeOrZero(Δv_)) {}
 
 template<typename InertialFrame, typename Frame>
-bool Manœuvre<InertialFrame, Frame>::Intensity::has_spherical_coordinates()
-    const {
+Vector<double, Frenet<Frame>> const&
+Manœuvre<InertialFrame, Frame>::Intensity::direction() const {
+  return direction_;
+}
+
+template<typename InertialFrame, typename Frame>
+Velocity<Frenet<Frame>> const&
+Manœuvre<InertialFrame, Frame>::Intensity::Δv() const {
+  return Δv_;
+}
+
+template<typename InertialFrame, typename Frame>
+bool
+Manœuvre<InertialFrame, Frame>::Intensity::has_spherical_coordinates() const {
   return std::holds_alternative<SphericalIntensity>(Δv_coordinates_);
 }
 
@@ -62,26 +79,14 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
   : initial_mass_(initial_mass),
     construction_burn_(burn),
     burn_(burn) {
-  // Fill the missing fields of `intensity`.
-  auto& intensity = burn_.intensity;
-  if (intensity.Δv) {
-    CHECK(!intensity.direction && !intensity.duration);
-    intensity.direction = NormalizeOrZero(*intensity.Δv);
-    auto const speed = intensity.Δv->Norm();
-    if (speed == Speed()) {
-      // This handles the case where `thrust_` vanishes, where the usual formula
-      // would yield NaN.
-      intensity.duration = Time();
-    } else {
-      intensity.duration =
-          initial_mass_ * specific_impulse() *
-          (1 - std::exp(-speed / specific_impulse())) / thrust();
-    }
+  auto const speed = burn.intensity.Δv().Norm();
+  if (speed == Speed()) {
+    // This handles the case where `thrust_` vanishes, where the usual formula
+    // would yield NaN.
+    duration_ = Time();
   } else {
-    CHECK(intensity.direction && intensity.duration);
-    // Циолковский's equation.
-    intensity.Δv = *intensity.direction * specific_impulse() *
-                   std::log(initial_mass_ / final_mass());
+    duration_ = initial_mass_ * specific_impulse() *
+                (1 - std::exp(-speed / specific_impulse())) / thrust();
   }
 
   // Fill the missing fields of `timing`.

@@ -58,7 +58,6 @@ class Manœuvre {
                SphericalCoordinates<Speed> const& Δv_spherical_coordinates);
 
     Vector<double, Frenet<Frame>> const& direction() const;
-    Time const& duration() const;
     Velocity<Frenet<Frame>> const& Δv() const;
 
     // Construction parameters.
@@ -74,6 +73,8 @@ class Manœuvre {
     };
 
     std::variant<R3Element<Speed>, SphericalIntensity> Δv_coordinates_;
+    Velocity<Frenet<Frame>> Δv_;
+    Vector<double, Frenet<Frame>> direction_;
   };
 
   // Characterization of timing.  All members for exactly one of the groups
@@ -198,6 +199,7 @@ class Manœuvre {
   Mass initial_mass_;
   Burn construction_burn_;  // As given at construction.
   Burn burn_;  // All optionals filled.
+  Time duration_;
   std::optional<DegreesOfFreedom<InertialFrame>> initial_degrees_of_freedom_;
 };
 
