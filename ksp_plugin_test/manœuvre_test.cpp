@@ -10,6 +10,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
 #include "gmock/gmock.h"
@@ -55,6 +56,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::ksp_plugin::_frames;
@@ -98,6 +100,17 @@ class ManœuvreTest : public ::testing::Test {
     return owned_mock_reference_frame;
   }
 
+  // Some tests want to specify the duration of the burn for convenience.  Let's
+  // give them Циолковский's equation.
+  Speed Циолковский(Mass const& initial_mass,
+                    Time const& duration,
+                    Force const& thrust,
+                    SpecificImpulse const& specific_impulse) const {
+    Variation<Mass> const mass_flow = thrust / specific_impulse;
+    Mass const final_mass = initial_mass - mass_flow * duration;
+    return specific_impulse * std::log(initial_mass / final_mass);
+  }
+
   Instant const t0_;
   StrictMock<MockRigidReferenceFrame<World, Rendering>> const*
       mock_reference_frame_;
@@ -131,9 +144,8 @@ class ManœuvreTest : public ::testing::Test {
 TEST_F(ManœuvreTest, TimedBurn) {
   Vector<double, Frenet<Rendering>> const e_y({0, 1, 0});
 
-  Manœuvre<World, Rendering>::Intensity intensity;
-  intensity.direction = e_y;
-  intensity.duration = 1 * Second;
+  Manœuvre<World, Rendering>::Intensity const intensity(
+      {0 * Metre / Second, std::log(2) * Metre / Second, 0 * Metre / Second});
   Manœuvre<World, Rendering>::Timing timing;
   timing.initial_time = t0_;
   Manœuvre<World, Rendering>::Burn const burn{
@@ -194,8 +206,8 @@ TEST_F(ManœuvreTest, TimedBurn) {
 TEST_F(ManœuvreTest, TargetΔv) {
   Vector<double, Frenet<Rendering>> const e_y({0, 1, 0});
 
-  Manœuvre<World, Rendering>::Intensity intensity;
-  intensity.Δv = e_y * Metre / Second;
+  Manœuvre<World, Rendering>::Intensity const intensity(
+      {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second});
   Manœuvre<World, Rendering>::Timing timing;
   timing.time_of_half_Δv = t0_;
   Manœuvre<World, Rendering>::Burn const burn{
@@ -286,11 +298,13 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   Mass const total_vehicle_at_s_ivb_2nd_eco = 59285 * Kilogram;
 
   // An arbitrary direction, we're not testing this.
-  Vector<double, Frenet<Rendering>> const e_y({0, 1, 0});
+  R3Element<double> const e_y({0, 1, 0});
 
-  Manœuvre<World, Rendering>::Intensity first_burn_intensity;
-  first_burn_intensity.direction = e_y;
-  first_burn_intensity.duration = s_ivb_1st_eco - s_ivb_1st_90_percent_thrust;
+  Manœuvre<World, Rendering>::Intensity const first_burn_intensity(
+      e_y * Циолковский(total_vehicle_at_s_ivb_1st_90_percent_thrust,
+                        s_ivb_1st_eco - s_ivb_1st_90_percent_thrust,
+                        thrust_1st,
+                        specific_impulse_1st));
   Manœuvre<World, Rendering>::Timing first_burn_timing;
   first_burn_timing.initial_time = s_ivb_1st_90_percent_thrust;
   Manœuvre<World, Rendering>::Burn const first_burn{
@@ -337,9 +351,11 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   EXPECT_THAT(first_acceleration(first_manœuvre.final_time()).Norm(),
               IsNear(7.04_(1) * Metre / Pow<2>(Second)));
 
-  Manœuvre<World, Rendering>::Intensity second_burn_intensity;
-  second_burn_intensity.direction = e_y;
-  second_burn_intensity.duration = s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust;
+  Manœuvre<World, Rendering>::Intensity const second_burn_intensity(
+      e_y * Циолковский(total_vehicle_at_s_ivb_2nd_90_percent_thrust,
+                        s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust,
+                        thrust_2nd,
+                        specific_impulse_2nd));
   Manœuvre<World, Rendering>::Timing second_burn_timing;
   second_burn_timing.initial_time = s_ivb_2nd_90_percent_thrust;
   Manœuvre<World, Rendering>::Burn const second_burn{
@@ -403,10 +419,9 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
 TEST_F(ManœuvreTest, Serialization) {
   auto mock_reference_frame = MakeMockReferenceFrame();
   auto const unowned_reference_frame = mock_reference_frame.get();
-  Vector<double, Frenet<Rendering>> const e_y({0, 1, 0});
+  R3Element<double> const e_y({0, 1, 0});
 
-  Manœuvre<World, Rendering>::Intensity intensity;
-  intensity.Δv = e_y * Metre / Second;
+  Manœuvre<World, Rendering>::Intensity intensity(e_y * Metre / Second);
   Manœuvre<World, Rendering>::Timing timing;
   timing.time_of_half_Δv = t0_;
   Manœuvre<World, Rendering>::Burn const burn{
