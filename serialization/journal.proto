@@ -29,28 +29,16 @@ message XYZ {
   required double z = 3;
 }
 
-// For spherical coordinates below the naming convention is as follows.  Given
-// an orthonormal frame, the suffix of the identifier is the direction of the
-// polar axis.  The latitude is the angle measured from the plane perpendicular
-// to the polar axis, counted positively towards the polar axis.  The longitude
-// is the angle measured in that plane, counted from the axis that immediately
-// follows the polar axis (in circular order).
 enum CoordinateSystem {
-  // The barycentric frame.
-  CARTESIAN_XYZ = 1;
-  SPHERICAL_X = 2;
-  SPHERICAL_Y = 3;
-  SPHERICAL_Z = 4;
-  // The Frenet frame.
-  CARTESIAN_TNB = 5;
-  SPHERICAL_T = 6;
-  SPHERICAL_N = 7;
-  SPHERICAL_B = 8;
+  CARTESIAN_TNB = 1;
+  SPHERICAL_TNB = 2;
+  SPHERICAL_NBT = 3;
+  SPHERICAL_BTN = 4;
 }
 
 message DeltaV {
   required CoordinateSystem coordinate_system = 1;
-  optional XYZ xyz = 2;  // CARTESIAN_INERTIAL or CARTESIAN_TNB.
+  optional XYZ xyz = 2;  // CARTESIAN_TNB.
   optional SphericalCoordinates spherical_coordinates = 3;  // SPHERICAL_...
 }
 
@@ -95,6 +83,7 @@ message Burn {
   required double specific_impulse_in_seconds_g0 = 2;
   required NavigationFrameParameters frame = 3;
   required double initial_time = 4;
+  required bool is_inertially_fixed = 6;
   required DeltaV delta_v = 7;  // Added in Leray.
 }
 
