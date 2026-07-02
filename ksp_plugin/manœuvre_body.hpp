@@ -18,6 +18,45 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rigid_motion;
 
 template<typename InertialFrame, typename Frame>
+Manœuvre<InertialFrame, Frame>::Intensity::Intensity(
+    R3Element<Speed> const& Δv_cartesian_coordinates)
+    : Δv_coordinates_(Δv_cartesian_coordinates) {}
+
+template<typename InertialFrame, typename Frame>
+Manœuvre<InertialFrame, Frame>::Intensity::Intensity(
+    EvenPermutation permutation,
+    SphericalCoordinates<Speed> const& Δv_spherical_coordinates)
+    : Δv_coordinates_(
+          SphericalIntensity{permutation, Δv_spherical_coordinates}) {}
+
+template<typename InertialFrame, typename Frame>
+bool Manœuvre<InertialFrame, Frame>::Intensity::has_spherical_coordinates()
+    const {
+  return std::holds_alternative<SphericalIntensity>(Δv_coordinates_);
+}
+
+template<typename InertialFrame, typename Frame>
+R3Element<Speed> const& Manœuvre<
+    InertialFrame, Frame>::Intensity::Δv_cartesian_coordinates() const {
+  CHECK(has_spherical_coordinates());
+  return std::get<R3Element<Speed>>(Δv_coordinates_);
+}
+
+template<typename InertialFrame, typename Frame>
+EvenPermutation const& Manœuvre<InertialFrame, Frame>::Intensity::permutation()
+    const {
+  CHECK(has_spherical_coordinates());
+  return std::get<SphericalIntensity>(Δv_coordinates_).permutation;
+}
+
+template<typename InertialFrame, typename Frame>
+SphericalCoordinates<Speed> const&
+Manœuvre<InertialFrame, Frame>::Intensity::Δv_spherical_coordinates() const {
+  CHECK(has_spherical_coordinates());
+  return std::get<SphericalIntensity>(Δv_coordinates_).Δv_spherical_coordinates;
+}
+
+template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
                                          Burn const& burn)
   : initial_mass_(initial_mass),

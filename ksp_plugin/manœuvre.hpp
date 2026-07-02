@@ -66,6 +66,14 @@ class Manœuvre {
     R3Element<Speed> const& Δv_cartesian_coordinates() const;
     EvenPermutation const& permutation() const;
     SphericalCoordinates<Speed> const& Δv_spherical_coordinates() const;
+
+   private:
+    struct SphericalIntensity final {
+      EvenPermutation permutation;
+      SphericalCoordinates<Speed> Δv_spherical_coordinates;
+    };
+
+    std::variant<R3Element<Speed>, SphericalIntensity> Δv_coordinates_;
   };
 
   // Characterization of timing.  All members for exactly one of the groups
