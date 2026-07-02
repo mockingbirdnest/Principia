@@ -7,6 +7,8 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
@@ -26,6 +28,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
@@ -41,15 +45,27 @@ using namespace principia::quantities::_quantities;
 template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:
-  // Characterization of intensity.  All members for exactly one of the groups
-  // must be supplied.  The `direction` and `Δv` are given in the Frenet frame
-  // of the trajectory at the beginning of the burn.
-  struct Intensity final {
-    // Group 1.
-    std::optional<Vector<double, Frenet<Frame>>> direction;
-    std::optional<Time> duration;
-    // Group 2.
-    std::optional<Velocity<Frenet<Frame>>> Δv;
+  // Characterization of intensity.  In order to preserve the coordinates
+  // entered by the user, this class is, by special privilege, constructed from
+  // coordinates and not a `Vector`.  The coordinates are always interpreted in
+  // `Frenet<Frame>`.  For spherical coordinates, the `permutation` is used to
+  // specify the polar axis of the coordinates as an even permutation of
+  // (T, N, B).
+  class Intensity {
+   public:
+    Intensity(R3Element<Speed> const& Δv_cartesian_coordinates);
+    Intensity(EvenPermutation permutation,
+               SphericalCoordinates<Speed> const& Δv_spherical_coordinates);
+
+    Vector<double, Frenet<Frame>> const& direction() const;
+    Time const& duration() const;
+    Velocity<Frenet<Frame>> const& Δv() const;
+
+    // Construction parameters.
+    bool has_spherical_coordinates() const;
+    R3Element<Speed> const& Δv_cartesian_coordinates() const;
+    EvenPermutation const& permutation() const;
+    SphericalCoordinates<Speed> const& Δv_spherical_coordinates() const;
   };
 
   // Characterization of timing.  All members for exactly one of the groups
