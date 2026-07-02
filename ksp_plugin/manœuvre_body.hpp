@@ -126,17 +126,17 @@ typename Manœuvre<InertialFrame, Frame>::Burn const&
 template<typename InertialFrame, typename Frame>
 Vector<double, Frenet<Frame>> const& Manœuvre<InertialFrame, Frame>::direction()
     const {
-  return *full_intensity().direction;
+  return burn_.intensity.direction();
 }
 
 template<typename InertialFrame, typename Frame>
 Time const& Manœuvre<InertialFrame, Frame>::duration() const {
-  return *full_intensity().duration;
+  return duration_;
 }
 
 template<typename InertialFrame, typename Frame>
 Velocity<Frenet<Frame>> const& Manœuvre<InertialFrame, Frame>::Δv() const {
-  return *full_intensity().Δv;
+  return burn_.intensity.Δv();
 }
 
 template<typename InertialFrame, typename Frame>
@@ -319,12 +319,6 @@ Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration(
   } else {
     return Vector<Acceleration, InertialFrame>();
   }
-}
-
-template<typename InertialFrame, typename Frame>
-typename Manœuvre<InertialFrame, Frame>::Intensity const&
-Manœuvre<InertialFrame, Frame>::full_intensity() const {
-  return burn_.intensity;
 }
 
 template<typename InertialFrame, typename Frame>

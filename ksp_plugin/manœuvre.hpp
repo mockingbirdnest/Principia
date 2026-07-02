@@ -192,8 +192,7 @@ class Manœuvre {
       Instant const& t,
       Vector<double, InertialFrame> const& direction) const;
 
-  // Return structs where all the optionals are set.
-  Intensity const& full_intensity() const;
+  // Return a struct where all the optionals are set.
   Timing const& full_timing() const;
 
   Mass initial_mass_;
