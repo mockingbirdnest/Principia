@@ -77,6 +77,7 @@ endif
 
 TEST_LIBS     := \
 	$(DEPS_DIRECTORY)benchmark/src/libbenchmark.a \
+	$(DEPS_DIRECTORY)lodepng/liblodepng.a \
 	$(DEPS_DIRECTORY)protobuf/libprotobuf.a \
 	$(DEPS_DIRECTORY)protobuf/third_party/utf8_range/libutf8*.a
 ABSL_LIBS     := \
@@ -100,6 +101,7 @@ TEST_INCLUDES := \
 	-I$(DEPS_DIRECTORY)googletest/googletest/include \
 	-I$(DEPS_DIRECTORY)googletest/googlemock/ \
 	-I$(DEPS_DIRECTORY)googletest/googletest/ \
+	-I$(DEPS_DIRECTORY)lodepng/.. \
 	-I$(DEPS_DIRECTORY)benchmark/include
 INCLUDES      := -I. \
 	-I$(DEPS_DIRECTORY)protobuf/src \
@@ -339,7 +341,7 @@ $(PRINCIPIA_TEST_BIN) : $(TEST_OBJECTS)
 
 $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(PROTO_OBJECTS) $(ASTRONOMY_LIB_OBJECTS) $(MATHEMATICA_LIB_OBJECTS) $(PHYSICS_LIB_OBJECTS) $(BASE_LIB_OBJECTS) $(FUNCTIONS_LIB_OBJECTS) $(CORE_MATH_OBJECTS) $(NUMERICS_LIB_OBJECTS) $(GEOMETRY_LIB_OBJECTS) $(TESTING_UTILITIES_LIB_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) $(LIBS) -o $@
 
 # For tests that depend on the plugin, we link against the principia shared
 # library instead of statically linking the objects.
