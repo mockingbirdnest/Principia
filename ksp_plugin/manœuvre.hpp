@@ -66,6 +66,9 @@ class Manœuvre {
     EvenPermutation const& permutation() const;
     SphericalCoordinates<Speed> const& Δv_spherical_coordinates() const;
 
+    void WriteToMessage(not_null<serialization::Intensity*> message) const;
+    static Intensity ReadFromMessage(serialization::Intensity const& message);
+
    private:
     struct SphericalIntensity final {
       EvenPermutation permutation;

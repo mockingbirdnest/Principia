@@ -36,12 +36,24 @@ message FlightPlan {
   reserved "anomalous_segments", "max_steps";
 }
 
+message Intensity {
+  message Spherical {
+    required Permutation permutation = 1;
+    required SphericalCoordinates coordinates = 2;
+  }
+  oneof intensity {
+    R3Element cartesian = 1;
+    Spherical spherical = 2;
+  }
+}
+
 message Manoeuvre {
   required Quantity thrust = 1;
   required Quantity initial_mass = 2;
   required Quantity specific_impulse = 3;
-  required Multivector direction = 4;
-  required Quantity duration = 5;
+  optional Multivector direction = 4;  // Pre-Leray.
+  optional Quantity duration = 5;  // Pre-Leray.
+  optional Intensity intensity = 9;  // Added in Leray.
   required Point initial_time = 6;
   required ReferenceFrame frame = 7;
   // Required, addded in Чебышёв.

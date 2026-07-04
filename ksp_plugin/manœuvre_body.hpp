@@ -74,6 +74,31 @@ Manœuvre<InertialFrame, Frame>::Intensity::Δv_spherical_coordinates() const {
 }
 
 template<typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::Intensity::WriteToMessage(
+    not_null<serialization::Intensity*> const message) const {
+  if (std::holds_alternative<R3Element<Speed>>(Δv_coordinates_)) {
+    Δv_cartesian_coordinates().WriteToMessage(message->mutable_cartesian());
+  } else {
+    not_null<serialization::Intensity::Spherical>* const spherical_message =
+        message->mutable_spherical();
+    Δv_spherical_coordinates().WriteToMessage(
+        spherical_message->mutable_coordinates());
+    permutation().WriteToMessage(spherical_message->mutable_permutation());
+    auto const& spherical_intensity =
+        std::get<SphericalIntensity>(Δv_coordinates_);
+    message->set_allocated_spherical(
+        new serialization::SphericalIntensity(
+            spherical_intensity.permutation,
+            spherical_intensity.Δv_spherical_coordinates.ToMessage()));
+  }
+}
+
+template<typename InertialFrame, typename Frame>
+Manœuvre<InertialFrame, Frame>::Intensity
+Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
+    serialization::Intensity const& message) {}
+
+template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
                                          Burn const& burn)
   : initial_mass_(initial_mass),

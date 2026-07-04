@@ -68,6 +68,12 @@ message Sign {
   required bool negative = 1;
 }
 
+message SphericalCoordinates {
+  required Quantity radius = 1;
+  required Quantity latitude = 2;
+  required Quantity longitude = 3;
+}
+
 message SymmetricBilinearForm {
   required Frame frame = 1;
   required R3x3Matrix matrix = 2;
