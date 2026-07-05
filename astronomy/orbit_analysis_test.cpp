@@ -17,6 +17,7 @@
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
 #include "gmock/gmock.h"
+#include "graphics/colours.hpp"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -37,6 +38,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/golden_graphs.hpp"  // 🧙 For EXPECT_GOLDEN_GRAPH.
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics_matchers.hpp"
@@ -58,6 +60,7 @@ using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
+using namespace principia::graphics::_colours;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
@@ -679,6 +682,13 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
                                 IsNear(98.9_(1) * Degree),      // Ubuntu SSE.
                                 IsNear(99.9_(1) * Degree),      // Ubuntu AVX.
                                 IsNear(98.8_(1) * Degree)))));  // macOS.
+
+#if OS_WIN
+  EXPECT_GOLDEN_GRAPH(
+      elements.PlotEccentricityVector(
+          200, 150, Opaque(xkcd::black), xkcd::white, xkcd::cornflower),
+      "topex_poséidon_eccentricity_vector");
+#endif
 
   // Nominal longitude of the equatorial crossing of the first ascending pass
   // East of the ITRF zero-meridian (pass 135), as given in section 2 of

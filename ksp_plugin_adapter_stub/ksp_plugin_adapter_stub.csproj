@@ -86,6 +86,7 @@
     <None Include="ksp_plugin_adapter_stub.dll.config" />
     <None Include="localization\en-us.cfg" />
     <None Include="localization\fr-fr.cfg" />
+    <None Include="localization\ru.cfg" />
     <None Include="localization\zh-cn.cfg" />
   </ItemGroup>
   <ItemGroup />

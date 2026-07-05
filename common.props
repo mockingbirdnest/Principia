@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <!--Define project configurations.  Nothing interesting can happen here.-->
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+
+  <!--Microsoft C++ stuff.-->
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+
+  <!--Definitions.-->
+  <PropertyGroup>
+    <!--Special projects.  Must default to true for Clang Power Tools to get the includes right.-->
+    <PrincipiaBenchmarkProject>true</PrincipiaBenchmarkProject>
+    <PrincipiaBenchmarkProject Condition="$(ProjectName) != the-benchmark-project">false</PrincipiaBenchmarkProject>
+    <PrincipiaTestProject>true</PrincipiaTestProject>
+    <PrincipiaTestProject Condition="$(ProjectName) != the-test-project">false</PrincipiaTestProject>
+    <!--Predicates.-->
+    <PrincipiaMainProject>false</PrincipiaMainProject>
+    <PrincipiaMainProject Condition="$(PrincipiaBenchmarkProject) or $(PrincipiaTestProject)">true</PrincipiaMainProject>
+    <PrincipiaOptimize>false</PrincipiaOptimize>
+    <PrincipiaOptimize Condition="$(Configuration.StartsWith('Release'))">true</PrincipiaOptimize>
+    <!--Dependency paths.-->
+    <PrincipiaDependencyConfiguration>Debug</PrincipiaDependencyConfiguration>
+    <PrincipiaDependencyConfiguration Condition="$(PrincipiaOptimize)">Release</PrincipiaDependencyConfiguration>
+  </PropertyGroup>
+
+  <!--Compiler.-->
+  <PropertyGroup>
+    <IntDir>$(Configuration)\$(Platform)\</IntDir>
+    <OutDir>$(SolutionDir)$(Configuration)\$(Platform)\</OutDir>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+
+  <!--Target.-->
+  <PropertyGroup>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType Condition="$(PrincipiaMainProject)">Application</ConfigurationType>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="$(ConfigurationType)==Application">
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+  <!--Common options.-->
+  <PropertyGroup>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\the-include-directory;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <CallingConvention>vectorcall</CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4018;4068;4101;4180;4244;4267;4723;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>PRINCIPIA;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <WarningLevel>Level3</WarningLevel>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+    </Link>
+    <Lib>
+      <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
+    </Lib>
+  </ItemDefinitionGroup>
+
+  <!--Debug options.-->
+  <PropertyGroup Condition="!$(PrincipiaOptimize)">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="!$(PrincipiaOptimize)">
+    <ClCompile>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link></Link>
+  </ItemDefinitionGroup>
+
+  <!--Release options.-->
+  <PropertyGroup Condition="$(PrincipiaOptimize)">
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="$(PrincipiaOptimize)">
+    <ClCompile>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <Optimization>MaxSpeed</Optimization>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!--Import our property sheets.-->
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)portability_macros.props"/>
+  </ImportGroup>
+
+  <ImportGroup Condition="$(PrincipiaBenchmarkProject)">
+    <Import Project="$(SolutionDir)google_benchmark.props" />
+    <Import Project="$(SolutionDir)..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="$(SolutionDir)..\Google\benchmark\msvc\portability_macros.props" />
+  </ImportGroup>
+
+  <ImportGroup Condition="$(PrincipiaTestProject)">
+    <Import Project="$(SolutionDir)..\Google\googletest\googletest\msvc\portability_macros.props" />
+    <Import Project="$(SolutionDir)google_googlemock_main.props" />
+    <Import Project="$(SolutionDir)google_googletest.props" />
+  </ImportGroup>
+
+  <!--This import must be at the end.-->
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
