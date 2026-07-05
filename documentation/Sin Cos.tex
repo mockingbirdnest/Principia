@@ -931,9 +931,9 @@ The remaining steps of the computation are then as follows:
 \begin{dcases}
 t_1 &\DefineAs \roundAll{p_s\of{h^2}} \\
 t_2 &\DefineAs \roundAll{p_c\of{h^2}} \\
-t_3 &\DefineAs \round{h \round{h + \pa{\gd \red x + \gd \red x}}} \\
+t_3 &\DefineAs \round{h + \pa{\gd \red x + \gd \red x}} \\
 t_4 &\DefineAs \round{\round{h^2} \; h} \\
-t_5 &\DefineAs \round{\round{\round{s_k} \; t_3} \; t_2} \\
+t_5 &\DefineAs \round{\round{\round{\round{s_k} \; h } \; t_3} \; t_2} \\
 t_6 &\DefineAs \round{\round{t_4 \; t_1} + \gd \red x} \\
 t_7 &\DefineAs \round{\round{\round{c_k} \; t_6} + t_5} \\
 t_8 &\DefineAs \round{\round{t_0 \; \gd_0} + t7} \\
@@ -953,9 +953,9 @@ t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-52.292}}{2^{-
 &= \frac{\sin h \; \pa{1 + \gz_1} - h}{h^3} \pa{1 + \gz_3} \\
 t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.984}}{2^{-53.016}} \\
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
-t_3 &= h \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+t_3 &= \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \\
 t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
-t_5 &= \round{s_k} \; t_3 \; t_2 \; \pa{1 + \gd_5} \pa{1 + \gd_6} \\
+t_5 &= \round{s_k} \; h \; t_3 \; t_2 \; \pa{1 + \gd_2} \pa{1 + \gd_5} \pa{1 + \gd_6} \\
 t_6 &= \pa{t_4 \; t_1 \; \pa{1 + \gd_7} + \gd \red x} \pa{1 + \gd_8} \\
 t_7 &= \pa{\round{c_k} \; t_6 \; \pa{1 + \gd_9} + t_5} \pa{1 + \gd_{10}} \\
 t_8 &= \pa{t_0 \; \gd_0 \; \pa{1 + \gd_{11}} + t_7} \pa{1 + \gd_{12}} \\
@@ -997,9 +997,9 @@ The remaining steps of the computation are then as follows:
 \begin{dcases}
 t_1 &\DefineAs \roundAll{p_s\of{h^2}} \\
 t_2 &\DefineAs \roundAll{p_c\of{h^2}} \\
-t_3 &\DefineAs \round{h \round{h + \pa{\gd \red x + \gd \red x}}} \\
+t_3 &\DefineAs \round{h + \pa{\gd \red x + \gd \red x}} \\
 t_4 &\DefineAs \round{\round{h^2} \; h} \\
-t_5 &\DefineAs \round{\round{\round{c_k} \; t_3} \; t_2} \\
+t_5 &\DefineAs \round{\round{\round{\round{c_k} \; h} \; t_3} \; t_2} \\
 t_6 &\DefineAs \round{\round{t_4 \; t_1} + \gd \red x} \\
 t_7 &\DefineAs \round{-\round{\round{s_k} \; t_6} + t_5} \\
 t_8 &\DefineAs \round{\round{t_0 \; \gd_0} + t_7} \\
@@ -1017,9 +1017,9 @@ t_1 &= p_s\of{h^2} \pa{1 + \gz_3} \qquad & \gz_3 \in \intopen{-2^{-52.292}}{2^{-
 &= \frac{\sin h \; \pa{1 + \gz_1} - h}{h^3} \pa{1 + \gz_3} \\
 t_2 &= p_c\of{h^2} \pa{1 + \gz_4} \qquad & \gz_4 \in \intopen{-2^{-52.984}}{2^{-53.016}} \\
 &= \frac{\cos h - 1}{h^2} \pa{1 + \gz_2} \pa{1 + \gz_4} \\
-t_3 &= h \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \pa{1 + \gd_2} \\
+t_3 &= \pa{h + 2 \; \gd \red x} \pa{1 + \gd_1} \\
 t_4 &= h^3 \pa{1 + \gd_3} \pa{1 + \gd_4} \\
-t_5 &= \round{c_k} \; t_3 \; t_2 \; \pa{1 + \gd_5} \pa{1 + \gd_6} \\
+t_5 &= \round{c_k} \; h \; t_3 \; t_2 \; \pa{1 + \gd_2} \pa{1 + \gd_5} \pa{1 + \gd_6} \\
 t_6 &= \pa{t_4 \; t_1 \; \pa{1 + \gd_7} + \gd \red x} \pa{1 + \gd_8} \\
 t_7 &= \pa{\round{s_k} \; t_6 \; \pa{1 + \gd_9} + t_5} \pa{1 + \gd_{10}} \\
 t_8 &= \pa{t_0 \; \gd_0 \; \pa{1 + \gd_{11}} + t_7} \pa{1 + \gd_{12}} \\
