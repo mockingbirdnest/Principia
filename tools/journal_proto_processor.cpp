@@ -1500,7 +1500,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
 }
 
 void JournalProtoProcessor::ProcessInterchangeEnum(
-    EnumDescriptor const* const descriptor) {
+    EnumDescriptor const* descriptor) {
   std::string const name(descriptor->name());
   cs_interchange_enum_declaration_[descriptor] =
       "internal enum " + name + " : byte {\n";
@@ -1523,7 +1523,7 @@ void JournalProtoProcessor::ProcessInterchangeEnum(
 }
 
 void JournalProtoProcessor::ProcessInterchangeMessage(
-    Descriptor const* const descriptor) {
+    Descriptor const* descriptor) {
   std::string const name(descriptor->name());
   std::string const& parameter_name = ToLower(name);
   std::string const& proto_parameter_name = ToLower(name) + "_proto";
