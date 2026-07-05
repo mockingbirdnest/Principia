@@ -179,6 +179,8 @@ constexpr double three_term_x_reduced_threshold =
 
 namespace m128d {
 // TODO(phl): Is this value correct, in particular when used with a power of 2?
+// [BDL09] mentions [Mar00], chapter 10, and specifically C. Roothaan, for this
+// rounding technique, but we have not been able to track that book.
 M128D const mantissa_reduce_shifter(
     static_cast<double>(1LL << (std::numeric_limits<double>::digits - 1)));
 M128D const two_over_π(2.0 / π);
