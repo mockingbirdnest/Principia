@@ -8,6 +8,13 @@ using System.Runtime.InteropServices;
 namespace principia {
 namespace ksp_plugin_adapter {
 
+internal enum CoordinateSystem : byte {
+  CARTESIAN_TNB = 1,
+  SPHERICAL_TNB = 2,
+  SPHERICAL_NBT = 3,
+  SPHERICAL_BTN = 4,
+}
+
 internal partial class NavigationFrameParameters {
   public int extension;
   public int centre_index;
@@ -16,10 +23,23 @@ internal partial class NavigationFrameParameters {
 }
 
 [StructLayout(LayoutKind.Sequential)]
+public partial struct SphericalCoordinates {
+  public double radius;
+  public double latitude_in_degrees;
+  public double longitude_in_degrees;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 public partial struct XYZ {
   public double x;
   public double y;
   public double z;
+}
+
+internal partial class DeltaV {
+  public CoordinateSystem coordinate_system;
+  public XYZ? xyz;
+  public SphericalCoordinates? spherical_coordinates;
 }
 
 [StructLayout(LayoutKind.Sequential)]

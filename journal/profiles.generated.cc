@@ -11,10 +11,28 @@ NavigationFrameParameters DeserializeNavigationFrameParameters(serialization::Na
           navigation_frame_parameters.secondary_index()};
 }
 
+SphericalCoordinates DeserializeSphericalCoordinates(serialization::SphericalCoordinates const& spherical_coordinates, Player::PointerMap& pointer_map) {
+  return {spherical_coordinates.radius(),
+          spherical_coordinates.latitude_in_degrees(),
+          spherical_coordinates.longitude_in_degrees()};
+}
+
 XYZ DeserializeXYZ(serialization::XYZ const& xyz, Player::PointerMap& pointer_map) {
   return {xyz.x(),
           xyz.y(),
           xyz.z()};
+}
+
+DeltaV DeserializeDeltaV(serialization::DeltaV const& deltav, Player::PointerMap& pointer_map, XYZ& xyz_storage, SphericalCoordinates& spherical_coordinates_storage) {
+  return {static_cast<CoordinateSystem>(deltav.coordinate_system()),
+          deltav.has_xyz() ? [&pointer_map, &xyz_storage](serialization::XYZ const& message) {
+            xyz_storage = DeserializeXYZ(message, pointer_map);
+            return &xyz_storage;
+          }(deltav.xyz()) : nullptr,
+          deltav.has_spherical_coordinates() ? [&pointer_map, &spherical_coordinates_storage](serialization::SphericalCoordinates const& message) {
+            spherical_coordinates_storage = DeserializeSphericalCoordinates(message, pointer_map);
+            return &spherical_coordinates_storage;
+          }(deltav.spherical_coordinates()) : nullptr};
 }
 
 AdaptiveStepParameters DeserializeAdaptiveStepParameters(serialization::AdaptiveStepParameters const& adaptive_step_parameters, Player::PointerMap& pointer_map) {
@@ -289,11 +307,31 @@ serialization::NavigationFrameParameters SerializeNavigationFrameParameters(Navi
   return m;
 }
 
+serialization::SphericalCoordinates SerializeSphericalCoordinates(SphericalCoordinates const& spherical_coordinates) {
+  serialization::SphericalCoordinates m;
+  m.set_radius(spherical_coordinates.radius);
+  m.set_latitude_in_degrees(spherical_coordinates.latitude_in_degrees);
+  m.set_longitude_in_degrees(spherical_coordinates.longitude_in_degrees);
+  return m;
+}
+
 serialization::XYZ SerializeXYZ(XYZ const& xyz) {
   serialization::XYZ m;
   m.set_x(xyz.x);
   m.set_y(xyz.y);
   m.set_z(xyz.z);
+  return m;
+}
+
+serialization::DeltaV SerializeDeltaV(DeltaV const& deltav) {
+  serialization::DeltaV m;
+  m.set_coordinate_system(static_cast<serialization::CoordinateSystem>(deltav.coordinate_system));
+  if (deltav.xyz != nullptr) {
+    *m.mutable_xyz() = SerializeXYZ(*deltav.xyz);
+  }
+  if (deltav.spherical_coordinates != nullptr) {
+    *m.mutable_spherical_coordinates() = SerializeSphericalCoordinates(*deltav.spherical_coordinates);
+  }
   return m;
 }
 

@@ -2,6 +2,16 @@
 // If you change it, the changes will be lost the next time the generator is
 // run.  You should change the generator instead.
 
+enum class CoordinateSystem : unsigned char {
+  CARTESIAN_TNB = 1,
+  SPHERICAL_TNB = 2,
+  SPHERICAL_NBT = 3,
+  SPHERICAL_BTN = 4,
+};
+
+static_assert(std::is_pod<CoordinateSystem>::value,
+              "CoordinateSystem is used for interfacing");
+
 extern "C"
 struct NavigationFrameParameters {
   static void* operator new(std::size_t size) {
@@ -17,6 +27,19 @@ static_assert(std::is_pod<NavigationFrameParameters>::value,
               "NavigationFrameParameters is used for interfacing");
 
 extern "C"
+struct SphericalCoordinates {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
+  double radius;
+  double latitude_in_degrees;
+  double longitude_in_degrees;
+};
+
+static_assert(std::is_pod<SphericalCoordinates>::value,
+              "SphericalCoordinates is used for interfacing");
+
+extern "C"
 struct XYZ {
   static void* operator new(std::size_t size) {
     return ::operator new(size);
@@ -28,6 +51,19 @@ struct XYZ {
 
 static_assert(std::is_pod<XYZ>::value,
               "XYZ is used for interfacing");
+
+extern "C"
+struct DeltaV {
+  static void* operator new(std::size_t size) {
+    return ::operator new(size);
+  };
+  CoordinateSystem coordinate_system;
+  XYZ const* xyz;
+  SphericalCoordinates const* spherical_coordinates;
+};
+
+static_assert(std::is_pod<DeltaV>::value,
+              "DeltaV is used for interfacing");
 
 extern "C"
 struct AdaptiveStepParameters {

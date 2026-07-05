@@ -64,6 +64,61 @@ internal partial class NavigationFrameParameters {
   }
 }
 
+internal partial class DeltaV {
+  internal class Marshaler : MonoMarshaler {
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct Representation {
+      public CoordinateSystem coordinate_system;
+      public IntPtr xyz;
+      public IntPtr spherical_coordinates;
+    }
+
+    public static Representation ManagedToNative(DeltaV value) {
+      return new Representation{
+          coordinate_system = value.coordinate_system,
+          xyz = OptionalMarshaler<XYZ>.GetInstance(null).MarshalManagedToNative(value.xyz),
+          spherical_coordinates = OptionalMarshaler<SphericalCoordinates>.GetInstance(null).MarshalManagedToNative(value.spherical_coordinates),
+      };
+    }
+
+    public static DeltaV NativeToManaged(Representation representation) {
+      return new DeltaV{
+          coordinate_system = representation.coordinate_system,
+          xyz = OptionalMarshaler<XYZ>.GetInstance(null).MarshalNativeToManaged(representation.xyz) as XYZ?,
+          spherical_coordinates = OptionalMarshaler<SphericalCoordinates>.GetInstance(null).MarshalNativeToManaged(representation.spherical_coordinates) as SphericalCoordinates?,
+      };
+    }
+
+    public static ICustomMarshaler GetInstance(string s) {
+      return instance_;
+    }
+
+    public override void CleanUpNativeDataImplementation(IntPtr native_data) {
+      var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
+      OptionalMarshaler<XYZ>.GetInstance(null).CleanUpNativeData(representation.xyz);
+      OptionalMarshaler<SphericalCoordinates>.GetInstance(null).CleanUpNativeData(representation.spherical_coordinates);
+      Marshal.FreeHGlobal(native_data);
+    }
+
+    public override IntPtr MarshalManagedToNativeImplementation(object managed_object) {
+      if (!(managed_object is DeltaV value)) {
+        throw new NotSupportedException();
+      }
+      var representation = ManagedToNative(value);
+      IntPtr buffer = Marshal.AllocHGlobal(Marshal.SizeOf(representation));
+      Marshal.StructureToPtr(representation, buffer, fDeleteOld: false);
+      return buffer;
+    }
+
+    public override object MarshalNativeToManaged(IntPtr native_data) {
+      var representation = (Representation)Marshal.PtrToStructure(native_data, typeof(Representation));
+      return NativeToManaged(representation);
+    }
+
+    private static readonly Marshaler instance_ = new Marshaler();
+  }
+}
+
 internal partial class BodyGeopotentialElement {
   internal class Marshaler : MonoMarshaler {
     [StructLayout(LayoutKind.Sequential)]
