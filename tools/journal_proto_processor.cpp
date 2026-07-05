@@ -71,9 +71,16 @@ void JournalProtoProcessor::ProcessMessages() {
       journal::serialization::Method::descriptor();
   FileDescriptor const* file_descriptor = method_descriptor->file();
 
+  // Process all the enums in that file.
+  for (int i = 0; i < file_descriptor->enum_type_count(); ++i) {
+    EnumDescriptor const* const enum_descriptor = file_descriptor->enum_type(i);
+    ProcessInterchangeEnum(enum_descriptor);
+  }
+
   // Process all the messages in that file.
   for (int i = 0; i < file_descriptor->message_type_count(); ++i) {
-    Descriptor const* message_descriptor = file_descriptor->message_type(i);
+    Descriptor const* const message_descriptor =
+        file_descriptor->message_type(i);
     auto const message_descriptor_name = message_descriptor->name();
     if (message_descriptor->extension_range_count() > 0) {
       // Only the `Method` message should have a range.  Don't generate any code
@@ -123,6 +130,12 @@ JournalProtoProcessor::GetCsInterfaceSymbolDeclarations() const {
 }
 
 std::vector<std::string>
+JournalProtoProcessor::GetCsInterchangeEnumDeclarations() const {
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cs_interchange_enum_declaration_));
+}
+
+std::vector<std::string>
 JournalProtoProcessor::GetCsInterchangeTypeDeclarations() const {
   return std::ranges::to<std::vector<std::string>>(
       std::views::values(cs_interchange_type_declaration_));
@@ -138,6 +151,12 @@ std::vector<std::string>
 JournalProtoProcessor::GetCxxInterfaceMethodDeclarations() const {
   return std::ranges::to<std::vector<std::string>>(
       std::views::values(cxx_interface_method_declaration_));
+}
+
+std::vector<std::string>
+JournalProtoProcessor::GetCxxInterchangeEnumDeclarations() const {
+  return std::ranges::to<std::vector<std::string>>(
+      std::views::values(cxx_interchange_enum_declaration_));
 }
 
 std::vector<std::string>
@@ -894,6 +913,35 @@ void JournalProtoProcessor::ProcessRequiredDoubleField(
   field_cxx_type_[descriptor] = "double";
 }
 
+void JournalProtoProcessor::ProcessRequiredEnumField(
+    FieldDescriptor const* descriptor) {
+  EnumDescriptor const* enum_type = descriptor->enum_type();
+  std::string const enum_type_name(enum_type->name());
+  field_cs_type_[descriptor] = enum_type_name;
+  field_cs_predefined_marshaler_[descriptor] = "UnmanagedType.U1";
+  field_cs_private_type_[descriptor] = "byte";
+  field_cs_private_getter_fn_[descriptor] =
+      [enum_type_name](std::vector<std::string> const& identifiers) {
+        CHECK_EQ(1, identifiers.size());
+        return "get { return (" + enum_type_name + ")" + identifiers[0] + "; }";
+      };
+  field_cs_private_setter_fn_[descriptor] =
+      [](std::vector<std::string> const& identifiers) {
+        CHECK_EQ(1, identifiers.size());
+        return "set { " + identifiers[0] + " = (byte)value; }";
+      };
+
+  field_cxx_deserializer_fn_[descriptor] =
+    [enum_type_name](std::string const& expr) {
+      return "static_cast<" + enum_type_name + ">(" + expr + ")";
+    };
+  field_cxx_serializer_fn_[descriptor] =
+    [enum_type_name](std::string const& expr) {
+    return "static_cast<serialization::" + enum_type_name + ">(" + expr + ")";
+    };
+  field_cxx_type_[descriptor] = enum_type_name;
+}
+
 void JournalProtoProcessor::ProcessRequiredInt32Field(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "int";
@@ -1024,6 +1072,9 @@ void JournalProtoProcessor::ProcessRequiredField(
       break;
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessRequiredDoubleField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_ENUM:
+      ProcessRequiredEnumField(descriptor);
       break;
     case FieldDescriptor::TYPE_FIXED32:
       ProcessRequiredFixed32Field(descriptor);
@@ -1446,6 +1497,29 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
           field_cxx_type_[result_field_descriptor]);
   cxx_nested_type_declaration_[descriptor] =
       "  using Return = " + cxx_interface_return_type_[descriptor] + ";\n";
+}
+
+void JournalProtoProcessor::ProcessInterchangeEnum(
+    EnumDescriptor const* descriptor) {
+  std::string const name(descriptor->name());
+  cs_interchange_enum_declaration_[descriptor] =
+      "internal enum " + name + " : byte {\n";
+  cxx_interchange_enum_declaration_[descriptor] =
+      "enum class " + name + " : unsigned char {\n";
+  for (int i = 0; i < descriptor->value_count(); ++i) {
+    EnumValueDescriptor const* const value_descriptor = descriptor->value(i);
+    std::string const value_name(value_descriptor->name());
+    cs_interchange_enum_declaration_[descriptor] +=
+        "  " + value_name + " = " +
+        std::to_string(value_descriptor->number()) + ",\n";
+    cxx_interchange_enum_declaration_[descriptor] +=
+        "  " + value_name + " = " +
+        std::to_string(value_descriptor->number()) + ",\n";
+  }
+  cs_interchange_enum_declaration_[descriptor] += "}\n\n";
+  cxx_interchange_enum_declaration_[descriptor] +=
+      "};\n\nstatic_assert(std::is_pod<" + name +
+      ">::value,\n              \"" + name + " is used for interfacing\");\n\n";
 }
 
 void JournalProtoProcessor::ProcessInterchangeMessage(

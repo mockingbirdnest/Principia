@@ -208,6 +208,15 @@ inline bool operator==(Burn const& left, Burn const& right) {
          left.delta_v == right.delta_v;
 }
 
+inline bool operator==(DeltaV const& left, DeltaV const& right) {
+  return left.coordinate_system == right.coordinate_system &&
+         ((left.spherical_coordinates != nullptr &&
+           right.spherical_coordinates != nullptr &&
+           *left.spherical_coordinates == *right.spherical_coordinates) ||
+          (left.xyz != nullptr && right.xyz != nullptr &&
+           *left.xyz == *right.xyz));
+}
+
 inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                        FlightPlanAdaptiveStepParameters const& right) {
   return left.integrator_kind == right.integrator_kind &&
@@ -331,6 +340,15 @@ inline bool operator==(SolarTimesOfNodes const& left,
              right.mean_solar_times_of_ascending_nodes &&
          left.mean_solar_times_of_descending_nodes ==
              right.mean_solar_times_of_descending_nodes;
+}
+
+inline bool operator==(SphericalCoordinates const& left,
+                       SphericalCoordinates const& right) {
+  return NaNIndependentEq(left.radius, right.radius) &&
+         NaNIndependentEq(left.latitude_in_degrees,
+                          right.latitude_in_degrees) &&
+         NaNIndependentEq(left.longitude_in_degrees,
+                          right.longitude_in_degrees);
 }
 
 inline bool operator==(Status const& left, Status const& right) {
