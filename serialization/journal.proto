@@ -83,8 +83,8 @@ message Burn {
   required double specific_impulse_in_seconds_g0 = 2;
   required NavigationFrameParameters frame = 3;
   required double initial_time = 4;
+  required XYZ delta_v = 5;
   required bool is_inertially_fixed = 6;
-  required DeltaV delta_v = 7;  // Added in Leray.
 }
 
 message ConfigurationAccuracyParameters {
