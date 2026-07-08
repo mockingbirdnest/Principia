@@ -28,10 +28,12 @@ template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Intensity::Intensity(
     EvenPermutation permutation,
     SphericalCoordinates<Speed> const& Δv_spherical_coordinates)
-    : Δv_coordinates_(
-          SphericalIntensity{permutation, Δv_spherical_coordinates}),
-      Δv_(Permutation(permutation)(
-          Velocity<Frenet<Frame>>(Δv_spherical_coordinates.ToCartesian()))),
+    : Δv_coordinates_(SphericalIntensity{
+          Permutation<PermutedFrenet<Frame>, Frenet<Frame>>(permutation),
+          Δv_spherical_coordinates}),
+      Δv_(std::get<SphericalIntensity>(Δv_coordinates_)
+              .permutation(Velocity<PermutedFrenet<Frame>>(
+                  Δv_spherical_coordinates.ToCartesian()))),
       direction_(NormalizeOrZero(Δv_)) {}
 
 template<typename InertialFrame, typename Frame>
@@ -114,7 +116,11 @@ Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
       }
     case serialization::Intensity::IntensityCase::INTENSITY_NOT_SET:
       LOG(FATAL) << "Missing intensity: " << message;
-  }
+  };
+#if PRINCIPIA_COMPILER_MSVC && \
+    (_MSC_FULL_VER == 194'435'222 || _MSC_FULL_VER == 194'435'224)
+  std::abort();
+#endif
 }
 
 template<typename InertialFrame, typename Frame>

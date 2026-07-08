@@ -4,6 +4,7 @@
 #include <optional>
 
 #include "base/not_null.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -28,6 +29,7 @@ namespace _manœuvre {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
@@ -51,9 +53,9 @@ class Manœuvre {
   // Characterization of intensity.  In order to preserve the coordinates
   // entered by the user, this class is, by special privilege, constructed from
   // coordinates and not a `Vector`.  The coordinates are always interpreted in
-  // `Frenet<Frame>`.  For spherical coordinates, the `permutation` is used to
-  // specify the polar axis of the coordinates as an even permutation of
-  // (T, N, B).
+  // the (possibly permuted) `Frenet<Frame>`.  For spherical coordinates, the
+  // `permutation` is used to specify the polar axis of the coordinates as an
+  // even permutation of (T, N, B).
   class Intensity {
    public:
     Intensity(R3Element<Speed> const& Δv_cartesian_coordinates);
@@ -73,8 +75,16 @@ class Manœuvre {
     static Intensity ReadFromMessage(serialization::Intensity const& message);
 
    private:
+    //TODO(phl)comment
+    template<typename Frame>
+    using PermutedFrenet =
+        geometry::_frame::Frame<serialization::Frame::PhysicsTag,
+                                Arbitrary,
+                                Handedness::Right,
+                                serialization::Frame::PERMUTED_FRENET>;
+
     struct SphericalIntensity final {
-      EvenPermutation permutation;
+      Permutation<PermutedFrenet<Frame>, Frenet<Frame>> permutation;
       SphericalCoordinates<Speed> Δv_spherical_coordinates;
     };
 
