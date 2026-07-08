@@ -581,25 +581,25 @@ inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
       case EvenPermutation::XYZ:
         return {.coordinate_system = CoordinateSystem::SPHERICAL_TNB,
                 .xyz = nullptr,
-                .spherical_coordinates = ToSphericalCoordinates(
+                .spherical_coordinates = ToNewSphericalCoordinates(
                     intensity.Δv_spherical_coordinates())};
         break;
       case EvenPermutation::YZX:
         return {.coordinate_system = CoordinateSystem::SPHERICAL_NBT,
                 .xyz = nullptr,
-                .spherical_coordinates = ToSphericalCoordinates(
+                .spherical_coordinates = ToNewSphericalCoordinates(
                     intensity.Δv_spherical_coordinates())};
         break;
       case EvenPermutation::ZXY:
         return {.coordinate_system = CoordinateSystem::SPHERICAL_BTN,
                 .xyz = nullptr,
-                .spherical_coordinates = ToSphericalCoordinates(
+                .spherical_coordinates = ToNewSphericalCoordinates(
                     intensity.Δv_spherical_coordinates())};
         break;
     }
   } else {
     return {.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
-            .xyz = ToXYZ(intensity.Δv_cartesian_coordinates()),
+            .xyz = new XYZ(ToXYZ(intensity.Δv_cartesian_coordinates())),
             .spherical_coordinates = nullptr};
   }
 }
@@ -683,6 +683,15 @@ inline Status* ToNewStatus(absl::Status const& status) {
   }
 }
 
+inline SphericalCoordinates* ToNewSphericalCoordinates(
+    geometry::_r3_element::SphericalCoordinates<Speed> const&
+        spherical_coordinates) {
+  return new SphericalCoordinates{
+      .radius = spherical_coordinates.radius / (Metre / Second),
+      .latitude_in_degrees = spherical_coordinates.latitude / Degree,
+      .longitude_in_degrees = spherical_coordinates.longitude / Degree};
+}
+
 inline WXYZ ToWXYZ(Quaternion const& quaternion) {
   return {.w = quaternion.real_part(),
           .x = quaternion.imaginary_part().x,
@@ -696,6 +705,12 @@ inline XY ToXY(RP2Point<Length, Camera> const& rp2_point) {
 
 inline XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {.x = r3_element.x, .y = r3_element.y, .z = r3_element.z};
+}
+
+inline XYZ ToXYZ(R3Element<Speed> const& r3_element) {
+  return {.x = r3_element.x / (Metre / Second),
+          .y = r3_element.y / (Metre / Second),
+          .z = r3_element.z / (Metre / Second)};
 }
 
 inline XYZ ToXYZ(Position<World> const& position) {

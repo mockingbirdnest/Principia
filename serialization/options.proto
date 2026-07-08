@@ -15,15 +15,19 @@ extend google.protobuf.FieldOptions {
   // designated type of the pointer.
   optional string pointer_to = 50000;
 
-  // For a fixed64 field, indicates whether the corresponding pointer is
-  // consumed (deleted or has its ownership transferred) or produced (allocated)
-  // by the C++ side.
+  // For a fixed64 field, indicates that the corresponding pointer is
+  // consumed (deleted or has its ownership transferred)  by the C++ side.  For
+  // the second option, production is conditional on some state of the
+  // parameters.
   optional bool is_consumed = 50002;
-  optional bool is_produced = 50003;
-
-  // Same as above, but the consumption/production is conditional on some state
-  // of the parameters.
   optional string is_consumed_if = 50004;
+
+  // For a non-string, non-bytes field, indicates that the corresponding pointer
+  // is produced (allocated) by the C++ side.  For the second option, production
+  // is conditional on some state of the parameters.
+  // If the field is not a fixed64 field, there must be a field with an
+  // (address_of) option designating this field.
+  optional bool is_produced = 50003;
   optional string is_produced_if = 50005;
 
   // For a fixed64 field (which is used to represent a pointer), indicates that
@@ -52,9 +56,9 @@ extend google.protobuf.FieldOptions {
   // object.
   optional string size_of = 50014;
 
-  // For a fixed64 field used to represent an addresse, indicates that the
-  // object is owned by C# and not by C++.  There must be a field with a
-  // (size_of) option designating this field.
+  // For a fixed64 field used to represent an address, indicates that the object
+  // is owned by C# and not by C++.  There must be a field with a (size_of)
+  // option designating this field.
   optional bool is_csharp_owned = 50015;
 
   // For a field of an interchange message, specifies whether the generated C#

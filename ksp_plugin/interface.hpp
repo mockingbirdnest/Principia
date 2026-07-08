@@ -180,11 +180,17 @@ QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 // Ownership of the status and its message is transferred to the caller.
 Status* ToNewStatus(absl::Status const& status);
 
+// Ownership of the object is transferred to the caller.
+SphericalCoordinates* ToNewSphericalCoordinates(
+    geometry::_r3_element::SphericalCoordinates<Speed> const&
+        spherical_coordinates);
+
 WXYZ ToWXYZ(Quaternion const& quaternion);
 
 XY ToXY(RP2Point<Length, Camera> const& rp2_point);
 
 XYZ ToXYZ(R3Element<double> const& r3_element);
+XYZ ToXYZ(R3Element<Speed> const& r3_element);
 XYZ ToXYZ(Position<World> const& position);
 XYZ ToXYZ(Vector<double, World> const& direction);
 XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);

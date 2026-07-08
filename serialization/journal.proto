@@ -38,8 +38,12 @@ enum CoordinateSystem {
 
 message Intensity {
   required CoordinateSystem coordinate_system = 1;
-  optional XYZ xyz = 2;  // CARTESIAN_TNB.
-  optional SphericalCoordinates spherical_coordinates = 3;  // SPHERICAL_...
+  // CARTESIAN_TNB.
+  optional XYZ xyz = 2 [(is_produced) = true];
+  // SPHERICAL_...
+  optional SphericalCoordinates spherical_coordinates = 3 [(is_produced) = true];
+  required fixed64 xyz_address = 4 [(address_of) = "xyz"];
+  required fixed64 spherical_coordinates_address = 5 [(address_of) = "spherical_coordinates"];
 }
 
 // These messages should be in alphabetical order.
