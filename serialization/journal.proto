@@ -36,7 +36,7 @@ enum CoordinateSystem {
   SPHERICAL_BTN = 4;
 }
 
-message DeltaV {
+message Intensity {
   required CoordinateSystem coordinate_system = 1;
   optional XYZ xyz = 2;  // CARTESIAN_TNB.
   optional SphericalCoordinates spherical_coordinates = 3;  // SPHERICAL_...
@@ -84,7 +84,7 @@ message Burn {
   required NavigationFrameParameters frame = 3;
   required double initial_time = 4;
   required bool is_inertially_fixed = 6;
-  required DeltaV delta_v = 7;  // Added in Leray.
+  required Intensity intensity = 7;  // Added in Leray.
 }
 
 message ConfigurationAccuracyParameters {

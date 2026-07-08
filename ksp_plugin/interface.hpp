@@ -87,11 +87,11 @@ std::unique_ptr<T[]> TakeOwnershipArray(T** pointer);
 bool operator==(AdaptiveStepParameters const& left,
                 AdaptiveStepParameters const& right);
 bool operator==(Burn const& left, Burn const& right);
-bool operator==(DeltaV const& left, DeltaV const& right);
 bool operator==(EquatorialCrossings const& left,
                 EquatorialCrossings const& right);
 bool operator==(FlightPlanAdaptiveStepParameters const& left,
                 FlightPlanAdaptiveStepParameters const& right);
+bool operator==(Intensity const& left, Intensity const& right);
 bool operator==(Interval const& left, Interval const& right);
 bool operator==(NavigationFrameParameters const& left,
                 NavigationFrameParameters const& right);

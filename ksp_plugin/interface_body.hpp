@@ -215,16 +215,7 @@ inline bool operator==(Burn const& left, Burn const& right) {
                           right.specific_impulse_in_seconds_g0) &&
          left.frame == right.frame &&
          NaNIndependentEq(left.initial_time, right.initial_time) &&
-         left.delta_v == right.delta_v;
-}
-
-inline bool operator==(DeltaV const& left, DeltaV const& right) {
-  return left.coordinate_system == right.coordinate_system &&
-         ((left.spherical_coordinates != nullptr &&
-           right.spherical_coordinates != nullptr &&
-           *left.spherical_coordinates == *right.spherical_coordinates) ||
-          (left.xyz != nullptr && right.xyz != nullptr &&
-           *left.xyz == *right.xyz));
+         left.intensity == right.intensity;
 }
 
 inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
@@ -237,6 +228,15 @@ inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                           right.length_integration_tolerance) &&
          NaNIndependentEq(left.speed_integration_tolerance,
                           right.speed_integration_tolerance);
+}
+
+inline bool operator==(Intensity const& left, Intensity const& right) {
+  return left.coordinate_system == right.coordinate_system &&
+         ((left.spherical_coordinates != nullptr &&
+           right.spherical_coordinates != nullptr &&
+           *left.spherical_coordinates == *right.spherical_coordinates) ||
+          (left.xyz != nullptr && right.xyz != nullptr &&
+           *left.xyz == *right.xyz));
 }
 
 inline bool operator==(Interval const& left, Interval const& right) {
