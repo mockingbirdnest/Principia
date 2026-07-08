@@ -68,7 +68,7 @@ class Manœuvre {
     // Construction parameters.
     bool has_spherical_coordinates() const;
     R3Element<Speed> const& Δv_cartesian_coordinates() const;
-    EvenPermutation const& permutation() const;
+    EvenPermutation permutation() const;
     SphericalCoordinates<Speed> const& Δv_spherical_coordinates() const;
 
     void WriteToMessage(not_null<serialization::Intensity*> message) const;

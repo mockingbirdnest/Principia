@@ -583,20 +583,19 @@ inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
                 .xyz = nullptr,
                 .spherical_coordinates = ToNewSphericalCoordinates(
                     intensity.Δv_spherical_coordinates())};
-        break;
       case EvenPermutation::YZX:
         return {.coordinate_system = CoordinateSystem::SPHERICAL_NBT,
                 .xyz = nullptr,
                 .spherical_coordinates = ToNewSphericalCoordinates(
                     intensity.Δv_spherical_coordinates())};
-        break;
       case EvenPermutation::ZXY:
         return {.coordinate_system = CoordinateSystem::SPHERICAL_BTN,
                 .xyz = nullptr,
                 .spherical_coordinates = ToNewSphericalCoordinates(
                     intensity.Δv_spherical_coordinates())};
-        break;
     }
+    LOG(FATAL) << "Unexpected permutation: "
+               << static_cast<int>(intensity.permutation());
   } else {
     return {.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
             .xyz = new XYZ(ToXYZ(intensity.Δv_cartesian_coordinates())),

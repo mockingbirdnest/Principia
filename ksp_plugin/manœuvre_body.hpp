@@ -62,10 +62,10 @@ R3Element<Speed> const& Manœuvre<
 }
 
 template<typename InertialFrame, typename Frame>
-EvenPermutation const& Manœuvre<InertialFrame, Frame>::Intensity::permutation()
-    const {
+EvenPermutation Manœuvre<InertialFrame, Frame>::Intensity::permutation() const {
   CHECK(has_spherical_coordinates());
-  return std::get<SphericalIntensity>(Δv_coordinates_).permutation;
+  return std::get<SphericalIntensity>(Δv_coordinates_)
+      .permutation.coordinate_permutation();
 }
 
 template<typename InertialFrame, typename Frame>
