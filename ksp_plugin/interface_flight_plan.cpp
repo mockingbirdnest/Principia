@@ -60,17 +60,17 @@ namespace {
 
 NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
                                            Burn const& burn) {
-  std::optional<NavigationManœuvre::Intensity> intensity;
-  DeltaV const& delta_v = burn.delta_v;
-  switch (delta_v.coordinate_system) {
+  std::optional<NavigationManœuvre::Intensity> navigation_manœuvre_intensity;
+  auto const& intensity = burn.intensity;
+  switch (intensity.coordinate_system) {
     case CoordinateSystem::CARTESIAN_TNB: {
-      intensity = FromXYZ<R3Element<Speed>>(*delta_v.xyz);
+      navigation_manœuvre_intensity = FromXYZ<R3Element<Speed>>(*intensity.xyz);
     }
     case CoordinateSystem::SPHERICAL_TNB:
     case CoordinateSystem::SPHERICAL_NBT:
     case CoordinateSystem::SPHERICAL_BTN: {
       EvenPermutation permutation;
-      switch (delta_v.coordinate_system) {
+      switch (intensity.coordinate_system) {
         case CoordinateSystem::SPHERICAL_TNB:
           permutation = EvenPermutation::XYZ;
           break;
@@ -81,8 +81,8 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
           permutation = EvenPermutation::YZX;
           break;
       }
-      auto const& spherical_coordinates = *delta_v.spherical_coordinates;
-      intensity = NavigationManœuvre::Intensity(
+      auto const& spherical_coordinates = *intensity.spherical_coordinates;
+      navigation_manœuvre_intensity = NavigationManœuvre::Intensity(
           permutation,
           RadiusLatitudeLongitude<Speed>(
               spherical_coordinates.radius * (Metre / Second),
@@ -92,7 +92,7 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
   }
   NavigationManœuvre::Timing timing;
   timing.initial_time = FromGameTime(plugin, burn.initial_time);
-  return {.intensity = *intensity,
+  return {.intensity = *navigation_manœuvre_intensity,
           .timing = timing,
           .thrust = burn.thrust_in_kilonewtons * Kilo(Newton),
           .specific_impulse =
@@ -181,7 +181,7 @@ Burn GetBurn(Plugin const& plugin,
               manœuvre.specific_impulse() / (Second * StandardGravity),
           .frame = parameters,
           .initial_time = ToGameTime(plugin, manœuvre.initial_time()),
-          .delta_v = ToXYZ(manœuvre.Δv()),
+          .intensity = ToIntensity(manœuvre.intensity()),
           .is_inertially_fixed = manœuvre.is_inertially_fixed()};
 }
 

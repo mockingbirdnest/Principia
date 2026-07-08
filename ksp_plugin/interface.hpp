@@ -165,6 +165,8 @@ FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
         Barycentric>::GeneralizedAdaptiveStepParameters const&
         generalized_adaptive_step_parameters);
 
+Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity);
+
 KeplerianElements ToKeplerianElements(
     physics::_kepler_orbit::KeplerianElements<Barycentric> const&
         keplerian_elements);

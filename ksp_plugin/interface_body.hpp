@@ -13,6 +13,7 @@
 #include "absl/strings/str_split.h"
 #include "base/array.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
@@ -33,6 +34,7 @@ namespace interface {
 
 using namespace principia::base::_array;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
@@ -571,6 +573,35 @@ inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
           .speed_integration_tolerance =
               adaptive_step_parameters.speed_integration_tolerance() /
               (Metre / Second)};
+}
+
+inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
+  if (intensity.has_spherical_coordinates()) {
+    switch (intensity.permutation()) {
+      case EvenPermutation::XYZ:
+        return {.coordinate_system = CoordinateSystem::SPHERICAL_TNB,
+                .xyz = nullptr,
+                .spherical_coordinates = ToSphericalCoordinates(
+                    intensity.Δv_spherical_coordinates())};
+        break;
+      case EvenPermutation::YZX:
+        return {.coordinate_system = CoordinateSystem::SPHERICAL_NBT,
+                .xyz = nullptr,
+                .spherical_coordinates = ToSphericalCoordinates(
+                    intensity.Δv_spherical_coordinates())};
+        break;
+      case EvenPermutation::ZXY:
+        return {.coordinate_system = CoordinateSystem::SPHERICAL_BTN,
+                .xyz = nullptr,
+                .spherical_coordinates = ToSphericalCoordinates(
+                    intensity.Δv_spherical_coordinates())};
+        break;
+    }
+  } else {
+    return {.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
+            .xyz = ToXYZ(intensity.Δv_cartesian_coordinates()),
+            .spherical_coordinates = nullptr};
+  }
 }
 
 inline KeplerianElements ToKeplerianElements(
