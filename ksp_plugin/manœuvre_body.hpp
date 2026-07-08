@@ -79,24 +79,40 @@ void Manœuvre<InertialFrame, Frame>::Intensity::WriteToMessage(
   if (std::holds_alternative<R3Element<Speed>>(Δv_coordinates_)) {
     Δv_cartesian_coordinates().WriteToMessage(message->mutable_cartesian());
   } else {
-    not_null<serialization::Intensity::Spherical>* const spherical_message =
+    not_null<serialization::Intensity::Spherical*> const spherical_message =
         message->mutable_spherical();
     Δv_spherical_coordinates().WriteToMessage(
         spherical_message->mutable_coordinates());
     permutation().WriteToMessage(spherical_message->mutable_permutation());
     auto const& spherical_intensity =
         std::get<SphericalIntensity>(Δv_coordinates_);
-    message->set_allocated_spherical(
-        new serialization::SphericalIntensity(
-            spherical_intensity.permutation,
-            spherical_intensity.Δv_spherical_coordinates.ToMessage()));
   }
 }
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Intensity
 Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
-    serialization::Intensity const& message) {}
+    serialization::Intensity const& message) {
+  switch (message.intensity_case()) {
+    case serialization::Intensity::IntensityCase::kCartesian:
+      return Intensity(R3Element<Speed>::ReadFromMessage(message.cartesian()));
+    case serialization::Intensity::IntensityCase::kSpherical:
+      // The proto's permutation encodes the coordinate permutation integer;
+      // cast it to our EvenPermutation enum.  Spherical intensities are defined
+      // using an even permutation of (T, N, B).
+      auto const& spherical_message = message.spherical();
+      auto const permutation_int =
+          spherical_message.permutation().coordinate_permutation();
+      EvenPermutation const permutation =
+          static_cast<EvenPermutation>(permutation_int);
+      SphericalCoordinates<Speed> const coordinates =
+          SphericalCoordinates<Speed>::ReadFromMessage(
+              spherical_message.coordinates());
+      return Intensity(permutation, coordinates);
+    case serialization::Intensity::IntensityCase::INTENSITY_NOT_SET:
+      LOG(FATAL) << "Missing intensity: " << message;
+  }
+}
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
@@ -303,16 +319,33 @@ template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage(
     serialization::Manoeuvre const& message,
     not_null<Ephemeris<InertialFrame>*> const ephemeris) {
-  Intensity intensity;
-  intensity.direction =
-      Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction());
-  intensity.duration = Time::ReadFromMessage(message.duration());
+  bool const is_pre_leray = message.has_direction() || message.has_duration();
+  LOG_IF(WARNING, is_pre_leray) << "Reading pre-Leray Manœuvre";
+
   Timing timing;
   timing.initial_time = Instant::ReadFromMessage(message.initial_time());
-  Burn const burn{intensity,
+  Force const thrust = Force::ReadFromMessage(message.thrust());
+  SpecificImpulse const specific_impulse =
+      SpecificImpulse::ReadFromMessage(message.specific_impulse());
+  Mass const initial_mass = Mass::ReadFromMessage(message.initial_mass());
+
+  std::optional<Intensity> intensity;
+  if (is_pre_leray) {
+    auto const direction =
+        Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction());
+    auto const duration = Time::ReadFromMessage(message.duration());
+    auto const speed = ComputeЦиолковскийSpeed(
+        initial_mass, duration, thrust, specific_impulse);
+    intensity = Intensity(direction.coordinates() * speed);
+  } else {
+    CHECK(message.has_intensity()) << message;
+    intensity = Intensity::ReadFromMessage(message.intensity());
+  }
+
+  Burn const burn{*intensity,
                   timing,
-                  Force::ReadFromMessage(message.thrust()),
-                  SpecificImpulse::ReadFromMessage(message.specific_impulse()),
+                  thrust,
+                  specific_impulse,
                   RigidReferenceFrame<InertialFrame, Frame>::ReadFromMessage(
                       message.frame(), ephemeris),
                   message.is_inertially_fixed()};
@@ -350,6 +383,17 @@ template<typename InertialFrame, typename Frame>
 typename Manœuvre<InertialFrame, Frame>::Timing const&
 Manœuvre<InertialFrame, Frame>::full_timing() const {
   return burn_.timing;
+}
+
+template<typename InertialFrame, typename Frame>
+Speed Manœuvre<InertialFrame, Frame>::ComputeЦиолковскийSpeed(
+    Mass const& initial_mass,
+    Time const& duration,
+    Force const& thrust,
+    SpecificImpulse const& specific_impulse) {
+  Variation<Mass> const mass_flow = thrust / specific_impulse;
+  Mass const final_mass = initial_mass - mass_flow * duration;
+  return specific_impulse * std::log(initial_mass / final_mass);
 }
 
 }  // namespace internal

@@ -100,15 +100,13 @@ class ManœuvreTest : public ::testing::Test {
     return owned_mock_reference_frame;
   }
 
-  // Some tests want to specify the duration of the burn for convenience.  Let's
-  // give them Циолковский's equation.
-  Speed Циолковский(Mass const& initial_mass,
-                    Time const& duration,
-                    Force const& thrust,
-                    SpecificImpulse const& specific_impulse) const {
-    Variation<Mass> const mass_flow = thrust / specific_impulse;
-    Mass const final_mass = initial_mass - mass_flow * duration;
-    return specific_impulse * std::log(initial_mass / final_mass);
+  // Some tests want to specify the duration of the burn for convenience.
+  static Speed ComputeЦиолковскийSpeed(Mass const& initial_mass,
+                                Time const& duration,
+                                Force const& thrust,
+                                SpecificImpulse const& specific_impulse) {
+    return Manœuvre<World, Rendering>::ComputeЦиолковскийSpeed(
+        initial_mass, duration, thrust, specific_impulse);
   }
 
   Instant const t0_;
@@ -301,10 +299,11 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   R3Element<double> const e_y({0, 1, 0});
 
   Manœuvre<World, Rendering>::Intensity const first_burn_intensity(
-      e_y * Циолковский(total_vehicle_at_s_ivb_1st_90_percent_thrust,
-                        s_ivb_1st_eco - s_ivb_1st_90_percent_thrust,
-                        thrust_1st,
-                        specific_impulse_1st));
+      e_y *
+      ComputeЦиолковскийSpeed(total_vehicle_at_s_ivb_1st_90_percent_thrust,
+                              s_ivb_1st_eco - s_ivb_1st_90_percent_thrust,
+                              thrust_1st,
+                              specific_impulse_1st));
   Manœuvre<World, Rendering>::Timing first_burn_timing;
   first_burn_timing.initial_time = s_ivb_1st_90_percent_thrust;
   Manœuvre<World, Rendering>::Burn const first_burn{
@@ -352,10 +351,11 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
               IsNear(7.04_(1) * Metre / Pow<2>(Second)));
 
   Manœuvre<World, Rendering>::Intensity const second_burn_intensity(
-      e_y * Циолковский(total_vehicle_at_s_ivb_2nd_90_percent_thrust,
-                        s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust,
-                        thrust_2nd,
-                        specific_impulse_2nd));
+      e_y *
+      ComputeЦиолковскийSpeed(total_vehicle_at_s_ivb_2nd_90_percent_thrust,
+                              s_ivb_2nd_eco - s_ivb_2nd_90_percent_thrust,
+                              thrust_2nd,
+                              specific_impulse_2nd));
   Manœuvre<World, Rendering>::Timing second_burn_timing;
   second_burn_timing.initial_time = s_ivb_2nd_90_percent_thrust;
   Manœuvre<World, Rendering>::Burn const second_burn{

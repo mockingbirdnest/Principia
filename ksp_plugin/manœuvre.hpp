@@ -21,6 +21,9 @@
 
 namespace principia {
 namespace ksp_plugin {
+
+class ManœuvreTest;
+
 namespace _manœuvre {
 namespace internal {
 
@@ -198,11 +201,20 @@ class Manœuvre {
   // Return a struct where all the optionals are set.
   Timing const& full_timing() const;
 
+  // Циолковский's equation, used to convert the legacy representation of an
+  // intensity using a duration into a Δv.
+  static Speed ComputeЦиолковскийSpeed(Mass const& initial_mass,
+                                       Time const& duration,
+                                       Force const& thrust,
+                                       SpecificImpulse const& specific_impulse);
+
   Mass initial_mass_;
   Burn construction_burn_;  // As given at construction.
   Burn burn_;  // All optionals filled.
   Time duration_;
   std::optional<DegreesOfFreedom<InertialFrame>> initial_degrees_of_freedom_;
+
+  friend class ksp_plugin::ManœuvreTest;
 };
 
 }  // namespace internal
