@@ -168,6 +168,16 @@ struct XYZConverter<R3Element<MomentOfInertia>> {
   }
 };
 
+template<>
+struct XYZConverter<R3Element<Speed>> {
+  static constexpr Speed mts_unit = Metre / Second;
+  static R3Element<Speed> FromXYZ(XYZ const& xyz) {
+    return R3Element<Speed>(xyz.x * (Metre / Second),
+                            xyz.y * (Metre / Second),
+                            xyz.z * (Metre / Second));
+  }
+};
+
 inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
 }
@@ -520,6 +530,12 @@ template<>
 R3Element<MomentOfInertia>
 inline FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz) {
   return XYZConverter<R3Element<MomentOfInertia>>::FromXYZ(xyz);
+}
+
+template<>
+R3Element<Speed>
+inline FromXYZ<R3Element<Speed>>(XYZ const& xyz) {
+  return XYZConverter<R3Element<Speed>>::FromXYZ(xyz);
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
