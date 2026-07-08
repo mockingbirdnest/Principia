@@ -463,17 +463,11 @@ TEST_F(ManœuvreTest, Serialization) {
   EXPECT_EQ(1 * Newton, manœuvre_read.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre_read.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre_read.specific_impulse());
-// Fixed in 192'027'508.
-#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 191'627'024 || \
-                                _MSC_FULL_VER == 191'627'025 || \
-                                _MSC_FULL_VER == 191'627'027)
-  EXPECT_TRUE(e_y == manœuvre.direction());
-#else
-  EXPECT_EQ(e_y, manœuvre.direction());
-#endif
+  EXPECT_EQ((Vector<double, Frenet<Rendering>>(e_y)),
+            manœuvre_read.direction());
   EXPECT_EQ(1 * Kilogram / Second, manœuvre_read.mass_flow());
 
-  EXPECT_EQ(1 * Metre / Second, manœuvre.Δv().Norm());
+  EXPECT_EQ(1 * Metre / Second, manœuvre_read.Δv().Norm());
   EXPECT_EQ((2 - 2 / e) * Second, manœuvre_read.duration());
   EXPECT_EQ((2 - 2 / Sqrt(e)) * Second, manœuvre_read.time_to_half_Δv());
   EXPECT_EQ((2 / e) * Kilogram, manœuvre_read.final_mass());

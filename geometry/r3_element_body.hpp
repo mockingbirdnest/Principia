@@ -210,12 +210,30 @@ R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
 }
 
 template<typename Scalar>
-R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() {
+R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() const {
   auto const [sin_latitude, cos_latitude] = SinCos(latitude);
   auto const [sin_longitude, cos_longitude] = SinCos(longitude);
   return {radius * cos_longitude * cos_latitude,
           radius * sin_longitude * cos_latitude,
           radius * sin_latitude};
+}
+
+template<typename Scalar>
+void SphericalCoordinates<Scalar>::WriteToMessage(
+    not_null<serialization::SphericalCoordinates*> const message) const {
+  radius.WriteToMessage(message->mutable_radius());
+  latitude.WriteToMessage(message->mutable_latitude());
+  longitude.WriteToMessage(message->mutable_longitude());
+}
+
+template<typename Scalar>
+SphericalCoordinates<Scalar> SphericalCoordinates<Scalar>::ReadFromMessage(
+    serialization::SphericalCoordinates const& message) {
+  SphericalCoordinates<Scalar> result;
+  result.radius = Scalar::ReadFromMessage(message.radius());
+  result.latitude = Angle::ReadFromMessage(message.latitude());
+  result.longitude = Angle::ReadFromMessage(message.longitude());
+  return result;
 }
 
 template<typename Scalar>

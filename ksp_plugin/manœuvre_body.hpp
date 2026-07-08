@@ -97,18 +97,21 @@ Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
     case serialization::Intensity::IntensityCase::kCartesian:
       return Intensity(R3Element<Speed>::ReadFromMessage(message.cartesian()));
     case serialization::Intensity::IntensityCase::kSpherical:
-      // The proto's permutation encodes the coordinate permutation integer;
-      // cast it to our EvenPermutation enum.  Spherical intensities are defined
-      // using an even permutation of (T, N, B).
-      auto const& spherical_message = message.spherical();
-      auto const permutation_int =
-          spherical_message.permutation().coordinate_permutation();
-      EvenPermutation const permutation =
-          static_cast<EvenPermutation>(permutation_int);
-      SphericalCoordinates<Speed> const coordinates =
-          SphericalCoordinates<Speed>::ReadFromMessage(
-              spherical_message.coordinates());
-      return Intensity(permutation, coordinates);
+      // FIXME The proto's permutation encodes the coordinate permutation
+      // integer;
+      //  cast it to our EvenPermutation enum.  Spherical intensities are
+      //  defined using an even permutation of (T, N, B).
+      {
+        auto const& spherical_message = message.spherical();
+        auto const permutation_int =
+            spherical_message.permutation().coordinate_permutation();
+        EvenPermutation const permutation =
+            static_cast<EvenPermutation>(permutation_int);
+        SphericalCoordinates<Speed> const coordinates =
+            SphericalCoordinates<Speed>::ReadFromMessage(
+                spherical_message.coordinates());
+        return Intensity(permutation, coordinates);
+      }
     case serialization::Intensity::IntensityCase::INTENSITY_NOT_SET:
       LOG(FATAL) << "Missing intensity: " << message;
   }

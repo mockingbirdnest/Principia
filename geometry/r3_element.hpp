@@ -99,7 +99,12 @@ struct SphericalCoordinates final {
 
   // Uses the x-y plane as the equator, the x-axis as the reference direction on
   // the equator, and the z-axis as the north pole.
-  R3Element<Scalar> ToCartesian();
+  R3Element<Scalar> ToCartesian() const;
+
+  void WriteToMessage(
+      not_null<serialization::SphericalCoordinates*> message) const;
+  static SphericalCoordinates ReadFromMessage(
+      serialization::SphericalCoordinates const& message);
 
   Scalar radius;
   Angle latitude;
