@@ -31,6 +31,8 @@ message XYZ {
 
 enum CoordinateSystem {
   CARTESIAN_TNB = 1;
+  // In the spherical coordinate systems, the third letter is the polar axis,
+  // and the first letter is origin in the equatorial plane.
   SPHERICAL_TNB = 2;
   SPHERICAL_NBT = 3;
   SPHERICAL_BTN = 4;

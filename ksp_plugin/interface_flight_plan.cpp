@@ -69,21 +69,22 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
     case CoordinateSystem::SPHERICAL_TNB:
     case CoordinateSystem::SPHERICAL_NBT:
     case CoordinateSystem::SPHERICAL_BTN: {
-      EvenPermutation permutation;
+      EvenPermutation coordinate_permutation;
       switch (intensity.coordinate_system) {
         case CoordinateSystem::SPHERICAL_TNB:
-          permutation = EvenPermutation::XYZ;
+          coordinate_permutation = EvenPermutation::XYZ;
           break;
         case CoordinateSystem::SPHERICAL_BTN:
-          permutation = EvenPermutation::ZXY;
+          coordinate_permutation = EvenPermutation::YZX;
           break;
         case CoordinateSystem::SPHERICAL_NBT:
-          permutation = EvenPermutation::YZX;
+          coordinate_permutation = EvenPermutation::ZXY;
           break;
       }
       auto const& spherical_coordinates = *intensity.spherical_coordinates;
       navigation_manœuvre_intensity = NavigationManœuvre::Intensity(
-          permutation,
+          Permutation<PermutedFrenet<Navigation>, Frenet<Navigation>>(
+              coordinate_permutation),
           RadiusLatitudeLongitude<Speed>(
               spherical_coordinates.radius * (Metre / Second),
               spherical_coordinates.latitude_in_degrees * Degree,

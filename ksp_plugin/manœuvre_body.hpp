@@ -26,11 +26,10 @@ Manœuvre<InertialFrame, Frame>::Intensity::Intensity(
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Intensity::Intensity(
-    EvenPermutation permutation,
+    Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const& permutation,
     SphericalCoordinates<Speed> const& Δv_spherical_coordinates)
-    : Δv_coordinates_(SphericalIntensity{
-          Permutation<PermutedFrenet<Frame>, Frenet<Frame>>(permutation),
-          Δv_spherical_coordinates}),
+    : Δv_coordinates_(
+          SphericalIntensity{permutation, Δv_spherical_coordinates}),
       Δv_(std::get<SphericalIntensity>(Δv_coordinates_)
               .permutation(Velocity<PermutedFrenet<Frame>>(
                   Δv_spherical_coordinates.ToCartesian()))),
@@ -116,19 +115,13 @@ Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
     case serialization::Intensity::IntensityCase::kCartesian:
       return Intensity(R3Element<Speed>::ReadFromMessage(message.cartesian()));
     case serialization::Intensity::IntensityCase::kSpherical:
-      // FIXME The proto's permutation encodes the coordinate permutation
-      // integer;
-      //  cast it to our EvenPermutation enum.  Spherical intensities are
-      //  defined using an even permutation of (T, N, B).
       {
         auto const& spherical_message = message.spherical();
-        auto const permutation_int =
-            spherical_message.permutation().coordinate_permutation();
-        EvenPermutation const permutation =
-            static_cast<EvenPermutation>(permutation_int);
-        SphericalCoordinates<Speed> const coordinates =
-            SphericalCoordinates<Speed>::ReadFromMessage(
-                spherical_message.coordinates());
+        auto const permutation =
+            Permutation<PermutedFrenet<Frame>, Frenet<Frame>>::ReadFromMessage(
+                spherical_message.permutation());
+        auto const coordinates = SphericalCoordinates<Speed>::ReadFromMessage(
+            spherical_message.coordinates());
         return Intensity(permutation, coordinates);
       }
     case serialization::Intensity::IntensityCase::INTENSITY_NOT_SET:

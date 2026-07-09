@@ -59,8 +59,9 @@ class Manœuvre {
   class Intensity {
    public:
     Intensity(R3Element<Speed> const& Δv_cartesian_coordinates);
-    Intensity(EvenPermutation permutation,
-              SphericalCoordinates<Speed> const& Δv_spherical_coordinates);
+    Intensity(
+        Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const& permutation,
+        SphericalCoordinates<Speed> const& Δv_spherical_coordinates);
 
     Vector<double, Frenet<Frame>> const& direction() const;
     Velocity<Frenet<Frame>> const& Δv() const;
