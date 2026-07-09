@@ -49,6 +49,24 @@ Manœuvre<InertialFrame, Frame>::Intensity::Δv() const {
 }
 
 template<typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::Intensity::set_Δv(
+    Velocity<Frenet<Frame>> const& Δv) {
+  if (std::holds_alternative<R3Element<Speed>>(Δv_coordinates_)) {
+    Δv_coordinates_ = Δv.coordinates();
+  } else {
+    auto const& spherical_intensity =
+        std::get<SphericalIntensity>(Δv_coordinates_);
+    Velocity<PermutedFrenet<Frame>> const permuted_Δv =
+        permutation.Inverse()(Δv);
+    Δv_coordinates_.Δv_spherical_coordinates =
+        permuted_Δv.coordinates().ToSpherical();
+    // The `permutation` is unchanged.
+  }
+  Δv_ = Δv;
+  direction_ = NormalizeOrZero(Δv_);
+}
+
+template<typename InertialFrame, typename Frame>
 bool
 Manœuvre<InertialFrame, Frame>::Intensity::has_spherical_coordinates() const {
   return std::holds_alternative<SphericalIntensity>(Δv_coordinates_);

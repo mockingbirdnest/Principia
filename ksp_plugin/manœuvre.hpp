@@ -65,12 +65,17 @@ class Manœuvre {
     Vector<double, Frenet<Frame>> const& direction() const;
     Velocity<Frenet<Frame>> const& Δv() const;
 
+    // Changes `Δv` without affecting the nature of the representation
+    // (cartesian or spherical) or the permutation.
+    void set_Δv(Velocity<Frenet<Frame>> const& Δv);
+
     // Construction parameters.
     bool has_spherical_coordinates() const;
     R3Element<Speed> const& Δv_cartesian_coordinates() const;
     Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const&
     permutation() const;
     SphericalCoordinates<Speed> const& Δv_spherical_coordinates() const;
+
 
     void WriteToMessage(not_null<serialization::Intensity*> message) const;
     static Intensity ReadFromMessage(serialization::Intensity const& message);

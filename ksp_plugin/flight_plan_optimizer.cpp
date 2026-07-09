@@ -788,23 +788,7 @@ NavigationManœuvre::Burn FlightPlanOptimizer::UpdatedBurn(
     NavigationManœuvre const& manœuvre) {
   auto const argument = Dehomogeneize(homogeneous_argument);
   NavigationManœuvre::Burn burn = manœuvre.burn();
-  NavigationManœuvre::Intensity const intensity = burn.intensity;
-
-  Velocity<Frenet<Navigation>> const updated_Δv = manœuvre.Δv() + argument.ΔΔv;
-
-  // Preserve the representation of the intensity chosen by the user.
-  if (intensity.has_spherical_coordinates()) {
-    auto const& permutation = intensity.permutation();
-    Velocity<PermutedFrenet<Navigation>> const permuted_updated_Δv =
-        permutation.Inverse()(updated_Δv);
-    SphericalCoordinates<Speed> const Δv_spherical_coordinates =
-        permuted_updated_Δv.coordinates().ToSpherical();
-    burn.intensity = NavigationManœuvre::Intensity(
-        permutation.coordinate_permutation(), Δv_spherical_coordinates);
-  } else {
-    burn.intensity = NavigationManœuvre::Intensity(updated_Δv.coordinates());
-  }
-
+  burn.intensity.set_Δv(burn.intensity.Δv() + argument.ΔΔv);
   burn.timing = {.initial_time =
                      manœuvre.initial_time() + argument.Δinitial_time};
   return burn;
