@@ -53,9 +53,9 @@ class Manœuvre {
   // Characterization of intensity.  In order to preserve the coordinates
   // entered by the user, this class is, by special privilege, constructed from
   // coordinates and not a `Vector`.  The coordinates are always interpreted in
-  // the (possibly permuted) `Frenet<Frame>`.  For spherical coordinates, the
-  // `permutation` is used to specify the polar axis of the coordinates as an
-  // even permutation of (T, N, B).
+  // `Frenet<Frame>` (for cartesian coordinates) or in `PermutedFrenet<Frame>`
+  // (for spherical coordinates).  The `permutation` is used to specify the
+  // polar axis of the coordinates as an even permutation of (T, N, B).
   class Intensity {
    public:
     Intensity(R3Element<Speed> const& Δv_cartesian_coordinates);
@@ -68,21 +68,14 @@ class Manœuvre {
     // Construction parameters.
     bool has_spherical_coordinates() const;
     R3Element<Speed> const& Δv_cartesian_coordinates() const;
-    EvenPermutation permutation() const;
+    Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const&
+    permutation() const;
     SphericalCoordinates<Speed> const& Δv_spherical_coordinates() const;
 
     void WriteToMessage(not_null<serialization::Intensity*> message) const;
     static Intensity ReadFromMessage(serialization::Intensity const& message);
 
    private:
-    //TODO(phl)comment
-    template<typename Frame>
-    using PermutedFrenet =
-        geometry::_frame::Frame<serialization::Frame::PhysicsTag,
-                                Arbitrary,
-                                Handedness::Right,
-                                serialization::Frame::PERMUTED_FRENET>;
-
     struct SphericalIntensity final {
       Permutation<PermutedFrenet<Frame>, Frenet<Frame>> permutation;
       SphericalCoordinates<Speed> Δv_spherical_coordinates;

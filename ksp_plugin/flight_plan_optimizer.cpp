@@ -11,6 +11,8 @@
 #include "absl/status/status.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/permutation.hpp"
+#include "geometry/r3_element.hpp"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
@@ -25,6 +27,8 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_r3_element;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
@@ -784,7 +788,23 @@ NavigationManœuvre::Burn FlightPlanOptimizer::UpdatedBurn(
     NavigationManœuvre const& manœuvre) {
   auto const argument = Dehomogeneize(homogeneous_argument);
   NavigationManœuvre::Burn burn = manœuvre.burn();
-  burn.intensity = {.Δv = manœuvre.Δv() + argument.ΔΔv};
+  NavigationManœuvre::Intensity const intensity = burn.intensity;
+
+  Velocity<Frenet<Navigation>> const updated_Δv = manœuvre.Δv() + argument.ΔΔv;
+
+  // Preserve the representation of the intensity chosen by the user.
+  if (intensity.has_spherical_coordinates()) {
+    auto const& permutation = intensity.permutation();
+    Velocity<PermutedFrenet<Navigation>> const permuted_updated_Δv =
+        permutation.Inverse()(updated_Δv);
+    SphericalCoordinates<Speed> const Δv_spherical_coordinates =
+        permuted_updated_Δv.coordinates().ToSpherical();
+    burn.intensity = NavigationManœuvre::Intensity(
+        permutation.coordinate_permutation(), Δv_spherical_coordinates);
+  } else {
+    burn.intensity = NavigationManœuvre::Intensity(updated_Δv.coordinates());
+  }
+
   burn.timing = {.initial_time =
                      manœuvre.initial_time() + argument.Δinitial_time};
   return burn;

@@ -577,7 +577,7 @@ inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
 
 inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
   if (intensity.has_spherical_coordinates()) {
-    switch (intensity.permutation()) {
+    switch (intensity.permutation().coordinate_permutation()) {
       case EvenPermutation::XYZ:
         return {.coordinate_system = CoordinateSystem::SPHERICAL_TNB,
                 .xyz = nullptr,
@@ -594,8 +594,7 @@ inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
                 .spherical_coordinates = ToNewSphericalCoordinates(
                     intensity.Δv_spherical_coordinates())};
     }
-    LOG(FATAL) << "Unexpected permutation: "
-               << static_cast<int>(intensity.permutation());
+    LOG(FATAL) << "Unexpected permutation: " << intensity.permutation();
   } else {
     return {.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
             .xyz = new XYZ(ToXYZ(intensity.Δv_cartesian_coordinates())),
