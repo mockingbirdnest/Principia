@@ -94,7 +94,7 @@ MATCHER_P(HasInitialTime, initial_time, "") {
 }
 
 MATCHER_P(HasΔv, Δv, "") {
-  return arg.intensity.Δv && *arg.intensity.Δv == Δv;
+  return arg.intensity.Δv() == Δv;
 }
 
 MATCHER(IsOk,
@@ -138,12 +138,16 @@ class InterfaceFlightPlanTest : public ::testing::Test {
 };
 
 TEST_F(InterfaceFlightPlanTest, FlightPlan) {
+  XYZ const intensity_xyz{4, 5, 6};
   Burn interface_burn = {
       .thrust_in_kilonewtons = 1,
       .specific_impulse_in_seconds_g0 = 2,
       .frame = {.extension = 6000, .centre_index = celestial_index},
       .initial_time = 3,
-      .delta_v = {4, 5, 6},
+      .intensity =
+          Intensity{.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
+                    .xyz = &intensity_xyz,
+                    .spherical_coordinates = nullptr},
       .is_inertially_fixed = true};
   StrictMock<MockVessel> vessel;
 
@@ -273,9 +277,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
             &ephemeris,
             &centre);
 
-  MockManœuvre<Barycentric, Navigation>::Intensity intensity;
-  intensity.direction = Vector<double, Frenet<Navigation>>({1, 1, 1});
-  intensity.duration = 7 * Second;
+  MockManœuvre<Barycentric, Navigation>::Intensity const intensity(
+      {7 * Metre / Second, 7 * Metre / Second, 7 * Metre / Second});
   MockManœuvre<Barycentric, Navigation>::Timing timing;
   timing.initial_time = Instant();
   MockManœuvre<Barycentric, Navigation>::Burn const burn{
