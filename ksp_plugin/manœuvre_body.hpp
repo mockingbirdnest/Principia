@@ -54,11 +54,10 @@ void Manœuvre<InertialFrame, Frame>::Intensity::set_Δv(
   if (std::holds_alternative<R3Element<Speed>>(Δv_coordinates_)) {
     Δv_coordinates_ = Δv.coordinates();
   } else {
-    auto const& spherical_intensity =
-        std::get<SphericalIntensity>(Δv_coordinates_);
+    auto& spherical_intensity = std::get<SphericalIntensity>(Δv_coordinates_);
     Velocity<PermutedFrenet<Frame>> const permuted_Δv =
-        permutation.Inverse()(Δv);
-    Δv_coordinates_.Δv_spherical_coordinates =
+        spherical_intensity.permutation.Inverse()(Δv);
+    spherical_intensity.Δv_spherical_coordinates =
         permuted_Δv.coordinates().ToSpherical();
     // The `permutation` is unchanged.
   }

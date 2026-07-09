@@ -40,7 +40,13 @@ using Frenet = geometry::_frame::Frame<serialization::Frame::PhysicsTag,
                                        Handedness::Right,
                                        serialization::Frame::FRENET>;
 
-//TODO(phl)comment
+// A permutation of the Frenet frame used to express a vector in spherical
+// coordinates.  The polar axis is the z axis of `PermutedFrenet` and the
+// reference direction on the equator is its x axis.  Through the identity
+// permutation, these axes map to the binormal and tangent axes of `Frenet`,
+// respectively.  Therefore, if 𝒫 is the (even) permutation from
+// `PermutedFrenet` to `Frenet`, then 𝒫⁻¹(B) is the polar axis of the spherical
+// coordinates and 𝒫⁻¹(T) is the reference direction on the equator.
 template<typename Frame>
 using PermutedFrenet =
     geometry::_frame::Frame<serialization::Frame::PhysicsTag,
