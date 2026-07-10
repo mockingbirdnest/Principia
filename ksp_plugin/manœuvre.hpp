@@ -58,7 +58,7 @@ class Manœuvre {
   // polar axis of the coordinates as an even permutation of (T, N, B).
   class Intensity {
    public:
-    Intensity(R3Element<Speed> const& Δv_cartesian_coordinates);
+    explicit Intensity(R3Element<Speed> const& Δv_cartesian_coordinates);
     Intensity(
         Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const& permutation,
         SphericalCoordinates<Speed> const& Δv_spherical_coordinates);
@@ -207,7 +207,7 @@ class Manœuvre {
       Instant const& t,
       Vector<double, InertialFrame> const& direction) const;
 
-  // Return a struct where all the optionals are set.
+  // Returns a struct where all the optionals are set.
   Timing const& full_timing() const;
 
   // Циолковский's equation, used to convert the legacy representation of an

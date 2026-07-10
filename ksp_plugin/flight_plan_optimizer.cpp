@@ -11,8 +11,6 @@
 #include "absl/status/status.h"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/grassmann.hpp"
-#include "geometry/permutation.hpp"
-#include "geometry/r3_element.hpp"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
@@ -27,8 +25,6 @@ using std::placeholders::_1;
 using std::placeholders::_2;
 using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_permutation;
-using namespace principia::geometry::_r3_element;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;

@@ -101,10 +101,11 @@ class ManœuvreTest : public ::testing::Test {
   }
 
   // Some tests want to specify the duration of the burn for convenience.
-  static Speed ComputeЦиолковскийSpeed(Mass const& initial_mass,
-                                Time const& duration,
-                                Force const& thrust,
-                                SpecificImpulse const& specific_impulse) {
+  static Speed ComputeЦиолковскийSpeed(
+      Mass const& initial_mass,
+      Time const& duration,
+      Force const& thrust,
+      SpecificImpulse const& specific_impulse) {
     return Manœuvre<World, Rendering>::ComputeЦиолковскийSpeed(
         initial_mass, duration, thrust, specific_impulse);
   }

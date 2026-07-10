@@ -16,7 +16,7 @@ extend google.protobuf.FieldOptions {
   optional string pointer_to = 50000;
 
   // For a fixed64 field, indicates that the corresponding pointer is
-  // consumed (deleted or has its ownership transferred)  by the C++ side.  For
+  // consumed (deleted or has its ownership transferred) by the C++ side.  For
   // the second option, production is conditional on some state of the
   // parameters.
   optional bool is_consumed = 50002;
