@@ -73,7 +73,7 @@ Manœuvre<InertialFrame, Frame>::Intensity::has_spherical_coordinates() const {
 template<typename InertialFrame, typename Frame>
 R3Element<Speed> const& Manœuvre<
     InertialFrame, Frame>::Intensity::Δv_cartesian_coordinates() const {
-  CHECK(has_spherical_coordinates());
+  CHECK(!has_spherical_coordinates());
   return std::get<R3Element<Speed>>(Δv_coordinates_);
 }
 
