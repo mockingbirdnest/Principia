@@ -324,9 +324,9 @@ class BurnEditor : ScalingRenderer {
 
   public void Reset(NavigationManoeuvre manœuvre) {
     Burn burn = manœuvre.burn;
-    Δv_tangent_.value = burn.delta_v.x;
-    Δv_normal_.value = burn.delta_v.y;
-    Δv_binormal_.value = burn.delta_v.z;
+    Δv_tangent_.value = burn.intensity.xyz.Value.x;
+    Δv_normal_.value = burn.intensity.xyz.Value.y;
+    Δv_binormal_.value = burn.intensity.xyz.Value.z;
     initial_time_ = burn.initial_time;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
@@ -341,11 +341,17 @@ class BurnEditor : ScalingRenderer {
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
         frame = reference_frame_selector_.FrameParameters(),
         initial_time = initial_time_,
-        delta_v = new XYZ{
-            x = Δv_tangent_.value,
-            y = Δv_normal_.value,
-            z = Δv_binormal_.value
-        },
+        intensity =
+            new Intensity{
+                coordinate_system = CoordinateSystem.CARTESIAN_TNB,
+                xyz =
+                    new XYZ{
+                        x = Δv_tangent_.value,
+                        y = Δv_normal_.value,
+                        z = Δv_binormal_.value
+                    },
+                spherical_coordinates = null
+            },
         is_inertially_fixed = is_inertially_fixed_
     };
   }

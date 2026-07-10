@@ -152,7 +152,7 @@ internal class ManœuvreMarker : UnityEngine.MonoBehaviour {
     var caption = L10N.CacheFormat(
       "#Principia_MapNode_ManœuvreCaption",
       index_ + 1,
-      ((Vector3d)burn.delta_v).magnitude.ToString("0.000"),
+      ((Vector3d)burn.intensity.xyz).magnitude.ToString("0.000"),
       manœuvre.duration.ToString("0.0"),
       "T" + new PrincipiaTimeSpan(
               Planetarium.GetUniversalTime() - burn.initial_time).
