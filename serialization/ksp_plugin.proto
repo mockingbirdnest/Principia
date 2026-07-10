@@ -51,9 +51,9 @@ message Manoeuvre {
   required Quantity thrust = 1;
   required Quantity initial_mass = 2;
   required Quantity specific_impulse = 3;
-  optional Multivector direction = 4;  // Pre-Leray.
-  optional Quantity duration = 5;  // Pre-Leray.
-  optional Intensity intensity = 9;  // Required, added in Leray.
+  optional Multivector direction = 4;  // Pre-Levi-Civita.
+  optional Quantity duration = 5;  // Pre-Levi-Civita.
+  optional Intensity intensity = 9;  // Required, added in Levi-Civita.
   required Point initial_time = 6;
   required ReferenceFrame frame = 7;
   // Required, added in Чебышёв.

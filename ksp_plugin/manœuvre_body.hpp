@@ -338,8 +338,9 @@ template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage(
     serialization::Manoeuvre const& message,
     not_null<Ephemeris<InertialFrame>*> const ephemeris) {
-  bool const is_pre_leray = message.has_direction() || message.has_duration();
-  LOG_IF(WARNING, is_pre_leray) << "Reading pre-Leray Manœuvre";
+  bool const is_pre_levi_civita = message.has_direction() ||
+                                  message.has_duration();
+  LOG_IF(WARNING, is_pre_levi_civita) << "Reading pre-Levi-Civita Manœuvre";
 
   Timing timing;
   timing.initial_time = Instant::ReadFromMessage(message.initial_time());
@@ -349,7 +350,7 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
   Mass const initial_mass = Mass::ReadFromMessage(message.initial_mass());
 
   std::optional<Intensity> intensity;
-  if (is_pre_leray) {
+  if (is_pre_levi_civita) {
     auto const direction =
         Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction());
     auto const duration = Time::ReadFromMessage(message.duration());
