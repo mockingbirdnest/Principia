@@ -64,7 +64,8 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
   auto const& intensity = burn.intensity;
   switch (intensity.coordinate_system) {
     case CoordinateSystem::CARTESIAN_TNB: {
-      navigation_manœuvre_intensity = FromXYZ<R3Element<Speed>>(*intensity.xyz);
+      navigation_manœuvre_intensity = NavigationManœuvre::Intensity(
+          FromXYZ<R3Element<Speed>>(*intensity.xyz));
       break;
     }
     case CoordinateSystem::SPHERICAL_TNB:

@@ -297,7 +297,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   Mass const total_vehicle_at_s_ivb_2nd_eco = 59285 * Kilogram;
 
   // An arbitrary direction, we're not testing this.
-  R3Element<double> const e_y({0, 1, 0});
+  R3Element<double> const e_y(0, 1, 0);
 
   Manœuvre<World, Rendering>::Intensity const first_burn_intensity(
       e_y *
@@ -420,7 +420,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
 TEST_F(ManœuvreTest, Serialization) {
   auto mock_reference_frame = MakeMockReferenceFrame();
   auto const unowned_reference_frame = mock_reference_frame.get();
-  R3Element<double> const e_y({0, 1, 0});
+  R3Element<double> const e_y(0, 1, 0);
 
   Manœuvre<World, Rendering>::Intensity intensity(e_y * Metre / Second);
   Manœuvre<World, Rendering>::Timing timing;
