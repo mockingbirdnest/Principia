@@ -354,9 +354,9 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
     auto const direction =
         Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction());
     auto const duration = Time::ReadFromMessage(message.duration());
-    auto const speed = ComputeЦиолковскийSpeed(
-        initial_mass, duration, thrust, specific_impulse);
-    intensity = Intensity(direction.coordinates() * speed);
+    auto const Δv = ComputeЦиолковскийΔv(
+        direction, initial_mass, duration, thrust, specific_impulse);
+    intensity = Intensity(Δv.coordinates());
   } else {
     CHECK(message.has_intensity()) << message;
     intensity = Intensity::ReadFromMessage(message.intensity());
@@ -406,14 +406,17 @@ Manœuvre<InertialFrame, Frame>::full_timing() const {
 }
 
 template<typename InertialFrame, typename Frame>
-Speed Manœuvre<InertialFrame, Frame>::ComputeЦиолковскийSpeed(
+Velocity<Frenet<Frame>> Manœuvre<InertialFrame, Frame>::ComputeЦиолковскийΔv(
+    Vector<double, Frenet<Frame>> const& direction,
     Mass const& initial_mass,
     Time const& duration,
     Force const& thrust,
     SpecificImpulse const& specific_impulse) {
+  // The order of operations here is important to ensure that we obtain the
+  // exact same Δv that the pre-Levi-Civita code would have computed.
   Variation<Mass> const mass_flow = thrust / specific_impulse;
   Mass const final_mass = initial_mass - mass_flow * duration;
-  return specific_impulse * std::log(initial_mass / final_mass);
+  return direction * specific_impulse * std::log(initial_mass / final_mass);
 }
 
 }  // namespace internal

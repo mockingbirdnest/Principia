@@ -212,10 +212,12 @@ class Manœuvre {
 
   // Циолковский's equation, used to convert the legacy representation of an
   // intensity using a duration into a Δv.
-  static Speed ComputeЦиолковскийSpeed(Mass const& initial_mass,
-                                       Time const& duration,
-                                       Force const& thrust,
-                                       SpecificImpulse const& specific_impulse);
+  static Velocity<Frenet<Frame>> ComputeЦиолковскийΔv(
+      Vector<double, Frenet<Frame>> const& direction,
+      Mass const& initial_mass,
+      Time const& duration,
+      Force const& thrust,
+      SpecificImpulse const& specific_impulse);
 
   Mass initial_mass_;
   Burn construction_burn_;  // As given at construction.
