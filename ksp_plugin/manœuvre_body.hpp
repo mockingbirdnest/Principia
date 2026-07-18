@@ -18,31 +18,135 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_rigid_motion;
 
 template<typename InertialFrame, typename Frame>
+Manœuvre<InertialFrame, Frame>::Intensity::Intensity(
+    R3Element<Speed> const& Δv_cartesian_coordinates)
+    : Δv_coordinates_(Δv_cartesian_coordinates),
+      Δv_(Δv_cartesian_coordinates),
+      direction_(NormalizeOrZero(Δv_)) {}
+
+template<typename InertialFrame, typename Frame>
+Manœuvre<InertialFrame, Frame>::Intensity::Intensity(
+    Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const& permutation,
+    SphericalCoordinates<Speed> const& Δv_spherical_coordinates)
+    : Δv_coordinates_(
+          SphericalIntensity{permutation, Δv_spherical_coordinates}),
+      Δv_(std::get<SphericalIntensity>(Δv_coordinates_)
+              .permutation(Velocity<PermutedFrenet<Frame>>(
+                  Δv_spherical_coordinates.ToCartesian()))),
+      direction_(NormalizeOrZero(Δv_)) {}
+
+template<typename InertialFrame, typename Frame>
+Vector<double, Frenet<Frame>> const&
+Manœuvre<InertialFrame, Frame>::Intensity::direction() const {
+  return direction_;
+}
+
+template<typename InertialFrame, typename Frame>
+Velocity<Frenet<Frame>> const&
+Manœuvre<InertialFrame, Frame>::Intensity::Δv() const {
+  return Δv_;
+}
+
+template<typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::Intensity::set_Δv(
+    Velocity<Frenet<Frame>> const& Δv) {
+  if (std::holds_alternative<R3Element<Speed>>(Δv_coordinates_)) {
+    Δv_coordinates_ = Δv.coordinates();
+  } else {
+    auto& spherical_intensity = std::get<SphericalIntensity>(Δv_coordinates_);
+    Velocity<PermutedFrenet<Frame>> const permuted_Δv =
+        spherical_intensity.permutation.Inverse()(Δv);
+    spherical_intensity.Δv_spherical_coordinates =
+        permuted_Δv.coordinates().ToSpherical();
+    // The `permutation` is unchanged.
+  }
+  Δv_ = Δv;
+  direction_ = NormalizeOrZero(Δv_);
+}
+
+template<typename InertialFrame, typename Frame>
+bool
+Manœuvre<InertialFrame, Frame>::Intensity::has_spherical_coordinates() const {
+  return std::holds_alternative<SphericalIntensity>(Δv_coordinates_);
+}
+
+template<typename InertialFrame, typename Frame>
+R3Element<Speed> const& Manœuvre<
+    InertialFrame, Frame>::Intensity::Δv_cartesian_coordinates() const {
+  CHECK(!has_spherical_coordinates());
+  return std::get<R3Element<Speed>>(Δv_coordinates_);
+}
+
+template<typename InertialFrame, typename Frame>
+Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const&
+Manœuvre<InertialFrame, Frame>::Intensity::permutation() const {
+  CHECK(has_spherical_coordinates());
+  return std::get<SphericalIntensity>(Δv_coordinates_).permutation;
+}
+
+template<typename InertialFrame, typename Frame>
+SphericalCoordinates<Speed> const&
+Manœuvre<InertialFrame, Frame>::Intensity::Δv_spherical_coordinates() const {
+  CHECK(has_spherical_coordinates());
+  return std::get<SphericalIntensity>(Δv_coordinates_).Δv_spherical_coordinates;
+}
+
+template<typename InertialFrame, typename Frame>
+void Manœuvre<InertialFrame, Frame>::Intensity::WriteToMessage(
+    not_null<serialization::Intensity*> const message) const {
+  if (std::holds_alternative<R3Element<Speed>>(Δv_coordinates_)) {
+    Δv_cartesian_coordinates().WriteToMessage(message->mutable_cartesian());
+  } else {
+    not_null<serialization::Intensity::Spherical*> const spherical_message =
+        message->mutable_spherical();
+    Δv_spherical_coordinates().WriteToMessage(
+        spherical_message->mutable_coordinates());
+    permutation().WriteToMessage(spherical_message->mutable_permutation());
+    auto const& spherical_intensity =
+        std::get<SphericalIntensity>(Δv_coordinates_);
+  }
+}
+
+template<typename InertialFrame, typename Frame>
+Manœuvre<InertialFrame, Frame>::Intensity
+Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
+    serialization::Intensity const& message) {
+  switch (message.intensity_case()) {
+    case serialization::Intensity::IntensityCase::kCartesian:
+      return Intensity(R3Element<Speed>::ReadFromMessage(message.cartesian()));
+    case serialization::Intensity::IntensityCase::kSpherical:
+      {
+        auto const& spherical_message = message.spherical();
+        auto const permutation =
+            Permutation<PermutedFrenet<Frame>, Frenet<Frame>>::ReadFromMessage(
+                spherical_message.permutation());
+        auto const coordinates = SphericalCoordinates<Speed>::ReadFromMessage(
+            spherical_message.coordinates());
+        return Intensity(permutation, coordinates);
+      }
+    case serialization::Intensity::IntensityCase::INTENSITY_NOT_SET:
+      LOG(FATAL) << "Missing intensity: " << message;
+  };
+#if PRINCIPIA_COMPILER_MSVC && \
+    (_MSC_FULL_VER == 194'435'222 || _MSC_FULL_VER == 194'435'224)
+  std::abort();
+#endif
+}
+
+template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
                                          Burn const& burn)
   : initial_mass_(initial_mass),
     construction_burn_(burn),
     burn_(burn) {
-  // Fill the missing fields of `intensity`.
-  auto& intensity = burn_.intensity;
-  if (intensity.Δv) {
-    CHECK(!intensity.direction && !intensity.duration);
-    intensity.direction = NormalizeOrZero(*intensity.Δv);
-    auto const speed = intensity.Δv->Norm();
-    if (speed == Speed()) {
-      // This handles the case where `thrust_` vanishes, where the usual formula
-      // would yield NaN.
-      intensity.duration = Time();
-    } else {
-      intensity.duration =
-          initial_mass_ * specific_impulse() *
-          (1 - std::exp(-speed / specific_impulse())) / thrust();
-    }
+  auto const speed = burn.intensity.Δv().Norm();
+  if (speed == Speed()) {
+    // This handles the case where `thrust_` vanishes, where the usual formula
+    // would yield NaN.
+    duration_ = Time();
   } else {
-    CHECK(intensity.direction && intensity.duration);
-    // Циолковский's equation.
-    intensity.Δv = *intensity.direction * specific_impulse() *
-                   std::log(initial_mass_ / final_mass());
+    duration_ = initial_mass_ * specific_impulse() *
+                (1 - std::exp(-speed / specific_impulse())) / thrust();
   }
 
   // Fill the missing fields of `timing`.
@@ -82,17 +186,17 @@ typename Manœuvre<InertialFrame, Frame>::Burn const&
 template<typename InertialFrame, typename Frame>
 Vector<double, Frenet<Frame>> const& Manœuvre<InertialFrame, Frame>::direction()
     const {
-  return *full_intensity().direction;
+  return burn_.intensity.direction();
 }
 
 template<typename InertialFrame, typename Frame>
 Time const& Manœuvre<InertialFrame, Frame>::duration() const {
-  return *full_intensity().duration;
+  return duration_;
 }
 
 template<typename InertialFrame, typename Frame>
 Velocity<Frenet<Frame>> const& Manœuvre<InertialFrame, Frame>::Δv() const {
-  return *full_intensity().Δv;
+  return burn_.intensity.Δv();
 }
 
 template<typename InertialFrame, typename Frame>
@@ -234,16 +338,34 @@ template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage(
     serialization::Manoeuvre const& message,
     not_null<Ephemeris<InertialFrame>*> const ephemeris) {
-  Intensity intensity;
-  intensity.direction =
-      Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction());
-  intensity.duration = Time::ReadFromMessage(message.duration());
+  bool const is_pre_levi_civita = message.has_direction() ||
+                                  message.has_duration();
+  LOG_IF(WARNING, is_pre_levi_civita) << "Reading pre-Levi-Civita Manœuvre";
+
   Timing timing;
   timing.initial_time = Instant::ReadFromMessage(message.initial_time());
-  Burn const burn{intensity,
+  Force const thrust = Force::ReadFromMessage(message.thrust());
+  SpecificImpulse const specific_impulse =
+      SpecificImpulse::ReadFromMessage(message.specific_impulse());
+  Mass const initial_mass = Mass::ReadFromMessage(message.initial_mass());
+
+  std::optional<Intensity> intensity;
+  if (is_pre_levi_civita) {
+    auto const direction =
+        Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction());
+    auto const duration = Time::ReadFromMessage(message.duration());
+    auto const Δv = ComputeЦиолковскийΔv(
+        direction, initial_mass, duration, thrust, specific_impulse);
+    intensity = Intensity(Δv.coordinates());
+  } else {
+    CHECK(message.has_intensity()) << message;
+    intensity = Intensity::ReadFromMessage(message.intensity());
+  }
+
+  Burn const burn{*intensity,
                   timing,
-                  Force::ReadFromMessage(message.thrust()),
-                  SpecificImpulse::ReadFromMessage(message.specific_impulse()),
+                  thrust,
+                  specific_impulse,
                   RigidReferenceFrame<InertialFrame, Frame>::ReadFromMessage(
                       message.frame(), ephemeris),
                   message.is_inertially_fixed()};
@@ -278,15 +400,23 @@ Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration(
 }
 
 template<typename InertialFrame, typename Frame>
-typename Manœuvre<InertialFrame, Frame>::Intensity const&
-Manœuvre<InertialFrame, Frame>::full_intensity() const {
-  return burn_.intensity;
-}
-
-template<typename InertialFrame, typename Frame>
 typename Manœuvre<InertialFrame, Frame>::Timing const&
 Manœuvre<InertialFrame, Frame>::full_timing() const {
   return burn_.timing;
+}
+
+template<typename InertialFrame, typename Frame>
+Velocity<Frenet<Frame>> Manœuvre<InertialFrame, Frame>::ComputeЦиолковскийΔv(
+    Vector<double, Frenet<Frame>> const& direction,
+    Mass const& initial_mass,
+    Time const& duration,
+    Force const& thrust,
+    SpecificImpulse const& specific_impulse) {
+  // The order of operations here is important to ensure that we obtain the
+  // exact same Δv that the pre-Levi-Civita code would have computed.
+  Variation<Mass> const mass_flow = thrust / specific_impulse;
+  Mass const final_mass = initial_mass - mass_flow * duration;
+  return direction * specific_impulse * std::log(initial_mass / final_mass);
 }
 
 }  // namespace internal

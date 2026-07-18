@@ -567,8 +567,7 @@ class MetricTest
   }
 
   NavigationManœuvre::Burn MakeBurn() {
-    NavigationManœuvre::Intensity intensity;
-    intensity.Δv = Velocity<Frenet<Navigation>>(
+    NavigationManœuvre::Intensity const intensity(
         {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second});
     NavigationManœuvre::Timing timing;
     timing.initial_time = epoch_ + 1 * Minute;

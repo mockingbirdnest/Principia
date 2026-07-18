@@ -9,6 +9,8 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
+#include "geometry/r3_element.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/flight_plan.hpp"
@@ -34,6 +36,8 @@ namespace interface {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_r3_element;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimization_driver;
@@ -56,11 +60,43 @@ namespace {
 
 NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
                                            Burn const& burn) {
-  NavigationManœuvre::Intensity intensity;
-  intensity.Δv = FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v);
+  std::optional<NavigationManœuvre::Intensity> navigation_manœuvre_intensity;
+  auto const& intensity = burn.intensity;
+  switch (intensity.coordinate_system) {
+    case CoordinateSystem::CARTESIAN_TNB: {
+      navigation_manœuvre_intensity = NavigationManœuvre::Intensity(
+          FromXYZ<R3Element<Speed>>(*intensity.xyz));
+      break;
+    }
+    case CoordinateSystem::SPHERICAL_TNB:
+    case CoordinateSystem::SPHERICAL_NBT:
+    case CoordinateSystem::SPHERICAL_BTN: {
+      EvenPermutation coordinate_permutation;
+      switch (intensity.coordinate_system) {
+        case CoordinateSystem::SPHERICAL_TNB:
+          coordinate_permutation = EvenPermutation::XYZ;
+          break;
+        case CoordinateSystem::SPHERICAL_BTN:
+          coordinate_permutation = EvenPermutation::YZX;
+          break;
+        case CoordinateSystem::SPHERICAL_NBT:
+          coordinate_permutation = EvenPermutation::ZXY;
+          break;
+      }
+      auto const& spherical_coordinates = *intensity.spherical_coordinates;
+      navigation_manœuvre_intensity = NavigationManœuvre::Intensity(
+          Permutation<PermutedFrenet<Navigation>, Frenet<Navigation>>(
+              coordinate_permutation),
+          RadiusLatitudeLongitude<Speed>(
+              spherical_coordinates.radius * (Metre / Second),
+              spherical_coordinates.latitude_in_degrees * Degree,
+              spherical_coordinates.longitude_in_degrees * Degree));
+      break;
+    }
+  }
   NavigationManœuvre::Timing timing;
   timing.initial_time = FromGameTime(plugin, burn.initial_time);
-  return {.intensity = intensity,
+  return {.intensity = *navigation_manœuvre_intensity,
           .timing = timing,
           .thrust = burn.thrust_in_kilonewtons * Kilo(Newton),
           .specific_impulse =
@@ -149,7 +185,7 @@ Burn GetBurn(Plugin const& plugin,
               manœuvre.specific_impulse() / (Second * StandardGravity),
           .frame = parameters,
           .initial_time = ToGameTime(plugin, manœuvre.initial_time()),
-          .delta_v = ToXYZ(manœuvre.Δv()),
+          .intensity = ToIntensity(manœuvre.intensity()),
           .is_inertially_fixed = manœuvre.is_inertially_fixed()};
 }
 

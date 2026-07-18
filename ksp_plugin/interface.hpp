@@ -87,11 +87,11 @@ std::unique_ptr<T[]> TakeOwnershipArray(T** pointer);
 bool operator==(AdaptiveStepParameters const& left,
                 AdaptiveStepParameters const& right);
 bool operator==(Burn const& left, Burn const& right);
-bool operator==(DeltaV const& left, DeltaV const& right);
 bool operator==(EquatorialCrossings const& left,
                 EquatorialCrossings const& right);
 bool operator==(FlightPlanAdaptiveStepParameters const& left,
                 FlightPlanAdaptiveStepParameters const& right);
+bool operator==(Intensity const& left, Intensity const& right);
 bool operator==(Interval const& left, Interval const& right);
 bool operator==(NavigationFrameParameters const& left,
                 NavigationFrameParameters const& right);
@@ -165,6 +165,8 @@ FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
         Barycentric>::GeneralizedAdaptiveStepParameters const&
         generalized_adaptive_step_parameters);
 
+Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity);
+
 KeplerianElements ToKeplerianElements(
     physics::_kepler_orbit::KeplerianElements<Barycentric> const&
         keplerian_elements);
@@ -178,11 +180,17 @@ QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 // Ownership of the status and its message is transferred to the caller.
 Status* ToNewStatus(absl::Status const& status);
 
+// Ownership of the object is transferred to the caller.
+SphericalCoordinates* ToNewSphericalCoordinates(
+    geometry::_r3_element::SphericalCoordinates<Speed> const&
+        spherical_coordinates);
+
 WXYZ ToWXYZ(Quaternion const& quaternion);
 
 XY ToXY(RP2Point<Length, Camera> const& rp2_point);
 
 XYZ ToXYZ(R3Element<double> const& r3_element);
+XYZ ToXYZ(R3Element<Speed> const& r3_element);
 XYZ ToXYZ(Position<World> const& position);
 XYZ ToXYZ(Vector<double, World> const& direction);
 XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);

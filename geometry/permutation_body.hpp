@@ -29,8 +29,14 @@ Permutation<FromFrame, ToFrame>::Permutation(
     : coordinate_permutation_(coordinate_permutation) {}
 
 template<typename FromFrame, typename ToFrame>
-inline Sign Permutation<FromFrame, ToFrame>::Determinant() const {
+Sign Permutation<FromFrame, ToFrame>::Determinant() const {
   return Sign::OfNonZero(static_cast<int>(coordinate_permutation_));
+}
+
+template<typename FromFrame, typename ToFrame>
+typename Permutation<FromFrame, ToFrame>::CoordinatePermutation
+Permutation<FromFrame, ToFrame>::coordinate_permutation() const {
+  return coordinate_permutation_;
 }
 
 template<typename FromFrame, typename ToFrame>

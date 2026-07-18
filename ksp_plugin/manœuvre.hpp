@@ -4,9 +4,12 @@
 #include <optional>
 
 #include "base/not_null.hpp"
+#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
+#include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_segment_iterator.hpp"
@@ -19,13 +22,19 @@
 
 namespace principia {
 namespace ksp_plugin {
+
+class ManœuvreTest;
+
 namespace _manœuvre {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
+using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_segment_iterator;
@@ -41,15 +50,46 @@ using namespace principia::quantities::_quantities;
 template<typename InertialFrame, typename Frame>
 class Manœuvre {
  public:
-  // Characterization of intensity.  All members for exactly one of the groups
-  // must be supplied.  The `direction` and `Δv` are given in the Frenet frame
-  // of the trajectory at the beginning of the burn.
-  struct Intensity final {
-    // Group 1.
-    std::optional<Vector<double, Frenet<Frame>>> direction;
-    std::optional<Time> duration;
-    // Group 2.
-    std::optional<Velocity<Frenet<Frame>>> Δv;
+  // Characterization of intensity.  In order to preserve the coordinates
+  // entered by the user, this class is, by special privilege, constructed from
+  // coordinates and not a `Vector`.  The coordinates are always interpreted in
+  // `Frenet<Frame>` (for cartesian coordinates) or in `PermutedFrenet<Frame>`
+  // (for spherical coordinates).  The `permutation` is used to specify the
+  // polar axis of the coordinates as an even permutation of (T, N, B).
+  class Intensity {
+   public:
+    explicit Intensity(R3Element<Speed> const& Δv_cartesian_coordinates);
+    Intensity(
+        Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const& permutation,
+        SphericalCoordinates<Speed> const& Δv_spherical_coordinates);
+
+    Vector<double, Frenet<Frame>> const& direction() const;
+    Velocity<Frenet<Frame>> const& Δv() const;
+
+    // Changes `Δv` without affecting the nature of the representation
+    // (cartesian or spherical) or the permutation.
+    void set_Δv(Velocity<Frenet<Frame>> const& Δv);
+
+    // Construction parameters.
+    bool has_spherical_coordinates() const;
+    R3Element<Speed> const& Δv_cartesian_coordinates() const;
+    Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const&
+    permutation() const;
+    SphericalCoordinates<Speed> const& Δv_spherical_coordinates() const;
+
+
+    void WriteToMessage(not_null<serialization::Intensity*> message) const;
+    static Intensity ReadFromMessage(serialization::Intensity const& message);
+
+   private:
+    struct SphericalIntensity final {
+      Permutation<PermutedFrenet<Frame>, Frenet<Frame>> permutation;
+      SphericalCoordinates<Speed> Δv_spherical_coordinates;
+    };
+
+    std::variant<R3Element<Speed>, SphericalIntensity> Δv_coordinates_;
+    Velocity<Frenet<Frame>> Δv_;
+    Vector<double, Frenet<Frame>> direction_;
   };
 
   // Characterization of timing.  All members for exactly one of the groups
@@ -167,14 +207,25 @@ class Manœuvre {
       Instant const& t,
       Vector<double, InertialFrame> const& direction) const;
 
-  // Return structs where all the optionals are set.
-  Intensity const& full_intensity() const;
+  // Returns a struct where all the optionals are set.
   Timing const& full_timing() const;
+
+  // Циолковский's equation, used to convert the legacy representation of an
+  // intensity using a duration into a Δv.
+  static Velocity<Frenet<Frame>> ComputeЦиолковскийΔv(
+      Vector<double, Frenet<Frame>> const& direction,
+      Mass const& initial_mass,
+      Time const& duration,
+      Force const& thrust,
+      SpecificImpulse const& specific_impulse);
 
   Mass initial_mass_;
   Burn construction_burn_;  // As given at construction.
   Burn burn_;  // All optionals filled.
+  Time duration_;
   std::optional<DegreesOfFreedom<InertialFrame>> initial_degrees_of_freedom_;
+
+  friend class ksp_plugin::ManœuvreTest;
 };
 
 }  // namespace internal

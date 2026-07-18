@@ -68,6 +68,12 @@ message Sign {
   required bool negative = 1;
 }
 
+message SphericalCoordinates {
+  required Quantity radius = 1;
+  required Quantity latitude = 2;
+  required Quantity longitude = 3;
+}
+
 message SymmetricBilinearForm {
   required Frame frame = 1;
   required R3x3Matrix matrix = 2;
@@ -175,7 +181,6 @@ message Frame {
     APPARENT_WORLD = 19;
     BARYCENTRIC = 7;
     BODY_WORLD = 9;
-    // BUBBLE = 13;
     CAMERA = 14;
     CAMERA_COMPENSATED_REFERENCE = 21;
     CAMERA_REFERENCE = 17;
@@ -186,17 +191,23 @@ message Frame {
     NAVIGATION = 4;
     NON_ROTATING_PILE_UP = 11;
     PILE_UP_PRINCIPAL_AXES = 18;
-    // PRE_BOREL_BARYCENTRIC = 3;
     RIGID_PART = 16;
     WORLD = 5;
     WORLD_SUN = 6;
 
     reserved "APPARENT_BUBBLE";
+
+    reserved "BUBBLE";
+    reserved 13;
+
+    reserved "PRE_BOREL_BARYCENTRIC";
+    reserved 3;
   }
 
   // The frame tags used in the physics library.
   enum PhysicsTag {
     FRENET = 1;
+    PERMUTED_FRENET = 3;
     PRINCIPAL_AXES = 2;
   }
 

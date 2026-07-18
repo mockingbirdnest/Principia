@@ -13,6 +13,7 @@
 #include "absl/strings/str_split.h"
 #include "base/array.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
@@ -33,6 +34,7 @@ namespace interface {
 
 using namespace principia::base::_array;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
@@ -168,6 +170,16 @@ struct XYZConverter<R3Element<MomentOfInertia>> {
   }
 };
 
+template<>
+struct XYZConverter<R3Element<Speed>> {
+  static constexpr Speed mts_unit = Metre / Second;
+  static R3Element<Speed> FromXYZ(XYZ const& xyz) {
+    return R3Element<Speed>(xyz.x * (Metre / Second),
+                            xyz.y * (Metre / Second),
+                            xyz.z * (Metre / Second));
+  }
+};
+
 inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
 }
@@ -205,16 +217,7 @@ inline bool operator==(Burn const& left, Burn const& right) {
                           right.specific_impulse_in_seconds_g0) &&
          left.frame == right.frame &&
          NaNIndependentEq(left.initial_time, right.initial_time) &&
-         left.delta_v == right.delta_v;
-}
-
-inline bool operator==(DeltaV const& left, DeltaV const& right) {
-  return left.coordinate_system == right.coordinate_system &&
-         ((left.spherical_coordinates != nullptr &&
-           right.spherical_coordinates != nullptr &&
-           *left.spherical_coordinates == *right.spherical_coordinates) ||
-          (left.xyz != nullptr && right.xyz != nullptr &&
-           *left.xyz == *right.xyz));
+         left.intensity == right.intensity;
 }
 
 inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
@@ -227,6 +230,15 @@ inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                           right.length_integration_tolerance) &&
          NaNIndependentEq(left.speed_integration_tolerance,
                           right.speed_integration_tolerance);
+}
+
+inline bool operator==(Intensity const& left, Intensity const& right) {
+  return left.coordinate_system == right.coordinate_system &&
+         ((left.spherical_coordinates != nullptr &&
+           right.spherical_coordinates != nullptr &&
+           *left.spherical_coordinates == *right.spherical_coordinates) ||
+          (left.xyz != nullptr && right.xyz != nullptr &&
+           *left.xyz == *right.xyz));
 }
 
 inline bool operator==(Interval const& left, Interval const& right) {
@@ -522,6 +534,12 @@ inline FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz) {
   return XYZConverter<R3Element<MomentOfInertia>>::FromXYZ(xyz);
 }
 
+template<>
+R3Element<Speed>
+inline FromXYZ<R3Element<Speed>>(XYZ const& xyz) {
+  return XYZConverter<R3Element<Speed>>::FromXYZ(xyz);
+}
+
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
@@ -555,6 +573,33 @@ inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
           .speed_integration_tolerance =
               adaptive_step_parameters.speed_integration_tolerance() /
               (Metre / Second)};
+}
+
+inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
+  if (intensity.has_spherical_coordinates()) {
+    switch (intensity.permutation().coordinate_permutation()) {
+      case EvenPermutation::XYZ:
+        return {.coordinate_system = CoordinateSystem::SPHERICAL_TNB,
+                .xyz = nullptr,
+                .spherical_coordinates = ToNewSphericalCoordinates(
+                    intensity.Δv_spherical_coordinates())};
+      case EvenPermutation::YZX:
+        return {.coordinate_system = CoordinateSystem::SPHERICAL_NBT,
+                .xyz = nullptr,
+                .spherical_coordinates = ToNewSphericalCoordinates(
+                    intensity.Δv_spherical_coordinates())};
+      case EvenPermutation::ZXY:
+        return {.coordinate_system = CoordinateSystem::SPHERICAL_BTN,
+                .xyz = nullptr,
+                .spherical_coordinates = ToNewSphericalCoordinates(
+                    intensity.Δv_spherical_coordinates())};
+    }
+    LOG(FATAL) << "Unexpected permutation: " << intensity.permutation();
+  } else {
+    return {.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
+            .xyz = new XYZ(ToXYZ(intensity.Δv_cartesian_coordinates())),
+            .spherical_coordinates = nullptr};
+  }
 }
 
 inline KeplerianElements ToKeplerianElements(
@@ -636,6 +681,15 @@ inline Status* ToNewStatus(absl::Status const& status) {
   }
 }
 
+inline SphericalCoordinates* ToNewSphericalCoordinates(
+    geometry::_r3_element::SphericalCoordinates<Speed> const&
+        spherical_coordinates) {
+  return new SphericalCoordinates{
+      .radius = spherical_coordinates.radius / (Metre / Second),
+      .latitude_in_degrees = spherical_coordinates.latitude / Degree,
+      .longitude_in_degrees = spherical_coordinates.longitude / Degree};
+}
+
 inline WXYZ ToWXYZ(Quaternion const& quaternion) {
   return {.w = quaternion.real_part(),
           .x = quaternion.imaginary_part().x,
@@ -649,6 +703,12 @@ inline XY ToXY(RP2Point<Length, Camera> const& rp2_point) {
 
 inline XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {.x = r3_element.x, .y = r3_element.y, .z = r3_element.z};
+}
+
+inline XYZ ToXYZ(R3Element<Speed> const& r3_element) {
+  return {.x = r3_element.x / (Metre / Second),
+          .y = r3_element.y / (Metre / Second),
+          .z = r3_element.z / (Metre / Second)};
 }
 
 inline XYZ ToXYZ(Position<World> const& position) {
