@@ -206,8 +206,8 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
     A = J.Transpose() * A * J;
     V = V * J;
     if (k == max_iterations - 1) {
-      LOG(ERROR) << "Difficult diagonalization: " << matrix_
-                 << ", stopping with: " << A;
+      LOG(WARNING) << "Difficult diagonalization: " << matrix_
+                   << ", stopping with: " << A;
     }
   }
 

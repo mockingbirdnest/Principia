@@ -307,8 +307,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       bad_installation_dialog_.Hide();
     } else {
       is_bad_installation_ = true;
+      Interface.GetVersion(build_date : out string _,
+                           version    : out string version,
+                           platform   : out string _);
       bad_installation_dialog_.message = L10N.CacheFormat(
           "#Principia_DLLFailedToLoad",
+          version,
           load_error);
       bad_installation_dialog_.Show();
     }
