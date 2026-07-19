@@ -355,7 +355,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
               RenderPeriods(elements);
             }
             if (show_graphs_) {
-              Style.VerticallLine();
+              Style.VerticalLine();
               using (new UnityEngine.GUILayout.VerticalScope()) {
                 eccentricity_vector_graph_.Render();
                 UnityEngine.GUILayout.Label(
@@ -612,7 +612,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
 
   private void DrawEccentricityVectorGraph(OrbitalElements elements) {
-    if (eccentricity_vector_graph_ == null) { 
+    if (eccentricity_vector_graph_ == null) {
       eccentricity_vector_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
     Interval e_cos_ω_range = Interval.Empty;

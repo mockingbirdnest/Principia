@@ -108,22 +108,23 @@ class BurnEditor : ScalingRenderer {
 
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       bool changed = false;
-      CoordinateSystem updated_coordinate_system =
-          (CoordinateSystem)UnityEngine.GUILayout.SelectionGrid(
-              (int)coordinate_system_,
-              coordinate_system_strings_,
-              2);
       bool updated_inertially_fixed =
           UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
                                        L10N.CacheFormat(
                                            "#Principia_BurnEditor_InertiallyFixed"));
-      if (updated_coordinate_system != coordinate_system_) {
-        changed = true;
-        coordinate_system_ = updated_coordinate_system;
-      }
+      CoordinateSystem updated_coordinate_system =
+          (CoordinateSystem)UnityEngine.GUILayout.SelectionGrid(
+              (int)coordinate_system_,
+              coordinate_system_strings_,
+              xCount: 2,
+              GUILayoutWidth(7));
       if (updated_inertially_fixed != is_inertially_fixed_) {
         changed = true;
         is_inertially_fixed_ = updated_inertially_fixed;
+      }
+      if (updated_coordinate_system != coordinate_system_) {
+        changed = true;
+        coordinate_system_ = updated_coordinate_system;
       }
       return changed;
     }
