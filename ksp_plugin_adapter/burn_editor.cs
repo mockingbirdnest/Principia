@@ -96,6 +96,39 @@ class BurnEditor : ScalingRenderer {
     Maximized,
   }
 
+  // Renders the options for the burn.  Updates the options and returns true if
+  // an option has changed.
+  public bool RenderBurnOptions() {
+    if (coordinate_system_strings_ == null) {
+      coordinate_system_strings_ = [
+          L10N.CacheFormat("#Principia_BurnEditor_CartesianTNB"),
+          L10N.CacheFormat("#Principia_BurnEditor_SphericalTNB")
+      ];
+    }
+
+    using (new UnityEngine.GUILayout.HorizontalScope()) {
+      bool changed = false;
+      CoordinateSystem updated_coordinate_system =
+          (CoordinateSystem)UnityEngine.GUILayout.SelectionGrid(
+              (int)coordinate_system_,
+              coordinate_system_strings_,
+              2);
+      bool updated_inertially_fixed =
+          UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
+                                       L10N.CacheFormat(
+                                           "#Principia_BurnEditor_InertiallyFixed"));
+      if (updated_coordinate_system != coordinate_system_) {
+        changed = true;
+        coordinate_system_ = updated_coordinate_system;
+      }
+      if (updated_inertially_fixed != is_inertially_fixed_) {
+        changed = true;
+        is_inertially_fixed_ = updated_inertially_fixed;
+      }
+      return changed;
+    }
+  }
+
   // Renders the `BurnEditor`.  Returns `Changed` if and only if the settings
   // were changed.
   public Event Render(
@@ -145,7 +178,7 @@ class BurnEditor : ScalingRenderer {
         ReformatΔv();
       }
 
-      // The frame selector is disabled for an anomalous manœuvre as is has no
+      // The frame selector is disabled for an anomalous manœuvre as it has no
       // effect.
       if (anomalous) {
         reference_frame_selector_.Hide();
@@ -173,13 +206,7 @@ class BurnEditor : ScalingRenderer {
         }
         reference_frame_selector_.RenderButton();
       }
-      if (is_inertially_fixed_ !=
-          UnityEngine.GUILayout.Toggle(
-              is_inertially_fixed_,
-              L10N.CacheFormat("#Principia_BurnEditor_InertiallyFixed"))) {
-        changed = true;
-        is_inertially_fixed_ = !is_inertially_fixed_;
-      }
+      changed |= RenderBurnOptions();
       changed |= changed_reference_frame_;
 
       // The Δv controls are disabled for an anomalous manœuvre as they have no
@@ -516,6 +543,7 @@ class BurnEditor : ScalingRenderer {
   public bool minimized { private get; set; } = true;
   private BurnEditor previous_burn => get_burn_at_index_(index - 1);
 
+  private CoordinateSystem coordinate_system_;
   private bool is_inertially_fixed_;
   private readonly DifferentialSlider Δv_tangent_;
   private readonly DifferentialSlider Δv_normal_;
@@ -549,6 +577,7 @@ class BurnEditor : ScalingRenderer {
 
   private static UnityEngine.Texture decrement_revolution_;
   private static UnityEngine.Texture increment_revolution_;
+  private static string[] coordinate_system_strings_;
   private const char figure_space = '\u2007';
 }
 
