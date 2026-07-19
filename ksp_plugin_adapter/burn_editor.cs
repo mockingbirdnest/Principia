@@ -45,6 +45,36 @@ class BurnEditor : ScalingRenderer {
         formatter        : FormatΔvComponent,
         alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Binormal);
+    Δv_total_ = new DifferentialSlider(
+        label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvTotal"),
+        unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
+        min_value        : -max_Δv_component,
+        max_value        : max_Δv_component,
+        log10_lower_rate : log10_Δv_lower_rate,
+        log10_upper_rate : log10_Δv_upper_rate,
+        formatter        : FormatΔvComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
+        text_colour      : Style.Tangent);
+    in_plane_angle_ = new DifferentialSlider(
+        label            : L10N.CacheFormat("#Principia_BurnEditor_InPlaneAngle"),
+        unit             : L10N.CacheFormat("#Principia_BurnEditor_AngleUnit"),
+        min_value        : -max_angle_component,
+        max_value        : max_angle_component,
+        log10_lower_rate : log10_angle_lower_rate,
+        log10_upper_rate : log10_angle_upper_rate,
+        formatter        : FormatAngleComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
+        text_colour      : Style.Normal);
+    off_plane_angle_ = new DifferentialSlider(
+        label            : L10N.CacheFormat("#Principia_BurnEditor_OffPlaneAngle"),
+        unit             : L10N.CacheFormat("#Principia_BurnEditor_AngleUnit"),
+        min_value        : -max_angle_component,
+        max_value        : max_angle_component,
+        log10_lower_rate : log10_angle_lower_rate,
+        log10_upper_rate : log10_angle_upper_rate,
+        formatter        : FormatAngleComponent,
+        alignment        : UnityEngine.TextAnchor.MiddleLeft,
+        text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_InitialTime"),
         unit             : null,
@@ -113,11 +143,13 @@ class BurnEditor : ScalingRenderer {
                                        L10N.CacheFormat(
                                            "#Principia_BurnEditor_InertiallyFixed"));
       CoordinateSystem updated_coordinate_system =
-          (CoordinateSystem)UnityEngine.GUILayout.SelectionGrid(
-              (int)coordinate_system_,
-              coordinate_system_strings_,
-              xCount: 2,
-              GUILayoutWidth(7));
+          (CoordinateSystem)(UnityEngine.GUILayout.SelectionGrid(
+                                 (int)(coordinate_system_ -
+                                       CoordinateSystem.CARTESIAN_TNB),
+                                 coordinate_system_strings_,
+                                 xCount: 2,
+                                 GUILayoutWidth(7)) +
+                             (int)CoordinateSystem.CARTESIAN_TNB);
       if (updated_inertially_fixed != is_inertially_fixed_) {
         changed = true;
         is_inertially_fixed_ = updated_inertially_fixed;
@@ -212,9 +244,15 @@ class BurnEditor : ScalingRenderer {
 
       // The Δv controls are disabled for an anomalous manœuvre as they have no
       // effect.
-      changed |= Δv_tangent_.Render(enabled : !anomalous);
-      changed |= Δv_normal_.Render(enabled : !anomalous);
-      changed |= Δv_binormal_.Render(enabled : !anomalous);
+      if (coordinate_system_ == CoordinateSystem.CARTESIAN_TNB) {
+        changed |= Δv_tangent_.Render(enabled: !anomalous);
+        changed |= Δv_normal_.Render(enabled: !anomalous);
+        changed |= Δv_binormal_.Render(enabled: !anomalous);
+      } else {
+        changed |= Δv_total_.Render(enabled: !anomalous);
+        changed |= in_plane_angle_.Render(enabled: !anomalous);
+        changed |= off_plane_angle_.Render(enabled: !anomalous);
+      }
       {
         var render_time_base = time_base;
         previous_coast_duration_.value_if_different =
@@ -499,6 +537,11 @@ class BurnEditor : ScalingRenderer {
         match => match.Value + "'");
   }
 
+  private string FormatAngleComponent(double degrees) {
+    //return $"{degrees:00.00}°";
+    return $"{degrees:00.00}";
+  }
+
   private void UseTheForceLuke() {
     // The burn can last at most (9.80665 / scale) s.
     const double scale = 1;
@@ -548,11 +591,17 @@ class BurnEditor : ScalingRenderer {
   public bool minimized { private get; set; } = true;
   private BurnEditor previous_burn => get_burn_at_index_(index - 1);
 
-  private CoordinateSystem coordinate_system_;
+  private CoordinateSystem coordinate_system_ = CoordinateSystem.CARTESIAN_TNB;
   private bool is_inertially_fixed_;
+
   private readonly DifferentialSlider Δv_tangent_;
   private readonly DifferentialSlider Δv_normal_;
   private readonly DifferentialSlider Δv_binormal_;
+
+  private readonly DifferentialSlider Δv_total_;
+  private readonly DifferentialSlider in_plane_angle_;
+  private readonly DifferentialSlider off_plane_angle_;
+
   private readonly DifferentialSlider previous_coast_duration_;
   private readonly ReferenceFrameSelector<NavigationFrameParameters>
       reference_frame_selector_;
@@ -568,9 +617,12 @@ class BurnEditor : ScalingRenderer {
 
   private const double log10_Δv_lower_rate = -3.0;
   private const double log10_Δv_upper_rate = 3.5;
+  private const double log10_angle_lower_rate = -3.0;
+  private const double log10_angle_upper_rate = 1.5;
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
   private const double max_Δv_component = 99_999.999_999_999;
+  private const double max_angle_component = 180.0;
 
   // Not owned.
   private readonly Vessel vessel_;

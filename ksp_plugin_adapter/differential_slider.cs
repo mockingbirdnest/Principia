@@ -103,7 +103,14 @@ internal class DifferentialSlider : ScalingRenderer {
                                     style   : style);
       }
 
-      if (enabled) {
+      Log.Error("Rendering differential slider for " +
+                label_ +
+                " with value " +
+                value_.ToString() +
+                " and formatted value " +
+                formatted_value_ +
+                (parser_ == null ? " no parser " : " parser "));
+          if (enabled) {
         // If the text is not syntactically correct, or it exceeds the upper
         // bound, inform the user by drawing it in the warning style.  Note the
         // fudge factor to account for uncertainty in text/double conversions.
