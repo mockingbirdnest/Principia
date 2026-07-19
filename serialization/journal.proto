@@ -39,13 +39,13 @@ enum CoordinateSystem {
 }
 
 message Intensity {
+  // Logically, this is a variant record governed by the `coordinate_system`
+  // field.  Exactly one of the coordinate fields is meaningful.
   required CoordinateSystem coordinate_system = 1;
   // CARTESIAN_TNB.
-  optional XYZ xyz = 2 [(is_produced) = true];
+  required XYZ xyz = 2;
   // SPHERICAL_...
-  optional SphericalCoordinates spherical_coordinates = 3 [(is_produced) = true];
-  required fixed64 xyz_address = 4 [(address_of) = "xyz"];
-  required fixed64 spherical_coordinates_address = 5 [(address_of) = "spherical_coordinates"];
+  required SphericalCoordinates spherical_coordinates = 3;
 }
 
 // These messages should be in alphabetical order.

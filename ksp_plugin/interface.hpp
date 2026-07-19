@@ -180,8 +180,7 @@ QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 // Ownership of the status and its message is transferred to the caller.
 Status* ToNewStatus(absl::Status const& status);
 
-// Ownership of the object is transferred to the caller.
-SphericalCoordinates* ToNewSphericalCoordinates(
+SphericalCoordinates ToSphericalCoordinates(
     geometry::_r3_element::SphericalCoordinates<Speed> const&
         spherical_coordinates);
 

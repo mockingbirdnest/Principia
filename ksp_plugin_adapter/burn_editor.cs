@@ -351,9 +351,9 @@ class BurnEditor : ScalingRenderer {
 
   public void Reset(NavigationManoeuvre manœuvre) {
     Burn burn = manœuvre.burn;
-    Δv_tangent_.value = burn.intensity.xyz.Value.x;
-    Δv_normal_.value = burn.intensity.xyz.Value.y;
-    Δv_binormal_.value = burn.intensity.xyz.Value.z;
+    Δv_tangent_.value = burn.intensity.xyz.x;
+    Δv_normal_.value = burn.intensity.xyz.y;
+    Δv_binormal_.value = burn.intensity.xyz.z;
     initial_time_ = burn.initial_time;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
@@ -377,7 +377,11 @@ class BurnEditor : ScalingRenderer {
                         y = Δv_normal_.value,
                         z = Δv_binormal_.value
                     },
-                spherical_coordinates = null
+                spherical_coordinates =
+                    new SphericalCoordinates{
+                        radius = 0,
+                        latitude_in_degrees = 0, longitude_in_degrees = 0
+                    }
             },
         is_inertially_fixed = is_inertially_fixed_
     };
