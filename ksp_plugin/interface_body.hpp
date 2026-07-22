@@ -584,33 +584,30 @@ inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
 }
 
 inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
-  static const XYZ dummy_xyz{.x = 0, .y = 0, .z = 0};
-  static const SphericalCoordinates dummy_spherical_coordinates{
-      .radius = 0, .latitude_in_degrees = 0, .longitude_in_degrees = 0};
+  CoordinateSystem coordinate_system;
   if (intensity.has_spherical_coordinates()) {
     switch (intensity.permutation().coordinate_permutation()) {
-      case EvenPermutation::XYZ:
-        return {.coordinate_system = CoordinateSystem::SPHERICAL_TNB,
-                .xyz = dummy_xyz,
-                .spherical_coordinates = ToSphericalCoordinates(
-                    intensity.Δv_spherical_coordinates())};
-      case EvenPermutation::YZX:
-        return {.coordinate_system = CoordinateSystem::SPHERICAL_NBT,
-                .xyz = dummy_xyz,
-                .spherical_coordinates = ToSphericalCoordinates(
-                    intensity.Δv_spherical_coordinates())};
-      case EvenPermutation::ZXY:
-        return {.coordinate_system = CoordinateSystem::SPHERICAL_BTN,
-                .xyz = dummy_xyz,
-                .spherical_coordinates = ToSphericalCoordinates(
-                    intensity.Δv_spherical_coordinates())};
+      case EvenPermutation::XYZ: {
+        coordinate_system = CoordinateSystem::SPHERICAL_TNB;
+        break;
+      }
+      case EvenPermutation::YZX: {
+        coordinate_system = CoordinateSystem::SPHERICAL_NBT;
+        break;
+      }
+      case EvenPermutation::ZXY: {
+        coordinate_system = CoordinateSystem::SPHERICAL_BTN;
+        break;
+      }
     }
     LOG(FATAL) << "Unexpected permutation: " << intensity.permutation();
   } else {
-    return {.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
-            .xyz = ToXYZ(intensity.Δv_cartesian_coordinates()),
-            .spherical_coordinates = dummy_spherical_coordinates};
+    coordinate_system = CoordinateSystem::CARTESIAN_TNB;
   }
+  return {.coordinate_system = coordinate_system,
+          .xyz = ToXYZ(intensity.Δv_cartesian_coordinates()),
+          .spherical_coordinates =
+              ToSphericalCoordinates(intensity.Δv_spherical_coordinates())};
 }
 
 inline KeplerianElements ToKeplerianElements(

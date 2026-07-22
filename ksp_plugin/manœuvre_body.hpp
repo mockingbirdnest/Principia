@@ -71,10 +71,13 @@ Manœuvre<InertialFrame, Frame>::Intensity::has_spherical_coordinates() const {
 }
 
 template<typename InertialFrame, typename Frame>
-R3Element<Speed> const& Manœuvre<
-    InertialFrame, Frame>::Intensity::Δv_cartesian_coordinates() const {
-  CHECK(!has_spherical_coordinates());
-  return std::get<R3Element<Speed>>(Δv_coordinates_);
+R3Element<Speed> const&
+Manœuvre<InertialFrame, Frame>::Intensity::Δv_cartesian_coordinates() const {
+  if (has_spherical_coordinates()) {
+    return Δv().coordinates();
+  } else {
+    return std::get<R3Element<Speed>>(Δv_coordinates_);
+  }
 }
 
 template<typename InertialFrame, typename Frame>
@@ -87,8 +90,12 @@ Manœuvre<InertialFrame, Frame>::Intensity::permutation() const {
 template<typename InertialFrame, typename Frame>
 SphericalCoordinates<Speed> const&
 Manœuvre<InertialFrame, Frame>::Intensity::Δv_spherical_coordinates() const {
-  CHECK(has_spherical_coordinates());
-  return std::get<SphericalIntensity>(Δv_coordinates_).Δv_spherical_coordinates;
+  if (has_spherical_coordinates()) {
+    return std::get<SphericalIntensity>(Δv_coordinates_)
+        .Δv_spherical_coordinates;
+  } else {
+    return Δv().coordinates().ToSpherical();
+  }
 }
 
 template<typename InertialFrame, typename Frame>

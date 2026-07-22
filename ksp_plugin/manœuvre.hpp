@@ -70,7 +70,7 @@ class Manœuvre {
     // (cartesian or spherical) or the permutation.
     void set_Δv(Velocity<Frenet<Frame>> const& Δv);
 
-    // Construction parameters.
+    // Construction parameters and coordinate conversion.
     bool has_spherical_coordinates() const;
     R3Element<Speed> const& Δv_cartesian_coordinates() const;
     Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const&
