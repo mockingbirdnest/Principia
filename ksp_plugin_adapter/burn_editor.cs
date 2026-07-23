@@ -1,8 +1,7 @@
-﻿using KSP.Localization;
-using System;
+﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using static principia.ksp_plugin_adapter.MapNodePool;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -58,22 +57,24 @@ class BurnEditor : ScalingRenderer {
         text_colour      : Style.Tangent);
     in_plane_angle_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_InPlaneAngle"),
-        unit             : L10N.CacheFormat("#Principia_BurnEditor_AngleUnit"),
+        unit             : null,
         min_value        : -max_angle_component,
         max_value        : max_angle_component,
         log10_lower_rate : log10_angle_lower_rate,
         log10_upper_rate : log10_angle_upper_rate,
         formatter        : FormatAngleComponent,
+        parser           : TryParseAngleComponent,
         alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Normal);
     off_plane_angle_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_OffPlaneAngle"),
-        unit             : L10N.CacheFormat("#Principia_BurnEditor_AngleUnit"),
+        unit             : null,
         min_value        : -max_angle_component,
         max_value        : max_angle_component,
         log10_lower_rate : log10_angle_lower_rate,
         log10_upper_rate : log10_angle_upper_rate,
         formatter        : FormatAngleComponent,
+        parser           : TryParseAngleComponent,
         alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
@@ -567,17 +568,81 @@ class BurnEditor : ScalingRenderer {
     string unsigned_format = "00,000." + new string('0', fractional_digits);
     return Regex.Replace(
         Regex.Replace(
-        metres_per_second.ToString($"+{unsigned_format};−{unsigned_format};{figure_space}{unsigned_format}",
-                                   Culture.culture),
-        @"^[+−\s][0']{1,5}",
-        match => match.Value.Replace('0', figure_space)),
+            metres_per_second.ToString(
+                $"+{unsigned_format};−{unsigned_format};{figure_space}{unsigned_format}",
+                Culture.culture),
+            @"^[+−\s][0']{1,5}",
+            match => match.Value.Replace('0', figure_space)),
         // Add grouping marks to the fractional part.
         @"\d{3}(?=\d)",
         match => match.Value + "'");
   }
 
   private string FormatAngleComponent(double degrees) {
-    return $"{degrees:00.00}";
+    bool negative = degrees < 0;
+    if (negative) {
+      degrees = Math.Abs(degrees);
+    }
+    int integral_degrees = (int)Math.Floor(degrees);
+    double fractional_degrees = degrees - integral_degrees;
+    double arcminutes = fractional_degrees * 60;
+    int integral_arcminutes = (int)Math.Floor(arcminutes);
+    double fractional_arcminutes = arcminutes - integral_arcminutes;
+    double arcseconds = fractional_arcminutes * 60;
+    int integral_arcseconds = (int)Math.Floor(arcseconds);
+    double fractional_arcseconds = arcseconds - integral_arcseconds;
+    double milliarcseconds = fractional_arcseconds * 1000;
+    int integral_milliarcseconds = (int)Math.Floor(milliarcseconds);
+    if (milliarcseconds - integral_milliarcseconds >= 0.5) {
+      // Rounding.
+      if (++integral_milliarcseconds == 1000) {
+        integral_milliarcseconds = 0;
+        if (++integral_arcseconds == 60) {
+          integral_arcseconds = 0;
+          if (++integral_arcminutes == 60) {
+            integral_arcminutes = 0;
+            ++integral_degrees;
+            ///180?
+          }
+        }
+      }
+    }
+    string sign = negative ? "−" : "+";
+    return
+        $"{sign}{integral_degrees:000}°{nbsp}{integral_arcminutes:00}′{nbsp}{integral_arcseconds:00}.{integral_milliarcseconds:000}″";
+  }
+
+  private bool TryParseAngleComponent(string text, out double value) {
+    value = 0;
+    var regex =
+        new Regex(@"
+        ^(?:(?<sign>[+-−])?\s*)
+        (?:(?<degrees>\d+)\s*°\s*)
+        (?:(?<minutes>\d+)\s*′\s*)?
+        (?:(?<seconds>[0-9.,']+)\s*″\s*)?$",
+                  RegexOptions.IgnorePatternWhitespace);
+    var match = regex.Match(text);
+    if (!match.Success) {
+      return false;
+    }
+    var sign_group = match.Groups["sign"];
+    var degrees_group = match.Groups["degrees"];
+    var minutes_group = match.Groups["minutes"];
+    var seconds_group = match.Groups["seconds"];
+    string sign = sign_group.Success ? sign_group.Value : "+";
+    string degrees = degrees_group.Success ? degrees_group.Value : "0";
+    string minutes = minutes_group.Success ? minutes_group.Value : "0";
+    string seconds = seconds_group.Success ? seconds_group.Value : "0";
+    if (!int.TryParse(degrees, out int d) ||
+        !int.TryParse(minutes, out int m) ||
+        !double.TryParse(seconds.Replace(',', '.'),
+                         NumberStyles.AllowDecimalPoint,
+                         Culture.culture.NumberFormat,
+                         out double s)) {
+      return false;
+    }
+    value = (sign == "+" ? 1 : -1) * (d + m / 60.0 + s / 3600.0);
+    return true;
   }
 
   private void UseTheForceLuke() {
@@ -673,6 +738,7 @@ class BurnEditor : ScalingRenderer {
   private static UnityEngine.Texture decrement_revolution_;
   private static UnityEngine.Texture increment_revolution_;
   private static string[] coordinate_system_strings_;
+  private const string nbsp = "\xA0";
   private const char figure_space = '\u2007';
 }
 

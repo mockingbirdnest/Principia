@@ -15,8 +15,8 @@ internal class DifferentialSlider : ScalingRenderer {
                             double log10_lower_rate,
                             double log10_upper_rate,
                             ValueFormatter formatter,
-                            UnityEngine.TextAnchor alignment =
-                                UnityEngine.TextAnchor.MiddleRight,
+                            UnityEngine.TextAnchor
+                                alignment = UnityEngine.TextAnchor.MiddleRight,
                             ValueParser parser = null,
                             double zero_value = 0,
                             double min_value = double.NegativeInfinity,
@@ -32,23 +32,7 @@ internal class DifferentialSlider : ScalingRenderer {
     alignment_ = alignment;
     formatter_ = formatter;
     if (parser == null) {
-      // As a special exemption we allow a comma as the decimal separator and
-      // the hyphen-minus instead of the minus sign.
-      // We also remove grouping marks, since .NET does not like those in the
-      // fractional part.  Remove leading figure spaces so that a sign may be
-      // entered after them, see #3480; turn any remaining figure spaces into
-      // 0s, in case the user edits a blank leading digit.
-      parser_ = (string s, out double v) => double.TryParse(
-          s.Replace(',', '.').Replace('-', '−').Replace("'", "")
-           .TrimStart(figure_space)
-           .Replace(figure_space, '0'),
-          NumberStyles.AllowDecimalPoint |
-          NumberStyles.AllowLeadingSign |
-          NumberStyles.AllowLeadingWhite |
-          NumberStyles.AllowThousands |
-          NumberStyles.AllowTrailingWhite,
-          Culture.culture.NumberFormat,
-          out v);
+      parser_ = TryParseDouble;
     } else {
       parser_ = parser;
     }
@@ -350,6 +334,25 @@ internal class DifferentialSlider : ScalingRenderer {
       return false;
     }
     return true;
+  }
+
+  // As a special exemption we allow a comma as the decimal separator and the
+  // hyphen-minus instead of the minus sign.  We also remove grouping marks,
+  // since .NET does not like those in the fractional part.  Remove leading
+  // figure spaces so that a sign may be entered after them, see #3480; turn any
+  // remaining figure spaces into 0s, in case the user edits a blank leading
+  // digit.
+  private static bool TryParseDouble(string s, out double value) {
+    return double.TryParse(
+        s.Replace(',', '.').Replace('-', '−').Replace("'", "").
+            TrimStart(figure_space).Replace(figure_space, '0'),
+        NumberStyles.AllowDecimalPoint |
+        NumberStyles.AllowLeadingSign |
+        NumberStyles.AllowLeadingWhite |
+        NumberStyles.AllowThousands |
+        NumberStyles.AllowTrailingWhite,
+        Culture.culture.NumberFormat,
+        out value);
   }
 
   private readonly string label_;
