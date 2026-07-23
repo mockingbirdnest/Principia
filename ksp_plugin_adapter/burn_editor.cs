@@ -1,7 +1,8 @@
-﻿using System;
+﻿using KSP.Localization;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
-using KSP.Localization;
+using static principia.ksp_plugin_adapter.MapNodePool;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -386,6 +387,9 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_.value = Δv_tangent_.value;
     Δv_normal_.value = Δv_normal_.value;
     Δv_binormal_.value = Δv_binormal_.value;
+    Δv_total_.value = Δv_total_.value;
+    in_plane_angle_.value = in_plane_angle_.value;
+    off_plane_angle_.value = off_plane_angle_.value;
   }
 
   public void Reset(NavigationManoeuvre manœuvre) {
@@ -393,6 +397,11 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_.value = burn.intensity.xyz.x;
     Δv_normal_.value = burn.intensity.xyz.y;
     Δv_binormal_.value = burn.intensity.xyz.z;
+    Δv_total_.value = burn.intensity.spherical_coordinates.radius;
+    in_plane_angle_.value =
+        burn.intensity.spherical_coordinates.longitude_in_degrees;
+    off_plane_angle_.value =
+        burn.intensity.spherical_coordinates.latitude_in_degrees;
     initial_time_ = burn.initial_time;
     reference_frame_selector_.SetFrameParameters(burn.frame);
     is_inertially_fixed_ = burn.is_inertially_fixed;
@@ -402,14 +411,12 @@ class BurnEditor : ScalingRenderer {
   }
 
   public Burn Burn() {
-    return new Burn{
-        thrust_in_kilonewtons = thrust_in_kilonewtons_,
-        specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
-        frame = reference_frame_selector_.FrameParameters(),
-        initial_time = initial_time_,
+    Intensity intensity;
+    switch (coordinate_system_) {
+      case CoordinateSystem.CARTESIAN_TNB: {
         intensity =
             new Intensity{
-                coordinate_system = CoordinateSystem.CARTESIAN_TNB,
+                coordinate_system = coordinate_system_,
                 xyz =
                     new XYZ{
                         x = Δv_tangent_.value,
@@ -421,7 +428,39 @@ class BurnEditor : ScalingRenderer {
                         radius = 0,
                         latitude_in_degrees = 0, longitude_in_degrees = 0
                     }
-            },
+            };
+        break;
+      }
+      case CoordinateSystem.SPHERICAL_TNB:
+      case CoordinateSystem.SPHERICAL_NBT:
+      case CoordinateSystem.SPHERICAL_BTN: {
+        intensity =
+            new Intensity{
+                coordinate_system = coordinate_system_,
+                xyz =
+                    new XYZ{
+                        x = 0,
+                        y = 0,
+                        z = 0
+                    },
+                spherical_coordinates =
+                    new SphericalCoordinates{
+                        radius = Δv_total_.value,
+                        latitude_in_degrees = off_plane_angle_.value,
+                        longitude_in_degrees = in_plane_angle_.value
+                    }
+            };
+        break;
+      }
+      default:
+        throw Log.Fatal($"Unexpected coordinate system {coordinate_system_}");
+    }
+    return new Burn{
+        thrust_in_kilonewtons = thrust_in_kilonewtons_,
+        specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
+        frame = reference_frame_selector_.FrameParameters(),
+        initial_time = initial_time_,
+        intensity = intensity,
         is_inertially_fixed = is_inertially_fixed_
     };
   }
@@ -538,7 +577,6 @@ class BurnEditor : ScalingRenderer {
   }
 
   private string FormatAngleComponent(double degrees) {
-    //return $"{degrees:00.00}°";
     return $"{degrees:00.00}";
   }
 

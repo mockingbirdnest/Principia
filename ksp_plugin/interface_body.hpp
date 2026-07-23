@@ -599,8 +599,9 @@ inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
         coordinate_system = CoordinateSystem::SPHERICAL_BTN;
         break;
       }
+      default:
+        LOG(FATAL) << "Unexpected permutation: " << intensity.permutation();
     }
-    LOG(FATAL) << "Unexpected permutation: " << intensity.permutation();
   } else {
     coordinate_system = CoordinateSystem::CARTESIAN_TNB;
   }

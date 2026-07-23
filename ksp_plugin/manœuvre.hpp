@@ -72,10 +72,10 @@ class Manœuvre {
 
     // Construction parameters and coordinate conversion.
     bool has_spherical_coordinates() const;
-    R3Element<Speed> const& Δv_cartesian_coordinates() const;
+    R3Element<Speed> Δv_cartesian_coordinates() const;
     Permutation<PermutedFrenet<Frame>, Frenet<Frame>> const&
     permutation() const;
-    SphericalCoordinates<Speed> const& Δv_spherical_coordinates() const;
+    SphericalCoordinates<Speed> Δv_spherical_coordinates() const;
 
 
     void WriteToMessage(not_null<serialization::Intensity*> message) const;
