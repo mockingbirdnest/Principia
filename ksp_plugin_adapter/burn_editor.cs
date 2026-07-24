@@ -401,12 +401,14 @@ class BurnEditor : ScalingRenderer {
   public void Reset(NavigationManoeuvre manœuvre) {
     Burn burn = manœuvre.burn;
     Log.Error("Burn " +
+              burn.intensity.coordinate_system + " " +
               burn.intensity.spherical_coordinates.radius +
               " " +
               burn.intensity.spherical_coordinates.latitude_in_degrees +
               " " +
               burn.intensity.spherical_coordinates.longitude_in_degrees);
-        Δv_tangent_.value = burn.intensity.xyz.x;
+    coordinate_system_ = burn.intensity.coordinate_system;
+    Δv_tangent_.value = burn.intensity.xyz.x;
     Δv_normal_.value = burn.intensity.xyz.y;
     Δv_binormal_.value = burn.intensity.xyz.z;
     Δv_total_.value = burn.intensity.spherical_coordinates.radius;
@@ -426,6 +428,13 @@ class BurnEditor : ScalingRenderer {
     Intensity intensity;
     switch (coordinate_system_) {
       case CoordinateSystem.CARTESIAN_TNB: {
+        Log.Error("Intensity " +
+                  coordinate_system_ + " " +
+                  Δv_tangent_.value +
+                  " " +
+                  Δv_normal_.value +
+                  " " +
+                  Δv_binormal_.value);
         intensity =
             new Intensity{
                 coordinate_system = coordinate_system_,
@@ -447,6 +456,7 @@ class BurnEditor : ScalingRenderer {
       case CoordinateSystem.SPHERICAL_NBT:
       case CoordinateSystem.SPHERICAL_BTN: {
         Log.Error("Intensity " +
+                  coordinate_system_ + " " +
                   Δv_total_.value +
                   " " +
                   in_plane_angle_.value +
@@ -643,7 +653,7 @@ class BurnEditor : ScalingRenderer {
               " " +
               integral_milliarcseconds);
     return
-        $"{sign}{unsigned_degrees}°{nbsp}{integral_arcminutes:00}′{nbsp}{integral_arcseconds:00}.{integral_milliarcseconds:000}″";
+        $"{sign}{unsigned_degrees}°{nbsp}{integral_arcminutes:00}′{nbsp}{integral_arcseconds:00}″.{integral_milliarcseconds:000}";
   }
 
   internal bool TryParseAngleComponent(string text, out double value) {
@@ -653,8 +663,9 @@ class BurnEditor : ScalingRenderer {
         new Regex(@"
         ^(?:(?<sign>[+-−])?\s*)
         (?:(?<degrees>\d+)\s*°\s*)
-        (?:(?<minutes>\d+)\s*′\s*)?
-        (?:(?<seconds>[0-9.,']+)\s*″\s*)?$",
+        (?:(?<arcminutes>\d+)\s*′\s*)?
+        (?:(?<arcseconds>[0-9.,']+)\s*″\s*)?
+        (?:.(?<milliarcseconds>[0-9]+)\s*)?$",
                   RegexOptions.IgnorePatternWhitespace);
     var match = regex.Match(text);
     if (!match.Success) {
@@ -662,21 +673,23 @@ class BurnEditor : ScalingRenderer {
     }
     var sign_group = match.Groups["sign"];
     var degrees_group = match.Groups["degrees"];
-    var minutes_group = match.Groups["minutes"];
-    var seconds_group = match.Groups["seconds"];
+    var arcminutes_group = match.Groups["arcminutes"];
+    var arcseconds_group = match.Groups["arcseconds"];
+    var milliarcseconds_group = match.Groups["milliarcseconds"];
     string sign = sign_group.Success ? sign_group.Value : "+";
     string degrees = degrees_group.Success ? degrees_group.Value : "0";
-    string minutes = minutes_group.Success ? minutes_group.Value : "0";
-    string seconds = seconds_group.Success ? seconds_group.Value : "0";
+    string arcminutes = arcminutes_group.Success ? arcminutes_group.Value : "0";
+    string arcseconds = arcseconds_group.Success ? arcseconds_group.Value : "0";
+    string milliarcseconds =
+        milliarcseconds_group.Success ? milliarcseconds_group.Value : "0";
     if (!int.TryParse(degrees, out int d) ||
-        !int.TryParse(minutes, out int m) ||
-        !double.TryParse(seconds.Replace(',', '.'),
-                         NumberStyles.AllowDecimalPoint,
-                         Culture.culture.NumberFormat,
-                         out double s)) {
+        !int.TryParse(arcminutes, out int m) ||
+        !int.TryParse(arcseconds, out int s) ||
+        !int.TryParse(milliarcseconds, out int ms)) {
       return false;
     }
-    value = (sign == "+" ? 1 : -1) * (d + m / 60.0 + s / 3600.0);
+    value =
+        (sign == "+" ? 1 : -1) * (d + m / 60.0 + s / 3600.0 + ms / 3600000.0);
     Log.Error("Parsed " + value);
     return true;
   }
