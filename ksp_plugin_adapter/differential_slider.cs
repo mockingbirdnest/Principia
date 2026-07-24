@@ -23,6 +23,7 @@ internal class DifferentialSlider : ScalingRenderer {
                             double zero_value = 0,
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
+                            bool modular = false,
                             UnityEngine.Color? text_colour = null,
                             int label_width = 3,
                             int field_width = 5,
@@ -44,6 +45,7 @@ internal class DifferentialSlider : ScalingRenderer {
     display_zero_button_ = display_zero_button;
     min_value_ = min_value;
     max_value_ = max_value;
+    modular_ = modular;
     text_colour_ = text_colour;
   }
 
@@ -102,7 +104,7 @@ internal class DifferentialSlider : ScalingRenderer {
         // fudge factor to account for uncertainty in text/double conversions.
         var style = Style.Aligned(alignment_, UnityEngine.GUI.skin.textField);
         if (!parser_(formatted_value_, out double v1) ||
-            v1 > max_value_ + 0.1) {
+            (!modular_ && v1 > max_value_ + 0.1)) {
           style = Style.Warning(style);
         }
 
@@ -200,11 +202,27 @@ internal class DifferentialSlider : ScalingRenderer {
           }
         }
         if (increment != 0) {
-          double incremented_value = value + increment;
+          parser_(formatter_(value + increment, min_value_, max_value_),
+                  out double incremented_value);
+          Log.Error(
+              "Incrementing " + value + " by " + increment + " " +
+                incremented_value);
           if (incremented_value >= min_value_ &&
               incremented_value <= max_value_) {
             value_changed = true;
             value = incremented_value;
+            Log.Error("NonModular " + incremented_value);
+          } else if (modular_) {
+            Log.Error("Modular1 " + incremented_value);
+            while (incremented_value < min_value_) {
+              incremented_value += max_value_ - min_value_;
+            }
+            while (incremented_value > max_value_) {
+              incremented_value -= max_value_ - min_value_;
+            }
+            value_changed = true;
+            value = incremented_value;
+            Log.Error("Modular2 " + incremented_value);
           }
         }
       } else {
@@ -247,7 +265,9 @@ internal class DifferentialSlider : ScalingRenderer {
                                 (log10_upper_rate_ - log10_lower_rate_) *
                                 Math.Abs(slider_position_)) *
                    (DateTime.Now - last_time_).TotalSeconds;
-          value = Math.Min(Math.Max(min_value_, value), max_value_);
+          if (!modular_) {
+            value = Math.Min(Math.Max(min_value_, value), max_value_);
+          }
         }
       } else {
         slider_position_ = 0;
@@ -329,7 +349,8 @@ internal class DifferentialSlider : ScalingRenderer {
       return false;
     }
     increment = Math.Abs(adjusted_value - base_value);
-    if (base_value + increment > max_value_ &&
+    if (!modular_ &&
+        base_value + increment > max_value_ &&
         base_value - increment < min_value_) {
       // If the digit cannot be adjusted in either direction, don’t show arrows.
       // This can happen if the digit is actually a figure space standing for
@@ -368,6 +389,7 @@ internal class DifferentialSlider : ScalingRenderer {
   private readonly double zero_value_;
   private readonly bool display_zero_button_;
   private readonly double min_value_;
+  private readonly bool modular_;
 
   private readonly ValueFormatter formatter_;
   private readonly ValueParser parser_;

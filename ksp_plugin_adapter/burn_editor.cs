@@ -62,6 +62,7 @@ class BurnEditor : ScalingRenderer {
             unit             : null,
             min_value        : -180,
             max_value        : 180,
+            modular          : true,
             log10_lower_rate : log10_angle_lower_rate,
             log10_upper_rate : log10_angle_upper_rate,
             formatter        : FormatAngleComponent,
