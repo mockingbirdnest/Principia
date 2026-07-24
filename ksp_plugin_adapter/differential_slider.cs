@@ -5,7 +5,9 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class DifferentialSlider : ScalingRenderer {
-  public delegate string ValueFormatter(double value);
+  public delegate string ValueFormatter(double value,
+                                        double min_value,
+                                        double max_value);
 
   public delegate bool ValueParser(string s, out double value);
 
@@ -56,7 +58,7 @@ internal class DifferentialSlider : ScalingRenderer {
       value_ = value;
       // Reformat systematically, even if the value has not changed numerically,
       // as it may have been edited all the same (e.g., remove zeroes).
-      formatted_value_ = formatter_(value_.Value);
+      formatted_value_ = formatter_(value_.Value, min_value_, max_value_);
     }
   }
 
@@ -66,7 +68,7 @@ internal class DifferentialSlider : ScalingRenderer {
     set {
       if (!value_.HasValue || value_ != value) {
         value_ = value;
-        formatted_value_ = formatter_(value_.Value);
+        formatted_value_ = formatter_(value_.Value, min_value_, max_value_);
       }
     }
   }
@@ -175,7 +177,8 @@ internal class DifferentialSlider : ScalingRenderer {
             text_field_has_focus) {
           terminate_text_entry = true;
         } else if (!text_field_has_focus &&
-                   formatted_value_ != formatter_(value_.Value)) {
+                   formatted_value_ !=
+                   formatter_(value_.Value, min_value_, max_value_)) {
           terminate_text_entry = true;
         } else if (increment != 0) {
           terminate_text_entry = true;
@@ -193,7 +196,7 @@ internal class DifferentialSlider : ScalingRenderer {
             // and this is not nice.
           } else {
             // Go back to the previous legal value.
-            formatted_value_ = formatter_(value_.Value);
+            formatted_value_ = formatter_(value_.Value, min_value_, max_value_);
           }
         }
         if (increment != 0) {
@@ -385,6 +388,8 @@ internal class DifferentialSlider : ScalingRenderer {
   // `formatted_value_`.  The unit in that place is `increment`.
   private struct DigitAdjustment {
     public DigitAdjustment(int index, double increment) {
+      Log.Error("Creating digit adjustment at index " + index + " with increment " +
+                increment);
       this.index = index;
       this.increment = increment;
     }

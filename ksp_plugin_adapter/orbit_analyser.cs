@@ -138,7 +138,9 @@ internal static class Formatters {
   // Never omit leading 0s (to make keyboard editing easier) but do not show
   // seconds (they are irrelevant for a selector that shows durations much
   // longer than a revolution).
-  public static string FormatMissionDuration(double seconds) {
+  public static string FormatMissionDuration(double seconds,
+                                             double _,
+                                             double __) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
         with_leading_zeroes: true,
         with_seconds: false);

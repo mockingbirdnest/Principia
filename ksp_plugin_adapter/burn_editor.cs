@@ -60,16 +60,12 @@ class BurnEditor : ScalingRenderer {
             label            :
             L10N.CacheFormat("#Principia_BurnEditor_InPlaneAngle"),
             unit             : null,
+            min_value        : -180,
+            max_value        : 180,
             log10_lower_rate : log10_angle_lower_rate,
             log10_upper_rate : log10_angle_upper_rate,
-            formatter        :
-            (double degrees) =>
-                FormatAngleComponent(degrees, min_value: -180, max_value: 180),
-            parser           : (string text, out double value) =>
-                TryParseAngleComponent(text,
-                                       min_value: -180,
-                                       max_value: 180,
-                                       out value),
+            formatter        : FormatAngleComponent,
+            parser           : TryParseAngleComponent,
             field_width      : 7,
             text_colour      : Style.Normal);
     off_plane_angle_ =
@@ -77,16 +73,12 @@ class BurnEditor : ScalingRenderer {
             label            :
             L10N.CacheFormat("#Principia_BurnEditor_OffPlaneAngle"),
             unit             : null,
+            min_value        : -90,
+            max_value        : 90,
             log10_lower_rate : log10_angle_lower_rate,
             log10_upper_rate : log10_angle_upper_rate,
-            formatter        :
-            (double degrees) =>
-                FormatAngleComponent(degrees, min_value: -90, max_value: 90),
-            parser           : (string text, out double value) =>
-                TryParseAngleComponent(text,
-                                       min_value: -90,
-                                       max_value: 90,
-                                       out value),
+            formatter        : FormatAngleComponent,
+            parser           : TryParseAngleComponent,
             field_width      : 7,
             text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
@@ -573,7 +565,9 @@ class BurnEditor : ScalingRenderer {
     }
   }
 
-  private string FormatΔvComponent(double metres_per_second) {
+  private string FormatΔvComponent(double metres_per_second,
+                                   double _,
+                                   double __) {
     // The granularity of Instant in 1950.
     const double dt = 2.3841857910156250e-7; // 2⁻²² s.
     double initial_acceleration =
@@ -603,9 +597,9 @@ class BurnEditor : ScalingRenderer {
   }
 
   internal string FormatAngleComponent(double degrees,
-                                       int min_value,
-                                       int max_value) {
-    Log.Error("Formatting " + degrees + " " + min_value + " " + max_value);
+                                       double min_value,
+                                       double max_value) {
+    Log.Error("Formatting " + degrees);
     bool negative = degrees < 0;
     degrees = Math.Abs(degrees);
     int integral_degrees = (int)Math.Floor(degrees);
@@ -631,26 +625,6 @@ class BurnEditor : ScalingRenderer {
         }
       }
     }
-    while (integral_degrees > max_value ||
-           (integral_degrees == max_value &&
-            (integral_arcminutes > 0 ||
-             integral_arcseconds > 0 ||
-             integral_milliarcseconds > 0))) {
-      Log.Error("Correcting " +
-                integral_degrees +
-                " " +
-                integral_arcminutes +
-                " " +
-                integral_arcseconds  + " " + integral_milliarcseconds);
-      integral_degrees -= max_value - min_value;
-      Log.Error("Corrected " + integral_degrees);
-    }
-    if (integral_degrees < 0) {
-      Log.Error("Signing " + integral_degrees + " " + negative);
-      integral_degrees = -integral_degrees;
-      negative = !negative;
-      Log.Error("Signed " + integral_degrees + " " + negative);
-    }
     string sign = negative ? "−" : "+";
     string integral_digits =
         new string('0',
@@ -671,11 +645,8 @@ class BurnEditor : ScalingRenderer {
         $"{sign}{unsigned_degrees}°{nbsp}{integral_arcminutes:00}′{nbsp}{integral_arcseconds:00}.{integral_milliarcseconds:000}″";
   }
 
-  internal bool TryParseAngleComponent(string text,
-                                       int min_value,
-                                       int max_value,
-                                       out double value) {
-    Log.Error("Parsing " + text + " " + min_value + " " + max_value);
+  internal bool TryParseAngleComponent(string text, out double value) {
+    Log.Error("Parsing " + text);
     value = 0;
     var regex =
         new Regex(@"
@@ -705,17 +676,13 @@ class BurnEditor : ScalingRenderer {
       return false;
     }
     value = (sign == "+" ? 1 : -1) * (d + m / 60.0 + s / 3600.0);
-    while (value < min_value) {
-      value += max_value - min_value;
-    }
-    while (value > max_value) {
-      value -= max_value - min_value;
-    }
     Log.Error("Parsed " + value);
     return true;
   }
 
-  internal string FormatPreviousCoastDuration(double seconds) {
+  internal string FormatPreviousCoastDuration(double seconds,
+                                              double _,
+                                              double __) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
         with_leading_zeroes: true,
         with_seconds: true,
