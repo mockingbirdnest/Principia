@@ -55,28 +55,40 @@ class BurnEditor : ScalingRenderer {
         formatter        : FormatΔvComponent,
         alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Tangent);
-    in_plane_angle_ = new DifferentialSlider(
-        label            : L10N.CacheFormat("#Principia_BurnEditor_InPlaneAngle"),
-        unit             : null,
-        min_value        : -max_angle_component,
-        max_value        : max_angle_component,
-        log10_lower_rate : log10_angle_lower_rate,
-        log10_upper_rate : log10_angle_upper_rate,
-        formatter        : FormatAngleComponent,
-        parser           : TryParseAngleComponent,
-        alignment        : UnityEngine.TextAnchor.MiddleLeft,
-        text_colour      : Style.Normal);
-    off_plane_angle_ = new DifferentialSlider(
-        label            : L10N.CacheFormat("#Principia_BurnEditor_OffPlaneAngle"),
-        unit             : null,
-        min_value        : -max_angle_component,
-        max_value        : max_angle_component,
-        log10_lower_rate : log10_angle_lower_rate,
-        log10_upper_rate : log10_angle_upper_rate,
-        formatter        : FormatAngleComponent,
-        parser           : TryParseAngleComponent,
-        alignment        : UnityEngine.TextAnchor.MiddleLeft,
-        text_colour      : Style.Binormal);
+    in_plane_angle_ =
+        new DifferentialSlider(
+            label            :
+            L10N.CacheFormat("#Principia_BurnEditor_InPlaneAngle"),
+            unit             : null,
+            log10_lower_rate : log10_angle_lower_rate,
+            log10_upper_rate : log10_angle_upper_rate,
+            formatter        :
+            (double degrees) =>
+                FormatAngleComponent(degrees, min_value: -180, max_value: 180),
+            parser           : (string text, out double value) =>
+                TryParseAngleComponent(text,
+                                       min_value: -180,
+                                       max_value: 180,
+                                       out value),
+            field_width      : 7,
+            text_colour      : Style.Normal);
+    off_plane_angle_ =
+        new DifferentialSlider(
+            label            :
+            L10N.CacheFormat("#Principia_BurnEditor_OffPlaneAngle"),
+            unit             : null,
+            log10_lower_rate : log10_angle_lower_rate,
+            log10_upper_rate : log10_angle_upper_rate,
+            formatter        :
+            (double degrees) =>
+                FormatAngleComponent(degrees, min_value: -90, max_value: 90),
+            parser           : (string text, out double value) =>
+                TryParseAngleComponent(text,
+                                       min_value: -90,
+                                       max_value: 90,
+                                       out value),
+            field_width      : 7,
+            text_colour      : Style.Binormal);
     previous_coast_duration_ = new DifferentialSlider(
         label            : L10N.CacheFormat("#Principia_BurnEditor_InitialTime"),
         unit             : null,
@@ -395,7 +407,13 @@ class BurnEditor : ScalingRenderer {
 
   public void Reset(NavigationManoeuvre manœuvre) {
     Burn burn = manœuvre.burn;
-    Δv_tangent_.value = burn.intensity.xyz.x;
+    Log.Error("Burn " +
+              burn.intensity.spherical_coordinates.radius +
+              " " +
+              burn.intensity.spherical_coordinates.latitude_in_degrees +
+              " " +
+              burn.intensity.spherical_coordinates.longitude_in_degrees);
+        Δv_tangent_.value = burn.intensity.xyz.x;
     Δv_normal_.value = burn.intensity.xyz.y;
     Δv_binormal_.value = burn.intensity.xyz.z;
     Δv_total_.value = burn.intensity.spherical_coordinates.radius;
@@ -435,7 +453,13 @@ class BurnEditor : ScalingRenderer {
       case CoordinateSystem.SPHERICAL_TNB:
       case CoordinateSystem.SPHERICAL_NBT:
       case CoordinateSystem.SPHERICAL_BTN: {
-        intensity =
+        Log.Error("Intensity " +
+                  Δv_total_.value +
+                  " " +
+                  in_plane_angle_.value +
+                  " " +
+                  off_plane_angle_.value);
+              intensity =
             new Intensity{
                 coordinate_system = coordinate_system_,
                 xyz =
@@ -578,11 +602,12 @@ class BurnEditor : ScalingRenderer {
         match => match.Value + "'");
   }
 
-  private string FormatAngleComponent(double degrees) {
+  internal string FormatAngleComponent(double degrees,
+                                       int min_value,
+                                       int max_value) {
+    Log.Error("Formatting " + degrees + " " + min_value + " " + max_value);
     bool negative = degrees < 0;
-    if (negative) {
-      degrees = Math.Abs(degrees);
-    }
+    degrees = Math.Abs(degrees);
     int integral_degrees = (int)Math.Floor(degrees);
     double fractional_degrees = degrees - integral_degrees;
     double arcminutes = fractional_degrees * 60;
@@ -602,17 +627,55 @@ class BurnEditor : ScalingRenderer {
           if (++integral_arcminutes == 60) {
             integral_arcminutes = 0;
             ++integral_degrees;
-            ///180?
           }
         }
       }
     }
+    while (integral_degrees > max_value ||
+           (integral_degrees == max_value &&
+            (integral_arcminutes > 0 ||
+             integral_arcseconds > 0 ||
+             integral_milliarcseconds > 0))) {
+      Log.Error("Correcting " +
+                integral_degrees +
+                " " +
+                integral_arcminutes +
+                " " +
+                integral_arcseconds  + " " + integral_milliarcseconds);
+      integral_degrees -= max_value - min_value;
+      Log.Error("Corrected " + integral_degrees);
+    }
+    if (integral_degrees < 0) {
+      Log.Error("Signing " + integral_degrees + " " + negative);
+      integral_degrees = -integral_degrees;
+      negative = !negative;
+      Log.Error("Signed " + integral_degrees + " " + negative);
+    }
     string sign = negative ? "−" : "+";
+    string integral_digits =
+        new string('0',
+                   (int)Math.Ceiling(
+                       Math.Log10(Math.Max(Math.Abs(min_value),
+                                           Math.Abs(max_value)))));
+    string unsigned_degrees = integral_degrees.ToString($"{integral_digits}");
+    Log.Error("Formatted " +
+              sign +
+              unsigned_degrees +
+              " " +
+              integral_arcminutes +
+              " " +
+              integral_arcseconds +
+              " " +
+              integral_milliarcseconds);
     return
-        $"{sign}{integral_degrees:000}°{nbsp}{integral_arcminutes:00}′{nbsp}{integral_arcseconds:00}.{integral_milliarcseconds:000}″";
+        $"{sign}{unsigned_degrees}°{nbsp}{integral_arcminutes:00}′{nbsp}{integral_arcseconds:00}.{integral_milliarcseconds:000}″";
   }
 
-  private bool TryParseAngleComponent(string text, out double value) {
+  internal bool TryParseAngleComponent(string text,
+                                       int min_value,
+                                       int max_value,
+                                       out double value) {
+    Log.Error("Parsing " + text + " " + min_value + " " + max_value);
     value = 0;
     var regex =
         new Regex(@"
@@ -642,23 +705,14 @@ class BurnEditor : ScalingRenderer {
       return false;
     }
     value = (sign == "+" ? 1 : -1) * (d + m / 60.0 + s / 3600.0);
+    while (value < min_value) {
+      value += max_value - min_value;
+    }
+    while (value > max_value) {
+      value -= max_value - min_value;
+    }
+    Log.Error("Parsed " + value);
     return true;
-  }
-
-  private void UseTheForceLuke() {
-    // The burn can last at most (9.80665 / scale) s.
-    const double scale = 1;
-    // This, together with `scale = 1`, ensures that, when `initial_time` is
-    // less than 2 ** 32 s, `Δv(initial_time + duration)` does not overflow if
-    // Δv is less than 100 km/s, and that `initial_time + duration` does not
-    // fully cancel if Δv is more than 1 mm/s.
-    // TODO(egg): Before the C* release, add a persisted flag to indicate to the
-    // user that we are not using the craft's engines (we can also use that
-    // flag to remember whether the burn was created for active engines or
-    // active RCS).
-    const double range = 1000;
-    thrust_in_kilonewtons_ = initial_mass_in_tonnes_ * range * scale;
-    specific_impulse_in_seconds_g0_ = range;
   }
 
   internal string FormatPreviousCoastDuration(double seconds) {
@@ -677,6 +731,22 @@ class BurnEditor : ScalingRenderer {
     }
     value = ts.total_seconds;
     return true;
+  }
+
+  private void UseTheForceLuke() {
+    // The burn can last at most (9.80665 / scale) s.
+    const double scale = 1;
+    // This, together with `scale = 1`, ensures that, when `initial_time` is
+    // less than 2 ** 32 s, `Δv(initial_time + duration)` does not overflow if
+    // Δv is less than 100 km/s, and that `initial_time + duration` does not
+    // fully cancel if Δv is more than 1 mm/s.
+    // TODO(egg): Before the C* release, add a persisted flag to indicate to the
+    // user that we are not using the craft's engines (we can also use that
+    // flag to remember whether the burn was created for active engines or
+    // active RCS).
+    const double range = 1000;
+    thrust_in_kilonewtons_ = initial_mass_in_tonnes_ * range * scale;
+    specific_impulse_in_seconds_g0_ = range;
   }
 
   private double time_base => time_base_is_start_of_flight_plan_
@@ -725,7 +795,6 @@ class BurnEditor : ScalingRenderer {
   private const double log10_time_lower_rate = 0.0;
   private const double log10_time_upper_rate = 7.0;
   private const double max_Δv_component = 99_999.999_999_999;
-  private const double max_angle_component = 180.0;
 
   // Not owned.
   private readonly Vessel vessel_;
