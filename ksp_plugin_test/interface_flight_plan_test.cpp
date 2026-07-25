@@ -146,8 +146,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .initial_time = 3,
       .intensity =
           Intensity{.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
-                    .xyz = &intensity_xyz,
-                    .spherical_coordinates = nullptr},
+                    .xyz = intensity_xyz,
+                    .spherical_coordinates = SphericalCoordinates{}},
       .is_inertially_fixed = true};
   StrictMock<MockVessel> vessel;
 
