@@ -110,14 +110,12 @@ void Manœuvre<InertialFrame, Frame>::Intensity::WriteToMessage(
         spherical_message->mutable_coordinates());
     permutation().WriteToMessage(spherical_message->mutable_permutation());
   }
-  LOG(ERROR)<<"WTM "<<message;
 }
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Intensity
 Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
     serialization::Intensity const& message) {
-  LOG(ERROR)<<"RFM "<<message;
   switch (message.intensity_case()) {
     case serialization::Intensity::IntensityCase::kCartesian:
       return Intensity(R3Element<Speed>::ReadFromMessage(message.cartesian()));

@@ -400,13 +400,6 @@ class BurnEditor : ScalingRenderer {
 
   public void Reset(NavigationManoeuvre manœuvre) {
     Burn burn = manœuvre.burn;
-    Log.Error("Burn " +
-              burn.intensity.coordinate_system + " " +
-              burn.intensity.spherical_coordinates.radius +
-              " " +
-              burn.intensity.spherical_coordinates.latitude_in_degrees +
-              " " +
-              burn.intensity.spherical_coordinates.longitude_in_degrees);
     coordinate_system_ = burn.intensity.coordinate_system;
     Δv_tangent_.value = burn.intensity.xyz.x;
     Δv_normal_.value = burn.intensity.xyz.y;
@@ -428,13 +421,6 @@ class BurnEditor : ScalingRenderer {
     Intensity intensity;
     switch (coordinate_system_) {
       case CoordinateSystem.CARTESIAN_TNB: {
-        Log.Error("Intensity " +
-                  coordinate_system_ + " " +
-                  Δv_tangent_.value +
-                  " " +
-                  Δv_normal_.value +
-                  " " +
-                  Δv_binormal_.value);
         intensity =
             new Intensity{
                 coordinate_system = coordinate_system_,
@@ -455,14 +441,7 @@ class BurnEditor : ScalingRenderer {
       case CoordinateSystem.SPHERICAL_TNB:
       case CoordinateSystem.SPHERICAL_NBT:
       case CoordinateSystem.SPHERICAL_BTN: {
-        Log.Error("Intensity " +
-                  coordinate_system_ + " " +
-                  Δv_total_.value +
-                  " " +
-                  in_plane_angle_.value +
-                  " " +
-                  off_plane_angle_.value);
-              intensity =
+        intensity =
             new Intensity{
                 coordinate_system = coordinate_system_,
                 xyz =
@@ -610,7 +589,6 @@ class BurnEditor : ScalingRenderer {
   internal string FormatAngleComponent(double degrees,
                                        double min_value,
                                        double max_value) {
-    Log.Error("Formatting " + degrees);
     bool negative = degrees < 0;
     degrees = Math.Abs(degrees);
     int integral_degrees = (int)Math.Floor(degrees);
@@ -643,21 +621,11 @@ class BurnEditor : ScalingRenderer {
                        Math.Log10(Math.Max(Math.Abs(min_value),
                                            Math.Abs(max_value)))));
     string unsigned_degrees = integral_degrees.ToString($"{integral_digits}");
-    Log.Error("Formatted " +
-              sign +
-              unsigned_degrees +
-              " " +
-              integral_arcminutes +
-              " " +
-              integral_arcseconds +
-              " " +
-              integral_milliarcseconds);
     return
         $"{sign}{unsigned_degrees}°{nbsp}{integral_arcminutes:00}′{nbsp}{integral_arcseconds:00}″.{integral_milliarcseconds:000}";
   }
 
   internal bool TryParseAngleComponent(string text, out double value) {
-    Log.Error("Parsing " + text);
     value = 0;
     var regex =
         new Regex(@"
@@ -690,7 +658,6 @@ class BurnEditor : ScalingRenderer {
     }
     value =
         (sign == "+" ? 1 : -1) * (d + m / 60.0 + s / 3600.0 + ms / 3600000.0);
-    Log.Error("Parsed " + value);
     return true;
   }
 

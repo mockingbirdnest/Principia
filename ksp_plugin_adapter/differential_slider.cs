@@ -91,14 +91,7 @@ internal class DifferentialSlider : ScalingRenderer {
                                     style   : style);
       }
 
-      Log.Error("Rendering differential slider for " +
-                label_ +
-                " with value " +
-                value_.ToString() +
-                " and formatted value " +
-                formatted_value_ +
-                (parser_ == null ? " no parser " : " parser "));
-          if (enabled) {
+      if (enabled) {
         // If the text is not syntactically correct, or it exceeds the upper
         // bound, inform the user by drawing it in the warning style.  Note the
         // fudge factor to account for uncertainty in text/double conversions.
@@ -204,16 +197,11 @@ internal class DifferentialSlider : ScalingRenderer {
         if (increment != 0) {
           parser_(formatter_(value + increment, min_value_, max_value_),
                   out double incremented_value);
-          Log.Error(
-              "Incrementing " + value + " by " + increment + " " +
-                incremented_value);
           if (incremented_value >= min_value_ &&
               incremented_value <= max_value_) {
             value_changed = true;
             value = incremented_value;
-            Log.Error("NonModular " + incremented_value);
           } else if (modular_) {
-            Log.Error("Modular1 " + incremented_value);
             while (incremented_value < min_value_) {
               incremented_value += max_value_ - min_value_;
             }
@@ -222,7 +210,6 @@ internal class DifferentialSlider : ScalingRenderer {
             }
             value_changed = true;
             value = incremented_value;
-            Log.Error("Modular2 " + incremented_value);
           }
         }
       } else {
@@ -410,8 +397,6 @@ internal class DifferentialSlider : ScalingRenderer {
   // `formatted_value_`.  The unit in that place is `increment`.
   private struct DigitAdjustment {
     public DigitAdjustment(int index, double increment) {
-      Log.Error("Creating digit adjustment at index " + index + " with increment " +
-                increment);
       this.index = index;
       this.increment = increment;
     }
