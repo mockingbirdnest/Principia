@@ -109,15 +109,15 @@ void Manœuvre<InertialFrame, Frame>::Intensity::WriteToMessage(
     Δv_spherical_coordinates().WriteToMessage(
         spherical_message->mutable_coordinates());
     permutation().WriteToMessage(spherical_message->mutable_permutation());
-    auto const& spherical_intensity =
-        std::get<SphericalIntensity>(Δv_coordinates_);
   }
+  LOG(ERROR)<<"WTM "<<message;
 }
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Intensity
 Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
     serialization::Intensity const& message) {
+  LOG(ERROR)<<"RFM "<<message;
   switch (message.intensity_case()) {
     case serialization::Intensity::IntensityCase::kCartesian:
       return Intensity(R3Element<Speed>::ReadFromMessage(message.cartesian()));
@@ -334,8 +334,7 @@ void Manœuvre<InertialFrame, Frame>::WriteToMessage(
   thrust().WriteToMessage(message->mutable_thrust());
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   specific_impulse().WriteToMessage(message->mutable_specific_impulse());
-  direction().WriteToMessage(message->mutable_direction());
-  duration().WriteToMessage(message->mutable_duration());
+  burn_.intensity.WriteToMessage(message->mutable_intensity());
   initial_time().WriteToMessage(message->mutable_initial_time());
   frame()->WriteToMessage(message->mutable_frame());
   message->set_is_inertially_fixed(is_inertially_fixed());
