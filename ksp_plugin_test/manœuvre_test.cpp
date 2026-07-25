@@ -448,8 +448,7 @@ TEST_F(ManœuvreTest, Serialization) {
   EXPECT_TRUE(message.has_thrust());
   EXPECT_TRUE(message.has_initial_mass());
   EXPECT_TRUE(message.has_specific_impulse());
-  EXPECT_TRUE(message.has_direction());
-  EXPECT_TRUE(message.has_duration());
+  EXPECT_TRUE(message.has_intensity());
   EXPECT_TRUE(message.has_initial_time());
   EXPECT_TRUE(message.has_frame());
 
