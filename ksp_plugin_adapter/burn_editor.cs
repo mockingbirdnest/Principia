@@ -69,10 +69,10 @@ class BurnEditor : ScalingRenderer {
             parser           : TryParseAngleComponent,
             field_width      : 7,
             text_colour      : Style.Normal);
-    off_plane_angle_ =
+    out_of_plane_angle_ =
         new DifferentialSlider(
             label            :
-            L10N.CacheFormat("#Principia_BurnEditor_OffPlaneAngle"),
+            L10N.CacheFormat("#Principia_BurnEditor_OutOfPlaneAngle"),
             unit             : null,
             min_value        : -90,
             max_value        : 90,
@@ -258,7 +258,7 @@ class BurnEditor : ScalingRenderer {
       } else {
         changed |= Δv_total_.Render(enabled: !anomalous);
         changed |= in_plane_angle_.Render(enabled: !anomalous);
-        changed |= off_plane_angle_.Render(enabled: !anomalous);
+        changed |= out_of_plane_angle_.Render(enabled: !anomalous);
       }
       {
         var render_time_base = time_base;
@@ -395,7 +395,7 @@ class BurnEditor : ScalingRenderer {
     Δv_binormal_.value = Δv_binormal_.value;
     Δv_total_.value = Δv_total_.value;
     in_plane_angle_.value = in_plane_angle_.value;
-    off_plane_angle_.value = off_plane_angle_.value;
+    out_of_plane_angle_.value = out_of_plane_angle_.value;
   }
 
   public void Reset(NavigationManoeuvre manœuvre) {
@@ -407,7 +407,7 @@ class BurnEditor : ScalingRenderer {
     Δv_total_.value = burn.intensity.spherical_coordinates.radius;
     in_plane_angle_.value =
         burn.intensity.spherical_coordinates.longitude_in_degrees;
-    off_plane_angle_.value =
+    out_of_plane_angle_.value =
         burn.intensity.spherical_coordinates.latitude_in_degrees;
     initial_time_ = burn.initial_time;
     reference_frame_selector_.SetFrameParameters(burn.frame);
@@ -453,7 +453,7 @@ class BurnEditor : ScalingRenderer {
                 spherical_coordinates =
                     new SphericalCoordinates{
                         radius = Δv_total_.value,
-                        latitude_in_degrees = off_plane_angle_.value,
+                        latitude_in_degrees = out_of_plane_angle_.value,
                         longitude_in_degrees = in_plane_angle_.value
                     }
             };
@@ -721,7 +721,7 @@ class BurnEditor : ScalingRenderer {
 
   private readonly DifferentialSlider Δv_total_;
   private readonly DifferentialSlider in_plane_angle_;
-  private readonly DifferentialSlider off_plane_angle_;
+  private readonly DifferentialSlider out_of_plane_angle_;
 
   private readonly DifferentialSlider previous_coast_duration_;
   private readonly ReferenceFrameSelector<NavigationFrameParameters>
