@@ -155,7 +155,7 @@ class BurnEditor : ScalingRenderer {
                                        CoordinateSystem.CARTESIAN_TNB),
                                  coordinate_system_strings_,
                                  xCount: 2,
-                                 GUILayoutWidth(7)) +
+                                 GUILayoutWidth(8)) +
                              (int)CoordinateSystem.CARTESIAN_TNB);
       if (updated_inertially_fixed != is_inertially_fixed_) {
         changed = true;
