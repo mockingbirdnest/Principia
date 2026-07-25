@@ -74,9 +74,6 @@
     <ClInclude Include="get_line_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="version.generated.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="disjoint_sets.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
