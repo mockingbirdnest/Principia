@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using KSP.Localization;
 
 namespace principia {
@@ -25,6 +24,15 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                     PredictedVessel predicted_vessel) : base(
       adapter,
       predicted_vessel) {
+#if KSP_FORCE_LANGUAGE_EN_US
+    Localizer.SwitchToLanguage("en-us");
+#elif KSP_FORCE_LANGUAGE_FR_FR
+    Localizer.SwitchToLanguage("fr-fr");
+#elif KSP_FORCE_LANGUAGE_RU
+    Localizer.SwitchToLanguage("ru");
+#elif KSP_FORCE_LANGUAGE_ZH_CN
+    Localizer.SwitchToLanguage("zh-cn");
+#endif
     adapter_ = adapter;
     flight_planner_ = flight_planner;
     orbit_analyser_ = orbit_analyser;
