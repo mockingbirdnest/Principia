@@ -195,6 +195,7 @@ internal class DifferentialSlider : ScalingRenderer {
           }
         }
         if (increment != 0) {
+          // Format and reparse to effect any rounding done by the formatter.
           parser_(formatter_(value + increment, min_value_, max_value_),
                   out double incremented_value);
           if (incremented_value >= min_value_ &&

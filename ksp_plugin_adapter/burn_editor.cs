@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -133,7 +132,7 @@ class BurnEditor : ScalingRenderer {
     Maximized,
   }
 
-  // Renders the options for the burn.  Updates the options and returns true if
+  // Renders the options for the burn.  Updates this object and returns true if
   // an option has changed.
   public bool RenderBurnOptions() {
     if (coordinate_system_strings_ == null) {
