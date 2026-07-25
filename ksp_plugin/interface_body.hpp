@@ -233,12 +233,20 @@ inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
 }
 
 inline bool operator==(Intensity const& left, Intensity const& right) {
-  return left.coordinate_system == right.coordinate_system &&
-         ((left.spherical_coordinates != nullptr &&
-           right.spherical_coordinates != nullptr &&
-           *left.spherical_coordinates == *right.spherical_coordinates) ||
-          (left.xyz != nullptr && right.xyz != nullptr &&
-           *left.xyz == *right.xyz));
+  if (left.coordinate_system != right.coordinate_system) {
+    return false;
+  }
+  switch (left.coordinate_system) {
+    case CoordinateSystem::CARTESIAN_TNB:
+      return left.xyz == right.xyz;
+    case CoordinateSystem::SPHERICAL_TNB:
+    case CoordinateSystem::SPHERICAL_NBT:
+    case CoordinateSystem::SPHERICAL_BTN:
+      return left.spherical_coordinates == right.spherical_coordinates;
+    default:
+      LOG(FATAL) << "Unexpected coordinate system "
+                 << static_cast<unsigned char>(left.coordinate_system);
+  }
 }
 
 inline bool operator==(Interval const& left, Interval const& right) {
@@ -576,30 +584,31 @@ inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
 }
 
 inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
+  CoordinateSystem coordinate_system;
   if (intensity.has_spherical_coordinates()) {
     switch (intensity.permutation().coordinate_permutation()) {
-      case EvenPermutation::XYZ:
-        return {.coordinate_system = CoordinateSystem::SPHERICAL_TNB,
-                .xyz = nullptr,
-                .spherical_coordinates = ToNewSphericalCoordinates(
-                    intensity.Δv_spherical_coordinates())};
-      case EvenPermutation::YZX:
-        return {.coordinate_system = CoordinateSystem::SPHERICAL_NBT,
-                .xyz = nullptr,
-                .spherical_coordinates = ToNewSphericalCoordinates(
-                    intensity.Δv_spherical_coordinates())};
-      case EvenPermutation::ZXY:
-        return {.coordinate_system = CoordinateSystem::SPHERICAL_BTN,
-                .xyz = nullptr,
-                .spherical_coordinates = ToNewSphericalCoordinates(
-                    intensity.Δv_spherical_coordinates())};
+      case EvenPermutation::XYZ: {
+        coordinate_system = CoordinateSystem::SPHERICAL_TNB;
+        break;
+      }
+      case EvenPermutation::YZX: {
+        coordinate_system = CoordinateSystem::SPHERICAL_NBT;
+        break;
+      }
+      case EvenPermutation::ZXY: {
+        coordinate_system = CoordinateSystem::SPHERICAL_BTN;
+        break;
+      }
+      default:
+        LOG(FATAL) << "Unexpected permutation: " << intensity.permutation();
     }
-    LOG(FATAL) << "Unexpected permutation: " << intensity.permutation();
   } else {
-    return {.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
-            .xyz = new XYZ(ToXYZ(intensity.Δv_cartesian_coordinates())),
-            .spherical_coordinates = nullptr};
+    coordinate_system = CoordinateSystem::CARTESIAN_TNB;
   }
+  return {.coordinate_system = coordinate_system,
+          .xyz = ToXYZ(intensity.Δv_cartesian_coordinates()),
+          .spherical_coordinates =
+              ToSphericalCoordinates(intensity.Δv_spherical_coordinates())};
 }
 
 inline KeplerianElements ToKeplerianElements(
@@ -681,10 +690,10 @@ inline Status* ToNewStatus(absl::Status const& status) {
   }
 }
 
-inline SphericalCoordinates* ToNewSphericalCoordinates(
+inline SphericalCoordinates ToSphericalCoordinates(
     geometry::_r3_element::SphericalCoordinates<Speed> const&
         spherical_coordinates) {
-  return new SphericalCoordinates{
+  return SphericalCoordinates{
       .radius = spherical_coordinates.radius / (Metre / Second),
       .latitude_in_degrees = spherical_coordinates.latitude / Degree,
       .longitude_in_degrees = spherical_coordinates.longitude / Degree};

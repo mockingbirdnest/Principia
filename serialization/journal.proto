@@ -38,14 +38,17 @@ enum CoordinateSystem {
   SPHERICAL_BTN = 4;
 }
 
+// This message is used in both directions: C++ → C# and C# → C++.
+// The C++ side fills both fields irrespective of the `coordinate_system`.  The
+// C# side only fills the field that is meaningful for the `coordinate_system`.
+// That way, the C# code can switch coordinate system without having to do
+// coordinate conversions (the conversions are all on the C++ side).
 message Intensity {
   required CoordinateSystem coordinate_system = 1;
   // CARTESIAN_TNB.
-  optional XYZ xyz = 2 [(is_produced) = true];
+  required XYZ xyz = 2;
   // SPHERICAL_...
-  optional SphericalCoordinates spherical_coordinates = 3 [(is_produced) = true];
-  required fixed64 xyz_address = 4 [(address_of) = "xyz"];
-  required fixed64 spherical_coordinates_address = 5 [(address_of) = "spherical_coordinates"];
+  required SphericalCoordinates spherical_coordinates = 3;
 }
 
 // These messages should be in alphabetical order.

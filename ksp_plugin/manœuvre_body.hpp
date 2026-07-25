@@ -71,10 +71,13 @@ Manœuvre<InertialFrame, Frame>::Intensity::has_spherical_coordinates() const {
 }
 
 template<typename InertialFrame, typename Frame>
-R3Element<Speed> const& Manœuvre<
-    InertialFrame, Frame>::Intensity::Δv_cartesian_coordinates() const {
-  CHECK(!has_spherical_coordinates());
-  return std::get<R3Element<Speed>>(Δv_coordinates_);
+R3Element<Speed>
+Manœuvre<InertialFrame, Frame>::Intensity::Δv_cartesian_coordinates() const {
+  if (has_spherical_coordinates()) {
+    return Δv().coordinates();
+  } else {
+    return std::get<R3Element<Speed>>(Δv_coordinates_);
+  }
 }
 
 template<typename InertialFrame, typename Frame>
@@ -85,10 +88,14 @@ Manœuvre<InertialFrame, Frame>::Intensity::permutation() const {
 }
 
 template<typename InertialFrame, typename Frame>
-SphericalCoordinates<Speed> const&
+SphericalCoordinates<Speed>
 Manœuvre<InertialFrame, Frame>::Intensity::Δv_spherical_coordinates() const {
-  CHECK(has_spherical_coordinates());
-  return std::get<SphericalIntensity>(Δv_coordinates_).Δv_spherical_coordinates;
+  if (has_spherical_coordinates()) {
+    return std::get<SphericalIntensity>(Δv_coordinates_)
+        .Δv_spherical_coordinates;
+  } else {
+    return Δv().coordinates().ToSpherical();
+  }
 }
 
 template<typename InertialFrame, typename Frame>
@@ -102,8 +109,6 @@ void Manœuvre<InertialFrame, Frame>::Intensity::WriteToMessage(
     Δv_spherical_coordinates().WriteToMessage(
         spherical_message->mutable_coordinates());
     permutation().WriteToMessage(spherical_message->mutable_permutation());
-    auto const& spherical_intensity =
-        std::get<SphericalIntensity>(Δv_coordinates_);
   }
 }
 
@@ -327,8 +332,7 @@ void Manœuvre<InertialFrame, Frame>::WriteToMessage(
   thrust().WriteToMessage(message->mutable_thrust());
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   specific_impulse().WriteToMessage(message->mutable_specific_impulse());
-  direction().WriteToMessage(message->mutable_direction());
-  duration().WriteToMessage(message->mutable_duration());
+  burn_.intensity.WriteToMessage(message->mutable_intensity());
   initial_time().WriteToMessage(message->mutable_initial_time());
   frame()->WriteToMessage(message->mutable_frame());
   message->set_is_inertially_fixed(is_inertially_fixed());

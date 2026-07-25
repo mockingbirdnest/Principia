@@ -158,14 +158,14 @@ internal static class Style {
 
   public static void LineSpacing() {
     if (line_spacing_style_ == null) {
-      line_spacing_style_ = 
+      line_spacing_style_ =
           new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
       line_spacing_style_.fixedHeight /= 5;
     }
     UnityEngine.GUILayout.Label("", line_spacing_style_);
   }
 
-  public static void VerticallLine() {
+  public static void VerticalLine() {
     if (vertical_line_style_ == null ||
         !vertical_line_style_.normal.background) {
       vertical_line_style_ =
@@ -180,7 +180,7 @@ internal static class Style {
 
   public static void VerticalLineSpacing() {
     if (vertical_line_spacing_style_ == null) {
-      vertical_line_spacing_style_ = 
+      vertical_line_spacing_style_ =
           new UnityEngine.GUIStyle(UnityEngine.GUI.skin.label);
       vertical_line_spacing_style_.fixedWidth /= 5;
     }
