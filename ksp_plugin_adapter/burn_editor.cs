@@ -45,8 +45,8 @@ class BurnEditor : ScalingRenderer {
         formatter        : FormatΔvComponent,
         alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Binormal);
-    Δv_total_ = new DifferentialSlider(
-        label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvTotal"),
+    Δv_magnitude_ = new DifferentialSlider(
+        label            : L10N.CacheFormat("#Principia_BurnEditor_ΔvMagnitude"),
         unit             : L10N.CacheFormat("#Principia_BurnEditor_SpeedUnit"),
         min_value        : -max_Δv_component,
         max_value        : max_Δv_component,
@@ -256,7 +256,7 @@ class BurnEditor : ScalingRenderer {
         changed |= Δv_normal_.Render(enabled: !anomalous);
         changed |= Δv_binormal_.Render(enabled: !anomalous);
       } else {
-        changed |= Δv_total_.Render(enabled: !anomalous);
+        changed |= Δv_magnitude_.Render(enabled: !anomalous);
         changed |= in_plane_angle_.Render(enabled: !anomalous);
         changed |= out_of_plane_angle_.Render(enabled: !anomalous);
       }
@@ -393,7 +393,7 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_.value = Δv_tangent_.value;
     Δv_normal_.value = Δv_normal_.value;
     Δv_binormal_.value = Δv_binormal_.value;
-    Δv_total_.value = Δv_total_.value;
+    Δv_magnitude_.value = Δv_magnitude_.value;
     in_plane_angle_.value = in_plane_angle_.value;
     out_of_plane_angle_.value = out_of_plane_angle_.value;
   }
@@ -404,7 +404,7 @@ class BurnEditor : ScalingRenderer {
     Δv_tangent_.value = burn.intensity.xyz.x;
     Δv_normal_.value = burn.intensity.xyz.y;
     Δv_binormal_.value = burn.intensity.xyz.z;
-    Δv_total_.value = burn.intensity.spherical_coordinates.radius;
+    Δv_magnitude_.value = burn.intensity.spherical_coordinates.radius;
     in_plane_angle_.value =
         burn.intensity.spherical_coordinates.longitude_in_degrees;
     out_of_plane_angle_.value =
@@ -452,7 +452,7 @@ class BurnEditor : ScalingRenderer {
                     },
                 spherical_coordinates =
                     new SphericalCoordinates{
-                        radius = Δv_total_.value,
+                        radius = Δv_magnitude_.value,
                         latitude_in_degrees = out_of_plane_angle_.value,
                         longitude_in_degrees = in_plane_angle_.value
                     }
@@ -719,7 +719,7 @@ class BurnEditor : ScalingRenderer {
   private readonly DifferentialSlider Δv_normal_;
   private readonly DifferentialSlider Δv_binormal_;
 
-  private readonly DifferentialSlider Δv_total_;
+  private readonly DifferentialSlider Δv_magnitude_;
   private readonly DifferentialSlider in_plane_angle_;
   private readonly DifferentialSlider out_of_plane_angle_;
 
