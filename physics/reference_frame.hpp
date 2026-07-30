@@ -121,11 +121,23 @@ class ReferenceFrame {
   static not_null<std::unique_ptr<ReferenceFrame>>
       ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
+
+  virtual void HashValue(absl::HashState state) const = 0;
+
+  template<typename H, typename IF, typename TF>
+  friend H AbslHashValue(H state, const ReferenceFrame<IF, TF>& frame);
 };
 
 template<typename InertialFrame, typename ThisFrame>
 bool operator==(ReferenceFrame<InertialFrame, ThisFrame> const& left,
                 ReferenceFrame<InertialFrame, ThisFrame> const& right);
+
+template<typename H, typename InertialFrame, typename ThisFrame>
+H AbslHashValue(H state,
+                const ReferenceFrame<InertialFrame, ThisFrame>& frame) {
+  value.HashValue(absl::HashState::Create(&state));
+  return std::move(state);
+}
 
 }  // namespace internal
 
