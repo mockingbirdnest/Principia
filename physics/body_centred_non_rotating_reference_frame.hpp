@@ -94,6 +94,11 @@ class BodyCentredNonRotatingReferenceFrame
   not_null<MassiveBody const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
   OrthogonalMap<InertialFrame, ThisFrame> const orthogonal_map_;
+
+  template<typename IF, typename TF>
+  friend bool operator==(
+      BodyCentredNonRotatingReferenceFrame<IF, TF> const& left,
+      BodyCentredNonRotatingReferenceFrame<IF, TF> const& right);
 };
 
 template<typename InertialFrame, typename ThisFrame>

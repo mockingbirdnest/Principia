@@ -207,7 +207,7 @@ TEST_F(BodySurfaceReferenceFrameTest, Serialization) {
 
   EXPECT_TRUE(message.HasExtension(
       serialization::BodySurfaceReferenceFrame::extension));
-  auto const extension = message.GetExtension(
+  auto const& extension = message.GetExtension(
       serialization::BodySurfaceReferenceFrame::extension);
   EXPECT_TRUE(extension.has_centre());
   EXPECT_EQ(0, extension.centre());
@@ -226,6 +226,10 @@ TEST_F(BodySurfaceReferenceFrameTest, Serialization) {
                                 1 * Metre / Second})};
   EXPECT_EQ(big_frame_->GeometricAcceleration(t, point_dof),
             read_big_frame->GeometricAcceleration(t, point_dof));
+}
+
+TEST_F(BodySurfaceReferenceFrameTest, Hashing) {
+  EXPECT_EQ(*big_frame_, *big_frame_);
 }
 
 }  // namespace physics

@@ -209,7 +209,7 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, Serialization) {
 
   EXPECT_TRUE(message.HasExtension(
       serialization::BodyCentredNonRotatingReferenceFrame::extension));
-  auto const extension = message.GetExtension(
+  auto const& extension = message.GetExtension(
       serialization::BodyCentredNonRotatingReferenceFrame::extension);
   EXPECT_TRUE(extension.has_centre());
   EXPECT_EQ(1, extension.centre());
@@ -228,6 +228,11 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, Serialization) {
                         1 * Metre / Second})};
   EXPECT_EQ(small_frame_->GeometricAcceleration(t, point_dof),
             read_small_frame->GeometricAcceleration(t, point_dof));
+}
+
+TEST_F(BodyCentredNonRotatingReferenceFrameTest, Hashing) {
+  EXPECT_EQ(*big_frame_, *big_frame_);
+  EXPECT_EQ(*small_frame_, *small_frame_);
 }
 
 }  // namespace physics

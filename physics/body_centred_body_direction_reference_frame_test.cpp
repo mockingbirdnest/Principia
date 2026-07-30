@@ -258,9 +258,9 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ConstructFromOneBody) {
     EXPECT_THAT(
         (dof_from_discrete.velocity() - dof_from_both_bodies.velocity()).Norm(),
         VanishesBefore(1 * Kilo(Metre) / Second, 0, 93));
-    // For the moment, the `BodyCentredBodyDirectionReferenceFrame` assumes that
-    // its reference trajectories are free-falling, and gives us the wrong
-    // geometric acceleration when this is not the case.
+    // For now, the `BodyCentredBodyDirectionReferenceFrame` assumes that its
+    // reference trajectories are free-falling, and gives us the wrong geometric
+    // acceleration when this is not the case.
     auto const intrinsic_acceleration =
         ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
             ICRS::origin + Displacement<ICRS>({0 * Kilo(Metre),
@@ -275,6 +275,10 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ConstructFromOneBody) {
              dof_from_both_bodies)).Norm(),
          AlmostEquals(intrinsic_acceleration.Norm(), 0, 142));
   }
+}
+
+TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Hashing) {
+  EXPECT_EQ(*big_small_frame_, *big_small_frame_);
 }
 
 }  // namespace physics

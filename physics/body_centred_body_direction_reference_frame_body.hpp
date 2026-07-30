@@ -259,8 +259,10 @@ bool operator==(
         left,
     BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame> const&
         right) {
-  if (left.primary == nullptr || right.primary == nullptr) {
-    // One of the frames is a target frame.
+  CHECK_EQ(left.ephemeris_, right.ephemeris_);
+  if (left.primary_ == nullptr || right.primary_ == nullptr) {
+    // One of the frames is a target frame.  Target frames, like unhappy
+    // families, are all different.
     return false;
   } else {
     return left.primary_ == right.primary_ &&

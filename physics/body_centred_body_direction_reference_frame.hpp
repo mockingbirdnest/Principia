@@ -115,6 +115,11 @@ class BodyCentredBodyDirectionReferenceFrame
   std::function<Trajectory<InertialFrame> const&()> const primary_trajectory_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const
       secondary_trajectory_;
+
+  template<typename IF, typename TF>
+  friend bool operator==(
+      BodyCentredBodyDirectionReferenceFrame<IF, TF> const& left,
+      BodyCentredBodyDirectionReferenceFrame<IF, TF> const& right);
 };
 
 template<typename InertialFrame, typename ThisFrame>

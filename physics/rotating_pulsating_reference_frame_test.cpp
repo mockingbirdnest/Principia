@@ -180,5 +180,9 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
 
 #endif
 
+TEST_F(RotatingPulsatingReferenceFrameTest, Hashing) {
+  EXPECT_EQ(earth_moon_, earth_moon_);
+}
+
 }  // namespace physics
 }  // namespace principia

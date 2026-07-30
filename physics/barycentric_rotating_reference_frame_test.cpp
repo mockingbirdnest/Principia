@@ -208,7 +208,7 @@ TEST_F(BarycentricRotatingReferenceFrameTest, Serialization) {
 
   EXPECT_TRUE(message.HasExtension(
       serialization::BarycentricRotatingReferenceFrame::extension));
-  auto const extension = message.GetExtension(
+  auto const& extension = message.GetExtension(
       serialization::BarycentricRotatingReferenceFrame::extension);
   EXPECT_EQ(1, extension.primary().size());
   EXPECT_EQ(1, extension.secondary().size());
@@ -229,6 +229,10 @@ TEST_F(BarycentricRotatingReferenceFrameTest, Serialization) {
                                 1 * Metre / Second})};
   EXPECT_EQ(big_small_frame_->GeometricAcceleration(t, point_dof),
             read_big_small_frame->GeometricAcceleration(t, point_dof));
+}
+
+TEST_F(BarycentricRotatingReferenceFrameTest, Hashing) {
+  EXPECT_EQ(*big_small_frame_, *big_small_frame_);
 }
 
 }  // namespace physics

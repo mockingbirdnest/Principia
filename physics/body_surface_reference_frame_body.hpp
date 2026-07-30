@@ -126,6 +126,7 @@ template<typename InertialFrame, typename ThisFrame>
 bool operator==(
     BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& left,
     BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& right) {
+  CHECK_EQ(left.ephemeris_, right.ephemeris_);
   return left.centre_ == right.centre_;
 }
 

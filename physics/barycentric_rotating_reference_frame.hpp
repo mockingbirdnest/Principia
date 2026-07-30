@@ -170,6 +170,11 @@ class BarycentricRotatingReferenceFrame
       ABSL_GUARDED_BY(lock_);
   mutable CachedDerivatives last_evaluated_secondary_derivatives_
       ABSL_GUARDED_BY(lock_);
+
+  template<typename IF, typename TF>
+  friend bool operator==(
+      BarycentricRotatingReferenceFrame<IF, TF> const& left,
+      BarycentricRotatingReferenceFrame<IF, TF> const& right);
 };
 
 template<typename InertialFrame, typename ThisFrame>

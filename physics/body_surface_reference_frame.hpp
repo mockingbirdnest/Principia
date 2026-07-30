@@ -80,6 +80,10 @@ class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame,
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<RotatingBody<InertialFrame> const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
+
+  template<typename IF, typename TF>
+  friend bool operator==(BodySurfaceReferenceFrame<IF, TF> const& left,
+                         BodySurfaceReferenceFrame<IF, TF> const& right);
 };
 
 template<typename InertialFrame, typename ThisFrame>

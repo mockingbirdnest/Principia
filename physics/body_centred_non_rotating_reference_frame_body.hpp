@@ -128,6 +128,7 @@ bool operator==(
     BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const& left,
     BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const&
         right) {
+  CHECK_EQ(left.ephemeris_, right.ephemeris_);
   return left.centre_ == right.centre_;
 }
 

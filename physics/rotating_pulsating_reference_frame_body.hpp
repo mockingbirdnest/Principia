@@ -233,6 +233,7 @@ template<typename InertialFrame, typename ThisFrame>
 bool operator==(
     RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame> const& left,
     RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame> const& right) {
+  CHECK_EQ(left.ephemeris_, right.ephemeris_);
   // The comparison does not depend on the order of the bodies.  Note that the
   // bodies are pointers to objects held by the ephemeris, so comparing them is
   // legitimate.
