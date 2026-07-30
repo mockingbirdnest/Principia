@@ -81,7 +81,10 @@ ToThisFrameAtTime(Instant const& t) const {
 template<typename InertialFrame, typename ThisFrame>
 void BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::HashValue(
     absl::HashState state) const {
-  absl::HashState::combine(std::move(state), centre_);
+  absl::HashState::combine(
+      std::move(state),
+      serialization::BodyCentredNonRotatingReferenceFrame::extension.number(),
+      centre_);
 }
 
 template<typename InertialFrame, typename ThisFrame>

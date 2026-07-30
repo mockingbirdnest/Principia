@@ -168,7 +168,11 @@ void BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::HashValue(
       primaries_.begin(), primaries_.end());
   absl::flat_hash_set<not_null<MassiveBody const*>> const secondaries_set(
       secondaries_.begin(), secondaries_.end());
-  absl::HashState::combine(std::move(state), primaries_set, secondaries_set);
+  absl::HashState::combine(
+      std::move(state),
+      serialization::BarycentricRotatingReferenceFrame::extension.number(),
+      primaries_set,
+      secondaries_set);
 }
 
 template<typename InertialFrame, typename ThisFrame>

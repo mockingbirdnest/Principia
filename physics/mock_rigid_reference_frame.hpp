@@ -28,6 +28,8 @@ class MockRigidReferenceFrame : public RigidReferenceFrame<InertialFrame,
   MOCK_METHOD(Instant, t_min, (), (const, override));
   MOCK_METHOD(Instant, t_max, (), (const, override));
 
+  MOCK_METHOD(void, HashValue, (absl::HashState state), (const, override));
+
   MOCK_METHOD(void,
               WriteToMessage,
               (not_null<serialization::ReferenceFrame*> message),

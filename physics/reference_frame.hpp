@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "absl/hash/ha"
+#include "absl/hash/hash.h"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"

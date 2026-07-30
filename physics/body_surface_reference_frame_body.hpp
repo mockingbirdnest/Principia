@@ -71,7 +71,10 @@ BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 template<typename InertialFrame, typename ThisFrame>
 void BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::HashValue(
     absl::HashState state) const {
-  absl::HashState::combine(std::move(state), centre_);
+  absl::HashState::combine(
+      std::move(state),
+      serialization::BodySurfaceReferenceFrame::extension.number(),
+      centre_);
 }
 
 template<typename InertialFrame, typename ThisFrame>
