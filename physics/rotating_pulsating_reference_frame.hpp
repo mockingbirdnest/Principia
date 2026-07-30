@@ -109,7 +109,16 @@ class RotatingPulsatingReferenceFrame
   std::vector<not_null<MassiveBody const*>> const secondaries_;
   BarycentricRotatingReferenceFrame<InertialFrame, RotatingFrame> const
       rotating_frame_;
+
+  template<typename IF, typename TF>
+  friend bool operator==(RotatingPulsatingReferenceFrame<IF, TF> const& left,
+                         RotatingPulsatingReferenceFrame<IF, TF> const& right);
 };
+
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame> const& right);
 
 }  // namespace internal
 

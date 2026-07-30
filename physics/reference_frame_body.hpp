@@ -73,6 +73,33 @@ ReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
   }
 }
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(ReferenceFrame<InertialFrame, ThisFrame> const& left,
+                ReferenceFrame<InertialFrame, ThisFrame> const& right) {
+  // We exceptionally use RTTI here because `operator==` is hopelessly broken
+  // in C++ in the presence of inheritance.
+  if (typeid(left) != typeid(right)) {
+    return false;
+  }
+  {
+    using RotatingPulsating =
+        RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>;
+    if (typeid(left) == typeid(RotatingPulsating)) {
+      return static_cast<RotatingPulsating const&>(left) ==
+             static_cast<RotatingPulsating const&>(right);
+    }
+  }
+  {
+    using Rigid = RigidReferenceFrame<InertialFrame, ThisFrame>;
+    if (typeid(left) == typeid(Rigid)) {
+      return static_cast<Rigid const&>(left) ==
+             static_cast<Rigid const&>(right);
+    }
+  }
+  LOG(FATAL) << "Unrecognized reference frame types: " << typeid(left).name()
+             << " and " << typeid(right).name();
+}
+
 }  // namespace internal
 }  // namespace _reference_frame
 }  // namespace physics

@@ -397,6 +397,47 @@ ComputeGeometricAccelerations(
   euler_acceleration = -dΩ_over_dt * r / Radian;
 }
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(RigidReferenceFrame<InertialFrame, ThisFrame> const& left,
+                RigidReferenceFrame<InertialFrame, ThisFrame> const& right) {
+  if (typeid(left) != typeid(right)) {
+    return false;
+  }
+  {
+    using BarycentricRotating =
+        BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>;
+    if (typeid(left) == typeid(BarycentricRotating)) {
+      return static_cast<BarycentricRotating const&>(left) ==
+             static_cast<BarycentricRotating const&>(right);
+    }
+  }
+  {
+    using BodyCentredBodyDirection =
+        BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>;
+    if (typeid(left) == typeid(BodyCentredBodyDirection)) {
+      return static_cast<BodyCentredBodyDirection const&>(left) ==
+             static_cast<BodyCentredBodyDirection const&>(right);
+    }
+  }
+  {
+    using BodyCentredNonRotating =
+        BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>;
+    if (typeid(left) == typeid(BodyCentredNonRotating)) {
+      return static_cast<BodyCentredNonRotating const&>(left) ==
+             static_cast<BodyCentredNonRotating const&>(right);
+    }
+  }
+  {
+    using BodySurface = BodySurfaceReferenceFrame<InertialFrame, ThisFrame>;
+    if (typeid(left) == typeid(BodySurface)) {
+      return static_cast<BodySurface const&>(left) ==
+             static_cast<BodySurface const&>(right);
+    }
+  }
+  LOG(FATAL) << "Unrecognized reference frame types: " << typeid(left).name()
+             << " and " << typeid(right).name();
+}
+
 }  // namespace internal
 }  // namespace _rigid_reference_frame
 }  // namespace physics

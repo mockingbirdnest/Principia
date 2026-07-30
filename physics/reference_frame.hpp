@@ -123,6 +123,10 @@ class ReferenceFrame {
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 };
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(ReferenceFrame<InertialFrame, ThisFrame> const& left,
+                ReferenceFrame<InertialFrame, ThisFrame> const& right);
+
 }  // namespace internal
 
 using internal::Frenet;
