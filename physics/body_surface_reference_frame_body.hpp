@@ -122,6 +122,13 @@ BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
              acceleration_of_to_frame_origin);
 }
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& right) {
+  return left.centre_ == right.centre_;
+}
+
 }  // namespace internal
 }  // namespace _body_surface_reference_frame
 }  // namespace physics

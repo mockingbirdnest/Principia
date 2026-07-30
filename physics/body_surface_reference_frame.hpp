@@ -82,6 +82,11 @@ class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame,
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
 };
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& right);
+
 }  // namespace internal
 
 using internal::BodySurfaceReferenceFrame;

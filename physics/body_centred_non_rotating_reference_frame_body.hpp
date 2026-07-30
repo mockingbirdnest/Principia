@@ -123,6 +123,14 @@ MotionOfThisFrame(Instant const& t) const {
                  ComputeGravitationalAccelerationOnMassiveBody(centre_, t));
 }
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const&
+        right) {
+  return left.centre_ == right.centre_;
+}
+
 }  // namespace internal
 }  // namespace _body_centred_non_rotating_reference_frame
 }  // namespace physics

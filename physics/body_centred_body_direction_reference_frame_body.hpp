@@ -253,6 +253,21 @@ BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
              primary_degrees_of_freedom.velocity());
 }
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame> const&
+        left,
+    BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame> const&
+        right) {
+  if (left.primary == nullptr || right.primary == nullptr) {
+    // One of the frames is a target frame.
+    return false;
+  } else {
+    return left.primary_ == right.primary_ &&
+           left.secondary_ == right.secondary_;
+  }
+}
+
 }  // namespace internal
 }  // namespace _body_centred_body_direction_reference_frame
 }  // namespace physics

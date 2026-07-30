@@ -96,6 +96,11 @@ class BodyCentredNonRotatingReferenceFrame
   OrthogonalMap<InertialFrame, ThisFrame> const orthogonal_map_;
 };
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const&
+        right);
 
 }  // namespace internal
 

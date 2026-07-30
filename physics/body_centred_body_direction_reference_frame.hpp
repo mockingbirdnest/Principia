@@ -117,6 +117,12 @@ class BodyCentredBodyDirectionReferenceFrame
       secondary_trajectory_;
 };
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(BodyCentredBodyDirectionReferenceFrame<InertialFrame,
+                                                       ThisFrame> const& left,
+                BodyCentredBodyDirectionReferenceFrame<InertialFrame,
+                                                       ThisFrame> const& right);
+
 }  // namespace internal
 
 using internal::BodyCentredBodyDirectionReferenceFrame;

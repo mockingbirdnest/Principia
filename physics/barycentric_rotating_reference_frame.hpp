@@ -172,6 +172,11 @@ class BarycentricRotatingReferenceFrame
       ABSL_GUARDED_BY(lock_);
 };
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame> const& right);
+
 }  // namespace internal
 
 using internal::BarycentricRotatingReferenceFrame;

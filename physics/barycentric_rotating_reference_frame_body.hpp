@@ -453,6 +453,25 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
       barycentre_degrees_of_freedom.velocity());
 }
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame> const& right) {
+  // The comparison does not depend on the order of the bodies.  Note that the
+  // bodies are pointers to objects held by the ephemeris, so comparing them is
+  // legitimate.
+  absl::flat_hash_set<not_null<MassiveBody const*>> const left_primaries(
+      left.primaries_.begin(), left.primaries_.end());
+  absl::flat_hash_set<not_null<MassiveBody const*>> const right_primaries(
+      right.primaries_.begin(), right.primaries_.end());
+  absl::flat_hash_set<not_null<MassiveBody const*>> const left_secondaries(
+      left.secondaries_.begin(), left.secondaries_.end());
+  absl::flat_hash_set<not_null<MassiveBody const*>> const right_secondaries(
+      right.secondaries_.begin(), right.secondaries_.end());
+  return left_primaries == right_primaries &&
+         left_secondaries == right_secondaries;
+}
+
 }  // namespace internal
 }  // namespace _barycentric_rotating_reference_frame
 }  // namespace physics
