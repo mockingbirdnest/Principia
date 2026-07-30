@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "absl/hash/ha"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -113,6 +114,11 @@ class ReferenceFrame {
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
+  virtual void HashValue(absl::HashState state) const = 0;
+
+  template<typename H, typename IF, typename TF>
+  friend H AbslHashValue(H state, const ReferenceFrame<IF, TF>& frame);
+
   virtual void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const = 0;
 
@@ -121,11 +127,6 @@ class ReferenceFrame {
   static not_null<std::unique_ptr<ReferenceFrame>>
       ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
-
-  virtual void HashValue(absl::HashState state) const = 0;
-
-  template<typename H, typename IF, typename TF>
-  friend H AbslHashValue(H state, const ReferenceFrame<IF, TF>& frame);
 };
 
 template<typename InertialFrame, typename ThisFrame>
@@ -135,7 +136,7 @@ bool operator==(ReferenceFrame<InertialFrame, ThisFrame> const& left,
 template<typename H, typename InertialFrame, typename ThisFrame>
 H AbslHashValue(H state,
                 const ReferenceFrame<InertialFrame, ThisFrame>& frame) {
-  value.HashValue(absl::HashState::Create(&state));
+  frame.HashValue(absl::HashState::Create(&state));
   return std::move(state);
 }
 

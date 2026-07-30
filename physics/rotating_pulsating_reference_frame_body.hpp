@@ -156,6 +156,17 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::HashValue(
+    absl::HashState state) const {
+  absl::flat_hash_set<not_null<MassiveBody const*>> const primaries_set(
+      primaries_.begin(), primaries_.end());
+  absl::flat_hash_set<not_null<MassiveBody const*>> const secondaries_set(
+      secondaries_.begin(), secondaries_.end());
+  absl::HashState::combine(
+      std::move(state), primaries_set, secondaries_set, rotating_frame_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
 void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::WriteToMessage(
     not_null<serialization::ReferenceFrame*> message) const {
   auto* const extension = message->MutableExtension(

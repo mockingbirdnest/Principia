@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "absl/hash/hash.h"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -84,6 +85,8 @@ class RotatingPulsatingReferenceFrame
   SpecificEnergy GeometricPotential(
       Instant const& t,
       Position<ThisFrame> const& position) const override;
+
+  void HashValue(absl::HashState state) const override;
 
   void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const override;

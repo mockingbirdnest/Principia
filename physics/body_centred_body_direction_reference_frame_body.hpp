@@ -126,6 +126,12 @@ ToThisFrameAtTime(Instant const& t) const {
 
 template<typename InertialFrame, typename ThisFrame>
 void BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
+    HashValue(absl::HashState state) const {
+  absl::HashState::combine(std::move(state), primary_, secondary_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   auto* const extension =
       message->MutableExtension(

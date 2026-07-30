@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "absl/hash/hash.h"
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -87,6 +88,8 @@ class BarycentricRotatingReferenceFrame
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
+
+  void HashValue(absl::HashState state) const override;
 
   void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const override;

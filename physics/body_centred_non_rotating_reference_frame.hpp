@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "absl/hash/hash.h"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -71,6 +72,8 @@ class BodyCentredNonRotatingReferenceFrame
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
+
+  void HashValue(absl::HashState state) const override;
 
   void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const override;

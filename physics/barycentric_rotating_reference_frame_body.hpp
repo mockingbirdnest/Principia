@@ -162,6 +162,16 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+void BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::HashValue(
+    absl::HashState state) const {
+  absl::flat_hash_set<not_null<MassiveBody const*>> const primaries_set(
+      primaries_.begin(), primaries_.end());
+  absl::flat_hash_set<not_null<MassiveBody const*>> const secondaries_set(
+      secondaries_.begin(), secondaries_.end());
+  absl::HashState::combine(std::move(state), primaries_set, secondaries_set);
+}
+
+template<typename InertialFrame, typename ThisFrame>
 void BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   auto* const extension = message->MutableExtension(
@@ -461,6 +471,7 @@ bool operator==(
   // The comparison does not depend on the order of the bodies.  Note that the
   // bodies are pointers to objects held by the ephemeris, so comparing them is
   // legitimate.
+  //TODO(phl)Precompute?
   absl::flat_hash_set<not_null<MassiveBody const*>> const left_primaries(
       left.primaries_.begin(), left.primaries_.end());
   absl::flat_hash_set<not_null<MassiveBody const*>> const right_primaries(

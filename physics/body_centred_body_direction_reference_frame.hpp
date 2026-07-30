@@ -72,6 +72,8 @@ class BodyCentredBodyDirectionReferenceFrame
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
+  void HashValue(absl::HashState state) const override;
+
   void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const override;
 

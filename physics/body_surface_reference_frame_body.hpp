@@ -69,6 +69,12 @@ BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+void BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::HashValue(
+    absl::HashState state) const {
+  absl::HashState::combine(std::move(state), centre_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
 void BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   message->MutableExtension(
