@@ -14,6 +14,7 @@
 #include "base/recurring_thread.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/flight_plan_optimization_driver.hpp"
@@ -48,6 +49,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimization_driver;
@@ -290,6 +292,17 @@ class Vessel {
   // Returns "vessel_name (GUID)".
   std::string ShortDebugString() const;
 
+  // Storage of frame-specific payload for the benefit of the clients.
+  struct Payload {
+    Interval<Instant> plottable_time_interval{.min = InfinitePast,
+                                              .max = InfiniteFuture};
+  };
+
+  void ClearPayload(not_null<PlottingFrame const*> frame);
+  void SetPayload(not_null<std::unique_ptr<PlottingFrame const>> frame,
+                  Payload payload);
+  Payload GetPayload(not_null<PlottingFrame const*> frame) const;
+
   // The vessel must satisfy `is_initialized()`.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,
                               PileUp::SerializationIndexForPileUp const&
@@ -407,7 +420,7 @@ class Vessel {
   LazilyDeserializedFlightPlan const& selected_flight_plan() const;
 
   GUID const guid_;
-  std::string name_;
+  std::string const name_;
 
   MasslessBody const body_;
   Ephemeris<Barycentric>::AdaptiveStepParameters
@@ -472,6 +485,24 @@ class Vessel {
   std::optional<OrbitAnalyser> orbit_analyser_;
 
   static std::atomic_bool synchronous_;
+
+  struct PlottingFrameKeyHash {
+    using is_transparent = void;
+    size_t operator()(PlottingFrame const* key) const;
+    size_t operator()(PlottingFrameKey const& key) const;
+  };
+
+  struct PlottingFrameKeyEq {
+    using is_transparent = void;
+    bool operator()(PlottingFrameKey const& lhs,
+                    PlottingFrameKey const& rhs) const;
+    bool operator()(PlottingFrame const* lhs,
+                    PlottingFrameKey const& rhs) const;
+    bool operator()(PlottingFrameKey const& lhs,
+                    PlottingFrame const* rhs) const;
+  };
+
+  absl::flat_hash_map<PlottingFrameKey, Payload> payloads_;
 
   friend class ksp_plugin::VesselTest;
 };

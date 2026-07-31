@@ -6,6 +6,7 @@
 #include "geometry/permutation.hpp"
 #include "ksp_plugin/manœuvre.hpp"
 #include "physics/reference_frame.hpp"
+#include "physics/reference_frame_key.hpp"
 #include "physics/rigid_reference_frame.hpp"
 
 namespace principia {
@@ -17,6 +18,7 @@ using namespace principia::geometry::_frame;
 using namespace principia::geometry::_permutation;
 using namespace principia::ksp_plugin::_manœuvre;
 using namespace principia::physics::_reference_frame;
+using namespace principia::physics::_reference_frame_key;
 using namespace principia::physics::_rigid_reference_frame;
 
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
@@ -169,6 +171,7 @@ using MainBodyCentred = Frame<serialization::Frame::PluginTag,
 using NavigationFrame = RigidReferenceFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
 using PlottingFrame = ReferenceFrame<Barycentric, Navigation>;
+using PlottingFrameKey = ReferenceFrameKey<Barycentric, Navigation>;
 
 // The map between the vector spaces of `WorldSun` and `AliceSun`.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
@@ -194,6 +197,7 @@ using internal::NavigationFrame;
 using internal::NavigationManœuvre;
 using internal::PartPrincipalAxes;
 using internal::PlottingFrame;
+using internal::PlottingFrameKey;
 using internal::RigidPart;
 using internal::World;
 using internal::WorldSun;

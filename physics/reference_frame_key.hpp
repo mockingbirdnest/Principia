@@ -34,6 +34,23 @@ class ReferenceFrameKey {
     return *lhs.frame_ == *rhs.frame_;
   }
 
+  // Support for heterogeneous lookups.
+  struct absl_container_hash {
+    using F = ReferenceFrame<InertialFrame, ThisFrame>;
+    using is_transparent = void;
+    size_t operator()(F const* frame) const;
+    size_t operator()(ReferenceFrameKey const& key) const;
+  };
+
+  struct absl_container_eq {
+    using F = ReferenceFrame<InertialFrame, ThisFrame>;
+    using is_transparent = void;
+    bool operator()(ReferenceFrameKey const& lhs,
+                    ReferenceFrameKey const& rhs) const;
+    bool operator()(F const* lhs, ReferenceFrameKey const& rhs) const;
+    bool operator()(ReferenceFrameKey const& lhs, F const* rhs) const;
+  };
+
  private:
   not_null<std::shared_ptr<ReferenceFrame<InertialFrame, ThisFrame>>> frame_;
 };
