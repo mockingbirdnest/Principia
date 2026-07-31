@@ -234,7 +234,7 @@ TEST_F(BarycentricRotatingReferenceFrameTest, Serialization) {
             read_big_small_frame->GeometricAcceleration(t, point_dof));
 }
 
-TEST_F(BarycentricRotatingReferenceFrameTest, Hashing) {
+TEST_F(BarycentricRotatingReferenceFrameTest, Key) {
   auto small_big_frame =
       std::make_unique<BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>>(
           ephemeris_.get(), small_, big_);

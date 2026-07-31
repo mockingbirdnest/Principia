@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <utility>
 
 #include "base/not_null.hpp"
 #include "physics/reference_frame.hpp"
@@ -23,22 +24,18 @@ class ReferenceFrameKey {
           frame);
 
   template<typename H>
-  friend H AbslHashValue(H h, ReferenceFrameKey const& key);
+  friend H AbslHashValue(H h, ReferenceFrameKey const& key) {
+    return H::combine(std::move(h), *key.frame_);
+  }
+
+  friend bool operator==(ReferenceFrameKey const& lhs,
+                         ReferenceFrameKey const& rhs) {
+    return *lhs.frame_ == *rhs.frame_;
+  }
 
  private:
   not_null<std::shared_ptr<ReferenceFrame<InertialFrame, ThisFrame>>> frame_;
-
-  template<typename IF, typename TF>
-  friend bool operator==(ReferenceFrameKey<IF, TF> const& lhs,
-                         ReferenceFrameKey<IF, TF> const& rhs);
 };
-
-template<typename H, typename InertialFrame, typename ThisFrame>
-H AbslHashValue(H h, ReferenceFrameKey<InertialFrame, ThisFrame> const& key);
-
-template<typename InertialFrame, typename ThisFrame>
-bool operator==(ReferenceFrameKey<InertialFrame, ThisFrame> const& lhs,
-                ReferenceFrameKey<InertialFrame, ThisFrame> const& rhs);
 
 }  // namespace internal
 

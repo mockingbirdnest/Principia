@@ -50,8 +50,9 @@ class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame,
   static_assert(ThisFrame::may_rotate);
 
  public:
-  BodySurfaceReferenceFrame(not_null<Ephemeris<InertialFrame> const*> ephemeris,
-                          not_null<RotatingBody<InertialFrame> const*> centre);
+  BodySurfaceReferenceFrame(
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      not_null<RotatingBody<InertialFrame> const*> centre);
 
   not_null<RotatingBody<InertialFrame> const*> centre() const;
 

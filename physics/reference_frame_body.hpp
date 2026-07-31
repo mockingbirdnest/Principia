@@ -90,14 +90,18 @@ bool operator==(ReferenceFrame<InertialFrame, ThisFrame> const& left,
     }
   }
   {
+    // The type must be descended from `RigidReferenceFrame`, but we cannot
+    // check this using `typeid`.
+    // TODO(phl): Improve once we have reflection in C++26.
     using Rigid = RigidReferenceFrame<InertialFrame, ThisFrame>;
-    if (typeid(left) == typeid(Rigid)) {
-      return static_cast<Rigid const&>(left) ==
-             static_cast<Rigid const&>(right);
-    }
+    auto const* left_rigid = dynamic_cast<Rigid const*>(&left);
+    auto const* right_rigid = dynamic_cast<Rigid const*>(&right);
+    CHECK_NE(nullptr, left_rigid)
+        << "The type of left is " << typeid(left).name();
+    CHECK_NE(nullptr, right_rigid)
+        << "The type of right is " << typeid(right).name();
+    return *left_rigid == *right_rigid;
   }
-  LOG(FATAL) << "Unrecognized reference frame types: " << typeid(left).name()
-             << " and " << typeid(right).name();
 }
 
 }  // namespace internal

@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "absl/hash/hash_testing.h"
 #include "astronomy/frames.hpp"
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/frame.hpp"
@@ -18,6 +19,7 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/reference_frame_key.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
@@ -52,6 +54,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_reference_frame_key;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
@@ -277,8 +280,19 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ConstructFromOneBody) {
   }
 }
 
-TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Hashing) {
+TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Key) {
+  auto small_big_frame = std::make_unique<
+      BodyCentredBodyDirectionReferenceFrame<ICRS, BigSmallFrame>>(
+      ephemeris_.get(), small_, big_);
   EXPECT_EQ(*big_small_frame_, *big_small_frame_);
+  EXPECT_NE(*small_big_frame, *big_small_frame_);
+
+  ReferenceFrameKey<ICRS, BigSmallFrame> const big_small_frame_key(
+      std::move(big_small_frame_));
+  ReferenceFrameKey<ICRS, BigSmallFrame> const small_big_frame_key(
+      std::move(small_big_frame));
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {big_small_frame_key, big_small_frame_key, small_big_frame_key}));
 }
 
 }  // namespace physics
