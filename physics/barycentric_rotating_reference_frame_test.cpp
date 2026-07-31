@@ -17,6 +17,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/reference_frame_key.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
@@ -48,6 +49,7 @@ using namespace principia::physics::_barycentric_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_reference_frame_key;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
@@ -98,7 +100,7 @@ class BarycentricRotatingReferenceFrameTest : public ::testing::Test {
             {big_initial_state_, small_initial_state_},
             {big_gravitational_parameter_, small_gravitational_parameter_})) {
     EXPECT_OK(ephemeris_->Prolong(t0_ + 2 * period_));
-    big_small_frame_ = std::make_shared<
+    big_small_frame_ = std::make_unique<
         BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>>(
         ephemeris_.get(), big_, small_);
   }
@@ -115,7 +117,7 @@ class BarycentricRotatingReferenceFrameTest : public ::testing::Test {
   GravitationalParameter const small_gravitational_parameter_;
   DegreesOfFreedom<ICRS> const centre_of_mass_initial_state_;
 
-  std::shared_ptr<BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>>
+  std::unique_ptr<BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>>
       big_small_frame_;
 };
 
@@ -233,25 +235,18 @@ TEST_F(BarycentricRotatingReferenceFrameTest, Serialization) {
 }
 
 TEST_F(BarycentricRotatingReferenceFrameTest, Hashing) {
-  auto const small_big_frame =
-      std::make_shared<BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>>(
+  auto small_big_frame =
+      std::make_unique<BarycentricRotatingReferenceFrame<ICRS, BigSmallFrame>>(
           ephemeris_.get(), small_, big_);
   EXPECT_EQ(*big_small_frame_, *big_small_frame_);
   EXPECT_NE(*small_big_frame, *big_small_frame_);
+
+  ReferenceFrameKey<ICRS, BigSmallFrame> const big_small_frame_key(
+      std::move(big_small_frame_));
+  ReferenceFrameKey<ICRS, BigSmallFrame> const small_big_frame_key(
+      std::move(small_big_frame));
   EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
-      {big_small_frame_, big_small_frame_, small_big_frame}));
-
-  //TODO(phl)example
-  //auto const hash = [](std::shared_ptr<F> const& frame) {
-  //  return absl::Hash<F>{}(*frame);
-  //};
-  //auto const eq = [](std::shared_ptr<F> const& left,
-  //                   std::shared_ptr<F> const& right) {
-  //  return *left == *right;
-  //};
-
-  //absl::flat_hash_map<std::shared_ptr<F>, int, decltype(hash), decltype(eq)> m;
-  //m.insert(std::make_pair(std::move(small_small_frame1), 3));
+      {big_small_frame_key, big_small_frame_key, small_big_frame_key}));
 }
 
 }  // namespace physics
