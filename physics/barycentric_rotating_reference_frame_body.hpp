@@ -61,16 +61,14 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
           std::accumulate(secondaries_.begin(),
                           secondaries_.end(),
                           GravitationalParameter{},
-                          &add_gravitational_parameter)) {
-  absl::btree_set<not_null<MassiveBody const*>> primary_set(primaries_.begin(),
-                                                            primaries_.end());
-  absl::btree_set<not_null<MassiveBody const*>> secondary_set(
-      secondaries_.begin(), secondaries_.end());
+                          &add_gravitational_parameter)),
+      primary_set_(primaries_.begin(), primaries_.end()),
+      secondary_set_(secondaries_.begin(), secondaries_.end()) {
   absl::btree_set<not_null<MassiveBody const*>> intersection;
-  std::set_intersection(primary_set.begin(),
-                        primary_set.end(),
-                        secondary_set.begin(),
-                        secondary_set.end(),
+  std::set_intersection(primary_set_.begin(),
+                        primary_set_.end(),
+                        secondary_set_.begin(),
+                        secondary_set_.end(),
                         std::inserter(intersection, intersection.begin()));
   auto const names = [](auto const& bodies) {
     return absl::StrJoin(
@@ -81,9 +79,9 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
         });
   };
   CHECK_GE(primaries_.size(), 1) << names(primaries_);
-  CHECK_EQ(primary_set.size(), primaries_.size()) << names(primaries_);
+  CHECK_EQ(primary_set_.size(), primaries_.size()) << names(primaries_);
   CHECK_GE(secondaries_.size(), 1) << names(secondaries_);
-  CHECK_EQ(secondary_set.size(), secondaries_.size()) << names(secondaries_);
+  CHECK_EQ(secondary_set_.size(), secondaries_.size()) << names(secondaries_);
   CHECK_EQ(intersection.size(), 0) << names(intersection);
 }
 
@@ -164,15 +162,11 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 template<typename InertialFrame, typename ThisFrame>
 void BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::HashValue(
     absl::HashState state) const {
-  absl::flat_hash_set<not_null<MassiveBody const*>> const primaries_set(
-      primaries_.begin(), primaries_.end());
-  absl::flat_hash_set<not_null<MassiveBody const*>> const secondaries_set(
-      secondaries_.begin(), secondaries_.end());
   absl::HashState::combine(
       std::move(state),
       serialization::BarycentricRotatingReferenceFrame::extension.number(),
-      primaries_set,
-      secondaries_set);
+      primary_set_,
+      secondary_set_);
 }
 
 template<typename InertialFrame, typename ThisFrame>
@@ -475,17 +469,8 @@ bool operator==(
   // The comparison does not depend on the order of the bodies.  Note that the
   // bodies are pointers to objects held by the ephemeris, so comparing them is
   // legitimate.
-  //TODO(phl)Precompute?
-  absl::flat_hash_set<not_null<MassiveBody const*>> const left_primaries(
-      left.primaries_.begin(), left.primaries_.end());
-  absl::flat_hash_set<not_null<MassiveBody const*>> const right_primaries(
-      right.primaries_.begin(), right.primaries_.end());
-  absl::flat_hash_set<not_null<MassiveBody const*>> const left_secondaries(
-      left.secondaries_.begin(), left.secondaries_.end());
-  absl::flat_hash_set<not_null<MassiveBody const*>> const right_secondaries(
-      right.secondaries_.begin(), right.secondaries_.end());
-  return left_primaries == right_primaries &&
-         left_secondaries == right_secondaries;
+  return left.primary_set_ == right.primary_set_ &&
+         left.secondary_set_ == right.secondary_set_;
 }
 
 }  // namespace internal

@@ -11,6 +11,7 @@
 #include <memory>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/hash/hash.h"
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
@@ -163,6 +164,9 @@ class BarycentricRotatingReferenceFrame
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   std::vector<not_null<MassiveBody const*>> const primaries_;
   std::vector<not_null<MassiveBody const*>> const secondaries_;
+  // Ordered for intersection.
+  absl::btree_set<not_null<MassiveBody const*>> const primary_set_;
+  absl::btree_set<not_null<MassiveBody const*>> const secondary_set_;
   GravitationalParameter const primary_gravitational_parameter_;
   GravitationalParameter const secondary_gravitational_parameter_;
   mutable absl::Mutex lock_;
