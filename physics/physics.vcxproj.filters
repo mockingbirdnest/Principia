@@ -257,6 +257,12 @@
     <ClInclude Include="lagrange_equipotentials_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="reference_frame_key.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="reference_frame_key_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">

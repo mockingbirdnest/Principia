@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+#include "absl/container/btree_set.h"
+#include "absl/hash/hash.h"
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -88,6 +90,8 @@ class BarycentricRotatingReferenceFrame
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
+  void HashValue(absl::HashState state) const override;
+
   void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const override;
 
@@ -160,6 +164,9 @@ class BarycentricRotatingReferenceFrame
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   std::vector<not_null<MassiveBody const*>> const primaries_;
   std::vector<not_null<MassiveBody const*>> const secondaries_;
+  // Ordered for intersection.
+  absl::btree_set<not_null<MassiveBody const*>> const primary_set_;
+  absl::btree_set<not_null<MassiveBody const*>> const secondary_set_;
   GravitationalParameter const primary_gravitational_parameter_;
   GravitationalParameter const secondary_gravitational_parameter_;
   mutable absl::Mutex lock_;
@@ -170,7 +177,17 @@ class BarycentricRotatingReferenceFrame
       ABSL_GUARDED_BY(lock_);
   mutable CachedDerivatives last_evaluated_secondary_derivatives_
       ABSL_GUARDED_BY(lock_);
+
+  template<typename IF, typename TF>
+  friend bool operator==(
+      BarycentricRotatingReferenceFrame<IF, TF> const& left,
+      BarycentricRotatingReferenceFrame<IF, TF> const& right);
 };
+
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame> const& right);
 
 }  // namespace internal
 

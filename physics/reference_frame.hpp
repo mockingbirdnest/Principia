@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "absl/hash/hash.h"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -113,6 +114,8 @@ class ReferenceFrame {
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
+  virtual void HashValue(absl::HashState state) const = 0;
+
   virtual void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const = 0;
 
@@ -122,6 +125,10 @@ class ReferenceFrame {
       ReadFromMessage(serialization::ReferenceFrame const& message,
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 };
+
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(ReferenceFrame<InertialFrame, ThisFrame> const& left,
+                ReferenceFrame<InertialFrame, ThisFrame> const& right);
 
 }  // namespace internal
 

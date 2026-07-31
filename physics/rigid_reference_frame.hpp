@@ -190,6 +190,10 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
       Instant const& t) const = 0;
 };
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(RigidReferenceFrame<InertialFrame, ThisFrame> const& left,
+                RigidReferenceFrame<InertialFrame, ThisFrame> const& right);
+
 }  // namespace internal
 
 using internal::RigidReferenceFrame;

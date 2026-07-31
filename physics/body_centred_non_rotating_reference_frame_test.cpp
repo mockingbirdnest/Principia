@@ -1,7 +1,9 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 
 #include <memory>
+#include <utility>
 
+#include "absl/hash/hash_testing.h"
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -15,6 +17,7 @@
 #include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/reference_frame_key.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
@@ -46,6 +49,7 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
+using namespace principia::physics::_reference_frame_key;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_named_quantities;
@@ -209,7 +213,7 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, Serialization) {
 
   EXPECT_TRUE(message.HasExtension(
       serialization::BodyCentredNonRotatingReferenceFrame::extension));
-  auto const extension = message.GetExtension(
+  auto const& extension = message.GetExtension(
       serialization::BodyCentredNonRotatingReferenceFrame::extension);
   EXPECT_TRUE(extension.has_centre());
   EXPECT_EQ(1, extension.centre());
@@ -228,6 +232,22 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, Serialization) {
                         1 * Metre / Second})};
   EXPECT_EQ(small_frame_->GeometricAcceleration(t, point_dof),
             read_small_frame->GeometricAcceleration(t, point_dof));
+}
+
+TEST_F(BodyCentredNonRotatingReferenceFrameTest, Key) {
+  auto mixed_frame =
+      std::make_unique<BodyCentredNonRotatingReferenceFrame<ICRS, Big>>(
+          ephemeris_.get(), solar_system_.massive_body(*ephemeris_, small));
+  EXPECT_EQ(*big_frame_, *big_frame_);
+  EXPECT_EQ(*small_frame_, *small_frame_);
+  EXPECT_NE(*big_frame_, *mixed_frame);
+
+  ReferenceFrameKey<ICRS, Big> const big_frame_key(
+      std::move(big_frame_));
+  ReferenceFrameKey<ICRS, Big> const mixed_frame_key(
+      std::move(mixed_frame));
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {big_frame_key, big_frame_key, mixed_frame_key}));
 }
 
 }  // namespace physics

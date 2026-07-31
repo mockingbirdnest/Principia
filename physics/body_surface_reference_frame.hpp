@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "absl/hash/hash.h"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -49,8 +50,9 @@ class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame,
   static_assert(ThisFrame::may_rotate);
 
  public:
-  BodySurfaceReferenceFrame(not_null<Ephemeris<InertialFrame> const*> ephemeris,
-                          not_null<RotatingBody<InertialFrame> const*> centre);
+  BodySurfaceReferenceFrame(
+      not_null<Ephemeris<InertialFrame> const*> ephemeris,
+      not_null<RotatingBody<InertialFrame> const*> centre);
 
   not_null<RotatingBody<InertialFrame> const*> centre() const;
 
@@ -59,6 +61,8 @@ class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame,
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
+
+  void HashValue(absl::HashState state) const override;
 
   void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const override;
@@ -80,7 +84,16 @@ class BodySurfaceReferenceFrame : public RigidReferenceFrame<InertialFrame,
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<RotatingBody<InertialFrame> const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
+
+  template<typename IF, typename TF>
+  friend bool operator==(BodySurfaceReferenceFrame<IF, TF> const& left,
+                         BodySurfaceReferenceFrame<IF, TF> const& right);
 };
+
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& right);
 
 }  // namespace internal
 
