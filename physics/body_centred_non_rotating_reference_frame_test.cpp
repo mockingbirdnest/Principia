@@ -248,7 +248,6 @@ TEST_F(BodyCentredNonRotatingReferenceFrameTest, Key) {
       std::move(mixed_frame));
   EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
       {big_frame_key, big_frame_key, mixed_frame_key}));
-
 }
 
 }  // namespace physics
