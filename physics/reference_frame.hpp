@@ -116,9 +116,6 @@ class ReferenceFrame {
 
   virtual void HashValue(absl::HashState state) const = 0;
 
-  template<typename H, typename IF, typename TF>
-  friend H AbslHashValue(H state, const ReferenceFrame<IF, TF>& frame);
-
   virtual void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const = 0;
 
@@ -132,13 +129,6 @@ class ReferenceFrame {
 template<typename InertialFrame, typename ThisFrame>
 bool operator==(ReferenceFrame<InertialFrame, ThisFrame> const& left,
                 ReferenceFrame<InertialFrame, ThisFrame> const& right);
-
-template<typename H, typename InertialFrame, typename ThisFrame>
-H AbslHashValue(H state,
-                const ReferenceFrame<InertialFrame, ThisFrame>& frame) {
-  frame.HashValue(absl::HashState::Create(&state));
-  return std::move(state);
-}
 
 }  // namespace internal
 

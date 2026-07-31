@@ -162,12 +162,12 @@ void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::HashValue(
       primaries_.begin(), primaries_.end());
   absl::flat_hash_set<not_null<MassiveBody const*>> const secondaries_set(
       secondaries_.begin(), secondaries_.end());
-  absl::HashState::combine(
+  auto s = absl::HashState::combine(
       std::move(state),
       serialization::RotatingPulsatingReferenceFrame::extension.number(),
       primaries_set,
-      secondaries_set,
-      rotating_frame_);
+      secondaries_set);
+  rotating_frame_.HashValue(std::move(s));
 }
 
 template<typename InertialFrame, typename ThisFrame>

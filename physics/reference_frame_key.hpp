@@ -25,7 +25,8 @@ class ReferenceFrameKey {
 
   template<typename H>
   friend H AbslHashValue(H h, ReferenceFrameKey const& key) {
-    return H::combine(std::move(h), *key.frame_);
+    key.frame_->HashValue(absl::HashState::Create(&h));
+    return std::move(h);
   }
 
   friend bool operator==(ReferenceFrameKey const& lhs,
