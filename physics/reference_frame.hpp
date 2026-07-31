@@ -116,6 +116,12 @@ class ReferenceFrame {
 
   virtual void HashValue(absl::HashState state) const = 0;
 
+  template<typename H>
+  friend H AbslHashValue(H h, ReferenceFrame const& frame) {
+    (&frame)->HashValue(absl::HashState::Create(&h));
+    return std::move(h);
+  }
+
   virtual void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const = 0;
 

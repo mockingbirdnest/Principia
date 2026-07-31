@@ -301,6 +301,8 @@ class Vessel {
   void ClearPayload(not_null<PlottingFrame const*> frame);
   void SetPayload(not_null<std::unique_ptr<PlottingFrame const>> frame,
                   Payload payload);
+  // Returns a default-constructed payload if there is no payload for the given
+  // frame.
   Payload GetPayload(not_null<PlottingFrame const*> frame) const;
 
   // The vessel must satisfy `is_initialized()`.
@@ -420,7 +422,7 @@ class Vessel {
   LazilyDeserializedFlightPlan const& selected_flight_plan() const;
 
   GUID const guid_;
-  std::string const name_;
+  std::string name_;
 
   MasslessBody const body_;
   Ephemeris<Barycentric>::AdaptiveStepParameters
@@ -485,22 +487,6 @@ class Vessel {
   std::optional<OrbitAnalyser> orbit_analyser_;
 
   static std::atomic_bool synchronous_;
-
-  struct PlottingFrameKeyHash {
-    using is_transparent = void;
-    size_t operator()(PlottingFrame const* key) const;
-    size_t operator()(PlottingFrameKey const& key) const;
-  };
-
-  struct PlottingFrameKeyEq {
-    using is_transparent = void;
-    bool operator()(PlottingFrameKey const& lhs,
-                    PlottingFrameKey const& rhs) const;
-    bool operator()(PlottingFrame const* lhs,
-                    PlottingFrameKey const& rhs) const;
-    bool operator()(PlottingFrameKey const& lhs,
-                    PlottingFrame const* rhs) const;
-  };
 
   absl::flat_hash_map<PlottingFrameKey, Payload> payloads_;
 

@@ -637,6 +637,25 @@ std::string Vessel::ShortDebugString() const {
   return name_ + " (" + guid_ + ")";
 }
 
+void Vessel::ClearPayload(not_null<PlottingFrame const*> const frame) {
+  payloads_.erase(frame);
+}
+
+void Vessel::SetPayload(not_null<std::unique_ptr<PlottingFrame const>> frame,
+                        Payload payload) {
+  PlottingFrameKey key(std::move(frame));
+  payloads_[key] = std::move(payload);
+}
+
+Vessel::Payload Vessel::GetPayload(
+    not_null<PlottingFrame const*> const frame) const {
+  if (auto const it = payloads_.find(frame); it == payloads_.end()) {
+    return Payload{};
+  } else {
+    return it->second;
+  }
+}
+
 void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
                             PileUp::SerializationIndexForPileUp const&
                                 serialization_index_for_pile_up) const {

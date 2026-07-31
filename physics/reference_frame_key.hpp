@@ -20,7 +20,7 @@ template<typename InertialFrame, typename ThisFrame>
 class ReferenceFrameKey {
  public:
   explicit ReferenceFrameKey(
-      not_null<std::unique_ptr<ReferenceFrame<InertialFrame, ThisFrame>>>
+      not_null<std::unique_ptr<ReferenceFrame<InertialFrame, ThisFrame> const>>
           frame);
 
   template<typename H>
@@ -38,7 +38,7 @@ class ReferenceFrameKey {
   struct absl_container_hash {
     using F = ReferenceFrame<InertialFrame, ThisFrame>;
     using is_transparent = void;
-    size_t operator()(F const* frame) const;
+    size_t operator()(not_null<F const*> frame) const;
     size_t operator()(ReferenceFrameKey const& key) const;
   };
 
@@ -47,12 +47,13 @@ class ReferenceFrameKey {
     using is_transparent = void;
     bool operator()(ReferenceFrameKey const& lhs,
                     ReferenceFrameKey const& rhs) const;
-    bool operator()(F const* lhs, ReferenceFrameKey const& rhs) const;
-    bool operator()(ReferenceFrameKey const& lhs, F const* rhs) const;
+    bool operator()(not_null<F const*> lhs, ReferenceFrameKey const& rhs) const;
+    bool operator()(ReferenceFrameKey const& lhs, not_null<F const*> rhs) const;
   };
 
  private:
-  not_null<std::shared_ptr<ReferenceFrame<InertialFrame, ThisFrame>>> frame_;
+  not_null<std::shared_ptr<ReferenceFrame<InertialFrame, ThisFrame> const>>
+      frame_;
 };
 
 }  // namespace internal
