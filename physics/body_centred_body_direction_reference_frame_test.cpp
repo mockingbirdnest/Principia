@@ -1,6 +1,7 @@
 #include "physics/body_centred_body_direction_reference_frame.hpp"
 
 #include <memory>
+#include <utility>
 
 #include "absl/hash/hash_testing.h"
 #include "astronomy/frames.hpp"

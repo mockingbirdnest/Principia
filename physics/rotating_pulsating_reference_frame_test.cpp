@@ -1,6 +1,7 @@
 #include "physics/rotating_pulsating_reference_frame.hpp"
 
 #include <memory>
+#include <utility>
 
 #include "absl/hash/hash_testing.h"
 #include "absl/status/status.h"
