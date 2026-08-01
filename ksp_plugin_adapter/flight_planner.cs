@@ -729,7 +729,7 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
         with_seconds: true);
   }
 
-  internal string FormatPlanLength(double value) {
+  internal string FormatPlanLength(double value, double _, double __) {
     return FormatPositiveTimeSpan(value -
                                   plugin.FlightPlanGetInitialTime(
                                       predicted_vessel.id.ToString()));

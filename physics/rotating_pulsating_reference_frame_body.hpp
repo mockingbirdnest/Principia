@@ -40,16 +40,14 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
     : ephemeris_(ephemeris),
       primaries_(std::move(primaries)),
       secondaries_(std::move(secondaries)),
-      rotating_frame_(ephemeris_, primaries_, secondaries_) {
-  absl::btree_set<not_null<MassiveBody const*>> primary_set(primaries_.begin(),
-                                                            primaries_.end());
-  absl::btree_set<not_null<MassiveBody const*>> secondary_set(
-      secondaries_.begin(), secondaries_.end());
+      rotating_frame_(ephemeris_, primaries_, secondaries_),
+      primary_set_(primaries_.begin(), primaries_.end()),
+      secondary_set_(secondaries_.begin(), secondaries_.end()) {
   absl::btree_set<not_null<MassiveBody const*>> intersection;
-  std::set_intersection(primary_set.begin(),
-                        primary_set.end(),
-                        secondary_set.begin(),
-                        secondary_set.end(),
+  std::set_intersection(primary_set_.begin(),
+                        primary_set_.end(),
+                        secondary_set_.begin(),
+                        secondary_set_.end(),
                         std::inserter(intersection, intersection.begin()));
   auto const names = [](auto const& bodies) {
     return absl::StrJoin(
@@ -60,9 +58,9 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
         });
   };
   CHECK_GE(primaries_.size(), 1) << names(primaries_);
-  CHECK_EQ(primary_set.size(), primaries_.size()) << names(primaries_);
+  CHECK_EQ(primary_set_.size(), primaries_.size()) << names(primaries_);
   CHECK_GE(secondaries_.size(), 1) << names(secondaries_);
-  CHECK_EQ(secondary_set.size(), secondaries_.size()) << names(secondaries_);
+  CHECK_EQ(secondary_set_.size(), secondaries_.size()) << names(secondaries_);
   CHECK_EQ(intersection.size(), 0) << names(intersection);
 }
 
@@ -156,6 +154,17 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::GeometricPotential(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::HashValue(
+    absl::HashState state) const {
+  auto s = absl::HashState::combine(
+      std::move(state),
+      serialization::RotatingPulsatingReferenceFrame::extension.number(),
+      primary_set_,
+      secondary_set_);
+  rotating_frame_.HashValue(std::move(s));
+}
+
+template<typename InertialFrame, typename ThisFrame>
 void RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::WriteToMessage(
     not_null<serialization::ReferenceFrame*> message) const {
   auto* const extension = message->MutableExtension(
@@ -227,6 +236,19 @@ auto RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::ToRotatingFrame(
   auto const& [r, ṙ] = r_derivatives_1;
   return SimilarMotion<ThisFrame, RotatingFrame>::DilatationAboutOrigin(
       Homothecy<double, ThisFrame, RotatingFrame>(r / (1 * Metre)), ṙ / r);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame> const& right) {
+  CHECK_EQ(left.ephemeris_, right.ephemeris_);
+  // The comparison does not depend on the order of the bodies.  Note that the
+  // bodies are pointers to objects held by the ephemeris, so comparing them is
+  // legitimate.
+  return left.primary_set_ == right.primary_set_ &&
+         left.secondary_set_ == right.secondary_set_ &&
+         left.rotating_frame_ == right.rotating_frame_;
 }
 
 }  // namespace internal

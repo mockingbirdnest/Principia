@@ -69,6 +69,9 @@ class Permutation : public LinearMap<Permutation<FromFrame, ToFrame>,
 
   Sign Determinant() const;
 
+  // Only use for interchange.
+  CoordinatePermutation coordinate_permutation() const;
+
   Permutation<ToFrame, FromFrame> Inverse() const;
 
   template<typename Scalar>

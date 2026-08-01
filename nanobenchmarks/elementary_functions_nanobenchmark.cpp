@@ -70,7 +70,7 @@ NANOBENCHMARK(principia_sin_cos) {
 NANOBENCHMARK(payne_hanek) {
   DoublePrecision<Angle> x_reduced;
   std::int64_t quadrant;
-  PayneHanek<61>(x * Radian, x_reduced, quadrant);
+  PayneHanekReduction<61>(x * Radian, x_reduced, quadrant);
   return x_reduced.value / Radian;
 }
 

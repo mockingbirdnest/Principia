@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "absl/hash/hash.h"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -39,6 +40,20 @@ using Frenet = geometry::_frame::Frame<serialization::Frame::PhysicsTag,
                                        Arbitrary,
                                        Handedness::Right,
                                        serialization::Frame::FRENET>;
+
+// A permutation of the Frenet frame used to express a vector in spherical
+// coordinates.  The polar axis is the z axis of `PermutedFrenet` and the
+// reference direction on the equator is its x axis.  Through the identity
+// permutation, these axes map to the binormal and tangent axes of `Frenet`,
+// respectively.  Therefore, if 𝒫 is the (even) permutation from
+// `PermutedFrenet` to `Frenet`, then 𝒫⁻¹(B) is the polar axis of the spherical
+// coordinates and 𝒫⁻¹(T) is the reference direction on the equator.
+template<typename Frame>
+using PermutedFrenet =
+    geometry::_frame::Frame<serialization::Frame::PhysicsTag,
+                            Arbitrary,
+                            Handedness::Right,
+                            serialization::Frame::PERMUTED_FRENET>;
 
 // The definition of a reference frame `ThisFrame` in arbitrary motion with
 // respect to the inertial reference frame `InertialFrame`.
@@ -99,6 +114,8 @@ class ReferenceFrame {
       Instant const& t,
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
+  virtual void HashValue(absl::HashState state) const = 0;
+
   virtual void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const = 0;
 
@@ -109,10 +126,15 @@ class ReferenceFrame {
                       not_null<Ephemeris<InertialFrame> const*> ephemeris);
 };
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(ReferenceFrame<InertialFrame, ThisFrame> const& left,
+                ReferenceFrame<InertialFrame, ThisFrame> const& right);
+
 }  // namespace internal
 
-using internal::ReferenceFrame;
 using internal::Frenet;
+using internal::PermutedFrenet;
+using internal::ReferenceFrame;
 
 }  // namespace _reference_frame
 }  // namespace physics

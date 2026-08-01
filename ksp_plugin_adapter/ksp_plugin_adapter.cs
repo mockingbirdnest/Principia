@@ -307,8 +307,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       bad_installation_dialog_.Hide();
     } else {
       is_bad_installation_ = true;
+      Interface.GetVersion(build_date : out string _,
+                           version    : out string version,
+                           platform   : out string _);
       bad_installation_dialog_.message = L10N.CacheFormat(
           "#Principia_DLLFailedToLoad",
+          version,
           load_error);
       bad_installation_dialog_.Show();
     }
@@ -2075,7 +2079,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   stock_velocity_at_node_time,
                   Vector3d.Cross(stock_velocity_at_node_time,
                                  stock_displacement_from_parent_at_node_time));
-          guidance_node_.DeltaV = ((Vector3d)burn.delta_v).magnitude *
+          guidance_node_.DeltaV = ((Vector3d)burn.intensity.xyz).magnitude *
                                   (Vector3d)(UnityEngine.Quaternion.Inverse(
                                                  stock_frenet_frame_to_world) *
                                              (Vector3d)guidance);

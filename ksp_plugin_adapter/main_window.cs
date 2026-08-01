@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using KSP.Localization;
 
 namespace principia {
@@ -8,14 +7,14 @@ namespace ksp_plugin_adapter {
 
 internal class MainWindow : VesselSupervisedWindowRenderer {
   // Update this section before each release.
-  private const string next_release_name = "Leray";
-  private const int next_release_lunation_number = 328;
+  private const string next_release_name = "Lévy";
+  private const int next_release_lunation_number = 330;
   // This field must appear first for the `AssemblyInfo.cs` to be properly
   // constructed.
   private readonly DateTimeOffset current_release_date_ =
-      new DateTimeOffset(2026, 06, 15, 02, 54, 10, TimeSpan.Zero);
+      new DateTimeOffset(2026, 08, 12, 17, 36, 45, TimeSpan.Zero);
   private readonly DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2026, 07, 14, 09, 43, 37, TimeSpan.Zero);
+      new DateTimeOffset(2026, 09, 11, 03, 27, 00, TimeSpan.Zero);
 
   public MainWindow(PrincipiaPluginAdapter adapter,
                     FlightPlanner flight_planner,
@@ -25,6 +24,15 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
                     PredictedVessel predicted_vessel) : base(
       adapter,
       predicted_vessel) {
+#if KSP_FORCE_LANGUAGE_EN_US
+    Localizer.SwitchToLanguage("en-us");
+#elif KSP_FORCE_LANGUAGE_FR_FR
+    Localizer.SwitchToLanguage("fr-fr");
+#elif KSP_FORCE_LANGUAGE_RU
+    Localizer.SwitchToLanguage("ru");
+#elif KSP_FORCE_LANGUAGE_ZH_CN
+    Localizer.SwitchToLanguage("zh-cn");
+#endif
     adapter_ = adapter;
     flight_planner_ = flight_planner;
     orbit_analyser_ = orbit_analyser;

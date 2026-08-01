@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "absl/hash/hash.h"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -72,6 +73,8 @@ class BodyCentredNonRotatingReferenceFrame
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
+  void HashValue(absl::HashState state) const override;
+
   void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const override;
 
@@ -94,8 +97,18 @@ class BodyCentredNonRotatingReferenceFrame
   not_null<MassiveBody const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
   OrthogonalMap<InertialFrame, ThisFrame> const orthogonal_map_;
+
+  template<typename IF, typename TF>
+  friend bool operator==(
+      BodyCentredNonRotatingReferenceFrame<IF, TF> const& left,
+      BodyCentredNonRotatingReferenceFrame<IF, TF> const& right);
 };
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const&
+        right);
 
 }  // namespace internal
 

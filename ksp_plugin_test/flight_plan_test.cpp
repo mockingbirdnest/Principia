@@ -149,10 +149,9 @@ class FlightPlanTest : public testing::Test {
       SpecificImpulse const& specific_impulse,
       Instant const& initial_time,
       Speed const& Δv) {
-    NavigationManœuvre::Intensity intensity;
-    intensity.Δv = Velocity<Frenet<Navigation>>({Δv,
-                                                 0 * Metre / Second,
-                                                 0 * Metre / Second});
+    NavigationManœuvre::Intensity const intensity({Δv,
+                                                   0 * Metre / Second,
+                                                   0 * Metre / Second});
     NavigationManœuvre::Timing timing;
     timing.initial_time = initial_time;
     return {intensity,
@@ -164,10 +163,9 @@ class FlightPlanTest : public testing::Test {
   }
 
   NavigationManœuvre::Burn MakeFirstBurn() {
-    NavigationManœuvre::Intensity intensity;
-    intensity.Δv = Velocity<Frenet<Navigation>>({1 * Metre / Second,
-                                                 0 * Metre / Second,
-                                                 0 * Metre / Second});
+    NavigationManœuvre::Intensity const intensity({1 * Metre / Second,
+                                                   0 * Metre / Second,
+                                                   0 * Metre / Second});
     NavigationManœuvre::Timing timing;
     timing.initial_time = t0_ + 1 * Second;
     return {intensity,
@@ -185,9 +183,17 @@ class FlightPlanTest : public testing::Test {
   }
 
   NavigationManœuvre::Burn MakeThirdBurn() {
-    auto burn = MakeFirstBurn();
-    *burn.intensity.Δv *= 10;
-    return burn;
+    NavigationManœuvre::Intensity const intensity({10 * Metre / Second,
+                                                   0 * Metre / Second,
+                                                   0 * Metre / Second});
+    NavigationManœuvre::Timing timing;
+    timing.initial_time = t0_ + 1 * Second;
+    return {intensity,
+            timing,
+            /*thrust=*/1 * Newton,
+            /*specific_impulse=*/1 * Newton * Second / Kilogram,
+            make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
+            /*is_inertially_fixed=*/true};
   }
 
   Instant const t0_;
@@ -495,11 +501,10 @@ TEST_F(FlightPlanTest, Issue2331) {
       make_not_null_shared<TestNavigationFrame>(*navigation_frame_);
   bool const inertially_fixed = true;
 
-  NavigationManœuvre::Intensity intensity0;
-  intensity0.Δv =
-      Velocity<Frenet<NavigationFrame>>({2035.0000000000005 * Metre / Second,
-                                         0 * Metre / Second,
-                                         0 * Metre / Second});
+  NavigationManœuvre::Intensity const intensity0(
+      {2035.0000000000005 * Metre / Second,
+       0 * Metre / Second,
+       0 * Metre / Second});
   NavigationManœuvre::Timing timing0;
   timing0.initial_time = J2000 + 3894.6399999993528 * Second;
   NavigationManœuvre::Burn const burn0{intensity0,
@@ -510,11 +515,10 @@ TEST_F(FlightPlanTest, Issue2331) {
                                        inertially_fixed};
   EXPECT_OK(flight_plan.Insert(burn0, 0));
 
-  NavigationManœuvre::Intensity intensity1;
-  intensity1.Δv =
-      Velocity<Frenet<NavigationFrame>>({819.29427681721018 * Metre / Second,
-                                         0 * Metre / Second,
-                                         0 * Metre / Second});
+  NavigationManœuvre::Intensity const intensity1(
+      {819.29427681721018 * Metre / Second,
+       0 * Metre / Second,
+       0 * Metre / Second});
   NavigationManœuvre::Timing timing1;
   timing1.initial_time = J2000 + 4258.1383894665723 * Second;
   NavigationManœuvre::Burn const burn1{intensity1,
@@ -525,8 +529,10 @@ TEST_F(FlightPlanTest, Issue2331) {
                                        inertially_fixed};
   EXPECT_OK(flight_plan.Insert(burn1, 1));
 
-  NavigationManœuvre::Intensity intensity2;
-  intensity2.Δv = Velocity<Frenet<NavigationFrame>>();
+  NavigationManœuvre::Intensity const intensity2(
+      {0 * Metre / Second,
+       0 * Metre / Second,
+       0 * Metre / Second});
   NavigationManœuvre::Timing timing2;
   timing2.initial_time = J2000 + 3894.6399999993528 * Second;
   NavigationManœuvre::Burn const burn2{intensity2,

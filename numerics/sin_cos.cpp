@@ -15,6 +15,7 @@
 #include "numerics/accurate_tables.mathematica.h"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/double_precision.hpp"
+#include "numerics/elementary_functions.hpp"
 #include "numerics/m128d.hpp"
 #include "numerics/osaca.hpp"  // 🧙 For OSACA_*.
 #include "numerics/polynomial_evaluators.hpp"
@@ -31,6 +32,7 @@ using namespace principia::base::_tags;
 using namespace principia::numerics::_accurate_tables;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_double_precision;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_m128d;
 using namespace principia::numerics::_polynomial_evaluators;
 
@@ -48,13 +50,18 @@ using namespace principia::numerics::_polynomial_evaluators;
     /* From argument reduction. */                                           \
     constexpr double abs_x = x > 0 ? x : -x;                                 \
     constexpr std::int64_t n = static_cast<std::int64_t>(x * (2 / π) + 0.5); \
-    constexpr double reduction_value = x - n * C₁;                           \
-    constexpr double reduction_error = n * δC₁;                              \
+    constexpr double abs_n = n > 0 ? n : -n;                                 \
+    constexpr double reduction_value = x - n * cody_waite::C₁;               \
+    constexpr double reduction_error = n * cody_waite::δC₁;                  \
     /* Used to determine whether a better argument reduction is needed. */   \
     constexpr DoublePrecision<double> x_reduced =                            \
         TwoDifference(reduction_value, reduction_error);                     \
     constexpr double abs_x_reduced_value =                                   \
         x_reduced.value > 0 ? x_reduced.value : -x_reduced.value;            \
+    constexpr double two_term_x_reduced_threshold =                          \
+        abs_n * boldo_daumas_li::two_term_x_reduced_threshold_multiplier;    \
+    constexpr double three_term_x_reduced_threshold =                        \
+        abs_n * boldo_daumas_li::three_term_x_reduced_threshold_multiplier;  \
     /* Used in Sin to detect the near-0 case. */                             \
     constexpr double abs_x̃ =                                                 \
         x_reduced.value > 0 ? x_reduced.value : -x_reduced.value;            \
@@ -79,18 +86,80 @@ namespace {
 using Argument = M128D;
 using Value = M128D;
 
+SlowPathCallback slow_path_sin_callback = nullptr;
+SlowPathCallback slow_path_cos_callback = nullptr;
+
 constexpr std::int64_t table_spacing_bits = 9;
 constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
 constexpr double table_spacing = 1.0 / table_spacing_reciprocal;
 constexpr double sin_near_zero_cutoff =
     (table_spacing + 7.0 * table_spacing / 32.0) / 2.0;
 
+constexpr std::int64_t κ₃ = 18;
+
+constexpr double e_sin_near_zero = 0x1.0000'D28F'8E40'4p0;  // 2^-70.281.
+constexpr double e_sin = 0x1.0001'94C0'D077'2p0;  // 2^-69.339.
+constexpr double e_cos = 0x1.0001'58B5'12B3'2p0;  // 2^-69.570.
+
+namespace m128d {
+
+M128D const quiet_NaN(std::numeric_limits<double>::quiet_NaN());
+M128D const zero(0.0);
+
+// Accurate table index.
+M128D const mantissa_index_bits =
+    M128D::MakeFromBits(UINT64_C(0x0000'0000'0000'01ff));
+M128D const accurate_table_index_addend(static_cast<double>(
+    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1)));
+
+// Polynomials.
+M128D const sin_0(-0x1.5555'5555'5555'4p-3);
+M128D const sin_1(0x1.1111'1094'7803'6p-7);
+M128D const sin_near_zero_0(-0x1.5555'5555'5555'4p-3);
+M128D const sin_near_zero_1(0x1.1111'1071'144E'2p-7);
+M128D const cos_0(-0x1.FFFF'FFFF'FFFF'Cp-2);
+M128D const cos_1(0x1.5555'547D'C144'Bp-5);
+
+}  // namespace m128d
+
+namespace boldo_daumas_li {
+
+// These constants must be `constexpr` (and therefore `double`) to be used in
+// the `OSACA_` macros.  See `boldo_daumas_li.wl` for their computation.
+constexpr double applicability_threshold =
+    Pow<2>(π) * (1LL << (std::numeric_limits<double>::digits - κ₃ - 7));
+constexpr double two_term_x_reduced_threshold_multiplier =
+    1.0 / (1LL << (std::numeric_limits<double>::digits - 4 - κ₃));
+constexpr double three_term_x_reduced_threshold_multiplier =
+    (3.0 + (1LL << (κ₃ + 1))) /
+    (1LL << (std::numeric_limits<double>::digits - 4 - κ₃));
+constexpr double addend = 0x1.8000'0000'0000'0p52;
+constexpr double R = 0x1.45F3'06DC'9C88'3p-1;
+constexpr double C₁ = 0x1.921F'B544'42D1'8p0;
+constexpr double C₂ = 0x1.1A62'6331'45C0'0p-54;
+constexpr double C₃ = 0x1.B839'A252'049C'1p-104;
+
+namespace m128d {
+M128D const applicability_threshold(boldo_daumas_li::applicability_threshold);
+M128D const two_term_x_reduced_threshold_multiplier(
+    boldo_daumas_li::two_term_x_reduced_threshold_multiplier);
+M128D const three_term_x_reduced_threshold_multiplier(
+    boldo_daumas_li::three_term_x_reduced_threshold_multiplier);
+M128D const addend(boldo_daumas_li::addend);
+M128D const R(boldo_daumas_li::R);
+M128D const C₁(boldo_daumas_li::C₁);
+M128D const C₂(boldo_daumas_li::C₂);
+M128D const C₃(boldo_daumas_li::C₃);
+}  // namespace m128d
+}  // namespace boldo_daumas_li
+
+namespace cody_waite {
+
 constexpr std::int64_t κ₁ = 8;
 constexpr std::int64_t κʹ₁ = 5;
 constexpr std::int64_t κ₂ = 18;
 constexpr std::int64_t κʹ₂ = 14;
 constexpr std::int64_t κʺ₂ = 15;
-constexpr std::int64_t κ₃ = 18;
 
 // These constants must be `constexpr` (and therefore `double`) to be used in
 // the `OSACA_` macros.
@@ -108,43 +177,21 @@ constexpr double three_term_x_reduced_threshold =
     ((1LL << (-(κ₂ + κʹ₂ + κʺ₂ - std::numeric_limits<double>::digits + 2))) +
      2);
 
-constexpr double e_sin_near_zero = 0x1.0000'D28F'8E40'4p0;  // 2^-70.281.
-constexpr double e_sin = 0x1.0001'94C0'D077'2p0;  // 2^-69.339.
-constexpr double e_cos = 0x1.0001'58B5'12B3'2p0;  // 2^-69.570.
-
-SlowPathCallback slow_path_sin_callback = nullptr;
-SlowPathCallback slow_path_cos_callback = nullptr;
-
 namespace m128d {
-
-M128D const quiet_NaN(std::numeric_limits<double>::quiet_NaN());
-M128D const zero(0.0);
-
-// Argument reduction.
+// TODO(phl): Is this value correct, in particular when used with a power of 2?
+// [BDL09] mentions [Mar00], chapter 10, and specifically C. Roothaan, for this
+// rounding technique, but we have not been able to track that book.
 M128D const mantissa_reduce_shifter(
     static_cast<double>(1LL << (std::numeric_limits<double>::digits - 1)));
 M128D const two_over_π(2.0 / π);
-M128D const C₁(internal::C₁);
-M128D const δC₁(internal::δC₁);
-M128D const C₂(internal::C₂);
-M128D const Cʹ₂(internal::Cʹ₂);
-M128D const δC₂(internal::δC₂);
 
-// Accurate table index.
-M128D const mantissa_index_bits =
-    M128D::MakeFromBits(UINT64_C(0x0000'0000'0000'01ff));
-M128D const accurate_table_index_addend(static_cast<double>(
-    1LL << (std::numeric_limits<double>::digits - table_spacing_bits - 1)));
-
-// Polynomials.
-M128D const sin_0(-0x1.5555'5555'5555'4p-3);
-M128D const sin_1(0x1.1111'1094'7803'6p-7);
-M128D const sin_near_zero_0(-0x1.5555'5555'5555'4p-3);
-M128D const sin_near_zero_1(0x1.1111'1071'144E'2p-7);
-M128D const cos_0(-0x1.FFFF'FFFF'FFFF'Cp-2);
-M128D const cos_1(0x1.5555'547D'C144'Bp-5);
-
+M128D const C₁(cody_waite::C₁);
+M128D const δC₁(cody_waite::δC₁);
+M128D const C₂(cody_waite::C₂);
+M128D const Cʹ₂(cody_waite::Cʹ₂);
+M128D const δC₂(cody_waite::δC₂);
 }  // namespace m128d
+}  // namespace cody_waite
 
 template<FMAPresence fma_presence>
 M128D MaybeFusedMultiplyAdd(M128D const a, M128D const b, M128D const c) {
@@ -244,25 +291,76 @@ Value DetectDangerousRounding(Value const y, Value const δy) {
   }
 }
 
-template<FMAPresence fma_presence, bool preserve_sign>
-FORCE_INLINE void Reduce(Argument const x,
-                         DoublePrecision<Argument>& x_reduced,
-                         std::int64_t& quadrant) {
-  Argument const abs_x = Abs(x);
-  OSACA_IF(abs_x < π / 4) {
-    x_reduced.value = x;
-    x_reduced.error = m128d::zero;
-    quadrant = 0;
-    return;
-  } OSACA_ELSE_IF(abs_x <= two_term_x_threshold) {
+// A large or difficult reduction.  It seems complicated to implement Payne-
+// Hanek for `M128D` because of the floating-point helpers that it uses.
+FORCE_INLINE void PayneHanekReduction(Argument const x,
+                                      DoublePrecision<Argument>& x_reduced,
+                                      std::int64_t& quadrant) {
+  auto const x_double = static_cast<double>(x);
+  DoublePrecision<double> x_reduced_double{uninitialized};
+  _angle_reduction::PayneHanekReduction<61>(
+      x_double, x_reduced_double, quadrant);
+  x_reduced.value = M128D(x_reduced_double.value);
+  x_reduced.error = M128D(x_reduced_double.error);
+}
+
+// This is the reduction technique described in [BDL09].  We are following
+// [Mul16], section 11.2.2.
+FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
+                                         Argument const abs_x,
+                                         DoublePrecision<Argument>& x_reduced,
+                                         std::int64_t& quadrant) {
+  using namespace boldo_daumas_li;
+  namespace m128d = boldo_daumas_li::m128d;
+  OSACA_IF(abs_x <= applicability_threshold) {
+    M128D const n =
+        FusedMultiplyAdd(m128d::R, x, m128d::addend) - m128d::addend;
+    M128D const abs_n = Abs(n);
+    M128D two_term_x_reduced_threshold =
+        abs_n * m128d::two_term_x_reduced_threshold_multiplier;
+    M128D const u = FusedNegatedMultiplyAdd(n, m128d::C₁, x);
+    x_reduced.value = FusedNegatedMultiplyAdd(n, m128d::C₂, u);
+    M128D const abs_x_reduced_value = Abs(x_reduced.value);
+    M128D const ρₕ = n * m128d::C₂;
+    M128D const ρₗ = FusedMultiplySubtract(n, m128d::C₂, ρₕ);
+    DoublePrecision<M128D> const t = QuickTwoDifference(u, ρₕ);
+    x_reduced.error = ((t.value - x_reduced.value) + t.error) - ρₗ;
+    std::int64_t k_int = _mm_cvtsd_si64(static_cast<__m128d>(n));
+    quadrant = k_int & 0b11;
+    OSACA_IF(abs_x_reduced_value >= two_term_x_reduced_threshold) {
+      return;
+    } else {
+      M128D three_term_x_reduced_threshold =
+          abs_n * m128d::three_term_x_reduced_threshold_multiplier;
+      M128D const w = n * m128d::C₃;
+      x_reduced -= w;
+      M128D const abs_x_reduced_value = Abs(x_reduced.value);
+      OSACA_IF(abs_x_reduced_value >= three_term_x_reduced_threshold) {
+        return;
+      }
+    }
+  }
+  PayneHanekReduction(x, x_reduced, quadrant);
+}
+
+// This is the reduction technique described in [Mul+10], section 10.1.1, with
+// either 2 or 3 terms for approximating π / 2.  See also
+// `documentation/Sin Cos.pdf`.  Note that we cannot use FMA in this code.
+template<bool preserve_sign>
+FORCE_INLINE void CodyWaiteReduction(Argument const x,
+                                     Argument const abs_x,
+                                     DoublePrecision<Argument>& x_reduced,
+                                     std::int64_t& quadrant) {
+  using namespace cody_waite;
+  namespace m128d = cody_waite::m128d;
+  OSACA_IF(abs_x <= two_term_x_threshold) {
     // We are not very sensitive to rounding errors in this expression, because
     // in the worst case it could cause the reduced angle to jump from the
     // vicinity of π / 4 to the vicinity of -π / 4 with appropriate adjustment
     // of the quadrant.
     M128D const sign = Sign(x);
     M128D n_double =
-        MaybeFusedMultiplyAdd<fma_presence>(
-            abs_x, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+        (abs_x * m128d::two_over_π + m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
     // Don't move the computation of `n` after the if, it generates some extra
@@ -272,11 +370,10 @@ FORCE_INLINE void Reduce(Argument const x,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₁, x);
+      y = x - n_double * m128d::C₁;
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(
-          n_double, m128d::C₁, abs_x);
+      y = abs_x - n_double * m128d::C₁;
     }
 
     Argument const δy = n_double * m128d::δC₁;
@@ -290,8 +387,7 @@ FORCE_INLINE void Reduce(Argument const x,
     // Same code as above.
     M128D const sign = Sign(x);
     M128D n_double =
-        MaybeFusedMultiplyAdd<fma_presence>(
-            abs_x, m128d::two_over_π, m128d::mantissa_reduce_shifter) -
+        (abs_x * m128d::two_over_π + m128d::mantissa_reduce_shifter) -
         m128d::mantissa_reduce_shifter;
 
     Argument y;
@@ -299,11 +395,10 @@ FORCE_INLINE void Reduce(Argument const x,
     if constexpr (preserve_sign) {
       n_double = n_double ^ sign;
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(n_double, m128d::C₂, x);
+      y = x - n_double * m128d::C₂;
     } else {
       n = _mm_cvtsd_si64(static_cast<__m128d>(n_double));
-      y = MaybeFusedNegatedMultiplyAdd<fma_presence>(
-          n_double, m128d::C₂, abs_x);
+      y = abs_x - n_double * m128d::C₂;
     }
 
     Argument const yʹ = n_double * m128d::Cʹ₂;
@@ -316,14 +411,26 @@ FORCE_INLINE void Reduce(Argument const x,
       return;
     }
   }
-  // A large or difficult reduction.  It seems complicated to implement Payne-
-  // Hanek for `M128D` because of the floating-point helpers that it uses.
-  {
-    auto const x_double = static_cast<double>(x);
-    DoublePrecision<double> x_reduced_double;
-    PayneHanek<61>(x_double, x_reduced_double, quadrant);
-    x_reduced.value = M128D(x_reduced_double.value);
-    x_reduced.error = M128D(x_reduced_double.error);
+  PayneHanekReduction(x, x_reduced, quadrant);
+}
+
+template<FMAPresence fma_presence, bool preserve_sign>
+FORCE_INLINE void Reduce(Argument const x,
+                         DoublePrecision<Argument>& x_reduced,
+                         std::int64_t& quadrant) {
+  static_assert(fma_presence != FMAPresence::Unknown);
+  Argument const abs_x = Abs(x);
+  OSACA_IF(abs_x < π / 4) {
+    x_reduced.value = x;
+    x_reduced.error = m128d::zero;
+    quadrant = 0;
+    return;
+  } else {
+    if constexpr (fma_presence == FMAPresence::Present) {
+      BoldoDaumasLiReduction(x, abs_x, x_reduced, quadrant);
+    } else {
+      CodyWaiteReduction<preserve_sign>(x, abs_x, x_reduced, quadrant);
+    }
   }
 }
 
@@ -387,13 +494,14 @@ Value SinImplementation(DoublePrecision<Argument> const x_reduced) {
         TwoProductAdd<fma_presence>(signed_cos_xₖ, h, signed_sin_xₖ);
     auto const h² = h * h;
     auto const h³ = h² * h;
-    auto const h_plus_δx̃² = h * ((signed_δx̃ + signed_δx̃) + h);
+    auto const h_plus_δx̃² = (signed_δx̃ + signed_δx̃) + h;
     auto const polynomial_term =
         MaybeFusedMultiplyAdd<fma_presence>(
             signed_cos_xₖ,
             MaybeFusedMultiplyAdd<fma_presence>(
                 h³, SinPolynomial<fma_presence>(h²), signed_δx̃),
-            (signed_sin_xₖ * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
+            ((signed_sin_xₖ * h) * h_plus_δx̃²) *
+                CosPolynomial<fma_presence>(h²)) +
         sin_xₖ_plus_h_cos_xₖ.error;
     return DetectDangerousRounding<fma_presence, e_sin>(
         sin_xₖ_plus_h_cos_xₖ.value, polynomial_term);
@@ -424,13 +532,13 @@ Value CosImplementation(DoublePrecision<Argument> const x_reduced) {
       TwoProductNegatedAdd<fma_presence>(sin_xₖ, h, cos_xₖ);
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const h_plus_δx̃² = h * ((signed_δx̃ + signed_δx̃) + h);
+  auto const h_plus_δx̃² = (signed_δx̃ + signed_δx̃) + h;
   auto const polynomial_term =
       MaybeFusedNegatedMultiplyAdd<fma_presence>(
           sin_xₖ,
           MaybeFusedMultiplyAdd<fma_presence>(
               h³, SinPolynomial<fma_presence>(h²), signed_δx̃),
-          (cos_xₖ * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
+          ((cos_xₖ * h) * h_plus_δx̃²) * CosPolynomial<fma_presence>(h²)) +
       cos_xₖ_minus_h_sin_xₖ.error;
   return DetectDangerousRounding<fma_presence, e_cos>(
       cos_xₖ_minus_h_sin_xₖ.value, polynomial_term);
@@ -469,12 +577,12 @@ SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
       TwoProductNegatedAdd<fma_presence>(sin_xₖ, h, cos_xₖ);
   auto const h² = h * h;
   auto const h³ = h² * h;
-  auto const h_plus_δx̃² = h * ((signed_δx̃ + signed_δx̃) + h);
+  auto const h_plus_δx̃² = (signed_δx̃ + signed_δx̃) + h;
 
   auto const h³_sin_polynomial = MaybeFusedMultiplyAdd<fma_presence>(
       h³, SinPolynomial<fma_presence>(h²), signed_δx̃);
   auto const h_plus_e²_cos_polynomial =
-      h_plus_δx̃² * CosPolynomial<fma_presence>(h²);
+      h_plus_δx̃² * (h * CosPolynomial<fma_presence>(h²));
 
   auto const sin_polynomial_term =
       MaybeFusedMultiplyAdd<fma_presence>(

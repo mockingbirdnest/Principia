@@ -49,8 +49,6 @@
       <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
       <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <CustomBuild Include="ksp_plugin.proto">
       <FileType>Document</FileType>
       <AdditionalInputs>$(Protoc)</AdditionalInputs>
@@ -79,6 +77,13 @@
       <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
       <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
+    <CustomBuild Include="options.proto">
+      <FileType>Document</FileType>
+      <AdditionalInputs>$(Protoc)</AdditionalInputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)')) -I"$(SolutionDir)..\Google\protobuf\src"</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
+    </CustomBuild>
     <CustomBuild Include="journal.proto">
       <FileType>Document</FileType>
       <AdditionalInputs>$(Protoc)</AdditionalInputs>
@@ -102,6 +107,7 @@
     <ClInclude Include="journal.pb.h" />
     <ClInclude Include="ksp_plugin.pb.h" />
     <ClInclude Include="numerics.pb.h" />
+    <ClInclude Include="options.pb.h" />
     <ClInclude Include="physics.pb.h" />
     <ClInclude Include="quantities.pb.h" />
     <ClInclude Include="resource.h" />
@@ -115,6 +121,7 @@
     <ClCompile Include="journal.pb.cc" />
     <ClCompile Include="ksp_plugin.pb.cc" />
     <ClCompile Include="numerics.pb.cc" />
+    <ClCompile Include="options.pb.cc" />
     <ClCompile Include="physics.pb.cc" />
     <ClCompile Include="quantities.pb.cc" />
     <ClCompile Include="testing_utilities.pb.cc" />

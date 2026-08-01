@@ -14,6 +14,8 @@ namespace _journal_proto_processor {
 namespace internal {
 
 using ::google::protobuf::Descriptor;
+using ::google::protobuf::EnumDescriptor;
+using ::google::protobuf::EnumValueDescriptor;
 using ::google::protobuf::FieldDescriptor;
 using ::google::protobuf::FieldOptions;
 using ::google::protobuf::FileDescriptor;
@@ -25,6 +27,7 @@ class JournalProtoProcessor final {
   // ksp_plugin_adapter/interface.generated.cs
   std::vector<std::string> GetCsInterfaceMethodDeclarations() const;
   std::vector<std::string> GetCsInterfaceSymbolDeclarations() const;
+  std::vector<std::string> GetCsInterchangeEnumDeclarations() const;
   std::vector<std::string> GetCsInterchangeTypeDeclarations() const;
 
   // ksp_plugin_adapter/marshalers.generated.cs
@@ -32,6 +35,7 @@ class JournalProtoProcessor final {
 
   // ksp_plugin/interface.generated.h
   std::vector<std::string> GetCxxInterfaceMethodDeclarations() const;
+  std::vector<std::string> GetCxxInterchangeEnumDeclarations() const;
   std::vector<std::string> GetCxxInterchangeTypeDeclarations() const;
 
   // journal/profiles.generated.{h,cc}
@@ -73,6 +77,7 @@ class JournalProtoProcessor final {
   void ProcessRequiredBoolField(FieldDescriptor const* descriptor);
   void ProcessRequiredBytesField(FieldDescriptor const* descriptor);
   void ProcessRequiredDoubleField(FieldDescriptor const* descriptor);
+  void ProcessRequiredEnumField(FieldDescriptor const* descriptor);
   void ProcessRequiredInt32Field(FieldDescriptor const* descriptor);
   void ProcessRequiredInt64Field(FieldDescriptor const* descriptor);
   void ProcessRequiredUint32Field(FieldDescriptor const* descriptor);
@@ -92,6 +97,7 @@ class JournalProtoProcessor final {
                     std::vector<FieldDescriptor const*>* field_descriptors);
   void ProcessReturn(Descriptor const* descriptor);
 
+  void ProcessInterchangeEnum(EnumDescriptor const* descriptor);
   void ProcessInterchangeMessage(Descriptor const* descriptor);
   void ProcessMethodExtension(Descriptor const* descriptor);
 
@@ -320,6 +326,12 @@ class JournalProtoProcessor final {
   // The interchange messages that are represented by a class (as opposed to a
   // struct) in the C# code.
   std::set<Descriptor const*> cs_interchange_classes_;
+
+  // The C#/C++ definition of a type corresponding to an interchange enum.  The
+  // key is a descriptor for an interchange enum.
+  std::map<EnumDescriptor const*, std::string> cs_interchange_enum_declaration_;
+  std::map<EnumDescriptor const*, std::string>
+      cxx_interchange_enum_declaration_;
 
   // The C#/C++ definition of a type corresponding to an interchange message.
   // The key is a descriptor for an interchange message.

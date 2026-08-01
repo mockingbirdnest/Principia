@@ -13,6 +13,7 @@
 #include "absl/strings/str_split.h"
 #include "base/array.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/permutation.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
@@ -33,6 +34,7 @@ namespace interface {
 
 using namespace principia::base::_array;
 using namespace principia::geometry::_orthogonal_map;
+using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
@@ -168,6 +170,16 @@ struct XYZConverter<R3Element<MomentOfInertia>> {
   }
 };
 
+template<>
+struct XYZConverter<R3Element<Speed>> {
+  static constexpr Speed mts_unit = Metre / Second;
+  static R3Element<Speed> FromXYZ(XYZ const& xyz) {
+    return R3Element<Speed>(xyz.x * (Metre / Second),
+                            xyz.y * (Metre / Second),
+                            xyz.z * (Metre / Second));
+  }
+};
+
 inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
 }
@@ -205,7 +217,7 @@ inline bool operator==(Burn const& left, Burn const& right) {
                           right.specific_impulse_in_seconds_g0) &&
          left.frame == right.frame &&
          NaNIndependentEq(left.initial_time, right.initial_time) &&
-         left.delta_v == right.delta_v;
+         left.intensity == right.intensity;
 }
 
 inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
@@ -218,6 +230,23 @@ inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                           right.length_integration_tolerance) &&
          NaNIndependentEq(left.speed_integration_tolerance,
                           right.speed_integration_tolerance);
+}
+
+inline bool operator==(Intensity const& left, Intensity const& right) {
+  if (left.coordinate_system != right.coordinate_system) {
+    return false;
+  }
+  switch (left.coordinate_system) {
+    case CoordinateSystem::CARTESIAN_TNB:
+      return left.xyz == right.xyz;
+    case CoordinateSystem::SPHERICAL_TNB:
+    case CoordinateSystem::SPHERICAL_NBT:
+    case CoordinateSystem::SPHERICAL_BTN:
+      return left.spherical_coordinates == right.spherical_coordinates;
+    default:
+      LOG(FATAL) << "Unexpected coordinate system "
+                 << static_cast<unsigned char>(left.coordinate_system);
+  }
 }
 
 inline bool operator==(Interval const& left, Interval const& right) {
@@ -331,6 +360,15 @@ inline bool operator==(SolarTimesOfNodes const& left,
              right.mean_solar_times_of_ascending_nodes &&
          left.mean_solar_times_of_descending_nodes ==
              right.mean_solar_times_of_descending_nodes;
+}
+
+inline bool operator==(SphericalCoordinates const& left,
+                       SphericalCoordinates const& right) {
+  return NaNIndependentEq(left.radius, right.radius) &&
+         NaNIndependentEq(left.latitude_in_degrees,
+                          right.latitude_in_degrees) &&
+         NaNIndependentEq(left.longitude_in_degrees,
+                          right.longitude_in_degrees);
 }
 
 inline bool operator==(Status const& left, Status const& right) {
@@ -504,6 +542,12 @@ inline FromXYZ<R3Element<MomentOfInertia>>(XYZ const& xyz) {
   return XYZConverter<R3Element<MomentOfInertia>>::FromXYZ(xyz);
 }
 
+template<>
+R3Element<Speed>
+inline FromXYZ<R3Element<Speed>>(XYZ const& xyz) {
+  return XYZConverter<R3Element<Speed>>::FromXYZ(xyz);
+}
+
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
@@ -537,6 +581,34 @@ inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
           .speed_integration_tolerance =
               adaptive_step_parameters.speed_integration_tolerance() /
               (Metre / Second)};
+}
+
+inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
+  CoordinateSystem coordinate_system;
+  if (intensity.has_spherical_coordinates()) {
+    switch (intensity.permutation().coordinate_permutation()) {
+      case EvenPermutation::XYZ: {
+        coordinate_system = CoordinateSystem::SPHERICAL_TNB;
+        break;
+      }
+      case EvenPermutation::YZX: {
+        coordinate_system = CoordinateSystem::SPHERICAL_NBT;
+        break;
+      }
+      case EvenPermutation::ZXY: {
+        coordinate_system = CoordinateSystem::SPHERICAL_BTN;
+        break;
+      }
+      default:
+        LOG(FATAL) << "Unexpected permutation: " << intensity.permutation();
+    }
+  } else {
+    coordinate_system = CoordinateSystem::CARTESIAN_TNB;
+  }
+  return {.coordinate_system = coordinate_system,
+          .xyz = ToXYZ(intensity.Δv_cartesian_coordinates()),
+          .spherical_coordinates =
+              ToSphericalCoordinates(intensity.Δv_spherical_coordinates())};
 }
 
 inline KeplerianElements ToKeplerianElements(
@@ -618,6 +690,15 @@ inline Status* ToNewStatus(absl::Status const& status) {
   }
 }
 
+inline SphericalCoordinates ToSphericalCoordinates(
+    geometry::_r3_element::SphericalCoordinates<Speed> const&
+        spherical_coordinates) {
+  return SphericalCoordinates{
+      .radius = spherical_coordinates.radius / (Metre / Second),
+      .latitude_in_degrees = spherical_coordinates.latitude / Degree,
+      .longitude_in_degrees = spherical_coordinates.longitude / Degree};
+}
+
 inline WXYZ ToWXYZ(Quaternion const& quaternion) {
   return {.w = quaternion.real_part(),
           .x = quaternion.imaginary_part().x,
@@ -631,6 +712,12 @@ inline XY ToXY(RP2Point<Length, Camera> const& rp2_point) {
 
 inline XYZ ToXYZ(R3Element<double> const& r3_element) {
   return {.x = r3_element.x, .y = r3_element.y, .z = r3_element.z};
+}
+
+inline XYZ ToXYZ(R3Element<Speed> const& r3_element) {
+  return {.x = r3_element.x / (Metre / Second),
+          .y = r3_element.y / (Metre / Second),
+          .z = r3_element.z / (Metre / Second)};
 }
 
 inline XYZ ToXYZ(Position<World> const& position) {

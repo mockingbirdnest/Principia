@@ -79,6 +79,15 @@ ToThisFrameAtTime(Instant const& t) const {
 }
 
 template<typename InertialFrame, typename ThisFrame>
+void BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::HashValue(
+    absl::HashState state) const {
+  absl::HashState::combine(
+      std::move(state),
+      serialization::BodyCentredNonRotatingReferenceFrame::extension.number(),
+      centre_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
 void BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   message->MutableExtension(
@@ -121,6 +130,15 @@ MotionOfThisFrame(Instant const& t) const {
              /*angular_acceleration_of_to_frame=*/{},
              /*acceleration_of_to_frame_origin=*/ephemeris_->
                  ComputeGravitationalAccelerationOnMassiveBody(centre_, t));
+}
+
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BodyCentredNonRotatingReferenceFrame<InertialFrame, ThisFrame> const&
+        right) {
+  CHECK_EQ(left.ephemeris_, right.ephemeris_);
+  return left.centre_ == right.centre_;
 }
 
 }  // namespace internal

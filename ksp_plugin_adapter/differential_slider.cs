@@ -5,7 +5,9 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class DifferentialSlider : ScalingRenderer {
-  public delegate string ValueFormatter(double value);
+  public delegate string ValueFormatter(double value,
+                                        double min_value,
+                                        double max_value);
 
   public delegate bool ValueParser(string s, out double value);
 
@@ -15,12 +17,13 @@ internal class DifferentialSlider : ScalingRenderer {
                             double log10_lower_rate,
                             double log10_upper_rate,
                             ValueFormatter formatter,
-                            UnityEngine.TextAnchor alignment =
-                                UnityEngine.TextAnchor.MiddleRight,
+                            UnityEngine.TextAnchor
+                                alignment = UnityEngine.TextAnchor.MiddleRight,
                             ValueParser parser = null,
                             double zero_value = 0,
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
+                            bool modular = false,
                             UnityEngine.Color? text_colour = null,
                             int label_width = 3,
                             int field_width = 5,
@@ -32,23 +35,7 @@ internal class DifferentialSlider : ScalingRenderer {
     alignment_ = alignment;
     formatter_ = formatter;
     if (parser == null) {
-      // As a special exemption we allow a comma as the decimal separator and
-      // the hyphen-minus instead of the minus sign.
-      // We also remove grouping marks, since .NET does not like those in the
-      // fractional part.  Remove leading figure spaces so that a sign may be
-      // entered after them, see #3480; turn any remaining figure spaces into
-      // 0s, in case the user edits a blank leading digit.
-      parser_ = (string s, out double v) => double.TryParse(
-          s.Replace(',', '.').Replace('-', '−').Replace("'", "")
-           .TrimStart(figure_space)
-           .Replace(figure_space, '0'),
-          NumberStyles.AllowDecimalPoint |
-          NumberStyles.AllowLeadingSign |
-          NumberStyles.AllowLeadingWhite |
-          NumberStyles.AllowThousands |
-          NumberStyles.AllowTrailingWhite,
-          Culture.culture.NumberFormat,
-          out v);
+      parser_ = TryParseDouble;
     } else {
       parser_ = parser;
     }
@@ -58,6 +45,7 @@ internal class DifferentialSlider : ScalingRenderer {
     display_zero_button_ = display_zero_button;
     min_value_ = min_value;
     max_value_ = max_value;
+    modular_ = modular;
     text_colour_ = text_colour;
   }
 
@@ -72,7 +60,7 @@ internal class DifferentialSlider : ScalingRenderer {
       value_ = value;
       // Reformat systematically, even if the value has not changed numerically,
       // as it may have been edited all the same (e.g., remove zeroes).
-      formatted_value_ = formatter_(value_.Value);
+      formatted_value_ = formatter_(value_.Value, min_value_, max_value_);
     }
   }
 
@@ -82,7 +70,7 @@ internal class DifferentialSlider : ScalingRenderer {
     set {
       if (!value_.HasValue || value_ != value) {
         value_ = value;
-        formatted_value_ = formatter_(value_.Value);
+        formatted_value_ = formatter_(value_.Value, min_value_, max_value_);
       }
     }
   }
@@ -109,7 +97,7 @@ internal class DifferentialSlider : ScalingRenderer {
         // fudge factor to account for uncertainty in text/double conversions.
         var style = Style.Aligned(alignment_, UnityEngine.GUI.skin.textField);
         if (!parser_(formatted_value_, out double v1) ||
-            v1 > max_value_ + 0.1) {
+            (!modular_ && v1 > max_value_ + 0.1)) {
           style = Style.Warning(style);
         }
 
@@ -184,7 +172,8 @@ internal class DifferentialSlider : ScalingRenderer {
             text_field_has_focus) {
           terminate_text_entry = true;
         } else if (!text_field_has_focus &&
-                   formatted_value_ != formatter_(value_.Value)) {
+                   formatted_value_ !=
+                   formatter_(value_.Value, min_value_, max_value_)) {
           terminate_text_entry = true;
         } else if (increment != 0) {
           terminate_text_entry = true;
@@ -202,13 +191,24 @@ internal class DifferentialSlider : ScalingRenderer {
             // and this is not nice.
           } else {
             // Go back to the previous legal value.
-            formatted_value_ = formatter_(value_.Value);
+            formatted_value_ = formatter_(value_.Value, min_value_, max_value_);
           }
         }
         if (increment != 0) {
-          double incremented_value = value + increment;
+          // Format and reparse to effect any rounding done by the formatter.
+          parser_(formatter_(value + increment, min_value_, max_value_),
+                  out double incremented_value);
           if (incremented_value >= min_value_ &&
               incremented_value <= max_value_) {
+            value_changed = true;
+            value = incremented_value;
+          } else if (modular_) {
+            while (incremented_value < min_value_) {
+              incremented_value += max_value_ - min_value_;
+            }
+            while (incremented_value > max_value_) {
+              incremented_value -= max_value_ - min_value_;
+            }
             value_changed = true;
             value = incremented_value;
           }
@@ -253,7 +253,9 @@ internal class DifferentialSlider : ScalingRenderer {
                                 (log10_upper_rate_ - log10_lower_rate_) *
                                 Math.Abs(slider_position_)) *
                    (DateTime.Now - last_time_).TotalSeconds;
-          value = Math.Min(Math.Max(min_value_, value), max_value_);
+          if (!modular_) {
+            value = Math.Min(Math.Max(min_value_, value), max_value_);
+          }
         }
       } else {
         slider_position_ = 0;
@@ -335,7 +337,8 @@ internal class DifferentialSlider : ScalingRenderer {
       return false;
     }
     increment = Math.Abs(adjusted_value - base_value);
-    if (base_value + increment > max_value_ &&
+    if (!modular_ &&
+        base_value + increment > max_value_ &&
         base_value - increment < min_value_) {
       // If the digit cannot be adjusted in either direction, don’t show arrows.
       // This can happen if the digit is actually a figure space standing for
@@ -343,6 +346,25 @@ internal class DifferentialSlider : ScalingRenderer {
       return false;
     }
     return true;
+  }
+
+  // As a special exemption we allow a comma as the decimal separator and the
+  // hyphen-minus instead of the minus sign.  We also remove grouping marks,
+  // since .NET does not like those in the fractional part.  Remove leading
+  // figure spaces so that a sign may be entered after them, see #3480; turn any
+  // remaining figure spaces into 0s, in case the user edits a blank leading
+  // digit.
+  private static bool TryParseDouble(string s, out double value) {
+    return double.TryParse(
+        s.Replace(',', '.').Replace('-', '−').Replace("'", "").
+            TrimStart(figure_space).Replace(figure_space, '0'),
+        NumberStyles.AllowDecimalPoint |
+        NumberStyles.AllowLeadingSign |
+        NumberStyles.AllowLeadingWhite |
+        NumberStyles.AllowThousands |
+        NumberStyles.AllowTrailingWhite,
+        Culture.culture.NumberFormat,
+        out value);
   }
 
   private readonly string label_;
@@ -355,6 +377,7 @@ internal class DifferentialSlider : ScalingRenderer {
   private readonly double zero_value_;
   private readonly bool display_zero_button_;
   private readonly double min_value_;
+  private readonly bool modular_;
 
   private readonly ValueFormatter formatter_;
   private readonly ValueParser parser_;
