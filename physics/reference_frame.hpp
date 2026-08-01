@@ -2,6 +2,7 @@
 #define PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
 
 #include <memory>
+#include <utility>
 
 #include "absl/hash/hash.h"
 #include "base/not_null.hpp"
