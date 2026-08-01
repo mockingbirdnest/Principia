@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <fstream>
 #include <ranges>
+#include <string>
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
