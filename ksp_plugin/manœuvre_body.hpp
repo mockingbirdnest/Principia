@@ -133,7 +133,9 @@ Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
       LOG(FATAL) << "Missing intensity: " << message;
   };
 #if PRINCIPIA_COMPILER_MSVC && \
-    (_MSC_FULL_VER == 194'435'222 || _MSC_FULL_VER == 194'435'224)
+    (_MSC_FULL_VER == 194'435'222 || \
+     _MSC_FULL_VER == 194'435'224 || \
+     _MSC_FULL_VER == 194'435'228)
   std::abort();
 #endif
 }
