@@ -23,6 +23,8 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -32,12 +34,15 @@
 #include "ksp_plugin/pile_up.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
+#include "physics/body_surface_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/rotating_body.hpp"
+#include "physics/rotating_pulsating_reference_frame.hpp"
+#include "physics/solar_system.hpp"
 #include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -46,6 +51,7 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -66,6 +72,8 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::integrators::_methods;
+using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
@@ -76,12 +84,15 @@ using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_vessel;
 using namespace principia::ksp_plugin_test::_plugin_io;
+using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_rotating_body;
+using namespace principia::physics::_rotating_pulsating_reference_frame;
+using namespace principia::physics::_solar_system;
 using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
@@ -90,6 +101,7 @@ using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_solar_system_factory;
 
 class VesselTest : public testing::Test {
  protected:
@@ -1019,6 +1031,73 @@ TEST_F(VesselTest, Reanimator) {
 }
 
 #endif
+
+TEST_F(VesselTest, Payload) {
+  auto const solar_system = make_not_null_unique<SolarSystem<Barycentric>>(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt",
+      /*ignore_frame=*/true);
+  auto const ephemeris = solar_system->MakeEphemeris(
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
+      {SymmetricLinearMultistepIntegrator<
+           QuinlanTremaine1990Order12,
+           Ephemeris<Barycentric>::NewtonianMotionEquation>(),
+       /*step=*/10 * Minute});
+  auto const earth = solar_system->rotating_body(
+      *ephemeris, SolarSystemFactory::name(SolarSystemFactory::Earth));
+  auto const moon = solar_system->rotating_body(
+      *ephemeris, SolarSystemFactory::name(SolarSystemFactory::Moon));
+
+  BodySurfaceReferenceFrame<Barycentric, Navigation> const earth_surface(
+      ephemeris.get(), earth);
+  RotatingPulsatingReferenceFrame<Barycentric, Navigation> const earth_moon(
+      ephemeris.get(), earth, moon);
+
+  Vessel::Payload const default_payload;
+  EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_surface));
+  EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_moon));
+
+  Vessel::Payload const payload1{
+      .plottable_time_interval = {.min = t0_ + 1 * Second,
+                                  .max = t0_ + 3 * Second}};
+  vessel_.SetPayload(
+      make_not_null_unique<BodySurfaceReferenceFrame<Barycentric, Navigation>>(
+          ephemeris.get(), earth),
+      payload1);
+  EXPECT_EQ(payload1, vessel_.GetPayload(&earth_surface));
+  EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_moon));
+
+  Vessel::Payload const payload2{
+      .plottable_time_interval = {.min = t0_ - 10 * Second,
+                                  .max = t0_ + 3 * Second}};
+  vessel_.SetPayload(
+      make_not_null_unique<
+          RotatingPulsatingReferenceFrame<Barycentric, Navigation>>(
+          ephemeris.get(), earth, moon),
+      payload2);
+  EXPECT_EQ(payload1, vessel_.GetPayload(&earth_surface));
+  EXPECT_EQ(payload2, vessel_.GetPayload(&earth_moon));
+
+  Vessel::Payload const payload3{
+      .plottable_time_interval = {.min = t0_ + 15 * Second,
+                                  .max = t0_ + 35 * Second}};
+  vessel_.SetPayload(
+      make_not_null_unique<BodySurfaceReferenceFrame<Barycentric, Navigation>>(
+          ephemeris.get(), earth),
+      payload3);
+  EXPECT_EQ(payload3, vessel_.GetPayload(&earth_surface));
+  EXPECT_EQ(payload2, vessel_.GetPayload(&earth_moon));
+
+  vessel_.ClearPayload(&earth_surface);
+  EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_surface));
+  EXPECT_EQ(payload2, vessel_.GetPayload(&earth_moon));
+
+  vessel_.ClearPayload(&earth_moon);
+  EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_surface));
+  EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_moon));
+}
 
 }  // namespace ksp_plugin
 }  // namespace principia

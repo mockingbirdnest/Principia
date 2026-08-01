@@ -296,6 +296,7 @@ class Vessel {
   struct Payload {
     Interval<Instant> plottable_time_interval{.min = InfinitePast,
                                               .max = InfiniteFuture};
+    friend bool operator==(Payload const&, Payload const&) = default;
   };
 
   void ClearPayload(not_null<PlottingFrame const*> frame);
