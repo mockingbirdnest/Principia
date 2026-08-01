@@ -22,9 +22,23 @@ echo "Parallelism is ${PARALLELISM}."
 make clean
 
 make -j ${PARALLELISM} \
+  --keep-going \
   bin/${PRINCIPIA_PLATFORM}/benchmark \
   bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
   ${TARGET}
+
+git add *.png
+
+if git diff --quiet HEAD *.png; then
+  echo same;
+else
+  gh auth login
+  git commit -m "Update goldens"
+  BRANCH_NAME="goldens-$(printf '%(%Y%m%dT%H%M%S)T')"
+  git checkout -b ${BRANCH_NAME}
+  git push --set-upstream TODO ${BRANCH_NAME}
+  gh pr create
+fi;
 
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   # See https://github.com/actions/virtual-environments/issues/2619#issuecomment-788397841
