@@ -642,15 +642,15 @@ void Vessel::ClearPayload(not_null<PlottingFrame const*> const frame) {
 }
 
 void Vessel::SetPayload(not_null<std::unique_ptr<PlottingFrame const>> frame,
-                        Payload payload) {
+                        PlottingFramePayload payload) {
   PlottingFrameKey key(std::move(frame));
   payloads_[key] = std::move(payload);
 }
 
-Vessel::Payload Vessel::GetPayload(
+Vessel::PlottingFramePayload Vessel::GetPayload(
     not_null<PlottingFrame const*> const frame) const {
   if (auto const it = payloads_.find(frame); it == payloads_.end()) {
-    return Payload{};
+    return PlottingFramePayload{};
   } else {
     return it->second;
   }

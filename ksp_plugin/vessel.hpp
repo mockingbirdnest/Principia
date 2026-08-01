@@ -293,18 +293,19 @@ class Vessel {
   std::string ShortDebugString() const;
 
   // Storage of frame-specific payload for the benefit of the clients.
-  struct Payload {
+  struct PlottingFramePayload {
     Interval<Instant> plottable_time_interval{.min = InfinitePast,
                                               .max = InfiniteFuture};
-    friend bool operator==(Payload const&, Payload const&) = default;
+    friend bool operator==(PlottingFramePayload const&,
+                           PlottingFramePayload const&) = default;
   };
 
   void ClearPayload(not_null<PlottingFrame const*> frame);
   void SetPayload(not_null<std::unique_ptr<PlottingFrame const>> frame,
-                  Payload payload);
+                  PlottingFramePayload payload);
   // Returns a default-constructed payload if there is no payload for the given
   // frame.
-  Payload GetPayload(not_null<PlottingFrame const*> frame) const;
+  PlottingFramePayload GetPayload(not_null<PlottingFrame const*> frame) const;
 
   // The vessel must satisfy `is_initialized()`.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,
@@ -489,7 +490,7 @@ class Vessel {
 
   static std::atomic_bool synchronous_;
 
-  absl::flat_hash_map<PlottingFrameKey, Payload> payloads_;
+  absl::flat_hash_map<PlottingFrameKey, PlottingFramePayload> payloads_;
 
   friend class ksp_plugin::VesselTest;
 };

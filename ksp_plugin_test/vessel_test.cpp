@@ -1055,11 +1055,11 @@ TEST_F(VesselTest, Payload) {
   RotatingPulsatingReferenceFrame<Barycentric, Navigation> const earth_moon(
       ephemeris.get(), earth, moon);
 
-  Vessel::Payload const default_payload;
+  Vessel::PlottingFramePayload const default_payload;
   EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_surface));
   EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_moon));
 
-  Vessel::Payload const payload1{
+  Vessel::PlottingFramePayload const payload1{
       .plottable_time_interval = {.min = t0_ + 1 * Second,
                                   .max = t0_ + 3 * Second}};
   vessel_.SetPayload(
@@ -1069,7 +1069,7 @@ TEST_F(VesselTest, Payload) {
   EXPECT_EQ(payload1, vessel_.GetPayload(&earth_surface));
   EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_moon));
 
-  Vessel::Payload const payload2{
+  Vessel::PlottingFramePayload const payload2{
       .plottable_time_interval = {.min = t0_ - 10 * Second,
                                   .max = t0_ + 3 * Second}};
   vessel_.SetPayload(
@@ -1080,9 +1080,9 @@ TEST_F(VesselTest, Payload) {
   EXPECT_EQ(payload1, vessel_.GetPayload(&earth_surface));
   EXPECT_EQ(payload2, vessel_.GetPayload(&earth_moon));
 
-  Vessel::Payload const payload3{
+  Vessel::PlottingFramePayload const payload3{
       .plottable_time_interval = {.min = t0_ + 15 * Second,
-                                  .max = t0_ + 35 * Second}};
+                                  .max = InfiniteFuture}};
   vessel_.SetPayload(
       make_not_null_unique<BodySurfaceReferenceFrame<Barycentric, Navigation>>(
           ephemeris.get(), earth),
