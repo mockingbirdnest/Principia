@@ -41,6 +41,37 @@ internal class
     selected_celestial = FlightGlobals.GetHomeBody();
     is_freshly_constructed_ = true;
 
+    plottable_time_interval_midpoint_ =
+        new DifferentialSlider(
+            label:
+            L10N.CacheFormat(
+                "#Principia_ReferenceFrameSelector_Midpoint"),
+            unit: null,
+            log10_lower_rate : log10_duration_lower_rate,
+            log10_upper_rate : log10_duration_upper_rate,
+            zero_value       : 0,
+            min_value        : 0,
+            formatter        : FormatPlottableTimeInterval,
+            parser           : TryParsePlottableTimeInterval,
+            field_width      : 7){
+            value            = 0
+        };
+    plottable_time_interval_duration_ =
+        new DifferentialSlider(
+            label:
+            L10N.CacheFormat(
+                "#Principia_ReferenceFrameSelector_Duration"),
+            unit: null,
+            log10_lower_rate : log10_duration_lower_rate,
+            log10_upper_rate : log10_duration_upper_rate,
+            zero_value       : double.PositiveInfinity,
+            min_value        : 0,
+            formatter        : FormatPlottableTimeInterval,
+            parser           : TryParsePlottableTimeInterval,
+            field_width      : 7){
+            value            = double.PositiveInfinity
+        };
+
     expanded_ = new Dictionary<CelestialBody, bool>();
     pinned = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -562,6 +593,22 @@ internal class
         ScheduleShrink();
       }
 
+      // For the plotting frame, allow the user to set the plottable time
+      // interval.
+      if (typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters)) {
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          UnityEngine.GUILayout.Label(
+              L10N.CacheFormat(
+                  "#Principia_ReferenceFrameSelector_PlottableTimeInterval"),
+              style: Style.MiddleLeftAligned(UnityEngine.GUI.skin.label,
+                                             Height(2)));
+          using (new UnityEngine.GUILayout.VerticalScope()) {
+            plottable_time_interval_midpoint_.Render(enabled: true);
+            plottable_time_interval_duration_.Render(enabled: true);
+          }
+        }
+      }
+
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         // Left-hand side: tree view of celestials.
         using (new UnityEngine.GUILayout.VerticalScope(
@@ -837,6 +884,25 @@ internal class
         selected_celestial == celestial && frame_type == type;
   }
 
+  internal string FormatPlottableTimeInterval(double seconds,
+                                              double _,
+                                              double __) {
+    return new PrincipiaTimeSpan(seconds).FormatPositive(
+        with_leading_zeroes: true,
+        with_seconds: true,
+        iau_style: true,
+        fractional_second_digits: 6);
+  }
+
+  internal bool TryParsePlottableTimeInterval(string text, out double value) {
+    value = 0;
+    if (!PrincipiaTimeSpan.TryParse(text, out PrincipiaTimeSpan ts)) {
+      return false;
+    }
+    value = ts.total_seconds;
+    return true;
+  }
+
   // Runs an action that may change the frame and run on_change_ if there
   // actually was a change.
   private void EffectChange(Action action) {
@@ -881,6 +947,12 @@ internal class
 
   // Horizontal offset between a node and its children.
   private const int children_offset = 1;
+  private const double log10_duration_lower_rate = -3.0;
+  private const double log10_duration_upper_rate = 3.5;
+
+  private readonly DifferentialSlider plottable_time_interval_midpoint_;
+  private readonly DifferentialSlider plottable_time_interval_duration_;
+
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;
