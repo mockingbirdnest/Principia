@@ -18,14 +18,14 @@ ReferenceFrameKey<InertialFrame, ThisFrame>::ReferenceFrameKey(
     : frame_(std::move(frame)) {}
 
 template<typename InertialFrame, typename ThisFrame>
-size_t
+std::size_t
 ReferenceFrameKey<InertialFrame, ThisFrame>::absl_container_hash::operator()(
     not_null<F const*> const frame) const {
   return absl::HashOf(*frame);
 }
 
 template<typename InertialFrame, typename ThisFrame>
-size_t
+std::size_t
 ReferenceFrameKey<InertialFrame, ThisFrame>::absl_container_hash::operator()(
     ReferenceFrameKey const& key) const {
   return absl::HashOf(key);
