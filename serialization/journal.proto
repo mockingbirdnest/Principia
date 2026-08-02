@@ -127,6 +127,11 @@ message FlightPlanAdaptiveStepParameters {
   required double speed_integration_tolerance = 3;
 }
 
+message Interval {
+  required double min = 1;
+  required double max = 2;
+}
+
 message KeplerianElements {
   required double eccentricity = 1;
   required double semimajor_axis = 2 [default = nan];  // Optional.
@@ -179,6 +184,10 @@ message PlottingFrameParameters {
   repeated int32 secondary_index = 4;
 }
 
+message PlottingFramePayload {
+  required Interval plottable_time_interval = 1;
+}
+
 message QP {
   required XYZ q = 1;
   required XYZ p = 2;
@@ -218,11 +227,6 @@ message XY {
 // The messages used within OrbitAnalysis are defined first, so that the struct
 // definitions, being generated in the same order refer to already-defined
 // types.
-message Interval {
-  required double min = 1;
-  required double max = 2;
-}
-
 message PlottableElements {
   required double time = 1;
   required double semimajor_axis = 2;
@@ -302,7 +306,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5218.
+  extensions 5000 to 5999;  // Last used: 5221.
 }
 
 message ActivatePlayer {
@@ -2777,6 +2781,18 @@ message VesselBinormal {
   optional Return return = 3;
 }
 
+message VesselClearPlottingFramePayload {
+  extend Method {
+    optional VesselClearPlottingFramePayload extension = 5219;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+    required PlottingFrameParameters parameters = 3;
+  }
+  optional In in = 1;
+}
+
 message VesselFromParent {
   extend Method {
     optional VesselFromParent extension = 5034;
@@ -2809,6 +2825,22 @@ message VesselGetAnalysis {
   message Return {
     required OrbitAnalysis result = 1 [(is_produced) = true];
     required fixed64 address = 2 [(address_of) = "result"];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message VesselGetPlottingFramePayload {
+  extend Method {
+    optional VesselGetPlottingFramePayload extension = 5220;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+    required PlottingFrameParameters parameters = 3;
+  }
+  message Return {
+    required PlottingFramePayload payload = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -2855,6 +2887,19 @@ message VesselRequestAnalysis {
                                  (is_subject) = true];
     required string vessel_guid = 2;
     required double mission_duration = 4;
+  }
+  optional In in = 1;
+}
+
+message VesselSetPlottingFramePayload {
+  extend Method {
+    optional VesselSetPlottingFramePayload extension = 5221;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+    required PlottingFrameParameters parameters = 3;
+    required PlottingFramePayload payload = 4;
   }
   optional In in = 1;
 }
