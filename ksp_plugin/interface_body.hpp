@@ -26,7 +26,6 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
-#include "physics/tensors.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -46,14 +45,8 @@ using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rigid_motion;
-using namespace principia::physics::_tensors;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
-
-// OrbitalElements is hidden by an interface type, and the fully-qualified name
-// is very long.
-using ClassicalElements =
-    astronomy::_orbital_elements::OrbitalElements::ClassicalElements;
 
 // No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.
@@ -220,6 +213,14 @@ inline bool operator==(Burn const& left, Burn const& right) {
          left.intensity == right.intensity;
 }
 
+inline bool operator==(EquatorialCrossings const& left,
+                       EquatorialCrossings const& right) {
+  return left.longitudes_reduced_to_ascending_pass ==
+             right.longitudes_reduced_to_ascending_pass &&
+         left.longitudes_reduced_to_descending_pass ==
+             right.longitudes_reduced_to_descending_pass;
+}
+
 inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                        FlightPlanAdaptiveStepParameters const& right) {
   return left.integrator_kind == right.integrator_kind &&
@@ -305,6 +306,20 @@ inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
          left.recurrence == right.recurrence;
 }
 
+inline bool operator==(OrbitalElements const& left,
+                       OrbitalElements const& right) {
+  return NaNIndependentEq(left.anomalistic_period, right.anomalistic_period) &&
+         left.mean_argument_of_periapsis == right.mean_argument_of_periapsis &&
+         left.mean_eccentricity == right.mean_eccentricity &&
+         left.mean_inclination == right.mean_inclination &&
+         left.mean_longitude_of_ascending_nodes ==
+             right.mean_longitude_of_ascending_nodes &&
+         left.mean_semimajor_axis == right.mean_semimajor_axis &&
+         NaNIndependentEq(left.nodal_period, right.nodal_period) &&
+         NaNIndependentEq(left.nodal_precession, right.nodal_precession) &&
+         NaNIndependentEq(left.sidereal_period, right.sidereal_period);
+}
+
 inline bool operator==(PlottableElements const& left,
                        PlottableElements const& right) {
   return NaNIndependentEq(left.semimajor_axis, right.semimajor_axis) &&
@@ -324,26 +339,9 @@ inline bool operator==(PlottableElements const& left,
                           right.eccentricity_sin_argument_of_periapsis);
 }
 
-inline bool operator==(EquatorialCrossings const& left,
-                       EquatorialCrossings const& right) {
-  return left.longitudes_reduced_to_ascending_pass ==
-             right.longitudes_reduced_to_ascending_pass &&
-         left.longitudes_reduced_to_descending_pass ==
-             right.longitudes_reduced_to_descending_pass;
-}
-
-inline bool operator==(OrbitalElements const& left,
-                       OrbitalElements const& right) {
-  return NaNIndependentEq(left.anomalistic_period, right.anomalistic_period) &&
-         left.mean_argument_of_periapsis == right.mean_argument_of_periapsis &&
-         left.mean_eccentricity == right.mean_eccentricity &&
-         left.mean_inclination == right.mean_inclination &&
-         left.mean_longitude_of_ascending_nodes ==
-             right.mean_longitude_of_ascending_nodes &&
-         left.mean_semimajor_axis == right.mean_semimajor_axis &&
-         NaNIndependentEq(left.nodal_period, right.nodal_period) &&
-         NaNIndependentEq(left.nodal_precession, right.nodal_precession) &&
-         NaNIndependentEq(left.sidereal_period, right.sidereal_period);
+bool operator==(PlottingFramePayload const& left,
+                PlottingFramePayload const& right) {
+  return left.time_interval == right.time_interval;
 }
 
 inline bool operator==(QP const& left, QP const& right) {
@@ -476,15 +474,6 @@ inline InertiaTensor<RigidPart> FromMomentsOfInertia(
   return principal_axes_to_part(inertia_tensor_in_principal_axes);
 }
 
-inline Renderer::Node FromNode(Plugin const& plugin,
-                               Node const& node) {
-  return Renderer::Node{
-      .time = FromGameTime(plugin, node.time),
-      .position = FromXYZ<Position<World>>(node.world_position),
-      .apparent_inclination = node.apparent_inclination_in_degrees * Degree,
-      .out_of_plane_velocity = node.out_of_plane_velocity * Metre / Second};
-}
-
 template<>
 inline DegreesOfFreedom<World> FromQP(QP const& qp) {
   return QPConverter<DegreesOfFreedom<World>>::FromQP(qp);
@@ -611,6 +600,12 @@ inline Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity) {
               ToSphericalCoordinates(intensity.Δv_spherical_coordinates())};
 }
 
+template<typename T>
+Interval ToInterval(geometry::_interval::Interval<T> const& interval) {
+  return {interval.min / si::Unit<T>,
+          interval.max / si::Unit<T>};
+}
+
 inline KeplerianElements ToKeplerianElements(
     physics::_kepler_orbit::KeplerianElements<Barycentric> const&
         keplerian_elements) {
@@ -628,6 +623,22 @@ inline KeplerianElements ToKeplerianElements(
       .argument_of_periapsis_in_degrees =
           *keplerian_elements.argument_of_periapsis / Degree,
       .mean_anomaly = *keplerian_elements.mean_anomaly / Radian};
+}
+
+inline Status* ToNewStatus(absl::Status const& status) {
+  if (status.ok()) {
+    return new Status{.error = static_cast<int>(status.code()),
+                      .message = nullptr};
+  } else {
+    std::string_view const message = status.message();
+    LOG(ERROR) << message;
+    UniqueArray<char> allocated_message(message.size() + 1);
+    std::memcpy(allocated_message.data.get(),
+                message.data(),
+                message.size() + 1);
+    return new Status{.error = static_cast<int>(status.code()),
+                      .message = allocated_message.data.release()};
+  }
 }
 
 inline PlottableElements ToPlottableElements(
@@ -657,37 +668,12 @@ inline PlottableElements ToPlottableElements(
   };
 }
 
-inline Node ToNode(Plugin const& plugin,
-                   Renderer::Node const& node) {
-  return Node{
-      .time = ToGameTime(plugin, node.time),
-      .world_position = ToXYZ(node.position),
-      .apparent_inclination_in_degrees = node.apparent_inclination / Degree,
-      .out_of_plane_velocity = node.out_of_plane_velocity / (Metre / Second)};
-}
-
 inline QP ToQP(DegreesOfFreedom<World> const& dof) {
   return QPConverter<DegreesOfFreedom<World>>::ToQP(dof);
 }
 
 inline QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
   return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(relative_dof);
-}
-
-inline Status* ToNewStatus(absl::Status const& status) {
-  if (status.ok()) {
-    return new Status{.error = static_cast<int>(status.code()),
-                      .message = nullptr};
-  } else {
-    std::string_view const message = status.message();
-    LOG(ERROR) << message;
-    UniqueArray<char> allocated_message(message.size() + 1);
-    std::memcpy(allocated_message.data.get(),
-                message.data(),
-                message.size() + 1);
-    return new Status{.error = static_cast<int>(status.code()),
-                      .message = allocated_message.data.release()};
-  }
 }
 
 inline SphericalCoordinates ToSphericalCoordinates(
@@ -745,20 +731,32 @@ inline XYZ ToXYZ(Bivector<Torque, World> const& torque) {
   return XYZConverter<Bivector<Torque, World>>::ToXYZ(torque);
 }
 
-template<typename T>
-Interval ToInterval(geometry::_interval::Interval<T> const& interval) {
-  return {interval.min / si::Unit<T>,
-          interval.max / si::Unit<T>};
-}
-
 inline Instant FromGameTime(Plugin const& plugin,
                             double const t) {
   return plugin.GameEpoch() + t * Second;
 }
 
+inline Renderer::Node FromNode(Plugin const& plugin,
+                               Node const& node) {
+  return Renderer::Node{
+      .time = FromGameTime(plugin, node.time),
+      .position = FromXYZ<Position<World>>(node.world_position),
+      .apparent_inclination = node.apparent_inclination_in_degrees * Degree,
+      .out_of_plane_velocity = node.out_of_plane_velocity * Metre / Second};
+}
+
 inline double ToGameTime(Plugin const& plugin,
                          Instant const& t) {
   return (t - plugin.GameEpoch()) / Second;
+}
+
+inline Node ToNode(Plugin const& plugin,
+                   Renderer::Node const& node) {
+  return Node{
+      .time = ToGameTime(plugin, node.time),
+      .world_position = ToXYZ(node.position),
+      .apparent_inclination_in_degrees = node.apparent_inclination / Degree,
+      .out_of_plane_velocity = node.out_of_plane_velocity / (Metre / Second)};
 }
 
 inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
