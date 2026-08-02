@@ -2,6 +2,7 @@
 #define PRINCIPIA_PHYSICS_REFERENCE_FRAME_HPP_
 
 #include <memory>
+#include <utility>
 
 #include "absl/hash/hash.h"
 #include "base/not_null.hpp"
@@ -115,6 +116,12 @@ class ReferenceFrame {
       DegreesOfFreedom<ThisFrame> const& degrees_of_freedom) const;
 
   virtual void HashValue(absl::HashState state) const = 0;
+
+  template<typename H>
+  friend H AbslHashValue(H h, ReferenceFrame const& frame) {
+    (&frame)->HashValue(absl::HashState::Create(&h));
+    return std::move(h);
+  }
 
   virtual void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const = 0;
