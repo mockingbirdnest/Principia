@@ -19,6 +19,18 @@ XYZ __cdecl principia__VesselBinormal(Plugin const* const plugin,
   return m.Return(ToXYZ(plugin->VesselBinormal(vessel_guid)));
 }
 
+void __cdecl principia__VesselClearPlottingFramePayload(
+    Plugin* const plugin,
+    char const* const vessel_guid,
+    PlottingFrameParameters const& parameters) {
+  journal::Method<journal::VesselClearPlottingFramePayload> m(
+      {plugin, vessel_guid, parameters});
+  CHECK(plugin != nullptr);
+  Vessel& vessel = *plugin->GetVessel(vessel_guid);
+  auto const navigation_frame = NewPlottingFrame(*plugin, parameters);
+  vessel.ClearPayload(navigation_frame.get());
+}
+
 // Calls `plugin->VesselFromParent` with the arguments given.
 // `plugin` must not be null.  No transfer of ownership.
 QP __cdecl principia__VesselFromParent(Plugin const* const plugin,
@@ -54,6 +66,19 @@ OrbitAnalysis* __cdecl principia__VesselGetAnalysis(
   return m.Return(analysis);
 }
 
+PlottingFramePayload __cdecl principia__VesselGetPlottingFramePayload(
+    Plugin* const plugin,
+    char const* const vessel_guid,
+    PlottingFrameParameters const& parameters) {
+  journal::Method<journal::VesselGetPlottingFramePayload> m(
+      {plugin, vessel_guid, parameters});
+  CHECK(plugin != nullptr);
+  Vessel& vessel = *plugin->GetVessel(vessel_guid);
+  auto const navigation_frame = NewPlottingFrame(*plugin, parameters);
+  auto const payload = vessel.GetPayload(navigation_frame.get());
+  return m.Return(ToPlottingFramePayload(*plugin, payload));
+}
+
 AdaptiveStepParameters __cdecl
 principia__VesselGetPredictionAdaptiveStepParameters(
     Plugin const* const plugin,
@@ -82,6 +107,20 @@ void __cdecl principia__VesselRequestAnalysis(Plugin* const plugin,
   plugin->ClearOrbitAnalysersOfVesselsOtherThan(vessel);
   vessel.RequestOrbitAnalysis(mission_duration * Second);
   return m.Return();
+}
+
+void __cdecl principia__VesselSetPlottingFramePayload(
+    Plugin* const plugin,
+    char const* const vessel_guid,
+    PlottingFrameParameters const& parameters,
+    PlottingFramePayload const payload) {
+  journal::Method<journal::VesselSetPlottingFramePayload> m(
+      {plugin, vessel_guid, parameters, payload});
+  CHECK(plugin != nullptr);
+  Vessel& vessel = *plugin->GetVessel(vessel_guid);
+  auto navigation_frame = NewPlottingFrame(*plugin, parameters);
+  vessel.SetPayload(std::move(navigation_frame),
+                    FromPlottingFramePayload(*plugin, payload));
 }
 
 void __cdecl principia__VesselSetPredictionAdaptiveStepParameters(

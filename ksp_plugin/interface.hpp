@@ -216,10 +216,16 @@ XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum);
 Instant FromGameTime(Plugin const& plugin, double t);
 Renderer::Node FromNode(Plugin const& plugin,
                         Node const& node);
+Vessel::PlottingFramePayload FromPlottingFramePayload(
+    Plugin const& plugin,
+    PlottingFramePayload const& payload);
 
 double ToGameTime(Plugin const& plugin, Instant const& t);
 Node ToNode(Plugin const& plugin,
             Renderer::Node const& node);
+PlottingFramePayload ToPlottingFramePayload(
+    Plugin const& plugin,
+    Vessel::PlottingFramePayload const& payload);
 
 // A factory for NavigationFrame objects.
 not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(

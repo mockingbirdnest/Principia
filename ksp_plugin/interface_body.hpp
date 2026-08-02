@@ -339,9 +339,9 @@ inline bool operator==(PlottableElements const& left,
                           right.eccentricity_sin_argument_of_periapsis);
 }
 
-bool operator==(PlottingFramePayload const& left,
-                PlottingFramePayload const& right) {
-  return left.time_interval == right.time_interval;
+inline bool operator==(PlottingFramePayload const& left,
+                       PlottingFramePayload const& right) {
+  return left.plottable_time_interval == right.plottable_time_interval;
 }
 
 inline bool operator==(QP const& left, QP const& right) {
@@ -745,6 +745,15 @@ inline Renderer::Node FromNode(Plugin const& plugin,
       .out_of_plane_velocity = node.out_of_plane_velocity * Metre / Second};
 }
 
+inline Vessel::PlottingFramePayload FromPlottingFramePayload(
+    Plugin const& plugin,
+    PlottingFramePayload const& payload) {
+  return Vessel::PlottingFramePayload{
+      .plottable_time_interval = {
+          .min = FromGameTime(plugin, payload.plottable_time_interval.min),
+          .max = FromGameTime(plugin, payload.plottable_time_interval.max)}};
+}
+
 inline double ToGameTime(Plugin const& plugin,
                          Instant const& t) {
   return (t - plugin.GameEpoch()) / Second;
@@ -757,6 +766,14 @@ inline Node ToNode(Plugin const& plugin,
       .world_position = ToXYZ(node.position),
       .apparent_inclination_in_degrees = node.apparent_inclination / Degree,
       .out_of_plane_velocity = node.out_of_plane_velocity / (Metre / Second)};
+}
+
+inline PlottingFramePayload ToPlottingFramePayload(
+    Plugin const& plugin,
+    Vessel::PlottingFramePayload const& payload) {
+  return {.plottable_time_interval = {
+              .min = ToGameTime(plugin, payload.plottable_time_interval.min),
+              .max = ToGameTime(plugin, payload.plottable_time_interval.max)}};
 }
 
 inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
