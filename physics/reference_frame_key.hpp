@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <utility>
 
@@ -38,8 +39,8 @@ class ReferenceFrameKey {
   struct absl_container_hash {
     using F = ReferenceFrame<InertialFrame, ThisFrame>;
     using is_transparent = void;
-    size_t operator()(not_null<F const*> frame) const;
-    size_t operator()(ReferenceFrameKey const& key) const;
+    std::size_t operator()(not_null<F const*> frame) const;
+    std::size_t operator()(ReferenceFrameKey const& key) const;
   };
 
   struct absl_container_eq {
