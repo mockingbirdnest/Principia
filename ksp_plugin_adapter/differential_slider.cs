@@ -27,7 +27,7 @@ internal class DifferentialSlider : ScalingRenderer {
                             UnityEngine.Color? text_colour = null,
                             int label_width = 3,
                             int field_width = 5,
-                            bool display_zero_button = true) {
+                            string zero_button_label = "0") {
     label_ = label;
     label_width_ = label_width;
     field_width_ = field_width;
@@ -42,11 +42,11 @@ internal class DifferentialSlider : ScalingRenderer {
     log10_lower_rate_ = log10_lower_rate;
     log10_upper_rate_ = log10_upper_rate;
     zero_value_ = zero_value;
-    display_zero_button_ = display_zero_button;
     min_value_ = min_value;
     max_value_ = max_value;
     modular_ = modular;
     text_colour_ = text_colour;
+    zero_button_label_ = zero_button_label;
   }
 
   public double max_value {
@@ -235,8 +235,9 @@ internal class DifferentialSlider : ScalingRenderer {
             rightValue : 1,
             options    : UnityEngine.GUILayout.ExpandWidth(true));
 
-        if (display_zero_button_ &&
-            UnityEngine.GUILayout.Button("0", GUILayoutWidth(1))) {
+        if (zero_button_label_ != null &&
+            UnityEngine.GUILayout.Button(zero_button_label_,
+                                         GUILayoutWidth(1))) {
           value_changed = true;
           // Force a change of value so that any input is discarded.
           value = zero_value_;
@@ -375,7 +376,7 @@ internal class DifferentialSlider : ScalingRenderer {
   private readonly double log10_lower_rate_;
   private readonly double log10_upper_rate_;
   private readonly double zero_value_;
-  private readonly bool display_zero_button_;
+  private readonly string zero_button_label_;
   private readonly double min_value_;
   private readonly bool modular_;
 

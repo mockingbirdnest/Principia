@@ -53,23 +53,25 @@ internal class
             min_value        : 0,
             formatter        : FormatPlottableTimeInterval,
             parser           : TryParsePlottableTimeInterval,
-            field_width      : 7){
+            label_width      : 4,
+            field_width      : 5){
             value            = 0
         };
     plottable_time_interval_duration_ =
         new DifferentialSlider(
-            label:
-            L10N.CacheFormat(
+            label: L10N.CacheFormat(
                 "#Principia_ReferenceFrameSelector_Duration"),
             unit: null,
-            log10_lower_rate : log10_duration_lower_rate,
-            log10_upper_rate : log10_duration_upper_rate,
-            zero_value       : double.PositiveInfinity,
-            min_value        : 0,
-            formatter        : FormatPlottableTimeInterval,
-            parser           : TryParsePlottableTimeInterval,
-            field_width      : 7){
-            value            = double.PositiveInfinity
+            log10_lower_rate  : log10_duration_lower_rate,
+            log10_upper_rate  : log10_duration_upper_rate,
+            zero_value        : PrincipiaTimeSpan.max_seconds,
+            zero_button_label : "∞",
+            min_value         : 0,
+            formatter         : FormatPlottableTimeInterval,
+            parser            : TryParsePlottableTimeInterval,
+            label_width       : 4,
+            field_width       : 5){
+            value            = PrincipiaTimeSpan.max_seconds
         };
 
     expanded_ = new Dictionary<CelestialBody, bool>();
@@ -573,6 +575,22 @@ internal class
       PrincipiaPluginAdapter.LoadTextureOrDie(out unpinned_, "unpinned.png");
     }
     using (new UnityEngine.GUILayout.VerticalScope()) {
+      // For the plotting frame, allow the user to set the plottable time
+      // interval.
+      if (typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters)) {
+        using (new UnityEngine.GUILayout.HorizontalScope()) {
+          UnityEngine.GUILayout.Label(
+              L10N.CacheFormat(
+                  "#Principia_ReferenceFrameSelector_PlottableTimeInterval"),
+              style: Style.MiddleLeftAligned(UnityEngine.GUI.skin.label,
+                                             Height(2)));
+          using (new UnityEngine.GUILayout.VerticalScope()) {
+            plottable_time_interval_midpoint_.Render(enabled: true);
+            plottable_time_interval_duration_.Render(enabled: true);
+          }
+        }
+      }
+
       UnityEngine.GUILayout.Label(
           L10N.CacheFormat(
               "#Principia_ReferenceFrameSelector_Description_Heading",
@@ -591,22 +609,6 @@ internal class
       if (tree_width_ != new_tree_width) {
         tree_width_ = new_tree_width;
         ScheduleShrink();
-      }
-
-      // For the plotting frame, allow the user to set the plottable time
-      // interval.
-      if (typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters)) {
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Label(
-              L10N.CacheFormat(
-                  "#Principia_ReferenceFrameSelector_PlottableTimeInterval"),
-              style: Style.MiddleLeftAligned(UnityEngine.GUI.skin.label,
-                                             Height(2)));
-          using (new UnityEngine.GUILayout.VerticalScope()) {
-            plottable_time_interval_midpoint_.Render(enabled: true);
-            plottable_time_interval_duration_.Render(enabled: true);
-          }
-        }
       }
 
       using (new UnityEngine.GUILayout.HorizontalScope()) {
@@ -889,9 +891,9 @@ internal class
                                               double __) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
         with_leading_zeroes: true,
-        with_seconds: true,
-        iau_style: true,
-        fractional_second_digits: 6);
+        with_seconds: false,
+        iau_style: false,
+        fractional_second_digits: 0);
   }
 
   internal bool TryParsePlottableTimeInterval(string text, out double value) {
@@ -947,8 +949,8 @@ internal class
 
   // Horizontal offset between a node and its children.
   private const int children_offset = 1;
-  private const double log10_duration_lower_rate = -3.0;
-  private const double log10_duration_upper_rate = 3.5;
+  private const double log10_duration_lower_rate = 2.0;
+  private const double log10_duration_upper_rate = 6.0;
 
   private readonly DifferentialSlider plottable_time_interval_midpoint_;
   private readonly DifferentialSlider plottable_time_interval_duration_;

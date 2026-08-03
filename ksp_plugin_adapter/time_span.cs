@@ -8,6 +8,8 @@ namespace ksp_plugin_adapter {
 
 // This class starts with "Principia" to avoid confusion with the .Net TimeSpan.
 class PrincipiaTimeSpan {
+  public static double max_seconds => int.MaxValue;
+
   public PrincipiaTimeSpan(double seconds) {
     seconds_ = seconds;
   }
@@ -22,17 +24,21 @@ class PrincipiaTimeSpan {
     seconds = seconds_;
     try {
       seconds = seconds_ % date_time_formatter.Minute;
-      minutes = ((int)(seconds_ - seconds) % date_time_formatter.Hour) /
-                date_time_formatter.Minute;
+      minutes =
+          (checked((int)(seconds_ - seconds)) % date_time_formatter.Hour) /
+          date_time_formatter.Minute;
       hours =
-          ((int)(seconds_ - seconds - minutes * date_time_formatter.Minute) %
+          (checked((int)(seconds_ -
+                         seconds -
+                         minutes * date_time_formatter.Minute)) %
            date_time_formatter.Day) /
           date_time_formatter.Hour;
-      days = (int)(seconds_ -
-                   seconds -
-                   minutes * date_time_formatter.Minute -
-                   hours * date_time_formatter.Hour) /
-             date_time_formatter.Day;
+      days =
+          checked((int)(seconds_ -
+                        seconds -
+                        minutes * date_time_formatter.Minute -
+                        hours * date_time_formatter.Hour)) /
+          date_time_formatter.Day;
       return true;
     } catch (OverflowException) {
       return false;
@@ -56,6 +62,9 @@ class PrincipiaTimeSpan {
                                bool with_seconds,
                                bool iau_style = false,
                                int fractional_second_digits = 1) {
+    if (seconds_ == max_seconds) {
+      return "∞";
+    }
     if (!Split(out int days,
                out int hours,
                out int minutes,
@@ -118,6 +127,10 @@ class PrincipiaTimeSpan {
   public double total_seconds => seconds_;
 
   public static bool TryParse(string text, out PrincipiaTimeSpan time_span) {
+    if (text == "∞") {
+      time_span = new PrincipiaTimeSpan(max_seconds);
+      return true;
+    }
     time_span = new PrincipiaTimeSpan(double.NaN);
     // Using a technology that is customarily used to parse HTML.
     // Wrapping the literal in a Regex constructor and then substituting the day

@@ -1058,16 +1058,16 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       new DifferentialSlider(
           label               :
           L10N.CacheFormat("#Principia_OrbitAnalyser_MissionDuration"),
-          unit                : null,
-          log10_lower_rate    : 0,
-          log10_upper_rate    : 7,
-          min_value           : 10,
-          max_value           : double.PositiveInfinity,
-          formatter           : Formatters.FormatMissionDuration,
-          parser              : Formatters.TryParseMissionDuration,
-          label_width         : 3,
-          field_width         : 5,
-          display_zero_button : false) {
+          unit              : null,
+          log10_lower_rate  : 0,
+          log10_upper_rate  : 7,
+          min_value         : 10,
+          max_value         : double.PositiveInfinity,
+          formatter         : Formatters.FormatMissionDuration,
+          parser            : Formatters.TryParseMissionDuration,
+          label_width       : 3,
+          field_width       : 5,
+          zero_button_label : null) {
           value = 7 * 24 * 60 * 60
       };
 
