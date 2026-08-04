@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KSP.Localization;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -423,17 +422,17 @@ internal class
   }
 
   private string Abbreviation() {
-    return target_frame_selected ? TargetFrameAbbreviation(target)
+    return target_frame_selected ? TargetFrameAbbreviation(target_vessel)
                                  : Abbreviation(frame_type, selected_celestial);
   }
 
   public string Name() {
-    return target_frame_selected ? TargetFrameName(target)
+    return target_frame_selected ? TargetFrameName(target_vessel)
                                  : Name(frame_type, selected_celestial);
   }
 
   public string NavballName() {
-    return target_frame_selected ? TargetFrameNavballName(target)
+    return target_frame_selected ? TargetFrameNavballName(target_vessel)
                                  : NavballName(frame_type, selected_celestial);
   }
 
@@ -461,7 +460,7 @@ internal class
   // Null unless this is a primary-secondary or primary-secondaries frame.
   public CelestialBody Primary() {
     if (target_frame_selected) {
-      return target.orbit.referenceBody;
+      return target_vessel.orbit.referenceBody;
     }
     switch (frame_type) {
       case FrameType.BARYCENTRIC_ROTATING:
@@ -553,7 +552,8 @@ internal class
 
   public FrameType frame_type { get; private set; }
   private CelestialBody selected_celestial { get; set; }
-  public Vessel target { get; set; }
+  public Vessel active_vessel { get; set; }
+  public Vessel target_vessel { get; set; }
   public bool target_frame_selected { get; private set; }
 
   protected override string Title =>
@@ -579,7 +579,7 @@ internal class
               Name(),
               Abbreviation()));
       UnityEngine.GUILayout.Label(
-          target_frame_selected ? TargetFrameDescription(target)
+          target_frame_selected ? TargetFrameDescription(target_vessel)
                                 : Description(frame_type, selected_celestial),
           Style.Multiline(UnityEngine.GUI.skin.label),
           GUILayoutHeight(4));
@@ -610,11 +610,14 @@ internal class
       }
     }
 
-    Vessel active_vessel = FlightGlobals.ActiveVessel;
     // For the plotting frame, allow the user to set the plottable time
     // interval.
-    if (active_vessel != null &&
-        typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters)) {
+    bool must_display_plottable_time_interval =
+        typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters) &&
+        MapView.MapIsEnabled &&
+        active_vessel != null;
+    if (must_display_plottable_time_interval) {
+      Style.HorizontalLine();
       using (new UnityEngine.GUILayout.HorizontalScope()) {
         UnityEngine.GUILayout.Label(
             L10N.CacheFormat(
@@ -626,7 +629,11 @@ internal class
           plottable_time_interval_duration_.Render(enabled: true);
         }
       }
+    } else if (does_display_plottable_time_interval_) {
+      ScheduleShrink();
     }
+    does_display_plottable_time_interval_ =
+        must_display_plottable_time_interval;
 
     UnityEngine.GUI.DragWindow();
   }
@@ -657,7 +664,7 @@ internal class
     if (pinned[celestial]) {
       return true;
     }
-    if (target_pinned_ && target?.orbit.referenceBody == celestial) {
+    if (target_pinned_ && target_vessel?.orbit.referenceBody == celestial) {
       return true;
     }
     foreach (CelestialBody body in celestial.orbitingBodies) {
@@ -680,9 +687,9 @@ internal class
     width += 1;
     // Focus.
     width += 1;
-    if (!celestial.is_leaf(target)) {
+    if (!celestial.is_leaf(target_vessel)) {
       if ((expanded_[celestial] || target_pinned_) &&
-          target?.orbit.referenceBody == celestial) {
+          target_vessel?.orbit.referenceBody == celestial) {
         // Indent.
         float target_width = children_offset * (depth + 1);
         // Missing +- button.
@@ -690,7 +697,7 @@ internal class
         // Target name.
         target_width += CalcWidth(
             L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
-                             target.vesselName),
+                             target_vessel.vesselName),
             UnityEngine.GUI.skin.label);
         // Pin.
         target_width += 1;
@@ -712,7 +719,7 @@ internal class
   private void RenderSubtree(CelestialBody celestial, int depth) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(Width(children_offset * depth));
-      if (celestial.is_leaf(target)) {
+      if (celestial.is_leaf(target_vessel)) {
         UnityEngine.GUILayout.Button(
             "", UnityEngine.GUI.skin.label, GUILayoutWidth(children_offset));
       } else {
@@ -739,16 +746,16 @@ internal class
             (float)Math.Tan(apparent_size / 2));
       }
     }
-    if (!celestial.is_leaf(target)) {
+    if (!celestial.is_leaf(target_vessel)) {
       if ((expanded_[celestial] || target_pinned_) &&
-          target?.orbit.referenceBody == celestial) {
+          target_vessel?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Space(Width(children_offset * (depth + 1)));
           UnityEngine.GUILayout.Button(
               "", UnityEngine.GUI.skin.label, GUILayoutWidth(children_offset));
           UnityEngine.GUILayout.Label(
               L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
-                               target.vesselName));
+                               target_vessel.vesselName));
           UnityEngine.GUILayout.FlexibleSpace();
           if (UnityEngine.GUILayout.Toggle(target_pinned_,
                                            "",
@@ -758,7 +765,7 @@ internal class
             ScheduleShrink();
           }
           if (RenderFocusButton()) {
-            PlanetariumCamera.fetch.SetTarget(target.mapObject);
+            PlanetariumCamera.fetch.SetTarget(target_vessel.mapObject);
             PlanetariumCamera.fetch.SetDistance(
                 PlanetariumCamera.fetch.minDistance);
           }
@@ -829,17 +836,17 @@ internal class
         });
       }
     }
-    if (!celestial.is_leaf(target)) {
+    if (!celestial.is_leaf(target_vessel)) {
       if ((expanded_[celestial] || target_pinned_) &&
-          target?.orbit.referenceBody == celestial) {
+          target_vessel?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
           UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
           if (ToggleButton(
                   target_frame_selected,
                   new UnityEngine.GUIContent(
-                    TargetFrameSelectorText(target),
-                    TargetFrameSelectorTooltip(target)),
+                    TargetFrameSelectorText(target_vessel),
+                    TargetFrameSelectorTooltip(target_vessel)),
                   GUILayoutWidth(column_width))) {
             EffectChange(() => {
               target_frame_selected = true;
@@ -929,7 +936,7 @@ internal class
     action();
     if (is_freshly_constructed_) {
       pinned[selected_celestial] = true;
-      if (!selected_celestial.is_leaf(target)) {
+      if (!selected_celestial.is_leaf(target_vessel)) {
         expanded_[selected_celestial] = true;
       }
     }
@@ -942,7 +949,7 @@ internal class
       on_change_(
           target_frame_selected ? (ReferenceFrameParameters)(object)null
                                 : FrameParameters(),
-          target_frame_selected ? target : null);
+          target_frame_selected ? target_vessel : null);
       is_freshly_constructed_ = false;
     }
     if (frame_type != FrameType.BODY_SURFACE) {
@@ -975,6 +982,7 @@ internal class
   private readonly Dictionary<CelestialBody, bool> expanded_;
   private bool target_pinned_ = true;
   private bool is_freshly_constructed_;
+  private bool does_display_plottable_time_interval_ = false;
   private float tree_width_ = 0f;
   private FrameType last_orbital_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
   private static UnityEngine.Texture focus_;
