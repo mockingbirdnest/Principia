@@ -26,11 +26,12 @@ internal class
   public delegate void Callback(ReferenceFrameParameters frame_parameters,
                                 Vessel target_vessel);
 
-  public ReferenceFrameSelector(ISupervisor supervisor,
+  public ReferenceFrameSelector(PrincipiaPluginAdapter adapter,
                                 Callback on_change,
                                 string name) : base(
-      supervisor,
+      adapter,
       UnityEngine.GUILayout.MinWidth(0)) {
+    adapter_ = adapter;
     on_change_ = on_change;
     name_ = name;
 
@@ -624,9 +625,58 @@ internal class
                 "#Principia_ReferenceFrameSelector_PlottableTimeInterval"),
             style: Style.MiddleLeftAligned(UnityEngine.GUI.skin.label,
                                            Height(2)));
+
+        bool changed = false;
+        var plugin = adapter_.Plugin() ;
+        PlottingFrameParameters plotting_frame_parameters =
+            adapter_.plotting_frame_selector_.FrameParameters();
+        string active_vessel_guid = active_vessel.id.ToString();
+        PlottingFramePayload existing_payload =
+            plugin.VesselGetPlottingFramePayload(
+                active_vessel_guid,
+                plotting_frame_parameters);
+        plottable_time_interval_duration_.value =
+            Math.Min(
+                Math.Max(existing_payload.plottable_time_interval.max -
+                         existing_payload.plottable_time_interval.min,
+                         0),
+                PrincipiaTimeSpan.max_seconds);
+        // A trick to avoid NaNs when the interval is ]-∞, +∞[.
+        if (existing_payload.plottable_time_interval.min ==
+            -existing_payload.plottable_time_interval.max) {
+          plottable_time_interval_midpoint_.value = 0.0;
+        } else {
+          plottable_time_interval_midpoint_.value =
+              ( existing_payload.plottable_time_interval.min +
+                existing_payload.plottable_time_interval.max) /
+              2;
+        }
+
         using (new UnityEngine.GUILayout.VerticalScope()) {
-          plottable_time_interval_midpoint_.Render(enabled: true);
-          plottable_time_interval_duration_.Render(enabled: true);
+          changed |= plottable_time_interval_midpoint_.Render(enabled: true);
+          changed |= plottable_time_interval_duration_.Render(enabled: true);
+        }
+
+        if (changed) {
+          double midpoint = plottable_time_interval_midpoint_.value;
+          double duration = plottable_time_interval_duration_.value;
+          if (midpoint == 0.0 && duration == PrincipiaTimeSpan.max_seconds) {
+            plugin.VesselClearPlottingFramePayload(
+                active_vessel_guid,
+                plotting_frame_parameters);
+          } else {
+            var payload =
+                new PlottingFramePayload{
+                    plottable_time_interval = {
+                        min = midpoint - duration / 2,
+                        max = midpoint + duration / 2
+                    }
+                };
+            plugin.VesselSetPlottingFramePayload(
+                active_vessel_guid,
+                plotting_frame_parameters,
+                payload);
+          }
         }
       }
     } else if (does_display_plottable_time_interval_) {
@@ -977,6 +1027,7 @@ internal class
   private readonly DifferentialSlider plottable_time_interval_midpoint_;
   private readonly DifferentialSlider plottable_time_interval_duration_;
 
+  private readonly PrincipiaPluginAdapter adapter_;
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;

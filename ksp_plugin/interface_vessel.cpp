@@ -31,6 +31,7 @@ void __cdecl principia__VesselClearPlottingFramePayload(
   Vessel& vessel = *plugin->GetVessel(vessel_guid);
   auto const navigation_frame = NewPlottingFrame(*plugin, parameters);
   vessel.ClearPayload(navigation_frame.get());
+  return m.Return();
 }
 
 // Calls `plugin->VesselFromParent` with the arguments given.
@@ -123,6 +124,7 @@ void __cdecl principia__VesselSetPlottingFramePayload(
   auto navigation_frame = NewPlottingFrame(*plugin, parameters);
   vessel.SetPayload(std::move(navigation_frame),
                     FromPlottingFramePayload(*plugin, payload));
+  return m.Return();
 }
 
 void __cdecl principia__VesselSetPredictionAdaptiveStepParameters(
