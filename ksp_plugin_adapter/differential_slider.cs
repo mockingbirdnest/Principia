@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -17,9 +16,9 @@ internal class DifferentialSlider : ScalingRenderer {
                             double log10_lower_rate,
                             double log10_upper_rate,
                             ValueFormatter formatter,
+                            ValueParser parser,
                             UnityEngine.TextAnchor
                                 alignment = UnityEngine.TextAnchor.MiddleRight,
-                            ValueParser parser = null,
                             double zero_value = 0,
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
@@ -34,11 +33,7 @@ internal class DifferentialSlider : ScalingRenderer {
     unit_ = unit;
     alignment_ = alignment;
     formatter_ = formatter;
-    if (parser == null) {
-      parser_ = TryParseDouble;
-    } else {
-      parser_ = parser;
-    }
+    parser_ = parser;
     log10_lower_rate_ = log10_lower_rate;
     log10_upper_rate_ = log10_upper_rate;
     zero_value_ = zero_value;
@@ -347,25 +342,6 @@ internal class DifferentialSlider : ScalingRenderer {
       return false;
     }
     return true;
-  }
-
-  // As a special exemption we allow a comma as the decimal separator and the
-  // hyphen-minus instead of the minus sign.  We also remove grouping marks,
-  // since .NET does not like those in the fractional part.  Remove leading
-  // figure spaces so that a sign may be entered after them, see #3480; turn any
-  // remaining figure spaces into 0s, in case the user edits a blank leading
-  // digit.
-  private static bool TryParseDouble(string s, out double value) {
-    return double.TryParse(
-        s.Replace(',', '.').Replace('-', '−').Replace("'", "").
-            TrimStart(figure_space).Replace(figure_space, '0'),
-        NumberStyles.AllowDecimalPoint |
-        NumberStyles.AllowLeadingSign |
-        NumberStyles.AllowLeadingWhite |
-        NumberStyles.AllowThousands |
-        NumberStyles.AllowTrailingWhite,
-        Culture.culture.NumberFormat,
-        out value);
   }
 
   private readonly string label_;
