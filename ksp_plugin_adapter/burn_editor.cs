@@ -93,7 +93,7 @@ class BurnEditor : ScalingRenderer {
         log10_upper_rate : log10_time_upper_rate,
         // We cannot have a coast of length 0, so let's make it very
         // short: that will be indistinguishable.
-        zero_value       : 0.001,
+        zero_value       : _ => 0.001,
         min_value        : 0,
         formatter        : FormatPreviousCoastDuration,
         parser           : TryParsePreviousCoastDuration,

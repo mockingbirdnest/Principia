@@ -14,27 +14,28 @@ class PrincipiaTimeSpan {
     seconds_ = seconds;
   }
 
-  public bool Split(out int days,
-                    out int hours,
-                    out int minutes,
-                    out double seconds) {
+  public static bool Split(double total_seconds,
+                           out int days,
+                           out int hours,
+                           out int minutes,
+                           out double seconds) {
     days = 0;
     hours = 0;
     minutes = 0;
-    seconds = seconds_;
+    seconds = total_seconds;
     try {
-      seconds = seconds_ % date_time_formatter.Minute;
+      seconds = total_seconds % date_time_formatter.Minute;
       minutes =
-          (checked((int)(seconds_ - seconds)) % date_time_formatter.Hour) /
+          (checked((int)(total_seconds - seconds)) % date_time_formatter.Hour) /
           date_time_formatter.Minute;
       hours =
-          (checked((int)(seconds_ -
+          (checked((int)(total_seconds -
                          seconds -
                          minutes * date_time_formatter.Minute)) %
            date_time_formatter.Day) /
           date_time_formatter.Hour;
       days =
-          checked((int)(seconds_ -
+          checked((int)(total_seconds -
                         seconds -
                         minutes * date_time_formatter.Minute -
                         hours * date_time_formatter.Hour)) /
@@ -65,15 +66,13 @@ class PrincipiaTimeSpan {
     if (seconds_ == max_seconds) {
       return "∞";
     }
-    if (!Split(out int days,
+    if (!Split(seconds_,
+               out int days,
                out int hours,
                out int minutes,
                out double seconds)) {
       // In case of error, saturate to the largest representable value.
-      days = int.MaxValue;
-      hours = 0;
-      minutes = 0;
-      seconds = 0;
+      Split(max_seconds, out days, out hours, out minutes, out seconds);
     }
     var components = new List<string>();
     if (with_leading_zeroes) {

@@ -1067,7 +1067,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
           parser            : Formatters.TryParseMissionDuration,
           label_width       : 3,
           field_width       : 5,
-          zero_button_label : null) {
+          zero_button_label : _ => null) {
           value = 7 * 24 * 60 * 60
       };
 

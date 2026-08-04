@@ -43,34 +43,32 @@ internal class
 
     plottable_time_interval_midpoint_ =
         new DifferentialSlider(
-            label:
-            L10N.CacheFormat(
-                "#Principia_ReferenceFrameSelector_Midpoint"),
+            label            :
+            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Midpoint"),
             unit: null,
             log10_lower_rate : log10_duration_lower_rate,
             log10_upper_rate : log10_duration_upper_rate,
-            zero_value       : 0,
             min_value        : 0,
-            formatter        : FormatPlottableTimeInterval,
-            parser           : TryParsePlottableTimeInterval,
+            formatter        : FormatPlottableDuration,
+            parser           : TryParsePlottableDuration,
             label_width      : 4,
             field_width      : 5){
             value            = 0
         };
     plottable_time_interval_duration_ =
         new DifferentialSlider(
-            label: L10N.CacheFormat(
-                "#Principia_ReferenceFrameSelector_Duration"),
+            label             :
+            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Duration"),
             unit: null,
             log10_lower_rate  : log10_duration_lower_rate,
             log10_upper_rate  : log10_duration_upper_rate,
-            zero_value        : PrincipiaTimeSpan.max_seconds,
-            zero_button_label : "∞",
             min_value         : 0,
-            formatter         : FormatPlottableTimeInterval,
-            parser            : TryParsePlottableTimeInterval,
+            formatter         : FormatPlottableDuration,
+            parser            : TryParsePlottableDuration,
             label_width       : 4,
-            field_width       : 5){
+            field_width       : 5,
+            zero_value        : ZeroPlottableDurationValue,
+            zero_button_label : ZeroPlottableDurationButtonLabel){
             value            = PrincipiaTimeSpan.max_seconds
         };
 
@@ -575,22 +573,6 @@ internal class
       PrincipiaPluginAdapter.LoadTextureOrDie(out unpinned_, "unpinned.png");
     }
     using (new UnityEngine.GUILayout.VerticalScope()) {
-      // For the plotting frame, allow the user to set the plottable time
-      // interval.
-      if (typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters)) {
-        using (new UnityEngine.GUILayout.HorizontalScope()) {
-          UnityEngine.GUILayout.Label(
-              L10N.CacheFormat(
-                  "#Principia_ReferenceFrameSelector_PlottableTimeInterval"),
-              style: Style.MiddleLeftAligned(UnityEngine.GUI.skin.label,
-                                             Height(2)));
-          using (new UnityEngine.GUILayout.VerticalScope()) {
-            plottable_time_interval_midpoint_.Render(enabled: true);
-            plottable_time_interval_duration_.Render(enabled: true);
-          }
-        }
-      }
-
       UnityEngine.GUILayout.Label(
           L10N.CacheFormat(
               "#Principia_ReferenceFrameSelector_Description_Heading",
@@ -627,6 +609,25 @@ internal class
         }
       }
     }
+
+    Vessel active_vessel = FlightGlobals.ActiveVessel;
+    // For the plotting frame, allow the user to set the plottable time
+    // interval.
+    if (active_vessel != null &&
+        typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters)) {
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        UnityEngine.GUILayout.Label(
+            L10N.CacheFormat(
+                "#Principia_ReferenceFrameSelector_PlottableTimeInterval"),
+            style: Style.MiddleLeftAligned(UnityEngine.GUI.skin.label,
+                                           Height(2)));
+        using (new UnityEngine.GUILayout.VerticalScope()) {
+          plottable_time_interval_midpoint_.Render(enabled: true);
+          plottable_time_interval_duration_.Render(enabled: true);
+        }
+      }
+    }
+
     UnityEngine.GUI.DragWindow();
   }
 
@@ -886,9 +887,23 @@ internal class
         selected_celestial == celestial && frame_type == type;
   }
 
-  internal string FormatPlottableTimeInterval(double seconds,
-                                              double _,
-                                              double __) {
+  private static double ZeroPlottableDurationValue(double? value) {
+    if (value.HasValue && value.Value < PrincipiaTimeSpan.max_seconds) {
+      return PrincipiaTimeSpan.max_seconds;
+    } else {
+      return 0.0;
+    }
+  }
+
+  private static string ZeroPlottableDurationButtonLabel(double? value) {
+    if (value.HasValue && value.Value < PrincipiaTimeSpan.max_seconds) {
+      return "∞";
+    } else {
+      return "0";
+    }
+  }
+
+  internal string FormatPlottableDuration(double seconds, double _, double __) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
         with_leading_zeroes: true,
         with_seconds: false,
@@ -896,7 +911,7 @@ internal class
         fractional_second_digits: 0);
   }
 
-  internal bool TryParsePlottableTimeInterval(string text, out double value) {
+  internal bool TryParsePlottableDuration(string text, out double value) {
     value = 0;
     if (!PrincipiaTimeSpan.TryParse(text, out PrincipiaTimeSpan ts)) {
       return false;
