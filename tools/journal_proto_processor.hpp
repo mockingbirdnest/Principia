@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -103,6 +104,14 @@ class JournalProtoProcessor final {
 
   bool HasMarshaler(FieldDescriptor const* descriptor) const;
   std::string MarshalAs(FieldDescriptor const* descriptor) const;
+
+  // Some maps (the ones that contain code snippets, as opposed to internal
+  // data) are keyed by some descriptor pointers, and the order of these maps
+  // must be deterministic, and reflect the order of the source .proto file.
+  template<typename T>
+  struct OrderByIndices {
+    bool operator()(T const* left, T const* right) const;
+  };
 
   // As the recursive methods above traverse the protocol buffer type
   // declarations, they enter in the following maps (and set) various pieces of
@@ -298,22 +307,22 @@ class JournalProtoProcessor final {
 
   // The C#/C++ declaration of an interface method corresponding to a method
   // message.  The key is a descriptor for a method message.
-  absl::flat_hash_map<Descriptor const*, std::string>
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
       cs_interface_method_declaration_;
-  absl::flat_hash_map<Descriptor const*, std::string>
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
       cxx_interface_method_declaration_;
 
   // A partial declaration of the C# class Interface.Symbols containing the
   // declaration of the delegate corresponding to a method message.  The key is
   // a descriptor for a method message.
-  absl::flat_hash_map<Descriptor const*, std::string>
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
       cs_interface_symbol_declaration_;
 
   // A list of C#/C++ parameters for an interface method.  The key is a
   // descriptor for an In or Out message.  Produced but not used for Out
   // messages.
-  absl::flat_hash_map<Descriptor const*, std::vector<std::string>>
-      cs_interface_parameters_;
+  std::map<Descriptor const*, std::vector<std::string>,
+           OrderByIndices<Descriptor>> cs_interface_parameters_;
   absl::flat_hash_map<Descriptor const*, std::vector<std::string>>
       cxx_interface_parameters_;
   // Same as `cs_interface_parameters_`, but with `MarshalAs` attributes.
@@ -341,16 +350,16 @@ class JournalProtoProcessor final {
 
   // The C#/C++ definition of a type corresponding to an interchange enum.  The
   // key is a descriptor for an interchange enum.
-  absl::flat_hash_map<EnumDescriptor const*, std::string>
+  std::map<EnumDescriptor const*, std::string, OrderByIndices<EnumDescriptor>>
       cs_interchange_enum_declaration_;
-  absl::flat_hash_map<EnumDescriptor const*, std::string>
+  std::map<EnumDescriptor const*, std::string, OrderByIndices<EnumDescriptor>>
       cxx_interchange_enum_declaration_;
 
   // The C#/C++ definition of a type corresponding to an interchange message.
   // The key is a descriptor for an interchange message.
-  absl::flat_hash_map<Descriptor const*, std::string>
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
       cs_interchange_type_declaration_;
-  absl::flat_hash_map<Descriptor const*, std::string>
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
       cxx_interchange_type_declaration_;
 
   // The full name of the C# class that implements a custom marshaler for an
@@ -359,7 +368,7 @@ class JournalProtoProcessor final {
 
   // The definition of the C# class that implements a custom marshaler for an
   // interchange message.
-  absl::flat_hash_map<Descriptor const*, std::string>
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
       cs_custom_marshaler_class_;
 
   // The C# declarations of fields in the Representation struct of a custom
@@ -379,10 +388,12 @@ class JournalProtoProcessor final {
   // The definitions of the Serialize, Deserialize and (if needed) Insert
   // functions for interchange messages.  The key is a descriptor for an
   // interchange message.
-  absl::flat_hash_map<Descriptor const*, std::string>
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
       cxx_deserialize_definition_;
-  absl::flat_hash_map<Descriptor const*, std::string> cxx_serialize_definition_;
-  absl::flat_hash_map<Descriptor const*, std::string> cxx_insert_definition_;
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
+      cxx_serialize_definition_;
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
+      cxx_insert_definition_;
 
   // For interchange messages that require deserialization storage, the
   // arguments for the storage in the call to the Deserialize function.  Starts
@@ -407,7 +418,8 @@ class JournalProtoProcessor final {
       cxx_deserialization_storage_parameters_;
 
   // The statements to be included in the body of the Play function.
-  absl::flat_hash_map<Descriptor const*, std::string> cxx_play_statement_;
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
+      cxx_play_statement_;
 
   // The entire sequence of statements for the body of a Fill function.  The key
   // is a descriptor for an In or Out message.
@@ -430,12 +442,12 @@ class JournalProtoProcessor final {
 
   // A code snippet for the implementation of the Fill and Run functions.  The
   // key is a descriptor for a method message.
-  absl::flat_hash_map<Descriptor const*, std::string>
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
       cxx_functions_implementation_;
 
   // A code snippet for the declaration of the top-level struct for a method.
   // The key is a descriptor for a method message.
-  absl::flat_hash_map<Descriptor const*, std::string>
+  std::map<Descriptor const*, std::string, OrderByIndices<Descriptor>>
       cxx_toplevel_type_declaration_;
 
   // A code snippet for the declaration of a nested In or Out struct or a Return

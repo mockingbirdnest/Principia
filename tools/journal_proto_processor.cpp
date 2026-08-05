@@ -1422,6 +1422,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       result_field_descriptor = field_descriptor;
     }
   }
+  LOG(ERROR)<<descriptor->full_name()<<" "<<result_field_descriptor->full_name();
   CHECK(result_field_descriptor != nullptr)
       << descriptor->full_name()
       << " must have exactly one field without the (address_of) option";
@@ -1435,12 +1436,13 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   std::string const cxx_field_getter =
       "message.return_()." + std::string(result_field_descriptor->name()) +
       "()";
-  if (cxx_insert_definition_.contains(
-          result_field_descriptor->message_type())) {
-    Descriptor const* message_type = result_field_descriptor->message_type();
-    std::string const message_type_name(message_type->name());
-    cxx_run_body_epilog_[descriptor] += "  Insert" + message_type_name + "(" +
-                                        cxx_field_getter +
+  Descriptor const* field_message_type =
+      result_field_descriptor->message_type();
+  if (field_message_type != nullptr &&
+      cxx_insert_definition_.contains(field_message_type)) {
+    std::string const field_message_type_name(field_message_type->name());
+    cxx_run_body_epilog_[descriptor] += "  Insert" + field_message_type_name +
+                                        "(" + cxx_field_getter +
                                         ", *result, pointer_map);\n";
   }
   if (field_cxx_inserter_fn_.contains(result_field_descriptor)) {
@@ -1449,9 +1451,8 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
                                                         "result");
   } else if (!result_field_options.HasExtension(
                  journal::serialization::omit_check)) {
-    Descriptor const* field_message_type =
-        result_field_descriptor->message_type();
-    if (cxx_deserialization_storage_declarations_.contains(
+    if (field_message_type != nullptr &&
+        cxx_deserialization_storage_declarations_.contains(
             field_message_type)) {
       cxx_run_body_epilog_[descriptor] +=
           cxx_deserialization_storage_declarations_[field_message_type];
@@ -1614,6 +1615,12 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     // deserialization, generate it now.
     if (field_descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
       Descriptor const* field_message_type = field_descriptor->message_type();
+LOG(ERROR)<<field_message_type->full_name();
+LOG(ERROR)<<cxx_deserialization_storage_arguments_[field_message_type].size();
+LOG(ERROR)<<cxx_deserialization_storage_parameters_[field_message_type].size();
+LOG(ERROR)<<descriptor->full_name();
+LOG(ERROR)<<cxx_deserialization_storage_arguments_[descriptor].size();
+LOG(ERROR)<<cxx_deserialization_storage_parameters_[descriptor].size();
       if (cxx_deserialization_storage_arguments_.contains(field_message_type)) {
         cxx_deserialization_storage_arguments_[descriptor] +=
              cxx_deserialization_storage_arguments_[field_message_type];
@@ -2159,6 +2166,42 @@ std::string JournalProtoProcessor::MarshalAs(
      _MSC_FULL_VER == 194'435'228)
   std::abort();
 #endif
+}
+
+template<typename T>
+bool JournalProtoProcessor::OrderByIndices<T>::operator()(
+    T const* const left,
+    T const* const right) const {
+  CHECK(left != nullptr);
+  CHECK(right != nullptr);
+  if (left == right) {
+    return false;
+  }
+
+  auto const get_indices = [](T const* const t) {
+    std::vector<int> indices;
+    indices.push_back(t->index());
+    Descriptor const* type = t->containing_type();
+    while (type != nullptr) {
+      indices.push_back(type->index());
+      type = type->containing_type();
+    }
+    std::reverse(indices.begin(), indices.end());
+    return indices;
+  };
+  //return left < right;
+  if (get_indices(left) < get_indices(right)) {
+    LOG(ERROR) << absl::StrJoin(get_indices(left), "/") << " "
+               << left->full_name() << " < "
+               << absl::StrJoin(get_indices(right), "/") << " "
+               << right->full_name();
+  } else {
+    LOG(ERROR) << absl::StrJoin(get_indices(left), "/") << " "
+               << left->full_name()
+               << " >= " << absl::StrJoin(get_indices(right), "/") << " "
+               << right->full_name();
+  }
+  return get_indices(left) < get_indices(right);
 }
 
 }  // namespace internal
