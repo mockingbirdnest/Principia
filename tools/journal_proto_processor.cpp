@@ -1614,12 +1614,6 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     // deserialization, generate it now.
     if (field_descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
       Descriptor const* field_message_type = field_descriptor->message_type();
-LOG(ERROR)<<field_message_type->full_name();
-LOG(ERROR)<<cxx_deserialization_storage_arguments_[field_message_type].size();
-LOG(ERROR)<<cxx_deserialization_storage_parameters_[field_message_type].size();
-LOG(ERROR)<<descriptor->full_name();
-LOG(ERROR)<<cxx_deserialization_storage_arguments_[descriptor].size();
-LOG(ERROR)<<cxx_deserialization_storage_parameters_[descriptor].size();
       if (cxx_deserialization_storage_arguments_.contains(field_message_type)) {
         cxx_deserialization_storage_arguments_[descriptor] +=
              cxx_deserialization_storage_arguments_[field_message_type];
