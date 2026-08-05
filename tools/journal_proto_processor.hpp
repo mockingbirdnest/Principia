@@ -1,11 +1,11 @@
 #pragma once
 
 #include <functional>
-#include <set>
 #include <string>
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/descriptor.h"
 
 namespace principia {
@@ -116,24 +116,24 @@ class JournalProtoProcessor final {
 
   // The fields that are in.  Note that the out fields present in `in_out_` are
   // not in `in_`.
-  std::set<FieldDescriptor const*> in_;
+  absl::flat_hash_set<FieldDescriptor const*> in_;
 
   // The fields that are in-out, i.e. for which fields of the same name exist in
   // both the In and the Out messages.  Note that both fields are present in
   // this set.  Those fields are transmitted through the interface with an extra
   // level of indirection.
-  std::set<FieldDescriptor const*> in_out_;
+  absl::flat_hash_set<FieldDescriptor const*> in_out_;
 
   // The fields that are out.  Those fields are transmitted through the
   // interface with an extra level of indirection.  Note that the in fields
   // present in `in_out_` are not in `out_`.
-  std::set<FieldDescriptor const*> out_;
+  absl::flat_hash_set<FieldDescriptor const*> out_;
 
   // The fields that are returned.
-  std::set<FieldDescriptor const*> return_;
+  absl::flat_hash_set<FieldDescriptor const*> return_;
 
   // The fields that are part of interchange messages.
-  std::set<FieldDescriptor const*> interchange_;
+  absl::flat_hash_set<FieldDescriptor const*> interchange_;
 
   // For a field that has an (address_of) option, field_cxx_address_of_ has that
   // field as a key and the field designated by the option as its value.
@@ -277,7 +277,7 @@ class JournalProtoProcessor final {
   // The fields that must be marshaled by simply copying their fields.  This is
   // useful for classes-within-classes when we don't need a level of
   // indirection.
-  std::set<FieldDescriptor const*> field_cs_marshal_by_copy_;
+  absl::flat_hash_set<FieldDescriptor const*> field_cs_marshal_by_copy_;
 
   // The C# type for a field, suitable for use in a private member when the
   // actual data cannot be exposed directly (think bool).
@@ -337,7 +337,7 @@ class JournalProtoProcessor final {
 
   // The interchange messages that are represented by a class (as opposed to a
   // struct) in the C# code.
-  std::set<Descriptor const*> cs_interchange_classes_;
+  absl::flat_hash_set<Descriptor const*> cs_interchange_classes_;
 
   // The C#/C++ definition of a type corresponding to an interchange enum.  The
   // key is a descriptor for an interchange enum.

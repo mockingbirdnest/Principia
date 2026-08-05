@@ -8,7 +8,6 @@
 #include <memory>
 #include <optional>
 #include <ranges>
-#include <set>
 #include <string>
 #include <thread>
 #include <utility>
@@ -16,6 +15,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
@@ -1344,7 +1344,7 @@ void Vessel::AttachPrediction(DiscreteTrajectory<Barycentric>&& trajectory) {
 
 bool Vessel::IsCollapsible() const {
   PileUp const* containing_pile_up = nullptr;
-  std::set<not_null<Part*>> parts;
+  absl::flat_hash_set<not_null<Part*>> parts;
   for (const auto& [_, part] : parts_) {
     // We expect parts to be piled up.
     CHECK(part->is_piled_up());

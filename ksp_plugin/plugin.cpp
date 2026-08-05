@@ -9,7 +9,6 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <set>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -18,6 +17,7 @@
 #include <vector>
 
 #include "absl/containers/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
@@ -940,7 +940,7 @@ void Plugin::SetPredictionAdaptiveStepParameters(
 
 void Plugin::UpdatePrediction(std::vector<GUID> const& vessel_guids) const {
   CHECK(!initializing_);
-  std::set<not_null<Vessel*>> predicted_vessels;
+  absl::flat_hash_set<not_null<Vessel*>> predicted_vessels;
   for (auto const& guid : vessel_guids) {
     predicted_vessels.insert(FindOrDie(vessels_, guid).get());
   }
