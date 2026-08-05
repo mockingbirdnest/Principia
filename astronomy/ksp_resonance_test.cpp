@@ -1,9 +1,9 @@
 #include <algorithm>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/log/check.h"
 #include "absl/log/globals.h"
 #include "absl/log/log.h"
@@ -77,7 +77,7 @@ class KSPResonanceTest : public ::testing::Test {
  protected:
   using KSP = Frame<struct KSPTag, Inertial>;
 
-  using Periods = std::map<not_null<MassiveBody const*>, Time>;
+  using Periods = absl::flat_hash_map<not_null<MassiveBody const*>, Time>;
 
   KSPResonanceTest()
       : solar_system_(

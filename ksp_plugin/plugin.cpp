@@ -17,6 +17,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/containers/flat_hash_map.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
@@ -1476,7 +1477,8 @@ void Plugin::WriteToMessage(
     message->set_system_fingerprint(system_fingerprint_);
   }
   ephemeris_->Prolong(current_time_).IgnoreError();
-  std::map<not_null<Celestial const*>, Index const> celestial_to_index;
+  absl::flat_hash_map<not_null<Celestial const*>, Index const>
+      celestial_to_index;
   for (auto const& [index, owned_celestial] : celestials_) {
     celestial_to_index.emplace(owned_celestial.get(), index);
   }
@@ -1493,7 +1495,8 @@ void Plugin::WriteToMessage(
   }
 
   // Construct a map to help serialization of the pile-ups.
-  std::map<not_null<PileUp const*>, int> serialization_index_to_pile_up;
+  absl::flat_hash_map<not_null<PileUp const*>, int>
+      serialization_index_to_pile_up;
   int serialization_index = 0;
   for (auto const* pile_up : pile_ups_) {
     serialization_index_to_pile_up[pile_up] = serialization_index++;
@@ -1503,7 +1506,7 @@ void Plugin::WriteToMessage(
         return serialization_index_to_pile_up.at(pile_up);
       };
 
-  std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
+  absl::flat_hash_map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& [guid, vessel] : vessels_) {
     vessel_to_guid.emplace(vessel.get(), guid);
     auto* const vessel_message = message->add_vessel();

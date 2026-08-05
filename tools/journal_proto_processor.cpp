@@ -4,7 +4,6 @@
 #include <cctype>
 #include <functional>
 #include <iostream>
-#include <iterator>
 #include <map>
 #include <ranges>
 #include <set>

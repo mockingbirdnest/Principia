@@ -1,10 +1,10 @@
 #pragma once
 
-#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "base/not_null.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -94,7 +94,7 @@ class HierarchicalSystem final {
   System system_;
   // Invariant: `systems_[p]->primary.get() == p`.
   // None of these pointers should be null, but I want to use operator[].
-  std::map<not_null<MassiveBody const*>, System*> systems_;
+  absl::flat_hash_map<not_null<MassiveBody const*>, System*> systems_;
 };
 
 }  // namespace internal

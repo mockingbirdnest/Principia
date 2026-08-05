@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <iterator>
-#include <map>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -50,7 +49,7 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
   elements.mean_anomaly = 0 * Radian;
 
   // Invariant: `body_indices[bodies[i]] == i` for all `i`.
-  std::map<not_null<MassiveBody const*>, int> body_indices;
+  absl::flat_hash_map<not_null<MassiveBody const*>, int> body_indices;
   std::vector<not_null<MassiveBody const*>> bodies;
 
   auto const new_body = [&body_indices, &bodies](Mass const& mass) {
@@ -106,7 +105,7 @@ TEST_F(HierarchicalSystemTest, FromMeanMotions) {
 
 
   // Invariant: `body_indices[bodies[i]] == i` for all `i`.
-  std::map<not_null<MassiveBody const*>, int> body_indices;
+  absl::flat_hash_map<not_null<MassiveBody const*>, int> body_indices;
   std::vector<not_null<MassiveBody const*>> bodies;
 
   auto const new_body = [&body_indices, &bodies]() {
