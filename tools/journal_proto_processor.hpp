@@ -107,7 +107,9 @@ class JournalProtoProcessor final {
 
   // Some maps (the ones that contain code snippets, as opposed to internal
   // data) are keyed by some descriptor pointers, and the order of these maps
-  // must be deterministic, and reflect the order of the source .proto file.
+  // must be deterministic and reflect that of the .proto file.  This comparator
+  // achives this by constructing a "path" of indices from the top of the file
+  // to the innermost declaration.
   template<typename T>
   struct OrderByIndices {
     bool operator()(T const* left, T const* right) const;

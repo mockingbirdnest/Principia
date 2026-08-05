@@ -1422,7 +1422,6 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       result_field_descriptor = field_descriptor;
     }
   }
-  LOG(ERROR)<<descriptor->full_name()<<" "<<result_field_descriptor->full_name();
   CHECK(result_field_descriptor != nullptr)
       << descriptor->full_name()
       << " must have exactly one field without the (address_of) option";
@@ -2178,6 +2177,10 @@ bool JournalProtoProcessor::OrderByIndices<T>::operator()(
     return false;
   }
 
+  // A "path" of indices from the top-level message down to the individual
+  // declaration.  For instance, the indices for `CatchUpLaggingVessels.Out`
+  // might be {38, 1} if `CatchUpLaggingVessels` is the 39th message in the file
+  // and `Out` is its second nested message.
   auto const get_indices = [](T const* const t) {
     std::vector<int> indices;
     indices.push_back(t->index());
@@ -2189,18 +2192,7 @@ bool JournalProtoProcessor::OrderByIndices<T>::operator()(
     std::reverse(indices.begin(), indices.end());
     return indices;
   };
-  //return left < right;
-  if (get_indices(left) < get_indices(right)) {
-    LOG(ERROR) << absl::StrJoin(get_indices(left), "/") << " "
-               << left->full_name() << " < "
-               << absl::StrJoin(get_indices(right), "/") << " "
-               << right->full_name();
-  } else {
-    LOG(ERROR) << absl::StrJoin(get_indices(left), "/") << " "
-               << left->full_name()
-               << " >= " << absl::StrJoin(get_indices(right), "/") << " "
-               << right->full_name();
-  }
+
   return get_indices(left) < get_indices(right);
 }
 
