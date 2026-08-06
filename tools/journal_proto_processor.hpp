@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/container/node_hash_map.h"
 #include "google/protobuf/descriptor.h"
@@ -115,13 +116,18 @@ class JournalProtoProcessor final {
     bool operator()(T const* left, T const* right) const;
   };
 
-  // IMPORTANT!  The hash maps in this code are `node_hash_map`s, not
-  // `flat_hash_map`s, because many of them are string-valued, and we
-  // extensively use `+=`.  This causes plague and pestilence if the map gets
-  // reshashed in the middle of the assignment, because `flat_hash_map` doesn't
-  // have pointer stability.  Technically we could use `flat_hash_map` for the
-  // maps that are not string-valued, but this would just be unnecessarily
-  // dangerous.
+  // IMPORTANT!
+  //
+  // The members that are pointer- or function-values hash maps are
+  // `flat_hash_map` because we probably don't need pointer stability (we should
+  // not retain pointers or references to pointers or functions).  All others
+  // are `node_hash_map`s.  To see why, consider the maps that are
+  // string-valued; we extensively use `+=` in conjuction with `[]`, which can
+  // cause rehashing in the middle of the assignment (evaluate the addres of the
+  // rhs, evaluate the address of the lhs, it's not in the map, insert, rehash).
+  //
+  // For local maps we generally use `flat_hash_map` because we can easily
+  // verify that pointer stability is not needed.
 
   // As the recursive methods above traverse the protocol buffer type
   // declarations, they enter in the following maps (and set) various pieces of
@@ -157,24 +163,24 @@ class JournalProtoProcessor final {
   // For a field that has an (address_of) option, field_cxx_address_of_ has that
   // field as a key and the field designated by the option as its value.
   // field_cxx_address_ is the inverse map.
-  absl::node_hash_map<FieldDescriptor const*, FieldDescriptor const*>
+  absl::flat_hash_map<FieldDescriptor const*, FieldDescriptor const*>
       field_cxx_address_of_;
-  absl::node_hash_map<FieldDescriptor const*, FieldDescriptor const*>
+  absl::flat_hash_map<FieldDescriptor const*, FieldDescriptor const*>
       field_cxx_address_;
 
   // For a field that has a (size_of) option, field_cxx_size_of_ has that field
   // as a key and the field designated by the option as its value.
   // field_cxx_size_ is the inverse map.
-  absl::node_hash_map<FieldDescriptor const*, FieldDescriptor const*>
+  absl::flat_hash_map<FieldDescriptor const*, FieldDescriptor const*>
       field_cxx_size_of_;
-  absl::node_hash_map<FieldDescriptor const*, FieldDescriptor const*>
+  absl::flat_hash_map<FieldDescriptor const*, FieldDescriptor const*>
       field_cxx_size_;
 
   // For all fields, a lambda that takes the name of a local variable containing
   // data extracted (and deserialized) from the field and returns a list of
   // expressions to be passed to the interface.  Deals with passing by reference
   // for fields that are in-out or optional.
-  absl::node_hash_map<
+  absl::flat_hash_map<
       FieldDescriptor const*,
       std::function<std::vector<std::string>(std::string const& identifier)>>
       field_cxx_arguments_fn_;
@@ -185,7 +191,7 @@ class JournalProtoProcessor final {
   // prefix of a call, i.e., it must be a pointer followed by "->" or a
   // reference followed by ".".  The lambda calls `field_cxx_serializer_fn_` to
   // serialize expressions as necessary; thus, `expr` must *not* be serialized.
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& prefix,
                                                 std::string const& expr)>>
       field_cxx_assignment_fn_;
@@ -195,7 +201,7 @@ class JournalProtoProcessor final {
   // the pointer_map.  `expr` is a uint64 expression for the entry to be
   // removed (typically something like `message.in().bar()`).  No data for other
   // fields.
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& expr)>>
       field_cxx_deleter_fn_;
 
@@ -207,14 +213,14 @@ class JournalProtoProcessor final {
   // fields.
   // Note that for a field that is designated by a (size_of) field, the
   // (size_of) field is passed to this lambda instead of the field itself.
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& expr)>>
       field_cxx_deserializer_fn_;
 
   // For all fields, a lambda that takes an expression for a struct member and
   // returns an expression that dereferences it if the field uses a level of
   // indirection (e.g., is optional or in-out).
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& expr)>>
       field_cxx_indirect_member_get_fn_;
 
@@ -224,33 +230,33 @@ class JournalProtoProcessor final {
   // of the pointer (typically something like `message.in().bar()`), `expr2` is
   // a pointer expression for the current value of the pointer (typically the
   // name of a local variable).  No data for other fields.
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& expr1,
                                                 std::string const& expr2)>>
       field_cxx_inserter_fn_;
 
   // For all fields, a lambda that takes a C# parameter type as stored in
   // `field_cs_type_`, and adds a mode to it.
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& type)>>
       field_cs_mode_fn_;
   // For all fields, a lambda that takes a C++ parameter or member type as
   // stored in `field_cxx_type_`, and adds a mode to it.
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& type)>>
       field_cxx_mode_fn_;
 
   // For all fields, a lambda that takes a C# parameter type as stored in
   // `field_cs_type_`, and adds `this` to it if `is_subject`; the result can be
   // used to declare a parameter in an extension method.
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& type)>>
       field_cs_extension_method_parameter_fn_;
 
   // For all fields, a lambda that takes a pointer expression and a statement
   // generated by `field_cxx_assignment_fn_`.  If the field is optional, returns
   // an if statement that only executes `stmt` if `expr` in nonnull.
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& expr,
                                                 std::string const& stmt)>>
       field_cxx_optional_assignment_fn_;
@@ -260,7 +266,7 @@ class JournalProtoProcessor final {
   // and a deserialized expression for reading the field (typically the result
   // of `field_cxx_deserializer_fn_`) and returns a conditional expression for
   // either a pointer to the deserialized value or nullptr.
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& condition,
                                                 std::string const& expr)>>
       field_cxx_optional_pointer_fn_;
@@ -269,18 +275,18 @@ class JournalProtoProcessor final {
   // variable (possibly with dereferencing) and returns a protocol buffer
   // expression suitable for assigning to some field either using set_bar() or
   // mutable_bar() (typically the result is a call to some Serialize function).
-  absl::node_hash_map<FieldDescriptor const*,
+  absl::flat_hash_map<FieldDescriptor const*,
                       std::function<std::string(std::string const& expr)>>
       field_cxx_serializer_fn_;
 
   // For fields that are implemented using private members, a lambda that takes
   // the names of the members and returns the C# implementation of the getter
   // and setter.
-  absl::node_hash_map<
+  absl::flat_hash_map<
       FieldDescriptor const*,
       std::function<std::string(std::vector<std::string> const& identifiers)>>
       field_cs_private_getter_fn_;
-  absl::node_hash_map<
+  absl::flat_hash_map<
       FieldDescriptor const*,
       std::function<std::string(std::vector<std::string> const& identifiers)>>
       field_cs_private_setter_fn_;
