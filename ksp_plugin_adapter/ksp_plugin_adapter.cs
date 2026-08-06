@@ -1049,13 +1049,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       galaxy_cube_rotator_.pre_cull = RotateGalaxyCube;
     }
 
-    // Orient the celestial bodies.
-    foreach (var body in FlightGlobals.Bodies) {
-      body.scaledBody.transform.rotation =
-          (UnityEngine.QuaternionD)plugin_.CelestialRotation(
-              body.flightGlobalsIndex);
-    }
-
     // Handle clicks on planets.
     if (MapView.MapIsEnabled) {
       HandleMapViewClicks();
@@ -2007,6 +2000,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
             Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}
         };
+        body.rotation = body.BodyFrame.Rotation.swizzle;
+        body.bodyTransform.rotation = body.rotation;
       }
     }
   }
