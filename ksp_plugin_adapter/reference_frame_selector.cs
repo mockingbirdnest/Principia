@@ -641,15 +641,18 @@ internal class
                          existing_payload.plottable_time_interval.min,
                          0),
                 PrincipiaTimeSpan.max_seconds);
-        // A trick to avoid NaNs when the interval is ]-∞, +∞[.
-        if (existing_payload.plottable_time_interval.min ==
-            -existing_payload.plottable_time_interval.max) {
+        // Avoid NaNs when the interval is ]-∞, +∞[.
+        if (existing_payload.plottable_time_interval is {
+                min: double.NegativeInfinity, max: double.PositiveInfinity
+            }) {
           plottable_time_interval_midpoint_.value = 0.0;
         } else {
           plottable_time_interval_midpoint_.value =
-              ( existing_payload.plottable_time_interval.min +
-                existing_payload.plottable_time_interval.max) /
-              2;
+              ((existing_payload.plottable_time_interval.min -
+                active_vessel.launchTime) +
+               (existing_payload.plottable_time_interval.max -
+                active_vessel.launchTime)) /
+              2 ;
         }
 
         using (new UnityEngine.GUILayout.VerticalScope()) {
@@ -668,8 +671,9 @@ internal class
             var payload =
                 new PlottingFramePayload{
                     plottable_time_interval = {
-                        min = midpoint - duration / 2,
-                        max = midpoint + duration / 2
+                        min =
+                            active_vessel.launchTime + midpoint - duration / 2,
+                        max = active_vessel.launchTime + midpoint + duration / 2
                     }
                 };
             plugin.VesselSetPlottingFramePayload(
