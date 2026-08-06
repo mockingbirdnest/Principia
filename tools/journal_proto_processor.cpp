@@ -1436,7 +1436,9 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
       "message.return_()." + std::string(result_field_descriptor->name()) +
       "()";
   Descriptor const* field_message_type =
-      result_field_descriptor->message_type();
+      result_field_descriptor->type() == FieldDescriptor::TYPE_MESSAGE
+          ? result_field_descriptor->message_type()
+          : nullptr;
   if (field_message_type != nullptr &&
       cxx_insert_definition_.contains(field_message_type)) {
     std::string const field_message_type_name(field_message_type->name());
