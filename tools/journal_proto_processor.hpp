@@ -118,13 +118,14 @@ class JournalProtoProcessor final {
 
   // IMPORTANT!
   //
-  // The members that are pointer- or function-values hash maps are
+  // The members that are pointer- or function-valued hash maps are
   // `flat_hash_map` because we probably don't need pointer stability (we should
   // not retain pointers or references to pointers or functions).  All others
   // are `node_hash_map`s.  To see why, consider the maps that are
-  // string-valued; we extensively use `+=` in conjuction with `[]`, which can
-  // cause rehashing in the middle of the assignment (evaluate the addres of the
-  // rhs, evaluate the address of the lhs, it's not in the map, insert, rehash).
+  // string-valued; we extensively use `+=` in conjunction with `[]`, which can
+  // cause rehashing in the middle of the assignment (evaluate the address of
+  // the rhs, evaluate the address of the lhs, it's not in the map, insert,
+  // rehash).
   //
   // For local maps we generally use `flat_hash_map` because we can easily
   // verify that pointer stability is not needed.
