@@ -4,7 +4,6 @@
 #include <cctype>
 #include <functional>
 #include <iostream>
-#include <iterator>
 #include <map>
 #include <ranges>
 #include <set>
@@ -1436,12 +1435,15 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   std::string const cxx_field_getter =
       "message.return_()." + std::string(result_field_descriptor->name()) +
       "()";
-  if (cxx_insert_definition_.contains(
-          result_field_descriptor->message_type())) {
-    Descriptor const* message_type = result_field_descriptor->message_type();
-    std::string const message_type_name(message_type->name());
-    cxx_run_body_epilog_[descriptor] += "  Insert" + message_type_name + "(" +
-                                        cxx_field_getter +
+  Descriptor const* field_message_type =
+      result_field_descriptor->type() == FieldDescriptor::TYPE_MESSAGE
+          ? result_field_descriptor->message_type()
+          : nullptr;
+  if (field_message_type != nullptr &&
+      cxx_insert_definition_.contains(field_message_type)) {
+    std::string const field_message_type_name(field_message_type->name());
+    cxx_run_body_epilog_[descriptor] += "  Insert" + field_message_type_name +
+                                        "(" + cxx_field_getter +
                                         ", *result, pointer_map);\n";
   }
   if (field_cxx_inserter_fn_.contains(result_field_descriptor)) {
@@ -1450,9 +1452,8 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
                                                         "result");
   } else if (!result_field_options.HasExtension(
                  journal::serialization::omit_check)) {
-    Descriptor const* field_message_type =
-        result_field_descriptor->message_type();
-    if (cxx_deserialization_storage_declarations_.contains(
+    if (field_message_type != nullptr &&
+        cxx_deserialization_storage_declarations_.contains(
             field_message_type)) {
       cxx_run_body_epilog_[descriptor] +=
           cxx_deserialization_storage_declarations_[field_message_type];
@@ -2160,6 +2161,35 @@ std::string JournalProtoProcessor::MarshalAs(
      _MSC_FULL_VER == 194'435'228)
   std::abort();
 #endif
+}
+
+template<typename T>
+bool JournalProtoProcessor::OrderByIndices<T>::operator()(
+    T const* const left,
+    T const* const right) const {
+  CHECK(left != nullptr);
+  CHECK(right != nullptr);
+  if (left == right) {
+    return false;
+  }
+
+  // A "path" of indices from the top-level message down to the individual
+  // declaration.  For instance, the indices for `CatchUpLaggingVessels.Out`
+  // might be {38, 1} if `CatchUpLaggingVessels` is the 39th message in the file
+  // and `Out` is its second nested message.
+  auto const get_indices = [](T const* const t) {
+    std::vector<int> indices;
+    indices.push_back(t->index());
+    Descriptor const* type = t->containing_type();
+    while (type != nullptr) {
+      indices.push_back(type->index());
+      type = type->containing_type();
+    }
+    std::reverse(indices.begin(), indices.end());
+    return indices;
+  };
+
+  return get_indices(left) < get_indices(right);
 }
 
 }  // namespace internal

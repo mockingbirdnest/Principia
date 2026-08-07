@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
@@ -556,7 +557,8 @@ void StatisticallyAnalyseStability() {
               Ephemeris<Barycentric>::NewtonianMotionEquation>(),
           step);
 
-  std::map<not_null<Ephemeris<Barycentric>*>, bool> numerically_unsound;
+  absl::flat_hash_map<not_null<Ephemeris<Barycentric>*>, bool>
+      numerically_unsound;
   for (auto const& ephemeris : perturbed_ephemerides) {
     CHECK_OK(ephemeris->Prolong(ksp_epoch));
     numerically_unsound[ephemeris.get()] = false;
