@@ -26,18 +26,17 @@ This project depends upon:
 - the KSP assemblies `Assembly-CSharp.dll` and `Assembly-CSharp-firstpass.dll`, found in `<KSP directory>\KSP_x64_Data\Managed`;
 - the Unity assemblies `UnityEngine.CoreModule.dll`, `UnityEngine.dll`, `UnityEngine.ImageConversionModule.dll`, `UnityEngine.IMGUIMode.dll`, `UnityEngine.InputLegacyModule.dll`, `UnityEngine.PhysicsModule.dll`, `UnityEngine.TextRenderingModule.dll` and `UnityEngine.UI.dll`, found in
   `<KSP directory>\KSP_x64_Data\Managed`;
-- our [fork](https://github.com/mockingbirdnest/glog) of the Google glog
-  library;
-- our [fork](https://github.com/mockingbirdnest/googletest) of the Google googletest
-  and googlemock libraries;
-- our [fork](https://github.com/mockingbirdnest/protobuf) of the Google
-  protobuf library;
-- our [fork](https://github.com/mockingbirdnest/benchmark) of the Google
-  benchmark library;
-- our [fork](https://github.com/mockingbirdnest/gipfeli) of the Google gipfeli library;
 - our [fork](https://github.com/mockingbirdnest/abseil-cpp) of the Google Abseil C++ library;
+- our [fork](https://github.com/mockingbirdnest/benchmark) of the Google benchmark library;
+- our [fork](https://github.com/mockingbirdnest/config) of the Boost config library;
+- our [fork](https://github.com/mockingbirdnest/core-math) of the INRIA CORE-MATH library;
+- our [fork](https://github.com/mockingbirdnest/gipfeli) of the Google gipfeli library;
+- our [fork](https://github.com/mockingbirdnest/googletest) of the Google googletest and googlemock libraries;
+- our [fork](https://github.com/mockingbirdnest/lodepng) of Lode's PNG library;
+- our [fork](https://github.com/mockingbirdnest/multiprecision) of the Boost multiprecision library;
+- our [fork](https://github.com/mockingbirdnest/protobuf) of the Google protobuf library;
+- our [fork](https://github.com/mockingbirdnest/re2) of the Google RE2 library;
 - our [fork](https://github.com/mockingbirdnest/zfp) of the LLNL zfp library;
-- our [modified excerpts](https://github.com/mockingbirdnest/chromium) of the Chromium codebase (for stack tracing support in glog on Windows).
 
 ## Installation steps
 
