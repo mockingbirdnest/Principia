@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -11,42 +10,50 @@ internal class DifferentialSlider : ScalingRenderer {
 
   public delegate bool ValueParser(string s, out double value);
 
+  public delegate double ZeroValue(double? value);
+
+  public delegate string ZeroButtonLabel(double? value);
+
   // Rates are in units of `value` per real-time second.
   public DifferentialSlider(string label,
                             string unit,
                             double log10_lower_rate,
                             double log10_upper_rate,
                             ValueFormatter formatter,
+                            ValueParser parser,
                             UnityEngine.TextAnchor
                                 alignment = UnityEngine.TextAnchor.MiddleRight,
-                            ValueParser parser = null,
-                            double zero_value = 0,
                             double min_value = double.NegativeInfinity,
                             double max_value = double.PositiveInfinity,
                             bool modular = false,
                             UnityEngine.Color? text_colour = null,
                             int label_width = 3,
                             int field_width = 5,
-                            bool display_zero_button = true) {
+                            ZeroValue zero_value = null,
+                            ZeroButtonLabel zero_button_label = null) {
     label_ = label;
-    label_width_ = label_width;
-    field_width_ = field_width;
     unit_ = unit;
-    alignment_ = alignment;
-    formatter_ = formatter;
-    if (parser == null) {
-      parser_ = TryParseDouble;
-    } else {
-      parser_ = parser;
-    }
     log10_lower_rate_ = log10_lower_rate;
     log10_upper_rate_ = log10_upper_rate;
-    zero_value_ = zero_value;
-    display_zero_button_ = display_zero_button;
+    formatter_ = formatter;
+    parser_ = parser;
+    alignment_ = alignment;
     min_value_ = min_value;
     max_value_ = max_value;
     modular_ = modular;
     text_colour_ = text_colour;
+    label_width_ = label_width;
+    field_width_ = field_width;
+    if (zero_value == null) {
+      zero_value_ =  _ => 0.0;
+    } else {
+      zero_value_ = zero_value;
+    }
+    if (zero_button_label == null) {
+      zero_button_label_ = _ => "0";
+    } else {
+      zero_button_label_ = zero_button_label;
+    }
   }
 
   public double max_value {
@@ -235,11 +242,12 @@ internal class DifferentialSlider : ScalingRenderer {
             rightValue : 1,
             options    : UnityEngine.GUILayout.ExpandWidth(true));
 
-        if (display_zero_button_ &&
-            UnityEngine.GUILayout.Button("0", GUILayoutWidth(1))) {
+        if (zero_button_label_(value_) != null &&
+            UnityEngine.GUILayout.Button(zero_button_label_(value_),
+                                         GUILayoutWidth(1))) {
           value_changed = true;
           // Force a change of value so that any input is discarded.
-          value = zero_value_;
+          value = zero_value_(value_);
         }
         if (slider_position_ != 0.0) {
           value_changed = true;
@@ -348,51 +356,36 @@ internal class DifferentialSlider : ScalingRenderer {
     return true;
   }
 
-  // As a special exemption we allow a comma as the decimal separator and the
-  // hyphen-minus instead of the minus sign.  We also remove grouping marks,
-  // since .NET does not like those in the fractional part.  Remove leading
-  // figure spaces so that a sign may be entered after them, see #3480; turn any
-  // remaining figure spaces into 0s, in case the user edits a blank leading
-  // digit.
-  private static bool TryParseDouble(string s, out double value) {
-    return double.TryParse(
-        s.Replace(',', '.').Replace('-', '−').Replace("'", "").
-            TrimStart(figure_space).Replace(figure_space, '0'),
-        NumberStyles.AllowDecimalPoint |
-        NumberStyles.AllowLeadingSign |
-        NumberStyles.AllowLeadingWhite |
-        NumberStyles.AllowThousands |
-        NumberStyles.AllowTrailingWhite,
-        Culture.culture.NumberFormat,
-        out value);
-  }
-
   private readonly string label_;
-  private readonly int label_width_;
-  private readonly int field_width_;
   private readonly string unit_;
 
   private readonly double log10_lower_rate_;
   private readonly double log10_upper_rate_;
-  private readonly double zero_value_;
-  private readonly bool display_zero_button_;
-  private readonly double min_value_;
-  private readonly bool modular_;
 
   private readonly ValueFormatter formatter_;
   private readonly ValueParser parser_;
+
+  private readonly UnityEngine.TextAnchor alignment_;
+
+  private readonly double min_value_;
+  private double max_value_;
+  private readonly bool modular_;
+
   private readonly UnityEngine.Color? text_colour_;
+  private readonly int label_width_;
+  private readonly int field_width_;
+
+  private readonly ZeroValue zero_value_;
+  private readonly ZeroButtonLabel zero_button_label_;
 
   private float slider_position_ = 0.0f;
   private DateTime last_time_;
-  private double max_value_;
   // It is convenient for the value to be nullable so that we have a way to
   // ensure that an assignment to it will actually have an effect and won't be
   // optimized due to the existing value.  This happens at initialization and
   // during some events handling.
   private double? value_;
   private string formatted_value_;
-  private readonly UnityEngine.TextAnchor alignment_;
 
   // Represents a possible adjustment of the digit at `index` in
   // `formatted_value_`.  The unit in that place is `increment`.

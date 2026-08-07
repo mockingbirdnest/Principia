@@ -492,6 +492,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void UpdatePredictions() {
     Vessel main_vessel = PredictedVessel();
+    plotting_frame_selector_.active_vessel = main_vessel;
 
     if (MapView.MapIsEnabled) {
       string main_vessel_guid = main_vessel?.id.ToString();
@@ -2117,8 +2118,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
 
     var target_vessel = TargetVessel();
-    if (plotting_frame_selector_.target != target_vessel) {
-       plotting_frame_selector_.target = target_vessel;
+    if (plotting_frame_selector_.target_vessel != target_vessel) {
+       plotting_frame_selector_.target_vessel = target_vessel;
        if (plotting_frame_selector_.target_frame_selected &&
            target_vessel == null) {
          // The target is no longer manageable.
@@ -2179,7 +2180,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         // plotting frame.
         if (!(FlightGlobals.speedDisplayMode ==
                   FlightGlobals.SpeedDisplayModes.Target &&
-              plotting_frame_selector_.target == null)) {
+              plotting_frame_selector_.target_vessel == null)) {
           if (plotting_frame_selector_.IsSurfaceFrame()) {
             if (FlightGlobals.speedDisplayMode !=
                 FlightGlobals.SpeedDisplayModes.Surface) {

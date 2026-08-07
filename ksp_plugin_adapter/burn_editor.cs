@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -22,6 +23,7 @@ class BurnEditor : ScalingRenderer {
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         formatter        : FormatΔvComponent,
+        parser           : TryParseDouble,
         alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Tangent);
     Δv_normal_ = new DifferentialSlider(
@@ -32,6 +34,7 @@ class BurnEditor : ScalingRenderer {
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         formatter        : FormatΔvComponent,
+        parser           : TryParseDouble,
         alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Normal);
     Δv_binormal_ = new DifferentialSlider(
@@ -42,6 +45,7 @@ class BurnEditor : ScalingRenderer {
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         formatter        : FormatΔvComponent,
+        parser           : TryParseDouble,
         alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Binormal);
     Δv_magnitude_ = new DifferentialSlider(
@@ -52,6 +56,7 @@ class BurnEditor : ScalingRenderer {
         log10_lower_rate : log10_Δv_lower_rate,
         log10_upper_rate : log10_Δv_upper_rate,
         formatter        : FormatΔvComponent,
+        parser           : TryParseDouble,
         alignment        : UnityEngine.TextAnchor.MiddleLeft,
         text_colour      : Style.Tangent);
     in_plane_angle_ =
@@ -88,7 +93,7 @@ class BurnEditor : ScalingRenderer {
         log10_upper_rate : log10_time_upper_rate,
         // We cannot have a coast of length 0, so let's make it very
         // short: that will be indistinguishable.
-        zero_value       : 0.001,
+        zero_value       : _ => 0.001,
         min_value        : 0,
         formatter        : FormatPreviousCoastDuration,
         parser           : TryParsePreviousCoastDuration,
@@ -583,6 +588,25 @@ class BurnEditor : ScalingRenderer {
         // Add grouping marks to the fractional part.
         @"\d{3}(?=\d)",
         match => match.Value + "'");
+  }
+
+  // As a special exemption we allow a comma as the decimal separator and the
+  // hyphen-minus instead of the minus sign.  We also remove grouping marks,
+  // since .NET does not like those in the fractional part.  Remove leading
+  // figure spaces so that a sign may be entered after them, see #3480; turn any
+  // remaining figure spaces into 0s, in case the user edits a blank leading
+  // digit.
+  internal bool TryParseDouble(string s, out double value) {
+    return double.TryParse(
+        s.Replace(',', '.').Replace('-', '−').Replace("'", "").
+            TrimStart(figure_space).Replace(figure_space, '0'),
+        NumberStyles.AllowDecimalPoint |
+        NumberStyles.AllowLeadingSign |
+        NumberStyles.AllowLeadingWhite |
+        NumberStyles.AllowThousands |
+        NumberStyles.AllowTrailingWhite,
+        Culture.culture.NumberFormat,
+        out value);
   }
 
   internal string FormatAngleComponent(double degrees,
