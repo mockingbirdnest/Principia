@@ -49,6 +49,7 @@ using interface::OrbitRecurrence;
 using interface::Origin;
 using interface::PlottableElements;
 using interface::PlottingFrameParameters;
+using interface::PlottingFramePayload;
 using interface::QP;
 using interface::QPRW;
 using interface::SolarTimesOfNodes;

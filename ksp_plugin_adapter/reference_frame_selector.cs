@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using KSP.Localization;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -27,11 +26,12 @@ internal class
   public delegate void Callback(ReferenceFrameParameters frame_parameters,
                                 Vessel target_vessel);
 
-  public ReferenceFrameSelector(ISupervisor supervisor,
+  public ReferenceFrameSelector(PrincipiaPluginAdapter adapter,
                                 Callback on_change,
                                 string name) : base(
-      supervisor,
+      adapter,
       UnityEngine.GUILayout.MinWidth(0)) {
+    adapter_ = adapter;
     on_change_ = on_change;
     name_ = name;
 
@@ -40,6 +40,37 @@ internal class
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     selected_celestial = FlightGlobals.GetHomeBody();
     is_freshly_constructed_ = true;
+
+    plottable_time_interval_midpoint_ =
+        new DifferentialSlider(
+            label            :
+            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Midpoint"),
+            unit: null,
+            log10_lower_rate : log10_duration_lower_rate,
+            log10_upper_rate : log10_duration_upper_rate,
+            min_value        : 0,
+            formatter        : FormatPlottableDuration,
+            parser           : TryParsePlottableDuration,
+            label_width      : 4,
+            field_width      : 5){
+            value            = 0
+        };
+    plottable_time_interval_duration_ =
+        new DifferentialSlider(
+            label             :
+            L10N.CacheFormat("#Principia_ReferenceFrameSelector_Duration"),
+            unit: null,
+            log10_lower_rate  : log10_duration_lower_rate,
+            log10_upper_rate  : log10_duration_upper_rate,
+            min_value         : 0,
+            formatter         : FormatPlottableDuration,
+            parser            : TryParsePlottableDuration,
+            label_width       : 4,
+            field_width       : 5,
+            zero_value        : ZeroPlottableDurationValue,
+            zero_button_label : ZeroPlottableDurationButtonLabel){
+            value            = PrincipiaTimeSpan.max_seconds
+        };
 
     expanded_ = new Dictionary<CelestialBody, bool>();
     pinned = new Dictionary<CelestialBody, bool>();
@@ -392,17 +423,17 @@ internal class
   }
 
   private string Abbreviation() {
-    return target_frame_selected ? TargetFrameAbbreviation(target)
+    return target_frame_selected ? TargetFrameAbbreviation(target_vessel)
                                  : Abbreviation(frame_type, selected_celestial);
   }
 
   public string Name() {
-    return target_frame_selected ? TargetFrameName(target)
+    return target_frame_selected ? TargetFrameName(target_vessel)
                                  : Name(frame_type, selected_celestial);
   }
 
   public string NavballName() {
-    return target_frame_selected ? TargetFrameNavballName(target)
+    return target_frame_selected ? TargetFrameNavballName(target_vessel)
                                  : NavballName(frame_type, selected_celestial);
   }
 
@@ -430,7 +461,7 @@ internal class
   // Null unless this is a primary-secondary or primary-secondaries frame.
   public CelestialBody Primary() {
     if (target_frame_selected) {
-      return target.orbit.referenceBody;
+      return target_vessel.orbit.referenceBody;
     }
     switch (frame_type) {
       case FrameType.BARYCENTRIC_ROTATING:
@@ -522,7 +553,8 @@ internal class
 
   public FrameType frame_type { get; private set; }
   private CelestialBody selected_celestial { get; set; }
-  public Vessel target { get; set; }
+  public Vessel active_vessel { get; set; }
+  public Vessel target_vessel { get; set; }
   public bool target_frame_selected { get; private set; }
 
   protected override string Title =>
@@ -548,7 +580,7 @@ internal class
               Name(),
               Abbreviation()));
       UnityEngine.GUILayout.Label(
-          target_frame_selected ? TargetFrameDescription(target)
+          target_frame_selected ? TargetFrameDescription(target_vessel)
                                 : Description(frame_type, selected_celestial),
           Style.Multiline(UnityEngine.GUI.skin.label),
           GUILayoutHeight(4));
@@ -578,6 +610,85 @@ internal class
         }
       }
     }
+
+    // For the plotting frame, allow the user to set the plottable time
+    // interval.
+    bool must_display_plottable_time_interval =
+        typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters) &&
+        MapView.MapIsEnabled &&
+        active_vessel != null;
+    if (must_display_plottable_time_interval) {
+      Style.HorizontalLine();
+      using (new UnityEngine.GUILayout.HorizontalScope()) {
+        UnityEngine.GUILayout.Label(
+            L10N.CacheFormat(
+                "#Principia_ReferenceFrameSelector_PlottableTimeInterval"),
+            style: Style.MiddleLeftAligned(UnityEngine.GUI.skin.label,
+                                           Height(2)));
+
+        bool changed = false;
+        var plugin = adapter_.Plugin() ;
+        PlottingFrameParameters plotting_frame_parameters =
+            adapter_.plotting_frame_selector_.FrameParameters();
+        string active_vessel_guid = active_vessel.id.ToString();
+        PlottingFramePayload existing_payload =
+            plugin.VesselGetPlottingFramePayload(
+                active_vessel_guid,
+                plotting_frame_parameters);
+        plottable_time_interval_duration_.value =
+            Math.Min(
+                Math.Max(existing_payload.plottable_time_interval.max -
+                         existing_payload.plottable_time_interval.min,
+                         0),
+                PrincipiaTimeSpan.max_seconds);
+        // Avoid NaNs when the interval is ]-∞, +∞[.
+        if (existing_payload.plottable_time_interval is {
+                min: double.NegativeInfinity, max: double.PositiveInfinity
+            }) {
+          plottable_time_interval_midpoint_.value = 0.0;
+        } else {
+          plottable_time_interval_midpoint_.value =
+              ((existing_payload.plottable_time_interval.min -
+                active_vessel.launchTime) +
+               (existing_payload.plottable_time_interval.max -
+                active_vessel.launchTime)) /
+              2 ;
+        }
+
+        using (new UnityEngine.GUILayout.VerticalScope()) {
+          changed |= plottable_time_interval_midpoint_.Render(enabled: true);
+          changed |= plottable_time_interval_duration_.Render(enabled: true);
+        }
+
+        if (changed) {
+          double midpoint = plottable_time_interval_midpoint_.value;
+          double duration = plottable_time_interval_duration_.value;
+          if (midpoint == 0.0 && duration == PrincipiaTimeSpan.max_seconds) {
+            plugin.VesselClearPlottingFramePayload(
+                active_vessel_guid,
+                plotting_frame_parameters);
+          } else {
+            var payload =
+                new PlottingFramePayload{
+                    plottable_time_interval = {
+                        min =
+                            active_vessel.launchTime + midpoint - duration / 2,
+                        max = active_vessel.launchTime + midpoint + duration / 2
+                    }
+                };
+            plugin.VesselSetPlottingFramePayload(
+                active_vessel_guid,
+                plotting_frame_parameters,
+                payload);
+          }
+        }
+      }
+    } else if (does_display_plottable_time_interval_) {
+      ScheduleShrink();
+    }
+    does_display_plottable_time_interval_ =
+        must_display_plottable_time_interval;
+
     UnityEngine.GUI.DragWindow();
   }
 
@@ -607,7 +718,7 @@ internal class
     if (pinned[celestial]) {
       return true;
     }
-    if (target_pinned_ && target?.orbit.referenceBody == celestial) {
+    if (target_pinned_ && target_vessel?.orbit.referenceBody == celestial) {
       return true;
     }
     foreach (CelestialBody body in celestial.orbitingBodies) {
@@ -630,9 +741,9 @@ internal class
     width += 1;
     // Focus.
     width += 1;
-    if (!celestial.is_leaf(target)) {
+    if (!celestial.is_leaf(target_vessel)) {
       if ((expanded_[celestial] || target_pinned_) &&
-          target?.orbit.referenceBody == celestial) {
+          target_vessel?.orbit.referenceBody == celestial) {
         // Indent.
         float target_width = children_offset * (depth + 1);
         // Missing +- button.
@@ -640,7 +751,7 @@ internal class
         // Target name.
         target_width += CalcWidth(
             L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
-                             target.vesselName),
+                             target_vessel.vesselName),
             UnityEngine.GUI.skin.label);
         // Pin.
         target_width += 1;
@@ -662,7 +773,7 @@ internal class
   private void RenderSubtree(CelestialBody celestial, int depth) {
     using (new UnityEngine.GUILayout.HorizontalScope()) {
       UnityEngine.GUILayout.Space(Width(children_offset * depth));
-      if (celestial.is_leaf(target)) {
+      if (celestial.is_leaf(target_vessel)) {
         UnityEngine.GUILayout.Button(
             "", UnityEngine.GUI.skin.label, GUILayoutWidth(children_offset));
       } else {
@@ -689,16 +800,16 @@ internal class
             (float)Math.Tan(apparent_size / 2));
       }
     }
-    if (!celestial.is_leaf(target)) {
+    if (!celestial.is_leaf(target_vessel)) {
       if ((expanded_[celestial] || target_pinned_) &&
-          target?.orbit.referenceBody == celestial) {
+          target_vessel?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Space(Width(children_offset * (depth + 1)));
           UnityEngine.GUILayout.Button(
               "", UnityEngine.GUI.skin.label, GUILayoutWidth(children_offset));
           UnityEngine.GUILayout.Label(
               L10N.CacheFormat("#Principia_ReferenceFrameSelector_Target",
-                               target.vesselName));
+                               target_vessel.vesselName));
           UnityEngine.GUILayout.FlexibleSpace();
           if (UnityEngine.GUILayout.Toggle(target_pinned_,
                                            "",
@@ -708,7 +819,7 @@ internal class
             ScheduleShrink();
           }
           if (RenderFocusButton()) {
-            PlanetariumCamera.fetch.SetTarget(target.mapObject);
+            PlanetariumCamera.fetch.SetTarget(target_vessel.mapObject);
             PlanetariumCamera.fetch.SetDistance(
                 PlanetariumCamera.fetch.minDistance);
           }
@@ -779,17 +890,17 @@ internal class
         });
       }
     }
-    if (!celestial.is_leaf(target)) {
+    if (!celestial.is_leaf(target_vessel)) {
       if ((expanded_[celestial] || target_pinned_) &&
-          target?.orbit.referenceBody == celestial) {
+          target_vessel?.orbit.referenceBody == celestial) {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
           UnityEngine.GUILayout.Button("", UnityEngine.GUI.skin.label, GUILayoutWidth(column_width));
           if (ToggleButton(
                   target_frame_selected,
                   new UnityEngine.GUIContent(
-                    TargetFrameSelectorText(target),
-                    TargetFrameSelectorTooltip(target)),
+                    TargetFrameSelectorText(target_vessel),
+                    TargetFrameSelectorTooltip(target_vessel)),
                   GUILayoutWidth(column_width))) {
             EffectChange(() => {
               target_frame_selected = true;
@@ -837,6 +948,39 @@ internal class
         selected_celestial == celestial && frame_type == type;
   }
 
+  private static double ZeroPlottableDurationValue(double? value) {
+    if (value.HasValue && value.Value < PrincipiaTimeSpan.max_seconds) {
+      return PrincipiaTimeSpan.max_seconds;
+    } else {
+      return 0.0;
+    }
+  }
+
+  private static string ZeroPlottableDurationButtonLabel(double? value) {
+    if (value.HasValue && value.Value < PrincipiaTimeSpan.max_seconds) {
+      return "∞";
+    } else {
+      return "0";
+    }
+  }
+
+  internal string FormatPlottableDuration(double seconds, double _, double __) {
+    return new PrincipiaTimeSpan(seconds).FormatPositive(
+        with_leading_zeroes: true,
+        with_seconds: false,
+        iau_style: false,
+        fractional_second_digits: 0);
+  }
+
+  internal bool TryParsePlottableDuration(string text, out double value) {
+    value = 0;
+    if (!PrincipiaTimeSpan.TryParse(text, out PrincipiaTimeSpan ts)) {
+      return false;
+    }
+    value = ts.total_seconds;
+    return true;
+  }
+
   // Runs an action that may change the frame and run on_change_ if there
   // actually was a change.
   private void EffectChange(Action action) {
@@ -846,7 +990,7 @@ internal class
     action();
     if (is_freshly_constructed_) {
       pinned[selected_celestial] = true;
-      if (!selected_celestial.is_leaf(target)) {
+      if (!selected_celestial.is_leaf(target_vessel)) {
         expanded_[selected_celestial] = true;
       }
     }
@@ -859,7 +1003,7 @@ internal class
       on_change_(
           target_frame_selected ? (ReferenceFrameParameters)(object)null
                                 : FrameParameters(),
-          target_frame_selected ? target : null);
+          target_frame_selected ? target_vessel : null);
       is_freshly_constructed_ = false;
     }
     if (frame_type != FrameType.BODY_SURFACE) {
@@ -881,11 +1025,19 @@ internal class
 
   // Horizontal offset between a node and its children.
   private const int children_offset = 1;
+  private const double log10_duration_lower_rate = 2.0;
+  private const double log10_duration_upper_rate = 6.0;
+
+  private readonly DifferentialSlider plottable_time_interval_midpoint_;
+  private readonly DifferentialSlider plottable_time_interval_duration_;
+
+  private readonly PrincipiaPluginAdapter adapter_;
   private readonly Callback on_change_;
   private readonly string name_;
   private readonly Dictionary<CelestialBody, bool> expanded_;
   private bool target_pinned_ = true;
   private bool is_freshly_constructed_;
+  private bool does_display_plottable_time_interval_ = false;
   private float tree_width_ = 0f;
   private FrameType last_orbital_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
   private static UnityEngine.Texture focus_;
