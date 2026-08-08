@@ -73,6 +73,37 @@ ReferenceFrame<InertialFrame, ThisFrame>::ReadFromMessage(
   }
 }
 
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(ReferenceFrame<InertialFrame, ThisFrame> const& left,
+                ReferenceFrame<InertialFrame, ThisFrame> const& right) {
+  // We exceptionally use RTTI here because `operator==` is hopelessly broken
+  // in C++ in the presence of inheritance.
+  if (typeid(left) != typeid(right)) {
+    return false;
+  }
+  {
+    using RotatingPulsating =
+        RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>;
+    if (typeid(left) == typeid(RotatingPulsating)) {
+      return static_cast<RotatingPulsating const&>(left) ==
+             static_cast<RotatingPulsating const&>(right);
+    }
+  }
+  {
+    // The type must be descended from `RigidReferenceFrame`, but we cannot
+    // check this using `typeid`.
+    // TODO(phl): Improve once we have reflection in C++26.
+    using Rigid = RigidReferenceFrame<InertialFrame, ThisFrame>;
+    auto const* left_rigid = dynamic_cast<Rigid const*>(&left);
+    auto const* right_rigid = dynamic_cast<Rigid const*>(&right);
+    CHECK_NE(nullptr, left_rigid)
+        << "The type of left is " << typeid(left).name();
+    CHECK_NE(nullptr, right_rigid)
+        << "The type of right is " << typeid(right).name();
+    return *left_rigid == *right_rigid;
+  }
+}
+
 }  // namespace internal
 }  // namespace _reference_frame
 }  // namespace physics

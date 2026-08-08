@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "absl/hash/hash_testing.h"
 #include "astronomy/frames.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
@@ -16,6 +17,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/reference_frame_key.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/solar_system.hpp"
@@ -48,6 +50,7 @@ using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
+using namespace principia::physics::_reference_frame_key;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_solar_system;
@@ -207,7 +210,7 @@ TEST_F(BodySurfaceReferenceFrameTest, Serialization) {
 
   EXPECT_TRUE(message.HasExtension(
       serialization::BodySurfaceReferenceFrame::extension));
-  auto const extension = message.GetExtension(
+  auto const& extension = message.GetExtension(
       serialization::BodySurfaceReferenceFrame::extension);
   EXPECT_TRUE(extension.has_centre());
   EXPECT_EQ(0, extension.centre());
@@ -226,6 +229,11 @@ TEST_F(BodySurfaceReferenceFrameTest, Serialization) {
                                 1 * Metre / Second})};
   EXPECT_EQ(big_frame_->GeometricAcceleration(t, point_dof),
             read_big_frame->GeometricAcceleration(t, point_dof));
+}
+
+TEST_F(BodySurfaceReferenceFrameTest, Key) {
+  // This test is very limited because we only have one rotating body, `big_`.
+  EXPECT_EQ(*big_frame_, *big_frame_);
 }
 
 }  // namespace physics

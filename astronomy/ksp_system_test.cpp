@@ -215,8 +215,9 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   EXPECT_OK(ephemeris_->Prolong(final_time));
   LOG(INFO) << "Integration done";
 
-  std::map<not_null<MassiveBody const*>, Length> last_separations;
-  std::map<not_null<MassiveBody const*>, Sign> last_separation_changes;
+  absl::flat_hash_map<not_null<MassiveBody const*>, Length> last_separations;
+  absl::flat_hash_map<not_null<MassiveBody const*>, Sign>
+      last_separation_changes;
 
   Instant t = solar_system_.epoch();
 

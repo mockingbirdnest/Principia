@@ -1,7 +1,9 @@
 #include "physics/rotating_pulsating_reference_frame.hpp"
 
 #include <memory>
+#include <utility>
 
+#include "absl/hash/hash_testing.h"
 #include "absl/status/status.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
@@ -20,6 +22,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/reference_frame_key.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -49,6 +52,7 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
+using namespace principia::physics::_reference_frame_key;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
 using namespace principia::quantities::_quantities;
@@ -179,6 +183,24 @@ TEST_F(RotatingPulsatingReferenceFrameTest, GeometricAcceleration) {
 }
 
 #endif
+
+TEST_F(RotatingPulsatingReferenceFrameTest, Key) {
+  auto earth_moon =
+      std::make_unique<RotatingPulsatingReferenceFrame<ICRS, EarthMoon>>(
+          ephemeris_.get(), earth_, moon_);
+  auto moon_earth =
+      std::make_unique<RotatingPulsatingReferenceFrame<ICRS, EarthMoon>>(
+          ephemeris_.get(), moon_, earth_);
+  EXPECT_EQ(earth_moon, earth_moon);
+  EXPECT_NE(moon_earth, earth_moon);
+
+  ReferenceFrameKey<ICRS, EarthMoon> const earth_moon_key(
+      std::move(earth_moon));
+  ReferenceFrameKey<ICRS, EarthMoon> const moon_earth_key(
+      std::move(moon_earth));
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      {earth_moon_key, earth_moon_key, moon_earth_key}));
+}
 
 }  // namespace physics
 }  // namespace principia

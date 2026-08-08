@@ -12,18 +12,19 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
       predicted_vessel) {
     adapter_ = adapter;
     predicted_vessel_ = predicted_vessel;
-    final_time_ = new DifferentialSlider(
-        label               :
-        L10N.CacheFormat("#Principia_FlightPlan_PlanLength"),
-        unit                : null,
-        log10_lower_rate    : log10_time_lower_rate,
-        log10_upper_rate    : log10_time_upper_rate,
-        min_value           : 10,
-        max_value           : double.PositiveInfinity,
-        formatter           : FormatPlanLength,
-        parser              : TryParsePlanLength,
-        field_width         : 7,
-        display_zero_button : false);
+    final_time_ =
+        new DifferentialSlider(
+            label               :
+            L10N.CacheFormat("#Principia_FlightPlan_PlanLength"),
+            unit              : null,
+            log10_lower_rate  : log10_time_lower_rate,
+            log10_upper_rate  : log10_time_upper_rate,
+            min_value         : 10,
+            max_value         : double.PositiveInfinity,
+            formatter         : FormatPlanLength,
+            parser            : TryParsePlanLength,
+            field_width       : 7,
+            zero_button_label : _ => null);
     final_trajectory_analyser_ =
         new PlannedOrbitAnalyser(adapter, predicted_vessel);
   }
@@ -729,7 +730,7 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
         with_seconds: true);
   }
 
-  internal string FormatPlanLength(double value) {
+  internal string FormatPlanLength(double value, double _, double __) {
     return FormatPositiveTimeSpan(value -
                                   plugin.FlightPlanGetInitialTime(
                                       predicted_vessel.id.ToString()));

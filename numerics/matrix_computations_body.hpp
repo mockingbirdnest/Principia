@@ -1007,8 +1007,8 @@ ClassicalJacobi(Matrix const& A,  std::int64_t max_iterations, double const ε) 
     // V = V J
     PostMultiply(V, J);
     if (k == max_iterations - 1) {
-      LOG(ERROR) << "Difficult diagonalization: " << A
-                 << ", stopping with: " << diagonalized_A;
+      LOG(WARNING) << "Difficult diagonalization: " << A
+                   << ", stopping with: " << diagonalized_A;
     }
   }
 

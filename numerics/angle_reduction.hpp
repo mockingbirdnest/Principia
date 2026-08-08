@@ -16,9 +16,9 @@ using namespace principia::quantities::_quantities;
 // positive x axis, 1 on the positive y axis, and so on.  This function is
 // usable with types `Angle` and `double`.
 template<std::int64_t precision, typename Angle>
-void PayneHanek(Angle const& x,
-                DoublePrecision<Angle>& x_reduced,
-                std::int64_t& quadrant);
+void PayneHanekReduction(Angle const& x,
+                         DoublePrecision<Angle>& x_reduced,
+                         std::int64_t& quadrant);
 
 // If [fractional_part_lower_bound, fractional_part_upper_bound] covers 2π or
 // more, the reduction is modulo 2π.  If it covers only π, the reduction is
@@ -36,7 +36,7 @@ void ReduceAngle(Angle const& θ,
 
 }  // namespace internal
 
-using internal::PayneHanek;
+using internal::PayneHanekReduction;
 using internal::ReduceAngle;
 
 }  // namespace _angle_reduction

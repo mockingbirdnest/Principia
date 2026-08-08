@@ -2,9 +2,9 @@
 
 #include <filesystem>
 #include <fstream>
-#include <map>
 #include <memory>
 
+#include "absl/container/flat_hash_map.h"
 #include "serialization/journal.pb.h"
 
 namespace principia {
@@ -18,7 +18,7 @@ namespace internal {
 
 class Player final {
  public:
-  using PointerMap = std::map<std::uint64_t, void*>;
+  using PointerMap = absl::flat_hash_map<std::uint64_t, void*>;
 
   explicit Player(std::filesystem::path const& path);
 

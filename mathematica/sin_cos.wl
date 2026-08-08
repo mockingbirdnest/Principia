@@ -1289,7 +1289,7 @@
 
 
 (* ::Input:: *)
-(*t3[h_,\[Delta]x\:0303_]:=h(2 \[Delta]x\:0303+h)(1+\[Delta]1)(1+\[Delta]2)*)
+(*t3[h_,\[Delta]x\:0303_]:=(2 \[Delta]x\:0303+h)(1+\[Delta]1)*)
 
 
 (* ::Input:: *)
@@ -1297,7 +1297,7 @@
 
 
 (* ::Input:: *)
-(*t5[h_,\[Delta]x\:0303_,sk_]:=Hold[CorrectlyRound[sk]]t3[h,\[Delta]x\:0303] t2[h](1+\[Delta]5)(1+\[Delta]6)*)
+(*t5[h_,\[Delta]x\:0303_,sk_]:=Hold[CorrectlyRound[sk]]h t3[h,\[Delta]x\:0303] t2[h](1+\[Delta]2)(1+\[Delta]5)(1+\[Delta]6)*)
 
 
 (* ::Input:: *)
@@ -1576,7 +1576,7 @@
 
 
 (* ::Input:: *)
-(*t3[h_,\[Delta]x\:0303_]:=h(2 \[Delta]x\:0303+h)(1+\[Delta]1)(1+\[Delta]2)*)
+(*t3[h_,\[Delta]x\:0303_]:=(2 \[Delta]x\:0303+h)(1+\[Delta]1)*)
 
 
 (* ::Input:: *)
@@ -1584,7 +1584,7 @@
 
 
 (* ::Input:: *)
-(*t5[h_,\[Delta]x\:0303_,ck_]:=Hold[CorrectlyRound[ck]] t3[h,\[Delta]x\:0303]t2[h](1+\[Delta]5)(1+\[Delta]6)*)
+(*t5[h_,\[Delta]x\:0303_,ck_]:=Hold[CorrectlyRound[ck]] h t3[h,\[Delta]x\:0303]t2[h](1+\[Delta]2)(1+\[Delta]5)(1+\[Delta]6)*)
 
 
 (* ::Input:: *)

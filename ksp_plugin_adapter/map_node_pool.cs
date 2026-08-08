@@ -186,7 +186,7 @@ internal class MapNodePool {
                      : fixed_body.orbitDriver.Renderer.nodeColor;
         break;
       case MapObject.ObjectType.ApproachIntersect:
-        associated_map_object = reference_frame.target.mapObject;
+        associated_map_object = reference_frame.target_vessel.mapObject;
         colour = XKCDColors.Chartreuse;
         break;
       case MapObject.ObjectType.AscendingNode:
@@ -333,7 +333,7 @@ internal class MapNodePool {
         case MapObject.ObjectType.ApproachIntersect: {
           var payload = properties.payload as LegacyMapNodePayload;
           double separation =
-              (properties.reference_frame.target.GetWorldPos3D() -
+              (properties.reference_frame.target_vessel.GetWorldPos3D() -
                payload.world_position).magnitude;
           double speed = payload.velocity.magnitude;
           caption.Header = L10N.CacheFormat("#Principia_MapNode_ApproachHeader",

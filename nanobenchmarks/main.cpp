@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <cstdio>
 #include <format>
-#include <map>
 #include <memory>
 #include <print>
 #include <ranges>
@@ -10,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
@@ -103,7 +103,8 @@ TSCCalibration CalibrateTSC(Logger* const logger) {
   std::size_t const name_width =
       std::ranges::max(reference_cycle_counts_widths);
 
-  std::map<Nanobenchmark<double, double> const*, LatencyDistributionTable>
+  absl::flat_hash_map<Nanobenchmark<double, double> const*,
+                      LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(stdout,
                       "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",
@@ -153,7 +154,8 @@ double CalibrateOverhead(TSCCalibration const& calibration,
   std::size_t const name_width =
       std::ranges::max(reference_cycle_counts_widths);
 
-  std::map<Nanobenchmark<Value, Argument> const*, LatencyDistributionTable>
+  absl::flat_hash_map<Nanobenchmark<Value, Argument> const*,
+                      LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(stdout,
                       "{:<" + std::to_string(name_width + 2) + "}{:8}{}\n",

@@ -307,8 +307,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       bad_installation_dialog_.Hide();
     } else {
       is_bad_installation_ = true;
+      Interface.GetVersion(build_date : out string _,
+                           version    : out string version,
+                           platform   : out string _);
       bad_installation_dialog_.message = L10N.CacheFormat(
           "#Principia_DLLFailedToLoad",
+          version,
           load_error);
       bad_installation_dialog_.Show();
     }
@@ -488,6 +492,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void UpdatePredictions() {
     Vessel main_vessel = PredictedVessel();
+    plotting_frame_selector_.active_vessel = main_vessel;
 
     if (MapView.MapIsEnabled) {
       string main_vessel_guid = main_vessel?.id.ToString();
@@ -1042,13 +1047,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       galaxy_cube_rotator_ = ScaledCamera.Instance.galaxyCamera.gameObject.
           AddComponent<RenderingActions>();
       galaxy_cube_rotator_.pre_cull = RotateGalaxyCube;
-    }
-
-    // Orient the celestial bodies.
-    foreach (var body in FlightGlobals.Bodies) {
-      body.scaledBody.transform.rotation =
-          (UnityEngine.QuaternionD)plugin_.CelestialRotation(
-              body.flightGlobalsIndex);
     }
 
     // Handle clicks on planets.
@@ -2002,6 +2000,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
             Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}
         };
+        body.rotation = body.BodyFrame.Rotation.swizzle;
+        body.bodyTransform.rotation = body.rotation;
       }
     }
   }
@@ -2075,7 +2075,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   stock_velocity_at_node_time,
                   Vector3d.Cross(stock_velocity_at_node_time,
                                  stock_displacement_from_parent_at_node_time));
-          guidance_node_.DeltaV = ((Vector3d)burn.delta_v).magnitude *
+          guidance_node_.DeltaV = ((Vector3d)burn.intensity.xyz).magnitude *
                                   (Vector3d)(UnityEngine.Quaternion.Inverse(
                                                  stock_frenet_frame_to_world) *
                                              (Vector3d)guidance);
@@ -2118,8 +2118,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
 
     var target_vessel = TargetVessel();
-    if (plotting_frame_selector_.target != target_vessel) {
-       plotting_frame_selector_.target = target_vessel;
+    if (plotting_frame_selector_.target_vessel != target_vessel) {
+       plotting_frame_selector_.target_vessel = target_vessel;
        if (plotting_frame_selector_.target_frame_selected &&
            target_vessel == null) {
          // The target is no longer manageable.
@@ -2180,7 +2180,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         // plotting frame.
         if (!(FlightGlobals.speedDisplayMode ==
                   FlightGlobals.SpeedDisplayModes.Target &&
-              plotting_frame_selector_.target == null)) {
+              plotting_frame_selector_.target_vessel == null)) {
           if (plotting_frame_selector_.IsSurfaceFrame()) {
             if (FlightGlobals.speedDisplayMode !=
                 FlightGlobals.SpeedDisplayModes.Surface) {

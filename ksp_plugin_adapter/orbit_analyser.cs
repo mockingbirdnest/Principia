@@ -138,7 +138,9 @@ internal static class Formatters {
   // Never omit leading 0s (to make keyboard editing easier) but do not show
   // seconds (they are irrelevant for a selector that shows durations much
   // longer than a revolution).
-  public static string FormatMissionDuration(double seconds) {
+  public static string FormatMissionDuration(double seconds,
+                                             double _,
+                                             double __) {
     return new PrincipiaTimeSpan(seconds).FormatPositive(
         with_leading_zeroes: true,
         with_seconds: false);
@@ -355,7 +357,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
               RenderPeriods(elements);
             }
             if (show_graphs_) {
-              Style.VerticallLine();
+              Style.VerticalLine();
               using (new UnityEngine.GUILayout.VerticalScope()) {
                 eccentricity_vector_graph_.Render();
                 UnityEngine.GUILayout.Label(
@@ -612,7 +614,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
 
   private void DrawEccentricityVectorGraph(OrbitalElements elements) {
-    if (eccentricity_vector_graph_ == null) { 
+    if (eccentricity_vector_graph_ == null) {
       eccentricity_vector_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
     Interval e_cos_ω_range = Interval.Empty;
@@ -1056,16 +1058,16 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       new DifferentialSlider(
           label               :
           L10N.CacheFormat("#Principia_OrbitAnalyser_MissionDuration"),
-          unit                : null,
-          log10_lower_rate    : 0,
-          log10_upper_rate    : 7,
-          min_value           : 10,
-          max_value           : double.PositiveInfinity,
-          formatter           : Formatters.FormatMissionDuration,
-          parser              : Formatters.TryParseMissionDuration,
-          label_width         : 3,
-          field_width         : 5,
-          display_zero_button : false) {
+          unit              : null,
+          log10_lower_rate  : 0,
+          log10_upper_rate  : 7,
+          min_value         : 10,
+          max_value         : double.PositiveInfinity,
+          formatter         : Formatters.FormatMissionDuration,
+          parser            : Formatters.TryParseMissionDuration,
+          label_width       : 3,
+          field_width       : 5,
+          zero_button_label : _ => null) {
           value = 7 * 24 * 60 * 60
       };
 

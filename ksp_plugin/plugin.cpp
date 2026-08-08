@@ -9,7 +9,6 @@
 #include <map>
 #include <memory>
 #include <optional>
-#include <set>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -17,6 +16,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
@@ -88,13 +89,38 @@ Length const& MaxCollisionError() {
     if (Flags::IsPresent(name)) {
       auto const values = Flags::Values(name);
       CHECK_EQ(values.size(), 1);
-      return ParseQuantity<Length>(
-          *Flags::Values("max_collision_error").begin());
+      return ParseQuantity<Length>(*values.begin());
     } else {
       return 10 * Metre;
     }
   }();
   return max_collision_error;
+}
+
+// By default, we want deserialization to use all the cores.  But some users
+// have complained that the Leibniz migration uses up too much memory (RAM and
+// paging space), presumably because they have too little memory for the number
+// of cores.  So we allow them to specify a maximum number of threads.  This
+// should only be used during the migration, otherwise it will slow down
+// scene changes forever, but we don't enforce that: it would require to "peek"
+// at the save in the middle of a callback, and that's just messy.
+std::int64_t NumberOfThreadsForVesselDeserialization() {
+  static std::int64_t const number_of_threads_for_vessel_deserialization =
+      []() {
+        std::string_view const name =
+            "number_of_threads_for_vessel_deserialization";
+        if (Flags::IsPresent(name)) {
+          auto const values = Flags::Values(name);
+          CHECK_EQ(1, values.size());
+          return std::max(INT64_C(1), std::min<std::int64_t>(
+              std::thread::hardware_concurrency(),
+              std::stoul(
+                  values.begin()->c_str())));
+        } else {
+          return static_cast<std::int64_t>(std::thread::hardware_concurrency());
+        }
+      }();
+  return number_of_threads_for_vessel_deserialization;
 }
 
 }  // namespace
@@ -914,7 +940,7 @@ void Plugin::SetPredictionAdaptiveStepParameters(
 
 void Plugin::UpdatePrediction(std::vector<GUID> const& vessel_guids) const {
   CHECK(!initializing_);
-  std::set<not_null<Vessel*>> predicted_vessels;
+  absl::flat_hash_set<not_null<Vessel*>> predicted_vessels;
   for (auto const& guid : vessel_guids) {
     predicted_vessels.insert(FindOrDie(vessels_, guid).get());
   }
@@ -1451,7 +1477,8 @@ void Plugin::WriteToMessage(
     message->set_system_fingerprint(system_fingerprint_);
   }
   ephemeris_->Prolong(current_time_).IgnoreError();
-  std::map<not_null<Celestial const*>, Index const> celestial_to_index;
+  absl::flat_hash_map<not_null<Celestial const*>, Index const>
+      celestial_to_index;
   for (auto const& [index, owned_celestial] : celestials_) {
     celestial_to_index.emplace(owned_celestial.get(), index);
   }
@@ -1468,7 +1495,8 @@ void Plugin::WriteToMessage(
   }
 
   // Construct a map to help serialization of the pile-ups.
-  std::map<not_null<PileUp const*>, int> serialization_index_to_pile_up;
+  absl::flat_hash_map<not_null<PileUp const*>, int>
+      serialization_index_to_pile_up;
   int serialization_index = 0;
   for (auto const* pile_up : pile_ups_) {
     serialization_index_to_pile_up[pile_up] = serialization_index++;
@@ -1478,7 +1506,7 @@ void Plugin::WriteToMessage(
         return serialization_index_to_pile_up.at(pile_up);
       };
 
-  std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
+  absl::flat_hash_map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& [guid, vessel] : vessels_) {
     vessel_to_guid.emplace(vessel.get(), guid);
     auto* const vessel_message = message->add_vessel();
@@ -1582,9 +1610,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                              plugin->name_to_index_);
 
   // Deserialization of vessels may be slow because of the Лефшец-to-Leibniz
-  // migration, let's use all the cores.
+  // migration, let's do it in parallel.
   ThreadPool<not_null<std::unique_ptr<Vessel>>> vessel_deserialization_pool(
-      std::thread::hardware_concurrency());
+      NumberOfThreadsForVesselDeserialization());
   std::vector<std::future<not_null<std::unique_ptr<Vessel>>>> vessel_futures;
   vessel_futures.reserve(message.vessel_size());
   for (auto const& vessel_message : message.vessel()) {

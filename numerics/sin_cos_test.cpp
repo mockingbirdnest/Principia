@@ -193,7 +193,7 @@ class SinCosTest : public ::testing::Test {
     for (std::int64_t i = 0; i < statistics.size(); ++i) {
       bundle.Add([i, lower_bound, upper_bound, sin_cos, &statistics]() {
         statistics[i] = RandomArgumentTest<iterations_quantum>(
-            lower_bound, upper_bound, sin_cos, /*seed=*/i);
+            lower_bound, upper_bound, sin_cos, /*seed=*/random_device_());
         return absl::OkStatus();
       });
     }
@@ -251,11 +251,18 @@ class SinCosTest : public ::testing::Test {
     log_statistics("Cos", final_statistics.cos);
   }
 
+  // In this test case, we use a real source of entropy for the random number
+  // generators, not a fixed number.  Over time, this means that we exercise a
+  // larger part of the input space and we are more likely to find anomalies
+  // (although that's still a needle in a haystack).  Failures will output
+  // enough information that we can debug the problem.
+  static std::random_device random_device_;
   static absl::Mutex lock_;
   static std::int64_t sin_fallbacks_;
   static std::int64_t cos_fallbacks_;
 };
 
+std::random_device SinCosTest::random_device_;
 ABSL_CONST_INIT absl::Mutex SinCosTest::lock_(absl::kConstInit);
 std::int64_t SinCosTest::sin_fallbacks_ = 0;
 std::int64_t SinCosTest::cos_fallbacks_ = 0;
@@ -265,7 +272,7 @@ TEST_F(SinCosTest, AccurateTableIndex) {
 
   static const __m128d mantissa_index_bits =
       _mm_castsi128_pd(_mm_cvtsi64_si128(0x0000'0000'0000'01ff));
-  std::mt19937_64 random(42);
+  std::mt19937_64 random(random_device_());
   std::uniform_real_distribution<> uniformly_at(0, π / 4);
 
   for (std::int64_t i = 0; i < iterations; ++i) {
@@ -296,7 +303,7 @@ TEST_F(SinCosTest, ReduceIndex) {
       _mm_castsi128_pd(_mm_cvtsi64_si128(0x8000'0000'0000'0000));
   static constexpr double mantissa_reduce_shifter =
       1LL << (std::numeric_limits<double>::digits - 1);
-  std::mt19937_64 random(42);
+  std::mt19937_64 random(random_device_());
   std::uniform_real_distribution<> uniformly_at(-1000.0, 1000.0);
 
   for (std::int64_t i = 0; i < iterations; ++i) {

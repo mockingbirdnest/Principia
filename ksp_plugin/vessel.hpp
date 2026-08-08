@@ -14,6 +14,7 @@
 #include "base/recurring_thread.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/flight_plan_optimization_driver.hpp"
@@ -48,6 +49,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
 using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimization_driver;
@@ -290,6 +292,21 @@ class Vessel {
   // Returns "vessel_name (GUID)".
   std::string ShortDebugString() const;
 
+  // Storage of frame-specific payload for the benefit of the clients.
+  struct PlottingFramePayload {
+    Interval<Instant> plottable_time_interval{.min = InfinitePast,
+                                              .max = InfiniteFuture};
+    friend bool operator==(PlottingFramePayload const&,
+                           PlottingFramePayload const&) = default;
+  };
+
+  void ClearPayload(not_null<PlottingFrame const*> frame);
+  void SetPayload(not_null<std::unique_ptr<PlottingFrame const>> frame,
+                  PlottingFramePayload payload);
+  // Returns a default-constructed payload if there is no payload for the given
+  // frame.
+  PlottingFramePayload GetPayload(not_null<PlottingFrame const*> frame) const;
+
   // The vessel must satisfy `is_initialized()`.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message,
                               PileUp::SerializationIndexForPileUp const&
@@ -472,6 +489,8 @@ class Vessel {
   std::optional<OrbitAnalyser> orbit_analyser_;
 
   static std::atomic_bool synchronous_;
+
+  absl::flat_hash_map<PlottingFrameKey, PlottingFramePayload> payloads_;
 
   friend class ksp_plugin::VesselTest;
 };

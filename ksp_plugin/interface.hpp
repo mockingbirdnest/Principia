@@ -34,6 +34,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rigid_reference_frame.hpp"
+#include "physics/tensors.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -71,6 +72,7 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_reference_frame;
+using namespace principia::physics::_tensors;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -91,6 +93,7 @@ bool operator==(EquatorialCrossings const& left,
                 EquatorialCrossings const& right);
 bool operator==(FlightPlanAdaptiveStepParameters const& left,
                 FlightPlanAdaptiveStepParameters const& right);
+bool operator==(Intensity const& left, Intensity const& right);
 bool operator==(Interval const& left, Interval const& right);
 bool operator==(NavigationFrameParameters const& left,
                 NavigationFrameParameters const& right);
@@ -102,13 +105,24 @@ bool operator==(Node const& left, Node const& right);
 bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right);
 bool operator==(OrbitRecurrence const& left, OrbitRecurrence const& right);
 bool operator==(OrbitalElements const& left, OrbitalElements const& right);
+bool operator==(PlottableElements const& left, PlottableElements const& right);
+bool operator==(PlottingFramePayload const& left,
+                PlottingFramePayload const& right);
 bool operator==(QP const& left, QP const& right);
 bool operator==(QPRW const& left, QPRW const& right);
 bool operator==(SolarTimesOfNodes const& left, SolarTimesOfNodes const& right);
+bool operator==(SphericalCoordinates const& left,
+                SphericalCoordinates const& right);
+bool operator==(Status const& left, Status const& right);
 bool operator==(TQP const& left, TQP const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XY const& left, XY const& right);
 bool operator==(XYZ const& left, XYZ const& right);
+
+// OrbitalElements is hidden by an interface type, and the fully-qualified name
+// is very long.
+using ClassicalElements =
+    astronomy::_orbital_elements::OrbitalElements::ClassicalElements;
 
 // Conversions between interchange data and typed data.
 
@@ -121,8 +135,9 @@ std::pair<physics::_ephemeris::Ephemeris<Barycentric>::AdaptiveStepParameters,
 FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
                                          flight_plan_adaptive_step_parameters);
 
-Renderer::Node FromNode(Plugin const& plugin,
-                        Node const& node);
+InertiaTensor<RigidPart> FromMomentsOfInertia(
+    XYZ const& moments_of_inertia_in_tonnes,
+    WXYZ const& principal_axes_rotation);
 
 template<typename T>
 T FromQP(QP const& qp);
@@ -162,36 +177,55 @@ FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
         Barycentric>::GeneralizedAdaptiveStepParameters const&
         generalized_adaptive_step_parameters);
 
+Intensity ToIntensity(NavigationManœuvre::Intensity const& intensity);
+
+template<typename T>
+Interval ToInterval(geometry::_interval::Interval<T> const& interval);
+
 KeplerianElements ToKeplerianElements(
     physics::_kepler_orbit::KeplerianElements<Barycentric> const&
         keplerian_elements);
 
-Node ToNode(Plugin const& plugin,
-            Renderer::Node const& node);
+// Ownership of the status and its message is transferred to the caller.
+Status* ToNewStatus(absl::Status const& status);
+
+PlottableElements ToPlottableElements(Plugin const& plugin,
+                                      ClassicalElements const& elements);
 
 QP ToQP(DegreesOfFreedom<World> const& dof);
 QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 
-// Ownership of the status and its message is transferred to the caller.
-Status* ToNewStatus(absl::Status const& status);
+SphericalCoordinates ToSphericalCoordinates(
+    geometry::_r3_element::SphericalCoordinates<Speed> const&
+        spherical_coordinates);
 
 WXYZ ToWXYZ(Quaternion const& quaternion);
 
 XY ToXY(RP2Point<Length, Camera> const& rp2_point);
 
 XYZ ToXYZ(R3Element<double> const& r3_element);
+XYZ ToXYZ(R3Element<Speed> const& r3_element);
 XYZ ToXYZ(Position<World> const& position);
 XYZ ToXYZ(Vector<double, World> const& direction);
 XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);
 XYZ ToXYZ(Bivector<AngularMomentum, World> const& angular_momentum);
 
-template<typename T>
-Interval ToInterval(geometry::_interval::Interval<T> const& interval);
-
 // Conversions between interchange data and typed data that depend on the state
 // of the plugin.
+
 Instant FromGameTime(Plugin const& plugin, double t);
+Renderer::Node FromNode(Plugin const& plugin,
+                        Node const& node);
+Vessel::PlottingFramePayload FromPlottingFramePayload(
+    Plugin const& plugin,
+    PlottingFramePayload const& payload);
+
 double ToGameTime(Plugin const& plugin, Instant const& t);
+Node ToNode(Plugin const& plugin,
+            Renderer::Node const& node);
+PlottingFramePayload ToPlottingFramePayload(
+    Plugin const& plugin,
+    Vessel::PlottingFramePayload const& payload);
 
 // A factory for NavigationFrame objects.
 not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(

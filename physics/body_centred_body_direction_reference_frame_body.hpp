@@ -126,6 +126,16 @@ ToThisFrameAtTime(Instant const& t) const {
 
 template<typename InertialFrame, typename ThisFrame>
 void BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
+    HashValue(absl::HashState state) const {
+  absl::HashState::combine(
+      std::move(state),
+      serialization::BodyCentredBodyDirectionReferenceFrame::extension.number(),
+      primary_,
+      secondary_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+void BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   auto* const extension =
       message->MutableExtension(
@@ -251,6 +261,23 @@ BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame>::ToThisFrame(
              rigid_transformation,
              angular_velocity,
              primary_degrees_of_freedom.velocity());
+}
+
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame> const&
+        left,
+    BodyCentredBodyDirectionReferenceFrame<InertialFrame, ThisFrame> const&
+        right) {
+  CHECK_EQ(left.ephemeris_, right.ephemeris_);
+  if (left.primary_ == nullptr || right.primary_ == nullptr) {
+    // One of the frames is a target frame.  Target frames, like unhappy
+    // families, are all different.
+    return false;
+  } else {
+    return left.primary_ == right.primary_ &&
+           left.secondary_ == right.secondary_;
+  }
 }
 
 }  // namespace internal

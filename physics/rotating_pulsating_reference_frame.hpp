@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+#include "absl/container/btree_set.h"
+#include "absl/hash/hash.h"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -85,6 +87,8 @@ class RotatingPulsatingReferenceFrame
       Instant const& t,
       Position<ThisFrame> const& position) const override;
 
+  void HashValue(absl::HashState state) const override;
+
   void WriteToMessage(
       not_null<serialization::ReferenceFrame*> message) const override;
 
@@ -107,9 +111,21 @@ class RotatingPulsatingReferenceFrame
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   std::vector<not_null<MassiveBody const*>> const primaries_;
   std::vector<not_null<MassiveBody const*>> const secondaries_;
+  // Ordered for intersection.
+  absl::btree_set<not_null<MassiveBody const*>> const primary_set_;
+  absl::btree_set<not_null<MassiveBody const*>> const secondary_set_;
   BarycentricRotatingReferenceFrame<InertialFrame, RotatingFrame> const
       rotating_frame_;
+
+  template<typename IF, typename TF>
+  friend bool operator==(RotatingPulsatingReferenceFrame<IF, TF> const& left,
+                         RotatingPulsatingReferenceFrame<IF, TF> const& right);
 };
+
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame> const& left,
+    RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame> const& right);
 
 }  // namespace internal
 

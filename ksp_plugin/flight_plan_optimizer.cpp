@@ -784,7 +784,7 @@ NavigationManœuvre::Burn FlightPlanOptimizer::UpdatedBurn(
     NavigationManœuvre const& manœuvre) {
   auto const argument = Dehomogeneize(homogeneous_argument);
   NavigationManœuvre::Burn burn = manœuvre.burn();
-  burn.intensity = {.Δv = manœuvre.Δv() + argument.ΔΔv};
+  burn.intensity.set_Δv(burn.intensity.Δv() + argument.ΔΔv);
   burn.timing = {.initial_time =
                      manœuvre.initial_time() + argument.Δinitial_time};
   return burn;

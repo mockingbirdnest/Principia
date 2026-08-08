@@ -57,7 +57,7 @@ TEST_F(AngleReductionTest, PayneHanekMul97Examples) {
     Angle const x = 0x1.8p200 * Radian;
     DoublePrecision<Angle> x_reduced;
     std::int64_t quadrant;
-    PayneHanek<20>(x, x_reduced, quadrant);
+    PayneHanekReduction<20>(x, x_reduced, quadrant);
     EXPECT_EQ(1, quadrant);
     // The last 20.4 bits of the result are incorrect.
     EXPECT_THAT(x_reduced,
@@ -71,7 +71,7 @@ TEST_F(AngleReductionTest, PayneHanekMul97Examples) {
     Angle const x = 6381956970095103.0 * 0x1.0p797 * Radian;
     DoublePrecision<Angle> x_reduced;
     std::int64_t quadrant;
-    PayneHanek<61>(x, x_reduced, quadrant);
+    PayneHanekReduction<61>(x, x_reduced, quadrant);
     EXPECT_EQ(1, quadrant);
     // The last 49.7 bits of the result are incorrect.
     EXPECT_THAT(x_reduced,
@@ -110,11 +110,11 @@ TEST_F(AngleReductionTest, PayneHanekRandom) {
 
     DoublePrecision<Angle> actual_reduced_angle;
     std::int64_t actual_quadrant;
-    PayneHanek<61>(x.value, actual_reduced_angle, actual_quadrant);
+    PayneHanekReduction<61>(x.value, actual_reduced_angle, actual_quadrant);
 
     EXPECT_EQ(expected_quadrant, actual_quadrant);
-    // We dropped `x.error` when calling `PayneHanek`, so we need to adjust our
-    // expectations here.
+    // We dropped `x.error` when calling `PayneHanekReduction`, so we need to
+    // adjust our expectations here.
     // The last 49.9 bits of the result may be incorrect, for
     // x = +1.68662971306440473e+09 rad|-5.42639714097227698e-08 rad, which has
     // a cancellation of 40.9 bits.  The fact that the error is so large is

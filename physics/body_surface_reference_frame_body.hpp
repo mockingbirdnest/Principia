@@ -69,6 +69,15 @@ BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+void BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::HashValue(
+    absl::HashState state) const {
+  absl::HashState::combine(
+      std::move(state),
+      serialization::BodySurfaceReferenceFrame::extension.number(),
+      centre_);
+}
+
+template<typename InertialFrame, typename ThisFrame>
 void BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::ReferenceFrame*> const message) const {
   message->MutableExtension(
@@ -120,6 +129,14 @@ BodySurfaceReferenceFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
              to_this_frame,
              angular_acceleration_of_to_frame,
              acceleration_of_to_frame_origin);
+}
+
+template<typename InertialFrame, typename ThisFrame>
+bool operator==(
+    BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& left,
+    BodySurfaceReferenceFrame<InertialFrame, ThisFrame> const& right) {
+  CHECK_EQ(left.ephemeris_, right.ephemeris_);
+  return left.centre_ == right.centre_;
 }
 
 }  // namespace internal
