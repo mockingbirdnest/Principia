@@ -35,7 +35,6 @@ git add *.png
 if git diff --quiet HEAD *.png; then
   echo same;
 else
-  gh auth login
   git commit -m "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
   BRANCH_NAME="goldens-$(printf '%(%Y%m%dT%H%M%S)T')-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
   git checkout -b ${BRANCH_NAME}
