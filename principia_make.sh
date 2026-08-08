@@ -21,10 +21,31 @@ echo "Parallelism is ${PARALLELISM}."
 
 make clean
 
+set +e
 make -j ${PARALLELISM} \
+  --keep-going \
   bin/${PRINCIPIA_PLATFORM}/benchmark \
   bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
   ${TARGET}
+MAKE_RESULT=$?
+set -e
+
+git add *.png
+
+if git diff --quiet HEAD *.png; then
+  echo same;
+else
+  gh auth login
+  git commit -m "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
+  BRANCH_NAME="goldens-$(printf '%(%Y%m%dT%H%M%S)T')-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
+  git checkout -b ${BRANCH_NAME}
+  git push --set-upstream https://github.com/enrico-dandolo/Principia.git ${BRANCH_NAME}
+  gh pr create --fill
+fi;
+
+if [[ "${MAKE_RESULT}" != 0 ]]; then
+  exit "${MAKE_RESULT}"
+fi;
 
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   # See https://github.com/actions/virtual-environments/issues/2619#issuecomment-788397841
