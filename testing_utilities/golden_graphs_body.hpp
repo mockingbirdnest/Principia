@@ -21,7 +21,7 @@ namespace internal {
 
 using namespace principia::numerics::_fma;
 
- std::vector<std::uint8_t> ReadFile(std::filesystem::path const& path) {
+std::vector<std::uint8_t> ReadFile(std::filesystem::path const& path) {
   std::vector<std::uint8_t> result;
   std::ifstream in(path, std::ios::binary | std::ios::in);
   while (in.good()) {
