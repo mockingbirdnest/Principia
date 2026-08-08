@@ -33,11 +33,11 @@ if git diff --quiet HEAD *.png; then
   echo same;
 else
   gh auth login
-  git commit -m "Update goldens"
-  BRANCH_NAME="goldens-$(printf '%(%Y%m%dT%H%M%S)T')"
+  git commit -m "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
+  BRANCH_NAME="goldens-$(printf '%(%Y%m%dT%H%M%S)T')-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
   git checkout -b ${BRANCH_NAME}
-  git push --set-upstream TODO ${BRANCH_NAME}
-  gh pr create
+  git push --set-upstream https://github.com/enrico-dandolo/Principia.git ${BRANCH_NAME}
+  gh pr create --fill
 fi;
 
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
