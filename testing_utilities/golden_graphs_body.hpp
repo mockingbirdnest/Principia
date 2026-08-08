@@ -64,9 +64,9 @@ void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
                    graph.width(),
                    graph.height());
   bool const matches_primary = std::equal(actual_data,
-                                         actual_data + actual_size,
-                                         primary_golden.begin(),
-                                         primary_golden.end());
+                                          actual_data + actual_size,
+                                          primary_golden.begin(),
+                                          primary_golden.end());
   if (matches_primary && platform_image_path != image_path) {
     EXPECT_EQ(platform_specific_golden.size(), 0)
         << image_path << " matches, platform-specific override "
