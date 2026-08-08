@@ -35,8 +35,10 @@ git add *.png
 if git diff --quiet HEAD *.png; then
   echo same;
 else
+  git config user.email "enrico.dandolo@mockingbirdnest.com"
+  git config user.name "Enrico Dandolo"
   git commit -m "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
-  BRANCH_NAME="goldens-$(printf '%(%Y%m%dT%H%M%S)T')-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
+  BRANCH_NAME="goldens-$(date '+%Y%m%dT%H%M%S')-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
   git checkout -b ${BRANCH_NAME}
   git push --set-upstream https://github.com/enrico-dandolo/Principia.git ${BRANCH_NAME}
   gh pr create --fill
