@@ -41,7 +41,7 @@ else
   BRANCH_NAME="goldens-$(date '+%Y%m%dT%H%M%S')-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
   git checkout -b ${BRANCH_NAME}
   git push --set-upstream "https://${GH_TOKEN}@github.com/enrico-dandolo/Principia.git" ${BRANCH_NAME}
-  gh pr create --fill
+  gh pr create --fill --head enrico-dandolo:${BRANCH_NAME}
 fi;
 
 if [[ "${MAKE_RESULT}" != 0 ]]; then
