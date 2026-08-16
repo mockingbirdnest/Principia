@@ -8,7 +8,7 @@ if [[ "${PRINCIPIA_PLATFORM?}" != "x64" &&
   exit 1
 fi
 
-if [[ "${PRINCIPIA_PLATFORM?}" != "x64_AVX_FMA" ]]; then
+if [[ "${PRINCIPIA_PLATFORM?}" == "x64_AVX_FMA" ]]; then
   PLATFORM_GOLDEN_SUFFIX="_fma"
 fi
 
@@ -36,9 +36,13 @@ make -j ${PARALLELISM} \
 MAKE_RESULT=$?
 set -e
 
-if git diff --quiet HEAD *.png; then
-  echo same;
+if git diff --quiet HEAD; then
+  echo same
 else
+  # git diff --compact-summary outputs something like
+  #  path/to/deleted.file (gone) |  21 ---------
+  #  path/to/modified.file       |   2 +-
+  #  2 files changed, 1 insersion(+), 22 deletions(-)
   git diff --compact-summary HEAD |
       awk '/\.png/ { if ($2 == "(gone)") { print("(deleted) " $1) } else { system("sha1sum -b " $1) } }' \
       > golden_hashes.txt
@@ -79,12 +83,12 @@ else
     echo "Branch ${BRANCH_NAME} already exists."
     echo "Merge the following PR to update these goldens:"
     gh pr list --head ${BRANCH_NAME}
-  fi;
-fi;
+  fi
+fi
 
 if [[ "${MAKE_RESULT}" != 0 ]]; then
   exit "${MAKE_RESULT}"
-fi;
+fi
 
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   # See https://github.com/actions/virtual-environments/issues/2619#issuecomment-788397841
