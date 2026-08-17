@@ -57,7 +57,7 @@ else
   git ls-remote --exit-code                                   \
       --heads https://github.com/enrico-dandolo/Principia.git \
       refs/heads/${BRANCH_NAME}
-  if [[$? == 2]]; then
+  if [[ $? == 2 ]]; then
     git config user.email "enrico.dandolo@mockingbirdnest.com"
     git config user.name "Enrico Dandolo"
     git checkout -b ${BRANCH_NAME}
