@@ -32,7 +32,8 @@ make -j ${PARALLELISM} \
   --keep-going \
   bin/${PRINCIPIA_PLATFORM}/benchmark \
   bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
-  ${TARGET}
+  astronomy/test
+#  ${TARGET}
 MAKE_RESULT=$?
 set -e
 
@@ -58,13 +59,16 @@ else
       --heads https://github.com/enrico-dandolo/Principia.git \
       refs/heads/${BRANCH_NAME}
   if [[ $? == 2 ]]; then
+    echo "Exit code is 2"
     git config user.email "enrico.dandolo@mockingbirdnest.com"
     git config user.name "Enrico Dandolo"
     git checkout -b ${BRANCH_NAME}
     GOLDEN_SUFFIX="${OS_GOLDEN_SUFFIX}${PLATFORM_GOLDEN_SUFFIX?}"
     FILES_CHANGED="$(git diff --name-only HEAD | awk '/\.png/ { $1 }')"
     for file in ${FILES_CHANGED}; do
+      echo "File ${file} was changed"
       if [[ -f ${file} ]]; then
+        echo "Moving to ${file}.new"
         mv "${file}" "${file}.new"
       fi
       cp "$(echo "${file}" | sed "s/${GOLDEN_SUFFIX}\.png/.png/")" "${file}"
@@ -74,17 +78,24 @@ else
     git commit \
         -m "Copy default goldens over ${AGENT_OS} ${PRINCIPIA_PLATFORM} goldens"
     for file in ${FILES_CHANGED}; do
+      echo "File ${file} was changed, again"
       if [[ -f "${file}.new" ]]; then
+        echo "Moving ${file}.new"
         mv "${file}.new" "${file}"
       else
+        echo "Removing ${file}"
         git rm "${file}"
       fi
     done
+    echo "Adding"
     git add *.png
+    echo "Commiting"
     git commit -m "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
+    echo "Pushing"
     git push --set-upstream                                           \
         "https://${GH_TOKEN}@github.com/enrico-dandolo/Principia.git" \
         ${BRANCH_NAME}
+    echo "Creating PR"
     gh pr create --fill --head enrico-dandolo:${BRANCH_NAME}
   else
     echo "Branch ${BRANCH_NAME} already exists."
