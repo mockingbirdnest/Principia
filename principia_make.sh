@@ -68,7 +68,7 @@ else
     git config user.email "enrico.dandolo@mockingbirdnest.com"
     git config user.name "Enrico Dandolo"
     git checkout -b ${BRANCH_NAME}
-    GOLDEN_SUFFIX="${OS_GOLDEN_SUFFIX}${PLATFORM_GOLDEN_SUFFIX?}"
+    GOLDEN_SUFFIX="${OS_GOLDEN_SUFFIX}${PLATFORM_GOLDEN_SUFFIX}"
     FILES_CHANGED="$(git diff --name-only HEAD | awk '/\.png/ { $1 }')"
     echo "Files changed ${FILES_CHANGED}"
     for file in ${FILES_CHANGED}; do
