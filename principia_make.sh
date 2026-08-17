@@ -56,11 +56,13 @@ else
   BRANCH_NAME="goldens-${HASH}-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
   echo "Looking for branch ${BRANCH_NAME}..."
   echo "git ls-remote --exit-code --heads https://github.com/enrico-dandolo/Principia.git refs/heads/${BRANCH_NAME}"
+  set +e
   git ls-remote --exit-code                                   \
       --heads https://github.com/enrico-dandolo/Principia.git \
       refs/heads/${BRANCH_NAME}
-  echo "Done looking $?"
+  #echo "Done looking $?"
   code=$?
+  set -e
   echo "Exit code is ${code}"
   if [[ ${code} == 2 ]]; then
     git config user.email "enrico.dandolo@mockingbirdnest.com"
