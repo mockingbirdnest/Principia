@@ -40,6 +40,7 @@ echo "Make finished with status ${MAKE_RESULT}"
 
 # Add all PNG files so new files are tracked.
 git add *.png
+env
 
 if git diff --quiet HEAD; then
   echo "No files changed"
@@ -104,12 +105,12 @@ else
         "https://${GH_TOKEN}@github.com/enrico-dandolo/Principia.git" \
         ${BRANCH_NAME}
     echo "Creating PR"
-    gh pr create --fill --head enrico-dandolo:${BRANCH_NAME}
+    gh pr create --fill --head enrico-dandolo:${BRANCH_NAME} \
+        --title "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
   else
     echo "Branch ${BRANCH_NAME} already exists."
     echo "Merge the following PR to update these goldens:"
-    gh pr list --head ${BRANCH_NAME} \
-        --title "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
+    gh pr list --head ${BRANCH_NAME}
   fi
 fi
 
