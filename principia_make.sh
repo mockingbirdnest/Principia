@@ -36,13 +36,17 @@ make -j ${PARALLELISM} \
 MAKE_RESULT=$?
 set -e
 
+# Add all PNG files so new files are tracked.
+git add *.png
+
 if git diff --quiet HEAD; then
   echo same
 else
   # git diff --compact-summary outputs something like
+  #  path/to/new.file (new)      |   1 +
   #  path/to/deleted.file (gone) |  21 ---------
   #  path/to/modified.file       |   2 +-
-  #  2 files changed, 1 insersion(+), 22 deletions(-)
+  #  2 files changed, 2 insertions(+), 22 deletions(-)
   git diff --compact-summary HEAD |
       awk '/\.png/ { if ($2 == "(gone)") { print("(deleted) " $1) } else { system("sha1sum -b " $1) } }' \
       > golden_hashes.txt
@@ -63,6 +67,7 @@ else
       fi
       cp "$(echo "${file}" | sed "s/${GOLDEN_SUFFIX}\.png/.png/")" "${file}"
     done
+    git reset
     git add *.png
     git commit \
         -m "Copy default goldens over ${AGENT_OS} ${PRINCIPIA_PLATFORM} goldens"
