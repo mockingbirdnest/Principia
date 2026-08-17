@@ -40,18 +40,20 @@ set -e
 git add *.png
 
 if git diff --quiet HEAD; then
-  echo same
+  echo No files changed
 else
-  # git diff --compact-summary outputs something like
-  #  path/to/new.file (new)      |   1 +
-  #  path/to/deleted.file (gone) |  21 ---------
-  #  path/to/modified.file       |   2 +-
-  #  2 files changed, 2 insertions(+), 22 deletions(-)
-  git diff --compact-summary HEAD |
-      awk '/\.png/ { if ($2 == "(gone)") { print("(deleted) " $1) } else { system("sha1sum -b " $1) } }' \
+  # git diff --name-status --no-renames outputs something like
+  # A       path/to/new.file
+  # D       path/to/deleted.file
+  # M       path/to/modified.file
+  git config core.quotePath false
+  git diff --name-status --no-renames HEAD |
+      awk '/\.png/ { if ($1 == "A") { print("(deleted) " $2) } else { system("shasum -b " $2) } }' \
       > golden_hashes.txt
-  HASH=$(sha1sum golden_hashes.txt | awk '{print($1)}')
+  cat golden_hashes.txt
+  HASH=$(shasum golden_hashes.txt | awk '{print($1)}')
   BRANCH_NAME="goldens-${HASH}-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
+  echo Looking for branch ${BRANCH_NAME}...
   git ls-remote --exit-code                                   \
       --heads https://github.com/enrico-dandolo/Principia.git \
       refs/heads/${BRANCH_NAME}
@@ -60,7 +62,7 @@ else
     git config user.name "Enrico Dandolo"
     git checkout -b ${BRANCH_NAME}
     GOLDEN_SUFFIX="${OS_GOLDEN_SUFFIX}${PLATFORM_GOLDEN_SUFFIX?}"
-    FILES_CHANGED="$(git diff --compact-summary HEAD | awk '/\.png/ { $1 }')"
+    FILES_CHANGED="$(git diff --name-only HEAD | awk '/\.png/ { $1 }')"
     for file in ${FILES_CHANGED}; do
       if [[ -f ${file} ]]; then
         mv "${file}" "${file}.new"
