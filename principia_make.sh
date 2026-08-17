@@ -48,7 +48,7 @@ else
   # M       path/to/modified.file
   git config core.quotePath false
   git diff --name-status --no-renames HEAD |
-      awk '/\.png/ { if ($1 == "A") { print("(deleted) " $2) } else { system("shasum -b " $2) } }' \
+      awk '/\.png/ { if ($1 == "D") { print("(deleted) " $2) } else { system("shasum -b " $2) } }' \
       > golden_hashes.txt
   cat golden_hashes.txt
   HASH=$(shasum golden_hashes.txt | awk '{print($1)}')
