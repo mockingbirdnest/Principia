@@ -55,9 +55,11 @@ else
   HASH=$(shasum golden_hashes.txt | awk '{print($1)}')
   BRANCH_NAME="goldens-${HASH}-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
   echo "Looking for branch ${BRANCH_NAME}..."
+  echo "git ls-remote --exit-code --heads https://github.com/enrico-dandolo/Principia.git refs/heads/${BRANCH_NAME}"
   git ls-remote --exit-code                                   \
       --heads https://github.com/enrico-dandolo/Principia.git \
       refs/heads/${BRANCH_NAME}
+  echo "Done looking $?"
   code=$?
   echo "Exit code is ${code}"
   if [[ ${code} == 2 ]]; then
