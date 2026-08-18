@@ -76,7 +76,7 @@ else
   ls_remote_exit_status=$?
   set -e
 
-  if (( ${ls_remote_exit_status} == 2 )); then
+  if (( ls_remote_exit_status == 2 )); then
     # The branch does not exists.  Configure git and find the changed files.
     git config user.email "enrico.dandolo@mockingbirdnest.com"
     git config user.name "Enrico Dandolo"
@@ -130,8 +130,8 @@ else
   fi
 fi
 
-if (( "${make_exit_status}" != 0 )); then
-  exit "${make_exit_status}"
+if (( make_exit_status != 0 )); then
+  exit ${make_exit_status}
 fi
 
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
