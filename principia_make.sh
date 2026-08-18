@@ -1,7 +1,4 @@
 #! /bin/bash
-# It seems that protoc really wants its dependencies to be in /usr/local/lib.
-# In some setups, e.g., Azure pipelines, this does not work, so we need to help
-# it find its dynamic libraries.
 
 readonly NEW_EXTENSION='.new'
 
@@ -21,6 +18,9 @@ if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   target="each_test"
 elif [[ "${AGENT_OS?}" == "Linux" ]]; then
   os_golden_suffix="_linux"
+  # It seems that protoc really wants its dependencies to be in /usr/local/lib.
+  # In some setups, e.g., Azure pipelines, this does not work, so we need to
+  # help it find its dynamic libraries.
   export LD_LIBRARY_PATH="./deps/protobuf/src/.libs:$LD_LIBRARY_PATH"
   parallelism=$(nproc --all)
   target="each_package_test"
@@ -80,11 +80,15 @@ else
 
   echo "Exit code is ${ls_remote_exit_code}"
   if (( ${ls_remote_exit_code} == 2 )); then
+    # The branch does not exists.  Set up git and find the changed files.
     git config user.email "enrico.dandolo@mockingbirdnest.com"
     git config user.name "Enrico Dandolo"
     git checkout -b ${branch_name}
     golden_suffix="${os_golden_suffix}${platform_golden_suffix}"
     files_changed=$(git diff --name-only HEAD | grep '\.png')
+
+    # For each changed file, squirrel away the updated file (if any) and copy
+    # the default (Windows) golden over it.
     echo "Files changed ${files_changed}"
     for file in ${files_changed}; do
       echo "File ${file} was changed"
@@ -94,10 +98,17 @@ else
       fi
       cp $(echo "${file}" | sed "s/${golden_suffix}\.png/.png/") "${file}"
     done
+
+    # Create a commit where the default goldens were copied over the existing,
+    # platform-specific, goldens.  This makes it possible to see how the changed
+    # files differ from the default ones.
     git reset
     git add *.png
     git commit \
         -m "Copy default goldens over ${AGENT_OS} ${PRINCIPIA_PLATFORM} goldens"
+
+    # For each changed file, copy the squirrelled-away updated file on top of
+    # the default golden.
     echo "Files changed ${files_changed}"
     for file in ${files_changed}; do
       echo "File ${file} was changed, again"
@@ -109,10 +120,17 @@ else
         git rm "${file}"
       fi
     done
+
+    # Create a commit where the updated files were copied over the default
+    # goldens.  Together, the two commits make it possible to figure out (1)
+    # how the platform-specific goldens changed (2) how they differ from the
+    # Windows golden.
     echo "Adding"
     git add *.png
     echo "Commiting"
     git commit -m "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
+
+    # Create a PR with the two commits.
     echo "Pushing"
     git push --set-upstream                                           \
         "https://${GH_TOKEN}@github.com/enrico-dandolo/Principia.git" \
