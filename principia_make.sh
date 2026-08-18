@@ -67,18 +67,15 @@ else
   final_hash=$(shasum /tmp/golden_hashes.txt | awk '{print($1)}')
   branch_name="goldens-${final_hash}-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
   echo "Looking for branch ${branch_name}."
-  echo "git ls-remote --exit-code --heads https://github.com/enrico-dandolo/Principia.git refs/heads/${branch_name}"
 
   # `ls-remote` fails if the branch does not exist, so we need to handle errors.
   set +e
   git ls-remote --exit-code                                   \
       --heads https://github.com/enrico-dandolo/Principia.git \
       refs/heads/${branch_name}
-  #echo "Done looking $?"
   ls_remote_exit_code=$?
   set -e
 
-  echo "Exit code is ${ls_remote_exit_code}"
   if (( ${ls_remote_exit_code} == 2 )); then
     # The branch does not exists.  Set up git and find the changed files.
     git config user.email "enrico.dandolo@mockingbirdnest.com"
@@ -89,11 +86,8 @@ else
 
     # For each changed file, squirrel away the updated file (if any) and copy
     # the default (Windows) golden over it.
-    echo "Files changed ${files_changed}"
     for file in ${files_changed}; do
-      echo "File ${file} was changed"
       if [[ -f ${file} ]]; then
-        echo "Moving to ${file}.new"
         mv "${file}" "${file}${NEW_EXTENSION}"
       fi
       cp $(echo "${file}" | sed "s/${golden_suffix}\.png/.png/") "${file}"
@@ -109,14 +103,10 @@ else
 
     # For each changed file, copy the squirrelled-away updated file on top of
     # the default golden.
-    echo "Files changed ${files_changed}"
     for file in ${files_changed}; do
-      echo "File ${file} was changed, again"
       if [[ -f "${file}${NEW_EXTENSION}" ]]; then
-        echo "Moving ${file}.new"
         mv "${file}${NEW_EXTENSION}" "${file}"
       else
-        echo "Removing ${file}"
         git rm "${file}"
       fi
     done
@@ -125,17 +115,13 @@ else
     # goldens.  Together, the two commits make it possible to figure out (1)
     # how the platform-specific goldens changed (2) how they differ from the
     # Windows golden.
-    echo "Adding"
     git add *.png
-    echo "Commiting"
     git commit -m "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
 
     # Create a PR with the two commits.
-    echo "Pushing"
     git push --set-upstream                                           \
         "https://${GH_TOKEN}@github.com/enrico-dandolo/Principia.git" \
         ${branch_name}
-    echo "Creating PR"
     gh pr create --fill --head enrico-dandolo:${branch_name} \
         --title "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
   else
