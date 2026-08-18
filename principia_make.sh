@@ -2,6 +2,9 @@
 # It seems that protoc really wants its dependencies to be in /usr/local/lib.
 # In some setups, e.g., Azure pipelines, this does not work, so we need to help
 # it find its dynamic libraries.
+
+readonly NEW_EXTENSION='.new'
+
 if [[ "${PRINCIPIA_PLATFORM?}" != "x64" &&
       "${PRINCIPIA_PLATFORM?}" != "x64_AVX_FMA" ]]; then
   echo "PRINCIPIA_PLATFORM must be x64 or x64_AVX_FMA."
@@ -87,7 +90,7 @@ else
       echo "File ${file} was changed"
       if [[ -f ${file} ]]; then
         echo "Moving to ${file}.new"
-        mv "${file}" "${file}.new"
+        mv "${file}" "${file}${NEW_EXTENSION}"
       fi
       cp $(echo "${file}" | sed "s/${golden_suffix}\.png/.png/") "${file}"
     done
@@ -98,9 +101,9 @@ else
     echo "Files changed ${files_changed}"
     for file in ${files_changed}; do
       echo "File ${file} was changed, again"
-      if [[ -f "${file}.new" ]]; then
+      if [[ -f "${file}${NEW_EXTENSION}" ]]; then
         echo "Moving ${file}.new"
-        mv "${file}.new" "${file}"
+        mv "${file}${NEW_EXTENSION}" "${file}"
       else
         echo "Removing ${file}"
         git rm "${file}"
@@ -124,7 +127,7 @@ else
   fi
 fi
 
-if [[ "${make_exit_status}" != 0 ]]; then
+if (( "${make_exit_status}" != 0 )); then
   exit "${make_exit_status}"
 fi
 
@@ -133,4 +136,5 @@ if [[ "${AGENT_OS?}" == "Darwin" ]]; then
   # for why this is needed.
   sudo /usr/sbin/purge
 fi
+
 make release
