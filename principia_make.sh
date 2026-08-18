@@ -1,6 +1,6 @@
 #! /bin/bash
 
-readonly NEW_EXTENSION='.new'
+readonly SQUIRREL_EXTENSION='.squirrel'
 
 if [[ "${PRINCIPIA_PLATFORM?}" != "x64" &&
       "${PRINCIPIA_PLATFORM?}" != "x64_AVX_FMA" ]]; then
@@ -73,11 +73,11 @@ else
   git ls-remote --exit-code                                   \
       --heads https://github.com/enrico-dandolo/Principia.git \
       refs/heads/${branch_name}
-  ls_remote_exit_code=$?
+  ls_remote_exit_status=$?
   set -e
 
-  if (( ${ls_remote_exit_code} == 2 )); then
-    # The branch does not exists.  Set up git and find the changed files.
+  if (( ${ls_remote_exit_status} == 2 )); then
+    # The branch does not exists.  Configure git and find the changed files.
     git config user.email "enrico.dandolo@mockingbirdnest.com"
     git config user.name "Enrico Dandolo"
     git checkout -b ${branch_name}
@@ -85,27 +85,26 @@ else
     files_changed=$(git diff --name-only HEAD | grep '\.png')
 
     # For each changed file, squirrel away the updated file (if any) and copy
-    # the default (Windows) golden over it.
+    # the default (Windows) golden in its place.
     for file in ${files_changed}; do
       if [[ -f ${file} ]]; then
-        mv "${file}" "${file}${NEW_EXTENSION}"
+        mv "${file}" "${file}${SQUIRREL_EXTENSION}"
       fi
       cp $(echo "${file}" | sed "s/${golden_suffix}\.png/.png/") "${file}"
     done
 
     # Create a commit where the default goldens were copied over the existing,
-    # platform-specific, goldens.  This makes it possible to see how the changed
-    # files differ from the default ones.
+    # platform-specific, goldens.
     git reset
     git add *.png
     git commit \
         -m "Copy default goldens over ${AGENT_OS} ${PRINCIPIA_PLATFORM} goldens"
 
-    # For each changed file, copy the squirrelled-away updated file on top of
+    # For each changed file, copy the squirrelled-away (updated) file on top of
     # the default golden.
     for file in ${files_changed}; do
-      if [[ -f "${file}${NEW_EXTENSION}" ]]; then
-        mv "${file}${NEW_EXTENSION}" "${file}"
+      if [[ -f "${file}${SQUIRREL_EXTENSION}" ]]; then
+        mv -f "${file}${SQUIRREL_EXTENSION}" "${file}"
       else
         git rm "${file}"
       fi
