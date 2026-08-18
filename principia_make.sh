@@ -84,7 +84,7 @@ else
     git config user.name "Enrico Dandolo"
     git checkout -b ${branch_name}
     golden_suffix="${os_golden_suffix}${platform_golden_suffix}"
-    files_changed="$(git diff --name-only HEAD | grep '\.png')"
+    files_changed=$(git diff --name-only HEAD | grep '\.png')
     echo "Files changed ${files_changed}"
     for file in ${files_changed}; do
       echo "File ${file} was changed"
