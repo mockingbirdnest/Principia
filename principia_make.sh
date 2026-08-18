@@ -44,7 +44,6 @@ echo "Make finished with status ${make_exit_status}."
 
 # Add all PNG files so new files are tracked.
 git add *.png
-env
 
 if git diff --quiet HEAD; then
   echo "No files changed."
