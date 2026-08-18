@@ -9,84 +9,88 @@ if [[ "${PRINCIPIA_PLATFORM?}" != "x64" &&
 fi
 
 if [[ "${PRINCIPIA_PLATFORM?}" == "x64_AVX_FMA" ]]; then
-  PLATFORM_GOLDEN_SUFFIX="_fma"
+  platform_golden_suffix="_fma"
 fi
 
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
-  OS_GOLDEN_SUFFIX="_macos"
-  PARALLELISM=$(sysctl -n hw.ncpu)
-  TARGET="each_test"
+  os_golden_suffix="_macos"
+  parallelism=$(sysctl -n hw.ncpu)
+  target="each_test"
 elif [[ "${AGENT_OS?}" == "Linux" ]]; then
-  OS_GOLDEN_SUFFIX="_linux"
+  os_golden_suffix="_linux"
   export LD_LIBRARY_PATH="./deps/protobuf/src/.libs:$LD_LIBRARY_PATH"
-  PARALLELISM=$(nproc --all)
-  TARGET="each_package_test"
+  parallelism=$(nproc --all)
+  target="each_package_test"
 fi
 
-echo "Parallelism is ${PARALLELISM}."
+echo "Parallelism is ${parallelism}."
 
 make clean
 
+# Build the target, catching errors and grabbing the status.
 set +e
-make -j ${PARALLELISM} \
+make -j ${parallelism} \
   --keep-going \
   bin/${PRINCIPIA_PLATFORM}/benchmark \
   bin/${PRINCIPIA_PLATFORM}/nanobenchmark \
-  astronomy/test
-#  ${TARGET}
-MAKE_RESULT=$?
+  ${target}
+make_exit_status=$?
 set -e
-echo "Make finished with status ${MAKE_RESULT}"
+
+echo "Make finished with status ${make_exit_status}."
 
 # Add all PNG files so new files are tracked.
 git add *.png
 env
 
 if git diff --quiet HEAD; then
-  echo "No files changed"
+  echo "No files changed."
 else
-  # git diff --name-status --no-renames outputs something like
+  # `git diff --name-status --no-renames` outputs something like:
   # A       path/to/new.file
   # D       path/to/deleted.file
   # M       path/to/modified.file
   git config core.quotePath false
   git diff --name-status --no-renames HEAD |
       awk '/\.png/ { if ($1 == "D") { print("(deleted) " $2) } else { system("shasum -b " $2) } }' \
-      > golden_hashes.txt
-  cat golden_hashes.txt
-  HASH=$(shasum golden_hashes.txt | awk '{print($1)}')
-  BRANCH_NAME="goldens-${HASH}-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
-  echo "Looking for branch ${BRANCH_NAME}..."
-  echo "git ls-remote --exit-code --heads https://github.com/enrico-dandolo/Principia.git refs/heads/${BRANCH_NAME}"
+      > /tmp/golden_hashes.txt
+  cat /tmp/golden_hashes.txt
+  final_hash=$(shasum /tmp/golden_hashes.txt | awk '{print($1)}')
+  branch_name="goldens-${final_hash}-${AGENT_OS}-${PRINCIPIA_PLATFORM}"
+  echo "Looking for branch ${branch_name}."
+  echo "git ls-remote --exit-code --heads https://github.com/enrico-dandolo/Principia.git refs/heads/${branch_name}"
+
+  # `ls-remote` fails if the branch does not exist, so we need to handle errors.
   set +e
   git ls-remote --exit-code                                   \
       --heads https://github.com/enrico-dandolo/Principia.git \
-      refs/heads/${BRANCH_NAME}
+      refs/heads/${branch_name}
   #echo "Done looking $?"
-  code=$?
+  ls_remote_exit_code=$?
   set -e
-  echo "Exit code is ${code}"
-  if [[ ${code} == 2 ]]; then
+
+  echo "Exit code is ${ls_remote_exit_code}"
+  if (( ${ls_remote_exit_code} == 2 )); then
     git config user.email "enrico.dandolo@mockingbirdnest.com"
     git config user.name "Enrico Dandolo"
-    git checkout -b ${BRANCH_NAME}
-    GOLDEN_SUFFIX="${OS_GOLDEN_SUFFIX}${PLATFORM_GOLDEN_SUFFIX}"
-    FILES_CHANGED="$(git diff --name-only HEAD | grep '\.png')"
-    echo "Files changed ${FILES_CHANGED}"
-    for file in ${FILES_CHANGED}; do
+    git checkout -b ${branch_name}
+    golden_suffix="${os_golden_suffix}${platform_golden_suffix}"
+    files_changed="$(git diff --name-only HEAD | grep '\.png')"
+    echo "Files changed ${files_changed}"
+    for file in ${files_changed}; do
       echo "File ${file} was changed"
       if [[ -f ${file} ]]; then
         echo "Moving to ${file}.new"
         mv "${file}" "${file}.new"
       fi
-      cp $(echo "${file}" | sed "s/${GOLDEN_SUFFIX}\.png/.png/") "${file}"
+      cp $(echo "${file}" | sed "s/${golden_suffix}\.png/.png/") "${file}"
     done
     git reset
     git add *.png
     git commit \
         -m "Copy default goldens over ${AGENT_OS} ${PRINCIPIA_PLATFORM} goldens"
-    echo "Files changed ${FILES_CHANGED}"
-    for file in ${FILES_CHANGED}; do
+    echo "Files changed ${files_changed}"
+    for file in ${files_changed}; do
       echo "File ${file} was changed, again"
       if [[ -f "${file}.new" ]]; then
         echo "Moving ${file}.new"
@@ -103,19 +107,19 @@ else
     echo "Pushing"
     git push --set-upstream                                           \
         "https://${GH_TOKEN}@github.com/enrico-dandolo/Principia.git" \
-        ${BRANCH_NAME}
+        ${branch_name}
     echo "Creating PR"
-    gh pr create --fill --head enrico-dandolo:${BRANCH_NAME} \
+    gh pr create --fill --head enrico-dandolo:${branch_name} \
         --title "Update goldens for ${AGENT_OS} ${PRINCIPIA_PLATFORM}"
   else
-    echo "Branch ${BRANCH_NAME} already exists."
+    echo "Branch ${branch_name} already exists."
     echo "Merge the following PR to update these goldens:"
-    gh pr list --head ${BRANCH_NAME}
+    gh pr list --head ${branch_name}
   fi
 fi
 
-if [[ "${MAKE_RESULT}" != 0 ]]; then
-  exit "${MAKE_RESULT}"
+if [[ "${make_exit_status}" != 0 ]]; then
+  exit "${make_exit_status}"
 fi
 
 if [[ "${AGENT_OS?}" == "Darwin" ]]; then
