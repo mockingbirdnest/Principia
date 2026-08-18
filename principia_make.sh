@@ -51,8 +51,14 @@ else
   # D       path/to/deleted.file
   # M       path/to/modified.file
   git config core.quotePath false
-  git diff --name-status --no-renames HEAD |
-      awk '/\.png/ { if ($1 == "D") { print("(deleted) " $2) } else { system("shasum -b " $2) } }' \
+  git diff --name-status --no-renames HEAD \
+      | awk '/\.png/ {
+               if ($1 == "D") {
+                 print("(deleted) " $2)
+               } else {
+                 system("shasum -b " $2)
+               }
+             }' \
       > /tmp/golden_hashes.txt
   cat /tmp/golden_hashes.txt
   final_hash=$(shasum /tmp/golden_hashes.txt | awk '{print($1)}')
