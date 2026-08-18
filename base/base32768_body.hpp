@@ -207,7 +207,7 @@ void Base32768Encoder<null_terminated>::Encode(Array<std::uint8_t const> input,
   std::uint8_t const* const input_end = input.data + input.size;
   std::int64_t input_bit_index = 0;
   while (input.data < input_end) {
-    std::int32_t data;
+    std::int32_t data = 0;  // Initial value never used.
 
     // Prepare for normal encoding.
     std::int32_t shift = bytes_per_code_point * bits_per_byte -

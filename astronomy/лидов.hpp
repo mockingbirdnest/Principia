@@ -62,7 +62,6 @@ inline double ЛидовMaximalInclinationLine(Angle const i, double const c₂)
 // is i.
 Interval<double> ЛидовMaximalInclinationLineC₂Range(Angle const i) {
   double const cos_i = Cos(i);
-  double const cos²_i = Pow<2>(cos_i);
   return {i > i_critical ? -Pow<2>(1.0 - 5.0 * Cos(2.0 * i)) / 60.0 : 0,
           2.0 / 5.0};
 }

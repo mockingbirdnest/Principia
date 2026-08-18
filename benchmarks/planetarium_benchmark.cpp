@@ -337,9 +337,6 @@ void BM_PlanetariumPlotMethod3(
                   distance_from_earth),
       &plotting);
   std::vector<ScaledSpacePoint> line;
-  int iterations = 0;
-  // This is the time of a lunar eclipse in January 2000.
-  constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   for (auto _ : state) {
     line.clear();
     planetarium.PlotMethod3(
@@ -351,7 +348,6 @@ void BM_PlanetariumPlotMethod3(
         /*add_point=*/
         [&line](ScaledSpacePoint const& point) { line.push_back(point); },
         /*max_points=*/std::numeric_limits<int>::max());
-    ++iterations;
   }
   Interval<double> x;
   Interval<double> y;
@@ -383,9 +379,6 @@ void BM_PlanetariumPlotMethod4DiscreteTrajectory(
                   distance_from_earth),
       &plotting);
   std::vector<ScaledSpacePoint> line;
-  int iterations = 0;
-  // This is the time of a lunar eclipse in January 2000.
-  constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   for (auto _ : state) {
     line.clear();
     planetarium.PlotMethod4(
@@ -397,7 +390,6 @@ void BM_PlanetariumPlotMethod4DiscreteTrajectory(
         /*add_point=*/
         [&line](ScaledSpacePoint const& point) { line.push_back(point); },
         /*max_points=*/std::numeric_limits<int>::max());
-    ++iterations;
   }
   Interval<double> x;
   Interval<double> y;
@@ -429,9 +421,6 @@ void BM_PlanetariumPlotMethod4ContinuousTrajectory(
                   distance_from_earth),
       &plotting);
   std::vector<ScaledSpacePoint> line;
-  int iterations = 0;
-  // This is the time of a lunar eclipse in January 2000.
-  constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   for (auto _ : state) {
     line.clear();
     planetarium.PlotMethod4(
@@ -442,7 +431,6 @@ void BM_PlanetariumPlotMethod4ContinuousTrajectory(
         /*add_point=*/
         [&line](ScaledSpacePoint const& point) { line.push_back(point); },
         /*max_points=*/std::numeric_limits<int>::max());
-    ++iterations;
   }
   Interval<double> x;
   Interval<double> y;

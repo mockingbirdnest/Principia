@@ -52,6 +52,8 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
     : ephemeris_(std::move(ephemeris)),
       primaries_(std::move(primaries)),
       secondaries_(std::move(secondaries)),
+      primary_set_(primaries_.begin(), primaries_.end()),
+      secondary_set_(secondaries_.begin(), secondaries_.end()),
       primary_gravitational_parameter_(
           std::accumulate(primaries_.begin(),
                           primaries_.end(),
@@ -61,9 +63,7 @@ BarycentricRotatingReferenceFrame<InertialFrame, ThisFrame>::
           std::accumulate(secondaries_.begin(),
                           secondaries_.end(),
                           GravitationalParameter{},
-                          &add_gravitational_parameter)),
-      primary_set_(primaries_.begin(), primaries_.end()),
-      secondary_set_(secondaries_.begin(), secondaries_.end()) {
+                          &add_gravitational_parameter)) {
   absl::btree_set<not_null<MassiveBody const*>> intersection;
   std::set_intersection(primary_set_.begin(),
                         primary_set_.end(),

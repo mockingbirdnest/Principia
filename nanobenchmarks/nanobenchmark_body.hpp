@@ -57,8 +57,8 @@ Nanobenchmark<Value_, Argument_>::Run(Logger* const logger) const {
   std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
   static std::vector<double>& samples = *new std::vector<double>(
       sample_count, std::numeric_limits<double>::quiet_NaN());
-  int registers[4]{};
-  int const leaf = 0;
+  [[maybe_unused]] int registers[4]{};
+  [[maybe_unused]] int const leaf = 0;
   for (int j = 0; j < sample_count; ++j) {
     double const input = absl::GetFlag(FLAGS_input);
     double x = input;

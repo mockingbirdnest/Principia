@@ -40,9 +40,9 @@ RotatingPulsatingReferenceFrame<InertialFrame, ThisFrame>::
     : ephemeris_(ephemeris),
       primaries_(std::move(primaries)),
       secondaries_(std::move(secondaries)),
-      rotating_frame_(ephemeris_, primaries_, secondaries_),
       primary_set_(primaries_.begin(), primaries_.end()),
-      secondary_set_(secondaries_.begin(), secondaries_.end()) {
+      secondary_set_(secondaries_.begin(), secondaries_.end()),
+      rotating_frame_(ephemeris_, primaries_, secondaries_) {
   absl::btree_set<not_null<MassiveBody const*>> intersection;
   std::set_intersection(primary_set_.begin(),
                         primary_set_.end(),

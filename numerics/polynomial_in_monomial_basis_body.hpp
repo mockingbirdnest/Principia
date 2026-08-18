@@ -874,9 +874,6 @@ std::ostream& operator<<(
     std::ostream& out,
     PolynomialInMonomialBasis<Value, Argument, degree,
                               Evaluator> const& polynomial) {
-  using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>::
-          Coefficients;
   std::string const argument =
       absl::StrCat("(T - ", DebugString(polynomial.origin_), ")");
   std::vector<std::string> terms;
