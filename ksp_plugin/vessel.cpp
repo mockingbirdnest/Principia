@@ -1100,7 +1100,7 @@ Vessel::MakeCheckpointerWriterFromPileUp() {
     // Here the containing pile-up is the one for the collapsible segment.
     std::unique_ptr<Ephemeris<Barycentric>::FixedStepParameters>
         fixed_step_parameters;
-    ForSomePart([this, &fixed_step_parameters](Part& first_part) {
+    ForSomePart([&fixed_step_parameters](Part& first_part) {
       fixed_step_parameters =
           std::make_unique<Ephemeris<Barycentric>::FixedStepParameters>(
               first_part.containing_pile_up()->fixed_step_parameters());

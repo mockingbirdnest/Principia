@@ -126,6 +126,7 @@ class Manœuvre {
   // attached to a coasting trajectory.
   Manœuvre(Mass const& initial_mass,
            Burn const& burn);
+  virtual ~Manœuvre() = default;
 
   Mass const& initial_mass() const;
 

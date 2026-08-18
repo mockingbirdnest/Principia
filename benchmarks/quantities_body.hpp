@@ -48,7 +48,7 @@ inline void DoubleDiscreteCosineTransform(std::vector<double>& result) {
   }
   result.resize(dimension);
   double sign = 1;
-  double sum;
+  [[maybe_unused]] double sum;
   for (std::size_t k = 0; k < dimension; ++k, sign *= -1) {
     sum = 0;
     for (std::size_t n = 1; n < dimension - 1; ++n) {

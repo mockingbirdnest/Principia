@@ -504,6 +504,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
     ЧебышёвPicardIterationParams<ODE> const& params)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator),
+      params_(params),
       boundary_(ЧебышёвPicardIterationState<Method::M, ODE_>::
                     UninitializedDependentVariableMatrix(problem)),
       Xⁱ_(ЧебышёвPicardIterationState<Method::M, ODE_>::
@@ -511,8 +512,7 @@ template<ЧебышёвPicardMethod Method, typename ODE_>
       Xⁱ⁺¹_(ЧебышёвPicardIterationState<Method::M, ODE_>::
                 UninitializedDependentVariableMatrix(problem)),
       f_(ЧебышёвPicardIterationState<Method::M, ODE_>::
-             UninitializedRightHandSideMatrix(problem)),
-      params_(params) {
+             UninitializedRightHandSideMatrix(problem)) {
   t_.reserve(M + 1);
 }
 
