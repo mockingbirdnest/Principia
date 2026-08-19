@@ -347,21 +347,6 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
                                                       vessel_guid));
 
-  DiscreteTrajectory<World> rendered_trajectory;
-  EXPECT_OK(rendered_trajectory.Append(
-      t0_, DegreesOfFreedom<World>(World::origin, World::unmoving)));
-  EXPECT_OK(rendered_trajectory.Append(
-      t0_ + 1 * Second,
-      DegreesOfFreedom<World>(
-          World::origin +
-              Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
-          World::unmoving)));
-  EXPECT_OK(rendered_trajectory.Append(
-      t0_ + 2 * Second,
-      DegreesOfFreedom<World>(
-          World::origin +
-              Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
-          World::unmoving)));
   DiscreteTrajectory<Barycentric> segment;
   DegreesOfFreedom<Barycentric> const immobile_origin{Barycentric::origin,
                                                       Barycentric::unmoving};
@@ -370,21 +355,6 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_OK(segment.Append(t0_ + 2 * Second, immobile_origin));
   EXPECT_CALL(flight_plan_, GetSegment(3))
       .WillOnce(Return(segment.segments().begin()));
-  EXPECT_CALL(renderer_, RenderBarycentricTrajectoryInWorld(_, _, _, _, _))
-      .WillOnce(Return(ByMove(std::move(rendered_trajectory))));
-  auto* const iterator =
-      principia__FlightPlanRenderedSegment(plugin_.get(),
-                                           vessel_guid,
-                                           {0, 1, 2},
-                                           3);
-  EXPECT_EQ(XYZ({0, 0, 0}),
-            principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
-  principia__IteratorIncrement(iterator);
-  EXPECT_EQ(XYZ({0, 1, 2}),
-            principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
-  principia__IteratorIncrement(iterator);
-  EXPECT_EQ(XYZ({0, 2, 4}),
-            principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
 
   interface_burn.thrust_in_kilonewtons = 10;
   EXPECT_CALL(*plugin_,

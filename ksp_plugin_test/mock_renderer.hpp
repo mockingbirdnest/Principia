@@ -35,15 +35,6 @@ class MockRenderer : public Renderer {
               (),
               (const, override));
 
-  MOCK_METHOD(DiscreteTrajectory<World>,
-              RenderBarycentricTrajectoryInWorld,
-              (Instant const& time,
-               DiscreteTrajectory<Barycentric>::iterator const& begin,
-               DiscreteTrajectory<Barycentric>::iterator const& end,
-               Position<World> const& sun_world_position,
-               (Rotation<Barycentric, AliceSun> const& planetarium_rotation)),
-              (const, override));
-
   MOCK_METHOD((OrthogonalMap<Barycentric, WorldSun>),
               BarycentricToWorldSun,
               ((Rotation<Barycentric, AliceSun> const& planetarium_rotation)),
