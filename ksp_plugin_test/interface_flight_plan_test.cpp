@@ -347,15 +347,6 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
                                                       vessel_guid));
 
-  DiscreteTrajectory<Barycentric> segment;
-  DegreesOfFreedom<Barycentric> const immobile_origin{Barycentric::origin,
-                                                      Barycentric::unmoving};
-  EXPECT_OK(segment.Append(t0_, immobile_origin));
-  EXPECT_OK(segment.Append(t0_ + 1 * Second, immobile_origin));
-  EXPECT_OK(segment.Append(t0_ + 2 * Second, immobile_origin));
-  EXPECT_CALL(flight_plan_, GetSegment(3))
-      .WillOnce(Return(segment.segments().begin()));
-
   interface_burn.thrust_in_kilonewtons = 10;
   EXPECT_CALL(*plugin_,
               NewBodyCentredNonRotatingNavigationFrame(celestial_index))
