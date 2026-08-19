@@ -170,12 +170,7 @@ RigidTransformation<Barycentric, World> Renderer::BarycentricToWorld(
 OrthogonalMap<Barycentric, World> Renderer::BarycentricToWorld(
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return OrthogonalMap<WorldSun, World>::Identity() *
-         BarycentricToWorldSun(planetarium_rotation);
-}
-
-OrthogonalMap<Barycentric, WorldSun> Renderer::BarycentricToWorldSun(
-    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
+         sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
          planetarium_rotation.Forget<OrthogonalMap>();
 }
 

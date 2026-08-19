@@ -101,6 +101,10 @@ class Renderer {
       DiscreteTrajectory<Barycentric>::iterator const& begin,
       DiscreteTrajectory<Barycentric>::iterator const& end) const;
 
+  // In this function and others in this class, `sun_world_position` is the
+  // current position of the sun in `World` space as returned by
+  // `Planetarium.fetch.Sun.position`; it is used to define the relation between
+  // `WorldSun` and `World`.
   DistinguishedPoints<World>
   RenderDistinguishedPointsInWorld(
       Instant const& time,
@@ -127,9 +131,6 @@ class Renderer {
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   virtual OrthogonalMap<Barycentric, World> BarycentricToWorld(
-      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
-
-  virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun(
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Converts from the Frenet frame of the manœuvre's initial time in the

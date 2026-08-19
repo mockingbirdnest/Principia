@@ -35,8 +35,8 @@ class MockRenderer : public Renderer {
               (),
               (const, override));
 
-  MOCK_METHOD((OrthogonalMap<Barycentric, WorldSun>),
-              BarycentricToWorldSun,
+  MOCK_METHOD((OrthogonalMap<Barycentric, World>),
+              BarycentricToWorld,
               ((Rotation<Barycentric, AliceSun> const& planetarium_rotation)),
               (const, override));
   MOCK_METHOD((Similarity<Navigation, World>),

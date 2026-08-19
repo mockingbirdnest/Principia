@@ -322,10 +322,10 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(flight_plan_, GetManœuvre(3))
       .WillOnce(ReturnRef(*navigation_manœuvre_));
 
-  EXPECT_CALL(renderer_, BarycentricToWorldSun(_))
+  EXPECT_CALL(renderer_, BarycentricToWorld(_))
       .WillOnce(Return(
-          Permutation<Barycentric, WorldSun>(
-              Permutation<Barycentric, WorldSun>::CoordinatePermutation::YXZ)
+          Permutation<Barycentric, World>(
+              Permutation<Barycentric, World>::CoordinatePermutation::YXZ)
               .Forget<OrthogonalMap>()));
   EXPECT_CALL(*navigation_manœuvre_, FrenetFrame())
       .WillOnce(
