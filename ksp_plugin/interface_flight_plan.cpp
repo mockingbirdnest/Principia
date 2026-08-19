@@ -393,22 +393,6 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
   return m.Return(result);
 }
 
-XYZ __cdecl principia__FlightPlanGetManoeuvreInitialPlottedVelocity(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    int const index) {
-  journal::Method<journal::FlightPlanGetManoeuvreInitialPlottedVelocity> m(
-      {plugin, vessel_guid, index});
-  CHECK(plugin != nullptr);
-
-  auto const& [t, dof] =
-      GetFlightPlan(*plugin, vessel_guid).GetSegment(2 * index)->back();
-  Velocity<Navigation> const v =
-      plugin->renderer().BarycentricToPlotting(t)(dof).velocity();
-  return m.Return(ToXYZ(plugin->renderer().PlottingToWorld(
-      plugin->CurrentTime(), plugin->PlanetariumRotation())(v)));
-}
-
 Status* __cdecl principia__FlightPlanInsert(Plugin const* const plugin,
                                             char const* const vessel_guid,
                                             Burn const& burn,
@@ -621,6 +605,49 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
   return m.Return();
 }
 
+Iterator* __cdecl principia__FlightPlanRenderedManoeuvre(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    XYZ const sun_world_position,
+    int const index) {
+  journal::Method<journal::FlightPlanRenderedManoeuvre> m({plugin,
+                                                           vessel_guid,
+                                                           sun_world_position,
+                                                           index});
+  CHECK(plugin != nullptr);
+  CHECK_EQ(1, index % 2) << index;
+
+  // This might force a (partial) recomputation of the flight plan to avoid a
+  // deadline, and a change of the anomalous status that will be noticed by the
+  // flight planner.
+  auto const segment =
+      GetFlightPlan(*plugin, vessel_guid).GetSegmentAvoidingDeadlines(index);
+
+  DistinguishedPoints<World> rendered_manœuvre;
+  if (!segment->empty()) {
+    DistinguishedPoints<Barycentric> manœuvre;
+    manœuvre.emplace(segment->front().time,
+                     segment->front().degrees_of_freedom);
+    rendered_manœuvre = plugin->renderer().RenderDistinguishedPointsInWorld(
+        plugin->CurrentTime(),
+        manœuvre.begin(),
+        manœuvre.end(),
+        FromXYZ<Position<World>>(sun_world_position),
+        plugin->PlanetariumRotation());
+
+    if (!rendered_manœuvre.empty() &&
+        rendered_manœuvre.begin()->first != segment->front().time) {
+      // TODO(egg): this is ugly; we should centralize rendering.
+      // If this is a burn and we cannot render the beginning of the burn, we
+      // render none of it, otherwise we try to render the Frenet trihedron at
+      // the start and we fail.
+      rendered_manœuvre.clear();
+    }
+  }
+  return m.Return(new TypedIterator<DistinguishedPoints<World>>(
+      std::move(rendered_manœuvre), plugin));
+}
+
 void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
                                                 char const* const vessel_guid,
                                                 double const* const t_max,
@@ -660,43 +687,6 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
       std::move(rendered_descending),
       plugin);
   return m.Return();
-}
-
-Iterator* __cdecl principia__FlightPlanRenderedSegment(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    XYZ const sun_world_position,
-    int const index) {
-  journal::Method<journal::FlightPlanRenderedSegment> m({plugin,
-                                                         vessel_guid,
-                                                         sun_world_position,
-                                                         index});
-  CHECK(plugin != nullptr);
-
-  // This might force a (partial) recomputation of the flight plan to avoid a
-  // deadline, and a change of the anomalous status that will be noticed by the
-  // flight planner.
-  auto const segment =
-      GetFlightPlan(*plugin, vessel_guid).GetSegmentAvoidingDeadlines(index);
-
-  auto rendered_trajectory =
-      plugin->renderer().RenderBarycentricTrajectoryInWorld(
-          plugin->CurrentTime(),
-          segment->begin(),
-          segment->end(),
-          FromXYZ<Position<World>>(sun_world_position),
-          plugin->PlanetariumRotation());
-  if (index % 2 == 1 && !rendered_trajectory.empty() &&
-      rendered_trajectory.front().time != segment->front().time) {
-    // TODO(egg): this is ugly; we should centralize rendering.
-    // If this is a burn and we cannot render the beginning of the burn, we
-    // render none of it, otherwise we try to render the Frenet trihedron at the
-    // start and we fail.
-    rendered_trajectory.clear();
-  }
-  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_trajectory),
-      plugin));
 }
 
 Status* __cdecl principia__FlightPlanReplace(Plugin const* const plugin,
