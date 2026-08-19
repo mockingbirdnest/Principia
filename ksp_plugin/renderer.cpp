@@ -72,24 +72,6 @@ Vessel const& Renderer::GetTargetVessel() const {
   return *target_->vessel;
 }
 
-DiscreteTrajectory<World>
-Renderer::RenderBarycentricTrajectoryInWorld(
-    Instant const& time,
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end,
-    Position<World> const& sun_world_position,
-    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  auto const trajectory_in_plotting_frame =
-      RenderBarycentricTrajectoryInPlotting(begin, end);
-  auto trajectory_in_world =
-      RenderPlottingTrajectoryInWorld(time,
-                                      trajectory_in_plotting_frame.begin(),
-                                      trajectory_in_plotting_frame.end(),
-                                      sun_world_position,
-                                      planetarium_rotation);
-  return trajectory_in_world;
-}
-
 DiscreteTrajectory<Navigation>
 Renderer::RenderBarycentricTrajectoryInPlotting(
     DiscreteTrajectory<Barycentric>::iterator const& begin,
@@ -110,25 +92,6 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
         .IgnoreError();
   }
   return trajectory;
-}
-
-DiscreteTrajectory<World>
-Renderer::RenderPlottingTrajectoryInWorld(
-    Instant const& time,
-    DiscreteTrajectory<Navigation>::iterator const& begin,
-    DiscreteTrajectory<Navigation>::iterator const& end,
-    Position<World> const& sun_world_position,
-    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return RenderPlottingContainerInWorld<DiscreteTrajectory>(
-      time,
-      begin, end,
-      sun_world_position,
-      planetarium_rotation,
-      [](DiscreteTrajectory<World>& trajectory,
-         Instant const& t,
-         DegreesOfFreedom<World> const& world_degrees_of_freedom) {
-        trajectory.Append(t, world_degrees_of_freedom).IgnoreError();
-      });
 }
 
 DistinguishedPoints<World> Renderer::RenderDistinguishedPointsInWorld(
@@ -207,12 +170,7 @@ RigidTransformation<Barycentric, World> Renderer::BarycentricToWorld(
 OrthogonalMap<Barycentric, World> Renderer::BarycentricToWorld(
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return OrthogonalMap<WorldSun, World>::Identity() *
-         BarycentricToWorldSun(planetarium_rotation);
-}
-
-OrthogonalMap<Barycentric, WorldSun> Renderer::BarycentricToWorldSun(
-    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
+         sun_looking_glass.Inverse().Forget<OrthogonalMap>() *
          planetarium_rotation.Forget<OrthogonalMap>();
 }
 

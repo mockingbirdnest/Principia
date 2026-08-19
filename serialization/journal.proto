@@ -306,7 +306,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5221.
+  extensions 5000 to 5999;  // Last used: 5222.
 }
 
 message ActivatePlayer {
@@ -1175,6 +1175,27 @@ message FlightPlanRenderedClosestApproaches {
   optional Out out = 2;
 }
 
+message FlightPlanRenderedManoeuvre {
+  extend Method {
+    optional FlightPlanRenderedManoeuvre extension = 5069;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ sun_world_position = 3;
+    required int32 index = 4;  // Must be odd.
+  }
+  message Return {
+    // The result has 0 or 1 points.
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (disposable) = "DisposableIterator",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message FlightPlanRenderedNodes {
   extend Method {
     optional FlightPlanRenderedNodes extension = 5123;
@@ -1197,26 +1218,6 @@ message FlightPlanRenderedNodes {
   }
   optional In in = 1;
   optional Out out = 2;
-}
-
-message FlightPlanRenderedSegment {
-  extend Method {
-    optional FlightPlanRenderedSegment extension = 5069;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required XYZ sun_world_position = 3;
-    required int32 index = 4;
-  }
-  message Return {
-    required fixed64 result = 1 [(pointer_to) = "Iterator",
-                                 (disposable) = "DisposableIterator",
-                                 (is_produced) = true];
-  }
-  optional In in = 1;
-  optional Return return = 3;
 }
 
 message FlightPlanReplace {
@@ -1860,6 +1861,22 @@ message IteratorGetDistinguishedPointsTime {
   }
   message Return {
     required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetDistinguishedPointsXYZ {
+  extend Method {
+    optional IteratorGetDistinguishedPointsXYZ extension = 5222;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required XYZ result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
