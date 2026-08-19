@@ -104,6 +104,19 @@ double __cdecl principia__IteratorGetDistinguishedPointsTime(
       }));
 }
 
+XYZ __cdecl principia__IteratorGetDistinguishedPointsXYZ(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetDistinguishedPointsXYZ> m({iterator});
+  CHECK(iterator != nullptr);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<DistinguishedPoints<World>> const*>(iterator));
+  return m.Return(typed_iterator->Get<XYZ>(
+      [](DistinguishedPoints<World>::value_type const& v) -> XYZ {
+        auto const& [_, degrees_of_freedom] = v;
+        return ToXYZ(degrees_of_freedom.position());
+      }));
+}
+
 Node __cdecl principia__IteratorGetNode(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetNode> m({iterator});
   CHECK(iterator != nullptr);

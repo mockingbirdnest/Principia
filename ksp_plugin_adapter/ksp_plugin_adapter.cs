@@ -2459,8 +2459,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                 }
                 double time_at_start =
                     rendered_manœuvre.IteratorGetDistinguishedPointsTime();
-                QP dof_at_start =
-                    rendered_manœuvre.IteratorGetDistinguishedPointsQP();
+                var position_at_start =
+                    (Vector3d)rendered_manœuvre.
+                        IteratorGetDistinguishedPointsXYZ();
                 if (flight_plan_collision_ == null ||
                     time_at_start <= flight_plan_collision_.Value.t) {
                   int manœuvre_index = i / 2;
@@ -2475,10 +2476,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                       manœuvre_marker_pool_.Add(
                           ManœuvreMarker.Create(main_window_, flight_planner_));
                     }
+                    var initial_plotted_velocity =
+                        (Vector3d)plugin_.
+                            FlightPlanGetManoeuvreInitialPlottedVelocity(
+                                main_vessel_guid,
+                                manœuvre_index);
                     manœuvre_marker_pool_[number_of_rendered_manœuvres].Render(
                         manœuvre_index,
-                        world_position: (Vector3d)dof_at_start.q,
-                        initial_plotted_velocity: (Vector3d)dof_at_start.p,
+                        world_position: position_at_start,
+                        initial_plotted_velocity,
                         trihedron);
                     ++number_of_rendered_manœuvres;
                   }

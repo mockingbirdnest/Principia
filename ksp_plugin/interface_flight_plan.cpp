@@ -393,6 +393,25 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
   return m.Return(result);
 }
 
+XYZ __cdecl principia__FlightPlanGetManoeuvreInitialPlottedVelocity(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const index) {
+  journal::Method<journal::FlightPlanGetManoeuvreInitialPlottedVelocity> m(
+      {plugin, vessel_guid, index});
+  CHECK(plugin != nullptr);
+
+  // Note that we cannot use the velocity producted by
+  // `FlightPlanRenderedManoeuvre` here because it is fictitious, see the
+  // "Lasciate ogne speranza" comment.
+  auto const& [t, dof] =
+      GetFlightPlan(*plugin, vessel_guid).GetSegment(2 * index)->back();
+  Velocity<Navigation> const v =
+      plugin->renderer().BarycentricToPlotting(t)(dof).velocity();
+  return m.Return(ToXYZ(plugin->renderer().PlottingToWorld(
+      plugin->CurrentTime(), plugin->PlanetariumRotation())(v)));
+}
+
 Status* __cdecl principia__FlightPlanInsert(Plugin const* const plugin,
                                             char const* const vessel_guid,
                                             Burn const& burn,
