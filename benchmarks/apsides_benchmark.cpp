@@ -162,7 +162,6 @@ BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
     CHECK_OK(ComputeNodes(*ilrsa_lageos2_trajectory_gcrs_,
                           ilrsa_lageos2_trajectory_gcrs_->begin(),
                           ilrsa_lageos2_trajectory_gcrs_->end(),
-                          /*t_max=*/InfiniteFuture,
                           Vector<double, GCRS>({0, 0, 1}),
                           /*max_points=*/std::numeric_limits<int>::max(),
                           ascending,

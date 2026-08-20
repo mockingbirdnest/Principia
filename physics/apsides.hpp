@@ -82,7 +82,6 @@ template<typename Frame, typename Predicate = ConstantFunction<bool>>
 absl::Status ComputeNodes(Trajectory<Frame> const& trajectory,
                           typename DiscreteTrajectory<Frame>::iterator begin,
                           typename DiscreteTrajectory<Frame>::iterator end,
-                          Instant const& t_max,
                           Vector<double, Frame> const& north,
                           int max_points,
                           DistinguishedPoints<Frame>& ascending,

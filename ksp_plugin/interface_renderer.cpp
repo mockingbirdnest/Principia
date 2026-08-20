@@ -117,8 +117,10 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
   std::vector<Renderer::Node> rendered_ascending;
   std::vector<Renderer::Node> rendered_descending;
   plugin->ComputeAndRenderNodes(
-      prediction->begin(), prediction->end(),
-      t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+      /*begin=*/prediction->begin(),
+      /*end=*/t_max == nullptr
+          ? prediction->end()
+          : prediction->upper_bound(FromGameTime(*plugin, *t_max)),
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_ascending,
