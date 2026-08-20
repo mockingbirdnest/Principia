@@ -41,7 +41,6 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     Trajectory<Frame> const& trajectory,
                     typename DiscreteTrajectory<Frame>::iterator begin,
                     typename DiscreteTrajectory<Frame>::iterator end,
-                    Instant const& t_max,
                     int max_points,
                     DistinguishedPoints<Frame>& apoapsides,
                     DistinguishedPoints<Frame>& periapsides);

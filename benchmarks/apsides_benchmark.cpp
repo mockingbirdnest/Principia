@@ -146,7 +146,6 @@ BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
                    *ilrsa_lageos2_trajectory_icrs_,
                    ilrsa_lageos2_trajectory_icrs_->begin(),
                    ilrsa_lageos2_trajectory_icrs_->end(),
-                   /*t_max=*/InfiniteFuture,
                    /*max_points=*/std::numeric_limits<int>::max(),
                    apoapsides,
                    periapsides);

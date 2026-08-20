@@ -573,8 +573,10 @@ void __cdecl principia__FlightPlanRenderedApsides(
     plugin->ComputeAndRenderApsides(
         celestial_index,
         flight_plan,
-        segment.begin(), segment.end(),
-        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+        /*begin=*/segment.begin(),
+        /*end=*/t_max == nullptr
+            ? segment.end()
+            : segment.upper_bound(FromGameTime(*plugin, *t_max)),
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_apoapsides,

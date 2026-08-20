@@ -62,8 +62,10 @@ void __cdecl principia__RenderedPredictionApsides(
   plugin->ComputeAndRenderApsides(
       celestial_index,
       *prediction,
-      prediction->begin(), prediction->end(),
-      t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+      /*begin=*/prediction->begin(),
+      /*end=*/t_max == nullptr
+          ? prediction->end()
+          : prediction->upper_bound(FromGameTime(*plugin, *t_max)),
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_apoapsides,
