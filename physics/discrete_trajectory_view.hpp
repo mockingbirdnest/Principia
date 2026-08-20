@@ -97,9 +97,11 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   // Not serializable.
 
  private:
-  not_null<DiscreteTrajectory<Frame>*> discrete_trajectory_;
+  not_null<DiscreteTrajectory<Frame>*> trajectory_;
   const_iterator begin_;
   const_iterator end_;
+  Instant t_min;
+  Instant t_max;
 };
 
 }  // namespace internal

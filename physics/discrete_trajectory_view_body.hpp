@@ -24,41 +24,41 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
     DiscreteTrajectory<Frame> const& trajectory,
     const_iterator const begin,
     const_iterator const end)
-    : segments_(make_not_null_unique<Segments>(1)) {
-  auto const sit = segments_->begin();
-  auto const self = SegmentIterator(segments_.get(), sit);
-  *sit = DiscreteTrajectorySegment<Frame>(self);
+    : trajectory_(&trajectory), begin_(begin), end_(end) {
+  if (begin_ == trajectory_->end()) {
+    t_min = InfiniteFuture;
+  } else {
+    t_min = begin->time;
+  }
+  if (end_ == trajectory_->begin()) {
+    t_max = InfinitePast;
+  } else {
+    t_max = std::prev(end_)->time;
+  }
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
 DiscreteTrajectoryView<Frame>::front() const {
-  auto const sit = segment_by_left_endpoint_.begin()->second;
-  return *sit->timeline_.begin();
+  return *begin_;
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
 DiscreteTrajectoryView<Frame>::back() const {
-  return *rbegin();
+  return *std::prev(end_);
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::iterator
 DiscreteTrajectoryView<Frame>::begin() const {
-  if (empty()) {
-    return end();
-  } else {
-    auto const sit = segment_by_left_endpoint_.begin()->second;
-    return sit->begin();
-  }
+  return begin_;
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::iterator
 DiscreteTrajectoryView<Frame>::end() const {
-  return iterator::EndOfLastSegment(
-      SegmentIterator(segments_.get(), segments_->end()));
+  return end_;
 }
 
 template<typename Frame>
@@ -75,24 +75,12 @@ DiscreteTrajectoryView<Frame>::rend() const {
 
 template<typename Frame>
 bool DiscreteTrajectoryView<Frame>::empty() const {
-  return segment_by_left_endpoint_.empty();
+  return begin_ == end_;
 }
 
 template<typename Frame>
 std::int64_t DiscreteTrajectoryView<Frame>::size() const {
-  if (empty()) {
-    return 0;
-  }
-  std::int64_t size = 1;
-  std::int64_t nonempty_segments = 0;
-  for (auto const& segment : *segments_) {
-    if (!segment.empty()) {
-      ++nonempty_segments;
-      size += segment.size();
-    }
-  }
-  size -= nonempty_segments;  // The junction points.
-  return size;
+  return std::distance(begin_, end_);
 }
 
 template<typename Frame>
@@ -149,40 +137,30 @@ DiscreteTrajectoryView<Frame>::rsegments() const {
 
 template<typename Frame>
 Instant DiscreteTrajectoryView<Frame>::t_min() const {
-  if (empty()) {
-    return InfiniteFuture;
-  }
-  for (auto sit = segments_->begin();; ++sit) {
-    if (!sit->empty()) {
-      return sit->t_min();
-    }
-  }
+  return t_min_;
 }
 
 template<typename Frame>
 Instant DiscreteTrajectoryView<Frame>::t_max() const {
-  if (empty()) {
-    return InfinitePast;
-  }
-  return segments_->back().t_max();
+  return t_max_;
 }
 
 template<typename Frame>
 Position<Frame> DiscreteTrajectoryView<Frame>::EvaluatePosition(
     Instant const& t) const {
-  return FindSegment(t)->second->EvaluatePosition(t);
+  return trajectory_->EvaluatePosition(t);
 }
 
 template<typename Frame>
 Velocity<Frame> DiscreteTrajectoryView<Frame>::EvaluateVelocity(
     Instant const& t) const {
-  return FindSegment(t)->second->EvaluateVelocity(t);
+  return trajectory_->EvaluateVelocity(t);
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> DiscreteTrajectoryView<Frame>::EvaluateDegreesOfFreedom(
     Instant const& t) const {
-  return FindSegment(t)->second->EvaluateDegreesOfFreedom(t);
+  return trajectory_->EvaluateDegreesOfFreedom(t);
 }
 
 }  // namespace internal
