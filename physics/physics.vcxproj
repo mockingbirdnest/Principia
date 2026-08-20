@@ -36,6 +36,8 @@
     <ClInclude Include="discrete_trajectory_segment_iterator_body.hpp" />
     <ClInclude Include="discrete_trajectory_types.hpp" />
     <ClInclude Include="discrete_trajectory_types_body.hpp" />
+    <ClInclude Include="discrete_trajectory_view.hpp" />
+    <ClInclude Include="discrete_trajectory_view_body.hpp" />
     <ClInclude Include="equipotential.hpp" />
     <ClInclude Include="equipotential_body.hpp" />
     <ClInclude Include="harmonic_damping.hpp" />
