@@ -413,7 +413,6 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
                  trajectory,
                  trajectory.begin(),
                  trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
