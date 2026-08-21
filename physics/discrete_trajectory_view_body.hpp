@@ -84,12 +84,16 @@ DiscreteTrajectoryView<Frame>::rend() const {
 
 template<typename Frame>
 bool DiscreteTrajectoryView<Frame>::empty() const {
-  return begin() == end();
+  return t_max_ < t_min_;
 }
 
 template<typename Frame>
 std::int64_t DiscreteTrajectoryView<Frame>::size() const {
-  return std::distance(begin(), end());
+  if (empty()) {
+    return 0;
+  } else {
+    return std::distance(begin(), end());
+  }
 }
 
 template<typename Frame>
