@@ -23,7 +23,8 @@ using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory;
 
-// A view of a range of a `DiscreteTrajectory`.  This class is copyable.
+// A read-only view of a range of a `DiscreteTrajectory`.  This class is
+// copyable.
 template<typename Frame>
 class DiscreteTrajectoryView : public Trajectory<Frame> {
  public:
