@@ -2,19 +2,25 @@
 
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/space.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
+#include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
 
 namespace principia {
 namespace physics {
-namespace _discrete_trajectory {
+namespace _discrete_trajectory_view {
 namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_iterator;
+using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory;
 
 // A view of a range of a `DiscreteTrajectory`.  This class is copyable.
@@ -29,12 +35,15 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   using reference = value_type const&;
   using reverse_iterator = std::reverse_iterator<iterator>;
 
+  // The `DiscreteTrajectory` passed at construction must outlive this object.
+
   // A convenience constructor for building a view that covers an entire
   // trajectory.
-  explicit DiscreteTrajectoryView(DiscreteTrajectory<Frame> const& trajectory);
+  explicit DiscreteTrajectoryView(
+      not_null<DiscreteTrajectory<Frame> const*> trajectory);
 
   // Constructs a view that covers the range [`begin`, `end`[.
-  DiscreteTrajectoryView(DiscreteTrajectory<Frame> const& trajectory,
+  DiscreteTrajectoryView(not_null<DiscreteTrajectory<Frame> const*> trajectory,
                          const_iterator begin,
                          const_iterator end);
 
@@ -42,7 +51,7 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   // is in the range [`t_min`, `t_max`].  Note that the resulting view `v` has
   // `t_min <= v.t_min()` and `v.t_max() <= t_max`.  It may be empty if there
   // is not point in the given time interval.
-  DiscreteTrajectoryView(DiscreteTrajectory<Frame> const& trajectory,
+  DiscreteTrajectoryView(not_null<DiscreteTrajectory<Frame> const*> trajectory,
                          Instant const& t_min,
                          Instant const& t_max);
 
@@ -79,7 +88,7 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   // Not serializable.
 
  private:
-  not_null<DiscreteTrajectory<Frame>*> trajectory_;
+  not_null<DiscreteTrajectory<Frame> const*> trajectory_;
   const_iterator begin_;
   const_iterator end_;
   Instant t_min_;
@@ -88,9 +97,9 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
 
 }  // namespace internal
 
-using internal::DiscreteTrajectory;
+using internal::DiscreteTrajectoryView;
 
-}  // namespace _discrete_trajectory
+}  // namespace _discrete_trajectory_view
 }  // namespace physics
 }  // namespace principia
 

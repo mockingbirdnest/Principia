@@ -8,23 +8,24 @@
 
 namespace principia {
 namespace physics {
-namespace _discrete_trajectory {
+namespace _discrete_trajectory_view {
 namespace internal {
 
 using namespace principia::geometry::_instant;
 
 template<typename Frame>
 DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
-    DiscreteTrajectory<Frame> const& trajectory)
-    : DiscreteTrajectoryView(trajectory, trajectory.begin(), trajectory.end()) {
-}
+    not_null<DiscreteTrajectory<Frame> const*> const trajectory)
+    : DiscreteTrajectoryView(trajectory,
+                             trajectory->begin(),
+                             trajectory->end()) {}
 
 template<typename Frame>
 DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
-    DiscreteTrajectory<Frame> const& trajectory,
+    not_null<DiscreteTrajectory<Frame> const*> const trajectory,
     const_iterator const begin,
     const_iterator const end)
-    : trajectory_(&trajectory), begin_(begin), end_(end) {
+    : trajectory_(trajectory), begin_(begin), end_(end) {
   if (begin_ == trajectory_->end()) {
     t_min_ = InfiniteFuture;
   } else {
@@ -35,16 +36,20 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
   } else {
     t_max_ = std::prev(end_)->time;
   }
+  if (t_max_ < t_min_) {
+    t_min_ = InfiniteFuture;
+    t_max_ = InfinitePast;
+  }
 }
 
 template<typename Frame>
 DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
-    DiscreteTrajectory<Frame> const& trajectory,
+    not_null<DiscreteTrajectory<Frame> const*> const trajectory,
     Instant const& t_min,
     Instant const& t_max)
     : DiscreteTrajectoryView(trajectory,
-                             trajectory.lower_bound(t_min),
-                             trajectory.upper_bound(t_max)) {}
+                             trajectory->lower_bound(t_min),
+                             trajectory->upper_bound(t_max)) {}
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
@@ -161,6 +166,6 @@ DegreesOfFreedom<Frame> DiscreteTrajectoryView<Frame>::EvaluateDegreesOfFreedom(
 }
 
 }  // namespace internal
-}  // namespace _discrete_trajectory
+}  // namespace _discrete_trajectory_view
 }  // namespace physics
 }  // namespace principia
