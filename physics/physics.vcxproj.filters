@@ -370,5 +370,8 @@
     <ClCompile Include="lagrange_equipotentials_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="discrete_trajectory_view_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

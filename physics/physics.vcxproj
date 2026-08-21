@@ -112,6 +112,7 @@
     <ClCompile Include="discrete_trajectory_segment_iterator_test.cpp" />
     <ClCompile Include="discrete_trajectory_segment_test.cpp" />
     <ClCompile Include="discrete_trajectory_test.cpp" />
+    <ClCompile Include="discrete_trajectory_view_test.cpp" />
     <ClCompile Include="equipotential_test.cpp" />
     <ClCompile Include="harmonic_damping_test.cpp" />
     <ClCompile Include="lagrange_equipotentials_test.cpp" />
