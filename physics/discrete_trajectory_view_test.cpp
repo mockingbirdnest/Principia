@@ -90,7 +90,7 @@ class DiscreteTrajectoryViewTest : public ::testing::Test {
   Instant const t0_;
 };
 
-TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireTrajectory) {
+TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireNonemptyTrajectory) {
   auto const trajectory = MakeTrajectory();
   DiscreteTrajectoryView<World> view(&trajectory);
 
@@ -128,6 +128,24 @@ TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireTrajectory) {
             view.EvaluateVelocity(t0_ + 6.3 * Second));
   EXPECT_EQ(trajectory.EvaluateDegreesOfFreedom(t0_ + 6.4 * Second),
             view.EvaluateDegreesOfFreedom(t0_ + 6.4 * Second));
+}
+
+TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireEmptyTrajectory) {
+  DiscreteTrajectory<World> trajectory;
+  DiscreteTrajectoryView<World> view(&trajectory);
+
+  EXPECT_EQ(trajectory.begin(), view.begin());
+  EXPECT_EQ(trajectory.end(), view.end());
+
+  EXPECT_TRUE(view.empty());
+  EXPECT_EQ(0, view.size());
+
+  EXPECT_EQ(view.end(), view.find(t0_ + 6 * Second));
+  EXPECT_EQ(view.end(), view.lower_bound(t0_ + 6 * Second));
+  EXPECT_EQ(view.end(), view.upper_bound(t0_ + 6 * Second));
+
+  EXPECT_EQ(InfiniteFuture, view.t_min());
+  EXPECT_EQ(InfinitePast, view.t_max());
 }
 
 TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByIteratorsNonempty) {
@@ -170,12 +188,11 @@ TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByIteratorsNonempty) {
 
 TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByIteratorsEmpty) {
   auto const trajectory = MakeTrajectory();
-  auto const it1 = std::prev(trajectory.end());
-  auto const it2 = std::next(trajectory.begin());
-  DiscreteTrajectoryView<World> view(&trajectory, it1, it2);
+  auto const it = std::next(trajectory.begin());
+  DiscreteTrajectoryView<World> view(&trajectory, it, it);
 
-  EXPECT_EQ(it1, view.begin());
-  EXPECT_EQ(it2, view.end());
+  EXPECT_EQ(it, view.begin());
+  EXPECT_EQ(it, view.end());
 
   EXPECT_TRUE(view.empty());
   EXPECT_EQ(0, view.size());
@@ -226,9 +243,9 @@ TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesNonempty) {
 TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesEmpty) {
   auto const trajectory = MakeTrajectory();
   DiscreteTrajectoryView<World> view(
-      &trajectory, t0_ + 13 * Second, t0_ + 3.1 * Second);
+      &trajectory, t0_ + 3.1 * Second, t0_ + 3.2 * Second);
 
-  EXPECT_EQ(trajectory.find(t0_ + 13 * Second), view.begin());
+  EXPECT_EQ(trajectory.find(t0_ + 4 * Second), view.begin());
   EXPECT_EQ(trajectory.find(t0_ + 4 * Second), view.end());
 
   EXPECT_TRUE(view.empty());
