@@ -54,12 +54,14 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
 DiscreteTrajectoryView<Frame>::front() const {
+  CHECK(!empty());
   return *begin_;
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
 DiscreteTrajectoryView<Frame>::back() const {
+  CHECK(!empty());
   return *std::prev(end_);
 }
 
@@ -78,13 +80,13 @@ DiscreteTrajectoryView<Frame>::end() const {
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reverse_iterator
 DiscreteTrajectoryView<Frame>::rbegin() const {
-  return reverse_iterator(end());
+  return reverse_iterator(end_);
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reverse_iterator
 DiscreteTrajectoryView<Frame>::rend() const {
-  return reverse_iterator(begin());
+  return reverse_iterator(begin_);
 }
 
 template<typename Frame>
@@ -97,7 +99,7 @@ std::int64_t DiscreteTrajectoryView<Frame>::size() const {
   if (empty()) {
     return 0;
   } else {
-    return std::distance(begin(), end());
+    return std::distance(begin_, end_);
   }
 }
 
@@ -107,27 +109,33 @@ DiscreteTrajectoryView<Frame>::find(Instant const& t) const {
   if (t_min_ <= t && t <= t_max_) {
     return trajectory_->find(t);
   } else {
-    return end();
+    return end_;
   }
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::iterator
 DiscreteTrajectoryView<Frame>::lower_bound(Instant const& t) const {
-  if (t <= t_max_) {
-    return trajectory_->lower_bound(t);
+  // The order of the tests is important to return `end_` for empty views.
+  if (t_max_ < t) {
+    return end_;
+  } else if (t <= t_min_) {
+    return begin_;
   } else {
-    return end();
+    return trajectory_->lower_bound(t);
   }
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::iterator
 DiscreteTrajectoryView<Frame>::upper_bound(Instant const& t) const {
-  if (t < t_max_) {
-    return trajectory_->upper_bound(t);
+  // The order of the tests is important to return `end_` for empty views.
+  if (t_max_ <= t) {
+    return end_;
+  } else if (t < t_min_) {
+    return begin_;
   } else {
-    return end();
+    return trajectory_->upper_bound(t);
   }
 }
 
