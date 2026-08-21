@@ -52,14 +52,14 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
 DiscreteTrajectoryView<Frame>::front() const {
-  CHECK(!empty());
+  DCHECK(!empty());
   return *begin_;
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
 DiscreteTrajectoryView<Frame>::back() const {
-  CHECK(!empty());
+  DCHECK(!empty());
   return *std::prev(end_);
 }
 
@@ -94,11 +94,7 @@ bool DiscreteTrajectoryView<Frame>::empty() const {
 
 template<typename Frame>
 std::int64_t DiscreteTrajectoryView<Frame>::size() const {
-  if (empty()) {
-    return 0;
-  } else {
-    return std::distance(begin_, end_);
-  }
+  return std::distance(begin_, end_);
 }
 
 template<typename Frame>
