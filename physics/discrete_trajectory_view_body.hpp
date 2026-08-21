@@ -26,19 +26,17 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
     const_iterator const begin,
     const_iterator const end)
     : trajectory_(trajectory), begin_(begin), end_(end) {
-  if (begin_ == trajectory_->end()) {
+  if (begin_ == end_) {
     t_min_ = InfiniteFuture;
+    t_max_ = InfinitePast;
   } else {
+    // The only way that `begin_` can be past the end or `end_` at the beginning
+    // is if they are equal.
+    CHECK(begin_ != trajectory_->end());
+    CHECK(end_ != trajectory_->begin());
     t_min_ = begin->time;
-  }
-  if (end_ == trajectory_->begin()) {
-    t_max_ = InfinitePast;
-  } else {
     t_max_ = std::prev(end_)->time;
-  }
-  if (t_max_ < t_min_) {
-    t_min_ = InfiniteFuture;
-    t_max_ = InfinitePast;
+    CHECK_LE(t_min_, t_max_) << "Overempty ranges not supported";
   }
 }
 
