@@ -4,14 +4,10 @@
 
 #include <iterator>
 
-#include "geometry/instant.hpp"
-
 namespace principia {
 namespace physics {
 namespace _discrete_trajectory_view {
 namespace internal {
-
-using namespace principia::geometry::_instant;
 
 template<typename Frame>
 DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
