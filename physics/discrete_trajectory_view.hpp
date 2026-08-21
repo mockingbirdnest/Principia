@@ -55,10 +55,13 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
                                              SegmentIterator,
                                              std::ranges::subrange_kind::sized>;
 
+  explicit DiscreteTrajectoryView(DiscreteTrajectory<Frame> const& trajectory);
   DiscreteTrajectoryView(DiscreteTrajectory<Frame> const& trajectory,
                          const_iterator begin,
                          const_iterator end);
-  //TODO(phl)constructors
+  DiscreteTrajectoryView(DiscreteTrajectory<Frame> const& trajectory,
+                         Instant const& t_min,
+                         Instant const& t_max);
 
   // Copyable.
   DiscreteTrajectoryView(DiscreteTrajectoryView&&) = default;
@@ -83,8 +86,8 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   iterator lower_bound(Instant const& t) const;
   iterator upper_bound(Instant const& t) const;
 
-  SegmentRange segments() const;
-  std::ranges::reverse_view<SegmentRange> rsegments() const;
+  // No `segments` or `rsegments` as that would expose parts of the trajectory
+  // outside of the range of the view.
 
   Instant t_min() const override;
   Instant t_max() const override;
@@ -100,8 +103,8 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   not_null<DiscreteTrajectory<Frame>*> trajectory_;
   const_iterator begin_;
   const_iterator end_;
-  Instant t_min;
-  Instant t_max;
+  Instant t_min_;
+  Instant t_max_;
 };
 
 }  // namespace internal
