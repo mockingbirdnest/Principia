@@ -1,44 +1,23 @@
 #pragma once
 
-#include <iterator>
-#include <list>
-#include <memory>
-#include <ranges>
-#include <vector>
-
-#include "absl/container/btree_map.h"
-#include "absl/status/status.h"
-#include "base/concepts.hpp"
 #include "base/not_null.hpp"
-#include "base/tags.hpp"
 #include "geometry/instant.hpp"
-#include "geometry/space.hpp"
-#include "physics/degrees_of_freedom.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
-#include "physics/discrete_trajectory_segment.hpp"
-#include "physics/discrete_trajectory_segment_iterator.hpp"
-#include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory.hpp"
-#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
 namespace _discrete_trajectory {
 namespace internal {
 
-using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
-using namespace principia::base::_tags;
 using namespace principia::geometry::_instant;
-using namespace principia::geometry::_space;
-using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_iterator;
-using namespace principia::physics::_discrete_trajectory_segment;
-using namespace principia::physics::_discrete_trajectory_segment_iterator;
-using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory;
 
-//TODO(phl)comments
+// A view of a range of a `DiscreteTrajectory`.  This class is copyable.
 template<typename Frame>
 class DiscreteTrajectoryView : public Trajectory<Frame> {
  public:
@@ -49,25 +28,23 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   using const_iterator = DiscreteTrajectoryIterator<Frame>;
   using reference = value_type const&;
   using reverse_iterator = std::reverse_iterator<iterator>;
-  using SegmentIterator = DiscreteTrajectorySegmentIterator<Frame>;
-  using ReverseSegmentIterator = std::reverse_iterator<SegmentIterator>;
-  using SegmentRange = std::ranges::subrange<SegmentIterator,
-                                             SegmentIterator,
-                                             std::ranges::subrange_kind::sized>;
 
+  // A convenience constructor for building a view that covers an entire
+  // trajectory.
   explicit DiscreteTrajectoryView(DiscreteTrajectory<Frame> const& trajectory);
+
+  // Constructs a view that covers the range [`begin`, `end`[.
   DiscreteTrajectoryView(DiscreteTrajectory<Frame> const& trajectory,
                          const_iterator begin,
                          const_iterator end);
+
+  // Constructs a view that covers all the points in the `trajectory` whose time
+  // is in the range [`t_min`, `t_max`].  Note that the resulting view `v` has
+  // `t_min <= v.t_min()` and `v.t_max() <= t_max`.  It may be empty if there
+  // is not point in the given time interval.
   DiscreteTrajectoryView(DiscreteTrajectory<Frame> const& trajectory,
                          Instant const& t_min,
                          Instant const& t_max);
-
-  // Copyable.
-  DiscreteTrajectoryView(DiscreteTrajectoryView&&) = default;
-  DiscreteTrajectoryView& operator=(DiscreteTrajectoryView&&) = default;
-  DiscreteTrajectoryView(const DiscreteTrajectoryView&) = delete;
-  DiscreteTrajectoryView& operator=(const DiscreteTrajectoryView&) = delete;
 
   reference front() const;
   reference back() const;
@@ -89,9 +66,11 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   // No `segments` or `rsegments` as that would expose parts of the trajectory
   // outside of the range of the view.
 
+  // These functions return +∞ and -∞, respectively, for an empty view.
   Instant t_min() const override;
   Instant t_max() const override;
 
+  // `t` must be in the range [`this->t_min()`, `this->t_max()`].
   Position<Frame> EvaluatePosition(Instant const& t) const override;
   Velocity<Frame> EvaluateVelocity(Instant const& t) const override;
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
