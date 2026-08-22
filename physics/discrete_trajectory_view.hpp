@@ -7,7 +7,7 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
-#include "physics/trajectory.hpp"
+#include "physics/trajectory_view.hpp"
 
 namespace principia {
 namespace physics {
@@ -21,12 +21,12 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
-using namespace principia::physics::_trajectory;
+using namespace principia::physics::_trajectory_view;
 
 // A read-only view of a range of a `DiscreteTrajectory`.  This class is
 // copyable.
 template<typename Frame>
-class DiscreteTrajectoryView : public Trajectory<Frame> {
+class DiscreteTrajectoryView : public TrajectoryView<Frame> {
  public:
   using key_type = typename Timeline<Frame>::key_type;
   using value_type = typename Timeline<Frame>::value_type;
@@ -52,6 +52,7 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   // is in the range [`t_min`, `t_max`].  Note that the resulting view `v` has
   // `t_min <= v.t_min()` and `v.t_max() <= t_max`.  It may be empty if there
   // is not point in the given time interval.
+  //TODO(phl)fix
   DiscreteTrajectoryView(not_null<DiscreteTrajectory<Frame> const*> trajectory,
                          Instant const& t_min,
                          Instant const& t_max);
@@ -65,7 +66,6 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   reverse_iterator rbegin() const;
   reverse_iterator rend() const;
 
-  bool empty() const;
   std::int64_t size() const;
 
   iterator find(Instant const& t) const;
@@ -76,24 +76,20 @@ class DiscreteTrajectoryView : public Trajectory<Frame> {
   // No `segments` or `rsegments` as that would expose parts of the trajectory
   // outside of the range of the view.
 
-  // These functions return +∞ and -∞, respectively, for an empty view.
-  Instant t_min() const override;
-  Instant t_max() const override;
-
-  // `t` must be in the range [`this->t_min()`, `this->t_max()`].
-  Position<Frame> EvaluatePosition(Instant const& t) const override;
-  Velocity<Frame> EvaluateVelocity(Instant const& t) const override;
-  DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
-      Instant const& t) const override;
-
   // Not serializable.
 
  private:
-  not_null<DiscreteTrajectory<Frame> const*> trajectory_;
+  DiscreteTrajectory<Frame> const& trajectory() const;
+
+  static Instant TrajectoryViewTMin(DiscreteTrajectory<Frame> const& trajectory,
+                                    const_iterator const begin,
+                                    const_iterator const end);
+  static Instant TrajectoryViewTMax(DiscreteTrajectory<Frame> const& trajectory,
+                                    const_iterator const begin,
+                                    const_iterator const end);
+
   const_iterator begin_;
   const_iterator end_;
-  Instant t_min_;
-  Instant t_max_;
 };
 
 }  // namespace internal

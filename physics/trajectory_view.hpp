@@ -49,6 +49,9 @@ class TrajectoryView : public Trajectory<Frame> {
 
   // Not serializable.
 
+ protected:
+  Trajectory<Frame> const& trajectory() const;
+
  private:
   not_null<Trajectory<Frame> const*> trajectory_;
   Instant t_min_;

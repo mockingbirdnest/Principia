@@ -66,6 +66,11 @@ DegreesOfFreedom<Frame> TrajectoryView<Frame>::EvaluateDegreesOfFreedom(
   return trajectory_->EvaluateDegreesOfFreedom(t);
 }
 
+template<typename Frame>
+Trajectory<Frame> const& TrajectoryView<Frame>::trajectory() const {
+  return *trajectory_;
+}
+
 }  // namespace internal
 }  // namespace _trajectory_view
 }  // namespace physics
