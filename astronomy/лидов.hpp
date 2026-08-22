@@ -1,6 +1,9 @@
 #pragma once
 
+#include <cstdint>
+
 #include "absl/log/log.h"
+#include "astronomy/orbital_elements.hpp"
 #include "geometry/interval.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
@@ -13,11 +16,30 @@ namespace astronomy {
 namespace _лидов {
 namespace internal {
 
+using namespace principia::astronomy::_orbital_elements;
 using namespace principia::geometry::_interval;
+using namespace principia::graphics::_graph;
+using namespace principia::graphics::_colours;
 using namespace principia::journal::_method;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+
+enum class ЛидовGrid {
+  None,
+  MaxEccentricityMinInclination,
+  MinEccentricityMaxInclination,
+};
+
+Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
+                                 std::int64_t width,
+                                 std::int64_t height,
+                                 RGBA32 background,
+                                 RGB24 region_boundary_colour,
+                                 RGB24 inclination_colour,
+                                 RGB24 eccentricity_colour,
+                                 RGB24 лидов_parameter_colour,
+                                 ЛидовGrid grid);
 
 // All functions in this file refer to an orbit perturbed as in the analysis of
 // [Лид61].  The parameters c₁ and c₂ are as defined there.
@@ -41,7 +63,7 @@ inline double ЛидовMaximalEccentricityLine(double const e, double const c�
 // Returns the range of values of c₂ such that there exists a c₁ such that the
 // upper bound of eccentricity for an orbit with these values of c₁ and c₂
 // is e.
-Interval<double> ЛидовMaximalEccentricityLineC₂Range(double const e) {
+inline Interval<double> ЛидовMaximalEccentricityLineC₂Range(double const e) {
   double const e² = Pow<2>(e);
   double const e⁴ = Pow<4>(e);
   return {-3.0 * e⁴ / 5.0, 2.0 * e² / 5.0};
@@ -60,7 +82,7 @@ inline double ЛидовMaximalInclinationLine(Angle const i, double const c₂)
 // Returns the range of values of c₂ such that there exists a c₁ such that the
 // upper bound of inclination for an orbit with these values of c₁ and c₂
 // is i.
-Interval<double> ЛидовMaximalInclinationLineC₂Range(Angle const i) {
+inline Interval<double> ЛидовMaximalInclinationLineC₂Range(Angle const i) {
   double const cos_i = Cos(i);
   return {i > i_critical ? -Pow<2>(1.0 - 5.0 * Cos(2.0 * i)) / 60.0 : 0,
           2.0 / 5.0};
@@ -77,7 +99,7 @@ inline double ЛидовMinimalInclinationLine(Angle const i, double const c₂)
 // Returns the range of values of c₂ such that there exists a c₁ such that the
 // lower bound of inclination for an orbit with these values of c₁ and c₂
 // is i.
-Interval<double> ЛидовMinimalInclinationLineC₂Range(Angle const i) {
+inline Interval<double> ЛидовMinimalInclinationLineC₂Range(Angle const i) {
   double const cos_i = Cos(i);
   double const cos²_i = Pow<2>(cos_i);
   return i > i_critical
@@ -88,7 +110,8 @@ Interval<double> ЛидовMinimalInclinationLineC₂Range(Angle const i) {
 
 // Returns the value of c₁ such that the lower bound of eccentricity for an
 // orbit with these values of c₁ and c₂ is e.
-double ЛидовMinimalEccentricityLeftLine(double const e, double const c₂) {
+inline double ЛидовMinimalEccentricityLeftLine(double const e,
+                                               double const c₂) {
   double const e² = Pow<2>(e);
   return 3.0 / 5.0 - c₂ + c₂ / e² - 3.0 * e² / 5.0;
 }
@@ -96,7 +119,8 @@ double ЛидовMinimalEccentricityLeftLine(double const e, double const c₂) 
 // Returns the range of negative values of c₂ such that there exists a c₁ such
 // that the lower bound of eccentricity for an orbit with these values of c₁
 // and c₂ is e.
-Interval<double> ЛидовMinimalEccentricityLeftLineC₂Range(double const e) {
+inline Interval<double> ЛидовMinimalEccentricityLeftLineC₂Range(
+    double const e) {
   double const e² = Pow<2>(e);
   double const e⁴ = Pow<4>(e);
   return {-3.0 * e² / 5.0, -3.0 * e⁴ / 5.0};
@@ -119,6 +143,8 @@ inline double ЛидовMinimalEccentricityRightLineC₁Max(double const e) {
 }  // namespace internal
 
 using internal::ЛидовFrozenLine;
+using internal::ЛидовGraph;
+using internal::ЛидовGrid;
 using internal::ЛидовMaximalEccentricityLine;
 using internal::ЛидовMaximalEccentricityLineC₂Range;
 using internal::ЛидовMaximalInclinationLine;

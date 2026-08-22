@@ -10,6 +10,7 @@
 #include "astronomy/mercury_orbiter.hpp"
 #include "astronomy/orbital_elements.hpp"
 #include "astronomy/time_scales.hpp"
+#include "astronomy/лидов.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -47,6 +48,7 @@ using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_mercury_orbiter;
 using namespace principia::astronomy::_orbital_elements;
 using namespace principia::astronomy::_time_scales;
+using namespace principia::astronomy::_лидов;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
@@ -234,6 +236,37 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   // elements is as described in [Лид61].
   EXPECT_THAT(c₂.min, IsNear(-0.091_(1)));
   EXPECT_THAT(c₂.max, IsNear(-0.083_(1)));
+
+  EXPECT_GOLDEN_GRAPH(ЛидовGraph(elements,
+                                 /*width=*/200,
+                                 /*height=*/200,
+                                 /*background=*/Opaque(xkcd::black),
+                                 /*region_boundary_colour=*/xkcd::white,
+                                 /*inclination_colour=*/xkcd::lavender,
+                                 /*eccentricity_colour=*/xkcd::cornflower,
+                                 /*лидов_parameter_colour=*/xkcd::rose_red,
+                                 ЛидовGrid::None),
+                      "mercury_orbiter_лидов_no_grid");
+  EXPECT_GOLDEN_GRAPH(ЛидовGraph(elements,
+                                 /*width=*/200,
+                                 /*height=*/200,
+                                 /*background=*/Opaque(xkcd::black),
+                                 /*region_boundary_colour=*/xkcd::white,
+                                 /*inclination_colour=*/xkcd::lavender,
+                                 /*eccentricity_colour=*/xkcd::cornflower,
+                                 /*лидов_parameter_colour=*/xkcd::rose_red,
+                                 ЛидовGrid::MaxEccentricityMinInclination),
+                      "mercury_orbiter_лидов_max_e_min_i");
+  EXPECT_GOLDEN_GRAPH(ЛидовGraph(elements,
+                                 /*width=*/200,
+                                 /*height=*/200,
+                                 /*background=*/Opaque(xkcd::black),
+                                 /*region_boundary_colour=*/xkcd::white,
+                                 /*inclination_colour=*/xkcd::lavender,
+                                 /*eccentricity_colour=*/xkcd::cornflower,
+                                 /*лидов_parameter_colour=*/xkcd::rose_red,
+                                 ЛидовGrid::MinEccentricityMaxInclination),
+                      "mercury_orbiter_лидов_min_e_max_i");
 
   // TODO(egg): The above are integrals of motion only when averaging over an
   // orbit of the perturbing body (so here, over the orbit of Mercury); see what
