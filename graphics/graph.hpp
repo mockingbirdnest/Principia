@@ -26,6 +26,14 @@ concept graph_point =
 template<affine Abscissa, affine Ordinate>
 class Graph {
  public:
+  // A pixel centred at coordinates that lie in the product of closed intervals
+  // `x_range` × `y_range` lies entirely within the image.  In particular, the
+  // border of `x_range` × `y_range` can be plotted using the pixels on the edge
+  // of the image.  This means that the image overhangs `x_range` × `y_range` by
+  // half a pixel in all directions.
+  // abscissa: x_range.min              ...              x_range.max
+  //          |_____↓_____|___________| ... |___________|_____↓_____|
+  // pixel:         0           1             width - 2   width - 1
   Graph(std::int64_t width,
         std::int64_t height,
         Interval<Abscissa> const& x_range,
@@ -63,8 +71,8 @@ class Graph {
 
   std::int64_t const width_;
   std::int64_t const height_;
-  Difference<Abscissa> const pixel_width_ = x_range_.measure() / width_;
-  Difference<Ordinate> const pixel_height_ = y_range_.measure() / height_;
+  Difference<Abscissa> const pixel_width_ = x_range_.measure() / (width_ - 1);
+  Difference<Ordinate> const pixel_height_ = y_range_.measure() / (height_ - 1);
   Inverse<Difference<Abscissa>> const inverse_pixel_width_ = 1 / pixel_width_;
   Inverse<Difference<Ordinate>> const inverse_pixel_height_ = 1 / pixel_height_;
   std::vector<RGBA32> pixels_;
