@@ -100,20 +100,22 @@ std::int64_t Graph<Abscissa, Ordinate>::height() const {
 template<affine Abscissa, affine Ordinate>
 std::int64_t Graph<Abscissa, Ordinate>::abscissa_to_pixel(
     Abscissa const x) const {
-  return static_cast<std::int64_t>((x - x_range_.min) * inverse_pixel_width_);
+  return static_cast<std::int64_t>((x - x_range_.min) * inverse_pixel_width_ +
+                                   0.5);
 }
 
 template<affine Abscissa, affine Ordinate>
 Interval<Abscissa> Graph<Abscissa, Ordinate>::pixel_to_abscissa(
     std::int64_t i) const {
-  return {i * pixel_width_ + x_range_.min,
-          (i + 1) * pixel_width_ + x_range_.min};
+  return {(i - 0.5) * pixel_width_ + x_range_.min,
+          (i + 0.5) * pixel_width_ + x_range_.min};
 }
 
 template<affine Abscissa, affine Ordinate>
 std::int64_t Graph<Abscissa, Ordinate>::ordinate_to_pixel(
     Ordinate const y) const {
-  return static_cast<std::int64_t>((y_range_.max - y) * inverse_pixel_height_);
+  return static_cast<std::int64_t>((y_range_.max - y) * inverse_pixel_height_ +
+                                   0.5);
 }
 
 template<affine Abscissa, affine Ordinate>
