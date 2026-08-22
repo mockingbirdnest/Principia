@@ -23,6 +23,19 @@ using namespace principia::quantities::_si;
 
 class GraphTest : public ::testing::Test {};
 
+TEST_F(GraphTest, Frame) {
+  Graph<Angle, double> graph(std::round(100 * φ),
+                             100,
+                             {-2 * π * Radian, 2 * π * Radian},
+                             {-1.0, 1.0},
+                             /*background=*/Opaque(xkcd::red));
+  graph.PlotHorizontalLine(-1.0, xkcd::blue);
+  graph.PlotHorizontalLine(1.0, xkcd::blue);
+  graph.PlotVerticalLine(-2 * π * Radian, xkcd::blue);
+  graph.PlotVerticalLine(2 * π * Radian, xkcd::blue);
+  EXPECT_GOLDEN_GRAPH(graph, "frame");
+}
+
 TEST_F(GraphTest, Sinusoid) {
   Graph<Angle, double> graph(std::round(100 * φ),
                              100,
