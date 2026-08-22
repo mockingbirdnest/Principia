@@ -1,4 +1,4 @@
-#include "physics/discrete_trajectory_view.hpp"
+#include "physics/trajectory_view.hpp"
 
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -6,6 +6,7 @@
 #include "gtest/gtest.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/discrete_trajectory_factories.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -18,12 +19,13 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
-using namespace principia::physics::_discrete_trajectory_view;
+using namespace principia::physics::_trajectory;
+using namespace principia::physics::_trajectory_view;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_discrete_trajectory_factories;
 using namespace principia::testing_utilities::_matchers;
 
-class DiscreteTrajectoryViewTest : public ::testing::Test {
+class TrajectoryViewTest : public ::testing::Test {
  protected:
   using World = Frame<serialization::Frame::TestTag,
                       Inertial,
@@ -90,34 +92,11 @@ class DiscreteTrajectoryViewTest : public ::testing::Test {
   Instant const t0_;
 };
 
-TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireNonemptyTrajectory) {
+TEST_F(TrajectoryViewTest, ViewOfEntireNonemptyTrajectory) {
   auto const trajectory = MakeTrajectory();
-  DiscreteTrajectoryView<World> view(&trajectory);
-
-  EXPECT_EQ(trajectory.front().time, view.front().time);
-  EXPECT_EQ(trajectory.front().degrees_of_freedom,
-            view.front().degrees_of_freedom);
-  EXPECT_EQ(trajectory.back().time, view.back().time);
-  EXPECT_EQ(trajectory.back().degrees_of_freedom,
-            view.back().degrees_of_freedom);
-
-  EXPECT_EQ(trajectory.begin(), view.begin());
-  EXPECT_EQ(trajectory.end(), view.end());
-  EXPECT_EQ(trajectory.rbegin(), view.rbegin());
-  EXPECT_EQ(trajectory.rend(), view.rend());
+  TrajectoryView<World> view(&trajectory);
 
   EXPECT_FALSE(view.empty());
-  EXPECT_EQ(15, view.size());
-
-  EXPECT_EQ(t0_ + 6 * Second, view.find(t0_ + 6 * Second)->time);
-  EXPECT_EQ(t0_ + 6 * Second, view.lower_bound(t0_ + 6 * Second)->time);
-  EXPECT_EQ(t0_ + 7 * Second, view.lower_bound(t0_ + 6.1 * Second)->time);
-  EXPECT_EQ(view.begin(), view.lower_bound(t0_ - 3 * Second));
-  EXPECT_EQ(view.end(), view.lower_bound(t0_ + 14.1 * Second));
-  EXPECT_EQ(t0_ + 7 * Second, view.upper_bound(t0_ + 6 * Second)->time);
-  EXPECT_EQ(t0_ + 7 * Second, view.upper_bound(t0_ + 6.1 * Second)->time);
-  EXPECT_EQ(view.begin(), view.upper_bound(t0_ - 3 * Second));
-  EXPECT_EQ(view.end(), view.upper_bound(t0_ + 14 * Second));
 
   EXPECT_EQ(trajectory.t_min(), view.t_min());
   EXPECT_EQ(trajectory.t_max(), view.t_max());
@@ -130,107 +109,25 @@ TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireNonemptyTrajectory) {
             view.EvaluateDegreesOfFreedom(t0_ + 6.4 * Second));
 }
 
-TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireEmptyTrajectory) {
+TEST_F(TrajectoryViewTest, ViewOfEntireEmptyTrajectory) {
   DiscreteTrajectory<World> trajectory;
-  DiscreteTrajectoryView<World> view(&trajectory);
-
-  EXPECT_EQ(trajectory.begin(), view.begin());
-  EXPECT_EQ(trajectory.end(), view.end());
+  TrajectoryView<World> view(&trajectory);
 
   EXPECT_TRUE(view.empty());
-  EXPECT_EQ(0, view.size());
-
-  EXPECT_EQ(view.end(), view.find(t0_ + 6 * Second));
-  EXPECT_EQ(view.end(), view.lower_bound(t0_ + 6 * Second));
-  EXPECT_EQ(view.end(), view.upper_bound(t0_ + 6 * Second));
 
   EXPECT_EQ(InfiniteFuture, view.t_min());
   EXPECT_EQ(InfinitePast, view.t_max());
 }
 
-TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByIteratorsNonempty) {
+TEST_F(TrajectoryViewTest, ViewDefinedByTimesNonempty) {
   auto const trajectory = MakeTrajectory();
-  auto const it1 = std::next(trajectory.begin());
-  auto const it2 = std::prev(trajectory.end());
-  DiscreteTrajectoryView<World> view(&trajectory, it1, it2);
-
-  EXPECT_EQ(it1->time, view.front().time);
-  EXPECT_EQ(it1->degrees_of_freedom, view.front().degrees_of_freedom);
-  EXPECT_EQ(std::prev(it2)->time, view.back().time);
-  EXPECT_EQ(std::prev(it2)->degrees_of_freedom, view.back().degrees_of_freedom);
-
-  EXPECT_EQ(it1, view.begin());
-  EXPECT_EQ(it2, view.end());
-
-  EXPECT_FALSE(view.empty());
-  EXPECT_EQ(13, view.size());
-
-  EXPECT_EQ(t0_ + 6 * Second, view.find(t0_ + 6 * Second)->time);
-  EXPECT_EQ(t0_ + 6 * Second, view.lower_bound(t0_ + 6 * Second)->time);
-  EXPECT_EQ(t0_ + 7 * Second, view.lower_bound(t0_ + 6.1 * Second)->time);
-  EXPECT_EQ(view.begin(), view.lower_bound(t0_));
-  EXPECT_EQ(view.end(), view.lower_bound(t0_ + 13.1 * Second));
-  EXPECT_EQ(t0_ + 7 * Second, view.upper_bound(t0_ + 6 * Second)->time);
-  EXPECT_EQ(t0_ + 7 * Second, view.upper_bound(t0_ + 6.1 * Second)->time);
-  EXPECT_EQ(view.begin(), view.upper_bound(t0_));
-  EXPECT_EQ(view.end(), view.upper_bound(t0_ + 13 * Second));
-
-  EXPECT_EQ(t0_ + 1 * Second, view.t_min());
-  EXPECT_EQ(t0_ + 13 * Second, view.t_max());
-
-  EXPECT_EQ(trajectory.EvaluatePosition(t0_ + 6.2 * Second),
-            view.EvaluatePosition(t0_ + 6.2 * Second));
-  EXPECT_EQ(trajectory.EvaluateVelocity(t0_ + 6.3 * Second),
-            view.EvaluateVelocity(t0_ + 6.3 * Second));
-  EXPECT_EQ(trajectory.EvaluateDegreesOfFreedom(t0_ + 6.4 * Second),
-            view.EvaluateDegreesOfFreedom(t0_ + 6.4 * Second));
-}
-
-TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByIteratorsEmpty) {
-  auto const trajectory = MakeTrajectory();
-  auto const it = std::next(trajectory.begin());
-  DiscreteTrajectoryView<World> view(&trajectory, it, it);
-
-  EXPECT_EQ(it, view.begin());
-  EXPECT_EQ(it, view.end());
-
-  EXPECT_TRUE(view.empty());
-  EXPECT_EQ(0, view.size());
-
-  EXPECT_EQ(view.end(), view.find(t0_ + 6 * Second));
-  EXPECT_EQ(view.end(), view.lower_bound(t0_ + 6 * Second));
-  EXPECT_EQ(view.end(), view.upper_bound(t0_ + 6 * Second));
-
-  EXPECT_EQ(InfiniteFuture, view.t_min());
-  EXPECT_EQ(InfinitePast, view.t_max());
-}
-
-TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesNonempty) {
-  auto const trajectory = MakeTrajectory();
-  DiscreteTrajectoryView<World> view(
+  TrajectoryView<World> view(
       &trajectory, t0_ + 1.5 * Second, t0_ + 13.2 * Second);
 
-  EXPECT_EQ(t0_ + 2 * Second, view.front().time);
-  EXPECT_EQ(t0_ + 13 * Second, view.back().time);
-
-  EXPECT_EQ(std::next(std::next(trajectory.begin())), view.begin());
-  EXPECT_EQ(std::prev(trajectory.end()), view.end());
-
   EXPECT_FALSE(view.empty());
-  EXPECT_EQ(12, view.size());
 
-  EXPECT_EQ(t0_ + 6 * Second, view.find(t0_ + 6 * Second)->time);
-  EXPECT_EQ(t0_ + 6 * Second, view.lower_bound(t0_ + 6 * Second)->time);
-  EXPECT_EQ(t0_ + 7 * Second, view.lower_bound(t0_ + 6.1 * Second)->time);
-  EXPECT_EQ(view.begin(), view.lower_bound(t0_ + 1 * Second));
-  EXPECT_EQ(view.end(), view.lower_bound(t0_ + 13.1 * Second));
-  EXPECT_EQ(t0_ + 7 * Second, view.upper_bound(t0_ + 6 * Second)->time);
-  EXPECT_EQ(t0_ + 7 * Second, view.upper_bound(t0_ + 6.1 * Second)->time);
-  EXPECT_EQ(view.begin(), view.upper_bound(t0_ + 1.2 * Second));
-  EXPECT_EQ(view.end(), view.upper_bound(t0_ + 13 * Second));
-
-  EXPECT_EQ(t0_ + 2 * Second, view.t_min());
-  EXPECT_EQ(t0_ + 13 * Second, view.t_max());
+  EXPECT_EQ(t0_ + 1.5 * Second, view.t_min());
+  EXPECT_EQ(t0_ + 13.2 * Second, view.t_max());
 
   EXPECT_EQ(trajectory.EvaluatePosition(t0_ + 6.2 * Second),
             view.EvaluatePosition(t0_ + 6.2 * Second));
@@ -240,20 +137,12 @@ TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesNonempty) {
             view.EvaluateDegreesOfFreedom(t0_ + 6.4 * Second));
 }
 
-TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesEmpty) {
+TEST_F(TrajectoryViewTest, ViewDefinedByTimesEmpty) {
   auto const trajectory = MakeTrajectory();
-  DiscreteTrajectoryView<World> view(
-      &trajectory, t0_ + 3.1 * Second, t0_ + 3.2 * Second);
-
-  EXPECT_EQ(trajectory.find(t0_ + 4 * Second), view.begin());
-  EXPECT_EQ(trajectory.find(t0_ + 4 * Second), view.end());
+  TrajectoryView<World> view(
+      &trajectory, t0_ + 3.2 * Second, t0_ + 3.1 * Second);
 
   EXPECT_TRUE(view.empty());
-  EXPECT_EQ(0, view.size());
-
-  EXPECT_EQ(view.end(), view.find(t0_ + 6 * Second));
-  EXPECT_EQ(view.end(), view.lower_bound(t0_ + 6 * Second));
-  EXPECT_EQ(view.end(), view.upper_bound(t0_ + 6 * Second));
 
   EXPECT_EQ(InfiniteFuture, view.t_min());
   EXPECT_EQ(InfinitePast, view.t_max());

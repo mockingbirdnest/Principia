@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iterator>
-
 #include "physics/trajectory_view.hpp"
 
 namespace principia {
