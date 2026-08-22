@@ -49,10 +49,11 @@ class DiscreteTrajectoryView : public TrajectoryView<Frame> {
                          const_iterator end);
 
   // Constructs a view that covers all the points in the `trajectory` whose time
-  // is in the range [`t_min`, `t_max`].  Note that the resulting view `v` has
-  // `t_min <= v.t_min()` and `v.t_max() <= t_max`.  It may be empty if there
-  // is not point in the given time interval.
-  //TODO(phl)fix
+  // is in the interval [`t_min`, `t_max`].  Note that iterating over the
+  // (discrete) points of the trajectory may start with a point above `t_min`
+  // and end with a point below `t_max`.  The view may even be empty if there is
+  // no point in the given time interval.  But it is still possible to evaluate
+  // the degrees of freedom over the entire interval [`t_min`, `t_max`].
   DiscreteTrajectoryView(not_null<DiscreteTrajectory<Frame> const*> trajectory,
                          Instant const& t_min,
                          Instant const& t_max);
@@ -66,6 +67,12 @@ class DiscreteTrajectoryView : public TrajectoryView<Frame> {
   reverse_iterator rbegin() const;
   reverse_iterator rend() const;
 
+  // Beware: `empty()` implies `size() == 0` but not the reverse.  `empty()`
+  // means that there exist no valid times to evaluate the degrees of freedom of
+  // the view.  `size() == 0` means that iterating over the (discrete) points of
+  // the view yields no point.  A trajectory constructed with a time interval
+  // that is between two points of the discrete trajectory is not empty but its
+  // size is 0.
   std::int64_t size() const;
 
   iterator find(Instant const& t) const;

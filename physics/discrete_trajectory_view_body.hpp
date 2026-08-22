@@ -32,9 +32,9 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
     not_null<DiscreteTrajectory<Frame> const*> const trajectory,
     Instant const& t_min,
     Instant const& t_max)
-    : DiscreteTrajectoryView(trajectory,
-                             trajectory->lower_bound(t_min),
-                             trajectory->upper_bound(t_max)) {}
+    : TrajectoryView<Frame>(trajectory, t_min, t_max),
+      begin_(trajectory->lower_bound(t_min)),
+      end_(trajectory->upper_bound(t_max)) {}
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
