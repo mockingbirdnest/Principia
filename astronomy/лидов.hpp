@@ -1,6 +1,9 @@
 #pragma once
 
+#include <cstdint>
+
 #include "absl/log/log.h"
+#include "astronomy/orbital_elements.hpp"
 #include "geometry/interval.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
@@ -13,11 +16,30 @@ namespace astronomy {
 namespace _лидов {
 namespace internal {
 
+using namespace principia::astronomy::_orbital_elements;
 using namespace principia::geometry::_interval;
+using namespace principia::graphics::_graph;
+using namespace principia::graphics::_colours;
 using namespace principia::journal::_method;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
+
+enum class ЛидовGrid {
+  None,
+  MaxEccentricityMinInclination,
+  MinEccentricityMaxInclination,
+};
+
+Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
+                                 std::int64_t width,
+                                 std::int64_t height,
+                                 RGBA32 background,
+                                 RGB24 region_boundary_colour,
+                                 RGB24 inclination_colour,
+                                 RGB24 eccentricity_colour,
+                                 RGB24 лидов_parameter_colour,
+                                 ЛидовGrid grid);
 
 // All functions in this file refer to an orbit perturbed as in the analysis of
 // [Лид61].  The parameters c₁ and c₂ are as defined there.
@@ -119,6 +141,8 @@ inline double ЛидовMinimalEccentricityRightLineC₁Max(double const e) {
 }  // namespace internal
 
 using internal::ЛидовFrozenLine;
+using internal::ЛидовGraph;
+using internal::ЛидовGrid;
 using internal::ЛидовMaximalEccentricityLine;
 using internal::ЛидовMaximalEccentricityLineC₂Range;
 using internal::ЛидовMaximalInclinationLine;
