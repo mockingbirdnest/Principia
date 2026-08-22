@@ -25,7 +25,15 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
                             TrajectoryViewTMin(*trajectory, begin, end),
                             TrajectoryViewTMax(*trajectory, begin, end)),
       begin_(begin),
-      end_(end) {}
+      end_(end) {
+  if (begin_ == end_) {
+    // If the view has no point, make sure that its iterators cannot be
+    // dereferenced, lest they give access to part of the trajectory that's not
+    // covered by the view.
+    begin_ = this->trajectory().end();
+    end_ = this->trajectory().end();
+  }
+}
 
 template<typename Frame>
 DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
@@ -34,7 +42,15 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
     Instant const& t_max)
     : TrajectoryView<Frame>(trajectory, t_min, t_max),
       begin_(trajectory->lower_bound(t_min)),
-      end_(trajectory->upper_bound(t_max)) {}
+      end_(trajectory->upper_bound(t_max)) {
+  if (begin_ == end_) {
+    // If the view has no point, make sure that its iterators cannot be
+    // dereferenced, lest they give access to part of the trajectory that's not
+    // covered by the view.
+    begin_ = this->trajectory().end();
+    end_ = this->trajectory().end();
+  }
+}
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
@@ -98,7 +114,12 @@ DiscreteTrajectoryView<Frame>::lower_bound(Instant const& t) const {
   } else if (t <= this->t_min()) {
     return begin_;
   } else {
-    return trajectory().lower_bound(t);
+    auto const it = trajectory().lower_bound(t);
+    if (it == trajectory().end() || this->t_max() < it->time) {
+      return end_;
+    } else {
+      return it;
+    }
   }
 }
 
@@ -111,7 +132,12 @@ DiscreteTrajectoryView<Frame>::upper_bound(Instant const& t) const {
   } else if (t < this->t_min()) {
     return begin_;
   } else {
-    return trajectory().upper_bound(t);
+    auto const it = trajectory().upper_bound(t);
+    if (it == trajectory().end() || this->t_max() < it->time) {
+      return end_;
+    } else {
+      return it;
+    }
   }
 }
 
