@@ -63,7 +63,7 @@ inline double ЛидовMaximalEccentricityLine(double const e, double const c�
 // Returns the range of values of c₂ such that there exists a c₁ such that the
 // upper bound of eccentricity for an orbit with these values of c₁ and c₂
 // is e.
-Interval<double> ЛидовMaximalEccentricityLineC₂Range(double const e) {
+inline Interval<double> ЛидовMaximalEccentricityLineC₂Range(double const e) {
   double const e² = Pow<2>(e);
   double const e⁴ = Pow<4>(e);
   return {-3.0 * e⁴ / 5.0, 2.0 * e² / 5.0};
@@ -82,7 +82,7 @@ inline double ЛидовMaximalInclinationLine(Angle const i, double const c₂)
 // Returns the range of values of c₂ such that there exists a c₁ such that the
 // upper bound of inclination for an orbit with these values of c₁ and c₂
 // is i.
-Interval<double> ЛидовMaximalInclinationLineC₂Range(Angle const i) {
+inline Interval<double> ЛидовMaximalInclinationLineC₂Range(Angle const i) {
   double const cos_i = Cos(i);
   return {i > i_critical ? -Pow<2>(1.0 - 5.0 * Cos(2.0 * i)) / 60.0 : 0,
           2.0 / 5.0};
@@ -99,7 +99,7 @@ inline double ЛидовMinimalInclinationLine(Angle const i, double const c₂)
 // Returns the range of values of c₂ such that there exists a c₁ such that the
 // lower bound of inclination for an orbit with these values of c₁ and c₂
 // is i.
-Interval<double> ЛидовMinimalInclinationLineC₂Range(Angle const i) {
+inline Interval<double> ЛидовMinimalInclinationLineC₂Range(Angle const i) {
   double const cos_i = Cos(i);
   double const cos²_i = Pow<2>(cos_i);
   return i > i_critical
@@ -110,7 +110,8 @@ Interval<double> ЛидовMinimalInclinationLineC₂Range(Angle const i) {
 
 // Returns the value of c₁ such that the lower bound of eccentricity for an
 // orbit with these values of c₁ and c₂ is e.
-double ЛидовMinimalEccentricityLeftLine(double const e, double const c₂) {
+inline double ЛидовMinimalEccentricityLeftLine(double const e,
+                                               double const c₂) {
   double const e² = Pow<2>(e);
   return 3.0 / 5.0 - c₂ + c₂ / e² - 3.0 * e² / 5.0;
 }
@@ -118,7 +119,8 @@ double ЛидовMinimalEccentricityLeftLine(double const e, double const c₂) 
 // Returns the range of negative values of c₂ such that there exists a c₁ such
 // that the lower bound of eccentricity for an orbit with these values of c₁
 // and c₂ is e.
-Interval<double> ЛидовMinimalEccentricityLeftLineC₂Range(double const e) {
+inline Interval<double> ЛидовMinimalEccentricityLeftLineC₂Range(
+    double const e) {
   double const e² = Pow<2>(e);
   double const e⁴ = Pow<4>(e);
   return {-3.0 * e² / 5.0, -3.0 * e⁴ / 5.0};

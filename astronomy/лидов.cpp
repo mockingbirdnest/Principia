@@ -89,6 +89,7 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
                 return std::pair{c₂, c₁};
               }),
       лидов_parameter_colour);
+  return graph;
 }
 
 }  // namespace internal
