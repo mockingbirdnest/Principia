@@ -4,12 +4,14 @@
 
 #include "absl/log/log.h"
 #include "astronomy/лидов.hpp"
+#include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 
 namespace principia {
 namespace interface {
 
 using namespace principia::astronomy::_лидов;
+using namespace principia::journal::_method;
 
 double __cdecl principia__GraphLidovFrozenLine(double const c₂) {
   journal::Method<journal::GraphLidovFrozenLine> m({c₂});
