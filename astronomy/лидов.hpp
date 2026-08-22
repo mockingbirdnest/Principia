@@ -5,8 +5,8 @@
 #include "absl/log/log.h"
 #include "astronomy/orbital_elements.hpp"
 #include "geometry/interval.hpp"
-#include "journal/method.hpp"
-#include "journal/profiles.hpp"  // 🧙 For generated profiles.
+#include "graphics/colours.hpp"
+#include "graphics/graph.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -18,9 +18,8 @@ namespace internal {
 
 using namespace principia::astronomy::_orbital_elements;
 using namespace principia::geometry::_interval;
-using namespace principia::graphics::_graph;
 using namespace principia::graphics::_colours;
-using namespace principia::journal::_method;
+using namespace principia::graphics::_graph;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
