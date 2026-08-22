@@ -92,6 +92,8 @@
     <ClInclude Include="tensors.hpp" />
     <ClInclude Include="trajectory.hpp" />
     <ClInclude Include="clientele.hpp" />
+    <ClInclude Include="trajectory_view.hpp" />
+    <ClInclude Include="trajectory_view_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="analytical_series_test.cpp" />
@@ -127,5 +129,6 @@
     <ClCompile Include="rotating_pulsating_reference_frame_test.cpp" />
     <ClCompile Include="similar_motion_test.cpp" />
     <ClCompile Include="solar_system_test.cpp" />
+    <ClCompile Include="trajectory_view_test.cpp" />
   </ItemGroup>
 </Project>
