@@ -1010,7 +1010,6 @@ void Plugin::ComputeAndRenderApsides(
     Trajectory<Barycentric> const& trajectory,
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end,
-    Instant const& t_max,
     Position<World> const& sun_world_position,
     int const max_points,
     DistinguishedPoints<World>& apoapsides,
@@ -1020,7 +1019,6 @@ void Plugin::ComputeAndRenderApsides(
   ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
                  trajectory,
                  begin, end,
-                 t_max,
                  max_points,
                  barycentric_apoapsides,
                  barycentric_periapsides);
@@ -1058,7 +1056,6 @@ Plugin::ComputeAndRenderFirstCollision(
   ComputeApsides(celestial_trajectory,
                  trajectory,
                  begin, end,
-                 /*t_max=*/InfiniteFuture,
                  max_points,
                  apoapsides,
                  periapsides);
@@ -1113,7 +1110,6 @@ void Plugin::ComputeAndRenderClosestApproaches(
   ComputeApsides(*renderer_->GetTargetVessel().prediction(),
                  trajectory,
                  begin, end,
-                 /*t_max=*/InfiniteFuture,
                  max_points,
                  apoapsides,
                  periapsides);
@@ -1129,7 +1125,6 @@ void Plugin::ComputeAndRenderClosestApproaches(
 void Plugin::ComputeAndRenderNodes(
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end,
-    Instant const& t_max,
     Position<World> const& sun_world_position,
     int const max_points,
     std::vector<Renderer::Node>& ascending,
@@ -1160,7 +1155,6 @@ void Plugin::ComputeAndRenderNodes(
   ComputeNodes(trajectory_in_plotting,
                trajectory_in_plotting.begin(),
                trajectory_in_plotting.end(),
-               t_max,
                Vector<double, Navigation>({0, 0, 1}),
                max_points,
                plotting_ascending,

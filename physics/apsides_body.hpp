@@ -58,7 +58,6 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     Trajectory<Frame> const& trajectory,
                     typename DiscreteTrajectory<Frame>::iterator const begin,
                     typename DiscreteTrajectory<Frame>::iterator const end,
-                    Instant const& t_max,
                     int const max_points,
                     DistinguishedPoints<Frame>& apoapsides,
                     DistinguishedPoints<Frame>& periapsides) {
@@ -68,14 +67,14 @@ void ComputeApsides(Trajectory<Frame> const& reference,
   std::optional<Variation<Square<Length>>>
       previous_squared_distance_derivative;
 
-  Instant const effective_t_min = reference.t_min();
-  Instant const effective_t_max = std::min(t_max, reference.t_max());
+  Instant const reference_t_min = reference.t_min();
+  Instant const reference_t_max = reference.t_max();
   for (auto it = begin; it != end; ++it) {
     auto const& [time, degrees_of_freedom] = *it;
-    if (time < effective_t_min) {
+    if (time < reference_t_min) {
       continue;
     }
-    if (time > effective_t_max) {
+    if (time > reference_t_max) {
       break;
     }
     DegreesOfFreedom<Frame> const body_degrees_of_freedom =
@@ -475,7 +474,6 @@ absl::Status ComputeNodes(
     Trajectory<Frame> const& trajectory,
     typename DiscreteTrajectory<Frame>::iterator const begin,
     typename DiscreteTrajectory<Frame>::iterator const end,
-    Instant const& t_max,
     Vector<double, Frame> const& north,
     int const max_points,
     DistinguishedPoints<Frame>& ascending,
@@ -494,9 +492,6 @@ absl::Status ComputeNodes(
   for (auto it = begin; it != end; ++it) {
     RETURN_IF_STOPPED;
     auto const& [time, degrees_of_freedom] = *it;
-    if (time > t_max) {
-      break;
-    }
     Length const z =
         (degrees_of_freedom.position() - Frame::origin).coordinates().z;
     Speed const z_speed = degrees_of_freedom.velocity().coordinates().z;
