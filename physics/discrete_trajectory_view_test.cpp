@@ -1,5 +1,7 @@
 #include "physics/discrete_trajectory_view.hpp"
 
+#include <ranges>
+
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -268,6 +270,12 @@ TEST_F(DiscreteTrajectoryViewTest, Deduction) {
   EXPECT_EQ(15, view1.size());
   EXPECT_EQ(15, view2.size());
   EXPECT_EQ(15, view3.size());
+}
+
+TEST_F(DiscreteTrajectoryViewTest, Ranges) {
+  auto const trajectory = MakeTrajectory();
+  // Check that this compiles.
+  auto it = std::ranges::begin(DiscreteTrajectoryView(&trajectory));
 }
 
 }  // namespace physics

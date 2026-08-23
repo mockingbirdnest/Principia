@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ranges>
+
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -123,4 +125,14 @@ using internal::DiscreteTrajectoryView;
 }  // namespace physics
 }  // namespace principia
 
+namespace std {
+namespace ranges {
+template<class Frame>
+inline constexpr bool enable_borrowed_range<
+    principia::physics::_discrete_trajectory_view::DiscreteTrajectoryView<
+        Frame>> = true;
+}  // namespace ranges
+}  // namespace std
+
 #include "physics/discrete_trajectory_view_body.hpp"
+
