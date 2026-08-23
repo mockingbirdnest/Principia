@@ -127,7 +127,7 @@ using internal::DiscreteTrajectoryView;
 
 namespace std {
 namespace ranges {
-template<class Frame>
+template<typename Frame>
 inline constexpr bool enable_borrowed_range<
     principia::physics::_discrete_trajectory_view::DiscreteTrajectoryView<
         Frame>> = true;
@@ -135,4 +135,3 @@ inline constexpr bool enable_borrowed_range<
 }  // namespace std
 
 #include "physics/discrete_trajectory_view_body.hpp"
-
