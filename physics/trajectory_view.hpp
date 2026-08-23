@@ -58,6 +58,13 @@ class TrajectoryView : public Trajectory<Frame> {
   Instant t_max_;
 };
 
+template<typename Frame>
+TrajectoryView(Trajectory<Frame> const*) -> TrajectoryView<Frame>;
+
+template<typename Frame>
+TrajectoryView(Trajectory<Frame> const*, Instant const&, Instant const&)
+    -> TrajectoryView<Frame>;
+
 }  // namespace internal
 
 using internal::TrajectoryView;

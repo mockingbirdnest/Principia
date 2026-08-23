@@ -99,6 +99,22 @@ class DiscreteTrajectoryView : public TrajectoryView<Frame> {
   const_iterator end_;
 };
 
+template<typename Frame>
+DiscreteTrajectoryView(DiscreteTrajectory<Frame> const*)
+    -> DiscreteTrajectoryView<Frame>;
+
+template<typename Frame>
+DiscreteTrajectoryView(DiscreteTrajectory<Frame> const*,
+                       typename DiscreteTrajectoryView<Frame>::const_iterator,
+                       typename DiscreteTrajectoryView<Frame>::const_iterator)
+    -> DiscreteTrajectoryView<Frame>;
+
+template<typename Frame>
+DiscreteTrajectoryView(DiscreteTrajectory<Frame> const*,
+                       Instant const&,
+                       Instant const&)
+    -> DiscreteTrajectoryView<Frame>;
+
 }  // namespace internal
 
 using internal::DiscreteTrajectoryView;

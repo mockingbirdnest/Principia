@@ -92,7 +92,7 @@ class DiscreteTrajectoryViewTest : public ::testing::Test {
 
 TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireNonemptyTrajectory) {
   auto const trajectory = MakeTrajectory();
-  DiscreteTrajectoryView<World> view(&trajectory);
+  DiscreteTrajectoryView<World> const view(&trajectory);
 
   EXPECT_EQ(trajectory.front().time, view.front().time);
   EXPECT_EQ(trajectory.front().degrees_of_freedom,
@@ -128,7 +128,7 @@ TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireNonemptyTrajectory) {
 
 TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireEmptyTrajectory) {
   DiscreteTrajectory<World> trajectory;
-  DiscreteTrajectoryView<World> view(&trajectory);
+  DiscreteTrajectoryView<World> const view(&trajectory);
 
   EXPECT_EQ(trajectory.begin(), view.begin());
   EXPECT_EQ(trajectory.end(), view.end());
@@ -177,7 +177,7 @@ TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByIteratorsNonempty) {
 TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByIteratorsEmpty) {
   auto const trajectory = MakeTrajectory();
   auto const it = std::next(trajectory.begin());
-  DiscreteTrajectoryView<World> view(&trajectory, it, it);
+  DiscreteTrajectoryView<World> const view(&trajectory, it, it);
 
   EXPECT_EQ(trajectory.end(), view.begin());
   EXPECT_EQ(trajectory.end(), view.end());
@@ -191,7 +191,7 @@ TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByIteratorsEmpty) {
 
 TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesNonempty) {
   auto const trajectory = MakeTrajectory();
-  DiscreteTrajectoryView<World> view(
+  DiscreteTrajectoryView<World> const view(
       &trajectory, t0_ + 1.5 * Second, t0_ + 13.2 * Second);
 
   EXPECT_EQ(t0_ + 2 * Second, view.front().time);
@@ -222,7 +222,7 @@ TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesNonempty) {
 
 TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesNonemptySize0) {
   auto const trajectory = MakeTrajectory();
-  DiscreteTrajectoryView<World> view(
+  DiscreteTrajectoryView<World> const view(
       &trajectory, t0_ + 1.5 * Second, t0_ + 1.8 * Second);
 
   EXPECT_EQ(trajectory.end(), view.begin());
@@ -245,7 +245,7 @@ TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesNonemptySize0) {
 
 TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesEmpty) {
   auto const trajectory = MakeTrajectory();
-  DiscreteTrajectoryView<World> view(
+  DiscreteTrajectoryView<World> const view(
       &trajectory, t0_ + 3.1 * Second, t0_ + 3.6 * Second);
 
   EXPECT_EQ(trajectory.end(), view.begin());
@@ -256,6 +256,18 @@ TEST_F(DiscreteTrajectoryViewTest, ViewDefinedByTimesEmpty) {
   EXPECT_EQ(view.end(), view.find(t0_ + 3.5 * Second));
   EXPECT_EQ(view.end(), view.lower_bound(t0_ + 3.5 * Second));
   EXPECT_EQ(view.end(), view.upper_bound(t0_ + 3.5 * Second));
+}
+
+TEST_F(DiscreteTrajectoryViewTest, Deduction) {
+  auto const trajectory = MakeTrajectory();
+  DiscreteTrajectoryView const view1(&trajectory);
+  DiscreteTrajectoryView const view2(
+      &trajectory, trajectory.begin(), trajectory.end());
+  DiscreteTrajectoryView const view3(&trajectory, t0_, t0_ + 14 * Second);
+
+  EXPECT_EQ(15, view1.size());
+  EXPECT_EQ(15, view2.size());
+  EXPECT_EQ(15, view3.size());
 }
 
 }  // namespace physics
