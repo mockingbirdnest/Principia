@@ -72,7 +72,7 @@ double ЛидовMinimalInclinationLine(Angle i, double c₂);
 // Returns the range of values of c₂ such that there exists a c₁ such that the
 // lower bound of inclination for an orbit with these values of c₁ and c₂
 // is i.
-Interval<double> ЛидовMinimalInclinationLineC₂Range(Angle cnst i);
+Interval<double> ЛидовMinimalInclinationLineC₂Range(Angle i);
 
 // Returns the value of c₁ such that the lower bound of eccentricity for an
 // orbit with these values of c₁ and c₂ is e.
