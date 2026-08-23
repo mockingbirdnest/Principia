@@ -93,7 +93,7 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
 }
 
 
-static const Angle i_critical = ArcCos(Sqrt(3.0 / 5.0));
+Angle const i_critical = ArcCos(Sqrt(3.0 / 5.0));
 
 double ЛидовFrozenLine(double const c₂) {
   CHECK_LE(c₂, 0);
@@ -140,14 +140,12 @@ Interval<double> ЛидовMinimalInclinationLineC₂Range(Angle const i) {
              : Interval<double>{0, cos²_i - 3.0 / 5.0};
 }
 
-double ЛидовMinimalEccentricityLeftLine(double const e,
-                                               double const c₂) {
+double ЛидовMinimalEccentricityLeftLine(double const e, double const c₂) {
   double const e² = Pow<2>(e);
   return 3.0 / 5.0 - c₂ + c₂ / e² - 3.0 * e² / 5.0;
 }
 
-Interval<double> ЛидовMinimalEccentricityLeftLineC₂Range(
-    double const e) {
+Interval<double> ЛидовMinimalEccentricityLeftLineC₂Range(double const e) {
   double const e² = Pow<2>(e);
   double const e⁴ = Pow<4>(e);
   return {-3.0 * e² / 5.0, -3.0 * e⁴ / 5.0};
