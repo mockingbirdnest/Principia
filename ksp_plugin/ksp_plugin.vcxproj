@@ -10,6 +10,7 @@
     <Import Project="..\shared\geometry.vcxitems" Label="Shared" />
     <Import Project="..\shared\journal.vcxitems" Label="Shared" />
     <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
+    <Import Project="..\shared\astronomy.vcxitems" Label="Shared" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

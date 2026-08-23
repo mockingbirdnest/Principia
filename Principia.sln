@@ -668,6 +668,7 @@ Global
 		shared\functions\functions.vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
 		shared\geometry.vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
 		shared\testing_utilities.vcxitems*{9e0ae155-47b1-4090-af00-038af87a876d}*SharedItemsImports = 4
+		shared\astronomy.vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\base.vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\geometry.vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
 		shared\journal.vcxitems*{a3f94607-2666-408f-af98-0e47d61c98bb}*SharedItemsImports = 4
