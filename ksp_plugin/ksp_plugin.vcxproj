@@ -10,6 +10,7 @@
     <Import Project="..\shared\geometry.vcxitems" Label="Shared" />
     <Import Project="..\shared\journal.vcxitems" Label="Shared" />
     <Import Project="..\shared\numerics.vcxitems" Label="Shared" />
+    <Import Project="..\shared\astronomy.vcxitems" Label="Shared" />
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -73,6 +74,7 @@
     <ClCompile Include="identification.cpp" />
     <ClCompile Include="integrators.cpp" />
     <ClCompile Include="interface.cpp" />
+    <ClCompile Include="interface_celestial.cpp" />
     <ClCompile Include="interface_collision.cpp" />
     <ClCompile Include="interface_flight_plan.cpp" />
     <ClCompile Include="interface_future.cpp" />

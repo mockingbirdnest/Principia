@@ -367,7 +367,6 @@ class Plugin {
       Trajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator const& begin,
       DiscreteTrajectory<Barycentric>::iterator const& end,
-      Instant const& t_max,
       Position<World> const& sun_world_position,
       int max_points,
       DistinguishedPoints<World>& apoapsides,
@@ -401,7 +400,6 @@ class Plugin {
   virtual void ComputeAndRenderNodes(
       DiscreteTrajectory<Barycentric>::iterator const& begin,
       DiscreteTrajectory<Barycentric>::iterator const& end,
-      Instant const& t_max,
       Position<World> const& sun_world_position,
       int max_points,
       std::vector<Renderer::Node>& ascending,
@@ -409,6 +407,7 @@ class Plugin {
 
   virtual bool HasCelestial(Index index) const;
   virtual Celestial const& GetCelestial(Index index) const;
+  virtual std::vector<not_null<Celestial const*>> GetAllCelestials() const;
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
   virtual not_null<Vessel*> GetVessel(GUID const& vessel_guid) const;

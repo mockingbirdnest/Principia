@@ -15,5 +15,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)..\astronomy\standard_product_3.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\astronomy\лидов.cpp" />
   </ItemGroup>
 </Project>
