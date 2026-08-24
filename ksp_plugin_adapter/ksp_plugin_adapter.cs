@@ -2487,9 +2487,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             bool is_burn = i % 2 == 1;
             if (is_burn) {
               using (DisposableIterator rendered_manœuvre =
-                         plugin_.FlightPlanRenderedManoeuvre(main_vessel_guid,
-                           sun_world_position,
-                           i)) {
+                     plugin_.FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
+                         main_vessel_guid,
+                         sun_world_position,
+                         i)) {
                 if (rendered_manœuvre.IteratorAtEnd()) {
                   Log.Info("Skipping segment " + i);
                   continue;
