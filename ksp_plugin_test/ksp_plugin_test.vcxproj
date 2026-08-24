@@ -27,6 +27,7 @@
     <ClCompile Include="..\ksp_plugin\identification.cpp" />
     <ClCompile Include="..\ksp_plugin\integrators.cpp" />
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
+    <ClCompile Include="..\ksp_plugin\interface_celestial.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_collision.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_future.cpp" />
