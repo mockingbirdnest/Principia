@@ -956,6 +956,43 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       Log.Warning("No principia state found, creating one");
       ResetPlugin();
     }
+
+    // Check that the user didn't mess with the solar system.
+    var ksp_celestial_names = new SortedSet<string>();
+    var ksp_not_in_principia = new SortedSet<string>();
+    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      ksp_celestial_names.Add(celestial.name);
+      ksp_not_in_principia.Add(celestial.name);
+    }
+    using (DisposableIterator all_celestial_names =
+           plugin_.CelestialGetAllNames()) {
+      var principia_celestial_names = new SortedSet<string>();
+      var principia_not_in_ksp = new SortedSet<string>();
+      for (;
+           !all_celestial_names.IteratorAtEnd();
+           all_celestial_names.IteratorIncrement()) {
+        string celestial_name = all_celestial_names.IteratorGetCelestialName();
+        principia_celestial_names.Add(celestial_name);
+        principia_not_in_ksp.Add(celestial_name);
+      }
+      ksp_not_in_principia.ExceptWith(principia_celestial_names);
+      if (ksp_not_in_principia.Count > 0) {
+        Log.Error("Principia does not know about the following KSP celestial " +
+                  "bodies: " +
+                  string.Join(", ", ksp_not_in_principia.ToArray()));
+      }
+      principia_not_in_ksp.ExceptWith(ksp_celestial_names);
+      if (principia_not_in_ksp.Count > 0) {
+        Log.Error("KSP does not know about the following Principia celestial " +
+                  "bodies: " +
+                  string.Join(", ", principia_not_in_ksp.ToArray()));
+      }
+      if (ksp_not_in_principia.Count > 0 || principia_not_in_ksp.Count > 0) {
+        Log.Fatal("KSP and Principia disagree on the solar system; " +
+                  "you have probably changed the solar system since creating " +
+                  "the Principia save.");
+      }
+    }
   }
 
   #endregion
