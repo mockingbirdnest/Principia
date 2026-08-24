@@ -162,13 +162,10 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
 
   // This reference frame is non-rotating, with its origin at the selenocentre.
   // The axes are those of LunarSurface at J2000.
-  // Note that this frame is not actually inertial, but we want to use it with
-  // `KeplerOrbit`.  Perhaps we should have a concept of non-rotating, and
-  // `KeplerOrbit` should check that; this is good enough for a test.
-  using Selenocentric = Frame<struct SelenocentricTag, Inertial>;
+  using Selenocentric = Frame<struct SelenocentricTag, NonRotating>;
 
-  // We do not use a `BodyCentredNonRotatingReferenceFrame` since that would use
-  // ICRS axes.
+  // We do not use a `BodyCentredNonRotatingReferenceFrame` since that would not
+  // have its x axis pointing towards the Earth at J2000.
   RigidMotion<ICRS, Selenocentric> ToSelenocentric(Instant const& t) {
     return RigidMotion<ICRS, Selenocentric>(
         RigidTransformation<ICRS, Selenocentric>(
