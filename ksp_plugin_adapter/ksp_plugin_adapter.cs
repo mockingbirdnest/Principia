@@ -2881,8 +2881,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           // GetUniqueValue resp. GetAtMostOneValue corresponding to required
           // resp. optional in principia.serialization.GravityModel.Body.
           var body_parameters =
-              ConfigNodeParsers.NewCartesianBodyParameters(body,
-                body_gravity_model);
+              ConfigNodeParsers.NewCartesianBodyParameters(
+                  body,
+                  body_gravity_model);
           // GetUniqueValue since these are all required fields in
           // principia.serialization.InitialState.Cartesian.Body.
           plugin_.InsertCelestialAbsoluteCartesian(
@@ -2918,8 +2919,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
           body.initialRotation = unmodified_initial_rotations_[body];
           var body_parameters =
-              ConfigNodeParsers.NewKeplerianBodyParameters(body,
-                body_gravity_model);
+              ConfigNodeParsers.NewKeplerianBodyParameters(
+                  body,
+                  body_gravity_model);
           plugin_.InsertCelestialJacobiKeplerian(
               celestial_index    : body.flightGlobalsIndex,
               parent_index       : orbit?.referenceBody.flightGlobalsIndex,

@@ -407,6 +407,7 @@ class Plugin {
 
   virtual bool HasCelestial(Index index) const;
   virtual Celestial const& GetCelestial(Index index) const;
+  virtual std::vector<not_null<Celestial const*>> GetAllCelestials() const;
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
   virtual not_null<Vessel*> GetVessel(GUID const& vessel_guid) const;

@@ -1,5 +1,6 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <string>
 #include <vector>
 
 #include "absl/log/check.h"
@@ -38,6 +39,17 @@ void __cdecl principia__IteratorDelete(Iterator** const iterator) {
   journal::Method<journal::IteratorDelete> m({iterator}, {iterator});
   TakeOwnership(iterator);
   return m.Return();
+}
+
+char const* __cdecl principia__IteratorGetCelestialName(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetCelestialName> m({iterator});
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<std::vector<std::string>> const*>(iterator));
+  return m.Return(typed_iterator->Get<char const*>(
+      [](std::string const& name) -> char const* {
+        return name.c_str();
+      }));
 }
 
 QP __cdecl principia__IteratorGetDiscreteTrajectoryQP(
