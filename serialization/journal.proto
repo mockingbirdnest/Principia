@@ -306,7 +306,7 @@ message OrbitAnalysis {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5221.
+  extensions 5000 to 5999;  // Last used: 5223.
 }
 
 message ActivatePlayer {
@@ -396,6 +396,23 @@ message CelestialFromParent {
   }
   message Return {
     required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CelestialGetAllNames {
+  extend Method {
+    optional CelestialGetAllNames extension = 5222;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (disposable) = "DisposableIterator",
+                                 (is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1783,6 +1800,22 @@ message IteratorDelete {
   }
   optional In in = 1;
   optional Out out = 2;
+}
+
+message IteratorGetCelestialName {
+  extend Method {
+    optional IteratorGetCelestialName extension = 5223;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required string result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message IteratorGetDiscreteTrajectoryQP {

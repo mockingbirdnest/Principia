@@ -1181,6 +1181,14 @@ Celestial const& Plugin::GetCelestial(Index const index) const {
   return *FindOrDie(celestials_, index);
 }
 
+std::vector<not_null<Celestial const*>> Plugin::GetAllCelestials() const {
+  std::vector<not_null<Celestial const*>> celestials;
+  for (auto const& [_, celestial] : celestials_) {
+    celestials.push_back(celestial.get());
+  }
+  return celestials;
+}
+
 bool Plugin::HasVessel(GUID const& vessel_guid) const {
   return vessels_.contains(vessel_guid);
 }
