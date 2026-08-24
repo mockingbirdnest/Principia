@@ -14,6 +14,7 @@
 #include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
+#include "astronomy/orbital_elements.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -21,6 +22,7 @@
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
+#include "graphics/colours.hpp"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -43,6 +45,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/golden_graphs.hpp"  // 🧙 For EXPECT_GOLDEN_GRAPH.
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 #include "testing_utilities/numerics_matchers.hpp"
@@ -53,6 +56,7 @@ namespace astronomy {
 using ::testing::Lt;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
+using namespace principia::astronomy::_orbital_elements;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -60,6 +64,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_space;
 using namespace principia::geometry::_space_transformations;
+using namespace principia::graphics::_colours;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
@@ -118,7 +123,7 @@ struct GeopotentialTruncation {
 
   // A string describing the truncation.
   std::string DegreeAndOrder() const {
-    return absl::StrCat(max_degree, "x", zonal_only ? 0 : max_degree);
+    return absl::StrCat(max_degree, "×", zonal_only ? 0 : max_degree);
   }
 };
 
@@ -359,9 +364,18 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
   DiscreteTrajectory<LunarSurface> surface_trajectory;
+  // Used to compute the mean elements.
+  // TODO(egg): we could use this for the nodes as well, though we would no
+  // longer be logging the surface frame displacements to Mathematica.  The
+  // surface frame is relevant to test a repeat ground track orbit; let’s wait
+  // until we have ground track plotting and see what we need to test the ground
+  // track.
+  DiscreteTrajectory<Selenocentric> selenocentric_trajectory;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
     EXPECT_OK(surface_trajectory.Append(
         time, lunar_frame_.ToThisFrameAtTime(time)(degrees_of_freedom)));
+    EXPECT_OK(selenocentric_trajectory.Append(
+        time, ToSelenocentric(time)(degrees_of_freedom)))
   }
 
   for (Instant t = J2000; t <= J2000 + 2 * period; t += period / 50'000) {
@@ -513,6 +527,19 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
         RelativeErrorFrom(GetParam().first_period_descending_nodes.max_e_sin_ω,
                           Lt(0.017)));
   }
+
+  auto const elements = OrbitalElements::ForTrajectory(
+      selenocentric_trajectory, *moon_, MasslessBody{});
+  ASSERT_OK(elements);
+  static_assert(principia::testing_utilities::_golden_graphs::internal::
+                    parameterized_test<decltype(*this)>);
+  EXPECT_GOLDEN_GRAPH(
+      elements->PlotEccentricityVector(200,
+                                       200,
+                                       /*background=*/Opaque(xkcd::black),
+                                       /*axis_colour=*/xkcd::white,
+                                       /*line_colour=*/xkcd::cornflower),
+      "near_circular_rgt_eccentricity_vector");
 
   {
     EccentricityVectorRange actual_period_ends;
