@@ -626,15 +626,19 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
   return m.Return();
 }
 
-Iterator* __cdecl principia__FlightPlanRenderedManoeuvre(
+// Returns the degrees of freedom at the start of the manœuvre, rendered in
+// `World`.  The return iterator contains at most one point.  It is empty when
+// the beginning of the burn cannot be rendered.
+Iterator* __cdecl principia__FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
     Plugin const* const plugin,
     char const* const vessel_guid,
     XYZ const sun_world_position,
     int const index) {
-  journal::Method<journal::FlightPlanRenderedManoeuvre> m({plugin,
-                                                           vessel_guid,
-                                                           sun_world_position,
-                                                           index});
+  journal::Method<journal::FlightPlanRenderedManoeuvreInitialDegreesOfFreedom>
+      m({plugin,
+         vessel_guid,
+         sun_world_position,
+         index});
   CHECK(plugin != nullptr);
   CHECK_EQ(1, index % 2) << index;
 
@@ -659,9 +663,9 @@ Iterator* __cdecl principia__FlightPlanRenderedManoeuvre(
     if (!rendered_manœuvre.empty() &&
         rendered_manœuvre.begin()->first != segment->front().time) {
       // TODO(egg): this is ugly; we should centralize rendering.
-      // If this is a burn and we cannot render the beginning of the burn, we
-      // render none of it, otherwise we try to render the Frenet trihedron at
-      // the start and we fail.
+      // If we cannot render the beginning of the burn, we render none of it,
+      // otherwise we try to render the Frenet trihedron at the start and we
+      // fail.
       rendered_manœuvre.clear();
     }
   }
