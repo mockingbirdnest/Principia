@@ -21,18 +21,17 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
     not_null<DiscreteTrajectory<Frame> const*> const trajectory,
     const_iterator const begin,
     const_iterator const end)
-    : trajectory_(trajectory), begin_(begin), end_(end) {
+    : TrajectoryView<Frame>(trajectory,
+                            TrajectoryViewTMin(*trajectory, begin, end),
+                            TrajectoryViewTMax(*trajectory, begin, end)),
+      begin_(begin),
+      end_(end) {
   if (begin_ == end_) {
-    t_min_ = InfiniteFuture;
-    t_max_ = InfinitePast;
-  } else {
-    // The only way that `begin_` can be past the end or `end_` at the beginning
-    // is if they are equal.
-    CHECK(begin_ != trajectory_->end());
-    CHECK(end_ != trajectory_->begin());
-    t_min_ = begin->time;
-    t_max_ = std::prev(end_)->time;
-    CHECK_LE(t_min_, t_max_) << "Overempty ranges not supported";
+    // If the view has no point, make sure that its iterators cannot be
+    // dereferenced, lest they give access to part of the trajectory that's not
+    // covered by the view.
+    begin_ = this->trajectory().end();
+    end_ = this->trajectory().end();
   }
 }
 
@@ -41,21 +40,29 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
     not_null<DiscreteTrajectory<Frame> const*> const trajectory,
     Instant const& t_min,
     Instant const& t_max)
-    : DiscreteTrajectoryView(trajectory,
-                             trajectory->lower_bound(t_min),
-                             trajectory->upper_bound(t_max)) {}
+    : TrajectoryView<Frame>(trajectory, t_min, t_max),
+      begin_(trajectory->lower_bound(t_min)),
+      end_(trajectory->upper_bound(t_max)) {
+  if (begin_ == end_) {
+    // If the view has no point, make sure that its iterators cannot be
+    // dereferenced, lest they give access to part of the trajectory that's not
+    // covered by the view.
+    begin_ = this->trajectory().end();
+    end_ = this->trajectory().end();
+  }
+}
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
 DiscreteTrajectoryView<Frame>::front() const {
-  DCHECK(!empty());
+  DCHECK(begin_ != end_);
   return *begin_;
 }
 
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::reference
 DiscreteTrajectoryView<Frame>::back() const {
-  DCHECK(!empty());
+  DCHECK(begin_ != end_);
   return *std::prev(end_);
 }
 
@@ -84,11 +91,6 @@ DiscreteTrajectoryView<Frame>::rend() const {
 }
 
 template<typename Frame>
-bool DiscreteTrajectoryView<Frame>::empty() const {
-  return t_max_ < t_min_;
-}
-
-template<typename Frame>
 std::int64_t DiscreteTrajectoryView<Frame>::size() const {
   return std::distance(begin_, end_);
 }
@@ -96,8 +98,8 @@ std::int64_t DiscreteTrajectoryView<Frame>::size() const {
 template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::iterator
 DiscreteTrajectoryView<Frame>::find(Instant const& t) const {
-  if (t_min_ <= t && t <= t_max_) {
-    return trajectory_->find(t);
+  if (this->t_min() <= t && t <= this->t_max()) {
+    return trajectory().find(t);
   } else {
     return end_;
   }
@@ -107,12 +109,17 @@ template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::iterator
 DiscreteTrajectoryView<Frame>::lower_bound(Instant const& t) const {
   // The order of the tests is important to return `end_` for empty views.
-  if (t_max_ < t) {
+  if (this->t_max() < t) {
     return end_;
-  } else if (t <= t_min_) {
+  } else if (t <= this->t_min()) {
     return begin_;
   } else {
-    return trajectory_->lower_bound(t);
+    auto const it = trajectory().lower_bound(t);
+    if (it == trajectory().end() || this->t_max() < it->time) {
+      return end_;
+    } else {
+      return it;
+    }
   }
 }
 
@@ -120,47 +127,57 @@ template<typename Frame>
 typename DiscreteTrajectoryView<Frame>::iterator
 DiscreteTrajectoryView<Frame>::upper_bound(Instant const& t) const {
   // The order of the tests is important to return `end_` for empty views.
-  if (t_max_ <= t) {
+  if (this->t_max() <= t) {
     return end_;
-  } else if (t < t_min_) {
+  } else if (t < this->t_min()) {
     return begin_;
   } else {
-    return trajectory_->upper_bound(t);
+    auto const it = trajectory().upper_bound(t);
+    if (it == trajectory().end() || this->t_max() < it->time) {
+      return end_;
+    } else {
+      return it;
+    }
   }
 }
 
 template<typename Frame>
-Instant DiscreteTrajectoryView<Frame>::t_min() const {
-  return t_min_;
+DiscreteTrajectory<Frame> const& DiscreteTrajectoryView<Frame>::trajectory()
+    const {
+  return dynamic_cast<DiscreteTrajectory<Frame> const&>(
+      TrajectoryView<Frame>::trajectory());
 }
 
 template<typename Frame>
-Instant DiscreteTrajectoryView<Frame>::t_max() const {
-  return t_max_;
+Instant DiscreteTrajectoryView<Frame>::TrajectoryViewTMin(
+    DiscreteTrajectory<Frame> const& trajectory,
+    const_iterator const begin,
+    const_iterator const end) {
+  if (begin == end) {
+    return InfiniteFuture;
+  } else {
+    // The only way that `begin` can be past the end or `end` at the beginning
+    // is if they are equal.
+    CHECK(begin != trajectory.end());
+    CHECK(end != trajectory.begin());
+    return begin->time;
+  }
 }
 
 template<typename Frame>
-Position<Frame> DiscreteTrajectoryView<Frame>::EvaluatePosition(
-    Instant const& t) const {
-  CHECK_LE(t_min_, t);
-  CHECK_LE(t, t_max_);
-  return trajectory_->EvaluatePosition(t);
-}
-
-template<typename Frame>
-Velocity<Frame> DiscreteTrajectoryView<Frame>::EvaluateVelocity(
-    Instant const& t) const {
-  CHECK_LE(t_min_, t);
-  CHECK_LE(t, t_max_);
-  return trajectory_->EvaluateVelocity(t);
-}
-
-template<typename Frame>
-DegreesOfFreedom<Frame> DiscreteTrajectoryView<Frame>::EvaluateDegreesOfFreedom(
-    Instant const& t) const {
-  CHECK_LE(t_min_, t);
-  CHECK_LE(t, t_max_);
-  return trajectory_->EvaluateDegreesOfFreedom(t);
+Instant DiscreteTrajectoryView<Frame>::TrajectoryViewTMax(
+    DiscreteTrajectory<Frame> const& trajectory,
+    const_iterator const begin,
+    const_iterator const end) {
+  if (begin == end) {
+    return InfinitePast;
+  } else {
+    // The only way that `begin` can be past the end or `end` at the beginning
+    // is if they are equal.
+    CHECK(begin != trajectory.end());
+    CHECK(end != trajectory.begin());
+    return std::prev(end)->time;
+  }
 }
 
 }  // namespace internal

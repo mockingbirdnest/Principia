@@ -269,6 +269,12 @@
     <ClInclude Include="discrete_trajectory_view_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="trajectory_view.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trajectory_view_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -371,6 +377,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="discrete_trajectory_view_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="trajectory_view_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

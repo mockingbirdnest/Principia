@@ -141,7 +141,6 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
                  trajectory,
                  trajectory.begin(),
                  trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
@@ -207,7 +206,6 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -316,7 +314,6 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -416,7 +413,6 @@ TEST_F(ApsidesTest, ComputeNodes) {
   EXPECT_OK(ComputeNodes(trajectory,
                          trajectory.begin(),
                          trajectory.end(),
-                         /*t_max=*/InfiniteFuture,
                          north,
                          /*max_points=*/std::numeric_limits<int>::max(),
                          ascending_nodes,
@@ -458,7 +454,6 @@ TEST_F(ApsidesTest, ComputeNodes) {
   EXPECT_OK(ComputeNodes(trajectory,
                          trajectory.begin(),
                          trajectory.end(),
-                         /*t_max=*/InfiniteFuture,
                          mostly_south,
                          /*max_points=*/std::numeric_limits<int>::max(),
                          south_ascending_nodes,
@@ -553,7 +548,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisBelowMaxRadius) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -594,7 +588,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisAboveMaxRadius) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -631,7 +624,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, NoPeriapsis) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -681,7 +673,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisBelowMaxRadius) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -734,7 +725,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisAboveMaxRadius) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -791,7 +781,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -848,7 +837,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -904,7 +892,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisOneApoapsis) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -945,7 +932,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, InitialApoapsisOnePeriapsis) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -986,7 +972,6 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisFinalApoapsis) {
                  vessel_trajectory,
                  vessel_trajectory.begin(),
                  vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);

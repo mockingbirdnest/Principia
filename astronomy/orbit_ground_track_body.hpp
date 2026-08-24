@@ -136,7 +136,6 @@ absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
   RETURN_IF_ERROR(ComputeNodes(trajectory,
                                trajectory.begin(),
                                trajectory.end(),
-                               /*t_max=*/InfiniteFuture,
                                Vector<double, PrimaryCentred>({0, 0, 1}),
                                /*max_points=*/std::numeric_limits<int>::max(),
                                ascending_nodes,

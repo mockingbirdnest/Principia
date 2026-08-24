@@ -367,7 +367,6 @@ class Plugin {
       Trajectory<Barycentric> const& trajectory,
       DiscreteTrajectory<Barycentric>::iterator const& begin,
       DiscreteTrajectory<Barycentric>::iterator const& end,
-      Instant const& t_max,
       Position<World> const& sun_world_position,
       int max_points,
       DistinguishedPoints<World>& apoapsides,
@@ -401,7 +400,6 @@ class Plugin {
   virtual void ComputeAndRenderNodes(
       DiscreteTrajectory<Barycentric>::iterator const& begin,
       DiscreteTrajectory<Barycentric>::iterator const& end,
-      Instant const& t_max,
       Position<World> const& sun_world_position,
       int max_points,
       std::vector<Renderer::Node>& ascending,
