@@ -663,9 +663,8 @@ Iterator* __cdecl principia__FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
     if (!rendered_manœuvre.empty() &&
         rendered_manœuvre.begin()->first != segment->front().time) {
       // TODO(egg): this is ugly; we should centralize rendering.
-      // If we cannot render the beginning of the burn, we render none of it,
-      // otherwise we try to render the Frenet trihedron at the start and we
-      // fail.
+      // If we cannot render the beginning of the burn, we don't return
+      // anything, otherwise we fail when trying to render the Frenet trihedron.
       rendered_manœuvre.clear();
     }
   }
