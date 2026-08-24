@@ -94,7 +94,7 @@ class TrajectoryViewTest : public ::testing::Test {
 
 TEST_F(TrajectoryViewTest, ViewOfEntireNonemptyTrajectory) {
   auto const trajectory = MakeTrajectory();
-  TrajectoryView<World> view(&trajectory);
+  TrajectoryView<World> const view(&trajectory);
 
   EXPECT_FALSE(view.empty());
 
@@ -111,7 +111,7 @@ TEST_F(TrajectoryViewTest, ViewOfEntireNonemptyTrajectory) {
 
 TEST_F(TrajectoryViewTest, ViewOfEntireEmptyTrajectory) {
   DiscreteTrajectory<World> trajectory;
-  TrajectoryView<World> view(&trajectory);
+  TrajectoryView<World> const view(&trajectory);
 
   EXPECT_TRUE(view.empty());
 
@@ -121,7 +121,7 @@ TEST_F(TrajectoryViewTest, ViewOfEntireEmptyTrajectory) {
 
 TEST_F(TrajectoryViewTest, ViewDefinedByTimesNonempty) {
   auto const trajectory = MakeTrajectory();
-  TrajectoryView<World> view(
+  TrajectoryView<World> const view(
       &trajectory, t0_ + 1.5 * Second, t0_ + 13.2 * Second);
 
   EXPECT_FALSE(view.empty());
@@ -139,13 +139,22 @@ TEST_F(TrajectoryViewTest, ViewDefinedByTimesNonempty) {
 
 TEST_F(TrajectoryViewTest, ViewDefinedByTimesEmpty) {
   auto const trajectory = MakeTrajectory();
-  TrajectoryView<World> view(
+  TrajectoryView<World> const view(
       &trajectory, t0_ + 3.2 * Second, t0_ + 3.1 * Second);
 
   EXPECT_TRUE(view.empty());
 
   EXPECT_EQ(InfiniteFuture, view.t_min());
   EXPECT_EQ(InfinitePast, view.t_max());
+}
+
+TEST_F(TrajectoryViewTest, Deduction) {
+  auto const trajectory = MakeTrajectory();
+  TrajectoryView const view1(&trajectory);
+  TrajectoryView const view2(&trajectory, t0_, t0_ + 14 * Second);
+
+  EXPECT_FALSE(view1.empty());
+  EXPECT_FALSE(view2.empty());
 }
 
 }  // namespace physics

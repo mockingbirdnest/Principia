@@ -67,9 +67,9 @@ class DiscreteTrajectoryTest : public ::testing::Test {
                       Handedness::Right,
                       serialization::Frame::TEST>;
 
-
   // Constructs a trajectory with three 5-second segments starting at `t0` and
-  // the given `degrees_of_freedom`.
+  // the given initial `degrees_of_freedom`.
+  // TODO(phl): This code is duplicated in `DiscreteTrajectoryViewTest`.
   static DiscreteTrajectory<World> MakeTrajectory(
       Instant const& t0,
       DegreesOfFreedom<World> const& degrees_of_freedom) {

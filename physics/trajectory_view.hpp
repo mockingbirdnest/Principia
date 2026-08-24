@@ -49,11 +49,21 @@ class TrajectoryView : public Trajectory<Frame> {
 
   // Not serializable.
 
+ protected:
+  Trajectory<Frame> const& trajectory() const;
+
  private:
   not_null<Trajectory<Frame> const*> trajectory_;
   Instant t_min_;
   Instant t_max_;
 };
+
+template<typename Frame>
+TrajectoryView(Trajectory<Frame> const*) -> TrajectoryView<Frame>;
+
+template<typename Frame>
+TrajectoryView(Trajectory<Frame> const*, Instant const&, Instant const&)
+    -> TrajectoryView<Frame>;
 
 }  // namespace internal
 
