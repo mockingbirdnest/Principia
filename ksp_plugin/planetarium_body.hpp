@@ -60,9 +60,7 @@ EvaluateDegreesOfFreedomInNavigation<Navigation>(
 
 template<typename Frame>
 void Planetarium::PlotMethod3(
-    Trajectory<Frame> const& trajectory,
-    Instant const& first_time,
-    Instant const& last_time,
+    TrajectoryView<Frame> const& trajectory,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,
@@ -149,9 +147,7 @@ void Planetarium::PlotMethod3(
 
 template<typename Frame>
 void Planetarium::PlotMethod4(
-    Trajectory<Frame> const& trajectory,
-    Instant const& first_time,
-    Instant const& last_time,
+    TrajectoryView<Frame> const& trajectory,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,

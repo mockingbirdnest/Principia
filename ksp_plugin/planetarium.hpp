@@ -85,8 +85,7 @@ class Planetarium {
               not_null<PlottingFrame const*> plotting_frame,
               PlottingToScaledSpaceConversion plotting_to_scaled_space);
 
-  // A no-op method that just returns all the points in the trajectory defined
-  // by `begin` and `end`.
+  // A no-op method that just returns all the points in the trajectory view.
   RP2Lines<Length, Camera> PlotMethod0(
       DiscreteTrajectoryView<Barycentric> const& trajectory,
       Instant const& now,
@@ -159,8 +158,8 @@ class Planetarium {
   std::vector<Sphere<Navigation>> ComputePlottableSpheres(
       Instant const& now) const;
 
-  // Computes the segments of the trajectory defined by `begin` and `end` that
-  // are not hidden by the `plottable_spheres`.
+  // Computes the segments of the trajectory view that are not hidden by the
+  // `plottable_spheres`.
   Segments<Navigation> ComputePlottableSegments(
       const std::vector<Sphere<Navigation>>& plottable_spheres,
       DiscreteTrajectoryView<Barycentric> const& trajectory) const;
