@@ -93,19 +93,6 @@ class Renderer {
   virtual Vessel& GetTargetVessel();
   virtual Vessel const& GetTargetVessel() const;
 
-  // Returns a trajectory in `World` corresponding to the trajectory defined by
-  // `begin` and `end`, as seen in the current plotting frame.  In this function
-  // and others in this class, `sun_world_position` is the current position of
-  // the sun in `World` space as returned by `Planetarium.fetch.Sun.position`;
-  // it is used to define the relation between `WorldSun` and `World`.
-  virtual DiscreteTrajectory<World>
-  RenderBarycentricTrajectoryInWorld(
-      Instant const& time,
-      DiscreteTrajectory<Barycentric>::iterator const& begin,
-      DiscreteTrajectory<Barycentric>::iterator const& end,
-      Position<World> const& sun_world_position,
-      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
-
   // Returns a trajectory in the current plotting frame corresponding to the
   // trajectory defined by `begin` and `end`.  If there is a target vessel, its
   // prediction must not be empty.
@@ -114,16 +101,13 @@ class Renderer {
       DiscreteTrajectory<Barycentric>::iterator const& begin,
       DiscreteTrajectory<Barycentric>::iterator const& end) const;
 
-  // Returns a trajectory in `World` corresponding to the trajectory defined by
-  // `begin` and `end` in the current plotting frame.
-  virtual DiscreteTrajectory<World>
-  RenderPlottingTrajectoryInWorld(
-      Instant const& time,
-      DiscreteTrajectory<Navigation>::iterator const& begin,
-      DiscreteTrajectory<Navigation>::iterator const& end,
-      Position<World> const& sun_world_position,
-      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
-
+  // In this function and others in this class, `sun_world_position` is the
+  // current position of the sun in `World` space as returned by
+  // `Planetarium.fetch.Sun.position`; it is used to define the relation between
+  // `WorldSun` and `World`.
+  // Also, coordinate conversions go through the plotting frame, so the caller
+  // must ensure that the iterators correspond to times in the time range of the
+  // plotting frame.
   DistinguishedPoints<World>
   RenderDistinguishedPointsInWorld(
       Instant const& time,
@@ -150,9 +134,6 @@ class Renderer {
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   virtual OrthogonalMap<Barycentric, World> BarycentricToWorld(
-      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
-
-  virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun(
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Converts from the Frenet frame of the manœuvre's initial time in the

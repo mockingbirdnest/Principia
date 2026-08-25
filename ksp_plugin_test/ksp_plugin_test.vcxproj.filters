@@ -38,9 +38,6 @@
     <ClCompile Include="celestial_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="plugin_integration_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\flight_plan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
