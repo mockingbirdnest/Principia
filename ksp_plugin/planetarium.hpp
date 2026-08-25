@@ -13,7 +13,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
-#include "physics/trajectory.hpp"
+#include "physics/trajectory_view.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -33,6 +33,7 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_trajectory;
+using namespace principia::physics::_trajectory_view;
 using namespace principia::quantities::_quantities;
 
 // Corresponds to a UnityEngine.Vector3 representing a position in KSP’s
@@ -108,7 +109,7 @@ class Planetarium {
 
   // The same method, operating on the `Trajectory` interface.
   RP2Lines<Length, Camera> PlotMethod2(
-      DiscreteTrajectoryView<Barycentric> const& trajectory,
+      TrajectoryView<Barycentric> const& trajectory,
       Instant const& now,
       bool reverse,
       Length* minimal_distance = nullptr) const;
@@ -127,7 +128,7 @@ class Planetarium {
   // can be converted to `Navigation`.
   template<typename Frame>
   void PlotMethod3(
-      DiscreteTrajectoryView<Frame> const& trajectory,
+      TrajectoryView<Frame> const& trajectory,
       bool reverse,
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points,
@@ -146,7 +147,7 @@ class Planetarium {
   // can be converted to `Navigation`.
   template<typename Frame>
   void PlotMethod4(
-      DiscreteTrajectoryView<Barycentric> const& trajectory,
+      TrajectoryView<Barycentric> const& trajectory,
       bool reverse,
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points,
@@ -162,8 +163,7 @@ class Planetarium {
   // are not hidden by the `plottable_spheres`.
   Segments<Navigation> ComputePlottableSegments(
       const std::vector<Sphere<Navigation>>& plottable_spheres,
-      DiscreteTrajectory<Barycentric>::iterator begin,
-      DiscreteTrajectory<Barycentric>::iterator end) const;
+      DiscreteTrajectoryView<Barycentric> const& trajectory) const;
 
   // Computes the proper motion (in the astronomical sense) of the given point
   // and velocity seen from a frame centered at the origin of `Camera`.  This
