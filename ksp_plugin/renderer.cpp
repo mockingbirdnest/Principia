@@ -76,16 +76,17 @@ DiscreteTrajectory<Navigation>
 Renderer::RenderBarycentricTrajectoryInPlotting(
     DiscreteTrajectory<Barycentric>::iterator const& begin,
     DiscreteTrajectory<Barycentric>::iterator const& end) const {
+  auto const plotting_frame = GetPlottingFrame();
   DiscreteTrajectory<Navigation> trajectory;
   for (auto it = begin; it != end; ++it) {
     auto const& [time, degrees_of_freedom] = *it;
-    if (target_) {
-      auto const prediction = target_->vessel->prediction();
-      if (time < prediction->t_min()) {
-        continue;
-      } else if (time > prediction->t_max()) {
-        break;
-      }
+
+    // If there is a target vessel, its prediction may not cover all the times
+    // we want to convert.
+    if (time < plotting_frame->t_min()) {
+      continue;
+    } else if (time > plotting_frame->t_max()) {
+      break;
     }
     trajectory.Append(time,
                       BarycentricToPlotting(time)(degrees_of_freedom))

@@ -650,24 +650,27 @@ Iterator* __cdecl principia__FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
 
   DistinguishedPoints<World> rendered_manœuvre;
   if (!segment->empty()) {
-    DistinguishedPoints<Barycentric> manœuvre;
-    manœuvre.emplace(segment->front().time,
-                     segment->front().degrees_of_freedom);
-    rendered_manœuvre = plugin->renderer().RenderDistinguishedPointsInWorld(
-        plugin->CurrentTime(),
-        manœuvre.begin(),
-        manœuvre.end(),
-        FromXYZ<Position<World>>(sun_world_position),
-        plugin->PlanetariumRotation());
+    auto const plotting_frame = plugin->renderer().GetPlottingFrame();
+    Instant const initial_time = segment->front().time;
 
-    if (!rendered_manœuvre.empty() &&
-        rendered_manœuvre.begin()->first != segment->front().time) {
-      // TODO(egg): this is ugly; we should centralize rendering.
-      // If we cannot render the beginning of the burn, we don't return
-      // anything, otherwise we fail when trying to render the Frenet trihedron.
-      rendered_manœuvre.clear();
+    // The initial time may be outside the time range of the plotting frame if
+    // there is a target vessel with a sufficiently short prediction.  Don't
+    // render a Frenet trihedron in this case.
+    if (plotting_frame->t_min() <= initial_time &&
+        initial_time <= plotting_frame->t_max()) {
+      DistinguishedPoints<Barycentric> manœuvre;
+      manœuvre.emplace(initial_time,
+                       segment->front().degrees_of_freedom);
+      rendered_manœuvre = plugin->renderer().RenderDistinguishedPointsInWorld(
+          plugin->CurrentTime(),
+          manœuvre.begin(),
+          manœuvre.end(),
+          FromXYZ<Position<World>>(sun_world_position),
+          plugin->PlanetariumRotation());
     }
   }
+  // The iterator has 0 or 1 point.
+  // TODO(phl): Should we have an Optional class for this?
   return m.Return(new TypedIterator<DistinguishedPoints<World>>(
       std::move(rendered_manœuvre), plugin));
 }

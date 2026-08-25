@@ -105,6 +105,9 @@ class Renderer {
   // current position of the sun in `World` space as returned by
   // `Planetarium.fetch.Sun.position`; it is used to define the relation between
   // `WorldSun` and `World`.
+  // Also, coordinate conversions go through the plotting frame, so the caller
+  // must ensure that the iterators correspond to times in the time range of the
+  // plotting frame.
   DistinguishedPoints<World>
   RenderDistinguishedPointsInWorld(
       Instant const& time,
