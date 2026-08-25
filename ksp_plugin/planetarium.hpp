@@ -118,7 +118,6 @@ class Planetarium {
   // apparent angle of the sagitta as the metric to analyse curvature.
   void PlotMethod3(
       DiscreteTrajectoryView<Barycentric> const& trajectory,
-      Instant const& t_max,
       bool reverse,
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points) const;
@@ -133,11 +132,10 @@ class Planetarium {
       int max_points,
       Length* minimal_distance = nullptr) const;
 
-  // A method similar to PlotMethod4, but which uses the RMS of the apparent
+  // A method similar to PlotMethod3, but which uses the RMS of the apparent
   // distance between the trajectory and line segments.
   void PlotMethod4(
       DiscreteTrajectoryView<Barycentric> const& trajectory,
-      Instant const& t_max,
       bool reverse,
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points) const;

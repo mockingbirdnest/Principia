@@ -261,7 +261,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
 void Planetarium::PlotMethod3(
     DiscreteTrajectoryView<Barycentric> const& trajectory,
-    Instant const& t_max,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int max_points) const {
@@ -278,7 +277,6 @@ void Planetarium::PlotMethod3(
 
 void Planetarium::PlotMethod4(
     DiscreteTrajectoryView<Barycentric> const& trajectory,
-    Instant const& t_max,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int max_points) const {

@@ -154,8 +154,8 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
     planetarium->PlotMethod4(
         *segment,
         segment->begin(),
-        segment->end(),
-        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+        t_max == nullptr ? segment->end()
+                         : segment->upper_bound(FromGameTime(*plugin, *t_max)),
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -186,8 +186,8 @@ void __cdecl principia__PlanetariumPlotPrediction(
   planetarium->PlotMethod4(
       *prediction,
       prediction->begin(),
-      prediction->end(),
-      t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+      t_max == nullptr ? prediction->end()
+                       : prediction->upper_bound(FromGameTime(*plugin, *t_max)),
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
         vertices[(*vertex_count)++] = vertex;
@@ -242,8 +242,9 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     planetarium->PlotMethod4(
         trajectory,
         trajectory.lower_bound(desired_first_time),
-        psychohistory->end(),
-        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+        t_max == nullptr
+            ? psychohistory->end()
+            : psychohistory->upper_bound(FromGameTime(*plugin, *t_max)),
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
