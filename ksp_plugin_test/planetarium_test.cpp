@@ -42,6 +42,7 @@
 #include "numerics/quadrature.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/equipotential.hpp"
 #include "physics/lagrange_equipotentials.hpp"
@@ -98,6 +99,7 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_quadrature;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_equipotential;
 using namespace principia::physics::_lagrange_equipotentials;
@@ -371,9 +373,7 @@ TEST_F(PlanetariumTest, PlotMethod0) {
                                 &plotting_frame_,
                                 plotting_to_scaled_space_);
   auto const rp2_lines =
-      planetarium.PlotMethod0(discrete_trajectory,
-                              discrete_trajectory.begin(),
-                              discrete_trajectory.end(),
+      planetarium.PlotMethod0(DiscreteTrajectoryView(&discrete_trajectory),
                               t0_ + 10 * Second,
                               /*reverse=*/false);
 
@@ -420,9 +420,7 @@ TEST_F(PlanetariumTest, PlotMethod1) {
                                 &plotting_frame_,
                                 plotting_to_scaled_space_);
   auto const rp2_lines =
-      planetarium.PlotMethod1(discrete_trajectory,
-                              discrete_trajectory.begin(),
-                              discrete_trajectory.end(),
+      planetarium.PlotMethod1(DiscreteTrajectoryView(&discrete_trajectory),
                               t0_ + 10 * Second,
                               /*reverse=*/false);
 
@@ -459,9 +457,7 @@ TEST_F(PlanetariumTest, PlotMethod2) {
                                 &plotting_frame_,
                                 plotting_to_scaled_space_);
   auto const rp2_lines =
-      planetarium.PlotMethod2(discrete_trajectory,
-                              discrete_trajectory.begin(),
-                              discrete_trajectory.end(),
+      planetarium.PlotMethod2(DiscreteTrajectoryView(&discrete_trajectory),
                               t0_ + 10 * Second,
                               /*reverse=*/false);
 
@@ -516,9 +512,7 @@ TEST_F(PlanetariumTest, PlotMethod2_RealSolarSystem) {
       plotting_frame.get(),
       plotting_to_scaled_space_);
   auto const rp2_lines =
-      planetarium.PlotMethod2(discrete_trajectory,
-                              discrete_trajectory.begin(),
-                              discrete_trajectory.end(),
+      planetarium.PlotMethod2(DiscreteTrajectoryView(&discrete_trajectory),
                               discrete_trajectory.back().time,
                               /*reverse=*/false);
 
@@ -537,9 +531,7 @@ TEST_F(PlanetariumTest, PlotMethod3_Equipotentials_AngularResolution) {
       [](Planetarium const& planetarium,
          DiscreteTrajectory<Navigation> const& line) {
         planetarium.PlotMethod3(
-            line,
-            line.front().time,
-            line.back().time,
+            DiscreteTrajectoryView(&line),
             /*reverse=*/false,
             [](ScaledSpacePoint const&) {},
             /*max_points=*/std::numeric_limits<int>::max());
@@ -642,9 +634,7 @@ TEST_F(PlanetariumTest, PlotMethod4_Equipotentials_AngularResolution) {
       [](Planetarium const& planetarium,
          DiscreteTrajectory<Navigation> const& line) {
         planetarium.PlotMethod4(
-            line,
-            line.front().time,
-            line.back().time,
+            DiscreteTrajectoryView(&line),
             /*reverse=*/false,
             [](ScaledSpacePoint const&) {},
             /*max_points=*/std::numeric_limits<int>::max());

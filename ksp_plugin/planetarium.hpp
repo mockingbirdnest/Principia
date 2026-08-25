@@ -144,7 +144,7 @@ class Planetarium {
   // can be converted to `Navigation`.
   template<typename Frame>
   void PlotMethod4(
-      TrajectoryView<Barycentric> const& trajectory,
+      TrajectoryView<Frame> const& trajectory,
       bool reverse,
       std::function<void(ScaledSpacePoint const&)> const& add_point,
       int max_points,
