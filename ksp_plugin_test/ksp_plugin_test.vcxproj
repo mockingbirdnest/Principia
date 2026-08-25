@@ -62,7 +62,6 @@
     <ClCompile Include="pile_up_test.cpp" />
     <ClCompile Include="planetarium_test.cpp" />
     <ClCompile Include="plugin_compatibility_test.cpp" />
-    <ClCompile Include="plugin_integration_test.cpp" />
     <ClCompile Include="plugin_io.cpp" />
     <ClCompile Include="plugin_test.cpp" />
     <ClCompile Include="renderer_test.cpp" />

@@ -2485,42 +2485,47 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
           for (int i = 0; i < number_of_segments; ++i) {
             bool is_burn = i % 2 == 1;
-            using (DisposableIterator rendered_segments =
-                plugin_.FlightPlanRenderedSegment(main_vessel_guid,
-                                                  sun_world_position,
-                                                  i)) {
-              if (rendered_segments.IteratorAtEnd()) {
-                Log.Info("Skipping segment " + i);
-                continue;
-              }
-              Vector3d position_at_start = (Vector3d)rendered_segments.
-                  IteratorGetDiscreteTrajectoryXYZ();
-              double time_at_start =
-                  rendered_segments.IteratorGetDiscreteTrajectoryTime();
-              if (is_burn &&
-                  (flight_plan_collision_ == null ||
-                   time_at_start <= flight_plan_collision_.Value.t)) {
-                int manœuvre_index = i / 2;
-                if (manœuvre_index <
-                    number_of_manœuvres - number_of_anomalous_manœuvres) {
-                  NavigationManoeuvreFrenetTrihedron trihedron =
-                      plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
-                          main_vessel_guid,
-                          manœuvre_index);
-                  if (number_of_rendered_manœuvres
-                      >= manœuvre_marker_pool_.Count) {
-                    manœuvre_marker_pool_.Add(
-                        ManœuvreMarker.Create(main_window_, flight_planner_));
+            if (is_burn) {
+              using (DisposableIterator rendered_manœuvre =
+                     plugin_.FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
+                         main_vessel_guid,
+                         sun_world_position,
+                         i)) {
+                if (rendered_manœuvre.IteratorAtEnd()) {
+                  Log.Info("Skipping segment " + i);
+                  continue;
+                }
+                double time_at_start =
+                    rendered_manœuvre.IteratorGetDistinguishedPointsTime();
+                var position_at_start =
+                    (Vector3d)rendered_manœuvre.
+                        IteratorGetDistinguishedPointsXYZ();
+                if (flight_plan_collision_ == null ||
+                    time_at_start <= flight_plan_collision_.Value.t) {
+                  int manœuvre_index = i / 2;
+                  if (manœuvre_index <
+                      number_of_manœuvres - number_of_anomalous_manœuvres) {
+                    NavigationManoeuvreFrenetTrihedron trihedron =
+                        plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
+                            main_vessel_guid,
+                            manœuvre_index);
+                    if (number_of_rendered_manœuvres >=
+                        manœuvre_marker_pool_.Count) {
+                      manœuvre_marker_pool_.Add(
+                          ManœuvreMarker.Create(main_window_, flight_planner_));
+                    }
+                    var initial_plotted_velocity =
+                        (Vector3d)plugin_.
+                            FlightPlanGetManoeuvreInitialPlottedVelocity(
+                                main_vessel_guid,
+                                manœuvre_index);
+                    manœuvre_marker_pool_[number_of_rendered_manœuvres].Render(
+                        manœuvre_index,
+                        world_position: position_at_start,
+                        initial_plotted_velocity,
+                        trihedron);
+                    ++number_of_rendered_manœuvres;
                   }
-                  var initial_plotted_velocity =
-                      (Vector3d)plugin_.FlightPlanGetManoeuvreInitialPlottedVelocity(
-                          main_vessel_guid, manœuvre_index);
-                  manœuvre_marker_pool_[number_of_rendered_manœuvres].
-                      Render(manœuvre_index,
-                             world_position: position_at_start,
-                             initial_plotted_velocity,
-                             trihedron);
-                  ++number_of_rendered_manœuvres;
                 }
               }
             }
