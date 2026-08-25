@@ -118,6 +118,9 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
     EXPECT_CALL(*reference_frame_, ToThisFrameAtTime(t))
         .WillOnce(Return(rigid_motion));
   }
+  EXPECT_CALL(*reference_frame_, t_min()).WillRepeatedly(Return(t0_));
+  EXPECT_CALL(*reference_frame_, t_max())
+      .WillRepeatedly(Return(t0_ + 9 * Second));
 
   auto const rendered_trajectory =
       renderer_.RenderBarycentricTrajectoryInPlotting(
@@ -145,6 +148,8 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   MockContinuousTrajectory<Barycentric> celestial_trajectory;
   EXPECT_CALL(ephemeris, trajectory(_))
       .WillRepeatedly(Return(&celestial_trajectory));
+  EXPECT_CALL(ephemeris, t_min()).WillRepeatedly(Return(t0_));
+  EXPECT_CALL(ephemeris, t_max()).WillRepeatedly(Return(t0_ + 10 * Second));
 
   DiscreteTrajectory<Barycentric> trajectory_to_render;
   AppendTrajectoryTimeline(
