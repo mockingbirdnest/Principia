@@ -294,8 +294,8 @@ TEST_F(DiscreteTrajectoryViewTest, Restrict) {
 
   EXPECT_EQ(std::next(trajectory.begin()), view.begin());
   EXPECT_EQ(trajectory.end(), view.end());
-  EXPECT_EQ(t0_ + 1 * Second, trajectory.t_min());
-  EXPECT_EQ(t0_ + 14 * Second, trajectory.t_max());
+  EXPECT_EQ(t0_ + 1 * Second, view.t_min());
+  EXPECT_EQ(t0_ + 14 * Second, view.t_max());
 
   EXPECT_FALSE(view.empty());
   EXPECT_EQ(14, view.size());
@@ -304,8 +304,8 @@ TEST_F(DiscreteTrajectoryViewTest, Restrict) {
 
   EXPECT_EQ(t0_ + 3 * Second, view.front().time);
   EXPECT_EQ(t0_ + 12 * Second, view.back().time);
-  EXPECT_EQ(t0_ + 2.3 * Second, trajectory.t_min());
-  EXPECT_EQ(t0_ + 12.2 * Second, trajectory.t_max());
+  EXPECT_EQ(t0_ + 2.3 * Second, view.t_min());
+  EXPECT_EQ(t0_ + 12.2 * Second, view.t_max());
 
   EXPECT_FALSE(view.empty());
   EXPECT_EQ(10, view.size());
@@ -314,18 +314,18 @@ TEST_F(DiscreteTrajectoryViewTest, Restrict) {
 
   EXPECT_EQ(trajectory.end(), view.begin());
   EXPECT_EQ(trajectory.end(), view.end());
-  EXPECT_EQ(t0_ + 3.2 * Second, trajectory.t_min());
-  EXPECT_EQ(t0_ + 3.5 * Second, trajectory.t_max());
+  EXPECT_EQ(t0_ + 3.2 * Second, view.t_min());
+  EXPECT_EQ(t0_ + 3.5 * Second, view.t_max());
 
   EXPECT_FALSE(view.empty());
   EXPECT_EQ(0, view.size());
 
-  view.Restrict(trajectory.end(), trajectory.begin());
+  view.Restrict(trajectory.begin(), trajectory.begin());
 
   EXPECT_EQ(trajectory.end(), view.begin());
   EXPECT_EQ(trajectory.end(), view.end());
-  EXPECT_EQ(InfiniteFuture, trajectory.t_min());
-  EXPECT_EQ(InfinitePast, trajectory.t_max());
+  EXPECT_EQ(InfiniteFuture, view.t_min());
+  EXPECT_EQ(InfinitePast, view.t_max());
 
   EXPECT_TRUE(view.empty());
   EXPECT_EQ(0, view.size());
