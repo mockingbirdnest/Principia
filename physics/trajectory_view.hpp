@@ -41,6 +41,10 @@ class TrajectoryView : public Trajectory<Frame> {
   Instant t_min() const override;
   Instant t_max() const override;
 
+  // Modifies this view by intersecting its time range with the given
+  // [`t_min`, `t_max`].  This may result in an empty view.
+  virtual void Restrict(Instant const& t_min, Instant const& t_max);
+
   // `t` must be in the range [`this->t_min()`, `this->t_max()`].
   Position<Frame> EvaluatePosition(Instant const& t) const override;
   Velocity<Frame> EvaluateVelocity(Instant const& t) const override;

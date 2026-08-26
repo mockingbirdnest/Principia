@@ -43,6 +43,17 @@ Instant TrajectoryView<Frame>::t_max() const {
 }
 
 template<typename Frame>
+void TrajectoryView<Frame>::Restrict(Instant const& t_min,
+                                     Instant const& t_max) {
+  t_min_ = std::max(t_min, t_min_);
+  t_max_ = std::min(t_max, t_max_);
+  if (t_max_ < t_min_) {
+    t_min_ = InfiniteFuture;
+    t_max_ = InfinitePast;
+  }
+}
+
+template<typename Frame>
 Position<Frame> TrajectoryView<Frame>::EvaluatePosition(
     Instant const& t) const {
   CHECK_LE(t_min_, t);

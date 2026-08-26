@@ -85,6 +85,13 @@ class DiscreteTrajectoryView : public TrajectoryView<Frame> {
   // No `segments` or `rsegments` as that would expose parts of the trajectory
   // outside of the range of the view.
 
+  // Modifies this view by intersecting its time range with the given
+  // [`t_min`, `t_max`].  This may result in an empty view or a view of size 0.
+  void Restrict(Instant const& t_min, Instant const& t_max) override;
+
+  // Same as above, but with iterators.
+  void Restrict(const_iterator begin, const_iterator end);
+
   // Not serializable.
 
  private:
