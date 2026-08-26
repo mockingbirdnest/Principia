@@ -53,8 +53,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTrajectoryView<Barycentric> const& trajectory,
     Instant const& now,
     bool const /*reverse*/) const {
-  auto const plottable_begin = trajectory.lower_bound(plotting_frame_->t_min());
-  auto const plottable_end = trajectory.lower_bound(plotting_frame_->t_max());
+  DiscreteTrajectoryView plottable_view = trajectory;
+  plottable_view.Restrict(plotting_frame_->t_min(), plotting_frame_->t_max());
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const plottable_segments = ComputePlottableSegments(plottable_spheres,
                                                            trajectory);
@@ -138,11 +138,9 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   if (trajectory.size() == 0) {
     return {};
   }
-  auto last = end;
-  --last;
-  auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
-  auto const last_time = std::min(last->time, plotting_frame_->t_max());
-  return PlotMethod2(trajectory, begin_time, last_time, now, reverse);
+  TrajectoryView plottable_view = trajectory;
+  plottable_view.Restrict(plotting_frame_->t_min(), plotting_frame_->t_max());
+  return PlotMethod2(plottable_view, now, reverse);
 }
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod2(
@@ -154,8 +152,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto const plottable_spheres = ComputePlottableSpheres(now);
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
-  auto const final_time = reverse ? first_time : last_time;
-  auto previous_time = reverse ? last_time : first_time;
+  auto const final_time = reverse ? trajectory.t_min() : trajectory.t_max();
+  auto previous_time = reverse ? trajectory.t_max() : trajectory.t_min();
 
   if (minimal_distance != nullptr) {
     *minimal_distance = Infinity<Length>;
@@ -267,12 +265,9 @@ void Planetarium::PlotMethod3(
   if (trajectory.size() == 0) {
     return;
   }
-  auto last = std::prev(end);
-  auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
-  auto const last_time =
-      std::min({last->time, plotting_frame_->t_max(), t_max});
-  PlotMethod3(
-      trajectory, begin_time, last_time, reverse, add_point, max_points);
+  TrajectoryView plottable_view = trajectory;
+  plottable_view.Restrict(plotting_frame_->t_min(), plotting_frame_->t_max());
+  PlotMethod3(plottable_view, reverse, add_point, max_points);
 }
 
 void Planetarium::PlotMethod4(
@@ -283,12 +278,9 @@ void Planetarium::PlotMethod4(
   if (trajectory.size() == 0) {
     return;
   }
-  auto last = std::prev(end);
-  auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
-  auto const last_time =
-      std::min({last->time, plotting_frame_->t_max(), t_max});
-  PlotMethod4(
-      trajectory, begin_time, last_time, reverse, add_point, max_points);
+  TrajectoryView plottable_view = trajectory;
+  plottable_view.Restrict(plotting_frame_->t_min(), plotting_frame_->t_max());
+  PlotMethod4(plottable_view, reverse, add_point, max_points);
 }
 
 std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(

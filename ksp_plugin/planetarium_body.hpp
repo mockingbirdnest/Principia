@@ -67,8 +67,8 @@ void Planetarium::PlotMethod3(
     Length* const minimal_distance) const {
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
-  auto const final_time = reverse ? first_time : last_time;
-  auto previous_time = reverse ? last_time : first_time;
+  auto const final_time = reverse ? trajectory.t_min() : trajectory.t_max();
+  auto previous_time = reverse ? trajectory.t_max() : trajectory.t_min();
 
   if (minimal_distance != nullptr) {
     *minimal_distance = Infinity<Length>;
@@ -152,8 +152,8 @@ void Planetarium::PlotMethod4(
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,
     Length* const minimal_distance) const {
-  auto const final_time = reverse ? first_time : last_time;
-  auto previous_time = reverse ? last_time : first_time;
+  auto const final_time = reverse ? trajectory.t_min() : trajectory.t_max();
+  auto previous_time = reverse ? trajectory.t_max() : trajectory.t_min();
 
   if (minimal_distance != nullptr) {
     *minimal_distance = Infinity<Length>;
