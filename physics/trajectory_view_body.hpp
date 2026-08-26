@@ -2,6 +2,8 @@
 
 #include "physics/trajectory_view.hpp"
 
+#include <algorithm>
+
 namespace principia {
 namespace physics {
 namespace _trajectory_view {

@@ -32,7 +32,6 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
-using namespace principia::physics::_trajectory;
 using namespace principia::physics::_trajectory_view;
 using namespace principia::quantities::_quantities;
 
