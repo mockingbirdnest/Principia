@@ -35,14 +35,14 @@ using namespace principia::quantities::_si;
 template<typename Frame>
 DegreesOfFreedom<Navigation> EvaluateDegreesOfFreedomInNavigation(
     PlottingFrame const& plotting_frame,
-    Trajectory<Frame> const& trajectory,
+    TrajectoryView<Frame> const& trajectory,
     Instant const& t);
 
 template<>
 inline DegreesOfFreedom<Navigation>
 EvaluateDegreesOfFreedomInNavigation<Barycentric>(
     PlottingFrame const& plotting_frame,
-    Trajectory<Barycentric> const& trajectory,
+    TrajectoryView<Barycentric> const& trajectory,
     Instant const& t) {
   SimilarMotion<Barycentric, Navigation> const to_plotting_frame_at_t =
       plotting_frame.ToThisFrameAtTimeSimilarly(t);
@@ -53,7 +53,7 @@ template<>
 inline DegreesOfFreedom<Navigation>
 EvaluateDegreesOfFreedomInNavigation<Navigation>(
     PlottingFrame const& /*plotting_frame*/,
-    Trajectory<Navigation> const& trajectory,
+    TrajectoryView<Navigation> const& trajectory,
     Instant const& t) {
   return trajectory.EvaluateDegreesOfFreedom(t);
 }
