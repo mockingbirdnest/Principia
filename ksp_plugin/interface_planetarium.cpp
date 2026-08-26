@@ -156,11 +156,11 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   if (index % 2 == 0 ||
       segment->empty() ||
       segment->front().time >= plugin->renderer().GetPlottingFrame()->t_min()) {
-    DiscreteTrajectoryView const view(
-        &flight_plan.GetAllSegments(),
-        segment->begin(),
-        t_max == nullptr ? segment->end()
-                         : segment->upper_bound(FromGameTime(*plugin, *t_max)));
+    DiscreteTrajectoryView view(
+        &flight_plan.GetAllSegments(), segment->begin(), segment->end());
+    if (t_max != nullptr) {
+      view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+    }
     planetarium->PlotMethod4(
         view,
         /*reverse=*/false,
@@ -191,12 +191,11 @@ void __cdecl principia__PlanetariumPlotPrediction(
 
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   auto const prediction = vessel.prediction();
-  DiscreteTrajectoryView const view(
-      &vessel.trajectory(),
-      prediction->begin(),
-      t_max == nullptr
-          ? prediction->end()
-          : prediction->upper_bound(FromGameTime(*plugin, *t_max)));
+  DiscreteTrajectoryView view(
+      &vessel.trajectory(), prediction->begin(), prediction->end());
+  if (t_max != nullptr) {
+    view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+  }
   planetarium->PlotMethod4(
       view,
       /*reverse=*/false,
@@ -250,12 +249,12 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     // time the history will be shorter than desired.
     vessel->RequestReanimation(desired_first_time);
 
-    DiscreteTrajectoryView const view(
-        &trajectory,
-        trajectory.lower_bound(desired_first_time),
-        t_max == nullptr
-            ? psychohistory->end()
-            : psychohistory->upper_bound(FromGameTime(*plugin, *t_max)));
+    DiscreteTrajectoryView view(&trajectory,
+                                trajectory.lower_bound(desired_first_time),
+                                psychohistory->end());
+    if (t_max != nullptr) {
+      view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+    }
     planetarium->PlotMethod4(
         view,
         /*reverse=*/true,
