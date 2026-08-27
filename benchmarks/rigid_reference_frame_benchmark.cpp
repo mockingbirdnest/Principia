@@ -17,6 +17,7 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
@@ -46,6 +47,7 @@ using namespace principia::physics::_body;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_massive_body;
 using namespace principia::physics::_massless_body;
@@ -79,17 +81,14 @@ void FillLinearTrajectory(Position<F> const& initial,
 // This code is derived from Plugin::RenderTrajectory.
 std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyReferenceFrame(
-    not_null<ReferenceFrame<Barycentric,
-                            Rendering>*> const reference_frame,
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end) {
+    not_null<ReferenceFrame<Barycentric, Rendering>*> const reference_frame,
+    DiscreteTrajectoryView<Barycentric> const& trajectory) {
   std::vector<std::pair<Position<Barycentric>,
                         Position<Barycentric>>> result;
 
   // Compute the trajectory in the rendering frame.
   DiscreteTrajectory<Rendering> intermediate_trajectory;
-  for (auto it = begin; it != end; ++it) {
-    auto const& [time, degrees_of_freedom] = *it;
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
     CHECK_OK(intermediate_trajectory.Append(
         time,
         reference_frame->ToThisFrameAtTimeSimilarly(time)(degrees_of_freedom)));
@@ -101,7 +100,7 @@ ApplyReferenceFrame(
       intermediate_trajectory.begin();
   DiscreteTrajectory<Rendering>::iterator const intermediate_end =
       intermediate_trajectory.end();
-  auto to_rendering_frame_at_current_time =
+  auto const& to_rendering_frame_at_current_time =
       reference_frame->FromThisFrameAtTimeSimilarly(current_time).similarity();
   if (initial_it != intermediate_end) {
     for (auto final_it = initial_it;
@@ -121,15 +120,13 @@ std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyRigidReferenceFrame(
     not_null<RigidReferenceFrame<Barycentric,
                                  Rendering>*> const reference_frame,
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end) {
+    DiscreteTrajectoryView<Barycentric> const& trajectory) {
   std::vector<std::pair<Position<Barycentric>,
                         Position<Barycentric>>> result;
 
   // Compute the trajectory in the rendering frame.
   DiscreteTrajectory<Rendering> intermediate_trajectory;
-  for (auto it = begin; it != end; ++it) {
-    auto const& [time, degrees_of_freedom] = *it;
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
     CHECK_OK(intermediate_trajectory.Append(
         time,
         reference_frame->ToThisFrameAtTime(time)(degrees_of_freedom)));
@@ -141,7 +138,7 @@ ApplyRigidReferenceFrame(
       intermediate_trajectory.begin();
   DiscreteTrajectory<Rendering>::iterator const intermediate_end =
       intermediate_trajectory.end();
-  auto to_rendering_frame_at_current_time =
+  auto const& to_rendering_frame_at_current_time =
       reference_frame->FromThisFrameAtTime(current_time).rigid_transformation();
   if (initial_it != intermediate_end) {
     for (auto final_it = initial_it;
@@ -199,9 +196,8 @@ void BM_BodyCentredNonRotatingReferenceFrame(benchmark::State& state) {
   BodyCentredNonRotatingReferenceFrame<Barycentric, Rendering>
       reference_frame(ephemeris.get(), earth);
   for (auto _ : state) {
-    auto v = ApplyRigidReferenceFrame(&reference_frame,
-                                      probe_trajectory.begin(),
-                                      probe_trajectory.end());
+    auto v = ApplyRigidReferenceFrame(
+        &reference_frame, DiscreteTrajectoryView(&probe_trajectory));
   }
 }
 
@@ -249,9 +245,8 @@ void BM_BarycentricRotatingReferenceFrame(benchmark::State& state) {
   BarycentricRotatingReferenceFrame<Barycentric, Rendering>
       reference_frame(ephemeris.get(), earth, venus);
   for (auto _ : state) {
-    auto v = ApplyRigidReferenceFrame(&reference_frame,
-                                      probe_trajectory.begin(),
-                                      probe_trajectory.end());
+    auto v = ApplyRigidReferenceFrame(
+        &reference_frame, DiscreteTrajectoryView(&probe_trajectory));
   }
 }
 
@@ -316,8 +311,7 @@ void BM_RotatingPulsatingReferenceFrame(benchmark::State& state) {
       reference_frame(ephemeris.get(), primaries, secondaries);
   for (auto _ : state) {
     auto v = ApplyReferenceFrame(&reference_frame,
-                                 probe_trajectory.begin(),
-                                 probe_trajectory.end());
+                                 DiscreteTrajectoryView(&probe_trajectory));
   }
 }
 

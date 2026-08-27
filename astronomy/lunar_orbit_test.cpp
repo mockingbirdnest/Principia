@@ -31,6 +31,7 @@
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
@@ -69,6 +70,7 @@ using namespace principia::physics::_apsides;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massless_body;
@@ -399,9 +401,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   DistinguishedPoints<LunarSurface> ascending_nodes;
   DistinguishedPoints<LunarSurface> descending_nodes;
-  EXPECT_OK(ComputeNodes(surface_trajectory,
-                         surface_trajectory.begin(),
-                         surface_trajectory.end(),
+  EXPECT_OK(ComputeNodes(DiscreteTrajectoryView(&surface_trajectory),
                          /*north=*/Vector<double, LunarSurface>({0, 0, 1}),
                          /*max_points=*/std::numeric_limits<int>::max(),
                          ascending_nodes,
@@ -410,9 +410,7 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   DistinguishedPoints<ICRS> apoapsides;
   DistinguishedPoints<ICRS> periapsides;
   ComputeApsides(*ephemeris_->trajectory(moon_),
-                 trajectory,
-                 trajectory.begin(),
-                 trajectory.end(),
+                 DiscreteTrajectoryView(&trajectory),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
