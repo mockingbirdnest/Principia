@@ -43,6 +43,7 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_frame_field.hpp"
 #include "physics/body_surface_reference_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
@@ -73,6 +74,7 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_frame_field;
 using namespace principia::physics::_body_surface_reference_frame;
+using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
@@ -1007,9 +1009,7 @@ void Plugin::ExtendPredictionForFlightPlan(GUID const& vessel_guid) const {
 
 void Plugin::ComputeAndRenderApsides(
     Index const celestial_index,
-    Trajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end,
+    DiscreteTrajectoryView<Barycentric> const& trajectory,
     Position<World> const& sun_world_position,
     int const max_points,
     DistinguishedPoints<World>& apoapsides,
@@ -1018,7 +1018,6 @@ void Plugin::ComputeAndRenderApsides(
   DistinguishedPoints<Barycentric> barycentric_periapsides;
   ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
                  trajectory,
-                 begin, end,
                  max_points,
                  barycentric_apoapsides,
                  barycentric_periapsides);
@@ -1037,9 +1036,7 @@ void Plugin::ComputeAndRenderApsides(
 std::optional<DistinguishedPoints<World>::value_type>
 Plugin::ComputeAndRenderFirstCollision(
     Index const celestial_index,
-    Trajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end,
+    DiscreteTrajectoryView<Barycentric> const& trajectory,
     Position<World> const& sun_world_position,
     int max_points,
     std::function<Length(Angle const& latitude,
@@ -1053,7 +1050,6 @@ Plugin::ComputeAndRenderFirstCollision(
   DistinguishedPoints<Barycentric> periapsides;
   ComputeApsides(celestial_trajectory,
                  trajectory,
-                 begin, end,
                  max_points,
                  apoapsides,
                  periapsides);
@@ -1080,12 +1076,10 @@ Plugin::ComputeAndRenderFirstCollision(
       // rendering.
       DistinguishedPoints<Barycentric> const points_to_render({collision});
       DistinguishedPoints<World> const rendered_points =
-          renderer_->RenderDistinguishedPointsInWorld(
-              current_time_,
-              points_to_render.begin(),
-              points_to_render.end(),
-              sun_world_position,
-              PlanetariumRotation());
+          renderer_->RenderDistinguishedPointsInWorld(current_time_,
+                                                      points_to_render,
+                                                      sun_world_position,
+                                                      PlanetariumRotation());
       return *rendered_points.begin();
     }
   }
@@ -1095,9 +1089,7 @@ Plugin::ComputeAndRenderFirstCollision(
 }
 
 void Plugin::ComputeAndRenderClosestApproaches(
-    Trajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end,
+    DiscreteTrajectoryView<Barycentric> const& trajectory,
     Position<World> const& sun_world_position,
     int const max_points,
     DistinguishedPoints<World>& closest_approaches) const {
@@ -1107,28 +1099,25 @@ void Plugin::ComputeAndRenderClosestApproaches(
   DistinguishedPoints<Barycentric> periapsides;
   ComputeApsides(*renderer_->GetTargetVessel().prediction(),
                  trajectory,
-                 begin, end,
                  max_points,
                  apoapsides,
                  periapsides);
   closest_approaches =
       renderer_->RenderDistinguishedPointsInWorld(
           current_time_,
-          periapsides.begin(),
-          periapsides.end(),
+          periapsides,
           sun_world_position,
           PlanetariumRotation());
 }
 
 void Plugin::ComputeAndRenderNodes(
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end,
+    DiscreteTrajectoryView<Barycentric> const& trajectory,
     Position<World> const& sun_world_position,
     int const max_points,
     std::vector<Renderer::Node>& ascending,
     std::vector<Renderer::Node>& descending) const {
   auto const trajectory_in_plotting =
-      renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
+      renderer_->RenderBarycentricTrajectoryInPlotting(trajectory);
 
   auto const* const cast_plotting_frame = dynamic_cast<
       BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation> const*>(
@@ -1150,9 +1139,7 @@ void Plugin::ComputeAndRenderNodes(
   DistinguishedPoints<Navigation> plotting_ascending;
   DistinguishedPoints<Navigation> plotting_descending;
   // The so-called North is orthogonal to the plane of the trajectory.
-  ComputeNodes(trajectory_in_plotting,
-               trajectory_in_plotting.begin(),
-               trajectory_in_plotting.end(),
+  ComputeNodes(DiscreteTrajectoryView(&trajectory_in_plotting),
                Vector<double, Navigation>({0, 0, 1}),
                max_points,
                plotting_ascending,
