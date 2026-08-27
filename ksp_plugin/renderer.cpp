@@ -72,27 +72,21 @@ Vessel const& Renderer::GetTargetVessel() const {
   return *target_->vessel;
 }
 
-DiscreteTrajectory<Navigation>
-Renderer::RenderBarycentricTrajectoryInPlotting(
-    DiscreteTrajectory<Barycentric>::iterator const& begin,
-    DiscreteTrajectory<Barycentric>::iterator const& end) const {
+DiscreteTrajectory<Navigation> Renderer::RenderBarycentricTrajectoryInPlotting(
+    DiscreteTrajectoryView<Barycentric> const& trajectory) const {
   auto const plotting_frame = GetPlottingFrame();
-  DiscreteTrajectory<Navigation> trajectory;
-  for (auto it = begin; it != end; ++it) {
-    auto const& [time, degrees_of_freedom] = *it;
+  // If there is a target vessel, its prediction may not cover all the times we
+  // want to convert.
+  DiscreteTrajectoryView plottable_view = trajectory;
+  plottable_view.Restrict(plotting_frame->t_min(), plotting_frame->t_max());
 
-    // If there is a target vessel, its prediction may not cover all the times
-    // we want to convert.
-    if (time < plotting_frame->t_min()) {
-      continue;
-    } else if (time > plotting_frame->t_max()) {
-      break;
-    }
-    trajectory.Append(time,
-                      BarycentricToPlotting(time)(degrees_of_freedom))
+  DiscreteTrajectory<Navigation> plotting_trajectory;
+  for (auto const& [time, degrees_of_freedom] : plottable_view) {
+    plotting_trajectory
+        .Append(time, BarycentricToPlotting(time)(degrees_of_freedom))
         .IgnoreError();
   }
-  return trajectory;
+  return plotting_trajectory;
 }
 
 DistinguishedPoints<World> Renderer::RenderDistinguishedPointsInWorld(

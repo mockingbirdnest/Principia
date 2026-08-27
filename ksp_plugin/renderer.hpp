@@ -19,6 +19,7 @@
 #include "physics/apsides.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rigid_motion.hpp"
@@ -46,6 +47,7 @@ using namespace principia::ksp_plugin::_vessel;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
@@ -98,8 +100,7 @@ class Renderer {
   // prediction must not be empty.
   virtual DiscreteTrajectory<Navigation>
   RenderBarycentricTrajectoryInPlotting(
-      DiscreteTrajectory<Barycentric>::iterator const& begin,
-      DiscreteTrajectory<Barycentric>::iterator const& end) const;
+      DiscreteTrajectoryView<Barycentric> const& trajectory) const;
 
   // In this function and others in this class, `sun_world_position` is the
   // current position of the sun in `World` space as returned by
