@@ -57,7 +57,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
   plottable_view.Restrict(plotting_frame_->t_min(), plotting_frame_->t_max());
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const plottable_segments = ComputePlottableSegments(plottable_spheres,
-                                                           trajectory);
+                                                           plottable_view);
 
   auto const field_of_view_radius² =
       perspective_.focal() * perspective_.focal() *

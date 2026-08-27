@@ -156,13 +156,12 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   if (index % 2 == 0 ||
       segment->empty() ||
       segment->front().time >= plugin->renderer().GetPlottingFrame()->t_min()) {
-    DiscreteTrajectoryView view(
-        &flight_plan.GetAllSegments(), segment->begin(), segment->end());
+    DiscreteTrajectoryView segment_view(&flight_plan.GetAllSegments(), segment);
     if (t_max != nullptr) {
-      view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+      segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
     }
     planetarium->PlotMethod4(
-        view,
+        segment_view,
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -191,13 +190,12 @@ void __cdecl principia__PlanetariumPlotPrediction(
 
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   auto const prediction = vessel.prediction();
-  DiscreteTrajectoryView view(
-      &vessel.trajectory(), prediction->begin(), prediction->end());
+  DiscreteTrajectoryView prediction_view(&vessel.trajectory(), prediction);
   if (t_max != nullptr) {
-    view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+    prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
   }
   planetarium->PlotMethod4(
-      view,
+      prediction_view,
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
         vertices[(*vertex_count)++] = vertex;
@@ -249,14 +247,15 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     // time the history will be shorter than desired.
     vessel->RequestReanimation(desired_first_time);
 
-    DiscreteTrajectoryView view(&trajectory,
-                                trajectory.lower_bound(desired_first_time),
-                                psychohistory->end());
+    DiscreteTrajectoryView psychohistory_view(
+        &trajectory,
+        trajectory.lower_bound(desired_first_time),
+        psychohistory->end());
     if (t_max != nullptr) {
-      view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+      psychohistory_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
     }
     planetarium->PlotMethod4(
-        view,
+        psychohistory_view,
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -308,12 +307,12 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
 
     Instant const first_time =
         std::max(desired_first_time, celestial_trajectory.t_min());
-    TrajectoryView const view(&celestial_trajectory,
-                              /*t_min=*/first_time,
-                              /*t_max=*/plugin->CurrentTime());
+    TrajectoryView const celestial_view(&celestial_trajectory,
+                                        /*t_min=*/first_time,
+                                        /*t_max=*/plugin->CurrentTime());
     Length minimal_distance;
     planetarium->PlotMethod4(
-        view,
+        celestial_view,
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -367,12 +366,12 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
         plugin->GetCelestial(celestial_index).trajectory();
     // No need to request reanimation here because the current time of the
     // plugin is necessarily covered.
-    TrajectoryView const view(&celestial_trajectory,
-                              /*t_min=*/plugin->CurrentTime(),
-                              /*t_max=*/final_time);
+    TrajectoryView const celestial_view(&celestial_trajectory,
+                                        /*t_min=*/plugin->CurrentTime(),
+                                        /*t_max=*/final_time);
     Length minimal_distance;
     planetarium->PlotMethod4(
-        view,
+        celestial_view,
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
