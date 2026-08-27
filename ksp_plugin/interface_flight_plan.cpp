@@ -663,8 +663,7 @@ Iterator* __cdecl principia__FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
                        segment->front().degrees_of_freedom);
       rendered_manœuvre = plugin->renderer().RenderDistinguishedPointsInWorld(
           plugin->CurrentTime(),
-          manœuvre.begin(),
-          manœuvre.end(),
+          manœuvre,
           FromXYZ<Position<World>>(sun_world_position),
           plugin->PlanetariumRotation());
     }

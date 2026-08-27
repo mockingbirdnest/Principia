@@ -7,7 +7,6 @@
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
-#include "base/ranges.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/permutation.hpp"
 #include "physics/body_centred_body_direction_reference_frame.hpp"
@@ -17,7 +16,6 @@ namespace ksp_plugin {
 namespace _renderer {
 namespace internal {
 
-using namespace principia::base::_ranges;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_permutation;
 using namespace principia::physics::_body_centred_body_direction_reference_frame;  // NOLINT
@@ -91,20 +89,18 @@ DiscreteTrajectory<Navigation> Renderer::RenderBarycentricTrajectoryInPlotting(
 
 DistinguishedPoints<World> Renderer::RenderDistinguishedPointsInWorld(
     Instant const& time,
-    DistinguishedPoints<Barycentric>::const_iterator const begin,
-    DistinguishedPoints<Barycentric>::const_iterator const end,
+    DistinguishedPoints<Barycentric> const& points,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   DistinguishedPoints<Navigation> plotting_points;
-  for (auto const& [t, degrees_of_freedom] : Range(begin, end)) {
+  for (auto const& [t, degrees_of_freedom] : points) {
     auto const plotting_degrees_of_freedom =
         BarycentricToPlotting(t)(degrees_of_freedom);
     plotting_points.emplace(t, plotting_degrees_of_freedom);
   }
   return RenderPlottingContainerInWorld<DistinguishedPoints>(
       time,
-      plotting_points.begin(),
-      plotting_points.end(),
+      plotting_points,
       sun_world_position,
       planetarium_rotation,
       [](DistinguishedPoints<World>& world_points,
@@ -117,15 +113,14 @@ DistinguishedPoints<World> Renderer::RenderDistinguishedPointsInWorld(
 std::vector<Renderer::Node>
 Renderer::RenderNodes(
     Instant const& time,
-    DistinguishedPoints<Navigation>::const_iterator const& begin,
-    DistinguishedPoints<Navigation>::const_iterator const& end,
+    DistinguishedPoints<Navigation> const& points,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   std::vector<Node> nodes;
   Similarity<Navigation, World> const
       from_plotting_frame_to_world_at_current_time =
           PlottingToWorld(time, sun_world_position, planetarium_rotation);
-  for (auto const& [t, degrees_of_freedom] : Range(begin, end)) {
+  for (auto const& [t, degrees_of_freedom] : points) {
     DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
         degrees_of_freedom;
     ConformalMap<double, Navigation, World> const
@@ -304,8 +299,7 @@ Renderer::Target::Target(
 template<template<typename Frame> typename Container>
 Container<World> Renderer::RenderPlottingContainerInWorld(
     Instant const& time,
-    Container<Navigation>::const_iterator const& begin,
-    Container<Navigation>::const_iterator const& end,
+    Container<Navigation> const& container,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation,
     std::function<void(Container<World>&,
@@ -344,7 +338,7 @@ Container<World> Renderer::RenderPlottingContainerInWorld(
   Similarity<Navigation, World> const
       from_plotting_frame_to_world_at_current_time =
           PlottingToWorld(time, sun_world_position, planetarium_rotation);
-  for (auto const& [t, degrees_of_freedom] : Range(begin, end)) {
+  for (auto const& [t, degrees_of_freedom] : container) {
     DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
         degrees_of_freedom;
     ConformalMap<double, Navigation, World> const

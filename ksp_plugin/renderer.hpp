@@ -112,15 +112,13 @@ class Renderer {
   DistinguishedPoints<World>
   RenderDistinguishedPointsInWorld(
       Instant const& time,
-      DistinguishedPoints<Barycentric>::const_iterator begin,
-      DistinguishedPoints<Barycentric>::const_iterator end,
+      DistinguishedPoints<Barycentric> const& points,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   std::vector<Node> RenderNodes(
       Instant const& time,
-      DistinguishedPoints<Navigation>::const_iterator const& begin,
-      DistinguishedPoints<Navigation>::const_iterator const& end,
+      DistinguishedPoints<Navigation> const& points,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
@@ -208,8 +206,7 @@ class Renderer {
   template<template<typename Frame> typename Container>
   Container<World> RenderPlottingContainerInWorld(
       Instant const& time,
-      Container<Navigation>::const_iterator const& begin,
-      Container<Navigation>::const_iterator const& end,
+      Container<Navigation> const& container,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation,
       std::function<void(Container<World>&,

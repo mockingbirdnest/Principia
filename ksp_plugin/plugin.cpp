@@ -1024,14 +1024,12 @@ void Plugin::ComputeAndRenderApsides(
                  barycentric_periapsides);
   apoapsides = renderer_->RenderDistinguishedPointsInWorld(
                    current_time_,
-                   barycentric_apoapsides.begin(),
-                   barycentric_apoapsides.end(),
+                   barycentric_apoapsides,
                    sun_world_position,
                    PlanetariumRotation());
   periapsides = renderer_->RenderDistinguishedPointsInWorld(
                     current_time_,
-                    barycentric_periapsides.begin(),
-                    barycentric_periapsides.end(),
+                    barycentric_periapsides,
                     sun_world_position,
                     PlanetariumRotation());
 }
@@ -1162,13 +1160,11 @@ void Plugin::ComputeAndRenderNodes(
                show_node).IgnoreError();
 
   ascending = renderer_->RenderNodes(current_time_,
-                                     plotting_ascending.begin(),
-                                     plotting_ascending.end(),
+                                     plotting_ascending,
                                      sun_world_position,
                                      PlanetariumRotation());
   descending = renderer_->RenderNodes(current_time_,
-                                      plotting_descending.begin(),
-                                      plotting_descending.end(),
+                                      plotting_descending,
                                       sun_world_position,
                                       PlanetariumRotation());
 }
