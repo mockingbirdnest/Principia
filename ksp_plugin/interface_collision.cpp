@@ -44,7 +44,7 @@ NewExecutor(Plugin const* const plugin,
                plugin,
                sun_world_position =
                    FromXYZ<Position<World>>(sun_world_position),
-               &vessel_trajectory](
+               vessel_trajectory](
                   std::function<Length(Angle const& latitude,
                                        Angle const& longitude)> const& radius) {
     return plugin->ComputeAndRenderFirstCollision(celestial_index,
