@@ -11,6 +11,7 @@
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "physics/apsides.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 
 namespace principia {
 namespace interface {
@@ -19,6 +20,7 @@ using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_iterators;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_apsides;
+using namespace principia::physics::_discrete_trajectory_view;
 
 namespace {
 
@@ -56,16 +58,18 @@ void __cdecl principia__RenderedPredictionApsides(
        max_points},
       {apoapsides, periapsides});
   CHECK(plugin != nullptr);
-  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
+  auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const prediction = vessel.prediction();
+  DiscreteTrajectoryView prediction_view(
+      &vessel.trajectory(), prediction->begin(), prediction->end());
+  if (t_max != nullptr) {
+    prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+  }
   DistinguishedPoints<World> rendered_apoapsides;
   DistinguishedPoints<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(
       celestial_index,
-      *prediction,
-      /*begin=*/prediction->begin(),
-      /*end=*/t_max == nullptr
-          ? prediction->end()
-          : prediction->upper_bound(FromGameTime(*plugin, *t_max)),
+      prediction_view,
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_apoapsides,
@@ -89,12 +93,13 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       {plugin, vessel_guid, sun_world_position, max_points},
       {closest_approaches});
   CHECK(plugin != nullptr);
-  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
+  auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const prediction = vessel.prediction();
+  DiscreteTrajectoryView const prediction_view(
+      &vessel.trajectory(), prediction->begin(), prediction->end());
   DistinguishedPoints<World> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
-      *prediction,
-      prediction->begin(),
-      prediction->end(),
+      prediction_view,
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_closest_approaches);
@@ -115,14 +120,17 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
       {plugin, vessel_guid, t_max, sun_world_position, max_points},
       {ascending, descending});
   CHECK(plugin != nullptr);
-  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
+  auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const prediction = vessel.prediction();
+  DiscreteTrajectoryView prediction_view(
+      &vessel.trajectory(), prediction->begin(), prediction->end());
+  if (t_max != nullptr) {
+    prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+  }
   std::vector<Renderer::Node> rendered_ascending;
   std::vector<Renderer::Node> rendered_descending;
   plugin->ComputeAndRenderNodes(
-      /*begin=*/prediction->begin(),
-      /*end=*/t_max == nullptr
-          ? prediction->end()
-          : prediction->upper_bound(FromGameTime(*plugin, *t_max)),
+      prediction_view,
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
       rendered_ascending,

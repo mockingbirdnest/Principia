@@ -15,6 +15,7 @@
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/mock_rigid_reference_frame.hpp"
@@ -42,6 +43,7 @@ using namespace principia::ksp_plugin_test::_mock_celestial;
 using namespace principia::ksp_plugin_test::_mock_vessel;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_mock_continuous_trajectory;
 using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_mock_rigid_reference_frame;
@@ -124,8 +126,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
 
   auto const rendered_trajectory =
       renderer_.RenderBarycentricTrajectoryInPlotting(
-          trajectory_to_render.begin(),
-          trajectory_to_render.end());
+          DiscreteTrajectoryView(&trajectory_to_render));
 
   EXPECT_EQ(10, rendered_trajectory.size());
   int index = 0;
@@ -190,8 +191,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
   auto const rendered_trajectory =
       renderer_.RenderBarycentricTrajectoryInPlotting(
-          trajectory_to_render.begin(),
-          trajectory_to_render.end());
+          DiscreteTrajectoryView(&trajectory_to_render));
 
   EXPECT_EQ(5, rendered_trajectory.size());
   int index = 3;

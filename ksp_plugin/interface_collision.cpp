@@ -12,6 +12,7 @@
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
 #include "physics/apsides.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -22,12 +23,12 @@ using namespace principia::base::_push_pull_callback;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_apsides;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
 namespace {
 
-template<typename TrajectoryLike>
 not_null<std::unique_ptr<
     PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>,
                      Length, Angle, Angle>>>
@@ -35,7 +36,7 @@ NewExecutor(Plugin const* const plugin,
             int const celestial_index,
             XYZ const sun_world_position,
             int const max_points,
-            TrajectoryLike const& vessel_trajectory) {
+            DiscreteTrajectoryView<Barycentric> const& vessel_trajectory) {
   CHECK(plugin != nullptr);
 
   auto task = [celestial_index,
@@ -48,8 +49,6 @@ NewExecutor(Plugin const* const plugin,
                                        Angle const& longitude)> const& radius) {
     return plugin->ComputeAndRenderFirstCollision(celestial_index,
                                                   vessel_trajectory,
-                                                  vessel_trajectory.begin(),
-                                                  vessel_trajectory.end(),
                                                   sun_world_position,
                                                   max_points,
                                                   radius);
@@ -121,12 +120,13 @@ PushPullExecutor<
        vessel_guid}};
   CHECK(plugin != nullptr);
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
-  return m.Return(NewExecutor(plugin,
-                              celestial_index,
-                              sun_world_position,
-                              max_points,
-                              flight_plan.GetAllSegments())
-                      .release());
+  return m.Return(
+      NewExecutor(plugin,
+                  celestial_index,
+                  sun_world_position,
+                  max_points,
+                  DiscreteTrajectoryView(&flight_plan.GetAllSegments()))
+          .release());
 }
 
 PushPullExecutor<
@@ -144,12 +144,15 @@ PushPullExecutor<
        max_points,
        vessel_guid}};
   CHECK(plugin != nullptr);
-  not_null<Vessel*> const vessel = plugin->GetVessel(vessel_guid);
+  Vessel const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const prediction = vessel.prediction();
+  DiscreteTrajectoryView const prediction_view(
+      &vessel.trajectory(), prediction->begin(), prediction->end());
   return m.Return(NewExecutor(plugin,
                               celestial_index,
                               sun_world_position,
                               max_points,
-                              *vessel->prediction())
+                              prediction_view)
                       .release());
 }
 
