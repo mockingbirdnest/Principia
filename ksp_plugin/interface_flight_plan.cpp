@@ -575,13 +575,13 @@ void __cdecl principia__FlightPlanRenderedApsides(
   for (auto const& segment : flight_plan.segments()) {
     DistinguishedPoints<World> segment_rendered_apoapsides;
     DistinguishedPoints<World> segment_rendered_periapsides;
-    DiscreteTrajectoryView view(&flight_plan, segment.begin(), segment.end());
+    DiscreteTrajectoryView segment_view(&flight_plan, segment);
     if (t_max != nullptr) {
-      view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+      segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
     }
     plugin->ComputeAndRenderApsides(
         celestial_index,
-        view,
+        segment_view,
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_apoapsides,
@@ -613,10 +613,9 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
   DistinguishedPoints<World> rendered_closest_approaches;
   for (auto const& segment : flight_plan.segments()) {
     DistinguishedPoints<World> segment_rendered_closest_approaches;
-    DiscreteTrajectoryView const view(
-        &flight_plan, segment.begin(), segment.end());
+    DiscreteTrajectoryView const segment_view(&flight_plan, segment);
     plugin->ComputeAndRenderClosestApproaches(
-        view,
+        segment_view,
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_closest_approaches);
@@ -695,11 +694,11 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
   for (auto const& segment : flight_plan.segments()) {
     std::vector<Renderer::Node> segment_rendered_ascending;
     std::vector<Renderer::Node> segment_rendered_descending;
-    DiscreteTrajectoryView view(&flight_plan, segment.begin(), segment.end());
+    DiscreteTrajectoryView segment_view(&flight_plan, segment);
     if (t_max != nullptr) {
-      view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+      segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
     }
-    plugin->ComputeAndRenderNodes(view,
+    plugin->ComputeAndRenderNodes(segment_view,
                                   FromXYZ<Position<World>>(sun_world_position),
                                   max_points,
                                   segment_rendered_ascending,

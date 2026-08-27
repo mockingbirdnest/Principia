@@ -67,8 +67,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 
   DiscreteTrajectoryView referenceable_view = trajectory;
   referenceable_view.Restrict(reference.t_min(), reference.t_max());
-  for (auto it = trajectory.begin(); it != trajectory.end(); ++it) {
-    auto const& [time, degrees_of_freedom] = *it;
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
     DegreesOfFreedom<Frame> const body_degrees_of_freedom =
         reference.EvaluateDegreesOfFreedom(time);
     RelativeDegreesOfFreedom<Frame> const relative =
@@ -479,9 +478,8 @@ absl::Status ComputeNodes(
   std::optional<Length> previous_z;
   std::optional<Speed> previous_z_speed;
 
-  for (auto it = trajectory.begin(); it != trajectory.end(); ++it) {
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
     RETURN_IF_STOPPED;
-    auto const& [time, degrees_of_freedom] = *it;
     Length const z =
         (degrees_of_freedom.position() - Frame::origin).coordinates().z;
     Speed const z_speed = degrees_of_freedom.velocity().coordinates().z;

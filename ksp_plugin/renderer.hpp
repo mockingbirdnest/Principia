@@ -96,8 +96,8 @@ class Renderer {
   virtual Vessel const& GetTargetVessel() const;
 
   // Returns a trajectory in the current plotting frame corresponding to the
-  // trajectory defined by `begin` and `end`.  If there is a target vessel, its
-  // prediction must not be empty.
+  // given trajectory view.  If there is a target vessel, its prediction must
+  // not be empty.
   virtual DiscreteTrajectory<Navigation>
   RenderBarycentricTrajectoryInPlotting(
       DiscreteTrajectoryView<Barycentric> const& trajectory) const;

@@ -145,6 +145,43 @@ TEST_F(DiscreteTrajectoryViewTest, ViewOfEntireEmptyTrajectory) {
 TEST_F(DiscreteTrajectoryViewTest, ViewDefinedBySegment) {
   auto const trajectory = MakeTrajectory();
   auto const segments = trajectory.segments();
+  auto const& segment = *std::next(segments.begin());
+  DiscreteTrajectoryView<World> view(&trajectory, segment);
+
+  EXPECT_EQ(segment.front().time, view.front().time);
+  EXPECT_EQ(segment.front().degrees_of_freedom,
+            view.front().degrees_of_freedom);
+  EXPECT_EQ(segment.back().time, view.back().time);
+  EXPECT_EQ(segment.back().degrees_of_freedom, view.back().degrees_of_freedom);
+
+  EXPECT_EQ(segment.begin(), view.begin());
+  EXPECT_EQ(segment.end(), view.end());
+
+  EXPECT_EQ(6, view.size());
+  EXPECT_EQ(t0_ + 4 * Second, view.t_min());
+  EXPECT_EQ(t0_ + 9 * Second, view.t_max());
+
+  EXPECT_EQ(t0_ + 6 * Second, view.find(t0_ + 6 * Second)->time);
+  EXPECT_EQ(t0_ + 6 * Second, view.lower_bound(t0_ + 6 * Second)->time);
+  EXPECT_EQ(t0_ + 7 * Second, view.lower_bound(t0_ + 6.1 * Second)->time);
+  EXPECT_EQ(view.begin(), view.lower_bound(t0_));
+  EXPECT_EQ(view.end(), view.lower_bound(t0_ + 13.1 * Second));
+  EXPECT_EQ(t0_ + 7 * Second, view.upper_bound(t0_ + 6 * Second)->time);
+  EXPECT_EQ(t0_ + 7 * Second, view.upper_bound(t0_ + 6.1 * Second)->time);
+  EXPECT_EQ(view.begin(), view.upper_bound(t0_));
+  EXPECT_EQ(view.end(), view.upper_bound(t0_ + 13 * Second));
+
+  EXPECT_EQ(trajectory.EvaluatePosition(t0_ + 6.2 * Second),
+            view.EvaluatePosition(t0_ + 6.2 * Second));
+  EXPECT_EQ(trajectory.EvaluateVelocity(t0_ + 6.3 * Second),
+            view.EvaluateVelocity(t0_ + 6.3 * Second));
+  EXPECT_EQ(trajectory.EvaluateDegreesOfFreedom(t0_ + 6.4 * Second),
+            view.EvaluateDegreesOfFreedom(t0_ + 6.4 * Second));
+}
+
+TEST_F(DiscreteTrajectoryViewTest, ViewDefinedBySegmentIterator) {
+  auto const trajectory = MakeTrajectory();
+  auto const segments = trajectory.segments();
   auto const segment = std::next(segments.begin());
   DiscreteTrajectoryView<World> view(&trajectory, segment);
 

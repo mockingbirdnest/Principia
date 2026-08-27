@@ -59,9 +59,8 @@ void __cdecl principia__RenderedPredictionApsides(
       {apoapsides, periapsides});
   CHECK(plugin != nullptr);
   auto const& vessel = *plugin->GetVessel(vessel_guid);
-  auto const prediction = vessel.prediction();
-  DiscreteTrajectoryView prediction_view(
-      &vessel.trajectory(), prediction->begin(), prediction->end());
+  DiscreteTrajectoryView prediction_view(&vessel.trajectory(),
+                                         vessel.prediction());
   if (t_max != nullptr) {
     prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
   }
@@ -94,9 +93,8 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       {closest_approaches});
   CHECK(plugin != nullptr);
   auto const& vessel = *plugin->GetVessel(vessel_guid);
-  auto const prediction = vessel.prediction();
-  DiscreteTrajectoryView const prediction_view(
-      &vessel.trajectory(), prediction->begin(), prediction->end());
+  DiscreteTrajectoryView const prediction_view(&vessel.trajectory(),
+                                               vessel.prediction());
   DistinguishedPoints<World> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
       prediction_view,
@@ -121,9 +119,8 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
       {ascending, descending});
   CHECK(plugin != nullptr);
   auto const& vessel = *plugin->GetVessel(vessel_guid);
-  auto const prediction = vessel.prediction();
-  DiscreteTrajectoryView prediction_view(
-      &vessel.trajectory(), prediction->begin(), prediction->end());
+  DiscreteTrajectoryView prediction_view(&vessel.trajectory(),
+                                         vessel.prediction());
   if (t_max != nullptr) {
     prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
   }

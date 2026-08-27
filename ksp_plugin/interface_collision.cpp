@@ -145,9 +145,8 @@ PushPullExecutor<
        vessel_guid}};
   CHECK(plugin != nullptr);
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
-  auto const prediction = vessel.prediction();
   DiscreteTrajectoryView const prediction_view(
-      &vessel.trajectory(), prediction->begin(), prediction->end());
+      &vessel.trajectory(), vessel.prediction());
   return m.Return(NewExecutor(plugin,
                               celestial_index,
                               sun_world_position,
