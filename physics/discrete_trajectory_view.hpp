@@ -8,6 +8,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_iterator.hpp"
+#include "physics/discrete_trajectory_segment_iterator.hpp"
 #include "physics/discrete_trajectory_types.hpp"
 #include "physics/trajectory_view.hpp"
 
@@ -22,6 +23,7 @@ using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_iterator;
+using namespace principia::physics::_discrete_trajectory_segment_iterator;
 using namespace principia::physics::_discrete_trajectory_types;
 using namespace principia::physics::_trajectory_view;
 
@@ -44,6 +46,11 @@ class DiscreteTrajectoryView : public TrajectoryView<Frame> {
   // trajectory.
   explicit DiscreteTrajectoryView(
       not_null<DiscreteTrajectory<Frame> const*> trajectory);
+
+  // A convenience constructor for building a view that covers a segment of a
+  // trajectory.
+  DiscreteTrajectoryView(not_null<DiscreteTrajectory<Frame> const*> trajectory,
+                         DiscreteTrajectorySegmentIterator<Frame> segment);
 
   // Constructs a view that covers the range [`begin`, `end`[.
   DiscreteTrajectoryView(not_null<DiscreteTrajectory<Frame> const*> trajectory,
@@ -116,6 +123,11 @@ template<typename Frame>
 DiscreteTrajectoryView(DiscreteTrajectory<Frame> const*,
                        typename DiscreteTrajectoryView<Frame>::const_iterator,
                        typename DiscreteTrajectoryView<Frame>::const_iterator)
+    -> DiscreteTrajectoryView<Frame>;
+
+template<typename Frame>
+DiscreteTrajectoryView(DiscreteTrajectory<Frame> const*,
+                       DiscreteTrajectorySegmentIterator<Frame>)
     -> DiscreteTrajectoryView<Frame>;
 
 template<typename Frame>
