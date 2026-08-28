@@ -282,6 +282,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
     int const celestial_index,
+    char const* const vessel_guid,
     double const max_history_length,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
@@ -291,6 +292,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
       {planetarium,
        plugin,
        celestial_index,
+       vessel_guid,
        max_history_length,
        vertices,
        vertices_size},
@@ -314,11 +316,16 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     // time the history will be shorter than desired.
     plugin->RequestReanimation(desired_first_time);
 
-    Instant const first_time =
-        std::max(desired_first_time, celestial_trajectory.t_min());
-    TrajectoryView const celestial_view(&celestial_trajectory,
-                                        /*t_min=*/first_time,
-                                        /*t_max=*/plugin->CurrentTime());
+    // The active vessel is used to limit the time range that we display.
+    TrajectoryView celestial_view(&celestial_trajectory);
+    celestial_view.Restrict(desired_first_time, plugin->CurrentTime());
+    if (vessel_guid != nullptr) {
+      auto const plotting_frame = plugin->renderer().GetPlottingFrame();
+      auto const& vessel = *plugin->GetVessel(vessel_guid);
+      auto const payload = vessel.GetPayload(plotting_frame);
+      celestial_view.Restrict(payload.plottable_time_interval);
+    }
+
     Length minimal_distance;
     planetarium->PlotMethod4(
         celestial_view,
@@ -364,20 +371,25 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     *minimal_distance_from_camera = std::numeric_limits<double>::infinity();
     return m.Return();
   } else {
+    auto const plotting_frame = plugin->renderer().GetPlottingFrame();
     auto const& vessel = *plugin->GetVessel(vessel_guid);
+    auto const payload = vessel.GetPayload(plotting_frame);
     Instant const prediction_final_time = vessel.prediction()->t_max();
-    Instant const final_time =
-        vessel.has_flight_plan()
-            ? std::max(GetFlightPlan(*plugin, vessel_guid).actual_final_time(),
-                       prediction_final_time)
-            : prediction_final_time;
+
     auto const& celestial_trajectory =
         plugin->GetCelestial(celestial_index).trajectory();
     // No need to request reanimation here because the current time of the
     // plugin is necessarily covered.
-    TrajectoryView const celestial_view(&celestial_trajectory,
-                                        /*t_min=*/plugin->CurrentTime(),
-                                        /*t_max=*/final_time);
+    TrajectoryView celestial_view(&celestial_trajectory,
+                                  /*t_min=*/plugin->CurrentTime(),
+                                  /*t_max=*/prediction_final_time);
+    celestial_view.Restrict(payload.plottable_time_interval);
+    if (vessel.has_flight_plan()) {
+      celestial_view.Restrict(
+          InfinitePast,
+          GetFlightPlan(*plugin, vessel_guid).actual_final_time());
+    }
+
     Length minimal_distance;
     planetarium->PlotMethod4(
         celestial_view,
