@@ -568,17 +568,23 @@ void __cdecl principia__FlightPlanRenderedApsides(
        max_points},
       {apoapsides, periapsides});
   CHECK(plugin != nullptr);
+  auto const plotting_frame = plugin->renderer().GetPlottingFrame();
+  auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const payload = vessel.GetPayload(plotting_frame);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
+
   DistinguishedPoints<World> rendered_apoapsides;
   DistinguishedPoints<World> rendered_periapsides;
   for (auto const& segment : flight_plan.segments()) {
-    DistinguishedPoints<World> segment_rendered_apoapsides;
-    DistinguishedPoints<World> segment_rendered_periapsides;
     DiscreteTrajectoryView segment_view(&flight_plan, segment);
+    segment_view.Restrict(payload.plottable_time_interval);
     if (t_max != nullptr) {
       segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
     }
+
+    DistinguishedPoints<World> segment_rendered_apoapsides;
+    DistinguishedPoints<World> segment_rendered_periapsides;
     plugin->ComputeAndRenderApsides(
         celestial_index,
         segment_view,
@@ -608,12 +614,18 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
       {plugin, vessel_guid, sun_world_position, max_points},
       {closest_approaches});
   CHECK(plugin != nullptr);
+  auto const plotting_frame = plugin->renderer().GetPlottingFrame();
+  auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const payload = vessel.GetPayload(plotting_frame);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
+
   DistinguishedPoints<World> rendered_closest_approaches;
   for (auto const& segment : flight_plan.segments()) {
+    DiscreteTrajectoryView segment_view(&flight_plan, segment);
+    segment_view.Restrict(payload.plottable_time_interval);
+
     DistinguishedPoints<World> segment_rendered_closest_approaches;
-    DiscreteTrajectoryView const segment_view(&flight_plan, segment);
     plugin->ComputeAndRenderClosestApproaches(
         segment_view,
         FromXYZ<Position<World>>(sun_world_position),
@@ -644,6 +656,10 @@ Iterator* __cdecl principia__FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
   CHECK(plugin != nullptr);
   CHECK_EQ(1, index % 2) << index;
 
+  auto const plotting_frame = plugin->renderer().GetPlottingFrame();
+  auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const payload = vessel.GetPayload(plotting_frame);
+
   // This might force a (partial) recomputation of the flight plan to avoid a
   // deadline, and a change of the anomalous status that will be noticed by the
   // flight planner.
@@ -652,14 +668,15 @@ Iterator* __cdecl principia__FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
 
   DistinguishedPoints<World> rendered_manœuvre;
   if (!segment->empty()) {
-    auto const plotting_frame = plugin->renderer().GetPlottingFrame();
     Instant const initial_time = segment->front().time;
 
     // The initial time may be outside the time range of the plotting frame if
     // there is a target vessel with a sufficiently short prediction.  Don't
     // render a Frenet trihedron in this case.
     if (plotting_frame->t_min() <= initial_time &&
-        initial_time <= plotting_frame->t_max()) {
+        payload.plottable_time_interval.min <= initial_time &&
+        initial_time <= plotting_frame->t_max() &&
+        initial_time <= payload.plottable_time_interval.max) {
       DistinguishedPoints<Barycentric> manœuvre;
       manœuvre.emplace(initial_time,
                        segment->front().degrees_of_freedom);
@@ -687,14 +704,19 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
       {plugin, vessel_guid, t_max, sun_world_position, max_points},
       {ascending, descending});
   CHECK(plugin != nullptr);
+  auto const plotting_frame = plugin->renderer().GetPlottingFrame();
+  auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const payload = vessel.GetPayload(plotting_frame);
   auto const& flight_plan =
       GetFlightPlan(*plugin, vessel_guid).GetAllSegments();
+
   std::vector<Renderer::Node> rendered_ascending;
   std::vector<Renderer::Node> rendered_descending;
   for (auto const& segment : flight_plan.segments()) {
     std::vector<Renderer::Node> segment_rendered_ascending;
     std::vector<Renderer::Node> segment_rendered_descending;
     DiscreteTrajectoryView segment_view(&flight_plan, segment);
+    segment_view.Restrict(payload.plottable_time_interval);
     if (t_max != nullptr) {
       segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
     }

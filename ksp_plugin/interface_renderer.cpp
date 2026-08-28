@@ -58,12 +58,16 @@ void __cdecl principia__RenderedPredictionApsides(
        max_points},
       {apoapsides, periapsides});
   CHECK(plugin != nullptr);
+  auto const plotting_frame = plugin->renderer().GetPlottingFrame();
   auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const payload = vessel.GetPayload(plotting_frame);
   DiscreteTrajectoryView prediction_view(&vessel.trajectory(),
                                          vessel.prediction());
+  prediction_view.Restrict(payload.plottable_time_interval);
   if (t_max != nullptr) {
     prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
   }
+
   DistinguishedPoints<World> rendered_apoapsides;
   DistinguishedPoints<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(
@@ -92,9 +96,13 @@ void __cdecl principia__RenderedPredictionClosestApproaches(
       {plugin, vessel_guid, sun_world_position, max_points},
       {closest_approaches});
   CHECK(plugin != nullptr);
+  auto const plotting_frame = plugin->renderer().GetPlottingFrame();
   auto const& vessel = *plugin->GetVessel(vessel_guid);
-  DiscreteTrajectoryView const prediction_view(&vessel.trajectory(),
-                                               vessel.prediction());
+  auto const payload = vessel.GetPayload(plotting_frame);
+  DiscreteTrajectoryView prediction_view(&vessel.trajectory(),
+                                         vessel.prediction());
+  prediction_view.Restrict(payload.plottable_time_interval);
+
   DistinguishedPoints<World> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
       prediction_view,
@@ -118,9 +126,12 @@ void __cdecl principia__RenderedPredictionNodes(Plugin const* const plugin,
       {plugin, vessel_guid, t_max, sun_world_position, max_points},
       {ascending, descending});
   CHECK(plugin != nullptr);
+  auto const plotting_frame = plugin->renderer().GetPlottingFrame();
   auto const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const payload = vessel.GetPayload(plotting_frame);
   DiscreteTrajectoryView prediction_view(&vessel.trajectory(),
                                          vessel.prediction());
+  prediction_view.Restrict(payload.plottable_time_interval);
   if (t_max != nullptr) {
     prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
   }
