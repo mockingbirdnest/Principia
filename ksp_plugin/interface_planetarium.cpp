@@ -145,7 +145,9 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   CHECK(planetarium != nullptr);
   *vertex_count = 0;
 
+  auto const plotting_frame = plugin->renderer().GetPlottingFrame();
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const payload = vessel.GetPayload(plotting_frame);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
   FlightPlan const& flight_plan = vessel.flight_plan();
   auto const segment = flight_plan.GetSegment(index);
@@ -155,8 +157,9 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   // start and we fail.
   if (index % 2 == 0 ||
       segment->empty() ||
-      segment->front().time >= plugin->renderer().GetPlottingFrame()->t_min()) {
+      segment->front().time >= plotting_frame->t_min()) {
     DiscreteTrajectoryView segment_view(&flight_plan.GetAllSegments(), segment);
+    segment_view.Restrict(payload.plottable_time_interval);
     if (t_max != nullptr) {
       segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
     }
@@ -188,9 +191,12 @@ void __cdecl principia__PlanetariumPlotPrediction(
   CHECK(planetarium != nullptr);
   *vertex_count = 0;
 
+  auto const plotting_frame = plugin->renderer().GetPlottingFrame();
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const payload = vessel.GetPayload(plotting_frame);
   DiscreteTrajectoryView prediction_view(&vessel.trajectory(),
                                          vessel.prediction());
+  prediction_view.Restrict(payload.plottable_time_interval);
   if (t_max != nullptr) {
     prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
   }
@@ -235,9 +241,11 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
   if (plugin->renderer().HasTargetVessel()) {
     return m.Return();
   } else {
-    auto const vessel = plugin->GetVessel(vessel_guid);
-    auto const& trajectory = vessel->trajectory();
-    auto const& psychohistory = vessel->psychohistory();
+    auto const plotting_frame = plugin->renderer().GetPlottingFrame();
+    auto& vessel = *plugin->GetVessel(vessel_guid);
+    auto const payload = vessel.GetPayload(plotting_frame);
+    auto const& trajectory = vessel.trajectory();
+    auto const& psychohistory = vessel.psychohistory();
 
     Instant const desired_first_time =
         plugin->CurrentTime() - max_history_length * Second;
@@ -245,12 +253,13 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     // Since we would want to plot starting from `desired_first_time`, ask the
     // reanimator to reconstruct the past.  That may take a while, during which
     // time the history will be shorter than desired.
-    vessel->RequestReanimation(desired_first_time);
+    vessel.RequestReanimation(desired_first_time);
 
     DiscreteTrajectoryView psychohistory_view(
         &trajectory,
         trajectory.lower_bound(desired_first_time),
         psychohistory->end());
+    psychohistory_view.Restrict(payload.plottable_time_interval);
     if (t_max != nullptr) {
       psychohistory_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
     }
