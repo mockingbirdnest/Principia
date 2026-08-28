@@ -56,6 +56,11 @@ void TrajectoryView<Frame>::Restrict(Instant const& t_min,
 }
 
 template<typename Frame>
+void TrajectoryView<Frame>::Restrict(Interval<Instant> const& interval) {
+  this->Restrict(interval.min, interval.max);
+}
+
+template<typename Frame>
 Position<Frame> TrajectoryView<Frame>::EvaluatePosition(
     Instant const& t) const {
   CHECK_LE(t_min_, t);

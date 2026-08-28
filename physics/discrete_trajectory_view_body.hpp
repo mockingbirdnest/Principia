@@ -159,6 +159,12 @@ void DiscreteTrajectoryView<Frame>::Restrict(Instant const& t_min,
 }
 
 template<typename Frame>
+void DiscreteTrajectoryView<Frame>::Restrict(
+    Interval<Instant> const& interval) {
+  this->Restrict(interval.min, interval.max);
+}
+
+template<typename Frame>
 void DiscreteTrajectoryView<Frame>::Restrict(const_iterator begin,
                                              const_iterator end) {
   Restrict(TrajectoryViewTMin(trajectory(), begin, end),
