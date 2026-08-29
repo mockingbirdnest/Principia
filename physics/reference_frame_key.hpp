@@ -5,7 +5,9 @@
 #include <utility>
 
 #include "base/not_null.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
@@ -13,6 +15,7 @@ namespace _reference_frame_key {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
 
 // A copyable container for using `ReferenceFrame` and its subclasses as keys in
@@ -23,6 +26,13 @@ class ReferenceFrameKey {
   explicit ReferenceFrameKey(
       not_null<std::unique_ptr<ReferenceFrame<InertialFrame, ThisFrame> const>>
           frame);
+
+  void WriteToMessage(
+      not_null<serialization::ReferenceFrame*> message) const;
+
+  static ReferenceFrameKey ReadFromMessage(
+      serialization::ReferenceFrame const& message,
+      not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
   template<typename H>
   friend H AbslHashValue(H h, ReferenceFrameKey const& key) {
