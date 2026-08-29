@@ -12,7 +12,7 @@ internal class DifferentialSlider : ScalingRenderer {
 
   public delegate double ZeroValue(double? value);
 
-  public delegate string ZeroButtonLabel(double? value);
+  public delegate UnityEngine.GUIContent ZeroButtonContent(double? value);
 
   // Rates are in units of `value` per real-time second.
   public DifferentialSlider(string label,
@@ -30,8 +30,7 @@ internal class DifferentialSlider : ScalingRenderer {
                             int label_width = 3,
                             int field_width = 5,
                             ZeroValue zero_value = null,
-                            ZeroButtonLabel zero_button_label = null,
-                            string zero_button_tooltip = null) {
+                            ZeroButtonContent zero_button_content = null) {
     label_ = label;
     unit_ = unit;
     log10_lower_rate_ = log10_lower_rate;
@@ -50,12 +49,11 @@ internal class DifferentialSlider : ScalingRenderer {
     } else {
       zero_value_ = zero_value;
     }
-    if (zero_button_label == null) {
-      zero_button_label_ = _ => "0";
+    if (zero_button_content == null) {
+      zero_button_content_ = _ => new UnityEngine.GUIContent("0");
     } else {
-      zero_button_label_ = zero_button_label;
+      zero_button_content_ = zero_button_content;
     }
-    zero_button_tooltip_ = zero_button_tooltip;
   }
 
   public double max_value {
@@ -245,11 +243,8 @@ internal class DifferentialSlider : ScalingRenderer {
             options    : UnityEngine.GUILayout.ExpandWidth(true));
 
         UnityEngine.GUIContent zero_button_content =
-            zero_button_tooltip_ == null
-                ? new UnityEngine.GUIContent(zero_button_label_(value_))
-                : new UnityEngine.GUIContent(zero_button_label_(value_),
-                                             zero_button_tooltip_);
-        if (zero_button_label_(value_) != null &&
+            zero_button_content_(value_);
+        if (zero_button_content != null &&
             UnityEngine.GUILayout.Button(zero_button_content,
                                          GUILayoutWidth(1))) {
           value_changed = true;
@@ -383,8 +378,7 @@ internal class DifferentialSlider : ScalingRenderer {
   private readonly int field_width_;
 
   private readonly ZeroValue zero_value_;
-  private readonly ZeroButtonLabel zero_button_label_;
-  private readonly string zero_button_tooltip_;
+  private readonly ZeroButtonContent zero_button_content_;
 
   private float slider_position_ = 0.0f;
   private DateTime last_time_;

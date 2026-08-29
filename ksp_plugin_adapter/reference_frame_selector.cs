@@ -43,36 +43,34 @@ internal class
 
     plottable_time_interval_midpoint_ =
         new DifferentialSlider(
-            label            :
+            label               :
             L10N.CacheFormat("#Principia_ReferenceFrameSelector_Midpoint"),
-            unit              : null,
-            log10_lower_rate  : log10_duration_lower_rate,
-            log10_upper_rate  : log10_duration_upper_rate,
-            min_value         : 0,
-            formatter         : FormatPlottableDuration,
-            parser            : TryParsePlottableDuration,
-            label_width       : 4,
-            field_width       : 5,
-            zero_value        : PlottableMidpointZeroValue,
-            zero_button_label : PlottableMidpointZeroButtonLabel,
-            zero_button_tooltip : L10N.CacheFormat(
-                "#Principia_ReferenceFrameSelector_MidpointTooltip")){
+            unit                : null,
+            log10_lower_rate    : log10_duration_lower_rate,
+            log10_upper_rate    : log10_duration_upper_rate,
+            min_value           : 0,
+            formatter           : FormatPlottableDuration,
+            parser              : TryParsePlottableDuration,
+            label_width         : 4,
+            field_width         : 5,
+            zero_value          : PlottableMidpointZeroValue,
+            zero_button_content : PlottableMidpointZeroButtonContent){
             value            = 0
         };
     plottable_time_interval_duration_ =
         new DifferentialSlider(
-            label             :
+            label               :
             L10N.CacheFormat("#Principia_ReferenceFrameSelector_Duration"),
-            unit              : null,
-            log10_lower_rate  : log10_duration_lower_rate,
-            log10_upper_rate  : log10_duration_upper_rate,
-            min_value         : 0,
-            formatter         : FormatPlottableDuration,
-            parser            : TryParsePlottableDuration,
-            label_width       : 4,
-            field_width       : 5,
-            zero_value        : PlottableDurationZeroValue,
-            zero_button_label : PlottableDurationZeroButtonLabel){
+            unit                : null,
+            log10_lower_rate    : log10_duration_lower_rate,
+            log10_upper_rate    : log10_duration_upper_rate,
+            min_value           : 0,
+            formatter           : FormatPlottableDuration,
+            parser              : TryParsePlottableDuration,
+            label_width         : 4,
+            field_width         : 5,
+            zero_value          : PlottableDurationZeroValue,
+            zero_button_content : PlottableDurationZeroButtonContent){
             value            = PrincipiaTimeSpan.max_seconds
         };
 
@@ -960,11 +958,12 @@ internal class
     }
   }
 
-  private static string PlottableDurationZeroButtonLabel(double? value) {
+  private static UnityEngine.GUIContent PlottableDurationZeroButtonContent(
+      double? value) {
     if (value.HasValue && value.Value < PrincipiaTimeSpan.max_seconds) {
-      return "∞";
+      return new UnityEngine.GUIContent("∞");
     } else {
-      return "0";
+      return new UnityEngine.GUIContent("0");
     }
   }
 
@@ -972,9 +971,12 @@ internal class
     return adapter_.Plugin().CurrentTime();
   }
 
-  private static string PlottableMidpointZeroButtonLabel(double? unused) {
-    // Something that looks roughly like a clock.  Calibri is not helpful.
-    return "└";
+  private static UnityEngine.GUIContent PlottableMidpointZeroButtonContent(
+      double? unused) {
+    // TODO(phl): Draw a better icon (a clock).
+    return new UnityEngine.GUIContent(focus_,
+                                      L10N.CacheFormat(
+                                          "#Principia_ReferenceFrameSelector_MidpointTooltip"));
   }
 
   internal string FormatPlottableDuration(double seconds, double _, double __) {
