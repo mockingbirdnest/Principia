@@ -30,7 +30,8 @@ internal class DifferentialSlider : ScalingRenderer {
                             int label_width = 3,
                             int field_width = 5,
                             ZeroValue zero_value = null,
-                            ZeroButtonLabel zero_button_label = null) {
+                            ZeroButtonLabel zero_button_label = null,
+                            string zero_button_tooltip = null) {
     label_ = label;
     unit_ = unit;
     log10_lower_rate_ = log10_lower_rate;
@@ -54,6 +55,7 @@ internal class DifferentialSlider : ScalingRenderer {
     } else {
       zero_button_label_ = zero_button_label;
     }
+    zero_button_tooltip_ = zero_button_tooltip;
   }
 
   public double max_value {
@@ -242,8 +244,13 @@ internal class DifferentialSlider : ScalingRenderer {
             rightValue : 1,
             options    : UnityEngine.GUILayout.ExpandWidth(true));
 
+        UnityEngine.GUIContent zero_button_content =
+            zero_button_tooltip_ == null
+                ? new UnityEngine.GUIContent(zero_button_label_(value_))
+                : new UnityEngine.GUIContent(zero_button_label_(value_),
+                                             zero_button_tooltip_);
         if (zero_button_label_(value_) != null &&
-            UnityEngine.GUILayout.Button(zero_button_label_(value_),
+            UnityEngine.GUILayout.Button(zero_button_content,
                                          GUILayoutWidth(1))) {
           value_changed = true;
           // Force a change of value so that any input is discarded.
@@ -377,6 +384,7 @@ internal class DifferentialSlider : ScalingRenderer {
 
   private readonly ZeroValue zero_value_;
   private readonly ZeroButtonLabel zero_button_label_;
+  private readonly string zero_button_tooltip_;
 
   private float slider_position_ = 0.0f;
   private DateTime last_time_;
