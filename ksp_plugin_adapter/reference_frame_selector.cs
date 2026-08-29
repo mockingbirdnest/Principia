@@ -973,8 +973,10 @@ internal class
 
   private static UnityEngine.GUIContent PlottableMidpointZeroButtonContent(
       double? unused) {
-    // TODO(phl): Draw a better icon (a clock).
-    return new UnityEngine.GUIContent(focus_,
+    if (clock_ == null) {
+      PrincipiaPluginAdapter.LoadTextureOrDie(out clock_, "clock.png");
+    }
+    return new UnityEngine.GUIContent(clock_,
                                       L10N.CacheFormat(
                                           "#Principia_ReferenceFrameSelector_MidpointTooltip"));
   }
@@ -1055,6 +1057,7 @@ internal class
   private bool does_display_plottable_time_interval_ = false;
   private float tree_width_ = 0f;
   private FrameType last_orbital_type_ = FrameType.BODY_CENTRED_NON_ROTATING;
+  private static UnityEngine.Texture clock_;
   private static UnityEngine.Texture focus_;
   private static UnityEngine.Texture pinned_;
   private static UnityEngine.Texture unpinned_;
