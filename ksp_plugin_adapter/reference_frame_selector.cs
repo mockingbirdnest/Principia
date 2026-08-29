@@ -635,7 +635,7 @@ internal class
             plugin.VesselGetPlottingFramePayload(
                 active_vessel_guid,
                 plotting_frame_parameters);
-        plottable_time_interval_duration_.value =
+        plottable_time_interval_duration_.value_if_different =
             Math.Min(
                 Math.Max(existing_payload.plottable_time_interval.max -
                          existing_payload.plottable_time_interval.min,
@@ -645,9 +645,9 @@ internal class
         if (existing_payload.plottable_time_interval is {
                 min: double.NegativeInfinity, max: double.PositiveInfinity
             }) {
-          plottable_time_interval_midpoint_.value = 0.0;
+          plottable_time_interval_midpoint_.value_if_different = 0.0;
         } else {
-          plottable_time_interval_midpoint_.value =
+          plottable_time_interval_midpoint_.value_if_different =
               ((existing_payload.plottable_time_interval.min -
                 active_vessel.launchTime) +
                (existing_payload.plottable_time_interval.max -
