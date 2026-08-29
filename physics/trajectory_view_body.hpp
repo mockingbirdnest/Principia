@@ -2,6 +2,8 @@
 
 #include "physics/trajectory_view.hpp"
 
+#include <algorithm>
+
 namespace principia {
 namespace physics {
 namespace _trajectory_view {
@@ -40,6 +42,17 @@ Instant TrajectoryView<Frame>::t_min() const {
 template<typename Frame>
 Instant TrajectoryView<Frame>::t_max() const {
   return t_max_;
+}
+
+template<typename Frame>
+void TrajectoryView<Frame>::Restrict(Instant const& t_min,
+                                     Instant const& t_max) {
+  t_min_ = std::max(t_min, t_min_);
+  t_max_ = std::min(t_max, t_max_);
+  if (t_max_ < t_min_) {
+    t_min_ = InfiniteFuture;
+    t_max_ = InfinitePast;
+  }
 }
 
 template<typename Frame>

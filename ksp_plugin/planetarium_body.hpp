@@ -35,14 +35,14 @@ using namespace principia::quantities::_si;
 template<typename Frame>
 DegreesOfFreedom<Navigation> EvaluateDegreesOfFreedomInNavigation(
     PlottingFrame const& plotting_frame,
-    Trajectory<Frame> const& trajectory,
+    TrajectoryView<Frame> const& trajectory,
     Instant const& t);
 
 template<>
 inline DegreesOfFreedom<Navigation>
 EvaluateDegreesOfFreedomInNavigation<Barycentric>(
     PlottingFrame const& plotting_frame,
-    Trajectory<Barycentric> const& trajectory,
+    TrajectoryView<Barycentric> const& trajectory,
     Instant const& t) {
   SimilarMotion<Barycentric, Navigation> const to_plotting_frame_at_t =
       plotting_frame.ToThisFrameAtTimeSimilarly(t);
@@ -53,24 +53,22 @@ template<>
 inline DegreesOfFreedom<Navigation>
 EvaluateDegreesOfFreedomInNavigation<Navigation>(
     PlottingFrame const& /*plotting_frame*/,
-    Trajectory<Navigation> const& trajectory,
+    TrajectoryView<Navigation> const& trajectory,
     Instant const& t) {
   return trajectory.EvaluateDegreesOfFreedom(t);
 }
 
 template<typename Frame>
 void Planetarium::PlotMethod3(
-    Trajectory<Frame> const& trajectory,
-    Instant const& first_time,
-    Instant const& last_time,
+    TrajectoryView<Frame> const& trajectory,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,
     Length* const minimal_distance) const {
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
-  auto const final_time = reverse ? first_time : last_time;
-  auto previous_time = reverse ? last_time : first_time;
+  auto const final_time = reverse ? trajectory.t_min() : trajectory.t_max();
+  auto previous_time = reverse ? trajectory.t_max() : trajectory.t_min();
 
   if (minimal_distance != nullptr) {
     *minimal_distance = Infinity<Length>;
@@ -149,15 +147,13 @@ void Planetarium::PlotMethod3(
 
 template<typename Frame>
 void Planetarium::PlotMethod4(
-    Trajectory<Frame> const& trajectory,
-    Instant const& first_time,
-    Instant const& last_time,
+    TrajectoryView<Frame> const& trajectory,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int const max_points,
     Length* const minimal_distance) const {
-  auto const final_time = reverse ? first_time : last_time;
-  auto previous_time = reverse ? last_time : first_time;
+  auto const final_time = reverse ? trajectory.t_min() : trajectory.t_max();
+  auto previous_time = reverse ? trajectory.t_max() : trajectory.t_min();
 
   if (minimal_distance != nullptr) {
     *minimal_distance = Infinity<Length>;

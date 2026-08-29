@@ -18,6 +18,8 @@
 #include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
+#include "physics/trajectory_view.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -35,6 +37,8 @@ using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_planetarium;
 using namespace principia::ksp_plugin::_renderer;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
+using namespace principia::physics::_trajectory_view;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
@@ -143,7 +147,8 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
 
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
-  auto const segment = vessel.flight_plan().GetSegment(index);
+  FlightPlan const& flight_plan = vessel.flight_plan();
+  auto const segment = flight_plan.GetSegment(index);
   // TODO(egg): this is ugly; we should centralize rendering.
   // If this is a burn and we cannot render the beginning of the burn, we
   // render none of it, otherwise we try to render the Frenet trihedron at the
@@ -151,11 +156,12 @@ void __cdecl principia__PlanetariumPlotFlightPlanSegment(
   if (index % 2 == 0 ||
       segment->empty() ||
       segment->front().time >= plugin->renderer().GetPlottingFrame()->t_min()) {
+    DiscreteTrajectoryView segment_view(&flight_plan.GetAllSegments(), segment);
+    if (t_max != nullptr) {
+      segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+    }
     planetarium->PlotMethod4(
-        *segment,
-        segment->begin(),
-        segment->end(),
-        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+        segment_view,
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -182,12 +188,14 @@ void __cdecl principia__PlanetariumPlotPrediction(
   CHECK(planetarium != nullptr);
   *vertex_count = 0;
 
-  auto const prediction = plugin->GetVessel(vessel_guid)->prediction();
+  Vessel const& vessel = *plugin->GetVessel(vessel_guid);
+  auto const prediction = vessel.prediction();
+  DiscreteTrajectoryView prediction_view(&vessel.trajectory(), prediction);
+  if (t_max != nullptr) {
+    prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+  }
   planetarium->PlotMethod4(
-      *prediction,
-      prediction->begin(),
-      prediction->end(),
-      t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+      prediction_view,
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
         vertices[(*vertex_count)++] = vertex;
@@ -239,11 +247,15 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
     // time the history will be shorter than desired.
     vessel->RequestReanimation(desired_first_time);
 
-    planetarium->PlotMethod4(
-        trajectory,
+    DiscreteTrajectoryView psychohistory_view(
+        &trajectory,
         trajectory.lower_bound(desired_first_time),
-        psychohistory->end(),
-        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+        psychohistory->end());
+    if (t_max != nullptr) {
+      psychohistory_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+    }
+    planetarium->PlotMethod4(
+        psychohistory_view,
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -295,11 +307,12 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
 
     Instant const first_time =
         std::max(desired_first_time, celestial_trajectory.t_min());
+    TrajectoryView const celestial_view(&celestial_trajectory,
+                                        /*t_min=*/first_time,
+                                        /*t_max=*/plugin->CurrentTime());
     Length minimal_distance;
     planetarium->PlotMethod4(
-        celestial_trajectory,
-        first_time,
-        /*last_time=*/plugin->CurrentTime(),
+        celestial_view,
         /*reverse=*/true,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -353,11 +366,12 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
         plugin->GetCelestial(celestial_index).trajectory();
     // No need to request reanimation here because the current time of the
     // plugin is necessarily covered.
+    TrajectoryView const celestial_view(&celestial_trajectory,
+                                        /*t_min=*/plugin->CurrentTime(),
+                                        /*t_max=*/final_time);
     Length minimal_distance;
     planetarium->PlotMethod4(
-        celestial_trajectory,
-        /*first_time=*/plugin->CurrentTime(),
-        /*last_time=*/final_time,
+        celestial_view,
         /*reverse=*/false,
         [vertices, vertex_count](ScaledSpacePoint const& vertex) {
           vertices[(*vertex_count)++] = vertex;
@@ -389,13 +403,9 @@ void __cdecl principia__PlanetariumPlotEquipotential(
       *ABSL_DIE_IF_NULL(plugin->geometric_potential_plotter().equipotentials());
   CHECK_GE(index, 0);
   CHECK_LT(index, equipotentials.lines.size());
-  DiscreteTrajectory<Navigation> const& equipotential =
-      equipotentials.lines[index];
 
   planetarium->PlotMethod4(
-      equipotential,
-      equipotential.front().time,
-      equipotential.back().time,
+      DiscreteTrajectoryView(&equipotentials.lines[index]),
       /*reverse=*/false,
       [vertices, vertex_count](ScaledSpacePoint const& vertex) {
         vertices[(*vertex_count)++] = vertex;

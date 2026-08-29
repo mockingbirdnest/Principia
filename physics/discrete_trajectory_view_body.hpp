@@ -19,21 +19,18 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
 template<typename Frame>
 DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
     not_null<DiscreteTrajectory<Frame> const*> const trajectory,
+    DiscreteTrajectorySegmentIterator<Frame> const segment)
+    : DiscreteTrajectoryView(trajectory, segment->begin(), segment->end()) {}
+
+template<typename Frame>
+DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
+    not_null<DiscreteTrajectory<Frame> const*> const trajectory,
     const_iterator const begin,
     const_iterator const end)
-    : TrajectoryView<Frame>(trajectory,
-                            TrajectoryViewTMin(*trajectory, begin, end),
-                            TrajectoryViewTMax(*trajectory, begin, end)),
-      begin_(begin),
-      end_(end) {
-  if (begin_ == end_) {
-    // If the view has no point, make sure that its iterators cannot be
-    // dereferenced, lest they give access to part of the trajectory that's not
-    // covered by the view.
-    begin_ = this->trajectory().end();
-    end_ = this->trajectory().end();
-  }
-}
+    : DiscreteTrajectoryView<Frame>(
+          trajectory,
+          TrajectoryViewTMin(*trajectory, begin, end),
+          TrajectoryViewTMax(*trajectory, begin, end)) {}
 
 template<typename Frame>
 DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
@@ -43,7 +40,7 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
     : TrajectoryView<Frame>(trajectory, t_min, t_max),
       begin_(trajectory->lower_bound(t_min)),
       end_(trajectory->upper_bound(t_max)) {
-  if (begin_ == end_) {
+  if (this->empty() || begin_ == end_) {
     // If the view has no point, make sure that its iterators cannot be
     // dereferenced, lest they give access to part of the trajectory that's not
     // covered by the view.
@@ -139,6 +136,27 @@ DiscreteTrajectoryView<Frame>::upper_bound(Instant const& t) const {
       return it;
     }
   }
+}
+
+template<typename Frame>
+void DiscreteTrajectoryView<Frame>::Restrict(Instant const& t_min,
+                                             Instant const& t_max) {
+  TrajectoryView<Frame>::Restrict(t_min, t_max);
+
+  // Similar to the code in the constructor.
+  begin_ = trajectory().lower_bound(this->t_min());
+  end_ = trajectory().upper_bound(this->t_max());
+  if (this->empty() || begin_ == end_) {
+    begin_ = this->trajectory().end();
+    end_ = this->trajectory().end();
+  }
+}
+
+template<typename Frame>
+void DiscreteTrajectoryView<Frame>::Restrict(const_iterator begin,
+                                             const_iterator end) {
+  Restrict(TrajectoryViewTMin(trajectory(), begin, end),
+           TrajectoryViewTMax(trajectory(), begin, end));
 }
 
 template<typename Frame>

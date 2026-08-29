@@ -157,5 +157,30 @@ TEST_F(TrajectoryViewTest, Deduction) {
   EXPECT_FALSE(view2.empty());
 }
 
+TEST_F(TrajectoryViewTest, Restrict) {
+  auto const trajectory = MakeTrajectory();
+  TrajectoryView<World> view(
+      &trajectory);
+
+  EXPECT_FALSE(view.empty());
+
+  EXPECT_EQ(trajectory.t_min(), view.t_min());
+  EXPECT_EQ(trajectory.t_max(), view.t_max());
+
+  view.Restrict(t0_ + 1.5 * Second, t0_ + 13.2 * Second);
+
+  EXPECT_FALSE(view.empty());
+
+  EXPECT_EQ(t0_ + 1.5 * Second, view.t_min());
+  EXPECT_EQ(t0_ + 13.2 * Second, view.t_max());
+
+  view.Restrict(t0_ + 3.2 * Second, t0_ + 3.1 * Second);
+
+  EXPECT_TRUE(view.empty());
+
+  EXPECT_EQ(InfiniteFuture, view.t_min());
+  EXPECT_EQ(InfinitePast, view.t_max());
+}
+
 }  // namespace physics
 }  // namespace principia

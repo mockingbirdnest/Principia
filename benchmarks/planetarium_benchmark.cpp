@@ -30,6 +30,7 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -38,6 +39,7 @@
 #include "physics/rotating_body.hpp"
 #include "physics/rotating_pulsating_reference_frame.hpp"
 #include "physics/solar_system.hpp"
+#include "physics/trajectory_view.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -71,6 +73,7 @@ using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
@@ -79,6 +82,7 @@ using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_rotating_pulsating_reference_frame;
 using namespace principia::physics::_solar_system;
+using namespace principia::physics::_trajectory_view;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
@@ -340,10 +344,7 @@ void BM_PlanetariumPlotMethod3(
   for (auto _ : state) {
     line.clear();
     planetarium.PlotMethod3(
-        satellites.goes_8_trajectory(),
-        satellites.goes_8_trajectory().begin(),
-        satellites.goes_8_trajectory().end(),
-        /*t_max=*/InfiniteFuture,
+        DiscreteTrajectoryView(&satellites.goes_8_trajectory()),
         /*reverse=*/false,
         /*add_point=*/
         [&line](ScaledSpacePoint const& point) { line.push_back(point); },
@@ -382,10 +383,7 @@ void BM_PlanetariumPlotMethod4DiscreteTrajectory(
   for (auto _ : state) {
     line.clear();
     planetarium.PlotMethod4(
-        satellites.goes_8_trajectory(),
-        satellites.goes_8_trajectory().begin(),
-        satellites.goes_8_trajectory().end(),
-        /*t_max=*/InfiniteFuture,
+        DiscreteTrajectoryView(&satellites.goes_8_trajectory()),
         /*reverse=*/false,
         /*add_point=*/
         [&line](ScaledSpacePoint const& point) { line.push_back(point); },
@@ -424,9 +422,7 @@ void BM_PlanetariumPlotMethod4ContinuousTrajectory(
   for (auto _ : state) {
     line.clear();
     planetarium.PlotMethod4(
-        satellites.moon_trajectory(),
-        satellites.goes_8_trajectory().front().time,
-        satellites.goes_8_trajectory().back().time,
+        TrajectoryView(&satellites.moon_trajectory()),
         /*reverse=*/false,
         /*add_point=*/
         [&line](ScaledSpacePoint const& point) { line.push_back(point); },
