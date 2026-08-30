@@ -157,10 +157,8 @@ inline Graph<double, double> OrbitalElements::PlotEccentricityVector(
     e_sin_ω_range.max = midpoint + e_cos_ω_range.measure() / aspect_ratio / 2;
   } else {
     double const midpoint = e_cos_ω_range.midpoint();
-    e_cos_ω_range.min =
-        midpoint - width * e_sin_ω_range.measure() * aspect_ratio / 2;
-    e_cos_ω_range.max =
-        midpoint + width * e_sin_ω_range.measure() * aspect_ratio / 2;
+    e_cos_ω_range.min = midpoint - e_sin_ω_range.measure() * aspect_ratio / 2;
+    e_cos_ω_range.max = midpoint + e_sin_ω_range.measure() * aspect_ratio / 2;
   }
   Graph<double, double> graph(
       width, height, e_cos_ω_range, e_sin_ω_range, background);
