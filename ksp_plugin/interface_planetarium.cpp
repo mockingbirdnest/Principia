@@ -189,8 +189,8 @@ void __cdecl principia__PlanetariumPlotPrediction(
   *vertex_count = 0;
 
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
-  auto const prediction = vessel.prediction();
-  DiscreteTrajectoryView prediction_view(&vessel.trajectory(), prediction);
+  DiscreteTrajectoryView prediction_view(&vessel.trajectory(),
+                                         vessel.prediction());
   if (t_max != nullptr) {
     prediction_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
   }

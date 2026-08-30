@@ -26,6 +26,7 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -52,6 +53,7 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_si;
@@ -573,13 +575,13 @@ void __cdecl principia__FlightPlanRenderedApsides(
   for (auto const& segment : flight_plan.segments()) {
     DistinguishedPoints<World> segment_rendered_apoapsides;
     DistinguishedPoints<World> segment_rendered_periapsides;
+    DiscreteTrajectoryView segment_view(&flight_plan, segment);
+    if (t_max != nullptr) {
+      segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+    }
     plugin->ComputeAndRenderApsides(
         celestial_index,
-        flight_plan,
-        /*begin=*/segment.begin(),
-        /*end=*/t_max == nullptr
-            ? segment.end()
-            : segment.upper_bound(FromGameTime(*plugin, *t_max)),
+        segment_view,
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_apoapsides,
@@ -611,9 +613,9 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
   DistinguishedPoints<World> rendered_closest_approaches;
   for (auto const& segment : flight_plan.segments()) {
     DistinguishedPoints<World> segment_rendered_closest_approaches;
+    DiscreteTrajectoryView const segment_view(&flight_plan, segment);
     plugin->ComputeAndRenderClosestApproaches(
-        flight_plan,
-        segment.begin(), segment.end(),
+        segment_view,
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_closest_approaches);
@@ -663,8 +665,7 @@ Iterator* __cdecl principia__FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
                        segment->front().degrees_of_freedom);
       rendered_manœuvre = plugin->renderer().RenderDistinguishedPointsInWorld(
           plugin->CurrentTime(),
-          manœuvre.begin(),
-          manœuvre.end(),
+          manœuvre,
           FromXYZ<Position<World>>(sun_world_position),
           plugin->PlanetariumRotation());
     }
@@ -693,15 +694,15 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
   for (auto const& segment : flight_plan.segments()) {
     std::vector<Renderer::Node> segment_rendered_ascending;
     std::vector<Renderer::Node> segment_rendered_descending;
-    plugin->ComputeAndRenderNodes(
-        /*begin=*/segment.begin(),
-        /*end=*/t_max == nullptr
-            ? segment.end()
-            : segment.upper_bound(FromGameTime(*plugin, *t_max)),
-        FromXYZ<Position<World>>(sun_world_position),
-        max_points,
-        segment_rendered_ascending,
-        segment_rendered_descending);
+    DiscreteTrajectoryView segment_view(&flight_plan, segment);
+    if (t_max != nullptr) {
+      segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+    }
+    plugin->ComputeAndRenderNodes(segment_view,
+                                  FromXYZ<Position<World>>(sun_world_position),
+                                  max_points,
+                                  segment_rendered_ascending,
+                                  segment_rendered_descending);
     std::move(segment_rendered_ascending.begin(),
               segment_rendered_ascending.end(),
               std::back_inserter(rendered_ascending));

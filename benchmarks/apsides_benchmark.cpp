@@ -21,6 +21,7 @@
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/solar_system.hpp"
@@ -44,6 +45,7 @@ using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_oblate_body;
 using namespace principia::physics::_solar_system;
@@ -143,9 +145,7 @@ BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
     DistinguishedPoints<ICRS> apoapsides;
     DistinguishedPoints<ICRS> periapsides;
     ComputeApsides(*earth_trajectory_,
-                   *ilrsa_lageos2_trajectory_icrs_,
-                   ilrsa_lageos2_trajectory_icrs_->begin(),
-                   ilrsa_lageos2_trajectory_icrs_->end(),
+                   DiscreteTrajectoryView(ilrsa_lageos2_trajectory_icrs_),
                    /*max_points=*/std::numeric_limits<int>::max(),
                    apoapsides,
                    periapsides);
@@ -158,13 +158,12 @@ BENCHMARK_F(ApsidesBenchmark, ComputeNodes)(benchmark::State& state) {
   for (auto _ : state) {
     DistinguishedPoints<GCRS> ascending;
     DistinguishedPoints<GCRS> descending;
-    CHECK_OK(ComputeNodes(*ilrsa_lageos2_trajectory_gcrs_,
-                          ilrsa_lageos2_trajectory_gcrs_->begin(),
-                          ilrsa_lageos2_trajectory_gcrs_->end(),
-                          Vector<double, GCRS>({0, 0, 1}),
-                          /*max_points=*/std::numeric_limits<int>::max(),
-                          ascending,
-                          descending));
+    CHECK_OK(
+        ComputeNodes(DiscreteTrajectoryView(ilrsa_lageos2_trajectory_gcrs_),
+                     Vector<double, GCRS>({0, 0, 1}),
+                     /*max_points=*/std::numeric_limits<int>::max(),
+                     ascending,
+                     descending));
     CHECK_EQ(2365, ascending.size());
     CHECK_EQ(2365, descending.size());
   }

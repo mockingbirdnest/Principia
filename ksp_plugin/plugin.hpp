@@ -38,8 +38,8 @@
 #include "physics/apsides.hpp"
 #include "physics/body.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/hierarchical_system.hpp"
@@ -88,8 +88,8 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_body;
 using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_frame_field;
 using namespace principia::physics::_hierarchical_system;
@@ -364,9 +364,7 @@ class Plugin {
   // respect to the celestial with index `celestial_index`.
   virtual void ComputeAndRenderApsides(
       Index celestial_index,
-      Trajectory<Barycentric> const& trajectory,
-      DiscreteTrajectory<Barycentric>::iterator const& begin,
-      DiscreteTrajectory<Barycentric>::iterator const& end,
+      DiscreteTrajectoryView<Barycentric> const& trajectory,
       Position<World> const& sun_world_position,
       int max_points,
       DistinguishedPoints<World>& apoapsides,
@@ -377,9 +375,7 @@ class Plugin {
   virtual std::optional<DistinguishedPoints<World>::value_type>
   ComputeAndRenderFirstCollision(
       Index celestial_index,
-      Trajectory<Barycentric> const& trajectory,
-      DiscreteTrajectory<Barycentric>::iterator const& begin,
-      DiscreteTrajectory<Barycentric>::iterator const& end,
+      DiscreteTrajectoryView<Barycentric> const& trajectory,
       Position<World> const& sun_world_position,
       int max_points,
       std::function<Length(Angle const& latitude,
@@ -388,9 +384,7 @@ class Plugin {
   // Computes the closest approaches of the trajectory defined by `begin` and
   // `end` with respect to the trajectory of the targetted vessel.
   virtual void ComputeAndRenderClosestApproaches(
-      Trajectory<Barycentric> const& trajectory,
-      DiscreteTrajectory<Barycentric>::iterator const& begin,
-      DiscreteTrajectory<Barycentric>::iterator const& end,
+      DiscreteTrajectoryView<Barycentric> const& trajectory,
       Position<World> const& sun_world_position,
       int max_points,
       DistinguishedPoints<World>& closest_approaches) const;
@@ -398,8 +392,7 @@ class Plugin {
   // Computes the nodes of the trajectory defined by `begin` and `end` with
   // respect to plane of the trajectory of the targetted vessel.
   virtual void ComputeAndRenderNodes(
-      DiscreteTrajectory<Barycentric>::iterator const& begin,
-      DiscreteTrajectory<Barycentric>::iterator const& end,
+      DiscreteTrajectoryView<Barycentric> const& trajectory,
       Position<World> const& sun_world_position,
       int max_points,
       std::vector<Renderer::Node>& ascending,

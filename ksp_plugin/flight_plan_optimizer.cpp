@@ -13,6 +13,7 @@
 #include "geometry/grassmann.hpp"
 #include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
 
@@ -27,6 +28,7 @@ using namespace principia::geometry::_barycentre_calculator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::quantities::_si;
 
 // Conversion factors between `Argument` and `HomogeneousArgument`.
@@ -561,13 +563,13 @@ FlightPlanOptimizer::EvaluateClosestPeriapsis(
   for (;;) {
     DistinguishedPoints<Barycentric> apoapsides;
     DistinguishedPoints<Barycentric> periapsides;
-    ComputeApsides(celestial_trajectory,
-                   vessel_trajectory,
-                   vessel_trajectory.lower_bound(begin_time),
-                   vessel_trajectory.end(),
-                   max_apsides,
-                   apoapsides,
-                   periapsides);
+    ComputeApsides(
+        celestial_trajectory,
+        DiscreteTrajectoryView(
+            &vessel_trajectory, begin_time, vessel_trajectory.t_max()),
+        max_apsides,
+        apoapsides,
+        periapsides);
     distance_at_closest_periapsis = Infinity<Length>;
     for (auto const& periapsis : periapsides) {
       auto const& [time, degrees_of_freedom] = periapsis;

@@ -34,6 +34,7 @@
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "physics/apsides.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/si.hpp"
@@ -70,6 +71,7 @@ using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
@@ -279,9 +281,9 @@ TEST_F(PluginCompatibilityTest, Reach) {
 
     // The begin time avoid spurious periapsides right after the launch.
     ComputeApsides(celestial_trajectory,
-                   flight_plan_trajectory,
-                   flight_plan_trajectory.upper_bound("1970-08-15T00:00:00"_TT),
-                   flight_plan_trajectory.end(),
+                   DiscreteTrajectoryView(&flight_plan_trajectory,
+                                          "1970-08-15T00:00:00"_TT,
+                                          flight_plan_trajectory.t_max()),
                    /*max_points=*/100,
                    apoapsides,
                    periapsides);

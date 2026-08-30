@@ -19,8 +19,14 @@ DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
 template<typename Frame>
 DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
     not_null<DiscreteTrajectory<Frame> const*> const trajectory,
+    DiscreteTrajectorySegment<Frame> const& segment)
+    : DiscreteTrajectoryView(trajectory, segment.begin(), segment.end()) {}
+
+template<typename Frame>
+DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
+    not_null<DiscreteTrajectory<Frame> const*> const trajectory,
     DiscreteTrajectorySegmentIterator<Frame> const segment)
-    : DiscreteTrajectoryView(trajectory, segment->begin(), segment->end()) {}
+    : DiscreteTrajectoryView(trajectory, *segment) {}
 
 template<typename Frame>
 DiscreteTrajectoryView<Frame>::DiscreteTrajectoryView(
