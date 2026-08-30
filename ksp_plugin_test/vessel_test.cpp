@@ -65,6 +65,9 @@ using ::testing::Le;
 using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::Truly;
+using ::testing::UnorderedPointwise;
+using ::testing::Value;
 using ::testing::_;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_not_null;
@@ -1033,6 +1036,10 @@ TEST_F(VesselTest, Reanimator) {
 #endif
 
 TEST_F(VesselTest, Payload) {
+  MockFunction<int(not_null<PileUp const*>)>
+      serialization_index_for_pile_up;
+  EXPECT_CALL(serialization_index_for_pile_up, Call(_)).Times(0);
+
   auto const solar_system = make_not_null_unique<SolarSystem<Barycentric>>(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -1054,6 +1061,9 @@ TEST_F(VesselTest, Payload) {
       ephemeris.get(), earth);
   RotatingPulsatingReferenceFrame<Barycentric, Navigation> const earth_moon(
       ephemeris.get(), earth, moon);
+
+  // Necessary for serialization.
+  vessel_.CreateTrajectoryIfNeeded(t0_);
 
   Vessel::PlottingFramePayload const default_payload;
   EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_surface));
@@ -1089,6 +1099,33 @@ TEST_F(VesselTest, Payload) {
       payload3);
   EXPECT_EQ(payload3, vessel_.GetPayload(&earth_surface));
   EXPECT_EQ(payload2, vessel_.GetPayload(&earth_moon));
+
+  // Check that serialization preserves the payloads.
+  serialization::Vessel message;
+  vessel_.WriteToMessage(&message,
+                         serialization_index_for_pile_up.AsStdFunction());
+
+  Celestial const celestial(earth);
+  auto const v = Vessel::ReadFromMessage(
+      message, &celestial, ephemeris.get(), /*deletion_callback=*/nullptr);
+  serialization::Vessel second_message;
+  v->WriteToMessage(&second_message,
+                    serialization_index_for_pile_up.AsStdFunction());
+
+  // This ugly check is necessary because the protocol buffer matchers are not
+  // publicly available, so this is the only way to ignore the ordering of a
+  // repeated field.
+  EXPECT_THAT(
+      message.payload(),
+      UnorderedPointwise(
+          Truly([](std::pair<serialization::Vessel::Payload const&,
+                             serialization::Vessel::Payload const&> const& p) {
+            return Value(p.first, EqualsProto(p.second));
+          }),
+          second_message.payload()));
+  message.clear_payload();
+  second_message.clear_payload();
+  EXPECT_THAT(message, EqualsProto(second_message));
 
   vessel_.ClearPayload(&earth_surface);
   EXPECT_EQ(default_payload, vessel_.GetPayload(&earth_surface));

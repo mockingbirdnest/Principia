@@ -713,6 +713,17 @@ void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
       LOG(FATAL) << "Unexpected flight plan variant " << flight_plan.index();
     }
   }
+
+  // This a hash map so the order is unspecified.
+  for (auto const& [plotting_frame_key, plotting_frame_payload] : payloads_) {
+    auto* const payload = message->add_payload();
+    plotting_frame_key.WriteToMessage(payload->mutable_plotting_frame());
+    plotting_frame_payload.plottable_time_interval.min.WriteToMessage(
+        payload->mutable_t_min());
+    plotting_frame_payload.plottable_time_interval.max.WriteToMessage(
+        payload->mutable_t_max());
+  }
+
   message->set_selected_flight_plan_index(selected_flight_plan_index_);
   message->set_is_collapsible(is_collapsible_);
   checkpointer_->WriteToMessage(message->mutable_checkpoint());
@@ -882,6 +893,15 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                   message.downsampling_parameters().tolerance())};
     } else {
       vessel->downsampling_parameters_ = std::nullopt;
+    }
+
+    for (auto const& payload : message.payload()) {
+      auto key = PlottingFrameKey::ReadFromMessage(
+          payload.plotting_frame(), ephemeris);
+      vessel->payloads_[key] = PlottingFramePayload{
+          .plottable_time_interval = {
+              .min = Instant::ReadFromMessage(payload.t_min()),
+              .max = Instant::ReadFromMessage(payload.t_max())}};
     }
   }
 
