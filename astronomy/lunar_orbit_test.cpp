@@ -15,6 +15,7 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "astronomy/orbital_elements.hpp"
+#include "astronomy/лидов.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -57,6 +58,7 @@ using ::testing::Lt;
 using namespace principia::astronomy::_epoch;
 using namespace principia::astronomy::_frames;
 using namespace principia::astronomy::_orbital_elements;
+using namespace principia::astronomy::_лидов;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -98,30 +100,110 @@ struct ExpectedEccentricityVectorRange {
   ApproximateQuantity<double> max_e_sin_ω;
 };
 
-struct GeopotentialTruncation {
+struct RL06Orbit {
+  // Initial conditions and elements from table 2 of [RL06].
+  int const revolutions_per_month;
+  Length const x₀;
+  Length const y₀;
+  Length const z₀ = 0 * Metre;
+  Speed const  u₀;
+  Speed const v₀;
+  Speed const w₀;
+  Length const a₀ = +1.861791339407e+03 * Kilo(Metre);
+  double const e₀ = +2.110475283361e-02;
+  Angle const i₀ = +9.298309294740e+01 * Degree;
+  Angle const ω₀ = -7.839337618501e+01 * Degree;
+  Angle const Ω₀ = -1.589469097527e+02 * Degree;
+  
+  static RL06Orbit A(Length const& LU, Time const& TU) {
+    return {
+        .revolutions_per_month = 73,
+        .x₀ = -1.311519120505e-02  * LU,
+        .y₀ = 5.435394815081e-04 * LU,
+        .u₀ = -1.281711107594e-02 * (LU / TU),
+        .v₀ = -3.056086111584e-01 * (LU / TU),
+        .w₀ = 9.077797920947e-01 * (LU / TU),
+        .a₀ = 5.046738218681e+03 * Kilo(Metre),
+        .e₀ = 2.425326521133e-04,
+        .i₀ = 7.063797094157e+01 * Degree,
+        .ω₀ = -4.048674547795e+01 * Degree,
+        .Ω₀ = 1.776268201967e+02 * Degree,
+    };
+  }  
+  static RL06Orbit B(Length const& LU, Time const& TU) {
+    return {
+        .revolutions_per_month = 73,
+        .x₀ = -7.660645625403e-03  * LU,
+        .y₀ = 5.028162133106e-03 * LU,
+        .u₀ = 1.327777508469e-01 * (LU / TU),
+        .v₀ = -9.233621714500e-01 * (LU / TU),
+        .w₀ = 9.132878998189e-01 * (LU / TU),
+        .a₀ = 4.996647749602e+03 * Kilo(Metre),
+        .e₀ = 5.384086098625e-01,
+        .i₀ = 5.220698531621e+01 * Degree,
+        .ω₀ = 8.922084663298e+01 * Degree,
+        .Ω₀ = 1.467205983429e+02 * Degree,
+    };
+  }
+  static RL06Orbit C(Length const& LU, Time const& TU) {
+    return {
+        .revolutions_per_month = 328,
+        .x₀ = -4.498948742093e-03 * LU,
+        .y₀ = -1.731769313131e-03 * LU,
+        .u₀ = -6.203996010078e-02 * (LU / TU),
+        .v₀ = 7.000280770869e-02 * (LU / TU),
+        .w₀ = 1.588813067177e+00 * (LU / TU),
+        .a₀ = +1.861791339407e+03 * Kilo(Metre),
+        .e₀ = +2.110475283361e-02,
+        .i₀ = +9.298309294740e+01 * Degree,
+        .ω₀ = -7.839337618501e+01 * Degree,
+        .Ω₀ = -1.589469097527e+02 * Degree,
+    };
+  }
+};
+
+
+struct OrbitAndGeopotentialTruncation {
+  // The orbit from [RL06], as a function of the lunar length and time units;
+  RL06Orbit (&orbit)(Length const& LU, Time const& TU);
   // The geopotential truncation used.
   int max_degree;
+  // Figure 13 from [RL06] compares evolutions in the 50×0 and 50×50 field for
+  // an orbit in the same family as orbit C.  The paper does not give that
+  // orbit, but we do a similar comparison with Orbit C itself.
   bool zonal_only;
 
   // Expectations.  All values are checked with IsNear.
 
   // The Euclidean norm of the change in the (e cos ω, e sin ω) vector between
-  // the beginning and the end of the first cycle of the repeat ground track
-  // orbit.
-  ApproximateQuantity<double> first_cycle_eccentricity_vector_drift;
+  // the beginning and the end of the first period of the ground track cycle
+  // orbit (which lasts one month).
+  ApproximateQuantity<double> first_month_eccentricity_vector_drift;
 
   // An expectation for the periodic repeat ground track behaviour discounting
   // any effects that are periodic over one orbit.
   // Bounds the value of the eccentricity vector at the descending node of every
-  // orbit of the first cycle.
-  ExpectedEccentricityVectorRange first_cycle_descending_nodes;
+  // orbit of the first month.
+  ExpectedEccentricityVectorRange first_month_descending_nodes;
 
   // An expectation for the behaviour over `long_term`.  Only the first
   // descending node of each period is bounded, so that the periodic component
   // tested above is ignored.
-  ExpectedEccentricityVectorRange cycle_ends;
+  ExpectedEccentricityVectorRange month_ends;
   // The duration for the above expectation.
   Time long_term;
+
+  std::string_view OrbitName() const {
+    if (&orbit == &RL06Orbit::A) {
+      return "A";
+    } else if (&orbit == &RL06Orbit::B) {
+      return "B";
+    } else if (&orbit == &RL06Orbit::C) {
+      return "C";
+    } else {
+      LOG(FATAL) << "Unknown orbit " << orbit;
+    }
+  }
 
   // A string describing the truncation.
   std::string DegreeAndOrder() const {
@@ -129,11 +211,11 @@ struct GeopotentialTruncation {
   }
 };
 
-std::ostream& operator<<(std::ostream& o, GeopotentialTruncation truncation) {
-  return o << truncation.DegreeAndOrder();
+std::ostream& operator<<(std::ostream& o, OrbitAndGeopotentialTruncation param) {
+  return o << param.OrbitName() << "_" << param.DegreeAndOrder();
 }
 
-class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
+class LunarOrbitTest : public ::testing::TestWithParam<OrbitAndGeopotentialTruncation> {
  protected:
   LunarOrbitTest()
       : solar_system_2000_([]() {
@@ -198,69 +280,81 @@ class LunarOrbitTest : public ::testing::TestWithParam<GeopotentialTruncation> {
 #if !defined(_DEBUG)
 
 #if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
-std::array<GeopotentialTruncation, 7> const geopotential_truncations = {
+std::array<OrbitAndGeopotentialTruncation, 7> const geopotential_truncations = {
 #else
-std::array<GeopotentialTruncation, 5> const geopotential_truncations = {
+std::array<OrbitAndGeopotentialTruncation, 5> const geopotential_truncations = {
 #endif
     {{
 #if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
+         .orbit = RL06Orbit::C,
          .max_degree = 50,
          .zonal_only = false,
-         .first_cycle_eccentricity_vector_drift = 0.00018,
-         .first_cycle_descending_nodes = {-0.0055, +0.0051, -0.027, -0.018},
-         .cycle_ends = {+0.0026, +0.0037, -0.021, -0.0200},
+         .first_month_eccentricity_vector_drift = 0.00018,
+         .first_month_descending_nodes = {-0.0055, +0.0051, -0.027, -0.018},
+         .month_ends = {+0.0026, +0.0037, -0.021, -0.0200},
          .long_term = 10 * JulianYear,
      },
      {
 #endif
+         .orbit = RL06Orbit::C,
          .max_degree = 30,
-         .zonal_only = true,
-         .first_cycle_eccentricity_vector_drift = 0.00032_(1),
-         .first_cycle_descending_nodes = {-0.0058_(1), +0.0048_(1), -0.027_(1), -0.018_(1)},
-         .cycle_ends = {+0.0019_(1), +0.0050_(1), -0.022_(1), -0.0190_(1)},
+         .zonal_only = false,
+         .first_month_eccentricity_vector_drift = 0.00032_(1),
+         .first_month_descending_nodes =
+             {-0.0080_(1), +0.0074_(1), -0.029_(1), -0.014_(1)},
+         .month_ends = {+0.00062_(1), +0.0055_(1), -0.022_(1), -0.018_(1)},
          .long_term = 10 * JulianYear,
      },
      {
-         .max_degree = 30,
-         .zonal_only = false,
-         .first_cycle_eccentricity_vector_drift = 0.00032_(1),
-         .first_cycle_descending_nodes = {-0.0058_(1), +0.0048_(1), -0.027_(1), -0.018_(1)},
-         .cycle_ends = {+0.0019_(1), +0.0050_(1), -0.022_(1), -0.0190_(1)},
-         .long_term = 1 * JulianYear,
-     },
-     {
+         .orbit = RL06Orbit::C,
          .max_degree = 25,
          .zonal_only = false,
-         .first_cycle_eccentricity_vector_drift = 0.00110_(1),
-         .first_cycle_descending_nodes = {-0.0060_(1), +0.0044_(1), -0.027_(1), -0.018_(1)},
-         .cycle_ends = {-0.0017_(1), +0.0089_(1), -0.021_(1), -0.0110_(1)},
+         .first_month_eccentricity_vector_drift = 0.0011_(1),
+         .first_month_descending_nodes =
+             {-0.011_(1), +0.0044_(1), -0.027_(1), -0.0093_(1)},
+         .month_ends = {-0.0017_(1), +0.0037_(1), -0.021_(1), -0.011_(1)},
          .long_term = 1 * JulianYear,
      },
      {
+         .orbit = RL06Orbit::C,
          .max_degree = 20,
          .zonal_only = false,
-         .first_cycle_eccentricity_vector_drift = 0.00130_(1),
-         .first_cycle_descending_nodes = {-0.0064_(1), +0.0045_(1), -0.028_(1), -0.018_(1)},
-         .cycle_ends = {-0.0030_(1), +0.0100_(1), -0.021_(1), -0.0083_(1)},
+         .first_month_eccentricity_vector_drift = 0.0013_(1),
+         .first_month_descending_nodes =
+             {-0.012_(1), +0.0045_(1), -0.028_(1), -0.0069_(1)},
+         .month_ends = {-0.0030_(1), +0.0036_(1), -0.021_(1), -0.0088_(1)},
          .long_term = 1 * JulianYear,
      },
      {
+         .orbit = RL06Orbit::C,
          .max_degree = 10,
          .zonal_only = false,
-         .first_cycle_eccentricity_vector_drift = 0.00370_(1),
-         .first_cycle_descending_nodes = {-0.0091_(1), +0.0036_(1), -0.028_(1), -0.018_(1)},
-         .cycle_ends = {-0.0160_(1), +0.0210_(1), -0.021_(1), +0.0160_(1)},
+         .first_month_eccentricity_vector_drift = 0.0037_(1),
+         .first_month_descending_nodes =
+             {-0.027_(1), +0.0036_(1), -0.028_(1), +0.014_(1)},
+         .month_ends = {-0.016_(1), +0.0036_(1), -0.021_(1), +0.013_(1)},
          .long_term = 1 * JulianYear,
 #if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
      },
      {
+         .orbit = RL06Orbit::C,
          .max_degree = 50,
          .zonal_only = true,
-         .first_cycle_eccentricity_vector_drift = 0.00098,
-         .first_cycle_descending_nodes = {+0.0038, +0.0040, -0.022, -0.021},
-         .cycle_ends = {-0.0047, +0.0040, -0.025, -0.0170},
+         .first_month_eccentricity_vector_drift = 0.00098,
+         .first_month_descending_nodes = {+0.0038, +0.0040, -0.022, -0.021},
+         .month_ends = {-0.0047, +0.0040, -0.025, -0.0170},
          .long_term = 1 * JulianYear,
 #endif
+     },
+     {
+         .orbit = RL06Orbit::C,
+         .max_degree = 30,
+         .zonal_only = true,
+         .first_month_eccentricity_vector_drift = 0.0011_(1),
+         .first_month_descending_nodes =
+             {-0.0053_(1), +0.0050_(1), -0.025_(1), -0.013_(1)},
+         .month_ends = {-0.0052_(1), +0.0050_(1), -0.025_(1), -0.013_(1)},
+         .long_term = 10 * JulianYear,
      }},
 };
 
@@ -269,17 +363,18 @@ INSTANTIATE_TEST_SUITE_P(
     LunarOrbitTest,
     ::testing::ValuesIn(geopotential_truncations));
 
-TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
+TEST_P(LunarOrbitTest, OrbitalElements) {
   Time const integration_step = 10 * Second;
-  LOG(INFO) << "Using a " << GetParam() << " selenopotential field";
+  LOG(INFO) << "Orbit " << GetParam().OrbitName() << " using a "
+            << GetParam().DegreeAndOrder() << " selenopotential field";
 
-  Logger logger(
-      SOLUTION_DIR / "mathematica" /
-          absl::StrCat(
-              "lunar_orbit_", GetParam().DegreeAndOrder(), ".generated.wl"),
-      /*make_unique=*/false);
-
-  // We work with orbit C from [RL06].
+  Logger logger(SOLUTION_DIR / "mathematica" /
+                    absl::StrCat("lunar_orbit_",
+                                 GetParam().OrbitName(),
+                                 "_",
+                                 GetParam().DegreeAndOrder(),
+                                 ".generated.wl"),
+                /*make_unique=*/false);
 
   // The length and time units LU and TU are such that, in an idealized
   // Earth-Moon system, the Earth-Moon distance is 1 LU and the angular
@@ -310,31 +405,19 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   logger.Set("tu", TU, ExpressIn(Second));
   logger.Set("lu", LU, ExpressIn(Metre));
 
-  Time const cycle = 2 * π * TU;
-  int const revolutions_per_cycle = 328;
+  Time const month = 2 * π * TU;
 
-  // Initial conditions and elements from table 2 of [RL06].
-  Length const x0 = -4.498948742093e-03 * LU;
-  Length const y0 = -1.731769313131e-03 * LU;
-  Length const z0 =  0 * LU;
-  Speed const  u0 = -6.203996010078e-02 * (LU / TU);
-  Speed const  v0 =  7.000280770869e-02 * (LU / TU);
-  Speed const  w0 =  1.588813067177e+00 * (LU / TU);
+  auto const orbit = GetParam().orbit(LU, TU);
 
   DegreesOfFreedom<LunarSurface> const lunar_initial_state = {
-      LunarSurface::origin + Displacement<LunarSurface>({x0, y0, z0}),
-      Velocity<LunarSurface>({u0, v0, w0})};
+      LunarSurface::origin + Displacement<LunarSurface>({orbit.x₀, orbit.y₀, orbit.z₀}),
+      Velocity<LunarSurface>({orbit.u₀, orbit.v₀, orbit.w₀})};
 
   EXPECT_OK(ephemeris_->Prolong(J2000));
   DegreesOfFreedom<ICRS> const initial_state =
       lunar_frame_.FromThisFrameAtTime(J2000)(lunar_initial_state);
 
   {
-    Length const a0 = +1.861791339407e+03 * Kilo(Metre);
-    double const e0 = +2.110475283361e-02;
-    Angle const  i0 = +9.298309294740e+01 * Degree;
-    Angle const  ω0 = -7.839337618501e+01 * Degree;
-    Angle const  Ω0 = -1.589469097527e+02 * Degree;
 
     KeplerianElements<Selenocentric> const initial_osculating =
         KeplerOrbit<Selenocentric>(
@@ -346,15 +429,17 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
     // error on our LU with respect to the one in the paper: the semimajor axis
     // has the same value in LU.
     EXPECT_THAT(*initial_osculating.semimajor_axis,
-                RelativeErrorFrom(a0, IsNear(9.0e-4_(1))));
+                RelativeErrorFrom(orbit.a₀, IsNear(9.0e-4_(1))));
     EXPECT_THAT(*initial_osculating.eccentricity,
-                RelativeErrorFrom(e0, IsNear(1.4e-10_(1))));
+                RelativeErrorFrom(orbit.e₀, IsNear(1.4e-10_(1))));
     EXPECT_THAT(initial_osculating.inclination,
-                RelativeErrorFrom(i0, IsNear(9.7e-9_(1))));
-    EXPECT_THAT(*initial_osculating.argument_of_periapsis,
-                RelativeErrorFrom(2 * π * Radian + ω0, IsNear(2.0e-11_(1))));
-    EXPECT_THAT(initial_osculating.longitude_of_ascending_node,
-                RelativeErrorFrom(2 * π * Radian + Ω0, IsNear(4.7e-13_(1))));
+                RelativeErrorFrom(orbit.i₀, IsNear(9.7e-9_(1))));
+    EXPECT_THAT(
+        *initial_osculating.argument_of_periapsis,
+        RelativeErrorFrom(2 * π * Radian + orbit.ω₀, IsNear(2.0e-11_(1))));
+    EXPECT_THAT(
+        initial_osculating.longitude_of_ascending_node,
+        RelativeErrorFrom(2 * π * Radian + orbit.Ω₀, IsNear(4.7e-13_(1))));
   }
 
   DiscreteTrajectory<ICRS> trajectory;
@@ -373,11 +458,11 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
-  DiscreteTrajectory<Selenocentric> first_cycle_selenocentric_trajectory;
+  DiscreteTrajectory<Selenocentric> first_month_selenocentric_trajectory;
   DiscreteTrajectory<Selenocentric> selenocentric_trajectory;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
-    if (time - J2000 <= cycle) {
-      EXPECT_OK(first_cycle_selenocentric_trajectory.Append(
+    if (time - J2000 <= month) {
+      EXPECT_OK(first_month_selenocentric_trajectory.Append(
           time, ToSelenocentric(time)(degrees_of_freedom)))
     }
     EXPECT_OK(selenocentric_trajectory.Append(
@@ -395,8 +480,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   };
 
   
-  std::vector<EccentricityVector> first_cycle_osculating_eccentricity_vector;
-  for (Instant t = J2000; t <= J2000 + cycle; t += cycle / 50'000) {
+  std::vector<EccentricityVector> first_month_osculating_eccentricity_vector;
+  for (Instant t = J2000; t <= J2000 + month; t += month / 50'000) {
     auto const elements = KeplerOrbit<Selenocentric>(
             *moon_,
             satellite_,
@@ -406,23 +491,25 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
     Angle const& ω = *elements.argument_of_periapsis;
     double const& e = *elements.eccentricity;
-    first_cycle_osculating_eccentricity_vector.emplace_back(e, ω);
+    first_month_osculating_eccentricity_vector.emplace_back(e, ω);
   }
 
-  auto const first_cycle_mean_elements = OrbitalElements::ForTrajectory(
-      first_cycle_selenocentric_trajectory, *moon_, MasslessBody{});
-  ASSERT_OK(first_cycle_mean_elements);
-  auto first_cycle_eccentricity_vector_graph =
-      first_cycle_mean_elements->PlotEccentricityVector(
-          200,
-          200,
+  auto const first_month_mean_elements = OrbitalElements::ForTrajectory(
+      first_month_selenocentric_trajectory, *moon_, MasslessBody{});
+  ASSERT_OK(first_month_mean_elements);
+  auto first_month_eccentricity_vector_graph =
+      first_month_mean_elements->PlotEccentricityVector(
+          /*width=*/200,
+          /*height=*/200,
           /*background=*/Opaque(xkcd::white),
           /*axis_colour=*/xkcd::black,
           /*line_colour=*/xkcd::red);
-  first_cycle_eccentricity_vector_graph.ListPointPlot(
-      first_cycle_osculating_eccentricity_vector, xkcd::blue);
-  EXPECT_GOLDEN_GRAPH(first_cycle_eccentricity_vector_graph,
-                      "rl06c_first_cycle");
+  first_month_eccentricity_vector_graph.ListPointPlot(
+      first_month_osculating_eccentricity_vector, xkcd::blue);
+  // This corresponds to the left-hand side of [RL06] figures 9–11 for orbits
+  // A–C, with the addition of the mean elements in red.
+  EXPECT_GOLDEN_GRAPH(first_month_eccentricity_vector_graph,
+                      "first_month");
 
   DistinguishedPoints<Selenocentric> ascending_nodes;
   DistinguishedPoints<Selenocentric> descending_nodes;
@@ -460,28 +547,29 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
 
   {
     auto const e0 = descending_node_eccentricity_vector[0];
-    auto const e1 = descending_node_eccentricity_vector[revolutions_per_cycle];
+    auto const e1 =
+        descending_node_eccentricity_vector[orbit.revolutions_per_month];
     EXPECT_THAT(
         Sqrt(Pow<2>(e0.e_cos_ω - e1.e_cos_ω) + Pow<2>(e0.e_sin_ω - e1.e_sin_ω)),
-        IsNear(GetParam().first_cycle_eccentricity_vector_drift));
+        IsNear(GetParam().first_month_eccentricity_vector_drift));
   }
 
   {
-    Interval<double> e_cos_ω;
-    Interval<double> e_sin_ω;
+    Interval<double> first_month_e_cos_ω;
+    Interval<double> first_month_e_sin_ω;
     for (auto const& eccentricity_vector :
          descending_node_eccentricity_vector) {
-      e_cos_ω.Include(eccentricity_vector.e_cos_ω);
-      e_sin_ω.Include(eccentricity_vector.e_sin_ω);
+      first_month_e_cos_ω.Include(eccentricity_vector.e_cos_ω);
+      first_month_e_sin_ω.Include(eccentricity_vector.e_sin_ω);
     }
-    EXPECT_THAT(e_cos_ω.min,
-                IsNear(GetParam().first_cycle_descending_nodes.min_e_cos_ω));
-    EXPECT_THAT(e_cos_ω.max,
-                IsNear(GetParam().first_cycle_descending_nodes.max_e_cos_ω));
-    EXPECT_THAT(e_sin_ω.min,
-                IsNear(GetParam().first_cycle_descending_nodes.min_e_sin_ω));
-    EXPECT_THAT(e_sin_ω.max,
-                IsNear(GetParam().first_cycle_descending_nodes.max_e_sin_ω));
+    EXPECT_THAT(first_month_e_cos_ω.min,
+                IsNear(GetParam().first_month_descending_nodes.min_e_cos_ω));
+    EXPECT_THAT(first_month_e_cos_ω.max,
+                IsNear(GetParam().first_month_descending_nodes.max_e_cos_ω));
+    EXPECT_THAT(first_month_e_sin_ω.min,
+                IsNear(GetParam().first_month_descending_nodes.min_e_sin_ω));
+    EXPECT_THAT(first_month_e_sin_ω.max,
+                IsNear(GetParam().first_month_descending_nodes.max_e_sin_ω));
   }
 
   auto const long_term_mean_elements = OrbitalElements::ForTrajectory(
@@ -489,8 +577,8 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   ASSERT_OK(long_term_mean_elements);
   auto long_term_eccentricity_vector_graph =
       long_term_mean_elements->PlotEccentricityVector(
-          200,
-          200,
+          /*width=*/200,
+          /*height=*/200,
           /*background=*/Opaque(xkcd::white),
           /*axis_colour=*/xkcd::black,
           /*line_colour=*/xkcd::red);
@@ -498,29 +586,43 @@ TEST_P(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
       descending_node_eccentricity_vector, xkcd::black);
 
   {
-    Interval<double> e_cos_ω;
-    Interval<double> e_sin_ω;
+    Interval<double> long_term_e_cos_ω;
+    Interval<double> long_term_e_sin_ω;
     for (int revolution = 0;
          revolution < descending_node_eccentricity_vector.size();
-         revolution += revolutions_per_cycle) {
+         revolution += orbit.revolutions_per_month) {
       auto const eccentricity_vector =
           descending_node_eccentricity_vector[revolution];
-      e_cos_ω.Include(eccentricity_vector.e_cos_ω);
-      e_sin_ω.Include(eccentricity_vector.e_sin_ω);
+      long_term_e_cos_ω.Include(eccentricity_vector.e_cos_ω);
+      long_term_e_sin_ω.Include(eccentricity_vector.e_sin_ω);
       long_term_eccentricity_vector_graph.ListPointPlot(
           std::array{eccentricity_vector}, xkcd::green);
     }
-    EXPECT_THAT(e_cos_ω.min,
-                IsNear(GetParam().cycle_ends.min_e_cos_ω));
-    EXPECT_THAT(e_cos_ω.max,
-                IsNear(GetParam().cycle_ends.max_e_cos_ω));
-    EXPECT_THAT(e_sin_ω.min,
-                IsNear(GetParam().cycle_ends.min_e_sin_ω));
-    EXPECT_THAT(e_sin_ω.max,
-                IsNear(GetParam().cycle_ends.max_e_sin_ω));
+    EXPECT_THAT(long_term_e_cos_ω.min,
+                IsNear(GetParam().month_ends.min_e_cos_ω));
+    EXPECT_THAT(long_term_e_cos_ω.max,
+                IsNear(GetParam().month_ends.max_e_cos_ω));
+    EXPECT_THAT(long_term_e_sin_ω.min,
+                IsNear(GetParam().month_ends.min_e_sin_ω));
+    EXPECT_THAT(long_term_e_sin_ω.max,
+                IsNear(GetParam().month_ends.max_e_sin_ω));
   }
+  // This corresponds to the right-hand side of [RL06] figures 9–11 for orbits
+  // A–C, with the addition of the mean elements in red, and with the points at
+  // the end of each ground track month shown in green instead of black.
   EXPECT_GOLDEN_GRAPH(long_term_eccentricity_vector_graph,
-                      "rl06c_long_term");
+                      "long_term");
+
+  EXPECT_GOLDEN_GRAPH(ЛидовGraph(*long_term_mean_elements,
+                                 /*width=*/200,
+                                 /*height=*/200,
+                                 /*background=*/Opaque(xkcd::black),
+                                 /*region_boundary_colour=*/xkcd::white,
+                                 /*inclination_colour=*/xkcd::lavender,
+                                 /*eccentricity_colour=*/xkcd::cornflower,
+                                 /*лидов_parameter_colour=*/xkcd::rose_red,
+                                 ЛидовGrid::MaxEccentricityMinInclination),
+                      "лидов");
 }
 
 #endif
