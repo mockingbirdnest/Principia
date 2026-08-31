@@ -21,13 +21,13 @@ template<typename Point, typename Abscissa, typename Ordinate>
 concept graph_point = requires(Point const& p) {
   {
     [&p] {
-      auto const [x, y] = p;
+      auto const [x, _] = p;
       return x;
     }()
   } -> std::convertible_to<Abscissa>;
   {
     [&p] {
-      auto const [x, y] = p;
+      auto const [_, y] = p;
       return y;
     }()
   } -> std::convertible_to<Ordinate>;

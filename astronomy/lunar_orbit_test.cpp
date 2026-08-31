@@ -112,11 +112,11 @@ struct RL06Orbit {
   Speed const  u₀;
   Speed const v₀;
   Speed const w₀;
-  Length const a₀ = +1.861791339407e+03 * Kilo(Metre);
-  double const e₀ = +2.110475283361e-02;
-  Angle const i₀ = +9.298309294740e+01 * Degree;
-  Angle const ω₀ = -7.839337618501e+01 * Degree;
-  Angle const Ω₀ = -1.589469097527e+02 * Degree;
+  Length const a₀;
+  double const e₀;
+  Angle const i₀;
+  Angle const ω₀;
+  Angle const Ω₀;
   // Expected relative errors on the initial osculating elements.
   // The error of a₀ relatively large (9.0e-4) and is independent of the orbit:
   // it is the error between our LU and the one from [RL06].  The errors of the
@@ -223,7 +223,7 @@ struct OrbitAndGeopotentialTruncation {
   // Override the range of the eccentricity vector plot for the first month.
   // This is used for orbit A, where the osculating eccentricity vector varies
   // much more than the mean one.
-  std::optional<double> first_month_e_cos_ω_plot_range = std::nullopt;
+  std::optional<double> first_month_e_cos_ω_plot_range;
 
   std::string_view OrbitName() const {
     if (&orbit == &RL06Orbit::A) {
@@ -508,7 +508,7 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
   DiscreteTrajectory<Selenocentric> first_month_selenocentric_trajectory;
   DiscreteTrajectory<Selenocentric> selenocentric_trajectory;
   for (auto const& [time, degrees_of_freedom] : trajectory) {
-    if (time - J2000 <= month) {
+    if (time <= J2000 + month) {
       EXPECT_OK(first_month_selenocentric_trajectory.Append(
           time, ToSelenocentric(time)(degrees_of_freedom)))
     }
