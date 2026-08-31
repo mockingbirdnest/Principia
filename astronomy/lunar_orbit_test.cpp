@@ -20,6 +20,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/space.hpp"
 #include "geometry/space_transformations.hpp"
@@ -27,6 +28,7 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "physics/apsides.hpp"
 #include "physics/body_surface_reference_frame.hpp"
@@ -38,6 +40,7 @@
 #include "physics/oblate_body.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
