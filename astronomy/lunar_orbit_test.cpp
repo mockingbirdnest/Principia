@@ -651,7 +651,7 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
   }
   // This corresponds to the right-hand side of [RL06] figures 9–11 for orbits
   // A–C, with the addition of the mean elements in red, and with the points at
-  // the end of each ground track month shown in green instead of black.
+  // the end of each ground track cycle shown in green instead of black.
   EXPECT_GOLDEN_GRAPH(long_term_eccentricity_vector_graph,
                       "long_term");
 
