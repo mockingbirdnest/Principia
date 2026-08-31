@@ -455,7 +455,8 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
   auto const orbit = GetParam().orbit(LU, TU);
 
   DegreesOfFreedom<LunarSurface> const lunar_initial_state = {
-      LunarSurface::origin + Displacement<LunarSurface>({orbit.x₀, orbit.y₀, orbit.z₀}),
+      LunarSurface::origin +
+          Displacement<LunarSurface>({orbit.x₀, orbit.y₀, orbit.z₀}),
       Velocity<LunarSurface>({orbit.u₀, orbit.v₀, orbit.w₀})};
 
   EXPECT_OK(ephemeris_->Prolong(J2000));
@@ -463,7 +464,6 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
       lunar_frame_.FromThisFrameAtTime(J2000)(lunar_initial_state);
 
   {
-
     KeplerianElements<Selenocentric> const initial_osculating =
         KeplerOrbit<Selenocentric>(
             *moon_,
@@ -526,7 +526,6 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
     double e_sin_ω;
   };
 
-  
   std::vector<EccentricityVector> first_month_osculating_eccentricity_vector;
   for (Instant t = J2000; t <= J2000 + month; t += month / 50'000) {
     auto const elements = KeplerOrbit<Selenocentric>(
@@ -580,8 +579,8 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
             selenocentric_trajectory.EvaluateDegreesOfFreedom(time) -
                 selenocentre_,
             time).elements_at_epoch();
-      descending_node_eccentricity_vector
-          .emplace_back(*elements.eccentricity,*elements.argument_of_periapsis);
+    descending_node_eccentricity_vector.emplace_back(
+        *elements.eccentricity, *elements.argument_of_periapsis);
   }
 
   {
