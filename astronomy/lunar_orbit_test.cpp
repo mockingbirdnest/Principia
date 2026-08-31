@@ -118,11 +118,11 @@ struct RL06Orbit {
   Angle const ω₀;
   Angle const Ω₀;
   // Expected relative errors on the initial osculating elements.
-  // The error of a₀ relatively large (9.0e-4) and is independent of the orbit:
-  // it is the error between our LU and the one from [RL06].  The errors of the
-  // eccentricity and angles should be tiny, reflecting differences in
-  // evaluation of the geometric computations; they serve as a check on data
-  // entry.
+  // The error of a₀ relatively large (9.0e-4, see `expected_lu_error` below)
+  // and is independent of the orbit: it is the error between our LU and the one
+  // from [RL06].  The errors of the eccentricity and angles should be tiny,
+  // reflecting differences in evaluation of the geometric computations; they
+  // serve as a check on data entry.
   ApproximateQuantity<double> const e₀_error;
   ApproximateQuantity<double> const i₀_error;
   ApproximateQuantity<double> const ω₀_error;
@@ -448,7 +448,8 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
   EXPECT_THAT(moon_->gravitational_parameter() / (Pow<3>(LU) / Pow<2>(TU)),
               AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 1));
   EXPECT_THAT(TU, RelativeErrorFrom(TU_rl, IsNear(1.4e-3_(1))));
-  EXPECT_THAT(LU, RelativeErrorFrom(LU_rl, IsNear(9.0e-4_(1))));
+  auto const expected_lu_error = 9.0e-4_(1);
+  EXPECT_THAT(LU, RelativeErrorFrom(LU_rl, IsNear(expected_lu_error)));
 
   Time const month = 2 * π * TU;
 
@@ -474,7 +475,7 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
     // error on our LU with respect to the one in the paper: the semimajor axis
     // has the same value in LU.
     EXPECT_THAT(*initial_osculating.semimajor_axis,
-                RelativeErrorFrom(orbit.a₀, IsNear(9.0e-4_(1))));
+                RelativeErrorFrom(orbit.a₀, IsNear(expected_lu_error)));
     EXPECT_THAT(*initial_osculating.eccentricity,
                 RelativeErrorFrom(orbit.e₀, IsNear(orbit.e₀_error)));
     EXPECT_THAT(initial_osculating.inclination,
@@ -527,12 +528,11 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
   };
 
   std::vector<EccentricityVector> first_month_osculating_eccentricity_vector;
-  for (Instant t = J2000; t <= J2000 + month; t += month / 50'000) {
+  for (auto const& [t, dof] : first_month_selenocentric_trajectory) {
     auto const elements = KeplerOrbit<Selenocentric>(
             *moon_,
             satellite_,
-            selenocentric_trajectory.EvaluateDegreesOfFreedom(t) -
-                selenocentre_,
+            dof - selenocentre_,
             t).elements_at_epoch();
 
     Angle const& ω = *elements.argument_of_periapsis;
