@@ -27,8 +27,6 @@
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "mathematica/logger.hpp"
-#include "mathematica/mathematica.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "physics/apsides.hpp"
 #include "physics/body_surface_reference_frame.hpp"
@@ -70,8 +68,6 @@ using namespace principia::geometry::_space_transformations;
 using namespace principia::graphics::_colours;
 using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
-using namespace principia::mathematica::_logger;
-using namespace principia::mathematica::_mathematica;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_apsides;
@@ -345,9 +341,10 @@ std::array<OrbitAndGeopotentialTruncation, 7> const geopotential_truncations = {
          .orbit = RL06Orbit::C,
          .max_degree = 50,
          .zonal_only = false,
-         .first_month_eccentricity_vector_drift = 0.00018,
-         .first_month_descending_nodes = {-0.0055, +0.0051, -0.027, -0.018},
-         .month_ends = {+0.0026, +0.0037, -0.021, -0.0200},
+         .first_month_eccentricity_vector_drift = 0.00018_(1),
+         .first_month_descending_nodes =
+             {-0.0071_(1), +0.0067_(1), -0.029_(1), -0.016_(1)},
+         .month_ends = {+0.0020_(1), +0.0052_(1), -0.022_(1), -0.018_(1)},
          .long_term = 10 * JulianYear,
      },
      {
@@ -393,8 +390,9 @@ std::array<OrbitAndGeopotentialTruncation, 7> const geopotential_truncations = {
      },
      // Figure 13 from [RL06] compares long-term evolutions in the 50×0 and
      // 50×50 field for an orbit in the same family as orbit C.  The paper does
-     // not give that orbit, but we do a similar comparison with Orbit C itself
-     // in the 30×0 and 30×30 fields.
+     // not give that orbit (for which the 50×0 field results in a collision),
+     // but we do a similar comparison with Orbit C itself in the 30×0 and 30×30
+     // fields.
      {
          .orbit = RL06Orbit::C,
          .max_degree = 30,
@@ -416,14 +414,6 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
   Time const integration_step = 10 * Second;
   LOG(INFO) << "Orbit " << GetParam().OrbitName() << " using a "
             << GetParam().DegreeAndOrder() << " selenopotential field";
-
-  Logger logger(SOLUTION_DIR / "mathematica" /
-                    absl::StrCat("lunar_orbit_",
-                                 GetParam().OrbitName(),
-                                 "_",
-                                 GetParam().DegreeAndOrder(),
-                                 ".generated.wl"),
-                /*make_unique=*/false);
 
   // The length and time units LU and TU are such that, in an idealized
   // Earth-Moon system, the Earth-Moon distance is 1 LU and the angular
@@ -450,9 +440,6 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
               AlmostEquals(GM_rl / (Pow<3>(LU_rl) / Pow<2>(TU_rl)), 1));
   EXPECT_THAT(TU, RelativeErrorFrom(TU_rl, IsNear(1.4e-3_(1))));
   EXPECT_THAT(LU, RelativeErrorFrom(LU_rl, IsNear(9.0e-4_(1))));
-
-  logger.Set("tu", TU, ExpressIn(Second));
-  logger.Set("lu", LU, ExpressIn(Metre));
 
   Time const month = 2 * π * TU;
 
