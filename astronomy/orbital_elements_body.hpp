@@ -138,7 +138,8 @@ inline Graph<double, double> OrbitalElements::PlotEccentricityVector(
     std::int64_t const height,
     RGBA32 const background,
     RGB24 const axis_colour,
-    RGB24 const line_colour) const {
+    RGB24 const line_colour,
+    std::optional<double> e_cos_ω_measure) const {
   double const aspect_ratio =
       static_cast<double>(width) / static_cast<double>(height);
   std::vector<std::pair<double, double>> eccentricity_vector;
@@ -150,6 +151,11 @@ inline Graph<double, double> OrbitalElements::PlotEccentricityVector(
     eccentricity_vector.emplace_back(e * cos_ω, e * sin_ω);
     e_cos_ω_range.Include(eccentricity_vector.back().first);
     e_sin_ω_range.Include(eccentricity_vector.back().second);
+  }
+  if (e_cos_ω_measure.has_value()) {
+    e_cos_ω_range = {e_cos_ω_range.midpoint() - *e_cos_ω_measure / 2,
+                     e_cos_ω_range.midpoint() + *e_cos_ω_measure / 2};
+    e_sin_ω_range = {e_sin_ω_range.midpoint(), e_sin_ω_range.midpoint()};
   }
   if (e_cos_ω_range.measure() / width > e_sin_ω_range.measure() / height) {
     double const midpoint = e_sin_ω_range.midpoint();

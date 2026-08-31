@@ -72,6 +72,7 @@ using namespace principia::integrators::_methods;
 using namespace principia::integrators::_symmetric_linear_multistep_integrator;
 using namespace principia::mathematica::_logger;
 using namespace principia::mathematica::_mathematica;
+using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_body_surface_reference_frame;
@@ -90,6 +91,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
 using namespace principia::testing_utilities::_is_near;
+using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics_matchers;
 
 // A minimum bounding rectangle for a set of values of the eccentricity vector.
@@ -114,6 +116,16 @@ struct RL06Orbit {
   Angle const i₀ = +9.298309294740e+01 * Degree;
   Angle const ω₀ = -7.839337618501e+01 * Degree;
   Angle const Ω₀ = -1.589469097527e+02 * Degree;
+  // Expected relative errors on the initial osculating elements.
+  // The error of a₀ relatively large (9.0e-4) and is independent of the orbit:
+  // it is the error between our LU and the one from [RL06].  The errors of the
+  // eccentricity and angles should be tiny, reflecting differences in
+  // evaluation of the geometric computations; they serve as a check on data
+  // entry.
+  ApproximateQuantity<double> const e₀_error;
+  ApproximateQuantity<double> const i₀_error;
+  ApproximateQuantity<double> const ω₀_error;
+  ApproximateQuantity<double> const Ω₀_error;
   
   static RL06Orbit A(Length const& LU, Time const& TU) {
     return {
@@ -128,6 +140,10 @@ struct RL06Orbit {
         .i₀ = 7.063797094157e+01 * Degree,
         .ω₀ = -4.048674547795e+01 * Degree,
         .Ω₀ = 1.776268201967e+02 * Degree,
+        .e₀_error = 4.0e-9_(1),
+        .i₀_error = 9.9e-15_(1),
+        .ω₀_error = 1.2e-10_(1),
+        .Ω₀_error = 2.5e-13_(1),
     };
   }  
   static RL06Orbit B(Length const& LU, Time const& TU) {
@@ -143,6 +159,10 @@ struct RL06Orbit {
         .i₀ = 5.220698531621e+01 * Degree,
         .ω₀ = 8.922084663298e+01 * Degree,
         .Ω₀ = 1.467205983429e+02 * Degree,
+        .e₀_error = 1.5e-12_(1),
+        .i₀_error = 3.4e-13_(1),
+        .ω₀_error = 1.3e-12_(1),
+        .Ω₀_error = 3.6e-13_(1),
     };
   }
   static RL06Orbit C(Length const& LU, Time const& TU) {
@@ -158,6 +178,10 @@ struct RL06Orbit {
         .i₀ = +9.298309294740e+01 * Degree,
         .ω₀ = -7.839337618501e+01 * Degree,
         .Ω₀ = -1.589469097527e+02 * Degree,
+        .e₀_error = 1.4e-10_(1),
+        .i₀_error = 9.7e-9_(1),
+        .ω₀_error = 2.0e-11_(1),
+        .Ω₀_error = 4.7e-13_(1),
     };
   }
 };
@@ -168,9 +192,6 @@ struct OrbitAndGeopotentialTruncation {
   RL06Orbit (&orbit)(Length const& LU, Time const& TU);
   // The geopotential truncation used.
   int max_degree;
-  // Figure 13 from [RL06] compares evolutions in the 50×0 and 50×50 field for
-  // an orbit in the same family as orbit C.  The paper does not give that
-  // orbit, but we do a similar comparison with Orbit C itself.
   bool zonal_only;
 
   // Expectations.  All values are checked with IsNear.
@@ -192,6 +213,14 @@ struct OrbitAndGeopotentialTruncation {
   ExpectedEccentricityVectorRange month_ends;
   // The duration for the above expectation.
   Time long_term;
+
+  // The expected status of the integration over `long_term`.
+  absl::StatusCode long_term_status = absl::StatusCode::kOk;
+
+  // Override the range of the eccentricity vector plot for the first month.
+  // This is used for orbit A, where the osculating eccentricity vector varies
+  // much more than the mean one.
+  std::optional<double> first_month_e_cos_ω_plot_range = std::nullopt;
 
   std::string_view OrbitName() const {
     if (&orbit == &RL06Orbit::A) {
@@ -280,11 +309,38 @@ class LunarOrbitTest : public ::testing::TestWithParam<OrbitAndGeopotentialTrunc
 #if !defined(_DEBUG)
 
 #if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
-std::array<OrbitAndGeopotentialTruncation, 7> const geopotential_truncations = {
+std::array<OrbitAndGeopotentialTruncation, 8> const geopotential_truncations = {
 #else
-std::array<OrbitAndGeopotentialTruncation, 5> const geopotential_truncations = {
+std::array<OrbitAndGeopotentialTruncation, 7> const geopotential_truncations = {
 #endif
     {{
+         .orbit = RL06Orbit::A,
+         .max_degree = 30,
+         .zonal_only = false,
+         .first_month_eccentricity_vector_drift = 0.000'061_(1),
+         .first_month_descending_nodes =
+             {-0.51_(1), +0.000'043_(1), -0.51_(1), -0.000'062_(1)},
+         .month_ends = {-0.50_(1), -0.000'50_(1), -0.50_(1), -0.000'33_(1)},
+         // We find a collision somewhere in March 2004; [RL06] has it
+         // after 5.39 years.
+         .long_term = 4.25 * JulianYear,
+         .long_term_status = absl::StatusCode::kOutOfRange,
+         .first_month_e_cos_ω_plot_range = 14e-4,
+     },
+     {
+         .orbit = RL06Orbit::B,
+         .max_degree = 30,
+         .zonal_only = false,
+         .first_month_eccentricity_vector_drift = 0.0098_(1),
+         .first_month_descending_nodes =
+             {-0.091_(1), +0.10_(1), +0.42_(1), +0.56_(1)},
+         .month_ends = {-0.090_(1), +0.096_(1), +0.42_(1), +0.56_(1)},
+         .long_term = 10 * JulianYear,
+     },
+     {
+// This test was used to determine that 30 is an appropriate maximum degree for
+// the geopotential, by comparing the appearance of the graphs for orbit C (the
+// lowest of the three) in the 50×50 and 𝑛×𝑛 selenopotentials.
 #if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
          .orbit = RL06Orbit::C,
          .max_degree = 50,
@@ -334,18 +390,11 @@ std::array<OrbitAndGeopotentialTruncation, 5> const geopotential_truncations = {
              {-0.027_(1), +0.0036_(1), -0.028_(1), +0.014_(1)},
          .month_ends = {-0.016_(1), +0.0036_(1), -0.021_(1), +0.013_(1)},
          .long_term = 1 * JulianYear,
-#if PRINCIPIA_GEOPOTENTIAL_MAX_DEGREE_50
      },
-     {
-         .orbit = RL06Orbit::C,
-         .max_degree = 50,
-         .zonal_only = true,
-         .first_month_eccentricity_vector_drift = 0.00098,
-         .first_month_descending_nodes = {+0.0038, +0.0040, -0.022, -0.021},
-         .month_ends = {-0.0047, +0.0040, -0.025, -0.0170},
-         .long_term = 1 * JulianYear,
-#endif
-     },
+     // Figure 13 from [RL06] compares long-term evolutions in the 50×0 and
+     // 50×50 field for an orbit in the same family as orbit C.  The paper does
+     // not give that orbit, but we do a similar comparison with Orbit C itself
+     // in the 30×0 and 30×30 fields.
      {
          .orbit = RL06Orbit::C,
          .max_degree = 30,
@@ -431,15 +480,17 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
     EXPECT_THAT(*initial_osculating.semimajor_axis,
                 RelativeErrorFrom(orbit.a₀, IsNear(9.0e-4_(1))));
     EXPECT_THAT(*initial_osculating.eccentricity,
-                RelativeErrorFrom(orbit.e₀, IsNear(1.4e-10_(1))));
+                RelativeErrorFrom(orbit.e₀, IsNear(orbit.e₀_error)));
     EXPECT_THAT(initial_osculating.inclination,
-                RelativeErrorFrom(orbit.i₀, IsNear(9.7e-9_(1))));
+                RelativeErrorFrom(orbit.i₀, IsNear(orbit.i₀_error)));
     EXPECT_THAT(
         *initial_osculating.argument_of_periapsis,
-        RelativeErrorFrom(2 * π * Radian + orbit.ω₀, IsNear(2.0e-11_(1))));
+                RelativeErrorFrom(ReduceAngle<0.0, 2 * π>(orbit.ω₀),
+                                  IsNear(orbit.ω₀_error)));
     EXPECT_THAT(
         initial_osculating.longitude_of_ascending_node,
-        RelativeErrorFrom(2 * π * Radian + orbit.Ω₀, IsNear(4.7e-13_(1))));
+                RelativeErrorFrom(ReduceAngle<0.0, 2 * π>(orbit.Ω₀),
+                                  IsNear(orbit.Ω₀_error)));
   }
 
   DiscreteTrajectory<ICRS> trajectory;
@@ -452,9 +503,9 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
               Quinlan1999Order8A,
               Ephemeris<ICRS>::NewtonianMotionEquation>(),
           integration_step));
-
-  EXPECT_OK(
-      ephemeris_->FlowWithFixedStep(J2000 + GetParam().long_term, *instance));
+  EXPECT_THAT(
+      ephemeris_->FlowWithFixedStep(J2000 + GetParam().long_term, *instance),
+      StatusIs(GetParam().long_term_status));
 
   // To find the nodes, we need to convert the trajectory to a reference frame
   // whose xy plane is the Moon's equator.
@@ -503,7 +554,8 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
           /*height=*/200,
           /*background=*/Opaque(xkcd::white),
           /*axis_colour=*/xkcd::black,
-          /*line_colour=*/xkcd::red);
+          /*line_colour=*/xkcd::red,
+          /*e_cos_ω_measure=*/GetParam().first_month_e_cos_ω_plot_range);
   first_month_eccentricity_vector_graph.ListPointPlot(
       first_month_osculating_eccentricity_vector, xkcd::blue);
   // This corresponds to the left-hand side of [RL06] figures 9–11 for orbits
