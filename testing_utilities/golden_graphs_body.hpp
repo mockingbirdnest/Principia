@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <span>
+#include <string>
 #include <string_view>
 
 #include "absl/strings/ascii.h"
@@ -48,7 +49,10 @@ std::string ParamSuffix(T const& test) {
   return (std::stringstream() << "_" << test.GetParam()).str();
 }
 
-template<typename Test, typename Abscissa, typename Ordinate, typename Character>
+template<typename Test,
+         typename Abscissa,
+         typename Ordinate,
+         typename Character>
 void ExpectGoldenGraph(Test const& test,
                        Graph<Abscissa, Ordinate> const& graph,
                        std::basic_string_view<Character> const suffix,
