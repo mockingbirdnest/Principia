@@ -179,6 +179,11 @@ message Vessel {
     required DiscreteTrajectory non_collapsible_segment = 2;
     required FixedStepParameters collapsible_fixed_step_parameters = 3;
   }
+  message Payload {
+    required ReferenceFrame plotting_frame = 1;
+    required Point t_min = 2;
+    required Point t_max = 3;
+  }
   required string guid = 13;
   required string name = 19;
   required MasslessBody body = 1;
@@ -194,6 +199,7 @@ message Vessel {
   repeated Checkpoint checkpoint = 21;  // Added in हरीश चंद्र.
   optional DiscreteTrajectorySegment.DownsamplingParameters
       downsampling_parameters = 23;  // Added in हरीश चंद्र.
+  repeated Payload payload = 25;  // Added in Lévy.
 
   // Pre-Буняковский.
   reserved 2, 3, 5;

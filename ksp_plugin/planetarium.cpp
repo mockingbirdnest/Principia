@@ -50,17 +50,14 @@ Planetarium::Planetarium(
       plotting_to_scaled_space_(std::move(plotting_to_scaled_space)) {}
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod0(
-    DiscreteTrajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator const /*begin*/,
-    DiscreteTrajectory<Barycentric>::iterator const /*end*/,
+    DiscreteTrajectoryView<Barycentric> const& trajectory,
     Instant const& now,
     bool const /*reverse*/) const {
-  auto const plottable_begin = trajectory.lower_bound(plotting_frame_->t_min());
-  auto const plottable_end = trajectory.lower_bound(plotting_frame_->t_max());
+  DiscreteTrajectoryView plottable_view = trajectory;
+  plottable_view.Restrict(plotting_frame_->t_min(), plotting_frame_->t_max());
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const plottable_segments = ComputePlottableSegments(plottable_spheres,
-                                                           plottable_begin,
-                                                           plottable_end);
+                                                           plottable_view);
 
   auto const field_of_view_radius² =
       perspective_.focal() * perspective_.focal() *
@@ -99,9 +96,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
 }
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod1(
-    DiscreteTrajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator const begin,
-    DiscreteTrajectory<Barycentric>::iterator const end,
+    DiscreteTrajectoryView<Barycentric> const& trajectory,
     Instant const& now,
     bool const reverse) const {
   Length const focal_plane_tolerance =
@@ -109,7 +104,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
   auto const focal_plane_tolerance² =
       focal_plane_tolerance * focal_plane_tolerance;
 
-  auto const rp2_lines = PlotMethod0(trajectory, begin, end, now, reverse);
+  auto const rp2_lines = PlotMethod0(trajectory, now, reverse);
 
   RP2Lines<Length, Camera> new_rp2_lines;
   for (auto const& rp2_line : rp2_lines) {
@@ -137,25 +132,19 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
 }
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod2(
-    Trajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator const begin,
-    DiscreteTrajectory<Barycentric>::iterator const end,
+    DiscreteTrajectoryView<Barycentric> const& trajectory,
     Instant const& now,
     bool const reverse) const {
-  if (begin == end) {
+  if (trajectory.size() == 0) {
     return {};
   }
-  auto last = end;
-  --last;
-  auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
-  auto const last_time = std::min(last->time, plotting_frame_->t_max());
-  return PlotMethod2(trajectory, begin_time, last_time, now, reverse);
+  TrajectoryView plottable_view = trajectory;
+  plottable_view.Restrict(plotting_frame_->t_min(), plotting_frame_->t_max());
+  return PlotMethod2(plottable_view, now, reverse);
 }
 
 RP2Lines<Length, Camera> Planetarium::PlotMethod2(
-    Trajectory<Barycentric> const& trajectory,
-    Instant const& first_time,
-    Instant const& last_time,
+    TrajectoryView<Barycentric> const& trajectory,
     Instant const& now,
     bool const reverse,
     Length* const minimal_distance) const {
@@ -163,8 +152,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto const plottable_spheres = ComputePlottableSpheres(now);
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
-  auto const final_time = reverse ? first_time : last_time;
-  auto previous_time = reverse ? last_time : first_time;
+  auto const final_time = reverse ? trajectory.t_min() : trajectory.t_max();
+  auto previous_time = reverse ? trajectory.t_max() : trajectory.t_min();
 
   if (minimal_distance != nullptr) {
     *minimal_distance = Infinity<Length>;
@@ -269,41 +258,29 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 }
 
 void Planetarium::PlotMethod3(
-    Trajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator begin,
-    DiscreteTrajectory<Barycentric>::iterator end,
-    Instant const& t_max,
+    DiscreteTrajectoryView<Barycentric> const& trajectory,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int max_points) const {
-  if (begin == end) {
+  if (trajectory.size() == 0) {
     return;
   }
-  auto last = std::prev(end);
-  auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
-  auto const last_time =
-      std::min({last->time, plotting_frame_->t_max(), t_max});
-  PlotMethod3(
-      trajectory, begin_time, last_time, reverse, add_point, max_points);
+  TrajectoryView plottable_view = trajectory;
+  plottable_view.Restrict(plotting_frame_->t_min(), plotting_frame_->t_max());
+  PlotMethod3(plottable_view, reverse, add_point, max_points);
 }
 
 void Planetarium::PlotMethod4(
-    Trajectory<Barycentric> const& trajectory,
-    DiscreteTrajectory<Barycentric>::iterator begin,
-    DiscreteTrajectory<Barycentric>::iterator end,
-    Instant const& t_max,
+    DiscreteTrajectoryView<Barycentric> const& trajectory,
     bool const reverse,
     std::function<void(ScaledSpacePoint const&)> const& add_point,
     int max_points) const {
-  if (begin == end) {
+  if (trajectory.size() == 0) {
     return;
   }
-  auto last = std::prev(end);
-  auto const begin_time = std::max(begin->time, plotting_frame_->t_min());
-  auto const last_time =
-      std::min({last->time, plotting_frame_->t_max(), t_max});
-  PlotMethod4(
-      trajectory, begin_time, last_time, reverse, add_point, max_points);
+  TrajectoryView plottable_view = trajectory;
+  plottable_view.Restrict(plotting_frame_->t_min(), plotting_frame_->t_max());
+  PlotMethod4(plottable_view, reverse, add_point, max_points);
 }
 
 std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(
@@ -333,13 +310,12 @@ std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(
 
 Segments<Navigation> Planetarium::ComputePlottableSegments(
     const std::vector<Sphere<Navigation>>& plottable_spheres,
-    DiscreteTrajectory<Barycentric>::iterator const begin,
-    DiscreteTrajectory<Barycentric>::iterator const end) const {
+    DiscreteTrajectoryView<Barycentric> const& trajectory) const {
   Segments<Navigation> all_segments;
-  if (begin == end) {
+  if (trajectory.size() == 0) {
     return all_segments;
   }
-  auto it1 = begin;
+  auto it1 = trajectory.begin();
   Instant t1 = it1->time;
   SimilarMotion<Barycentric, Navigation> similar_motion_at_t1 =
       plotting_frame_->ToThisFrameAtTimeSimilarly(t1);
@@ -347,7 +323,7 @@ Segments<Navigation> Planetarium::ComputePlottableSegments(
       similar_motion_at_t1(it1->degrees_of_freedom).position();
 
   auto it2 = it1;
-  while (++it2 != end) {
+  while (++it2 != trajectory.end()) {
     // Processing one segment of the trajectory.
     Instant const t2 = it2->time;
 

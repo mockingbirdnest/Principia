@@ -15,6 +15,7 @@
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "physics/mock_rigid_reference_frame.hpp"
@@ -42,6 +43,7 @@ using namespace principia::ksp_plugin_test::_mock_celestial;
 using namespace principia::ksp_plugin_test::_mock_vessel;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_mock_continuous_trajectory;
 using namespace principia::physics::_mock_ephemeris;
 using namespace principia::physics::_mock_rigid_reference_frame;
@@ -118,11 +120,13 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
     EXPECT_CALL(*reference_frame_, ToThisFrameAtTime(t))
         .WillOnce(Return(rigid_motion));
   }
+  EXPECT_CALL(*reference_frame_, t_min()).WillRepeatedly(Return(t0_));
+  EXPECT_CALL(*reference_frame_, t_max())
+      .WillRepeatedly(Return(t0_ + 9 * Second));
 
   auto const rendered_trajectory =
       renderer_.RenderBarycentricTrajectoryInPlotting(
-          trajectory_to_render.begin(),
-          trajectory_to_render.end());
+          DiscreteTrajectoryView(&trajectory_to_render));
 
   EXPECT_EQ(10, rendered_trajectory.size());
   int index = 0;
@@ -145,6 +149,8 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   MockContinuousTrajectory<Barycentric> celestial_trajectory;
   EXPECT_CALL(ephemeris, trajectory(_))
       .WillRepeatedly(Return(&celestial_trajectory));
+  EXPECT_CALL(ephemeris, t_min()).WillRepeatedly(Return(t0_));
+  EXPECT_CALL(ephemeris, t_max()).WillRepeatedly(Return(t0_ + 10 * Second));
 
   DiscreteTrajectory<Barycentric> trajectory_to_render;
   AppendTrajectoryTimeline(
@@ -185,8 +191,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
   auto const rendered_trajectory =
       renderer_.RenderBarycentricTrajectoryInPlotting(
-          trajectory_to_render.begin(),
-          trajectory_to_render.end());
+          DiscreteTrajectoryView(&trajectory_to_render));
 
   EXPECT_EQ(5, rendered_trajectory.size());
   int index = 3;
@@ -198,53 +203,6 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
     EXPECT_LT((degrees_of_freedom.position() - Navigation::origin).Norm(),
               42 * Metre);
     EXPECT_LT(degrees_of_freedom.velocity().Norm(), 6 * Metre / Second);
-    ++index;
-  }
-}
-
-TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
-  DiscreteTrajectory<Navigation> trajectory_to_render;
-  AppendTrajectoryTimeline(
-      NewLinearTrajectoryTimeline(
-          /*v=*/Velocity<Navigation>(
-              {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second}),
-          /*Δt=*/1 * Second,
-          /*t1=*/t0_,
-          /*t2=*/t0_ + 10 * Second),
-      /*to=*/trajectory_to_render);
-
-  Instant const rendering_time = t0_ + 5 * Second;
-  Position<World> const sun_world_position =
-      World::origin +
-      Displacement<World>({300 * Metre, 200 * Metre, 100 * Metre});
-  Rotation<Barycentric, AliceSun> const planetarium_rotation(
-      1 * Radian,
-      Bivector<double, Barycentric>({1.0, 1.1, 1.2}),
-      DefinesFrame<AliceSun>{});
-  RigidMotion<Navigation, Barycentric> const rigid_motion(
-      RigidTransformation<Navigation, Barycentric>::Identity(),
-      Navigation::nonrotating,
-      Navigation::unmoving);
-  EXPECT_CALL(*reference_frame_, FromThisFrameAtTime(_))
-      .WillRepeatedly(Return(rigid_motion));
-
-  auto const rendered_trajectory =
-      renderer_.RenderPlottingTrajectoryInWorld(rendering_time,
-                                                trajectory_to_render.begin(),
-                                                trajectory_to_render.end(),
-                                                sun_world_position,
-                                                planetarium_rotation);
-
-  EXPECT_EQ(10, rendered_trajectory.size());
-  int index = 0;
-  for (auto const& [time, degrees_of_freedom] : rendered_trajectory) {
-    EXPECT_EQ(t0_ + index * Second, time);
-    // The degrees of freedom are computed using real geometrical transforms.
-    // No point in re-doing the computation here, we just check that the numbers
-    // are reasonable.
-    EXPECT_LT((degrees_of_freedom.position() - World::origin).Norm(),
-              452 * Metre);
-    EXPECT_LT(degrees_of_freedom.velocity().Norm(), 9 * Metre / Second);
     ++index;
   }
 }

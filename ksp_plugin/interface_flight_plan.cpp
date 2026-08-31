@@ -26,6 +26,7 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/rigid_reference_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -52,6 +53,7 @@ using namespace principia::physics::_body_centred_body_direction_reference_frame
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_rigid_reference_frame;
 using namespace principia::quantities::_constants;
 using namespace principia::quantities::_si;
@@ -401,6 +403,9 @@ XYZ __cdecl principia__FlightPlanGetManoeuvreInitialPlottedVelocity(
       {plugin, vessel_guid, index});
   CHECK(plugin != nullptr);
 
+  // Note that we cannot use the velocity producted by
+  // `FlightPlanRenderedManoeuvre` here because it is fictitious, see the
+  // "Lasciate ogne speranza" comment.
   auto const& [t, dof] =
       GetFlightPlan(*plugin, vessel_guid).GetSegment(2 * index)->back();
   Velocity<Navigation> const v =
@@ -570,11 +575,13 @@ void __cdecl principia__FlightPlanRenderedApsides(
   for (auto const& segment : flight_plan.segments()) {
     DistinguishedPoints<World> segment_rendered_apoapsides;
     DistinguishedPoints<World> segment_rendered_periapsides;
+    DiscreteTrajectoryView segment_view(&flight_plan, segment);
+    if (t_max != nullptr) {
+      segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+    }
     plugin->ComputeAndRenderApsides(
         celestial_index,
-        flight_plan,
-        segment.begin(), segment.end(),
-        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
+        segment_view,
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_apoapsides,
@@ -606,9 +613,9 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
   DistinguishedPoints<World> rendered_closest_approaches;
   for (auto const& segment : flight_plan.segments()) {
     DistinguishedPoints<World> segment_rendered_closest_approaches;
+    DiscreteTrajectoryView const segment_view(&flight_plan, segment);
     plugin->ComputeAndRenderClosestApproaches(
-        flight_plan,
-        segment.begin(), segment.end(),
+        segment_view,
         FromXYZ<Position<World>>(sun_world_position),
         max_points,
         segment_rendered_closest_approaches);
@@ -619,6 +626,54 @@ void __cdecl principia__FlightPlanRenderedClosestApproaches(
       std::move(rendered_closest_approaches),
       plugin);
   return m.Return();
+}
+
+// Returns the degrees of freedom at the start of the manœuvre, rendered in
+// `World`.  The return iterator contains at most one point.  It is empty when
+// the beginning of the burn cannot be rendered.
+Iterator* __cdecl principia__FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    XYZ const sun_world_position,
+    int const index) {
+  journal::Method<journal::FlightPlanRenderedManoeuvreInitialDegreesOfFreedom>
+      m({plugin,
+         vessel_guid,
+         sun_world_position,
+         index});
+  CHECK(plugin != nullptr);
+  CHECK_EQ(1, index % 2) << index;
+
+  // This might force a (partial) recomputation of the flight plan to avoid a
+  // deadline, and a change of the anomalous status that will be noticed by the
+  // flight planner.
+  auto const segment =
+      GetFlightPlan(*plugin, vessel_guid).GetSegmentAvoidingDeadlines(index);
+
+  DistinguishedPoints<World> rendered_manœuvre;
+  if (!segment->empty()) {
+    auto const plotting_frame = plugin->renderer().GetPlottingFrame();
+    Instant const initial_time = segment->front().time;
+
+    // The initial time may be outside the time range of the plotting frame if
+    // there is a target vessel with a sufficiently short prediction.  Don't
+    // render a Frenet trihedron in this case.
+    if (plotting_frame->t_min() <= initial_time &&
+        initial_time <= plotting_frame->t_max()) {
+      DistinguishedPoints<Barycentric> manœuvre;
+      manœuvre.emplace(initial_time,
+                       segment->front().degrees_of_freedom);
+      rendered_manœuvre = plugin->renderer().RenderDistinguishedPointsInWorld(
+          plugin->CurrentTime(),
+          manœuvre,
+          FromXYZ<Position<World>>(sun_world_position),
+          plugin->PlanetariumRotation());
+    }
+  }
+  // The iterator has 0 or 1 point.
+  // TODO(phl): Should we have an Optional class for this?
+  return m.Return(new TypedIterator<DistinguishedPoints<World>>(
+      std::move(rendered_manœuvre), plugin));
 }
 
 void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
@@ -639,13 +694,15 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
   for (auto const& segment : flight_plan.segments()) {
     std::vector<Renderer::Node> segment_rendered_ascending;
     std::vector<Renderer::Node> segment_rendered_descending;
-    plugin->ComputeAndRenderNodes(
-        segment.begin(), segment.end(),
-        t_max == nullptr ? InfiniteFuture : FromGameTime(*plugin, *t_max),
-        FromXYZ<Position<World>>(sun_world_position),
-        max_points,
-        segment_rendered_ascending,
-        segment_rendered_descending);
+    DiscreteTrajectoryView segment_view(&flight_plan, segment);
+    if (t_max != nullptr) {
+      segment_view.Restrict(InfinitePast, FromGameTime(*plugin, *t_max));
+    }
+    plugin->ComputeAndRenderNodes(segment_view,
+                                  FromXYZ<Position<World>>(sun_world_position),
+                                  max_points,
+                                  segment_rendered_ascending,
+                                  segment_rendered_descending);
     std::move(segment_rendered_ascending.begin(),
               segment_rendered_ascending.end(),
               std::back_inserter(rendered_ascending));
@@ -660,43 +717,6 @@ void __cdecl principia__FlightPlanRenderedNodes(Plugin const* const plugin,
       std::move(rendered_descending),
       plugin);
   return m.Return();
-}
-
-Iterator* __cdecl principia__FlightPlanRenderedSegment(
-    Plugin const* const plugin,
-    char const* const vessel_guid,
-    XYZ const sun_world_position,
-    int const index) {
-  journal::Method<journal::FlightPlanRenderedSegment> m({plugin,
-                                                         vessel_guid,
-                                                         sun_world_position,
-                                                         index});
-  CHECK(plugin != nullptr);
-
-  // This might force a (partial) recomputation of the flight plan to avoid a
-  // deadline, and a change of the anomalous status that will be noticed by the
-  // flight planner.
-  auto const segment =
-      GetFlightPlan(*plugin, vessel_guid).GetSegmentAvoidingDeadlines(index);
-
-  auto rendered_trajectory =
-      plugin->renderer().RenderBarycentricTrajectoryInWorld(
-          plugin->CurrentTime(),
-          segment->begin(),
-          segment->end(),
-          FromXYZ<Position<World>>(sun_world_position),
-          plugin->PlanetariumRotation());
-  if (index % 2 == 1 && !rendered_trajectory.empty() &&
-      rendered_trajectory.front().time != segment->front().time) {
-    // TODO(egg): this is ugly; we should centralize rendering.
-    // If this is a burn and we cannot render the beginning of the burn, we
-    // render none of it, otherwise we try to render the Frenet trihedron at the
-    // start and we fail.
-    rendered_trajectory.clear();
-  }
-  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_trajectory),
-      plugin));
 }
 
 Status* __cdecl principia__FlightPlanReplace(Plugin const* const plugin,

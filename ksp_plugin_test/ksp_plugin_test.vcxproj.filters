@@ -38,9 +38,6 @@
     <ClCompile Include="celestial_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="plugin_integration_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ksp_plugin\flight_plan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -174,6 +171,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\ksp_plugin\interface_graph.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ksp_plugin\plugin_reader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ksp_plugin\interface_celestial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

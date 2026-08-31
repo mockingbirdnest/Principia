@@ -55,10 +55,7 @@ constexpr Speed max_collision_speed = 10'000 * Metre / Second;
 
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
-                    Trajectory<Frame> const& trajectory,
-                    typename DiscreteTrajectory<Frame>::iterator const begin,
-                    typename DiscreteTrajectory<Frame>::iterator const end,
-                    Instant const& t_max,
+                    DiscreteTrajectoryView<Frame> const& trajectory,
                     int const max_points,
                     DistinguishedPoints<Frame>& apoapsides,
                     DistinguishedPoints<Frame>& periapsides) {
@@ -68,16 +65,9 @@ void ComputeApsides(Trajectory<Frame> const& reference,
   std::optional<Variation<Square<Length>>>
       previous_squared_distance_derivative;
 
-  Instant const effective_t_min = reference.t_min();
-  Instant const effective_t_max = std::min(t_max, reference.t_max());
-  for (auto it = begin; it != end; ++it) {
-    auto const& [time, degrees_of_freedom] = *it;
-    if (time < effective_t_min) {
-      continue;
-    }
-    if (time > effective_t_max) {
-      break;
-    }
+  DiscreteTrajectoryView referenceable_view = trajectory;
+  referenceable_view.Restrict(reference.t_min(), reference.t_max());
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
     DegreesOfFreedom<Frame> const body_degrees_of_freedom =
         reference.EvaluateDegreesOfFreedom(time);
     RelativeDegreesOfFreedom<Frame> const relative =
@@ -472,10 +462,7 @@ ComputeFirstCollision(
 
 template<typename Frame, typename Predicate>
 absl::Status ComputeNodes(
-    Trajectory<Frame> const& trajectory,
-    typename DiscreteTrajectory<Frame>::iterator const begin,
-    typename DiscreteTrajectory<Frame>::iterator const end,
-    Instant const& t_max,
+    DiscreteTrajectoryView<Frame> const& trajectory,
     Vector<double, Frame> const& north,
     int const max_points,
     DistinguishedPoints<Frame>& ascending,
@@ -491,12 +478,8 @@ absl::Status ComputeNodes(
   std::optional<Length> previous_z;
   std::optional<Speed> previous_z_speed;
 
-  for (auto it = begin; it != end; ++it) {
+  for (auto const& [time, degrees_of_freedom] : trajectory) {
     RETURN_IF_STOPPED;
-    auto const& [time, degrees_of_freedom] = *it;
-    if (time > t_max) {
-      break;
-    }
     Length const z =
         (degrees_of_freedom.position() - Frame::origin).coordinates().z;
     Speed const z_speed = degrees_of_freedom.velocity().coordinates().z;

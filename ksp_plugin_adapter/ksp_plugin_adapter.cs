@@ -956,6 +956,43 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       Log.Warning("No principia state found, creating one");
       ResetPlugin();
     }
+
+    // Check that the user didn't mess with the solar system.
+    var ksp_celestial_names = new SortedSet<string>();
+    var ksp_not_in_principia = new SortedSet<string>();
+    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      ksp_celestial_names.Add(celestial.name);
+      ksp_not_in_principia.Add(celestial.name);
+    }
+    using (DisposableIterator all_celestial_names =
+           plugin_.CelestialGetAllNames()) {
+      var principia_celestial_names = new SortedSet<string>();
+      var principia_not_in_ksp = new SortedSet<string>();
+      for (;
+           !all_celestial_names.IteratorAtEnd();
+           all_celestial_names.IteratorIncrement()) {
+        string celestial_name = all_celestial_names.IteratorGetCelestialName();
+        principia_celestial_names.Add(celestial_name);
+        principia_not_in_ksp.Add(celestial_name);
+      }
+      ksp_not_in_principia.ExceptWith(principia_celestial_names);
+      if (ksp_not_in_principia.Count > 0) {
+        Log.Error("Principia does not know about the following KSP celestial " +
+                  "bodies: " +
+                  string.Join(", ", ksp_not_in_principia.ToArray()));
+      }
+      principia_not_in_ksp.ExceptWith(ksp_celestial_names);
+      if (principia_not_in_ksp.Count > 0) {
+        Log.Error("KSP does not know about the following Principia celestial " +
+                  "bodies: " +
+                  string.Join(", ", principia_not_in_ksp.ToArray()));
+      }
+      if (ksp_not_in_principia.Count > 0 || principia_not_in_ksp.Count > 0) {
+        Log.Fatal("KSP and Principia disagree on the solar system; " +
+                  "you have probably changed the solar system since creating " +
+                  "the Principia save.");
+      }
+    }
   }
 
   #endregion
@@ -2448,42 +2485,47 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
           for (int i = 0; i < number_of_segments; ++i) {
             bool is_burn = i % 2 == 1;
-            using (DisposableIterator rendered_segments =
-                plugin_.FlightPlanRenderedSegment(main_vessel_guid,
-                                                  sun_world_position,
-                                                  i)) {
-              if (rendered_segments.IteratorAtEnd()) {
-                Log.Info("Skipping segment " + i);
-                continue;
-              }
-              Vector3d position_at_start = (Vector3d)rendered_segments.
-                  IteratorGetDiscreteTrajectoryXYZ();
-              double time_at_start =
-                  rendered_segments.IteratorGetDiscreteTrajectoryTime();
-              if (is_burn &&
-                  (flight_plan_collision_ == null ||
-                   time_at_start <= flight_plan_collision_.Value.t)) {
-                int manœuvre_index = i / 2;
-                if (manœuvre_index <
-                    number_of_manœuvres - number_of_anomalous_manœuvres) {
-                  NavigationManoeuvreFrenetTrihedron trihedron =
-                      plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
-                          main_vessel_guid,
-                          manœuvre_index);
-                  if (number_of_rendered_manœuvres
-                      >= manœuvre_marker_pool_.Count) {
-                    manœuvre_marker_pool_.Add(
-                        ManœuvreMarker.Create(main_window_, flight_planner_));
+            if (is_burn) {
+              using (DisposableIterator rendered_manœuvre =
+                     plugin_.FlightPlanRenderedManoeuvreInitialDegreesOfFreedom(
+                         main_vessel_guid,
+                         sun_world_position,
+                         i)) {
+                if (rendered_manœuvre.IteratorAtEnd()) {
+                  Log.Info("Skipping segment " + i);
+                  continue;
+                }
+                double time_at_start =
+                    rendered_manœuvre.IteratorGetDistinguishedPointsTime();
+                var position_at_start =
+                    (Vector3d)rendered_manœuvre.
+                        IteratorGetDistinguishedPointsXYZ();
+                if (flight_plan_collision_ == null ||
+                    time_at_start <= flight_plan_collision_.Value.t) {
+                  int manœuvre_index = i / 2;
+                  if (manœuvre_index <
+                      number_of_manœuvres - number_of_anomalous_manœuvres) {
+                    NavigationManoeuvreFrenetTrihedron trihedron =
+                        plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
+                            main_vessel_guid,
+                            manœuvre_index);
+                    if (number_of_rendered_manœuvres >=
+                        manœuvre_marker_pool_.Count) {
+                      manœuvre_marker_pool_.Add(
+                          ManœuvreMarker.Create(main_window_, flight_planner_));
+                    }
+                    var initial_plotted_velocity =
+                        (Vector3d)plugin_.
+                            FlightPlanGetManoeuvreInitialPlottedVelocity(
+                                main_vessel_guid,
+                                manœuvre_index);
+                    manœuvre_marker_pool_[number_of_rendered_manœuvres].Render(
+                        manœuvre_index,
+                        world_position: position_at_start,
+                        initial_plotted_velocity,
+                        trihedron);
+                    ++number_of_rendered_manœuvres;
                   }
-                  var initial_plotted_velocity =
-                      (Vector3d)plugin_.FlightPlanGetManoeuvreInitialPlottedVelocity(
-                          main_vessel_guid, manœuvre_index);
-                  manœuvre_marker_pool_[number_of_rendered_manœuvres].
-                      Render(manœuvre_index,
-                             world_position: position_at_start,
-                             initial_plotted_velocity,
-                             trihedron);
-                  ++number_of_rendered_manœuvres;
                 }
               }
             }
@@ -2881,8 +2923,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           // GetUniqueValue resp. GetAtMostOneValue corresponding to required
           // resp. optional in principia.serialization.GravityModel.Body.
           var body_parameters =
-              ConfigNodeParsers.NewCartesianBodyParameters(body,
-                body_gravity_model);
+              ConfigNodeParsers.NewCartesianBodyParameters(
+                  body,
+                  body_gravity_model);
           // GetUniqueValue since these are all required fields in
           // principia.serialization.InitialState.Cartesian.Body.
           plugin_.InsertCelestialAbsoluteCartesian(
@@ -2918,8 +2961,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
           body.initialRotation = unmodified_initial_rotations_[body];
           var body_parameters =
-              ConfigNodeParsers.NewKeplerianBodyParameters(body,
-                body_gravity_model);
+              ConfigNodeParsers.NewKeplerianBodyParameters(
+                  body,
+                  body_gravity_model);
           plugin_.InsertCelestialJacobiKeplerian(
               celestial_index    : body.flightGlobalsIndex,
               parent_index       : orbit?.referenceBody.flightGlobalsIndex,

@@ -34,6 +34,7 @@
 #include "physics/body_surface_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
@@ -77,6 +78,7 @@ using namespace principia::physics::_apsides;
 using namespace principia::physics::_body_surface_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massless_body;
@@ -555,23 +557,14 @@ TEST_P(LunarOrbitTest, OrbitalElements) {
 
   DistinguishedPoints<Selenocentric> ascending_nodes;
   DistinguishedPoints<Selenocentric> descending_nodes;
-  EXPECT_OK(ComputeNodes(selenocentric_trajectory,
-                         selenocentric_trajectory.begin(),
-                         selenocentric_trajectory.end(),
-                         /*t_max=*/InfiniteFuture,
+  EXPECT_OK(ComputeNodes(DiscreteTrajectoryView(&selenocentric_trajectory),
                          /*north=*/Vector<double, Selenocentric>({0, 0, 1}),
                          /*max_points=*/std::numeric_limits<int>::max(),
                          ascending_nodes,
                          descending_nodes));
-
   struct Nodes {
     std::string_view const name;
     DistinguishedPoints<Selenocentric> const& points;
-  };
-
-  struct Apsides {
-    std::string_view const name;
-    DistinguishedPoints<ICRS> const& points;
   };
 
   std::vector<EccentricityVector> descending_node_eccentricity_vector;

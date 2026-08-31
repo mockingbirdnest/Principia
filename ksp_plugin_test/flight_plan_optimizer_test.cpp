@@ -38,6 +38,7 @@
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/reference_frame.hpp"
 #include "physics/rotating_body.hpp"
@@ -80,6 +81,7 @@ using namespace principia::physics::_apsides;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rotating_body;
@@ -115,10 +117,7 @@ class FlightPlanOptimizerTest : public testing::Test {
     DistinguishedPoints<Barycentric> apoapsides;
     DistinguishedPoints<Barycentric> periapsides;
     ComputeApsides(celestial_trajectory,
-                   flight_plan_trajectory,
-                   flight_plan_trajectory.begin(),
-                   flight_plan_trajectory.end(),
-                   /*t_max=*/InfiniteFuture,
+                   DiscreteTrajectoryView(&flight_plan_trajectory),
                    /*max_points=*/100,
                    apoapsides,
                    periapsides);

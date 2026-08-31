@@ -16,15 +16,15 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
         new DifferentialSlider(
             label               :
             L10N.CacheFormat("#Principia_FlightPlan_PlanLength"),
-            unit              : null,
-            log10_lower_rate  : log10_time_lower_rate,
-            log10_upper_rate  : log10_time_upper_rate,
-            min_value         : 10,
-            max_value         : double.PositiveInfinity,
-            formatter         : FormatPlanLength,
-            parser            : TryParsePlanLength,
-            field_width       : 7,
-            zero_button_label : _ => null);
+            unit                : null,
+            log10_lower_rate    : log10_time_lower_rate,
+            log10_upper_rate    : log10_time_upper_rate,
+            min_value           : 10,
+            max_value           : double.PositiveInfinity,
+            formatter           : FormatPlanLength,
+            parser              : TryParsePlanLength,
+            field_width         : 7,
+            zero_button_content : _ => null);
     final_trajectory_analyser_ =
         new PlannedOrbitAnalyser(adapter, predicted_vessel);
   }

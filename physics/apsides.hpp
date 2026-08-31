@@ -11,6 +11,7 @@
 #include "geometry/interval.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -26,6 +27,7 @@ using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_rotating_body;
 using namespace principia::physics::_trajectory;
 using namespace principia::quantities::_quantities;
@@ -33,15 +35,12 @@ using namespace principia::quantities::_quantities;
 template<typename Frame>
 using DistinguishedPoints = absl::btree_map<Instant, DegreesOfFreedom<Frame>>;
 
-// Computes the apsides with respect to `reference` for the section given by
-// `begin` and `end` of `trajectory`.  Appends to the given output trajectories
-// one point for each apsis.
+// Computes the apsides with respect to `reference` for the discrete trajectory
+// view `trajectory`.  Appends to the given output containers one point for each
+// apsis.
 template<typename Frame>
 void ComputeApsides(Trajectory<Frame> const& reference,
-                    Trajectory<Frame> const& trajectory,
-                    typename DiscreteTrajectory<Frame>::iterator begin,
-                    typename DiscreteTrajectory<Frame>::iterator end,
-                    Instant const& t_max,
+                    DiscreteTrajectoryView<Frame> const& trajectory,
                     int max_points,
                     DistinguishedPoints<Frame>& apoapsides,
                     DistinguishedPoints<Frame>& periapsides);
@@ -73,16 +72,13 @@ ComputeFirstCollision(
     std::function<Length(Angle const& latitude, Angle const& longitude)> const&
         radius);
 
-// Computes the crossings of the section given by `begin` and `end` of
+// Computes the crossings of the section given by the discrete trajectory view
 // `trajectory` with the xy plane.  Appends the crossings that go towards the
 // `north` side of the xy plane to `ascending`, and those that go away from the
 // `north` side to `descending`.
 // Nodes for which `predicate` returns false are excluded.
 template<typename Frame, typename Predicate = ConstantFunction<bool>>
-absl::Status ComputeNodes(Trajectory<Frame> const& trajectory,
-                          typename DiscreteTrajectory<Frame>::iterator begin,
-                          typename DiscreteTrajectory<Frame>::iterator end,
-                          Instant const& t_max,
+absl::Status ComputeNodes(DiscreteTrajectoryView<Frame> const& trajectory,
                           Vector<double, Frame> const& north,
                           int max_points,
                           DistinguishedPoints<Frame>& ascending,

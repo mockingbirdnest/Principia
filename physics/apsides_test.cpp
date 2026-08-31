@@ -24,6 +24,7 @@
 #include "numerics/elementary_functions.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -61,6 +62,7 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
@@ -138,10 +140,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(*ephemeris.trajectory(b),
-                 trajectory,
-                 trajectory.begin(),
-                 trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&trajectory),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
                  periapsides);
@@ -204,10 +203,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(reference_trajectory,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -313,10 +309,7 @@ TEST_F(ApsidesTest, ComputeFirstCollision) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(reference_trajectory,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -413,10 +406,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
   DistinguishedPoints<World> ascending_nodes;
   DistinguishedPoints<World> descending_nodes;
-  EXPECT_OK(ComputeNodes(trajectory,
-                         trajectory.begin(),
-                         trajectory.end(),
-                         /*t_max=*/InfiniteFuture,
+  EXPECT_OK(ComputeNodes(DiscreteTrajectoryView(&trajectory),
                          north,
                          /*max_points=*/std::numeric_limits<int>::max(),
                          ascending_nodes,
@@ -455,10 +445,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
   DistinguishedPoints<World> south_ascending_nodes;
   DistinguishedPoints<World> south_descending_nodes;
   Vector<double, World> const mostly_south({1, 1, -1});
-  EXPECT_OK(ComputeNodes(trajectory,
-                         trajectory.begin(),
-                         trajectory.end(),
-                         /*t_max=*/InfiniteFuture,
+  EXPECT_OK(ComputeNodes(DiscreteTrajectoryView(&trajectory),
                          mostly_south,
                          /*max_points=*/std::numeric_limits<int>::max(),
                          south_ascending_nodes,
@@ -550,10 +537,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisBelowMaxRadius) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -591,10 +575,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisAboveMaxRadius) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -628,10 +609,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, NoPeriapsis) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -678,10 +656,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisBelowMaxRadius) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -731,10 +706,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OneApoapsisAboveMaxRadius) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -788,10 +760,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -845,10 +814,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals,
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -901,10 +867,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisOneApoapsis) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -942,10 +905,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, InitialApoapsisOnePeriapsis) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);
@@ -983,10 +943,7 @@ TEST_F(ApsidesTest_ComputeCollisionIntervals, OnePeriapsisFinalApoapsis) {
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
   ComputeApsides(body_trajectory_,
-                 vessel_trajectory,
-                 vessel_trajectory.begin(),
-                 vessel_trajectory.end(),
-                 /*t_max=*/InfiniteFuture,
+                 DiscreteTrajectoryView(&vessel_trajectory),
                  /*max_points=*/10,
                  apoapsides,
                  periapsides);

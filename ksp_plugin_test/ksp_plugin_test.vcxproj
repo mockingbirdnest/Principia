@@ -27,6 +27,7 @@
     <ClCompile Include="..\ksp_plugin\identification.cpp" />
     <ClCompile Include="..\ksp_plugin\integrators.cpp" />
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
+    <ClCompile Include="..\ksp_plugin\interface_celestial.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_collision.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_future.cpp" />
@@ -61,7 +62,6 @@
     <ClCompile Include="pile_up_test.cpp" />
     <ClCompile Include="planetarium_test.cpp" />
     <ClCompile Include="plugin_compatibility_test.cpp" />
-    <ClCompile Include="plugin_integration_test.cpp" />
     <ClCompile Include="plugin_io.cpp" />
     <ClCompile Include="plugin_test.cpp" />
     <ClCompile Include="renderer_test.cpp" />

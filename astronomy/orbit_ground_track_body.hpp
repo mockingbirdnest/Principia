@@ -10,6 +10,7 @@
 #include "numerics/angle_reduction.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "physics/apsides.hpp"
+#include "physics/discrete_trajectory_view.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -22,6 +23,7 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_angle_reduction;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::physics::_apsides;
+using namespace principia::physics::_discrete_trajectory_view;
 using namespace principia::quantities::_si;
 
 // Note that the origin of this celestial longitude is arbitrary: it is not the
@@ -133,10 +135,7 @@ absl::StatusOr<OrbitGroundTrack> OrbitGroundTrack::ForTrajectory(
   DistinguishedPoints<PrimaryCentred> ascending_nodes;
   DistinguishedPoints<PrimaryCentred> descending_nodes;
   OrbitGroundTrack ground_track;
-  RETURN_IF_ERROR(ComputeNodes(trajectory,
-                               trajectory.begin(),
-                               trajectory.end(),
-                               /*t_max=*/InfiniteFuture,
+  RETURN_IF_ERROR(ComputeNodes(DiscreteTrajectoryView(&trajectory),
                                Vector<double, PrimaryCentred>({0, 0, 1}),
                                /*max_points=*/std::numeric_limits<int>::max(),
                                ascending_nodes,
