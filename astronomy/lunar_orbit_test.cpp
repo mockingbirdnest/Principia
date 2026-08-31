@@ -127,7 +127,7 @@ struct RL06Orbit {
   ApproximateQuantity<double> const i₀_error;
   ApproximateQuantity<double> const ω₀_error;
   ApproximateQuantity<double> const Ω₀_error;
-  
+
   static RL06Orbit A(Length const& LU, Time const& TU) {
     return {
         .revolutions_per_month = 73,
@@ -146,7 +146,8 @@ struct RL06Orbit {
         .ω₀_error = 1.2e-10_(1),
         .Ω₀_error = 2.5e-13_(1),
     };
-  }  
+  }
+
   static RL06Orbit B(Length const& LU, Time const& TU) {
     return {
         .revolutions_per_month = 73,
@@ -166,6 +167,7 @@ struct RL06Orbit {
         .Ω₀_error = 3.6e-13_(1),
     };
   }
+
   static RL06Orbit C(Length const& LU, Time const& TU) {
     return {
         .revolutions_per_month = 328,
@@ -241,11 +243,13 @@ struct OrbitAndGeopotentialTruncation {
   }
 };
 
-std::ostream& operator<<(std::ostream& o, OrbitAndGeopotentialTruncation param) {
+std::ostream& operator<<(std::ostream& o,
+                         OrbitAndGeopotentialTruncation param) {
   return o << param.OrbitName() << "_" << param.DegreeAndOrder();
 }
 
-class LunarOrbitTest : public ::testing::TestWithParam<OrbitAndGeopotentialTruncation> {
+class LunarOrbitTest
+    : public ::testing::TestWithParam<OrbitAndGeopotentialTruncation> {
  protected:
   LunarOrbitTest()
       : solar_system_2000_([]() {
