@@ -18,10 +18,20 @@ using namespace principia::geometry::_interval;
 using namespace principia::graphics::_colours;
 
 template<typename Point, typename Abscissa, typename Ordinate>
-concept graph_point =
-    (std::tuple_size_v<Point> == 2) &&
-    std::convertible_to<std::tuple_element_t<0, Point>, Abscissa> &&
-    std::convertible_to<std::tuple_element_t<1, Point>, Ordinate>;
+concept graph_point = requires(Point const& p) {
+  {
+    [&p] {
+      auto const [x, _] = p;
+      return x;
+    }()
+  } -> std::convertible_to<Abscissa>;
+  {
+    [&p] {
+      auto const [_, y] = p;
+      return y;
+    }()
+  } -> std::convertible_to<Ordinate>;
+};
 
 template<affine Abscissa, affine Ordinate>
 class Graph {

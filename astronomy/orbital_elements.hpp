@@ -83,12 +83,17 @@ class OrbitalElements {
                                    RGB24 line_colour) const;
 
   // Returns a graph of the locus of the eccentricity vector (e cos ω, e sin ω)
-  // over the `mean_elements()`.
-  Graph<double, double> PlotEccentricityVector(std::int64_t width,
-                                               std::int64_t height,
-                                               RGBA32 background,
-                                               RGB24 axis_colour,
-                                               RGB24 line_colour) const;
+  // over the `mean_elements()`.  If `e_cos_ω_measure` is provided, the abscissa
+  // range is an interval of measure `e_cos_ω_measure` centred at the midpoint
+  // of the locus of the eccentricity vector; otherwise the plot range is the
+  // smallest that fits the entire locus of the eccentricity vector.
+  Graph<double, double> PlotEccentricityVector(
+      std::int64_t width,
+      std::int64_t height,
+      RGBA32 background,
+      RGB24 axis_colour,
+      RGB24 line_colour,
+      std::optional<double> e_cos_ω_measure = std::nullopt) const;
 
   // The period of the (osculating) mean longitude λ = Ω + ω + M.
   // Note that since our mean elements are filtered by integration over this

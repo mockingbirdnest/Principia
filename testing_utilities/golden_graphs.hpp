@@ -7,6 +7,7 @@
 
 #define EXPECT_GOLDEN_GRAPH(graph, suffix)                            \
   (::principia::testing_utilities::_golden_graphs::ExpectGoldenGraph( \
+      *this,                                                          \
       (graph),                                                        \
       FILESYSTEM_STRING_VIEW(suffix),                                 \
       FILESYSTEM_STRING_VIEW(__FILE__)))
@@ -22,8 +23,12 @@ using namespace principia::graphics::_graph;
 // platform-appropriate for paths (UTF-16 on Windows, UTF-8 on *nix).  We take
 // pointers rather than `basic_string_view<Character>` so that we can deduce
 // `Character` from the literals.
-template<typename Abscissa, typename Ordinate, typename Character>
-void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
+template<typename Test,
+         typename Abscissa,
+         typename Ordinate,
+         typename Character>
+void ExpectGoldenGraph(Test const& test,
+                       Graph<Abscissa, Ordinate> const& graph,
                        std::basic_string_view<Character> const suffix,
                        std::basic_string_view<Character> const test_file);
 

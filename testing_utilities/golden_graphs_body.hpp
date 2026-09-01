@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <span>
+#include <string>
 #include <string_view>
 
 #include "absl/strings/ascii.h"
@@ -35,12 +36,30 @@ inline std::vector<std::uint8_t> ReadFile(std::filesystem::path const& path) {
   return result;
 }
 
-template<typename Abscissa, typename Ordinate, typename Character>
-void ExpectGoldenGraph(Graph<Abscissa, Ordinate> const& graph,
+template<typename Test>
+concept parameterized_test = requires(Test const& test) { test.GetParam(); };
+
+template<typename T>
+std::string ParamSuffix(T const& test) {
+  return "";
+}
+
+template<parameterized_test T>
+std::string ParamSuffix(T const& test) {
+  return (std::stringstream() << "_" << test.GetParam()).str();
+}
+
+template<typename Test,
+         typename Abscissa,
+         typename Ordinate,
+         typename Character>
+void ExpectGoldenGraph(Test const& test,
+                       Graph<Abscissa, Ordinate> const& graph,
                        std::basic_string_view<Character> const suffix,
                        std::basic_string_view<Character> const test_file) {
   auto const image_path = std::filesystem::path(test_file)
                               .replace_extension()
+                              .concat(ParamSuffix(test))
                               .concat("_")
                               .concat(suffix)
                               .replace_extension(".png");
