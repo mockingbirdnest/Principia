@@ -4,6 +4,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/instant.hpp"
+#include "geometry/interval.hpp"
 #include "geometry/space.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -20,6 +21,7 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_instant;
+using namespace principia::geometry::_interval;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -99,6 +101,8 @@ class DiscreteTrajectoryView : public TrajectoryView<Frame> {
   // Modifies this view by intersecting its time range with the given
   // [`t_min`, `t_max`].  This may result in an empty view or a view of size 0.
   void Restrict(Instant const& t_min, Instant const& t_max) override;
+
+  void Restrict(Interval<Instant> const& interval) override;
 
   // Same as above, but with iterators.
   void Restrict(const_iterator begin, const_iterator end);

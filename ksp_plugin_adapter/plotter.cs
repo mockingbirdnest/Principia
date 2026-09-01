@@ -193,6 +193,7 @@ class Plotter {
         planetarium.PlanetariumPlotCelestialPastTrajectory(
             Plugin,
             root.flightGlobalsIndex,
+            main_vessel_guid,
             history_length,
             VertexBuffer.data,
             VertexBuffer.size,
