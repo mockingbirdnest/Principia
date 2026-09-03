@@ -230,6 +230,9 @@
     <ClInclude Include="string_log_sink.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="reanimator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
