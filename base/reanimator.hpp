@@ -1,10 +1,12 @@
 #pragma once
 
 #include <functional>
+#include <memory>
 #include <thread>
 
 #include "absl/base/thread_annotations.h"
 #include "absl/container/btree_map.h"
+#include "absl/synchronization/notification.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/status/status.h"
 
@@ -22,6 +24,7 @@ class Reanimator {
 
   explicit Reanimator(Task task);
 
+  //Start is idempotent.
   void Start();
   void Stop();
 
@@ -29,14 +32,15 @@ class Reanimator {
   void Queue(Key const& key);
 
   //Synchronous.
+  void Run(Key const& key);
   void Run(Key const& key, ProgressCallback progress_callback);
 
-  //Cancels < key.
-  void CancelBefore(Key const& key);  //Beware of locking.
+  //Cancels < before_key.
+  void Cancel(Key const& before_key);  //Beware of locking.
 
  private:
   struct Request {
-    bool synchronous = true;
+    absl::Notification* done = nullptr;
     ProgressCallback progress_callback = nullptr;
   };
 
