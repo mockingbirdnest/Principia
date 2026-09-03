@@ -60,6 +60,7 @@
     <ClInclude Include="ranges.hpp" />
     <ClInclude Include="ranges_body.hpp" />
     <ClInclude Include="reanimator.hpp" />
+    <ClInclude Include="reanimator_body.hpp" />
     <ClInclude Include="recurring_thread.hpp" />
     <ClInclude Include="recurring_thread_body.hpp" />
     <ClInclude Include="serialization.hpp" />

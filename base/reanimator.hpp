@@ -3,7 +3,9 @@
 #include <functional>
 #include <thread>
 
+#include "absl/base/thread_annotations.h"
 #include "absl/container/btree_map.h"
+#include "absl/synchronization/mutex.h"
 #include "absl/status/status.h"
 
 namespace principia {
@@ -29,20 +31,34 @@ class Reanimator {
   //Synchronous.
   void Run(Key const& key, ProgressCallback progress_callback);
 
+  //Cancels < key.
   void CancelBefore(Key const& key);  //Beware of locking.
 
  private:
   struct Request {
     bool synchronous = true;
+    ProgressCallback progress_callback = nullptr;
   };
 
+  void Loop();
+
   Task const task_;
-  std::jthread thread_;
-  absl::btree_multimap<Key, Request> queue_;
+
+  absl::Mutex queue_lock_;
+  bool stopping_ = false ABSL_GUARDED_BY(queue_lock_);
+  //Increasing key.
+  absl::btree_multimap<Key, Request> queue_ ABSL_GUARDED_BY(queue_lock_);
+
+  absl::Mutex jthread_lock_;
+  std::jthread jthread_ ABSL_GUARDED_BY(queue_lock_);
 };
 
 }  // namespace internal
 
+using internal::Reanimator;
+
 }  // namespace _reanimator
 }  // namespace base
 }  // namespace principia
+
+#include "base/reanimator_body.hpp"
