@@ -208,7 +208,6 @@ TEST_F(ReanimatorTest, WaitWithProgressCallback) {
 
   // Action 1 is the last executed, so the progress callback is called for all
   // three actions.
-  ///Race!
   std::vector<int> callback_keys;
   EXPECT_OK(reanimator.Wait(
       handle1, [&callback_keys](int const key, absl::Status const& status) {

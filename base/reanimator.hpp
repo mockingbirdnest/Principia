@@ -7,9 +7,9 @@
 
 #include "absl/base/thread_annotations.h"
 #include "absl/container/btree_map.h"
+#include "absl/status/status.h"
 #include "absl/synchronization/notification.h"
 #include "absl/synchronization/mutex.h"
-#include "absl/status/status.h"
 
 namespace principia {
 namespace base {
