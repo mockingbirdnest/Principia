@@ -1,5 +1,6 @@
 #pragma once
 
+#include "absl/log/die_if_null.h"
 #include "base/reanimator.hpp"
 #include "base/stoppable_thread.hpp"
 
@@ -9,7 +10,7 @@ namespace _reanimator {
 namespace internal {
 
 template<typename Key>
-Reanimator<Key>::Reanimator(Task task) : task_(std::move(task)) {}
+Reanimator<Key>::Reanimator(Action action) : action_(std::move(action)) {}
 
 template<typename Key>
 void Reanimator<Key>::Start() {
@@ -30,38 +31,30 @@ void Reanimator<Key>::Stop() {
 }
 
 template<typename Key>
-void Reanimator<Key>::Queue(Key const& key) {
+void Reanimator<Key>::RunAsynchronously(Key const& key) {
   absl::MutexLock l(&queue_lock_);
-  queue_.emplace(key, Request{});
+  queue_.emplace(key, PendingRun{});
 }
 
 template<typename Key>
-void Reanimator<Key>::Run(Key const& key) {
-  Run(key, /*progress_callback=*/nullptr);
-}
-
-template<typename Key>
-void Reanimator<Key>::Run(Key const& key, ProgressCallback progress_callback) {
-  auto const done = std::make_unique<Notification>();
+typename Reanimator<Key>::Handle Reanimator<Key>::RunSynchronously(
+    Key const& key) {
   absl::MutexLock l(&queue_lock_);
 
   // Queue the call.  The `Notification` will be notified once it has run.
   auto const [it, _] = queue_.emplace(
       key,
-      Request{.done = done.get(),
-              .progress_callback = std::move(progress_callback)});
+      PendingRun{.done = std::make_unique<Notification>()});
 
-  // Wait for the queued run to execute.  Since we never cancel synchronous
-  // calls we are sure that the `Notification` will ultimately be notified.
-  done->WaitForNotification();
+  return &it->second;
 }
 
 template<typename Key>
 void Reanimator<Key>::Cancel(Key const& before_key) {
   absl::MutexLock l(&queue_lock_);
   for (auto it = queue_.begin(); it != queue_.end();) {
-    auto const& [key, request] = *it;
-    if (request.synchronous) {
+    auto const& [key, run] = *it;
+    if (run.done != nullptr) {
       return;
     } else if (key < before_key) {
       it = queue_.erase(it);
@@ -70,6 +63,14 @@ void Reanimator<Key>::Cancel(Key const& before_key) {
       return;
     }
   }
+}
+
+template<typename Key>
+absl::Status Reanimator<Key>::Wait(Handle const handle,
+                                   ProgressCallback progress_callback) {
+  auto const& pending_run = *ABSL_DIE_IF_NULL(handle);
+  ABSL_DIE_IF_NULL(pending_run->done)->WaitForNotification();
+  //Progress, status
 }
 
 template<typename Key>
@@ -86,10 +87,10 @@ void Reanimator<Key>::Loop() {
       return;
     } else {
       auto const rbegin = queue_.rbegin();
-      auto const [key, request] = *queue_.rbegin();
-      absl::Status const status = task_(key);
-      if (request.done != nullptr) {
-        request.done->Notify();
+      auto const [key, run] = *queue_.rbegin();
+      absl::Status const status = action_(key);
+      if (run.done != nullptr) {
+        run.done->Notify();
       }
       // Progress
       queue_.erase(rbegin);

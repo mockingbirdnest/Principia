@@ -1,11 +1,11 @@
 #pragma once
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <thread>
 
 #include "absl/base/thread_annotations.h"
-#include "absl/container/btree_map.h"
 #include "absl/synchronization/notification.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/status/status.h"
@@ -17,41 +17,43 @@ namespace internal {
 
 template<typename Key>
 class Reanimator {
+  struct PendingRun {
+    std::unique_ptr<absl::Notification> done;//Synch
+  };
+  using Handle = PendingRun const*;
+
  public:
-  using Task = std::function<absl::Status(Key const&)>;
+  using Action = std::function<absl::Status(Key const&)>;
   using ProgressCallback =
       std::function<void(Key const& key, absl::Status const& status)>;
 
-  explicit Reanimator(Task task);
+  explicit Reanimator(Action action);
 
   //Start is idempotent.
   void Start();
   void Stop();
 
   //Asynchronous.
-  void Queue(Key const& key);
+  void RunAsynchronously(Key const& key);
 
   //Synchronous.
-  void Run(Key const& key);
-  void Run(Key const& key, ProgressCallback progress_callback);
+  Handle RunSynchronously(Key const& key);
 
   //Cancels < before_key.
-  void Cancel(Key const& before_key);  //Beware of locking.
+  void Cancel(Key const& before_key);
+
+  absl::Status Wait(Handle handle,
+                    ProgressCallback progress_callback = nullptr);
 
  private:
-  struct Request {
-    absl::Notification* done = nullptr;
-    ProgressCallback progress_callback = nullptr;
-  };
-
   void Loop();
 
-  Task const task_;
+  Action const action_;
 
   absl::Mutex queue_lock_;
   bool stopping_ = false ABSL_GUARDED_BY(queue_lock_);
-  //Increasing key.
-  absl::btree_multimap<Key, Request> queue_ ABSL_GUARDED_BY(queue_lock_);
+  //Increasing key.  Pointer stability.
+  std::multimap<Key, PendingRun> queue_ ABSL_GUARDED_BY(queue_lock_);
 
   absl::Mutex jthread_lock_;
   std::jthread jthread_ ABSL_GUARDED_BY(queue_lock_);
