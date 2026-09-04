@@ -22,7 +22,7 @@ void Reanimator<Key>::Start() {
 
 template<typename Key>
 void Reanimator<Key>::Stop() {
-  // Should wait for the sync calls.
+  ///Should wait for the sync calls.
   absl::MutexLock(&queue_lock_);
   stopping_ = true;
 
@@ -58,7 +58,7 @@ void Reanimator<Key>::Cancel(Key const& before_key) {
       return;
     } else if (key < before_key) {
       it = queue_.erase(it);
-      // Kill the thread.
+      ///Kill the thread.
     } else {
       return;
     }
@@ -69,8 +69,11 @@ template<typename Key>
 absl::Status Reanimator<Key>::Wait(Handle const handle,
                                    ProgressCallback progress_callback) {
   auto const& pending_run = *ABSL_DIE_IF_NULL(handle);
+  if (progress_callback != nullptr) {
+
+  }
   ABSL_DIE_IF_NULL(pending_run->done)->WaitForNotification();
-  //Progress, status
+  ///Progress, status
 }
 
 template<typename Key>
@@ -92,7 +95,7 @@ void Reanimator<Key>::Loop() {
       if (run.done != nullptr) {
         run.done->Notify();
       }
-      // Progress
+      ///Progress
       queue_.erase(rbegin);
     }
   }

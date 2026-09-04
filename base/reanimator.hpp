@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <list>
 #include <map>
 #include <memory>
 #include <thread>
@@ -17,9 +18,7 @@ namespace internal {
 
 template<typename Key>
 class Reanimator {
-  struct PendingRun {
-    std::unique_ptr<absl::Notification> done;//Synch
-  };
+  struct PendingRun;
   using Handle = PendingRun const*;
 
  public:
@@ -29,30 +28,36 @@ class Reanimator {
 
   explicit Reanimator(Action action);
 
-  //Start is idempotent.
+  ///Start is idempotent.
   void Start();
   void Stop();
 
-  //Asynchronous.
   void RunAsynchronously(Key const& key);
 
-  //Synchronous.
   Handle RunSynchronously(Key const& key);
 
-  //Cancels < before_key.
+  ///Cancels < before_key.
   void Cancel(Key const& before_key);
 
   absl::Status Wait(Handle handle,
                     ProgressCallback progress_callback = nullptr);
 
  private:
+  ///Iterator stability.
+  using ProgressCallbacks = std::list<ProgressCallback>;
+
+  struct PendingRun {
+    std::unique_ptr<absl::Notification> done;//Synch
+    std::vector<ProgressCallbacks::const_iterator> waiters;
+  };
+
   void Loop();
 
   Action const action_;
 
   absl::Mutex queue_lock_;
   bool stopping_ = false ABSL_GUARDED_BY(queue_lock_);
-  //Increasing key.  Pointer stability.
+  ///Increasing key.  Pointer stability.
   std::multimap<Key, PendingRun> queue_ ABSL_GUARDED_BY(queue_lock_);
 
   absl::Mutex jthread_lock_;
