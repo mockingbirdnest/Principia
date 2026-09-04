@@ -55,15 +55,16 @@ class Reanimator {
   Handle RunGuaranteed(Key const& key);
 
   // Cancels all the best-effort runs with a key strictly less than
-  // `before_key`.  This may include the action being executed.
+  // `before_key`.  This may cancel the action being executed if it is
+  // best-effort.
   void Cancel(Key const& before_key);
 
   // Waits for the run with the given `handle` to complete and returns its
   // status.  The `progress_callback`, if any, is executed each time an action
   // completes during the call to `Wait`.  There are no strong guarantees on the
   // callbacks that are executed (because it's a race between the waiting thread
-  // and the execution thread), but the callback is sure to be executed for the
-  // run being waited for.
+  // and the execution thread), but the callback is sure to be executed at least
+  // once, for the run being waited for.
   absl::Status Wait(Handle handle,
                     ProgressCallback progress_callback = nullptr);
 
@@ -79,7 +80,7 @@ class Reanimator {
     absl::Status status;
   };
 
-  // The execution loop, run on the `jthread_`.
+  // The execution loop, run on `jthread_`.
   void RepeatedRunActions();
 
   // Construction parameter.

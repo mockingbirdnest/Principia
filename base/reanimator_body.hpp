@@ -2,6 +2,9 @@
 
 #include "base/reanimator.hpp"
 
+#include <memory>
+#include <utility>
+
 #include "absl/log/check.h"
 #include "absl/log/die_if_null.h"
 #include "base/stoppable_thread.hpp"
@@ -37,7 +40,7 @@ void Reanimator<Key>::Stop() {
   }
 
   // Mark the thread as stopped and wait for all the queued actions to complete.
-  // This includes the best-effort once.  The stop request is so that actions
+  // This includes the best-effort ones.  The stop request is so that actions
   // that have a `RETURN_IF_STOPPED` can finish quickly.
   jthread_.request_stop();
   jthread_.join();
@@ -58,7 +61,8 @@ typename Reanimator<Key>::Handle Reanimator<Key>::RunGuaranteed(
   absl::MutexLock l(&lock_);
   CHECK(!stopped_);
 
-  // Queue the call.  The `Notification` will be notified once it has run.
+  // Queue the call.  The `Notification` will be notified once the action has
+  // run.
   auto const handle = std::make_shared<PendingRun>(
       PendingRun{.done = std::make_unique<absl::Notification>()});
   queue_.emplace(key, handle);
@@ -75,6 +79,8 @@ void Reanimator<Key>::Cancel(Key const& before_key) {
     for (auto it = queue_.begin(); it != queue_.end();) {
       auto const& [key, run] = *it;
       if (run->done != nullptr) {
+        // A guaranteed run.  Don't touch it, and don't touch any of the
+        // following runs.
         return;
       } else if (key < before_key) {
         it = queue_.erase(it);
@@ -85,6 +91,7 @@ void Reanimator<Key>::Cancel(Key const& before_key) {
           break;
         }
       } else {
+        // Here `key >= before_key`, so we are done.
         return;
       }
     }
@@ -130,7 +137,6 @@ absl::Status Reanimator<Key>::Wait(Handle const handle,
 
 template<typename Key>
 void Reanimator<Key>::RepeatedRunActions() {
-///Name
   auto queue_not_empty_or_must_exit = [this] {
     lock_.AssertReaderHeld();
     return !queue_.empty() || jthread_must_exit_;
