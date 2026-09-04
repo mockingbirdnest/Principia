@@ -1,13 +1,17 @@
 #pragma once
 
-#include "absl/log/die_if_null.h"
 #include "base/reanimator.hpp"
+
+#include "absl/log/check.h"
+#include "absl/log/die_if_null.h"
 #include "base/stoppable_thread.hpp"
 
 namespace principia {
 namespace base {
 namespace _reanimator {
 namespace internal {
+
+using namespace principia::base::_stoppable_thread;
 
 template<typename Key>
 Reanimator<Key>::Reanimator(Action action) : action_(std::move(action)) {}
@@ -43,7 +47,7 @@ template<typename Key>
 void Reanimator<Key>::RunBestEffort(Key const& key) {
   absl::MutexLock l(&queue_lock_);
   CHECK(!stopping_);
-  queue_.emplace(key, PendingRun{});
+  queue_.emplace(key, std::make_shared<PendingRun>());
 }
 
 template<typename Key>
@@ -53,8 +57,8 @@ typename Reanimator<Key>::Handle Reanimator<Key>::RunGuaranteed(
   CHECK(!stopping_);
 
   // Queue the call.  The `Notification` will be notified once it has run.
-  auto const handle =
-      std::make_shared<PendingRun>({.done = std::make_unique<Notification>()});
+  auto const handle = std::make_shared<PendingRun>(
+      PendingRun{.done = std::make_unique<absl::Notification>()});
   queue_.emplace(key, handle);
 
   // The `PendingRun` is co-owned by the queue and the caller of this function.
@@ -66,7 +70,7 @@ void Reanimator<Key>::Cancel(Key const& before_key) {
   absl::MutexLock l(&queue_lock_);
   for (auto it = queue_.begin(); it != queue_.end();) {
     auto const& [key, run] = *it;
-    if (run.done != nullptr) {
+    if (run->done != nullptr) {
       return;
     } else if (key < before_key) {
       it = queue_.erase(it);
@@ -89,14 +93,14 @@ absl::Status Reanimator<Key>::Wait(Handle const handle,
   auto const& pending_run = *ABSL_DIE_IF_NULL(handle);
 
   // Insert my progress callback, if any, and retain an iterator on it.
-  std::optional<ProgressCallback::const_iterator> my_progress_callback;
+  std::optional<ProgressCallbacks::const_iterator> my_progress_callback;
   if (progress_callback != nullptr) {
     absl::MutexLock l(&queue_lock_);
     progress_callbacks_.push_front(std::move(progress_callback));
     my_progress_callback = progress_callbacks_.begin();
   }
 
-  ABSL_DIE_IF_NULL(pending_run->done)->WaitForNotification();
+  ABSL_DIE_IF_NULL(pending_run.done)->WaitForNotification();
 
   // Remove my progress callback.
   if (my_progress_callback.has_value()) {
@@ -114,9 +118,9 @@ void Reanimator<Key>::RepeatedRunActions() {
     return !queue_.empty();
   };
 
-  absl::Mutex l(&queue_lock_);
+  absl::MutexLock l(&queue_lock_);
   for (;;) {
-    lock_.Await(absl::Condition(&queue_not_empty));
+    queue_lock_.Await(absl::Condition(&queue_not_empty));
     // Run the action at the end of the queue (the one with the greatest key).
     // Note that the run is still in the queue when the action is executed.  It
     // is important to retain a copy of `handle` because the queue might change
