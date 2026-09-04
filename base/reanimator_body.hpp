@@ -16,7 +16,7 @@ template<typename Key>
 void Reanimator<Key>::Start() {
   absl::MutexLock l(&jthread_lock_);
   if (!jthread_.joinable()) {
-    jthread_ = MakeStoppableThread([this]() { Loop(); });
+    jthread_ = MakeStoppableThread([this]() { RepeatedRunActions(); });
   }
 }
 
@@ -27,25 +27,27 @@ void Reanimator<Key>::Stop() {
     return queue_.empty();
   };
 
-  // Wait for all the calls to complete.  This includes the asynchronous calls.
+  // Wait for all the calls to complete.  This includes the best-effort calls.
   // Note that after this point it's not possible to enqueue new runs.
-  absl::MutexLock l(&queue_lock_);
-  stopping_ = true;
-  queue_lock_.Await(absl::Condition(&queue_empty));
+  {
+    absl::MutexLock l(&queue_lock_);
+    stopping_ = true;
+    queue_lock_.Await(absl::Condition(&queue_empty));
+  }
 
   absl::MutexLock l(&jthread_lock_);
   jthread_ = std::jthread();
 }
 
 template<typename Key>
-void Reanimator<Key>::RunAsynchronously(Key const& key) {
+void Reanimator<Key>::RunBestEffort(Key const& key) {
   absl::MutexLock l(&queue_lock_);
   CHECK(!stopping_);
   queue_.emplace(key, PendingRun{});
 }
 
 template<typename Key>
-typename Reanimator<Key>::Handle Reanimator<Key>::RunSynchronously(
+typename Reanimator<Key>::Handle Reanimator<Key>::RunGuaranteed(
     Key const& key) {
   absl::MutexLock l(&queue_lock_);
   CHECK(!stopping_);
@@ -86,7 +88,7 @@ absl::Status Reanimator<Key>::Wait(Handle const handle,
   // This object won't go away since we hold `handle`.
   auto const& pending_run = *ABSL_DIE_IF_NULL(handle);
 
-  // Insert our progress callback, if any, and retain an iterator on it.
+  // Insert my progress callback, if any, and retain an iterator on it.
   std::optional<ProgressCallback::const_iterator> my_progress_callback;
   if (progress_callback != nullptr) {
     absl::MutexLock l(&queue_lock_);
@@ -96,7 +98,7 @@ absl::Status Reanimator<Key>::Wait(Handle const handle,
 
   ABSL_DIE_IF_NULL(pending_run->done)->WaitForNotification();
 
-  // Remove our progress callback.
+  // Remove my progress callback.
   if (my_progress_callback.has_value()) {
     absl::MutexLock l(&queue_lock_);
     progress_callbacks_.erase(my_progress_callback.value());
@@ -106,7 +108,7 @@ absl::Status Reanimator<Key>::Wait(Handle const handle,
 }
 
 template<typename Key>
-void Reanimator<Key>::Loop() {
+void Reanimator<Key>::RepeatedRunActions() {
   auto queue_not_empty = [this] {
     queue_lock_.AssertReaderHeld();
     return !queue_.empty();
@@ -116,9 +118,10 @@ void Reanimator<Key>::Loop() {
   for (;;) {
     lock_.Await(absl::Condition(&queue_not_empty));
     // Run the action at the end of the queue (the one with the greatest key).
-    // Note that the run is still in the queue when the action is executed.
-    auto const rbegin = queue_.rbegin();
-    auto const& [key, handle] = *queue_.rbegin();
+    // Note that the run is still in the queue when the action is executed.  It
+    // is important to retain a copy of `handle` because the queue might change
+    // (due to `Cancel`) while we run the action.
+    auto const [key, handle] = *queue_.rbegin();
 
     queue_lock_.Unlock();
     handle->status = action_(key);
@@ -135,9 +138,18 @@ void Reanimator<Key>::Loop() {
       handle->done->Notify();
     }
 
-    // Remove the pending run from the queue.  It will be destroyed once all its
-    // handles are gone.
-    queue_.erase(rbegin);
+    // Remove the pending run from the queue.  We cannot hold an iterator across
+    // the run of the action because the `queue_` could be modified while we
+    // don't hold the `lock_`, including deleting the pending run that we are
+    // executing.  Instead, we look explicitly for our key and handle.
+    auto const [it1, it2] = queue_.equal_range(key);
+    for (auto it = it1; it != it2; ++it) {
+      if (it->second == handle) {
+        // The `PendingRun` will be destroyed once all its handles are gone.
+        queue_.erase(it);
+        break;
+      }
+    }
   }
 }
 
