@@ -29,40 +29,36 @@ template<typename Key>
 void Reanimator<Key>::Stop() {
   absl::MutexLock l(&jthread_lock_);
 
-  auto queue_empty = [this] {
-    queue_lock_.AssertReaderHeld();
-    LOG(ERROR) << "Stop condition E: " << queue_.empty();
-    return queue_.empty();
-  };
-
   // Mark the thread as stopped and wait for all the calls to complete.  This
   // includes the best-effort calls.  The actions that have a
   // `RETURN_IF_STOPPED` should finish quickly.  Note that after this point it's
   // not possible to enqueue new runs.
   {
-    absl::MutexLock l(&queue_lock_);
+    absl::MutexLock l(&lock_);
     LOG(ERROR) << "Stop request_stop";
-    jthread_.request_stop();
     stopped_ = true;
-    queue_lock_.Await(absl::Condition(&queue_empty));
+    jthread_must_exit_ = true;
   }
 
   LOG(ERROR) << "Stop joining";
+  jthread_.request_stop();
   jthread_.join();
   LOG(ERROR) << "Stop joined";
 }
 
 template<typename Key>
 void Reanimator<Key>::RunBestEffort(Key const& key) {
-  absl::MutexLock l(&queue_lock_);
+  absl::MutexLock l(&lock_);
   CHECK(!stopped_);
+
+  // Queue the call.  The `PendingRun` is just owned by the queue.
   queue_.emplace(key, std::make_shared<PendingRun>());
 }
 
 template<typename Key>
 typename Reanimator<Key>::Handle Reanimator<Key>::RunGuaranteed(
     Key const& key) {
-  absl::MutexLock l(&queue_lock_);
+  absl::MutexLock l(&lock_);
   CHECK(!stopped_);
 
   // Queue the call.  The `Notification` will be notified once it has run.
@@ -78,7 +74,7 @@ template<typename Key>
 void Reanimator<Key>::Cancel(Key const& before_key) {
   absl::MutexLock l(&jthread_lock_);
   {
-    absl::MutexLock l(&queue_lock_);
+    absl::MutexLock l(&lock_);
     for (auto it = queue_.begin(); it != queue_.end();) {
       auto const& [key, run] = *it;
       if (run->done != nullptr) {
@@ -91,7 +87,8 @@ void Reanimator<Key>::Cancel(Key const& before_key) {
         // complete quickly.
         if (it == queue_.end()) {
           LOG(ERROR) << "Cancel request_stop";
-          jthread_.request_stop();
+          jthread_must_exit_ = true;
+          break;
         }
       } else {
         return;
@@ -100,7 +97,12 @@ void Reanimator<Key>::Cancel(Key const& before_key) {
   }
 
   LOG(ERROR) << "Cancel recreating thread";
+  jthread_.request_stop();
   jthread_.join();
+  {
+    absl::MutexLock l(&lock_);
+    jthread_must_exit_ = false;
+  }
   jthread_ = MakeStoppableThread([this]() { RepeatedRunActions(); });
   LOG(ERROR) << "Cancel recreated thread";
 }
@@ -114,7 +116,7 @@ absl::Status Reanimator<Key>::Wait(Handle const handle,
   // Insert my progress callback, if any, and retain an iterator on it.
   std::optional<ProgressCallbacks::const_iterator> my_progress_callback;
   if (progress_callback != nullptr) {
-    absl::MutexLock l(&queue_lock_);
+    absl::MutexLock l(&lock_);
     progress_callbacks_.push_front(std::move(progress_callback));
     my_progress_callback = progress_callbacks_.begin();
   }
@@ -123,7 +125,7 @@ absl::Status Reanimator<Key>::Wait(Handle const handle,
 
   // Remove my progress callback.
   if (my_progress_callback.has_value()) {
-    absl::MutexLock l(&queue_lock_);
+    absl::MutexLock l(&lock_);
     progress_callbacks_.erase(my_progress_callback.value());
   }
 
@@ -132,24 +134,21 @@ absl::Status Reanimator<Key>::Wait(Handle const handle,
 
 template<typename Key>
 void Reanimator<Key>::RepeatedRunActions() {
-  auto queue_not_empty_or_stop_requested = [this] {
-    queue_lock_.AssertReaderHeld();
+///Name
+  auto queue_not_empty_or_must_exit = [this] {
+    lock_.AssertReaderHeld();
     // All requests to stop must happen under `queue_lock_`.  Don't use
     // `this_stoppable_thread` here, the condition can be evaluated on any
     // thread.
-    LOG(ERROR) << "RepeatedRunActions condition E: " << queue_.empty()
-               << " SR: " << jthread_.get_stop_token().stop_requested();
-    return !queue_.empty() || jthread_.get_stop_token().stop_requested();
+    return !queue_.empty() || jthread_must_exit_;
   };
 
-  absl::MutexLock l(&queue_lock_);
+  absl::MutexLock l(&lock_);
   for (;;) {
-    queue_lock_.Await(absl::Condition(&queue_not_empty_or_stop_requested));
+    lock_.Await(absl::Condition(&queue_not_empty_or_must_exit));
 
-    LOG(ERROR) << "RepeatedRunActions awaited E: " << queue_.empty() << " SR: "
-               << this_stoppable_thread::get_stop_token().stop_requested();
     if (queue_.empty()) {
-      CHECK(this_stoppable_thread::get_stop_token().stop_requested());
+      CHECK(jthread_must_exit_);
       LOG(ERROR) << "RepeatedRunActions breaking";
       break;
     }
@@ -160,9 +159,9 @@ void Reanimator<Key>::RepeatedRunActions() {
     // (due to `Cancel`) while we run the action.
     auto const [key, handle] = *queue_.rbegin();
 
-    queue_lock_.Unlock();
+    lock_.Unlock();
     handle->status = action_(key);
-    queue_lock_.Lock();
+    lock_.Lock();
 
     // Run the progress callbacks.  This happens before unblocking the waiters
     // so that the waiters see their own progress.

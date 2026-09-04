@@ -59,7 +59,7 @@ TEST_F(ReanimatorTest, RunGuaranteed) {
 
 TEST_F(ReanimatorTest, RunBestEffort) {
   std::vector<int> processed;
-  ToyReanimator reanimator([&processed](int const& key) {
+  ToyReanimator reanimator([&processed](int const key) {
     processed.push_back(key);
     return absl::OkStatus();
   });
@@ -83,7 +83,7 @@ TEST_F(ReanimatorTest, RunBestEffort) {
 TEST_F(ReanimatorTest, CancelKillsBestEffortRuns) {
   std::vector<int> processed;
   absl::Notification proceed;
-  ToyReanimator reanimator([&proceed, &processed](int const& key) {
+  ToyReanimator reanimator([&proceed, &processed](int const key) {
     proceed.WaitForNotification();
     processed.push_back(key);
     return absl::OkStatus();
@@ -121,7 +121,7 @@ TEST_F(ReanimatorTest, CancelEverythingReturnIfStopped) {
   std::vector<int> processed;
   absl::Notification proceed1;
   absl::Notification proceed2;
-  ToyReanimator reanimator([&proceed1, &proceed2, &processed](int const& key) {
+  ToyReanimator reanimator([&proceed1, &proceed2, &processed](int const key) {
     proceed1.WaitForNotification();
     RETURN_IF_STOPPED;
     proceed2.WaitForNotification();
@@ -156,12 +156,14 @@ TEST_F(ReanimatorTest, CancelEverythingReturnIfStopped) {
 
   // No action was run to completion.
   EXPECT_THAT(processed, IsEmpty());
+
+  cancellator.join();
 }
 
 TEST_F(ReanimatorTest, CancelEverythingSlow) {
   std::vector<int> processed;
   absl::Notification running;
-  ToyReanimator reanimator([&processed, &running](int const& key) {
+  ToyReanimator reanimator([&processed, &running](int const key) {
     running.Notify();
     std::this_thread::sleep_for(1000ms);
     processed.push_back(key);
@@ -190,7 +192,7 @@ TEST_F(ReanimatorTest, CancelEverythingSlow) {
 TEST_F(ReanimatorTest, WaitWithProgressCallback) {
   absl::Mutex lock;
   std::vector<int> processed;
-  ToyReanimator reanimator([&lock, &processed](int const& key) {
+  ToyReanimator reanimator([&lock, &processed](int const key) {
     absl::MutexLock l(&lock);
     processed.push_back(key);
     return absl::OkStatus();
@@ -204,7 +206,7 @@ TEST_F(ReanimatorTest, WaitWithProgressCallback) {
   absl::Mutex callback_lock;
   EXPECT_OK(reanimator.Wait(
       handle2,
-      [&callback_lock, &callback_keys](int const& key,
+      [&callback_lock, &callback_keys](int const key,
                                        absl::Status const& status) {
         absl::MutexLock l(&callback_lock);
         callback_keys.push_back(key);

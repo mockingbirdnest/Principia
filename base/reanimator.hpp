@@ -81,24 +81,28 @@ class Reanimator {
   // Construction parameter.
   Action const action_;
 
-  absl::Mutex queue_lock_;
+  absl::Mutex lock_;
 
-  // Set to `true` when `Stop` has been called.
-  bool stopped_ = false ABSL_GUARDED_BY(queue_lock_);
+  // Set to `true` when `Stop` has been called to prevent further calls to
+  // `RunBestEffort` and `RunGuaranteed`.
+  bool stopped_ = false ABSL_GUARDED_BY(lock_);
+
+  // Used to force the `jthread_` to exit when we want to join with it.
+  bool jthread_must_exit_ = false ABSL_GUARDED_BY(lock_);
 
   // The progress callbacks of all the waiters.  They are executed each time an
   // action completes.
-  ProgressCallbacks progress_callbacks_ ABSL_GUARDED_BY(queue_lock_);
+  ProgressCallbacks progress_callbacks_ ABSL_GUARDED_BY(lock_);
 
   // The queue is ordered by increasing keys, and the first run to execute is
   // the one with the greatest key.  The run being executed is still present in
   // the queue.
-  absl::btree_multimap<Key, Handle> queue_ ABSL_GUARDED_BY(queue_lock_);
+  absl::btree_multimap<Key, Handle> queue_ ABSL_GUARDED_BY(lock_);
 
-  absl::Mutex jthread_lock_;
   // A `request_stop` on this thread *must* happen under `queue_lock_` to
   // correctly unblock the thread.
-  std::jthread jthread_ ABSL_GUARDED_BY(queue_lock_);
+  absl::Mutex jthread_lock_;
+  std::jthread jthread_ ABSL_GUARDED_BY(jthread_lock_);
 };
 
 }  // namespace internal
