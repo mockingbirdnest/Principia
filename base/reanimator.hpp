@@ -27,14 +27,17 @@ class Reanimator {
   using Handle = std::shared_ptr<PendingRun>;
 
  public:
+  // If `Action` takes a long time, it should use `RETURN_IF_STOPPED` to observe
+  // stop requests.
   using Action = std::function<absl::Status(Key const&)>;
+
   using ProgressCallback =
       std::function<void(Key const& key, absl::Status const& status)>;
 
   explicit Reanimator(Action action);
 
   // Creates the internal thread which may start running queued actions.
-  // Idempotent.
+  // Idempotent.  It's fine to queue actions before calling `Start`.
   void Start();
 
   // Waits for all queued actions (including the best-effort ones) to complete
@@ -81,7 +84,7 @@ class Reanimator {
   absl::Mutex queue_lock_;
 
   // Set to `true` when `Stop` has been called.
-  bool stopping_ = false ABSL_GUARDED_BY(queue_lock_);
+  bool stopped_ = false ABSL_GUARDED_BY(queue_lock_);
 
   // The progress callbacks of all the waiters.  They are executed each time an
   // action completes.
@@ -93,6 +96,8 @@ class Reanimator {
   absl::btree_multimap<Key, Handle> queue_ ABSL_GUARDED_BY(queue_lock_);
 
   absl::Mutex jthread_lock_;
+  // A `request_stop` on this thread *must* happen under `queue_lock_` to
+  // correctly unblock the thread.
   std::jthread jthread_ ABSL_GUARDED_BY(queue_lock_);
 };
 

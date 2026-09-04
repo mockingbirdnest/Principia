@@ -331,5 +331,8 @@
     <ClCompile Include="string_log_sink.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="reanimator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

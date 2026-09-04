@@ -107,6 +107,7 @@
     <ClCompile Include="pull_serializer_test.cpp" />
     <ClCompile Include="push_deserializer_test.cpp" />
     <ClCompile Include="push_pull_callback_test.cpp" />
+    <ClCompile Include="reanimator_test.cpp" />
     <ClCompile Include="recurring_thread_test.cpp" />
     <ClCompile Include="stoppable_thread_test.cpp" />
     <ClCompile Include="string_log_sink.cpp" />
