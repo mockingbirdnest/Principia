@@ -1,6 +1,5 @@
 #include "base/reanimator.hpp"
 
-#include <atomic>
 #include <chrono>
 #include <cstdint>
 #include <thread>
@@ -11,7 +10,7 @@
 #include "absl/synchronization/notification.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "testing_utilities/matchers.hpp"
+#include "testing_utilities/matchers.hpp"  // 🧙 For EXPECT_OK.
 
 namespace principia {
 namespace base {
@@ -20,7 +19,6 @@ using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::UnorderedElementsAre;
 using namespace principia::base::_reanimator;
-using namespace principia::testing_utilities::_matchers;
 using namespace std::chrono_literals;
 
 class ReanimatorTest : public ::testing::Test {
@@ -190,34 +188,32 @@ TEST_F(ReanimatorTest, CancelEverythingSlow) {
 }
 
 TEST_F(ReanimatorTest, WaitWithProgressCallback) {
-  absl::Mutex lock;
   std::vector<int> processed;
-  ToyReanimator reanimator([&lock, &processed](int const key) {
-    absl::MutexLock l(&lock);
+  ToyReanimator reanimator([&processed](int const key) {
     processed.push_back(key);
     return absl::OkStatus();
   });
+
+  // Queue three runs.
+  auto const handle1 = reanimator.RunGuaranteed(1);
+  reanimator.RunBestEffort(2);
+  reanimator.RunGuaranteed(3);
+
   reanimator.Start();
 
-  auto const handle1 = reanimator.RunGuaranteed(1);
-  auto const handle2 = reanimator.RunGuaranteed(2);
-
+  // Action 1 is the last executed, so the progress callback is called for all
+  // three actions.
   std::vector<int> callback_keys;
-  absl::Mutex callback_lock;
   EXPECT_OK(reanimator.Wait(
-      handle2,
-      [&callback_lock, &callback_keys](int const key,
-                                       absl::Status const& status) {
-        absl::MutexLock l(&callback_lock);
+      handle1, [&callback_keys](int const key, absl::Status const& status) {
+        CHECK_OK(status);
         callback_keys.push_back(key);
       }));
 
-  EXPECT_OK(reanimator.Wait(handle1));
   reanimator.Stop();
 
   // The progress callback was called at least for the run being waited for.
-  absl::MutexLock l(&callback_lock);
-  EXPECT_THAT(callback_keys, ElementsAre(2));
+  EXPECT_THAT(callback_keys, ElementsAre(3, 2, 1));
 }
 
 }  // namespace base

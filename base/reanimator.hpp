@@ -28,9 +28,10 @@ class Reanimator {
 
  public:
   // If `Action` takes a long time, it should use `RETURN_IF_STOPPED` to observe
-  // stop requests.
+  // stop requests.  At most one action is executing at any point in time.
   using Action = std::function<absl::Status(Key const&)>;
 
+  // At most one `ProgressCallback` is executed at any point in time.
   using ProgressCallback =
       std::function<void(Key const& key, absl::Status const& status)>;
 
