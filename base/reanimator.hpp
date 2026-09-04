@@ -60,7 +60,10 @@ class Reanimator {
 
   // Waits for the run with the given `handle` to complete and returns its
   // status.  The `progress_callback`, if any, is executed each time an action
-  // completes.
+  // completes during the call to `Wait`.  There are no strong guarantees on the
+  // callbacks that are executed (because it's a race between the waiting thread
+  // and the execution thread), but the callback is sure to be executed for the
+  // run being waited for.
   absl::Status Wait(Handle handle,
                     ProgressCallback progress_callback = nullptr);
 

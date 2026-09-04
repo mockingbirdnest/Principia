@@ -163,7 +163,7 @@ TEST_F(ReanimatorTest, CancelEverythingSlow) {
   absl::Notification running;
   ToyReanimator reanimator([&processed, &running](int const key) {
     running.Notify();
-    std::this_thread::sleep_for(1000ms);
+    std::this_thread::sleep_for(500ms);
     processed.push_back(key);
     return absl::OkStatus();
   });
@@ -199,10 +199,16 @@ TEST_F(ReanimatorTest, WaitWithProgressCallback) {
   reanimator.RunBestEffort(2);
   reanimator.RunGuaranteed(3);
 
-  reanimator.Start();
+  // Delay starting the reanimator until after the call to `Wait` to ensure
+  // that the progress callback is called for all three actions.
+  auto starter = std::thread([&reanimator]() {
+    std::this_thread::sleep_for(100ms);
+    reanimator.Start();
+  });
 
   // Action 1 is the last executed, so the progress callback is called for all
   // three actions.
+  ///Race!
   std::vector<int> callback_keys;
   EXPECT_OK(reanimator.Wait(
       handle1, [&callback_keys](int const key, absl::Status const& status) {
@@ -214,6 +220,8 @@ TEST_F(ReanimatorTest, WaitWithProgressCallback) {
 
   // The progress callback was called at least for the run being waited for.
   EXPECT_THAT(callback_keys, ElementsAre(3, 2, 1));
+
+  starter.join();
 }
 
 }  // namespace base
