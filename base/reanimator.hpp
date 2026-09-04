@@ -99,8 +99,9 @@ class Reanimator {
   // the queue.
   absl::btree_multimap<Key, Handle> queue_ ABSL_GUARDED_BY(lock_);
 
-  // A `request_stop` on this thread *must* happen under `queue_lock_` to
-  // correctly unblock the thread.
+  // Any code that is going to touch the thread should start by grabbing this
+  // lock to establish a critical section.  We don't want the rest of the class
+  // to see, say, a stopped but not yet joined thread.
   absl::Mutex jthread_lock_;
   std::jthread jthread_ ABSL_GUARDED_BY(jthread_lock_);
 };

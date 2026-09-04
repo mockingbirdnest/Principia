@@ -3,7 +3,6 @@
 #include "base/reanimator.hpp"
 
 #include "absl/log/check.h"
-#include "absl/log/log.h"
 #include "absl/log/die_if_null.h"
 #include "base/stoppable_thread.hpp"
 
@@ -29,21 +28,19 @@ template<typename Key>
 void Reanimator<Key>::Stop() {
   absl::MutexLock l(&jthread_lock_);
 
-  // Mark the thread as stopped and wait for all the calls to complete.  This
-  // includes the best-effort calls.  The actions that have a
-  // `RETURN_IF_STOPPED` should finish quickly.  Note that after this point it's
-  // not possible to enqueue new runs.
+  // Force the thread to exit once all the queued actions have been executed.
+  // Also ensure that after this point it's not possible to enqueue new actions.
   {
     absl::MutexLock l(&lock_);
-    LOG(ERROR) << "Stop request_stop";
     stopped_ = true;
     jthread_must_exit_ = true;
   }
 
-  LOG(ERROR) << "Stop joining";
+  // Mark the thread as stopped and wait for all the queued actions to complete.
+  // This includes the best-effort once.  The stop request is so that actions
+  // that have a `RETURN_IF_STOPPED` can finish quickly.
   jthread_.request_stop();
   jthread_.join();
-  LOG(ERROR) << "Stop joined";
 }
 
 template<typename Key>
@@ -81,12 +78,9 @@ void Reanimator<Key>::Cancel(Key const& before_key) {
         return;
       } else if (key < before_key) {
         it = queue_.erase(it);
-        LOG(ERROR) << "Cancel queue_size: " << queue_.size();
-        // If the queue is now empty, we need to mark the thread as stopped.  If
-        // there is a running action with a `RETURN_IF_STOPPED`, it should
-        // complete quickly.
+        // If the queue is now empty, we will mark the thread as stopped so
+        // it should exit as soon as the current action is done.
         if (it == queue_.end()) {
-          LOG(ERROR) << "Cancel request_stop";
           jthread_must_exit_ = true;
           break;
         }
@@ -96,15 +90,17 @@ void Reanimator<Key>::Cancel(Key const& before_key) {
     }
   }
 
-  LOG(ERROR) << "Cancel recreating thread";
+  // Mark the thread as stopped so that, if there is a running action with a
+  // `RETURN_IF_STOPPED`, it can complete quickly.
   jthread_.request_stop();
   jthread_.join();
   {
     absl::MutexLock l(&lock_);
     jthread_must_exit_ = false;
   }
+
+  // The thread that we stopped is now gone, create a new one.
   jthread_ = MakeStoppableThread([this]() { RepeatedRunActions(); });
-  LOG(ERROR) << "Cancel recreated thread";
 }
 
 template<typename Key>
@@ -137,9 +133,6 @@ void Reanimator<Key>::RepeatedRunActions() {
 ///Name
   auto queue_not_empty_or_must_exit = [this] {
     lock_.AssertReaderHeld();
-    // All requests to stop must happen under `queue_lock_`.  Don't use
-    // `this_stoppable_thread` here, the condition can be evaluated on any
-    // thread.
     return !queue_.empty() || jthread_must_exit_;
   };
 
@@ -149,7 +142,6 @@ void Reanimator<Key>::RepeatedRunActions() {
 
     if (queue_.empty()) {
       CHECK(jthread_must_exit_);
-      LOG(ERROR) << "RepeatedRunActions breaking";
       break;
     }
 
