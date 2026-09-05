@@ -59,6 +59,8 @@
     <ClInclude Include="push_pull_callback_body.hpp" />
     <ClInclude Include="ranges.hpp" />
     <ClInclude Include="ranges_body.hpp" />
+    <ClInclude Include="reanimator.hpp" />
+    <ClInclude Include="reanimator_body.hpp" />
     <ClInclude Include="recurring_thread.hpp" />
     <ClInclude Include="recurring_thread_body.hpp" />
     <ClInclude Include="serialization.hpp" />
@@ -105,6 +107,7 @@
     <ClCompile Include="pull_serializer_test.cpp" />
     <ClCompile Include="push_deserializer_test.cpp" />
     <ClCompile Include="push_pull_callback_test.cpp" />
+    <ClCompile Include="reanimator_test.cpp" />
     <ClCompile Include="recurring_thread_test.cpp" />
     <ClCompile Include="stoppable_thread_test.cpp" />
     <ClCompile Include="string_log_sink.cpp" />
