@@ -89,9 +89,7 @@ Vessel::Vessel(
       reanimator_(
           [this](ReanimatorParameters const& reanimator_parameters) {
             return Reanimate(reanimator_parameters);
-          },
-          20ms),  // 50 Hz.
-      reanimator_clientele_(/*default_key=*/InfiniteFuture),
+          }),
       backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()),
@@ -396,6 +394,9 @@ void Vessel::RequestReanimation(Instant const& desired_t_min,
   Instant allowable_desired_t_min;
   {
     absl::MutexLock l(&lock_);
+
+    ///Comments
+    reanimator_.Cancel(desired_t_min);
 
     // If the reanimator is asked to do significantly less work (in terms of
     // checkpoints to reanimate) than it is currently doing, interrupt it.  Note
@@ -1075,8 +1076,7 @@ Vessel::Vessel()
       checkpointer_(make_not_null_unique<Checkpointer<serialization::Vessel>>(
           /*reader=*/nullptr,
           /*writer=*/nullptr)),
-      reanimator_(/*action=*/nullptr, 0ms),
-      reanimator_clientele_(InfiniteFuture),
+      reanimator_(/*action=*/nullptr),
       backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
       prediction_(trajectory_.segments().end()),

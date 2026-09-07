@@ -12,6 +12,7 @@
 #include "absl/status/status.h"
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
+#include "base/reanimator.hpp"
 #include "base/recurring_thread.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
@@ -27,7 +28,6 @@
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "physics/checkpointer.hpp"
-#include "physics/clientele.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/discrete_trajectory_segment.hpp"
@@ -47,6 +47,7 @@ namespace _vessel {
 namespace internal {
 
 using namespace principia::base::_not_null;
+using namespace principia::base::_reanimator;
 using namespace principia::base::_recurring_thread;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
@@ -62,7 +63,6 @@ using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_part;
 using namespace principia::ksp_plugin::_pile_up;
 using namespace principia::physics::_checkpointer;
-using namespace principia::physics::_clientele;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_discrete_trajectory_segment;
@@ -460,8 +460,7 @@ class Vessel {
   Instant oldest_reanimated_checkpoint_ ABSL_GUARDED_BY(lock_) = InfinitePast;
 
   // The techniques and terminology follow [Lov22].
-  RecurringThread<ReanimatorParameters> reanimator_;
-  Clientele<Instant> reanimator_clientele_;
+  Reanimator<ReanimatorParameters> reanimator_;
 
   // Parameter passed to the last call to `RequestReanimation`, if any.
   std::optional<Instant> last_desired_t_min_ ABSL_GUARDED_BY(lock_);
