@@ -191,12 +191,6 @@
     <ClInclude Include="integration_parameters_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="clientele.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="clientele_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="similar_motion.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -347,9 +341,6 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="harmonic_damping_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="clientele_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="similar_motion_test.cpp">
