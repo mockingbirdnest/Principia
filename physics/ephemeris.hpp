@@ -12,7 +12,7 @@
 #include "absl/synchronization/mutex.h"
 #include "base/concepts.hpp"
 #include "base/not_null.hpp"
-#include "base/recurring_thread.hpp"
+#include "base/reanimator.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
@@ -21,7 +21,6 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/apsides.hpp"
 #include "physics/checkpointer.hpp"
-#include "physics/clientele.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -42,7 +41,7 @@ namespace internal {
 
 using namespace principia::base::_concepts;
 using namespace principia::base::_not_null;
-using namespace principia::base::_recurring_thread;
+using namespace principia::base::_reanimator;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
@@ -50,7 +49,6 @@ using namespace principia::integrators::_integrators;
 using namespace principia::integrators::_ordinary_differential_equations;
 using namespace principia::physics::_apsides;
 using namespace principia::physics::_checkpointer;
-using namespace principia::physics::_clientele;
 using namespace principia::physics::_continuous_trajectory;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
@@ -168,11 +166,15 @@ class Ephemeris {
 
   // Asks the reanimator thread to asynchronously reconstruct the past so that
   // the `t_min()` of the ephemeris ultimately ends up at or before
-  // `desired_t_min`.
+  // `desired_t_min`.  This is a best-effort operation, it might be cancelled by
+  // a subsequent reanimation.
   void RequestReanimation(Instant const& desired_t_min);
 
-  // Same as `RequestReanimation`, but synchronous.  This function blocks until
-  // the `t_min()` of the ephemeris is at or before `desired_t_min`.
+  // Asks the reanimator thread to synchronously reconstruct the past so that
+  // the `t_min()` of the ephemeris ultimately ends up at or before
+  // `desired_t_min`.  This is a guaranteed operation, so it cannot be cancelled
+  // by a subsequent reanimation.  This function blocks until the `t_min()` of
+  // the ephemeris is at or before `desired_t_min`.
   void AwaitReanimation(Instant const& desired_t_min);
 
   // Creates an instance suitable for integrating the given `trajectories` with
@@ -341,7 +343,7 @@ class Ephemeris {
       Instant const& t_final) EXCLUDES(lock_);
 
   bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min)
-      REQUIRES_SHARED(lock_);
+      EXCLUDES(lock_);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
@@ -542,17 +544,13 @@ class Ephemeris {
   Instant oldest_reanimated_checkpoint_ ABSL_GUARDED_BY(lock_) = InfinitePast;
 
   // The techniques and terminology follow [Lov22].
-  RecurringThread<Instant> reanimator_;
-  Clientele<Instant> reanimator_clientele_;
+  Reanimator<Instant> reanimator_;
 
   // The fields above this line are fixed at construction and therefore not
   // protected.  Note that `ContinuousTrajectory` is thread-safe.  `lock_` is
   // also used to protect sections where the trajectories are not mutually
   // consistent (e.g., during Prolong).
   mutable absl::Mutex lock_;
-
-  // Parameter passed to the last call to `RequestReanimation`, if any.
-  std::optional<Instant> last_desired_t_min_ ABSL_GUARDED_BY(lock_);
 
   std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>
       instance_ ABSL_GUARDED_BY(lock_);
