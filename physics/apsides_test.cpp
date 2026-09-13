@@ -49,7 +49,9 @@ using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
+using ::testing::Pair;
 using ::testing::SizeIs;
+using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -243,6 +245,53 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
                                                    apoapsides,
                                                    periapsides);
   EXPECT_THAT(intervals, IsEmpty());
+}
+
+TEST_F(ApsidesTest, ComputeApsidesTimeRanges) {
+  Instant const t0;
+  Instant const t1 = t0;
+  Instant const t2 = t1 + 3 * Second;
+  Instant const t3 = t1 + 21 * Second;
+  Instant const t4 = t1 + 25 * Second;
+  Time const Δt = 1.0 / 128.0 * Second;
+
+  DiscreteTrajectory<World> reference_trajectory;
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin + Displacement<World>(
+                                  {-10.0 * Metre, 0.0 * Metre, 0.0 * Metre}),
+              Velocity<World>({1.0 * Metre / Second,
+                               0.0 * Metre / Second,
+                               0.0 * Metre / Second})),
+          Δt,
+          t1,
+          t3),
+      reference_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin + Displacement<World>(
+                                  {0.0 * Metre, -10.0 * Metre, 0.0 * Metre}),
+              Velocity<World>({0.0 * Metre / Second,
+                               1.0 * Metre / Second,
+                               0.0 * Metre / Second})),
+          Δt,
+          t2,
+          t4),
+      vessel_trajectory);
+
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
+  ComputeApsides(reference_trajectory,
+                 DiscreteTrajectoryView(&vessel_trajectory),
+                 /*max_points=*/10,
+                 apoapsides,
+                 periapsides);
+
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, ElementsAre(Pair(t0 + 11.5 * Second, _)));
 }
 
 #endif

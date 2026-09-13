@@ -67,7 +67,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 
   DiscreteTrajectoryView referenceable_view = trajectory;
   referenceable_view.Restrict(reference.t_min(), reference.t_max());
-  for (auto const& [time, degrees_of_freedom] : trajectory) {
+  for (auto const& [time, degrees_of_freedom] : referenceable_view) {
     DegreesOfFreedom<Frame> const body_degrees_of_freedom =
         reference.EvaluateDegreesOfFreedom(time);
     RelativeDegreesOfFreedom<Frame> const relative =
@@ -128,7 +128,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
       // 3rd-degree polynomial would yield `squared_distance_approximation`, so
       // we shouldn't be far from the truth.
       DegreesOfFreedom<Frame> const apsis_degrees_of_freedom =
-          trajectory.EvaluateDegreesOfFreedom(apsis_time);
+          referenceable_view.EvaluateDegreesOfFreedom(apsis_time);
       if (Sign(squared_distance_derivative).is_negative()) {
         apoapsides.emplace(apsis_time, apsis_degrees_of_freedom);
       } else {
