@@ -397,10 +397,15 @@ class Vessel {
   // Update the vessel trajectory with the segments found in
   // `reanimated_trajectories_`.  This function should only be called on the
   // main thread.
-  void MergeReanimatedTrajectories() EXCLUDES(lock_);
+  void MergeReanimatedTrajectories() ABSL_LOCKS_EXCLUDED(lock_);
+
+  // Update the vessel trajectory with the segments found in
+  // `reanimated_trajectories_`.  This function should only be called on the
+  // main thread.
+  void MergeReanimatedTrajectories() ABSL_LOCKS_EXCLUDED(lock_);
 
   bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min)
-      ABSL_SHARED_LOCKS_REQUIRED(lock_);
+      ABSL_LOCKS_EXCLUDED(lock_);
 
   // Runs the integrator to compute the `prognostication_` based on the given
   // parameters.
