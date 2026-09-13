@@ -87,8 +87,9 @@ Vessel::Vessel(
           MakeCheckpointerWriterFromPileUp(),
           MakeCheckpointerReader())),
       reanimator_(
-          [this](ReanimatorParameters const& reanimator_parameters) {
-            return Reanimate(reanimator_parameters);
+          [this](Instant const& desired_t_min,
+                 ReanimatorParameters const& reanimator_parameters) {
+            return Reanimate(desired_t_min, reanimator_parameters);
           }),
       backstory_(trajectory_.segments().begin()),
       psychohistory_(trajectory_.segments().end()),
@@ -390,77 +391,48 @@ void Vessel::RequestReanimation(Instant const& desired_t_min,
                                 bool const quiet) {
   reanimator_.Start();
 
-  bool must_restart;
-  Instant allowable_desired_t_min;
-  {
-    absl::MutexLock l(&lock_);
-
-    ///Comments
-    reanimator_.Cancel(desired_t_min);
-
-    // If the reanimator is asked to do significantly less work (in terms of
-    // checkpoints to reanimate) than it is currently doing, interrupt it.  Note
-    // that this is fundamentally racy: for instance the reanimator may not have
-    // picked the last input given by Put.  But it helps if the user was doing a
-    // very long reanimation and wants to shorten it.  Note however that we must
-    // not move the desired t_min beyond the point where there are clients
-    // waiting for reanimation as they would never succeed.
-    allowable_desired_t_min =
-        std::min(desired_t_min, reanimator_clientele_.first());
-    must_restart =
-        last_desired_t_min_.has_value() &&
-        checkpointer_->checkpoint_at_or_before(last_desired_t_min_.value()) <
-            checkpointer_->checkpoint_at_or_before(allowable_desired_t_min);
-    LOG_IF_EVERY_N_SEC(WARNING, must_restart, 1)
-        << "Restarting reanimator because desired t_min went from "
-        << last_desired_t_min_.value() << " to " << allowable_desired_t_min;
-    last_desired_t_min_ = allowable_desired_t_min;
+  // There may be trajectories in `reanimated_trajectories_` that result from a
+  // previous call to this function and have not been merged yet.  Merge them
+  // now, and check if we have anything to do.
+  MergeReanimatedTrajectories();
+  if (DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
+    return;
   }
 
-  if (must_restart) {
-    reanimator_.Restart();
-  }
+  // If the reanimator is asked to do significantly less best-effort work (in
+  // terms of checkpoints to reanimate) than it is currently doing, we want to
+  // interrupt best-effort reanimations, without affecting the guaranteed
+  // reanimations.
+  reanimator_.Cancel(desired_t_min);
 
-  {
-    absl::ReaderMutexLock l(&lock_);
-
-    // It is important for correctness that we *don't* enqueue a reanimation
-    // request if the desired time has already been reached.  When called from
-    // `AwaitReanimation`, there will be no waiting in that case.  If we
-    // enqueued a reanimation it would proceed asynchronously without anyone
-    // waiting, and this could cause a race if the trajectory being reanimated
-    // was destroyed soon thereafter, as can happen as part of the
-    // Лефшец-to-Leibniz migration.
-    if (!DesiredTMinReachedOrFullyReanimated(allowable_desired_t_min)) {
-      reanimator_.Put(
-          {.desired_t_min = allowable_desired_t_min, .quiet = quiet});
-    }
-  }
+  // Now queue our best-effort reanimation.  The result of this reanimation will
+  // only be visible when the next call to `RequestReanimation` or
+  // `AwaitReanimation` takes place.
+  reanimator_.RunBestEffort(desired_t_min, {.quiet = quiet});
 }
 
 void Vessel::AwaitReanimation(Instant const& desired_t_min,
                               bool const quiet) {
-  auto has_reanimated_trajectories = [this] {
-    lock_.AssertReaderHeld();
-    return !reanimated_trajectories_.empty();
-  };
+  reanimator_.Start();
 
-  Client const me(desired_t_min, reanimator_clientele_);
-  RequestReanimation(desired_t_min, quiet);
-
-  absl::MutexLock l(&lock_);
-  while (!DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
-    lock_.Await(absl::Condition(&has_reanimated_trajectories));
-
-    // Consume the reanimated trajectories and merge them into this trajectory.
-    // This is the only place where the reanimation becomes externally visible,
-    // thereby ensuring that the trajectory doesn't change, say, while clients
-    // iterate over it.
-    while (!reanimated_trajectories_.empty()) {
-      trajectory_.Merge(std::move(reanimated_trajectories_.front()));
-      reanimated_trajectories_.pop();
-    }
+  // See the comment in the above function.
+  MergeReanimatedTrajectories();
+  if (DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
+    return;
   }
+
+  // Queue our guaranteed reanimation.
+  auto const handle =
+      reanimator_.RunGuaranteed(desired_t_min, {.quiet = quiet});
+
+  // Await the guaranteed reanimation, merging the reanimated trajectories as
+  // they become available.  This makes the effect of reanimation visible
+  // "in real time".
+  auto const merge_reanimated_trajectories = [this](Instant const&,
+                                                    absl::Status const&) {
+    MergeReanimatedTrajectories();
+  };
+  reanimator_.Wait(handle, merge_reanimated_trajectories).IgnoreError();
 }
 
 void Vessel::CreateFlightPlan(
@@ -1136,14 +1108,14 @@ Checkpointer<serialization::Vessel>::Reader Vessel::MakeCheckpointerReader() {
 }
 
 absl::Status Vessel::Reanimate(
+    Instant const& desired_t_min,
     ReanimatorParameters const& reanimator_parameters) {
   // This method is very similar to Ephemeris::Reanimate.  See the comments
   // there for some of the subtle points.
   static_assert(serializable<Barycentric>);
   absl::btree_set<Instant> checkpoints;
   LOG_EVERY_N_SEC(INFO, reanimator_parameters.quiet ? 1 : 0)
-      << "Reanimating " << ShortDebugString() << " until "
-      << reanimator_parameters.desired_t_min;
+      << "Reanimating " << ShortDebugString() << " until " << desired_t_min;
 
   Instant t_final;
   {
@@ -1155,8 +1127,7 @@ absl::Status Vessel::Reanimate(
     }
 
     Instant const oldest_checkpoint_to_reanimate =
-        checkpointer_->checkpoint_at_or_before(
-            reanimator_parameters.desired_t_min);
+        checkpointer_->checkpoint_at_or_before(desired_t_min);
     checkpoints = checkpointer_->all_checkpoints_between(
         oldest_checkpoint_to_reanimate, oldest_reanimated_checkpoint_);
 
@@ -1244,8 +1215,20 @@ absl::StatusOr<Instant> Vessel::ReanimateOneCheckpoint(
   return reanimated_trajectory_t_initial;
 }
 
+void Vessel::MergeReanimatedTrajectories() {
+  // Consume the reanimated trajectories and merge them into this trajectory.
+  // This is the only place where the reanimation becomes externally visible,
+  // thereby ensuring that the trajectory doesn't change, say, while clients
+  // iterate over it.
+  absl::MutexLock l(&lock_);
+  while (!reanimated_trajectories_.empty()) {
+    trajectory_.Merge(std::move(reanimated_trajectories_.front()));
+    reanimated_trajectories_.pop();
+  }
+}
+
 bool Vessel::DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min) {
-  lock_.AssertReaderHeld();
+  absl::ReaderMutexLock l(&lock_);
   return trajectory_.t_min() <= desired_t_min ||
          oldest_reanimated_checkpoint_ == checkpointer_->oldest_checkpoint();
 }
