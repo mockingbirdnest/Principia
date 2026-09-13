@@ -1,8 +1,10 @@
 # Principia
 
+![⚠️](https://place-hold.it/10/f00000/000000&text=) _If you downloaded Lévy before September 13th, 20:58 UTC, you probably have a buggy version (see [#4685](https://github.com/mockingbirdnest/Principia/issues/4685)). Please download it again. If you have the correct version, the version string in the Principia UI says `2026091103-Lévy-0-gc6db14e961191ce8fd931d3302bfa7f7e80d0ecd`. We apologize for the inconvenience._ ![⚠️](https://place-hold.it/10/f00000/000000&text=)
+
 **&lrm;[Lévy](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#le%CC%81vy), the September version of Principia, is available, with new features and bug fixes.  Download it [here for 1.8.1, 1.9.1, 1.10.1, 1.11.0, 1.11.1, 1.11.2, and 1.12.2 to 1.12.5](https://bit.ly/l3vy).**
 
-**For the convenience of Chinese users, download from 腾讯微云: [Principia Lévy for 1.8.1—1.12.5](https://share.weiyun.com/jGEtO4NR).**
+**For the convenience of Chinese users, download from 腾讯微云: [Principia Lévy for 1.8.1—1.12.5](https://share.weiyun.com/JAmT3w6C).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
