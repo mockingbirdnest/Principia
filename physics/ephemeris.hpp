@@ -345,7 +345,7 @@ class Ephemeris {
       Instant const& t_final) ABSL_LOCKS_EXCLUDED(lock_);
 
   bool DesiredTMinReachedOrFullyReanimated(Instant const& desired_t_min)
-      ABSL_SHARED_LOCKS_REQUIRED(lock_);
+      ABSL_LOCKS_EXCLUDED(lock_);
 
   // Callbacks for the integrators.
   void AppendMassiveBodiesState(
