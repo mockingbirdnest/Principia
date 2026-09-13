@@ -49,7 +49,9 @@ using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
+using ::testing::Pair;
 using ::testing::SizeIs;
+using ::testing::_;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -249,8 +251,8 @@ TEST_F(ApsidesTest, ComputeApsidesTimeRanges) {
   Instant const t0;
   Instant const t1 = t0;
   Instant const t2 = t1 + 3 * Second;
-  Instant const t3 = t1 + 5 * Second;
-  Instant const t4 = t1 + 11 * Second;
+  Instant const t3 = t1 + 21 * Second;
+  Instant const t4 = t1 + 25 * Second;
   Time const Δt = 1.0 / 128.0 * Second;
 
   DiscreteTrajectory<World> reference_trajectory;
@@ -271,7 +273,7 @@ TEST_F(ApsidesTest, ComputeApsidesTimeRanges) {
       NewLinearTrajectoryTimeline(
           DegreesOfFreedom<World>(
               World::origin + Displacement<World>(
-                                  {-10.0 * Metre, 0.0 * Metre, 0.0 * Metre}),
+                                  {0.0 * Metre, -10.0 * Metre, 0.0 * Metre}),
               Velocity<World>({0.0 * Metre / Second,
                                1.0 * Metre / Second,
                                0.0 * Metre / Second})),
@@ -288,8 +290,8 @@ TEST_F(ApsidesTest, ComputeApsidesTimeRanges) {
                  apoapsides,
                  periapsides);
 
-  EXPECT_THAT(apoapsides, SizeIs(1));
-  EXPECT_THAT(periapsides, SizeIs(1));
+  EXPECT_THAT(apoapsides, IsEmpty());
+  EXPECT_THAT(periapsides, ElementsAre(Pair(t0 + 11.5 * Second, _)));
 }
 
 #endif
