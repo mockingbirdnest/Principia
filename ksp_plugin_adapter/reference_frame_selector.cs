@@ -41,6 +41,7 @@ internal class
     selected_celestial = FlightGlobals.GetHomeBody();
     is_freshly_constructed_ = true;
 
+    // A duration since the vessel launch time.
     plottable_time_interval_midpoint_ =
         new DifferentialSlider(
             label               :
@@ -614,9 +615,12 @@ internal class
     }
 
     // For the plotting frame, allow the user to set the plottable time
-    // interval.
+    // interval.  If we have a selected target, don't do this because we need
+    // special handling for the payload associated with that frame.
+    // TODO(phl): Implement support for the target frame.
     bool must_display_plottable_time_interval =
         typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters) &&
+        !target_frame_selected &&
         MapView.MapIsEnabled &&
         active_vessel != null;
     if (must_display_plottable_time_interval) {
@@ -968,7 +972,9 @@ internal class
   }
 
   private double PlottableMidpointZeroValue(double? unused) {
-    return adapter_.Plugin().CurrentTime();
+    // A duration since the vessel launch time.  Note that the slider is not
+    // shown when there is no active vessel.
+    return adapter_.Plugin().CurrentTime() - active_vessel.launchTime;
   }
 
   private static UnityEngine.GUIContent PlottableMidpointZeroButtonContent(
