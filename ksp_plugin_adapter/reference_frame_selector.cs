@@ -615,9 +615,12 @@ internal class
     }
 
     // For the plotting frame, allow the user to set the plottable time
-    // interval.
+    // interval.  If we have a selected target, don't do this because we need
+    // special handling for the payload associated with that frame.
+    // TODO(phl): Implement support for the target frame.
     bool must_display_plottable_time_interval =
         typeof(ReferenceFrameParameters) == typeof(PlottingFrameParameters) &&
+        !target_frame_selected &&
         MapView.MapIsEnabled &&
         active_vessel != null;
     if (must_display_plottable_time_interval) {
