@@ -245,6 +245,53 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory_Circular) {
   EXPECT_THAT(intervals, IsEmpty());
 }
 
+TEST_F(ApsidesTest, ComputeApsidesTimeRanges) {
+  Instant const t0;
+  Instant const t1 = t0;
+  Instant const t2 = t1 + 3 * Second;
+  Instant const t3 = t1 + 5 * Second;
+  Instant const t4 = t1 + 11 * Second;
+  Time const Δt = 1.0 / 128.0 * Second;
+
+  DiscreteTrajectory<World> reference_trajectory;
+  DiscreteTrajectory<World> vessel_trajectory;
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin + Displacement<World>(
+                                  {-10.0 * Metre, 0.0 * Metre, 0.0 * Metre}),
+              Velocity<World>({1.0 * Metre / Second,
+                               0.0 * Metre / Second,
+                               0.0 * Metre / Second})),
+          Δt,
+          t1,
+          t3),
+      reference_trajectory);
+  AppendTrajectoryTimeline(
+      NewLinearTrajectoryTimeline(
+          DegreesOfFreedom<World>(
+              World::origin + Displacement<World>(
+                                  {-10.0 * Metre, 0.0 * Metre, 0.0 * Metre}),
+              Velocity<World>({0.0 * Metre / Second,
+                               1.0 * Metre / Second,
+                               0.0 * Metre / Second})),
+          Δt,
+          t2,
+          t4),
+      vessel_trajectory);
+
+  DistinguishedPoints<World> apoapsides;
+  DistinguishedPoints<World> periapsides;
+  ComputeApsides(reference_trajectory,
+                 DiscreteTrajectoryView(&vessel_trajectory),
+                 /*max_points=*/10,
+                 apoapsides,
+                 periapsides);
+
+  EXPECT_THAT(apoapsides, SizeIs(1));
+  EXPECT_THAT(periapsides, SizeIs(1));
+}
+
 #endif
 
 TEST_F(ApsidesTest, ComputeFirstCollision) {
