@@ -41,6 +41,7 @@ internal class
     selected_celestial = FlightGlobals.GetHomeBody();
     is_freshly_constructed_ = true;
 
+    // A duration since the vessel launch time.
     plottable_time_interval_midpoint_ =
         new DifferentialSlider(
             label               :
@@ -968,7 +969,9 @@ internal class
   }
 
   private double PlottableMidpointZeroValue(double? unused) {
-    return adapter_.Plugin().CurrentTime();
+    // A duration since the vessel launch time.  Note that the slider is not
+    // shown when there is no active vessel.
+    return adapter_.Plugin().CurrentTime() - active_vessel.launchTime;
   }
 
   private static UnityEngine.GUIContent PlottableMidpointZeroButtonContent(
