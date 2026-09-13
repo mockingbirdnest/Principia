@@ -107,9 +107,8 @@ Ephemeris<Frame>::Ephemeris(
       reanimator_(
           [this](Instant const& desired_t_min) {
             return Reanimate(desired_t_min);
-          },
-          20ms),  // 50 Hz.
-      reanimator_clientele_(/*default_key=*/InfiniteFuture) {
+          })  // 50 Hz.
+{
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -264,49 +263,29 @@ Ephemeris<Frame>::EvaluateAllDegreesOfFreedom(Instant const& t) const {
 template<typename Frame>
 void Ephemeris<Frame>::RequestReanimation(Instant const& desired_t_min) {
   reanimator_.Start();
-
-  bool must_restart;
-  Instant allowable_desired_t_min;
-  {
-    absl::MutexLock l(&lock_);
-
-    // If the reanimator is asked to do significantly less work (as defined by
-    // the time between checkpoints) than it is currently doing, interrupt it.
-    // Note that this is fundamentally racy: for instance the reanimator may not
-    // have picked the last input given by Put.  But it helps if the user was
-    // doing a very long reanimation and wants to shorten it.  Note however that
-    // we must not move the desired t_min beyond the point where there are
-    // clients waiting for reanimation (e.g., vessels) as they would never
-    // succeed.
-    allowable_desired_t_min =
-        std::min(desired_t_min, reanimator_clientele_.first());
-    must_restart = last_desired_t_min_.has_value() &&
-                   last_desired_t_min_.value() + max_time_between_checkpoints <
-                       allowable_desired_t_min;
-    LOG_IF_EVERY_N_SEC(WARNING, must_restart, 1)
-        << "Restarting reanimator because desired t_min went from "
-        << last_desired_t_min_.value() << " to " << allowable_desired_t_min;
-    last_desired_t_min_ = allowable_desired_t_min;
+  if (DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
+    return;
   }
 
-  // Don't hold the lock while restarting, the reanimator needs it.
-  if (must_restart) {
-    reanimator_.Restart();
-  }
-  reanimator_.Put(allowable_desired_t_min);
+  // If the reanimator is asked to do significantly less best-effort work (in
+  // terms of checkpoints to reanimate) than it is currently doing, we want to
+  // interrupt best-effort reanimations, without affecting the guaranteed
+  // reanimations.  This helps if the user was doing a very long reanimation and
+  // wants to shorten it.
+  reanimator_.Cancel(desired_t_min);
+
+  // Now queue our best-effort reanimation.
+  reanimator_.RunBestEffort(desired_t_min);
 }
 
 template<typename Frame>
 void Ephemeris<Frame>::AwaitReanimation(Instant const& desired_t_min) {
-  auto desired_t_min_reached = [this, desired_t_min]() {
-    lock_.AssertReaderHeld();
-    return t_min_locked() <= desired_t_min;
-  };
-
-  Client const me(desired_t_min, reanimator_clientele_);
-  RequestReanimation(desired_t_min);
-  absl::ReaderMutexLock l(&lock_);
-  lock_.Await(absl::Condition(&desired_t_min_reached));
+  reanimator_.Start();
+  if (DesiredTMinReachedOrFullyReanimated(desired_t_min)) {
+    return;
+  }
+  auto const handle = reanimator_.RunGuaranteed(desired_t_min);
+  reanimator_.Wait(handle).IgnoreError();
 }
 
 template<typename Frame>
@@ -916,8 +895,7 @@ Ephemeris<Frame>::Ephemeris(
       checkpointer_(
           make_not_null_unique<Checkpointer<serialization::Ephemeris>>(
               /*reader=*/nullptr, /*writer=*/nullptr)),
-      reanimator_(/*action=*/nullptr, 0ms),
-      reanimator_clientele_(InfiniteFuture) {}
+      reanimator_(/*action=*/nullptr) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::WriteToCheckpointIfNeeded(Instant const& time) const {
@@ -1063,7 +1041,7 @@ absl::Status Ephemeris<Frame>::ReanimateOneCheckpoint(
 template<typename Frame>
 bool Ephemeris<Frame>::DesiredTMinReachedOrFullyReanimated(
     Instant const& desired_t_min) {
-  lock_.AssertReaderHeld();
+  absl::ReaderMutexLock l(&lock_);
   return t_min_locked() <= desired_t_min ||
          oldest_reanimated_checkpoint_ == checkpointer_->oldest_checkpoint();
 }
