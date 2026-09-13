@@ -375,20 +375,20 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     auto const& vessel = *plugin->GetVessel(vessel_guid);
     auto const payload = vessel.GetPayload(plotting_frame);
     Instant const prediction_final_time = vessel.prediction()->t_max();
+    Instant const final_time =
+        vessel.has_flight_plan()
+            ? std::max(GetFlightPlan(*plugin, vessel_guid).actual_final_time(),
+                       prediction_final_time)
+            : prediction_final_time;
 
     auto const& celestial_trajectory =
         plugin->GetCelestial(celestial_index).trajectory();
     // No need to request reanimation here because the current time of the
     // plugin is necessarily covered.
-    TrajectoryView celestial_view(&celestial_trajectory,
-                                  /*t_min=*/plugin->CurrentTime(),
-                                  /*t_max=*/prediction_final_time);
+    TrajectoryView celestial_view(&celestial_trajectory);
+    celestial_view.Restrict(/*t_min=*/plugin->CurrentTime(),
+                            /*t_max=*/final_time);
     celestial_view.Restrict(payload.plottable_time_interval);
-    if (vessel.has_flight_plan()) {
-      celestial_view.Restrict(
-          InfinitePast,
-          GetFlightPlan(*plugin, vessel_guid).actual_final_time());
-    }
 
     Length minimal_distance;
     planetarium->PlotMethod4(
