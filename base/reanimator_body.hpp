@@ -130,7 +130,8 @@ absl::Status Reanimator<Key, Parameters...>::Wait(
   auto const& pending_run = *ABSL_DIE_IF_NULL(handle);
 
   // Insert my progress callback, if any, and retain an iterator on it.
-  std::optional<ProgressCallbacks::const_iterator> my_progress_callback;
+  std::optional<typename ProgressCallbacks::const_iterator>
+      my_progress_callback;
   if (progress_callback != nullptr) {
     absl::MutexLock l(&lock_);
     progress_callbacks_.push_front(std::move(progress_callback));

@@ -91,10 +91,10 @@ class Reanimator {
 
   // Set to `true` when `Stop` has been called to prevent further calls to
   // `RunBestEffort` and `RunGuaranteed`.
-  bool stopped_ = false ABSL_GUARDED_BY(lock_);
+  bool stopped_  ABSL_GUARDED_BY(lock_)= false;
 
   // Used to force the `jthread_` to exit when we want to join with it.
-  bool jthread_must_exit_ = false ABSL_GUARDED_BY(lock_);
+  bool jthread_must_exit_ ABSL_GUARDED_BY(lock_) = false;
 
   // The progress callbacks of all the waiters.  They are executed each time an
   // action completes.
