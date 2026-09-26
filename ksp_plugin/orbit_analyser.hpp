@@ -10,6 +10,7 @@
 #include "astronomy/orbit_ground_track.hpp"
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
+#include "astronomy/лидов.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
@@ -30,6 +31,7 @@ namespace internal {
 using namespace principia::astronomy::_orbit_ground_track;
 using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::astronomy::_orbital_elements;
+using namespace principia::astronomy::_лидов;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
@@ -41,6 +43,8 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_quantities;
+using namespace principia::graphics::_colours;
+using namespace principia::graphics::_graph;
 
 // The `OrbitAnalyser` asynchronously integrates a trajectory, and computes
 // orbital elements, recurrence, and ground track properties of the resulting
@@ -54,8 +58,41 @@ class OrbitAnalyser {
   // different recurrence is relatively cheap, so it is inconvenient to wait for
   // a whole new analysis to do so, but doing it at every frame is still
   // wasteful, so we cache that in the `Analysis`.
+  // It is likewise mutable via `SetPlotOptions`, for the same reasons.
+  // Eventually it may make sense to make plotting asynchronous, but it should
+  // still likely be separate from analysis.
   class Analysis {
    public:
+    struct PlotOptions {
+      // The width of all graphs.
+      std::int64_t width;
+      // The height of time series graphs: a(t), e(t), i(t), ω(t), Ω(t),
+      // h_pe(t), h_ap(t).
+      std::int64_t time_series_height;
+      // The background colour of all graphs.
+      RGBA32 background_colour;
+      // The axis colour of all graphs.
+      RGB24 axis_colour;
+      // The colour used for the locus of the eccentricity vector, as well as
+      // for the time series of its polar coordinates e(t) and ω(t), and for the
+      // lines of constant extremal e in the Лидов graph.
+      RGB24 eccentricity_vector_colour;
+      // The colour used for the time series of the inclination i(t) and for the
+      // lines of constant extremal i in the Лидов graph.
+      RGB24 inclination_colour;
+      // The colour used for the time series Ω(t).
+      RGB24 longitude_of_ascending_node_colour;
+      // The colour used for the time series whose dimension is a length: a(t),
+      // h_pe(t), h_ap(t).
+      RGB24 distance_colour;
+      RGB24 лидов_parameter_colour;
+      ЛидовGrid лидов_grid;
+
+
+      friend bool operator==(PlotOptions const& left,
+                             PlotOptions const& right) = default;
+    };
+
     Instant const& first_time() const;
     Time const& mission_duration() const;
     RotatingBody<Barycentric> const* primary() const;
@@ -82,6 +119,9 @@ class OrbitAnalyser {
     // `!elements.has_value()`, updating `equatorial_crossings` if needed.
     void ResetRecurrence();
 
+    // Computes all graphs if the options have changed.
+    void SetPlotOptions(PlotOptions options);
+
    private:
     explicit Analysis(Instant const& first_time);
 
@@ -98,6 +138,16 @@ class OrbitAnalyser {
     std::optional<OrbitGroundTrack> ground_track_;
     std::optional<OrbitGroundTrack::EquatorCrossingLongitudes>
         equatorial_crossings_;
+
+    std::optional<PlotOptions> plot_options_;
+    std::unique_ptr<Graph<double, double>> eccentricity_vector_graph_;
+    std::unique_ptr<Graph<double, double>> лидов_graph_;
+    std::unique_ptr<Graph<Instant, Length>> semimajor_axis_graph_;
+    std::unique_ptr<Graph<Instant, double>> eccentricity_graph_;
+    std::unique_ptr<Graph<Instant, Angle>> inclination_graph_;
+    std::unique_ptr<Graph<Instant, Angle>> argument_of_periapsis_graph_;
+    std::unique_ptr<Graph<Instant, Length>> periapsis_distance_graph_;
+    std::unique_ptr<Graph<Instant, Length>> apoapsis_distance_graph_;
 
     friend class OrbitAnalyser;
   };

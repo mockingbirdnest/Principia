@@ -10,11 +10,15 @@ struct RGB24 {
   std::uint8_t red;
   std::uint8_t green;
   std::uint8_t blue;
+
+  friend bool operator==(RGB24 const& left, RGB24 const& right) = default;
 };
 
 struct RGBA32 {
   RGB24 colour;
   std::uint8_t alpha;
+
+  friend bool operator==(RGBA32 const& left, RGBA32 const& right) = default;
 };
 
 constexpr RGBA32 Opaque(RGB24 const colour) {
