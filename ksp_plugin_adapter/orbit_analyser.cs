@@ -537,7 +537,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
   double last_t_min_ = double.PositiveInfinity;
 
-  private void DrawAllGraphs(OrbitalElements elements) {
+  private void DrawAllGraphs(OrbitAnalysis analysis) {
     if (elements == null) {
       return;
     }
@@ -550,12 +550,12 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     }
     must_redraw_graphs_ = false;
     last_t_min_ = t_min;
-    DrawElementGraphs(elements);
-    DrawEccentricityVectorGraph(elements);
-    DrawЛидовGraph(elements);
+    DrawElementGraphs(analysis);
+    DrawEccentricityVectorGraph(analysis);
+    DrawЛидовGraph(analysis);
   }
 
-  private void DrawElementGraphs(OrbitalElements elements) {
+  private void DrawElementGraphs(OrbitAnalysis analysis) {
     if (a_graph_ == null) {
       a_graph_ = new Graph((int)Width(10), (int)Height(1));
       e_graph_ = new Graph((int)Width(10), (int)Height(1));
@@ -565,121 +565,29 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       periapsis_graph_ = new Graph((int)Width(10), (int)Height(1));
       apoapsis_graph_ = new Graph((int)Width(10), (int)Height(1));
     }
-    Interval t_range = Interval.Empty;
-    elements.plottable_elements.IteratorReset();
-    t_range.min =
-        elements.plottable_elements.IteratorGetPlottableElements().time;
-    for (;
-         !elements.plottable_elements.IteratorAtEnd();
-         elements.plottable_elements.IteratorIncrement()) {
-      var elements_at_t =
-          elements.plottable_elements.IteratorGetPlottableElements();
-      t_range.max = elements_at_t.time;
-    }
-    foreach (var distance_graph in new[]
-                 { a_graph_, periapsis_graph_, apoapsis_graph_ }) {
-      distance_graph.PrepareCanvas(t_range,
-                                   new Interval{
-                                       min =
-                                           elements.mean_periapsis_distance.min,
-                                       max = elements.mean_apoapsis_distance.max
-                                   });
-    }
-    e_graph_.PrepareCanvas(t_range, elements.mean_eccentricity);
-    i_graph_.PrepareCanvas(t_range, elements.mean_inclination);
-    Ω_graph_.PrepareCanvas(t_range, elements.mean_longitude_of_ascending_nodes);
-    ω_graph_.PrepareCanvas(t_range, elements.mean_argument_of_periapsis);
-    for (elements.plottable_elements.IteratorReset();
-         !elements.plottable_elements.IteratorAtEnd();
-         elements.plottable_elements.IteratorIncrement()) {
-      var elements_at_t = elements.plottable_elements.IteratorGetPlottableElements();
-      double t = elements_at_t.time;
-      a_graph_.PlotPoint(t, elements_at_t.semimajor_axis, XKCDColors.Sunflower);
-      e_graph_.PlotPoint(t, elements_at_t.eccentricity, XKCDColors.Cornflower);
-      i_graph_.PlotPoint(t, elements_at_t.inclination, XKCDColors.Lavender);
-      Ω_graph_.PlotPoint(t,
-                         elements_at_t.longitude_of_ascending_node,
-                         XKCDColors.LightPink);
-      ω_graph_.PlotPoint(t,
-                         elements_at_t.argument_of_periapsis,
-                         XKCDColors.Cornflower);
-      periapsis_graph_.PlotPoint(t,
-                                 elements_at_t.periapsis_distance,
-                                 XKCDColors.Sunflower);
-      apoapsis_graph_.PlotPoint(t,
-                                elements_at_t.apoapsis_distance,
-                                XKCDColors.Sunflower);
-    }
+    a_graph_.LoadPixels(analysis.semimajor_axis_graph);
+    e_graph_.LoadPixels(analysis.eccentricity_graph);
+    i_graph_.LoadPixels(analysis.inclination_graph);
+    Ω_graph_.LoadPixels(analysis.longitude_of_ascending_node_graph);
+    ω_graph_.LoadPixels(analysis.argument_of_periapsis_graph);
+    periapsis_graph_.LoadPixels(analysis.periapsis_distance_graph);
+    apoapsis_graph_.LoadPixels(analysis.apoapsis_distance_graph);
   }
 
 
-  private void DrawEccentricityVectorGraph(OrbitalElements elements) {
+  private void DrawEccentricityVectorGraph(OrbitAnalysis analysis) {
     if (eccentricity_vector_graph_ == null) {
       eccentricity_vector_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
-    Interval e_cos_ω_range = Interval.Empty;
-    Interval e_sin_ω_range = Interval.Empty;
-    for (elements.plottable_elements.IteratorReset();
-         !elements.plottable_elements.IteratorAtEnd();
-         elements.plottable_elements.IteratorIncrement()) {
-      var elements_at_t =
-          elements.plottable_elements.IteratorGetPlottableElements();
-      e_cos_ω_range.Include(elements_at_t.
-                                eccentricity_cos_argument_of_periapsis);
-      e_sin_ω_range.Include(elements_at_t.
-                                eccentricity_sin_argument_of_periapsis);
-    }
-    // Show a square region of the eccentricity vector space.
-    if (e_cos_ω_range.measure > e_sin_ω_range.measure) {
-      double midpoint = e_sin_ω_range.midpoint;
-      e_sin_ω_range.min = midpoint - e_cos_ω_range.measure / 2;
-      e_sin_ω_range.max = midpoint + e_cos_ω_range.measure / 2;
-    } else {
-      double midpoint = e_cos_ω_range.midpoint;
-      e_cos_ω_range.min = midpoint - e_sin_ω_range.measure / 2;
-      e_cos_ω_range.max = midpoint + e_sin_ω_range.measure / 2;
-    }
-    eccentricity_vector_graph_.PrepareCanvas(e_cos_ω_range, e_sin_ω_range);
-    eccentricity_vector_graph_.PlotHorizontalLine(0, XKCDColors.White);
-    eccentricity_vector_graph_.PlotVerticalLine(0, XKCDColors.White);
-    for (elements.plottable_elements.IteratorReset();
-         !elements.plottable_elements.IteratorAtEnd();
-         elements.plottable_elements.IteratorIncrement()) {
-      var elements_at_t = elements.plottable_elements.IteratorGetPlottableElements();
-      eccentricity_vector_graph_.PlotPoint(
-          elements_at_t.eccentricity_cos_argument_of_periapsis,
-          elements_at_t.eccentricity_sin_argument_of_periapsis,
-          XKCDColors.Cornflower);
-    }
+    eccentricity_vector_graph_.LoadPixels(analysis.eccentricity_vector_graph);
   }
 
-  private void DrawЛидовGraph(OrbitalElements elements) {
+  private void DrawЛидовGraph(OrbitAnalysis analysis) {
     if (лидов_graph_ == null) {
       лидов_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
-    лидов_graph_.PrepareCanvas(
-        new Interval{ min = -3.0 / 5.0, max = 2.0 / 5.0 },
-        new Interval{ min = 0, max = 1 });
-    лидов_graph_.PlotVerticalLine(0, XKCDColors.White);
-    лидов_graph_.PlotFunction(Interface.GraphLidovFrozenLine,
-                              new Interval{ min = -3.0 / 5.0, max = 0 },
-                              XKCDColors.White);
+    лидов_graph_.LoadPixels(analysis.lidov_graph);
     if (show_max_e_min_i_lines_) {
-      for (int ten_e_max = 1; ten_e_max <= 10; ++ten_e_max) {
-        double e_max = ten_e_max / 10.0;
-        Interval c2_range =
-            Interface.GraphLidovMaximalEccentricityLineC2Range(e_max);
-        лидов_graph_.PlotFunction(
-            c2 => Interface.GraphLidovMaximalEccentricityLine(e_max, c2),
-            c2_range,
-            XKCDColors.Cornflower);
-      }
-      for (int i_min_degrees = 0; i_min_degrees <= 80; i_min_degrees += 10) {
-        лидов_graph_.PlotFunction(
-            c2 => Interface.GraphLidovMinimalInclinationLine(i_min_degrees, c2),
-            Interface.GraphLidovMinimalInclinationLineC2Range(i_min_degrees),
-            XKCDColors.Lavender);
-      }
       for (int i_min_degrees = 10; i_min_degrees <= 30; i_min_degrees += 10) {
         Interval c2 =
             Interface.GraphLidovMinimalInclinationLineC2Range(i_min_degrees);
@@ -700,28 +608,6 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       }
     }
     if (show_min_e_max_i_lines_) {
-      for (int ten_e_min = 1; ten_e_min <= 9; ++ten_e_min) {
-        double e_min = ten_e_min / 10.0;
-        Interval c2_range =
-            Interface.GraphLidovMinimalEccentricityLeftLineC2Range(e_min);
-        лидов_graph_.PlotFunction(
-            c2 => Interface.GraphLidovMinimalEccentricityLeftLine(e_min, c2),
-            c2_range,
-            XKCDColors.Cornflower);
-        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(
-            e_min,
-            out double c2_right,
-            out double c1_max);
-        лидов_graph_.PlotVerticalLine(c2_right,
-                                      XKCDColors.Cornflower,
-                                      new Interval{ min = 0, max = c1_max });
-      }
-      for (int i_max_degrees = 0; i_max_degrees <= 90; i_max_degrees += 10) {
-        лидов_graph_.PlotFunction(
-            c2 => Interface.GraphLidovMaximalInclinationLine(i_max_degrees, c2),
-            Interface.GraphLidovMaximalInclinationLineC2Range(i_max_degrees),
-            XKCDColors.Lavender);
-      }
       for (int ten_e_min = 4; ten_e_min <= 9; ++ten_e_min) {
         double e_min = ten_e_min / 10.0;
         Interval c2 =
@@ -775,23 +661,6 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                               XKCDColors.Cornflower,
                               UnityEngine.TextAnchor.MiddleLeft);
       }
-    } else {
-      // Plot the boundaries of the (c₂, c₁) space that are normally covered by
-      // the coloured lines.
-      foreach (int i_degrees in new[]{ 0, 90 }) {
-        лидов_graph_.PlotFunction(
-            c2 => Interface.GraphLidovMaximalInclinationLine(i_degrees, c2),
-            Interface.GraphLidovMaximalInclinationLineC2Range(i_degrees),
-            XKCDColors.White);
-      }
-    }
-    for (elements.plottable_elements.IteratorReset();
-         !elements.plottable_elements.IteratorAtEnd();
-         elements.plottable_elements.IteratorIncrement()) {
-      var elements_at_t = elements.plottable_elements.IteratorGetPlottableElements();
-      лидов_graph_.PlotPoint(elements_at_t.lidov_c2,
-                             elements_at_t.lidov_c1,
-                             XKCDColors.RoseRed);
     }
   }
 

@@ -17,6 +17,7 @@
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
 #include "geometry/space.hpp"
+#include "graphics/colours.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/iterators.hpp"
@@ -55,6 +56,7 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
+using namespace principia::graphics::_colours;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_iterators;
@@ -105,7 +107,6 @@ bool operator==(Node const& left, Node const& right);
 bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right);
 bool operator==(OrbitRecurrence const& left, OrbitRecurrence const& right);
 bool operator==(OrbitalElements const& left, OrbitalElements const& right);
-bool operator==(PlottableElements const& left, PlottableElements const& right);
 bool operator==(PlottingFramePayload const& left,
                 PlottingFramePayload const& right);
 bool operator==(QP const& left, QP const& right);
@@ -188,9 +189,6 @@ KeplerianElements ToKeplerianElements(
 
 // Ownership of the status and its message is transferred to the caller.
 Status* ToNewStatus(absl::Status const& status);
-
-PlottableElements ToPlottableElements(Plugin const& plugin,
-                                      ClassicalElements const& elements);
 
 QP ToQP(DegreesOfFreedom<World> const& dof);
 QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);

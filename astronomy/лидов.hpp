@@ -43,19 +43,6 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
 // All functions in this file refer to an orbit perturbed as in the analysis of
 // [Лид61].  The parameters c₁ and c₂ are as defined there.
 
-// Returns c₁ such that an orbit with these values of c₁ and c₂ has no
-// eccentricity-inclination exchange.
-double ЛидовFrozenLine(double c₂);
-
-// Returns c₁ such that the upper bound of eccentricity for an orbit with these
-// values of c₁ and c₂ is e.
-double ЛидовMaximalEccentricityLine(double e, double c₂);
-
-// Returns the range of values of c₂ such that there exists a c₁ such that the
-// upper bound of eccentricity for an orbit with these values of c₁ and c₂
-// is e.
-Interval<double> ЛидовMaximalEccentricityLineC₂Range(double e);
-
 // Returns c₁ such that the upper bound of inclination for an orbit with these
 // values of c₁ and c₂ is i.
 double ЛидовMaximalInclinationLine(Angle i, double c₂);
@@ -64,10 +51,6 @@ double ЛидовMaximalInclinationLine(Angle i, double c₂);
 // upper bound of inclination for an orbit with these values of c₁ and c₂
 // is i.
 Interval<double> ЛидовMaximalInclinationLineC₂Range(Angle i);
-
-// Returns c₁ such that the lower bound of inclination for an orbit with these
-// values of c₁ and c₂ is i.
-double ЛидовMinimalInclinationLine(Angle i, double c₂);
 
 // Returns the range of values of c₂ such that there exists a c₁ such that the
 // lower bound of inclination for an orbit with these values of c₁ and c₂
@@ -93,18 +76,14 @@ double ЛидовMinimalEccentricityRightLineC₁Max(double e);
 
 }  // namespace internal
 
-using internal::ЛидовFrozenLine;
 using internal::ЛидовGraph;
 using internal::ЛидовGrid;
-using internal::ЛидовMaximalEccentricityLine;
-using internal::ЛидовMaximalEccentricityLineC₂Range;
 using internal::ЛидовMaximalInclinationLine;
 using internal::ЛидовMaximalInclinationLineC₂Range;
 using internal::ЛидовMinimalEccentricityLeftLine;
 using internal::ЛидовMinimalEccentricityLeftLineC₂Range;
 using internal::ЛидовMinimalEccentricityRightLineC₁Max;
 using internal::ЛидовMinimalEccentricityRightLineC₂;
-using internal::ЛидовMinimalInclinationLine;
 using internal::ЛидовMinimalInclinationLineC₂Range;
 
 }  // namespace _лидов

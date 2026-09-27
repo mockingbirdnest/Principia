@@ -320,25 +320,6 @@ inline bool operator==(OrbitalElements const& left,
          NaNIndependentEq(left.sidereal_period, right.sidereal_period);
 }
 
-inline bool operator==(PlottableElements const& left,
-                       PlottableElements const& right) {
-  return NaNIndependentEq(left.semimajor_axis, right.semimajor_axis) &&
-         NaNIndependentEq(left.eccentricity, right.eccentricity) &&
-         NaNIndependentEq(left.inclination, right.inclination) &&
-         NaNIndependentEq(left.longitude_of_ascending_node,
-                          right.longitude_of_ascending_node) &&
-         NaNIndependentEq(left.argument_of_periapsis,
-                          right.argument_of_periapsis) &&
-         NaNIndependentEq(left.periapsis_distance, right.periapsis_distance) &&
-         NaNIndependentEq(left.apoapsis_distance, right.apoapsis_distance) &&
-         NaNIndependentEq(left.lidov_c1, right.lidov_c1) &&
-         NaNIndependentEq(left.lidov_c2, right.lidov_c2) &&
-         NaNIndependentEq(left.eccentricity_cos_argument_of_periapsis,
-                          right.eccentricity_cos_argument_of_periapsis) &&
-         NaNIndependentEq(left.eccentricity_sin_argument_of_periapsis,
-                          right.eccentricity_sin_argument_of_periapsis);
-}
-
 inline bool operator==(PlottingFramePayload const& left,
                        PlottingFramePayload const& right) {
   return left.plottable_time_interval == right.plottable_time_interval;
@@ -641,33 +622,6 @@ inline Status* ToNewStatus(absl::Status const& status) {
   }
 }
 
-inline PlottableElements ToPlottableElements(
-    Plugin const& plugin,
-    ClassicalElements const& elements) {
-  auto const [sin_i, cos_i] = SinCos(elements.inclination);
-  auto const [sin_ω, cos_ω] = SinCos(elements.argument_of_periapsis);
-  double const sin²_i = Pow<2>(sin_i);
-  double const cos²_i = Pow<2>(cos_i);
-  double const& e = elements.eccentricity;
-  double const e² = Pow<2>(e);
-  double const sin²_ω = Pow<2>(sin_ω);
-  return {
-      .time = ToGameTime(plugin, elements.time),
-      .semimajor_axis = elements.semimajor_axis / Metre,
-      .eccentricity = elements.eccentricity,
-      .inclination = elements.inclination / Radian,
-      .longitude_of_ascending_node =
-          elements.longitude_of_ascending_node / Radian,
-      .argument_of_periapsis = elements.argument_of_periapsis / Radian,
-      .periapsis_distance = elements.periapsis_distance / Metre,
-      .apoapsis_distance = elements.apoapsis_distance / Metre,
-      .lidov_c1 = (1 - e²) * cos²_i,
-      .lidov_c2 = e² * (2.0 / 5.0 - sin²_i * sin²_ω),
-      .eccentricity_cos_argument_of_periapsis = e * cos_ω,
-      .eccentricity_sin_argument_of_periapsis = e * sin_ω,
-  };
-}
-
 inline QP ToQP(DegreesOfFreedom<World> const& dof) {
   return QPConverter<DegreesOfFreedom<World>>::ToQP(dof);
 }
@@ -929,13 +883,6 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .first_collision_risk_time =
             to_double_ptr(vessel_analysis->first_collision_risk()),
         .first_reentry_time = to_double_ptr(vessel_analysis->first_reentry()),
-        .plottable_elements = new TypedIterator<std::vector<PlottableElements>>(
-            elements.mean_elements()
-            | std::ranges::views::transform([&plugin](auto const& elements) {
-                return ToPlottableElements(plugin, elements);
-              })
-            | std::ranges::to<std::vector<PlottableElements>>(),
-            &plugin),
     };
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {
@@ -985,6 +932,41 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
                   2 * ground_track_revolution)),
       };
     }
+  }
+  if (vessel_analysis->eccentricity_vector_graph() != nullptr) {
+    analysis->eccentricity_vector_graph =
+        vessel_analysis->eccentricity_vector_graph()->pixels().data();
+  }
+  if (vessel_analysis->лидов_graph() != nullptr) {
+    analysis->lidov_graph = vessel_analysis->лидов_graph()->pixels().data();
+  }
+  if (vessel_analysis->semimajor_axis_graph() != nullptr) {
+    analysis->semimajor_axis_graph =
+        vessel_analysis->semimajor_axis_graph()->pixels().data();
+  }
+  if (vessel_analysis->eccentricity_graph() != nullptr) {
+    analysis->eccentricity_graph =
+        vessel_analysis->eccentricity_graph()->pixels().data();
+  }
+  if (vessel_analysis->inclination_graph() != nullptr) {
+    analysis->inclination_graph =
+        vessel_analysis->inclination_graph()->pixels().data();
+  }
+  if (vessel_analysis->longitude_of_ascending_node_graph() != nullptr) {
+    analysis->longitude_of_ascending_node_graph =
+        vessel_analysis->longitude_of_ascending_node_graph()->pixels().data();
+  }
+  if (vessel_analysis->argument_of_periapsis_graph() != nullptr) {
+    analysis->argument_of_periapsis_graph =
+        vessel_analysis->argument_of_periapsis_graph()->pixels().data();
+  }
+  if (vessel_analysis->periapsis_distance_graph() != nullptr) {
+    analysis->periapsis_distance_graph =
+        vessel_analysis->periapsis_distance_graph()->pixels().data();
+  }
+  if (vessel_analysis->apoapsis_distance_graph() != nullptr) {
+    analysis->apoapsis_distance_graph =
+        vessel_analysis->apoapsis_distance_graph()->pixels().data();
   }
   return analysis;
 }

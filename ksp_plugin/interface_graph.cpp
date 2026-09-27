@@ -13,24 +13,6 @@ namespace interface {
 using namespace principia::astronomy::_лидов;
 using namespace principia::journal::_method;
 
-double __cdecl principia__GraphLidovFrozenLine(double const c₂) {
-  journal::Method<journal::GraphLidovFrozenLine> m({c₂});
-  return m.Return(ЛидовFrozenLine(c₂));
-}
-
-double __cdecl principia__GraphLidovMaximalEccentricityLine(double const e,
-                                                            double const c₂) {
-  journal::Method<journal::GraphLidovMaximalEccentricityLine> m({e, c₂});
-  return m.Return(ЛидовMaximalEccentricityLine(e, c₂));
-}
-
-Interval __cdecl principia__GraphLidovMaximalEccentricityLineC2Range(
-    double const e) {
-  journal::Method<journal::GraphLidovMaximalEccentricityLineC2Range> m({e});
-  auto const [c₂_min, c₂_max] = ЛидовMaximalEccentricityLineC₂Range(e);
-  return m.Return({c₂_min, c₂_max});
-}
-
 double __cdecl principia__GraphLidovMaximalInclinationLine(
     double const inclination_in_degrees,
     double const c₂) {
@@ -47,15 +29,6 @@ Interval __cdecl principia__GraphLidovMaximalInclinationLineC2Range(
   Angle const i = inclination_in_degrees * Degree;
   auto const [c₂_min, c₂_max] = ЛидовMaximalInclinationLineC₂Range(i);
   return m.Return({c₂_min, c₂_max});
-}
-
-double __cdecl principia__GraphLidovMinimalInclinationLine(
-    double const inclination_in_degrees,
-    double const c₂) {
-  journal::Method<journal::GraphLidovMinimalInclinationLine> m(
-      {inclination_in_degrees, c₂});
-  Angle const i = inclination_in_degrees * Degree;
-  return m.Return(ЛидовMinimalInclinationLine(i, c₂));
 }
 
 Interval __cdecl principia__GraphLidovMinimalInclinationLineC2Range(

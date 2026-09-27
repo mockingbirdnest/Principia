@@ -9,74 +9,19 @@ namespace ksp_plugin_adapter {
 
 internal class Graph : ScalingRenderer {
   public Graph(int width, int height) {
-    texture_ = new UnityEngine.Texture2D(width, height);
-    all_black_ = new UnityEngine.Color[width * height];
-    for (int i = 0; i < all_black_.Length; ++i) {
-      all_black_[i] = XKCDColors.Black;
+    texture_ = new UnityEngine.Texture2D(width, height, UnityEngine.TextureFormat.RGBA32, mipChain: false);
+    all_black_ = new byte[width * height * 4];
+    for (int i = 0; i < width * height; ++i) {
+      all_black_[4 * i + 3] = 255;
     }
   }
 
-  public void PrepareCanvas(Interval x_range, Interval y_range) {
-    x_range_ = x_range;
-    y_range_ = y_range;
-    dirty_ = true;
-    texture_.SetPixels(all_black_);
-    labels_.Clear();
-  }
-
-  public void PlotFunction(Func<double, double> f,
-                           Interval x_subrange,
-                           UnityEngine.Color colour) {
-    for (int i = AbscissaToPixel(x_subrange.min);
-         i <= AbscissaToPixel(x_subrange.max);
-         ++i) {
-      // Honest plotting assuming f is monotone.
-      Interval pixel_range = PixelToAbscissa(i).IntersectedWith(x_subrange);
-      double f_x_min = f.Invoke(pixel_range.min);
-      double f_x_max = f.Invoke(pixel_range.max);
-      double f_min;
-      double f_max;
-      if (f_x_min <= f_x_max) {
-        f_min = f_x_min;
-        f_max = f_x_max;
-      } else {
-        f_min = f_x_max;
-        f_max = f_x_min;
-      }
-      for (int j = OrdinateToPixel(f_min); j <= OrdinateToPixel(f_max); ++j) {
-        texture_.SetPixel(i, j, colour);
-      }
+  public void LoadPixels(IntPtr rgba32_begin) {
+    if (rgba32_begin == IntPtr.Zero) {
+      texture_.LoadRawTextureData(all_black_);
+    } else {
+      texture_.LoadRawTextureData(rgba32_begin, texture_.width * texture_.height * 4);
     }
-  }
-
-  public void PlotVerticalLine(double x,
-                               UnityEngine.Color colour,
-                               Interval? y_range = null) {
-    if (!x_range_.Contains(x)) {
-      return;
-    }
-    for (int j = y_range == null ? 0 : OrdinateToPixel(y_range.Value.min);
-         j <
-         (y_range == null
-              ? texture_.height
-              : OrdinateToPixel(y_range.Value.max));
-         ++j) {
-      texture_.SetPixel(AbscissaToPixel(x), j, colour);
-    }
-  }
-
-  public void PlotHorizontalLine(double y, UnityEngine.Color colour) {
-    if (!y_range_.Contains(y)) {
-      return;
-    }
-    for (int i = 0; i < texture_.width; ++i) {
-      texture_.SetPixel(i, OrdinateToPixel(y), colour);
-    }
-  }
-
-  public void PlotPoint(double x, double y, UnityEngine.Color colour) {
-    dirty_ = true;
-    texture_.SetPixel(AbscissaToPixel(x), OrdinateToPixel(y), colour);
   }
 
   public void AddLabel(double x,
@@ -159,13 +104,6 @@ internal class Graph : ScalingRenderer {
     return (int)(texture_.width * (x - x_range_.min) / x_range_.measure);
   }
 
-  private Interval PixelToAbscissa(int i) {
-    return new Interval{
-        min = i * x_range_.measure / texture_.width + x_range_.min,
-        max = (i + 1) * x_range_.measure / texture_.width + x_range_.min
-    };
-  }
-
   private int OrdinateToPixel(double y) {
     return (int)(texture_.height * (y - y_range_.min) / y_range_.measure);
   }
@@ -181,10 +119,10 @@ internal class Graph : ScalingRenderer {
   private Interval x_range_;
   private Interval y_range_;
   private bool dirty_;
-  private List<Label> labels_ = new List<Label>();
+  private readonly List<Label> labels_ = new List<Label>();
   
-  private UnityEngine.Texture2D texture_;
-  private UnityEngine.Color[] all_black_;
+  private readonly UnityEngine.Texture2D texture_;
+  private readonly byte[] all_black_;
 }
 
 }  // namespace ksp_plugin_adapter

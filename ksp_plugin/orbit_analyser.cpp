@@ -392,6 +392,50 @@ OrbitAnalyser::Analysis::equatorial_crossings() const {
   return equatorial_crossings_;
 }
 
+Graph<double, double> const*
+OrbitAnalyser::Analysis::eccentricity_vector_graph() const {
+  return eccentricity_vector_graph_.get();
+}
+
+Graph<double, double> const* OrbitAnalyser::Analysis::лидов_graph() const {
+  return лидов_graph_.get();
+}
+
+Graph<Instant, Length> const* OrbitAnalyser::Analysis::semimajor_axis_graph()
+    const {
+  return semimajor_axis_graph_.get();
+}
+
+Graph<Instant, double> const* OrbitAnalyser::Analysis::eccentricity_graph()
+    const {
+  return eccentricity_graph_.get();
+}
+
+Graph<Instant, Angle> const* OrbitAnalyser::Analysis::inclination_graph()
+    const {
+  return inclination_graph_.get();
+}
+
+Graph<Instant, Angle> const*
+OrbitAnalyser::Analysis::longitude_of_ascending_node_graph() const {
+  return longitude_of_ascending_node_graph_.get();
+}
+
+Graph<Instant, Angle> const*
+OrbitAnalyser::Analysis::argument_of_periapsis_graph() const {
+  return argument_of_periapsis_graph_.get();
+}
+
+Graph<Instant, Length> const*
+OrbitAnalyser::Analysis::periapsis_distance_graph() const {
+  return periapsis_distance_graph_.get();
+}
+
+Graph<Instant, Length> const* OrbitAnalyser::Analysis::apoapsis_distance_graph()
+    const {
+  return apoapsis_distance_graph_.get();
+}
+
 void OrbitAnalyser::Analysis::SetRecurrence(
     OrbitRecurrence const& recurrence) {
   if (recurrence_ != recurrence) {

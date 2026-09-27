@@ -112,6 +112,16 @@ class OrbitAnalyser {
     std::optional<OrbitGroundTrack::EquatorCrossingLongitudes> const&
     equatorial_crossings() const;
 
+    Graph<double, double> const* eccentricity_vector_graph() const;
+    Graph<double, double> const* лидов_graph() const;
+    Graph<Instant, Length> const* semimajor_axis_graph() const;
+    Graph<Instant, double> const* eccentricity_graph() const;
+    Graph<Instant, Angle> const* inclination_graph() const;
+    Graph<Instant, Angle> const* longitude_of_ascending_node_graph() const;
+    Graph<Instant, Angle> const* argument_of_periapsis_graph() const;
+    Graph<Instant, Length> const* periapsis_distance_graph() const;
+    Graph<Instant, Length> const* apoapsis_distance_graph() const;
+
     // Sets `recurrence`, updating `equatorial_crossings` if needed.
     void SetRecurrence(OrbitRecurrence const& recurrence);
     // Resets `recurrence` to a value deduced from `*elements` by
@@ -145,6 +155,7 @@ class OrbitAnalyser {
     std::unique_ptr<Graph<Instant, Length>> semimajor_axis_graph_;
     std::unique_ptr<Graph<Instant, double>> eccentricity_graph_;
     std::unique_ptr<Graph<Instant, Angle>> inclination_graph_;
+    std::unique_ptr<Graph<Instant, Angle>> longitude_of_ascending_node_graph_;
     std::unique_ptr<Graph<Instant, Angle>> argument_of_periapsis_graph_;
     std::unique_ptr<Graph<Instant, Length>> periapsis_distance_graph_;
     std::unique_ptr<Graph<Instant, Length>> apoapsis_distance_graph_;

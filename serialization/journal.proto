@@ -224,24 +224,6 @@ message XY {
   required double y = 2;
 }
 
-// The messages used within OrbitAnalysis are defined first, so that the struct
-// definitions, being generated in the same order refer to already-defined
-// types.
-message PlottableElements {
-  required double time = 1;
-  required double semimajor_axis = 2;
-  required double eccentricity = 3;
-  required double inclination = 4;
-  required double longitude_of_ascending_node = 5;
-  required double argument_of_periapsis = 6;
-  required double periapsis_distance = 7;
-  required double apoapsis_distance = 8;
-  required double lidov_c1 = 14;
-  required double lidov_c2 = 15;
-  required double eccentricity_cos_argument_of_periapsis = 16;
-  required double eccentricity_sin_argument_of_periapsis = 17;
-}
-
 message OrbitalElements {
   required double sidereal_period = 1;
   required double nodal_period = 2;
@@ -263,10 +245,6 @@ message OrbitalElements {
   required fixed64 first_collision_time_address = 16 [(address_of) = "first_collision_time"];
   required fixed64 first_collision_risk_time_address = 17 [(address_of) = "first_collision_risk_time"];
   required fixed64 first_reentry_time_address = 18 [(address_of) = "first_reentry_time"];
-  // Added in Leibniz.
-  required fixed64 plottable_elements = 19 [(pointer_to) = "Iterator",
-                                            (disposable) = "DisposableIterator",
-                                            (is_produced) = true];
 }
 
 message OrbitRecurrence {
@@ -303,6 +281,15 @@ message OrbitAnalysis {
   required fixed64 recurrence_address = 8 [(address_of) = "recurrence"];
   required fixed64 ground_track_equatorial_crossings_address = 9 [(address_of) = "ground_track_equatorial_crossings"];
   required fixed64 solar_times_of_nodes_address = 12 [(address_of) = "solar_times_of_nodes"];
+  required fixed64 eccentricity_vector_graph = 13 [(pointer_to) = "RGBA32 const"];
+  required fixed64 lidov_graph = 14 [(pointer_to) = "RGBA32 const"];
+  required fixed64 semimajor_axis_graph = 15 [(pointer_to) = "RGBA32 const"];
+  required fixed64 eccentricity_graph = 16 [(pointer_to) = "RGBA32 const"];
+  required fixed64 inclination_graph = 17 [(pointer_to) = "RGBA32 const"];
+  required fixed64 longitude_of_ascending_node_graph = 18 [(pointer_to) = "RGBA32 const"];
+  required fixed64 argument_of_periapsis_graph = 19 [(pointer_to) = "RGBA32 const"];
+  required fixed64 periapsis_distance_graph = 20 [(pointer_to) = "RGBA32 const"];
+  required fixed64 apoapsis_distance_graph = 21 [(pointer_to) = "RGBA32 const"];
 }
 
 message Method {
@@ -1453,49 +1440,6 @@ message GetVersion {
   optional Out out = 2;
 }
 
-message GraphLidovFrozenLine {
-  extend Method {
-    optional GraphLidovFrozenLine extension = 5208;
-  }
-  message In {
-    required double c2 = 1;
-  }
-  message Return {
-    required double result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message GraphLidovMaximalEccentricityLine {
-  extend Method {
-    optional GraphLidovMaximalEccentricityLine extension = 5206;
-  }
-  message In {
-    required double eccentricity = 1;
-    required double c2 = 2;
-  }
-  message Return {
-    required double result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message GraphLidovMaximalEccentricityLineC2Range {
-  extend Method {
-    optional GraphLidovMaximalEccentricityLineC2Range extension = 5207;
-  }
-  message In {
-    required double eccentricity = 1;
-  }
-  message Return {
-    required Interval result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message GraphLidovMaximalInclinationLine {
   extend Method {
     optional GraphLidovMaximalInclinationLine extension = 5209;
@@ -1567,21 +1511,6 @@ message GraphLidovMinimalEccentricityRightLineC2AndC1Max {
   }
   optional In in = 1;
   optional Out out = 2;
-}
-
-message GraphLidovMinimalInclinationLine {
-  extend Method {
-    optional GraphLidovMinimalInclinationLine extension = 5204;
-  }
-  message In {
-    required double inclination_in_degrees = 1;
-    required double c2 = 2;
-  }
-  message Return {
-    required double result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
 }
 
 message GraphLidovMinimalInclinationLineC2Range {
@@ -1977,22 +1906,6 @@ message IteratorGetVesselGuid {
   }
   message Return {
     required string result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message IteratorGetPlottableElements {
-  extend Method {
-    optional IteratorGetPlottableElements extension = 5212;
-  }
-  message In {
-    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
-                                   (disposable) = "DisposableIterator",
-                                   (is_subject) = true];
-  }
-  message Return {
-    required PlottableElements result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
