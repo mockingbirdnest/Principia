@@ -938,18 +938,20 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
   protected double requested_mission_duration => mission_duration_.value;
 
-  protected OrbitAnalysisPlotOptions plot_options => new() {
-      width = (int)Width(10),
-      time_series_height = (int)Height(1),
-      background_colour = XKCDColors.Black.rgba(),
-      axis_colour = XKCDColors.White.rgba(),
-      eccentricity_vector_colour = XKCDColors.Cornflower.rgba(),
-      inclination_colour = XKCDColors.Lavender.rgba(),
-      longitude_of_ascending_node_colour = XKCDColors.LightPink.rgba(),
-      distance_colour = XKCDColors.Sunflower.rgba(),
-      lidov_parameter_colour = XKCDColors.RoseRed.rgba(),
-      lidov_grid = лидов_grid_,
-  };
+  protected OrbitAnalysisPlotOptions? plot_options => show_graphs_
+      ? new() {
+          width = (int)Width(10),
+          time_series_height = (int)Height(1),
+          background_colour = XKCDColors.Black.rgba(),
+          axis_colour = XKCDColors.White.rgba(),
+          eccentricity_vector_colour = XKCDColors.Cornflower.rgba(),
+          inclination_colour = XKCDColors.Lavender.rgba(),
+          longitude_of_ascending_node_colour = XKCDColors.LightPink.rgba(),
+          distance_colour = XKCDColors.Sunflower.rgba(),
+          lidov_parameter_colour = XKCDColors.RoseRed.rgba(),
+          lidov_grid = лидов_grid_,
+      }
+      : null;
 
   private bool autodetect_recurrence_ = true;
   private int revolutions_per_cycle_ = 1;

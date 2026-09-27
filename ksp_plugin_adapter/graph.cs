@@ -22,6 +22,8 @@ internal class Graph : ScalingRenderer {
     } else {
       texture_.LoadRawTextureData(rgba32_begin, texture_.width * texture_.height * 4);
     }
+    texture_.Apply();
+    labels_.Clear();
   }
 
   public void AddLabel(double x,
@@ -36,15 +38,16 @@ internal class Graph : ScalingRenderer {
   }
 
   public void Render() {
-    if (dirty_) {
-      texture_.Apply();
-      dirty_ = false;
-    }
     UnityEngine.GUILayout.Box("",
                               UnityEngine.GUILayout.Width(texture_.width),
                               UnityEngine.GUILayout.Height(texture_.height));
     if (UnityEngine.Event.current.type == UnityEngine.EventType.Repaint) {
       var graph_rectangle = UnityEngine.GUILayoutUtility.GetLastRect();
+      graph_rectangle =
+          new UnityEngine.Rect(graph_rectangle.xMin,
+                               graph_rectangle.yMax,
+                               graph_rectangle.width,
+                               -graph_rectangle.height);
       UnityEngine.GUI.DrawTexture(graph_rectangle, texture_);
       foreach (var label in labels_) {
         var label_rectangle =
@@ -118,7 +121,6 @@ internal class Graph : ScalingRenderer {
 
   private Interval x_range_;
   private Interval y_range_;
-  private bool dirty_;
   private readonly List<Label> labels_ = new List<Label>();
   
   private readonly UnityEngine.Texture2D texture_;
