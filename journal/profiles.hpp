@@ -5,6 +5,7 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/push_pull_callback.hpp"
+#include "graphics/colours.hpp"
 #include "journal/player.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For symbols in interface.
@@ -63,6 +64,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_push_pull_callback;
+using namespace principia::graphics::_colours;
 using namespace principia::journal::_player;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_pile_up;

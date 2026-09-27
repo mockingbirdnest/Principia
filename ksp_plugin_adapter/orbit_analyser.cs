@@ -264,8 +264,8 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
             rightValue : 1);
       }
 
+      DrawAllGraphs(analysis);
       OrbitalElements elements = analysis.elements;
-      DrawAllGraphs(elements);
       OrbitRecurrence? recurrence = analysis.recurrence;
       EquatorialCrossings? equatorial_crossings =
           analysis.ground_track_equatorial_crossings;
@@ -538,18 +538,11 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
   double last_t_min_ = double.PositiveInfinity;
 
   private void DrawAllGraphs(OrbitAnalysis analysis) {
-    if (elements == null) {
-      return;
-    }
-    double t_min = double.PositiveInfinity;
-    if (!elements.plottable_elements.IteratorAtEnd()) {
-      t_min = elements.plottable_elements.IteratorGetPlottableElements().time;
-    }
-    if (t_min == last_t_min_ && !must_redraw_graphs_) {
+    if (analysis.first_time == last_t_min_ && !must_redraw_graphs_) {
       return;
     }
     must_redraw_graphs_ = false;
-    last_t_min_ = t_min;
+    last_t_min_ = analysis.first_time;
     DrawElementGraphs(analysis);
     DrawEccentricityVectorGraph(analysis);
     DrawЛидовGraph(analysis);

@@ -5,6 +5,39 @@ namespace astronomy {
 namespace _лидов {
 namespace internal {
 
+Angle const i_critical = ArcCos(Sqrt(3.0 / 5.0));
+
+// Returns c₁ such that an orbit with these values of c₁ and c₂ has no
+// eccentricity-inclination exchange.
+double FrozenLine(double const c₂) {
+  CHECK_LE(c₂, 0);
+  return 3.0 / 5.0 - 2 * Sqrt(-3.0 / 5.0 * c₂) - c₂;
+}
+
+// Returns c₁ such that the upper bound of eccentricity for an orbit with these
+// values of c₁ and c₂ is e.
+double MaximalEccentricityLine(double const e, double const c₂) {
+  double const e² = Pow<2>(e);
+  return 3.0 / 5.0 - c₂ + c₂ / e² - 3 * e² / 5.0;
+}
+
+// Returns the range of values of c₂ such that there exists a c₁ such that the
+// upper bound of eccentricity for an orbit with these values of c₁ and c₂
+// is e.
+Interval<double> ЛидовMaximalEccentricityLineC₂Range(double const e) {
+  double const e² = Pow<2>(e);
+  double const e⁴ = Pow<4>(e);
+  return {-3.0 * e⁴ / 5.0, 2.0 * e² / 5.0};
+}
+
+// Returns c₁ such that the lower bound of inclination for an orbit with these
+// values of c₁ and c₂ is i.
+double MinimalInclinationLine(Angle const i, double const c₂) {
+  double const cos_i = Cos(i);
+  double const cos²_i = Pow<2>(cos_i);
+  return cos²_i * (5.0 * cos²_i - 5.0 * c₂ - 3.0) / (5.0 * cos²_i - 3.0);
+}
+
 Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
                                  std::int64_t const width,
                                  std::int64_t const height,
@@ -17,7 +50,7 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
   Graph<double, double> graph(
       width, height, {-3.0 / 5.0, 2.0 / 5.0}, {0, 1}, background);
   graph.PlotVerticalLine(0, region_boundary_colour);
-  graph.Plot(ЛидовFrozenLine, {-3.0 / 5.0, 0}, region_boundary_colour);
+  graph.Plot(FrozenLine, {-3.0 / 5.0, 0}, region_boundary_colour);
   switch (grid) {
     case ЛидовGrid::None:
       graph.PlotHorizontalLine(0, region_boundary_colour);
@@ -33,7 +66,7 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
         double const e_max = ten_e_max / 10.0;
         graph.Plot(
             [e_max](double const c₂) {
-              return ЛидовMaximalEccentricityLine(e_max, c₂);
+              return MaximalEccentricityLine(e_max, c₂);
             },
             ЛидовMaximalEccentricityLineC₂Range(e_max),
             eccentricity_colour);
@@ -42,7 +75,7 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
         Angle const i_min = i_min_degrees * Degree;
         graph.Plot(
             [i_min](double const c₂) {
-              return ЛидовMinimalInclinationLine(i_min, c₂);
+              return MinimalInclinationLine(i_min, c₂);
             },
             ЛидовMinimalInclinationLineC₂Range(i_min),
             inclination_colour);
@@ -91,9 +124,6 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
       лидов_parameter_colour);
   return graph;
 }
-
-
-Angle const i_critical = ArcCos(Sqrt(3.0 / 5.0));
 
 double ЛидовMaximalInclinationLine(Angle const i, double const c₂) {
   double const cos_i = Cos(i);

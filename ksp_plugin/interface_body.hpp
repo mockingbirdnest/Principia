@@ -856,6 +856,7 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
     return t.has_value() ? new double(ToGameTime(plugin, *t)) : nullptr;
   };
 
+  analysis->first_time = ToGameTime(plugin, vessel_analysis->first_time());
   analysis->mission_duration = vessel_analysis->mission_duration() / Second;
   if (vessel_analysis->elements().has_value()) {
     auto const& elements = *vessel_analysis->elements();
