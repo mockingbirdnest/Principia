@@ -293,6 +293,25 @@ message OrbitAnalysis {
   required fixed64 apoapsis_distance_graph = 21 [(pointer_to) = "RGBA32 const"];
 }
 
+enum LidovGrid {
+  NONE = 0;
+  MAX_ECCENTRICITY_MIN_INCLINATION = 1;
+  MIN_ECCENTRICITY_MAX_INCLINATION = 2;
+}
+
+message OrbitAnalysisPlotOptions {
+  required int64 width = 1;
+  required int64 time_series_height = 2;
+  required fixed32 background_colour = 3;
+  required fixed32 axis_colour = 4;
+  required fixed32 eccentricity_vector_colour = 5;
+  required fixed32 inclination_colour = 6;
+  required fixed32 longitude_of_ascending_node_colour = 7;
+  required fixed32 distance_colour = 8;
+  required fixed32 lidov_parameter_colour = 9;
+  required LidovGrid lidov_grid = 10;
+}
+
 message Method {
   extensions 5000 to 5999;  // Last used: 5224.
 }
@@ -876,6 +895,7 @@ message FlightPlanGetCoastAnalysis {
     optional int32 days_per_cycle = 4;
     required int32 ground_track_revolution = 5;
     required int32 index = 6;
+    optional OrbitAnalysisPlotOptions plot_options = 7;
   }
   message Return {
     required OrbitAnalysis result = 1 [(is_produced) = true];
@@ -2787,6 +2807,7 @@ message VesselGetAnalysis {
     optional int32 revolutions_per_cycle = 5;
     optional int32 days_per_cycle = 6;
     required int32 ground_track_revolution = 7;
+    optional OrbitAnalysisPlotOptions plot_options = 8;
   }
   message Return {
     required OrbitAnalysis result = 1 [(is_produced) = true];

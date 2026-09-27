@@ -351,6 +351,9 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                 if (UnityEngine.GUILayout.Button(graph_icon_,
                                                  GUILayoutWidth(1))) {
                   show_graphs_ = !show_graphs_;
+                  if (show_graphs_) {
+                    must_redraw_graphs_ = true;
+                  }
                   ScheduleShrink();
                 }
               }
@@ -580,7 +583,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       лидов_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
     лидов_graph_.LoadPixels(analysis.lidov_graph);
-    if (show_max_e_min_i_lines_) {
+    if (лидов_grid_ == LidovGrid.MAX_ECCENTRICITY_MIN_INCLINATION) {
       for (int i_min_degrees = 10; i_min_degrees <= 30; i_min_degrees += 10) {
         Interval c2 =
             Interface.GraphLidovMinimalInclinationLineC2Range(i_min_degrees);
@@ -600,7 +603,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
                               UnityEngine.TextAnchor.UpperCenter);
       }
     }
-    if (show_min_e_max_i_lines_) {
+    if (лидов_grid_ == LidovGrid.MIN_ECCENTRICITY_MAX_INCLINATION) {
       for (int ten_e_min = 4; ten_e_min <= 9; ++ten_e_min) {
         double e_min = ten_e_min / 10.0;
         Interval c2 =
@@ -630,7 +633,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
     // then at the minimal c₂ for the line, instead of at either end of the c₂
     // interval depending on the inclination).  Likewise the eccentricity labels
     // on the equatorial curve are the for both max and min e.
-    if (show_max_e_min_i_lines_ || show_min_e_max_i_lines_) {
+    if (лидов_grid_ != LidovGrid.NONE) {
       for (int i_degrees = 10; i_degrees <= 60; i_degrees += 10) {
         Interval c2 =
             Interface.GraphLidovMaximalInclinationLineC2Range(i_degrees);
@@ -774,25 +777,25 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
               L10N.CacheFormat(
                   "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_ShowGrid"));
           if (UnityEngine.GUILayout.Toggle(
-                  show_max_e_min_i_lines_,
+                  лидов_grid_ == LidovGrid.MAX_ECCENTRICITY_MIN_INCLINATION,
                   L10N.CacheFormat(
                       "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MaxEMinI")) !=
-              show_max_e_min_i_lines_) {
-            show_max_e_min_i_lines_ = !show_max_e_min_i_lines_;
-            if (show_max_e_min_i_lines_) {
-              show_min_e_max_i_lines_ = false;
-            }
+              (лидов_grid_ == LidovGrid.MAX_ECCENTRICITY_MIN_INCLINATION)) {
+            лидов_grid_ =
+                лидов_grid_ == LidovGrid.MAX_ECCENTRICITY_MIN_INCLINATION
+                    ? LidovGrid.NONE
+                    : LidovGrid.MAX_ECCENTRICITY_MIN_INCLINATION;
             must_redraw_graphs_ = true;
           }
           if (UnityEngine.GUILayout.Toggle(
-                  show_min_e_max_i_lines_,
+                  лидов_grid_ == LidovGrid.MIN_ECCENTRICITY_MAX_INCLINATION,
                   L10N.CacheFormat(
                       "#Principia_OrbitAnalyser_Elements_Graphs_ЛидовParameters_MinEMaxI")) !=
-              show_min_e_max_i_lines_) {
-            show_min_e_max_i_lines_ = !show_min_e_max_i_lines_;
-            if (show_min_e_max_i_lines_) {
-              show_max_e_min_i_lines_ = false;
-            }
+              (лидов_grid_ == LidovGrid.MIN_ECCENTRICITY_MAX_INCLINATION)) {
+            лидов_grid_ =
+                лидов_grid_ == LidovGrid.MIN_ECCENTRICITY_MAX_INCLINATION
+                    ? LidovGrid.NONE
+                    : LidovGrid.MIN_ECCENTRICITY_MAX_INCLINATION;
             must_redraw_graphs_ = true;
           }
         }
@@ -935,6 +938,19 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
 
   protected double requested_mission_duration => mission_duration_.value;
 
+  protected OrbitAnalysisPlotOptions plot_options => new() {
+      width = (int)Width(10),
+      time_series_height = (int)Height(1),
+      background_colour = XKCDColors.Black.rgba(),
+      axis_colour = XKCDColors.White.rgba(),
+      eccentricity_vector_colour = XKCDColors.Cornflower.rgba(),
+      inclination_colour = XKCDColors.Lavender.rgba(),
+      longitude_of_ascending_node_colour = XKCDColors.LightPink.rgba(),
+      distance_colour = XKCDColors.Sunflower.rgba(),
+      lidov_parameter_colour = XKCDColors.RoseRed.rgba(),
+      lidov_grid = лидов_grid_,
+  };
+
   private bool autodetect_recurrence_ = true;
   private int revolutions_per_cycle_ = 1;
   private int days_per_cycle_ = 1;
@@ -963,8 +979,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
   private Graph лидов_graph_;
   private Graph eccentricity_vector_graph_;
   private bool must_redraw_graphs_ = false;
-  private bool show_max_e_min_i_lines_ = true;
-  private bool show_min_e_max_i_lines_ = false;
+  private LidovGrid лидов_grid_ = LidovGrid.MAX_ECCENTRICITY_MIN_INCLINATION;
 }
 
 internal class CurrentOrbitAnalyser : OrbitAnalyser {
@@ -982,7 +997,8 @@ internal class CurrentOrbitAnalyser : OrbitAnalyser {
     return plugin.VesselGetAnalysis(predicted_vessel.id.ToString(),
                                     manual_revolutions_per_cycle,
                                     manual_days_per_cycle,
-                                    ground_track_revolution);
+                                    ground_track_revolution,
+                                    plot_options);
   }
 
   protected override string ButtonText(string orbit_description) {
@@ -1021,7 +1037,8 @@ internal class PlannedOrbitAnalyser : OrbitAnalyser {
                                              manual_revolutions_per_cycle,
                                              manual_days_per_cycle,
                                              ground_track_revolution,
-                                             index);
+                                             index,
+                                             plot_options);
   }
 
   protected override string ButtonText(string orbit_description) {

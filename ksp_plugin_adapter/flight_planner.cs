@@ -633,7 +633,8 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
         revolutions_per_cycle   : null,
         days_per_cycle          : null,
         ground_track_revolution : 0,
-        index);
+        index,
+        null);
     string orbit_description = null;
     orbital_period = coast_analysis.elements?.nodal_period;
     if (coast_analysis.primary_index.HasValue) {

@@ -456,7 +456,7 @@ void OrbitAnalyser::Analysis::ResetRecurrence() {
   }
 }
 
-void OrbitAnalyser::Analysis::SetPlotOptions(PlotOptions options) {
+void OrbitAnalyser::Analysis::SetPlotOptions(PlotOptions const& options) {
   if (plot_options_ == options) {
     return;
   }

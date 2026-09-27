@@ -129,8 +129,8 @@ class OrbitAnalyser {
     // `!elements.has_value()`, updating `equatorial_crossings` if needed.
     void ResetRecurrence();
 
-    // Computes all graphs if the options have changed.
-    void SetPlotOptions(PlotOptions options);
+    // Recomputes graphs if the options have changed.
+    void SetPlotOptions(PlotOptions const& options);
 
    private:
     explicit Analysis(Instant const& first_time);

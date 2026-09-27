@@ -292,7 +292,8 @@ OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
     int const* const revolutions_per_cycle,
     int const* const days_per_cycle,
     int const ground_track_revolution,
-    int const index) {
+    int const index,
+    OrbitAnalysisPlotOptions const* const plot_options) {
   journal::Method<journal::FlightPlanGetCoastAnalysis> m(
       {plugin,
        vessel_guid,
@@ -307,7 +308,8 @@ OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
                        *plugin,
                        /*revolutions_per_cycle=*/revolutions_per_cycle,
                        /*days_per_cycle=*/days_per_cycle,
-                       /*ground_track_revolution=*/ground_track_revolution);
+                       /*ground_track_revolution=*/ground_track_revolution,
+                       plot_options);
   analysis->progress_of_next_analysis = flight_plan.progress_of_analysis(index);
   return m.Return(analysis);
 }
