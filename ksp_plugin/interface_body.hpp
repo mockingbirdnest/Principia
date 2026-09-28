@@ -856,6 +856,8 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
     CHECK_GT(*revolutions_per_cycle, 0);
     CHECK_NE(*days_per_cycle, 0);
   }
+  analysis->lidov_graph_labels =
+      new TypedIterator<std::span<Label const>>({}, &plugin);
   if (vessel_analysis == nullptr) {
     return analysis;
   }
@@ -973,9 +975,6 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
     analysis->lidov_graph = vessel_analysis->лидов_graph()->pixels().data();
     analysis->lidov_graph_labels = new TypedIterator<std::span<Label const>>(
         vessel_analysis->лидов_graph()->labels(), &plugin);
-  } else {
-    analysis->lidov_graph_labels =
-        new TypedIterator<std::span<Label const>>({}, &plugin);
   }
   if (vessel_analysis->semimajor_axis_graph() != nullptr) {
     analysis->semimajor_axis_graph =
