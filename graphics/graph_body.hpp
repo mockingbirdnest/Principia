@@ -83,8 +83,27 @@ void Graph<Abscissa, Ordinate>::PlotHorizontalLine(Ordinate y,
 }
 
 template<affine Abscissa, affine Ordinate>
+template<graph_point<Abscissa, Ordinate> Point>
+void Graph<Abscissa, Ordinate>::AddLabel(Point const& point,
+                                         std::string text,
+                                         RGB24 const colour,
+                                         Label::TextPlacement const placement) {
+  auto const& [x, y] = point;
+  labels_.emplace_back(abscissa_to_pixel(x),
+                       ordinate_to_pixel(y),
+                       std::move(text),
+                       colour,
+                       placement);
+}
+
+template<affine Abscissa, affine Ordinate>
 std::vector<RGBA32> const& Graph<Abscissa, Ordinate>::pixels() const {
   return pixels_;
+}
+
+template<affine Abscissa, affine Ordinate>
+std::vector<Label> const& Graph<Abscissa, Ordinate>::labels() const {
+  return labels_;
 }
 
 template<affine Abscissa, affine Ordinate>

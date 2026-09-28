@@ -38,6 +38,7 @@ using namespace principia::geometry::_permutation;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
+using namespace principia::graphics::_graph;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_orbit_analyser;
@@ -232,6 +233,15 @@ inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                           right.length_integration_tolerance) &&
          NaNIndependentEq(left.speed_integration_tolerance,
                           right.speed_integration_tolerance);
+}
+
+inline bool operator==(GraphLabel const& left,
+                       GraphLabel const& right) {
+  return left.x == right.x &&
+         left.y == right.y &&
+         left.text == right.text &&
+         left.colour == right.colour &&
+         left.anchor == right.anchor;
 }
 
 inline bool operator==(Intensity const& left, Intensity const& right) {
@@ -961,6 +971,11 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
   }
   if (vessel_analysis->лидов_graph() != nullptr) {
     analysis->lidov_graph = vessel_analysis->лидов_graph()->pixels().data();
+    analysis->lidov_graph_labels = new TypedIterator<std::span<Label const>>(
+        vessel_analysis->лидов_graph()->labels(), &plugin);
+  } else {
+    analysis->lidov_graph_labels =
+        new TypedIterator<std::span<Label const>>({}, &plugin);
   }
   if (vessel_analysis->semimajor_axis_graph() != nullptr) {
     analysis->semimajor_axis_graph =

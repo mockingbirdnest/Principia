@@ -268,6 +268,27 @@ message SolarTimesOfNodes {
   required Interval mean_solar_times_of_descending_nodes = 2;
 }
 
+// Mirrors UnityEngine.TextAnchor, including the numeric values.
+enum TextAnchor {
+  UPPER_LEFT    = 0;
+  UPPER_CENTER  = 1;
+  UPPER_RIGHT   = 2;
+  MIDDLE_LEFT   = 3;
+  MIDDLE_CENTER = 4;
+  MIDDLE_RIGHT  = 5;
+  LOWER_LEFT    = 6;
+  LOWER_CENTER  = 7;
+  LOWER_RIGHT   = 8;
+}
+
+message GraphLabel {
+  required int64 x = 1;
+  required int64 y = 2;
+  required string text = 3;
+  required fixed32 colour = 4;
+  required TextAnchor anchor = 5;
+}
+
 message OrbitAnalysis {
   required double progress_of_next_analysis = 1;
   optional int32 primary_index = 2 [(is_produced) = true];
@@ -291,6 +312,9 @@ message OrbitAnalysis {
   required fixed64 argument_of_periapsis_graph = 19 [(pointer_to) = "RGBA32 const"];
   required fixed64 periapsis_distance_graph = 20 [(pointer_to) = "RGBA32 const"];
   required fixed64 apoapsis_distance_graph = 21 [(pointer_to) = "RGBA32 const"];
+  required fixed64 lidov_graph_labels = 23 [(pointer_to) = "Iterator",
+                                            (disposable) = "DisposableIterator",
+                                            (is_produced) = true];
 }
 
 enum LidovGrid {
@@ -313,7 +337,7 @@ message OrbitAnalysisPlotOptions {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5224.
+  extensions 5000 to 5999;  // Last used: 5225.
 }
 
 message ActivatePlayer {
@@ -1461,93 +1485,6 @@ message GetVersion {
   optional Out out = 2;
 }
 
-message GraphLidovMaximalInclinationLine {
-  extend Method {
-    optional GraphLidovMaximalInclinationLine extension = 5209;
-  }
-  message In {
-    required double inclination_in_degrees = 1;
-    required double c2 = 2;
-  }
-  message Return {
-    required double result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message GraphLidovMaximalInclinationLineC2Range {
-  extend Method {
-    optional GraphLidovMaximalInclinationLineC2Range extension = 5210;
-  }
-  message In {
-    required double inclination_in_degrees = 1;
-  }
-  message Return {
-    required Interval result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message GraphLidovMinimalEccentricityLeftLine {
-  extend Method {
-    optional GraphLidovMinimalEccentricityLeftLine extension = 5211;
-  }
-  message In {
-    required double eccentricity = 1;
-    required double c2 = 2;
-  }
-  message Return {
-    required double result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message GraphLidovMinimalEccentricityLeftLineC2Range {
-  extend Method {
-    optional GraphLidovMinimalEccentricityLeftLineC2Range extension = 5213;
-  }
-  message In {
-    required double eccentricity = 1;
-  }
-  message Return {
-    required Interval result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message GraphLidovMinimalEccentricityRightLineC2AndC1Max {
-  extend Method {
-    optional GraphLidovMinimalEccentricityRightLineC2AndC1Max extension = 5214;
-  }
-  message In {
-    required double eccentricity = 1;
-  }
-  message Out {
-    required double c2 = 1;
-    required double c1_max = 2;
-  }
-  optional In in = 1;
-  optional Out out = 2;
-}
-
-message GraphLidovMinimalInclinationLineC2Range {
-  extend Method {
-    optional GraphLidovMinimalInclinationLineC2Range extension = 5205;
-  }
-  message In {
-    required double inclination_in_degrees = 1;
-  }
-  message Return {
-    required Interval result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message HasEncounteredApocalypse {
   extend Method {
     optional HasEncounteredApocalypse extension = 5102;
@@ -1861,6 +1798,28 @@ message IteratorGetDistinguishedPointsXYZ {
   }
   message Return {
     required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetGraphLabel {
+  extend Method {
+    optional IteratorGetGraphLabel extension = 5225;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
+  }
+  message Return {
+    // A GraphLabel contains a non-owned string, but that means we need to
+    // return it with a custom marshaller, and the way to do that is to return
+    // it by pointer.  Since we do a conversion from
+    // principia::graphics::_graph::Label to the interchange type GraphLabel,
+    // this means it must be produced.
+    required GraphLabel result = 1 [(is_produced) = true];
+    required fixed64 address = 2 [(address_of) = "result"];
   }
   optional In in = 1;
   optional Return return = 3;

@@ -583,80 +583,11 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       лидов_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
     лидов_graph_.LoadPixels(analysis.lidov_graph);
-    if (лидов_grid_ == LidovGrid.MAX_ECCENTRICITY_MIN_INCLINATION) {
-      for (int i_min_degrees = 10; i_min_degrees <= 30; i_min_degrees += 10) {
-        Interval c2 =
-            Interface.GraphLidovMinimalInclinationLineC2Range(i_min_degrees);
-        лидов_graph_.AddLabel(c2.max,
-                              0,
-                              $"{i_min_degrees}°",
-                              XKCDColors.Lavender,
-                              UnityEngine.TextAnchor.UpperCenter);
-      }
-      for (int i_min_degrees = 40; i_min_degrees <= 80; i_min_degrees += 10) {
-        Interval c2 =
-            Interface.GraphLidovMinimalInclinationLineC2Range(i_min_degrees);
-        лидов_graph_.AddLabel(c2.min,
-                              0,
-                              $"{i_min_degrees}°",
-                              XKCDColors.Lavender,
-                              UnityEngine.TextAnchor.UpperCenter);
-      }
-    }
-    if (лидов_grid_ == LidovGrid.MIN_ECCENTRICITY_MAX_INCLINATION) {
-      for (int ten_e_min = 4; ten_e_min <= 9; ++ten_e_min) {
-        double e_min = ten_e_min / 10.0;
-        Interval c2 =
-            Interface.GraphLidovMinimalEccentricityLeftLineC2Range(e_min);
-        лидов_graph_.AddLabel(c2.min,
-                              0,
-                              $".{ten_e_min}",
-                              XKCDColors.Cornflower,
-                              UnityEngine.TextAnchor.UpperCenter);
-      }
-      for (int ten_e_min = 6; ten_e_min <= 9; ++ten_e_min) {
-        double e_min = ten_e_min / 10.0;
-        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(
-            e_min,
-            out double c2,
-            out double _);
-        лидов_graph_.AddLabel(c2,
-                              0,
-                              $".{ten_e_min}",
-                              XKCDColors.Cornflower,
-                              UnityEngine.TextAnchor.UpperCenter);
-      }
-    }
-    // The inclination labels on the frozen curve are the same for both the max
-    // and min lines (because the inclination is frozen there); it is easiest to
-    // position them based on the maximal inclination lines (because they are
-    // then at the minimal c₂ for the line, instead of at either end of the c₂
-    // interval depending on the inclination).  Likewise the eccentricity labels
-    // on the equatorial curve are the for both max and min e.
-    if (лидов_grid_ != LidovGrid.NONE) {
-      for (int i_degrees = 10; i_degrees <= 60; i_degrees += 10) {
-        Interval c2 =
-            Interface.GraphLidovMaximalInclinationLineC2Range(i_degrees);
-        double c1 =
-            Interface.GraphLidovMaximalInclinationLine(i_degrees, c2.min);
-        лидов_graph_.AddLabel(c2.min,
-                              c1,
-                              $"{i_degrees}°",
-                              XKCDColors.Lavender,
-                              UnityEngine.TextAnchor.MiddleRight);
-      }
-      for (int ten_e = 2; ten_e <= 9; ++ten_e) {
-        double e = ten_e / 10.0;
-        Interface.GraphLidovMinimalEccentricityRightLineC2AndC1Max(
-            e,
-            out double c2,
-            out double c1);
-        лидов_graph_.AddLabel(c2,
-                              c1,
-                              $" .{ten_e}",
-                              XKCDColors.Cornflower,
-                              UnityEngine.TextAnchor.MiddleLeft);
-      }
+    for (;
+         !analysis.lidov_graph_labels.IteratorAtEnd();
+         analysis.lidov_graph_labels.IteratorIncrement()) {
+      лидов_graph_.AddLabel(analysis.lidov_graph_labels.
+                                IteratorGetGraphLabel());
     }
   }
 

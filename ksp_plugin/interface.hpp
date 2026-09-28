@@ -95,6 +95,7 @@ bool operator==(EquatorialCrossings const& left,
                 EquatorialCrossings const& right);
 bool operator==(FlightPlanAdaptiveStepParameters const& left,
                 FlightPlanAdaptiveStepParameters const& right);
+bool operator==(GraphLabel const& left, GraphLabel const& right);
 bool operator==(Intensity const& left, Intensity const& right);
 bool operator==(Interval const& left, Interval const& right);
 bool operator==(NavigationFrameParameters const& left,

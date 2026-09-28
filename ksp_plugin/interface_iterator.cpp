@@ -22,6 +22,8 @@ namespace interface {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::graphics::_colours;
+using namespace principia::graphics::_graph;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
@@ -126,6 +128,38 @@ XYZ __cdecl principia__IteratorGetDistinguishedPointsXYZ(
       [](DistinguishedPoints<World>::value_type const& v) -> XYZ {
         auto const& [_, degrees_of_freedom] = v;
         return ToXYZ(degrees_of_freedom.position());
+      }));
+}
+
+GraphLabel* __cdecl principia__IteratorGetGraphLabel(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetGraphLabel> m({iterator});
+  CHECK(iterator != nullptr);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<std::span<Label const>> const*>(iterator));
+  return m.Return(
+      typed_iterator->Get<GraphLabel*>([](Label const& label) -> GraphLabel* {
+        auto* const result = new GraphLabel{
+            .x = label.x,
+            .y = label.y,
+            .text = label.text.data(),
+            .colour = std::bit_cast<std::uint32_t>(Opaque(label.colour)),
+        };
+        switch (label.placement) {
+          case Label::TextPlacement::Above:
+            result->anchor = TextAnchor::LOWER_CENTER;
+            break;
+          case Label::TextPlacement::Below:
+            result->anchor = TextAnchor::UPPER_CENTER;
+            break;
+          case Label::TextPlacement::Left:
+            result->anchor = TextAnchor::MIDDLE_RIGHT;
+            break;
+          case Label::TextPlacement::Right:
+            result->anchor = TextAnchor::MIDDLE_LEFT;
+            break;
+        }
+        return result;
       }));
 }
 

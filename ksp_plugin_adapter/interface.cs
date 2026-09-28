@@ -326,6 +326,10 @@ internal static partial class Interface {
   internal static uint rgba(this UnityEngine.Color color) {
     return new RGBA32{color = color}.rgba;
   }
+ 
+  internal static UnityEngine.Color32 FromRGBA(uint color) {
+    return new RGBA32{rgba = color}.color;
+  }
 }
 
 } // namespace ksp_plugin_adapter

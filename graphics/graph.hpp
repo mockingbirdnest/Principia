@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <string>
 #include <ranges>
 #include <vector>
 
@@ -33,6 +34,20 @@ concept graph_point = requires(Point const& p) {
   } -> std::convertible_to<Ordinate>;
 };
 
+struct Label {
+  enum class TextPlacement {
+    Above,
+    Below,
+    Left,
+    Right,
+  };
+  int64_t x;
+  int64_t y;
+  std::string text;
+  RGB24 colour;
+  TextPlacement placement;
+};
+
 template<affine Abscissa, affine Ordinate>
 class Graph {
  public:
@@ -63,7 +78,14 @@ class Graph {
       std::optional<Interval<Ordinate>> y_range = std::nullopt);
   void PlotHorizontalLine(Ordinate y, RGB24 colour);
 
+  template<graph_point<Abscissa, Ordinate> Point>
+  void AddLabel(Point const& point,
+                std::string text,
+                RGB24 colour,
+                Label::TextPlacement placement);
+
   std::vector<RGBA32> const& pixels() const;
+  std::vector<Label> const& labels() const;
   std::int64_t width() const;
   std::int64_t height() const;
 
@@ -86,11 +108,13 @@ class Graph {
   Inverse<Difference<Abscissa>> const inverse_pixel_width_ = 1 / pixel_width_;
   Inverse<Difference<Ordinate>> const inverse_pixel_height_ = 1 / pixel_height_;
   std::vector<RGBA32> pixels_;
+  std::vector<Label> labels_;
 };
 
 }  // namespace internal
 
 using internal::Graph;
+using internal::Label;
 using internal::RGBA32;
 using internal::RGB24;
 

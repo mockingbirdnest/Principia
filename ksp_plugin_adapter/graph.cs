@@ -26,14 +26,11 @@ internal class Graph : ScalingRenderer {
     labels_.Clear();
   }
 
-  public void AddLabel(double x,
-                       double y,
-                       string text,
-                       UnityEngine.Color colour,
-                       UnityEngine.TextAnchor anchor) {
+  public void AddLabel(GraphLabel label) {
     labels_.Add(new Label{
-        x_pixels = AbscissaToPixel(x), y_pixels = OrdinateToPixel(y),
-        text = text, colour = colour, anchor = anchor,
+        x = label.x, y = label.y, text = label.text,
+        colour = Interface.FromRGBA(label.colour),
+        anchor = (UnityEngine.TextAnchor)label.anchor
     });
   }
 
@@ -51,8 +48,8 @@ internal class Graph : ScalingRenderer {
       UnityEngine.GUI.DrawTexture(graph_rectangle, texture_);
       foreach (var label in labels_) {
         var label_rectangle =
-            new UnityEngine.Rect(graph_rectangle.xMin + label.x_pixels,
-                                 graph_rectangle.yMax - label.y_pixels,
+            new UnityEngine.Rect(graph_rectangle.xMin + label.x,
+                                 graph_rectangle.yMax - label.y,
                                  Width(2),
                                  Height(1));
         switch (label.anchor) {
@@ -103,24 +100,14 @@ internal class Graph : ScalingRenderer {
     }
   }
 
-  private int AbscissaToPixel(double x) {
-    return (int)(texture_.width * (x - x_range_.min) / x_range_.measure);
-  }
-
-  private int OrdinateToPixel(double y) {
-    return (int)(texture_.height * (y - y_range_.min) / y_range_.measure);
-  }
-
   private struct Label {
-    public int x_pixels;
-    public int y_pixels;
+    public long x;
+    public long y;
     public string text;
     public UnityEngine.Color colour;
     public UnityEngine.TextAnchor anchor;
   };
 
-  private Interval x_range_;
-  private Interval y_range_;
   private readonly List<Label> labels_ = new List<Label>();
   
   private readonly UnityEngine.Texture2D texture_;
