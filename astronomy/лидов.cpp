@@ -218,14 +218,14 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
       graph.AddLabel(std::pair{c₂.min, c₁},
                      absl::StrCat(i_degrees, "°"),
                      inclination_colour,
-                     Label::TextPlacement::Right);
+                     Label::TextPlacement::Left);
     }
     for (int ten_e = 2; ten_e <= 9; ++ten_e) {
       double e = ten_e / 10.0;
       double const c₂ = MinimalEccentricityRightLineC₂(e);
       double const c₁ = MinimalEccentricityRightLineC₁Max(e);
       graph.AddLabel(std::pair{c₂, c₁},
-                     absl::StrCat(ten_e),
+                     absl::StrCat(" .", ten_e),
                      eccentricity_colour,
                      Label::TextPlacement::Right);
     }

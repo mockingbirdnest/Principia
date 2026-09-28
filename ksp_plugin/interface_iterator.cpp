@@ -141,7 +141,7 @@ GraphLabel* __cdecl principia__IteratorGetGraphLabel(
       typed_iterator->Get<GraphLabel*>([](Label const& label) -> GraphLabel* {
         auto* const result = new GraphLabel{
             .x = label.x,
-            .y = label.y,
+            .y = -label.y,
             .text = label.text.data(),
             .colour = std::bit_cast<std::uint32_t>(Opaque(label.colour)),
         };
