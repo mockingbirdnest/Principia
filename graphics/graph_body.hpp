@@ -3,6 +3,8 @@
 #include "graphics/graph.hpp"
 
 #include <optional>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace principia {
