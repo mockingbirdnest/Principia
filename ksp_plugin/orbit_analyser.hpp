@@ -15,6 +15,8 @@
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
+#include "graphics/colours.hpp"
+#include "graphics/graph.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -36,6 +38,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
+using namespace principia::graphics::_colours;
+using namespace principia::graphics::_graph;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
@@ -43,8 +47,6 @@ using namespace principia::physics::_discrete_trajectory;
 using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_rotating_body;
 using namespace principia::quantities::_quantities;
-using namespace principia::graphics::_colours;
-using namespace principia::graphics::_graph;
 
 // The `OrbitAnalyser` asynchronously integrates a trajectory, and computes
 // orbital elements, recurrence, and ground track properties of the resulting

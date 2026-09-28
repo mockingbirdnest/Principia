@@ -8,6 +8,8 @@
 #include "absl/log/log.h"
 #include "base/not_null.hpp"
 #include "geometry/rp2_point.hpp"
+#include "graphics/colours.hpp"
+#include "graphics/graph.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
