@@ -952,21 +952,25 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
   }
   if (plot_options != nullptr) {
     vessel_analysis->SetPlotOptions({
-    .width = plot_options->width,
-    .time_series_height = plot_options->time_series_height,
-         .background_colour = std::bit_cast<RGBA32>(plot_options->background_colour),
-         .axis_colour = std::bit_cast<RGBA32>(plot_options->axis_colour).colour,
-         .eccentricity_vector_colour = std::bit_cast<RGBA32>(plot_options->eccentricity_vector_colour
-         ).colour,
-         .inclination_colour = std::bit_cast<RGBA32>(plot_options->inclination_colour
-         ).colour,
-         .longitude_of_ascending_node_colour = std::bit_cast<RGBA32>(plot_options->longitude_of_ascending_node_colour
-         ).colour,
-         .distance_colour = std::bit_cast<RGBA32>(plot_options->distance_colour
-         ).colour,
-         .лидов_parameter_colour = std::bit_cast<RGBA32>(plot_options->lidov_parameter_colour
-         ).colour,
-         .лидов_grid = static_cast<ЛидовGrid>(plot_options->lidov_grid),
+        .width = plot_options->width,
+        .time_series_height = plot_options->time_series_height,
+        .background_colour =
+            std::bit_cast<RGBA32>(plot_options->background_colour),
+        .axis_colour = std::bit_cast<RGBA32>(plot_options->axis_colour).colour,
+        .eccentricity_vector_colour =
+            std::bit_cast<RGBA32>(plot_options->eccentricity_vector_colour)
+                .colour,
+        .inclination_colour =
+            std::bit_cast<RGBA32>(plot_options->inclination_colour).colour,
+        .longitude_of_ascending_node_colour =
+            std::bit_cast<RGBA32>(
+                plot_options->longitude_of_ascending_node_colour)
+                .colour,
+        .distance_colour =
+            std::bit_cast<RGBA32>(plot_options->distance_colour).colour,
+        .лидов_parameter_colour =
+            std::bit_cast<RGBA32>(plot_options->lidov_parameter_colour).colour,
+        .лидов_grid = static_cast<ЛидовGrid>(plot_options->lidov_grid),
     });
   }
   if (vessel_analysis->eccentricity_vector_graph() != nullptr) {
