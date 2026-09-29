@@ -229,19 +229,23 @@ class BurnEditor : ScalingRenderer {
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
           if (UnityEngine.GUILayout.Button(
-              L10N.CacheFormat("#Principia_BurnEditor_ActiveEngines"))) {
+                  ConditionalCheckMark(Actuator.ACTIVE_ENGINES) +
+                  L10N.CacheFormat("#Principia_BurnEditor_ActiveEngines"))) {
             engine_warning_ = "";
             ComputeEngineCharacteristics();
             ReformatΔv();
             changed = true;
           } else if (UnityEngine.GUILayout.Button(
-              L10N.CacheFormat("#Principia_BurnEditor_ActiveRCS"))) {
+                         ConditionalCheckMark(Actuator.ACTIVE_RCS) +
+                         L10N.CacheFormat("#Principia_BurnEditor_ActiveRCS"))) {
             engine_warning_ = "";
             ComputeRCSCharacteristics();
             ReformatΔv();
             changed = true;
           } else if (UnityEngine.GUILayout.Button(
-              L10N.CacheFormat("#Principia_BurnEditor_InstantImpulse"))) {
+                         ConditionalCheckMark(Actuator.INSTANT_IMPULSE) +
+                         L10N.CacheFormat(
+                             "#Principia_BurnEditor_InstantImpulse"))) {
             engine_warning_ = "";
             UseTheForceLuke();
             ReformatΔv();
@@ -486,11 +490,13 @@ class BurnEditor : ScalingRenderer {
   }
 
   private void ComputeEngineCharacteristics() {
+    actuator_ = Actuator.ACTIVE_ENGINES;
     ModuleEngines[] active_engines =
         (from part in vessel_.parts
          select (from PartModule module in part.Modules
                  where (module as ModuleEngines)?.EngineIgnited == true
-                 select module as ModuleEngines)).SelectMany(x => x).ToArray();
+                 select module as ModuleEngines)).
+        SelectMany(x => x).ToArray();
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     double[] thrusts =
         (from engine in active_engines
@@ -520,11 +526,12 @@ class BurnEditor : ScalingRenderer {
   }
 
   private void ComputeRCSCharacteristics() {
-    ModuleRCS[] active_rcs = (from part in vessel_.parts
-                              select (from PartModule module in part.Modules
-                                      where module is ModuleRCS module_rcs &&
-                                            module_rcs.rcsEnabled
-                                      select module as ModuleRCS)).
+    actuator_ = Actuator.ACTIVE_RCS;
+    ModuleRCS[] active_rcs =
+        (from part in vessel_.parts
+         select (from PartModule module in part.Modules
+                 where module is ModuleRCS module_rcs && module_rcs.rcsEnabled
+                 select module as ModuleRCS)).
         SelectMany(x => x).ToArray();
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     // NOTE(egg): NathanKell informs me that in >= 1.0.5, RCS has a useZaxis
@@ -704,7 +711,12 @@ class BurnEditor : ScalingRenderer {
     return true;
   }
 
+  private string ConditionalCheckMark(Actuator actuator) {
+    return actuator_ == actuator ? "✓" : "";
+  }
+
   private void UseTheForceLuke() {
+    actuator_ = Actuator.INSTANT_IMPULSE;
     // The burn can last at most (9.80665 / scale) s.
     const double scale = 1;
     // This, together with `scale = 1`, ensures that, when `initial_time` is
@@ -749,6 +761,7 @@ class BurnEditor : ScalingRenderer {
   private readonly DifferentialSlider previous_coast_duration_;
   private readonly ReferenceFrameSelector<NavigationFrameParameters>
       reference_frame_selector_;
+  private Actuator actuator_;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
   private double duration_;
