@@ -1,6 +1,7 @@
 #include "ksp_plugin/orbit_analyser.hpp"
 
 #include <algorithm>
+#include <memory>
 #include <optional>
 #include <utility>
 #include <vector>
