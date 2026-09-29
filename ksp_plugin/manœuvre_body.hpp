@@ -331,6 +331,7 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
 template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::WriteToMessage(
     not_null<serialization::Manoeuvre*> const message) const {
+  message->set_actuator(burn_.actuator);
   thrust().WriteToMessage(message->mutable_thrust());
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   specific_impulse().WriteToMessage(message->mutable_specific_impulse());
@@ -346,7 +347,10 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
     not_null<Ephemeris<InertialFrame>*> const ephemeris) {
   bool const is_pre_levi_civita = message.has_direction() ||
                                   message.has_duration();
-  LOG_IF(WARNING, is_pre_levi_civita) << "Reading pre-Levi-Civita Manœuvre";
+  bool const is_pre_lichnerowicz = !message.has_actuator();
+  LOG_IF(WARNING, is_pre_lichnerowicz)
+      << "Reading pre-" << (is_pre_levi_civita ? "Levi-Civita" : "Lichnerowicz")
+      << " Manœuvre";
 
   Timing timing;
   timing.initial_time = Instant::ReadFromMessage(message.initial_time());
@@ -368,8 +372,13 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
     intensity = Intensity::ReadFromMessage(message.intensity());
   }
 
+  serialization::Actuator const actuator =
+      is_pre_lichnerowicz ? serialization::Actuator::ACTIVE_ENGINES
+                          : message.actuator();
+
   Burn const burn{*intensity,
                   timing,
+                  actuator,
                   thrust,
                   specific_impulse,
                   RigidReferenceFrame<InertialFrame, Frame>::ReadFromMessage(

@@ -105,6 +105,7 @@ class Manœuvre {
   struct Burn final {
     Intensity intensity;
     Timing timing;
+    serialization::Actuator actuator;
     Force thrust;
     // Specific impulse by mass, because specific impulse by weight is insane.
     // This is defined as the ratio of thrust to mass flow.
