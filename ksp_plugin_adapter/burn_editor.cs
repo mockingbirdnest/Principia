@@ -230,6 +230,10 @@ class BurnEditor : ScalingRenderer {
           // We use buttons and not toggles below because repeatedly clicking a
           // button has an effect (it recomputes the thrust based on the current
           // orientation) while a toggle cannot be re-clicked.
+          // The buttons are disabled when there is no engine or RCS,
+          // respectively.  But we preserve the thrust that was previously
+          // computed for the burn: this makes it possible to edit the burn in
+          // the Tracking Station where we cannot the engines and RCS.
 
           engine_warning_ = "";
           bool has_active_engine = HasActiveEngine();
