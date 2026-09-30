@@ -233,7 +233,7 @@ class BurnEditor : ScalingRenderer {
           // The buttons are disabled when there is no engine or RCS,
           // respectively.  But we preserve the thrust that was previously
           // computed for the burn: this makes it possible to edit the burn in
-          // the Tracking Station where we cannot the engines and RCS.
+          // the Tracking Station where we cannot see the engines and RCS.
 
           engine_warning_ = "";
           bool has_active_engine = HasActiveEngine();
