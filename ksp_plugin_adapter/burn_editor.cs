@@ -126,7 +126,6 @@ class BurnEditor : ScalingRenderer {
               { plotting_frame_parameters.PrimaryIndices[0] },
       });
     }
-    UnityEngine.Debug.Log("Constructor");
   }
 
   public enum Event {
@@ -207,11 +206,10 @@ class BurnEditor : ScalingRenderer {
         return Event.Deleted;
       }
     }
-    UnityEngine.Debug.Log("Render1 " + minimized + " " + actuator_);
     if (minimized) {
       return Event.None;
     }
-    UnityEngine.Debug.Log("Render2 " + first_time_rendering_);
+
     using (new UnityEngine.GUILayout.VerticalScope()) {
       // When we are first rendered, the `initial_mass_in_tonnes_` will just have
       // been set.  If we have fallen back to instant impulse, we should use this
@@ -229,6 +227,10 @@ class BurnEditor : ScalingRenderer {
         reference_frame_selector_.Hide();
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
+          // We use buttons and not toggles below because repeatedly clicking a
+          // button has an effect (it recomputes the thrust based on the current
+          // orientation) while a toggle cannot be re-clicked.
+
           engine_warning_ = "";
           bool has_active_engine = HasActiveEngine();
           if (!has_active_engine) {
@@ -237,22 +239,14 @@ class BurnEditor : ScalingRenderer {
                     "#Principia_BurnEditor_Warning_NoActiveEngines");
           }
           UnityEngine.GUI.enabled = has_active_engine;
-          if (UnityEngine.GUILayout.Toggle(actuator_ == Actuator.ACTIVE_ENGINES,
-                                           L10N.CacheFormat(
-                                               "#Principia_BurnEditor_ActiveEngines"))) {
-            // We go through this path if `actuator_` is `ACTIVE_ENGINES`
-            // (which happens if the burn was constructed using engines) even if
-            // the current scene doesn't know about the engines (for instance,
-            // the Tracking Station).  In that case, we don't want to effect a
-            // change.
-            if (has_active_engine) {
-              UnityEngine.Debug.Log("ACTIVE_ENGINE");
-              actuator_ = Actuator.ACTIVE_ENGINES;
-              ComputeEngineCharacteristics(out thrust_in_kilonewtons_,
-                                           out specific_impulse_in_seconds_g0_);
-              ReformatΔv();
-              changed = true;
-            }
+          if (UnityEngine.GUILayout.Button(
+                  ConditionalCheckMark(Actuator.ACTIVE_ENGINES) +
+                  L10N.CacheFormat("#Principia_BurnEditor_ActiveEngines"))) {
+            actuator_ = Actuator.ACTIVE_ENGINES;
+            ComputeEngineCharacteristics(out thrust_in_kilonewtons_,
+                                         out specific_impulse_in_seconds_g0_);
+            ReformatΔv();
+            changed = true;
           }
 
           bool has_active_rcs = HasActiveRCS();
@@ -261,26 +255,21 @@ class BurnEditor : ScalingRenderer {
                 L10N.CacheFormat("#Principia_BurnEditor_Warning_NoActiveRCS");
           }
           UnityEngine.GUI.enabled = has_active_rcs;
-          if (UnityEngine.GUILayout.Toggle(actuator_ == Actuator.ACTIVE_RCS,
-                                           L10N.CacheFormat(
-                                               "#Principia_BurnEditor_ActiveRCS"))) {
-            // See the comment for engines, above.
-            if (has_active_rcs) {
-              UnityEngine.Debug.Log("ACTIVE_RCS");
-              actuator_ = Actuator.ACTIVE_RCS;
-              ComputeRCSCharacteristics(out thrust_in_kilonewtons_,
-                                        out specific_impulse_in_seconds_g0_);
-              ReformatΔv();
-              changed = true;
-            }
+          if (UnityEngine.GUILayout.Button(
+                  ConditionalCheckMark(Actuator.ACTIVE_RCS) +
+                  L10N.CacheFormat("#Principia_BurnEditor_ActiveRCS"))) {
+            actuator_ = Actuator.ACTIVE_RCS;
+            ComputeRCSCharacteristics(out thrust_in_kilonewtons_,
+                                      out specific_impulse_in_seconds_g0_);
+            ReformatΔv();
+            changed = true;
           }
 
           UnityEngine.GUI.enabled = true;
-          if (UnityEngine.GUILayout.Toggle(
-                  actuator_ == Actuator.INSTANT_IMPULSE,
+          if (UnityEngine.GUILayout.Button(
+                  ConditionalCheckMark(Actuator.INSTANT_IMPULSE) +
                   L10N.CacheFormat("#Principia_BurnEditor_InstantImpulse"))) {
             if (actuator_ != Actuator.INSTANT_IMPULSE) {
-              UnityEngine.Debug.Log("INSTANT_IMPULSE");
               actuator_  = Actuator.INSTANT_IMPULSE;
               UseTheForceLuke(out thrust_in_kilonewtons_,
                               out specific_impulse_in_seconds_g0_);
@@ -445,7 +434,6 @@ class BurnEditor : ScalingRenderer {
 
   public void Reset(NavigationManoeuvre manœuvre) {
     Burn burn = manœuvre.burn;
-    UnityEngine.Debug.Log("Reset1 "+ actuator_);
     actuator_ = burn.actuator;
     thrust_in_kilonewtons_ = burn.thrust_in_kilonewtons;
     specific_impulse_in_seconds_g0_ = burn.specific_impulse_in_seconds_g0;
@@ -464,11 +452,6 @@ class BurnEditor : ScalingRenderer {
     duration_ = manœuvre.duration;
     initial_mass_in_tonnes_ = manœuvre.initial_mass_in_tonnes;
     ReformatΔv();
-    UnityEngine.Debug.Log("Reset2 "+ actuator_+
-                          " " +
-                          thrust_in_kilonewtons_ +
-                          " " +
-                          specific_impulse_in_seconds_g0_);
   }
 
   public Burn Burn() {
@@ -620,6 +603,10 @@ class BurnEditor : ScalingRenderer {
     ComputeRCSCharacteristics(out double thrust_in_kilonewtons,
                               out double specific_impulse_in_seconds_g0);
     return thrust_in_kilonewtons != 0;
+  }
+
+  private string ConditionalCheckMark(Actuator actuator) {
+    return actuator_ == actuator ? "✓" : "";
   }
 
   private string FormatΔvComponent(double metres_per_second,
