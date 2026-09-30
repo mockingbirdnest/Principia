@@ -217,6 +217,11 @@ Instant const& Manœuvre<InertialFrame, Frame>::time_of_half_Δv() const {
 }
 
 template<typename InertialFrame, typename Frame>
+serialization::Actuator Manœuvre<InertialFrame, Frame>::actuator() const {
+  return burn_.actuator;
+}
+
+template<typename InertialFrame, typename Frame>
 Force const& Manœuvre<InertialFrame, Frame>::thrust() const {
   return burn_.thrust;
 }

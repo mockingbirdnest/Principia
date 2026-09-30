@@ -144,6 +144,7 @@ class Manœuvre {
   Instant const& time_of_half_Δv() const;
 
   // Individual burn fields.
+  serialization::Actuator actuator() const;
   Force const& thrust() const;
   SpecificImpulse const& specific_impulse() const;
   not_null<std::shared_ptr<RigidReferenceFrame<InertialFrame, Frame> const>>
