@@ -156,6 +156,7 @@ class FlightPlanTest : public testing::Test {
     timing.initial_time = initial_time;
     return {intensity,
             timing,
+            serialization::ACTIVE_ENGINES,
             thrust,
             specific_impulse,
             make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
@@ -170,6 +171,7 @@ class FlightPlanTest : public testing::Test {
     timing.initial_time = t0_ + 1 * Second;
     return {intensity,
             timing,
+            serialization::ACTIVE_ENGINES,
             /*thrust=*/1 * Newton,
             /*specific_impulse=*/1 * Newton * Second / Kilogram,
             make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
@@ -190,6 +192,7 @@ class FlightPlanTest : public testing::Test {
     timing.initial_time = t0_ + 1 * Second;
     return {intensity,
             timing,
+            serialization::ACTIVE_ENGINES,
             /*thrust=*/1 * Newton,
             /*specific_impulse=*/1 * Newton * Second / Kilogram,
             make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
@@ -509,6 +512,7 @@ TEST_F(FlightPlanTest, Issue2331) {
   timing0.initial_time = J2000 + 3894.6399999993528 * Second;
   NavigationManœuvre::Burn const burn0{intensity0,
                                        timing0,
+                                       serialization::ACTIVE_ENGINES,
                                        thrust,
                                        specific_impulse,
                                        frame,
@@ -523,6 +527,7 @@ TEST_F(FlightPlanTest, Issue2331) {
   timing1.initial_time = J2000 + 4258.1383894665723 * Second;
   NavigationManœuvre::Burn const burn1{intensity1,
                                        timing1,
+                                       serialization::ACTIVE_ENGINES,
                                        thrust,
                                        specific_impulse,
                                        frame,
@@ -537,6 +542,7 @@ TEST_F(FlightPlanTest, Issue2331) {
   timing2.initial_time = J2000 + 3894.6399999993528 * Second;
   NavigationManœuvre::Burn const burn2{intensity2,
                                        timing2,
+                                       serialization::ACTIVE_ENGINES,
                                        thrust,
                                        specific_impulse,
                                        frame,

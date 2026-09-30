@@ -284,6 +284,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   MockManœuvre<Barycentric, Navigation>::Burn const burn{
       intensity,
       timing,
+      serialization::ACTIVE_ENGINES,
       10 * Kilo(Newton),
       30 * Second * StandardGravity,
       std::unique_ptr<RigidReferenceFrame<Barycentric, Navigation> const>(
