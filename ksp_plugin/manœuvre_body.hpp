@@ -377,6 +377,10 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
     intensity = Intensity::ReadFromMessage(message.intensity());
   }
 
+  // This assumes that pre-Lichnerowicz manœuvres were all using active engines,
+  // which could be wrong, in which case the flight plan will change the first
+  // time the manœuvre is expanded.  It's not ideal, but then before
+  // Lichnerowicz this used to happen at each scene change.🤷
   serialization::Actuator const actuator =
       is_pre_lichnerowicz ? serialization::Actuator::ACTIVE_ENGINES
                           : message.actuator();
