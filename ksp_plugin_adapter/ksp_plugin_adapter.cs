@@ -792,7 +792,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   // Checks that the user didn't mess with the solar system.
-  [MethodImpl(MethodImplOptions.NoOptimization)]
   public void ValidateSolarSystem() {
     var ksp_celestial_names = new SortedSet<string>();
     var ksp_not_in_principia = new SortedSet<string>();
