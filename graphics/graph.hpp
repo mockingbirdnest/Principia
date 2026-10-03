@@ -1,8 +1,8 @@
 #pragma once
 
 #include <optional>
-#include <string>
 #include <ranges>
+#include <string>
 #include <vector>
 
 #include "base/algebra.hpp"
@@ -78,6 +78,7 @@ class Graph {
       std::optional<Interval<Ordinate>> y_range = std::nullopt);
   void PlotHorizontalLine(Ordinate y, RGB24 colour);
 
+  // The string is passed by value and moved into this object.
   template<graph_point<Abscissa, Ordinate> Point>
   void AddLabel(Point const& point,
                 std::string text,
@@ -85,6 +86,7 @@ class Graph {
                 Label::TextPlacement placement);
 
   std::vector<RGBA32> const& pixels() const;
+  // The labels are in the order in which `AddLabel` was called.
   std::vector<Label> const& labels() const;
   std::int64_t width() const;
   std::int64_t height() const;

@@ -21,7 +21,7 @@ double FrozenLine(double const c₂) {
 // values of c₁ and c₂ is e.
 double MaximalEccentricityLine(double const e, double const c₂) {
   double const e² = Pow<2>(e);
-  return 3.0 / 5.0 - c₂ + c₂ / e² - 3 * e² / 5.0;
+  return 3.0 / 5.0 - c₂ + c₂ / e² - 3.0 * e² / 5.0;
 }
 
 // Returns the range of values of c₂ such that there exists a c₁ such that the
@@ -48,7 +48,8 @@ double MaximalInclinationLine(Angle const i, double const c₂) {
 // is i.
 Interval<double> MaximalInclinationLineC₂Range(Angle const i) {
   double const cos_i = Cos(i);
-  return {i > i_critical ? -Pow<2>(1.0 - 5.0 * Cos(2.0 * i)) / 60.0 : 0,
+  double const cos²_i = Pow<2>(cos_i);
+  return {i > i_critical ? -Pow<2>(6.0 - 10.0 * cos²_i) / 60.0 : 0.0,
           2.0 / 5.0};
 }
 
@@ -68,8 +69,8 @@ Interval<double> MinimalInclinationLineC₂Range(Angle const i) {
   double const cos²_i = Pow<2>(cos_i);
   return i > i_critical
              ? Interval<double>{cos²_i - 3.0 / 5.0,
-                                -Pow<2>(1.0 - 5.0 * Cos(2 * i)) / 60.0}
-             : Interval<double>{0, cos²_i - 3.0 / 5.0};
+                                -Pow<2>(6.0 - 10.0 * cos²_i) / 60.0}
+             : Interval<double>{0.0, cos²_i - 3.0 / 5.0};
 }
 
 // Returns the value of c₁ such that the lower bound of eccentricity for an
@@ -92,7 +93,7 @@ Interval<double> MinimalEccentricityLeftLineC₂Range(double const e) {
 // e.
 double MinimalEccentricityRightLineC₂(double const e) {
   double const e² = Pow<2>(e);
-  return 2.0 * e² / 5;
+  return 2.0 * e² / 5.0;
 }
 
 // Returns the maximal possible value of c₁ that can be attained when c₂ has the
@@ -185,15 +186,15 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
             inclination_colour);
       }
       for (int ten_e_min = 4; ten_e_min <= 9; ++ten_e_min) {
-        double e_min = ten_e_min / 10.0;
-        Interval c₂ = MinimalEccentricityLeftLineC₂Range(e_min);
+        double const e_min = ten_e_min * 0.1;
+        Interval const c₂ = MinimalEccentricityLeftLineC₂Range(e_min);
         graph.AddLabel(std::pair{c₂.min, 0.0},
                        absl::StrCat(".", ten_e_min),
                        eccentricity_colour,
                        Label::TextPlacement::Below);
       }
       for (int ten_e_min = 6; ten_e_min <= 9; ++ten_e_min) {
-        double const e_min = ten_e_min / 10.0;
+        double const e_min = ten_e_min * 0.1;
         double const c₂ = MinimalEccentricityRightLineC₂(e_min);
         graph.AddLabel(std::pair{c₂, 0.0},
                        absl::StrCat(".", ten_e_min),
@@ -211,17 +212,15 @@ Graph<double, double> ЛидовGraph(OrbitalElements const& elements,
   if (grid != ЛидовGrid::None) {
     for (int i_degrees = 10; i_degrees <= 60; i_degrees += 10) {
       Angle const i = i_degrees * Degree;
-      Interval c₂ =
-          MaximalInclinationLineC₂Range(i);
-      double c₁ =
-          MaximalInclinationLine(i, c₂.min);
+      Interval const c₂ = MaximalInclinationLineC₂Range(i);
+      double const c₁ = MaximalInclinationLine(i, c₂.min);
       graph.AddLabel(std::pair{c₂.min, c₁},
                      absl::StrCat(i_degrees, "°"),
                      inclination_colour,
                      Label::TextPlacement::Left);
     }
     for (int ten_e = 2; ten_e <= 9; ++ten_e) {
-      double e = ten_e / 10.0;
+      double const e = ten_e * 0.1;
       double const c₂ = MinimalEccentricityRightLineC₂(e);
       double const c₁ = MinimalEccentricityRightLineC₁Max(e);
       graph.AddLabel(std::pair{c₂, c₁},

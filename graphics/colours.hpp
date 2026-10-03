@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <type_traits>
 
 namespace principia {
 namespace graphics {
@@ -20,6 +21,10 @@ struct RGBA32 {
 
   friend bool operator==(RGBA32 const& left, RGBA32 const& right) = default;
 };
+
+static_assert(std::is_standard_layout_v<RGBA32>,
+              "RGBA32 must be a standard-layout type for compatibility with "
+              "UnityEngine.Color32");
 
 constexpr RGBA32 Opaque(RGB24 const colour) {
   return {.colour = colour, .alpha = 255};
