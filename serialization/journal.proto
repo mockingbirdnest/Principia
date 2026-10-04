@@ -923,6 +923,12 @@ message FlightPlanGetCoastAnalysis {
     optional int32 days_per_cycle = 4;
     required int32 ground_track_revolution = 5;
     required int32 index = 6;
+    // Omitting the `plot_options` means that no graphs are needed; they are not
+    // (re-)computed, and may be absent from the resulting `OrbitAnalysis`.
+    // Note that the resulting `OrbitAnalysis` may still have graphs even in the
+    // absence of `plot_options`, if they had previously been passed and no new
+    // analysis is available (this corresponds to the user opening and then
+    // closing the graphs while an analysis is ongoing).
     optional OrbitAnalysisPlotOptions plot_options = 7;
   }
   message Return {
