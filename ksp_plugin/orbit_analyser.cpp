@@ -23,7 +23,6 @@ namespace _orbit_analyser {
 namespace internal {
 
 using namespace principia::base::_stoppable_thread;
-using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
