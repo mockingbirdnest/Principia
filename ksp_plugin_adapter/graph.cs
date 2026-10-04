@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,11 +9,12 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class Graph : ScalingRenderer {
-  public Graph(int width, int height) {
+  public unsafe Graph(int width, int height) {
     texture_ = new UnityEngine.Texture2D(width, height, UnityEngine.TextureFormat.RGBA32, mipChain: false);
-    all_black_ = new byte[width * height * 4];
+    all_black_ = new byte[width * height * sizeof(UnityEngine.Color32)];
+    const int offsetof_a = 3;
     for (int i = 0; i < width * height; ++i) {
-      all_black_[4 * i + 3] = 255;
+      all_black_[sizeof(UnityEngine.Color32) * i + offsetof_a] = 255;
     }
   }
 

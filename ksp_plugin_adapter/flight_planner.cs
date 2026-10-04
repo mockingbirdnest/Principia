@@ -628,13 +628,16 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
 
   private bool RenderCoast(int index, out double? orbital_period) {
     string vessel_guid = predicted_vessel.id.ToString();
+    // No `plot_options`, i.e., no plots, because this analysis serves only to
+    // describe the coast; we do not show an analyser window for it, and thus no
+    // graphs.
     var coast_analysis = plugin.FlightPlanGetCoastAnalysis(
         vessel_guid,
         revolutions_per_cycle   : null,
         days_per_cycle          : null,
         ground_track_revolution : 0,
         index,
-        null);
+        plot_options            : null);
     string orbit_description = null;
     orbital_period = coast_analysis.elements?.nodal_period;
     if (coast_analysis.primary_index.HasValue) {

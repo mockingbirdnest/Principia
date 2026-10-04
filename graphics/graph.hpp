@@ -41,8 +41,8 @@ struct Label {
     Left,
     Right,
   };
-  int64_t x;
-  int64_t y;
+  std::int64_t x;
+  std::int64_t y;
   std::string text;
   RGB24 colour;
   TextPlacement placement;
