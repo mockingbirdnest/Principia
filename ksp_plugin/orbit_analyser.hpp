@@ -111,7 +111,6 @@ class OrbitAnalyser {
   // still likely be separate from analysis.
   class Analysis {
    public:
-
     Instant const& first_time() const;
     Time const& mission_duration() const;
     RotatingBody<Barycentric> const* primary() const;
