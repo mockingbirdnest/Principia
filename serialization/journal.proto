@@ -289,10 +289,25 @@ message GraphLabel {
   required TextAnchor anchor = 5;
 }
 
+message ElementGraphs {
+  required fixed64 eccentricity_vector_graph = 1 [(pointer_to) = "RGBA32 const"];
+  required fixed64 lidov_graph = 2 [(pointer_to) = "RGBA32 const"];
+  required fixed64 semimajor_axis_graph = 3 [(pointer_to) = "RGBA32 const"];
+  required fixed64 eccentricity_graph = 4 [(pointer_to) = "RGBA32 const"];
+  required fixed64 inclination_graph = 5 [(pointer_to) = "RGBA32 const"];
+  required fixed64 longitude_of_ascending_node_graph = 6 [(pointer_to) = "RGBA32 const"];
+  required fixed64 argument_of_periapsis_graph = 7 [(pointer_to) = "RGBA32 const"];
+  required fixed64 periapsis_distance_graph = 8 [(pointer_to) = "RGBA32 const"];
+  required fixed64 apoapsis_distance_graph = 9 [(pointer_to) = "RGBA32 const"];
+  required fixed64 lidov_graph_labels = 10 [(pointer_to) = "Iterator",
+                                            (disposable) = "DisposableIterator",
+                                            (is_produced) = true];
+}
+
 message OrbitAnalysis {
   required double progress_of_next_analysis = 1;
   optional int32 primary_index = 2 [(is_produced) = true];
-  required double first_time = 22;
+  required double first_time = 13;
   required double mission_duration = 3;
   optional OrbitalElements elements = 4 [(is_produced) = true];
   optional OrbitRecurrence recurrence = 5 [(is_produced) = true];
@@ -303,18 +318,7 @@ message OrbitAnalysis {
   required fixed64 recurrence_address = 8 [(address_of) = "recurrence"];
   required fixed64 ground_track_equatorial_crossings_address = 9 [(address_of) = "ground_track_equatorial_crossings"];
   required fixed64 solar_times_of_nodes_address = 12 [(address_of) = "solar_times_of_nodes"];
-  required fixed64 eccentricity_vector_graph = 13 [(pointer_to) = "RGBA32 const"];
-  required fixed64 lidov_graph = 14 [(pointer_to) = "RGBA32 const"];
-  required fixed64 semimajor_axis_graph = 15 [(pointer_to) = "RGBA32 const"];
-  required fixed64 eccentricity_graph = 16 [(pointer_to) = "RGBA32 const"];
-  required fixed64 inclination_graph = 17 [(pointer_to) = "RGBA32 const"];
-  required fixed64 longitude_of_ascending_node_graph = 18 [(pointer_to) = "RGBA32 const"];
-  required fixed64 argument_of_periapsis_graph = 19 [(pointer_to) = "RGBA32 const"];
-  required fixed64 periapsis_distance_graph = 20 [(pointer_to) = "RGBA32 const"];
-  required fixed64 apoapsis_distance_graph = 21 [(pointer_to) = "RGBA32 const"];
-  required fixed64 lidov_graph_labels = 23 [(pointer_to) = "Iterator",
-                                            (disposable) = "DisposableIterator",
-                                            (is_produced) = true];
+  required ElementGraphs element_graphs = 14;
 }
 
 enum LidovGrid {

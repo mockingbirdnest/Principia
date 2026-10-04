@@ -858,7 +858,7 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
     CHECK_GT(*revolutions_per_cycle, 0);
     CHECK_NE(*days_per_cycle, 0);
   }
-  analysis->lidov_graph_labels =
+  analysis->element_graphs.lidov_graph_labels =
       new TypedIterator<std::span<Label const>>({}, &plugin);
   if (vessel_analysis == nullptr) {
     return analysis;
@@ -973,42 +973,28 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .лидов_grid = static_cast<ЛидовGrid>(plot_options->lidov_grid),
     });
   }
-  if (vessel_analysis->eccentricity_vector_graph() != nullptr) {
-    analysis->eccentricity_vector_graph =
-        vessel_analysis->eccentricity_vector_graph()->pixels().data();
-  }
-  if (vessel_analysis->лидов_graph() != nullptr) {
-    analysis->lidov_graph = vessel_analysis->лидов_graph()->pixels().data();
-    analysis->lidov_graph_labels = new TypedIterator<std::span<Label const>>(
-        vessel_analysis->лидов_graph()->labels(), &plugin);
-  }
-  if (vessel_analysis->semimajor_axis_graph() != nullptr) {
-    analysis->semimajor_axis_graph =
-        vessel_analysis->semimajor_axis_graph()->pixels().data();
-  }
-  if (vessel_analysis->eccentricity_graph() != nullptr) {
-    analysis->eccentricity_graph =
-        vessel_analysis->eccentricity_graph()->pixels().data();
-  }
-  if (vessel_analysis->inclination_graph() != nullptr) {
-    analysis->inclination_graph =
-        vessel_analysis->inclination_graph()->pixels().data();
-  }
-  if (vessel_analysis->longitude_of_ascending_node_graph() != nullptr) {
-    analysis->longitude_of_ascending_node_graph =
-        vessel_analysis->longitude_of_ascending_node_graph()->pixels().data();
-  }
-  if (vessel_analysis->argument_of_periapsis_graph() != nullptr) {
-    analysis->argument_of_periapsis_graph =
-        vessel_analysis->argument_of_periapsis_graph()->pixels().data();
-  }
-  if (vessel_analysis->periapsis_distance_graph() != nullptr) {
-    analysis->periapsis_distance_graph =
-        vessel_analysis->periapsis_distance_graph()->pixels().data();
-  }
-  if (vessel_analysis->apoapsis_distance_graph() != nullptr) {
-    analysis->apoapsis_distance_graph =
-        vessel_analysis->apoapsis_distance_graph()->pixels().data();
+  if (vessel_analysis->element_graphs() != nullptr) {
+    auto const& graphs = *vessel_analysis->element_graphs();
+    analysis->element_graphs.eccentricity_vector_graph =
+        graphs.eccentricity_vector_graph.pixels().data();
+    analysis->element_graphs.lidov_graph = graphs.лидов_graph->pixels().data();
+    analysis->element_graphs.lidov_graph_labels =
+        new TypedIterator<std::span<Label const>>(graphs.лидов_graph->labels(),
+                                                  &plugin);
+    analysis->element_graphs.semimajor_axis_graph =
+        graphs.semimajor_axis_graph.pixels().data();
+    analysis->element_graphs.eccentricity_graph =
+        graphs.eccentricity_graph.pixels().data();
+    analysis->element_graphs.inclination_graph =
+        graphs.inclination_graph.pixels().data();
+    analysis->element_graphs.longitude_of_ascending_node_graph =
+        graphs.longitude_of_ascending_node_graph.pixels().data();
+    analysis->element_graphs.argument_of_periapsis_graph =
+        graphs.argument_of_periapsis_graph.pixels().data();
+    analysis->element_graphs.periapsis_distance_graph =
+        graphs.periapsis_distance_graph.pixels().data();
+    analysis->element_graphs.apoapsis_distance_graph =
+        graphs.apoapsis_distance_graph.pixels().data();
   }
   return analysis;
 }

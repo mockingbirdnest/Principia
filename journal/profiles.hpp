@@ -34,6 +34,7 @@ using interface::ConfigurationAdaptiveStepParameters;
 using interface::ConfigurationDownsamplingParameters;
 using interface::ConfigurationFixedStepParameters;
 using interface::CoordinateSystem;
+using interface::ElementGraphs;
 using interface::EquatorialCrossings;
 using interface::FlightPlanAdaptiveStepParameters;
 using interface::GraphLabel;

@@ -561,32 +561,34 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       periapsis_graph_ = new Graph((int)Width(10), (int)Height(1));
       apoapsis_graph_ = new Graph((int)Width(10), (int)Height(1));
     }
-    a_graph_.LoadPixels(analysis.semimajor_axis_graph);
-    e_graph_.LoadPixels(analysis.eccentricity_graph);
-    i_graph_.LoadPixels(analysis.inclination_graph);
-    Ω_graph_.LoadPixels(analysis.longitude_of_ascending_node_graph);
-    ω_graph_.LoadPixels(analysis.argument_of_periapsis_graph);
-    periapsis_graph_.LoadPixels(analysis.periapsis_distance_graph);
-    apoapsis_graph_.LoadPixels(analysis.apoapsis_distance_graph);
+    a_graph_.LoadPixels(analysis.element_graphs.semimajor_axis_graph);
+    e_graph_.LoadPixels(analysis.element_graphs.eccentricity_graph);
+    i_graph_.LoadPixels(analysis.element_graphs.inclination_graph);
+    Ω_graph_.LoadPixels(analysis.element_graphs.
+                            longitude_of_ascending_node_graph);
+    ω_graph_.LoadPixels(analysis.element_graphs.argument_of_periapsis_graph);
+    periapsis_graph_.LoadPixels(
+        analysis.element_graphs.periapsis_distance_graph);
+    apoapsis_graph_.LoadPixels(analysis.element_graphs.apoapsis_distance_graph);
   }
-
 
   private void DrawEccentricityVectorGraph(OrbitAnalysis analysis) {
     if (eccentricity_vector_graph_ == null) {
       eccentricity_vector_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
-    eccentricity_vector_graph_.LoadPixels(analysis.eccentricity_vector_graph);
+    eccentricity_vector_graph_.LoadPixels(
+        analysis.element_graphs.eccentricity_vector_graph);
   }
 
   private void DrawЛидовGraph(OrbitAnalysis analysis) {
     if (лидов_graph_ == null) {
       лидов_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
-    лидов_graph_.LoadPixels(analysis.lidov_graph);
+    лидов_graph_.LoadPixels(analysis.element_graphs.lidov_graph);
     for (;
-         !analysis.lidov_graph_labels.IteratorAtEnd();
-         analysis.lidov_graph_labels.IteratorIncrement()) {
-      лидов_graph_.AddLabel(analysis.lidov_graph_labels.
+         !analysis.element_graphs.lidov_graph_labels.IteratorAtEnd();
+         analysis.element_graphs.lidov_graph_labels.IteratorIncrement()) {
+      лидов_graph_.AddLabel(analysis.element_graphs.lidov_graph_labels.
                                 IteratorGetGraphLabel());
     }
   }

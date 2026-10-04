@@ -54,18 +54,7 @@ using namespace principia::quantities::_quantities;
 // orbit.
 class OrbitAnalyser {
  public:
-  // The analysis stores the computed orbital characteristics.  It is publicly
-  // mutable via `SetRecurrence` and `ResetRecurrence` to allow the caller to
-  // consider a nominal recurrence other than the one deduced from the orbital
-  // elements: analysing the precomputed ground track with respect to a
-  // different recurrence is relatively cheap, so it is inconvenient to wait for
-  // a whole new analysis to do so, but doing it at every frame is still
-  // wasteful, so we cache that in the `Analysis`.
-  // It is likewise mutable via `SetPlotOptions`, for the same reasons.
-  // Eventually it may make sense to make plotting asynchronous, but it should
-  // still likely be separate from analysis.
-  class Analysis {
-   public:
+  struct ElementGraphs {
     struct PlotOptions {
       // The width of all graphs.
       std::int64_t width;
@@ -91,10 +80,37 @@ class OrbitAnalyser {
       RGB24 лидов_parameter_colour;
       ЛидовGrid лидов_grid;
 
-
       friend bool operator==(PlotOptions const& left,
                              PlotOptions const& right) = default;
     };
+
+    Graph<double, double> eccentricity_vector_graph;
+    // The Лидов graph can be changed independently of the others by changing
+    // the grid options, and Graph is not assignable (the dimensions are fixed
+    // at construction), hence the indirection.
+    not_null<std::unique_ptr<Graph<double, double>>> лидов_graph;
+    Graph<Instant, Length> semimajor_axis_graph;
+    Graph<Instant, double> eccentricity_graph;
+    Graph<Instant, Angle> inclination_graph;
+    Graph<Instant, Angle> longitude_of_ascending_node_graph;
+    Graph<Instant, Angle> argument_of_periapsis_graph;
+    Graph<Instant, Length> periapsis_distance_graph;
+    Graph<Instant, Length> apoapsis_distance_graph;
+    PlotOptions plot_options_;
+  };
+
+  // The analysis stores the computed orbital characteristics.  It is publicly
+  // mutable via `SetRecurrence` and `ResetRecurrence` to allow the caller to
+  // consider a nominal recurrence other than the one deduced from the orbital
+  // elements: analysing the precomputed ground track with respect to a
+  // different recurrence is relatively cheap, so it is inconvenient to wait for
+  // a whole new analysis to do so, but doing it at every frame is still
+  // wasteful, so we cache that in the `Analysis`.
+  // It is likewise mutable via `SetPlotOptions`, for the same reasons.
+  // Eventually it may make sense to make plotting asynchronous, but it should
+  // still likely be separate from analysis.
+  class Analysis {
+   public:
 
     Instant const& first_time() const;
     Time const& mission_duration() const;
@@ -115,16 +131,6 @@ class OrbitAnalyser {
     std::optional<OrbitGroundTrack::EquatorCrossingLongitudes> const&
     equatorial_crossings() const;
 
-    Graph<double, double> const* eccentricity_vector_graph() const;
-    Graph<double, double> const* лидов_graph() const;
-    Graph<Instant, Length> const* semimajor_axis_graph() const;
-    Graph<Instant, double> const* eccentricity_graph() const;
-    Graph<Instant, Angle> const* inclination_graph() const;
-    Graph<Instant, Angle> const* longitude_of_ascending_node_graph() const;
-    Graph<Instant, Angle> const* argument_of_periapsis_graph() const;
-    Graph<Instant, Length> const* periapsis_distance_graph() const;
-    Graph<Instant, Length> const* apoapsis_distance_graph() const;
-
     // Sets `recurrence`, updating `equatorial_crossings` if needed.
     void SetRecurrence(OrbitRecurrence const& recurrence);
     // Resets `recurrence` to a value deduced from `*elements` by
@@ -132,8 +138,11 @@ class OrbitAnalyser {
     // `!elements.has_value()`, updating `equatorial_crossings` if needed.
     void ResetRecurrence();
 
+    // Null if the plot options have not been set.
+    ElementGraphs const* element_graphs() const;
+
     // Recomputes graphs if the options have changed.
-    void SetPlotOptions(PlotOptions const& options);
+    void SetPlotOptions(ElementGraphs::PlotOptions const& options);
 
    private:
     explicit Analysis(Instant const& first_time);
@@ -151,17 +160,7 @@ class OrbitAnalyser {
     std::optional<OrbitGroundTrack> ground_track_;
     std::optional<OrbitGroundTrack::EquatorCrossingLongitudes>
         equatorial_crossings_;
-
-    std::optional<PlotOptions> plot_options_;
-    std::unique_ptr<Graph<double, double>> eccentricity_vector_graph_;
-    std::unique_ptr<Graph<double, double>> лидов_graph_;
-    std::unique_ptr<Graph<Instant, Length>> semimajor_axis_graph_;
-    std::unique_ptr<Graph<Instant, double>> eccentricity_graph_;
-    std::unique_ptr<Graph<Instant, Angle>> inclination_graph_;
-    std::unique_ptr<Graph<Instant, Angle>> longitude_of_ascending_node_graph_;
-    std::unique_ptr<Graph<Instant, Angle>> argument_of_periapsis_graph_;
-    std::unique_ptr<Graph<Instant, Length>> periapsis_distance_graph_;
-    std::unique_ptr<Graph<Instant, Length>> apoapsis_distance_graph_;
+    std::unique_ptr<ElementGraphs> element_graphs_;
 
     friend class OrbitAnalyser;
   };

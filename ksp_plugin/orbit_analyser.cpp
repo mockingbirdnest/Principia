@@ -23,6 +23,7 @@ namespace _orbit_analyser {
 namespace internal {
 
 using namespace principia::base::_stoppable_thread;
+using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_integrators;
 using namespace principia::physics::_kepler_orbit;
 using namespace principia::physics::_massive_body;
@@ -393,50 +394,6 @@ OrbitAnalyser::Analysis::equatorial_crossings() const {
   return equatorial_crossings_;
 }
 
-Graph<double, double> const*
-OrbitAnalyser::Analysis::eccentricity_vector_graph() const {
-  return eccentricity_vector_graph_.get();
-}
-
-Graph<double, double> const* OrbitAnalyser::Analysis::лидов_graph() const {
-  return лидов_graph_.get();
-}
-
-Graph<Instant, Length> const* OrbitAnalyser::Analysis::semimajor_axis_graph()
-    const {
-  return semimajor_axis_graph_.get();
-}
-
-Graph<Instant, double> const* OrbitAnalyser::Analysis::eccentricity_graph()
-    const {
-  return eccentricity_graph_.get();
-}
-
-Graph<Instant, Angle> const* OrbitAnalyser::Analysis::inclination_graph()
-    const {
-  return inclination_graph_.get();
-}
-
-Graph<Instant, Angle> const*
-OrbitAnalyser::Analysis::longitude_of_ascending_node_graph() const {
-  return longitude_of_ascending_node_graph_.get();
-}
-
-Graph<Instant, Angle> const*
-OrbitAnalyser::Analysis::argument_of_periapsis_graph() const {
-  return argument_of_periapsis_graph_.get();
-}
-
-Graph<Instant, Length> const*
-OrbitAnalyser::Analysis::periapsis_distance_graph() const {
-  return periapsis_distance_graph_.get();
-}
-
-Graph<Instant, Length> const* OrbitAnalyser::Analysis::apoapsis_distance_graph()
-    const {
-  return apoapsis_distance_graph_.get();
-}
-
 void OrbitAnalyser::Analysis::SetRecurrence(
     OrbitRecurrence const& recurrence) {
   if (recurrence_ != recurrence) {
@@ -457,14 +414,20 @@ void OrbitAnalyser::Analysis::ResetRecurrence() {
   }
 }
 
-void OrbitAnalyser::Analysis::SetPlotOptions(PlotOptions const& options) {
-  if (plot_options_ == options) {
+OrbitAnalyser::ElementGraphs const* OrbitAnalyser::Analysis::element_graphs()
+    const {
+  return element_graphs_.get();
+}
+
+void OrbitAnalyser::Analysis::SetPlotOptions(
+    ElementGraphs::PlotOptions const& options) {
+  if (element_graphs_ != nullptr && element_graphs_->plot_options_ == options) {
     return;
   }
   if (!elements_.has_value()) {
     return;
   }
-  лидов_graph_ = std::make_unique<Graph<double, double>>(
+  auto лидов_graph = make_not_null_unique<Graph<double, double>>(
       ЛидовGraph(*elements_,
                  options.width,
                  options.width,
@@ -474,62 +437,67 @@ void OrbitAnalyser::Analysis::SetPlotOptions(PlotOptions const& options) {
                  options.eccentricity_vector_colour,
                  options.лидов_parameter_colour,
                  options.лидов_grid));
-  if (plot_options_.has_value()) {
-    plot_options_->лидов_grid = options.лидов_grid;
+  if (element_graphs_ != nullptr) {
+    element_graphs_->plot_options_.лидов_grid = options.лидов_grid;
+    // If only the Лидов grid setting changed, we only need to change the Лидов
+    // graph.
+    if (element_graphs_->plot_options_ == options) {
+      element_graphs_->лидов_graph = std::move(лидов_graph);
+      return;
+    }
   }
-  // If only the Лидов grid setting changed, we are done.
-  if (plot_options_ == options) {
-    return;
-  }
-  eccentricity_vector_graph_ = std::make_unique<Graph<double, double>>(
-      elements_->PlotEccentricityVector(options.width,
-                                        options.width,
-                                        options.background_colour,
-                                        options.axis_colour,
-                                        options.eccentricity_vector_colour));
-  semimajor_axis_graph_ =
-      std::make_unique<Graph<Instant, Length>>(elements_->PlotTimeSeries(
+  element_graphs_ = std::make_unique<ElementGraphs>(ElementGraphs{
+      .eccentricity_vector_graph =
+          elements_->PlotEccentricityVector(options.width,
+                                            options.width,
+                                            options.background_colour,
+                                            options.axis_colour,
+                                            options.eccentricity_vector_colour),
+      .лидов_graph = std::move(лидов_graph),
+      .semimajor_axis_graph = elements_->PlotTimeSeries(
           &OrbitalElements::ClassicalElements::semimajor_axis,
           options.width,
           options.time_series_height,
           options.background_colour,
-          options.distance_colour));
-  eccentricity_graph_ =
-      std::make_unique<Graph<Instant, double>>(elements_->PlotTimeSeries(
+          options.distance_colour),
+      .eccentricity_graph = elements_->PlotTimeSeries(
           &OrbitalElements::ClassicalElements::eccentricity,
           options.width,
           options.time_series_height,
           options.background_colour,
-          options.eccentricity_vector_colour));
-  inclination_graph_ =
-      std::make_unique<Graph<Instant, Angle>>(elements_->PlotTimeSeries(
+          options.eccentricity_vector_colour),
+      .inclination_graph = elements_->PlotTimeSeries(
           &OrbitalElements::ClassicalElements::inclination,
           options.width,
           options.time_series_height,
           options.background_colour,
-          options.inclination_colour));
-  argument_of_periapsis_graph_ =
-      std::make_unique<Graph<Instant, Angle>>(elements_->PlotTimeSeries(
+          options.inclination_colour),
+      .longitude_of_ascending_node_graph = elements_->PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::longitude_of_ascending_node,
+          options.width,
+          options.time_series_height,
+          options.background_colour,
+          options.inclination_colour),
+      .argument_of_periapsis_graph = elements_->PlotTimeSeries(
           &OrbitalElements::ClassicalElements::argument_of_periapsis,
           options.width,
           options.time_series_height,
           options.background_colour,
-          options.eccentricity_vector_colour));
-  periapsis_distance_graph_ =
-      std::make_unique<Graph<Instant, Length>>(elements_->PlotTimeSeries(
+          options.eccentricity_vector_colour),
+      .periapsis_distance_graph = elements_->PlotTimeSeries(
           &OrbitalElements::ClassicalElements::periapsis_distance,
           options.width,
           options.time_series_height,
           options.background_colour,
-          options.distance_colour));
-  apoapsis_distance_graph_ =
-      std::make_unique<Graph<Instant, Length>>(elements_->PlotTimeSeries(
+          options.distance_colour),
+      .apoapsis_distance_graph = elements_->PlotTimeSeries(
           &OrbitalElements::ClassicalElements::apoapsis_distance,
           options.width,
           options.time_series_height,
           options.background_colour,
-          options.distance_colour));
-  plot_options_ = options;
+          options.distance_colour),
+      .plot_options_ = options,
+  });
 }
 
 OrbitAnalyser::Analysis::Analysis(Instant const& first_time)
