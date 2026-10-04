@@ -4,9 +4,6 @@
     <ProjectGuid>{20c9d292-5155-4e8a-9c6c-ffb761ea2c5d}</ProjectGuid>
     <RootNamespace>graphics</RootNamespace>
   </PropertyGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile />
-  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="graph.hpp" />
     <ClInclude Include="graph_body.hpp" />
