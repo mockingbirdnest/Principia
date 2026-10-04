@@ -476,7 +476,7 @@ void OrbitAnalyser::Analysis::SetPlotOptions(
           options.width,
           options.time_series_height,
           options.background_colour,
-          options.inclination_colour),
+          options.longitude_of_ascending_node_colour),
       .argument_of_periapsis_graph = elements_->PlotTimeSeries(
           &OrbitalElements::ClassicalElements::argument_of_periapsis,
           options.width,
