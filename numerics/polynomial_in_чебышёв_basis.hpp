@@ -54,14 +54,21 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_concepts;
 
-template<typename Value_, typename Argument_, auto _ = std::nullopt>
+#if !PRINCIPIA_COMPILER_MSVC || \
+  !(_MSC_FULL_VER == 195'236'725)
+constexpr auto degree_agnostic = std::nullopt;
+#else
+constexpr auto degree_agnostic = -1;
+#endif
+
+template<typename Value_, typename Argument_, auto _ = degree_agnostic>
 class PolynomialInЧебышёвBasis;
 
 // Degree-agnostic base class defining the contract of polynomials in the
 // Чебышёв basis and used for polymorphic storage.
 template<affine Value_, affine Argument_>
   requires homogeneous_affine_space<Value_, Difference<Argument_>>
-class PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>
+class PolynomialInЧебышёвBasis<Value_, Argument_, degree_agnostic>
     : public Polynomial<Value_, Argument_> {
  public:
   using Argument = Argument_;
