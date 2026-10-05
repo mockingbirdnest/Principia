@@ -54,11 +54,11 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_polynomial;
 using namespace principia::quantities::_concepts;
 
-#if !PRINCIPIA_COMPILER_MSVC || \
-  !(_MSC_FULL_VER == 195'236'725)
-constexpr auto degree_agnostic = std::nullopt;
-#else
+#if PRINCIPIA_COMPILER_MSVC && \
+    (_MSC_FULL_VER == 195'236'725)
 constexpr auto degree_agnostic = -1;
+#else
+constexpr auto degree_agnostic = std::nullopt;
 #endif
 
 template<typename Value_, typename Argument_, auto _ = degree_agnostic>

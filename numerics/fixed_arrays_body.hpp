@@ -41,14 +41,14 @@ struct Construction<std::array<Scalar, size>> {
   }
 };
 
-#if !PRINCIPIA_COMPILER_MSVC || \
-    !(_MSC_FULL_VER == 195'236'725)
+#if PRINCIPIA_COMPILER_MSVC && \
+    (_MSC_FULL_VER == 195'236'725)
+template<typename Array>
+struct Construction<std::unique_ptr<Array>> {
+#else
 template<affine Scalar, std::int64_t size>
 struct Construction<std::unique_ptr<std::array<Scalar, size>>> {
   using Array = std::array<Scalar, size>;
-#else
-template<typename Array>
-struct Construction<std::unique_ptr<Array>> {
 #endif
 
   static constexpr std::unique_ptr<Array>
