@@ -36,7 +36,7 @@ using namespace principia::quantities::_si;
 
 template<affine Value_, affine Argument_>
   requires homogeneous_affine_space<Value_, Difference<Argument_>>
-bool PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::
+bool PolynomialInЧебышёвBasis<Value_, Argument_, degree_agnostic>::
     MayHaveRealRoots(Value const error_estimate) const
   requires convertible_to_quantity<Value_> {
   return MayHaveRealRootsOrDie(error_estimate);
@@ -45,7 +45,7 @@ bool PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::
 template<affine Value_, affine Argument_>
   requires homogeneous_affine_space<Value_, Difference<Argument_>>
 absl::btree_set<Argument_>
-PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_agnostic>::RealRoots(
     double const ε) const
   requires convertible_to_quantity<Value_> {
   return RealRootsOrDie(ε);
@@ -60,8 +60,8 @@ PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::RealRoots(
 
 template<affine Value_, affine Argument_>
   requires homogeneous_affine_space<Value_, Difference<Argument_>>
-std::unique_ptr<PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>>
-PolynomialInЧебышёвBasis<Value_, Argument_, std::nullopt>::ReadFromMessage(
+std::unique_ptr<PolynomialInЧебышёвBasis<Value_, Argument_, degree_agnostic>>
+PolynomialInЧебышёвBasis<Value_, Argument_, degree_agnostic>::ReadFromMessage(
     serialization::ЧебышёвSeries const& pre_канторович_message) {
   LOG(WARNING) << "Reading pre-Канторович PolynomialInЧебышёвBasis";
   serialization::Polynomial message;

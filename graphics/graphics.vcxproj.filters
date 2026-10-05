@@ -20,6 +20,9 @@
     <ClInclude Include="graph_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="colours.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="graph_test.cpp">
