@@ -217,6 +217,11 @@ Instant const& Manœuvre<InertialFrame, Frame>::time_of_half_Δv() const {
 }
 
 template<typename InertialFrame, typename Frame>
+serialization::Actuator Manœuvre<InertialFrame, Frame>::actuator() const {
+  return burn_.actuator;
+}
+
+template<typename InertialFrame, typename Frame>
 Force const& Manœuvre<InertialFrame, Frame>::thrust() const {
   return burn_.thrust;
 }
@@ -331,6 +336,7 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
 template<typename InertialFrame, typename Frame>
 void Manœuvre<InertialFrame, Frame>::WriteToMessage(
     not_null<serialization::Manoeuvre*> const message) const {
+  message->set_actuator(burn_.actuator);
   thrust().WriteToMessage(message->mutable_thrust());
   initial_mass_.WriteToMessage(message->mutable_initial_mass());
   specific_impulse().WriteToMessage(message->mutable_specific_impulse());
@@ -346,7 +352,10 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
     not_null<Ephemeris<InertialFrame>*> const ephemeris) {
   bool const is_pre_levi_civita = message.has_direction() ||
                                   message.has_duration();
-  LOG_IF(WARNING, is_pre_levi_civita) << "Reading pre-Levi-Civita Manœuvre";
+  bool const is_pre_lichnerowicz = !message.has_actuator();
+  LOG_IF(WARNING, is_pre_lichnerowicz)
+      << "Reading pre-" << (is_pre_levi_civita ? "Levi-Civita" : "Lichnerowicz")
+      << " Manœuvre";
 
   Timing timing;
   timing.initial_time = Instant::ReadFromMessage(message.initial_time());
@@ -368,8 +377,17 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
     intensity = Intensity::ReadFromMessage(message.intensity());
   }
 
+  // This assumes that pre-Lichnerowicz manœuvres were all using active engines,
+  // which could be wrong, in which case the flight plan will change if
+  // "Active Engine" is clicked after loading.  It's not ideal, but then before
+  // Lichnerowicz this used to happen at each scene change.🤷
+  serialization::Actuator const actuator =
+      is_pre_lichnerowicz ? serialization::Actuator::ACTIVE_ENGINES
+                          : message.actuator();
+
   Burn const burn{*intensity,
                   timing,
+                  actuator,
                   thrust,
                   specific_impulse,
                   RigidReferenceFrame<InertialFrame, Frame>::ReadFromMessage(

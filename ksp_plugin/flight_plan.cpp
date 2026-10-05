@@ -411,6 +411,10 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   // We need to forcefully prolong, otherwise we might exceed the ephemeris
   // step limit while recomputing the segments and make the flight plan
   // anomalous for no good reason.
+  // TODO(phl): If the flight plan is ridiculously long (for instance, because
+  // it is using the RCS with a sizeable Δv) this call may take a very long
+  // time. This doesn't happen when interactively editing the flight plan,
+  // because we bail out.  Fix this somehow.
   flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_)
       .IgnoreError();
   absl::Status const status = flight_plan->RecomputeAllSegments();

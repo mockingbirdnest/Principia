@@ -8,6 +8,13 @@ package principia.serialization;
 
 option cc_enable_arenas = true;
 
+// NOTE: Keep this type in sync with `principia.journal.serialization.Actuator`.
+enum Actuator {
+  ACTIVE_ENGINES = 1;
+  ACTIVE_RCS = 2;
+  INSTANT_IMPULSE = 3;
+}
+
 message CelestialJacobiKeplerian {
   required int32 celestial_index = 1;
   optional int32 parent_index = 2;
@@ -48,6 +55,7 @@ message Intensity {
 }
 
 message Manoeuvre {
+  optional Actuator actuator = 10;  // Required, added in Lichnerowicz.
   required Quantity thrust = 1;
   required Quantity initial_mass = 2;
   required Quantity specific_impulse = 3;

@@ -572,6 +572,7 @@ class MetricTest
     timing.initial_time = epoch_ + 1 * Minute;
     return {intensity,
             timing,
+            serialization::ACTIVE_ENGINES,
             /*thrust=*/1 * Newton,
             /*specific_impulse=*/1 * Newton * Second / Kilogram,
             make_not_null_unique<TestNavigationFrame>(navigation_frame_),

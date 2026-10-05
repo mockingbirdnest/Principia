@@ -53,6 +53,13 @@ message Intensity {
 
 // These messages should be in alphabetical order.
 
+  // NOTE: Keep this type in sync with `principia.serialization.Actuator`.
+enum Actuator {
+  ACTIVE_ENGINES = 1;
+  ACTIVE_RCS = 2;
+  INSTANT_IMPULSE = 3;
+}
+
 message AdaptiveStepParameters {
   // Corresponds to AdaptiveStepSizeIntegrator.Kind.
   required int64 integrator_kind = 4;
@@ -88,6 +95,7 @@ message BodyParameters {
 }
 
 message Burn {
+  required Actuator actuator = 8;  // Added in Lichnerowicz.
   required double thrust_in_kilonewtons = 1;
   required double specific_impulse_in_seconds_g0 = 2;
   required NavigationFrameParameters frame = 3;

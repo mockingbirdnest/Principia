@@ -100,6 +100,7 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
   timing.initial_time = FromGameTime(plugin, burn.initial_time);
   return {.intensity = *navigation_manœuvre_intensity,
           .timing = timing,
+          .actuator = static_cast<serialization::Actuator>(burn.actuator),
           .thrust = burn.thrust_in_kilonewtons * Kilo(Newton),
           .specific_impulse =
               burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
@@ -182,7 +183,8 @@ Burn GetBurn(Plugin const& plugin,
 
   CHECK_EQ(number_of_subclasses, 1) << "Could not construct frame parameters";
 
-  return {.thrust_in_kilonewtons = manœuvre.thrust() / Kilo(Newton),
+  return {.actuator = static_cast<interface::Actuator>(manœuvre.actuator()),
+          .thrust_in_kilonewtons = manœuvre.thrust() / Kilo(Newton),
           .specific_impulse_in_seconds_g0 =
               manœuvre.specific_impulse() / (Second * StandardGravity),
           .frame = parameters,

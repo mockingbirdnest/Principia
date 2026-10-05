@@ -151,6 +151,7 @@ TEST_F(ManœuvreTest, TimedBurn) {
   Manœuvre<World, Rendering>::Burn const burn{
       intensity,
       timing,
+      serialization::ACTIVE_ENGINES,
       /*thrust=*/1 * Newton,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
       MakeMockReferenceFrame(),
@@ -213,6 +214,7 @@ TEST_F(ManœuvreTest, TargetΔv) {
   Manœuvre<World, Rendering>::Burn const burn{
       intensity,
       timing,
+      serialization::ACTIVE_ENGINES,
       /*thrust=*/1 * Newton,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
       MakeMockReferenceFrame(),
@@ -311,6 +313,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   Manœuvre<World, Rendering>::Burn const first_burn{
       first_burn_intensity,
       first_burn_timing,
+      serialization::ACTIVE_ENGINES,
       thrust_1st,
       specific_impulse_1st,
       MakeMockReferenceFrame(),
@@ -363,6 +366,7 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   Manœuvre<World, Rendering>::Burn const second_burn{
       second_burn_intensity,
       second_burn_timing,
+      serialization::ACTIVE_ENGINES,
       thrust_2nd,
       specific_impulse_2nd,
       MakeMockReferenceFrame(),
@@ -429,6 +433,7 @@ TEST_F(ManœuvreTest, Serialization) {
   Manœuvre<World, Rendering>::Burn const burn{
       intensity,
       timing,
+      serialization::ACTIVE_ENGINES,
       /*thrust=*/1 * Newton,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
       std::move(mock_reference_frame),
