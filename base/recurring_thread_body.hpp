@@ -59,6 +59,16 @@ RecurringThread<Input, Output>::RecurringThread(
       action_(std::move(action)) {}
 
 template<typename Input, typename Output>
+RecurringThread<Input, Output>::~RecurringThread() {
+  // The virtual function `RunAction` is called from the thread of the base
+  // class.  When we exit this destructor, the vtable entry for `RunAction` is
+  // reset to that of the base class, which is pure virtual.  So if it happens
+  // that `RunAction` is called after this destructor, the behaviour is
+  // undefined.
+  Stop();
+}
+
+template<typename Input, typename Output>
 void RecurringThread<Input, Output>::Put(Input input) {
   absl::MutexLock l(&input_output_lock_);
   input_ = std::move(input);
@@ -104,6 +114,12 @@ RecurringThread<Input, void>::RecurringThread(
     std::chrono::milliseconds const period)
     : BaseRecurringThread(period),
       action_(std::move(action)) {}
+
+template<typename Input>
+RecurringThread<Input, void>::~RecurringThread() {
+  // See the comment in the destructor of the other specialization.
+  Stop();
+}
 
 template<typename Input>
 void RecurringThread<Input, void>::Put(Input input) {
