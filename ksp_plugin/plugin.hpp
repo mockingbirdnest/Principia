@@ -124,19 +124,17 @@ class Plugin {
          std::string const& solar_system_epoch,
          Angle const& planetarium_rotation);
 
-  // Inserts a celestial body with index `celestial_index` and the given
-  // `gravity_model` and `initial_state`.
-  // If `parent_index` is null, inserts the sun, otherwise the parent of the new
+  // Inserts a celestial body with the given `gravity_model` and
+  // `initial_state`.  Returns the index of the newly-inserted celestial.  If
+  // `parent_index` is null, inserts the sun, otherwise the parent of the new
   // body is the body with index `*parent_index`, which must already have been
   // inserted.
   // All the bodies must be inserted using the same method.
-  virtual void InsertCelestialAbsoluteCartesian(
-      Index celestial_index,
+  virtual Index InsertCelestialAbsoluteCartesian(
       std::optional<Index> const& parent_index,
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Cartesian::Body const& initial_state);
-  virtual void InsertCelestialJacobiKeplerian(
-      Index celestial_index,
+  virtual Index InsertCelestialJacobiKeplerian(
       std::optional<Index> const& parent_index,
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Keplerian::Body const& initial_state);
@@ -400,6 +398,7 @@ class Plugin {
 
   virtual bool HasCelestial(Index index) const;
   virtual Celestial const& GetCelestial(Index index) const;
+  virtual Index GetCelestialIndex(Celestial const& celestial) const;
   virtual std::vector<not_null<Celestial const*>> GetAllCelestials() const;
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
@@ -498,10 +497,8 @@ class Plugin {
          Ephemeris<Barycentric>::AdaptiveStepParameters
              psychohistory_parameters);
 
-  void InitializeIndices(
-      std::string const& name,
-      Index celestial_index,
-      std::optional<Index> const& parent_index);
+  Index InitializeIndices(std::string const& name,
+                          std::optional<Index> const& parent_index);
 
   // Computes the value returned by `PlanetariumRotation`.  Must be called
   // whenever `main_body_` or `planetarium_rotation_` changes.
