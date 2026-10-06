@@ -313,12 +313,13 @@ message OrbitAnalysis {
   optional OrbitRecurrence recurrence = 5 [(is_produced) = true];
   optional EquatorialCrossings ground_track_equatorial_crossings = 6 [(is_produced) = true];
   optional SolarTimesOfNodes solar_times_of_nodes = 11 [(is_produced) = true];
+  optional ElementGraphs element_graphs = 14 [(is_produced) = true];
   required fixed64 primary_index_address = 10 [(address_of) = "primary_index"];
   required fixed64 elements_address = 7 [(address_of) = "elements"];
   required fixed64 recurrence_address = 8 [(address_of) = "recurrence"];
   required fixed64 ground_track_equatorial_crossings_address = 9 [(address_of) = "ground_track_equatorial_crossings"];
   required fixed64 solar_times_of_nodes_address = 12 [(address_of) = "solar_times_of_nodes"];
-  required ElementGraphs element_graphs = 14;
+  required fixed64 element_graphs_address = 15 [(address_of) = "element_graphs"];
 }
 
 enum LidovGrid {

@@ -14,7 +14,8 @@ internal class Graph : ScalingRenderer {
     all_black_ = new byte[width * height * sizeof(UnityEngine.Color32)];
     const int offsetof_a = 3;
     for (int i = 0; i < width * height; ++i) {
-      all_black_[sizeof(UnityEngine.Color32) * i + offsetof_a] = 255;
+      const byte opaque = 255;
+      all_black_[sizeof(UnityEngine.Color32) * i + offsetof_a] = opaque;
     }
   }
 

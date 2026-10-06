@@ -561,15 +561,21 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       periapsis_graph_ = new Graph((int)Width(10), (int)Height(1));
       apoapsis_graph_ = new Graph((int)Width(10), (int)Height(1));
     }
-    a_graph_.LoadPixels(analysis.element_graphs.semimajor_axis_graph);
-    e_graph_.LoadPixels(analysis.element_graphs.eccentricity_graph);
-    i_graph_.LoadPixels(analysis.element_graphs.inclination_graph);
-    Ω_graph_.LoadPixels(analysis.element_graphs.
-                            longitude_of_ascending_node_graph);
-    ω_graph_.LoadPixels(analysis.element_graphs.argument_of_periapsis_graph);
+    a_graph_.LoadPixels(analysis.element_graphs?.semimajor_axis_graph ??
+                        IntPtr.Zero);
+    e_graph_.LoadPixels(analysis.element_graphs?.eccentricity_graph ??
+                        IntPtr.Zero);
+    i_graph_.LoadPixels(analysis.element_graphs?.inclination_graph ??
+                        IntPtr.Zero);
+    Ω_graph_.LoadPixels(analysis.element_graphs?.
+                            longitude_of_ascending_node_graph ??
+                        IntPtr.Zero);
+    ω_graph_.LoadPixels(analysis.element_graphs?.argument_of_periapsis_graph ??
+                        IntPtr.Zero);
     periapsis_graph_.LoadPixels(
-        analysis.element_graphs.periapsis_distance_graph);
-    apoapsis_graph_.LoadPixels(analysis.element_graphs.apoapsis_distance_graph);
+        analysis.element_graphs?.periapsis_distance_graph ?? IntPtr.Zero);
+    apoapsis_graph_.LoadPixels(
+        analysis.element_graphs?.apoapsis_distance_graph ?? IntPtr.Zero);
   }
 
   private void DrawEccentricityVectorGraph(OrbitAnalysis analysis) {
@@ -577,19 +583,22 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       eccentricity_vector_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
     eccentricity_vector_graph_.LoadPixels(
-        analysis.element_graphs.eccentricity_vector_graph);
+        analysis.element_graphs?.eccentricity_vector_graph ?? IntPtr.Zero);
   }
 
   private void DrawЛидовGraph(OrbitAnalysis analysis) {
     if (лидов_graph_ == null) {
       лидов_graph_ = new Graph((int)Width(10), (int)Height(10));
     }
-    лидов_graph_.LoadPixels(analysis.element_graphs.lidov_graph);
-    for (;
-         !analysis.element_graphs.lidov_graph_labels.IteratorAtEnd();
-         analysis.element_graphs.lidov_graph_labels.IteratorIncrement()) {
-      лидов_graph_.AddLabel(analysis.element_graphs.lidov_graph_labels.
-                                IteratorGetGraphLabel());
+    лидов_graph_.LoadPixels(analysis.element_graphs?.lidov_graph ??
+                            IntPtr.Zero);
+    if (analysis.element_graphs != null) {
+      for (;
+           !analysis.element_graphs.lidov_graph_labels.IteratorAtEnd();
+           analysis.element_graphs.lidov_graph_labels.IteratorIncrement()) {
+        лидов_graph_.AddLabel(analysis.element_graphs.lidov_graph_labels.
+                                  IteratorGetGraphLabel());
+      }
     }
   }
 

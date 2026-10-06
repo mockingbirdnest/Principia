@@ -858,8 +858,6 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
     CHECK_GT(*revolutions_per_cycle, 0);
     CHECK_NE(*days_per_cycle, 0);
   }
-  analysis->element_graphs.lidov_graph_labels =
-      new TypedIterator<std::span<Label const>>({}, &plugin);
   if (vessel_analysis == nullptr) {
     return analysis;
   }
@@ -975,26 +973,28 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
   }
   if (vessel_analysis->element_graphs() != nullptr) {
     auto const& graphs = *vessel_analysis->element_graphs();
-    analysis->element_graphs.eccentricity_vector_graph =
-        graphs.eccentricity_vector_graph.pixels().data();
-    analysis->element_graphs.lidov_graph = graphs.лидов_graph->pixels().data();
-    analysis->element_graphs.lidov_graph_labels =
-        new TypedIterator<std::span<Label const>>(graphs.лидов_graph->labels(),
+    auto const analysis_element_graphs = new ElementGraphs;
+    analysis_element_graphs->eccentricity_vector_graph =
+        graphs.eccentricity_vector_graph().pixels().data();
+    analysis_element_graphs->lidov_graph = graphs.лидов_graph().pixels().data();
+    analysis_element_graphs->lidov_graph_labels =
+        new TypedIterator<std::span<Label const>>(graphs.лидов_graph().labels(),
                                                   &plugin);
-    analysis->element_graphs.semimajor_axis_graph =
-        graphs.semimajor_axis_graph.pixels().data();
-    analysis->element_graphs.eccentricity_graph =
-        graphs.eccentricity_graph.pixels().data();
-    analysis->element_graphs.inclination_graph =
-        graphs.inclination_graph.pixels().data();
-    analysis->element_graphs.longitude_of_ascending_node_graph =
-        graphs.longitude_of_ascending_node_graph.pixels().data();
-    analysis->element_graphs.argument_of_periapsis_graph =
-        graphs.argument_of_periapsis_graph.pixels().data();
-    analysis->element_graphs.periapsis_distance_graph =
-        graphs.periapsis_distance_graph.pixels().data();
-    analysis->element_graphs.apoapsis_distance_graph =
-        graphs.apoapsis_distance_graph.pixels().data();
+    analysis_element_graphs->semimajor_axis_graph =
+        graphs.semimajor_axis_graph().pixels().data();
+    analysis_element_graphs->eccentricity_graph =
+        graphs.eccentricity_graph().pixels().data();
+    analysis_element_graphs->inclination_graph =
+        graphs.inclination_graph().pixels().data();
+    analysis_element_graphs->longitude_of_ascending_node_graph =
+        graphs.longitude_of_ascending_node_graph().pixels().data();
+    analysis_element_graphs->argument_of_periapsis_graph =
+        graphs.argument_of_periapsis_graph().pixels().data();
+    analysis_element_graphs->periapsis_distance_graph =
+        graphs.periapsis_distance_graph().pixels().data();
+    analysis_element_graphs->apoapsis_distance_graph =
+        graphs.apoapsis_distance_graph().pixels().data();
+    analysis->element_graphs = analysis_element_graphs;
   }
   return analysis;
 }

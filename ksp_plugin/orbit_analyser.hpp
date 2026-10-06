@@ -54,7 +54,8 @@ using namespace principia::quantities::_quantities;
 // orbit.
 class OrbitAnalyser {
  public:
-  struct ElementGraphs {
+  class ElementGraphs {
+   public:
     struct PlotOptions {
       // The width of all graphs.
       std::int64_t width;
@@ -84,18 +85,41 @@ class OrbitAnalyser {
                              PlotOptions const& right) = default;
     };
 
-    Graph<double, double> eccentricity_vector_graph;
+    // `*elements` must outlive the constructed object.
+    ElementGraphs(not_null<OrbitalElements const*> elements, PlotOptions const& options);
+
+    Graph<double, double> const& eccentricity_vector_graph() const;
+    Graph<double, double> const& лидов_graph() const;
+    Graph<Instant, Length> const& semimajor_axis_graph() const;
+    Graph<Instant, double> const& eccentricity_graph() const;
+    Graph<Instant, Angle> const& inclination_graph() const;
+    Graph<Instant, Angle> const& longitude_of_ascending_node_graph() const;
+    Graph<Instant, Angle> const& argument_of_periapsis_graph() const;
+    Graph<Instant, Length> const& periapsis_distance_graph() const;
+    Graph<Instant, Length> const& apoapsis_distance_graph() const;
+
+    PlotOptions const& plot_options() const;
+
+    void SetЛидовGrid(ЛидовGrid лидов_grid);
+
+   private:
+    static not_null<std::unique_ptr<Graph<double, double>>> MakeЛидовGraph(
+        OrbitalElements const& elements,
+        PlotOptions const& options);
+
+    OrbitalElements const& elements_;
+    Graph<double, double> eccentricity_vector_graph_;
     // The Лидов graph can be changed independently of the others by changing
     // the grid options, and Graph is not assignable (the dimensions are fixed
     // at construction), hence the indirection.
-    not_null<std::unique_ptr<Graph<double, double>>> лидов_graph;
-    Graph<Instant, Length> semimajor_axis_graph;
-    Graph<Instant, double> eccentricity_graph;
-    Graph<Instant, Angle> inclination_graph;
-    Graph<Instant, Angle> longitude_of_ascending_node_graph;
-    Graph<Instant, Angle> argument_of_periapsis_graph;
-    Graph<Instant, Length> periapsis_distance_graph;
-    Graph<Instant, Length> apoapsis_distance_graph;
+    not_null<std::unique_ptr<Graph<double, double>>> лидов_graph_;
+    Graph<Instant, Length> semimajor_axis_graph_;
+    Graph<Instant, double> eccentricity_graph_;
+    Graph<Instant, Angle> inclination_graph_;
+    Graph<Instant, Angle> longitude_of_ascending_node_graph_;
+    Graph<Instant, Angle> argument_of_periapsis_graph_;
+    Graph<Instant, Length> periapsis_distance_graph_;
+    Graph<Instant, Length> apoapsis_distance_graph_;
     PlotOptions plot_options_;
   };
 

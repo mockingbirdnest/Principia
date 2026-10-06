@@ -344,6 +344,130 @@ OrbitAnalyser::ToPrimaryCentred(
   return primary_centred_trajectory;
 }
 
+OrbitAnalyser::ElementGraphs::ElementGraphs(
+    not_null<OrbitalElements const*> elements,
+    PlotOptions const& options)
+    : elements_(*elements),
+      eccentricity_vector_graph_(
+          elements_.PlotEccentricityVector(options.width,
+                                          options.width,
+                                          options.background_colour,
+                                          options.axis_colour,
+                                          options.eccentricity_vector_colour)),
+      лидов_graph_(MakeЛидовGraph(elements_, options)),
+      semimajor_axis_graph_(elements_.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::semimajor_axis,
+          options.width,
+          options.time_series_height,
+          options.background_colour,
+          options.distance_colour)),
+      eccentricity_graph_(elements_.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::eccentricity,
+          options.width,
+          options.time_series_height,
+          options.background_colour,
+          options.eccentricity_vector_colour)),
+      inclination_graph_(elements_.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::inclination,
+          options.width,
+          options.time_series_height,
+          options.background_colour,
+          options.inclination_colour)),
+      longitude_of_ascending_node_graph_(elements_.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::longitude_of_ascending_node,
+          options.width,
+          options.time_series_height,
+          options.background_colour,
+          options.longitude_of_ascending_node_colour)),
+      argument_of_periapsis_graph_(elements_.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::argument_of_periapsis,
+          options.width,
+          options.time_series_height,
+          options.background_colour,
+          options.eccentricity_vector_colour)),
+      periapsis_distance_graph_(elements_.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::periapsis_distance,
+          options.width,
+          options.time_series_height,
+          options.background_colour,
+          options.distance_colour)),
+      apoapsis_distance_graph_(elements_.PlotTimeSeries(
+          &OrbitalElements::ClassicalElements::apoapsis_distance,
+          options.width,
+          options.time_series_height,
+          options.background_colour,
+          options.distance_colour)),
+      plot_options_(options) {}
+
+Graph<double, double> const&
+OrbitAnalyser::ElementGraphs::eccentricity_vector_graph() const {
+  return eccentricity_vector_graph_;
+}
+
+Graph<double, double> const& OrbitAnalyser::ElementGraphs::лидов_graph() const {
+  return *лидов_graph_;
+}
+
+Graph<Instant, Length> const&
+OrbitAnalyser::ElementGraphs::semimajor_axis_graph() const {
+  return semimajor_axis_graph_;
+}
+
+Graph<Instant, double> const& OrbitAnalyser::ElementGraphs::eccentricity_graph()
+    const {
+  return eccentricity_graph_;
+}
+
+Graph<Instant, Angle> const& OrbitAnalyser::ElementGraphs::inclination_graph()
+    const {
+  return inclination_graph_;
+}
+
+Graph<Instant, Angle> const&
+OrbitAnalyser::ElementGraphs::longitude_of_ascending_node_graph() const {
+  return longitude_of_ascending_node_graph_;
+}
+
+Graph<Instant, Angle> const&
+OrbitAnalyser::ElementGraphs::argument_of_periapsis_graph() const {
+  return argument_of_periapsis_graph_;
+}
+
+Graph<Instant, Length> const&
+OrbitAnalyser::ElementGraphs::periapsis_distance_graph() const {
+  return periapsis_distance_graph_;
+}
+
+Graph<Instant, Length> const&
+OrbitAnalyser::ElementGraphs::apoapsis_distance_graph() const {
+  return apoapsis_distance_graph_;
+}
+
+OrbitAnalyser::ElementGraphs::PlotOptions const&
+OrbitAnalyser::ElementGraphs::plot_options() const {
+  return plot_options_;
+}
+
+void OrbitAnalyser::ElementGraphs::SetЛидовGrid(ЛидовGrid лидов_grid) {
+  plot_options_.лидов_grid = лидов_grid;
+  лидов_graph_ = MakeЛидовGraph(elements_, plot_options_);
+}
+
+not_null<std::unique_ptr<Graph<double, double>>>
+OrbitAnalyser::ElementGraphs::MakeЛидовGraph(OrbitalElements const& elements,
+                                             PlotOptions const& options) {
+  return make_not_null_unique<Graph<double, double>>(
+      ЛидовGraph(elements,
+                 options.width,
+                 options.width,
+                 options.background_colour,
+                 options.axis_colour,
+                 options.inclination_colour,
+                 options.eccentricity_vector_colour,
+                 options.лидов_parameter_colour,
+                 options.лидов_grid));
+}
+
 Instant const& OrbitAnalyser::Analysis::first_time() const {
   return first_time_;
 }
@@ -420,83 +544,24 @@ OrbitAnalyser::ElementGraphs const* OrbitAnalyser::Analysis::element_graphs()
 
 void OrbitAnalyser::Analysis::SetPlotOptions(
     ElementGraphs::PlotOptions const& options) {
-  if (element_graphs_ != nullptr && element_graphs_->plot_options_ == options) {
+  if (element_graphs_ != nullptr &&
+      element_graphs_->plot_options() == options) {
     return;
   }
   if (!elements_.has_value()) {
     return;
   }
-  auto лидов_graph = make_not_null_unique<Graph<double, double>>(
-      ЛидовGraph(*elements_,
-                 options.width,
-                 options.width,
-                 options.background_colour,
-                 options.axis_colour,
-                 options.inclination_colour,
-                 options.eccentricity_vector_colour,
-                 options.лидов_parameter_colour,
-                 options.лидов_grid));
   if (element_graphs_ != nullptr) {
-    element_graphs_->plot_options_.лидов_grid = options.лидов_grid;
+    auto plot_options = element_graphs_->plot_options();
+    plot_options.лидов_grid = options.лидов_grid;
     // If only the Лидов grid setting changed, we only need to change the Лидов
     // graph.
-    if (element_graphs_->plot_options_ == options) {
-      element_graphs_->лидов_graph = std::move(лидов_graph);
+    if (plot_options == options) {
+      element_graphs_->SetЛидовGrid(options.лидов_grid);
       return;
     }
   }
-  element_graphs_ = std::make_unique<ElementGraphs>(ElementGraphs{
-      .eccentricity_vector_graph =
-          elements_->PlotEccentricityVector(options.width,
-                                            options.width,
-                                            options.background_colour,
-                                            options.axis_colour,
-                                            options.eccentricity_vector_colour),
-      .лидов_graph = std::move(лидов_graph),
-      .semimajor_axis_graph = elements_->PlotTimeSeries(
-          &OrbitalElements::ClassicalElements::semimajor_axis,
-          options.width,
-          options.time_series_height,
-          options.background_colour,
-          options.distance_colour),
-      .eccentricity_graph = elements_->PlotTimeSeries(
-          &OrbitalElements::ClassicalElements::eccentricity,
-          options.width,
-          options.time_series_height,
-          options.background_colour,
-          options.eccentricity_vector_colour),
-      .inclination_graph = elements_->PlotTimeSeries(
-          &OrbitalElements::ClassicalElements::inclination,
-          options.width,
-          options.time_series_height,
-          options.background_colour,
-          options.inclination_colour),
-      .longitude_of_ascending_node_graph = elements_->PlotTimeSeries(
-          &OrbitalElements::ClassicalElements::longitude_of_ascending_node,
-          options.width,
-          options.time_series_height,
-          options.background_colour,
-          options.longitude_of_ascending_node_colour),
-      .argument_of_periapsis_graph = elements_->PlotTimeSeries(
-          &OrbitalElements::ClassicalElements::argument_of_periapsis,
-          options.width,
-          options.time_series_height,
-          options.background_colour,
-          options.eccentricity_vector_colour),
-      .periapsis_distance_graph = elements_->PlotTimeSeries(
-          &OrbitalElements::ClassicalElements::periapsis_distance,
-          options.width,
-          options.time_series_height,
-          options.background_colour,
-          options.distance_colour),
-      .apoapsis_distance_graph = elements_->PlotTimeSeries(
-          &OrbitalElements::ClassicalElements::apoapsis_distance,
-          options.width,
-          options.time_series_height,
-          options.background_colour,
-          options.distance_colour),
-      .plot_options_ = options,
-  });
+  element_graphs_ = std::make_unique<ElementGraphs>(&*elements_, options);
 }
 
 OrbitAnalyser::Analysis::Analysis(Instant const& first_time)
