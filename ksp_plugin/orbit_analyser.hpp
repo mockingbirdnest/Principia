@@ -184,6 +184,7 @@ class OrbitAnalyser {
     std::optional<OrbitGroundTrack> ground_track_;
     std::optional<OrbitGroundTrack::EquatorCrossingLongitudes>
         equatorial_crossings_;
+    // Null if the plot options have not been set.
     std::unique_ptr<ElementGraphs> element_graphs_;
 
     friend class OrbitAnalyser;
