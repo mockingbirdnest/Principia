@@ -981,7 +981,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                   serialization_encoding_);
       if (plugin_reader_.PluginReaderWillBeSlow()) {
         migration_monitor_ = new MigrationMonitor(plugin_reader_);
-        FlightAutoSave.fetch.bypassAutoSave = true;
         KeepPaused();
       } else {
         plugin_ = Interface.PluginReaderAwait(ref plugin_reader_);
@@ -3002,6 +3001,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void KeepPaused() {
+    // We have seen a case (#4695) where `FlightAutoSave.fetch` is null in
+    // `OnLoad`, maybe because another mod misbehaved.  Better retry to disable
+    // auto-saving each time we enter `OnGUI`.
+    if (FlightAutoSave.fetch != null) {
+      FlightAutoSave.fetch.bypassAutoSave = true;
+    }
     // If the game is paused in OnLoad while loading a quicksave, some of the
     // systems don’t get the message and the game continues in a half-paused
     // state.
