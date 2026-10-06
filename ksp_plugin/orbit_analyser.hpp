@@ -86,7 +86,8 @@ class OrbitAnalyser {
     };
 
     // `*elements` must outlive the constructed object.
-    ElementGraphs(not_null<OrbitalElements const*> elements, PlotOptions const& options);
+    ElementGraphs(not_null<OrbitalElements const*> elements,
+                  PlotOptions const& options);
 
     Graph<double, double> const& eccentricity_vector_graph() const;
     Graph<double, double> const& лидов_graph() const;
