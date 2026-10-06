@@ -1166,8 +1166,8 @@ Celestial const& Plugin::GetCelestial(Index const index) const {
   return *FindOrDie(celestials_, index);
 }
 
-Index Plugin::GetCelestialIndex(Celestial const& celestial) const {
-  return FindOrDie(name_to_index_, celestial.body()->name());
+Index Plugin::GetCelestialIndex(std::string const& name) const {
+  return FindOrDie(name_to_index_, name);
 }
 
 std::vector<not_null<Celestial const*>> Plugin::GetAllCelestials() const {

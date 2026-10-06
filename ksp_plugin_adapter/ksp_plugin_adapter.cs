@@ -446,6 +446,15 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
+  private void FillCelestialIndicesIfNeeded() {
+    if (celestial_indices_.Count == 0) {
+      foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+        int index = plugin_.CelestialGetIndex(celestial.name);
+        AddCelestialIndex(celestial, index);
+      }
+    }
+  }
+
   private delegate void BodyProcessor(CelestialBody body);
 
   private delegate void VesselProcessor(Vessel vessel);
@@ -1053,6 +1062,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       migration_monitor_.RenderWindow();
       return;
     }
+    if (PluginRunning()) {
+      if (!solar_system_was_validated_) {
+        ValidateSolarSystem();
+        solar_system_was_validated_ = true;
+      }
+      FillCelestialIndicesIfNeeded();
+    }
 
     apocalypse_dialog_.RenderWindow();
 
@@ -1281,11 +1297,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     parachuting_kerbal_angular_velocities_.Clear();
 
     if (PluginRunning()) {
-      if (!solar_system_was_validated_) {
-        ValidateSolarSystem();
-        solar_system_was_validated_ = true;
-      }
-
       plugin_.SetMainBody(GetCelestialIndex(
                               FlightGlobals.currentMainBody ??
                               FlightGlobals.GetHomeBody()));

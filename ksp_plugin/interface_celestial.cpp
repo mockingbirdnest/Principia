@@ -26,6 +26,13 @@ Iterator* __cdecl principia__CelestialGetAllNames(
   return m.Return(new TypedIterator<std::vector<std::string>>(names, plugin));
 }
 
+int __cdecl principia__CelestialGetIndex(Plugin const* const plugin,
+                                         char const* const name) {
+  journal::Method<journal::CelestialGetIndex> m({plugin, name});
+  CHECK(plugin != nullptr);
+  Index const celestial_index = plugin->GetCelestialIndex(name);
+}
+
 // Calls `plugin->CelestialFromParent` with the arguments given.
 // `plugin` must not be null.  No transfer of ownership.
 QP __cdecl principia__CelestialFromParent(Plugin const* const plugin,
