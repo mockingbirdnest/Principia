@@ -1698,7 +1698,6 @@ message InsertCelestialAbsoluteCartesian {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required int32 celestial_index = 2;
     optional int32 parent_index = 3;
     required BodyParameters body_parameters = 16;
     required string x = 9;
@@ -1708,7 +1707,11 @@ message InsertCelestialAbsoluteCartesian {
     required string vy = 13;
     required string vz = 14;
   }
+  message Return {
+    required int32 celestial_index = 1;
+  }
   optional In in = 1;
+  optional Return return = 3;
 }
 
 message InsertCelestialJacobiKeplerian {
@@ -1717,12 +1720,15 @@ message InsertCelestialJacobiKeplerian {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required int32 celestial_index = 2;
     optional int32 parent_index = 3;
     required BodyParameters body_parameters = 16;
     optional KeplerianElements keplerian_elements = 9;
   }
+  message Return {
+    required int32 celestial_index = 1;
+  }
   optional In in = 1;
+  optional Return return = 3;
 }
 
 message InsertOrKeepVessel {

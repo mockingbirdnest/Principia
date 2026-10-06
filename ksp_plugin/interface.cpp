@@ -710,10 +710,9 @@ void __cdecl principia__InitializePsychohistoryParameters(
   return m.Return();
 }
 
-void __cdecl principia__InsertCelestialAbsoluteCartesian(
+Index __cdecl principia__InsertCelestialAbsoluteCartesian(
     Plugin* const plugin,
-    int const celestial_index,
-    int const* const parent_index,
+    Index const* const parent_index,
     BodyParameters const& body_parameters,
     char const* const x,
     char const* const y,
@@ -723,7 +722,6 @@ void __cdecl principia__InsertCelestialAbsoluteCartesian(
     char const* const vz) {
   journal::Method<journal::InsertCelestialAbsoluteCartesian> m(
       {plugin,
-       celestial_index,
        parent_index,
        body_parameters,
        x, y, z,
@@ -737,24 +735,21 @@ void __cdecl principia__InsertCelestialAbsoluteCartesian(
   initial_state.set_vx(vx);
   initial_state.set_vy(vy);
   initial_state.set_vz(vz);
-  plugin->InsertCelestialAbsoluteCartesian(
-      celestial_index,
+  Index const celestial_index = plugin->InsertCelestialAbsoluteCartesian(
       parent_index == nullptr ? std::nullopt
                               : std::make_optional(*parent_index),
       MakeGravityModel(body_parameters),
       initial_state);
-  return m.Return();
+  return m.Return(celestial_index);
 }
 
-void __cdecl principia__InsertCelestialJacobiKeplerian(
+Index __cdecl principia__InsertCelestialJacobiKeplerian(
     Plugin* const plugin,
-    int const celestial_index,
-    int const* const parent_index,
+    Index const* const parent_index,
     BodyParameters const& body_parameters,
     KeplerianElements const* const keplerian_elements) {
   journal::Method<journal::InsertCelestialJacobiKeplerian> m(
       {plugin,
-       celestial_index,
        parent_index,
        body_parameters,
        keplerian_elements});
@@ -782,13 +777,12 @@ void __cdecl principia__InsertCelestialJacobiKeplerian(
     elements->set_mean_anomaly(
         DebugString(keplerian_elements->mean_anomaly * Radian));
   }
-  plugin->InsertCelestialJacobiKeplerian(
-      celestial_index,
+  Index const celestial_index = plugin->InsertCelestialJacobiKeplerian(
       parent_index == nullptr ? std::nullopt
                               : std::make_optional(*parent_index),
       MakeGravityModel(body_parameters),
       initial_state);
-  return m.Return();
+  return m.Return(celestial_index);
 }
 
 // Calls `plugin->InsertOrKeepVessel` with the arguments given.

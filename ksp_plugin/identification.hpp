@@ -18,6 +18,11 @@ namespace internal {
 
 using namespace principia::base::_not_null;
 
+// The index of a `Celestial`.  Computed by the `Plugin` when a celestial is
+// inserted, and persisted in the save.  Used to talk about celestials in the
+// interface.
+using Index = int;
+
 // The GUID of a vessel, obtained by `v.id.ToString()` in C#. We use this as a
 // key in a map.
 using GUID = std::string;
@@ -54,6 +59,7 @@ using VesselConstSet = std::set<not_null<Vessel const*>,
 }  // namespace internal
 
 using internal::GUID;
+using internal::Index;
 using internal::PartByPartIdComparator;
 using internal::PartId;
 using internal::PartTo;

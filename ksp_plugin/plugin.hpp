@@ -103,10 +103,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-// The index of a body in `FlightGlobals.Bodies`, obtained by
-// `b.flightGlobalsIndex` in C#. We use this as a key in a map.
-using Index = int;
-
 class Plugin {
  public:
   Plugin() = delete;
@@ -607,7 +603,6 @@ class Plugin {
 
 }  // namespace internal
 
-using internal::Index;
 using internal::Plugin;
 
 }  // namespace _plugin
