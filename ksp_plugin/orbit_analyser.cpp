@@ -448,7 +448,7 @@ OrbitAnalyser::ElementGraphs::plot_options() const {
   return plot_options_;
 }
 
-void OrbitAnalyser::ElementGraphs::SetЛидовGrid(ЛидовGrid лидов_grid) {
+void OrbitAnalyser::ElementGraphs::SetЛидовGrid(ЛидовGrid const лидов_grid) {
   plot_options_.лидов_grid = лидов_grid;
   лидов_graph_ = MakeЛидовGraph(elements_, plot_options_);
 }

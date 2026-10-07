@@ -13,8 +13,8 @@ internal class Graph : ScalingRenderer {
     texture_ = new UnityEngine.Texture2D(width, height, UnityEngine.TextureFormat.RGBA32, mipChain: false);
     all_black_ = new byte[width * height * sizeof(UnityEngine.Color32)];
     const int offsetof_a = 3;
+    const byte opaque = 255;
     for (int i = 0; i < width * height; ++i) {
-      const byte opaque = 255;
       all_black_[sizeof(UnityEngine.Color32) * i + offsetof_a] = opaque;
     }
   }

@@ -104,6 +104,8 @@ class OrbitAnalyser {
     void SetЛидовGrid(ЛидовGrid лидов_grid);
 
    private:
+    // Static for use in the constructor; also called by `SetЛидовGrid` with the
+    // member variables.
     static not_null<std::unique_ptr<Graph<double, double>>> MakeЛидовGraph(
         OrbitalElements const& elements,
         PlotOptions const& options);
