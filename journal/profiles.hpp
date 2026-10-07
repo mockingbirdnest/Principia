@@ -5,6 +5,7 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/push_pull_callback.hpp"
+#include "graphics/colours.hpp"
 #include "journal/player.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/interface.hpp"  // 🧙 For symbols in interface.
@@ -34,21 +35,24 @@ using interface::ConfigurationAdaptiveStepParameters;
 using interface::ConfigurationDownsamplingParameters;
 using interface::ConfigurationFixedStepParameters;
 using interface::CoordinateSystem;
+using interface::ElementGraphs;
 using interface::EquatorialCrossings;
 using interface::FlightPlanAdaptiveStepParameters;
+using interface::GraphLabel;
 using interface::Intensity;
 using interface::Interval;
 using interface::Iterator;
 using interface::KeplerianElements;
+using interface::LidovGrid;
 using interface::NavigationFrameParameters;
 using interface::NavigationManoeuvre;
 using interface::NavigationManoeuvreFrenetTrihedron;
 using interface::Node;
 using interface::OrbitalElements;
 using interface::OrbitAnalysis;
+using interface::OrbitAnalysisPlotOptions;
 using interface::OrbitRecurrence;
 using interface::Origin;
-using interface::PlottableElements;
 using interface::PlottingFrameParameters;
 using interface::PlottingFramePayload;
 using interface::QP;
@@ -56,6 +60,7 @@ using interface::QPRW;
 using interface::SolarTimesOfNodes;
 using interface::SphericalCoordinates;
 using interface::Status;
+using interface::TextAnchor;
 using interface::TQP;
 using interface::WXYZ;
 using interface::XY;
@@ -65,6 +70,7 @@ using namespace principia::base::_not_null;
 using namespace principia::base::_pull_serializer;
 using namespace principia::base::_push_deserializer;
 using namespace principia::base::_push_pull_callback;
+using namespace principia::graphics::_colours;
 using namespace principia::journal::_player;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_pile_up;

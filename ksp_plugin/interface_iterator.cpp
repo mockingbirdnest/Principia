@@ -8,6 +8,8 @@
 #include "absl/log/log.h"
 #include "base/not_null.hpp"
 #include "geometry/rp2_point.hpp"
+#include "graphics/colours.hpp"
+#include "graphics/graph.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"  // 🧙 For generated profiles.
 #include "ksp_plugin/frames.hpp"
@@ -22,6 +24,8 @@ namespace interface {
 
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_rp2_point;
+using namespace principia::graphics::_colours;
+using namespace principia::graphics::_graph;
 using namespace principia::journal::_method;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::ksp_plugin::_identification;
@@ -129,6 +133,38 @@ XYZ __cdecl principia__IteratorGetDistinguishedPointsXYZ(
       }));
 }
 
+GraphLabel* __cdecl principia__IteratorGetGraphLabel(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetGraphLabel> m({iterator});
+  CHECK(iterator != nullptr);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<std::span<Label const>> const*>(iterator));
+  return m.Return(
+      typed_iterator->Get<GraphLabel*>([](Label const& label) -> GraphLabel* {
+        auto* const result = new GraphLabel{
+            .x = label.x,
+            .y = -label.y,
+            .text = label.text.data(),
+            .colour = std::bit_cast<std::uint32_t>(Opaque(label.colour)),
+        };
+        switch (label.placement) {
+          case Label::TextPlacement::Above:
+            result->anchor = TextAnchor::LOWER_CENTER;
+            break;
+          case Label::TextPlacement::Below:
+            result->anchor = TextAnchor::UPPER_CENTER;
+            break;
+          case Label::TextPlacement::Left:
+            result->anchor = TextAnchor::MIDDLE_RIGHT;
+            break;
+          case Label::TextPlacement::Right:
+            result->anchor = TextAnchor::MIDDLE_LEFT;
+            break;
+        }
+        return result;
+      }));
+}
+
 Node __cdecl principia__IteratorGetNode(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetNode> m({iterator});
   CHECK(iterator != nullptr);
@@ -173,15 +209,6 @@ char const* __cdecl principia__IteratorGetVesselGuid(
       [](Vessel* const vessel) -> char const* {
         return vessel->guid().c_str();
       }));
-}
-
-PlottableElements __cdecl principia__IteratorGetPlottableElements(
-    Iterator const* const iterator) {
-  journal::Method<journal::IteratorGetPlottableElements> m({iterator});
-  auto const typed_iterator = check_not_null(
-      dynamic_cast<TypedIterator<std::vector<PlottableElements>> const*>(
-          iterator));
-  return m.Return(typed_iterator->Get<PlottableElements>(std::identity{}));
 }
 
 void __cdecl principia__IteratorIncrement(Iterator* const iterator) {
