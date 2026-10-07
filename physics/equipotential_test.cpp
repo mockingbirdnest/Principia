@@ -101,7 +101,7 @@ class EquipotentialTest : public ::testing::Test {
   Position<World> ComputePositionInWorld(
       Instant const& t,
       ReferenceFrame<Barycentric, World> const& reference_frame,
-      SolarSystemFactory::Index const body) {
+      SolarSystemFactory::Id const body) {
     auto const to_this_frame = reference_frame.ToThisFrameAtTimeSimilarly(t);
     return to_this_frame.similarity()(
         solar_system_->trajectory(*ephemeris_, SolarSystemFactory::name(body))
@@ -109,8 +109,8 @@ class EquipotentialTest : public ::testing::Test {
   }
 
   std::array<Position<World>, 2> ComputeLagrangePoints(
-      SolarSystemFactory::Index const body1,
-      SolarSystemFactory::Index const body2,
+      SolarSystemFactory::Id const body1,
+      SolarSystemFactory::Id const body2,
       Instant const& t,
       ReferenceFrame<Barycentric, World> const& reference_frame,
       Plane<World> const& plane) {
@@ -138,7 +138,7 @@ class EquipotentialTest : public ::testing::Test {
       Plane<World> const& plane,
       Instant const& t,
       ReferenceFrame<Barycentric, World> const& reference_frame,
-      SolarSystemFactory::Index const body,
+      SolarSystemFactory::Id const body,
       std::string_view const suffix = "") {
     Equipotential<Barycentric, World> const equipotential(
         equipotential_parameters_,

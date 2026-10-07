@@ -1726,8 +1726,9 @@ Index Plugin::InitializeIndices(std::string const& name,
                                 std::optional<Index> const& parent_index) {
   // TODO(phl): Pick an index scheme that helps debugability (e.g., using the
   // first characters of the name and some salting) and update the indices when
-  // reading a legacy save.
-  static Index last_celestial_index = 0;
+  // reading a legacy save.  For now, starting at 1000 will detect confusions in
+  // tests.
+  static Index last_celestial_index = 1000;
   Index const celestial_index = ++last_celestial_index;
   bool inserted = name_to_index_.emplace(name, celestial_index).second;
   CHECK(inserted) << name;

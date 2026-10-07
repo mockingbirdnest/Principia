@@ -19,10 +19,9 @@ class MockPlugin : public Plugin {
   MockPlugin(MockPlugin&&) = delete;
 
   MOCK_METHOD(
-      void,
+      Index,
       InsertCelestialAbsoluteCartesian,
-      (Index celestial_index,
-       std::optional<Index> const& parent_index,
+      (std::optional<Index> const& parent_index,
        serialization::GravityModel::Body const& gravity_model,
        serialization::InitialState::Cartesian::Body const& initial_state),
       (override));

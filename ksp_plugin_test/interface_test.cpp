@@ -246,11 +246,10 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
          vz   : "1  m / s")",
       &initial_state));
   EXPECT_CALL(*plugin_,
-              InsertCelestialAbsoluteCartesian(
-                  celestial_index,
-                  std::make_optional(parent_index),
-                  EqualsProto(gravity_model),
-                  EqualsProto(initial_state)));
+              InsertCelestialAbsoluteCartesian(std::make_optional(parent_index),
+                                               EqualsProto(gravity_model),
+                                               EqualsProto(initial_state)))
+      .WillOnce(Return(celestial_index));
 
   BodyParameters const body_parameters = {
       "Brian",
@@ -269,7 +268,6 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       /*j2=*/nullptr,
       /*geopotential=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
-                                              celestial_index,
                                               &parent_index,
                                               body_parameters,
                                               "0 m",
@@ -309,11 +307,10 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
          vz   : "1  m / s")",
       &initial_state));
   EXPECT_CALL(*plugin_,
-              InsertCelestialAbsoluteCartesian(
-                  celestial_index,
-                  std::make_optional(parent_index),
-                  EqualsProto(gravity_model),
-                  EqualsProto(initial_state)));
+              InsertCelestialAbsoluteCartesian(std::make_optional(parent_index),
+                                               EqualsProto(gravity_model),
+                                               EqualsProto(initial_state)))
+      .WillOnce(Return(celestial_index));
 
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",
@@ -331,7 +328,6 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                           "123e-6",
                                           /*geopotential=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
-                                              celestial_index,
                                               &parent_index,
                                               body_parameters,
                                               "0 m",
@@ -380,11 +376,10 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
          vz   : "1  m / s")",
       &initial_state));
   EXPECT_CALL(*plugin_,
-              InsertCelestialAbsoluteCartesian(
-                  celestial_index,
-                  std::make_optional(parent_index),
-                  EqualsProto(gravity_model),
-                  EqualsProto(initial_state)));
+              InsertCelestialAbsoluteCartesian(std::make_optional(parent_index),
+                                               EqualsProto(gravity_model),
+                                               EqualsProto(initial_state)))
+      .WillOnce(Return(celestial_index));
 
   BodyGeopotentialElement j2 = {"2", "0", "123e-6", nullptr, "456e-6"};
   BodyGeopotentialElement j3 = {"3", "0", "123e-7", nullptr, "-456e-7"};
@@ -405,7 +400,6 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
                                           /*j2=*/nullptr,
                                           j};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
-                                              celestial_index,
                                               &parent_index,
                                               body_parameters,
                                               "0 m",
