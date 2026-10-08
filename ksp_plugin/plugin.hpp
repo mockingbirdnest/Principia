@@ -332,7 +332,7 @@ class Plugin {
   // Returns the displacement and velocity of the celestial at index
   // `celestial_index` relative to its parent at current time.  A celestial with
   // index `celestial_index` must have been inserted, and it must not be the
-  // sun. Must be called after initialization.
+  // sun.  Must be called after initialization.
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index celestial_index) const;
 
