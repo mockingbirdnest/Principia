@@ -99,8 +99,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private bool celestial_terrains_were_validated_ = false;
   private bool solar_system_was_validated_ = false;
 
-  private Dictionary<CelestialBody, int> celestial_indices_ =
-      new Dictionary<CelestialBody, int>();
+  private readonly Dictionary<CelestialBody, int> celestial_to_index_ = new ();
+  private readonly Dictionary<int, CelestialBody> index_to_celestial_ = new ();
 
   private PlanetariumCameraAdjuster planetarium_camera_adjuster_;
 
@@ -431,23 +431,28 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (celestial == null) {
       Log.Fatal("Cannot add null celestial with index " + index);
     }
-    celestial_indices_.Add(celestial, index);
+    celestial_to_index_.Add(celestial, index);
+    index_to_celestial_.Add(index, celestial);
   }
 
-  private int GetCelestialIndex(CelestialBody celestial) {
-    return celestial_indices_[celestial];
+  public int GetCelestialIndex(CelestialBody celestial) {
+    return celestial_to_index_[celestial];
   }
 
-  private int? GetCelestialIndexOrNull(CelestialBody celestial) {
+  public int? GetCelestialIndexOrNull(CelestialBody celestial) {
     if (celestial == null) {
       return null;
     } else {
-      return celestial_indices_[celestial];
+      return celestial_to_index_[celestial];
     }
   }
 
+  public CelestialBody GetCelestialFromIndex(int index) {
+    return index_to_celestial_[index];
+  }
+
   private void FillCelestialIndicesIfNeeded() {
-    if (celestial_indices_.Count == 0) {
+    if (celestial_to_index_.Count == 0) {
       foreach (CelestialBody celestial in FlightGlobals.Bodies) {
         int index = plugin_.CelestialGetIndex(celestial.name);
         AddCelestialIndex(celestial, index);
@@ -1062,13 +1067,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       migration_monitor_.RenderWindow();
       return;
     }
-    if (PluginRunning()) {
-      if (!solar_system_was_validated_) {
-        ValidateSolarSystem();
-        solar_system_was_validated_ = true;
-      }
-      FillCelestialIndicesIfNeeded();
-    }
 
     apocalypse_dialog_.RenderWindow();
 
@@ -1297,6 +1295,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     parachuting_kerbal_angular_velocities_.Clear();
 
     if (PluginRunning()) {
+      if (!solar_system_was_validated_) {
+        ValidateSolarSystem();
+        solar_system_was_validated_ = true;
+      }
+      FillCelestialIndicesIfNeeded();
+
       plugin_.SetMainBody(GetCelestialIndex(
                               FlightGlobals.currentMainBody ??
                               FlightGlobals.GetHomeBody()));

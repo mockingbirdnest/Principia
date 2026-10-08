@@ -160,8 +160,8 @@ class Plugin {
   // Sets the parent of the celestial body with index `celestial_index` to the
   // one with index `parent_index`. Both bodies must already have been
   // inserted. Must be called after initialization.
-  // For a KSP `CelestialBody` `b`, the arguments correspond to
-  // `b.flightGlobalsIndex`, `b.orbit.referenceBody.flightGlobalsIndex`.
+  // For a KSP `CelestialBody` `b`, the `parent_index` corresponds to
+  // `b.orbit.referenceBody`.
   virtual void UpdateCelestialHierarchy(Index celestial_index,
                                         Index parent_index) const;
 
@@ -188,8 +188,8 @@ class Plugin {
   // If `InsertOrKeepVessel` is called with `loaded=false`, and returns
   // `inserted=true`, `InsertUnloadedPart` must be called for its parts
   // before the call to `AdvanceTime`, giving the vessel an initial state.
-  // For a KSP `Vessel` `v`, the arguments correspond to `v.id`,
-  // `v.orbit.referenceBody.flightGlobalsIndex`, `v.loaded`.
+  // For a KSP `Vessel` `v`, the `parent_index` correspond to
+  // `v.orbit.referenceBody`.
   virtual void InsertOrKeepVessel(GUID const& vessel_guid,
                                   std::string const& vessel_name,
                                   Index parent_index,
@@ -330,11 +330,9 @@ class Plugin {
       GUID const& vessel_guid) const;
 
   // Returns the displacement and velocity of the celestial at index
-  // `celestial_index` relative to its parent at current time. For a KSP
-  // `CelestialBody` `b`, the argument corresponds to `b.flightGlobalsIndex`,
-  // the return value to `{b.orbit.pos, b.orbit.vel}`.
-  // A celestial with index `celestial_index` must have been inserted, and it
-  // must not be the sun. Must be called after initialization.
+  // `celestial_index` relative to its parent at current time.  A celestial with
+  // index `celestial_index` must have been inserted, and it must not be the
+  // sun. Must be called after initialization.
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index celestial_index) const;
 
