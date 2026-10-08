@@ -50,7 +50,11 @@ class TypedIterator : public Iterator {
 
  private:
   Container container_;
+#if PRINCIPIA_COMPILER_CLANG && CLANG_VERSION_LE(23, 1, 3)
+  typename Container::iterator iterator_;
+#else
   typename Container::const_iterator iterator_;
+#endif
   Plugin const* plugin_;
 };
 
