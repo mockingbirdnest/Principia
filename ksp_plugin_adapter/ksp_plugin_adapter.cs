@@ -451,6 +451,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     return index_to_celestial_[index];
   }
 
+  public CelestialBody GetCelestialFromIndexOrNull(int? index) {
+    if (index.HasValue) {
+      return index_to_celestial_[index.Value];
+    } else {
+      return null;
+    }
+  }
+
   private void FillCelestialIndicesIfNeeded() {
     if (celestial_to_index_.Count == 0) {
       foreach (CelestialBody celestial in FlightGlobals.Bodies) {

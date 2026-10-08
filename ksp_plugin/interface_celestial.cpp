@@ -30,7 +30,7 @@ int __cdecl principia__CelestialGetIndex(Plugin const* const plugin,
                                          char const* const name) {
   journal::Method<journal::CelestialGetIndex> m({plugin, name});
   CHECK(plugin != nullptr);
-  return m.Return(plugin->GetCelestialIndex(name).value());
+  return m.Return(plugin->GetCelestialIndex(name));
 }
 
 // Calls `plugin->CelestialFromParent` with the arguments given.
