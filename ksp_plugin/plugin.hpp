@@ -188,7 +188,7 @@ class Plugin {
   // If `InsertOrKeepVessel` is called with `loaded=false`, and returns
   // `inserted=true`, `InsertUnloadedPart` must be called for its parts
   // before the call to `AdvanceTime`, giving the vessel an initial state.
-  // For a KSP `Vessel` `v`, the `parent_index` correspond to
+  // For a KSP `Vessel` `v`, the `parent_index` corresponds to
   // `v.orbit.referenceBody`.
   virtual void InsertOrKeepVessel(GUID const& vessel_guid,
                                   std::string const& vessel_name,

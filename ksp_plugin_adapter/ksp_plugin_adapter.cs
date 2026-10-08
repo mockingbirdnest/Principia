@@ -2828,6 +2828,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     previous_display_mode_ = null;
     navball_changed_ = true;
 
+    celestial_to_index_.Clear();
+    index_to_celestial_.Clear();
+
     // Load the flags.
     Interface.ClearFlags();
     ConfigNode.ValueList flags = GameDatabase.Instance.
