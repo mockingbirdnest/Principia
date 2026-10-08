@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "absl/strings/str_split.h"
+#include "astronomy/лидов.hpp"
 #include "base/array.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/permutation.hpp"
@@ -18,6 +19,7 @@
 #include "geometry/rotation.hpp"
 #include "geometry/sign.hpp"
 #include "geometry/space_transformations.hpp"
+#include "graphics/graph.hpp"
 #include "integrators/integrators.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
@@ -32,6 +34,7 @@
 namespace principia {
 namespace interface {
 
+using namespace principia::astronomy::_лидов;
 using namespace principia::base::_array;
 using namespace principia::geometry::_orthogonal_map;
 using namespace principia::geometry::_permutation;
@@ -39,6 +42,7 @@ using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space_transformations;
+using namespace principia::graphics::_graph;
 using namespace principia::integrators::_integrators;
 using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_orbit_analyser;
@@ -235,6 +239,15 @@ inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
                           right.speed_integration_tolerance);
 }
 
+inline bool operator==(GraphLabel const& left,
+                       GraphLabel const& right) {
+  return left.x == right.x &&
+         left.y == right.y &&
+         left.text == right.text &&
+         left.colour == right.colour &&
+         left.anchor == right.anchor;
+}
+
 inline bool operator==(Intensity const& left, Intensity const& right) {
   if (left.coordinate_system != right.coordinate_system) {
     return false;
@@ -320,25 +333,6 @@ inline bool operator==(OrbitalElements const& left,
          NaNIndependentEq(left.nodal_period, right.nodal_period) &&
          NaNIndependentEq(left.nodal_precession, right.nodal_precession) &&
          NaNIndependentEq(left.sidereal_period, right.sidereal_period);
-}
-
-inline bool operator==(PlottableElements const& left,
-                       PlottableElements const& right) {
-  return NaNIndependentEq(left.semimajor_axis, right.semimajor_axis) &&
-         NaNIndependentEq(left.eccentricity, right.eccentricity) &&
-         NaNIndependentEq(left.inclination, right.inclination) &&
-         NaNIndependentEq(left.longitude_of_ascending_node,
-                          right.longitude_of_ascending_node) &&
-         NaNIndependentEq(left.argument_of_periapsis,
-                          right.argument_of_periapsis) &&
-         NaNIndependentEq(left.periapsis_distance, right.periapsis_distance) &&
-         NaNIndependentEq(left.apoapsis_distance, right.apoapsis_distance) &&
-         NaNIndependentEq(left.lidov_c1, right.lidov_c1) &&
-         NaNIndependentEq(left.lidov_c2, right.lidov_c2) &&
-         NaNIndependentEq(left.eccentricity_cos_argument_of_periapsis,
-                          right.eccentricity_cos_argument_of_periapsis) &&
-         NaNIndependentEq(left.eccentricity_sin_argument_of_periapsis,
-                          right.eccentricity_sin_argument_of_periapsis);
 }
 
 inline bool operator==(PlottingFramePayload const& left,
@@ -643,33 +637,6 @@ inline Status* ToNewStatus(absl::Status const& status) {
   }
 }
 
-inline PlottableElements ToPlottableElements(
-    Plugin const& plugin,
-    ClassicalElements const& elements) {
-  auto const [sin_i, cos_i] = SinCos(elements.inclination);
-  auto const [sin_ω, cos_ω] = SinCos(elements.argument_of_periapsis);
-  double const sin²_i = Pow<2>(sin_i);
-  double const cos²_i = Pow<2>(cos_i);
-  double const& e = elements.eccentricity;
-  double const e² = Pow<2>(e);
-  double const sin²_ω = Pow<2>(sin_ω);
-  return {
-      .time = ToGameTime(plugin, elements.time),
-      .semimajor_axis = elements.semimajor_axis / Metre,
-      .eccentricity = elements.eccentricity,
-      .inclination = elements.inclination / Radian,
-      .longitude_of_ascending_node =
-          elements.longitude_of_ascending_node / Radian,
-      .argument_of_periapsis = elements.argument_of_periapsis / Radian,
-      .periapsis_distance = elements.periapsis_distance / Metre,
-      .apoapsis_distance = elements.apoapsis_distance / Metre,
-      .lidov_c1 = (1 - e²) * cos²_i,
-      .lidov_c2 = e² * (2.0 / 5.0 - sin²_i * sin²_ω),
-      .eccentricity_cos_argument_of_periapsis = e * cos_ω,
-      .eccentricity_sin_argument_of_periapsis = e * sin_ω,
-  };
-}
-
 inline QP ToQP(DegreesOfFreedom<World> const& dof) {
   return QPConverter<DegreesOfFreedom<World>>::ToQP(dof);
 }
@@ -884,7 +851,8 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
     Plugin const& plugin,
     int const* const revolutions_per_cycle,
     int const* const days_per_cycle,
-    int const ground_track_revolution) {
+    int const ground_track_revolution,
+    OrbitAnalysisPlotOptions const* const plot_options) {
   auto* const analysis = new OrbitAnalysis{};
   CHECK_EQ(revolutions_per_cycle == nullptr, days_per_cycle == nullptr);
   bool const has_nominal_recurrence = revolutions_per_cycle != nullptr;
@@ -904,6 +872,7 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
     return t.has_value() ? new double(ToGameTime(plugin, *t)) : nullptr;
   };
 
+  analysis->first_time = ToGameTime(plugin, vessel_analysis->first_time());
   analysis->mission_duration = vessel_analysis->mission_duration() / Second;
   if (vessel_analysis->elements().has_value()) {
     auto const& elements = *vessel_analysis->elements();
@@ -931,13 +900,6 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
         .first_collision_risk_time =
             to_double_ptr(vessel_analysis->first_collision_risk()),
         .first_reentry_time = to_double_ptr(vessel_analysis->first_reentry()),
-        .plottable_elements = new TypedIterator<std::vector<PlottableElements>>(
-            elements.mean_elements()
-            | std::ranges::views::transform([&plugin](auto const& elements) {
-                return ToPlottableElements(plugin, elements);
-              })
-            | std::ranges::to<std::vector<PlottableElements>>(),
-            &plugin),
     };
   }
   if (has_nominal_recurrence && vessel_analysis->primary() != nullptr) {
@@ -987,6 +949,54 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
                   2 * ground_track_revolution)),
       };
     }
+  }
+  if (plot_options != nullptr) {
+    vessel_analysis->SetPlotOptions({
+        .width = plot_options->width,
+        .time_series_height = plot_options->time_series_height,
+        .background_colour =
+            std::bit_cast<RGBA32>(plot_options->background_colour),
+        .axis_colour = std::bit_cast<RGBA32>(plot_options->axis_colour).colour,
+        .eccentricity_vector_colour =
+            std::bit_cast<RGBA32>(plot_options->eccentricity_vector_colour)
+                .colour,
+        .inclination_colour =
+            std::bit_cast<RGBA32>(plot_options->inclination_colour).colour,
+        .longitude_of_ascending_node_colour =
+            std::bit_cast<RGBA32>(
+                plot_options->longitude_of_ascending_node_colour)
+                .colour,
+        .distance_colour =
+            std::bit_cast<RGBA32>(plot_options->distance_colour).colour,
+        .лидов_parameter_colour =
+            std::bit_cast<RGBA32>(plot_options->lidov_parameter_colour).colour,
+        .лидов_grid = static_cast<ЛидовGrid>(plot_options->lidov_grid),
+    });
+  }
+  if (vessel_analysis->element_graphs() != nullptr) {
+    auto const& graphs = *vessel_analysis->element_graphs();
+    auto const analysis_element_graphs = new ElementGraphs;
+    analysis_element_graphs->eccentricity_vector_graph =
+        graphs.eccentricity_vector_graph().pixels().data();
+    analysis_element_graphs->lidov_graph = graphs.лидов_graph().pixels().data();
+    analysis_element_graphs->lidov_graph_labels =
+        new TypedIterator<std::span<Label const>>(graphs.лидов_graph().labels(),
+                                                  &plugin);
+    analysis_element_graphs->semimajor_axis_graph =
+        graphs.semimajor_axis_graph().pixels().data();
+    analysis_element_graphs->eccentricity_graph =
+        graphs.eccentricity_graph().pixels().data();
+    analysis_element_graphs->inclination_graph =
+        graphs.inclination_graph().pixels().data();
+    analysis_element_graphs->longitude_of_ascending_node_graph =
+        graphs.longitude_of_ascending_node_graph().pixels().data();
+    analysis_element_graphs->argument_of_periapsis_graph =
+        graphs.argument_of_periapsis_graph().pixels().data();
+    analysis_element_graphs->periapsis_distance_graph =
+        graphs.periapsis_distance_graph().pixels().data();
+    analysis_element_graphs->apoapsis_distance_graph =
+        graphs.apoapsis_distance_graph().pixels().data();
+    analysis->element_graphs = analysis_element_graphs;
   }
   return analysis;
 }
