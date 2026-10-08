@@ -1294,20 +1294,25 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
     }
-    if (must_set_plotting_frame_) {
-      must_set_plotting_frame_ = false;
-      plotting_frame_selector_.UpdateMainBody();
-      previous_display_mode_ = null;
-    }
 
     parachuting_kerbal_angular_velocities_.Clear();
 
     if (PluginRunning()) {
+      // Perform this check first, it will emit comprehensible messages and will
+      // avoid further errors in case of inconsistencies.
       if (!solar_system_was_validated_) {
         ValidateSolarSystem();
         solar_system_was_validated_ = true;
       }
+
+      // Must run before updating the main body.
       FillCelestialIndicesIfNeeded();
+
+      if (must_set_plotting_frame_) {
+        must_set_plotting_frame_ = false;
+        plotting_frame_selector_.UpdateMainBody();
+        previous_display_mode_ = null;
+      }
 
       plugin_.SetMainBody(GetCelestialIndex(
                               FlightGlobals.currentMainBody ??

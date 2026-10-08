@@ -1724,7 +1724,7 @@ Plugin::Plugin(
 
 Index Plugin::InitializeIndices(std::string const& name,
                                 std::optional<Index> const& parent_index) {
-  // TODO(phl): Pick an index scheme that helps debugability (e.g., using the
+  // TODO(phl): Pick an index scheme that helps debuggability (e.g., using the
   // first characters of the name and some salting) and update the indices when
   // reading a legacy save.  For now, starting at 1000 will detect confusions in
   // tests.
