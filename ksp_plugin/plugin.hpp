@@ -121,9 +121,9 @@ class Plugin {
          std::string const& solar_system_epoch,
          Angle const& planetarium_rotation);
 
-  // Inserts a celestial body with CityHash `celestial_city` and the given
+  // Inserts a celestial body with `CityHash` `celestial_city` and the given
   // `gravity_model` and `initial_state`. If `parent_city` is nullopt, inserts
-  // the sun, otherwise the parent of the new body is the body with CityHash
+  // the sun, otherwise the parent of the new body is the body with `CityHash`
   // `*parent_city`, which must already have been inserted.
   // All the bodies must be inserted using the same method.
   virtual void InsertCelestialAbsoluteCartesian(
@@ -159,8 +159,8 @@ class Plugin {
   // base, that has an attachment.
   virtual bool HasEncounteredApocalypse(std::string* details) const;
 
-  // Sets the parent of the celestial body with CityHash `celestial_city` to the
-  // one with CityHash `parent_city`. Both bodies must already have been
+  // Sets the parent of the celestial body with `CityHash` `celestial_city` to
+  // the one with `CityHash` `parent_city`. Both bodies must already have been
   // inserted. Must be called after initialization.
   // For a KSP `CelestialBody` `b`, the parent correspond to
   // `b.orbit.referenceBody`.
@@ -184,7 +184,7 @@ class Plugin {
   // Inserts a new vessel with GUID `vessel_guid` if it does not already exist,
   // and flags the vessel with GUID `vessel_guid` so it is kept when calling
   // `FreeVesselsAndPartsAndCollectPileUps`. The parent body for the vessel is
-  // set to the one with CityHash `parent_city`, which must have been inserted
+  // set to the one with `CityHash` `parent_city`, which must have been inserted
   // during initialization.
   // Sets `inserted` to true if a new vessel was inserted, to false otherwise.
   // If `InsertOrKeepVessel` is called with `loaded=false`, and returns
@@ -331,12 +331,12 @@ class Plugin {
       CityHash parent_city,
       GUID const& vessel_guid) const;
 
-  // Returns the displacement and velocity of the celestial with CityHash
+  // Returns the displacement and velocity of the celestial with `CityHash`
   // `celestial_city` relative to its parent at current time. For a KSP
   // `CelestialBody` `b`, the returned value corresponds to `{b.orbit.pos,
   // b.orbit.vel}`.
-  // A celestial with CityHash `celestial_city` must have been inserted, and it
-  // must not be the sun. Must be called after initialization.
+  // A celestial with `CityHash` `celestial_city` must have been inserted, and
+  // it must not be the sun. Must be called after initialization.
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       CityHash celestial_city) const;
 
@@ -357,7 +357,7 @@ class Plugin {
   virtual void ExtendPredictionForFlightPlan(GUID const& vessel_guid) const;
 
   // Computes the apsides of the trajectory defined by `begin` and `end` with
-  // respect to the celestial with CityHash `celestial_city`.
+  // respect to the celestial with `CityHash` `celestial_city`.
   virtual void ComputeAndRenderApsides(
       CityHash celestial_city,
       DiscreteTrajectoryView<Barycentric> const& trajectory,
@@ -367,7 +367,7 @@ class Plugin {
       DistinguishedPoints<World>& periapsides) const;
 
   // Computes the first collision between the trajectory defined by `begin` and
-  // `end` and the celestial with CityHash `celestial_city`.
+  // `end` and the celestial with `CityHash` `celestial_city`.
   virtual std::optional<DistinguishedPoints<World>::value_type>
   ComputeAndRenderFirstCollision(
       CityHash celestial_city,
