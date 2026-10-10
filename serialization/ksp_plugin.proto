@@ -15,13 +15,6 @@ enum Actuator {
   INSTANT_IMPULSE = 3;
 }
 
-message CelestialJacobiKeplerian {
-  required int32 celestial_index = 1;
-  optional int32 parent_index = 2;
-  optional KeplerianElements keplerian_elements = 3;
-  required MassiveBody body = 4;
-}
-
 message FlightPlan {
   required Quantity initial_mass = 1;
   required Point initial_time = 2;
@@ -126,15 +119,20 @@ message PileUp {
 
 message Plugin {
   message CelestialParenthood {
-    required int32 index = 1;
+    // Pre-Lie.
+    optional int32 index = 1;
     optional int32 parent_index = 2;
+    // Added in Lie.
+    optional fixed64 city = 4;  // Required.
+    optional fixed64 parent_city = 5;
     // Added in Catalan.
     optional int32 ephemeris_index = 3;
   }
   message VesselAndProperties {
     required string guid = 1;
     required Vessel vessel = 2;
-    required int32 parent_index = 3;
+    optional int32 parent_index = 3;  // Pre-Lie.
+    optional fixed64 parent_city = 8;  // Added in Lie, required.
     required bool loaded = 5;
     required bool kept = 7;
     // Pre-Cardano.
@@ -155,7 +153,8 @@ message Plugin {
   required Quantity planetarium_rotation = 4;
   required Point game_epoch = 15;
   required Point current_time = 5;
-  required int32 sun_index = 6;
+  optional int32 sun_index = 6;  // Pre-Lie.
+  optional fixed64 sun_city = 22;  // Added in Lie, required.
   optional ReferenceFrame pre_cauchy_plotting_frame = 11;
   repeated PileUp pile_up = 17;
   optional Renderer renderer = 18;  // Added in Cauchy.

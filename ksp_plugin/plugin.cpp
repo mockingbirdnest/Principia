@@ -18,6 +18,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/hash/internal/city.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
@@ -386,7 +387,7 @@ void Plugin::SetWorldRotationalReferenceFrame(CityHash const celestial_city) {
   angular_velocity_of_world_ = main_body_->angular_velocity();
 }
 
-CityHash Plugin::CelestialCityOfBody(MassiveBody const& body) const {
+CityHash Plugin::CelestialCityHashOfBody(MassiveBody const& body) const {
   return FindOrDie(name_to_city_, body.name());
 }
 
@@ -1592,7 +1593,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   ReadCelestialsFromMessages(*plugin->ephemeris_,
                              message.celestial(),
                              plugin->celestials_,
-                             plugin->name_to_index_);
+                             plugin->name_to_city_);
 
   // Deserialization of vessels may be slow because of the Лефшец-to-Leibniz
   // migration, let's do it in parallel.
@@ -1716,9 +1717,9 @@ Plugin::Plugin(
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 
-void Plugin::InsertInMaps(std::string const& name,
-                          CityHash const celestial_city,
-                          std::optional<CityHash> const& parent_city) {
+void Plugin::InsertIntoMaps(std::string const& name,
+                            CityHash const celestial_city,
+                            std::optional<CityHash> const& parent_city) {
   bool inserted = name_to_city_.emplace(name, celestial_city).second;
   CHECK(inserted) << name;
   inserted = city_to_name_.emplace(celestial_city, name).second;
@@ -1763,33 +1764,56 @@ void Plugin::ReadCelestialsFromMessages(
     google::protobuf::RepeatedPtrField<T> const& celestial_messages,
     CityHashToOwnedCelestial& celestials,
     std::map<std::string, CityHash>& name_to_city) {
+  // To be able to interpret `parent_index` in pre-Lie saves we must build this
+  // map that we drop on the floor when returning from this function.
+  std::map<std::int32_t, not_null<Celestial*>> legacy_celestials;
+
   auto const& bodies = ephemeris.bodies();
   int index = 0;
   for (auto const& celestial_message : celestial_messages) {
     bool const is_pre_cauchy = !celestial_message.has_ephemeris_index();
-    LOG_IF(WARNING, is_pre_cauchy) << "Reading pre-Cauchy Celestial";
+    bool const is_pre_lie = !celestial_message.has_city();
+    LOG_IF(WARNING, is_pre_lie)
+        << "Reading pre-" << (is_pre_cauchy ? "Cauchy" : "Lie") << " Celestial";
 
     auto const& body = is_pre_cauchy
                            ? bodies[index++]
                            : bodies[celestial_message.ephemeris_index()];
+    std::string const& name = body->name();
+    CityHash const celestial_city =
+        is_pre_lie ? absl::hash_internal::CityHash64(name.c_str(), name.size())
+                   : celestial_message.city();
     auto [it, inserted] = celestials.emplace(
-        celestial_message.index(),
+        celestial_city,
         make_not_null_unique<Celestial>(
-            dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
-                body)));
+            dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body)));
     CHECK(inserted) << celestial_message.index();
     it->second->set_trajectory(ephemeris.trajectory(body));
 
-    inserted =
-        name_to_index.emplace(body->name(), celestial_message.index()).second;
+    if (is_pre_lie) {
+      CHECK(celestial_message.has_index()) << celestial_message;
+      legacy_celestials.emplace(celestial_message.index(), it->second.get());
+    }
+
+    inserted = name_to_city.emplace(body->name(), celestial_city).second;
     CHECK(inserted) << body->name();
   }
   for (auto const& celestial_message : celestial_messages) {
+    bool const is_pre_lie = !celestial_message.has_city();
     if (celestial_message.has_parent_index()) {
-      not_null<std::unique_ptr<Celestial>> const& celestial =
-          FindOrDie(celestials, celestial_message.index());
+      CHECK(is_pre_lie);
+      not_null<Celestial*> const& celestial =
+          FindOrDie(legacy_celestials, celestial_message.index());
       not_null<Celestial const*> const parent =
-          FindOrDie(celestials, celestial_message.parent_index()).get();
+          FindOrDie(legacy_celestials, celestial_message.parent_index());
+      celestial->set_parent(parent);
+    }
+    if (celestial_message.has_parent_city()) {
+      CHECK(!is_pre_lie);
+      not_null<std::unique_ptr<Celestial>> const& celestial =
+          FindOrDie(celestials, celestial_message.city());
+      not_null<Celestial const*> const parent =
+          FindOrDie(celestials, celestial_message.parent_city()).get();
       celestial->set_parent(parent);
     }
   }
