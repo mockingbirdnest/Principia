@@ -4,6 +4,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -178,6 +179,10 @@ class TestablePlugin : public Plugin {
 
 class PluginTestWithoutPlugin : public testing::Test {
  protected:
+  // TODO(phl): Make Index a proper class/struct so that we don't have this weak
+  // typing nonsense where we map an `int` to an `int`.
+  using SSId = std::underlying_type_t<SolarSystemFactory::Id>;
+
   PluginTestWithoutPlugin()
       : solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::MajorBodiesOnly)),
@@ -219,6 +224,8 @@ class PluginTestWithoutPlugin : public testing::Test {
   std::string const initial_time_;
   Angle planetarium_rotation_;
 
+  absl::flat_hash_map<SSId, Index> ssid_to_index_;
+
   // These initial conditions will yield a low circular orbit around Earth.
   Displacement<AliceSun> satellite_initial_displacement_;
   Velocity<AliceSun> satellite_initial_velocity_;
@@ -232,16 +239,15 @@ class PluginTest : public PluginTestWithoutPlugin {
                                                      planetarium_rotation_)) {}
 
   void InsertAllSolarSystemBodies() {
-    for (int index = SolarSystemFactory::Sun;
-         index <= SolarSystemFactory::LastMajorBody;
-         ++index) {
+    for (SSId ssid = SolarSystemFactory::Sun;
+         ssid <= SolarSystemFactory::LastMajorBody;
+         ++ssid) {
       std::optional<Index> parent_index;
-      if (index != SolarSystemFactory::Sun) {
-        parent_index = SolarSystemFactory::parent(index);
+      if (ssid != SolarSystemFactory::Sun) {
+        parent_index = ssid_to_index_[SolarSystemFactory::parent(ssid)];
       }
-      std::string const name = SolarSystemFactory::name(index);
-      plugin_->InsertCelestialAbsoluteCartesian(
-          index,
+      std::string const name = SolarSystemFactory::name(ssid);
+      ssid_to_index_[ssid] = plugin_->InsertCelestialAbsoluteCartesian(
           parent_index,
           solar_system_->gravity_model_message(name),
           solar_system_->cartesian_initial_state_message(name));
@@ -287,18 +293,18 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
                     planetarium_rotation_);
   serialization::InitialState::Keplerian::Body keplerian_sun;
   keplerian_sun.set_name(SolarSystemFactory::name(SolarSystemFactory::Sun));
-  plugin->InsertCelestialJacobiKeplerian(
-      SolarSystemFactory::Sun,
-      /*parent_index=*/std::nullopt,
-      solar_system_->gravity_model_message(
-          SolarSystemFactory::name(SolarSystemFactory::Sun)),
-      keplerian_sun);
-  for (int index = SolarSystemFactory::Sun + 1;
-       index <= SolarSystemFactory::LastMajorBody;
-       ++index) {
-    std::string const name = SolarSystemFactory::name(index);
-    Index const parent_index = SolarSystemFactory::parent(index);
-    std::string const parent_name = SolarSystemFactory::name(parent_index);
+  ssid_to_index_[SolarSystemFactory::Sun] =
+      plugin->InsertCelestialJacobiKeplerian(
+          /*parent_index=*/std::nullopt,
+          solar_system_->gravity_model_message(
+              SolarSystemFactory::name(SolarSystemFactory::Sun)),
+          keplerian_sun);
+  for (SSId ssid = SolarSystemFactory::Sun + 1;
+       ssid <= SolarSystemFactory::LastMajorBody;
+       ++ssid) {
+    std::string const name = SolarSystemFactory::name(ssid);
+    SSId const parent_ssid = SolarSystemFactory::parent(ssid);
+    std::string const parent_name = SolarSystemFactory::name(parent_ssid);
     RelativeDegreesOfFreedom<Barycentric> const state_vectors =
         Identity<ICRS, Barycentric>()(
             solar_system_->degrees_of_freedom(name) -
@@ -327,9 +333,8 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
     elements->set_argument_of_periapsis(
         DebugString(*keplerian_elements.argument_of_periapsis));
     elements->set_mean_anomaly(DebugString(*keplerian_elements.mean_anomaly));
-    plugin->InsertCelestialJacobiKeplerian(
-        index,
-        parent_index,
+    ssid_to_index_[ssid] = plugin->InsertCelestialJacobiKeplerian(
+        ssid_to_index_[parent_ssid],
         solar_system_->gravity_model_message(name),
         keplerian_body);
   }
@@ -337,7 +342,7 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   bool inserted;
   plugin->InsertOrKeepVessel(satellite,
                              "v" + satellite,
-                             SolarSystemFactory::Earth,
+                             ssid_to_index_[SolarSystemFactory::Earth],
                              /*loaded=*/false,
                              inserted);
   plugin->InsertUnloadedPart(
@@ -371,14 +376,14 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   // is the most convenient way to check that forgetting works as expected.
   plugin->InsertOrKeepVessel(satellite,
                              "v" + satellite,
-                             SolarSystemFactory::Earth,
+                             ssid_to_index_[SolarSystemFactory::Earth],
                              /*loaded=*/false,
                              inserted);
   plugin->AdvanceTime(history_time(time, 3), Angle());
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->InsertOrKeepVessel(satellite,
                              "v" + satellite,
-                             SolarSystemFactory::Earth,
+                             ssid_to_index_[SolarSystemFactory::Earth],
                              /*loaded=*/false,
                              inserted);
   plugin->AdvanceTime(history_time(time, 6), Angle());
@@ -388,7 +393,7 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   plugin->CreateFlightPlan(satellite, history_time(time, 7), 4 * Kilogram);
   plugin->renderer().SetPlottingFrame(
       plugin->NewBodyCentredNonRotatingNavigationFrame(
-          SolarSystemFactory::Venus));
+          ssid_to_index_[SolarSystemFactory::Venus]));
 
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
@@ -404,7 +409,8 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
       Instant::ReadFromMessage(message.ephemeris().trajectory(0).first_time()));
 
   EXPECT_EQ(1, message.vessel_size());
-  EXPECT_EQ(SolarSystemFactory::Earth, message.vessel(0).parent_index());
+  EXPECT_EQ(ssid_to_index_[SolarSystemFactory::Earth],
+            message.vessel(0).parent_index());
   EXPECT_FALSE(message.vessel(0).vessel().flight_plans().empty());
   EXPECT_TRUE(message.vessel(0).vessel().has_history());
   auto const& vessel_0_history = message.vessel(0).vessel().history();
@@ -456,17 +462,18 @@ TEST_F(PluginTest, Initialization) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_, _)).Times(AnyNumber());
-  for (int index = SolarSystemFactory::Sun + 1;
-       index <= SolarSystemFactory::LastMajorBody;
-       ++index) {
+  for (SSId ssid = SolarSystemFactory::Sun + 1;
+       ssid <= SolarSystemFactory::LastMajorBody;
+       ++ssid) {
     auto const to_icrs =
         id_icrs_barycentric_.orthogonal_map().Inverse() *
         plugin_->InversePlanetariumRotation().Forget<OrthogonalMap>();
-    Index const parent_index = SolarSystemFactory::parent(index);
+    SSId const parent_ssid = SolarSystemFactory::parent(ssid);
     RelativeDegreesOfFreedom<ICRS> const from_parent =
-        solar_system_->degrees_of_freedom(SolarSystemFactory::name(index)) -
+        solar_system_->degrees_of_freedom(SolarSystemFactory::name(ssid)) -
         solar_system_->degrees_of_freedom(
-            SolarSystemFactory::name(parent_index));
+            SolarSystemFactory::name(parent_ssid));
+    Index const index = ssid_to_index_[ssid];
     EXPECT_THAT(from_parent,
                 Componentwise(
                     AlmostEquals(to_icrs(plugin_->CelestialFromParent(index)
@@ -475,7 +482,7 @@ TEST_F(PluginTest, Initialization) {
                     AlmostEquals(
                         to_icrs(plugin_->CelestialFromParent(index).velocity()),
                         441, 9400740)))
-        << SolarSystemFactory::name(index);
+        << SolarSystemFactory::name(ssid);
   }
 }
 
@@ -505,11 +512,10 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name : "S0")",
       &initial_state));
-  plugin_->InsertCelestialJacobiKeplerian(
-      0,
-      /*parent_index=*/std::nullopt,
-      gravity_model,
-      initial_state);
+  ssid_to_index_[0] = plugin_->InsertCelestialJacobiKeplerian(
+                                   /*parent_index=*/std::nullopt,
+                                   gravity_model,
+                                   initial_state);
 
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "P1"
@@ -532,11 +538,10 @@ TEST_F(PluginTest, HierarchicalInitialization) {
            mean_anomaly                : "0 rad"
          })",
       &initial_state));
-  plugin_->InsertCelestialJacobiKeplerian(
-      /*celestial_index=*/1,
-      /*parent_index=*/0,
-      gravity_model,
-      initial_state);
+  ssid_to_index_[1] = plugin_->InsertCelestialJacobiKeplerian(
+                          /*parent_index=*/ssid_to_index_[0],
+                          gravity_model,
+                          initial_state);
 
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "P2"
@@ -559,11 +564,10 @@ TEST_F(PluginTest, HierarchicalInitialization) {
            mean_anomaly                : "0 rad"
          })",
       &initial_state));
-  plugin_->InsertCelestialJacobiKeplerian(
-      /*celestial_index=*/2,
-      /*parent_index=*/0,
-      gravity_model,
-      initial_state);
+  ssid_to_index_[2] = plugin_->InsertCelestialJacobiKeplerian(
+                          /*parent_index=*/ssid_to_index_[0],
+                          gravity_model,
+                          initial_state);
 
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "M3"
@@ -586,26 +590,27 @@ TEST_F(PluginTest, HierarchicalInitialization) {
            mean_anomaly                : "3.1415926535897932384626433832795 rad"
          })",
       &initial_state));
-  plugin_->InsertCelestialJacobiKeplerian(
-      /*celestial_index=*/3,
-      /*parent_index=*/1,
-      gravity_model,
-      initial_state);
+  ssid_to_index_[3] = plugin_->InsertCelestialJacobiKeplerian(
+                          /*parent_index=*/ssid_to_index_[1],
+                          gravity_model,
+                          initial_state);
 
   plugin_->EndInitialization();
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_, _)).Times(AnyNumber());
-  EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
-              AlmostEquals(3 * Kilo(Metre), 1, 7));
-  EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
-              AlmostEquals(1 * Kilo(Metre), 10, 17));
-  EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
-              AlmostEquals(1 * Kilo(Metre), 1, 20));
+  EXPECT_THAT(
+      plugin_->CelestialFromParent(ssid_to_index_[1]).displacement().Norm(),
+      AlmostEquals(3 * Kilo(Metre), 1, 7));
+  EXPECT_THAT(
+      plugin_->CelestialFromParent(ssid_to_index_[2]).displacement().Norm(),
+      AlmostEquals(1 * Kilo(Metre), 10, 17));
+  EXPECT_THAT(
+      plugin_->CelestialFromParent(ssid_to_index_[3]).displacement().Norm(),
+      AlmostEquals(1 * Kilo(Metre), 1, 20));
 }
 
 TEST_F(PluginDeathTest, InsertCelestialError) {
   EXPECT_DEATH({
       plugin_->InsertCelestialAbsoluteCartesian(
-          42,
           /*parent_index=*/std::nullopt,
           solar_system_->gravity_model_message(
               SolarSystemFactory::name(SolarSystemFactory::Sun)),
@@ -617,18 +622,21 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->UpdateCelestialHierarchy(SolarSystemFactory::Sun,
-                                      SolarSystemFactory::Pluto);
+    plugin_->UpdateCelestialHierarchy(
+        ssid_to_index_[SolarSystemFactory::Sun],
+        ssid_to_index_[SolarSystemFactory::Pluto]);
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->UpdateCelestialHierarchy(not_a_body, SolarSystemFactory::Pluto);
+    plugin_->UpdateCelestialHierarchy(
+        not_a_body, ssid_to_index_[SolarSystemFactory::Pluto]);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->UpdateCelestialHierarchy(SolarSystemFactory::Sun, not_a_body);
+    plugin_->UpdateCelestialHierarchy(
+        ssid_to_index_[SolarSystemFactory::Sun], not_a_body);
   }, "Map key not found");
 }
 
@@ -639,7 +647,7 @@ TEST_F(PluginDeathTest, InsertOrKeepVesselError) {
     bool inserted;
     plugin_->InsertOrKeepVessel(guid,
                                 "v" + guid,
-                                SolarSystemFactory::Sun,
+                                ssid_to_index_[SolarSystemFactory::Sun],
                                 /*loaded=*/false,
                                 inserted);
   }, "Check failed: !initializing");
@@ -663,7 +671,7 @@ TEST_F(PluginDeathTest, InsertUnloadedPartError) {
     bool inserted;
     plugin_->InsertOrKeepVessel(guid,
                                 "v" + guid,
-                                SolarSystemFactory::Sun,
+                                ssid_to_index_[SolarSystemFactory::Sun],
                                 /*loaded=*/false,
                                 inserted);
     plugin_->InsertUnloadedPart(
@@ -689,7 +697,7 @@ TEST_F(PluginDeathTest, InsertUnloadedPartError) {
     bool inserted;
     plugin_->InsertOrKeepVessel(guid,
                                 "v" + guid,
-                                SolarSystemFactory::Sun,
+                                ssid_to_index_[SolarSystemFactory::Sun],
                                 /*loaded=*/false,
                                 inserted);
     Instant const initial_time = ParseTT(initial_time_);
@@ -720,12 +728,12 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->VesselFromParent(SolarSystemFactory::Sun, guid);
+    plugin_->VesselFromParent(ssid_to_index_[SolarSystemFactory::Sun], guid);
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->VesselFromParent(SolarSystemFactory::Sun, guid);
+    plugin_->VesselFromParent(ssid_to_index_[SolarSystemFactory::Sun], guid);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
@@ -733,19 +741,19 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
     bool inserted;
     plugin_->InsertOrKeepVessel(guid,
                                 "v" + guid,
-                                SolarSystemFactory::Sun,
+                                ssid_to_index_[SolarSystemFactory::Sun],
                                 /*loaded=*/false,
                                 inserted);
     plugin_->PrepareToReportCollisions();
     plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
-    plugin_->VesselFromParent(SolarSystemFactory::Sun, guid);
+    plugin_->VesselFromParent(ssid_to_index_[SolarSystemFactory::Sun], guid);
   }, R"regex(!parts_\.empty\(\))regex");
 }
 
 TEST_F(PluginDeathTest, CelestialFromParentError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->CelestialFromParent(SolarSystemFactory::Earth);
+    plugin_->CelestialFromParent(ssid_to_index_[SolarSystemFactory::Earth]);
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
@@ -755,7 +763,7 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->CelestialFromParent(SolarSystemFactory::Sun);
+    plugin_->CelestialFromParent(ssid_to_index_[SolarSystemFactory::Sun]);
   }, "is the sun");
 }
 
@@ -767,7 +775,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   bool inserted;
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
-                              SolarSystemFactory::Earth,
+                              ssid_to_index_[SolarSystemFactory::Earth],
                               /*loaded=*/false,
                               inserted);
   EXPECT_TRUE(inserted);
@@ -783,7 +791,8 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
   EXPECT_THAT(
-      plugin_->VesselFromParent(SolarSystemFactory::Earth, guid),
+      plugin_->VesselFromParent(ssid_to_index_[SolarSystemFactory::Earth],
+                                guid),
       Componentwise(AlmostEquals(satellite_initial_displacement_, 3437, 3438),
                     AlmostEquals(satellite_initial_velocity_, 11, 17)));
 }
@@ -792,34 +801,36 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_, _)).Times(AnyNumber());
-  for (int index = SolarSystemFactory::Sun + 1;
-       index <= SolarSystemFactory::LastMajorBody;
-       ++index) {
-    plugin_->UpdateCelestialHierarchy(index, SolarSystemFactory::Sun);
+  for (SSId ssid = SolarSystemFactory::Sun + 1;
+       ssid <= SolarSystemFactory::LastMajorBody;
+       ++ssid) {
+    plugin_->UpdateCelestialHierarchy(ssid_to_index_[ssid],
+                                      ssid_to_index_[SolarSystemFactory::Sun]);
   }
-  for (int index = SolarSystemFactory::Sun + 1;
-       index <= SolarSystemFactory::LastMajorBody;
-       ++index) {
+  for (SSId ssid = SolarSystemFactory::Sun + 1;
+       ssid <= SolarSystemFactory::LastMajorBody;
+       ++ssid) {
     auto const to_icrs =
         id_icrs_barycentric_.orthogonal_map().Inverse() *
         plugin_->InversePlanetariumRotation().Forget<OrthogonalMap>();
     RelativeDegreesOfFreedom<ICRS> const initial_from_parent =
-        solar_system_->degrees_of_freedom(SolarSystemFactory::name(index)) -
+        solar_system_->degrees_of_freedom(SolarSystemFactory::name(ssid)) -
         solar_system_->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
     RelativeDegreesOfFreedom<ICRS> const computed_from_parent(
-        to_icrs(plugin_->CelestialFromParent(index).displacement()),
-        to_icrs(plugin_->CelestialFromParent(index).velocity()));
+        to_icrs(
+            plugin_->CelestialFromParent(ssid_to_index_[ssid]).displacement()),
+        to_icrs(plugin_->CelestialFromParent(ssid_to_index_[ssid]).velocity()));
     EXPECT_THAT(
         (initial_from_parent.displacement() -
          computed_from_parent.displacement()).Norm(),
         VanishesBefore(initial_from_parent.displacement().Norm(), 0, 30))
-        << SolarSystemFactory::name(index);
+        << SolarSystemFactory::name(ssid);
     EXPECT_THAT(
         (initial_from_parent.velocity() -
          computed_from_parent.velocity()).Norm(),
         VanishesBefore(initial_from_parent.velocity().Norm(), 277, 3170841))
-        << SolarSystemFactory::name(index);
+        << SolarSystemFactory::name(ssid);
   }
 }
 
@@ -840,15 +851,16 @@ TEST_F(PluginTestWithoutPlugin, Navball) {
          reference_angle         : "0 deg"
          angular_frequency       : "1 rad/s")",
       &gravity_model));
-  plugin.InsertCelestialAbsoluteCartesian(
-      SolarSystemFactory::Sun,
-      /*parent_index=*/std::nullopt,
-      gravity_model,
-      solar_system_->cartesian_initial_state_message(
-          SolarSystemFactory::name(SolarSystemFactory::Sun)));
+  ssid_to_index_[SolarSystemFactory::Sun] =
+      plugin.InsertCelestialAbsoluteCartesian(
+          /*parent_index=*/std::nullopt,
+          gravity_model,
+          solar_system_->cartesian_initial_state_message(
+              SolarSystemFactory::name(SolarSystemFactory::Sun)));
   plugin.EndInitialization();
   not_null<std::unique_ptr<NavigationFrame>> navigation_frame =
-      plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::Sun);
+      plugin.NewBodyCentredNonRotatingNavigationFrame(
+          ssid_to_index_[SolarSystemFactory::Sun]);
   not_null<const PlottingFrame*> const navigation_frame_copy =
       navigation_frame.get();
   plugin.renderer().SetPlottingFrame(std::move(navigation_frame));
@@ -887,18 +899,18 @@ TEST_F(PluginTestWithoutPlugin, NavballTargetVessel) {
          reference_angle         : "0 deg"
          angular_frequency       : "1 rad/s")",
       &gravity_model));
-  plugin.InsertCelestialAbsoluteCartesian(
-      SolarSystemFactory::Sun,
-      /*parent_index=*/std::nullopt,
-      gravity_model,
-      solar_system_->cartesian_initial_state_message(
-          SolarSystemFactory::name(SolarSystemFactory::Sun)));
+  ssid_to_index_[SolarSystemFactory::Sun] =
+      plugin.InsertCelestialAbsoluteCartesian(
+          /*parent_index=*/std::nullopt,
+          gravity_model,
+          solar_system_->cartesian_initial_state_message(
+              SolarSystemFactory::name(SolarSystemFactory::Sun)));
   plugin.EndInitialization();
 
   bool inserted;
   plugin.InsertOrKeepVessel(guid,
                             "v" + guid,
-                            SolarSystemFactory::Sun,
+                            ssid_to_index_[SolarSystemFactory::Sun],
                             /*loaded=*/false,
                             inserted);
   plugin.InsertUnloadedPart(
@@ -910,7 +922,7 @@ TEST_F(PluginTestWithoutPlugin, NavballTargetVessel) {
   plugin.PrepareToReportCollisions();
   plugin.FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
 
-  plugin.SetTargetVessel(guid, SolarSystemFactory::Sun);
+  plugin.SetTargetVessel(guid, ssid_to_index_[SolarSystemFactory::Sun]);
   plugin.AdvanceTime(plugin.CurrentTime() + 12 * Hour, 0 * Radian);
   auto future = plugin.CatchUpVessel(guid);
   VesselSet collided_vessels;
@@ -923,13 +935,13 @@ TEST_F(PluginTestWithoutPlugin, Frenet) {
   Plugin plugin(initial_time_,
                 initial_time_,
                 0 * Radian);
-  plugin.InsertCelestialAbsoluteCartesian(
-      SolarSystemFactory::Earth,
-      /*parent_index=*/std::nullopt,
-      solar_system_->gravity_model_message(
-          SolarSystemFactory::name(SolarSystemFactory::Earth)),
-      solar_system_->cartesian_initial_state_message(
-          SolarSystemFactory::name(SolarSystemFactory::Earth)));
+  ssid_to_index_[SolarSystemFactory::Earth] =
+      plugin.InsertCelestialAbsoluteCartesian(
+          /*parent_index=*/std::nullopt,
+          solar_system_->gravity_model_message(
+              SolarSystemFactory::name(SolarSystemFactory::Earth)),
+          solar_system_->cartesian_initial_state_message(
+              SolarSystemFactory::name(SolarSystemFactory::Earth)));
   plugin.EndInitialization();
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(OddPermutation::XZY);
@@ -938,7 +950,7 @@ TEST_F(PluginTestWithoutPlugin, Frenet) {
   bool inserted;
   plugin.InsertOrKeepVessel(satellite,
                             "v" + satellite,
-                            SolarSystemFactory::Earth,
+                            ssid_to_index_[SolarSystemFactory::Earth],
                             /*loaded=*/false,
                             inserted);
   plugin.InsertUnloadedPart(
@@ -957,7 +969,7 @@ TEST_F(PluginTestWithoutPlugin, Frenet) {
   Vector<double, World> const b(-Cross(t.coordinates(), n.coordinates()));
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
-          SolarSystemFactory::Earth);
+          ssid_to_index_[SolarSystemFactory::Earth]);
   EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 5, 61));
   EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3, 25));
   EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 0, 15));

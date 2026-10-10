@@ -31,6 +31,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/plugin_io.hpp"
 #include "numerics/transposed_view.hpp"
@@ -74,6 +75,7 @@ using namespace principia::ksp_plugin::_celestial;
 using namespace principia::ksp_plugin::_flight_plan;
 using namespace principia::ksp_plugin::_flight_plan_optimizer;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_plugin_io;
 using namespace principia::numerics::_transposed_view;

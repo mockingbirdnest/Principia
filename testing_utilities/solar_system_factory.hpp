@@ -31,7 +31,7 @@ using namespace principia::quantities::_quantities;
 class SolarSystemFactory : not_constructible {
  public:
   // The bodies are in decreasing order of mass.
-  enum Index : int {
+  enum Id : int {
     Sun = 0,
     Jupiter = 1,
     Saturn = 2,

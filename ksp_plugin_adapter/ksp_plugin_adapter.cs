@@ -99,6 +99,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private bool celestial_terrains_were_validated_ = false;
   private bool solar_system_was_validated_ = false;
 
+  private readonly Dictionary<CelestialBody, int> celestial_to_index_ = new ();
+  private readonly Dictionary<int, CelestialBody> index_to_celestial_ = new ();
+
   private PlanetariumCameraAdjuster planetarium_camera_adjuster_;
 
   private RenderingActions map_renderer_;
@@ -424,6 +427,46 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     return TargetVessel()?.id.ToString();
   }
 
+  private void AddCelestialIndex(CelestialBody celestial, int index) {
+    if (celestial == null) {
+      Log.Fatal("Cannot add null celestial with index " + index);
+    }
+    celestial_to_index_.Add(celestial, index);
+    index_to_celestial_.Add(index, celestial);
+  }
+
+  public int GetCelestialIndex(CelestialBody celestial) {
+    return celestial_to_index_[celestial];
+  }
+
+  public int? GetCelestialIndexOrNull(CelestialBody celestial) {
+    if (celestial == null) {
+      return null;
+    } else {
+      return celestial_to_index_[celestial];
+    }
+  }
+
+  public CelestialBody GetCelestialFromIndex(int index) {
+    return index_to_celestial_[index];
+  }
+
+  public CelestialBody GetCelestialFromIndexOrNull(int? index) {
+    if (index.HasValue) {
+      return index_to_celestial_[index.Value];
+    } else {
+      return null;
+    }
+  }
+
+  private void FillCelestialIndicesIfNeeded() {
+    if (celestial_to_index_.Count == 0) {
+      foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+        int index = plugin_.CelestialGetIndex(celestial.name);
+        AddCelestialIndex(celestial, index);
+      }
+    }
+  }
 
   private delegate void BodyProcessor(CelestialBody body);
 
@@ -458,10 +501,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void UpdateBody(CelestialBody body, double universal_time) {
-    plugin_.UpdateCelestialHierarchy(body.flightGlobalsIndex,
-                                     body.orbit.referenceBody.
-                                         flightGlobalsIndex);
-    QP from_parent = plugin_.CelestialFromParent(body.flightGlobalsIndex);
+    int body_index = GetCelestialIndex(body);
+    plugin_.UpdateCelestialHierarchy(body_index,
+                                     GetCelestialIndex(
+                                         body.orbit.referenceBody));
+    QP from_parent = plugin_.CelestialFromParent(body_index);
     // TODO(egg): Some of this might be be superfluous and redundant.
     Orbit original = body.orbit;
     var copy = new Orbit(original.inclination,
@@ -525,9 +569,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private void UpdateVessel(Vessel vessel, double universal_time) {
     string vessel_guid = vessel.id.ToString();
     if (plugin_.HasVessel(vessel_guid)) {
-      QP from_parent = plugin_.VesselFromParent(
-          vessel.mainBody.flightGlobalsIndex,
-          vessel_guid);
+      QP from_parent =
+          plugin_.VesselFromParent(GetCelestialIndex(vessel.mainBody),
+                                   vessel_guid);
       vessel.orbit.UpdateFromStateVectors(pos : (Vector3d)from_parent.q,
                                           vel : (Vector3d)from_parent.p,
                                           refBody : vessel.orbit.referenceBody,
@@ -1165,20 +1209,14 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
             speed_display?.textSpeed != null &&
             !ferram_owns_the_speed_display) {
           speed_display.textTitle.text = plotting_frame_selector_.NavballName();
-          var active_vessel_velocity = plugin_has_active_manageable_vessel
-                                           ? (Vector3d)plugin_.VesselVelocity(
-                                               active_vessel_guid)
-                                           : (Vector3d)plugin_.
-                                               UnmanageableVesselVelocity(
-                                                   new QP{
-                                                       q = (XYZ)active_vessel.
-                                                           orbit.pos,
-                                                       p = (XYZ)active_vessel.
-                                                           orbit.vel
-                                                   },
-                                                   active_vessel.orbit.
-                                                       referenceBody.
-                                                       flightGlobalsIndex);
+          var active_vessel_velocity =
+              plugin_has_active_manageable_vessel
+                  ? (Vector3d)plugin_.VesselVelocity(active_vessel_guid)
+                  : (Vector3d)plugin_.UnmanageableVesselVelocity(new QP{
+                        q = (XYZ)active_vessel.orbit.pos,
+                        p = (XYZ)active_vessel.orbit.vel
+                    },
+                    GetCelestialIndex(active_vessel.orbit.referenceBody));
           speed_display.textSpeed.text = L10N.CacheFormat(
               "#Principia_SpeedDisplayText",
               active_vessel_velocity.magnitude.ToString("F1"));
@@ -1256,23 +1294,29 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
     }
-    if (must_set_plotting_frame_) {
-      must_set_plotting_frame_ = false;
-      plotting_frame_selector_.UpdateMainBody();
-      previous_display_mode_ = null;
-    }
 
     parachuting_kerbal_angular_velocities_.Clear();
 
     if (PluginRunning()) {
+      // Perform this check first, it will emit comprehensible messages and will
+      // avoid further errors in case of inconsistencies.
       if (!solar_system_was_validated_) {
         ValidateSolarSystem();
         solar_system_was_validated_ = true;
       }
 
-      plugin_.SetMainBody(
-          (FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody()).
-          flightGlobalsIndex);
+      // Must run before updating the main body.
+      FillCelestialIndicesIfNeeded();
+
+      if (must_set_plotting_frame_) {
+        must_set_plotting_frame_ = false;
+        plotting_frame_selector_.UpdateMainBody();
+        previous_display_mode_ = null;
+      }
+
+      plugin_.SetMainBody(GetCelestialIndex(
+                              FlightGlobals.currentMainBody ??
+                              FlightGlobals.GetHomeBody()));
 
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(
           v => is_manageable(v) && !v.packed && is_parachuting_kerbal(v))) {
@@ -1354,7 +1398,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       // `WaitForFixedUpdate`, since some may be destroyed (by collisions) during
       // the physics step.  See also #1281.
       foreach (Vessel vessel in FlightGlobals.Vessels) {
-        int main_body_index = vessel.mainBody.flightGlobalsIndex;
+        int main_body_index = GetCelestialIndex(vessel.mainBody);
         string vessel_guid = vessel.id.ToString();
         string unmanageability_reasons = UnmanageabilityReasons(vessel);
         if (unmanageability_reasons != null) {
@@ -1696,7 +1740,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           physical_object_rb.velocity += v_correction_at_root_part;
         }
         QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
-            main_body.flightGlobalsIndex,
+            GetCelestialIndex(main_body),
             origin,
             plugin_.CurrentTime());
         krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
@@ -1981,7 +2025,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (PluginRunning()) {
       if (FlightGlobals.currentMainBody?.inverseRotation == true) {
         plugin_.SetWorldRotationalReferenceFrame(
-            FlightGlobals.currentMainBody.flightGlobalsIndex);
+            GetCelestialIndex(FlightGlobals.currentMainBody));
       } else {
         plugin_.ClearWorldRotationalReferenceFrame();
       }
@@ -2028,10 +2072,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       if (FlightGlobals.currentMainBody != null) {
         FlightGlobals.currentMainBody.rotationPeriod =
             plugin_.CelestialRotationPeriod(
-                FlightGlobals.currentMainBody.flightGlobalsIndex);
+                GetCelestialIndex(FlightGlobals.currentMainBody));
         FlightGlobals.currentMainBody.initialRotation =
             plugin_.CelestialInitialRotationInDegrees(
-                FlightGlobals.currentMainBody.flightGlobalsIndex);
+                GetCelestialIndex(FlightGlobals.currentMainBody));
       }
       ApplyToBodyTree(body => UpdateBody(body, Planetarium.GetUniversalTime()));
 
@@ -2041,7 +2085,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         // be done in the C++ instead---once I figure out what it is.
         var swizzly_body_world_to_world =
             ((UnityEngine.QuaternionD)plugin_.CelestialRotation(
-                  body.flightGlobalsIndex)).swizzle;
+                  GetCelestialIndex(body))).swizzle;
         body.BodyFrame = new Planetarium.CelestialFrame{
             X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
             Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
@@ -2446,7 +2490,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
         MapView.MapIsEnabled &&
         plotting_frame_selector_.Centre() != null) {
       var centre = plotting_frame_selector_.Centre();
-      var centre_index = centre.flightGlobalsIndex;
+      var centre_index = GetCelestialIndex(centre);
       if (plotting_frame_selector_.IsSurfaceFrame()) {
         prediction_collision = RenderedPredictionCollision(vessel_guid, centre);
         if (prediction_collision.HasValue) {
@@ -2561,7 +2605,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private TQP? RenderedPredictionCollision(string vessel_guid,
                                            CelestialBody centre) {
     var executor = plugin_.CollisionNewPredictionExecutor(
-        celestial_index: centre.flightGlobalsIndex,
+        celestial_index: GetCelestialIndex(centre),
         sun_world_position: (XYZ)Planetarium.fetch.Sun.position,
         // TODO(phl): This should be much larger, if it is limited at all.
         max_points: MapNodePool.MaxNodesPerProvenance,
@@ -2587,7 +2631,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private TQP? RenderedFlightPlanCollision(string vessel_guid,
                                            CelestialBody centre) {
     var executor = plugin_.CollisionNewFlightPlanExecutor(
-        celestial_index: centre.flightGlobalsIndex,
+        celestial_index: GetCelestialIndex(centre),
         sun_world_position: (XYZ)Planetarium.fetch.Sun.position,
         // TODO(phl): This should be much larger, if it is limited at all.
         max_points: MapNodePool.MaxNodesPerProvenance,
@@ -2649,7 +2693,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     } else {
       if (plotting_frame_selector_.Centre() != null) {
         var centre = plotting_frame_selector_.Centre();
-        var centre_index = centre.flightGlobalsIndex;
+        var centre_index = GetCelestialIndex(centre);
         plugin_.RenderedPredictionApsides(vessel_guid,
                                           prediction_collision?.t,
                                           centre_index,
@@ -2734,7 +2778,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     } else {
       if (plotting_frame_selector_.Centre() != null) {
         var centre = plotting_frame_selector_.Centre();
-        var centre_index = centre.flightGlobalsIndex;
+        var centre_index = GetCelestialIndex(centre);
         plugin_.FlightPlanRenderedApsides(vessel_guid,
                                           flight_plan_collision?.t,
                                           centre_index,
@@ -2789,6 +2833,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     previous_display_mode_ = null;
     navball_changed_ = true;
 
+    celestial_to_index_.Clear();
+    index_to_celestial_.Clear();
+
     // Load the flags.
     Interface.ClearFlags();
     ConfigNode.ValueList flags = GameDatabase.Instance.
@@ -2807,9 +2854,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
     if (target_vessel != null) {
       // TODO(egg): We should use the analyser to pick the reference body.
-      plugin_.SetTargetVessel(
-          target_vessel.id.ToString(),
-          target_vessel.orbit.referenceBody.flightGlobalsIndex);
+      plugin_.SetTargetVessel(target_vessel.id.ToString(),
+                              GetCelestialIndex(
+                                  target_vessel.orbit.referenceBody));
     } else {
       plugin_.ClearTargetVessel();
       plugin_.SetPlottingFrame(frame_parameters);
@@ -2929,7 +2976,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   out ConfigNode body_initial_state)) {
             Log.Fatal("missing Cartesian initial state for " + body.name);
           }
-          int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
+          int? parent_index =
+              GetCelestialIndexOrNull(body.orbit?.referenceBody);
           // GetUniqueValue resp. GetAtMostOneValue corresponding to required
           // resp. optional in principia.serialization.GravityModel.Body.
           var body_parameters =
@@ -2938,16 +2986,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                   body_gravity_model);
           // GetUniqueValue since these are all required fields in
           // principia.serialization.InitialState.Cartesian.Body.
-          plugin_.InsertCelestialAbsoluteCartesian(
-              celestial_index : body.flightGlobalsIndex,
-              parent_index    : parent_index,
-              body_parameters : body_parameters,
-              x               : body_initial_state.GetUniqueValue("x"),
-              y               : body_initial_state.GetUniqueValue("y"),
-              z               : body_initial_state.GetUniqueValue("z"),
-              vx              : body_initial_state.GetUniqueValue("vx"),
-              vy              : body_initial_state.GetUniqueValue("vy"),
-              vz              : body_initial_state.GetUniqueValue("vz"));
+          AddCelestialIndex(
+              body,
+              plugin_.InsertCelestialAbsoluteCartesian(
+                  parent_index    : parent_index,
+                  body_parameters : body_parameters,
+                  x               : body_initial_state.GetUniqueValue("x"),
+                  y               : body_initial_state.GetUniqueValue("y"),
+                  z               : body_initial_state.GetUniqueValue("z"),
+                  vx              : body_initial_state.GetUniqueValue("vx"),
+                  vy              : body_initial_state.GetUniqueValue("vy"),
+                  vz              : body_initial_state.GetUniqueValue("vz")));
         };
         insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);
@@ -2974,11 +3023,13 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
               ConfigNodeParsers.NewKeplerianBodyParameters(
                   body,
                   body_gravity_model);
-          plugin_.InsertCelestialJacobiKeplerian(
-              celestial_index    : body.flightGlobalsIndex,
-              parent_index       : orbit?.referenceBody.flightGlobalsIndex,
-              body_parameters    : body_parameters,
-              keplerian_elements : orbit?.Elements());
+          int? parent_index = GetCelestialIndexOrNull(orbit?.referenceBody);
+          AddCelestialIndex(
+              body,
+              plugin_.InsertCelestialJacobiKeplerian(
+                  parent_index       : parent_index,
+                  body_parameters    : body_parameters,
+                  keplerian_elements : orbit?.Elements()));
         };
         insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);

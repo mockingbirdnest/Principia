@@ -103,10 +103,6 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 
-// The index of a body in `FlightGlobals.Bodies`, obtained by
-// `b.flightGlobalsIndex` in C#. We use this as a key in a map.
-using Index = int;
-
 class Plugin {
  public:
   Plugin() = delete;
@@ -124,19 +120,17 @@ class Plugin {
          std::string const& solar_system_epoch,
          Angle const& planetarium_rotation);
 
-  // Inserts a celestial body with index `celestial_index` and the given
-  // `gravity_model` and `initial_state`.
-  // If `parent_index` is null, inserts the sun, otherwise the parent of the new
+  // Inserts a celestial body with the given `gravity_model` and
+  // `initial_state`.  Returns the index of the newly-inserted celestial.  If
+  // `parent_index` is null, inserts the sun, otherwise the parent of the new
   // body is the body with index `*parent_index`, which must already have been
   // inserted.
   // All the bodies must be inserted using the same method.
-  virtual void InsertCelestialAbsoluteCartesian(
-      Index celestial_index,
+  virtual Index InsertCelestialAbsoluteCartesian(
       std::optional<Index> const& parent_index,
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Cartesian::Body const& initial_state);
-  virtual void InsertCelestialJacobiKeplerian(
-      Index celestial_index,
+  virtual Index InsertCelestialJacobiKeplerian(
       std::optional<Index> const& parent_index,
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Keplerian::Body const& initial_state);
@@ -166,8 +160,8 @@ class Plugin {
   // Sets the parent of the celestial body with index `celestial_index` to the
   // one with index `parent_index`. Both bodies must already have been
   // inserted. Must be called after initialization.
-  // For a KSP `CelestialBody` `b`, the arguments correspond to
-  // `b.flightGlobalsIndex`, `b.orbit.referenceBody.flightGlobalsIndex`.
+  // For a KSP `CelestialBody` `b`, the `parent_index` corresponds to
+  // `b.orbit.referenceBody`.
   virtual void UpdateCelestialHierarchy(Index celestial_index,
                                         Index parent_index) const;
 
@@ -194,8 +188,8 @@ class Plugin {
   // If `InsertOrKeepVessel` is called with `loaded=false`, and returns
   // `inserted=true`, `InsertUnloadedPart` must be called for its parts
   // before the call to `AdvanceTime`, giving the vessel an initial state.
-  // For a KSP `Vessel` `v`, the arguments correspond to `v.id`,
-  // `v.orbit.referenceBody.flightGlobalsIndex`, `v.loaded`.
+  // For a KSP `Vessel` `v`, the `parent_index` corresponds to
+  // `v.orbit.referenceBody`.
   virtual void InsertOrKeepVessel(GUID const& vessel_guid,
                                   std::string const& vessel_name,
                                   Index parent_index,
@@ -336,11 +330,9 @@ class Plugin {
       GUID const& vessel_guid) const;
 
   // Returns the displacement and velocity of the celestial at index
-  // `celestial_index` relative to its parent at current time. For a KSP
-  // `CelestialBody` `b`, the argument corresponds to `b.flightGlobalsIndex`,
-  // the return value to `{b.orbit.pos, b.orbit.vel}`.
-  // A celestial with index `celestial_index` must have been inserted, and it
-  // must not be the sun. Must be called after initialization.
+  // `celestial_index` relative to its parent at current time.  A celestial with
+  // index `celestial_index` must have been inserted, and it must not be the
+  // sun.  Must be called after initialization.
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index celestial_index) const;
 
@@ -400,6 +392,7 @@ class Plugin {
 
   virtual bool HasCelestial(Index index) const;
   virtual Celestial const& GetCelestial(Index index) const;
+  virtual Index GetCelestialIndex(std::string const& name) const;
   virtual std::vector<not_null<Celestial const*>> GetAllCelestials() const;
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
@@ -498,10 +491,8 @@ class Plugin {
          Ephemeris<Barycentric>::AdaptiveStepParameters
              psychohistory_parameters);
 
-  void InitializeIndices(
-      std::string const& name,
-      Index celestial_index,
-      std::optional<Index> const& parent_index);
+  Index InitializeIndices(std::string const& name,
+                          std::optional<Index> const& parent_index);
 
   // Computes the value returned by `PlanetariumRotation`.  Must be called
   // whenever `main_body_` or `planetarium_rotation_` changes.
@@ -610,7 +601,6 @@ class Plugin {
 
 }  // namespace internal
 
-using internal::Index;
 using internal::Plugin;
 
 }  // namespace _plugin

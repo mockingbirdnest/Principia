@@ -97,16 +97,17 @@ internal class
       switch (frame_type) {
         case FrameType.BODY_CENTRED_NON_ROTATING:
         case FrameType.BODY_SURFACE:
-          selected_celestial = FlightGlobals.Bodies[parameters.CentreIndex];
+          selected_celestial =
+              adapter_.GetCelestialFromIndex(parameters.CentreIndex);
           break;
         case FrameType.ROTATING_PULSATING:
-          selected_celestial = FlightGlobals.Bodies[
-              parameters.SecondaryIndices[0]];
+          selected_celestial =
+              adapter_.GetCelestialFromIndex(parameters.SecondaryIndices[0]);
           break;
         case FrameType.BARYCENTRIC_ROTATING:
         case FrameType.BODY_CENTRED_PARENT_DIRECTION:
           selected_celestial =
-              FlightGlobals.Bodies[parameters.PrimaryIndices[0]];
+              adapter_.GetCelestialFromIndex(parameters.PrimaryIndices[0]);
           break;
       }
     });
@@ -510,7 +511,7 @@ internal class
       case FrameType.BODY_SURFACE:
         return new ReferenceFrameParameters{
             Extension = frame_type,
-            CentreIndex = selected_celestial.flightGlobalsIndex,
+            CentreIndex = adapter_.GetCelestialIndex(selected_celestial),
             PrimaryIndices = new int[]{},
             SecondaryIndices = new int[]{},
         };
@@ -524,19 +525,19 @@ internal class
         return new ReferenceFrameParameters{
             Extension = frame_type,
             PrimaryIndices =
-                new[] {selected_celestial.flightGlobalsIndex},
+                new[] {adapter_.GetCelestialIndex(selected_celestial)},
             SecondaryIndices =
-                new[] {selected_celestial.referenceBody.flightGlobalsIndex}};
+                new[] {adapter_.GetCelestialIndex(selected_celestial.referenceBody)}};
       case FrameType.ROTATING_PULSATING:
         return new ReferenceFrameParameters{
             Extension = frame_type,
             PrimaryIndices = (
               from body in System(selected_celestial.referenceBody,
                                   end: selected_celestial)
-              select body.flightGlobalsIndex).ToArray(),
+              select adapter_.GetCelestialIndex(body)).ToArray(),
             SecondaryIndices = (
               from body in System(selected_celestial)
-              select body.flightGlobalsIndex).ToArray()
+              select adapter_.GetCelestialIndex(body)).ToArray()
 
         };
       default:

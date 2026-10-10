@@ -192,7 +192,7 @@ class Plotter {
       {
         planetarium.PlanetariumPlotCelestialPastTrajectory(
             Plugin,
-            root.flightGlobalsIndex,
+            adapter_.GetCelestialIndex(root),
             main_vessel_guid,
             history_length,
             VertexBuffer.data,
@@ -210,7 +210,7 @@ class Plotter {
       if (main_vessel_guid != null) {
         planetarium.PlanetariumPlotCelestialFutureTrajectory(
             Plugin,
-            root.flightGlobalsIndex,
+            adapter_.GetCelestialIndex(root),
             main_vessel_guid,
             VertexBuffer.data,
             VertexBuffer.size,

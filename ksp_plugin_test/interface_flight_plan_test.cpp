@@ -16,6 +16,7 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/mock_flight_plan.hpp"
 #include "ksp_plugin_test/mock_manœuvre.hpp"
@@ -57,6 +58,7 @@ using namespace principia::integrators::_embedded_explicit_generalized_runge_kut
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_mock_flight_plan;
 using namespace principia::ksp_plugin_test::_mock_manœuvre;

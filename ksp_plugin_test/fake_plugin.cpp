@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <string>
+#include <type_traits>
 
 #include "absl/log/check.h"
 #include "absl/log/log.h"
@@ -22,19 +23,22 @@ FakePlugin::FakePlugin(SolarSystem<ICRS> const& solar_system)
     : Plugin(/*game_epoch=*/solar_system.epoch_literal(),
              /*solar_system_epoch=*/solar_system.epoch_literal(),
              /*planetarium_rotation=*/0 * Radian) {
-  for (int index = SolarSystemFactory::Sun;
-       index <= SolarSystemFactory::LastBody;
-       ++index) {
+  using SSId = std::underlying_type_t<SolarSystemFactory::Id>;
+  absl::flat_hash_map<SSId, Index> ssid_to_index;
+
+  for (SSId ssid = SolarSystemFactory::Sun;
+       ssid <= SolarSystemFactory::LastBody;
+       ++ssid) {
     std::optional<Index> const parent_index =
-        index == SolarSystemFactory::Sun
+        ssid == SolarSystemFactory::Sun
             ? std::nullopt
-            : std::make_optional(SolarSystemFactory::parent(index));
-    InsertCelestialAbsoluteCartesian(
-        index,
+            : std::make_optional(
+                  ssid_to_index[SolarSystemFactory::parent(ssid)]);
+    ssid_to_index[ssid] = InsertCelestialAbsoluteCartesian(
         parent_index,
-        solar_system.gravity_model_message(SolarSystemFactory::name(index)),
+        solar_system.gravity_model_message(SolarSystemFactory::name(ssid)),
         solar_system.cartesian_initial_state_message(
-            SolarSystemFactory::name(index)));
+            SolarSystemFactory::name(ssid)));
   }
   EndInitialization();
 }

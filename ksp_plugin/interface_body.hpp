@@ -21,6 +21,7 @@
 #include "geometry/space_transformations.hpp"
 #include "graphics/graph.hpp"
 #include "integrators/integrators.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/renderer.hpp"
@@ -43,6 +44,7 @@ using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::graphics::_graph;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
@@ -775,13 +777,13 @@ inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
   switch (parameters.extension) {
     case serialization::RotatingPulsatingReferenceFrame::
         kExtensionFieldNumber: {
-      std::vector<int> primary_indices;
+      std::vector<Index> primary_indices;
       for (int const* const* index_ptr = parameters.primary_index;
            *index_ptr != nullptr;
            ++index_ptr) {
         primary_indices.push_back(**index_ptr);
       }
-      std::vector<int> secondary_indices;
+      std::vector<Index> secondary_indices;
       for (int const* const* index_ptr = parameters.secondary_index;
            *index_ptr != nullptr;
            ++index_ptr) {

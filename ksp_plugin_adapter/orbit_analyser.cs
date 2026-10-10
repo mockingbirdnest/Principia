@@ -192,10 +192,8 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
         RequestAnalysis();
       }
       OrbitAnalysis analysis = GetAnalysis();
-      CelestialBody primary = analysis.primary_index.HasValue
-                                  ? FlightGlobals.Bodies[
-                                      analysis.primary_index.Value]
-                                  : null;
+      CelestialBody primary =
+          adapter_.GetCelestialFromIndexOrNull(analysis.primary_index);
       orbit_description_ = OrbitDescription(primary,
                                             analysis.mission_duration,
                                             analysis.elements,
@@ -271,10 +269,8 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
           analysis.ground_track_equatorial_crossings;
       SolarTimesOfNodes? solar_times_of_nodes = analysis.solar_times_of_nodes;
       double mission_duration = analysis.mission_duration;
-      CelestialBody primary = analysis.primary_index.HasValue
-                                  ? FlightGlobals.Bodies[
-                                      analysis.primary_index.Value]
-                                  : null;
+      CelestialBody primary =
+          adapter_.GetCelestialFromIndexOrNull(analysis.primary_index);
 
       orbit_description_ = OrbitDescription(primary,
                                             mission_duration,

@@ -153,25 +153,26 @@ Plugin::~Plugin() {
   vessels_.clear();
 }
 
-void Plugin::InsertCelestialAbsoluteCartesian(
-    Index const celestial_index,
+Index Plugin::InsertCelestialAbsoluteCartesian(
     std::optional<Index> const& parent_index,
     serialization::GravityModel::Body const& gravity_model,
     serialization::InitialState::Cartesian::Body const& initial_state) {
   CHECK_EQ(gravity_model.name(), initial_state.name());
-  InitializeIndices(gravity_model.name(), celestial_index, parent_index);
+  Index const celestial_index =
+      InitializeIndices(gravity_model.name(), parent_index);
   *gravity_model_.add_body() = gravity_model;
   CHECK(!initial_state_.has_keplerian()) << initial_state_.DebugString();
   *initial_state_.mutable_cartesian()->add_body() = initial_state;
+  return celestial_index;
 }
 
-void Plugin::InsertCelestialJacobiKeplerian(
-    Index const celestial_index,
+Index Plugin::InsertCelestialJacobiKeplerian(
     std::optional<Index> const& parent_index,
     serialization::GravityModel::Body const& gravity_model,
     serialization::InitialState::Keplerian::Body const& initial_state) {
   CHECK_EQ(gravity_model.name(), initial_state.name());
-  InitializeIndices(gravity_model.name(), celestial_index, parent_index);
+  Index const celestial_index =
+      InitializeIndices(gravity_model.name(), parent_index);
   *gravity_model_.add_body() = gravity_model;
   CHECK(!initial_state_.has_cartesian()) << initial_state_.DebugString();
   serialization::InitialState::Keplerian::Body* const body =
@@ -180,6 +181,7 @@ void Plugin::InsertCelestialJacobiKeplerian(
   if (parent_index) {
     body->set_parent(FindOrDie(index_to_name_, *parent_index));
   }
+  return celestial_index;
 }
 
 void Plugin::InitializeDownsamplingParameters(
@@ -1164,6 +1166,10 @@ Celestial const& Plugin::GetCelestial(Index const index) const {
   return *FindOrDie(celestials_, index);
 }
 
+Index Plugin::GetCelestialIndex(std::string const& name) const {
+  return FindOrDie(name_to_index_, name);
+}
+
 std::vector<not_null<Celestial const*>> Plugin::GetAllCelestials() const {
   std::vector<not_null<Celestial const*>> celestials;
   for (auto const& [_, celestial] : celestials_) {
@@ -1716,15 +1722,21 @@ Plugin::Plugin(
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 
-void Plugin::InitializeIndices(std::string const& name,
-                               Index const celestial_index,
-                               std::optional<Index> const& parent_index) {
+Index Plugin::InitializeIndices(std::string const& name,
+                                std::optional<Index> const& parent_index) {
+  // TODO(phl): Pick an index scheme that helps debuggability (e.g., using the
+  // first characters of the name and some salting) and update the indices when
+  // reading a legacy save.  For now, starting at 1000 will detect confusions in
+  // tests.
+  static Index last_celestial_index = 1000;
+  Index const celestial_index = ++last_celestial_index;
   bool inserted = name_to_index_.emplace(name, celestial_index).second;
   CHECK(inserted) << name;
   inserted = index_to_name_.emplace(celestial_index, name).second;
   CHECK(inserted) << celestial_index;
   inserted = parents_.emplace(celestial_index, parent_index).second;
   CHECK(inserted) << celestial_index;
+  return celestial_index;
 }
 
 void Plugin::UpdatePlanetariumRotation() {
