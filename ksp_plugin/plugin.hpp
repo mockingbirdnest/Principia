@@ -494,9 +494,9 @@ class Plugin {
          Ephemeris<Barycentric>::AdaptiveStepParameters
              psychohistory_parameters);
 
-  void InsertInMaps(std::string const& name,
-                    CityHash celestial_city,
-                    std::optional<CityHash> const& parent_city);
+  void InsertIntoMaps(std::string const& name,
+                      CityHash celestial_city,
+                      std::optional<CityHash> const& parent_city);
 
   // Computes the value returned by `PlanetariumRotation`.  Must be called
   // whenever `main_body_` or `planetarium_rotation_` changes.
