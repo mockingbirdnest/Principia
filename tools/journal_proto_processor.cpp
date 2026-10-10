@@ -287,11 +287,10 @@ void JournalProtoProcessor::ProcessRepeatedDoubleField(
 void JournalProtoProcessor::ProcessRepeatedFixed64Field(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
-  CHECK(options.HasExtension(journal::serialization::encoding) &&
-        options.GetExtension(journal::serialization::encoding) ==
-            journal::serialization::UINT64)
+  CHECK(options.HasExtension(journal::serialization::is_integer) &&
+        options.GetExtension(journal::serialization::is_integer))
       << descriptor->full_name()
-      << " must have the (encoding) option set to UINT64";
+      << " must have the (is_integer) option set to true";
 
   ProcessRepeatedNonStringField(descriptor,
                                 /*cs_unboxed_type=*/"uint64",
@@ -545,6 +544,11 @@ void JournalProtoProcessor::ProcessOptionalDoubleField(
 
 void JournalProtoProcessor::ProcessOptionalFixed64Field(
     FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
+  CHECK(options.HasExtension(journal::serialization::is_integer) &&
+        options.GetExtension(journal::serialization::is_integer))
+      << descriptor->full_name()
+      << " must have the (is_integer) option set to true";
   ProcessOptionalNonStringField(
       descriptor,
       /*cs_boxed_type=*/"BoxedUint64",
@@ -642,6 +646,19 @@ void JournalProtoProcessor::ProcessRequiredFixed32Field(
 void JournalProtoProcessor::ProcessRequiredFixed64Field(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
+  if (options.HasExtension(journal::serialization::is_integer)) {
+    CHECK(options.GetExtension(journal::serialization::is_integer));
+    CHECK(!options.HasExtension(journal::serialization::pointer_to) &&
+          !options.HasExtension(journal::serialization::encoding) &&
+          !options.HasExtension(journal::serialization::address_of))
+        << descriptor->full_name()
+        << " has the (is_integer) option; it cannot have any of the "
+           "(pointer_to), (encoding), or (address_of) options";
+    field_cs_type_[descriptor] = "uint64";
+    field_cxx_type_[descriptor] = "uint64_t";
+    return;
+  }
+
   CHECK(!options.HasExtension(journal::serialization::pointer_to) ||
         !options.HasExtension(journal::serialization::encoding))
       << descriptor->full_name()
@@ -668,10 +685,6 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
       case journal::serialization::UTF_16:
         pointer_to = "char16_t const";
         break;
-      case journal::serialization::UINT64:
-        field_cs_type_[descriptor] = "uint64";
-        field_cxx_type_[descriptor] = "uint64_t";
-        return;
     }
   }
   if (field_cxx_address_of_.contains(descriptor)) {

@@ -8,7 +8,6 @@ package principia.journal.serialization;
 enum Encoding {
   UTF_8 = 1;  // Represented as "char const*" in C++ code.
   UTF_16 = 2;  // Represented as "char16_t const*" in C++ code.
-  UINT64 = 3;  // Represented as "uint64_t" in C++ code.
 }
 
 extend google.protobuf.FieldOptions {
@@ -65,6 +64,10 @@ extend google.protobuf.FieldOptions {
   // For a field of an interchange message, specifies whether the generated C#
   // field should be private (the default is public).
   optional bool is_private = 50017;
+
+  // For a fixed64 field, indicates that the field is actually a 64-bit integer,
+  // and not a pointer to some other data.
+  optional bool is_integer = 50018;
 }
 
 extend google.protobuf.MessageOptions {

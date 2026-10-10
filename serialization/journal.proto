@@ -10,11 +10,11 @@ message NavigationFrameParameters {
   option (is_class) = true;
   // Must correspond to a rigid reference frame.
   required int32 extension = 1;  // 6000 to 6999, see ReferenceFrame.
-  required fixed64 centre_city = 2 [(encoding) = UINT64];
+  required fixed64 centre_city = 2 [(is_integer) = true];
   required fixed64 primary_city = 3 [(is_private) = true,
-                                     (encoding) = UINT64];
+                                     (is_integer) = true];
   required fixed64 secondary_city = 4 [(is_private) = true,
-                                       (encoding) = UINT64];
+                                       (is_integer) = true];
 }
 
 message SphericalCoordinates {
@@ -189,9 +189,9 @@ message Origin {
 // mixing them up in the C#.
 message PlottingFrameParameters {
   required int32 extension = 1;  // 6000 to 6999, see ReferenceFrame.
-  required fixed64 centre_city = 2 [(encoding) = UINT64];
-  repeated fixed64 primary_city = 3 [(encoding) = UINT64];
-  repeated fixed64 secondary_city = 4 [(encoding) = UINT64];
+  required fixed64 centre_city = 2 [(is_integer) = true];
+  repeated fixed64 primary_city = 3 [(is_integer) = true];
+  repeated fixed64 secondary_city = 4 [(is_integer) = true];
 }
 
 message PlottingFramePayload {
@@ -317,7 +317,7 @@ message ElementGraphs {
 message OrbitAnalysis {
   required double progress_of_next_analysis = 1;
   optional fixed64 primary_city = 2 [(is_produced) = true,
-                                     (encoding) = UINT64];
+                                     (is_integer) = true];
   required double first_time = 13;
   required double mission_duration = 3;
   optional OrbitalElements elements = 4 [(is_produced) = true];
@@ -439,7 +439,7 @@ message CelestialFromParent {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    required fixed64 celestial_city = 2 [(encoding) = UINT64];
+    required fixed64 celestial_city = 2 [(is_integer) = true];
   }
   message Return {
     required QP result = 1;
@@ -472,7 +472,7 @@ message CelestialInitialRotationInDegrees {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    required fixed64 celestial_city = 2 [(encoding) = UINT64];
+    required fixed64 celestial_city = 2 [(is_integer) = true];
   }
   message Return {
     required double result = 1;
@@ -504,7 +504,7 @@ message CelestialRotationPeriod {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    required fixed64 celestial_city = 2 [(encoding) = UINT64];
+    required fixed64 celestial_city = 2 [(is_integer) = true];
   }
   message Return {
     required double result = 1;
@@ -604,7 +604,7 @@ message CollisionNewFlightPlanExecutor {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    required fixed64 celestial_city = 2 [(encoding) = UINT64];
+    required fixed64 celestial_city = 2 [(is_integer) = true];
     required XYZ sun_world_position = 3;
     required int32 max_points = 7;
     required string vessel_guid = 4;
@@ -626,7 +626,7 @@ message CollisionNewPredictionExecutor {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    required fixed64 celestial_city = 2 [(encoding) = UINT64];
+    required fixed64 celestial_city = 2 [(is_integer) = true];
     required XYZ sun_world_position = 3;
     required int32 max_points = 7;
     required string vessel_guid = 4;
@@ -1145,7 +1145,7 @@ message FlightPlanOptimizationDriverMake {
     required string vessel_guid = 2;
     required double distance = 3;
     optional double inclination_in_degrees = 4;
-    required fixed64 celestial_city = 5 [(encoding) = UINT64];
+    required fixed64 celestial_city = 5 [(is_integer) = true];
     required NavigationFrameParameters navigation_frame_parameters = 6;
   }
   optional In in = 1;
@@ -1209,7 +1209,7 @@ message FlightPlanRenderedApsides {
                                  (is_subject) = true];
     required string vessel_guid = 2;
     optional double t_max = 6;  // Added in von Koch.
-    required fixed64 celestial_city = 3 [(encoding) = UINT64];
+    required fixed64 celestial_city = 3 [(is_integer) = true];
     required XYZ sun_world_position = 4;
     required int32 max_points = 5;
   }
@@ -1599,8 +1599,8 @@ message InsertCelestialAbsoluteCartesian {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required fixed64 celestial_city = 2 [(encoding) = UINT64];
-    optional fixed64 parent_city = 3 [(encoding) = UINT64];
+    required fixed64 celestial_city = 2 [(is_integer) = true];
+    optional fixed64 parent_city = 3 [(is_integer) = true];
     required BodyParameters body_parameters = 16;
     required string x = 9;
     required string y = 10;
@@ -1618,8 +1618,8 @@ message InsertCelestialJacobiKeplerian {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required fixed64 celestial_city = 2 [(encoding) = UINT64];
-    optional fixed64 parent_city = 3 [(encoding) = UINT64];
+    required fixed64 celestial_city = 2 [(is_integer) = true];
+    optional fixed64 parent_city = 3 [(is_integer) = true];
     required BodyParameters body_parameters = 16;
     optional KeplerianElements keplerian_elements = 9;
   }
@@ -1634,7 +1634,7 @@ message InsertOrKeepVessel {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
     required string vessel_name = 5;
-    required fixed64 parent_city = 3 [(encoding) = UINT64];
+    required fixed64 parent_city = 3 [(is_integer) = true];
     required bool loaded = 4;
   }
   message Out {
@@ -1658,7 +1658,7 @@ message InsertOrKeepLoadedPart {
     required WXYZ principal_axes_rotation = 11;
     required bool is_solid_rocket_motor = 14;
     required string vessel_guid = 4;
-    required fixed64 main_body_city = 5 [(encoding) = UINT64];
+    required fixed64 main_body_city = 5 [(is_integer) = true];
     required QP main_body_world_degrees_of_freedom = 6;
     required QP part_world_degrees_of_freedom = 7;
     required WXYZ part_rotation = 12;
@@ -2237,7 +2237,7 @@ message PlanetariumPlotCelestialFutureTrajectory {
                                       (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
-    required fixed64 celestial_city = 3 [(encoding) = UINT64];
+    required fixed64 celestial_city = 3 [(is_integer) = true];
     required string vessel_guid = 4;
     required fixed64 vertices = 5 [(pointer_to) = "ScaledSpacePoint",
                                    (is_csharp_owned) = true];
@@ -2260,7 +2260,7 @@ message PlanetariumPlotCelestialPastTrajectory {
                                       (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
-    required fixed64 celestial_city = 3 [(encoding) = UINT64];
+    required fixed64 celestial_city = 3 [(is_integer) = true];
     optional string vessel_guid = 7;
     required double max_history_length = 4;
     required fixed64 vertices = 5 [(pointer_to) = "ScaledSpacePoint",
@@ -2460,7 +2460,7 @@ message RenderedPredictionApsides {
                                  (is_subject) = true];
     required string vessel_guid = 2;
     optional double t_max = 6;  // Added in von Koch.
-    required fixed64 celestial_city = 3 [(encoding) = UINT64];
+    required fixed64 celestial_city = 3 [(is_integer) = true];
     required XYZ sun_world_position = 4;
     required int32 max_points = 5;
   }
@@ -2663,7 +2663,7 @@ message SetTargetVessel {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
-    required fixed64 reference_body_city = 3 [(encoding) = UINT64];
+    required fixed64 reference_body_city = 3 [(is_integer) = true];
   }
   optional In in = 1;
 }
@@ -2698,7 +2698,7 @@ message UnmanageableVesselVelocity {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required QP degrees_of_freedom = 2;
-    required fixed64 celestial_city = 3 [(encoding) = UINT64];
+    required fixed64 celestial_city = 3 [(is_integer) = true];
   }
   message Return {
     required XYZ result = 1;
@@ -2714,8 +2714,8 @@ message UpdateCelestialHierarchy {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    required fixed64 celestial_city = 2 [(encoding) = UINT64];
-    required fixed64 parent_city = 3 [(encoding) = UINT64];
+    required fixed64 celestial_city = 2 [(is_integer) = true];
+    required fixed64 parent_city = 3 [(is_integer) = true];
   }
   optional In in = 1;
 }
@@ -2767,7 +2767,7 @@ message VesselFromParent {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    required fixed64 parent_city = 3 [(encoding) = UINT64];
+    required fixed64 parent_city = 3 [(is_integer) = true];
     required string vessel_guid = 2;
   }
   message Return {
