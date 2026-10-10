@@ -40,7 +40,7 @@ class MockPlugin : public Plugin {
               (const, override));
 
   MOCK_METHOD(Index,
-              CelestialIndexOfBody,
+              CelestialCityHashOfBody,
               (MassiveBody const& body),
               (const, override));
 

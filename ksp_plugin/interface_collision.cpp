@@ -33,13 +33,13 @@ not_null<std::unique_ptr<
     PushPullExecutor<std::optional<DistinguishedPoints<World>::value_type>,
                      Length, Angle, Angle>>>
 NewExecutor(Plugin const* const plugin,
-            int const celestial_index,
+            std::uint64_t const celestial_city,
             XYZ const sun_world_position,
             int const max_points,
             DiscreteTrajectoryView<Barycentric> const& vessel_trajectory) {
   CHECK(plugin != nullptr);
 
-  auto task = [celestial_index,
+  auto task = [celestial_city,
                max_points,
                plugin,
                sun_world_position =
@@ -47,7 +47,7 @@ NewExecutor(Plugin const* const plugin,
                vessel_trajectory](
                   std::function<Length(Angle const& latitude,
                                        Angle const& longitude)> const& radius) {
-    return plugin->ComputeAndRenderFirstCollision(celestial_index,
+    return plugin->ComputeAndRenderFirstCollision(celestial_city,
                                                   vessel_trajectory,
                                                   sun_world_position,
                                                   max_points,
@@ -108,13 +108,13 @@ PushPullExecutor<
     std::optional<DistinguishedPoints<World>::value_type>,
     Length, Angle, Angle>* __cdecl principia__CollisionNewFlightPlanExecutor(
     Plugin const* const plugin,
-    int const celestial_index,
+    std::uint64_t const celestial_city,
     XYZ const sun_world_position,
     int const max_points,
     char const* const vessel_guid) {
   journal::Method<journal::CollisionNewFlightPlanExecutor> m{
       {plugin,
-       celestial_index,
+       celestial_city,
        sun_world_position,
        max_points,
        vessel_guid}};
@@ -122,7 +122,7 @@ PushPullExecutor<
   auto& flight_plan = GetFlightPlan(*plugin, vessel_guid);
   return m.Return(
       NewExecutor(plugin,
-                  celestial_index,
+                  celestial_city,
                   sun_world_position,
                   max_points,
                   DiscreteTrajectoryView(&flight_plan.GetAllSegments()))
@@ -133,13 +133,13 @@ PushPullExecutor<
     std::optional<DistinguishedPoints<World>::value_type>,
     Length, Angle, Angle>* __cdecl principia__CollisionNewPredictionExecutor(
     Plugin const* const plugin,
-    int const celestial_index,
+    std::uint64_t const celestial_city,
     XYZ const sun_world_position,
     int const max_points,
     char const* const vessel_guid) {
   journal::Method<journal::CollisionNewPredictionExecutor> m{
       {plugin,
-       celestial_index,
+       celestial_city,
        sun_world_position,
        max_points,
        vessel_guid}};
@@ -148,7 +148,7 @@ PushPullExecutor<
   DiscreteTrajectoryView const prediction_view(
       &vessel.trajectory(), vessel.prediction());
   return m.Return(NewExecutor(plugin,
-                              celestial_index,
+                              celestial_city,
                               sun_world_position,
                               max_points,
                               prediction_view)

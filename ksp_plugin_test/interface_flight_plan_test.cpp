@@ -305,7 +305,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillRepeatedly(ReturnRef(identity_));
   EXPECT_CALL(flight_plan_, GetManœuvre(3))
       .WillOnce(ReturnRef(*navigation_manœuvre_));
-  EXPECT_CALL(*plugin_, CelestialIndexOfBody(Ref(centre)))
+  EXPECT_CALL(*plugin_, CelestialCityHashOfBody(Ref(centre)))
       .WillOnce(Return(celestial_index));
   auto const navigation_manoeuvre =
       std::unique_ptr<NavigationManoeuvre>(

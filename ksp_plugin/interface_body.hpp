@@ -866,7 +866,7 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
   }
   analysis->primary_city = vessel_analysis->primary() == nullptr
                                ? nullptr
-                               : new CityHash(plugin.CelestialCityOfBody(
+                               : new CityHash(plugin.CelestialCityHashOfBody(
                                      *vessel_analysis->primary()));
 
   auto const to_double_ptr = [&plugin](std::optional<Instant> const& t) {

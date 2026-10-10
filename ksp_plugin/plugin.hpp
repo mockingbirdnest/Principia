@@ -179,7 +179,7 @@ class Plugin {
   virtual void ClearWorldRotationalReferenceFrame();
   virtual void SetWorldRotationalReferenceFrame(CityHash celestial_city);
 
-  virtual CityHash CelestialCityOfBody(MassiveBody const& body) const;
+  virtual CityHash CelestialCityHashOfBody(MassiveBody const& body) const;
 
   // Inserts a new vessel with GUID `vessel_guid` if it does not already exist,
   // and flags the vessel with GUID `vessel_guid` so it is kept when calling

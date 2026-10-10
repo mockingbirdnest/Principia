@@ -113,9 +113,9 @@ Burn GetBurn(Plugin const& plugin,
   // When building the parameters, make sure that the "optional" fields get a
   // deterministic default.
   NavigationFrameParameters parameters;
-  parameters.centre_index = -1;
-  parameters.primary_index = -1;
-  parameters.secondary_index = -1;
+  parameters.centre_city = -1;
+  parameters.primary_city = -1;
+  parameters.secondary_city = -1;
 
   int number_of_subclasses = 0;
 
@@ -132,10 +132,10 @@ Burn GetBurn(Plugin const& plugin,
       // possible to set a manœuvre frame to barycentric since Haar, so this
       // cannot happen in this compatibility path.
       CHECK_EQ(barycentric_rotating_reference_frame->primaries().size(), 1);
-      parameters.primary_index = plugin.CelestialIndexOfBody(
+      parameters.primary_city = plugin.CelestialCityHashOfBody(
           *barycentric_rotating_reference_frame->primaries().front());
       CHECK_EQ(barycentric_rotating_reference_frame->secondaries().size(), 1);
-      parameters.secondary_index = plugin.CelestialIndexOfBody(
+      parameters.secondary_city = plugin.CelestialCityHashOfBody(
           *barycentric_rotating_reference_frame->secondaries().front());
     }
   }
@@ -148,9 +148,9 @@ Burn GetBurn(Plugin const& plugin,
       ++number_of_subclasses;
       parameters.extension = serialization::
           BodyCentredBodyDirectionReferenceFrame::kExtensionFieldNumber;
-      parameters.primary_index = plugin.CelestialIndexOfBody(
+      parameters.primary_city = plugin.CelestialCityHashOfBody(
           *body_centred_body_direction_reference_frame->primary());
-      parameters.secondary_index = plugin.CelestialIndexOfBody(
+      parameters.secondary_city = plugin.CelestialCityHashOfBody(
           *body_centred_body_direction_reference_frame->secondary());
     }
   }
@@ -163,7 +163,7 @@ Burn GetBurn(Plugin const& plugin,
       ++number_of_subclasses;
       parameters.extension = serialization::
           BodyCentredNonRotatingReferenceFrame::kExtensionFieldNumber;
-      parameters.centre_index = plugin.CelestialIndexOfBody(
+      parameters.centre_city = plugin.CelestialCityHashOfBody(
           *body_centred_non_rotating_reference_frame->centre());
     }
   }
@@ -176,8 +176,8 @@ Burn GetBurn(Plugin const& plugin,
       ++number_of_subclasses;
       parameters.extension =
           serialization::BodySurfaceReferenceFrame::kExtensionFieldNumber;
-      parameters.centre_index =
-          plugin.CelestialIndexOfBody(*body_surface_reference_frame->centre());
+      parameters.centre_city =
+          plugin.CelestialCityHashOfBody(*body_surface_reference_frame->centre());
     }
   }
 
@@ -479,18 +479,18 @@ void __cdecl principia__FlightPlanOptimizationDriverMake(
     char const* const vessel_guid,
     double const distance,
     double const* const inclination_in_degrees,
-    int const celestial_index,
+    std::uint64_t const celestial_city,
     NavigationFrameParameters const& navigation_frame_parameters) {
   journal::Method<journal::FlightPlanOptimizationDriverMake> m(
       {plugin,
        vessel_guid,
        distance,
        inclination_in_degrees,
-       celestial_index,
+       celestial_city,
        navigation_frame_parameters});
   CHECK(plugin != nullptr);
   auto& vessel = *plugin->GetVessel(vessel_guid);
-  const auto& celestial = plugin->GetCelestial(celestial_index);
+  const auto& celestial = plugin->GetCelestial(celestial_city);
 
   std::vector<FlightPlanOptimizer::MetricFactory> factories = {
       FlightPlanOptimizer::ForCelestialDistance(
@@ -558,7 +558,7 @@ void __cdecl principia__FlightPlanRenderedApsides(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const* const t_max,
-    int const celestial_index,
+    std::uint64_t const celestial_city,
     XYZ const sun_world_position,
     int const max_points,
     Iterator** const apoapsides,
@@ -567,7 +567,7 @@ void __cdecl principia__FlightPlanRenderedApsides(
       {plugin,
        vessel_guid,
        t_max,
-       celestial_index,
+       celestial_city,
        sun_world_position,
        max_points},
       {apoapsides, periapsides});
@@ -590,7 +590,7 @@ void __cdecl principia__FlightPlanRenderedApsides(
     DistinguishedPoints<World> segment_rendered_apoapsides;
     DistinguishedPoints<World> segment_rendered_periapsides;
     plugin->ComputeAndRenderApsides(
-        celestial_index,
+        celestial_city,
         segment_view,
         FromXYZ<Position<World>>(sun_world_position),
         max_points,

@@ -712,8 +712,8 @@ void __cdecl principia__InitializePsychohistoryParameters(
 
 void __cdecl principia__InsertCelestialAbsoluteCartesian(
     Plugin* const plugin,
-    int const celestial_index,
-    int const* const parent_index,
+    std::uint64_t const celestial_city,
+    std::uint64_t const* const parent_city,
     BodyParameters const& body_parameters,
     char const* const x,
     char const* const y,
@@ -723,8 +723,8 @@ void __cdecl principia__InsertCelestialAbsoluteCartesian(
     char const* const vz) {
   journal::Method<journal::InsertCelestialAbsoluteCartesian> m(
       {plugin,
-       celestial_index,
-       parent_index,
+       celestial_city,
+       parent_city,
        body_parameters,
        x, y, z,
        vx, vy, vz});
@@ -738,9 +738,9 @@ void __cdecl principia__InsertCelestialAbsoluteCartesian(
   initial_state.set_vy(vy);
   initial_state.set_vz(vz);
   plugin->InsertCelestialAbsoluteCartesian(
-      celestial_index,
-      parent_index == nullptr ? std::nullopt
-                              : std::make_optional(*parent_index),
+      celestial_city,
+      parent_city == nullptr ? std::nullopt
+                              : std::make_optional(*parent_city),
       MakeGravityModel(body_parameters),
       initial_state);
   return m.Return();
@@ -748,14 +748,14 @@ void __cdecl principia__InsertCelestialAbsoluteCartesian(
 
 void __cdecl principia__InsertCelestialJacobiKeplerian(
     Plugin* const plugin,
-    int const celestial_index,
-    int const* const parent_index,
+    std::uint64_t const celestial_city,
+    std::uint64_t const* const parent_city,
     BodyParameters const& body_parameters,
     KeplerianElements const* const keplerian_elements) {
   journal::Method<journal::InsertCelestialJacobiKeplerian> m(
       {plugin,
-       celestial_index,
-       parent_index,
+       celestial_city,
+       parent_city,
        body_parameters,
        keplerian_elements});
   CHECK(plugin != nullptr);
@@ -783,9 +783,9 @@ void __cdecl principia__InsertCelestialJacobiKeplerian(
         DebugString(keplerian_elements->mean_anomaly * Radian));
   }
   plugin->InsertCelestialJacobiKeplerian(
-      celestial_index,
-      parent_index == nullptr ? std::nullopt
-                              : std::make_optional(*parent_index),
+      celestial_city,
+      parent_city == nullptr ? std::nullopt
+                              : std::make_optional(*parent_city),
       MakeGravityModel(body_parameters),
       initial_state);
   return m.Return();
@@ -796,11 +796,11 @@ void __cdecl principia__InsertCelestialJacobiKeplerian(
 void __cdecl principia__InsertOrKeepVessel(Plugin* const plugin,
                                            char const* const vessel_guid,
                                            char const* const vessel_name,
-                                           int const parent_index,
+                                           std::uint64_t const parent_city,
                                            bool const loaded,
                                            bool* inserted) {
   journal::Method<journal::InsertOrKeepVessel> m(
-      {plugin, vessel_guid, vessel_name, parent_index, loaded}, {inserted});
+      {plugin, vessel_guid, vessel_name, parent_city, loaded}, {inserted});
   CHECK(plugin != nullptr);
   CHECK(vessel_guid != nullptr)
       << "name: "
@@ -810,7 +810,7 @@ void __cdecl principia__InsertOrKeepVessel(Plugin* const plugin,
       << (vessel_guid == nullptr ? "null" : std::string_view(vessel_guid));
   plugin->InsertOrKeepVessel(vessel_guid,
                              vessel_name,
-                             parent_index,
+                             parent_city,
                              loaded,
                              *inserted);
   return m.Return();
@@ -826,7 +826,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
     WXYZ const principal_axes_rotation,
     bool const is_solid_rocket_motor,
     char const* const vessel_guid,
-    int const main_body_index,
+    std::uint64_t const main_body_city,
     QP const main_body_world_degrees_of_freedom,
     QP const part_world_degrees_of_freedom,
     WXYZ const part_rotation,
@@ -842,7 +842,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
        principal_axes_rotation,
        is_solid_rocket_motor,
        vessel_guid,
-       main_body_index,
+       main_body_city,
        main_body_world_degrees_of_freedom,
        part_world_degrees_of_freedom,
        part_rotation,
@@ -865,7 +865,7 @@ void __cdecl principia__InsertOrKeepLoadedPart(
       inertia_tensor_in_rigid_part,
       is_solid_rocket_motor,
       vessel_guid,
-      main_body_index,
+      main_body_city,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
       MakePartRigidMotion(
           part_world_degrees_of_freedom, part_rotation, part_angular_velocity),
@@ -1119,10 +1119,10 @@ void __cdecl principia__SetFlag(char const* const name,
   return m.Return();
 }
 
-void __cdecl principia__SetMainBody(Plugin* const plugin, int const index) {
-  journal::Method<journal::SetMainBody> m({plugin, index});
+void __cdecl principia__SetMainBody(Plugin* const plugin, int const city) {
+  journal::Method<journal::SetMainBody> m({plugin, city});
   CHECK(plugin != nullptr);
-  plugin->SetMainBody(index);
+  plugin->SetMainBody(city);
   return m.Return();
 }
 
@@ -1152,31 +1152,33 @@ void __cdecl principia__SetVerboseLogging(int const level) {
 }
 
 void __cdecl principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
-                                                         int const index) {
-  journal::Method<journal::SetWorldRotationalReferenceFrame> m({plugin, index});
+                                                         int const city) {
+  journal::Method<journal::SetWorldRotationalReferenceFrame> m({plugin, city});
   CHECK(plugin != nullptr);
-  plugin->SetWorldRotationalReferenceFrame(index);
+  plugin->SetWorldRotationalReferenceFrame(city);
   return m.Return();
 }
 
-XYZ __cdecl principia__UnmanageableVesselVelocity(Plugin const* const plugin,
-                                                  QP const degrees_of_freedom,
-                                                  int const parent_index) {
+XYZ __cdecl principia__UnmanageableVesselVelocity(
+    Plugin const* const plugin,
+    QP const degrees_of_freedom,
+    std::uint64_t const parent_city) {
   return ToXYZ(ABSL_DIE_IF_NULL(plugin)->UnmanageableVesselVelocity(
       FromQP<RelativeDegreesOfFreedom<AliceSun>>(degrees_of_freedom),
-      parent_index));
+      parent_city));
 }
 
 // Calls `plugin->UpdateCelestialHierarchy` with the arguments given.
 // `plugin` must not be null.  No transfer of ownership.
-void __cdecl principia__UpdateCelestialHierarchy(Plugin const* const plugin,
-                                                 int const celestial_index,
-                                                 int const parent_index) {
+void __cdecl principia__UpdateCelestialHierarchy(
+    Plugin const* const plugin,
+    std::uint64_t const celestial_city,
+    std::uint64_t const parent_city) {
   journal::Method<journal::UpdateCelestialHierarchy> m({plugin,
-                                                        celestial_index,
-                                                        parent_index});
+                                                        celestial_city,
+                                                        parent_city});
   CHECK(plugin != nullptr);
-  plugin->UpdateCelestialHierarchy(celestial_index, parent_index);
+  plugin->UpdateCelestialHierarchy(celestial_city, parent_city);
   return m.Return();
 }
 

@@ -377,7 +377,7 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
   ReadReachFlightPlan();
 
   Celestial const& moon = FindCelestialByName("Moon", *plugin_);
-  auto const moon_index = plugin_->CelestialIndexOfBody(*moon.body());
+  auto const moon_index = plugin_->CelestialCityHashOfBody(*moon.body());
   auto const moon_frame =
       plugin_->NewBodyCentredNonRotatingNavigationFrame(moon_index);
   Instant flyby_time;
