@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/hash/internal/city.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "astronomy/frames.hpp"
@@ -140,8 +141,8 @@ class TestablePlugin : public Plugin {
   }
 
   not_null<ContinuousTrajectory<Barycentric> const*> trajectory(
-      Index const index) const {
-    return trajectories_.at(index);
+      CityHash const city) const {
+    return trajectories_.at(city);
   }
 
   // We override this part of initialization in order to create a
@@ -154,7 +155,7 @@ class TestablePlugin : public Plugin {
       ContinuousTrajectory<Barycentric>* const trajectory =
           const_cast<ContinuousTrajectory<Barycentric>*>(
               &*ephemeris_->trajectory(body));
-      trajectories_.emplace(name_to_index_[body->name()], trajectory);
+      trajectories_.emplace(name_to_city_[body->name()], trajectory);
 
       // Make sure that the `trajectory` member does the right thing.  Note that
       // the implicit conversion doesn't work too well in the matcher.
@@ -169,7 +170,7 @@ class TestablePlugin : public Plugin {
   }
 
  private:
-  std::map<Index, not_null<ContinuousTrajectory<Barycentric> const*>>
+  std::map<CityHash, not_null<ContinuousTrajectory<Barycentric> const*>>
       trajectories_;
   std::unique_ptr<MockEphemeris<Barycentric>> owned_mock_ephemeris_;
   std::unique_ptr<Ephemeris<Barycentric>> owned_real_ephemeris_;
@@ -200,6 +201,20 @@ class PluginTestWithoutPlugin : public testing::Test {
         Sqrt(solar_system_->gravitational_parameter(
                  SolarSystemFactory::name(SolarSystemFactory::Earth)) /
                  satellite_initial_displacement_.Norm()) * unit_tangent;
+  }
+
+  static CityHash GetCityHash(int const index) {
+      std::string const name = SolarSystemFactory::name(index);
+    return absl::hash_internal::CityHash64(name.c_str(), name.size());
+  }
+
+  static std::optional<CityHash> GetCityHashOrNullopt(
+      std::optional<int> const& index) {
+    if (index.has_value()) {
+      return GetCityHash(index.value());
+    } else {
+      return std::nullopt;
+    }
   }
 
   static void PrintSerializedPlugin(const Plugin& plugin) {
@@ -235,14 +250,14 @@ class PluginTest : public PluginTestWithoutPlugin {
     for (int index = SolarSystemFactory::Sun;
          index <= SolarSystemFactory::LastMajorBody;
          ++index) {
-      std::optional<Index> parent_index;
+      std::optional<int> parent_index;
       if (index != SolarSystemFactory::Sun) {
         parent_index = SolarSystemFactory::parent(index);
       }
       std::string const name = SolarSystemFactory::name(index);
       plugin_->InsertCelestialAbsoluteCartesian(
-          index,
-          parent_index,
+          GetCityHash(index),
+          GetCityHashOrNullopt(parent_index),
           solar_system_->gravity_model_message(name),
           solar_system_->cartesian_initial_state_message(name));
     }
@@ -297,7 +312,7 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
     std::string const name = SolarSystemFactory::name(index);
-    Index const parent_index = SolarSystemFactory::parent(index);
+    int const parent_index = SolarSystemFactory::parent(index);
     std::string const parent_name = SolarSystemFactory::name(parent_index);
     RelativeDegreesOfFreedom<Barycentric> const state_vectors =
         Identity<ICRS, Barycentric>()(
@@ -328,8 +343,8 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
         DebugString(*keplerian_elements.argument_of_periapsis));
     elements->set_mean_anomaly(DebugString(*keplerian_elements.mean_anomaly));
     plugin->InsertCelestialJacobiKeplerian(
-        index,
-        parent_index,
+        GetCityHash(index),
+        GetCityHashOrNullopt(parent_index),
         solar_system_->gravity_model_message(name),
         keplerian_body);
   }
@@ -337,7 +352,7 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   bool inserted;
   plugin->InsertOrKeepVessel(satellite,
                              "v" + satellite,
-                             SolarSystemFactory::Earth,
+                             GetCityHash(SolarSystemFactory::Earth),
                              /*loaded=*/false,
                              inserted);
   plugin->InsertUnloadedPart(
@@ -371,14 +386,14 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   // is the most convenient way to check that forgetting works as expected.
   plugin->InsertOrKeepVessel(satellite,
                              "v" + satellite,
-                             SolarSystemFactory::Earth,
+                             GetCityHash(SolarSystemFactory::Earth),
                              /*loaded=*/false,
                              inserted);
   plugin->AdvanceTime(history_time(time, 3), Angle());
   plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->InsertOrKeepVessel(satellite,
                              "v" + satellite,
-                             SolarSystemFactory::Earth,
+                             GetCityHash(SolarSystemFactory::Earth),
                              /*loaded=*/false,
                              inserted);
   plugin->AdvanceTime(history_time(time, 6), Angle());
@@ -388,7 +403,7 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   plugin->CreateFlightPlan(satellite, history_time(time, 7), 4 * Kilogram);
   plugin->renderer().SetPlottingFrame(
       plugin->NewBodyCentredNonRotatingNavigationFrame(
-          SolarSystemFactory::Venus));
+          GetCityHash(SolarSystemFactory::Venus)));
 
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
@@ -396,15 +411,16 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   EXPECT_EQ(SolarSystemFactory::LastMajorBody - SolarSystemFactory::Sun + 1,
             message.celestial_size());
 
-  EXPECT_FALSE(message.celestial(0).has_parent_index());
-  EXPECT_EQ(message.celestial(0).index(), message.celestial(1).parent_index());
+  EXPECT_FALSE(message.celestial(0).has_parent_city());
+  EXPECT_EQ(message.celestial(0).city(), message.celestial(1).parent_city());
 
   EXPECT_EQ(
       ParseTT(initial_time_),
       Instant::ReadFromMessage(message.ephemeris().trajectory(0).first_time()));
 
   EXPECT_EQ(1, message.vessel_size());
-  EXPECT_EQ(SolarSystemFactory::Earth, message.vessel(0).parent_index());
+  EXPECT_EQ(GetCityHash(SolarSystemFactory::Earth),
+            message.vessel(0).parent_city());
   EXPECT_FALSE(message.vessel(0).vessel().flight_plans().empty());
   EXPECT_TRUE(message.vessel(0).vessel().has_history());
   auto const& vessel_0_history = message.vessel(0).vessel().history();
@@ -459,21 +475,22 @@ TEST_F(PluginTest, Initialization) {
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
+    CityHash const city = GetCityHash(index);
     auto const to_icrs =
         id_icrs_barycentric_.orthogonal_map().Inverse() *
         plugin_->InversePlanetariumRotation().Forget<OrthogonalMap>();
-    Index const parent_index = SolarSystemFactory::parent(index);
+    int const parent_index = SolarSystemFactory::parent(index);
     RelativeDegreesOfFreedom<ICRS> const from_parent =
         solar_system_->degrees_of_freedom(SolarSystemFactory::name(index)) -
         solar_system_->degrees_of_freedom(
             SolarSystemFactory::name(parent_index));
     EXPECT_THAT(from_parent,
                 Componentwise(
-                    AlmostEquals(to_icrs(plugin_->CelestialFromParent(index)
+                    AlmostEquals(to_icrs(plugin_->CelestialFromParent(city)
                                              .displacement()),
                                  0, 458752),
                     AlmostEquals(
-                        to_icrs(plugin_->CelestialFromParent(index).velocity()),
+                        to_icrs(plugin_->CelestialFromParent(city).velocity()),
                         441, 9400740)))
         << SolarSystemFactory::name(index);
   }
@@ -507,7 +524,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       &initial_state));
   plugin_->InsertCelestialJacobiKeplerian(
       0,
-      /*parent_index=*/std::nullopt,
+      /*parent_city=*/std::nullopt,
       gravity_model,
       initial_state);
 
@@ -533,8 +550,8 @@ TEST_F(PluginTest, HierarchicalInitialization) {
          })",
       &initial_state));
   plugin_->InsertCelestialJacobiKeplerian(
-      /*celestial_index=*/1,
-      /*parent_index=*/0,
+      /*celestial_city=*/1,
+      /*parent_city=*/0,
       gravity_model,
       initial_state);
 
@@ -560,8 +577,8 @@ TEST_F(PluginTest, HierarchicalInitialization) {
          })",
       &initial_state));
   plugin_->InsertCelestialJacobiKeplerian(
-      /*celestial_index=*/2,
-      /*parent_index=*/0,
+      /*celestial_city=*/2,
+      /*parent_city=*/0,
       gravity_model,
       initial_state);
 
@@ -587,8 +604,8 @@ TEST_F(PluginTest, HierarchicalInitialization) {
          })",
       &initial_state));
   plugin_->InsertCelestialJacobiKeplerian(
-      /*celestial_index=*/3,
-      /*parent_index=*/1,
+      /*celestial_city=*/3,
+      /*parent_city=*/1,
       gravity_model,
       initial_state);
 
@@ -606,7 +623,7 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
   EXPECT_DEATH({
       plugin_->InsertCelestialAbsoluteCartesian(
           42,
-          /*parent_index=*/std::nullopt,
+          /*parent_city=*/std::nullopt,
           solar_system_->gravity_model_message(
               SolarSystemFactory::name(SolarSystemFactory::Sun)),
           solar_system_->cartesian_initial_state_message(
@@ -617,18 +634,20 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->UpdateCelestialHierarchy(SolarSystemFactory::Sun,
-                                      SolarSystemFactory::Pluto);
+    plugin_->UpdateCelestialHierarchy(GetCityHash(SolarSystemFactory::Sun),
+                                      GetCityHash(SolarSystemFactory::Pluto));
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->UpdateCelestialHierarchy(not_a_body, SolarSystemFactory::Pluto);
+    plugin_->UpdateCelestialHierarchy(not_a_body,
+                                      GetCityHash(SolarSystemFactory::Pluto));
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->UpdateCelestialHierarchy(SolarSystemFactory::Sun, not_a_body);
+    plugin_->UpdateCelestialHierarchy(GetCityHash(SolarSystemFactory::Sun),
+                                      not_a_body);
   }, "Map key not found");
 }
 
@@ -639,7 +658,7 @@ TEST_F(PluginDeathTest, InsertOrKeepVesselError) {
     bool inserted;
     plugin_->InsertOrKeepVessel(guid,
                                 "v" + guid,
-                                SolarSystemFactory::Sun,
+                                GetCityHash(SolarSystemFactory::Sun),
                                 /*loaded=*/false,
                                 inserted);
   }, "Check failed: !initializing");
@@ -663,7 +682,7 @@ TEST_F(PluginDeathTest, InsertUnloadedPartError) {
     bool inserted;
     plugin_->InsertOrKeepVessel(guid,
                                 "v" + guid,
-                                SolarSystemFactory::Sun,
+                                GetCityHash(SolarSystemFactory::Sun),
                                 /*loaded=*/false,
                                 inserted);
     plugin_->InsertUnloadedPart(
@@ -689,7 +708,7 @@ TEST_F(PluginDeathTest, InsertUnloadedPartError) {
     bool inserted;
     plugin_->InsertOrKeepVessel(guid,
                                 "v" + guid,
-                                SolarSystemFactory::Sun,
+                                GetCityHash(SolarSystemFactory::Sun),
                                 /*loaded=*/false,
                                 inserted);
     Instant const initial_time = ParseTT(initial_time_);
@@ -720,12 +739,12 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->VesselFromParent(SolarSystemFactory::Sun, guid);
+    plugin_->VesselFromParent(GetCityHash(SolarSystemFactory::Sun), guid);
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->VesselFromParent(SolarSystemFactory::Sun, guid);
+    plugin_->VesselFromParent(GetCityHash(SolarSystemFactory::Sun), guid);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
@@ -733,19 +752,19 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
     bool inserted;
     plugin_->InsertOrKeepVessel(guid,
                                 "v" + guid,
-                                SolarSystemFactory::Sun,
+                                GetCityHash(SolarSystemFactory::Sun),
                                 /*loaded=*/false,
                                 inserted);
     plugin_->PrepareToReportCollisions();
     plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
-    plugin_->VesselFromParent(SolarSystemFactory::Sun, guid);
+    plugin_->VesselFromParent(GetCityHash(SolarSystemFactory::Sun), guid);
   }, R"regex(!parts_\.empty\(\))regex");
 }
 
 TEST_F(PluginDeathTest, CelestialFromParentError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->CelestialFromParent(SolarSystemFactory::Earth);
+    plugin_->CelestialFromParent(GetCityHash(SolarSystemFactory::Earth));
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
@@ -755,7 +774,7 @@ TEST_F(PluginDeathTest, CelestialFromParentError) {
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     plugin_->EndInitialization();
-    plugin_->CelestialFromParent(SolarSystemFactory::Sun);
+    plugin_->CelestialFromParent(GetCityHash(SolarSystemFactory::Sun));
   }, "is the sun");
 }
 
@@ -767,7 +786,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   bool inserted;
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
-                              SolarSystemFactory::Earth,
+                              GetCityHash(SolarSystemFactory::Earth),
                               /*loaded=*/false,
                               inserted);
   EXPECT_TRUE(inserted);
@@ -783,7 +802,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
   EXPECT_THAT(
-      plugin_->VesselFromParent(SolarSystemFactory::Earth, guid),
+      plugin_->VesselFromParent(GetCityHash(SolarSystemFactory::Earth), guid),
       Componentwise(AlmostEquals(satellite_initial_displacement_, 3437, 3438),
                     AlmostEquals(satellite_initial_velocity_, 11, 17)));
 }
@@ -795,7 +814,8 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
-    plugin_->UpdateCelestialHierarchy(index, SolarSystemFactory::Sun);
+    plugin_->UpdateCelestialHierarchy(GetCityHash(index),
+                                      GetCityHash(SolarSystemFactory::Sun));
   }
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
@@ -807,9 +827,10 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
         solar_system_->degrees_of_freedom(SolarSystemFactory::name(index)) -
         solar_system_->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
+    CityHash const city = GetCityHash(index);
     RelativeDegreesOfFreedom<ICRS> const computed_from_parent(
-        to_icrs(plugin_->CelestialFromParent(index).displacement()),
-        to_icrs(plugin_->CelestialFromParent(index).velocity()));
+        to_icrs(plugin_->CelestialFromParent(city).displacement()),
+        to_icrs(plugin_->CelestialFromParent(city).velocity()));
     EXPECT_THAT(
         (initial_from_parent.displacement() -
          computed_from_parent.displacement()).Norm(),
@@ -841,14 +862,15 @@ TEST_F(PluginTestWithoutPlugin, Navball) {
          angular_frequency       : "1 rad/s")",
       &gravity_model));
   plugin.InsertCelestialAbsoluteCartesian(
-      SolarSystemFactory::Sun,
-      /*parent_index=*/std::nullopt,
+      GetCityHash(SolarSystemFactory::Sun),
+      /*parent_city=*/std::nullopt,
       gravity_model,
       solar_system_->cartesian_initial_state_message(
           SolarSystemFactory::name(SolarSystemFactory::Sun)));
   plugin.EndInitialization();
   not_null<std::unique_ptr<NavigationFrame>> navigation_frame =
-      plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::Sun);
+      plugin.NewBodyCentredNonRotatingNavigationFrame(
+          GetCityHash(SolarSystemFactory::Sun));
   not_null<const PlottingFrame*> const navigation_frame_copy =
       navigation_frame.get();
   plugin.renderer().SetPlottingFrame(std::move(navigation_frame));
@@ -888,8 +910,8 @@ TEST_F(PluginTestWithoutPlugin, NavballTargetVessel) {
          angular_frequency       : "1 rad/s")",
       &gravity_model));
   plugin.InsertCelestialAbsoluteCartesian(
-      SolarSystemFactory::Sun,
-      /*parent_index=*/std::nullopt,
+      GetCityHash(SolarSystemFactory::Sun),
+      /*parent_city=*/std::nullopt,
       gravity_model,
       solar_system_->cartesian_initial_state_message(
           SolarSystemFactory::name(SolarSystemFactory::Sun)));
@@ -898,7 +920,7 @@ TEST_F(PluginTestWithoutPlugin, NavballTargetVessel) {
   bool inserted;
   plugin.InsertOrKeepVessel(guid,
                             "v" + guid,
-                            SolarSystemFactory::Sun,
+                            GetCityHash(SolarSystemFactory::Sun),
                             /*loaded=*/false,
                             inserted);
   plugin.InsertUnloadedPart(
@@ -910,7 +932,7 @@ TEST_F(PluginTestWithoutPlugin, NavballTargetVessel) {
   plugin.PrepareToReportCollisions();
   plugin.FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
 
-  plugin.SetTargetVessel(guid, SolarSystemFactory::Sun);
+  plugin.SetTargetVessel(guid, GetCityHash(SolarSystemFactory::Sun));
   plugin.AdvanceTime(plugin.CurrentTime() + 12 * Hour, 0 * Radian);
   auto future = plugin.CatchUpVessel(guid);
   VesselSet collided_vessels;
@@ -924,8 +946,8 @@ TEST_F(PluginTestWithoutPlugin, Frenet) {
                 initial_time_,
                 0 * Radian);
   plugin.InsertCelestialAbsoluteCartesian(
-      SolarSystemFactory::Earth,
-      /*parent_index=*/std::nullopt,
+      GetCityHash(SolarSystemFactory::Earth),
+      /*parent_city=*/std::nullopt,
       solar_system_->gravity_model_message(
           SolarSystemFactory::name(SolarSystemFactory::Earth)),
       solar_system_->cartesian_initial_state_message(
@@ -957,7 +979,7 @@ TEST_F(PluginTestWithoutPlugin, Frenet) {
   Vector<double, World> const b(-Cross(t.coordinates(), n.coordinates()));
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
-          SolarSystemFactory::Earth);
+          GetCityHash(SolarSystemFactory::Earth));
   EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 5, 61));
   EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3, 25));
   EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 0, 15));
