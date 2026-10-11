@@ -192,7 +192,7 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters,
     //}
   }
 
-      public static bool operator ==(PlottingFrameParameters left,
+  public static bool operator ==(PlottingFrameParameters left,
                                  IReferenceFrameParameters right) {
     if ((object)left == null && (object)right == null) {
       return true;
