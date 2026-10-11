@@ -353,7 +353,7 @@ message OrbitAnalysisPlotOptions {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5225.
+  extensions 5000 to 5999;  // Last used: 5226.
 }
 
 message ActivatePlayer {
@@ -541,6 +541,20 @@ message CelestialWorldDegreesOfFreedom {
   }
   message Return {
     required QP result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message CityHash64 {
+  extend Method {
+    optional CityHash64 extension = 5226;
+  }
+  message In {
+    required string name = 1;
+  }
+  message Return {
+    required fixed64 city = 1 [(is_integer) = true];
   }
   optional In in = 1;
   optional Return return = 3;
