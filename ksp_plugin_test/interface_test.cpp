@@ -85,9 +85,9 @@ constexpr char part_name[] = "Picard's chair";
 constexpr char vessel_guid[] = "123-456";
 constexpr char vessel_name[] = "NCC-1701-D";
 
-constexpr Index celestial_index = 1;
-constexpr Index parent_index = 2;
-constexpr Index unused = 666;
+constexpr CityHash celestial_city = 1;
+constexpr CityHash parent_city = 2;
+constexpr CityHash unused = 666;
 
 constexpr PartId part_id = 42;
 
@@ -155,17 +155,17 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
     principia__DeletePlugin(nullptr);
   }, "!= nullptr");
   EXPECT_DEATH({
-    principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
+    principia__UpdateCelestialHierarchy(plugin, celestial_city, parent_city);
   }, "plugin.*!= nullptr");
   EXPECT_DEATH({
-    principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
+    principia__UpdateCelestialHierarchy(plugin, celestial_city, parent_city);
   }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     bool inserted;
     principia__InsertOrKeepVessel(plugin,
                                   vessel_guid,
                                   vessel_name,
-                                  parent_index,
+                                  parent_city,
                                   /*loaded=*/false,
                                   &inserted);
   }, "plugin.*!= nullptr");
@@ -177,10 +177,10 @@ TEST_F(InterfaceDeathTestWithoutPlugin, Errors) {
                                   parent_relative_degrees_of_freedom);
   }, "plugin.*!= nullptr");
   EXPECT_DEATH({
-    principia__VesselFromParent(plugin, celestial_index, vessel_guid);
+    principia__VesselFromParent(plugin, celestial_city, vessel_guid);
   }, "plugin.*!= nullptr");
   EXPECT_DEATH({
-    principia__CelestialFromParent(plugin, celestial_index);
+    principia__CelestialFromParent(plugin, celestial_city);
   }, "plugin.*!= nullptr");
   EXPECT_DEATH({
     principia__LogFatal("a file", 1729, "a fatal error");
@@ -247,8 +247,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       &initial_state));
   EXPECT_CALL(*plugin_,
               InsertCelestialAbsoluteCartesian(
-                  celestial_index,
-                  std::make_optional(parent_index),
+                  celestial_city,
+                  std::make_optional(parent_city),
                   EqualsProto(gravity_model),
                   EqualsProto(initial_state)));
 
@@ -269,8 +269,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       /*j2=*/nullptr,
       /*geopotential=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
-                                              celestial_index,
-                                              &parent_index,
+                                              celestial_city,
+                                              &parent_city,
                                               body_parameters,
                                               "0 m",
                                               "23.456e-7 km",
@@ -310,8 +310,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
       &initial_state));
   EXPECT_CALL(*plugin_,
               InsertCelestialAbsoluteCartesian(
-                  celestial_index,
-                  std::make_optional(parent_index),
+                  celestial_city,
+                  std::make_optional(parent_city),
                   EqualsProto(gravity_model),
                   EqualsProto(initial_state)));
 
@@ -331,8 +331,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                           "123e-6",
                                           /*geopotential=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
-                                              celestial_index,
-                                              &parent_index,
+                                              celestial_city,
+                                              &parent_city,
                                               body_parameters,
                                               "0 m",
                                               "23.456e-7 km",
@@ -381,8 +381,8 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
       &initial_state));
   EXPECT_CALL(*plugin_,
               InsertCelestialAbsoluteCartesian(
-                  celestial_index,
-                  std::make_optional(parent_index),
+                  celestial_city,
+                  std::make_optional(parent_city),
                   EqualsProto(gravity_model),
                   EqualsProto(initial_state)));
 
@@ -405,8 +405,8 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
                                           /*j2=*/nullptr,
                                           j};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
-                                              celestial_index,
-                                              &parent_index,
+                                              celestial_city,
+                                              &parent_city,
                                               body_parameters,
                                               "0 m",
                                               "23.456e-7 km",
@@ -418,10 +418,10 @@ TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
 
 TEST_F(InterfaceTest, UpdateCelestialHierarchy) {
   EXPECT_CALL(*plugin_,
-              UpdateCelestialHierarchy(celestial_index, parent_index));
+              UpdateCelestialHierarchy(celestial_city, parent_city));
   principia__UpdateCelestialHierarchy(plugin_.get(),
-                                      celestial_index,
-                                      parent_index);
+                                      celestial_city,
+                                      parent_city);
 }
 
 TEST_F(InterfaceTest, EndInitialization) {
@@ -435,7 +435,7 @@ TEST_F(InterfaceTest, InsertOrKeepVessel) {
   EXPECT_CALL(*plugin_,
               InsertOrKeepVessel(vessel_guid,
                                  vessel_name,
-                                 parent_index,
+                                 parent_city,
                                  /*loaded=*/false,
                                  Ref(inserted)))
       .WillOnce(SetArgReferee<4>(true));
@@ -446,7 +446,7 @@ TEST_F(InterfaceTest, InsertOrKeepVessel) {
   principia__InsertOrKeepVessel(plugin_.get(),
                                 vessel_guid,
                                 vessel_name,
-                                parent_index,
+                                parent_city,
                                 /*loaded=*/false,
                                 &inserted);
   EXPECT_TRUE(plugin_->HasVessel(vessel_guid));
@@ -483,7 +483,7 @@ TEST_F(InterfaceTest, AdvanceTime) {
 
 TEST_F(InterfaceTest, VesselFromParent) {
   EXPECT_CALL(*plugin_,
-              VesselFromParent(celestial_index, vessel_guid))
+              VesselFromParent(celestial_city, vessel_guid))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
                                {parent_position.x * si::Unit<Length>,
@@ -494,14 +494,14 @@ TEST_F(InterfaceTest, VesselFromParent) {
                                 parent_velocity.y * si::Unit<Speed>,
                                 parent_velocity.z * si::Unit<Speed>}))));
   QP const result = principia__VesselFromParent(plugin_.get(),
-                                                celestial_index,
+                                                celestial_city,
                                                 vessel_guid);
   EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
 }
 
 TEST_F(InterfaceTest, CelestialFromParent) {
   EXPECT_CALL(*plugin_,
-              CelestialFromParent(celestial_index))
+              CelestialFromParent(celestial_city))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
                                {parent_position.x * si::Unit<Length>,
@@ -512,29 +512,29 @@ TEST_F(InterfaceTest, CelestialFromParent) {
                                 parent_velocity.y * si::Unit<Speed>,
                                 parent_velocity.z * si::Unit<Speed>}))));
   QP const result = principia__CelestialFromParent(plugin_.get(),
-                                                    celestial_index);
+                                                    celestial_city);
   EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
 }
 
 TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
 
-  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
-                                                           nullptr};
-  std::array<int const*, 2> const parent_index_array = {&parent_index,
-                                                        nullptr};
+  std::array<std::uint64_t const*, 2> const celestial_city_array = {
+      &celestial_city, nullptr};
+  std::array<std::uint64_t const*, 2> const parent_city_array = {
+      &parent_city, nullptr};
   PlottingFrameParameters parameters = {
       .extension = serialization::BarycentricRotatingReferenceFrame::
           kExtensionFieldNumber,
-      .centre_index = unused,
-      .primary_index = celestial_index_array.data(),
-      .secondary_index = parent_index_array.data()};
+      .centre_city = unused,
+      .primary_city = celestial_city_array.data(),
+      .secondary_city = parent_city_array.data()};
   {
     auto* const mock_navigation_frame =
         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
-                NewBarycentricRotatingNavigationFrame(celestial_index,
-                                                      parent_index))
+                NewBarycentricRotatingNavigationFrame(celestial_city,
+                                                      parent_city))
         .WillOnce(Return(ByMove(
             std::unique_ptr<
                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
@@ -545,12 +545,12 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
 
   parameters.extension = serialization::BodyCentredNonRotatingReferenceFrame::
       kExtensionFieldNumber;
-  parameters.centre_index = celestial_index;
+  parameters.centre_city = celestial_city;
   {
     auto* const mock_navigation_frame =
         new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
     EXPECT_CALL(*plugin_,
-                NewBodyCentredNonRotatingNavigationFrame(celestial_index))
+                NewBodyCentredNonRotatingNavigationFrame(celestial_city))
         .WillOnce(Return(ByMove(
             std::unique_ptr<
                 StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
@@ -564,22 +564,22 @@ TEST_F(InterfaceTest, NavballOrientation) {
   auto* const mock_navigation_frame =
       new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              NewBarycentricRotatingNavigationFrame(celestial_index,
-                                                    parent_index))
+              NewBarycentricRotatingNavigationFrame(celestial_city,
+                                                    parent_city))
       .WillOnce(Return(
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
-                                                           nullptr};
-  std::array<int const*, 2> const parent_index_array = {&parent_index,
-                                                        nullptr};
+  std::array<std::uint64_t const*, 2> const celestial_city_array = {
+      &celestial_city, nullptr};
+  std::array<std::uint64_t const*, 2> const parent_city_array = {&parent_city,
+                                                                 nullptr};
   PlottingFrameParameters const parameters = {
       .extension = serialization::BarycentricRotatingReferenceFrame::
           kExtensionFieldNumber,
-      .centre_index = unused,
-      .primary_index = celestial_index_array.data(),
-      .secondary_index = parent_index_array.data()};
+      .centre_city = unused,
+      .primary_city = celestial_city_array.data(),
+      .secondary_city = parent_city_array.data()};
 
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));

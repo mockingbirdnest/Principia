@@ -98,10 +98,9 @@ class FlightPlanOptimizerTest : public testing::Test {
  protected:
   static Celestial const& FindCelestialByName(std::string_view const name,
                                               Plugin const& plugin) {
-    for (Index index = 0; plugin.HasCelestial(index); ++index) {
-      Celestial const& celestial = plugin.GetCelestial(index);
-      if (celestial.body()->name() == name) {
-        return celestial;
+    for (auto const& celestial : plugin.GetAllCelestials()) {
+      if (celestial->body()->name() == name) {
+        return *celestial;
       }
     }
     LOG(FATAL) << "No celestial named " << name;

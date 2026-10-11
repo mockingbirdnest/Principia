@@ -1,12 +1,14 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <array>
+#include <cstdint>
 #include <memory>
 
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
@@ -24,6 +26,7 @@ using ::testing::ReturnRef;
 using ::testing::StrictMock;
 using namespace principia::base::_not_null;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_mock_plugin;
 using namespace principia::ksp_plugin_test::_mock_renderer;
@@ -35,9 +38,9 @@ namespace {
 
 constexpr char vessel_guid[] = "123-456";
 
-constexpr Index celestial_index = 1;
-constexpr Index parent_index = 2;
-constexpr Index unused = 666;
+constexpr CityHash celestial_city = 1;
+constexpr CityHash parent_city = 2;
+constexpr CityHash unused = 666;
 
 }  // namespace
 
@@ -57,22 +60,22 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
   auto* const mock_navigation_frame =
       new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              NewBarycentricRotatingNavigationFrame(celestial_index,
-                                                    parent_index))
+              NewBarycentricRotatingNavigationFrame(celestial_city,
+                                                    parent_city))
       .WillOnce(Return(
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
-                                                           nullptr};
-  std::array<int const*, 2> const parent_index_array = {&parent_index,
-                                                        nullptr};
+  std::array<std::uint64_t const*, 2> const celestial_city_array = {
+      &celestial_city, nullptr};
+  std::array<std::uint64_t const*, 2> const parent_city_array = {&parent_city,
+                                                                 nullptr};
   PlottingFrameParameters const parameters = {
       .extension = serialization::BarycentricRotatingReferenceFrame::
           kExtensionFieldNumber,
-      .centre_index = unused,
-      .primary_index = celestial_index_array.data(),
-      .secondary_index = parent_index_array.data()};
+      .centre_city = unused,
+      .primary_city = celestial_city_array.data(),
+      .secondary_city = parent_city_array.data()};
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));
@@ -83,22 +86,22 @@ TEST_F(InterfaceRendererTest, Frenet) {
   auto* const mock_navigation_frame =
       new StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>;
   EXPECT_CALL(*plugin_,
-              NewBarycentricRotatingNavigationFrame(celestial_index,
-                                                    parent_index))
+              NewBarycentricRotatingNavigationFrame(celestial_city,
+                                                    parent_city))
       .WillOnce(Return(
           ByMove(std::unique_ptr<
                  StrictMock<MockRigidReferenceFrame<Barycentric, Navigation>>>(
               mock_navigation_frame))));
-  std::array<int const*, 2> const celestial_index_array = {&celestial_index,
-                                                           nullptr};
-  std::array<int const*, 2> const parent_index_array = {&parent_index,
-                                                        nullptr};
+  std::array<std::uint64_t const*, 2> const celestial_city_array = {
+      &celestial_city, nullptr};
+  std::array<std::uint64_t const*, 2> const parent_city_array = {&parent_city,
+                                                                 nullptr};
   PlottingFrameParameters const parameters = {
       .extension = serialization::BarycentricRotatingReferenceFrame::
           kExtensionFieldNumber,
-      .centre_index = unused,
-      .primary_index = celestial_index_array.data(),
-      .secondary_index = parent_index_array.data()};
+      .centre_city = unused,
+      .primary_city = celestial_city_array.data(),
+      .secondary_city = parent_city_array.data()};
 
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer_));
   EXPECT_CALL(renderer_, SetPlottingFrame(Pointer(mock_navigation_frame)));

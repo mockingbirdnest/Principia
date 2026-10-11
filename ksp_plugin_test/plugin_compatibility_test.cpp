@@ -272,9 +272,8 @@ TEST_F(PluginCompatibilityTest, Reach) {
 
   // Compute the flybys.
   std::map<Instant, std::string> flyby_map;
-  for (Index index = 0; plugin->HasCelestial(index); ++index) {
-    Celestial const& celestial = plugin->GetCelestial(index);
-    auto const& celestial_trajectory = celestial.trajectory();
+  for (auto const& celestial: plugin->GetAllCelestials()) {
+    auto const& celestial_trajectory = celestial->trajectory();
     auto const& flight_plan_trajectory = flight_plan.GetAllSegments();
     DistinguishedPoints<Barycentric> apoapsides;
     DistinguishedPoints<Barycentric> periapsides;
@@ -287,12 +286,12 @@ TEST_F(PluginCompatibilityTest, Reach) {
                    /*max_points=*/100,
                    apoapsides,
                    periapsides);
-    auto const radius = celestial.body()->mean_radius();
+    auto const radius = celestial->body()->mean_radius();
     for (auto const& [time, _] : periapsides) {
       if ((celestial_trajectory.EvaluatePosition(time) -
            flight_plan_trajectory.EvaluatePosition(time))
               .Norm() < 50 * radius) {
-        flyby_map[time] = celestial.body()->name();
+        flyby_map[time] = celestial->body()->name();
       }
     }
   }

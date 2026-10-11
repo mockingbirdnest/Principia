@@ -507,13 +507,15 @@ class Plugin {
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom) const;
 
   // Fill `celestials` using the `city` and `parent_city` fields found in
-  // `celestial_messages`.
-  template<typename T>
+  // `celestial_messages`.  To be able to interpret indices in pre-Lie saves we
+  // map indices to `CityHash` if needed.
   static void ReadCelestialsFromMessages(
       Ephemeris<Barycentric> const& ephemeris,
-      google::protobuf::RepeatedPtrField<T> const& celestial_messages,
+      google::protobuf::RepeatedPtrField<
+          serialization::Plugin::CelestialParenthood> const& celestial_messages,
       CityHashToOwnedCelestial& celestials,
-      std::map<std::string, CityHash>& name_to_city);
+      std::map<std::string, CityHash>& name_to_city,
+      absl::flat_hash_map<int, CityHash>& legacy_index_to_city);
 
   // Constructs a part using the constructor arguments, and add it to a vessel,
   // recording it in the appropriate map and setting up a deletion callback.

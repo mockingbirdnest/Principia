@@ -120,7 +120,7 @@ message PileUp {
 message Plugin {
   message CelestialParenthood {
     // Pre-Lie.
-    optional int32 index = 1;
+    optional int32 index = 1;  // Was required.
     optional int32 parent_index = 2;
     // Added in Lie.
     optional fixed64 city = 4;  // Required.
@@ -131,7 +131,7 @@ message Plugin {
   message VesselAndProperties {
     required string guid = 1;
     required Vessel vessel = 2;
-    optional int32 parent_index = 3;  // Pre-Lie.
+    optional int32 parent_index = 3;  // Pre-Lie, was required.
     optional fixed64 parent_city = 8;  // Added in Lie, required.
     required bool loaded = 5;
     required bool kept = 7;
@@ -153,9 +153,9 @@ message Plugin {
   required Quantity planetarium_rotation = 4;
   required Point game_epoch = 15;
   required Point current_time = 5;
-  optional int32 sun_index = 6;  // Pre-Lie.
+  optional int32 sun_index = 6;  // Pre-Lie, was required.
   optional fixed64 sun_city = 22;  // Added in Lie, required.
-  optional ReferenceFrame pre_cauchy_plotting_frame = 11;
+  optional ReferenceFrame plotting_frame = 11;  // Pre-Cauchy.
   repeated PileUp pile_up = 17;
   optional Renderer renderer = 18;  // Added in Cauchy.
   repeated ZombieAndProperties zombie = 19;  // Added in Frege.

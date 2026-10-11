@@ -16,6 +16,7 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin_test/mock_flight_plan.hpp"
 #include "ksp_plugin_test/mock_manœuvre.hpp"
@@ -57,6 +58,7 @@ using namespace principia::integrators::_embedded_explicit_generalized_runge_kut
 using namespace principia::integrators::_embedded_explicit_runge_kutta_nyström_integrator;  // NOLINT
 using namespace principia::integrators::_methods;
 using namespace principia::ksp_plugin::_frames;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin_test::_mock_flight_plan;
 using namespace principia::ksp_plugin_test::_mock_manœuvre;
@@ -79,7 +81,7 @@ using namespace principia::testing_utilities::_almost_equals;
 namespace {
 
 constexpr char vessel_guid[] = "123-456";
-constexpr Index celestial_index = 1;
+constexpr CityHash celestial_city = 1;
 
 MATCHER_P(HasThrust, thrust, "") {
   return arg.thrust == thrust;
@@ -142,7 +144,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   Burn interface_burn = {
       .thrust_in_kilonewtons = 1,
       .specific_impulse_in_seconds_g0 = 2,
-      .frame = {.extension = 6000, .centre_index = celestial_index},
+      .frame = {.extension = 6000, .centre_city = celestial_city},
       .initial_time = 3,
       .intensity =
           Intensity{.coordinate_system = CoordinateSystem::CARTESIAN_TNB,
@@ -238,7 +240,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                 plugin_.get(), vessel_guid));
 
   EXPECT_CALL(*plugin_,
-              NewBodyCentredNonRotatingNavigationFrame(celestial_index))
+              NewBodyCentredNonRotatingNavigationFrame(celestial_city))
       .WillOnce(Return(
           ByMove(std::make_unique<StrictMock<
                      MockRigidReferenceFrame<Barycentric, Navigation>>>())));
@@ -306,7 +308,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(flight_plan_, GetManœuvre(3))
       .WillOnce(ReturnRef(*navigation_manœuvre_));
   EXPECT_CALL(*plugin_, CelestialCityHashOfBody(Ref(centre)))
-      .WillOnce(Return(celestial_index));
+      .WillOnce(Return(celestial_city));
   auto const navigation_manoeuvre =
       std::unique_ptr<NavigationManoeuvre>(
           principia__FlightPlanGetManoeuvre(plugin_.get(),
@@ -315,7 +317,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
 
   EXPECT_EQ(10, navigation_manoeuvre->burn.thrust_in_kilonewtons);
   EXPECT_EQ(6000, navigation_manoeuvre->burn.frame.extension);
-  EXPECT_EQ(celestial_index, navigation_manoeuvre->burn.frame.centre_index);
+  EXPECT_EQ(celestial_city, navigation_manoeuvre->burn.frame.centre_city);
   EXPECT_EQ(20, navigation_manoeuvre->initial_mass_in_tonnes);
   EXPECT_THAT(navigation_manoeuvre->burn.specific_impulse_in_seconds_g0,
               AlmostEquals(30, 1));
@@ -350,7 +352,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
 
   interface_burn.thrust_in_kilonewtons = 10;
   EXPECT_CALL(*plugin_,
-              NewBodyCentredNonRotatingNavigationFrame(celestial_index))
+              NewBodyCentredNonRotatingNavigationFrame(celestial_city))
       .WillOnce(Return(
           ByMove(std::make_unique<StrictMock<
                      MockRigidReferenceFrame<Barycentric, Navigation>>>())));

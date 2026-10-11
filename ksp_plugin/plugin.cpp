@@ -1538,6 +1538,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     serialization::Plugin const& message,
     std::function<void(bool will_be_slow)> expected_performance_callback) {
   LOG(INFO) << __FUNCTION__;
+  bool const is_pre_cauchy = message.has_plotting_frame();
+  bool const is_pre_lie = !message.has_sun_city();
+  LOG_IF(WARNING, is_pre_lie)
+      << "Reading pre-" << (is_pre_cauchy ? "Cauchy" : "Lie") << " Plugin";
 
   auto const history_parameters =
       Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
@@ -1590,10 +1594,12 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   plugin->ephemeris_->Prolong(plugin->current_time_).IgnoreError();
   CHECK_LE(plugin->ephemeris_->t_min(), plugin->current_time_);
 
+  absl::flat_hash_map<int, CityHash> legacy_index_to_city;
   ReadCelestialsFromMessages(*plugin->ephemeris_,
                              message.celestial(),
                              plugin->celestials_,
-                             plugin->name_to_city_);
+                             plugin->name_to_city_,
+                             legacy_index_to_city);
 
   // Deserialization of vessels may be slow because of the Лефшец-to-Leibniz
   // migration, let's do it in parallel.
@@ -1602,8 +1608,12 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   std::vector<std::future<not_null<std::unique_ptr<Vessel>>>> vessel_futures;
   vessel_futures.reserve(message.vessel_size());
   for (auto const& vessel_message : message.vessel()) {
+    CityHash const parent_city =
+        is_pre_lie
+            ? FindOrDie(legacy_index_to_city, vessel_message.parent_index())
+            : vessel_message.parent_city();
     not_null<Celestial const*> const parent =
-        FindOrDie(plugin->celestials_, vessel_message.parent_index()).get();
+        FindOrDie(plugin->celestials_, parent_city).get();
     vessel_futures.push_back(vessel_deserialization_pool.Add(
         [expected_performance_callback, parent, &plugin, &vessel_message]() {
           return Vessel::ReadFromMessage(
@@ -1637,20 +1647,18 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     plugin->part_id_to_vessel_.emplace(part_id, vessel.get());
   }
 
-  plugin->sun_ = FindOrDie(plugin->celestials_, message.sun_index()).get();
+  CityHash const sun_city =
+      is_pre_lie ? FindOrDie(legacy_index_to_city, message.sun_index())
+                 : message.sun_city();
+  plugin->sun_ = FindOrDie(plugin->celestials_, sun_city).get();
   plugin->main_body_ = plugin->sun_->body();
   plugin->UpdatePlanetariumRotation();
 
-  bool const is_pre_cauchy = message.has_pre_cauchy_plotting_frame();
-  LOG_IF(WARNING, is_pre_cauchy) << "Reading pre-Cauchy Plugin";
-
   if (is_pre_cauchy) {
-    plugin->renderer_ =
-        std::make_unique<Renderer>(
-            plugin->sun_,
-            NavigationFrame::ReadFromMessage(
-                message.pre_cauchy_plotting_frame(),
-                plugin->ephemeris_.get()));
+    plugin->renderer_ = std::make_unique<Renderer>(
+        plugin->sun_,
+        NavigationFrame::ReadFromMessage(message.plotting_frame(),
+                                         plugin->ephemeris_.get()));
   } else {
     plugin->renderer_ = Renderer::ReadFromMessage(message.renderer(),
                                                   plugin->sun_,
@@ -1758,23 +1766,21 @@ Velocity<World> Plugin::VesselVelocity(
       plotting_frame_degrees_of_freedom.velocity());
 }
 
-template<typename T>
 void Plugin::ReadCelestialsFromMessages(
     Ephemeris<Barycentric> const& ephemeris,
-    google::protobuf::RepeatedPtrField<T> const& celestial_messages,
+    google::protobuf::RepeatedPtrField<
+        serialization::Plugin::CelestialParenthood> const& celestial_messages,
     CityHashToOwnedCelestial& celestials,
-    std::map<std::string, CityHash>& name_to_city) {
-  // To be able to interpret `parent_index` in pre-Lie saves we must build this
-  // map that we drop on the floor when returning from this function.
-  std::map<std::int32_t, not_null<Celestial*>> legacy_celestials;
-
+    std::map<std::string, CityHash>& name_to_city,
+    absl::flat_hash_map<int, CityHash>& legacy_index_to_city) {
   auto const& bodies = ephemeris.bodies();
   int index = 0;
   for (auto const& celestial_message : celestial_messages) {
     bool const is_pre_cauchy = !celestial_message.has_ephemeris_index();
     bool const is_pre_lie = !celestial_message.has_city();
     LOG_IF(WARNING, is_pre_lie)
-        << "Reading pre-" << (is_pre_cauchy ? "Cauchy" : "Lie") << " Celestial";
+        << "Reading pre-" << (is_pre_cauchy ? "Cauchy" : "Lie")
+        << " CelestialParenthood";
 
     auto const& body = is_pre_cauchy
                            ? bodies[index++]
@@ -1792,7 +1798,7 @@ void Plugin::ReadCelestialsFromMessages(
 
     if (is_pre_lie) {
       CHECK(celestial_message.has_index()) << celestial_message;
-      legacy_celestials.emplace(celestial_message.index(), it->second.get());
+      legacy_index_to_city.emplace(celestial_message.index(), celestial_city);
     }
 
     inserted = name_to_city.emplace(body->name(), celestial_city).second;
@@ -1802,10 +1808,14 @@ void Plugin::ReadCelestialsFromMessages(
     bool const is_pre_lie = !celestial_message.has_city();
     if (celestial_message.has_parent_index()) {
       CHECK(is_pre_lie);
-      not_null<Celestial*> const& celestial =
-          FindOrDie(legacy_celestials, celestial_message.index());
-      not_null<Celestial const*> const parent =
-          FindOrDie(legacy_celestials, celestial_message.parent_index());
+      not_null<std::unique_ptr<Celestial>> const& celestial = FindOrDie(
+          celestials,
+          FindOrDie(legacy_index_to_city, celestial_message.index()));
+      not_null<Celestial const*> const& parent =
+          FindOrDie(
+              celestials,
+              FindOrDie(legacy_index_to_city, celestial_message.parent_index()))
+              .get();
       celestial->set_parent(parent);
     }
     if (celestial_message.has_parent_city()) {
