@@ -303,7 +303,7 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   serialization::InitialState::Keplerian::Body keplerian_sun;
   keplerian_sun.set_name(SolarSystemFactory::name(SolarSystemFactory::Sun));
   plugin->InsertCelestialJacobiKeplerian(
-      SolarSystemFactory::Sun,
+      GetCityHash(SolarSystemFactory::Sun),
       /*parent_index=*/std::nullopt,
       solar_system_->gravity_model_message(
           SolarSystemFactory::name(SolarSystemFactory::Sun)),
@@ -411,8 +411,29 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   EXPECT_EQ(SolarSystemFactory::LastMajorBody - SolarSystemFactory::Sun + 1,
             message.celestial_size());
 
-  EXPECT_FALSE(message.celestial(0).has_parent_city());
-  EXPECT_EQ(message.celestial(0).city(), message.celestial(1).parent_city());
+  for (auto const& parenthood : message.celestial()) {
+    if (parenthood.city() == GetCityHash(SolarSystemFactory::Sun)) {
+      EXPECT_FALSE(parenthood.has_parent_city());
+    } else {
+      EXPECT_TRUE(parenthood.has_parent_city());
+    }
+    if (parenthood.city() == GetCityHash(SolarSystemFactory::Mercury)) {
+      EXPECT_EQ(GetCityHash(SolarSystemFactory::Sun), parenthood.parent_city());
+    }
+    if (parenthood.city() == GetCityHash(SolarSystemFactory::Moon)) {
+      EXPECT_EQ(GetCityHash(SolarSystemFactory::Earth),
+                parenthood.parent_city());
+    }
+    if (parenthood.city() == GetCityHash(SolarSystemFactory::Venus)) {
+      EXPECT_EQ(
+          parenthood.ephemeris_index(),
+          message.renderer()
+              .plotting_frame()
+              .GetExtension(serialization::
+                                BodyCentredNonRotatingReferenceFrame::extension)
+              .centre());
+    }
+  }
 
   EXPECT_EQ(
       ParseTT(initial_time_),
@@ -448,10 +469,6 @@ TEST_F(PluginTestWithoutPlugin, Serialization) {
   EXPECT_TRUE(message.renderer().has_plotting_frame());
   EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(
       serialization::BodyCentredNonRotatingReferenceFrame::extension));
-  EXPECT_EQ(message.celestial(SolarSystemFactory::Venus).ephemeris_index(),
-            message.renderer().plotting_frame().GetExtension(
-                serialization::BodyCentredNonRotatingReferenceFrame::extension).
-                    centre());
 
   plugin = nullptr;
   plugin = Plugin::ReadFromMessage(message);
@@ -960,7 +977,7 @@ TEST_F(PluginTestWithoutPlugin, Frenet) {
   bool inserted;
   plugin.InsertOrKeepVessel(satellite,
                             "v" + satellite,
-                            SolarSystemFactory::Earth,
+                            GetCityHash(SolarSystemFactory::Earth),
                             /*loaded=*/false,
                             inserted);
   plugin.InsertUnloadedPart(
