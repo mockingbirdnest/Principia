@@ -272,7 +272,7 @@ TEST_F(PluginCompatibilityTest, Reach) {
 
   // Compute the flybys.
   std::map<Instant, std::string> flyby_map;
-  for (auto const& celestial: plugin->GetAllCelestials()) {
+  for (auto const& celestial : plugin->GetAllCelestials()) {
     auto const& celestial_trajectory = celestial->trajectory();
     auto const& flight_plan_trajectory = flight_plan.GetAllSegments();
     DistinguishedPoints<Barycentric> apoapsides;

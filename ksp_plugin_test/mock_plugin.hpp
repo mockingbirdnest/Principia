@@ -114,7 +114,7 @@ class MockPlugin : public Plugin {
               (const, override));
   MOCK_METHOD(not_null<std::unique_ptr<NavigationFrame>>,
               NewBarycentricRotatingNavigationFrame,
-              (CityHash primary_cityx, CityHash secondary_city),
+              (CityHash primary_city, CityHash secondary_city),
               (const, override));
 
   MOCK_METHOD((std::unique_ptr<FrameField<World, Navball>>),

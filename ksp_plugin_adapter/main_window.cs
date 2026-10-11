@@ -95,21 +95,21 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
       history_length_.value = Convert.ToDouble(history_length_value);
     }
 
-    //frames_that_hide_unpinned_celestials.Clear();
-    //foreach (ConfigNode frame_node in node.GetNodes(
-    //             "frames_that_hide_unpinned_celestials")) {
-    //  var frame = new PlottingFrameParameters();
-    //  frame.Load(frame_node);
-    //  frames_that_hide_unpinned_celestials.Add(frame);
-    //}
+    frames_that_hide_unpinned_celestials.Clear();
+    foreach (ConfigNode frame_node in node.GetNodes(
+                 "frames_that_hide_unpinned_celestials")) {
+      var frame = new PlottingFrameParameters();
+      frame.Load(frame_node);
+      frames_that_hide_unpinned_celestials.Add(frame);
+    }
 
-    //frames_that_hide_unpinned_markers.Clear();
-    //foreach (ConfigNode frame_node in node.GetNodes(
-    //             "frames_that_hide_unpinned_markers")) {
-    //  var frame = new PlottingFrameParameters();
-    //  frame.Load(frame_node);
-    //  frames_that_hide_unpinned_markers.Add(frame);
-    //}
+    frames_that_hide_unpinned_markers.Clear();
+    foreach (ConfigNode frame_node in node.GetNodes(
+                 "frames_that_hide_unpinned_markers")) {
+      var frame = new PlottingFrameParameters();
+      frame.Load(frame_node);
+      frames_that_hide_unpinned_markers.Add(frame);
+    }
 
     string buffered_logging_value = node.GetAtMostOneValue("buffered_logging");
     if (buffered_logging_value != null) {
