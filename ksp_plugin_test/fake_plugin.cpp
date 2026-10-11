@@ -60,7 +60,7 @@ Vessel& FakePlugin::AddVesselInEarthOrbit(
     std::string const& part_name,
     KeplerianElements<Barycentric> const& elements) {
   KeplerOrbit<Barycentric> const earth_orbit(
-      *GetCelestial(SolarSystemFactory::Earth).body(),
+      *GetCelestial(GetCityHash(SolarSystemFactory::Earth)).body(),
       MasslessBody{},
       elements,
       CurrentTime());
@@ -69,7 +69,7 @@ Vessel& FakePlugin::AddVesselInEarthOrbit(
   bool inserted;
   InsertOrKeepVessel(vessel_id,
                      vessel_name,
-                     SolarSystemFactory::Earth,
+                     GetCityHash(SolarSystemFactory::Earth),
                      /*loaded=*/false,
                      inserted);
   CHECK(inserted) << "Failed to insert vessel " << vessel_name << " ("
