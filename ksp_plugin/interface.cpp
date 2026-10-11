@@ -19,6 +19,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/hash/internal/city.h"
 #include "absl/log/check.h"
 #include "absl/log/die_if_null.h"
 #include "absl/log/globals.h"
@@ -385,6 +386,11 @@ void __cdecl principia__CatchUpLaggingVessels(
   *collided_vessels =
       new TypedIterator<VesselSet>(std::move(collided_vessel_set), plugin);
   return m.Return();
+}
+
+std::uint64_t __cdecl principia__CityHash64(char const* const name) {
+  journal::Method<journal::CityHash64> m({name});
+  return m.Return(absl::hash_internal::CityHash64(name, std::strlen(name)));
 }
 
 void __cdecl principia__ClearFlags() {
@@ -1119,7 +1125,8 @@ void __cdecl principia__SetFlag(char const* const name,
   return m.Return();
 }
 
-void __cdecl principia__SetMainBody(Plugin* const plugin, int const city) {
+void __cdecl principia__SetMainBody(Plugin* const plugin,
+                                    std::uint64_t const city) {
   journal::Method<journal::SetMainBody> m({plugin, city});
   CHECK(plugin != nullptr);
   plugin->SetMainBody(city);
@@ -1151,8 +1158,9 @@ void __cdecl principia__SetVerboseLogging(int const level) {
   return m.Return();
 }
 
-void __cdecl principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
-                                                         int const city) {
+void __cdecl principia__SetWorldRotationalReferenceFrame(
+    Plugin* const plugin,
+    std::uint64_t const city) {
   journal::Method<journal::SetWorldRotationalReferenceFrame> m({plugin, city});
   CHECK(plugin != nullptr);
   plugin->SetWorldRotationalReferenceFrame(city);

@@ -120,16 +120,16 @@ public enum FrameType {
 
 internal interface IReferenceFrameParameters {
   FrameType Extension  { get; set; }
-  int CentreIndex { get; set; }
-  int[] PrimaryIndices { get; set; }
-  int[] SecondaryIndices { get; set; }
+  ulong CentreCity { get; set; }
+  ulong[] PrimaryCities { get; set; }
+  ulong[] SecondaryCities { get; set; }
 }
 
 internal partial class PlottingFrameParameters : IReferenceFrameParameters,
                                                  IConfigNode {
   public PlottingFrameParameters() {
-    primary_index = new int[]{};
-    secondary_index = new int[]{};
+    primary_city = new ulong[]{};
+    secondary_city = new ulong[]{};
   }
 
   public static explicit operator NavigationFrameParameters(
@@ -139,9 +139,9 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters,
     } else {
       return new NavigationFrameParameters{
           extension = p.extension,
-          centre_index = p.centre_index,
-          PrimaryIndices = p.PrimaryIndices,
-          SecondaryIndices = p.SecondaryIndices
+          centre_city= p.centre_city,
+          PrimaryCities = p.PrimaryCities,
+          SecondaryCities = p.SecondaryCities
       };
     }
   }
@@ -151,8 +151,8 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters,
   }
 
   public override int GetHashCode() =>
-      (extension, centre_index, primary_index.DefaultIfEmpty(-1).First(),
-       secondary_index.DefaultIfEmpty(-1).First()).GetHashCode();
+      (extension, centre_city, primary_city.DefaultIfEmpty(no_city).First(),
+       secondary_city.DefaultIfEmpty(no_city).First()).GetHashCode();
 
   public void Load(ConfigNode node) {
     if (!Enum.TryParse(node.GetUniqueValue("extension"),
@@ -200,9 +200,9 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters,
       return false;
     } else {
       return left.Extension == right.Extension &&
-             left.centre_index == right.CentreIndex &&
-             left.PrimaryIndices.SequenceEqual(right.PrimaryIndices) &&
-             left.SecondaryIndices.SequenceEqual(right.SecondaryIndices);
+             left.centre_city == right.CentreCity &&
+             left.PrimaryCities.SequenceEqual(right.PrimaryCities) &&
+             left.SecondaryCities.SequenceEqual(right.SecondaryCities);
     }
   }
 
@@ -216,20 +216,22 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters,
     set => extension = (int)value;
   }
 
-  public int CentreIndex {
-    get => centre_index;
-    set => centre_index = value;
+  public ulong CentreCity {
+    get => centre_city;
+    set => centre_city = value;
   }
 
-  public int[] PrimaryIndices {
-    get => primary_index;
-    set => primary_index = value;
+  public ulong[] PrimaryCities {
+    get => primary_city;
+    set => primary_city = value;
   }
 
-  public int[] SecondaryIndices {
-    get => secondary_index;
-    set => secondary_index = value;
+  public ulong[] SecondaryCities {
+    get => secondary_city;
+    set => secondary_city = value;
   }
+
+  private const ulong no_city = 0xFFFFFFFFFFFFFFFF;
 }
 
 internal partial class NavigationFrameParameters : IReferenceFrameParameters {
@@ -237,9 +239,9 @@ internal partial class NavigationFrameParameters : IReferenceFrameParameters {
       NavigationFrameParameters p) {
     return new PlottingFrameParameters{
         extension = p.extension,
-        centre_index = p.centre_index,
-        PrimaryIndices = p.PrimaryIndices,
-        SecondaryIndices = p.SecondaryIndices
+        centre_city = p.centre_city,
+        PrimaryCities = p.PrimaryCities,
+        SecondaryCities = p.SecondaryCities
     };
   }
 
@@ -248,7 +250,7 @@ internal partial class NavigationFrameParameters : IReferenceFrameParameters {
   }
 
   public override int GetHashCode() =>
-      (extension, centre_index, primary_index, secondary_index).GetHashCode();
+      (extension, centre_city, primary_city, secondary_city).GetHashCode();
 
   public static bool operator ==(NavigationFrameParameters left,
                                  IReferenceFrameParameters right) {
@@ -258,9 +260,9 @@ internal partial class NavigationFrameParameters : IReferenceFrameParameters {
       return false;
     } else {
       return left.Extension == right.Extension &&
-             left.CentreIndex == right.CentreIndex &&
-             left.PrimaryIndices.SequenceEqual(right.PrimaryIndices) &&
-             left.SecondaryIndices.SequenceEqual(right.SecondaryIndices);
+             left.CentreCity == right.CentreCity &&
+             left.PrimaryCities.SequenceEqual(right.PrimaryCities) &&
+             left.SecondaryCities.SequenceEqual(right.SecondaryCities);
     }
   }
 
@@ -274,25 +276,25 @@ internal partial class NavigationFrameParameters : IReferenceFrameParameters {
     set => extension = (int)value;
   }
 
-  public int CentreIndex {
-    get => centre_index;
-    set => centre_index = value;
+  public ulong CentreCity {
+    get => centre_city;
+    set => centre_city = value;
   }
 
-  public int[] PrimaryIndices {
-    get => primary_index == -1 ? new int[] {} : new[] { primary_index };
-    set => primary_index = value.DefaultIfEmpty(-1).Single();
+  public ulong[] PrimaryCities {
+    get => primary_city == no_city ? [] : [ primary_city ];
+    set => primary_city = value.DefaultIfEmpty(no_city).Single();
   }
 
-  public int[] SecondaryIndices {
-    get => secondary_index == -1 ? new int[] {} : new[] { secondary_index };
-    set => secondary_index = value.DefaultIfEmpty(-1).Single();
+  public ulong[] SecondaryCities {
+    get => secondary_city == no_city ? [] : [ secondary_city ];
+    set => secondary_city = value.DefaultIfEmpty(no_city).Single();
   }
+
+  private const ulong no_city = 0xFFFFFFFFFFFFFFFF;
 }
 
 internal static partial class Interface {
-  internal const string dll_path = "principia";
-
   internal static KeplerianElements Elements(this Orbit orbit) {
     double mean_motion = 2 * Math.PI / orbit.period;
     return new KeplerianElements{
@@ -322,11 +324,11 @@ internal static partial class Interface {
     [FieldOffset(0)]
     public UnityEngine.Color32 color;
   }
- 
+
   internal static uint rgba(this UnityEngine.Color color) {
     return new RGBA32{color = color}.rgba;
   }
- 
+
   internal static UnityEngine.Color32 FromRGBA(uint color) {
     return new RGBA32{rgba = color}.color;
   }

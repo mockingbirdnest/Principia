@@ -1,5 +1,6 @@
 #include "ksp_plugin/interface.hpp"
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -45,7 +46,7 @@ double __cdecl principia__CelestialInitialRotationInDegrees(
 }
 
 WXYZ __cdecl principia__CelestialRotation(Plugin const* const plugin,
-                                          int const city) {
+                                          std::uint64_t const city) {
   journal::Method<journal::CelestialRotation> m({plugin, city});
   CHECK(plugin != nullptr);
   return m.Return(ToWXYZ(plugin->CelestialRotation(city).quaternion()));
@@ -67,7 +68,7 @@ WXYZ __cdecl principia__CelestialSphereRotation(Plugin const* const plugin) {
 }
 
 QP __cdecl principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
-                                                     int const city,
+                                                     std::uint64_t const city,
                                                      Origin const origin,
                                                      double const time) {
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m(

@@ -98,16 +98,16 @@ internal class
         case FrameType.BODY_CENTRED_NON_ROTATING:
         case FrameType.BODY_SURFACE:
           selected_celestial =
-              adapter_.GetCelestialFromIndex(parameters.CentreIndex);
+              adapter_.GetCelestialFromCity(parameters.CentreCity);
           break;
         case FrameType.ROTATING_PULSATING:
           selected_celestial =
-              adapter_.GetCelestialFromIndex(parameters.SecondaryIndices[0]);
+              adapter_.GetCelestialFromCity(parameters.SecondaryCities[0]);
           break;
         case FrameType.BARYCENTRIC_ROTATING:
         case FrameType.BODY_CENTRED_PARENT_DIRECTION:
           selected_celestial =
-              adapter_.GetCelestialFromIndex(parameters.PrimaryIndices[0]);
+              adapter_.GetCelestialFromCity(parameters.PrimaryCities[0]);
           break;
       }
     });
@@ -163,7 +163,7 @@ internal class
   private static string TargetFrameName(Vessel target) {
     return L10N.CelestialString(
         "#Principia_ReferenceFrameSelector_Name_Target",
-        new []{target.orbit.referenceBody});
+        [target.orbit.referenceBody]);
   }
 
   private static string Name(FrameType type,
@@ -172,7 +172,7 @@ internal class
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Name_BodyCentredNonRotating",
-            new[]{selected});
+            [selected]);
       case FrameType.BARYCENTRIC_ROTATING:
         if (selected.is_root()) {
           throw Log.Fatal("Naming barycentric rotating frame of root body");
@@ -186,12 +186,12 @@ internal class
         } else {
           return L10N.ZWSPToHyphenBetweenNonCJK(L10N.CelestialString(
               "#Principia_ReferenceFrameSelector_Name_BodyCentredParentDirection",
-              new[]{selected, selected.referenceBody}));
+              [selected, selected.referenceBody]));
         }
       case FrameType.BODY_SURFACE:
         return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Name_BodySurface",
-            new[]{selected});
+            [selected]);
       case FrameType.ROTATING_PULSATING:
         if (selected.is_root()) {
           throw Log.Fatal(
@@ -199,7 +199,7 @@ internal class
         } else {
           return L10N.ZWSPToHyphenBetweenNonCJK(L10N.CelestialString(
               "#Principia_ReferenceFrameSelector_Name_RotatingPulsating",
-              new[]{selected, selected.referenceBody}));
+              [selected, selected.referenceBody]));
         }
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
@@ -209,13 +209,13 @@ internal class
   private static string TargetFrameAbbreviation(Vessel target) {
     return L10N.CelestialStringOrNull(
         "#Principia_ReferenceFrameSelector_Abbreviation_Target",
-        new[]{target.orbit.referenceBody});
+        [target.orbit.referenceBody]);
   }
 
   private static string TargetFrameNavballName(Vessel target) {
     return TargetFrameAbbreviation(target) ?? L10N.CelestialStringOrNull(
         "#Principia_ReferenceFrameSelector_NavballName_Target",
-        new[]{target.orbit.referenceBody}) ?? TargetFrameName(target);
+        [target.orbit.referenceBody]) ?? TargetFrameName(target);
   }
 
   private static string TargetFrameSelectorText(Vessel target) {
@@ -235,7 +235,7 @@ internal class
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return L10N.CelestialStringOrNull(
             "#Principia_ReferenceFrameSelector_Abbreviation_BodyCentredNonRotating",
-            new[]{selected});
+            [selected]);
       case FrameType.BARYCENTRIC_ROTATING:
         return "DEPRECATED";
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
@@ -245,12 +245,12 @@ internal class
         } else {
           return L10N.CelestialStringOrNull(
               "#Principia_ReferenceFrameSelector_Abbreviation_BodyCentredParentDirection",
-              new[]{selected, selected.referenceBody});
+              [selected, selected.referenceBody]);
         }
       case FrameType.BODY_SURFACE:
         return L10N.CelestialStringOrNull(
             "#Principia_ReferenceFrameSelector_Abbreviation_BodySurface",
-            new[]{selected});
+            [selected]);
       case FrameType.ROTATING_PULSATING:
         if (selected.is_root()) {
           throw Log.Fatal(
@@ -258,7 +258,7 @@ internal class
         } else {
           return L10N.CelestialStringOrNull(
               "#Principia_ReferenceFrameSelector_Abbreviation_RotatingPulsating",
-              new[]{selected, selected.referenceBody});
+              [selected, selected.referenceBody]);
         }
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
@@ -275,7 +275,7 @@ internal class
       case FrameType.BODY_CENTRED_NON_ROTATING:
         result = L10N.CelestialStringOrNull(
             "#Principia_ReferenceFrameSelector_NavballName_BodyCentredNonRotating",
-            new[]{selected});
+            [selected]);
         break;
       case FrameType.BARYCENTRIC_ROTATING:
         result = "DEPRECATED";
@@ -287,13 +287,13 @@ internal class
         } else {
           result = L10N.CelestialStringOrNull(
               "#Principia_ReferenceFrameSelector_NavballName_BodyCentredParentDirection",
-              new[]{selected, selected.referenceBody});
+              [selected, selected.referenceBody]);
         }
         break;
       case FrameType.BODY_SURFACE:
         result = L10N.CelestialStringOrNull(
             "#Principia_ReferenceFrameSelector_NavballName_BodySurface",
-            new[]{selected});
+            [selected]);
         break;
       case FrameType.ROTATING_PULSATING:
         if (selected.is_root()) {
@@ -302,7 +302,7 @@ internal class
         } else {
           result = L10N.CelestialStringOrNull(
               "#Principia_ReferenceFrameSelector_NavballName_RotatingPulsating",
-              new[]{selected, selected.referenceBody});
+              [selected, selected.referenceBody]);
         }
         break;
       default:
@@ -364,7 +364,7 @@ internal class
       case FrameType.ROTATING_PULSATING:
         return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Tooltip_RotatingPulsating",
-            new[]{selected, selected.referenceBody},
+            [selected, selected.referenceBody],
             name);
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
@@ -384,7 +384,7 @@ internal class
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Description_BodyCentredNonRotating",
-            new[]{selected});
+            [selected]);
       case FrameType.BARYCENTRIC_ROTATING:
         return "DEPRECATED";
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
@@ -394,12 +394,12 @@ internal class
         } else {
           return L10N.CelestialString(
               "#Principia_ReferenceFrameSelector_Description_BodyCentredParentDirection",
-              new[]{selected, selected.referenceBody});
+              [selected, selected.referenceBody]);
         }
       case FrameType.BODY_SURFACE:
         return L10N.CelestialString(
             "#Principia_ReferenceFrameSelector_Description_BodySurface",
-            new[]{selected});
+            [selected]);
       case FrameType.ROTATING_PULSATING:
         if (selected.is_root()) {
           throw Log.Fatal(
@@ -409,16 +409,18 @@ internal class
             case 0:
               return L10N.CelestialString(
                   "#Principia_ReferenceFrameSelector_Description_RotatingPulsating",
-                  new[]{selected, selected.referenceBody});
+                  [selected, selected.referenceBody]);
             case 1:
               return L10N.CelestialString(
                   "#Principia_ReferenceFrameSelector_Description_RotatingPulsatingOneMoon",
-                  new[]{selected, selected.referenceBody,
-                        selected.orbitingBodies.First()});
+                  [
+                      selected, selected.referenceBody,
+                        selected.orbitingBodies.First()
+                  ]);
             default:
               return L10N.CelestialString(
                   "#Principia_ReferenceFrameSelector_Description_RotatingPulsatingBigSystem",
-                  new[]{selected, selected.referenceBody});
+                  [selected, selected.referenceBody]);
           }
         }
       default:
@@ -511,9 +513,9 @@ internal class
       case FrameType.BODY_SURFACE:
         return new ReferenceFrameParameters{
             Extension = frame_type,
-            CentreIndex = adapter_.GetCelestialIndex(selected_celestial),
-            PrimaryIndices = new int[]{},
-            SecondaryIndices = new int[]{},
+            CentreCity = adapter_.GetCelestialCity(selected_celestial),
+            PrimaryCities = [],
+            SecondaryCities = [],
         };
       case FrameType.BARYCENTRIC_ROTATING:
         // Deprecated, might as well do the same as its other two-body friends.
@@ -524,20 +526,21 @@ internal class
         // terminology of `BodyCentredBodyDirection`).
         return new ReferenceFrameParameters{
             Extension = frame_type,
-            PrimaryIndices =
-                new[] {adapter_.GetCelestialIndex(selected_celestial)},
-            SecondaryIndices =
-                new[] {adapter_.GetCelestialIndex(selected_celestial.referenceBody)}};
+            PrimaryCities = [adapter_.GetCelestialCity(selected_celestial)],
+            SecondaryCities = [
+                adapter_.GetCelestialCity(selected_celestial.referenceBody)
+            ]
+        };
       case FrameType.ROTATING_PULSATING:
         return new ReferenceFrameParameters{
             Extension = frame_type,
-            PrimaryIndices = (
+            PrimaryCities = (
               from body in System(selected_celestial.referenceBody,
                                   end: selected_celestial)
-              select adapter_.GetCelestialIndex(body)).ToArray(),
-            SecondaryIndices = (
+              select adapter_.GetCelestialCity(body)).ToArray(),
+            SecondaryCities = (
               from body in System(selected_celestial)
-              select adapter_.GetCelestialIndex(body)).ToArray()
+              select adapter_.GetCelestialCity(body)).ToArray()
 
         };
       default:

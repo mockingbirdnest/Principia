@@ -436,11 +436,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     city_to_celestial_.Add(city, celestial);
   }
 
-  private ulong GetCelestialCity(CelestialBody celestial) {
+  internal ulong GetCelestialCity(CelestialBody celestial) {
     return celestial_to_city_[celestial];
   }
 
-  private ulong? GetCelestialCityOrNull(CelestialBody celestial) {
+  internal ulong? GetCelestialCityOrNull(CelestialBody celestial) {
     if (celestial == null) {
       return null;
     } else {
@@ -452,12 +452,18 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     return city_to_celestial_[city];
   }
 
+  public CelestialBody? GetCelestialFromCityOrNull(ulong? city) {
+    if (city == null) {
+      return null;
+    } else {
+      return city_to_celestial_[city.Value];
+    }
+  }
+
   private void FillCelestialCities() {
-    if (celestial_to_index_.Count == 0) {
-      foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-        int index = plugin_.CelestialGetIndex(celestial.name);
-        AddCelestialIndex(celestial, index);
-      }
+    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      ulong city = Interface.CityHash64(celestial.name);
+      AddCelestialCity(celestial, city);
     }
   }
 
@@ -1000,6 +1006,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (node.HasValue(principia_serialized_plugin)) {
       Cleanup();
       RemoveBuggyTidalLocking();
+      FillCelestialCities();
 
       IntPtr deserializer = IntPtr.Zero;
       string[] serializations = node.GetValues(principia_serialized_plugin);
@@ -2810,6 +2817,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   private void Cleanup() {
     UnityEngine.Object.Destroy(map_renderer_);
+    city_to_celestial_.Clear();
+    celestial_to_city_.Clear();
     map_renderer_ = null;
     map_node_pool_.Clear();
     LockClearing();
@@ -2919,6 +2928,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     try {
       Cleanup();
       RemoveBuggyTidalLocking();
+      FillCelestialCities();
       Dictionary<string, ConfigNode> name_to_gravity_model = null;
       ConfigNode gravity_model = GameDatabase.Instance.GetAtMostOneNode(
           principia_gravity_model_config_name);

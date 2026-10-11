@@ -193,7 +193,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       }
       OrbitAnalysis analysis = GetAnalysis();
       CelestialBody primary =
-          adapter_.GetCelestialFromIndexOrNull(analysis.primary_index);
+          adapter_.GetCelestialFromCityOrNull(analysis.primary_city);
       orbit_description_ = OrbitDescription(primary,
                                             analysis.mission_duration,
                                             analysis.elements,
@@ -270,7 +270,7 @@ internal abstract class OrbitAnalyser : RequiredVesselSupervisedWindowRenderer {
       SolarTimesOfNodes? solar_times_of_nodes = analysis.solar_times_of_nodes;
       double mission_duration = analysis.mission_duration;
       CelestialBody primary =
-          adapter_.GetCelestialFromIndexOrNull(analysis.primary_index);
+          adapter_.GetCelestialFromCityOrNull(analysis.primary_city);
 
       orbit_description_ = OrbitDescription(primary,
                                             mission_duration,
