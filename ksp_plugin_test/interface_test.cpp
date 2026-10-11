@@ -602,6 +602,13 @@ TEST_F(InterfaceTest, NavballOrientation) {
   EXPECT_EQ(q.z, 0);
 }
 
+// A change detector for the hash.
+TEST_F(InterfaceTest, CityHash) {
+  EXPECT_EQ(0x566EDC66FFBC0A3DULL, principia__CityHash64("Kerbin"));
+  EXPECT_EQ(0x2B6DCC7E848460DBULL, principia__CityHash64("Moon"));
+  EXPECT_EQ(0xE1CFE0F022A80B4EULL, principia__CityHash64("月亮"));
+}
+
 TEST_F(InterfaceTest, CurrentTime) {
   Instant const mjd0 = "MJD0"_TT;
   EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(mjd0));
