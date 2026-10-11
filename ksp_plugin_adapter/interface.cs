@@ -154,43 +154,43 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters,
       (extension, centre_city, primary_city.DefaultIfEmpty(no_city).First(),
        secondary_city.DefaultIfEmpty(no_city).First()).GetHashCode();
 
-  public void Load(ConfigNode node) {
-    if (!Enum.TryParse(node.GetUniqueValue("extension"),
-                       out FrameType extension)) {
-      Log.Fatal("Bad FrameType " + node.GetUniqueValue("extension"));
-    }
-    Extension = extension;
-    if (!int.TryParse(node.GetUniqueValue("centre_index"), out centre_index)) {
-      Log.Fatal("Bad centre_index " + node.GetUniqueValue("centre_index"));
-    }
-    var primary_indices = new List<int>();
-    foreach (string value in node.GetValues("primary_indices")) {
-      if (!int.TryParse(value, out int i)) {
-        Log.Fatal("Bad primary_indices " + value);
-      }
-      primary_indices.Add(i);
-    }
-    primary_index = primary_indices.ToArray();
-    var secondary_indices = new List<int>();
-    foreach (string value in node.GetValues("secondary_indices")) {
-      if (!int.TryParse(value, out int i)) {
-        Log.Fatal("Bad secondary_indices " + value);
-      }
-      secondary_indices.Add(i);
-    }
-    secondary_index = secondary_indices.ToArray();
-  }
+  //public void Load(ConfigNode node) {
+  //  if (!Enum.TryParse(node.GetUniqueValue("extension"),
+  //                     out FrameType extension)) {
+  //    Log.Fatal("Bad FrameType " + node.GetUniqueValue("extension"));
+  //  }
+  //  Extension = extension;
+  //  if (!int.TryParse(node.GetUniqueValue("centre_index"), out centre_index)) {
+  //    Log.Fatal("Bad centre_index " + node.GetUniqueValue("centre_index"));
+  //  }
+  //  var primary_indices = new List<int>();
+  //  foreach (string value in node.GetValues("primary_indices")) {
+  //    if (!int.TryParse(value, out int i)) {
+  //      Log.Fatal("Bad primary_indices " + value);
+  //    }
+  //    primary_indices.Add(i);
+  //  }
+  //  primary_index = primary_indices.ToArray();
+  //  var secondary_indices = new List<int>();
+  //  foreach (string value in node.GetValues("secondary_indices")) {
+  //    if (!int.TryParse(value, out int i)) {
+  //      Log.Fatal("Bad secondary_indices " + value);
+  //    }
+  //    secondary_indices.Add(i);
+  //  }
+  //  secondary_index = secondary_indices.ToArray();
+  //}
 
-  public void Save(ConfigNode node) {
-    node.AddValue("extension", Extension.ToString());
-    node.AddValue("centre_index", centre_index);
-    foreach (int i in primary_index) {
-      node.AddValue("primary_indices", i);
-    }
-    foreach (int i in secondary_index) {
-      node.AddValue("secondary_indices", i);
-    }
-  }
+  //public void Save(ConfigNode node) {
+  //  node.AddValue("extension", Extension.ToString());
+  //  node.AddValue("centre_index", centre_index);
+  //  foreach (int i in primary_index) {
+  //    node.AddValue("primary_indices", i);
+  //  }
+  //  foreach (int i in secondary_index) {
+  //    node.AddValue("secondary_indices", i);
+  //  }
+  //}
 
   public static bool operator ==(PlottingFrameParameters left,
                                  IReferenceFrameParameters right) {
