@@ -368,19 +368,24 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
                        -1.76616533203125000e+04 * (Metre / Second),
                        -7.76112133789062500e+03 * (Metre / Second)}))));
 
-  auto const& mercury = plugin->GetCelestial(2);
-  EXPECT_THAT(mercury.body()->name(), Eq("Mercury"));
+  Celestial const* mercury = nullptr;
+  for (auto const& celestial : plugin->GetAllCelestials()) {
+    if (celestial->body()->name() == "Mercury") {
+      mercury = celestial;
+      break;
+    }
+  }
 
   plugin->RequestReanimation(begin->time);
 
-  while (mercury.trajectory().t_min() > begin->time) {
+  while (mercury->trajectory().t_min() > begin->time) {
     absl::SleepFor(absl::Milliseconds(1));
   }
 
   // The history goes back far enough that we are still on our way to Mercury at
   // the beginning.
   EXPECT_THAT((begin->degrees_of_freedom.position() -
-               mercury.trajectory().EvaluatePosition(begin->time)).Norm(),
+               mercury->trajectory().EvaluatePosition(begin->time)).Norm(),
               IsNear(176'400'999_(1) * Kilo(Metre)));
   EXPECT_THAT(begin->time,
               Eq("1966-05-10T00:14:03"_TT + 0.0879862308502197 * Second));
@@ -401,7 +406,7 @@ TEST_F(PluginCompatibilityTest, DISABLED_Butcher) {
   EXPECT_THAT(it->degrees_of_freedom,
               Eq(MercuryOrbiterInitialDegreesOfFreedom<Barycentric>));
   EXPECT_THAT((it->degrees_of_freedom.position() -
-               mercury.trajectory().EvaluatePosition(it->time)).Norm(),
+               mercury->trajectory().EvaluatePosition(it->time)).Norm(),
               IsNear(19'163_(1) * Kilo(Metre)));
 }
 
