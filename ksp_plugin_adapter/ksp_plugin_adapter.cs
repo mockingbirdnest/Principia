@@ -99,7 +99,9 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private bool celestial_terrains_were_validated_ = false;
   private bool solar_system_was_validated_ = false;
 
-  private Dictionary<CelestialBody, ulong> celestial_cities_ = new ();
+  private readonly Dictionary<CelestialBody, ulong> celestial_to_city_ = new ();
+  private readonly Dictionary<ulong, CelestialBody> city_to_celestial_ = new ();
+
 
   private PlanetariumCameraAdjuster planetarium_camera_adjuster_;
 
@@ -430,18 +432,32 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     if (celestial == null) {
       Log.Fatal("Cannot add null celestial with CityHash " + city);
     }
-    celestial_cities_.Add(celestial, city);
+    celestial_to_city_.Add(celestial, city);
+    city_to_celestial_.Add(city, celestial);
   }
 
   private ulong GetCelestialCity(CelestialBody celestial) {
-    return celestial_cities_[celestial];
+    return celestial_to_city_[celestial];
   }
 
   private ulong? GetCelestialCityOrNull(CelestialBody celestial) {
     if (celestial == null) {
       return null;
     } else {
-      return celestial_cities_[celestial];
+      return celestial_to_city_[celestial];
+    }
+  }
+
+  public CelestialBody GetCelestialFromCity(ulong city) {
+    return city_to_celestial_[city];
+  }
+
+  private void FillCelestialCities() {
+    if (celestial_to_index_.Count == 0) {
+      foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+        int index = plugin_.CelestialGetIndex(celestial.name);
+        AddCelestialIndex(celestial, index);
+      }
     }
   }
 

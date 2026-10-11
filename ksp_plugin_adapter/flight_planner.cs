@@ -641,7 +641,8 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
     string orbit_description = null;
     orbital_period = coast_analysis.elements?.nodal_period;
     if (coast_analysis.primary_index.HasValue) {
-      var primary = FlightGlobals.Bodies[coast_analysis.primary_index.Value];
+      var primary =
+          adapter_.GetCelestialFromIndex(coast_analysis.primary_index.Value);
       int? nodal_revolutions = (int?)(coast_analysis.mission_duration /
                                       coast_analysis.elements?.nodal_period);
       orbit_description = OrbitAnalyser.OrbitDescription(
@@ -766,7 +767,7 @@ class FlightPlanner : RequiredVesselSupervisedWindowRenderer {
                                             centre.Radius +
                                             optimization_altitude_,
                                             optimization_inclination_in_degrees_,
-                                            centre.flightGlobalsIndex,
+                                            adapter_.GetCelestialIndex(centre),
                                             optimization_reference_frame_parameters_);
   }
 

@@ -162,7 +162,7 @@ class Plugin {
   // Sets the parent of the celestial body with `CityHash` `celestial_city` to
   // the one with `CityHash` `parent_city`. Both bodies must already have been
   // inserted. Must be called after initialization.
-  // For a KSP `CelestialBody` `b`, the parent correspond to
+  // For a KSP `CelestialBody` `b`, the parent corresponds to
   // `b.orbit.referenceBody`.
   virtual void UpdateCelestialHierarchy(CityHash celestial_city,
                                         CityHash parent_city) const;
