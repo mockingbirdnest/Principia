@@ -113,9 +113,9 @@ Burn GetBurn(Plugin const& plugin,
   // When building the parameters, make sure that the "optional" fields get a
   // deterministic default.
   NavigationFrameParameters parameters;
-  parameters.centre_city = -1;
-  parameters.primary_city = -1;
-  parameters.secondary_city = -1;
+  parameters.centre_city = no_city;
+  parameters.primary_city = no_city;
+  parameters.secondary_city = no_city;
 
   int number_of_subclasses = 0;
 

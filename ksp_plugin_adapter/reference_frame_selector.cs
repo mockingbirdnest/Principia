@@ -415,7 +415,7 @@ internal class
                   "#Principia_ReferenceFrameSelector_Description_RotatingPulsatingOneMoon",
                   [
                       selected, selected.referenceBody,
-                        selected.orbitingBodies.First()
+                      selected.orbitingBodies.First()
                   ]);
             default:
               return L10N.CelestialString(

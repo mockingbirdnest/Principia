@@ -898,7 +898,8 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   ephemeris_->Prolong(current_time_).IgnoreError();
   Celestial const& celestial = *FindOrDie(celestials_, celestial_city);
   CHECK(celestial.has_parent())
-      << "Body with CityHash " << celestial_city << " is the sun";
+      << "Body with CityHash 0x" << std::noshowbase << std::hex
+      << std::uppercase << celestial_city << " is the sun";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
       celestial.current_degrees_of_freedom(current_time_) -
       celestial.parent()->current_degrees_of_freedom(current_time_);

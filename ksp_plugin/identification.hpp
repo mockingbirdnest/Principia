@@ -22,6 +22,7 @@ using namespace principia::base::_not_null;
 // The hash of the name of a `CelestialBody`, obtained by `b.name` in C#. We use
 // this as a key in a map.
 using CityHash = std::uint64_t;
+constexpr CityHash no_city = 0xFFFF'FFFF'FFFF'FFFFULL;
 
 // The GUID of a vessel, obtained by `v.id.ToString()` in C#. We use this as a
 // key in a map.
@@ -58,6 +59,7 @@ using VesselConstSet = std::set<not_null<Vessel const*>,
 
 }  // namespace internal
 
+using internal::no_city;
 using internal::CityHash;
 using internal::GUID;
 using internal::PartByPartIdComparator;

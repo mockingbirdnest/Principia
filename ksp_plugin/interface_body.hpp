@@ -796,13 +796,13 @@ inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     default:
       CityHash primary_city;
       if (*parameters.primary_city == nullptr) {
-        primary_city = -1;
+        primary_city = no_city;
       } else {
         primary_city = **parameters.primary_city;
       }
       CityHash secondary_city;
       if (*parameters.secondary_city == nullptr) {
-        secondary_city = -1;
+        secondary_city = no_city;
       } else {
         secondary_city = **parameters.secondary_city;
       }

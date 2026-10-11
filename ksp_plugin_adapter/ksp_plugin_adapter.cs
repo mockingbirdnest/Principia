@@ -102,7 +102,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   private readonly Dictionary<CelestialBody, ulong> celestial_to_city_ = new ();
   private readonly Dictionary<ulong, CelestialBody> city_to_celestial_ = new ();
 
-
   private PlanetariumCameraAdjuster planetarium_camera_adjuster_;
 
   private RenderingActions map_renderer_;
@@ -2979,7 +2978,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           // GetUniqueValue since these are all required fields in
           // principia.serialization.InitialState.Cartesian.Body.
           plugin_.InsertCelestialAbsoluteCartesian(
-              celestial_city: celestial_city,
+              celestial_city  : celestial_city,
               parent_city     : parent_city,
               body_parameters : body_parameters,
               x               : body_initial_state.GetUniqueValue("x"),
@@ -3017,8 +3016,8 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
           ulong celestial_city = GetCelestialCity(body);
           ulong? parent_city = GetCelestialCityOrNull(orbit?.referenceBody);
           plugin_.InsertCelestialJacobiKeplerian(
-              celestial_city: celestial_city,
-              parent_city       : parent_city,
+              celestial_city     : celestial_city,
+              parent_city        : parent_city,
               body_parameters    : body_parameters,
               keplerian_elements : orbit?.Elements());
         };
