@@ -160,36 +160,36 @@ internal partial class PlottingFrameParameters : IReferenceFrameParameters,
       Log.Fatal("Bad FrameType " + node.GetUniqueValue("extension"));
     }
     Extension = extension;
-    //if (!int.TryParse(node.GetUniqueValue("centre_index"), out centre_index)) {
-    //  Log.Fatal("Bad centre_index " + node.GetUniqueValue("centre_index"));
-    //}
-    //var primary_indices = new List<int>();
-    //foreach (string value in node.GetValues("primary_indices")) {
-    //  if (!int.TryParse(value, out int i)) {
-    //    Log.Fatal("Bad primary_indices " + value);
-    //  }
-    //  primary_indices.Add(i);
-    //}
-    //primary_index = primary_indices.ToArray();
-    //var secondary_indices = new List<int>();
-    //foreach (string value in node.GetValues("secondary_indices")) {
-    //  if (!int.TryParse(value, out int i)) {
-    //    Log.Fatal("Bad secondary_indices " + value);
-    //  }
-    //  secondary_indices.Add(i);
-    //}
-    //secondary_index = secondary_indices.ToArray();
+    if (!ulong.TryParse(node.GetUniqueValue("centre_city"), out centre_city)) {
+      Log.Fatal("Bad centre_city " + node.GetUniqueValue("centre_city"));
+    }
+    var primary_cities = new List<ulong>();
+    foreach (string value in node.GetValues("primary_cities")) {
+      if (!ulong.TryParse(value, out ulong i)) {
+        Log.Fatal("Bad primary_cities " + value);
+      }
+      primary_cities.Add(i);
+    }
+    primary_city = primary_cities.ToArray();
+    var secondary_cities = new List<ulong>();
+    foreach (string value in node.GetValues("secondary_cities")) {
+      if (!ulong.TryParse(value, out ulong i)) {
+        Log.Fatal("Bad secondary_cities " + value);
+      }
+      secondary_cities.Add(i);
+    }
+    secondary_city = secondary_cities.ToArray();
   }
 
   public void Save(ConfigNode node) {
     node.AddValue("extension", Extension.ToString());
-    //node.AddValue("centre_index", centre_index);
-    //foreach (int i in primary_index) {
-    //  node.AddValue("primary_indices", i);
-    //}
-    //foreach (int i in secondary_index) {
-    //  node.AddValue("secondary_indices", i);
-    //}
+    node.AddValue("centre_city", centre_city);
+    foreach (ulong i in primary_city) {
+      node.AddValue("primary_cities", i);
+    }
+    foreach (ulong i in secondary_city) {
+      node.AddValue("secondary_cities", i);
+    }
   }
 
   public static bool operator ==(PlottingFrameParameters left,

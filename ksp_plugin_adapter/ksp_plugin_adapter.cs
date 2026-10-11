@@ -452,7 +452,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     return city_to_celestial_[city];
   }
 
-  public CelestialBody? GetCelestialFromCityOrNull(ulong? city) {
+  public CelestialBody GetCelestialFromCityOrNull(ulong? city) {
     if (city == null) {
       return null;
     } else {
