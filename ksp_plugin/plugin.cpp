@@ -1793,7 +1793,7 @@ void Plugin::ReadCelestialsFromMessages(
         celestial_city,
         make_not_null_unique<Celestial>(
             dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body)));
-    CHECK(inserted) << celestial_message.index();
+    CHECK(inserted) << celestial_city;
     it->second->set_trajectory(ephemeris.trajectory(body));
 
     if (is_pre_lie) {
