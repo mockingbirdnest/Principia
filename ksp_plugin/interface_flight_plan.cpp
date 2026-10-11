@@ -176,8 +176,8 @@ Burn GetBurn(Plugin const& plugin,
       ++number_of_subclasses;
       parameters.extension =
           serialization::BodySurfaceReferenceFrame::kExtensionFieldNumber;
-      parameters.centre_city =
-          plugin.CelestialCityHashOfBody(*body_surface_reference_frame->centre());
+      parameters.centre_city = plugin.CelestialCityHashOfBody(
+          *body_surface_reference_frame->centre());
     }
   }
 
