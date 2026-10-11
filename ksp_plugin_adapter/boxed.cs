@@ -46,6 +46,14 @@ internal class BoxedUInt32 : Boxed<uint> {
   protected BoxedUInt32(uint all) : base(all) {}
 }
 
+internal class BoxedUInt64 : Boxed<ulong> {
+  public static implicit operator BoxedUInt64(ulong all) {
+    return new BoxedUInt64(all);
+  }
+
+  protected BoxedUInt64(ulong all) : base(all) {}
+}
+
 internal class BoxedKeplerianElements : Boxed<KeplerianElements> {
   public static implicit operator
       BoxedKeplerianElements(KeplerianElements all) {

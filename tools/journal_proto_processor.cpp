@@ -293,7 +293,7 @@ void JournalProtoProcessor::ProcessRepeatedFixed64Field(
       << " must have the (is_integer) option set to true";
 
   ProcessRepeatedNonStringField(descriptor,
-                                /*cs_unboxed_type=*/"uint64",
+                                /*cs_unboxed_type=*/"ulong",
                                 /*cxx_type=*/"uint64_t");
   ProcessRepeatedScalarField(descriptor, "uint64_t");
 }
@@ -551,8 +551,8 @@ void JournalProtoProcessor::ProcessOptionalFixed64Field(
       << " must have the (is_integer) option set to true";
   ProcessOptionalNonStringField(
       descriptor,
-      /*cs_boxed_type=*/"BoxedUint64",
-      /*cs_unboxed_type=*/"uint64",
+      /*cs_boxed_type=*/"BoxedUInt64",
+      /*cs_unboxed_type=*/"ulong",
       /*cxx_type=*/"uint64_t");
   ProcessOptionalScalarField(descriptor, "uint64_t");
 }
@@ -654,7 +654,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         << descriptor->full_name()
         << " has the (is_integer) option; it cannot have any of the "
            "(pointer_to), (encoding), or (address_of) options";
-    field_cs_type_[descriptor] = "uint64";
+    field_cs_type_[descriptor] = "ulong";
     field_cxx_type_[descriptor] = "uint64_t";
     return;
   }
