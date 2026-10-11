@@ -1799,6 +1799,10 @@ void Plugin::ReadCelestialsFromMessages(
     if (is_pre_lie) {
       CHECK(celestial_message.has_index()) << celestial_message;
       legacy_index_to_city.emplace(celestial_message.index(), celestial_city);
+      LOG(INFO) << "Pre-Lie Celestial " << body->name()
+                << " remapped from index " << celestial_message.index()
+                << " to CityHash 0x" << std::noshowbase << std::hex
+                << std::uppercase << celestial_city;
     }
 
     inserted = name_to_city.emplace(body->name(), celestial_city).second;
