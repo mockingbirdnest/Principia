@@ -376,9 +376,9 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
   ReadReachFlightPlan();
 
   Celestial const& moon = FindCelestialByName("Moon", *plugin_);
-  auto const moon_index = plugin_->CelestialCityHashOfBody(*moon.body());
+  auto const moon_city = plugin_->CelestialCityHashOfBody(*moon.body());
   auto const moon_frame =
-      plugin_->NewBodyCentredNonRotatingNavigationFrame(moon_index);
+      plugin_->NewBodyCentredNonRotatingNavigationFrame(moon_city);
   Instant flyby_time;
   Angle flyby_inclination;
   ComputeFlyby(*flight_plan_, moon, *moon_frame, flyby_time, flyby_inclination);
@@ -390,9 +390,9 @@ TEST_F(FlightPlanOptimizerTest, DISABLED_PoleTheMoon) {
       flight_plan_,
       FlightPlanOptimizer::ForInclination(
           &moon,
-          [this, moon_index]() {
+          [this, moon_city]() {
             return plugin_->NewBodyCentredNonRotatingNavigationFrame(
-                moon_index);
+                moon_city);
           },
           90 * Degree),
       [&number_of_evaluations](FlightPlan const&) { ++number_of_evaluations; });
