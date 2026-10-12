@@ -158,6 +158,7 @@ jobs:
       with:
         configuration: ${{ matrix.configuration }}
         solution_glob: ${{ env.PRINCIPIA_SOLUTION }}
+        extra_flags: ''
 
     - name: Test ${{ matrix.configuration }}
       uses: mockingbirdnest/actions/windows/test@main
