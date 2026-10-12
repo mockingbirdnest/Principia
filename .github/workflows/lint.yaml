@@ -107,6 +107,11 @@ jobs:
       with:
         configuration: Release
         solution_directory: .
+    - name: Initialize build environment
+      uses: mockingbirdnest/actions/windows/initialize_build@main
+      with:
+        configuration: Release
+        vs: '18'
     - name: Build sourcerer
       shell: pwsh
       env:
