@@ -50,7 +50,8 @@ OrbitAnalysis* __cdecl principia__VesselGetAnalysis(
     char const* const vessel_guid,
     int const* const revolutions_per_cycle,
     int const* const days_per_cycle,
-    int const ground_track_revolution) {
+    int const ground_track_revolution,
+    OrbitAnalysisPlotOptions const* const plot_options) {
   journal::Method<journal::VesselGetAnalysis> m({plugin,
                                                  vessel_guid,
                                                  revolutions_per_cycle,
@@ -64,7 +65,8 @@ OrbitAnalysis* __cdecl principia__VesselGetAnalysis(
                        *plugin,
                        revolutions_per_cycle,
                        days_per_cycle,
-                       ground_track_revolution);
+                       ground_track_revolution,
+                       plot_options);
   analysis->progress_of_next_analysis = vessel.progress_of_orbit_analysis();
   return m.Return(analysis);
 }

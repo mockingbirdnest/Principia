@@ -126,7 +126,6 @@ class BurnEditor : ScalingRenderer {
               { plotting_frame_parameters.PrimaryIndices[0] },
       });
     }
-    ComputeEngineCharacteristics();
   }
 
   public enum Event {
@@ -210,6 +209,7 @@ class BurnEditor : ScalingRenderer {
     if (minimized) {
       return Event.None;
     }
+
     using (new UnityEngine.GUILayout.VerticalScope()) {
       // When we are first rendered, the `initial_mass_in_tonnes_` will just have
       // been set.  If we have fallen back to instant impulse, we should use this
@@ -218,7 +218,6 @@ class BurnEditor : ScalingRenderer {
         first_time_rendering_ = false;
         changed = true;
         engine_warning_ = "";
-        ComputeEngineCharacteristics();
         ReformatΔv();
       }
 
@@ -228,24 +227,59 @@ class BurnEditor : ScalingRenderer {
         reference_frame_selector_.Hide();
       } else {
         using (new UnityEngine.GUILayout.HorizontalScope()) {
+          // We use buttons and not toggles below because repeatedly clicking a
+          // button has an effect (it recomputes the thrust based on the current
+          // orientation) while a toggle cannot be re-clicked.
+          // The buttons are disabled when there is no engine or RCS,
+          // respectively.  But we preserve the thrust that was previously
+          // computed for the burn: this makes it possible to edit the burn in
+          // the Tracking Station where we cannot see the engines and RCS.
+
+          engine_warning_ = "";
+          bool has_active_engine = HasActiveEngine();
+          if (!has_active_engine) {
+            engine_warning_ +=
+                L10N.CacheFormat(
+                    "#Principia_BurnEditor_Warning_NoActiveEngines");
+          }
+          UnityEngine.GUI.enabled = has_active_engine;
           if (UnityEngine.GUILayout.Button(
-              L10N.CacheFormat("#Principia_BurnEditor_ActiveEngines"))) {
-            engine_warning_ = "";
-            ComputeEngineCharacteristics();
+                  ConditionalCheckMark(Actuator.ACTIVE_ENGINES) +
+                  L10N.CacheFormat("#Principia_BurnEditor_ActiveEngines"))) {
+            actuator_ = Actuator.ACTIVE_ENGINES;
+            ComputeEngineCharacteristics(out thrust_in_kilonewtons_,
+                                         out specific_impulse_in_seconds_g0_);
             ReformatΔv();
             changed = true;
-          } else if (UnityEngine.GUILayout.Button(
-              L10N.CacheFormat("#Principia_BurnEditor_ActiveRCS"))) {
-            engine_warning_ = "";
-            ComputeRCSCharacteristics();
+          }
+
+          bool has_active_rcs = HasActiveRCS();
+          if (!has_active_rcs) {
+            engine_warning_ +=
+                L10N.CacheFormat("#Principia_BurnEditor_Warning_NoActiveRCS");
+          }
+          UnityEngine.GUI.enabled = has_active_rcs;
+          if (UnityEngine.GUILayout.Button(
+                  ConditionalCheckMark(Actuator.ACTIVE_RCS) +
+                  L10N.CacheFormat("#Principia_BurnEditor_ActiveRCS"))) {
+            actuator_ = Actuator.ACTIVE_RCS;
+            ComputeRCSCharacteristics(out thrust_in_kilonewtons_,
+                                      out specific_impulse_in_seconds_g0_);
             ReformatΔv();
             changed = true;
-          } else if (UnityEngine.GUILayout.Button(
-              L10N.CacheFormat("#Principia_BurnEditor_InstantImpulse"))) {
-            engine_warning_ = "";
-            UseTheForceLuke();
-            ReformatΔv();
-            changed = true;
+          }
+
+          UnityEngine.GUI.enabled = true;
+          if (UnityEngine.GUILayout.Button(
+                  ConditionalCheckMark(Actuator.INSTANT_IMPULSE) +
+                  L10N.CacheFormat("#Principia_BurnEditor_InstantImpulse"))) {
+            if (actuator_ != Actuator.INSTANT_IMPULSE) {
+              actuator_  = Actuator.INSTANT_IMPULSE;
+              UseTheForceLuke(out thrust_in_kilonewtons_,
+                              out specific_impulse_in_seconds_g0_);
+              ReformatΔv();
+              changed = true;
+            }
           }
         }
         reference_frame_selector_.RenderButton();
@@ -404,6 +438,9 @@ class BurnEditor : ScalingRenderer {
 
   public void Reset(NavigationManoeuvre manœuvre) {
     Burn burn = manœuvre.burn;
+    actuator_ = burn.actuator;
+    thrust_in_kilonewtons_ = burn.thrust_in_kilonewtons;
+    specific_impulse_in_seconds_g0_ = burn.specific_impulse_in_seconds_g0;
     coordinate_system_ = burn.intensity.coordinate_system;
     Δv_tangent_.value = burn.intensity.xyz.x;
     Δv_normal_.value = burn.intensity.xyz.y;
@@ -467,6 +504,7 @@ class BurnEditor : ScalingRenderer {
         throw Log.Fatal($"Unexpected coordinate system {coordinate_system_}");
     }
     return new Burn{
+        actuator = actuator_,
         thrust_in_kilonewtons = thrust_in_kilonewtons_,
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
         frame = reference_frame_selector_.FrameParameters(),
@@ -485,7 +523,9 @@ class BurnEditor : ScalingRenderer {
     reference_frame_selector_.DisposeWindow();
   }
 
-  private void ComputeEngineCharacteristics() {
+  private void ComputeEngineCharacteristics(out double thrust_in_kilonewtons,
+                                            out double
+                                                specific_impulse_in_seconds_g0) {
     ModuleEngines[] active_engines =
         (from part in vessel_.parts
          select (from PartModule module in part.Modules
@@ -494,14 +534,13 @@ class BurnEditor : ScalingRenderer {
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     double[] thrusts =
         (from engine in active_engines
-         select
-             engine.MaxThrustOutputVac(useThrustLimiter: true) *
-             (from transform in engine.thrustTransforms
-              select Math.Max(0,
-                              Vector3d.Dot(reference_direction,
-                                           -transform.forward))).Average()).
+         select engine.MaxThrustOutputVac(useThrustLimiter: true) *
+                (from transform in engine.thrustTransforms
+                 select Math.Max(0,
+                                 Vector3d.Dot(reference_direction,
+                                              -transform.forward))).Average()).
         ToArray();
-    thrust_in_kilonewtons_ = thrusts.Sum();
+    thrust_in_kilonewtons = thrusts.Sum();
 
     // This would use zip if we had 4.0 or later.  We loop for now.
     double Σ_f_over_i_sp = 0;
@@ -509,23 +548,17 @@ class BurnEditor : ScalingRenderer {
       Σ_f_over_i_sp +=
           thrusts[i] / active_engines[i].atmosphereCurve.Evaluate(0);
     }
-    specific_impulse_in_seconds_g0_ = thrust_in_kilonewtons_ / Σ_f_over_i_sp;
-
-    // If there are no engines, fall back onto RCS.
-    if (thrust_in_kilonewtons_ == 0) {
-      engine_warning_ +=
-          L10N.CacheFormat("#Principia_BurnEditor_Warning_NoActiveEngines");
-      ComputeRCSCharacteristics();
-    }
+    specific_impulse_in_seconds_g0 = thrust_in_kilonewtons / Σ_f_over_i_sp;
   }
 
-  private void ComputeRCSCharacteristics() {
-    ModuleRCS[] active_rcs = (from part in vessel_.parts
-                              select (from PartModule module in part.Modules
-                                      where module is ModuleRCS module_rcs &&
-                                            module_rcs.rcsEnabled
-                                      select module as ModuleRCS)).
-        SelectMany(x => x).ToArray();
+  private void ComputeRCSCharacteristics(out double thrust_in_kilonewtons,
+                                         out double
+                                             specific_impulse_in_seconds_g0) {
+    ModuleRCS[] active_rcs =
+        (from part in vessel_.parts
+         select (from PartModule module in part.Modules
+                 where module is ModuleRCS module_rcs && module_rcs.rcsEnabled
+                 select module as ModuleRCS)).SelectMany(x => x).ToArray();
     Vector3d reference_direction = vessel_.ReferenceTransform.up;
     // NOTE(egg): NathanKell informs me that in >= 1.0.5, RCS has a useZaxis
     // property, that controls whether they thrust -up or -forward.  The madness
@@ -541,22 +574,43 @@ class BurnEditor : ScalingRenderer {
                                                   ? -transform.forward
                                                   : -transform.up))).Sum()).
         ToArray();
-    thrust_in_kilonewtons_ = thrusts.Sum();
+    thrust_in_kilonewtons = thrusts.Sum();
 
     // This would use zip if we had 4.0 or later.  We loop for now.
     double Σ_f_over_i_sp = 0;
     for (int i = 0; i < active_rcs.Length; ++i) {
-      Σ_f_over_i_sp +=
-          thrusts[i] / active_rcs[i].atmosphereCurve.Evaluate(0);
+      Σ_f_over_i_sp += thrusts[i] / active_rcs[i].atmosphereCurve.Evaluate(0);
     }
-    specific_impulse_in_seconds_g0_ = thrust_in_kilonewtons_ / Σ_f_over_i_sp;
+    specific_impulse_in_seconds_g0 = thrust_in_kilonewtons / Σ_f_over_i_sp;
+  }
 
-    // If RCS provides no thrust, model a virtually instant burn.
-    if (thrust_in_kilonewtons_ == 0) {
-      engine_warning_ +=
-          L10N.CacheFormat("#Principia_BurnEditor_Warning_NoActiveRCS");
-      UseTheForceLuke();
-    }
+  private void UseTheForceLuke(out double thrust_in_kilonewtons,
+                               out double specific_impulse_in_seconds_g0) {
+    // The burn can last at most (9.80665 / scale) s.
+    const double scale = 1;
+    // This, together with `scale = 1`, ensures that, when `initial_time` is
+    // less than 2 ** 32 s, `Δv(initial_time + duration)` does not overflow if
+    // Δv is less than 100 km/s, and that `initial_time + duration` does not
+    // fully cancel if Δv is more than 1 mm/s.
+    const double range = 1000;
+    thrust_in_kilonewtons = initial_mass_in_tonnes_ * range * scale;
+    specific_impulse_in_seconds_g0 = range;
+  }
+
+  private bool HasActiveEngine() {
+    ComputeEngineCharacteristics(out double thrust_in_kilonewtons,
+                                 out double specific_impulse_in_seconds_g0);
+    return thrust_in_kilonewtons != 0;
+  }
+
+  private bool HasActiveRCS () {
+    ComputeRCSCharacteristics(out double thrust_in_kilonewtons,
+                              out double specific_impulse_in_seconds_g0);
+    return thrust_in_kilonewtons != 0;
+  }
+
+  private string ConditionalCheckMark(Actuator actuator) {
+    return actuator_ == actuator ? "✓" : "";
   }
 
   private string FormatΔvComponent(double metres_per_second,
@@ -704,22 +758,6 @@ class BurnEditor : ScalingRenderer {
     return true;
   }
 
-  private void UseTheForceLuke() {
-    // The burn can last at most (9.80665 / scale) s.
-    const double scale = 1;
-    // This, together with `scale = 1`, ensures that, when `initial_time` is
-    // less than 2 ** 32 s, `Δv(initial_time + duration)` does not overflow if
-    // Δv is less than 100 km/s, and that `initial_time + duration` does not
-    // fully cancel if Δv is more than 1 mm/s.
-    // TODO(egg): Before the C* release, add a persisted flag to indicate to the
-    // user that we are not using the craft's engines (we can also use that
-    // flag to remember whether the burn was created for active engines or
-    // active RCS).
-    const double range = 1000;
-    thrust_in_kilonewtons_ = initial_mass_in_tonnes_ * range * scale;
-    specific_impulse_in_seconds_g0_ = range;
-  }
-
   private double time_base => time_base_is_start_of_flight_plan_
                                   ? plugin.FlightPlanGetInitialTime(
                                       vessel_.id.ToString())
@@ -749,6 +787,7 @@ class BurnEditor : ScalingRenderer {
   private readonly DifferentialSlider previous_coast_duration_;
   private readonly ReferenceFrameSelector<NavigationFrameParameters>
       reference_frame_selector_;
+  private Actuator actuator_;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
   private double duration_;

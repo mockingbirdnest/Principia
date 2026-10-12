@@ -175,9 +175,6 @@
     <ClCompile Include="interface_collision.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="interface_graph.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="plugin_reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

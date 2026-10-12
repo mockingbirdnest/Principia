@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using UnityEngine.Profiling;
 using static principia.ksp_plugin_adapter.FrameType;
 
@@ -98,6 +97,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   CelestialBody last_main_body_;
   private int main_body_change_countdown_ = 1;
   private bool celestial_terrains_were_validated_ = false;
+  private bool solar_system_was_validated_ = false;
 
   private PlanetariumCameraAdjuster planetarium_camera_adjuster_;
 
@@ -383,6 +383,10 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   ~PrincipiaPluginAdapter() {
     // We should not get here without deleting the plugin, but just for safety.
     Interface.DeletePlugin(ref plugin_);
+  }
+
+  private bool PluginBeingRead() {
+    return plugin_reader_ != IntPtr.Zero;
   }
 
   public bool PluginRunning() {
@@ -787,6 +791,45 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     }
   }
 
+  // Checks that the user didn't mess with the solar system.
+  public void ValidateSolarSystem() {
+    var ksp_celestial_names = new SortedSet<string>();
+    var ksp_not_in_principia = new SortedSet<string>();
+    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+      ksp_celestial_names.Add(celestial.name);
+      ksp_not_in_principia.Add(celestial.name);
+    }
+    using (DisposableIterator all_celestial_names =
+           plugin_.CelestialGetAllNames()) {
+      var principia_celestial_names = new SortedSet<string>();
+      var principia_not_in_ksp = new SortedSet<string>();
+      for (;
+           !all_celestial_names.IteratorAtEnd();
+           all_celestial_names.IteratorIncrement()) {
+        string celestial_name = all_celestial_names.IteratorGetCelestialName();
+        principia_celestial_names.Add(celestial_name);
+        principia_not_in_ksp.Add(celestial_name);
+      }
+      ksp_not_in_principia.ExceptWith(principia_celestial_names);
+      if (ksp_not_in_principia.Count > 0) {
+        Log.Error("Principia does not know about the following KSP celestial " +
+                  "bodies: " +
+                  string.Join(", ", ksp_not_in_principia.ToArray()));
+      }
+      principia_not_in_ksp.ExceptWith(ksp_celestial_names);
+      if (principia_not_in_ksp.Count > 0) {
+        Log.Error("KSP does not know about the following Principia celestial " +
+                  "bodies: " +
+                  string.Join(", ", principia_not_in_ksp.ToArray()));
+      }
+      if (ksp_not_in_principia.Count > 0 || principia_not_in_ksp.Count > 0) {
+        Log.Fatal("KSP and Principia disagree on the solar system; " +
+                  "you have probably changed the solar system since creating " +
+                  "the Principia save.");
+      }
+    }
+  }
+
   #region ScenarioModule lifecycle
 
   // These functions override virtual ones from `ScenarioModule`, but it seems
@@ -889,7 +932,7 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
 
   public override void OnSave(ConfigNode node) {
     base.OnSave(node);
-    if (plugin_reader_ != IntPtr.Zero) {
+    if (PluginBeingRead()) {
       throw new Exception(
           "Attempted to save while plugin reader is still running; " +
           "throwing exception to cancel the save and avoid save corruption.");
@@ -938,7 +981,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
                                   serialization_encoding_);
       if (plugin_reader_.PluginReaderWillBeSlow()) {
         migration_monitor_ = new MigrationMonitor(plugin_reader_);
-        FlightAutoSave.fetch.bypassAutoSave = true;
         KeepPaused();
       } else {
         plugin_ = Interface.PluginReaderAwait(ref plugin_reader_);
@@ -956,43 +998,6 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       Log.Warning("No principia state found, creating one");
       ResetPlugin();
     }
-
-    // Check that the user didn't mess with the solar system.
-    var ksp_celestial_names = new SortedSet<string>();
-    var ksp_not_in_principia = new SortedSet<string>();
-    foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-      ksp_celestial_names.Add(celestial.name);
-      ksp_not_in_principia.Add(celestial.name);
-    }
-    using (DisposableIterator all_celestial_names =
-           plugin_.CelestialGetAllNames()) {
-      var principia_celestial_names = new SortedSet<string>();
-      var principia_not_in_ksp = new SortedSet<string>();
-      for (;
-           !all_celestial_names.IteratorAtEnd();
-           all_celestial_names.IteratorIncrement()) {
-        string celestial_name = all_celestial_names.IteratorGetCelestialName();
-        principia_celestial_names.Add(celestial_name);
-        principia_not_in_ksp.Add(celestial_name);
-      }
-      ksp_not_in_principia.ExceptWith(principia_celestial_names);
-      if (ksp_not_in_principia.Count > 0) {
-        Log.Error("Principia does not know about the following KSP celestial " +
-                  "bodies: " +
-                  string.Join(", ", ksp_not_in_principia.ToArray()));
-      }
-      principia_not_in_ksp.ExceptWith(ksp_celestial_names);
-      if (principia_not_in_ksp.Count > 0) {
-        Log.Error("KSP does not know about the following Principia celestial " +
-                  "bodies: " +
-                  string.Join(", ", principia_not_in_ksp.ToArray()));
-      }
-      if (ksp_not_in_principia.Count > 0 || principia_not_in_ksp.Count > 0) {
-        Log.Fatal("KSP and Principia disagree on the solar system; " +
-                  "you have probably changed the solar system since creating " +
-                  "the Principia save.");
-      }
-    }
   }
 
   #endregion
@@ -1007,17 +1012,17 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
       bad_installation_dialog_.RenderWindow();
       return;
     }
-    if (plugin_reader_ != IntPtr.Zero) {
+    if (PluginBeingRead()) {
       if (UnityEngine.Event.current.type == UnityEngine.EventType.Layout) {
         plugin_ = Interface.PluginReaderGet(ref plugin_reader_);
-        if (plugin_ == IntPtr.Zero) {
-          KeepPaused();
-        } else {
+        if (PluginRunning()) {
           FlightDriver.SetPause(pauseState: false);
           migration_monitor_.Hide();
           migration_monitor_ = null;
           FlightAutoSave.fetch.bypassAutoSave = false;
           LockClearing();
+        } else {
+          KeepPaused();
         }
       }
     }
@@ -1260,6 +1265,11 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
     parachuting_kerbal_angular_velocities_.Clear();
 
     if (PluginRunning()) {
+      if (!solar_system_was_validated_) {
+        ValidateSolarSystem();
+        solar_system_was_validated_ = true;
+      }
+
       plugin_.SetMainBody(
           (FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody()).
           flightGlobalsIndex);
@@ -2991,6 +3001,12 @@ public partial class PrincipiaPluginAdapter : ScenarioModule,
   }
 
   private void KeepPaused() {
+    // We have seen a case (#4695) where `FlightAutoSave.fetch` is null in
+    // `OnLoad`, maybe because another mod misbehaved.  Better retry to disable
+    // auto-saving each time we enter `OnGUI`.
+    if (FlightAutoSave.fetch != null) {
+      FlightAutoSave.fetch.bypassAutoSave = true;
+    }
     // If the game is paused in OnLoad while loading a quicksave, some of the
     // systems don’t get the message and the game continues in a half-paused
     // state.

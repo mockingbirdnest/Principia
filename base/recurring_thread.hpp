@@ -65,6 +65,8 @@ class RecurringThread : public BaseRecurringThread {
   RecurringThread(Action action,
                   std::chrono::milliseconds period);
 
+  ~RecurringThread() override;
+
   // Overwrites the contents of the input channel.  The `input` data will be
   // either picked by the next execution of `action`, or overwritten by the next
   // call to `Put`.
@@ -94,6 +96,8 @@ class RecurringThread<Input, void> : public BaseRecurringThread {
   // was provided).  At construction the thread is in the stopped state.
   RecurringThread(Action action,
                   std::chrono::milliseconds period);
+
+  ~RecurringThread() override;
 
   // Overwrites the contents of the input channel.  The `input` data will be
   // either picked by the next execution of `action`, or overwritten by the next

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <memory>
 #include <optional>
 #include <thread>
 
@@ -10,10 +11,13 @@
 #include "astronomy/orbit_ground_track.hpp"
 #include "astronomy/orbit_recurrence.hpp"
 #include "astronomy/orbital_elements.hpp"
+#include "astronomy/лидов.hpp"
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/interval.hpp"
+#include "graphics/colours.hpp"
+#include "graphics/graph.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "physics/body_centred_non_rotating_reference_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -30,10 +34,13 @@ namespace internal {
 using namespace principia::astronomy::_orbit_ground_track;
 using namespace principia::astronomy::_orbit_recurrence;
 using namespace principia::astronomy::_orbital_elements;
+using namespace principia::astronomy::_лидов;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_interval;
+using namespace principia::graphics::_colours;
+using namespace principia::graphics::_graph;
 using namespace principia::ksp_plugin::_frames;
 using namespace principia::physics::_body_centred_non_rotating_reference_frame;
 using namespace principia::physics::_degrees_of_freedom;
@@ -47,6 +54,78 @@ using namespace principia::quantities::_quantities;
 // orbit.
 class OrbitAnalyser {
  public:
+  class ElementGraphs {
+   public:
+    struct PlotOptions {
+      // The width of all graphs.
+      std::int64_t width;
+      // The height of time series graphs: a(t), e(t), i(t), ω(t), Ω(t),
+      // h_pe(t), h_ap(t).
+      std::int64_t time_series_height;
+      // The background colour of all graphs.
+      RGBA32 background_colour;
+      // The axis colour of all graphs.
+      RGB24 axis_colour;
+      // The colour used for the locus of the eccentricity vector, as well as
+      // for the time series of its polar coordinates e(t) and ω(t), and for the
+      // lines of constant extremal e in the Лидов graph.
+      RGB24 eccentricity_vector_colour;
+      // The colour used for the time series of the inclination i(t) and for the
+      // lines of constant extremal i in the Лидов graph.
+      RGB24 inclination_colour;
+      // The colour used for the time series Ω(t).
+      RGB24 longitude_of_ascending_node_colour;
+      // The colour used for the time series whose dimension is a length: a(t),
+      // h_pe(t), h_ap(t).
+      RGB24 distance_colour;
+      RGB24 лидов_parameter_colour;
+      ЛидовGrid лидов_grid;
+
+      friend bool operator==(PlotOptions const& left,
+                             PlotOptions const& right) = default;
+    };
+
+    // `*elements` must outlive the constructed object.
+    ElementGraphs(not_null<OrbitalElements const*> elements,
+                  PlotOptions const& options);
+
+    Graph<double, double> const& eccentricity_vector_graph() const;
+    Graph<double, double> const& лидов_graph() const;
+    Graph<Instant, Length> const& semimajor_axis_graph() const;
+    Graph<Instant, double> const& eccentricity_graph() const;
+    Graph<Instant, Angle> const& inclination_graph() const;
+    Graph<Instant, Angle> const& longitude_of_ascending_node_graph() const;
+    Graph<Instant, Angle> const& argument_of_periapsis_graph() const;
+    Graph<Instant, Length> const& periapsis_distance_graph() const;
+    Graph<Instant, Length> const& apoapsis_distance_graph() const;
+
+    PlotOptions const& plot_options() const;
+
+    void SetЛидовGrid(ЛидовGrid лидов_grid);
+
+   private:
+    // Static for use in the constructor; also called by `SetЛидовGrid` with the
+    // member variables.
+    static not_null<std::unique_ptr<Graph<double, double>>> MakeЛидовGraph(
+        OrbitalElements const& elements,
+        PlotOptions const& options);
+
+    OrbitalElements const& elements_;
+    Graph<double, double> eccentricity_vector_graph_;
+    // The Лидов graph can be changed independently of the others by changing
+    // the grid options, and Graph is not assignable (the dimensions are fixed
+    // at construction), hence the indirection.
+    not_null<std::unique_ptr<Graph<double, double>>> лидов_graph_;
+    Graph<Instant, Length> semimajor_axis_graph_;
+    Graph<Instant, double> eccentricity_graph_;
+    Graph<Instant, Angle> inclination_graph_;
+    Graph<Instant, Angle> longitude_of_ascending_node_graph_;
+    Graph<Instant, Angle> argument_of_periapsis_graph_;
+    Graph<Instant, Length> periapsis_distance_graph_;
+    Graph<Instant, Length> apoapsis_distance_graph_;
+    PlotOptions plot_options_;
+  };
+
   // The analysis stores the computed orbital characteristics.  It is publicly
   // mutable via `SetRecurrence` and `ResetRecurrence` to allow the caller to
   // consider a nominal recurrence other than the one deduced from the orbital
@@ -54,6 +133,9 @@ class OrbitAnalyser {
   // different recurrence is relatively cheap, so it is inconvenient to wait for
   // a whole new analysis to do so, but doing it at every frame is still
   // wasteful, so we cache that in the `Analysis`.
+  // It is likewise mutable via `SetPlotOptions`, for the same reasons.
+  // Eventually it may make sense to make plotting asynchronous, but it should
+  // still likely be separate from analysis.
   class Analysis {
    public:
     Instant const& first_time() const;
@@ -82,6 +164,12 @@ class OrbitAnalyser {
     // `!elements.has_value()`, updating `equatorial_crossings` if needed.
     void ResetRecurrence();
 
+    // Null if the plot options have not been set.
+    ElementGraphs const* element_graphs() const;
+
+    // Recomputes graphs if the options have changed.
+    void SetPlotOptions(ElementGraphs::PlotOptions const& options);
+
    private:
     explicit Analysis(Instant const& first_time);
 
@@ -98,6 +186,8 @@ class OrbitAnalyser {
     std::optional<OrbitGroundTrack> ground_track_;
     std::optional<OrbitGroundTrack::EquatorCrossingLongitudes>
         equatorial_crossings_;
+    // Null if the plot options have not been set.
+    std::unique_ptr<ElementGraphs> element_graphs_;
 
     friend class OrbitAnalyser;
   };

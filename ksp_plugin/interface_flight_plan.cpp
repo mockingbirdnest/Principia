@@ -100,6 +100,7 @@ NavigationManœuvre::Burn FromInterfaceBurn(Plugin const& plugin,
   timing.initial_time = FromGameTime(plugin, burn.initial_time);
   return {.intensity = *navigation_manœuvre_intensity,
           .timing = timing,
+          .actuator = static_cast<serialization::Actuator>(burn.actuator),
           .thrust = burn.thrust_in_kilonewtons * Kilo(Newton),
           .specific_impulse =
               burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
@@ -182,7 +183,8 @@ Burn GetBurn(Plugin const& plugin,
 
   CHECK_EQ(number_of_subclasses, 1) << "Could not construct frame parameters";
 
-  return {.thrust_in_kilonewtons = manœuvre.thrust() / Kilo(Newton),
+  return {.actuator = static_cast<interface::Actuator>(manœuvre.actuator()),
+          .thrust_in_kilonewtons = manœuvre.thrust() / Kilo(Newton),
           .specific_impulse_in_seconds_g0 =
               manœuvre.specific_impulse() / (Second * StandardGravity),
           .frame = parameters,
@@ -292,7 +294,8 @@ OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
     int const* const revolutions_per_cycle,
     int const* const days_per_cycle,
     int const ground_track_revolution,
-    int const index) {
+    int const index,
+    OrbitAnalysisPlotOptions const* const plot_options) {
   journal::Method<journal::FlightPlanGetCoastAnalysis> m(
       {plugin,
        vessel_guid,
@@ -307,7 +310,8 @@ OrbitAnalysis* __cdecl principia__FlightPlanGetCoastAnalysis(
                        *plugin,
                        /*revolutions_per_cycle=*/revolutions_per_cycle,
                        /*days_per_cycle=*/days_per_cycle,
-                       /*ground_track_revolution=*/ground_track_revolution);
+                       /*ground_track_revolution=*/ground_track_revolution,
+                       plot_options);
   analysis->progress_of_next_analysis = flight_plan.progress_of_analysis(index);
   return m.Return(analysis);
 }

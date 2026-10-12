@@ -55,5 +55,15 @@ internal class BoxedKeplerianElements : Boxed<KeplerianElements> {
   protected BoxedKeplerianElements(KeplerianElements all) : base(all) {}
 }
 
+internal class BoxedOrbitAnalysisPlotOptions : Boxed<OrbitAnalysisPlotOptions> {
+  public static implicit operator BoxedOrbitAnalysisPlotOptions(
+      OrbitAnalysisPlotOptions all) {
+    return new BoxedOrbitAnalysisPlotOptions(all);
+  }
+
+  protected BoxedOrbitAnalysisPlotOptions(OrbitAnalysisPlotOptions all) :
+      base(all) {}
+}
+
 }  // namespace ksp_plugin_adapter
 }  // namespace principia

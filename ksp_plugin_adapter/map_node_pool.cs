@@ -181,9 +181,10 @@ internal class MapNodePool {
       case MapObject.ObjectType.Periapsis:
         CelestialBody fixed_body = reference_frame.Centre();
         associated_map_object = fixed_body.MapObject;
-        colour = fixed_body.orbit == null
-                     ? XKCDColors.SunshineYellow
-                     : fixed_body.orbitDriver.Renderer.nodeColor;
+        colour =
+            fixed_body.orbit == null || fixed_body.orbitDriver.Renderer == null
+                ? XKCDColors.SunshineYellow
+                : fixed_body.orbitDriver.Renderer.nodeColor;
         break;
       case MapObject.ObjectType.ApproachIntersect:
         associated_map_object = reference_frame.target_vessel.mapObject;

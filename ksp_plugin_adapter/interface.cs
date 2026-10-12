@@ -312,6 +312,24 @@ internal static partial class Interface {
   internal static void LoadSymbols() {
     symbols_ = new Symbols();
   }
+
+  // UnityEngine.Color32 is a union with an int rgba, but it is private, so we
+  // use our own union.
+  [StructLayout(LayoutKind.Explicit)]
+  private struct RGBA32 {
+    [FieldOffset(0)]
+    public uint rgba;
+    [FieldOffset(0)]
+    public UnityEngine.Color32 color;
+  }
+ 
+  internal static uint rgba(this UnityEngine.Color color) {
+    return new RGBA32{color = color}.rgba;
+  }
+ 
+  internal static UnityEngine.Color32 FromRGBA(uint color) {
+    return new RGBA32{rgba = color}.color;
+  }
 }
 
 } // namespace ksp_plugin_adapter
