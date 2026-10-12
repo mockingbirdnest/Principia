@@ -102,16 +102,16 @@ jobs:
     runs-on: windows-2022
     steps:
     - uses: actions/checkout@v6
-    - name: Restore Release
-      uses: mockingbirdnest/actions/windows/restore@main
-      with:
-        configuration: Release
-        solution_directory: .
     - name: Initialize build environment
       uses: mockingbirdnest/actions/windows/initialize_build@main
       with:
         configuration: Release
         vs: '18'
+    - name: Restore Release
+      uses: mockingbirdnest/actions/windows/restore@main
+      with:
+        configuration: Release
+        solution_directory: .
     - name: Build sourcerer
       shell: pwsh
       env:
