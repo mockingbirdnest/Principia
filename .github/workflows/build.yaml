@@ -60,6 +60,7 @@ jobs:
       uses: mockingbirdnest/actions/windows/initialize_build@main
       with:
         configuration: ${{ matrix.configuration }}
+        vs: '18'
 
     - name: Download abseil artifact
       uses: mockingbirdnest/actions/windows/download_artifact@main
