@@ -60,8 +60,8 @@ Nanobenchmark<Value_, Argument_, Concrete_>::Run(Logger* const logger) const {
       sample_count, std::numeric_limits<double>::quiet_NaN());
   [[maybe_unused]] int registers[4]{};
   [[maybe_unused]] int const leaf = 0;
+  double const input = absl::GetFlag(FLAGS_input);
   for (int j = 0; j < sample_count; ++j) {
-    double const input = absl::GetFlag(FLAGS_input);
     double x = input;
     // The CPUID barriers prevent out-of-order execution; see [Pao10].
 #if PRINCIPIA_COMPILER_MSVC
@@ -94,7 +94,9 @@ Nanobenchmark<Value_, Argument_, Concrete_>::Run(Logger* const logger) const {
     double const δtsc = tsc_stop - tsc_start;
     samples[j] = δtsc / loop_iterations;
 
-    absl::SetFlag(&FLAGS_input, x);
+    // Consume `x`, otherwise the compiler may eliminate the entire loop for
+    // certain functions like `std::cos`.
+    static double const y = x;
   }
   if (logger != nullptr) {
     logger->Append("samples", std::tuple{this->name(), samples});
