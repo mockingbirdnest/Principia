@@ -93,6 +93,8 @@ Nanobenchmark<Value_, Argument_, Concrete_>::Run(Logger* const logger) const {
 #endif
     double const δtsc = tsc_stop - tsc_start;
     samples[j] = δtsc / loop_iterations;
+
+    absl::SetFlag(&FLAGS_input, x);
   }
   if (logger != nullptr) {
     logger->Append("samples", std::tuple{this->name(), samples});

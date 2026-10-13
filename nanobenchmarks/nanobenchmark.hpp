@@ -139,17 +139,22 @@ class NanobenchmarkRegistry {
     SetName(#BaseClass "/" #Method);                                   \
   }
 
-#define NANOBENCHMARK_DECLARE(Function)                             \
-  class NANOBENCHMARK_CONCAT_NAME(Function)                         \
-      : public Nanobenchmark<double,                                \
-                             double,                                \
-                             NANOBENCHMARK_CONCAT_NAME(Function)> { \
-   public:                                                          \
-    NANOBENCHMARK_CONCAT_NAME(Function)() {                         \
-      SetName(#Function);                                           \
-    }                                                               \
-                                                                    \
-    __declspec(noinline) Value NanobenchmarkCase(Argument x) const; \
+#define NANOBENCHMARK_DECLARE(Function)                                     \
+  class NANOBENCHMARK_CONCAT_NAME(Function)                                 \
+      : public Nanobenchmark<double,                                        \
+                             double,                                        \
+                             NANOBENCHMARK_CONCAT_NAME(Function)> {         \
+   public:                                                                  \
+    using Base =                                                            \
+        Nanobenchmark<double, double, NANOBENCHMARK_CONCAT_NAME(Function)>; \
+    using Base::Value;                                                      \
+    using Base::Argument;                                                   \
+                                                                            \
+    NANOBENCHMARK_CONCAT_NAME(Function)() {                                 \
+      SetName(#Function);                                                   \
+    }                                                                       \
+                                                                            \
+    __declspec(noinline) Value NanobenchmarkCase(Argument x) const;         \
   };
 
 #define NANOBENCHMARK_DECLARE_FUNCTION2(line, Function)                    \
@@ -158,6 +163,11 @@ class NanobenchmarkRegistry {
                              double,                                       \
                              NANOBENCHMARK_CONCAT_NAME(line)> {            \
    public:                                                                 \
+    using Base =                                                           \
+        Nanobenchmark<double, double, NANOBENCHMARK_CONCAT_NAME(line)>;    \
+    using Base::Value;                                                     \
+    using Base::Argument;                                                  \
+                                                                           \
     NANOBENCHMARK_CONCAT_NAME(line)() {                                    \
       SetFunction(&Function);                                              \
       SetName(#Function);                                                  \
@@ -189,15 +199,15 @@ class NanobenchmarkRegistry {
 #define NANOBENCHMARK_FIXTURE(BaseClass, Method, ...)                      \
   NANOBENCHMARK_DECLARE_FIXTURE2(BaseClass, Method)                        \
   NANOBENCHMARK_REGISTER_FIXTURE(__LINE__, BaseClass, Method);             \
-  auto NANOBENCHMARK_CONCAT_NAME_FIXTURE(                                  \
+  __declspec(noinline) auto NANOBENCHMARK_CONCAT_NAME_FIXTURE(             \
       BaseClass, Method)::NanobenchmarkCase(Argument const argument) const \
       -> Value
 
-#define NANOBENCHMARK(Function)                                  \
-  NANOBENCHMARK_DECLARE(Function)                                \
-  NANOBENCHMARK_REGISTER(__LINE__, Function);                    \
-  double NANOBENCHMARK_CONCAT_NAME(Function)::NanobenchmarkCase( \
-      double const x)
+#define NANOBENCHMARK(Function)                          \
+  NANOBENCHMARK_DECLARE(Function)                        \
+  NANOBENCHMARK_REGISTER(__LINE__, Function);            \
+  __declspec(noinline) double NANOBENCHMARK_CONCAT_NAME( \
+      Function)::NanobenchmarkCase(double const x) const
 
 #define NANOBENCHMARK_FUNCTION(Function)             \
   NANOBENCHMARK_DECLARE_FUNCTION(__LINE__, Function) \
@@ -214,8 +224,9 @@ class NanobenchmarkRegistry {
       NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, f)::Argument);             \
   NANOBENCHMARK_DEFINE_FIXTURE3(BaseClass, f, f)                              \
   NANOBENCHMARK_REGISTER_FIXTURE(__LINE__, BaseClass, f);                     \
-  auto NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, f)::NanobenchmarkCase(    \
-      Argument const argument) const -> Value {                               \
+  __declspec(noinline) auto NANOBENCHMARK_CONCAT_NAME_FIXTURE(                \
+      BaseClass, f)::NanobenchmarkCase(Argument const argument) const         \
+      -> Value {                                                              \
     return f(argument);                                                       \
   }
 

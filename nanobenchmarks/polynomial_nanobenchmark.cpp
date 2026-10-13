@@ -22,10 +22,14 @@ using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
-template<typename Value_>
+template<typename Value_, typename Concrete_>
 class PolynomialNanobenchmark
-    : public Nanobenchmark<Value_, Instant, PolynomialNanobenchmark<Value_>> {
+    : public Nanobenchmark<Value_, Instant, Concrete_> {
  protected:
+  using Base = Nanobenchmark<Value_, Instant, Concrete_>;
+  using Base::Value;
+  using Base::Argument;
+
   using P1A = PolynomialInMonomialBasis<Displacement<World>, Instant, 1>;
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
   using P3A = PolynomialInMonomialBasis<Displacement<World>, Instant, 3>;
@@ -74,10 +78,12 @@ class PolynomialNanobenchmark
   P17A const p17_;
 };
 
+template<typename Concrete_>
 using PolynomialDisplacementNanobenchmark =
-   PolynomialNanobenchmark<Displacement<World>>;
+   PolynomialNanobenchmark<Displacement<World>, Concrete_>;
+template<typename Concrete_>
 using PolynomialRelativeDegreesOfFreedomNanobenchmark =
-   PolynomialNanobenchmark<RelativeDegreesOfFreedom<World>>;
+   PolynomialNanobenchmark<RelativeDegreesOfFreedom<World>, Concrete_>;
 
 NANOBENCHMARK_FIXTURE(PolynomialDisplacementNanobenchmark, Value01) {
   return p1_(argument);
