@@ -72,8 +72,9 @@ Nanobenchmark<Value_, Argument_, Concrete_>::Run(Logger* const logger) const {
     auto const tsc_start = __rdtsc();
     for (int i = 0; i < loop_iterations; ++i) {
       using D = Dependencies<Value, Argument>;
-      x = D::ConsumeValue(static_cast<Concrete_*>(this)->NanobenchmarkCase(
-          D::ProduceArgument(x)));
+      x = D::ConsumeValue(
+          static_cast<Concrete_ const*>(this)->NanobenchmarkCase(
+              D::ProduceArgument(x)));
       x += input - x;
     }
     unsigned int tsc_aux;
