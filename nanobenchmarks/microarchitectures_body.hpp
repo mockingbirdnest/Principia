@@ -37,10 +37,14 @@ NANOBENCHMARK_EXTERN_C_FUNCTION(sqrtsd_xmm0_xmm0);
 NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
 NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
 
-using DisplacementInstantNanobenchmark =
-    Nanobenchmark<Displacement<World>, Instant>;
-using RelativeDegreesOfFreedomInstantNanobenchmark =
-    Nanobenchmark<RelativeDegreesOfFreedom<World>, Instant>;
+class DisplacementInstantNanobenchmark
+    : public Nanobenchmark<Displacement<World>,
+                            Instant,
+                            DisplacementInstantNanobenchmark> {};
+class RelativeDegreesOfFreedomInstantNanobenchmark
+    : public Nanobenchmark<RelativeDegreesOfFreedom<World>,
+                            Instant,
+                            RelativeDegreesOfFreedomInstantNanobenchmark> {};
 
 #if 0
 // NOTE: To figure out the calling convention or to get the assembly code for a

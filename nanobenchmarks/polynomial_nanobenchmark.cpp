@@ -23,7 +23,8 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_si;
 
 template<typename Value_>
-class PolynomialNanobenchmark : public Nanobenchmark<Value_, Instant> {
+class PolynomialNanobenchmark
+    : public Nanobenchmark<Value_, Instant, PolynomialNanobenchmark<Value_>> {
  protected:
   using P1A = PolynomialInMonomialBasis<Displacement<World>, Instant, 1>;
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
