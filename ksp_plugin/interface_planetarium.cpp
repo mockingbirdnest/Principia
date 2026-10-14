@@ -275,13 +275,13 @@ void __cdecl principia__PlanetariumPlotPsychohistory(
 }
 
 // Fills the array of size `vertices_size` at `vertices` with vertices for the
-// rendered past trajectory of the celestial with the given index; the
+// rendered past trajectory of the celestial with the given `CityHash`; the
 // trajectory goes back `max_history_length` seconds before the present time (or
 // to the earliest time available if the relevant `t_min` is more recent).
 void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
-    int const celestial_index,
+    std::uint64_t const celestial_city,
     char const* const vessel_guid,
     double const max_history_length,
     ScaledSpacePoint* const vertices,
@@ -291,7 +291,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
   journal::Method<journal::PlanetariumPlotCelestialPastTrajectory> m(
       {planetarium,
        plugin,
-       celestial_index,
+       celestial_city,
        vessel_guid,
        max_history_length,
        vertices,
@@ -307,7 +307,7 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
     return m.Return();
   } else {
     auto const& celestial_trajectory =
-        plugin->GetCelestial(celestial_index).trajectory();
+        plugin->GetCelestial(celestial_city).trajectory();
     Instant const desired_first_time =
         plugin->CurrentTime() - max_history_length * Second;
 
@@ -341,13 +341,13 @@ void __cdecl principia__PlanetariumPlotCelestialPastTrajectory(
 }
 
 // Fills the array of size `vertices_size` at `vertices` with vertices for the
-// rendered future trajectory of the celestial with the given index; the
+// rendered future trajectory of the celestial with the given `CityHash`; the
 // trajectory goes as far as the furthest of the final time of the prediction or
 // that of the flight plan.
 void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
-    int const celestial_index,
+    std::uint64_t const celestial_city,
     char const* const vessel_guid,
     ScaledSpacePoint* const vertices,
     int const vertices_size,
@@ -356,7 +356,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
   journal::Method<journal::PlanetariumPlotCelestialFutureTrajectory> m(
       {planetarium,
        plugin,
-       celestial_index,
+       celestial_city,
        vessel_guid,
        vertices,
        vertices_size},
@@ -382,7 +382,7 @@ void __cdecl principia__PlanetariumPlotCelestialFutureTrajectory(
             : prediction_final_time;
 
     auto const& celestial_trajectory =
-        plugin->GetCelestial(celestial_index).trajectory();
+        plugin->GetCelestial(celestial_city).trajectory();
     // No need to request reanimation here because the current time of the
     // plugin is necessarily covered.
     TrajectoryView celestial_view(&celestial_trajectory);

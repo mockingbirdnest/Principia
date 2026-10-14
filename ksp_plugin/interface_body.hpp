@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <string>
@@ -21,6 +22,7 @@
 #include "geometry/space_transformations.hpp"
 #include "graphics/graph.hpp"
 #include "integrators/integrators.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/orbit_analyser.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/renderer.hpp"
@@ -43,6 +45,7 @@ using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space_transformations;
 using namespace principia::graphics::_graph;
 using namespace principia::integrators::_integrators;
+using namespace principia::ksp_plugin::_identification;
 using namespace principia::ksp_plugin::_orbit_analyser;
 using namespace principia::ksp_plugin::_plugin;
 using namespace principia::ksp_plugin::_renderer;
@@ -271,9 +274,9 @@ inline bool operator==(Interval const& left, Interval const& right) {
 inline bool operator==(NavigationFrameParameters const& left,
                        NavigationFrameParameters const& right) {
   return left.extension == right.extension &&
-         left.centre_index == right.centre_index &&
-         left.primary_index == right.primary_index &&
-         left.secondary_index == right.secondary_index;
+         left.centre_city == right.centre_city &&
+         left.primary_city == right.primary_city &&
+         left.secondary_city == right.secondary_city;
 }
 
 inline bool operator==(NavigationManoeuvre const& left,
@@ -314,7 +317,7 @@ inline bool operator==(OrbitAnalysis const& left, OrbitAnalysis const& right) {
              right.ground_track_equatorial_crossings &&
          left.solar_times_of_nodes == right.solar_times_of_nodes &&
          left.mission_duration == right.mission_duration &&
-         left.primary_index == right.primary_index &&
+         left.primary_city == right.primary_city &&
          left.progress_of_next_analysis == right.progress_of_next_analysis &&
          left.recurrence == right.recurrence;
 }
@@ -750,17 +753,17 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
     case serialization::BarycentricRotatingReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBarycentricRotatingNavigationFrame(
-          parameters.primary_index, parameters.secondary_index);
+          parameters.primary_city, parameters.secondary_city);
     case serialization::BodyCentredBodyDirectionReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBodyCentredBodyDirectionNavigationFrame(
-          parameters.primary_index, parameters.secondary_index);
+          parameters.primary_city, parameters.secondary_city);
     case serialization::BodyCentredNonRotatingReferenceFrame::
         kExtensionFieldNumber:
       return plugin.NewBodyCentredNonRotatingNavigationFrame(
-          parameters.centre_index);
+          parameters.centre_city);
     case serialization::BodySurfaceReferenceFrame::kExtensionFieldNumber:
-      return plugin.NewBodySurfaceNavigationFrame(parameters.centre_index);
+      return plugin.NewBodySurfaceNavigationFrame(parameters.centre_city);
     default:
       LOG(FATAL) << "Unexpected extension " << parameters.extension;
       std::abort();
@@ -770,44 +773,44 @@ inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(
 inline not_null<std::unique_ptr<PlottingFrame>> NewPlottingFrame(
     Plugin const& plugin,
     PlottingFrameParameters const& parameters) {
-  CHECK(parameters.primary_index != nullptr);
-  CHECK(parameters.secondary_index != nullptr);
+  CHECK(parameters.primary_city != nullptr);
+  CHECK(parameters.secondary_city != nullptr);
   switch (parameters.extension) {
     case serialization::RotatingPulsatingReferenceFrame::
         kExtensionFieldNumber: {
-      std::vector<int> primary_indices;
-      for (int const* const* index_ptr = parameters.primary_index;
-           *index_ptr != nullptr;
-           ++index_ptr) {
-        primary_indices.push_back(**index_ptr);
+      std::vector<CityHash> primary_cities;
+      for (CityHash const* const* city_ptr = parameters.primary_city;
+           *city_ptr != nullptr;
+           ++city_ptr) {
+        primary_cities.push_back(**city_ptr);
       }
-      std::vector<int> secondary_indices;
-      for (int const* const* index_ptr = parameters.secondary_index;
-           *index_ptr != nullptr;
-           ++index_ptr) {
-        secondary_indices.push_back(**index_ptr);
+      std::vector<CityHash> secondary_cities;
+      for (CityHash const* const* city_ptr = parameters.secondary_city;
+           *city_ptr != nullptr;
+           ++city_ptr) {
+        secondary_cities.push_back(**city_ptr);
       }
-      return plugin.NewRotatingPulsatingPlottingFrame(primary_indices,
-                                                      secondary_indices);
+      return plugin.NewRotatingPulsatingPlottingFrame(primary_cities,
+                                                      secondary_cities);
     }
     default:
-      int primary_index;
-      if (*parameters.primary_index == nullptr) {
-        primary_index = -1;
+      CityHash primary_city;
+      if (*parameters.primary_city == nullptr) {
+        primary_city = no_city;
       } else {
-        primary_index = **parameters.primary_index;
+        primary_city = **parameters.primary_city;
       }
-      int secondary_index;
-      if (*parameters.secondary_index == nullptr) {
-        secondary_index = -1;
+      CityHash secondary_city;
+      if (*parameters.secondary_city == nullptr) {
+        secondary_city = no_city;
       } else {
-        secondary_index = **parameters.secondary_index;
+        secondary_city = **parameters.secondary_city;
       }
       return NewNavigationFrame(plugin,
                                 {.extension = parameters.extension,
-                                 .centre_index = parameters.centre_index,
-                                 .primary_index = primary_index,
-                                 .secondary_index = secondary_index});
+                                 .centre_city = parameters.centre_city,
+                                 .primary_city = primary_city,
+                                 .secondary_city = secondary_city});
   }
 }
 
@@ -861,10 +864,10 @@ inline not_null<OrbitAnalysis*> NewOrbitAnalysis(
   if (vessel_analysis == nullptr) {
     return analysis;
   }
-  analysis->primary_index =
-      vessel_analysis->primary() == nullptr
-          ? nullptr
-          : new int(plugin.CelestialIndexOfBody(*vessel_analysis->primary()));
+  analysis->primary_city = vessel_analysis->primary() == nullptr
+                               ? nullptr
+                               : new CityHash(plugin.CelestialCityHashOfBody(
+                                     *vessel_analysis->primary()));
 
   auto const to_double_ptr = [&plugin](std::optional<Instant> const& t) {
     return t.has_value() ? new double(ToGameTime(plugin, *t)) : nullptr;

@@ -55,6 +55,7 @@ class JournalProtoProcessor final {
   void ProcessRepeatedScalarField(FieldDescriptor const* descriptor,
                                   std::string const& cxx_type);
   void ProcessRepeatedDoubleField(FieldDescriptor const* descriptor);
+  void ProcessRepeatedFixed64Field(FieldDescriptor const* descriptor);
   void ProcessRepeatedInt32Field(FieldDescriptor const* descriptor);
   void ProcessRepeatedInt64Field(FieldDescriptor const* descriptor);
   void ProcessRepeatedUint32Field(FieldDescriptor const* descriptor);
@@ -68,6 +69,7 @@ class JournalProtoProcessor final {
   void ProcessOptionalScalarField(FieldDescriptor const* descriptor,
                                   std::string const& cxx_type);
   void ProcessOptionalDoubleField(FieldDescriptor const* descriptor);
+  void ProcessOptionalFixed64Field(FieldDescriptor const* descriptor);
   void ProcessOptionalInt32Field(FieldDescriptor const* descriptor);
   void ProcessOptionalInt64Field(FieldDescriptor const* descriptor);
   void ProcessOptionalUint32Field(FieldDescriptor const* descriptor);

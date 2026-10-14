@@ -44,7 +44,7 @@ void __cdecl principia__RenderedPredictionApsides(
     Plugin const* const plugin,
     char const* const vessel_guid,
     double const* const t_max,
-    int const celestial_index,
+    std::uint64_t const celestial_city,
     XYZ const sun_world_position,
     int const max_points,
     Iterator** const apoapsides,
@@ -53,7 +53,7 @@ void __cdecl principia__RenderedPredictionApsides(
       {plugin,
        vessel_guid,
        t_max,
-       celestial_index,
+       celestial_city,
        sun_world_position,
        max_points},
       {apoapsides, periapsides});
@@ -71,7 +71,7 @@ void __cdecl principia__RenderedPredictionApsides(
   DistinguishedPoints<World> rendered_apoapsides;
   DistinguishedPoints<World> rendered_periapsides;
   plugin->ComputeAndRenderApsides(
-      celestial_index,
+      celestial_city,
       prediction_view,
       FromXYZ<Position<World>>(sun_world_position),
       max_points,
@@ -161,13 +161,14 @@ void __cdecl principia__SetPlottingFrame(
   return m.Return();
 }
 
-void __cdecl principia__SetTargetVessel(Plugin* const plugin,
-                                        char const* const vessel_guid,
-                                        int const reference_body_index) {
+void __cdecl principia__SetTargetVessel(
+    Plugin* const plugin,
+    char const* const vessel_guid,
+    std::uint64_t const reference_body_city) {
   journal::Method<journal::SetTargetVessel> m(
-      {plugin, vessel_guid, reference_body_index});
+      {plugin, vessel_guid, reference_body_city});
   CHECK(plugin != nullptr);
-  plugin->SetTargetVessel(vessel_guid, reference_body_index);
+  plugin->SetTargetVessel(vessel_guid, reference_body_city);
   return m.Return();
 }
 

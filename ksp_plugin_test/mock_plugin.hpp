@@ -21,8 +21,8 @@ class MockPlugin : public Plugin {
   MOCK_METHOD(
       void,
       InsertCelestialAbsoluteCartesian,
-      (Index celestial_index,
-       std::optional<Index> const& parent_index,
+      (CityHash celestial_city,
+       std::optional<CityHash> const& parent_city,
        serialization::GravityModel::Body const& gravity_model,
        serialization::InitialState::Cartesian::Body const& initial_state),
       (override));
@@ -36,11 +36,11 @@ class MockPlugin : public Plugin {
 
   MOCK_METHOD(void,
               UpdateCelestialHierarchy,
-              (Index celestial_index, Index parent_index),
+              (CityHash celestial_city, CityHash parent_city),
               (const, override));
 
-  MOCK_METHOD(Index,
-              CelestialIndexOfBody,
+  MOCK_METHOD(CityHash,
+              CelestialCityHashOfBody,
               (MassiveBody const& body),
               (const, override));
 
@@ -48,7 +48,7 @@ class MockPlugin : public Plugin {
               InsertOrKeepVessel,
               (GUID const& vessel_guid,
                std::string const& vessel_name,
-               Index parent_index,
+               CityHash parent_city,
                bool loaded,
                bool& inserted),
               (override));
@@ -68,12 +68,12 @@ class MockPlugin : public Plugin {
 
   MOCK_METHOD(RelativeDegreesOfFreedom<AliceSun>,
               VesselFromParent,
-              (Index parent_index, GUID const& vessel_guid),
+              (CityHash parent_city, GUID const& vessel_guid),
               (const, override));
 
   MOCK_METHOD(RelativeDegreesOfFreedom<AliceSun>,
               CelestialFromParent,
-              (Index celestial_index),
+              (CityHash celestial_city),
               (const, override));
 
   MOCK_METHOD(void,
@@ -110,11 +110,11 @@ class MockPlugin : public Plugin {
               (const, override));
   MOCK_METHOD(not_null<std::unique_ptr<NavigationFrame>>,
               NewBodyCentredNonRotatingNavigationFrame,
-              (Index reference_body_index),
+              (CityHash reference_body_city),
               (const, override));
   MOCK_METHOD(not_null<std::unique_ptr<NavigationFrame>>,
               NewBarycentricRotatingNavigationFrame,
-              (Index primary_index, Index secondary_index),
+              (CityHash primary_city, CityHash secondary_city),
               (const, override));
 
   MOCK_METHOD((std::unique_ptr<FrameField<World, Navball>>),

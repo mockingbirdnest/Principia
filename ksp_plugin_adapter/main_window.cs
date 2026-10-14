@@ -60,6 +60,8 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
     }
   }
 
+  // TODO(phl): Store these maps in the Plugin so that we can implement
+  // compatibility if/when frame parameters change.
   public HashSet<PlottingFrameParameters> frames_that_hide_unpinned_markers {
     get;
     private set;
@@ -97,7 +99,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
     frames_that_hide_unpinned_celestials.Clear();
     foreach (ConfigNode frame_node in node.GetNodes(
-                 "frames_that_hide_unpinned_celestials")) {
+                 "frames_that_hide_unpinned_celestials_lie")) {
       var frame = new PlottingFrameParameters();
       frame.Load(frame_node);
       frames_that_hide_unpinned_celestials.Add(frame);
@@ -105,7 +107,7 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
     frames_that_hide_unpinned_markers.Clear();
     foreach (ConfigNode frame_node in node.GetNodes(
-                 "frames_that_hide_unpinned_markers")) {
+                 "frames_that_hide_unpinned_markers_lie")) {
       var frame = new PlottingFrameParameters();
       frame.Load(frame_node);
       frames_that_hide_unpinned_markers.Add(frame);
@@ -157,10 +159,10 @@ internal class MainWindow : VesselSupervisedWindowRenderer {
 
     node.SetValue("history_length", history_length, createIfNotFound : true);
     foreach (var frame in frames_that_hide_unpinned_celestials) {
-      frame.Save(node.AddNode("frames_that_hide_unpinned_celestials"));
+      frame.Save(node.AddNode("frames_that_hide_unpinned_celestials_lie"));
     }
     foreach (var frame in frames_that_hide_unpinned_markers) {
-      frame.Save(node.AddNode("frames_that_hide_unpinned_markers"));
+      frame.Save(node.AddNode("frames_that_hide_unpinned_markers_lie"));
     }
 
     node.SetValue("buffered_logging",

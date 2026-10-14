@@ -284,6 +284,20 @@ void JournalProtoProcessor::ProcessRepeatedDoubleField(
   ProcessRepeatedScalarField(descriptor, "double");
 }
 
+void JournalProtoProcessor::ProcessRepeatedFixed64Field(
+    FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
+  CHECK(options.HasExtension(journal::serialization::is_integer) &&
+        options.GetExtension(journal::serialization::is_integer))
+      << descriptor->full_name()
+      << " must have the (is_integer) option set to true";
+
+  ProcessRepeatedNonStringField(descriptor,
+                                /*cs_unboxed_type=*/"ulong",
+                                /*cxx_type=*/"uint64_t");
+  ProcessRepeatedScalarField(descriptor, "uint64_t");
+}
+
 void JournalProtoProcessor::ProcessRepeatedInt32Field(
     FieldDescriptor const* descriptor) {
   ProcessRepeatedNonStringField(
@@ -528,6 +542,21 @@ void JournalProtoProcessor::ProcessOptionalDoubleField(
   ProcessOptionalScalarField(descriptor, "double");
 }
 
+void JournalProtoProcessor::ProcessOptionalFixed64Field(
+    FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
+  CHECK(options.HasExtension(journal::serialization::is_integer) &&
+        options.GetExtension(journal::serialization::is_integer))
+      << descriptor->full_name()
+      << " must have the (is_integer) option set to true";
+  ProcessOptionalNonStringField(
+      descriptor,
+      /*cs_boxed_type=*/"BoxedUInt64",
+      /*cs_unboxed_type=*/"ulong",
+      /*cxx_type=*/"uint64_t");
+  ProcessOptionalScalarField(descriptor, "uint64_t");
+}
+
 void JournalProtoProcessor::ProcessOptionalInt32Field(
     FieldDescriptor const* descriptor) {
   ProcessOptionalNonStringField(
@@ -617,6 +646,19 @@ void JournalProtoProcessor::ProcessRequiredFixed32Field(
 void JournalProtoProcessor::ProcessRequiredFixed64Field(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
+  if (options.HasExtension(journal::serialization::is_integer)) {
+    CHECK(options.GetExtension(journal::serialization::is_integer));
+    CHECK(!options.HasExtension(journal::serialization::pointer_to) &&
+          !options.HasExtension(journal::serialization::encoding) &&
+          !options.HasExtension(journal::serialization::address_of))
+        << descriptor->full_name()
+        << " has the (is_integer) option; it cannot have any of the "
+           "(pointer_to), (encoding), or (address_of) options";
+    field_cs_type_[descriptor] = "ulong";
+    field_cxx_type_[descriptor] = "uint64_t";
+    return;
+  }
+
   CHECK(!options.HasExtension(journal::serialization::pointer_to) ||
         !options.HasExtension(journal::serialization::encoding))
       << descriptor->full_name()
@@ -1012,6 +1054,9 @@ void JournalProtoProcessor::ProcessOptionalField(
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessOptionalDoubleField(descriptor);
       break;
+    case FieldDescriptor::TYPE_FIXED64:
+      ProcessOptionalFixed64Field(descriptor);
+      break;
     case FieldDescriptor::TYPE_INT32:
       ProcessOptionalInt32Field(descriptor);
       break;
@@ -1038,6 +1083,9 @@ void JournalProtoProcessor::ProcessRepeatedField(
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessRepeatedDoubleField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_FIXED64:
+      ProcessRepeatedFixed64Field(descriptor);
       break;
     case FieldDescriptor::TYPE_INT32:
       ProcessRepeatedInt32Field(descriptor);

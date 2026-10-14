@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 
+#include "absl/hash/internal/city.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "physics/massless_body.hpp"
@@ -18,6 +19,19 @@ using namespace principia::physics::_massless_body;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_solar_system_factory;
 
+CityHash GetCityHash(int const index) {
+  std::string const name = SolarSystemFactory::name(index);
+  return absl::hash_internal::CityHash64(name.c_str(), name.size());
+}
+
+std::optional<CityHash> GetCityHashOrNullopt(std::optional<int> const& index) {
+  if (index.has_value()) {
+    return GetCityHash(index.value());
+  } else {
+    return std::nullopt;
+  }
+}
+
 FakePlugin::FakePlugin(SolarSystem<ICRS> const& solar_system)
     : Plugin(/*game_epoch=*/solar_system.epoch_literal(),
              /*solar_system_epoch=*/solar_system.epoch_literal(),
@@ -25,13 +39,13 @@ FakePlugin::FakePlugin(SolarSystem<ICRS> const& solar_system)
   for (int index = SolarSystemFactory::Sun;
        index <= SolarSystemFactory::LastBody;
        ++index) {
-    std::optional<Index> const parent_index =
+    std::optional<int> const parent_index =
         index == SolarSystemFactory::Sun
             ? std::nullopt
             : std::make_optional(SolarSystemFactory::parent(index));
     InsertCelestialAbsoluteCartesian(
-        index,
-        parent_index,
+        GetCityHash(index),
+        GetCityHashOrNullopt(parent_index),
         solar_system.gravity_model_message(SolarSystemFactory::name(index)),
         solar_system.cartesian_initial_state_message(
             SolarSystemFactory::name(index)));
@@ -46,7 +60,7 @@ Vessel& FakePlugin::AddVesselInEarthOrbit(
     std::string const& part_name,
     KeplerianElements<Barycentric> const& elements) {
   KeplerOrbit<Barycentric> const earth_orbit(
-      *GetCelestial(SolarSystemFactory::Earth).body(),
+      *GetCelestial(GetCityHash(SolarSystemFactory::Earth)).body(),
       MasslessBody{},
       elements,
       CurrentTime());
@@ -55,7 +69,7 @@ Vessel& FakePlugin::AddVesselInEarthOrbit(
   bool inserted;
   InsertOrKeepVessel(vessel_id,
                      vessel_name,
-                     SolarSystemFactory::Earth,
+                     GetCityHash(SolarSystemFactory::Earth),
                      /*loaded=*/false,
                      inserted);
   CHECK(inserted) << "Failed to insert vessel " << vessel_name << " ("
