@@ -22,7 +22,7 @@ using namespace principia::base::_not_null;
 // The hash of the name of a `CelestialBody`, obtained by `b.name` in C#. We use
 // this as a key in a map.
 using CityHash = std::uint64_t;
-constexpr CityHash no_city = 0xFFFF'FFFF'FFFF'FFFFULL;
+constexpr CityHash no_city = UINT64_C(0xFFFF'FFFF'FFFF'FFFF);
 
 // The GUID of a vessel, obtained by `v.id.ToString()` in C#. We use this as a
 // key in a map.
