@@ -18,6 +18,7 @@
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/hash/internal/city.h"
 #include "absl/log/check.h"
 #include "absl/log/log.h"
 #include "absl/status/status.h"
@@ -154,31 +155,31 @@ Plugin::~Plugin() {
 }
 
 void Plugin::InsertCelestialAbsoluteCartesian(
-    Index const celestial_index,
-    std::optional<Index> const& parent_index,
+    CityHash const celestial_city,
+    std::optional<CityHash> const& parent_city,
     serialization::GravityModel::Body const& gravity_model,
     serialization::InitialState::Cartesian::Body const& initial_state) {
   CHECK_EQ(gravity_model.name(), initial_state.name());
-  InitializeIndices(gravity_model.name(), celestial_index, parent_index);
+  InsertIntoMaps(gravity_model.name(), celestial_city, parent_city);
   *gravity_model_.add_body() = gravity_model;
   CHECK(!initial_state_.has_keplerian()) << initial_state_.DebugString();
   *initial_state_.mutable_cartesian()->add_body() = initial_state;
 }
 
 void Plugin::InsertCelestialJacobiKeplerian(
-    Index const celestial_index,
-    std::optional<Index> const& parent_index,
+    CityHash const celestial_city,
+    std::optional<CityHash> const& parent_city,
     serialization::GravityModel::Body const& gravity_model,
     serialization::InitialState::Keplerian::Body const& initial_state) {
   CHECK_EQ(gravity_model.name(), initial_state.name());
-  InitializeIndices(gravity_model.name(), celestial_index, parent_index);
+  InsertIntoMaps(gravity_model.name(), celestial_city, parent_city);
   *gravity_model_.add_body() = gravity_model;
   CHECK(!initial_state_.has_cartesian()) << initial_state_.DebugString();
   serialization::InitialState::Keplerian::Body* const body =
       initial_state_.mutable_keplerian()->add_body();
   *body = initial_state;
-  if (parent_index) {
-    body->set_parent(FindOrDie(index_to_name_, *parent_index));
+  if (parent_city) {
+    body->set_parent(FindOrDie(city_to_name_, *parent_city));
   }
 }
 
@@ -261,19 +262,19 @@ void Plugin::EndInitialization() {
   // Construct the celestials using the bodies from the ephemeris.
   for (std::string const& name : solar_system.names()) {
     auto const rotating_body = solar_system.rotating_body(*ephemeris_, name);
-    Index const celestial_index = FindOrDie(name_to_index_, name);
+    CityHash const celestial_city = FindOrDie(name_to_city_, name);
     auto const [it, inserted] = celestials_.emplace(
-        celestial_index, std::make_unique<Celestial>(rotating_body));
-    CHECK(inserted) << "Body already exists at index " << celestial_index;
+        celestial_city, std::make_unique<Celestial>(rotating_body));
+    CHECK(inserted) << "Body already exists with CityHash " << celestial_city;
     it->second->set_trajectory(ephemeris_->trajectory(rotating_body));
   }
 
   // Establish the parent relationships between the celestials.
-  for (auto const& [celestial_index, celestial] : celestials_) {
-    auto const& parent_index = FindOrDie(parents_, celestial_index);
-    if (parent_index) {
+  for (auto const& [celestial_city, celestial] : celestials_) {
+    auto const& parent_city = FindOrDie(parents_, celestial_city);
+    if (parent_city) {
       not_null<Celestial const*> const parent =
-          FindOrDie(celestials_, *parent_index).get();
+          FindOrDie(celestials_, *parent_city).get();
       celestial->set_parent(parent);
     } else {
       CHECK(sun_ == nullptr);
@@ -286,7 +287,7 @@ void Plugin::EndInitialization() {
   UpdatePlanetariumRotation();
 
   // This would use NewBodyCentredNonRotatingNavigationFrame, but we don't have
-  // the sun's index at hand.
+  // the sun's `CityHash` at hand.
   // TODO(egg): maybe these functions should take `Celestial*`s, and we should
   // then export `FindOrDie(celestials_, _)`.
   renderer_ = std::make_unique<Renderer>(
@@ -322,26 +323,26 @@ bool Plugin::HasEncounteredApocalypse(std::string* const details) const {
   }
 }
 
-void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
-                                      Index const parent_index) const {
+void Plugin::UpdateCelestialHierarchy(CityHash const celestial_city,
+                                      CityHash const parent_city) const {
   CHECK(!initializing_);
-  FindOrDie(celestials_, celestial_index)->set_parent(
-      FindOrDie(celestials_, parent_index).get());
+  FindOrDie(celestials_, celestial_city)->set_parent(
+      FindOrDie(celestials_, parent_city).get());
 }
 
-void Plugin::SetMainBody(Index const index) {
-  main_body_ = FindOrDie(celestials_, index)->body();
-  LOG_IF(FATAL, main_body_ == nullptr) << index;
+void Plugin::SetMainBody(CityHash const city) {
+  main_body_ = FindOrDie(celestials_, city)->body();
+  LOG_IF(FATAL, main_body_ == nullptr) << city;
   UpdatePlanetariumRotation();
 }
 
 Rotation<BodyWorld, World> Plugin::CelestialRotation(
-    Index const index) const {
+    CityHash const city) const {
   // `BodyWorld` with its y and z axes swapped (so that z is the polar axis).
   using BodyFixed = Frame<struct BodyFixedTag>;
   Permutation<BodyWorld, BodyFixed> const body_mirror(OddPermutation::XZY);
 
-  auto const& body = *FindOrDie(celestials_, index)->body();
+  auto const& body = *FindOrDie(celestials_, city)->body();
 
   OrthogonalMap<BodyWorld, World> const result =
       OrthogonalMap<WorldSun, World>::Identity() *
@@ -363,15 +364,15 @@ Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
   return result.AsRotation();
 }
 
-Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
-  auto const& body = *FindOrDie(celestials_, celestial_index)->body();
+Angle Plugin::CelestialInitialRotation(CityHash const celestial_city) const {
+  auto const& body = *FindOrDie(celestials_, celestial_city)->body();
   // Offset by π/2 since `AngleAt` is with respect to the y axis of the
   // celestial frame of the body, but KSP counts from the x axis.
   return body.AngleAt(game_epoch_) + π / 2 * Radian;
 }
 
-Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
-  auto const& body = *FindOrDie(celestials_, celestial_index)->body();
+Time Plugin::CelestialRotationPeriod(CityHash const celestial_city) const {
+  auto const& body = *FindOrDie(celestials_, celestial_city)->body();
   // The result will be negative if the pole is the negative pole
   // (e.g. for Venus).  This is the convention KSP uses for retrograde rotation.
   return 2 * π * Radian / body.angular_frequency();
@@ -381,23 +382,23 @@ void Plugin::ClearWorldRotationalReferenceFrame() {
   angular_velocity_of_world_ = Barycentric::nonrotating;
 }
 
-void Plugin::SetWorldRotationalReferenceFrame(Index const celestial_index) {
-  SetMainBody(celestial_index);
+void Plugin::SetWorldRotationalReferenceFrame(CityHash const celestial_city) {
+  SetMainBody(celestial_city);
   angular_velocity_of_world_ = main_body_->angular_velocity();
 }
 
-Index Plugin::CelestialIndexOfBody(MassiveBody const& body) const {
-  return FindOrDie(name_to_index_, body.name());
+CityHash Plugin::CelestialCityHashOfBody(MassiveBody const& body) const {
+  return FindOrDie(name_to_city_, body.name());
 }
 
 void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 std::string const& vessel_name,
-                                Index const parent_index,
+                                CityHash const parent_city,
                                 bool const loaded,
                                 bool& inserted) {
   CHECK(!initializing_);
   not_null<Celestial const*> const parent =
-      FindOrDie(celestials_, parent_index).get();
+      FindOrDie(celestials_, parent_city).get();
   auto vit = vessels_.find(vessel_guid);
   if (vit == vessels_.end()) {
     // Restore the zombie parameters if we have some, otherwise use the default.
@@ -461,7 +462,7 @@ void Plugin::InsertOrKeepLoadedPart(
     InertiaTensor<RigidPart> const& inertia_tensor,
     bool const is_solid_rocket_motor,
     GUID const& vessel_guid,
-    Index const main_body_index,
+    CityHash const main_body_city,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
     RigidMotion<EccentricPart, World> const& part_rigid_motion,
     Time const& Δt) {
@@ -474,7 +475,7 @@ void Plugin::InsertOrKeepLoadedPart(
   // TODO(egg): Can we use `BarycentricToWorld` here?
   BodyCentredNonRotatingReferenceFrame<Barycentric, MainBodyCentred> const
       main_body_frame{ephemeris_.get(),
-                      FindOrDie(celestials_, main_body_index)->body()};
+                      FindOrDie(celestials_, main_body_city)->body()};
   RigidMotion<World, MainBodyCentred> const world_to_main_body_centred{
       RigidTransformation<World, MainBodyCentred>{
           main_body_degrees_of_freedom.position(),
@@ -720,11 +721,11 @@ RigidMotion<EccentricPart, World> Plugin::GetPartActualMotion(
 }
 
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
-    Index const index,
+    CityHash const city,
     RigidMotion<Barycentric, World> const& barycentric_to_world,
     Instant const& time) const {
   return barycentric_to_world(
-      FindOrDie(celestials_, index)->current_degrees_of_freedom(time));
+      FindOrDie(celestials_, city)->current_degrees_of_freedom(time));
 }
 
 RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
@@ -873,13 +874,13 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
 }
 
 RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
-    Index const parent_index,
+    CityHash const parent_city,
     GUID const& vessel_guid) const {
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       FindOrDie(vessels_, vessel_guid);
   not_null<Celestial const*> const parent =
-      FindOrDie(celestials_, parent_index).get();
+      FindOrDie(celestials_, parent_city).get();
   if (vessel->parent() != parent) {
     vessel->set_parent(parent);
   }
@@ -892,12 +893,13 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
 }
 
 RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
-    Index const celestial_index) const {
+    CityHash const celestial_city) const {
   CHECK(!initializing_);
   ephemeris_->Prolong(current_time_).IgnoreError();
-  Celestial const& celestial = *FindOrDie(celestials_, celestial_index);
+  Celestial const& celestial = *FindOrDie(celestials_, celestial_city);
   CHECK(celestial.has_parent())
-      << "Body at index " << celestial_index << " is the sun";
+      << "Body with CityHash 0x" << std::noshowbase << std::hex
+      << std::uppercase << celestial_city << " is the sun";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
       celestial.current_degrees_of_freedom(current_time_) -
       celestial.parent()->current_degrees_of_freedom(current_time_);
@@ -1008,7 +1010,7 @@ void Plugin::ExtendPredictionForFlightPlan(GUID const& vessel_guid) const {
 }
 
 void Plugin::ComputeAndRenderApsides(
-    Index const celestial_index,
+    CityHash const celestial_city,
     DiscreteTrajectoryView<Barycentric> const& trajectory,
     Position<World> const& sun_world_position,
     int const max_points,
@@ -1016,7 +1018,7 @@ void Plugin::ComputeAndRenderApsides(
     DistinguishedPoints<World>& periapsides) const {
   DistinguishedPoints<Barycentric> barycentric_apoapsides;
   DistinguishedPoints<Barycentric> barycentric_periapsides;
-  ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
+  ComputeApsides(FindOrDie(celestials_, celestial_city)->trajectory(),
                  trajectory,
                  max_points,
                  barycentric_apoapsides,
@@ -1035,13 +1037,13 @@ void Plugin::ComputeAndRenderApsides(
 
 std::optional<DistinguishedPoints<World>::value_type>
 Plugin::ComputeAndRenderFirstCollision(
-    Index const celestial_index,
+    CityHash const celestial_city,
     DiscreteTrajectoryView<Barycentric> const& trajectory,
     Position<World> const& sun_world_position,
     int max_points,
     std::function<Length(Angle const& latitude,
                          Angle const& longitude)> const& radius) const {
-  auto const& celestial = FindOrDie(celestials_, celestial_index);
+  auto const& celestial = FindOrDie(celestials_, celestial_city);
   auto const& celestial_body = *celestial->body();
   auto const& celestial_trajectory = celestial->trajectory();
 
@@ -1156,12 +1158,12 @@ void Plugin::ComputeAndRenderNodes(
                                       PlanetariumRotation());
 }
 
-bool Plugin::HasCelestial(Index const index) const {
-  return celestials_.contains(index);
+bool Plugin::HasCelestial(CityHash const city) const {
+  return celestials_.contains(city);
 }
 
-Celestial const& Plugin::GetCelestial(Index const index) const {
-  return *FindOrDie(celestials_, index);
+Celestial const& Plugin::GetCelestial(CityHash const city) const {
+  return *FindOrDie(celestials_, city);
 }
 
 std::vector<not_null<Celestial const*>> Plugin::GetAllCelestials() const {
@@ -1203,11 +1205,11 @@ not_null<std::unique_ptr<Planetarium>> Plugin::NewPlanetarium(
 
 not_null<std::unique_ptr<NavigationFrame>>
 Plugin::NewBarycentricRotatingNavigationFrame(
-    Index const primary_index,
-    Index const secondary_index) const {
+    CityHash const primary_city,
+    CityHash const secondary_city) const {
   CHECK(!initializing_);
-  Celestial const& primary = *FindOrDie(celestials_, primary_index);
-  Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
+  Celestial const& primary = *FindOrDie(celestials_, primary_city);
+  Celestial const& secondary = *FindOrDie(celestials_, secondary_city);
   return make_not_null_unique<
       BarycentricRotatingReferenceFrame<Barycentric, Navigation>>(
           ephemeris_.get(),
@@ -1217,11 +1219,11 @@ Plugin::NewBarycentricRotatingNavigationFrame(
 
 not_null<std::unique_ptr<NavigationFrame>>
 Plugin::NewBodyCentredBodyDirectionNavigationFrame(
-    Index const primary_index,
-    Index const secondary_index) const {
+    CityHash const primary_city,
+    CityHash const secondary_city) const {
   CHECK(!initializing_);
-  Celestial const& primary = *FindOrDie(celestials_, primary_index);
-  Celestial const& secondary = *FindOrDie(celestials_, secondary_index);
+  Celestial const& primary = *FindOrDie(celestials_, primary_city);
+  Celestial const& secondary = *FindOrDie(celestials_, secondary_city);
   return make_not_null_unique<
       BodyCentredBodyDirectionReferenceFrame<Barycentric, Navigation>>(
           ephemeris_.get(),
@@ -1231,10 +1233,10 @@ Plugin::NewBodyCentredBodyDirectionNavigationFrame(
 
 not_null<std::unique_ptr<NavigationFrame>>
 Plugin::NewBodyCentredNonRotatingNavigationFrame(
-    Index const reference_body_index) const {
+    CityHash const reference_body_city) const {
   CHECK(!initializing_);
   Celestial const& reference_body =
-      *FindOrDie(celestials_, reference_body_index);
+      *FindOrDie(celestials_, reference_body_city);
   return make_not_null_unique<
       BodyCentredNonRotatingReferenceFrame<Barycentric, Navigation>>(
           ephemeris_.get(),
@@ -1243,10 +1245,10 @@ Plugin::NewBodyCentredNonRotatingNavigationFrame(
 
 not_null<std::unique_ptr<NavigationFrame>>
 Plugin::NewBodySurfaceNavigationFrame(
-    Index const reference_body_index) const {
+    CityHash const reference_body_city) const {
   CHECK(!initializing_);
   Celestial const& reference_body =
-      *FindOrDie(celestials_, reference_body_index);
+      *FindOrDie(celestials_, reference_body_city);
   return make_not_null_unique<
       BodySurfaceReferenceFrame<Barycentric, Navigation>>(
       ephemeris_.get(), reference_body.body());
@@ -1254,15 +1256,15 @@ Plugin::NewBodySurfaceNavigationFrame(
 
 not_null<std::unique_ptr<PlottingFrame>>
 Plugin::NewRotatingPulsatingPlottingFrame(
-    std::vector<Index> const& primary_indices,
-    std::vector<Index> const& secondary_indices) const {
+    std::vector<CityHash> const& primary_cities,
+    std::vector<CityHash> const& secondary_cities) const {
   std::vector<not_null<MassiveBody const*>> primaries;
-  for (Index const i : primary_indices) {
+  for (CityHash const i : primary_cities) {
     Celestial const& primary = *FindOrDie(celestials_, i);
     primaries.push_back(primary.body());
   }
   std::vector<not_null<MassiveBody const*>> secondaries;
-  for (Index const i : secondary_indices) {
+  for (CityHash const i : secondary_cities) {
     Celestial const& secondary = *FindOrDie(celestials_, i);
     secondaries.push_back(secondary.body());
   }
@@ -1272,9 +1274,9 @@ Plugin::NewRotatingPulsatingPlottingFrame(
 }
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
-                             Index const reference_body_index) {
+                             CityHash const reference_body_city) {
   not_null<Celestial const*> const celestial =
-      FindOrDie(celestials_, reference_body_index).get();
+      FindOrDie(celestials_, reference_body_city).get();
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
   renderer_->SetTargetVessel(vessel, celestial, ephemeris_.get());
 }
@@ -1398,10 +1400,10 @@ Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
 
 Velocity<World> Plugin::UnmanageableVesselVelocity(
     RelativeDegreesOfFreedom<AliceSun> const& degrees_of_freedom,
-    Index const parent_index) const {
+    CityHash const parent_city) const {
   auto const parent_degrees_of_freedom =
       FindOrDie(celestials_,
-                parent_index)->current_degrees_of_freedom(current_time_);
+                parent_city)->current_degrees_of_freedom(current_time_);
   return VesselVelocity(
       current_time_,
       parent_degrees_of_freedom +
@@ -1462,18 +1464,18 @@ void Plugin::WriteToMessage(
     message->set_system_fingerprint(system_fingerprint_);
   }
   ephemeris_->Prolong(current_time_).IgnoreError();
-  absl::flat_hash_map<not_null<Celestial const*>, Index const>
-      celestial_to_index;
-  for (auto const& [index, owned_celestial] : celestials_) {
-    celestial_to_index.emplace(owned_celestial.get(), index);
+  absl::flat_hash_map<not_null<Celestial const*>, CityHash const>
+      celestial_to_city;
+  for (auto const& [city, owned_celestial] : celestials_) {
+    celestial_to_city.emplace(owned_celestial.get(), city);
   }
-  for (auto const& [index, owned_celestial] : celestials_) {
+  for (auto const& [city, owned_celestial] : celestials_) {
     auto* const celestial_message = message->add_celestial();
-    celestial_message->set_index(index);
+    celestial_message->set_city(city);
     if (owned_celestial->has_parent()) {
-      Index const parent_index =
-          FindOrDie(celestial_to_index, owned_celestial->parent());
-      celestial_message->set_parent_index(parent_index);
+      CityHash const parent_city =
+          FindOrDie(celestial_to_city, owned_celestial->parent());
+      celestial_message->set_parent_city(parent_city);
     }
     celestial_message->set_ephemeris_index(
         ephemeris_->serialization_index_for_body(owned_celestial->body()));
@@ -1498,8 +1500,8 @@ void Plugin::WriteToMessage(
     vessel_message->set_guid(guid);
     vessel->WriteToMessage(vessel_message->mutable_vessel(),
                            serialization_index_for_pile_up);
-    Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
-    vessel_message->set_parent_index(parent_index);
+    CityHash const parent_city = FindOrDie(celestial_to_city, vessel->parent());
+    vessel_message->set_parent_city(parent_city);
     vessel_message->set_loaded(loaded_vessels_.contains(vessel.get()));
     vessel_message->set_kept(kept_vessels_.contains(vessel.get()));
   }
@@ -1524,8 +1526,8 @@ void Plugin::WriteToMessage(
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
   game_epoch_.WriteToMessage(message->mutable_game_epoch());
   current_time_.WriteToMessage(message->mutable_current_time());
-  Index const sun_index = FindOrDie(celestial_to_index, sun_);
-  message->set_sun_index(sun_index);
+  CityHash const sun_city = FindOrDie(celestial_to_city, sun_);
+  message->set_sun_city(sun_city);
   renderer_->WriteToMessage(message->mutable_renderer());
 
   for (auto* const pile_up : pile_ups_) {
@@ -1537,6 +1539,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     serialization::Plugin const& message,
     std::function<void(bool will_be_slow)> expected_performance_callback) {
   LOG(INFO) << __FUNCTION__;
+  bool const is_pre_cauchy = message.has_plotting_frame();
+  bool const is_pre_lie = !message.has_sun_city();
+  LOG_IF(WARNING, is_pre_lie)
+      << "Reading pre-" << (is_pre_cauchy ? "Cauchy" : "Lie") << " Plugin";
 
   auto const history_parameters =
       Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
@@ -1589,10 +1595,12 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   plugin->ephemeris_->Prolong(plugin->current_time_).IgnoreError();
   CHECK_LE(plugin->ephemeris_->t_min(), plugin->current_time_);
 
+  absl::flat_hash_map<int, CityHash> legacy_index_to_city;
   ReadCelestialsFromMessages(*plugin->ephemeris_,
                              message.celestial(),
                              plugin->celestials_,
-                             plugin->name_to_index_);
+                             plugin->name_to_city_,
+                             legacy_index_to_city);
 
   // Deserialization of vessels may be slow because of the Лефшец-to-Leibniz
   // migration, let's do it in parallel.
@@ -1601,8 +1609,12 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   std::vector<std::future<not_null<std::unique_ptr<Vessel>>>> vessel_futures;
   vessel_futures.reserve(message.vessel_size());
   for (auto const& vessel_message : message.vessel()) {
+    CityHash const parent_city =
+        is_pre_lie
+            ? FindOrDie(legacy_index_to_city, vessel_message.parent_index())
+            : vessel_message.parent_city();
     not_null<Celestial const*> const parent =
-        FindOrDie(plugin->celestials_, vessel_message.parent_index()).get();
+        FindOrDie(plugin->celestials_, parent_city).get();
     vessel_futures.push_back(vessel_deserialization_pool.Add(
         [expected_performance_callback, parent, &plugin, &vessel_message]() {
           return Vessel::ReadFromMessage(
@@ -1636,20 +1648,18 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     plugin->part_id_to_vessel_.emplace(part_id, vessel.get());
   }
 
-  plugin->sun_ = FindOrDie(plugin->celestials_, message.sun_index()).get();
+  CityHash const sun_city =
+      is_pre_lie ? FindOrDie(legacy_index_to_city, message.sun_index())
+                 : message.sun_city();
+  plugin->sun_ = FindOrDie(plugin->celestials_, sun_city).get();
   plugin->main_body_ = plugin->sun_->body();
   plugin->UpdatePlanetariumRotation();
 
-  bool const is_pre_cauchy = message.has_pre_cauchy_plotting_frame();
-  LOG_IF(WARNING, is_pre_cauchy) << "Reading pre-Cauchy Plugin";
-
   if (is_pre_cauchy) {
-    plugin->renderer_ =
-        std::make_unique<Renderer>(
-            plugin->sun_,
-            NavigationFrame::ReadFromMessage(
-                message.pre_cauchy_plotting_frame(),
-                plugin->ephemeris_.get()));
+    plugin->renderer_ = std::make_unique<Renderer>(
+        plugin->sun_,
+        NavigationFrame::ReadFromMessage(message.plotting_frame(),
+                                         plugin->ephemeris_.get()));
   } else {
     plugin->renderer_ = Renderer::ReadFromMessage(message.renderer(),
                                                   plugin->sun_,
@@ -1716,15 +1726,15 @@ Plugin::Plugin(
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 
-void Plugin::InitializeIndices(std::string const& name,
-                               Index const celestial_index,
-                               std::optional<Index> const& parent_index) {
-  bool inserted = name_to_index_.emplace(name, celestial_index).second;
+void Plugin::InsertIntoMaps(std::string const& name,
+                            CityHash const celestial_city,
+                            std::optional<CityHash> const& parent_city) {
+  bool inserted = name_to_city_.emplace(name, celestial_city).second;
   CHECK(inserted) << name;
-  inserted = index_to_name_.emplace(celestial_index, name).second;
-  CHECK(inserted) << celestial_index;
-  inserted = parents_.emplace(celestial_index, parent_index).second;
-  CHECK(inserted) << celestial_index;
+  inserted = city_to_name_.emplace(celestial_city, name).second;
+  CHECK(inserted) << celestial_city;
+  inserted = parents_.emplace(celestial_city, parent_city).second;
+  CHECK(inserted) << celestial_city;
 }
 
 void Plugin::UpdatePlanetariumRotation() {
@@ -1757,39 +1767,68 @@ Velocity<World> Plugin::VesselVelocity(
       plotting_frame_degrees_of_freedom.velocity());
 }
 
-template<typename T>
 void Plugin::ReadCelestialsFromMessages(
     Ephemeris<Barycentric> const& ephemeris,
-    google::protobuf::RepeatedPtrField<T> const& celestial_messages,
-    IndexToOwnedCelestial& celestials,
-    std::map<std::string, Index>& name_to_index) {
+    google::protobuf::RepeatedPtrField<
+        serialization::Plugin::CelestialParenthood> const& celestial_messages,
+    CityHashToOwnedCelestial& celestials,
+    std::map<std::string, CityHash>& name_to_city,
+    absl::flat_hash_map<int, CityHash>& legacy_index_to_city) {
   auto const& bodies = ephemeris.bodies();
   int index = 0;
   for (auto const& celestial_message : celestial_messages) {
     bool const is_pre_cauchy = !celestial_message.has_ephemeris_index();
-    LOG_IF(WARNING, is_pre_cauchy) << "Reading pre-Cauchy Celestial";
+    bool const is_pre_lie = !celestial_message.has_city();
+    LOG_IF(WARNING, is_pre_lie)
+        << "Reading pre-" << (is_pre_cauchy ? "Cauchy" : "Lie")
+        << " CelestialParenthood";
 
     auto const& body = is_pre_cauchy
                            ? bodies[index++]
                            : bodies[celestial_message.ephemeris_index()];
+    std::string const& name = body->name();
+    CityHash const celestial_city =
+        is_pre_lie ? absl::hash_internal::CityHash64(name.c_str(), name.size())
+                   : celestial_message.city();
     auto [it, inserted] = celestials.emplace(
-        celestial_message.index(),
+        celestial_city,
         make_not_null_unique<Celestial>(
-            dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
-                body)));
-    CHECK(inserted) << celestial_message.index();
+            dynamic_cast_not_null<RotatingBody<Barycentric> const*>(body)));
+    CHECK(inserted) << celestial_city;
     it->second->set_trajectory(ephemeris.trajectory(body));
 
-    inserted =
-        name_to_index.emplace(body->name(), celestial_message.index()).second;
+    if (is_pre_lie) {
+      CHECK(celestial_message.has_index()) << celestial_message;
+      legacy_index_to_city.emplace(celestial_message.index(), celestial_city);
+      LOG(INFO) << "Pre-Lie Celestial " << body->name()
+                << " remapped from index " << celestial_message.index()
+                << " to CityHash 0x" << std::noshowbase << std::hex
+                << std::uppercase << celestial_city;
+    }
+
+    inserted = name_to_city.emplace(body->name(), celestial_city).second;
     CHECK(inserted) << body->name();
   }
   for (auto const& celestial_message : celestial_messages) {
+    bool const is_pre_lie = !celestial_message.has_city();
     if (celestial_message.has_parent_index()) {
+      CHECK(is_pre_lie);
+      not_null<std::unique_ptr<Celestial>> const& celestial = FindOrDie(
+          celestials,
+          FindOrDie(legacy_index_to_city, celestial_message.index()));
+      not_null<Celestial const*> const& parent =
+          FindOrDie(
+              celestials,
+              FindOrDie(legacy_index_to_city, celestial_message.parent_index()))
+              .get();
+      celestial->set_parent(parent);
+    }
+    if (celestial_message.has_parent_city()) {
+      CHECK(!is_pre_lie);
       not_null<std::unique_ptr<Celestial>> const& celestial =
-          FindOrDie(celestials, celestial_message.index());
+          FindOrDie(celestials, celestial_message.city());
       not_null<Celestial const*> const parent =
-          FindOrDie(celestials, celestial_message.parent_index()).get();
+          FindOrDie(celestials, celestial_message.parent_city()).get();
       celestial->set_parent(parent);
     }
   }

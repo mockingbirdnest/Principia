@@ -120,10 +120,8 @@ class BurnEditor : ScalingRenderer {
       // to one which fixes the Earth and the direction of the Sun.
       reference_frame_selector_.SetFrameParameters(new NavigationFrameParameters{
           Extension = FrameType.BODY_CENTRED_PARENT_DIRECTION,
-          PrimaryIndices = new[]
-              { plotting_frame_parameters.SecondaryIndices[0] },
-          SecondaryIndices = new[]
-              { plotting_frame_parameters.PrimaryIndices[0] },
+          PrimaryCities = [ plotting_frame_parameters.SecondaryCities[0] ],
+          SecondaryCities = [ plotting_frame_parameters.PrimaryCities[0] ],
       });
     }
   }

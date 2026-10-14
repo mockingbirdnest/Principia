@@ -37,12 +37,12 @@ void __cdecl principia__VesselClearPlottingFramePayload(
 // Calls `plugin->VesselFromParent` with the arguments given.
 // `plugin` must not be null.  No transfer of ownership.
 QP __cdecl principia__VesselFromParent(Plugin const* const plugin,
-                                       int const parent_index,
+                                       std::uint64_t const parent_city,
                                        char const* const vessel_guid) {
   journal::Method<journal::VesselFromParent> m(
-      {plugin, parent_index, vessel_guid});
+      {plugin, parent_city, vessel_guid});
   CHECK(plugin != nullptr);
-  return m.Return(ToQP(plugin->VesselFromParent(parent_index, vessel_guid)));
+  return m.Return(ToQP(plugin->VesselFromParent(parent_city, vessel_guid)));
 }
 
 OrbitAnalysis* __cdecl principia__VesselGetAnalysis(
