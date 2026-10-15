@@ -41,25 +41,33 @@ struct Construction<std::array<Scalar, size>> {
   }
 };
 
+#if PRINCIPIA_COMPILER_MSVC && \
+    (_MSC_FULL_VER == 195'236'725)
+template<typename Array>
+struct Construction<std::unique_ptr<Array>> {
+#else
 template<affine Scalar, std::int64_t size>
 struct Construction<std::unique_ptr<std::array<Scalar, size>>> {
-  static constexpr std::unique_ptr<std::array<Scalar, size>>
+  using Array = std::array<Scalar, size>;
+#endif
+
+  static constexpr std::unique_ptr<Array>
   Make(auto&&... args) {
-    return make_not_null_unique<std::array<Scalar, size>>(
+    return make_not_null_unique<Array>(
         std::forward<decltype(args)>(args)...);
   }
 
   static constexpr void MakeUninitialized(
-      std::unique_ptr<std::array<Scalar, size>>& data) {
+      std::unique_ptr<Array>& data) {
     // This does default initialization of the array, which leaves the elements
     // uninitialized.
-    data = std::make_unique_for_overwrite<std::array<Scalar, size>>();
+    data = std::make_unique_for_overwrite<Array>();
   }
 
-  static constexpr std::unique_ptr<std::array<Scalar, size>>
+  static constexpr std::unique_ptr<Array>
   MakeValueInitialized() {
     // This does value initialization of the array.
-    return make_not_null_unique<std::array<Scalar, size>>();
+    return make_not_null_unique<Array>();
   }
 };
 

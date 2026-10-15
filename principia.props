@@ -41,6 +41,11 @@
     <ConfigurationWithoutCPUFeatures>$(Configuration.Replace('_AVX_FMA',''))</ConfigurationWithoutCPUFeatures>
   </PropertyGroup>
 
+  <!--Remove this once compiler 19.52 is no longer in preview.  See https://developercommunity.visualstudio.com/t/C-compiler-rejects-some-character-in-i/11127845-->
+  <PropertyGroup>
+    <MSVCPreviewEnabled>true</MSVCPreviewEnabled>
+  </PropertyGroup>
+
   <!--Microsoft C++ stuff.-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 
@@ -71,7 +76,7 @@
 
   <!--Compiler.-->
   <PropertyGroup>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <PlatformToolset Condition="$(PrincipiaCompilerClangLLVM)">ClangCL</PlatformToolset>
   </PropertyGroup>
 
@@ -165,8 +170,9 @@
                                $(ProjectName) != serialization">EnableAllWarnings</WarningLevel>
     </ClCompile>
     <Link>
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <AdditionalDependencies>$(WindowsSDK_LibraryPath)\x64\synchronization.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <!--Debug options.-->
