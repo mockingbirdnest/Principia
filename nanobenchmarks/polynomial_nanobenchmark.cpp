@@ -27,8 +27,8 @@ class PolynomialNanobenchmark
     : public Nanobenchmark<Value_, Instant, Concrete_> {
  protected:
   using Base = Nanobenchmark<Value_, Instant, Concrete_>;
-  using Base::Value;
-  using Base::Argument;
+  using typename Base::Value;
+  using typename Base::Argument;
 
   using P1A = PolynomialInMonomialBasis<Displacement<World>, Instant, 1>;
   using P2A = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;

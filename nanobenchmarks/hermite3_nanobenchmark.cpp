@@ -22,8 +22,8 @@ template<typename Value_, typename Concrete_>
 class Hermite3Nanobenchmark : public Nanobenchmark<Value_, Instant, Concrete_> {
  protected:
   using Base = Nanobenchmark<Value_, Instant, Concrete_>;
-  using Base::Value;
-  using Base::Argument;
+  using typename Base::Value;
+  using typename Base::Argument;
 
   using H = Hermite3<Displacement<World>, Instant>;
 
