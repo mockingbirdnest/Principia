@@ -8,8 +8,6 @@
 #include "geometry/frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
 
-#pragma message("Compiler version: " STRINGIFY_EXPANSION(_MSC_FULL_VER))
-
 namespace principia {
 namespace numerics {
 
