@@ -125,6 +125,8 @@
     <ClInclude Include="apodization.hpp" />
     <ClInclude Include="unbounded_arrays.hpp" />
     <ClInclude Include="unbounded_arrays_body.hpp" />
+    <ClInclude Include="wide.hpp" />
+    <ClInclude Include="wide_body.hpp" />
     <ClInclude Include="чебышёв_lobatto.hpp" />
     <ClInclude Include="чебышёв_lobatto_body.hpp" />
   </ItemGroup>
@@ -174,6 +176,7 @@
     <ClCompile Include="sin_cos.cpp" />
     <ClCompile Include="sin_cos_test.cpp" />
     <ClCompile Include="unbounded_arrays_test.cpp" />
+    <ClCompile Include="wide_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="bivariate_elliptic_integrals.proto.txt" />

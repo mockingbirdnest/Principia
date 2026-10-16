@@ -287,6 +287,12 @@
     <ClInclude Include="payne_hanek.mathematica.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="wide.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wide_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="fixed_arrays_test.cpp">
@@ -422,6 +428,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="sin_cos_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wide_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
