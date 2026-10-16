@@ -28,39 +28,40 @@ namespace internal {
 using namespace principia::nanobenchmarks::_dependencies;
 
 template<typename Value_, typename Argument_>
-Nanobenchmark<Value_, Argument_>::BenchmarkedFunction
-Nanobenchmark<Value_, Argument_>::function() const {
+NanobenchmarkBase<Value_, Argument_>::BenchmarkedFunction
+NanobenchmarkBase<Value_, Argument_>::function() const {
   return function_;
 }
 
 template<typename Value_, typename Argument_>
-std::string const& Nanobenchmark<Value_, Argument_>::name() const {
+std::string const& NanobenchmarkBase<Value_, Argument_>::name() const {
   return name_;
 }
 
 template<typename Value_, typename Argument_>
-void Nanobenchmark<Value_, Argument_>::SetFunction(
+void NanobenchmarkBase<Value_, Argument_>::SetFunction(
     BenchmarkedFunction function) {
   CHECK(function != nullptr);
   function_ = function;
 }
 
 template<typename Value_, typename Argument_>
-void Nanobenchmark<Value_, Argument_>::SetName(std::string_view const name) {
+void NanobenchmarkBase<Value_, Argument_>::SetName(
+    std::string_view const name) {
   name_ = name;
 }
 
-template<typename Value_, typename Argument_>
+template<typename Value_, typename Argument_, typename Concrete_>
 __declspec(noinline) LatencyDistributionTable
-Nanobenchmark<Value_, Argument_>::Run(Logger* const logger) const {
+Nanobenchmark<Value_, Argument_, Concrete_>::Run(Logger* const logger) const {
   std::size_t const sample_count = absl::GetFlag(FLAGS_samples);
   std::size_t const loop_iterations = absl::GetFlag(FLAGS_loop_iterations);
   static std::vector<double>& samples = *new std::vector<double>(
       sample_count, std::numeric_limits<double>::quiet_NaN());
   [[maybe_unused]] int registers[4]{};
   [[maybe_unused]] int const leaf = 0;
+  double const input = absl::GetFlag(FLAGS_input);
   for (int j = 0; j < sample_count; ++j) {
-    double const input = absl::GetFlag(FLAGS_input);
     double x = input;
     // The CPUID barriers prevent out-of-order execution; see [Pao10].
 #if PRINCIPIA_COMPILER_MSVC
@@ -71,7 +72,9 @@ Nanobenchmark<Value_, Argument_>::Run(Logger* const logger) const {
     auto const tsc_start = __rdtsc();
     for (int i = 0; i < loop_iterations; ++i) {
       using D = Dependencies<Value, Argument>;
-      x = D::ConsumeValue(NanobenchmarkCase(D::ProduceArgument(x)));
+      x = D::ConsumeValue(
+          static_cast<Concrete_ const*>(this)->NanobenchmarkCase(
+              D::ProduceArgument(x)));
       x += input - x;
     }
     unsigned int tsc_aux;
@@ -90,9 +93,13 @@ Nanobenchmark<Value_, Argument_>::Run(Logger* const logger) const {
 #endif
     double const δtsc = tsc_stop - tsc_start;
     samples[j] = δtsc / loop_iterations;
+
+    // Consume `x`, otherwise the compiler may eliminate the entire loop for
+    // certain functions like `std::cos`.
+    static double const y = x;
   }
   if (logger != nullptr) {
-    logger->Append("samples", std::tuple{name(), samples});
+    logger->Append("samples", std::tuple{this->name(), samples});
   }
   std::ranges::sort(samples);
   LatencyDistributionTable result;
@@ -101,9 +108,9 @@ Nanobenchmark<Value_, Argument_>::Run(Logger* const logger) const {
 }
 
 template<typename Value_, typename Argument_>
-Nanobenchmark<Value_, Argument_> const*
+NanobenchmarkBase<Value_, Argument_> const*
 NanobenchmarkRegistry<Value_, Argument_>::Register(
-    Nanobenchmark<Value_, Argument_> const* const nanobenchmark) {
+    NanobenchmarkBase<Value_, Argument_> const* const nanobenchmark) {
   singleton().nanobenchmarks_by_name_.emplace(nanobenchmark->name(),
                                               nanobenchmark);
   if (nanobenchmark->function() != nullptr) {
@@ -114,10 +121,10 @@ NanobenchmarkRegistry<Value_, Argument_>::Register(
 }
 
 template<typename Value_, typename Argument_>
-std::vector<Nanobenchmark<Value_, Argument_> const*>
+std::vector<NanobenchmarkBase<Value_, Argument_> const*>
 NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarksMatching(
     std::regex const& filter) {
-  std::vector<Nanobenchmark<Value_, Argument_> const*> matching;
+  std::vector<NanobenchmarkBase<Value_, Argument_> const*> matching;
   for (auto const& [name, nanobenchmark] :
        singleton().nanobenchmarks_by_name_) {
     if (std::regex_match(name, filter)) {
@@ -128,7 +135,7 @@ NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarksMatching(
 }
 
 template<typename Value_, typename Argument_>
-Nanobenchmark<Value_, Argument_> const*
+NanobenchmarkBase<Value_, Argument_> const*
 NanobenchmarkRegistry<Value_, Argument_>::NanobenchmarkFor(
     BenchmarkedFunction const function) {
   if (auto const it = singleton().nanobenchmarks_by_function_.find(function);

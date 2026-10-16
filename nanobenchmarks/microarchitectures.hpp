@@ -14,7 +14,7 @@ using namespace principia::nanobenchmarks::_nanobenchmark;
 
 template<typename Value, typename Argument>
 using NanobenchmarkAndCycles =
-    std::pair<Nanobenchmark<Value, Argument> const*, int>;
+    std::pair<NanobenchmarkBase<Value, Argument> const*, int>;
 
 // The returned vector is sorted by nanobenchmark name.
 template<typename Value, typename Argument>

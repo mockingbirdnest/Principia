@@ -37,10 +37,12 @@ NANOBENCHMARK_EXTERN_C_FUNCTION(sqrtsd_xmm0_xmm0);
 NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0);
 NANOBENCHMARK_EXTERN_C_FUNCTION(mulsd_xmm0_xmm0_4x);
 
+template<typename Concrete_>
 using DisplacementInstantNanobenchmark =
-    Nanobenchmark<Displacement<World>, Instant>;
+    Nanobenchmark<Displacement<World>, Instant, Concrete_>;
+template<typename Concrete_>
 using RelativeDegreesOfFreedomInstantNanobenchmark =
-    Nanobenchmark<RelativeDegreesOfFreedom<World>, Instant>;
+    Nanobenchmark<RelativeDegreesOfFreedom<World>, Instant, Concrete_>;
 
 #if 0
 // NOTE: To figure out the calling convention or to get the assembly code for a
@@ -229,80 +231,82 @@ std::regex const rosetta2("VirtualApple .*");
 // Don't use `absl::flat_hash_map` below, for some reason it introduces noise in
 // the timings.
 template<typename Value, typename Argument>
-using MicroarchitectureDescription = std::vector<
-    std::pair<std::regex,
-              absl::btree_map<
-                  typename Nanobenchmark<Value, Argument>::BenchmarkedFunction,
-                  int>>>;
+using MicroarchitectureDescription = std::vector<std::pair<
+    std::regex,
+    absl::btree_map<
+        typename NanobenchmarkBase<Value, Argument>::BenchmarkedFunction,
+        int>>>;
 
 template<typename Value, typename Argument>
 MicroarchitectureDescription<Value, Argument> const microarchitectures;
 
 template<>
-MicroarchitectureDescription<double, double> const
-    microarchitectures<double, double>{
-        std::pair{
-            intel,
-            absl::btree_map<Nanobenchmark<double, double>::BenchmarkedFunction,
-                            int>{std::pair{&identity, 0},
-                                 std::pair{&mulsd_xmm0_xmm0, 4},
-                                 std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
-                                 std::pair{&sqrtps_xmm0_xmm0, 12}}},
-        std::pair{
-            zen3,
-            absl::btree_map<Nanobenchmark<double, double>::BenchmarkedFunction,
-                            int>{std::pair{&identity, 0},
-                                 std::pair{&mulsd_xmm0_xmm0, 3},
-                                 std::pair{&mulsd_xmm0_xmm0_4x, 4 * 3},
-                                 std::pair{&sqrtps_xmm0_xmm0, 14}}},
-        std::pair{
-            rosetta2,
-            absl::btree_map<Nanobenchmark<double, double>::BenchmarkedFunction,
-                            int>{std::pair{&identity, 0},
-                                 std::pair{&mulsd_xmm0_xmm0, 4},
-                                 std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4}}}};
+MicroarchitectureDescription<double, double> const microarchitectures<double,
+                                                                      double>{
+    std::pair{
+        intel,
+        absl::btree_map<NanobenchmarkBase<double, double>::BenchmarkedFunction,
+                        int>{std::pair{&identity, 0},
+                             std::pair{&mulsd_xmm0_xmm0, 4},
+                             std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4},
+                             std::pair{&sqrtps_xmm0_xmm0, 12}}},
+    std::pair{
+        zen3,
+        absl::btree_map<NanobenchmarkBase<double, double>::BenchmarkedFunction,
+                        int>{std::pair{&identity, 0},
+                             std::pair{&mulsd_xmm0_xmm0, 3},
+                             std::pair{&mulsd_xmm0_xmm0_4x, 4 * 3},
+                             std::pair{&sqrtps_xmm0_xmm0, 14}}},
+    std::pair{
+        rosetta2,
+        absl::btree_map<NanobenchmarkBase<double, double>::BenchmarkedFunction,
+                        int>{std::pair{&identity, 0},
+                             std::pair{&mulsd_xmm0_xmm0, 4},
+                             std::pair{&mulsd_xmm0_xmm0_4x, 4 * 4}}}};
 
 template<>
 MicroarchitectureDescription<Displacement<World>, Instant> const
     microarchitectures<Displacement<World>, Instant>{
         std::pair{
             intel,
-            absl::btree_map<Nanobenchmark<Displacement<World>,
-                                          Instant>::BenchmarkedFunction,
+            absl::btree_map<NanobenchmarkBase<Displacement<World>,
+                                              Instant>::BenchmarkedFunction,
                             int>{std::pair{&fill3_from_xmm0, 1 + 1 + 3 + 3},
                                  std::pair{&fill_from_ymm0, 3}}},
         std::pair{
             zen3,
-            absl::btree_map<Nanobenchmark<Displacement<World>,
-                                          Instant>::BenchmarkedFunction,
+            absl::btree_map<NanobenchmarkBase<Displacement<World>,
+                                              Instant>::BenchmarkedFunction,
                             int>{std::pair{&fill3_from_xmm0, 1 + 1 + 2 + 5},
                                  std::pair{&fill_from_ymm0, 5}}},
-        std::pair{rosetta2,
-                  absl::btree_map<Nanobenchmark<Displacement<World>,
-                                                Instant>::BenchmarkedFunction,
-                                  int>{std::pair{&fill3_from_xmm0, 0},
-                                       std::pair{&fill_from_ymm0, 0}}}};
+        std::pair{
+            rosetta2,
+            absl::btree_map<NanobenchmarkBase<Displacement<World>,
+                                              Instant>::BenchmarkedFunction,
+                            int>{std::pair{&fill3_from_xmm0, 0},
+                                 std::pair{&fill_from_ymm0, 0}}}};
 
 template<>
 MicroarchitectureDescription<RelativeDegreesOfFreedom<World>, Instant> const
     microarchitectures<RelativeDegreesOfFreedom<World>, Instant>{
         std::pair{
             intel,
-            absl::btree_map<Nanobenchmark<RelativeDegreesOfFreedom<World>,
-                                          Instant>::BenchmarkedFunction,
+            absl::btree_map<NanobenchmarkBase<RelativeDegreesOfFreedom<World>,
+                                              Instant>::BenchmarkedFunction,
                             int>{std::pair{&fill6_from_xmm0, 1 + 1 + 3 + 3},
                                  std::pair{&fill_from_ymm0_ymm1, 3}}},
         std::pair{
             zen3,
-            absl::btree_map<Nanobenchmark<RelativeDegreesOfFreedom<World>,
-                                          Instant>::BenchmarkedFunction,
+            absl::btree_map<NanobenchmarkBase<RelativeDegreesOfFreedom<World>,
+                                              Instant>::BenchmarkedFunction,
                             int>{std::pair{&fill6_from_xmm0, 1 + 1 + 2 + 5},
                                  std::pair{&fill_from_ymm0_ymm1, 5}}},
-        std::pair{rosetta2,
-                  absl::btree_map<Nanobenchmark<RelativeDegreesOfFreedom<World>,
-                                                Instant>::BenchmarkedFunction,
-                                  int>{std::pair{&fill6_from_xmm0, 0},
-                                       std::pair{&fill_from_ymm0_ymm1, 0}}}};
+        std::pair{
+            rosetta2,
+            absl::btree_map<NanobenchmarkBase<RelativeDegreesOfFreedom<World>,
+                                              Instant>::BenchmarkedFunction,
+                            int>{std::pair{&fill6_from_xmm0, 0},
+                                 std::pair{&fill_from_ymm0_ymm1, 0}}}};
 
 }  // namespace
 

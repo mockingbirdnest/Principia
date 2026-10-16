@@ -97,13 +97,13 @@ TSCCalibration CalibrateTSC(Logger* const logger) {
 
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
-      std::views::transform(&Nanobenchmark<double, double>::name) |
+      std::views::transform(&NanobenchmarkBase<double, double>::name) |
       std::views::transform(&FormattedWidth);
 
   std::size_t const name_width =
       std::ranges::max(reference_cycle_counts_widths);
 
-  absl::flat_hash_map<Nanobenchmark<double, double> const*,
+  absl::flat_hash_map<NanobenchmarkBase<double, double> const*,
                       LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(stdout,
@@ -148,13 +148,13 @@ double CalibrateOverhead(TSCCalibration const& calibration,
 
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
-      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
+      std::views::transform(&NanobenchmarkBase<Value, Argument>::name) |
       std::views::transform(&FormattedWidth);
 
   std::size_t const name_width =
       std::ranges::max(reference_cycle_counts_widths);
 
-  absl::flat_hash_map<Nanobenchmark<Value, Argument> const*,
+  absl::flat_hash_map<NanobenchmarkBase<Value, Argument> const*,
                       LatencyDistributionTable>
       reference_measurements;
   std::vprint_unicode(stdout,
@@ -203,11 +203,11 @@ void RunMatching(std::regex const& filter,
 
   auto const nanobenchmark_widths =
       nanobenchmarks |
-      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
+      std::views::transform(&NanobenchmarkBase<Value, Argument>::name) |
       std::views::transform(&FormattedWidth);
   auto const reference_cycle_counts_widths =
       reference_cycle_counts | std::views::keys |
-      std::views::transform(&Nanobenchmark<Value, Argument>::name) |
+      std::views::transform(&NanobenchmarkBase<Value, Argument>::name) |
       std::views::transform(&FormattedWidth);
 
   std::size_t name_width = std::ranges::max(reference_cycle_counts_widths);
@@ -220,7 +220,7 @@ void RunMatching(std::regex const& filter,
 
   auto benchmark_cycles =
       [&calibration, logger, overhead_cycles](
-          Nanobenchmark<Value, Argument> const* const nanobenchmark) {
+          NanobenchmarkBase<Value, Argument> const* const nanobenchmark) {
         return calibration(nanobenchmark->Run(logger)) - overhead_cycles;
       };
 
@@ -232,7 +232,7 @@ void RunMatching(std::regex const& filter,
 
   // This set avoids running the reference nanobenchmarks twice.
   absl::flat_hash_set<
-      Nanobenchmark<Value, Argument> const*>
+      NanobenchmarkBase<Value, Argument> const*>
       reference_nanobenchmarks;
   for (auto const& [nanobenchmark, cycles] : reference_cycle_counts) {
     reference_nanobenchmarks.insert(nanobenchmark);
