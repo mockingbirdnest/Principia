@@ -1,28 +1,27 @@
 #include "numerics/wide.hpp"
 
+#include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/matchers.hpp"
-#include "geometry/frame.hpp"
-#include "physics/degrees_of_freedom.hpp"
 
 namespace principia {
 namespace numerics {
 
-using namespace principia::numerics::_wide;
+using ::testing::Eq;
 using namespace principia::base::_algebra;
+using namespace principia::geometry::_frame;
+using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
+using namespace principia::geometry::_space;
+using namespace principia::numerics::_wide;
+using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_matchers;
-using namespace principia::geometry::_frame;
-using namespace principia::geometry::_grassmann;
-using namespace principia::physics::_degrees_of_freedom;
-using namespace principia::geometry::_instant;
-using namespace principia::geometry::_space;
-
-using ::testing::Eq;
 
 class WideTest : public ::testing::Test {
 protected:
@@ -41,8 +40,8 @@ TEST_F(WideTest, Concepts) {
 
 TEST_F(WideTest, Double) {
   Displacement<World> const r{{2 * Metre, 3 * Metre, 5 * Metre}};
-  Wide<double> ℼ = Widen(π);
-  Wide<double> 𝕖 = Widen(e);
+  Wide<double> ℼ = Wide(π);
+  Wide<double> 𝕖 = Wide(e);
   EXPECT_THAT((+𝕖).narrow(), Eq(e));
   EXPECT_THAT((-𝕖).narrow(), Eq(-e));
   EXPECT_THAT((𝕖 + ℼ).narrow(), Eq(e+π));
@@ -56,8 +55,8 @@ TEST_F(WideTest, Double) {
   // `Wide` works with `RelativeDegreesOfFreedom` without needing to declare any
   // new operators, because `Displacement` and `Velocity` are modules over
   // `Wide<double>`.
-  // Note that the operator/ requires only a module, see the comments in
-  // direct_sum.hpp.
+  // Note that the `operator/` requires only a module, see the comments in
+  // `direct_sum.hpp`.
   Velocity<World> const v{
       {11 * Metre / Second, 23 * Metre / Second, 29 * Metre / Second}};
   RelativeDegreesOfFreedom<World> rdof = {r, v};
@@ -67,8 +66,8 @@ TEST_F(WideTest, Double) {
 
 TEST_F(WideTest, Quantity) {
   Displacement<World> const r{{2 * Metre, 3 * Metre, 5 * Metre}};
-  Wide<Mass> ℼ = Widen(π * Kilogram);
-  Wide<Mass> 𝕖 = Widen(e * Kilogram);
+  Wide<Mass> ℼ = Wide(π * Kilogram);
+  Wide<Mass> 𝕖 = Wide(e * Kilogram);
   EXPECT_THAT((+𝕖).narrow(), Eq(e * Kilogram));
   EXPECT_THAT((-𝕖).narrow(), Eq(-e * Kilogram));
   EXPECT_THAT((𝕖 + ℼ).narrow(), Eq((e + π) * Kilogram));

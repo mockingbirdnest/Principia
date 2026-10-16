@@ -11,24 +11,14 @@ namespace internal {
 
 using namespace principia::quantities::_quantities;
 
-template<real_affine_space Scalar>
-  requires(real_dimension<Scalar> == 1)
-Wide<Scalar> Wide<Scalar>::Identity() requires ring<Scalar> {
-  return Widen(1.0);
-}
+#if PRINCIPIA_USE_AVX()
+#define MM(intrinsic) _mm256_ ## intrinsic
+#else
+#define MM(intrinsic) _mm_ ## intrinsic
+#endif
 
 template<real_affine_space Scalar>
-  requires(real_dimension<Scalar> == 1)
-Scalar Wide<Scalar>::narrow() const {
-  return narrow_value_;
-}
-
-template<real_affine_space Scalar>
-  requires(real_dimension<Scalar> == 1)
-Wide<Scalar>::Wide(UnderlyingType const value) : value_(value) {}
-
-template<quantity T>
-Wide<T> Widen(T const narrow) {
+Wide<Scalar>::Wide(Scalar const narrow) {
 #if PRINCIPIA_USE_AVX()
   return Wide<T>(ToM256D(narrow));
 #else
@@ -36,60 +26,16 @@ Wide<T> Widen(T const narrow) {
 #endif
 }
 
-#if PRINCIPIA_USE_AVX()
-inline UnderlyingType wide_sign_bit = _mm256_set1_pd(-0.0);
-#else
-inline UnderlyingType wide_sign_bit = _mm_set1_pd(-0.0);
-#endif
-
-template<additive_group T>
-Wide<T> operator+(Wide<T> const right) {
-  return right;
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar> Wide<Scalar>::Identity() requires ring<Scalar> {
+  return Wide(1.0);
 }
 
-template<additive_group T>
-Wide<T> operator-(Wide<T> const right) {
-#if PRINCIPIA_USE_AVX()
-  return Wide<T>(_mm256_xor_pd(right.value_, wide_sign_bit.value_));
-#else
-  return Wide<T>(_mm_xor_pd(right.value_, wide_sign_bit.value_));
-#endif
-}
-
-template<affine T, affine U>
-Wide<Sum<T, U>> operator+(Wide<T> const left, Wide<U> const right) {
-#if PRINCIPIA_USE_AVX()
-  return Wide<T>(_mm256_add_pd(left.value_, right.value_));
-#else
-  return Wide<T>(_mm_add_pd(left.value_, right.value_));
-#endif
-}
-
-template<affine T, affine U>
-Wide<Difference<T, U>> operator-(Wide<T> const left, Wide<U> const right) {
-#if PRINCIPIA_USE_AVX()
-  return Wide<Difference<T, U>>(_mm256_sub_pd(left.value_, right.value_));
-#else
-  return Wide<Difference<T, U>>(_mm_sub_pd(left.value_, right.value_));
-#endif
-}
-
-template<typename T, typename U>
-Wide<Product<T, U>> operator*(Wide<T> const left, Wide<U> const right) {
-#if PRINCIPIA_USE_AVX()
-  return Wide<Product<T, U>>(_mm256_mul_pd(left.value_, right.value_));
-#else
-  return Wide<Product<T, U>>(_mm_mul_pd(left.value_, right.value_));
-#endif
-}
-
-template<typename T, typename U>
-Wide<Quotient<T, U>> operator/(Wide<T> const left, Wide<U> const right) {
-#if PRINCIPIA_USE_AVX()
-  return Wide<Quotient<T, U>>(_mm256_div_pd(left.value_, right.value_));
-#else
-  return Wide<Quotient<T, U>>(_mm_div_pd(left.value_, right.value_));
-#endif
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Scalar Wide<Scalar>::narrow() const {
+  return narrow_value_;
 }
 
 template<additive_group T>
@@ -102,6 +48,52 @@ Wide<T>& operator-=(Wide<T>& left, Wide<T> const right) {
   return left = left - right;
 }
 
+template<r3_element_coordinates T>
+T& operator*=(T& left, Wide<double> const right) {
+  return left = T(left.coordinates() * right);
+}
+
+template<r3_element_coordinates T>
+T& operator/=(T& left, Wide<double> const right) {
+  return left = T(left.coordinates() / right);
+}
+
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar>::Wide(UnderlyingType const value) : value_(value) {}
+
+inline UnderlyingType wide_sign_bit = MM(set1_pd)(-0.0);
+
+template<additive_group T>
+Wide<T> operator+(Wide<T> const right) {
+  return right;
+}
+
+template<additive_group T>
+Wide<T> operator-(Wide<T> const right) {
+  return Wide<T>(MM(xor_pd)(right.value_, wide_sign_bit));
+}
+
+template<affine T, affine U>
+Wide<Sum<T, U>> operator+(Wide<T> const left, Wide<U> const right) {
+  return Wide<T>(MM(add_pd)(left.value_, right.value_));
+}
+
+template<affine T, affine U>
+Wide<Difference<T, U>> operator-(Wide<T> const left, Wide<U> const right) {
+  return Wide<Difference<T, U>>(MM(sub_pd)(left.value_, right.value_));
+}
+
+template<typename T, typename U>
+Wide<Product<T, U>> operator*(Wide<T> const left, Wide<U> const right) {
+  return Wide<Product<T, U>>(MM(mul_pd)(left.value_, right.value_));
+}
+
+template<typename T, typename U>
+Wide<Quotient<T, U>> operator/(Wide<T> const left, Wide<U> const right) {
+  return Wide<Quotient<T, U>>(MM(div_pd)(left.value_, right.value_));
+}
+
 template<r3_element_coordinates T, typename U>
 Product<T, U> operator*(T const left, Wide<U> const right) {
   return Product<T, U>(left.coordinates() * right);
@@ -112,19 +104,9 @@ Product<T, U> operator*(Wide<T> const left, U const right) {
   return Product<T, U>(left * right.coordinates());
 }
 
-template<r3_element_coordinates T>
-T& operator*=(T& left, Wide<double> const right) {
-  return left = T(left.coordinates() * right);
-}
-
 template<r3_element_coordinates T, typename U>
 Quotient<T, U> operator/(T const left, Wide<U> const right) {
   return Quotient<T, U>(left.coordinates() / right);
-}
-
-template<r3_element_coordinates T>
-T& operator/=(T& left, Wide<double> const right) {
-  return left = T(left.coordinates() / right);
 }
 
 template<typename T, typename U>
@@ -149,19 +131,9 @@ R3Element<Product<T, U>> operator*(Wide<T> const left,
 #endif
 }
 
-template<typename T>
-R3Element<T>& operator*=(R3Element<T>& left, Wide<double> right) {
-#if PRINCIPIA_USE_AVX()
-  left.xyzt = _mm256_mul_pd(left.xyzt, right.value_);
-#else
-  left.xy = _mm_mul_pd(left.xy, right.value_);
-  left.zt = _mm_mul_sd(left.zt, right.value_);
-#endif
-  return left;
-}
-
 template<typename T, typename U>
-R3Element<Quotient<T, U>> operator/(R3Element<T> left, Wide<U> right) {
+R3Element<Quotient<T, U>> operator/(R3Element<T> const& left,
+                                    Wide<U> const right) {
 #if PRINCIPIA_USE_AVX()
   return R3Element<Product<T, U>>(_mm256_div_pd(left.xyzt, right.value_));
 #else
@@ -171,7 +143,18 @@ R3Element<Quotient<T, U>> operator/(R3Element<T> left, Wide<U> right) {
 }
 
 template<typename T>
-R3Element<T>& operator/=(R3Element<T>& left, Wide<double> right) {
+R3Element<T>& operator*=(R3Element<T>& left, Wide<double> const right) {
+#if PRINCIPIA_USE_AVX()
+  left.xyzt = _mm256_mul_pd(left.xyzt, right.value_);
+#else
+  left.xy = _mm_mul_pd(left.xy, right.value_);
+  left.zt = _mm_mul_sd(left.zt, right.value_);
+#endif
+  return left;
+}
+
+template<typename T>
+R3Element<T>& operator/=(R3Element<T>& left, Wide<double> const right) {
 #if PRINCIPIA_USE_AVX()
   left.xyzt = _mm256_div_pd(left.xyzt, right.value_);
 #else
@@ -180,6 +163,8 @@ R3Element<T>& operator/=(R3Element<T>& left, Wide<double> right) {
 #endif
   return left;
 }
+
+#undef MM
 
 }  // namespace internal
 }  // namespace _wide

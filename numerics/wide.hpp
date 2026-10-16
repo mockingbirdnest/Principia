@@ -25,7 +25,6 @@ using UnderlyingType = __m256d;
 #else
 using UnderlyingType = __m128d;
 #endif
-constexpr std::int64_t WideAlignment = alignof(UnderlyingType);
 
 template<typename T>
 concept r3_element_coordinates = requires(T v) {
@@ -36,16 +35,18 @@ concept r3_element_coordinates = requires(T v) {
 // a `Scalar`, but is broadcast to all elements of a register of the appropriate
 // width for fast multiplications with `R3Element` or types wrapping it; this
 // can be used to factor out broadcast instructions in performance-critical
-// code. Since the point of using `Wide` is to minimize the cost incurred by the
-// implicit widening in scalar-vector multiplications widening, `Wide` is not
-// implicitly constructible from the narrow scalar, and operations between wide
-// scalars require that both arguments be `Wide`: `2.0 * Widen(2.0)` is
-// ill-formed, and must be written `Widen(2.0) * Widen(2.0)` instead.
+// code.  Since the point of using `Wide` is to minimize the cost incurred by
+// the implicit widening in scalar-vector multiplications widening, `Wide` is
+// not implicitly constructible from the narrow scalar, and operations between
+// wide scalars require that both arguments be `Wide`: `2.0 * Wide(2.0)` is
+// ill-formed, and must be written `Wide(2.0) * Wide(2.0)` instead.
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-class alignas(WideAlignment) Wide {
+class Wide {
  public:
   Wide() = default;
+
+  explicit Wide(Scalar narrow);
 
   static Wide Identity()
     requires ring<Scalar>;
@@ -54,7 +55,6 @@ class alignas(WideAlignment) Wide {
 
   template<additive_group T>
   Wide<T>& operator+=(Wide<T>& left, Wide<T> right);
-
   template<additive_group T>
   Wide<T>& operator-=(Wide<T>& left, Wide<T> right);
 
@@ -66,14 +66,7 @@ class alignas(WideAlignment) Wide {
  private:
   explicit Wide(UnderlyingType value);
 
-  union {
-    struct {
-      UnderlyingType value_;
-    };
-    struct {
-      Scalar narrow_value_;
-    };
-  };
+  UnderlyingType value_;
 
   template<quantity T>
   friend Wide<T> Widen(T narrow);
@@ -104,9 +97,6 @@ class alignas(WideAlignment) Wide {
   friend R3Element<T>& operator/=(R3Element<T>& left, Wide right)
     requires std::same_as<Scalar, double>;
 };
-
-template<quantity T>
-Wide<T> Widen(T narrow);
 
 template<additive_group T>
 Wide<T> operator+(Wide<T> right);
@@ -140,11 +130,11 @@ Product<T, U> operator*(T const& left, Wide<U> right);
 template<typename T, r3_element_coordinates U>
 Product<T, U> operator*(Wide<T> left, U const& right);
 
-template<r3_element_coordinates T>
-T& operator*=(T& left, Wide<double> right);
-
 template<r3_element_coordinates T, typename U>
 Quotient<T, U> operator/(T left, Wide<U> right);
+
+template<r3_element_coordinates T>
+T& operator*=(T& left, Wide<double> right);
 
 template<r3_element_coordinates T>
 T& operator/=(T& left, Wide<double> right);
@@ -155,11 +145,11 @@ R3Element<Product<T, U>> operator*(R3Element<T> const& left, Wide<U> right);
 template<typename T, instance<Multivector> U>
 R3Element<Product<T, U>> operator*(Wide<T> left, R3Element<U> const& right);
 
-template<typename T>
-R3Element<T>& operator*=(R3Element<T>& left, Wide<double> right);
-
 template<typename T, typename U>
 R3Element<Quotient<T, U>> operator/(R3Element<T> const& left, Wide<U> right);
+
+template<typename T>
+R3Element<T>& operator*=(R3Element<T>& left, Wide<double> right);
 
 template<typename T>
 R3Element<T>& operator/=(R3Element<T>& left, Wide<double> right);
@@ -167,7 +157,6 @@ R3Element<T>& operator/=(R3Element<T>& left, Wide<double> right);
 }  // namespace internal
 
 using internal::Wide;
-using internal::Widen;
 
 }  // namespace _wide
 }  // namespace numerics
