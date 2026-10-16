@@ -62,8 +62,8 @@ template<typename Value_, typename Argument_, typename Concrete_>
 class Nanobenchmark : public NanobenchmarkBase<Value_, Argument_> {
  public:
   using Base = NanobenchmarkBase<Value_, Argument_>;
-  using Base::Value;
-  using Base::Argument;
+  using typename Base::Value;
+  using typename Base::Argument;
 
   // We disable inlining on this function so that the overhead is independent of
   // the call site, and so that we actually call the benchmarked function via a
@@ -140,8 +140,8 @@ class NanobenchmarkRegistry {
    public:                                                               \
     using Base =                                                         \
         BaseClass<NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method)>; \
-    using Base::Value;                                                   \
-    using Base::Argument;                                                \
+    using typename Base::Value;                                          \
+    using typename Base::Argument;                                       \
                                                                          \
     NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method)() : Base() {    \
       SetName(#BaseClass "/" #Method);                                   \
@@ -157,8 +157,8 @@ class NanobenchmarkRegistry {
    public:                                                               \
     using Base =                                                         \
         BaseClass<NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method)>; \
-    using Base::Value;                                                   \
-    using Base::Argument;                                                \
+    using typename Base::Value;                                          \
+    using typename Base::Argument;                                       \
                                                                          \
     NANOBENCHMARK_CONCAT_NAME_FIXTURE(BaseClass, Method)();              \
                                                                          \
@@ -182,8 +182,8 @@ class NanobenchmarkRegistry {
    public:                                                                  \
     using Base =                                                            \
         Nanobenchmark<double, double, NANOBENCHMARK_CONCAT_NAME(Function)>; \
-    using Base::Value;                                                      \
-    using Base::Argument;                                                   \
+    using typename Base::Value;                                             \
+    using typename Base::Argument;                                          \
                                                                             \
     NANOBENCHMARK_CONCAT_NAME(Function)() {                                 \
       SetName(#Function);                                                   \
@@ -200,8 +200,8 @@ class NanobenchmarkRegistry {
    public:                                                                 \
     using Base =                                                           \
         Nanobenchmark<double, double, NANOBENCHMARK_CONCAT_NAME(line)>;    \
-    using Base::Value;                                                     \
-    using Base::Argument;                                                  \
+    using typename Base::Value;                                            \
+    using typename Base::Argument;                                         \
                                                                            \
     NANOBENCHMARK_CONCAT_NAME(line)() {                                    \
       SetFunction(&Function);                                              \
