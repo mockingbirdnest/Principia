@@ -65,5 +65,26 @@ TEST_F(WideTest, Double) {
   EXPECT_THAT(rdof / ℼ, Eq(rdof / π));
 }
 
+TEST_F(WideTest, Quantity) {
+  Displacement<World> const r{{2 * Metre, 3 * Metre, 5 * Metre}};
+  Wide<Mass> ℼ = Widen(π * Kilogram);
+  Wide<Mass> 𝕖 = Widen(e * Kilogram);
+  EXPECT_THAT((+𝕖).narrow(), Eq(e * Kilogram));
+  EXPECT_THAT((-𝕖).narrow(), Eq(-e * Kilogram));
+  EXPECT_THAT((𝕖 + ℼ).narrow(), Eq((e + π) * Kilogram));
+  EXPECT_THAT((𝕖 - ℼ).narrow(), Eq((e - π) * Kilogram));
+  EXPECT_THAT((𝕖 * ℼ).narrow(), Eq(e * π * Kilogram));
+  EXPECT_THAT((𝕖 / ℼ).narrow(), Eq(e / π * Kilogram));
+  EXPECT_THAT(ℼ * r, Eq(π * r));
+  EXPECT_THAT(r * ℼ, Eq(r * π));
+  EXPECT_THAT(r / ℼ, Eq(r / π));
+
+  Velocity<World> const v{
+      {11 * Metre / Second, 23 * Metre / Second, 29 * Metre / Second}};
+  RelativeDegreesOfFreedom<World> rdof = {r, v};
+  EXPECT_THAT(ℼ * rdof, Eq(π * Metre * rdof));
+  EXPECT_THAT(rdof / ℼ, Eq(rdof / (π * Metre)));
+}
+
 }  // namespace quantities
 }  // namespace principia

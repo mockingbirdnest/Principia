@@ -1,23 +1,23 @@
 #pragma once
 #include <immintrin.h>
 
-#include "quantities/concepts.hpp"
 #include "base/algebra.hpp"
 #include "base/macros.hpp"
 #include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace numerics {
 namespace _wide {
 namespace internal {
 
-using namespace geometry::_grassmann;
 using namespace base::_algebra;
 using namespace base::_traits;
-using namespace quantities::_concepts;
+using namespace geometry::_grassmann;
 using namespace geometry::_r3_element;
+using namespace quantities::_concepts;
 
 #if PRINCIPIA_USE_AVX()
 constexpr std::int64_t WideAlignment = 32;
@@ -45,9 +45,21 @@ class alignas(WideAlignment) Wide {
  public:
   Wide() = default;
 
-  static Wide Identity() requires ring<Scalar>;
+  static Wide Identity()
+    requires ring<Scalar>;
 
   Scalar narrow() const;
+
+  template<additive_group T>
+  Wide<T>& operator+=(Wide<T>& left, Wide<T> right);
+
+  template<additive_group T>
+  Wide<T>& operator-=(Wide<T>& left, Wide<T> right);
+
+  template<typename T, std::integral U>
+  Wide<T>& operator*=(Wide<T>& left, U right);
+  template<ring T>
+  Wide<T>& operator*=(Wide<T>& left, Wide<T> right);
 
  private:
 #if PRINCIPIA_USE_AVX()
@@ -70,100 +82,93 @@ class alignas(WideAlignment) Wide {
   };
 
   template<quantity T>
-  friend Wide<T> Widen(T);
+  friend Wide<T> Widen(T narrow);
 
   template<additive_group T>
-  friend Wide<T> operator-(Wide<T>);
+  friend Wide<T> operator-(Wide<T> right);
   template<affine T, affine U>
-  friend Wide<Sum<T, U>> operator+(Wide<T>, Wide<U>);
+  friend Wide<Sum<T, U>> operator+(Wide<T> left, Wide<U> right);
   template<affine T, affine U>
-  friend Wide<Difference<T, U>> operator-(Wide<T>, Wide<U>);
+  friend Wide<Difference<T, U>> operator-(Wide<T> left, Wide<U> right);
   template<typename T, typename U>
-  friend Wide<Product<T, U>> operator*(Wide<T>, Wide<U>);
+  friend Wide<Product<T, U>> operator*(Wide<T> left, Wide<U> right);
   template<typename T, typename U>
-  friend Wide<Quotient<T, U>> operator/(Wide<T>, Wide<U>);
+  friend Wide<Quotient<T, U>> operator/(Wide<T> left, Wide<U> right);
   template<typename T, typename U>
-  friend R3Element<Product<T, U>> operator*(R3Element<T>, Wide<U>);
+  friend R3Element<Product<T, U>> operator*(R3Element<T> const& left,
+                                            Wide<U> right);
   template<typename T, instance<Multivector> U>
-  friend R3Element<Product<T, U>> operator*(Wide<T>, R3Element<U>);
+  friend R3Element<Product<T, U>> operator*(Wide<T> left,
+                                            R3Element<U> const& right);
   template<typename T, typename U>
-  friend R3Element<Quotient<T, U>> operator/(R3Element<T>, Wide<U>);
+  friend R3Element<Quotient<T, U>> operator/(R3Element<T> const& left,
+                                             Wide<U> right);
   template<typename T>
-  friend R3Element<T>& operator*=(R3Element<T>&, Wide)
-  requires std::same_as<Scalar, double>;
+  friend R3Element<T>& operator*=(R3Element<T>& left, Wide right)
+    requires std::same_as<Scalar, double>;
   template<typename T>
-  friend R3Element<T>& operator/=(R3Element<T>&, Wide)
-  requires std::same_as<Scalar, double>;
+  friend R3Element<T>& operator/=(R3Element<T>& left, Wide right)
+    requires std::same_as<Scalar, double>;
 };
 
 template<quantity T>
-Wide<T> Widen(T);
+Wide<T> Widen(T narrow);
 
 template<additive_group T>
-Wide<T> operator+(Wide<T>);
+Wide<T> operator+(Wide<T> right);
 
 template<additive_group T>
-Wide<T> operator-(Wide<T>);
+Wide<T> operator-(Wide<T> right);
 
 template<affine T, affine U>
-Wide<Sum<T, U>> operator+(Wide<T>, Wide<U>);
+Wide<Sum<T, U>> operator+(Wide<T> left, Wide<U> right);
 
 template<affine T, affine U>
-Wide<Difference<T, U>> operator-(Wide<T>, Wide<U>);
+Wide<Difference<T, U>> operator-(Wide<T> left, Wide<U> right);
 
 template<typename T, typename U>
-Wide<Product<T, U>> operator*(Wide<T>, Wide<U>);
+Wide<Product<T, U>> operator*(Wide<T> left, Wide<U> right);
 
 template<typename T, typename U>
-Wide<Quotient<T, U>> operator/(Wide<T>, Wide<U>);
-
-template<additive_group T>
-Wide<T>& operator+=(Wide<T>& left, Wide<T> right);
-
-template<additive_group T>
-Wide<T>& operator-=(Wide<T>& left, Wide<T> right);
+Wide<Quotient<T, U>> operator/(Wide<T> left, Wide<U> right);
 
 template<typename T, std::integral U>
-Wide<T>& operator*=(Wide<T> left, U right);
-template<typename T, std::integral U>
-Wide<T> operator*(Wide<T>, U right);
+Wide<T> operator*(Wide<T> left, U right);
+
 template<typename T, std::integral U>
 Wide<T> operator*(U left, Wide<T> right);
-
-template<ring T>
-Wide<T>& operator*=(Wide<T>& left, Wide<T> right);
 
 // The following are the operations that are optimized by the use of `Wide`.
 
 template<r3_element_coordinates T, typename U>
-Product<T, U> operator*(T, Wide<U>);
+Product<T, U> operator*(T const& left, Wide<U> right);
 
 template<typename T, r3_element_coordinates U>
-Product<T, U> operator*(Wide<T>, U);
+Product<T, U> operator*(Wide<T> left, U const& right);
 
 template<r3_element_coordinates T>
-T& operator*=(T&, Wide<double>);
+T& operator*=(T& left, Wide<double> right);
 
 template<r3_element_coordinates T, typename U>
-Quotient<T, U> operator/(T, Wide<U>);
+Quotient<T, U> operator/(T left, Wide<U> right);
 
 template<r3_element_coordinates T>
-T& operator/=(T&, Wide<double>);
+T& operator/=(T& left, Wide<double> right);
 
 template<typename T, typename U>
-R3Element<Product<T, U>> operator*(R3Element<T>, Wide<U>);
+R3Element<Product<T, U>> operator*(R3Element<T> const& left, Wide<U> right);
 
 template<typename T, instance<Multivector> U>
-R3Element<Product<T, U>> operator*(Wide<T>, R3Element<U>);
+R3Element<Product<T, U>> operator*(Wide<T> left, R3Element<U> const& right);
 
 template<typename T>
-R3Element<T>& operator*=(R3Element<T>&, Wide<double>);
+R3Element<T>& operator*=(R3Element<T>& left, Wide<double> right);
 
 template<typename T, typename U>
-R3Element<Quotient<T, U>> operator/(R3Element<T>, Wide<U>);
+R3Element<Quotient<T, U>> operator/(R3Element<T> const& left, Wide<U> right);
 
 template<typename T>
-R3Element<T>& operator/=(R3Element<T>&, Wide<double>);
+R3Element<T>& operator/=(R3Element<T>& left, Wide<double> right);
 
 }  // namespace internal
 
