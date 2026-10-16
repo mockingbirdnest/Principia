@@ -12,10 +12,10 @@
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/fma.hpp"
+#include "numerics/m128d.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
 #define PRINCIPIA_USE_IACA 0
@@ -37,6 +37,7 @@ using namespace principia::geometry::_space;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_fma;
+using namespace principia::numerics::_m128d;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
@@ -82,6 +83,14 @@ TEST_F(DoublePrecisionTest, DISABLED_IACA) {
                 DoublePrecision<Displacement<World>>(y)));
 }
 #endif
+
+// Check that the error is zero-initialized for `M128D`.
+TEST_F(DoublePrecisionTest, M128DInitialization) {
+  M128D const x(3.0);
+  DoublePrecision<M128D> const y(x);
+  CHECK_EQ(y.value, x);
+  CHECK_EQ(y.error, M128D(0.0));
+}
 
 TEST_F(DoublePrecisionTest, AlgebraConcepts) {
   static_assert(real_vector_space<DoublePrecision<double>>);

@@ -110,7 +110,6 @@ constexpr double e_cos = 0x1.0001'58B5'12B3'2p0;  // 2^-69.570.
 namespace m128d {
 
 M128D const quiet_NaN(std::numeric_limits<double>::quiet_NaN());
-M128D const zero(0.0);
 
 // Accurate table index.
 M128D const mantissa_index_bits =
@@ -422,10 +421,7 @@ FORCE_INLINE ReducedArgument Reduce(Argument const x) {
   static_assert(fma_presence != FMAPresence::Unknown);
   Argument const abs_x = Abs(x);
   OSACA_IF(abs_x < π / 4) {
-    DoublePrecision<Argument> x_reduced{uninitialized};
-    x_reduced.value = x;
-    x_reduced.error = m128d::zero;
-    return {.x_reduced = std::move(x_reduced),
+    return {.x_reduced = DoublePrecision<Argument>(x),
             .quadrant = 0};
   } else {
     if constexpr (fma_presence == FMAPresence::Present) {
