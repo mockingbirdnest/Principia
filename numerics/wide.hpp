@@ -1,4 +1,5 @@
 #pragma once
+
 #include <immintrin.h>
 
 #include "base/algebra.hpp"
@@ -20,10 +21,11 @@ using namespace geometry::_r3_element;
 using namespace quantities::_concepts;
 
 #if PRINCIPIA_USE_AVX()
-constexpr std::int64_t WideAlignment = 32;
+using UnderlyingType = __m256d;
 #else
-constexpr std::int64_t WideAlignment = 16;
+using UnderlyingType = __m128d;
 #endif
+constexpr std::int64_t WideAlignment = alignof(UnderlyingType);
 
 template<typename T>
 concept r3_element_coordinates = requires(T v) {
@@ -62,19 +64,11 @@ class alignas(WideAlignment) Wide {
   Wide<T>& operator*=(Wide<T>& left, Wide<T> right);
 
  private:
-#if PRINCIPIA_USE_AVX()
-  explicit Wide(__m256d value);
-#else
-  explicit Wide(__m128d value);
-#endif
+  explicit Wide(UnderlyingType value);
 
   union {
     struct {
-#if PRINCIPIA_USE_AVX()
-      __m256d value_;
-#else
-      __m128d value_;
-#endif
+      UnderlyingType value_;
     };
     struct {
       Scalar narrow_value_;

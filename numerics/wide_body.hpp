@@ -1,4 +1,5 @@
 #pragma once
+
 #include "numerics/wide.hpp"
 
 #include "quantities/quantities.hpp"
@@ -12,7 +13,7 @@ using namespace principia::quantities::_quantities;
 
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-inline Wide<Scalar> Wide<Scalar>::Identity() requires ring<Scalar> {
+Wide<Scalar> Wide<Scalar>::Identity() requires ring<Scalar> {
   return Widen(1.0);
 }
 
@@ -22,18 +23,12 @@ Scalar Wide<Scalar>::narrow() const {
   return narrow_value_;
 }
 
-#if PRINCIPIA_USE_AVX()
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-Wide<Scalar>::Wide(__m256d value) : value_(value) {}
-#else
-template<real_affine_space Scalar>
-  requires(real_dimension<Scalar> == 1)
-Wide<Scalar>::Wide(__m256d value) : value_(value) {}
-#endif
+Wide<Scalar>::Wide(UnderlyingType const value) : value_(value) {}
 
 template<quantity T>
-Wide<T> Widen(T narrow) {
+Wide<T> Widen(T const narrow) {
 #if PRINCIPIA_USE_AVX()
   return Wide<T>(ToM256D(narrow));
 #else
@@ -41,7 +36,11 @@ Wide<T> Widen(T narrow) {
 #endif
 }
 
-inline Wide<double> wide_sign_bit = Widen(-0.0);
+#if PRINCIPIA_USE_AVX()
+inline UnderlyingType wide_sign_bit = _mm256_set1_pd(-0.0);
+#else
+inline UnderlyingType wide_sign_bit = _mm_set1_pd(-0.0);
+#endif
 
 template<additive_group T>
 Wide<T> operator+(Wide<T> const right) {
@@ -94,42 +93,43 @@ Wide<Quotient<T, U>> operator/(Wide<T> const left, Wide<U> const right) {
 }
 
 template<additive_group T>
-Wide<T>& operator+=(Wide<T>& left, Wide<T> right) {
+Wide<T>& operator+=(Wide<T>& left, Wide<T> const right) {
   return left = left + right;
 }
 
 template<additive_group T>
-Wide<T>& operator-=(Wide<T>& left, Wide<T> right) {
+Wide<T>& operator-=(Wide<T>& left, Wide<T> const right) {
   return left = left - right;
 }
 
 template<r3_element_coordinates T, typename U>
-Product<T, U> operator*(T left, Wide<U> right) {
+Product<T, U> operator*(T const left, Wide<U> const right) {
   return Product<T, U>(left.coordinates() * right);
 }
 
 template<typename T, r3_element_coordinates U>
-Product<T, U> operator*(Wide<T> left, U right) {
+Product<T, U> operator*(Wide<T> const left, U const right) {
   return Product<T, U>(left * right.coordinates());
 }
 
 template<r3_element_coordinates T>
-T& operator*=(T& left, Wide<double> right) {
+T& operator*=(T& left, Wide<double> const right) {
   return left = T(left.coordinates() * right);
 }
 
 template<r3_element_coordinates T, typename U>
-Quotient<T, U> operator/(T left, Wide<U> right) {
+Quotient<T, U> operator/(T const left, Wide<U> const right) {
   return Quotient<T, U>(left.coordinates() / right);
 }
 
 template<r3_element_coordinates T>
-T& operator/=(T& left, Wide<double> right) {
+T& operator/=(T& left, Wide<double> const right) {
   return left = T(left.coordinates() / right);
 }
 
 template<typename T, typename U>
-R3Element<Product<T, U>> operator*(R3Element<T> left, Wide<U> right) {
+R3Element<Product<T, U>> operator*(R3Element<T> const& left,
+                                   Wide<U> const right) {
 #if PRINCIPIA_USE_AVX()
   return R3Element<Product<T, U>>(_mm256_mul_pd(left.xyzt, right.value_));
 #else
@@ -139,7 +139,8 @@ R3Element<Product<T, U>> operator*(R3Element<T> left, Wide<U> right) {
 }
 
 template<typename T, typename U>
-R3Element<Product<T, U>> operator*(Wide<T> left, R3Element<U> right) {
+R3Element<Product<T, U>> operator*(Wide<T> const left,
+                                   R3Element<U> const& right) {
 #if PRINCIPIA_USE_AVX()
   return R3Element<Product<T, U>>(_mm256_mul_pd(left.value_, right.xyzt));
 #else
