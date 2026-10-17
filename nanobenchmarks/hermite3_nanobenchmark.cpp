@@ -18,9 +18,13 @@ using namespace principia::numerics::_hermite3;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_si;
 
-template<typename Value_>
-class Hermite3Nanobenchmark : public Nanobenchmark<Value_, Instant> {
+template<typename Value_, typename Concrete_>
+class Hermite3Nanobenchmark : public Nanobenchmark<Value_, Instant, Concrete_> {
  protected:
+  using Base = Nanobenchmark<Value_, Instant, Concrete_>;
+  using typename Base::Value;
+  using typename Base::Argument;
+
   using H = Hermite3<Displacement<World>, Instant>;
 
   Hermite3Nanobenchmark()
@@ -41,10 +45,12 @@ class Hermite3Nanobenchmark : public Nanobenchmark<Value_, Instant> {
   H const h_;
 };
 
+template<typename Concrete_>
 using Hermite3DisplacementNanobenchmark =
-    Hermite3Nanobenchmark<Displacement<World>>;
+    Hermite3Nanobenchmark<Displacement<World>, Concrete_>;
+template<typename Concrete_>
 using Hermite3RelativeDegreesOfFreedomNanobenchmark =
-    Hermite3Nanobenchmark<RelativeDegreesOfFreedom<World>>;
+    Hermite3Nanobenchmark<RelativeDegreesOfFreedom<World>, Concrete_>;
 
 NANOBENCHMARK_FIXTURE(Hermite3DisplacementNanobenchmark, ConstructionAndValue) {
   H const h({t0_, argument}, {d0_, d1_}, {v0_, v1_});
