@@ -29,6 +29,7 @@ namespace internal {
 
 class M128D {
  public:
+  // Performs no initialization, just like `double`.
   M128D() = default;
 
   // No constructors taking integral types, because the integral-to-floating
