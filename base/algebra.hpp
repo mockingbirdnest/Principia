@@ -210,7 +210,7 @@ int dimension;
 
 template<affine A, ring K>
   requires homogeneous_affine_module<A, K> && (!additive_group<A>)
-int dimension<A, K> = dimension<Difference<A>, K>;
+constexpr int dimension<A, K> = dimension<Difference<A>, K>;
 
 template<ring K>
 constexpr int dimension<K, K> = 1;

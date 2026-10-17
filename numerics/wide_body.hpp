@@ -20,11 +20,27 @@ using namespace principia::quantities::_quantities;
 #if PRINCIPIA_USE_AVX()
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-Wide<Scalar>::Wide(Scalar const narrow) : Wide(ToM256D(narrow)) {}
+Wide<Scalar>::Wide(Scalar const narrow)
+  requires quantity<Scalar>
+    : Wide(ToM256D(narrow)) {}
+
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar>::Wide(Scalar const narrow)
+  requires (!quantity<Scalar>) && quantity<Difference<Scalar>>
+    : Wide(ToM256D(narrow - Scalar{})) {}
 #else
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-Wide<Scalar>::Wide(Scalar const narrow) : Wide(ToM128D(narrow)) {}
+Wide<Scalar>::Wide(Scalar const narrow)
+  requires quantity<Scalar>
+    : Wide(ToM128D(narrow)) {}
+
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar>::Wide(Scalar const narrow)
+  requires (!quantity<Scalar>) && quantity<Difference<Scalar>>
+    : Wide(ToM128D(narrow - Scalar{})) {}
 #endif
 
 template<real_affine_space Scalar>
@@ -36,11 +52,19 @@ Wide<Scalar> Wide<Scalar>::Identity() requires ring<Scalar> {
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
 Scalar Wide<Scalar>::narrow() const {
+  if constexpr (quantity<Scalar>) {
 #if PRINCIPIA_USE_AVX()
   return FromM256D<Scalar>(value_);
 #else
   return FromM128D<Scalar>(value_);
 #endif
+  } else {
+#if PRINCIPIA_USE_AVX()
+  return Scalar{} + FromM256D<Difference<Scalar>>(value_);
+#else
+  return Scalar{} + FromM128D<Difference<Scalar>>(value_);
+#endif
+  }
 }
 
 template<additive_group T>
@@ -182,6 +206,108 @@ R3Element<T>& operator/=(R3Element<T>& left, Wide<double> const right) {
   return left;
 }
 
+template<typename T, typename U>
+R3Element<Product<T, U>> FusedMultiplyAdd(R3Element<T> const& a,
+                                          Wide<U> const b,
+                                          R3Element<Product<T, U>> const& c) {
+#if PRINCIPIA_USE_AVX()
+  return R3Element<Product<T, U>>(_mm256_fmadd_pd(a.xyzt, b.value_, c.xyzt));
+#else
+  return R3Element<Product<T, U>>(_mm_fmadd_pd(a.xy, b.value_, c.xy),
+                                  _mm_fmadd_sd(a.zt, b.value_, c.zt));
+#endif
+}
+
+template<typename T, typename U>
+R3Element<Product<T, U>> FusedMultiplyAdd(Wide<T> a,
+                                          R3Element<U> const& b,
+                                          R3Element<Product<T, U>> const& c) {
+#if PRINCIPIA_USE_AVX()
+  return R3Element<Product<T, U>>(_mm256_fmadd_pd(a.value_, b.xyzt, c.xyzt));
+#else
+  return R3Element<Product<T, U>>(_mm_fmadd_pd(a.value_, b.xy, c.xy),
+                                  _mm_fmadd_sd(a.value_, b.zt, c.zt));
+#endif
+}
+
+template<typename T, typename U>
+R3Element<Product<T, U>> FusedMultiplySubtract(
+    R3Element<T> const& a,
+    Wide<U> b,
+    R3Element<Product<T, U>> const& c) {
+#if PRINCIPIA_USE_AVX()
+  return R3Element<Product<T, U>>(_mm256_fmsub_pd(a.xyzt, b.value_, c.xyzt));
+#else
+  return R3Element<Product<T, U>>(_mm_fmsub_pd(a.xy, b.value_, c.xy),
+                                  _mm_fmsub_sd(a.zt, b.value_, c.zt));
+#endif
+}
+
+template<typename T, typename U>
+R3Element<Product<T, U>> FusedMultiplySubtract(
+    Wide<T> a,
+    R3Element<U> const& b,
+    R3Element<Product<T, U>> const& c) {
+#if PRINCIPIA_USE_AVX()
+  return R3Element<Product<T, U>>(_mm256_fmsub_pd(a.value_, b.xyzt, c.xyzt));
+#else
+  return R3Element<Product<T, U>>(_mm_fmsub_pd(a.value_, b.xy, c.xy),
+                                  _mm_fmsub_sd(a.value_, b.zt, c.zt));
+#endif
+}
+
+template<typename T, typename U>
+R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
+    R3Element<T> const& a,
+    Wide<U> b,
+    R3Element<Product<T, U>> const& c) {
+#if PRINCIPIA_USE_AVX()
+  return R3Element<Product<T, U>>(_mm256_fnmadd_pd(a.xyzt, b.value_, c.xyzt));
+#else
+  return R3Element<Product<T, U>>(_mm_fnmadd_pd(a.xy, b.value_, c.xy),
+                                  _mm_fnmadd_sd(a.zt, b.value_, c.zt));
+#endif
+}
+
+template<typename T, typename U>
+R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
+    Wide<T> a,
+    R3Element<U> const& b,
+    R3Element<Product<T, U>> const& c) {
+#if PRINCIPIA_USE_AVX()
+  return R3Element<Product<T, U>>(_mm256_fnmadd_pd(a.value_, b.xyzt, c.xyzt));
+#else
+  return R3Element<Product<T, U>>(_mm_fnmadd_pd(a.value_, b.xy, c.xy),
+                                  _mm_fnmadd_sd(a.value_, b.zt, c.zt));
+#endif
+}
+
+template<typename T, typename U>
+R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
+    R3Element<T> const& a,
+    Wide<U> b,
+    R3Element<Product<T, U>> const& c) {
+#if PRINCIPIA_USE_AVX()
+  return R3Element<Product<T, U>>(_mm256_fnmsub_pd(a.xyzt, b.value_, c.xyzt));
+#else
+  return R3Element<Product<T, U>>(_mm_fnmsub_pd(a.xy, b.value_, c.xy),
+                                  _mm_fnmsub_sd(a.zt, b.value_, c.zt));
+#endif
+}
+
+template<typename T, typename U>
+R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
+    Wide<T> a,
+    R3Element<U> const& b,
+    R3Element<Product<T, U>> const& c) {
+#if PRINCIPIA_USE_AVX()
+  return R3Element<Product<T, U>>(_mm256_fnmsub_pd(a.value_, b.xyzt, c.xyzt));
+#else
+  return R3Element<Product<T, U>>(_mm_fnmsub_pd(a.value_, b.xy, c.xy),
+                                  _mm_fnmsub_sd(a.value_, b.zt, c.zt));
+#endif
+}
+
 template<r3_element_coordinates T, typename U>
 Product<T, U> operator*(T const& left, Wide<U> const right) {
   return Product<T, U>(left.coordinates() * right);
@@ -205,6 +331,62 @@ T& operator*=(T& left, Wide<double> const right) {
 template<r3_element_coordinates T>
 T& operator/=(T& left, Wide<double> const right) {
   return left = T(left.coordinates() / right);
+}
+
+template<r3_element_coordinates T, typename U>
+Product<T, U> FusedMultiplyAdd(T const& a,
+                               Wide<U> b,
+                               Product<T, U> const& c) {
+  return FusedMultiplyAdd(a.coordinates(), b, c.coordinates());
+}
+
+template<typename T, r3_element_coordinates U>
+Product<T, U> FusedMultiplyAdd(Wide<T> a,
+                               U const& b,
+                               Product<T, U> const& c) {
+  return FusedMultiplyAdd(a, b.coordinates(), c.coordinates());
+}
+
+template<r3_element_coordinates T, typename U>
+Product<T, U> FusedMultiplySubtract(T const& a,
+                                    Wide<U> b,
+                                    Product<T, U> const& c) {
+  return FusedMultiplySubtract(a.coordinates(), b, c.coordinates());
+}
+
+template<typename T, r3_element_coordinates U>
+Product<T, U> FusedMultiplySubtract(Wide<T> a,
+                                    U const& b,
+                                    Product<T, U> const& c) {
+  return FusedMultiplySubtract(a, b.coordinates(), c.coordinates());
+}
+
+template<r3_element_coordinates T, typename U>
+Product<T, U> FusedNegatedMultiplyAdd(T const& a,
+                                      Wide<U> b,
+                                      Product<T, U> const& c) {
+  return FusedNegatedMultiplyAdd(a.coordinates(), b, c.coordinates());
+}
+
+template<typename T, r3_element_coordinates U>
+Product<T, U> FusedNegatedMultiplyAdd(Wide<T> a,
+                                      U const& b,
+                                      Product<T, U> const& c) {
+  return FusedNegatedMultiplyAdd(a, b.coordinates(), c.coordinates());
+}
+
+template<r3_element_coordinates T, typename U>
+Product<T, U> FusedNegatedMultiplySubtract(T const& a,
+                                           Wide<U> b,
+                                           Product<T, U> const& c) {
+  return FusedNegatedMultiplySubtract(a.coordinates(), b, c.coordinates());
+}
+
+template<typename T, r3_element_coordinates U>
+Product<T, U> FusedNegatedMultiplySubtract(Wide<T> a,
+                                           U const& b,
+                                           Product<T, U> const& c) {
+  return FusedNegatedMultiplySubtract(a, b.coordinates(), c.coordinates());
 }
 
 #undef MM

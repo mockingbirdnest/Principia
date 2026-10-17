@@ -1,5 +1,6 @@
 #include "numerics/wide.hpp"
 
+#include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -12,6 +13,7 @@ namespace principia {
 namespace numerics {
 
 using ::testing::Eq;
+using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
@@ -83,6 +85,18 @@ TEST_F(WideTest, Quantity) {
   RelativeDegreesOfFreedom<World> rdof = {r, v};
   EXPECT_THAT(ℼ * rdof, Eq(π * Kilogram * rdof));
   EXPECT_THAT(rdof / ℼ, Eq(rdof / (π * Kilogram)));
+}
+
+TEST_F(WideTest, Instant) {
+  Instant const t = "2026-10-17T14:47:11"_TT;
+  Instant const t₀ = "2026-10-17T00:00:00"_TT;
+  Time const Δt = t - t₀;
+  Wide<Instant> const 𝕥 = Wide(t);
+  Wide<Instant> const 𝕥₀ = Wide(t₀);
+  Wide<Time> const Δ𝕥 = Wide(Δt);
+  EXPECT_THAT((𝕥 - 𝕥₀).narrow(), Eq(Δt));
+  EXPECT_THAT((𝕥₀ + Δ𝕥).narrow(), Eq(t));
+  EXPECT_THAT((𝕥 - Δ𝕥).narrow(), Eq(t₀));
 }
 
 }  // namespace quantities
