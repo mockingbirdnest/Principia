@@ -152,7 +152,7 @@ Q FromM128D(__m128d x) {
 
 template<typename Q>
 Q FromM256D(__m256d x) {
-  return _mm256_cvtsd_f64(x);
+  return Q(_mm256_cvtsd_f64(x));
 }
 
 inline bool IsFinite(double const x) {

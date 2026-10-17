@@ -65,9 +65,6 @@ class Wide {
 
   UnderlyingType value_;
 
-  template<quantity T>
-  friend Wide<T> Widen(T narrow);
-
   template<additive_group T>
   friend Wide<T> operator-(Wide<T> right);
   template<affine T, affine U>

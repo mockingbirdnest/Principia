@@ -89,6 +89,44 @@ Wide<Quotient<T, U>> operator/(Wide<T> const left, Wide<U> const right) {
   return Wide<Quotient<T, U>>(MM(div_pd)(left.value_, right.value_));
 }
 
+template<typename T, std::integral U>
+Wide<T> operator*(Wide<T> const left, U const right) {
+  return left * Wide<double>(right);
+}
+
+template<typename T, std::integral U>
+Wide<T> operator*(U const left, Wide<T> const right) {
+  return Wide<double>(left) * right;
+}
+
+template<typename T, typename U>
+Wide<Product<T, U>> FusedMultiplyAdd(Wide<T> const a,
+                                     Wide<U> const b,
+                                     Wide<Product<T, U>> const c) {
+  return Wide<Product<T, U>>(MM(fmadd_pd)(a.value_, b.value_, c.value_));
+}
+
+template<typename T, typename U>
+Wide<Product<T, U>> FusedMultiplySubtract(Wide<T> const a,
+                                          Wide<U> const b,
+                                          Wide<Product<T, U>> const c) {
+  return Wide<Product<T, U>>(MM(fmsub_pd)(a.value_, b.value_, c.value_));
+}
+
+template<typename T, typename U>
+Wide<Product<T, U>> FusedNegatedMultiplyAdd(Wide<T> const a,
+                                            Wide<U> const b,
+                                            Wide<Product<T, U>> const c) {
+  return Wide<Product<T, U>>(MM(fnmadd_pd)(a.value_, b.value_, c.value_));
+}
+
+template<typename T, typename U>
+Wide<Product<T, U>> FusedNegatedMultiplySubtract(Wide<T> const a,
+                                                 Wide<U> const b,
+                                                 Wide<Product<T, U>> const c) {
+  return Wide<Product<T, U>>(MM(fnmsub_pd)(a.value_, b.value_, c.value_));
+}
+
 template<typename T, typename U>
 R3Element<Product<T, U>> operator*(R3Element<T> const& left,
                                    Wide<U> const right) {
@@ -115,10 +153,10 @@ template<typename T, typename U>
 R3Element<Quotient<T, U>> operator/(R3Element<T> const& left,
                                     Wide<U> const right) {
 #if PRINCIPIA_USE_AVX()
-  return R3Element<Product<T, U>>(_mm256_div_pd(left.xyzt, right.value_));
+  return R3Element<Quotient<T, U>>(_mm256_div_pd(left.xyzt, right.value_));
 #else
-  return R3Element<Product<T, U>>(_mm_div_pd(left.xy, right.value_),
-                                  _mm_div_sd(left.zt, right.value_));
+  return R3Element<Quotient<T, U>>(_mm_div_pd(left.xy, right.value_),
+                                   _mm_div_sd(left.zt, right.value_));
 #endif
 }
 

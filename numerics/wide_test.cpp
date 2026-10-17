@@ -81,8 +81,8 @@ TEST_F(WideTest, Quantity) {
   Velocity<World> const v{
       {11 * Metre / Second, 23 * Metre / Second, 29 * Metre / Second}};
   RelativeDegreesOfFreedom<World> rdof = {r, v};
-  EXPECT_THAT(ℼ * rdof, Eq(π * Metre * rdof));
-  EXPECT_THAT(rdof / ℼ, Eq(rdof / (π * Metre)));
+  EXPECT_THAT(ℼ * rdof, Eq(π * Kilogram * rdof));
+  EXPECT_THAT(rdof / ℼ, Eq(rdof / (π * Kilogram)));
 }
 
 }  // namespace quantities
