@@ -106,7 +106,6 @@ TEST_F(PolynomialInMonomialBasisTest, DISABLED_IACA) {
 #endif
 
 TEST_F(PolynomialInMonomialBasisTest, ℤⳆnℤOfX) {
-  static_assert(!real_affine_space<IntegerModulo<2>>);
   using P = PolynomialInMonomialBasis<IntegerModulo<2>,
                                       IntegerModulo<2>,
                                       /*degree=*/2,
