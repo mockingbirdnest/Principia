@@ -7,23 +7,26 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
-#include "testing_utilities/matchers.hpp"
+#include "numerics/fma.hpp"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace numerics {
 
 using ::testing::Eq;
+using ::testing::Ne;
 using namespace principia::astronomy::_time_scales;
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
+using namespace principia::numerics::_fma;
 using namespace principia::numerics::_wide;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
-using namespace principia::testing_utilities::_matchers;
+using namespace principia::testing_utilities::_almost_equals;
 
 class WideTest : public ::testing::Test {
 protected:
@@ -97,6 +100,34 @@ TEST_F(WideTest, Instant) {
   EXPECT_THAT((𝕥 - 𝕥₀).narrow(), Eq(Δt));
   EXPECT_THAT((𝕥₀ + Δ𝕥).narrow(), Eq(t));
   EXPECT_THAT((𝕥 - Δ𝕥).narrow(), Eq(t₀));
+}
+
+TEST_F(WideTest, FMA) {
+  Wide<double> ℼ = Wide(π);
+  Wide<double> 𝕖 = Wide(e);
+  constexpr double x = e + 4 * π;
+  constexpr double y = e - π;
+  EXPECT_THAT(e * x + π, AlmostEquals(FusedMultiplyAdd(e, x, π), 1));
+  EXPECT_THAT(e * y - π, AlmostEquals(FusedMultiplySubtract(e, y, π), 1));
+  EXPECT_THAT(-e * x - π, AlmostEquals(FusedNegatedMultiplySubtract(e, x, π), 1));
+  EXPECT_THAT(-e * y + π, AlmostEquals(FusedNegatedMultiplyAdd(e, y, π), 1));
+  Wide<double> 𝕩 = Wide(x);
+  Wide<double> 𝕪 = Wide(y);
+  EXPECT_THAT(FusedMultiplyAdd(𝕖, 𝕩, ℼ).narrow(),
+              Eq(FusedMultiplyAdd(e, x, π)));
+  EXPECT_THAT(FusedMultiplySubtract(𝕖, 𝕪, ℼ).narrow(),
+              Eq(FusedMultiplySubtract(e, y, π)));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(𝕖, 𝕩, ℼ).narrow(),
+              Eq(FusedNegatedMultiplySubtract(e, x, π)));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(𝕖, 𝕪, ℼ).narrow(),
+              Eq(FusedNegatedMultiplyAdd(e, y, π)));
+
+  Displacement<World> const u{{x * Metre, y * Metre, 0 * Metre}};
+  Displacement<World> const v{{π * Metre, -π * Metre, 0 * Metre}};
+  EXPECT_THAT(e * u + v, AlmostEquals(FusedMultiplyAdd(e, u, v), 1));
+  EXPECT_THAT(e * u - v, AlmostEquals(FusedMultiplySubtract(e, u, v), 1));
+  EXPECT_THAT(-e * u - v, AlmostEquals(FusedNegatedMultiplySubtract(e, u, v), 1));
+  EXPECT_THAT(-e * u + v, AlmostEquals(FusedNegatedMultiplyAdd(e, u, v), 1));
 }
 
 }  // namespace quantities

@@ -41,11 +41,11 @@ concept r3_element_coordinates = requires(T v) {
 // wide scalars require that both arguments be `Wide`: `2.0 * Wide(2.0)` is
 // ill-formed, and must be written `Wide(2.0) * Wide(2.0)` instead.
 template<real_affine_space Scalar>
-  requires(real_dimension<Scalar> == 1)
+  requires (real_dimension<Scalar> == 1)
 class Wide {
  public:
   Wide() = default;
-  
+
   explicit Wide(Scalar narrow) requires quantity<Scalar>;
   explicit Wide(Scalar narrow)
     requires (!quantity<Scalar>) && quantity<Difference<Scalar>>;
