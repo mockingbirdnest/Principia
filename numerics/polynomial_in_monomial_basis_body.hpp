@@ -284,7 +284,7 @@ operator()(Argument const& argument) const {
 template<typename Value_, typename Argument_, int degree_,
          template<typename, typename, int> typename Evaluator_>
 Derivative<Value_, Argument_>
- PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
+PolynomialInMonomialBasis<Value_, Argument_, degree_, Evaluator_>::
 EvaluateDerivative(Argument const& argument) const {
   return Evaluator<Value_, Difference<Argument_>, degree_>::EvaluateDerivative(
       coefficients_, argument - origin_);
