@@ -627,10 +627,8 @@ template<FMAPresence fma_presence>
 double __cdecl Sin(double x) {
   OSACA_FUNCTION_BEGIN(x, <fma_presence>);
   double value;
-  ReducedArgument const reduced =
+  auto const [x_reduced, quadrant] =
       Reduce<fma_presence, /*preserve_sign=*/true>(M128D(x));
-  auto const& x_reduced = reduced.x_reduced;
-  auto const& quadrant = reduced.quadrant;
   OSACA_IF(quadrant & 0b1) {
     value = static_cast<double>(CosImplementation<fma_presence>(x_reduced));
   } else {
@@ -652,10 +650,8 @@ template<FMAPresence fma_presence>
 double __cdecl Cos(double x) {
   OSACA_FUNCTION_BEGIN(x, <fma_presence>);
   double value;
-  ReducedArgument const reduced =
+  auto const [x_reduced, quadrant] =
       Reduce<fma_presence, /*preserve_sign=*/false>(M128D(x));
-  auto const& x_reduced = reduced.x_reduced;
-  auto const& quadrant = reduced.quadrant;
   OSACA_IF(quadrant & 0b1) {
     value = static_cast<double>(SinImplementation<fma_presence>(x_reduced));
   } else {
@@ -677,10 +673,8 @@ template<FMAPresence fma_presence>
 SC<double> __cdecl SinCos(double x) {
   OSACA_FUNCTION_BEGIN(x, <fma_presence>);
   SC<double> values;
-  ReducedArgument const reduced =
+  auto const [x_reduced, quadrant] =
       Reduce<fma_presence, /*preserve_sign=*/true>(M128D(x));
-  auto const& x_reduced = reduced.x_reduced;
-  auto const& quadrant = reduced.quadrant;
   auto m128ds = SinCosImplementation<fma_presence>(x_reduced);
   OSACA_IF(quadrant & 0b1) {
     values.sin = static_cast<double>(m128ds.cos);
