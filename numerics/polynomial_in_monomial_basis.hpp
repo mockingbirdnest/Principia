@@ -170,14 +170,15 @@ class PolynomialInMonomialBasis : public Polynomial<Value_, Argument_> {
   constexpr PolynomialInMonomialBasis& operator/=(S const& right)
     requires vector_space<Value, S>;
 
-  Value PRINCIPIA_VECTORCALL operator()(Argument const& argument) const;
-  Derivative<Value, Argument> PRINCIPIA_VECTORCALL EvaluateDerivative(
-      Argument const& argument) const;
+  FORCE_INLINE Value PRINCIPIA_VECTORCALL
+  operator()(Argument const& argument) const;
+  FORCE_INLINE Derivative<Value, Argument> PRINCIPIA_VECTORCALL
+  EvaluateDerivative(Argument const& argument) const;
 
-  void PRINCIPIA_VECTORCALL EvaluateWithDerivative(
-      Argument const& argument,
-      Value& value,
-      Derivative<Value, Argument>& derivative) const;
+  FORCE_INLINE void PRINCIPIA_VECTORCALL
+  EvaluateWithDerivative(Argument const& argument,
+                         Value& value,
+                         Derivative<Value, Argument>& derivative) const;
 
   constexpr int degree() const override;
   bool is_zero() const override;
