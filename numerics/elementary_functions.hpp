@@ -102,10 +102,8 @@ constexpr Q NextUp(Q const& x);
 template<typename Q>
 constexpr Q NextDown(Q const& x);
 
-template<int exponent, ring T>
-constexpr T Pow(T x);
-template<int exponent, typename D>
-constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+template<int exponent, homogeneous_ring T>
+constexpr Exponentiation<T, exponent> Pow(T const& x);
 
 double Sin(Angle const& α);
 double Cos(Angle const& α);

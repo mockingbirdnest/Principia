@@ -168,11 +168,11 @@ constexpr Q NextDown(Q const& x) {
   return si::Unit<Q> * numerics::_next::NextDown(x / si::Unit<Q>);
 }
 
-template<int exponent, ring T>
-constexpr T Pow(T x) {
+template<int exponent, homogeneous_ring T>
+constexpr Exponentiation<T, exponent> Pow(T const& x) {
   // Use the Russian peasant algorithm for small exponents.
   if constexpr (exponent < 0) {
-    static_assert(field<T>);
+    static_assert(homogeneous_field<T>);
     return 1 / Pow<-exponent>(x);
   } else if constexpr (exponent == 0) {
     return 1;
@@ -189,12 +189,6 @@ constexpr T Pow(T x) {
       return y²;
     }
   }
-}
-
-template<int exponent, typename D>
-constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x) {
-  return si::Unit<Exponentiation<Quantity<D>, exponent>> *
-         Pow<exponent>(x / si::Unit<Quantity<D>>);
 }
 
 inline double Sin(Angle const& α) {

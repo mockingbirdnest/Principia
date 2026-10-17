@@ -128,6 +128,24 @@ TEST_F(WideTest, FMA) {
   EXPECT_THAT(e * u - v, AlmostEquals(FusedMultiplySubtract(e, u, v), 1));
   EXPECT_THAT(-e * u - v, AlmostEquals(FusedNegatedMultiplySubtract(e, u, v), 1));
   EXPECT_THAT(-e * u + v, AlmostEquals(FusedNegatedMultiplyAdd(e, u, v), 1));
+
+  EXPECT_THAT(FusedMultiplyAdd(𝕖, u, v),
+              Eq(FusedMultiplyAdd(e, u, v)));
+  EXPECT_THAT(FusedMultiplySubtract(𝕖, u, v),
+              Eq(FusedMultiplySubtract(e, u, v)));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(𝕖, u, v),
+              Eq(FusedNegatedMultiplySubtract(e, u, v)));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(𝕖, u, v),
+              Eq(FusedNegatedMultiplyAdd(e, u, v)));
+
+  EXPECT_THAT(FusedMultiplyAdd(u, 𝕖, v),
+              Eq(FusedMultiplyAdd(u, e, v)));
+  EXPECT_THAT(FusedMultiplySubtract(u, 𝕖, v),
+              Eq(FusedMultiplySubtract(u, e, v)));
+  EXPECT_THAT(FusedNegatedMultiplySubtract(u, 𝕖, v),
+              Eq(FusedNegatedMultiplySubtract(u, e, v)));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(u, 𝕖, v),
+              Eq(FusedNegatedMultiplyAdd(u, e, v)));
 }
 
 }  // namespace quantities

@@ -117,44 +117,44 @@ class Wide {
 
   template<typename T, typename U>
   friend R3Element<Product<T, U>> FusedMultiplyAdd(
-      R3Element<T> a,
+      R3Element<T> const& a,
       Wide<U> b,
-      R3Element<Product<T, U>> c);
+      R3Element<Product<T, U>> const& c);
   template<typename T, typename U>
   friend R3Element<Product<T, U>> FusedMultiplyAdd(
       Wide<T> a,
-      R3Element<U> b,
-      R3Element<Product<T, U>> c);
+      R3Element<U> const& b,
+      R3Element<Product<T, U>> const& c);
   template<typename T, typename U>
   friend R3Element<Product<T, U>> FusedMultiplySubtract(
-      R3Element<T> a,
+      R3Element<T> const& a,
       Wide<U> b,
-      R3Element<Product<T, U>> c);
+      R3Element<Product<T, U>> const& c);
   template<typename T, typename U>
   friend R3Element<Product<T, U>> FusedMultiplySubtract(
       Wide<T> a,
-      R3Element<U> b,
-      R3Element<Product<T, U>> c);
+      R3Element<U> const& b,
+      R3Element<Product<T, U>> const& c);
   template<typename T, typename U>
   friend R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
-      R3Element<T> a,
+      R3Element<T> const& a,
       Wide<U> b,
-      R3Element<Product<T, U>> c);
+      R3Element<Product<T, U>> const& c);
   template<typename T, typename U>
   friend R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
       Wide<T> a,
-      R3Element<U> b,
-      R3Element<Product<T, U>> c);
+      R3Element<U> const& b,
+      R3Element<Product<T, U>> const& c);
   template<typename T, typename U>
   friend R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
-      R3Element<T> a,
+      R3Element<T> const& a,
       Wide<U> b,
-      R3Element<Product<T, U>> c);
+      R3Element<Product<T, U>> const& c);
   template<typename T, typename U>
   friend R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
       Wide<T> a,
-      R3Element<U> b,
-      R3Element<Product<T, U>> c);
+      R3Element<U> const& b,
+      R3Element<Product<T, U>> const& c);
 };
 
 template<additive_group T>
@@ -276,8 +276,8 @@ Product<T, U> FusedMultiplyAdd(T const& a,
                                Wide<U> b,
                                Product<T, U> const& c);
 template<typename T, r3_element_coordinates U>
-Product<T, U> FusedMultiplyAdd(Wide<T> const& a,
-                               U b,
+Product<T, U> FusedMultiplyAdd(Wide<T> a,
+                               U const& b,
                                Product<T, U> const& c);
 template<r3_element_coordinates T, typename U>
 Product<T, U> FusedMultiplySubtract(T const& a,

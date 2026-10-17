@@ -219,7 +219,7 @@ R3Element<Product<T, U>> FusedMultiplyAdd(R3Element<T> const& a,
 }
 
 template<typename T, typename U>
-R3Element<Product<T, U>> FusedMultiplyAdd(Wide<T> a,
+R3Element<Product<T, U>> FusedMultiplyAdd(Wide<T> const a,
                                           R3Element<U> const& b,
                                           R3Element<Product<T, U>> const& c) {
 #if PRINCIPIA_USE_AVX()
@@ -337,56 +337,62 @@ template<r3_element_coordinates T, typename U>
 Product<T, U> FusedMultiplyAdd(T const& a,
                                Wide<U> b,
                                Product<T, U> const& c) {
-  return FusedMultiplyAdd(a.coordinates(), b, c.coordinates());
+  return Product<T, U>(FusedMultiplyAdd(a.coordinates(), b, c.coordinates()));
 }
 
 template<typename T, r3_element_coordinates U>
 Product<T, U> FusedMultiplyAdd(Wide<T> a,
                                U const& b,
                                Product<T, U> const& c) {
-  return FusedMultiplyAdd(a, b.coordinates(), c.coordinates());
+  return Product<T, U>(FusedMultiplyAdd(a, b.coordinates(), c.coordinates()));
 }
 
 template<r3_element_coordinates T, typename U>
 Product<T, U> FusedMultiplySubtract(T const& a,
                                     Wide<U> b,
                                     Product<T, U> const& c) {
-  return FusedMultiplySubtract(a.coordinates(), b, c.coordinates());
+  return Product<T, U>(
+      FusedMultiplySubtract(a.coordinates(), b, c.coordinates()));
 }
 
 template<typename T, r3_element_coordinates U>
 Product<T, U> FusedMultiplySubtract(Wide<T> a,
                                     U const& b,
                                     Product<T, U> const& c) {
-  return FusedMultiplySubtract(a, b.coordinates(), c.coordinates());
+  return Product<T, U>(
+      FusedMultiplySubtract(a, b.coordinates(), c.coordinates()));
 }
 
 template<r3_element_coordinates T, typename U>
 Product<T, U> FusedNegatedMultiplyAdd(T const& a,
                                       Wide<U> b,
                                       Product<T, U> const& c) {
-  return FusedNegatedMultiplyAdd(a.coordinates(), b, c.coordinates());
+  return Product<T, U>(
+      FusedNegatedMultiplyAdd(a.coordinates(), b, c.coordinates()));
 }
 
 template<typename T, r3_element_coordinates U>
 Product<T, U> FusedNegatedMultiplyAdd(Wide<T> a,
                                       U const& b,
                                       Product<T, U> const& c) {
-  return FusedNegatedMultiplyAdd(a, b.coordinates(), c.coordinates());
+  return Product<T, U>(
+      FusedNegatedMultiplyAdd(a, b.coordinates(), c.coordinates()));
 }
 
 template<r3_element_coordinates T, typename U>
 Product<T, U> FusedNegatedMultiplySubtract(T const& a,
                                            Wide<U> b,
                                            Product<T, U> const& c) {
-  return FusedNegatedMultiplySubtract(a.coordinates(), b, c.coordinates());
+  return Product<T, U>(
+      FusedNegatedMultiplySubtract(a.coordinates(), b, c.coordinates()));
 }
 
 template<typename T, r3_element_coordinates U>
 Product<T, U> FusedNegatedMultiplySubtract(Wide<T> a,
                                            U const& b,
                                            Product<T, U> const& c) {
-  return FusedNegatedMultiplySubtract(a, b.coordinates(), c.coordinates());
+  return Product<T, U>(
+      FusedNegatedMultiplySubtract(a, b.coordinates(), c.coordinates()));
 }
 
 #undef MM
