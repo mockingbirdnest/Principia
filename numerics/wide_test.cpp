@@ -25,6 +25,7 @@ using namespace principia::numerics::_fma;
 using namespace principia::numerics::_wide;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::quantities::_quantities;
+using namespace principia::numerics::_elementary_functions;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
@@ -77,11 +78,11 @@ TEST_F(WideTest, Quantity) {
   EXPECT_THAT((-𝕖).narrow(), Eq(-e * Kilogram));
   EXPECT_THAT((𝕖 + ℼ).narrow(), Eq((e + π) * Kilogram));
   EXPECT_THAT((𝕖 - ℼ).narrow(), Eq((e - π) * Kilogram));
-  EXPECT_THAT((𝕖 * ℼ).narrow(), Eq(e * π * Kilogram));
-  EXPECT_THAT((𝕖 / ℼ).narrow(), Eq(e / π * Kilogram));
-  EXPECT_THAT(ℼ * r, Eq(π * r));
-  EXPECT_THAT(r * ℼ, Eq(r * π));
-  EXPECT_THAT(r / ℼ, Eq(r / π));
+  EXPECT_THAT((𝕖 * ℼ).narrow(), Eq(e * π * Pow<2>(Kilogram)));
+  EXPECT_THAT((𝕖 / ℼ).narrow(), Eq(e / π));
+  EXPECT_THAT(ℼ * r, Eq(π * Kilogram * r));
+  EXPECT_THAT(r * ℼ, Eq(r * π * Kilogram));
+  EXPECT_THAT(r / ℼ, Eq(r / (π * Kilogram)));
 
   Velocity<World> const v{
       {11 * Metre / Second, 23 * Metre / Second, 29 * Metre / Second}};

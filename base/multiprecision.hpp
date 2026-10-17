@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/algebra.hpp"  // 🧙 For specialization of dimension.
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "boost/multiprecision/number.hpp"
