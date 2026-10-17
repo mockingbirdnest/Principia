@@ -147,12 +147,8 @@ inline __m256d ToM256D(double x);
 template<typename Dimensions>
 __m256d ToM256D(Quantity<Dimensions> x);
 
-inline double FromM128D(__m128d x);
-
 template<typename Q>
 Q FromM128D(__m128d x);
-
-inline double FromM256D(__m256d x);
 
 template<typename Q>
 Q FromM256D(__m256d x);

@@ -36,7 +36,11 @@ Wide<Scalar> Wide<Scalar>::Identity() requires ring<Scalar> {
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
 Scalar Wide<Scalar>::narrow() const {
-  return narrow_value_;
+#if PRINCIPIA_USE_AVX()
+  return FromM256D<Scalar>(value_);
+#else
+  return FromM128D<Scalar>(value_);
+#endif
 }
 
 template<additive_group T>
