@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base/algebra.hpp"  // 🧙 For specialization of dimension.
 #include "boost/multiprecision/cpp_bin_float.hpp"
 #include "boost/multiprecision/cpp_int.hpp"
 #include "boost/multiprecision/number.hpp"
@@ -66,5 +67,14 @@ using internal::cpp_int;
 using internal::cpp_rational;
 
 }  // namespace _multiprecision
+
+namespace _algebra {
+
+template<_multiprecision::boost_cpp_bin_float T>
+constexpr int dimension<T, double> = 1;
+template<_multiprecision::boost_cpp_rational T>
+constexpr int dimension<T, double> = 1;
+
+}  // namespace _algebra
 }  // namespace base
 }  // namespace principia
