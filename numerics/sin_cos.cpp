@@ -89,6 +89,12 @@ using Value = M128D;
 SlowPathCallback slow_path_sin_callback = nullptr;
 SlowPathCallback slow_path_cos_callback = nullptr;
 
+// The result of argument reduction.
+struct ReducedArgument {
+  DoublePrecision<Argument> x_reduced;
+  std::int64_t quadrant;
+};
+
 constexpr std::int64_t table_spacing_bits = 9;
 constexpr double table_spacing_reciprocal = 1 << table_spacing_bits;
 constexpr double table_spacing = 1.0 / table_spacing_reciprocal;
@@ -104,7 +110,6 @@ constexpr double e_cos = 0x1.0001'58B5'12B3'2p0;  // 2^-69.570.
 namespace m128d {
 
 M128D const quiet_NaN(std::numeric_limits<double>::quiet_NaN());
-M128D const zero(0.0);
 
 // Accurate table index.
 M128D const mantissa_index_bits =
@@ -293,26 +298,27 @@ Value DetectDangerousRounding(Value const y, Value const δy) {
 
 // A large or difficult reduction.  It seems complicated to implement Payne-
 // Hanek for `M128D` because of the floating-point helpers that it uses.
-FORCE_INLINE void PayneHanekReduction(Argument const x,
-                                      DoublePrecision<Argument>& x_reduced,
-                                      std::int64_t& quadrant) {
+FORCE_INLINE ReducedArgument PayneHanekReduction(Argument const x) {
+  DoublePrecision<Argument> x_reduced{uninitialized};
+  std::int64_t quadrant;
   auto const x_double = static_cast<double>(x);
   DoublePrecision<double> x_reduced_double{uninitialized};
   _angle_reduction::PayneHanekReduction<61>(
       x_double, x_reduced_double, quadrant);
   x_reduced.value = M128D(x_reduced_double.value);
   x_reduced.error = M128D(x_reduced_double.error);
+  return {.x_reduced = x_reduced, .quadrant = quadrant};
 }
 
 // This is the reduction technique described in [BDL09].  We are following
 // [Mul16], section 11.2.2.
-FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
-                                         Argument const abs_x,
-                                         DoublePrecision<Argument>& x_reduced,
-                                         std::int64_t& quadrant) {
+FORCE_INLINE ReducedArgument BoldoDaumasLiReduction(Argument const x,
+                                                    Argument const abs_x) {
   using namespace boldo_daumas_li;
   namespace m128d = boldo_daumas_li::m128d;
   OSACA_IF(abs_x <= applicability_threshold) {
+    DoublePrecision<Argument> x_reduced{uninitialized};
+    std::int64_t quadrant;
     M128D const n =
         FusedMultiplyAdd(m128d::R, x, m128d::addend) - m128d::addend;
     M128D const abs_n = Abs(n);
@@ -328,7 +334,7 @@ FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
     std::int64_t k_int = _mm_cvtsd_si64(static_cast<__m128d>(n));
     quadrant = k_int & 0b11;
     OSACA_IF(abs_x_reduced_value >= two_term_x_reduced_threshold) {
-      return;
+      return {.x_reduced = x_reduced, .quadrant = quadrant};
     } else {
       M128D three_term_x_reduced_threshold =
           abs_n * m128d::three_term_x_reduced_threshold_multiplier;
@@ -336,21 +342,19 @@ FORCE_INLINE void BoldoDaumasLiReduction(Argument const x,
       x_reduced -= w;
       M128D const abs_x_reduced_value = Abs(x_reduced.value);
       OSACA_IF(abs_x_reduced_value >= three_term_x_reduced_threshold) {
-        return;
+        return {.x_reduced = x_reduced, .quadrant = quadrant};
       }
     }
   }
-  PayneHanekReduction(x, x_reduced, quadrant);
+  return PayneHanekReduction(x);
 }
 
 // This is the reduction technique described in [Mul+10], section 10.1.1, with
 // either 2 or 3 terms for approximating π / 2.  See also
 // `documentation/Sin Cos.pdf`.  Note that we cannot use FMA in this code.
 template<bool preserve_sign>
-FORCE_INLINE void CodyWaiteReduction(Argument const x,
-                                     Argument const abs_x,
-                                     DoublePrecision<Argument>& x_reduced,
-                                     std::int64_t& quadrant) {
+FORCE_INLINE ReducedArgument CodyWaiteReduction(Argument const x,
+                                                Argument const abs_x) {
   using namespace cody_waite;
   namespace m128d = cody_waite::m128d;
   OSACA_IF(abs_x <= two_term_x_threshold) {
@@ -377,11 +381,10 @@ FORCE_INLINE void CodyWaiteReduction(Argument const x,
     }
 
     Argument const δy = n_double * m128d::δC₁;
-    x_reduced = TwoDifference(y, δy);
+    DoublePrecision<Argument> const x_reduced = TwoDifference(y, δy);
     Argument const abs_x_reduced_value = Abs(x_reduced.value);
     OSACA_IF(abs_x_reduced_value >= two_term_x_reduced_threshold) {
-      quadrant = n & 0b11;
-      return;
+      return {.x_reduced = x_reduced, .quadrant = n & 0b11};
     }
   } OSACA_ELSE_IF(abs_x <= three_term_x_threshold) {
     // Same code as above.
@@ -404,32 +407,27 @@ FORCE_INLINE void CodyWaiteReduction(Argument const x,
     Argument const yʹ = n_double * m128d::Cʹ₂;
     Argument const δy = n_double * m128d::δC₂;
     auto const z = QuickTwoSum(yʹ, δy);
-    x_reduced = y - z;
+    DoublePrecision<Argument> const x_reduced = y - z;
     Argument const abs_x_reduced_value = Abs(x_reduced.value);
     OSACA_IF(abs_x_reduced_value >= three_term_x_reduced_threshold) {
-      quadrant = n & 0b11;
-      return;
+      return {.x_reduced = x_reduced, .quadrant = n & 0b11};
     }
   }
-  PayneHanekReduction(x, x_reduced, quadrant);
+  return PayneHanekReduction(x);
 }
 
 template<FMAPresence fma_presence, bool preserve_sign>
-FORCE_INLINE void Reduce(Argument const x,
-                         DoublePrecision<Argument>& x_reduced,
-                         std::int64_t& quadrant) {
+FORCE_INLINE ReducedArgument Reduce(Argument const x) {
   static_assert(fma_presence != FMAPresence::Unknown);
   Argument const abs_x = Abs(x);
   OSACA_IF(abs_x < π / 4) {
-    x_reduced.value = x;
-    x_reduced.error = m128d::zero;
-    quadrant = 0;
-    return;
+    return {.x_reduced = DoublePrecision<Argument>(x),
+            .quadrant = 0};
   } else {
     if constexpr (fma_presence == FMAPresence::Present) {
-      BoldoDaumasLiReduction(x, abs_x, x_reduced, quadrant);
+      return BoldoDaumasLiReduction(x, abs_x);
     } else {
-      CodyWaiteReduction<preserve_sign>(x, abs_x, x_reduced, quadrant);
+      return CodyWaiteReduction<preserve_sign>(x, abs_x);
     }
   }
 }
@@ -615,25 +613,22 @@ SC<Value> SinCosImplementation(DoublePrecision<Argument> const x_reduced) {
 }  // namespace
 
 void Reduce(double const x, double& x_reduced, std::int64_t& quadrant) {
-  DoublePrecision<M128D> x_reduced_m128d;
+  ReducedArgument reduced;
   if (CanUseHardwareFMA) {
-    Reduce<FMAPresence::Present, /*preserve_sign=*/true>(
-        M128D(x), x_reduced_m128d, quadrant);
+    reduced = Reduce<FMAPresence::Present, /*preserve_sign=*/true>(M128D(x));
   } else {
-    Reduce<FMAPresence::Absent, /*preserve_sign=*/true>(
-        M128D(x), x_reduced_m128d, quadrant);
+    reduced = Reduce<FMAPresence::Absent, /*preserve_sign=*/true>(M128D(x));
   }
-  x_reduced = static_cast<double>(x_reduced_m128d.value);
+  x_reduced = static_cast<double>(reduced.x_reduced.value);
+  quadrant = reduced.quadrant;
 }
 
 template<FMAPresence fma_presence>
 double __cdecl Sin(double x) {
   OSACA_FUNCTION_BEGIN(x, <fma_presence>);
-  DoublePrecision<Argument> x_reduced;
-  std::int64_t quadrant;
   double value;
-  Reduce<fma_presence, /*preserve_sign=*/true>(
-      M128D(x), x_reduced, quadrant);
+  auto const [x_reduced, quadrant] =
+      Reduce<fma_presence, /*preserve_sign=*/true>(M128D(x));
   OSACA_IF(quadrant & 0b1) {
     value = static_cast<double>(CosImplementation<fma_presence>(x_reduced));
   } else {
@@ -654,11 +649,9 @@ double __cdecl Sin(double x) {
 template<FMAPresence fma_presence>
 double __cdecl Cos(double x) {
   OSACA_FUNCTION_BEGIN(x, <fma_presence>);
-  DoublePrecision<Argument> x_reduced;
-  std::int64_t quadrant;
   double value;
-  Reduce<fma_presence, /*preserve_sign=*/false>(
-      M128D(x), x_reduced, quadrant);
+  auto const [x_reduced, quadrant] =
+      Reduce<fma_presence, /*preserve_sign=*/false>(M128D(x));
   OSACA_IF(quadrant & 0b1) {
     value = static_cast<double>(SinImplementation<fma_presence>(x_reduced));
   } else {
@@ -680,10 +673,8 @@ template<FMAPresence fma_presence>
 SC<double> __cdecl SinCos(double x) {
   OSACA_FUNCTION_BEGIN(x, <fma_presence>);
   SC<double> values;
-  DoublePrecision<Argument> x_reduced;
-  std::int64_t quadrant;
-  Reduce<fma_presence, /*preserve_sign=*/true>(
-      M128D(x), x_reduced, quadrant);
+  auto const [x_reduced, quadrant] =
+      Reduce<fma_presence, /*preserve_sign=*/true>(M128D(x));
   auto m128ds = SinCosImplementation<fma_presence>(x_reduced);
   OSACA_IF(quadrant & 0b1) {
     values.sin = static_cast<double>(m128ds.cos);
