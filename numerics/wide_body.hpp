@@ -17,14 +17,15 @@ using namespace principia::quantities::_quantities;
 #define MM(intrinsic) _mm_ ## intrinsic
 #endif
 
-template<real_affine_space Scalar>
-Wide<Scalar>::Wide(Scalar const narrow) {
 #if PRINCIPIA_USE_AVX()
-  return Wide<T>(ToM256D(narrow));
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar>::Wide(Scalar const narrow) : Wide(ToM256D(narrow)) {}
 #else
-  return Wide<T>(ToM128D(narrow));
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar>::Wide(Scalar const narrow) : Wide(ToM128D(narrow)) {}
 #endif
-}
 
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
@@ -46,16 +47,6 @@ Wide<T>& operator+=(Wide<T>& left, Wide<T> const right) {
 template<additive_group T>
 Wide<T>& operator-=(Wide<T>& left, Wide<T> const right) {
   return left = left - right;
-}
-
-template<r3_element_coordinates T>
-T& operator*=(T& left, Wide<double> const right) {
-  return left = T(left.coordinates() * right);
-}
-
-template<r3_element_coordinates T>
-T& operator/=(T& left, Wide<double> const right) {
-  return left = T(left.coordinates() / right);
 }
 
 template<real_affine_space Scalar>
@@ -92,21 +83,6 @@ Wide<Product<T, U>> operator*(Wide<T> const left, Wide<U> const right) {
 template<typename T, typename U>
 Wide<Quotient<T, U>> operator/(Wide<T> const left, Wide<U> const right) {
   return Wide<Quotient<T, U>>(MM(div_pd)(left.value_, right.value_));
-}
-
-template<r3_element_coordinates T, typename U>
-Product<T, U> operator*(T const left, Wide<U> const right) {
-  return Product<T, U>(left.coordinates() * right);
-}
-
-template<typename T, r3_element_coordinates U>
-Product<T, U> operator*(Wide<T> const left, U const right) {
-  return Product<T, U>(left * right.coordinates());
-}
-
-template<r3_element_coordinates T, typename U>
-Quotient<T, U> operator/(T const left, Wide<U> const right) {
-  return Quotient<T, U>(left.coordinates() / right);
 }
 
 template<typename T, typename U>
@@ -162,6 +138,31 @@ R3Element<T>& operator/=(R3Element<T>& left, Wide<double> const right) {
   left.zt = _mm_div_sd(left.zt, right.value_);
 #endif
   return left;
+}
+
+template<r3_element_coordinates T, typename U>
+Product<T, U> operator*(T const& left, Wide<U> const right) {
+  return Product<T, U>(left.coordinates() * right);
+}
+
+template<typename T, r3_element_coordinates U>
+Product<T, U> operator*(Wide<T> const left, U const& right) {
+  return Product<T, U>(left * right.coordinates());
+}
+
+template<r3_element_coordinates T, typename U>
+Quotient<T, U> operator/(T const& left, Wide<U> const right) {
+  return Quotient<T, U>(left.coordinates() / right);
+}
+
+template<r3_element_coordinates T>
+T& operator*=(T& left, Wide<double> const right) {
+  return left = T(left.coordinates() * right);
+}
+
+template<r3_element_coordinates T>
+T& operator/=(T& left, Wide<double> const right) {
+  return left = T(left.coordinates() / right);
 }
 
 #undef MM

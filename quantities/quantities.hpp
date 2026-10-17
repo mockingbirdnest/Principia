@@ -109,6 +109,12 @@ class Quantity final {
 
   template<typename Dimensions>
   friend __m256d ToM256D(Quantity<Dimensions> x);
+
+  template<typename Q>
+  friend Q FromM128D(__m128d x);
+
+  template<typename Q>
+  friend Q FromM256D(__m256d x);
 };
 
 template<typename LDimensions, typename RDimensions>
@@ -140,6 +146,16 @@ inline __m256d ToM256D(double x);
 
 template<typename Dimensions>
 __m256d ToM256D(Quantity<Dimensions> x);
+
+inline double FromM128D(__m128d x);
+
+template<typename Q>
+Q FromM128D(__m128d x);
+
+inline double FromM256D(__m256d x);
+
+template<typename Q>
+Q FromM256D(__m256d x);
 
 // A positive infinity of `Q`.
 template<typename Q>
@@ -178,6 +194,8 @@ using internal::Angle;
 using internal::Current;
 using internal::DebugString;
 using internal::Format;
+using internal::FromM128D;
+using internal::FromM256D;
 using internal::Infinity;
 using internal::IsFinite;
 using internal::Length;

@@ -53,15 +53,12 @@ class Wide {
 
   Scalar narrow() const;
 
-  template<additive_group T>
-  Wide<T>& operator+=(Wide<T>& left, Wide<T> right);
-  template<additive_group T>
-  Wide<T>& operator-=(Wide<T>& left, Wide<T> right);
+  Wide& operator+=(Wide right) requires additive_group<Scalar>;
+  Wide& operator-=(Wide right) requires additive_group<Scalar>;
 
-  template<typename T, std::integral U>
-  Wide<T>& operator*=(Wide<T>& left, U right);
-  template<ring T>
-  Wide<T>& operator*=(Wide<T>& left, Wide<T> right);
+  template<std::integral U>
+  Wide& operator*=(U right) requires additive_group<Scalar>;
+  Wide& operator*=(Wide right) requires ring<Scalar>;
 
  private:
   explicit Wide(UnderlyingType value);
@@ -82,6 +79,28 @@ class Wide {
   template<typename T, typename U>
   friend Wide<Quotient<T, U>> operator/(Wide<T> left, Wide<U> right);
   template<typename T, typename U>
+
+  friend Wide<Product<T, U>> FusedMultiplyAdd(
+      Wide<T> a,
+      Wide<U> b,
+      Wide<Product<T, U>> c);
+  template<typename T, typename U>
+  friend Wide<Product<T, U>> FusedMultiplySubtract(
+      Wide<T> a,
+      Wide<U> b,
+      Wide<Product<T, U>> c);
+  template<typename T, typename U>
+  friend Wide<Product<T, U>> FusedNegatedMultiplyAdd(
+      Wide<T> a,
+      Wide<U> b,
+      Wide<Product<T, U>> c);
+  template<typename T, typename U>
+  friend Wide<Product<T, U>> FusedNegatedMultiplySubtract(
+      Wide<T> a,
+      Wide<U> b,
+      Wide<Product<T, U>> c);
+
+  template<typename T, typename U>
   friend R3Element<Product<T, U>> operator*(R3Element<T> const& left,
                                             Wide<U> right);
   template<typename T, instance<Multivector> U>
@@ -96,6 +115,39 @@ class Wide {
   template<typename T>
   friend R3Element<T>& operator/=(R3Element<T>& left, Wide right)
     requires std::same_as<Scalar, double>;
+
+  friend R3Element<Product<T, U>> FusedMultiplyAdd(
+      R3Element<T> a,
+      Wide<U> b,
+      R3Element<Product<T, U>> c);
+  friend R3Element<Product<T, U>> FusedMultiplyAdd(
+      Wide<T> a,
+      R3Element<U> b,
+      R3Element<Product<T, U>> c);
+  friend R3Element<Product<T, U>> FusedMultiplySubtract(
+      R3Element<T> a,
+      Wide<U> b,
+      R3Element<Product<T, U>> c);
+  friend R3Element<Product<T, U>> FusedMultiplySubtract(
+      Wide<T> a,
+      R3Element<U> b,
+      R3Element<Product<T, U>> c);
+  friend R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
+      R3Element<T> a,
+      Wide<U> b,
+      R3Element<Product<T, U>> c);
+  friend R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
+      Wide<T> a,
+      R3Element<U> b,
+      R3Element<Product<T, U>> c);
+  friend R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
+      R3Element<T> a,
+      Wide<U> b,
+      R3Element<Product<T, U>> c);
+  friend R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
+      Wide<T> a,
+      R3Element<U> b,
+      R3Element<Product<T, U>> c);
 };
 
 template<additive_group T>
@@ -122,22 +174,24 @@ Wide<T> operator*(Wide<T> left, U right);
 template<typename T, std::integral U>
 Wide<T> operator*(U left, Wide<T> right);
 
+template<typename T, typename U>
+Wide<Product<T, U>> FusedMultiplyAdd(Wide<T> a,
+                                     Wide<U> b,
+                                     Wide<Product<T, U>> c);
+template<typename T, typename U>
+Wide<Product<T, U>> FusedMultiplySubtract(Wide<T> a,
+                                          Wide<U> b,
+                                          Wide<Product<T, U>> c);
+template<typename T, typename U>
+Wide<Product<T, U>> FusedNegatedMultiplyAdd(Wide<T> a,
+                                            Wide<U> b,
+                                            Wide<Product<T, U>> c);
+template<typename T, typename U>
+Wide<Product<T, U>> FusedNegatedMultiplySubtract(Wide<T> a,
+                                                 Wide<U> b,
+                                                 Wide<Product<T, U>> c);
+
 // The following are the operations that are optimized by the use of `Wide`.
-
-template<r3_element_coordinates T, typename U>
-Product<T, U> operator*(T const& left, Wide<U> right);
-
-template<typename T, r3_element_coordinates U>
-Product<T, U> operator*(Wide<T> left, U const& right);
-
-template<r3_element_coordinates T, typename U>
-Quotient<T, U> operator/(T left, Wide<U> right);
-
-template<r3_element_coordinates T>
-T& operator*=(T& left, Wide<double> right);
-
-template<r3_element_coordinates T>
-T& operator/=(T& left, Wide<double> right);
 
 template<typename T, typename U>
 R3Element<Product<T, U>> operator*(R3Element<T> const& left, Wide<U> right);
@@ -153,6 +207,23 @@ R3Element<T>& operator*=(R3Element<T>& left, Wide<double> right);
 
 template<typename T>
 R3Element<T>& operator/=(R3Element<T>& left, Wide<double> right);
+
+// The following don't need to be friend, they access the `coordinates` member.
+
+template<r3_element_coordinates T, typename U>
+Product<T, U> operator*(T const& left, Wide<U> right);
+
+template<typename T, r3_element_coordinates U>
+Product<T, U> operator*(Wide<T> left, U const& right);
+
+template<r3_element_coordinates T, typename U>
+Quotient<T, U> operator/(T const& left, Wide<U> right);
+
+template<r3_element_coordinates T>
+T& operator*=(T& left, Wide<double> right);
+
+template<r3_element_coordinates T>
+T& operator/=(T& left, Wide<double> right);
 
 }  // namespace internal
 
