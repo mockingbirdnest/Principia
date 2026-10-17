@@ -47,7 +47,7 @@ class Wide {
 
   explicit Wide(Scalar narrow) requires quantity<Scalar>;
   explicit Wide(Scalar narrow)
-    requires (!quantity<Scalar>) && quantity<Difference<Scalar>>;
+    requires (!quantity<Scalar>) && quantity<Difference<Scalar>>;  // NOLINT
 
   static Wide Identity()
     requires ring<Scalar>;
