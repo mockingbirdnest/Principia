@@ -131,6 +131,7 @@ TEST_F(WideTest, FMA) {
 
   Displacement<World> const u{{x * Metre, -y * Metre, 3 * x * Metre}};
   Displacement<World> const v{{π * Metre, -π * Metre, 3 * y * Metre}};
+  Position<World> const q = World::origin + v;
   EXPECT_THAT(e * u + v, AlmostEquals(FusedMultiplyAdd(e, u, v), 1));
   EXPECT_THAT(e * u - v, AlmostEquals(FusedMultiplySubtract(e, u, v), 1));
   EXPECT_THAT(-e * u - v,
@@ -154,6 +155,16 @@ TEST_F(WideTest, FMA) {
               Eq(FusedNegatedMultiplySubtract(u, e, v)));
   EXPECT_THAT(FusedNegatedMultiplyAdd(u, 𝕖, v),
               Eq(FusedNegatedMultiplyAdd(u, e, v)));
+
+  EXPECT_THAT(FusedMultiplyAdd(𝕖, u, q),
+              Eq(FusedMultiplyAdd(e, u, q)));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(𝕖, u, q),
+              Eq(FusedNegatedMultiplyAdd(e, u, q)));
+
+  EXPECT_THAT(FusedMultiplyAdd(u, 𝕖, q),
+              Eq(FusedMultiplyAdd(u, e, q)));
+  EXPECT_THAT(FusedNegatedMultiplyAdd(u, 𝕖, q),
+              Eq(FusedNegatedMultiplyAdd(u, e, q)));
 }
 
 }  // namespace numerics
