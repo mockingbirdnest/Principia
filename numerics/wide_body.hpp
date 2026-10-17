@@ -19,27 +19,27 @@ using namespace principia::quantities::_quantities;
 
 #if PRINCIPIA_USE_AVX()
 template<real_affine_space Scalar>
-  requires(real_dimension<Scalar> == 1)
+  requires (real_dimension<Scalar> == 1)  // NOLINT
 Wide<Scalar>::Wide(Scalar const narrow)
   requires quantity<Scalar>
     : Wide(ToM256D(narrow)) {}
 
 template<real_affine_space Scalar>
-  requires(real_dimension<Scalar> == 1)
+  requires (real_dimension<Scalar> == 1)  // NOLINT
 Wide<Scalar>::Wide(Scalar const narrow)
   requires (!quantity<Scalar>) && quantity<Difference<Scalar>>
     : Wide(ToM256D(narrow - Scalar{})) {}
 #else
 template<real_affine_space Scalar>
-  requires(real_dimension<Scalar> == 1)
+  requires (real_dimension<Scalar> == 1)  // NOLINT
 Wide<Scalar>::Wide(Scalar const narrow)
   requires quantity<Scalar>
     : Wide(ToM128D(narrow)) {}
 
 template<real_affine_space Scalar>
-  requires(real_dimension<Scalar> == 1)
+  requires (real_dimension<Scalar> == 1)  // NOLINT
 Wide<Scalar>::Wide(Scalar const narrow)
-  requires (!quantity<Scalar>) && quantity<Difference<Scalar>>
+  requires (!quantity<Scalar>) && quantity<Difference<Scalar>>  // NOLINT
     : Wide(ToM128D(narrow - Scalar{})) {}
 #endif
 

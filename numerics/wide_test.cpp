@@ -30,7 +30,7 @@ using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 
 class WideTest : public ::testing::Test {
-protected:
+ protected:
   using World = Frame<serialization::Frame::TestTag,
                       Inertial,
                       Handedness::Right,
@@ -110,7 +110,8 @@ TEST_F(WideTest, FMA) {
   constexpr double y = e - π;
   EXPECT_THAT(e * x + π, AlmostEquals(FusedMultiplyAdd(e, x, π), 1));
   EXPECT_THAT(e * y - π, AlmostEquals(FusedMultiplySubtract(e, y, π), 1));
-  EXPECT_THAT(-e * x - π, AlmostEquals(FusedNegatedMultiplySubtract(e, x, π), 1));
+  EXPECT_THAT(-e * x - π,
+              AlmostEquals(FusedNegatedMultiplySubtract(e, x, π), 1));
   EXPECT_THAT(-e * y + π, AlmostEquals(FusedNegatedMultiplyAdd(e, y, π), 1));
   Wide<double> 𝕩 = Wide(x);
   Wide<double> 𝕪 = Wide(y);
@@ -127,7 +128,8 @@ TEST_F(WideTest, FMA) {
   Displacement<World> const v{{π * Metre, -π * Metre, 3 * y * Metre}};
   EXPECT_THAT(e * u + v, AlmostEquals(FusedMultiplyAdd(e, u, v), 1));
   EXPECT_THAT(e * u - v, AlmostEquals(FusedMultiplySubtract(e, u, v), 1));
-  EXPECT_THAT(-e * u - v, AlmostEquals(FusedNegatedMultiplySubtract(e, u, v), 1));
+  EXPECT_THAT(-e * u - v,
+              AlmostEquals(FusedNegatedMultiplySubtract(e, u, v), 1));
   EXPECT_THAT(-e * u + v, AlmostEquals(FusedNegatedMultiplyAdd(e, u, v), 1));
 
   EXPECT_THAT(FusedMultiplyAdd(𝕖, u, v),
@@ -149,5 +151,5 @@ TEST_F(WideTest, FMA) {
               Eq(FusedNegatedMultiplyAdd(u, e, v)));
 }
 
-}  // namespace quantities
+}  // namespace numerics
 }  // namespace principia
