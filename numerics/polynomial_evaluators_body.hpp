@@ -4,7 +4,6 @@
 
 #include <cstddef>
 #include <tuple>
-#include <type_traits>
 
 #include "base/bits.hpp"
 #include "numerics/elementary_functions.hpp"
