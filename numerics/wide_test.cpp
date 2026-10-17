@@ -123,8 +123,8 @@ TEST_F(WideTest, FMA) {
   EXPECT_THAT(FusedNegatedMultiplyAdd(𝕖, 𝕪, ℼ).narrow(),
               Eq(FusedNegatedMultiplyAdd(e, y, π)));
 
-  Displacement<World> const u{{x * Metre, y * Metre, 0 * Metre}};
-  Displacement<World> const v{{π * Metre, -π * Metre, 0 * Metre}};
+  Displacement<World> const u{{x * Metre, -y * Metre, 3 * x * Metre}};
+  Displacement<World> const v{{π * Metre, -π * Metre, 3 * y * Metre}};
   EXPECT_THAT(e * u + v, AlmostEquals(FusedMultiplyAdd(e, u, v), 1));
   EXPECT_THAT(e * u - v, AlmostEquals(FusedMultiplySubtract(e, u, v), 1));
   EXPECT_THAT(-e * u - v, AlmostEquals(FusedNegatedMultiplySubtract(e, u, v), 1));
