@@ -3,7 +3,6 @@
 #include <immintrin.h>
 
 #include "base/algebra.hpp"
-#include "base/macros.hpp"
 #include "base/traits.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
