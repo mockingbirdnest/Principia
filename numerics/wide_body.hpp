@@ -27,7 +27,7 @@ Wide<Scalar>::Wide(Scalar const narrow)
 template<real_affine_space Scalar>
   requires (real_dimension<Scalar> == 1)  // NOLINT
 Wide<Scalar>::Wide(Scalar const narrow)
-  requires (!quantity<Scalar>) && quantity<Difference<Scalar>>
+  requires (!quantity<Scalar>) && quantity<Difference<Scalar>>  // NOLINT
     : Wide(ToM256D(narrow - Scalar{})) {}
 #else
 template<real_affine_space Scalar>
