@@ -186,28 +186,44 @@ template<typename T, typename U>
 Wide<Product<T, U>> FusedMultiplyAdd(Wide<T> const a,
                                      Wide<U> const b,
                                      Wide<Product<T, U>> const c) {
-  return INTRINSIC_WWW(TYPE(Product<T, U>), fmadd, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_WWW(TYPE(Product<T, U>), fmadd, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
 Wide<Product<T, U>> FusedMultiplySubtract(Wide<T> const a,
                                           Wide<U> const b,
                                           Wide<Product<T, U>> const c) {
-  return INTRINSIC_WWW(TYPE(Product<T, U>), fmsub, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_WWW(TYPE(Product<T, U>), fmsub, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
 Wide<Product<T, U>> FusedNegatedMultiplyAdd(Wide<T> const a,
                                             Wide<U> const b,
                                             Wide<Product<T, U>> const c) {
-  return INTRINSIC_WWW(TYPE(Product<T, U>), fnmadd, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_WWW(TYPE(Product<T, U>), fnmadd, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
 Wide<Product<T, U>> FusedNegatedMultiplySubtract(Wide<T> const a,
                                                  Wide<U> const b,
                                                  Wide<Product<T, U>> const c) {
-  return INTRINSIC_WWW(TYPE(Product<T, U>), fnmsub, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_WWW(TYPE(Product<T, U>), fnmsub, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
@@ -244,14 +260,22 @@ template<typename T, typename U>
 R3Element<Product<T, U>> FusedMultiplyAdd(R3Element<T> const& a,
                                           Wide<U> const b,
                                           R3Element<Product<T, U>> const& c) {
-  return INTRINSIC_RWR(TYPE(Product<T, U>), fmadd, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_RWR(TYPE(Product<T, U>), fmadd, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedMultiplyAdd(Wide<T> const a,
                                           R3Element<U> const& b,
                                           R3Element<Product<T, U>> const& c) {
-  return INTRINSIC_WRR(TYPE(Product<T, U>), fmadd, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_WRR(TYPE(Product<T, U>), fmadd, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
@@ -259,7 +283,11 @@ R3Element<Product<T, U>> FusedMultiplySubtract(
     R3Element<T> const& a,
     Wide<U> const b,
     R3Element<Product<T, U>> const& c) {
-  return INTRINSIC_RWR(TYPE(Product<T, U>), fmsub, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_RWR(TYPE(Product<T, U>), fmsub, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
@@ -267,7 +295,11 @@ R3Element<Product<T, U>> FusedMultiplySubtract(
     Wide<T> const a,
     R3Element<U> const& b,
     R3Element<Product<T, U>> const& c) {
-  return INTRINSIC_WRR(TYPE(Product<T, U>), fmsub, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_WRR(TYPE(Product<T, U>), fmsub, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
@@ -275,7 +307,11 @@ R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
     R3Element<T> const& a,
     Wide<U> const b,
     R3Element<Product<T, U>> const& c) {
-  return INTRINSIC_RWR(TYPE(Product<T, U>), fnmadd, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_RWR(TYPE(Product<T, U>), fnmadd, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
@@ -283,7 +319,11 @@ R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
     Wide<T> const a,
     R3Element<U> const& b,
     R3Element<Product<T, U>> const& c) {
-  return INTRINSIC_WRR(TYPE(Product<T, U>), fnmadd, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_WRR(TYPE(Product<T, U>), fnmadd, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
@@ -291,7 +331,11 @@ R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
     R3Element<T> const& a,
     Wide<U> const b,
     R3Element<Product<T, U>> const& c) {
-  return INTRINSIC_RWR(TYPE(Product<T, U>), fnmsub, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_RWR(TYPE(Product<T, U>), fnmsub, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<typename T, typename U>
@@ -299,7 +343,11 @@ R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
     Wide<T> const a,
     R3Element<U> const& b,
     R3Element<Product<T, U>> const& c) {
-  return INTRINSIC_WRR(TYPE(Product<T, U>), fnmsub, a, b, c);
+  if constexpr (CanEmitFMAInstructions) {
+    return INTRINSIC_WRR(TYPE(Product<T, U>), fnmsub, a, b, c);
+  } else {
+    LOG(FATAL) << "Clang cannot use FMA without VEX-encoding everything";
+  }
 }
 
 template<r3_element_coordinates T, typename U>
