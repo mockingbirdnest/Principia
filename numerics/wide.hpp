@@ -110,12 +110,12 @@ class Wide {
   template<typename T, typename U>
   friend R3Element<Quotient<T, U>> operator/(R3Element<T> const& left,
                                              Wide<U> right);
-  template<typename T>
-  friend R3Element<T>& operator*=(R3Element<T>& left, Wide right)
-    requires std::same_as<Scalar, double>;
-  template<typename T>
-  friend R3Element<T>& operator/=(R3Element<T>& left, Wide right)
-    requires std::same_as<Scalar, double>;
+  template<typename T, typename U>
+  friend R3Element<T>& operator*=(R3Element<T>& left, Wide<U> right)
+    requires std::same_as<U, double>;
+  template<typename T, typename U>
+  friend R3Element<T>& operator/=(R3Element<T>& left, Wide<U> right)
+    requires std::same_as<U, double>;
 
   template<typename T, typename U>
   friend R3Element<Product<T, U>> FusedMultiplyAdd(
@@ -211,11 +211,13 @@ R3Element<Product<T, U>> operator*(Wide<T> left, R3Element<U> const& right);
 template<typename T, typename U>
 R3Element<Quotient<T, U>> operator/(R3Element<T> const& left, Wide<U> right);
 
-template<typename T>
-R3Element<T>& operator*=(R3Element<T>& left, Wide<double> right);
+template<typename T, typename U>
+R3Element<T>& operator*=(R3Element<T>& left, Wide<U> right)
+  requires std::same_as<U, double>;
 
-template<typename T>
-R3Element<T>& operator/=(R3Element<T>& left, Wide<double> right);
+template<typename T, typename U>
+R3Element<T>& operator/=(R3Element<T>& left, Wide<U> right)
+  requires std::same_as<U, double>;
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedMultiplyAdd(R3Element<T> const& a,

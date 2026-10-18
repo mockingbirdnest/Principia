@@ -87,6 +87,12 @@ TEST_F(WideTest, Double) {
   RelativeDegreesOfFreedom<World> rdof = {r, v};
   EXPECT_THAT(ℼ * rdof, Eq(π * rdof));
   EXPECT_THAT(rdof / ℼ, Eq(rdof / π));
+
+  auto w = v;
+  w *= 𝕖;
+  EXPECT_THAT(w, Eq(e * v));
+  w /= 𝕖;
+  EXPECT_THAT(w, Eq(v));
 }
 
 TEST_F(WideTest, Quantity) {
