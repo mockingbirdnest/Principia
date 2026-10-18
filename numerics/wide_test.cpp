@@ -53,12 +53,12 @@ TEST_F(WideTest, Double) {
   Displacement<World> const r{{2 * Metre, 3 * Metre, 5 * Metre}};
   Wide<double> const ℼ = Wide(π);
   Wide<double> const 𝕖 = Wide(e);
-  EXPECT_THAT((+𝕖).narrow(), Eq(e));
-  EXPECT_THAT((-𝕖).narrow(), Eq(-e));
-  EXPECT_THAT((𝕖 + ℼ).narrow(), Eq(e + π));
-  EXPECT_THAT((𝕖 - ℼ).narrow(), Eq(e - π));
-  EXPECT_THAT((𝕖 * ℼ).narrow(), Eq(e * π));
-  EXPECT_THAT((𝕖 / ℼ).narrow(), Eq(e / π));
+  EXPECT_THAT(static_cast<double>(+𝕖), Eq(e));
+  EXPECT_THAT(static_cast<double>(-𝕖), Eq(-e));
+  EXPECT_THAT(static_cast<double>(𝕖 + ℼ), Eq(e + π));
+  EXPECT_THAT(static_cast<double>(𝕖 - ℼ), Eq(e - π));
+  EXPECT_THAT(static_cast<double>(𝕖 * ℼ), Eq(e * π));
+  EXPECT_THAT(static_cast<double>(𝕖 / ℼ), Eq(e / π));
   EXPECT_THAT(ℼ * r, Eq(π * r));
   EXPECT_THAT(r * ℼ, Eq(r * π));
   EXPECT_THAT(r / ℼ, Eq(r / π));
@@ -66,15 +66,15 @@ TEST_F(WideTest, Double) {
   Wide<double> 𝕩 = ℼ;
   Wide<double> 𝕪 = 𝕖;
   𝕩 += 𝕪;
-  EXPECT_THAT(𝕩.narrow(), AlmostEquals(e + π, 0));
+  EXPECT_THAT(static_cast<double>(𝕩), AlmostEquals(e + π, 0));
   𝕩 -= 𝕪;
-  EXPECT_THAT(𝕩.narrow(), AlmostEquals(π, 1));
+  EXPECT_THAT(static_cast<double>(𝕩), AlmostEquals(π, 1));
   𝕩 *= 2;
-  EXPECT_THAT(𝕩.narrow(), AlmostEquals(2 * π, 1));
+  EXPECT_THAT(static_cast<double>(𝕩), AlmostEquals(2 * π, 1));
   𝕩 *= 𝕪;
-  EXPECT_THAT(𝕩.narrow(), AlmostEquals(2 * π * e, 1));
+  EXPECT_THAT(static_cast<double>(𝕩), AlmostEquals(2 * π * e, 1));
   𝕩 /= 𝕪;
-  EXPECT_THAT(𝕩.narrow(), AlmostEquals(2 * π, 2));
+  EXPECT_THAT(static_cast<double>(𝕩), AlmostEquals(2 * π, 2));
 
   // `Wide` works with `RelativeDegreesOfFreedom` without needing to declare any
   // new operators, because `Displacement` and `Velocity` are modules over
@@ -92,12 +92,12 @@ TEST_F(WideTest, Quantity) {
   Displacement<World> const r{{2 * Metre, 3 * Metre, 5 * Metre}};
   Wide<Mass> const ℼ = Wide(π * Kilogram);
   Wide<Mass> const 𝕖 = Wide(e * Kilogram);
-  EXPECT_THAT((+𝕖).narrow(), Eq(e * Kilogram));
-  EXPECT_THAT((-𝕖).narrow(), Eq(-e * Kilogram));
-  EXPECT_THAT((𝕖 + ℼ).narrow(), Eq((e + π) * Kilogram));
-  EXPECT_THAT((𝕖 - ℼ).narrow(), Eq((e - π) * Kilogram));
-  EXPECT_THAT((𝕖 * ℼ).narrow(), Eq(e * π * Pow<2>(Kilogram)));
-  EXPECT_THAT((𝕖 / ℼ).narrow(), Eq(e / π));
+  EXPECT_THAT(static_cast<Mass>(+𝕖), Eq(e * Kilogram));
+  EXPECT_THAT(static_cast<Mass>(-𝕖), Eq(-e * Kilogram));
+  EXPECT_THAT(static_cast<Mass>(𝕖 + ℼ), Eq((e + π) * Kilogram));
+  EXPECT_THAT(static_cast<Mass>(𝕖 - ℼ), Eq((e - π) * Kilogram));
+  EXPECT_THAT(static_cast<Square<Mass>>(𝕖 * ℼ), Eq(e * π * Pow<2>(Kilogram)));
+  EXPECT_THAT(static_cast<double>(𝕖 / ℼ), Eq(e / π));
   EXPECT_THAT(ℼ * r, Eq(π * Kilogram * r));
   EXPECT_THAT(r * ℼ, Eq(r * π * Kilogram));
   EXPECT_THAT(r / ℼ, Eq(r / (π * Kilogram)));
@@ -105,11 +105,11 @@ TEST_F(WideTest, Quantity) {
   Wide<Mass> 𝕩 = ℼ;
   Wide<Mass> 𝕪 = 𝕖;
   𝕩 += 𝕪;
-  EXPECT_THAT(𝕩.narrow(), AlmostEquals((e + π) * Kilogram, 0));
+  EXPECT_THAT(static_cast<Mass>(𝕩), AlmostEquals((e + π) * Kilogram, 0));
   𝕩 -= 𝕪;
-  EXPECT_THAT(𝕩.narrow(), AlmostEquals(π * Kilogram, 1));
+  EXPECT_THAT(static_cast<Mass>(𝕩), AlmostEquals(π * Kilogram, 1));
   𝕩 *= 2;
-  EXPECT_THAT(𝕩.narrow(), AlmostEquals(2 * π * Kilogram, 1));
+  EXPECT_THAT(static_cast<Mass>(𝕩), AlmostEquals(2 * π * Kilogram, 1));
 
   Velocity<World> const v{
       {11 * Metre / Second, 23 * Metre / Second, 29 * Metre / Second}};
@@ -125,9 +125,9 @@ TEST_F(WideTest, Instant) {
   Wide<Instant> const 𝕥 = Wide(t);
   Wide<Instant> const 𝕥₀ = Wide(t₀);
   Wide<Time> const Δ𝕥 = Wide(Δt);
-  EXPECT_THAT((𝕥 - 𝕥₀).narrow(), Eq(Δt));
-  EXPECT_THAT((𝕥₀ + Δ𝕥).narrow(), Eq(t));
-  EXPECT_THAT((𝕥 - Δ𝕥).narrow(), Eq(t₀));
+  EXPECT_THAT(static_cast<Time>(𝕥 - 𝕥₀), Eq(Δt));
+  EXPECT_THAT(static_cast<Instant>(𝕥₀ + Δ𝕥), Eq(t));
+  EXPECT_THAT(static_cast<Instant>(𝕥 - Δ𝕥), Eq(t₀));
 }
 
 TEST_F(WideTest, FMA) {
@@ -142,13 +142,13 @@ TEST_F(WideTest, FMA) {
   EXPECT_THAT(-e * y + π, AlmostEquals(FusedNegatedMultiplyAdd(e, y, π), 1));
   Wide<double> const 𝕩 = Wide(x);
   Wide<double> const 𝕪 = Wide(y);
-  EXPECT_THAT(FusedMultiplyAdd(𝕖, 𝕩, ℼ).narrow(),
+  EXPECT_THAT(static_cast<double>(FusedMultiplyAdd(𝕖, 𝕩, ℼ)),
               Eq(FusedMultiplyAdd(e, x, π)));
-  EXPECT_THAT(FusedMultiplySubtract(𝕖, 𝕪, ℼ).narrow(),
+  EXPECT_THAT(static_cast<double>(FusedMultiplySubtract(𝕖, 𝕪, ℼ)),
               Eq(FusedMultiplySubtract(e, y, π)));
-  EXPECT_THAT(FusedNegatedMultiplySubtract(𝕖, 𝕩, ℼ).narrow(),
+  EXPECT_THAT(static_cast<double>(FusedNegatedMultiplySubtract(𝕖, 𝕩, ℼ)),
               Eq(FusedNegatedMultiplySubtract(e, x, π)));
-  EXPECT_THAT(FusedNegatedMultiplyAdd(𝕖, 𝕪, ℼ).narrow(),
+  EXPECT_THAT(static_cast<double>(FusedNegatedMultiplyAdd(𝕖, 𝕪, ℼ)),
               Eq(FusedNegatedMultiplyAdd(e, y, π)));
 
   Displacement<World> const u{{x * Metre, -y * Metre, 3 * x * Metre}};

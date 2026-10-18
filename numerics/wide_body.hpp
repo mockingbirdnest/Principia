@@ -53,7 +53,7 @@ Wide<Scalar> Wide<Scalar>::Identity() requires ring<Scalar> {
 
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-Scalar Wide<Scalar>::narrow() const {
+Wide<Scalar>::operator Scalar() const {
   if constexpr (quantity<Scalar>) {
 #if PRINCIPIA_USE_AVX()
   return FromM256D<Scalar>(value_);

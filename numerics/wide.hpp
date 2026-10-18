@@ -52,7 +52,7 @@ class Wide {
 
   static Wide Identity() requires ring<Scalar>;
 
-  Scalar narrow() const;
+  explicit operator Scalar() const;
 
   Wide& operator+=(Wide right) requires additive_group<Scalar>;
   Wide& operator-=(Wide right) requires additive_group<Scalar>;
