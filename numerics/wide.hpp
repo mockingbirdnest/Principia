@@ -19,6 +19,7 @@ using namespace geometry::_grassmann;
 using namespace geometry::_r3_element;
 using namespace quantities::_concepts;
 
+// Do not export this type.
 #if PRINCIPIA_USE_AVX()
 using UnderlyingType = __m256d;
 #else
