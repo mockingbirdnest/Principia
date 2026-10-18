@@ -145,6 +145,16 @@ __m256d ToM256D(Quantity<Dimensions> const x) {
   return _mm256_set1_pd(x.magnitude_);
 }
 
+template<typename Q>
+Q FromM128D(__m128d x) {
+  return Q(_mm_cvtsd_f64(x));
+}
+
+template<typename Q>
+Q FromM256D(__m256d x) {
+  return Q(_mm256_cvtsd_f64(x));
+}
+
 inline bool IsFinite(double const x) {
   return std::isfinite(x);
 }

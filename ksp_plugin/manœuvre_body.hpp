@@ -136,7 +136,8 @@ Manœuvre<InertialFrame, Frame>::Intensity::ReadFromMessage(
     (_MSC_FULL_VER == 194'435'222 || \
      _MSC_FULL_VER == 194'435'224 || \
      _MSC_FULL_VER == 194'435'228 || \
-     _MSC_FULL_VER == 195'236'725)
+     _MSC_FULL_VER == 195'236'725 || \
+     _MSC_FULL_VER == 195'236'815)
   std::abort();
 #endif
 }
