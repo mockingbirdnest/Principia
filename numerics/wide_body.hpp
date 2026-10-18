@@ -17,6 +17,30 @@ using namespace principia::quantities::_quantities;
 #define MM(intrinsic) _mm_ ## intrinsic
 #endif
 
+#define ESC(...) __VA_ARGS__
+
+#if PRINCIPIA_USE_AVX()
+#define FOO_RW(type, intrinsic, left, right) \
+  R3Element<type>(MM(intrinsic)(left.xyzt, right.value_))
+#define FOO_WR(type, intrinsic, left, right) \
+  R3Element<type>(MM(intrinsic)(left.value_, right.xyzt))
+#else
+#define FOO_RW(type, intrinsic, left, right)            \
+  R3Element<type>(MM(intrinsic)(left.xy, right.value_), \
+                  MM(intrinsic)(left.zt, right.value_))
+#define FOO_WR(type, intrinsic, left, right)            \
+  R3Element<type>(MM(intrinsic)(left.value_, right.xy), \
+                  MM(intrinsic)(left.value_, right.zt))
+#endif
+
+//#if PRINCIPIA_USE_AVX()
+//  return R3Element<Product<T, U>>(_mm256_fmadd_pd(a.xyzt, b.value_, c.xyzt));
+//#else
+//  return R3Element<Product<T, U>>(_mm_fmadd_pd(a.xy, b.value_, c.xy),
+//                                  _mm_fmadd_sd(a.zt, b.value_, c.zt));
+//#endif
+
+
 inline UnderlyingType wide_sign_bit = MM(set1_pd)(-0.0);
 
 #if PRINCIPIA_USE_AVX()
@@ -180,45 +204,24 @@ Wide<Product<T, U>> FusedNegatedMultiplySubtract(Wide<T> const a,
 template<typename T, typename U>
 R3Element<Product<T, U>> operator*(R3Element<T> const& left,
                                    Wide<U> const right) {
-#if PRINCIPIA_USE_AVX()
-  return R3Element<Product<T, U>>(_mm256_mul_pd(left.xyzt, right.value_));
-#else
-  return R3Element<Product<T, U>>(_mm_mul_pd(left.xy, right.value_),
-                                  _mm_mul_sd(left.zt, right.value_));
-#endif
+  return FOO_RW(ESC(Product<T, U>), mul_pd, left, right);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> operator*(Wide<T> const left,
                                    R3Element<U> const& right) {
-#if PRINCIPIA_USE_AVX()
-  return R3Element<Product<T, U>>(_mm256_mul_pd(left.value_, right.xyzt));
-#else
-  return R3Element<Product<T, U>>(_mm_mul_pd(left.value_, right.xy),
-                                  _mm_mul_sd(left.value_, right.zt));
-#endif
+  return FOO_WR(ESC(Product<T, U>), mul_pd, left, right);
 }
 
 template<typename T, typename U>
 R3Element<Quotient<T, U>> operator/(R3Element<T> const& left,
                                     Wide<U> const right) {
-#if PRINCIPIA_USE_AVX()
-  return R3Element<Quotient<T, U>>(_mm256_div_pd(left.xyzt, right.value_));
-#else
-  return R3Element<Quotient<T, U>>(_mm_div_pd(left.xy, right.value_),
-                                   _mm_div_sd(left.zt, right.value_));
-#endif
+  return FOO_RW(ESC(Quotient<T, U>), div_pd, left, right);
 }
 
 template<typename T>
 R3Element<T>& operator*=(R3Element<T>& left, Wide<double> const right) {
-#if PRINCIPIA_USE_AVX()
-  left.xyzt = _mm256_mul_pd(left.xyzt, right.value_);
-#else
-  left.xy = _mm_mul_pd(left.xy, right.value_);
-  left.zt = _mm_mul_sd(left.zt, right.value_);
-#endif
-  return left;
+  return left = FOO_RW(ESC(Product<T, double>), mul_pd, left, right);
 }
 
 template<typename T>
