@@ -2,6 +2,7 @@
 
 #include "numerics/wide.hpp"
 
+#include "numerics/fma.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -9,6 +10,7 @@ namespace numerics {
 namespace _wide {
 namespace internal {
 
+using namespace principia::numerics::_fma;
 using namespace principia::quantities::_quantities;
 
 // A wrapper for result types that are template instances.
