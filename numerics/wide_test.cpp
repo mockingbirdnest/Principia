@@ -51,17 +51,30 @@ TEST_F(WideTest, Concepts) {
 
 TEST_F(WideTest, Double) {
   Displacement<World> const r{{2 * Metre, 3 * Metre, 5 * Metre}};
-  Wide<double> ℼ = Wide(π);
-  Wide<double> 𝕖 = Wide(e);
+  Wide<double> const ℼ = Wide(π);
+  Wide<double> const 𝕖 = Wide(e);
   EXPECT_THAT((+𝕖).narrow(), Eq(e));
   EXPECT_THAT((-𝕖).narrow(), Eq(-e));
-  EXPECT_THAT((𝕖 + ℼ).narrow(), Eq(e+π));
-  EXPECT_THAT((𝕖 - ℼ).narrow(), Eq(e-π));
-  EXPECT_THAT((𝕖 * ℼ).narrow(), Eq(e*π));
-  EXPECT_THAT((𝕖 / ℼ).narrow(), Eq(e/π));
+  EXPECT_THAT((𝕖 + ℼ).narrow(), Eq(e + π));
+  EXPECT_THAT((𝕖 - ℼ).narrow(), Eq(e - π));
+  EXPECT_THAT((𝕖 * ℼ).narrow(), Eq(e * π));
+  EXPECT_THAT((𝕖 / ℼ).narrow(), Eq(e / π));
   EXPECT_THAT(ℼ * r, Eq(π * r));
   EXPECT_THAT(r * ℼ, Eq(r * π));
   EXPECT_THAT(r / ℼ, Eq(r / π));
+
+  Wide<double> 𝕩 = ℼ;
+  Wide<double> 𝕪 = 𝕖;
+  𝕩 += 𝕪;
+  EXPECT_THAT(𝕩.narrow(), AlmostEquals(e + π, 0));
+  𝕩 -= 𝕪;
+  EXPECT_THAT(𝕩.narrow(), AlmostEquals(π, 1));
+  𝕩 *= 2;
+  EXPECT_THAT(𝕩.narrow(), AlmostEquals(2 * π, 1));
+  𝕩 *= 𝕪;
+  EXPECT_THAT(𝕩.narrow(), AlmostEquals(2 * π * e, 1));
+  𝕩 /= 𝕪;
+  EXPECT_THAT(𝕩.narrow(), AlmostEquals(2 * π, 2));
 
   // `Wide` works with `RelativeDegreesOfFreedom` without needing to declare any
   // new operators, because `Displacement` and `Velocity` are modules over
@@ -77,8 +90,8 @@ TEST_F(WideTest, Double) {
 
 TEST_F(WideTest, Quantity) {
   Displacement<World> const r{{2 * Metre, 3 * Metre, 5 * Metre}};
-  Wide<Mass> ℼ = Wide(π * Kilogram);
-  Wide<Mass> 𝕖 = Wide(e * Kilogram);
+  Wide<Mass> const ℼ = Wide(π * Kilogram);
+  Wide<Mass> const 𝕖 = Wide(e * Kilogram);
   EXPECT_THAT((+𝕖).narrow(), Eq(e * Kilogram));
   EXPECT_THAT((-𝕖).narrow(), Eq(-e * Kilogram));
   EXPECT_THAT((𝕖 + ℼ).narrow(), Eq((e + π) * Kilogram));
@@ -88,6 +101,15 @@ TEST_F(WideTest, Quantity) {
   EXPECT_THAT(ℼ * r, Eq(π * Kilogram * r));
   EXPECT_THAT(r * ℼ, Eq(r * π * Kilogram));
   EXPECT_THAT(r / ℼ, Eq(r / (π * Kilogram)));
+
+  Wide<Mass> 𝕩 = ℼ;
+  Wide<Mass> 𝕪 = 𝕖;
+  𝕩 += 𝕪;
+  EXPECT_THAT(𝕩.narrow(), AlmostEquals((e + π) * Kilogram, 0));
+  𝕩 -= 𝕪;
+  EXPECT_THAT(𝕩.narrow(), AlmostEquals(π * Kilogram, 1));
+  𝕩 *= 2;
+  EXPECT_THAT(𝕩.narrow(), AlmostEquals(2 * π * Kilogram, 1));
 
   Velocity<World> const v{
       {11 * Metre / Second, 23 * Metre / Second, 29 * Metre / Second}};
@@ -109,8 +131,8 @@ TEST_F(WideTest, Instant) {
 }
 
 TEST_F(WideTest, FMA) {
-  Wide<double> ℼ = Wide(π);
-  Wide<double> 𝕖 = Wide(e);
+  Wide<double> const ℼ = Wide(π);
+  Wide<double> const 𝕖 = Wide(e);
   constexpr double x = e + 4 * π;
   constexpr double y = e - π;
   EXPECT_THAT(e * x + π, AlmostEquals(FusedMultiplyAdd(e, x, π), 1));
@@ -118,8 +140,8 @@ TEST_F(WideTest, FMA) {
   EXPECT_THAT(-e * x - π,
               AlmostEquals(FusedNegatedMultiplySubtract(e, x, π), 1));
   EXPECT_THAT(-e * y + π, AlmostEquals(FusedNegatedMultiplyAdd(e, y, π), 1));
-  Wide<double> 𝕩 = Wide(x);
-  Wide<double> 𝕪 = Wide(y);
+  Wide<double> const 𝕩 = Wide(x);
+  Wide<double> const 𝕪 = Wide(y);
   EXPECT_THAT(FusedMultiplyAdd(𝕖, 𝕩, ℼ).narrow(),
               Eq(FusedMultiplyAdd(e, x, π)));
   EXPECT_THAT(FusedMultiplySubtract(𝕖, 𝕪, ℼ).narrow(),

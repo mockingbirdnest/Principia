@@ -17,6 +17,8 @@ using namespace principia::quantities::_quantities;
 #define MM(intrinsic) _mm_ ## intrinsic
 #endif
 
+inline UnderlyingType wide_sign_bit = MM(set1_pd)(-0.0);
+
 #if PRINCIPIA_USE_AVX()
 template<real_affine_space Scalar>
   requires (real_dimension<Scalar> == 1)  // NOLINT
@@ -67,21 +69,45 @@ Scalar Wide<Scalar>::narrow() const {
   }
 }
 
-template<additive_group T>
-Wide<T>& operator+=(Wide<T>& left, Wide<T> const right) {
-  return left = left + right;
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar>& Wide<Scalar>::operator+=(Wide<Scalar> const right)
+  requires additive_group<Scalar> {
+  return *this = *this + right;
 }
 
-template<additive_group T>
-Wide<T>& operator-=(Wide<T>& left, Wide<T> const right) {
-  return left = left - right;
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar>& Wide<Scalar>::operator-=(Wide<Scalar> const right)
+  requires additive_group<Scalar> {
+  return *this = *this - right;
+}
+
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+template<std::integral U>
+Wide<Scalar>& Wide<Scalar>::operator*=(U const right)
+  requires additive_group<Scalar> {
+  return *this = *this * right;
+}
+
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar>& Wide<Scalar>::operator*=(Wide<Scalar> const right)
+  requires ring<Scalar> {
+  return *this = *this * right;
+}
+
+template<real_affine_space Scalar>
+  requires(real_dimension<Scalar> == 1)
+Wide<Scalar>& Wide<Scalar>::operator/=(Wide<Scalar> const right)
+  requires field<Scalar> {
+  return *this = *this / right;
 }
 
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
 Wide<Scalar>::Wide(UnderlyingType const value) : value_(value) {}
-
-inline UnderlyingType wide_sign_bit = MM(set1_pd)(-0.0);
 
 template<additive_group T>
 Wide<T> operator+(Wide<T> const right) {

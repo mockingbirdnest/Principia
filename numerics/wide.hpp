@@ -49,8 +49,7 @@ class Wide {
   explicit Wide(Scalar narrow)
     requires (!quantity<Scalar>) && quantity<Difference<Scalar>>;  // NOLINT
 
-  static Wide Identity()
-    requires ring<Scalar>;
+  static Wide Identity() requires ring<Scalar>;
 
   Scalar narrow() const;
 
@@ -60,6 +59,7 @@ class Wide {
   template<std::integral U>
   Wide& operator*=(U right) requires additive_group<Scalar>;
   Wide& operator*=(Wide right) requires ring<Scalar>;
+  Wide& operator/=(Wide right) requires field<Scalar>;
 
  private:
   explicit Wide(UnderlyingType value);
