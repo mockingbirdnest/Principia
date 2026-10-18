@@ -137,6 +137,7 @@ TEST_F(WideTest, Instant) {
   EXPECT_THAT(static_cast<Instant>(𝕥 - Δ𝕥), Eq(t₀));
 }
 
+#if PRINCIPIA_REQUIRES_FMA || PRINCIPIA_COMPILER_MSVC
 TEST_F(WideTest, FMA) {
   Wide<double> const ℼ = Wide(π);
   Wide<double> const 𝕖 = Wide(e);
@@ -195,6 +196,7 @@ TEST_F(WideTest, FMA) {
   EXPECT_THAT(FusedNegatedMultiplyAdd(u, 𝕖, q),
               Eq(FusedNegatedMultiplyAdd(u, e, q)));
 }
+#endif
 
 }  // namespace numerics
 }  // namespace principia
