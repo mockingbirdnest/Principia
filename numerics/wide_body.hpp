@@ -11,40 +11,42 @@ namespace internal {
 
 using namespace principia::quantities::_quantities;
 
+// A wrapper for result types that are template instances.
 #define TYPE(...) __VA_ARGS__
 
+// In the macros below, 'R' stands for 'R3Element' and 'W' for 'Wide'.
 #if PRINCIPIA_USE_AVX()
 #define MM_PD(intrinsic) _mm256_##intrinsic##_pd
-#define FOO_RW(type, intrinsic, left, right) \
+#define INTRINSIC_RW(type, intrinsic, left, right) \
   R3Element<type>(MM_PD(intrinsic)(left.xyzt, right.value_))
-#define FOO_RRW(type, intrinsic, a, b, c) \
-  R3Element<type>(MM_PD(intrinsic)(a.value_, b.xyzt, c.xyzt))
-#define FOO_RWR(type, intrinsic, a, b, c) \
+#define INTRINSIC_RWR(type, intrinsic, a, b, c) \
   R3Element<type>(MM_PD(intrinsic)(a.xyzt, b.value_, c.xyzt))
-#define FOO_WR(type, intrinsic, left, right) \
+#define INTRINSIC_WR(type, intrinsic, left, right) \
   R3Element<type>(MM_PD(intrinsic)(left.value_, right.xyzt))
-#define FOO_WW(type, intrinsic, left, right) \
+#define INTRINSIC_WW(type, intrinsic, left, right) \
   Wide<type>(MM_PD(intrinsic)(left.value_, right.value_))
-#define FOO_WWW(type, intrinsic, a, b, c) \
+#define INTRINSIC_WRR(type, intrinsic, a, b, c) \
+  R3Element<type>(MM_PD(intrinsic)(a.value_, b.xyzt, c.xyzt))
+#define INTRINSIC_WWW(type, intrinsic, a, b, c) \
   Wide<type>(MM_PD(intrinsic)(a.value_, b.value_, c.value_));
 #else
 #define MM_PD(intrinsic) _mm_##intrinsic##_pd
 #define MM_SD(intrinsic) _mm_##intrinsic##_sd
-#define FOO_RW(type, intrinsic, left, right)            \
+#define INTRINSIC_RW(type, intrinsic, left, right)         \
   R3Element<type>(MM_PD(intrinsic)(left.xy, right.value_), \
                   MM_SD(intrinsic)(left.zt, right.value_))
-#define FOO_RRW(type, intrinsic, a, b, c)            \
-  R3Element<type>(MM_PD(intrinsic)(a.value_, b.xy, c.xy), \
-                  MM_SD(intrinsic)(a.value_, b.zt, c.zt))
-#define FOO_RWR(type, intrinsic, a, b, c)            \
+#define INTRINSIC_RWR(type, intrinsic, a, b, c)           \
   R3Element<type>(MM_PD(intrinsic)(a.xy, b.value_, c.xy), \
                   MM_SD(intrinsic)(a.zt, b.value_, c.zt))
-#define FOO_WR(type, intrinsic, left, right)            \
+#define INTRINSIC_WR(type, intrinsic, left, right)         \
   R3Element<type>(MM_PD(intrinsic)(left.value_, right.xy), \
                   MM_SD(intrinsic)(left.value_, right.zt))
-#define FOO_WW(type, intrinsic, left, right) \
+#define INTRINSIC_WW(type, intrinsic, left, right) \
   Wide<type>(MM_PD(intrinsic)(left.value_, right.value_))
-#define FOO_WWW(type, intrinsic, a, b, c) \
+#define INTRINSIC_WRR(type, intrinsic, a, b, c)           \
+  R3Element<type>(MM_PD(intrinsic)(a.value_, b.xy, c.xy), \
+                  MM_SD(intrinsic)(a.value_, b.zt, c.zt))
+#define INTRINSIC_WWW(type, intrinsic, a, b, c) \
   Wide<type>(MM_PD(intrinsic)(a.value_, b.value_, c.value_));
 #endif
 
@@ -152,22 +154,22 @@ Wide<T> operator-(Wide<T> const right) {
 
 template<affine T, affine U>
 Wide<Sum<T, U>> operator+(Wide<T> const left, Wide<U> const right) {
-  return FOO_WW(TYPE(Sum<T, U>), add, left, right);
+  return INTRINSIC_WW(TYPE(Sum<T, U>), add, left, right);
 }
 
 template<affine T, affine U>
 Wide<Difference<T, U>> operator-(Wide<T> const left, Wide<U> const right) {
-  return FOO_WW(TYPE(Difference<T, U>), sub, left, right);
+  return INTRINSIC_WW(TYPE(Difference<T, U>), sub, left, right);
 }
 
 template<typename T, typename U>
 Wide<Product<T, U>> operator*(Wide<T> const left, Wide<U> const right) {
-  return FOO_WW(TYPE(Product<T, U>), mul, left, right);
+  return INTRINSIC_WW(TYPE(Product<T, U>), mul, left, right);
 }
 
 template<typename T, typename U>
 Wide<Quotient<T, U>> operator/(Wide<T> const left, Wide<U> const right) {
-  return FOO_WW(TYPE(Quotient<T, U>), div, left, right);
+  return INTRINSIC_WW(TYPE(Quotient<T, U>), div, left, right);
 }
 
 template<typename T, std::integral U>
@@ -184,118 +186,118 @@ template<typename T, typename U>
 Wide<Product<T, U>> FusedMultiplyAdd(Wide<T> const a,
                                      Wide<U> const b,
                                      Wide<Product<T, U>> const c) {
-  return FOO_WWW(TYPE(Product<T, U>), fmadd, a, b, c);
+  return INTRINSIC_WWW(TYPE(Product<T, U>), fmadd, a, b, c);
 }
 
 template<typename T, typename U>
 Wide<Product<T, U>> FusedMultiplySubtract(Wide<T> const a,
                                           Wide<U> const b,
                                           Wide<Product<T, U>> const c) {
-  return FOO_WWW(TYPE(Product<T, U>), fmsub, a, b, c);
+  return INTRINSIC_WWW(TYPE(Product<T, U>), fmsub, a, b, c);
 }
 
 template<typename T, typename U>
 Wide<Product<T, U>> FusedNegatedMultiplyAdd(Wide<T> const a,
                                             Wide<U> const b,
                                             Wide<Product<T, U>> const c) {
-  return FOO_WWW(TYPE(Product<T, U>), fnmadd, a, b, c);
+  return INTRINSIC_WWW(TYPE(Product<T, U>), fnmadd, a, b, c);
 }
 
 template<typename T, typename U>
 Wide<Product<T, U>> FusedNegatedMultiplySubtract(Wide<T> const a,
                                                  Wide<U> const b,
                                                  Wide<Product<T, U>> const c) {
-  return FOO_WWW(TYPE(Product<T, U>), fnmsub, a, b, c);
+  return INTRINSIC_WWW(TYPE(Product<T, U>), fnmsub, a, b, c);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> operator*(R3Element<T> const& left,
                                    Wide<U> const right) {
-  return FOO_RW(TYPE(Product<T, U>), mul, left, right);
+  return INTRINSIC_RW(TYPE(Product<T, U>), mul, left, right);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> operator*(Wide<T> const left,
                                    R3Element<U> const& right) {
-  return FOO_WR(TYPE(Product<T, U>), mul, left, right);
+  return INTRINSIC_WR(TYPE(Product<T, U>), mul, left, right);
 }
 
 template<typename T, typename U>
 R3Element<Quotient<T, U>> operator/(R3Element<T> const& left,
                                     Wide<U> const right) {
-  return FOO_RW(TYPE(Quotient<T, U>), div, left, right);
+  return INTRINSIC_RW(TYPE(Quotient<T, U>), div, left, right);
 }
 
 template<typename T>
 R3Element<T>& operator*=(R3Element<T>& left, Wide<double> const right) {
-  return left = FOO_RW(TYPE(Product<T, double>), mul, left, right);
+  return left = INTRINSIC_RW(TYPE(Product<T, double>), mul, left, right);
 }
 
 template<typename T>
 R3Element<T>& operator/=(R3Element<T>& left, Wide<double> const right) {
-  return left = FOO_RW(TYPE(Quotient<T, double>), div, left, right);
+  return left = INTRINSIC_RW(TYPE(Quotient<T, double>), div, left, right);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedMultiplyAdd(R3Element<T> const& a,
                                           Wide<U> const b,
                                           R3Element<Product<T, U>> const& c) {
-  return FOO_RWR(TYPE(Product<T, U>), fmadd, a, b, c);
+  return INTRINSIC_RWR(TYPE(Product<T, U>), fmadd, a, b, c);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedMultiplyAdd(Wide<T> const a,
                                           R3Element<U> const& b,
                                           R3Element<Product<T, U>> const& c) {
-  return FOO_RWR(TYPE(Product<T, U>), fmadd, a, b, c);
+  return INTRINSIC_WRR(TYPE(Product<T, U>), fmadd, a, b, c);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedMultiplySubtract(
     R3Element<T> const& a,
-    Wide<U> b,
+    Wide<U> const b,
     R3Element<Product<T, U>> const& c) {
-  return FOO_RWR(TYPE(Product<T, U>), fmsub, a, b, c);
+  return INTRINSIC_RWR(TYPE(Product<T, U>), fmsub, a, b, c);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedMultiplySubtract(
-    Wide<T> a,
+    Wide<T> const a,
     R3Element<U> const& b,
     R3Element<Product<T, U>> const& c) {
-  return FOO_RWR(TYPE(Product<T, U>), fmsub, a, b, c);
+  return INTRINSIC_WRR(TYPE(Product<T, U>), fmsub, a, b, c);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
     R3Element<T> const& a,
-    Wide<U> b,
+    Wide<U> const b,
     R3Element<Product<T, U>> const& c) {
-  return FOO_RWR(TYPE(Product<T, U>), fnmadd, a, b, c);
+  return INTRINSIC_RWR(TYPE(Product<T, U>), fnmadd, a, b, c);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedNegatedMultiplyAdd(
-    Wide<T> a,
+    Wide<T> const a,
     R3Element<U> const& b,
     R3Element<Product<T, U>> const& c) {
-  return FOO_RWR(TYPE(Product<T, U>), fnmadd, a, b, c);
+  return INTRINSIC_WRR(TYPE(Product<T, U>), fnmadd, a, b, c);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
     R3Element<T> const& a,
-    Wide<U> b,
+    Wide<U> const b,
     R3Element<Product<T, U>> const& c) {
-  return FOO_RWR(TYPE(Product<T, U>), fnmsub, a, b, c);
+  return INTRINSIC_RWR(TYPE(Product<T, U>), fnmsub, a, b, c);
 }
 
 template<typename T, typename U>
 R3Element<Product<T, U>> FusedNegatedMultiplySubtract(
-    Wide<T> a,
+    Wide<T> const a,
     R3Element<U> const& b,
     R3Element<Product<T, U>> const& c) {
-  return FOO_RWR(TYPE(Product<T, U>), fnmsub, a, b, c);
+  return INTRINSIC_WRR(TYPE(Product<T, U>), fnmsub, a, b, c);
 }
 
 template<r3_element_coordinates T, typename U>
@@ -385,7 +387,15 @@ Product<T, U> FusedNegatedMultiplySubtract(Wide<T> a,
       FusedNegatedMultiplySubtract(a, b.coordinates(), c.coordinates()));
 }
 
-#undef MM
+#undef TYPE
+#undef MM_PD
+#undef MM_SD
+#undef INTRINSIC_RW
+#undef INTRINSIC_RWR
+#undef INTRINSIC_WR
+#undef INTRINSIC_WW
+#undef INTRINSIC_WRR
+#undef INTRINSIC_WWW
 
 }  // namespace internal
 }  // namespace _wide
