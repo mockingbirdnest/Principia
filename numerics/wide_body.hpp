@@ -228,13 +228,15 @@ R3Element<Quotient<T, U>> operator/(R3Element<T> const& left,
   return INTRINSIC_RW(TYPE(Quotient<T, U>), div, left, right);
 }
 
-template<typename T>
-R3Element<T>& operator*=(R3Element<T>& left, Wide<double> const right) {
+template<typename T, typename U>
+R3Element<T>& operator*=(R3Element<T>& left, Wide<U> const right)
+  requires std::same_as<U, double> {
   return left = INTRINSIC_RW(TYPE(Product<T, double>), mul, left, right);
 }
 
-template<typename T>
-R3Element<T>& operator/=(R3Element<T>& left, Wide<double> const right) {
+template<typename T, typename U>
+R3Element<T>& operator/=(R3Element<T>& left, Wide<U> const right)
+  requires std::same_as<U, double> {
   return left = INTRINSIC_RW(TYPE(Quotient<T, double>), div, left, right);
 }
 
