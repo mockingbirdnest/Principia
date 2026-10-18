@@ -71,15 +71,13 @@ Wide<Scalar>::operator Scalar() const {
 
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-Wide<Scalar>& Wide<Scalar>::operator+=(Wide<Scalar> const right)
-  requires additive_group<Scalar> {
+Wide<Scalar>& Wide<Scalar>::operator+=(Wide<Difference<Scalar>> const right) {
   return *this = *this + right;
 }
 
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-Wide<Scalar>& Wide<Scalar>::operator-=(Wide<Scalar> const right)
-  requires additive_group<Scalar> {
+Wide<Scalar>& Wide<Scalar>::operator-=(Wide<Difference<Scalar>> const right) {
   return *this = *this - right;
 }
 
@@ -93,15 +91,17 @@ Wide<Scalar>& Wide<Scalar>::operator*=(U const right)
 
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-Wide<Scalar>& Wide<Scalar>::operator*=(Wide<Scalar> const right)
-  requires ring<Scalar> {
+template<ring R>
+Wide<Scalar>& Wide<Scalar>::operator*=(Wide<R> const right)
+  requires module<Scalar, R> {
   return *this = *this * right;
 }
 
 template<real_affine_space Scalar>
   requires(real_dimension<Scalar> == 1)
-Wide<Scalar>& Wide<Scalar>::operator/=(Wide<Scalar> const right)
-  requires field<Scalar> {
+template<field K>
+Wide<Scalar>& Wide<Scalar>::operator/=(Wide<K> const right)
+  requires vector_space<Scalar, K> {
   return *this = *this / right;
 }
 

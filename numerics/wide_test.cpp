@@ -43,7 +43,7 @@ class WideTest : public ::testing::Test {
 };
 
 TEST_F(WideTest, Concepts) {
-  static_assert(affine_module<Wide<Instant>, <Wide<double>>>);
+  static_assert(affine_module<Wide<Instant>, Wide<double>>);
   static_assert(ring<Wide<double>>);
   static_assert(module<Displacement<World>, Wide<double>>);
   // The field axioms require 1 / x, Identity() / x is not enough.

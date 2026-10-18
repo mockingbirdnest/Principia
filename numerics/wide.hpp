@@ -54,13 +54,15 @@ class Wide {
 
   explicit operator Scalar() const;
 
-  Wide& operator+=(Wide right) requires additive_group<Scalar>;
-  Wide& operator-=(Wide right) requires additive_group<Scalar>;
+  Wide& operator+=(Wide<Difference<Scalar>> right);
+  Wide& operator-=(Wide<Difference<Scalar>> right);
 
   template<std::integral U>
   Wide& operator*=(U right) requires additive_group<Scalar>;
-  Wide& operator*=(Wide right) requires ring<Scalar>;
-  Wide& operator/=(Wide right) requires field<Scalar>;
+  template<ring R>
+  Wide& operator*=(Wide<R> right) requires module<Scalar, R>;
+  template<field K>
+  Wide& operator/=(Wide<K> right) requires vector_space<Scalar, K>;
 
  private:
   explicit Wide(UnderlyingType value);
