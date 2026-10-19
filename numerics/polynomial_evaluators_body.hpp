@@ -38,9 +38,22 @@ struct WideEnoughGenerator<Value, Argument> {
 template<typename Value, typename Argument>
 using WideEnough = typename WideEnoughGenerator<Value, Argument>::type;
 
+// This will look weird.  This function saves a meaningful number of cycles
+// (roughly 10 for degree 10, 22 for degree 17) when evaluating the value and
+// derivative of `RelativeDegreesOfFreedom`-valued polynomials (see the
+// nanobenchmarks).  It saves a multiplication by 1.0 and a memory access to
+// load 2.0, but that's not where the performance gain comes from.  Apparently,
+// there is a lot less spilling of registers to memory when using this function
+// (xmm6-xmm11 instead of xmm6-xmm15), and also no temporaries touching memory.
+// I am leaving a `static_assert` because we'll need to recheck (using the
+// nanobenchmarks) that this function is still beneficial after any change of
+// compiler.
 template<int m, typename Value>
   requires(m > 0)
 Value Mul(Value x) {
+#if PRINCIPIA_COMPILER_MSVC
+  static_assert(_MSC_FULL_VER == 195'236'725 || _MSC_FULL_VER == 195'236'815,
+                "Check if the Mul function is still beneficial");
   if constexpr (m == 1) {
     return x;
   } else if constexpr (m == 2) {
@@ -48,6 +61,9 @@ Value Mul(Value x) {
   } else {
     return m * x;
   }
+#else
+  return m * x;
+#endif
 }
 
 // Internal helper for Estrin evaluation.  `degree` is the degree of the overall
