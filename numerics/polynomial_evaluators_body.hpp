@@ -172,6 +172,18 @@ EvaluateDerivative(Coefficients const& coefficients,
   }
 }
 
+template<int m, typename Value>
+  requires(m > 0)
+Value Mul(Value x) {
+  if constexpr (m == 1) {
+    return x;
+  } else if constexpr (m == 2) {
+    return x + x;
+  } else {
+    return m * x;
+  }
+}
+
 template<typename Value, typename Argument,
          int degree, bool fma, int low, int subdegree>
 FORCE_INLINE ValueAndDerivative<Value, Argument, low>
@@ -195,13 +207,15 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   auto const xᵐ = Pow<m>(x);
   auto const xᵐ⁻¹ = Pow<m - 1>(x);
   if constexpr (fma) {
-    auto const a_term = FusedMultiplyAdd(a.derivative, x, m * a.value);
     return {.value = FusedMultiplyAdd(a.value, xᵐ, b.value),
-            .derivative = FusedMultiplyAdd(a_term, xᵐ⁻¹, b.derivative)};
+            .derivative = FusedMultiplyAdd(
+                Mul<m>(a.value),
+                xᵐ⁻¹,
+                FusedMultiplyAdd(a.derivative, xᵐ, b.derivative))};
   } else {
-    return {.value = a.value * xᵐ + b.value,
-            .derivative = (a.derivative * x + m * a.value) * xᵐ⁻¹ +
-                          b.derivative};
+    return {
+        .value = a.value * xᵐ + b.value,
+        .derivative = (a.derivative * x + m * a.value) * xᵐ⁻¹ + b.derivative};
   }
 }
 
@@ -226,8 +240,8 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
 EvaluateDerivative(Coefficients const& coefficients,
                    WideEnoughArgument const& argument) {
   auto const& x = argument;
-  auto const& a = (low + 1) * get<low + 1>(coefficients);
-  auto const& b = low * get<low>(coefficients);
+  auto const& a = Mul<low + 1>(get<low + 1>(coefficients));
+  auto const& b = Mul<low>(get<low>(coefficients));
   if constexpr (fma) {
     return FusedMultiplyAdd(a, x, b);
   } else {
@@ -263,7 +277,7 @@ FORCE_INLINE Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
 EvaluateDerivative(Coefficients const& coefficients,
                    WideEnoughArgument const& /*argument*/) {
-  return low * get<low>(coefficients);
+  return Mul<low>(get<low>(coefficients));
 }
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
@@ -358,7 +372,7 @@ EvaluateDerivative(Coefficients const& coefficients,
     auto const a =
         InternalHornerEvaluator<Value, Argument, degree, fma, low + 1>::
             EvaluateDerivative(coefficients, argument);
-    auto const b = get<low>(coefficients) * low;
+    auto const b = Mul<low>(get<low>(coefficients));
     if constexpr (fma) {
       return FusedMultiplyAdd(a, x, b);
     } else {
