@@ -191,14 +191,17 @@ EvaluateWithDerivative(Coefficients const& coefficients,
       InternalEstrinEvaluator<Value, Argument, degree, fma, low, m - 1>::
           EvaluateWithDerivative(coefficients, argument);
 
-  auto const xᵐ = Pow<m>(argument);
-  auto const xᵐ⁻¹ = Pow<m - 1>(argument);
+  auto const& x = argument;
+  auto const xᵐ = Pow<m>(x);
+  auto const xᵐ⁻¹ = Pow<m - 1>(x);
   if constexpr (fma) {
+    auto const a_term = FusedMultiplyAdd(a.derivative, x, m * a.value);
     return {.value = FusedMultiplyAdd(a.value, xᵐ, b.value),
-            .derivative = FusedMultiplyAdd(a.derivative, xᵐ⁻¹, b.derivative)};
+            .derivative = FusedMultiplyAdd(a_term, xᵐ⁻¹, b.derivative)};
   } else {
     return {.value = a.value * xᵐ + b.value,
-            .derivative = a.derivative * xᵐ⁻¹ + b.derivative};
+            .derivative = (a.derivative * x + m * a.value) * xᵐ⁻¹ +
+                          b.derivative};
   }
 }
 
@@ -240,13 +243,10 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   auto const& x = argument;
   auto const& a = get<low + 1>(coefficients);
   auto const& b = get<low>(coefficients);
-  auto const& aʹ = (low + 1) * a;
-  auto const& bʹ = low * b;
   if constexpr (fma) {
-    return {.value = FusedMultiplyAdd(a, x, b),
-            .derivative = FusedMultiplyAdd(aʹ, x, bʹ)};
+    return {.value = FusedMultiplyAdd(a, x, b), .derivative = a};
   } else {
-    return {.value = a * x + b, .derivative = aʹ * x + bʹ};
+    return {.value = a * x + b, .derivative = a};
   }
 }
 
@@ -264,6 +264,20 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
 EvaluateDerivative(Coefficients const& coefficients,
                    WideEnoughArgument const& /*argument*/) {
   return low * get<low>(coefficients);
+}
+
+template<typename Value, typename Argument, int degree, bool fma, int low>
+FORCE_INLINE ValueAndDerivative<Value, Argument, low>
+InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
+EvaluateWithDerivative(Coefficients const& coefficients,
+                        WideEnoughArgument const& /*argument*/) {
+  auto const& a = get<low>(coefficients);
+  Derivative<Value, Argument, low + 1> const aʹ{};
+  if constexpr (fma) {
+    return {.value = a, .derivative = aʹ};
+  } else {
+    return {.value = a, .derivative = aʹ};
+  }
 }
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
