@@ -45,12 +45,13 @@ using WideEnough = typename WideEnoughGenerator<Value, Argument>::type;
 // load 2.0, but that's not where the performance gain comes from.  Apparently,
 // there is a lot less spilling of registers to memory when using this function
 // (xmm6-xmm11 instead of xmm6-xmm15), and also no temporaries touching memory.
+// Note that passing `x` by reference kills the performance gain.
 // I am leaving a `static_assert` because we'll need to recheck (using the
 // nanobenchmarks) that this function is still beneficial after any change of
 // compiler.
 template<int m, typename Value>
   requires(m > 0)
-Value Mul(Value x) {
+Value Mul(Value const x) {
 #if PRINCIPIA_COMPILER_MSVC
   static_assert(_MSC_FULL_VER == 195'236'725 || _MSC_FULL_VER == 195'236'815,
                 "Check if the Mul function is still beneficial");
