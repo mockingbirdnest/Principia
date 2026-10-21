@@ -19,6 +19,10 @@ constexpr std::int64_t PowerOf2Le(std::int64_t const n) {
   return n == 0 ? 0 : n == 1 ? 1 : PowerOf2Le(n >> 1) << 1;
 }
 
+constexpr std::int64_t PowerOf2Lt(std::int64_t const n) {
+  return n == 0 ? 0 : PowerOf2Le(n - 1);
+}
+
 constexpr std::int64_t BitReversedIncrement(std::int64_t const n,
                                             std::int64_t const bits) {
   if (bits == 0) {
