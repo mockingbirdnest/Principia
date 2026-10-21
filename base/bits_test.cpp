@@ -25,6 +25,18 @@ TEST(BitsTest, PowerOf2Le) {
   EXPECT_EQ(4, PowerOf2Le(4));
   EXPECT_EQ(4, PowerOf2Le(7));
   EXPECT_EQ(8, PowerOf2Le(8));
+  EXPECT_EQ(8, PowerOf2Le(9));
+}
+
+TEST(BitsTest, PowerOf2Lt) {
+  EXPECT_EQ(0, PowerOf2Lt(0));
+  EXPECT_EQ(0, PowerOf2Lt(1));
+  EXPECT_EQ(1, PowerOf2Lt(2));
+  EXPECT_EQ(2, PowerOf2Lt(3));
+  EXPECT_EQ(2, PowerOf2Lt(4));
+  EXPECT_EQ(4, PowerOf2Lt(7));
+  EXPECT_EQ(4, PowerOf2Lt(8));
+  EXPECT_EQ(8, PowerOf2Lt(9));
 }
 
 TEST(BitsTest, BitReversedIncrement) {
