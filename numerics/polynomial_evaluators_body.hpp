@@ -221,8 +221,8 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
 EvaluateDerivative(Coefficients const& coefficients,
                    WideEnoughArgument const& argument) {
   auto const& x = argument;
-  auto const& a = MUL(low + 1, get<low + 1>(coefficients));
-  auto const& b = MUL(low, get<low>(coefficients));
+  auto const a = MUL(low + 1, get<low + 1>(coefficients));
+  auto const b = MUL(low, get<low>(coefficients));
   if constexpr (fma) {
     return FusedMultiplyAdd(a, x, b);
   } else {
