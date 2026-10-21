@@ -42,7 +42,8 @@ class DirectSum {
   // Constructor from elements.  These are similar to constructors (2) and (3)
   // from https://en.cppreference.com/w/cpp/utility/tuple/tuple.html,
   // respectively.
-  constexpr DirectSum(T const&... args);  // NOLINT(runtime/explicit)
+  constexpr DirectSum(T const&... args)  // NOLINT(runtime/explicit)
+    requires(sizeof...(T) >= 1);
   template<typename... Args>
     requires(sizeof...(T) >= 1 && (std::constructible_from<T, Args> && ...))
   constexpr DirectSum(Args&&... args);  // NOLINT(runtime/explicit)
