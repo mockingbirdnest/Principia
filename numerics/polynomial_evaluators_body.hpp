@@ -133,7 +133,7 @@ Evaluate(Coefficients const& coefficients,
          WideEnoughArgument const& argument) {
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::Evaluate");
-  constexpr int m = PowerOf2Le(subdegree);
+  constexpr int m = PowerOf2Lt(subdegree);
 
   auto const a =
       InternalEstrinEvaluator<Value, Argument,
@@ -166,7 +166,7 @@ EvaluateDerivative(Coefficients const& coefficients,
   static_assert(subdegree >= 2,
                 "Unexpected subdegree in InternalEstrinEvaluator::"
                 "EvaluateDerivative");
-  constexpr int m = PowerOf2Le(subdegree);
+  constexpr int m = PowerOf2Lt(subdegree);
 
   auto const a =
       InternalEstrinEvaluator<Value, Argument,
