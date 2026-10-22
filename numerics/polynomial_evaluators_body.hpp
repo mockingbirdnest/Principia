@@ -255,7 +255,7 @@ EvaluateWithDerivative(Coefficients const& coefficients,
 
   auto const a =
       InternalEstrinEvaluator2<Value, Argument, Coefficients,
-                              fma, low + m, degree - m, lowʹ + m, degreeʹ -m>::
+                              fma, low + m, degree - m, lowʹ + m, degreeʹ - m>::
           EvaluateWithDerivative(coefficients, argument);
   auto const b =
       InternalEstrinEvaluator2<Value, Argument, Coefficients,
@@ -329,7 +329,7 @@ template<typename Value, typename Argument, typename Coefficients,
 FORCE_INLINE ValueAndDerivative<Value, Argument, low, lowʹ>
 InternalEstrinEvaluator2<Value, Argument, Coefficients, fma, low, 1, lowʹ, 0>::
 EvaluateWithDerivative(Coefficients const& coefficients,
-                        WideEnoughArgument const& argument) {
+                       WideEnoughArgument const& argument) {
   auto const& x = argument;
   auto const& a = get<low + 1>(coefficients);
   auto const& b = get<low>(coefficients);
@@ -364,7 +364,7 @@ template<typename Value, typename Argument, typename Coefficients,
 FORCE_INLINE ValueAndDerivative<Value, Argument, low, lowʹ>
 InternalEstrinEvaluator2<Value, Argument, Coefficients, fma, low, 0, lowʹ, 0>::
 EvaluateWithDerivative(Coefficients const& coefficients,
-                        WideEnoughArgument const& /*argument*/) {
+                       WideEnoughArgument const& /*argument*/) {
   auto const& b = get<low>(coefficients);
   auto const bʹ = MUL(lowʹ, get<lowʹ>(coefficients));
   return {.value = b, .derivative = bʹ};
