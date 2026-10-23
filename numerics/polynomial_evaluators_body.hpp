@@ -45,16 +45,12 @@ struct ValueAndDerivative {
 };
 
 // This function saves a multiplication by 1.0 and a multiplication by 2.0.
-// You'd think that the compiler would optimize this but it doesn't.
-// I am leaving a `static_assert` because we'll need to recheck (using the
-// nanobenchmarks) that this function is still beneficial after any change of
-// compiler.
+// The compiler is apparently unable to optimize these because the code is
+// produced by intrinsics in `R3Element::operator*`.
 #if PRINCIPIA_COMPILER_MSVC
 template<int m, typename Value>
   requires(m > 0)
 Value Mul(Value const x) {
-  static_assert(_MSC_FULL_VER == 195'236'725 || _MSC_FULL_VER == 195'236'815,
-                "Check if the Mul function is still beneficial");
   if constexpr (m == 1) {
     return x;
   } else if constexpr (m == 2) {
