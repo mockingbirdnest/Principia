@@ -41,22 +41,15 @@ using WideEnough = typename WideEnoughGenerator<Value, Argument>::type;
 template<typename Value, typename Argument, int low, int lowʹ>
 struct ValueAndDerivative {
   Derivative<Value, Argument, low> value;
-  //TODO(phl)what is the derivative exactly?
   Derivative<Value, Argument, lowʹ> derivative;
 };
 
-// This will look weird.  This function saves a meaningful number of cycles
-// (roughly 10 for degree 10, 22 for degree 17) when evaluating the value and
-// derivative of `RelativeDegreesOfFreedom`-valued polynomials (see the
-// nanobenchmarks).  It saves a multiplication by 1.0 and a memory access to
-// load 2.0, but that's not where the performance gain comes from.  Apparently,
-// there is a lot less spilling of registers to memory when using this function
-// (xmm6-xmm11 instead of xmm6-xmm15), and also no temporaries touching memory.
-// Note that passing `x` by reference kills the performance gain.
+// This function saves a multiplication by 1.0 and a multiplication by 2.0.
+// You'd think that the compiler would optimize this but it doesn't.
 // I am leaving a `static_assert` because we'll need to recheck (using the
 // nanobenchmarks) that this function is still beneficial after any change of
 // compiler.
-#if 1 && PRINCIPIA_COMPILER_MSVC
+#if PRINCIPIA_COMPILER_MSVC
 template<int m, typename Value>
   requires(m > 0)
 Value Mul(Value const x) {
