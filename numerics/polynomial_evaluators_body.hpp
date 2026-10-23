@@ -545,7 +545,8 @@ EvaluateWithDerivative(Coefficients const& coefficients,
     derivative = Derivative<Value, Argument>{};
     return;
   } else if constexpr (degree == 17) {
-    auto const& x = argument;
+    auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
+    auto const& x = wide_enough_argument;
 
     auto const aaaaa = get<17>(coefficients);
     auto const aaaab = get<16>(coefficients);
