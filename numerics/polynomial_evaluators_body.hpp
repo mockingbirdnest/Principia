@@ -56,7 +56,7 @@ struct ValueAndDerivative {
 // I am leaving a `static_assert` because we'll need to recheck (using the
 // nanobenchmarks) that this function is still beneficial after any change of
 // compiler.
-#if 0 && PRINCIPIA_COMPILER_MSVC
+#if 1 && PRINCIPIA_COMPILER_MSVC
 template<int m, typename Value>
   requires(m > 0)
 Value Mul(Value const x) {
@@ -249,7 +249,7 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   static_assert(degree >= degreeʹ);
   static_assert(low <= lowʹ);
   constexpr int m = ClosestPowerOf2(degree) / 2;
-  constexpr int mʹ = degreeʹ < degree && m > 1 ? m - 1 : m;
+  constexpr int mʹ = /*degreeʹ < degree && m > 1 ? m - 1 :*/ m;
 
   auto const a =
       InternalEstrinEvaluator2<
@@ -545,7 +545,7 @@ EvaluateWithDerivative(Coefficients const& coefficients,
     value = get<0>(coefficients);
     derivative = Derivative<Value, Argument>{};
     return;
-#if 1
+#if 0
   } else if constexpr (degree == 17) {
     auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
     auto const& x = wide_enough_argument;
