@@ -182,7 +182,19 @@ Evaluate(Coefficients const& coefficients,
          WideEnoughArgument const& argument) {
   static_assert(degree >= 2,
                 "Unexpected degree in InternalEstrinEvaluator::Evaluate");
-  //TODO(phl)Comment m.
+  // There is a wide flexibility in the choice of `m`, which is not documented
+  // in the literature.  [Mul16], p. 47 gives the example of degree 7 and says
+  // that the algorithm "can be easily extended to ... any degree".  [Est60]
+  // takes `2ᵐ < degree` which is a reasonable choice, but doesn't justify it.
+  // https://en.wikipedia.org/wiki/Estrin%27s_scheme takes `2ᵐ ≤ degree` which
+  // is a lame choice when `degree` is a power of 2 because the first recursion
+  // has `a` of degree 0 and doesn't usefully split the polynomial.
+  // Some choices of `m` are unambiguously bad.  For instance, `m = 2` doesn't
+  // requires to evaluate powers above `x²`, but it sequentializes the FMAs
+  // above the innermost ones.  We want to choose `m` as small as possible (to
+  // avoid computing large powers of `x`), but large enough to split the
+  // polynomial into two pieces of roughly equal degree, to preserve the
+  // independence of the FMAs.  The choice below achieves this.
   constexpr int m = ClosestPowerOf2(degree) / 2;
 
   auto const a =
@@ -249,22 +261,27 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   static_assert(degree >= degreeʹ);
   static_assert(low <= lowʹ);
   constexpr int m = ClosestPowerOf2(degree) / 2;
-  constexpr int mʹ = /*degreeʹ < degree && m > 1 ? m - 1 :*/ m;
+  // In order to comply with the assertions above, `mʹ` must be either `m` or
+  // `m - 1`.  Choosing it to be `degreeʹ < degree && m > 1 ? m - 1 : m`
+  // would result in a better "alignment" of the computations (`lowʹ == low`
+  // most of the time, so the end of the recursion only accesses two
+  // coefficients instead of three).  Unfortunately, this would require the
+  // extra computation of `Pow<mʹ>(x)`.  Since the compiler doesn't take
+  // advantage of the improved "alignment", we'll go with the simplest choice.
+  constexpr int mʹ = m;
 
-  auto const a =
-      InternalEstrinEvaluator2<
-          Value, Argument, Coefficients,
-          fma, low + m, degree - m, lowʹ + mʹ, degreeʹ - mʹ>::
-              EvaluateWithDerivative(coefficients, argument);
-  auto const b =
-      InternalEstrinEvaluator2<
-          Value, Argument, Coefficients,
-          fma, low, m - 1, lowʹ, mʹ - 1>::
-              EvaluateWithDerivative(coefficients, argument);
+  auto const a = InternalEstrinEvaluator2<
+                     Value, Argument, Coefficients,
+                     fma, low + m, degree - m, lowʹ + mʹ, degreeʹ - mʹ>::
+                 EvaluateWithDerivative(coefficients, argument);
+  auto const b = InternalEstrinEvaluator2<
+                     Value, Argument, Coefficients,
+                     fma, low, m - 1, lowʹ, mʹ - 1>::
+                 EvaluateWithDerivative(coefficients, argument);
 
   auto const& x = argument;
   auto const xᵐ = Pow<m>(x);
-  auto const xᵐʹ = Pow<mʹ>(x);
+  auto const xᵐʹ = xᵐ;
   if constexpr (fma) {
     return {.value = FusedMultiplyAdd(a.value, xᵐ, b.value),
             .derivative = FusedMultiplyAdd(a.derivative, xᵐʹ, b.derivative)};
