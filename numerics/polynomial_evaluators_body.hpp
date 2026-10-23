@@ -183,8 +183,7 @@ Evaluate(Coefficients const& coefficients,
   static_assert(degree >= 2,
                 "Unexpected degree in InternalEstrinEvaluator::Evaluate");
   //TODO(phl)Comment m.
-  constexpr int m₀ = PowerOf2Lt(degree);
-  constexpr int m = degree - m₀ < m₀ - 1 ? m₀ / 2 : m₀;
+  constexpr int m = ClosestPowerOf2(degree) / 2;
 
   auto const a =
       InternalEstrinEvaluator<Value, Argument, Coefficients,
@@ -218,8 +217,7 @@ EvaluateDerivative(Coefficients const& coefficients,
   static_assert(degree >= 2,
                 "Unexpected degree in InternalEstrinEvaluator::"
                 "EvaluateDerivative");
-  constexpr int m₀ = PowerOf2Lt(degree);
-  constexpr int m = degree - m₀ < m₀ - 1 ? m₀ / 2 : m₀;
+  constexpr int m = ClosestPowerOf2(degree) / 2;
 
   auto const a =
       InternalEstrinEvaluator<Value, Argument, Coefficients,
@@ -250,8 +248,7 @@ EvaluateWithDerivative(Coefficients const& coefficients,
                 "EvaluateWithDerivative");
   static_assert(degree >= degreeʹ);
   static_assert(low <= lowʹ);
-  constexpr int m₀ = PowerOf2Lt(degree);
-  constexpr int m = degree - m₀ < m₀ - 1 ? m₀ / 2 : m₀;
+  constexpr int m = ClosestPowerOf2(degree) / 2;
   constexpr int mʹ = degreeʹ < degree && m > 1 ? m - 1 : m;
 
   auto const a =
