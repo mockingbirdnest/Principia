@@ -252,24 +252,28 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   static_assert(low <= lowʹ);
   constexpr int m₀ = PowerOf2Lt(degree);
   constexpr int m = degree - m₀ < m₀ - 1 ? m₀ / 2 : m₀;
+  constexpr int mʹ = degreeʹ < degree && m > 1 ? m - 1 : m;
 
   auto const a =
-      InternalEstrinEvaluator2<Value, Argument, Coefficients,
-                              fma, low + m, degree - m, lowʹ + m, degreeʹ - m>::
-          EvaluateWithDerivative(coefficients, argument);
+      InternalEstrinEvaluator2<
+          Value, Argument, Coefficients,
+          fma, low + m, degree - m, lowʹ + mʹ, degreeʹ - mʹ>::
+              EvaluateWithDerivative(coefficients, argument);
   auto const b =
-      InternalEstrinEvaluator2<Value, Argument, Coefficients,
-                              fma, low, m - 1, lowʹ, m - 1>::
-          EvaluateWithDerivative(coefficients, argument);
+      InternalEstrinEvaluator2<
+          Value, Argument, Coefficients,
+          fma, low, m - 1, lowʹ, mʹ - 1>::
+              EvaluateWithDerivative(coefficients, argument);
 
   auto const& x = argument;
   auto const xᵐ = Pow<m>(x);
+  auto const xᵐʹ = Pow<mʹ>(x);
   if constexpr (fma) {
     return {.value = FusedMultiplyAdd(a.value, xᵐ, b.value),
-            .derivative = FusedMultiplyAdd(a.derivative, xᵐ, b.derivative)};
+            .derivative = FusedMultiplyAdd(a.derivative, xᵐʹ, b.derivative)};
   } else {
     return {.value = a.value * xᵐ + b.value,
-            .derivative = a.derivative * xᵐ + b.derivative};
+            .derivative = a.derivative * xᵐʹ + b.derivative};
   }
 }
 
@@ -544,6 +548,7 @@ EvaluateWithDerivative(Coefficients const& coefficients,
     value = get<0>(coefficients);
     derivative = Derivative<Value, Argument>{};
     return;
+#if 1
   } else if constexpr (degree == 17) {
     auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
     auto const& x = wide_enough_argument;
@@ -641,6 +646,7 @@ EvaluateWithDerivative(Coefficients const& coefficients,
     auto const x8 = Pow<8>(x);
     value = FusedMultiplyAdd(a, x8, b);
     derivative = FusedMultiplyAdd(aʹ, x8, bʹ);
+#endif
   } else {
     auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
     if constexpr (fma_policy == FMAPolicy::Auto) {
