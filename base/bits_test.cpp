@@ -39,6 +39,19 @@ TEST(BitsTest, PowerOf2Lt) {
   EXPECT_EQ(8, PowerOf2Lt(9));
 }
 
+TEST(BitsTest, ClosestPowerOf2) {
+  EXPECT_EQ(0, ClosestPowerOf2(0));
+  EXPECT_EQ(1, ClosestPowerOf2(1));
+  EXPECT_EQ(2, ClosestPowerOf2(2));
+  EXPECT_EQ(2, ClosestPowerOf2(3));
+  EXPECT_EQ(4, ClosestPowerOf2(4));
+  EXPECT_EQ(4, ClosestPowerOf2(5));
+  EXPECT_EQ(4, ClosestPowerOf2(6));
+  EXPECT_EQ(8, ClosestPowerOf2(7));
+  EXPECT_EQ(8, ClosestPowerOf2(8));
+  EXPECT_EQ(8, ClosestPowerOf2(9));
+}
+
 TEST(BitsTest, BitReversedIncrement) {
   EXPECT_EQ(0x8, BitReversedIncrement(0x0, 4));
   EXPECT_EQ(0x9, BitReversedIncrement(0x1, 4));
