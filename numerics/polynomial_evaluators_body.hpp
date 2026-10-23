@@ -178,12 +178,12 @@ Evaluate(Coefficients const& coefficients,
   // There is a wide flexibility in the choice of `m`, which is not documented
   // in the literature.  [Mul16], p. 47 gives the example of degree 7 and says
   // that the algorithm "can be easily extended to ... any degree".  [Est60]
-  // takes `2ᵐ < degree` which is a reasonable choice, but doesn't justify it.
-  // https://en.wikipedia.org/wiki/Estrin%27s_scheme takes `2ᵐ ≤ degree` which
-  // is a lame choice when `degree` is a power of 2 because the first recursion
-  // has `a` of degree 0 and doesn't usefully split the polynomial.
+  // takes `2ᵐ < degree` which is a reasonable choice, but he doesn't justify
+  // it.  https://en.wikipedia.org/wiki/Estrin%27s_scheme takes `2ᵐ ≤ degree`
+  // which is a lame choice when `degree` is a power of 2 because the first
+  // recursion has `a` of degree 0 and doesn't usefully split the polynomial.
   // Some choices of `m` are unambiguously bad.  For instance, `m = 2` doesn't
-  // requires to evaluate powers above `x²`, but it sequentializes the FMAs
+  // require to evaluate powers above `x²`, but it sequentializes the FMAs
   // above the innermost ones.  We want to choose `m` as small as possible (to
   // avoid computing large powers of `x`), but large enough to split the
   // polynomial into two pieces of roughly equal degree, to preserve the
