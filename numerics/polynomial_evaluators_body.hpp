@@ -544,6 +544,102 @@ EvaluateWithDerivative(Coefficients const& coefficients,
     value = get<0>(coefficients);
     derivative = Derivative<Value, Argument>{};
     return;
+  } else if constexpr (degree == 17) {
+    auto const& x = argument;
+
+    auto const aaaaa = get<17>(coefficients);
+    auto const aaaab = get<16>(coefficients);
+    auto const aaaabʹ = MUL(17, get<17>(coefficients));
+    auto const aaaa = FusedMultiplyAdd(aaaaa, x, aaaab);
+    auto const aaaaʹ = aaaabʹ;
+
+    auto const aaaba = get<15>(coefficients);
+    auto const aaabb = get<14>(coefficients);
+    auto const aaabaʹ = MUL(16, get<16>(coefficients));
+    auto const aaabbʹ = MUL(15, get<15>(coefficients));
+    auto const aaab = FusedMultiplyAdd(aaaba, x, aaabb);
+    auto const aaabʹ = FusedMultiplyAdd(aaabaʹ, x, aaabbʹ);
+
+    auto const xaaa = Pow<2>(x);
+    auto const aaa = FusedMultiplyAdd(aaaa, xaaa, aaab);
+    auto const aaaʹ = FusedMultiplyAdd(aaaaʹ, xaaa, aaabʹ);
+
+    auto const aaba = get<13>(coefficients);
+    auto const aabb = get<12>(coefficients);
+    auto const aabaʹ = MUL(14, get<14>(coefficients));
+    auto const aabbʹ = MUL(13, get<13>(coefficients));
+    auto const aab = FusedMultiplyAdd(aaba, x, aabb);
+    auto const aabʹ = FusedMultiplyAdd(aabaʹ, x, aabbʹ);
+
+    auto const xaa = Pow<2>(x);
+    auto const aa = FusedMultiplyAdd(aaa, xaa, aab);
+    auto const aaʹ = FusedMultiplyAdd(aaaʹ, xaa, aabʹ);
+
+    auto const abaa = get<11>(coefficients);
+    auto const abab = get<10>(coefficients);
+    auto const abaaʹ = MUL(12, get<12>(coefficients));
+    auto const ababʹ = MUL(11, get<11>(coefficients));
+    auto const aba = FusedMultiplyAdd(abaa, x, abab);
+    auto const abaʹ = FusedMultiplyAdd(abaaʹ, x, ababʹ);
+
+    auto const abba = get<9>(coefficients);
+    auto const abbb = get<8>(coefficients);
+    auto const abbaʹ = MUL(10, get<10>(coefficients));
+    auto const abbbʹ = MUL(9, get<9>(coefficients));
+    auto const abb = FusedMultiplyAdd(abba, x, abbb);
+    auto const abbʹ = FusedMultiplyAdd(abbaʹ, x, abbbʹ);
+
+    auto const xab = Pow<2>(x);
+    auto const ab = FusedMultiplyAdd(aba, xab, abb);
+    auto const abʹ = FusedMultiplyAdd(abaʹ, xab, abbʹ);
+
+    auto const xa = Pow<4>(x);
+    auto const a = FusedMultiplyAdd(aa, xa, ab);
+    auto const aʹ = FusedMultiplyAdd(aaʹ, xa, abʹ);
+
+    auto const baaa = get<7>(coefficients);
+    auto const baab = get<6>(coefficients);
+    auto const baaaʹ = MUL(8, get<8>(coefficients));
+    auto const baabʹ = MUL(7, get<7>(coefficients));
+    auto const baa = FusedMultiplyAdd(baaa, x, baab);
+    auto const baaʹ = FusedMultiplyAdd(baaaʹ, x, baabʹ);
+
+    auto const baba = get<5>(coefficients);
+    auto const babb = get<4>(coefficients);
+    auto const babaʹ = MUL(6, get<6>(coefficients));
+    auto const babbʹ = MUL(5, get<5>(coefficients));
+    auto const bab = FusedMultiplyAdd(baba, x, babb);
+    auto const babʹ = FusedMultiplyAdd(babaʹ, x, babbʹ);
+
+    auto const xba = Pow<2>(x);
+    auto const ba = FusedMultiplyAdd(baa, xba, bab);
+    auto const baʹ = FusedMultiplyAdd(baaʹ, xba, babʹ);
+
+    auto const bbaa = get<3>(coefficients);
+    auto const bbab = get<2>(coefficients);
+    auto const bbaaʹ = MUL(4, get<4>(coefficients));
+    auto const bbabʹ = MUL(3, get<3>(coefficients));
+    auto const bba = FusedMultiplyAdd(bbaa, x, bbab);
+    auto const bbaʹ = FusedMultiplyAdd(bbaaʹ, x, bbabʹ);
+
+    auto const bbba = get<1>(coefficients);
+    auto const bbbb = get<0>(coefficients);
+    auto const bbbaʹ = MUL(2, get<2>(coefficients));
+    auto const bbbbʹ = MUL(1, get<1>(coefficients));
+    auto const bbb = FusedMultiplyAdd(bbba, x, bbbb);
+    auto const bbbʹ = FusedMultiplyAdd(bbbaʹ, x, bbbbʹ);
+
+    auto const xbb = Pow<2>(x);
+    auto const bb = FusedMultiplyAdd(bba, xbb, bbb);
+    auto const bbʹ = FusedMultiplyAdd(bbaʹ, xbb, bbbʹ);
+
+    auto const xb = Pow<4>(x);
+    auto const b = FusedMultiplyAdd(ba, xb, bb);
+    auto const bʹ = FusedMultiplyAdd(baʹ, xb, bbʹ);
+
+    auto const x8 = Pow<8>(x);
+    value = FusedMultiplyAdd(a, x8, b);
+    derivative = FusedMultiplyAdd(aʹ, x8, bʹ);
   } else {
     auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
     if constexpr (fma_policy == FMAPolicy::Auto) {
