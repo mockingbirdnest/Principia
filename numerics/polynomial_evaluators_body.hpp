@@ -183,7 +183,9 @@ Evaluate(Coefficients const& coefficients,
   // above the innermost ones.  We want to choose `m` as small as possible (to
   // avoid computing large powers of `x`), but large enough to split the
   // polynomial into two pieces of roughly equal degree, to preserve the
-  // independence of the FMAs.  The choice below achieves this.
+  // independence of the FMAs.  The evaluation tree may end up a bit deeper with
+  // this choice, and the leaves look more like Horner, but the benchmarks
+  // demonstrate that this is preferable to Estrin's choice.
   constexpr int m = ClosestPowerOf2(degree) / 2;
 
   auto const a =
@@ -328,7 +330,8 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   auto const bʹ = get<lowʹ>(coefficients);
   if constexpr (fma) {
     // The strange formula for the derivative replaces two multiplications and
-    // one FMA by two FMAs.
+    // one FMA by two FMAs.  It also avoids having to reify the value of `lowʹ`
+    // in the generated code.
     return {.value = FusedMultiplyAdd(a, x, b),
             .derivative = FusedMultiplySubtract(
                 FusedMultiplyAdd(aʹ, x, bʹ), lowʹ + 1, bʹ)};
