@@ -319,16 +319,21 @@ InternalEstrinEvaluatorWithDerivative<Value, Argument, Coefficients,
                                       fma, low, 1, lowʹ, 1>::
 EvaluateWithDerivative(Coefficients const& coefficients,
                        WideEnoughArgument const& argument) {
-  auto const& x = argument;
-  auto const& a = get<low + 1>(coefficients);
-  auto const& b = get<low>(coefficients);
-  auto const aʹ = MUL(lowʹ + 1, get<lowʹ + 1>(coefficients));
-  auto const bʹ = MUL(lowʹ, get<lowʹ>(coefficients));
+  // Don't use references in these declarations, it degrades the performance of
+  // the generated code.
+  auto const x = argument;
+  auto const a = get<low + 1>(coefficients);
+  auto const b = get<low>(coefficients);
+  auto const aʹ = get<lowʹ + 1>(coefficients);
+  auto const bʹ = get<lowʹ>(coefficients);
   if constexpr (fma) {
+    // The strange formula for the derivative replaces two multiplications and
+    // one FMA by two FMAs.
     return {.value = FusedMultiplyAdd(a, x, b),
-            .derivative = FusedMultiplyAdd(aʹ, x, bʹ)};
+            .derivative = FusedMultiplySubtract(
+                FusedMultiplyAdd(aʹ, x, bʹ), lowʹ + 1, bʹ)};
   } else {
-    return {.value = a * x + b, .derivative = aʹ * x + bʹ};
+    return {.value = a * x + b, .derivative = (aʹ * x + bʹ) * (lowʹ + 1) - bʹ};
   }
 }
 
@@ -339,9 +344,9 @@ InternalEstrinEvaluatorWithDerivative<Value, Argument, Coefficients,
                                       fma, low, 1, lowʹ, 0>::
 EvaluateWithDerivative(Coefficients const& coefficients,
                        WideEnoughArgument const& argument) {
-  auto const& x = argument;
-  auto const& a = get<low + 1>(coefficients);
-  auto const& b = get<low>(coefficients);
+  auto const x = argument;
+  auto const a = get<low + 1>(coefficients);
+  auto const b = get<low>(coefficients);
   auto const bʹ = MUL(lowʹ, get<lowʹ>(coefficients));
   if constexpr (fma) {
     return {.value = FusedMultiplyAdd(a, x, b), .derivative = bʹ};
@@ -375,7 +380,7 @@ InternalEstrinEvaluatorWithDerivative<Value, Argument, Coefficients,
                                       fma, low, 0, lowʹ, 0>::
 EvaluateWithDerivative(Coefficients const& coefficients,
                        WideEnoughArgument const& /*argument*/) {
-  auto const& b = get<low>(coefficients);
+  auto const b = get<low>(coefficients);
   auto const bʹ = MUL(lowʹ, get<lowʹ>(coefficients));
   return {.value = b, .derivative = bʹ};
 }
