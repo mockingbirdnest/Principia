@@ -299,8 +299,8 @@ MicroarchitectureDescription<RelativeDegreesOfFreedom<World>, Instant> const
             zen3,
             absl::btree_map<NanobenchmarkBase<RelativeDegreesOfFreedom<World>,
                                               Instant>::BenchmarkedFunction,
-                            int>{std::pair{&fill6_from_xmm0, 1 + 1 + 2 + 5},
-                                 std::pair{&fill_from_ymm0_ymm1, 5}}},
+                            int>{std::pair{&fill6_from_xmm0, 10},
+                                 std::pair{&fill_from_ymm0_ymm1, 4}}},
         std::pair{
             rosetta2,
             absl::btree_map<NanobenchmarkBase<RelativeDegreesOfFreedom<World>,

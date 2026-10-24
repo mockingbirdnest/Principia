@@ -38,6 +38,35 @@ struct WideEnoughGenerator<Value, Argument> {
 template<typename Value, typename Argument>
 using WideEnough = typename WideEnoughGenerator<Value, Argument>::type;
 
+// This will look weird.  This function saves a meaningful number of cycles
+// (roughly 10 for degree 10, 22 for degree 17) when evaluating the value and
+// derivative of `RelativeDegreesOfFreedom`-valued polynomials (see the
+// nanobenchmarks).  It saves a multiplication by 1.0 and a memory access to
+// load 2.0, but that's not where the performance gain comes from.  Apparently,
+// there is a lot less spilling of registers to memory when using this function
+// (xmm6-xmm11 instead of xmm6-xmm15), and also no temporaries touching memory.
+// Note that passing `x` by reference kills the performance gain.
+// I am leaving a `static_assert` because we'll need to recheck (using the
+// nanobenchmarks) that this function is still beneficial after any change of
+// compiler.
+template<int m, typename Value>
+  requires(m > 0)
+Value Mul(Value const x) {
+#if PRINCIPIA_COMPILER_MSVC
+  static_assert(_MSC_FULL_VER == 195'236'725 || _MSC_FULL_VER == 195'236'815,
+                "Check if the Mul function is still beneficial");
+  if constexpr (m == 1) {
+    return x;
+  } else if constexpr (m == 2) {
+    return x + x;
+  } else {
+    return m * x;
+  }
+#else
+  return m * x;
+#endif
+}
+
 // Internal helper for Estrin evaluation.  `degree` is the degree of the overall
 // polynomial, `low` and `subdegree` defines the subpolynomial that we currently
 // evaluate, i.e., the one with a constant term coefficient
@@ -191,8 +220,8 @@ InternalEstrinEvaluator<Value, Argument, degree, fma, low, 1>::
 EvaluateDerivative(Coefficients const& coefficients,
                    WideEnoughArgument const& argument) {
   auto const& x = argument;
-  auto const& a = (low + 1) * get<low + 1>(coefficients);
-  auto const& b = low * get<low>(coefficients);
+  auto const& a = Mul<low + 1>(get<low + 1>(coefficients));
+  auto const& b = Mul<low>(get<low>(coefficients));
   if constexpr (fma) {
     return FusedMultiplyAdd(a, x, b);
   } else {
@@ -205,7 +234,7 @@ FORCE_INLINE Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, fma, low, 0>::
 EvaluateDerivative(Coefficients const& coefficients,
                    WideEnoughArgument const& /*argument*/) {
-  return low * get<low>(coefficients);
+  return Mul<low>(get<low>(coefficients));
 }
 
 template<typename Value, typename Argument, int degree, bool fma, int low>
@@ -278,7 +307,7 @@ EvaluateDerivative(Coefficients const& coefficients,
     auto const a =
         InternalHornerEvaluator<Value, Argument, degree, fma, low + 1>::
             EvaluateDerivative(coefficients, argument);
-    auto const b = get<low>(coefficients) * low;
+    auto const b = Mul<low>(get<low>(coefficients));
     if constexpr (fma) {
       return FusedMultiplyAdd(a, x, b);
     } else {
