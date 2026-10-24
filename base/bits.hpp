@@ -13,6 +13,13 @@ constexpr std::int64_t FloorLog2(std::int64_t n);
 // Greatest power of 2 less than or equal to n.  8 ↦ 8, 7 ↦ 4.
 constexpr std::int64_t PowerOf2Le(std::int64_t n);
 
+// Greatest power of 2 strictly less than n. 9 ↦ 8, 8 ↦ 4, 7 ↦ 4.
+constexpr std::int64_t PowerOf2Lt(std::int64_t n);
+
+// Closest power of 2 to n, down in case of a tie.
+//   9 ↦ 8, 8 ↦ 8, 7 ↦ 8, 6 ↦ 4, 5 ↦ 4, 4 ↦ 4.
+constexpr std::int64_t ClosestPowerOf2(std::int64_t n);
+
 // Computes bitreversed(bitreversed(n) + 1) assuming that n is represented on
 // the given number of bits.  For 4 bits:
 //   0 ↦ 8 ↦ 4 ↦ C ↦ 2 ↦ A ↦ 6 ↦ E ↦ 1 ↦ 9 ↦ 5 ↦ D ↦ 3 ↦ B ↦ 7 ↦ F
@@ -21,8 +28,10 @@ constexpr std::int64_t BitReversedIncrement(std::int64_t n, std::int64_t bits);
 }  // namespace internal
 
 using internal::BitReversedIncrement;
+using internal::ClosestPowerOf2;
 using internal::FloorLog2;
 using internal::PowerOf2Le;
+using internal::PowerOf2Lt;
 
 }  // namespace _bits
 }  // namespace base
