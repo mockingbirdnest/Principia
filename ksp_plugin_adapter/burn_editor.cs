@@ -215,7 +215,6 @@ class BurnEditor : ScalingRenderer {
       if (first_time_rendering_) {
         first_time_rendering_ = false;
         changed = true;
-        engine_warning_ = "";
         ReformatΔv();
       }
 
@@ -233,13 +232,7 @@ class BurnEditor : ScalingRenderer {
           // computed for the burn: this makes it possible to edit the burn in
           // the Tracking Station where we cannot see the engines and RCS.
 
-          engine_warning_ = "";
           bool has_active_engine = HasActiveEngine();
-          if (!has_active_engine) {
-            engine_warning_ +=
-                L10N.CacheFormat(
-                    "#Principia_BurnEditor_Warning_NoActiveEngines");
-          }
           UnityEngine.GUI.enabled = has_active_engine;
           if (UnityEngine.GUILayout.Button(
                   ConditionalCheckMark(Actuator.ACTIVE_ENGINES) +
@@ -252,10 +245,6 @@ class BurnEditor : ScalingRenderer {
           }
 
           bool has_active_rcs = HasActiveRCS();
-          if (!has_active_rcs) {
-            engine_warning_ +=
-                L10N.CacheFormat("#Principia_BurnEditor_Warning_NoActiveRCS");
-          }
           UnityEngine.GUI.enabled = has_active_rcs;
           if (UnityEngine.GUILayout.Button(
                   ConditionalCheckMark(Actuator.ACTIVE_RCS) +
@@ -344,9 +333,13 @@ class BurnEditor : ScalingRenderer {
             initial_time_ += period;
           }
         } else {
-          UnityEngine.GUILayout.Button("", GUILayoutWidth(1));
+          UnityEngine.GUI.enabled = false;
+          UnityEngine.GUILayout.Button(decrement_revolution_,
+                                       GUILayoutWidth(1));
           UnityEngine.GUILayout.Space(Width(5));
-          UnityEngine.GUILayout.Button("", GUILayoutWidth(1));
+          UnityEngine.GUILayout.Button(increment_revolution_,
+                                       GUILayoutWidth(1));
+          UnityEngine.GUI.enabled = true;
         }
 
         // Display and select the time base for the manœuvre.
@@ -406,8 +399,6 @@ class BurnEditor : ScalingRenderer {
           }
         }
       }
-      UnityEngine.GUILayout.Label(engine_warning_,
-                                  Style.Warning(UnityEngine.GUI.skin.label));
       changed_reference_frame_ = false;
     }
     return changed ? Event.Changed : Event.None;
@@ -810,7 +801,6 @@ class BurnEditor : ScalingRenderer {
   private readonly PrincipiaPluginAdapter adapter_;
 
   private bool changed_reference_frame_ = false;
-  private string engine_warning_ = "";
 
   private static UnityEngine.Texture decrement_revolution_;
   private static UnityEngine.Texture increment_revolution_;
