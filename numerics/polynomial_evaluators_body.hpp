@@ -183,13 +183,9 @@ Evaluate(Coefficients const& coefficients,
   // recursion has `a` of degree 0 and doesn't usefully split the polynomial.
   // Some choices of `m` are unambiguously bad.  For instance, `m = 2` doesn't
   // require to evaluate powers above `x²`, but it sequentializes the FMAs
-  // above the innermost ones.  We want to choose `m` as small as possible (to
-  // avoid computing large powers of `x`), but large enough to split the
-  // polynomial into two pieces of roughly equal degree, to preserve the
-  // independence of the FMAs.  The evaluation tree may end up a bit deeper with
-  // this choice, and the leaves look more like Horner, but the benchmarks
-  // demonstrate that this is preferable to Estrin's choice.
-  constexpr int m = ClosestPowerOf2(degree) / 2;
+  // above the innermost ones.  Here and in `EvaluateDerivative` we use Estrin's
+  // choice.
+  constexpr int m = PowerOf2Lt(degree);
 
   auto const a =
       InternalEstrinEvaluator<Value, Argument, Coefficients,
@@ -223,7 +219,7 @@ EvaluateDerivative(Coefficients const& coefficients,
   static_assert(degree >= 2,
                 "Unexpected degree in InternalEstrinEvaluator::"
                 "EvaluateDerivative");
-  constexpr int m = ClosestPowerOf2(degree) / 2;
+  constexpr int m = PowerOf2Lt(degree);
 
   auto const a =
       InternalEstrinEvaluator<Value, Argument, Coefficients,
@@ -254,6 +250,12 @@ EvaluateWithDerivative(Coefficients const& coefficients,
                 "EvaluateWithDerivative");
   static_assert(degree == degreeʹ || degree == degreeʹ + 1);
   static_assert(low == lowʹ || low == lowʹ - 1);
+  // Here we choose `m` as small as possible (to avoid computing large powers of
+  // `x`), but large enough to split the polynomial into two pieces of roughly
+  // equal degree, to preserve the independence of the FMAs.  The evaluation
+  // tree may end up a bit deeper with this choice, and the leaves look more
+  // like Horner, but the benchmarks demonstrate that this is preferable to
+  // Estrin's choice (because it relieves register pressure).
   constexpr int m = ClosestPowerOf2(degree) / 2;
   // In order to comply with the assertions above, `mʹ` must be either `m` or
   // `m - 1`.  Choosing it to be `degreeʹ < degree && m > 1 ? m - 1 : m`
