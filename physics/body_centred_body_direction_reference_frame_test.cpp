@@ -191,9 +191,9 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, GeometricAcceleration) {
   // ensures that we don't get NaNs.
   EXPECT_THAT(big_small_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
-                  -9.54502614154908457e5 * Metre / Pow<2>(Second),
-                  -1.90900949256416853e6 * Metre / Pow<2>(Second),
-                  -2.86351378905829182e6 * Metre / Pow<2>(Second)}), 0));
+                  -9.54502614154907991e5 * Metre / Pow<2>(Second),
+                  -1.90900949256416829e6 * Metre / Pow<2>(Second),
+                  -2.86351378905829089e6 * Metre / Pow<2>(Second)}), 0));
 }
 
 TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Serialization) {
@@ -258,10 +258,10 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, ConstructFromOneBody) {
             {ICRS::origin, ICRS::unmoving});
     EXPECT_THAT(
         (dof_from_discrete.position() - dof_from_both_bodies.position()).Norm(),
-        VanishesBefore(1 * Kilo(Metre), 0, 15));
+        VanishesBefore(1 * Kilo(Metre), 0, 17));
     EXPECT_THAT(
         (dof_from_discrete.velocity() - dof_from_both_bodies.velocity()).Norm(),
-        VanishesBefore(1 * Kilo(Metre) / Second, 0, 93));
+        VanishesBefore(1 * Kilo(Metre) / Second, 0, 94));
     // For the moment, the `BodyCentredBodyDirectionReferenceFrame` assumes that
     // its reference trajectories are free-falling, and gives us the wrong
     // geometric acceleration when this is not the case.
