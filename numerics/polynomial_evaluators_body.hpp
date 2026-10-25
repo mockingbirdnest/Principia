@@ -246,7 +246,7 @@ InternalEstrinEvaluatorWithDerivative<Value, Argument, Coefficients,
 EvaluateWithDerivative(Coefficients const& coefficients,
                        WideEnoughArgument const& argument) {
   static_assert(degree >= 2,
-                "Unexpected degree in InternalEstrinEvaluator::"
+                "Unexpected degree in InternalEstrinEvaluatorWithDerivative::"
                 "EvaluateWithDerivative");
   static_assert(degree == degreeʹ || degree == degreeʹ + 1);
   static_assert(low == lowʹ || low == lowʹ - 1);
