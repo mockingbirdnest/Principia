@@ -54,7 +54,9 @@ constexpr DirectSum<T...>::DirectSum(uninitialized_t)
   requires(!uninitialized_constructible<T> && ...) {}
 
 template<affine... T>
-constexpr DirectSum<T...>::DirectSum(T const&... args) : tuple_(args...) {}
+constexpr DirectSum<T...>::DirectSum(T const&... args)
+  requires(sizeof...(T) >= 1)
+    : tuple_(args...) {}
 
 template<affine... T>
 template<typename... Args>
