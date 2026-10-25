@@ -249,16 +249,15 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   static_assert(degree >= 2,
                 "Unexpected degree in InternalEstrinEvaluator::"
                 "EvaluateWithDerivative");
-  static_assert(degree >= degreeʹ);
-  static_assert(low <= lowʹ);
+  static_assert(degree == degreeʹ || degree == degreeʹ + 1);
+  static_assert(low == lowʹ || low == lowʹ - 1);
   constexpr int m = ClosestPowerOf2(degree) / 2;
   // In order to comply with the assertions above, `mʹ` must be either `m` or
   // `m - 1`.  Choosing it to be `degreeʹ < degree && m > 1 ? m - 1 : m`
   // would result in a better "alignment" of the computations (`lowʹ == low`
   // most of the time, so the end of the recursion only accesses two
   // coefficients instead of three).  Unfortunately, this would require the
-  // extra computation of `Pow<mʹ>(x)`.  Since the compiler doesn't take
-  // advantage of the improved "alignment", we'll go with the simplest choice.
+  // extra computation of `Pow<mʹ>(x)`, which makes things more expensive.
   constexpr int mʹ = m;
 
   auto const a = InternalEstrinEvaluatorWithDerivative<
@@ -321,6 +320,10 @@ InternalEstrinEvaluatorWithDerivative<Value, Argument, Coefficients,
                                       fma, low, 1, lowʹ, 1>::
 EvaluateWithDerivative(Coefficients const& coefficients,
                        WideEnoughArgument const& argument) {
+  // No point in trying to factor out the inner FMA in the computation of the
+  // derivative below because the degrees are never aligned.  If this ever
+  // changed, this assertion would fire.
+  static_assert(low == lowʹ - 1);
   // Don't use references in these declarations, it degrades the performance of
   // the generated code.
   auto const x = argument;
@@ -331,7 +334,8 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   if constexpr (fma) {
     // The strange formula for the derivative replaces two multiplications and
     // one FMA by two FMAs.  It also avoids having to reify the value of `lowʹ`
-    // in the generated code.
+    // in the generated code.  Note that this does not appear to be beneficial
+    // when we only compute the derivative.
     return {.value = FusedMultiplyAdd(a, x, b),
             .derivative = FusedMultiplySubtract(
                 FusedMultiplyAdd(aʹ, x, bʹ), lowʹ + 1, bʹ)};
