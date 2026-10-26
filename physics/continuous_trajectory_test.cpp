@@ -29,6 +29,7 @@
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/approximate_quantity.hpp"
+#include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -54,6 +55,7 @@ using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_almost_equals;
 using namespace principia::testing_utilities::_approximate_quantity;
+using namespace principia::testing_utilities::_componentwise;
 using namespace principia::testing_utilities::_is_near;
 using namespace principia::testing_utilities::_matchers;
 using namespace principia::testing_utilities::_numerics;
@@ -476,7 +478,9 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
             trajectory->t_max());
 
   // Check that the positions and velocities match the ones given by the
-  // functions above.
+  // functions above.  Note that `EvaluateDegreesOfFreedom` is optimized for
+  // combined evaluation, so it doesn't necessarily return the same result as
+  // evaluating the position and velocity separately.
   for (Instant time = trajectory->t_min();
        time <= trajectory->t_max();
        time += step / number_of_substeps) {
@@ -484,9 +488,10 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
                 AlmostEquals(position_function(time) - World::origin, 0, 11));
     EXPECT_THAT(trajectory->EvaluateVelocity(time),
                 AlmostEquals(velocity_function(time), 0, 4));
-    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time),
-              DegreesOfFreedom<World>(trajectory->EvaluatePosition(time),
-                                      trajectory->EvaluateVelocity(time)));
+    EXPECT_THAT(
+        trajectory->EvaluateDegreesOfFreedom(time),
+        Componentwise(AlmostEquals(trajectory->EvaluatePosition(time), 0, 2),
+                      AlmostEquals(trajectory->EvaluateVelocity(time), 0, 0)));
   }
 
 #if PRINCIPIA_CONTINUOUS_TRAJECTORY_SUPPORTS_PIECEWISE_POISSON_SERIES
