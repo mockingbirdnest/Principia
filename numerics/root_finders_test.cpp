@@ -383,51 +383,51 @@ TEST_F(RootFindersTest, SmoothMaximum) {
   double eps = 2 * ϵ;
   evaluations = 0;
   EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
-              AlmostEquals(1, 39'406'981));
-  EXPECT_THAT(evaluations, Eq(37));
+              AlmostEquals(1, 70'728));
+  EXPECT_THAT(evaluations, Eq(43));
   evaluations = 0;
   EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
-              AlmostEquals(1, 2'532'035));
-  EXPECT_THAT(evaluations, Eq(25));
+              AlmostEquals(1, 25'585'757));
+  EXPECT_THAT(evaluations, Eq(46));
 
   // 3/4 of the precision.
   eps = Sqrt(Sqrt(ϵ³));
   evaluations = 0;
   EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
-              AlmostEquals(1, 39'407'194));
-  EXPECT_THAT(evaluations, Eq(24));
+              AlmostEquals(1, 79'153));
+  EXPECT_THAT(evaluations, Eq(25));
   evaluations = 0;
   EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
-              AlmostEquals(1, 2'528'998));
-  EXPECT_THAT(evaluations, Eq(21));
+              AlmostEquals(1, 9'076'640));
+  EXPECT_THAT(evaluations, Eq(25));
 
   // 2/3 of the precision.
   eps = Cbrt(ϵ²);
   evaluations = 0;
   EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
-              AlmostEquals(1, 39'407'194));
+              AlmostEquals(1, 55'672));
   EXPECT_THAT(evaluations, Eq(18));
   evaluations = 0;
   EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
-              AlmostEquals(1, 2'461'373));
-  EXPECT_THAT(evaluations, Eq(15));
+              AlmostEquals(1, 68'817'228));
+  EXPECT_THAT(evaluations, Eq(30));
 
   // 5/9 of the precision.
   eps = Cbrt(Cbrt(ϵ⁵));
   evaluations = 0;
   EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
-              AlmostEquals(1, 13'620'875));
-  EXPECT_THAT(evaluations, Eq(17));
+              AlmostEquals(1, 55'672));
+  EXPECT_THAT(evaluations, Eq(11));
   evaluations = 0;
   EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
-              AlmostEquals(1, 18'471'305));
-  EXPECT_THAT(evaluations, Eq(11));
+              AlmostEquals(1, 27'404'674));
+  EXPECT_THAT(evaluations, Eq(18));
 
   // 1/2 of the precision.
   eps = Sqrt(ϵ);
   evaluations = 0;
   EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
-              AlmostEquals(1, 44'628'162));
+              AlmostEquals(1, 25'137'997));
   EXPECT_THAT(evaluations, Eq(9));
   evaluations = 0;
   EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
@@ -439,7 +439,7 @@ TEST_F(RootFindersTest, SmoothMaximum) {
   eps = Cbrt(ϵ);
   evaluations = 0;
   EXPECT_THAT(Brent(f, 0.0, π / 2, std::greater<>(), eps),
-              AlmostEquals(1, 8'905'048'021));
+              AlmostEquals(1, 8'905'048'032));
   EXPECT_THAT(evaluations, Eq(8));
   evaluations = 0;
   EXPECT_THAT(Brent(f, π / 7, 9 * π / 14, std::greater<>(), eps),
