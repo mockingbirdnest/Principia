@@ -80,7 +80,7 @@ TEST_F(PolynomialEvaluatorTest, Estrin) {
   Test<Estrin, 14, 0, 0>();
   Test<Estrin, 15, 0, 0>();
   Test<Estrin, 16, 0, 0>();
-  Test<Estrin, 17, 0, 1>();
+  Test<Estrin, 17, 0, 4>();
 }
 
 TEST_F(PolynomialEvaluatorTest, Horner) {
