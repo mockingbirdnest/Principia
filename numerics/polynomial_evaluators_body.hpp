@@ -182,7 +182,7 @@ Evaluate(Coefficients const& coefficients,
   // which is a lame choice when `degree` is a power of 2 because the first
   // recursion has `a` of degree 0 and doesn't usefully split the polynomial.
   // Some choices of `m` are unambiguously bad.  For instance, `m = 2` doesn't
-  // require to evaluate powers above `x²`, but it sequentializes the FMAs
+  // require evaluating powers above `x²`, but it sequentializes the FMAs
   // above the innermost ones.  Here and in `EvaluateDerivative` we use Estrin's
   // choice.
   constexpr int m = PowerOf2Lt(degree);
