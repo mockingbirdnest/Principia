@@ -634,12 +634,12 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
   // bit less than 3 m above the nominal value around that time.
   EXPECT_THAT(
       elements.mean_semimajor_axis_interval().midpoint(),
-              DifferenceFrom(7714.42938 * Kilo(Metre),
-                             AnyOf(IsNear(2.90_(1) * Metre),     // Windows.
-                                   IsNear(2.15_(1) * Metre),     // Ubuntu SSE.
-                                   IsNear(2.27_(1) * Metre),     // Ubuntu AVX.
-                                   IsNear(1.91_(1) * Metre),     // macOS.
-                                   IsNear(2.28_(1) * Metre))));  // Windows Lie.
+      DifferenceFrom(7714.42938 * Kilo(Metre),
+                     AnyOf(IsNear(2.90_(1) * Metre),     // Windows.
+                           IsNear(2.15_(1) * Metre),     // Ubuntu SSE.
+                           IsNear(2.27_(1) * Metre),     // Ubuntu AVX.
+                           IsNear(1.91_(1) * Metre),     // macOS.
+                           IsNear(2.28_(1) * Metre))));  // Windows Weyl.
   // Reference inclination from the legend of figure 9 of [BSFL98]; that
   // value is given as 66.040° in table 1 of [BSFL98], 66.039° in [BS96], and
   // 66.04° in [Ben97].
@@ -678,13 +678,13 @@ TEST_F(OrbitAnalysisTest, TOPEXPoséidon) {
                                 IsNear(75.1_(1) * Degree),    // Ubuntu SSE.
                                 IsNear(74.5_(1) * Degree),    // Ubuntu AVX.
                                 IsNear(75.0_(1) * Degree),    // macOS.
-                                IsNear(73.0_(1) * Degree))),  // Windows Lie.
+                                IsNear(73.0_(1) * Degree))),  // Windows Weyl.
                     Field(&Interval<Angle>::max,
                           AnyOf(IsNear(99.4_(1) * Degree),      // Windows.
                                 IsNear(98.9_(1) * Degree),      // Ubuntu SSE.
                                 IsNear(99.9_(1) * Degree),      // Ubuntu AVX.
                                 IsNear(98.8_(1) * Degree),      // macOS.
-                                IsNear(98.3_(1) * Degree)))));  // Windows Lie.
+                                IsNear(98.3_(1) * Degree)))));  // Windows Weyl.
 
   EXPECT_GOLDEN_GRAPH(
       elements.PlotEccentricityVector(

@@ -386,7 +386,7 @@ TEST_F(PoissonSeriesTest, PoorlyConditionedInnerProduct2) {
                                         IsNear(0.318_(1)),     // Windows.
                                         IsNear(0.372_(1)),     // Ubuntu.
                                         IsNear(0.368_(1)),     // macOS.
-                                        IsNear(0.375_(1)))));  // Windows Lie.
+                                        IsNear(0.375_(1)))));  // Windows Weyl.
   }
   {
     auto const product =

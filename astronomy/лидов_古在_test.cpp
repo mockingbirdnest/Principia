@@ -148,7 +148,7 @@ TEST_F(Лидов古在Test, MercuryOrbiter) {
   EXPECT_THAT(mercury_centred_trajectory.size(),
               AnyOf(Eq(1'603'775),    // Windows, Ubuntu AVX, macOS AVX.
                     Eq(1'603'763),    // Ubuntu SSE, macOS SSE.
-                    Eq(1'603'773)));  // Windows new.
+                    Eq(1'603'773)));  // Windows Weyl.
   OrbitalElements const elements = OrbitalElements::ForTrajectory(
       mercury_centred_trajectory, mercury_, MasslessBody{}).value();
   // The constants c₁ and c₂ are defined in [Лид61], equations (58) and (59)
