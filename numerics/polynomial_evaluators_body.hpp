@@ -274,7 +274,8 @@ PreWeylInternalEstrinEvaluator<Value, Argument, Coefficients,
 Evaluate(Coefficients const& coefficients,
          WideEnoughArgument const& argument) {
   static_assert(degree >= 2,
-                "Unexpected degree in PreWeylInternalEstrinEvaluator::Evaluate");
+                "Unexpected degree in PreWeylInternalEstrinEvaluator::"
+                "Evaluate");
   constexpr int m = PowerOf2Le(degree);
 
   auto const a =
