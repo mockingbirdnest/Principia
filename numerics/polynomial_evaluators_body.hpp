@@ -195,33 +195,6 @@ struct InternalEstrinEvaluatorWithDerivative<Value, Argument, Coefficients,
 };
 
 template<typename Value, typename Argument, typename Coefficients,
-         bool fma, int low>
-struct InternalEstrinEvaluator<Value, Argument, Coefficients, fma, low, -1> {
-  using WideEnoughArgument = WideEnough<Value, Argument>;
-
-  FORCE_INLINE static Derivative<Value, Argument, low> Evaluate(
-      Coefficients const& coefficients,
-      WideEnoughArgument const& argument);
-  FORCE_INLINE static Derivative<Value, Argument, low> EvaluateDerivative(
-      Coefficients const& coefficients,
-      WideEnoughArgument const& argument);
-};
-
-template<typename Value, typename Argument, typename Coefficients,
-         bool fma, int low>
-struct PreWeylInternalEstrinEvaluator<Value, Argument, Coefficients,
-                                      fma, low, -1> {
-  using WideEnoughArgument = WideEnough<Value, Argument>;
-
-  FORCE_INLINE static Derivative<Value, Argument, low> Evaluate(
-      Coefficients const& coefficients,
-      WideEnoughArgument const& argument);
-  FORCE_INLINE static Derivative<Value, Argument, low> EvaluateDerivative(
-      Coefficients const& coefficients,
-      WideEnoughArgument const& argument);
-};
-
-template<typename Value, typename Argument, typename Coefficients,
          bool fma, int low, int degree>
 FORCE_INLINE Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, Coefficients, fma, low, degree>::
@@ -559,42 +532,6 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   return {.value = b, .derivative = bʹ};
 }
 
-template<typename Value, typename Argument, typename Coefficients,
-         bool fma, int low>
-FORCE_INLINE Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, Coefficients, fma, low, -1>::
-Evaluate(Coefficients const& /*coefficients*/,
-         WideEnoughArgument const& /*argument*/) {
-  return Derivative<Value, Argument, low>{};
-}
-
-template<typename Value, typename Argument, typename Coefficients,
-         bool fma, int low>
-FORCE_INLINE Derivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, Coefficients, fma, low, -1>::
-EvaluateDerivative(Coefficients const& /*coefficients*/,
-                   WideEnoughArgument const& /*argument*/) {
-  return Derivative<Value, Argument, low>{};
-}
-
-template<typename Value, typename Argument, typename Coefficients,
-         bool fma, int low>
-FORCE_INLINE Derivative<Value, Argument, low>
-PreWeylInternalEstrinEvaluator<Value, Argument, Coefficients, fma, low, -1>::
-Evaluate(Coefficients const& /*coefficients*/,
-         WideEnoughArgument const& /*argument*/) {
-  return Derivative<Value, Argument, low>{};
-}
-
-template<typename Value, typename Argument, typename Coefficients,
-         bool fma, int low>
-FORCE_INLINE Derivative<Value, Argument, low>
-PreWeylInternalEstrinEvaluator<Value, Argument, Coefficients, fma, low, -1>::
-EvaluateDerivative(Coefficients const& /*coefficients*/,
-                   WideEnoughArgument const& /*argument*/) {
-  return Derivative<Value, Argument, low>{};
-}
-
 // Internal helper for Horner evaluation.  `degree` is the degree of the overall
 // polynomial, `low` defines the subpolynomial that we currently evaluate, i.e.,
 // the one with a constant term coefficient `get<low>(coefficients)`.
@@ -687,26 +624,30 @@ template<typename Value, typename Argument, int degree,
 Value EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
 Evaluate(Coefficients const& coefficients,
          Argument const& argument) {
-  auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
-  if constexpr (fma_policy == FMAPolicy::Auto) {
-    if ((fma_presence == FMAPresence::Present ||
-         (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
-      using InternalEvaluator = InternalEstrinEvaluator<Value,
-                                                        Argument,
-                                                        Coefficients,
-                                                        /*fma=*/true,
-                                                        /*low=*/0,
-                                                        /*degree=*/degree>;
-      return InternalEvaluator::Evaluate(coefficients, wide_enough_argument);
+  if constexpr (degree == 0) {
+    return get<0>(coefficients);
+  } else {
+    auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
+    if constexpr (fma_policy == FMAPolicy::Auto) {
+      if ((fma_presence == FMAPresence::Present ||
+           (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
+        using InternalEvaluator = InternalEstrinEvaluator<Value,
+                                                          Argument,
+                                                          Coefficients,
+                                                          /*fma=*/true,
+                                                          /*low=*/0,
+                                                          /*degree=*/degree>;
+        return InternalEvaluator::Evaluate(coefficients, wide_enough_argument);
+      }
     }
+    using InternalEvaluator = InternalEstrinEvaluator<Value,
+                                                      Argument,
+                                                      Coefficients,
+                                                      /*fma=*/false,
+                                                      /*low=*/0,
+                                                      /*degree=*/degree>;
+    return InternalEvaluator::Evaluate(coefficients, wide_enough_argument);
   }
-  using InternalEvaluator = InternalEstrinEvaluator<Value,
-                                                    Argument,
-                                                    Coefficients,
-                                                    /*fma=*/false,
-                                                    /*low=*/0,
-                                                    /*degree=*/degree>;
-  return InternalEvaluator::Evaluate(coefficients, wide_enough_argument);
 }
 
 template<typename Value, typename Argument, int degree,
@@ -715,29 +656,33 @@ Derivative<Value, Argument>
 EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
 EvaluateDerivative(Coefficients const& coefficients,
                    Argument const& argument) {
-  auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
-  if constexpr (fma_policy == FMAPolicy::Auto) {
-    if (fma_presence == FMAPresence::Present ||
-        (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
-      using InternalEvaluator =
-          InternalEstrinEvaluator<Value,
-                                  Argument,
-                                  Coefficients,
-                                  /*fma=*/true,
-                                  /*low=*/1,
-                                  /*degree=*/degree - 1>;
-      return InternalEvaluator::EvaluateDerivative(coefficients,
-                                                   wide_enough_argument);
+  if constexpr (degree == 0) {
+    return Derivative<Value, Argument>{};
+  } else {
+    auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
+    if constexpr (fma_policy == FMAPolicy::Auto) {
+      if (fma_presence == FMAPresence::Present ||
+          (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
+        using InternalEvaluator =
+            InternalEstrinEvaluator<Value,
+                                    Argument,
+                                    Coefficients,
+                                    /*fma=*/true,
+                                    /*low=*/1,
+                                    /*degree=*/degree - 1>;
+        return InternalEvaluator::EvaluateDerivative(coefficients,
+                                                     wide_enough_argument);
+      }
     }
+    using InternalEvaluator = InternalEstrinEvaluator<Value,
+                                                      Argument,
+                                                      Coefficients,
+                                                      /*fma=*/false,
+                                                      /*low=*/1,
+                                                      /*degree=*/degree - 1>;
+    return InternalEvaluator::EvaluateDerivative(coefficients,
+                                                 wide_enough_argument);
   }
-  using InternalEvaluator = InternalEstrinEvaluator<Value,
-                                                    Argument,
-                                                    Coefficients,
-                                                    /*fma=*/false,
-                                                    /*low=*/1,
-                                                    /*degree=*/degree - 1>;
-  return InternalEvaluator::EvaluateDerivative(coefficients,
-                                               wide_enough_argument);
 }
 
 template<typename Value, typename Argument, int degree,
