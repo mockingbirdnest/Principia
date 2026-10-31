@@ -24,7 +24,7 @@ using namespace principia::quantities::_tuples;
 template<typename Value, typename Argument, int degree>
 using Coefficients = Derivatives<Value, Argument, degree + 1>;
 
-template<typename Value, typename Argument, int degree,
+template<typename Value, typename Argument, int degree, bool is_pre_weyl,
          FMAPolicy fma_policy, FMAPresence fma_presence>
 class EstrinEvaluator {
   using Coefficients = internal::Coefficients<Value, Argument, degree>;
@@ -82,11 +82,13 @@ class HornerEvaluator {
 
 template<typename Value, typename Argument, int degree>
 using Estrin = internal::EstrinEvaluator<Value, Argument, degree,
+                                         /*is_pre_weyl=*/false,
                                          internal::FMAPolicy::Auto,
                                          internal::FMAPresence::Unknown>;
 template<typename Value, typename Argument, int degree>
 using EstrinWithoutFMA =
     internal::EstrinEvaluator<Value, Argument, degree,
+                              /*is_pre_weyl=*/false,
                               internal::FMAPolicy::Disallow,
                               internal::FMAPresence::Unknown>;
 template<typename Value, typename Argument, int degree>

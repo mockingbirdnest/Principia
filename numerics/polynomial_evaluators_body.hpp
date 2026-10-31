@@ -619,13 +619,37 @@ EvaluateDerivative(Coefficients const& coefficients,
   return get<degree>(coefficients) * degree;
 }
 
-template<typename Value, typename Argument, int degree,
+
+template<typename Value, typename Argument, int degree, bool is_pre_weyl,
          FMAPolicy fma_policy, FMAPresence fma_presence>
-Value EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+Value EstrinEvaluator<Value, Argument,
+                      degree, is_pre_weyl, fma_policy, fma_presence>::
 Evaluate(Coefficients const& coefficients,
          Argument const& argument) {
   if constexpr (degree == 0) {
     return get<0>(coefficients);
+  } else if constexpr (is_pre_weyl) {
+    auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
+    if constexpr (fma_policy == FMAPolicy::Auto) {
+      if ((fma_presence == FMAPresence::Present ||
+           (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA))) {
+        using InternalEvaluator =
+            PreWeylInternalEstrinEvaluator<Value,
+                                           Argument,
+                                           Coefficients,
+                                           /*fma=*/true,
+                                           /*low=*/0,
+                                           /*degree=*/degree>;
+        return InternalEvaluator::Evaluate(coefficients, wide_enough_argument);
+      }
+    }
+    using InternalEvaluator = PreWeylInternalEstrinEvaluator<Value,
+                                                             Argument,
+                                                             Coefficients,
+                                                             /*fma=*/false,
+                                                             /*low=*/0,
+                                                             /*degree=*/degree>;
+    return InternalEvaluator::Evaluate(coefficients, wide_enough_argument);
   } else {
     auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
     if constexpr (fma_policy == FMAPolicy::Auto) {
@@ -650,14 +674,40 @@ Evaluate(Coefficients const& coefficients,
   }
 }
 
-template<typename Value, typename Argument, int degree,
+template<typename Value, typename Argument, int degree, bool is_pre_weyl,
          FMAPolicy fma_policy, FMAPresence fma_presence>
 Derivative<Value, Argument>
-EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+EstrinEvaluator<Value, Argument,
+                degree, is_pre_weyl, fma_policy, fma_presence>::
 EvaluateDerivative(Coefficients const& coefficients,
                    Argument const& argument) {
   if constexpr (degree == 0) {
     return Derivative<Value, Argument>{};
+  } else if constexpr (is_pre_weyl) {
+    auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
+    if constexpr (fma_policy == FMAPolicy::Auto) {
+      if (fma_presence == FMAPresence::Present ||
+          (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
+        using InternalEvaluator =
+            PreWeylInternalEstrinEvaluator<Value,
+                                           Argument,
+                                           Coefficients,
+                                           /*fma=*/true,
+                                           /*low=*/1,
+                                           /*degree=*/degree - 1>;
+        return InternalEvaluator::EvaluateDerivative(coefficients,
+                                                     wide_enough_argument);
+      }
+    }
+    using InternalEvaluator =
+        PreWeylInternalEstrinEvaluator<Value,
+                                       Argument,
+                                       Coefficients,
+                                       /*fma=*/false,
+                                       /*low=*/1,
+                                       /*degree=*/degree - 1>;
+    return InternalEvaluator::EvaluateDerivative(coefficients,
+                                                 wide_enough_argument);
   } else {
     auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
     if constexpr (fma_policy == FMAPolicy::Auto) {
@@ -685,9 +735,10 @@ EvaluateDerivative(Coefficients const& coefficients,
   }
 }
 
-template<typename Value, typename Argument, int degree,
+template<typename Value, typename Argument, int degree, bool is_pre_weyl,
          FMAPolicy fma_policy, FMAPresence fma_presence>
-void EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+void EstrinEvaluator<Value, Argument,
+                     degree, is_pre_weyl, fma_policy, fma_presence>::
 EvaluateWithDerivative(Coefficients const& coefficients,
                        Argument const& argument,
                        Value& value,
@@ -695,6 +746,44 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   if constexpr (degree == 0) {
     value = get<0>(coefficients);
     derivative = Derivative<Value, Argument>{};
+  } else if constexpr (is_pre_weyl) {
+    auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
+    if constexpr (fma_policy == FMAPolicy::Auto) {
+      if (fma_presence == FMAPresence::Present ||
+          (fma_presence == FMAPresence::Unknown && CanUseHardwareFMA)) {
+        value = PreWeylInternalEstrinEvaluator<
+            Value,
+            Argument,
+            Coefficients,
+            /*fma=*/true,
+            /*low=*/0,
+            /*degree=*/degree>::Evaluate(coefficients, wide_enough_argument);
+        derivative = PreWeylInternalEstrinEvaluator<
+            Value,
+            Argument,
+            Coefficients,
+            /*fma=*/true,
+            /*low=*/1,
+            /*degree=*/degree - 1>::EvaluateDerivative(coefficients,
+                                                       wide_enough_argument);
+        return;
+      }
+    }
+    value = PreWeylInternalEstrinEvaluator<
+        Value,
+        Argument,
+        Coefficients,
+        /*fma=*/false,
+        /*low=*/0,
+        /*degree=*/degree>::Evaluate(coefficients, wide_enough_argument);
+    derivative = PreWeylInternalEstrinEvaluator<
+        Value,
+        Argument,
+        Coefficients,
+        /*fma=*/false,
+        /*low=*/1,
+        /*degree=*/degree - 1>::EvaluateDerivative(coefficients,
+                                                   wide_enough_argument);
   } else {
     auto const wide_enough_argument = WideEnough<Value, Argument>(argument);
     if constexpr (fma_policy == FMAPolicy::Auto) {
@@ -730,11 +819,13 @@ EvaluateWithDerivative(Coefficients const& coefficients,
   }
 }
 
-template<typename Value, typename Argument, int degree,
+template<typename Value, typename Argument, int degree, bool is_pre_weyl,
          FMAPolicy fma_policy, FMAPresence fma_presence>
-void EstrinEvaluator<Value, Argument, degree, fma_policy, fma_presence>::
+void EstrinEvaluator<Value, Argument,
+                     degree, is_pre_weyl, fma_policy, fma_presence>::
 WriteToMessage(
     not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message) {
+  //TODO(phl):Pre-Weyl support.
   switch (fma_policy) {
     case FMAPolicy::Auto:
       message->set_kind(
