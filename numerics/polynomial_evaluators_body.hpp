@@ -825,7 +825,7 @@ void EstrinEvaluator<Value, Argument,
                      degree, is_pre_weyl, fma_policy, fma_presence>::
 WriteToMessage(
     not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message) {
-  //TODO(phl):Pre-Weyl support.
+  // TODO(phl): Serialization of post-Weyl evaluators.
   switch (fma_policy) {
     case FMAPolicy::Auto:
       message->set_kind(
