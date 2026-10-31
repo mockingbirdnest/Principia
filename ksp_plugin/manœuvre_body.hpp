@@ -149,13 +149,11 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(Mass const& initial_mass,
     construction_burn_(burn),
     burn_(burn) {
   auto const speed = burn.intensity.Δv().Norm();
-  if (speed == Speed()) {
-    // This handles the case where `thrust_` vanishes, where the usual formula
-    // would yield NaN.
+  duration_ = initial_mass_ * specific_impulse() *
+              (1 - std::exp(-speed / specific_impulse())) / thrust();
+  if (duration_ != duration_) {
+    // This handles the cases where the usual formula yields NaN.
     duration_ = Time();
-  } else {
-    duration_ = initial_mass_ * specific_impulse() *
-                (1 - std::exp(-speed / specific_impulse())) / thrust();
   }
 
   // Fill the missing fields of `timing`.

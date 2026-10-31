@@ -776,7 +776,7 @@ class BurnEditor : ScalingRenderer {
   private readonly DifferentialSlider previous_coast_duration_;
   private readonly ReferenceFrameSelector<NavigationFrameParameters>
       reference_frame_selector_;
-  private Actuator actuator_;
+  private Actuator actuator_ = Actuator.ACTIVE_ENGINES;
   private double thrust_in_kilonewtons_;
   private double specific_impulse_in_seconds_g0_;
   private double duration_;
