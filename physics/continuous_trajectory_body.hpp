@@ -356,6 +356,7 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   if (first_time_) {
     first_time_->WriteToMessage(message->mutable_first_time());
   }
+  message->set_is_pre_weyl(false);
 }
 
 template<typename Frame>
@@ -377,13 +378,15 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
            .GetExtension(serialization::PolynomialInMonomialBasis::extension)
            .coefficient(0).has_multivector());
   bool const is_pre_کاشانی = !message.has_policy();
-  LOG_IF(WARNING, is_pre_کاشانی)
+  bool const is_pre_weyl = message.is_pre_weyl();
+  LOG_IF(WARNING, is_pre_weyl)
       << "Reading pre-"
       << (is_pre_cohen       ? "Cohen"
           : is_pre_fatou     ? "Fatou"
           : is_pre_grassmann ? "Grassmann"
           : is_pre_gröbner   ? "Gröbner"
-                             : "کاشانی") << " ContinuousTrajectory";
+          : is_pre_کاشانی   ? "کاشانی"
+                             : "Weyl") << " ContinuousTrajectory";
 
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(
@@ -491,11 +494,16 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
               case Evaluator::ESTRIN:
                 rewritten_evaluator.set_kind(Evaluator::ESTRIN_WITHOUT_FMA);
                 break;
+              case Evaluator::PRE_WEYL_ESTRIN:
+                rewritten_evaluator.set_kind(
+                    Evaluator::PRE_WEYL_ESTRIN_WITHOUT_FMA);
+                break;
               case Evaluator::HORNER:
                 rewritten_evaluator.set_kind(Evaluator::HORNER_WITHOUT_FMA);
                 break;
-              case Evaluator::HORNER_WITHOUT_FMA:
               case Evaluator::ESTRIN_WITHOUT_FMA:
+              case Evaluator::PRE_WEYL_ESTRIN_WITHOUT_FMA:
+              case Evaluator::HORNER_WITHOUT_FMA:
                 break;
             }
           }
@@ -511,11 +519,15 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     // See the comment above for the defaults here.
     if (is_pre_gröbner || !CanUseHardwareFMA) {
       continuous_trajectory->polynomial_evaluator_policy_ =
-          Policy::AlwaysEstrinWithoutFMA();
+          Policy::AlwaysPreWeylEstrinWithoutFMA();
     } else {
       continuous_trajectory->polynomial_evaluator_policy_ =
-          Policy::AlwaysEstrin();
+          Policy::AlwaysPreWeylEstrin();
     }
+  } else if (is_pre_weyl) {
+    continuous_trajectory->polynomial_evaluator_policy_ =
+        CanUseHardwareFMA ? Policy::ReadFromMessage(message.policy())
+                          : Policy::AlwaysPreWeylEstrinWithoutFMA();
   } else {
     continuous_trajectory->polynomial_evaluator_policy_ =
         CanUseHardwareFMA ? Policy::ReadFromMessage(message.policy())

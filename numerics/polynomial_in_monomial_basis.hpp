@@ -97,6 +97,8 @@ class Policy {
 
   static constexpr Policy AlwaysEstrin();
   static constexpr Policy AlwaysEstrinWithoutFMA();
+  static constexpr Policy AlwaysPreWeylEstrin();
+  static constexpr Policy AlwaysPreWeylEstrinWithoutFMA();
 
   void WriteToMessage(
       not_null<serialization::PolynomialInMonomialBasis::Policy*> message)

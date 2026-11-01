@@ -85,6 +85,7 @@ message ContinuousTrajectory {
       instant_polynomial_pair = 10;  // Added in Cohen.
   repeated Checkpoint checkpoint = 12;  // Added in Grassmann.
   optional PolynomialInMonomialBasis.Policy policy = 13;  // Added in کاشانی.
+  optional bool is_pre_weyl = 14 [default = true];  // Added in Weyl.
 }
 
 message DiscreteTrajectory {

@@ -99,17 +99,21 @@ message PolynomialInMonomialBasis {
   // code that constructs them.
   message Policy {
     enum Kind {
-      ALWAYS_ESTRIN_WITHOUT_FMA = 0;
       ALWAYS_ESTRIN = 1;
+      ALWAYS_ESTRIN_WITHOUT_FMA = 0;
+      ALWAYS_PRE_WEYL_ESTRIN = 3;
+      ALWAYS_PRE_WEYL_ESTRIN_WITHOUT_FMA = 2;
     }
     required Kind kind = 1;
   }
 
   message Evaluator {
     enum Kind {
-      ESTRIN = 0;
+      ESTRIN = 4;
+      ESTRIN_WITHOUT_FMA = 5;
+      PRE_WEYL_ESTRIN = 0;
+      PRE_WEYL_ESTRIN_WITHOUT_FMA = 2;
       HORNER = 1;
-      ESTRIN_WITHOUT_FMA = 2;
       HORNER_WITHOUT_FMA = 3;
     }
     required Kind kind = 1;

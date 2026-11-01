@@ -138,6 +138,12 @@ Policy::WithEvaluator(
     PolynomialInMonomialBasis<Value, Argument, degree, Evaluator_>&& polynomial)
     const {
   switch (kind_) {
+    case serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN: {
+      auto result = static_cast<
+          PolynomialInMonomialBasis<Value, Argument, degree, Estrin>>(
+          std::move(polynomial));
+      return make_not_null_unique<decltype(result)>(std::move(result));
+    }
     case serialization::PolynomialInMonomialBasis::Policy::
         ALWAYS_ESTRIN_WITHOUT_FMA: {
       auto result = static_cast<
@@ -145,10 +151,19 @@ Policy::WithEvaluator(
           std::move(polynomial));
       return make_not_null_unique<decltype(result)>(std::move(result));
     }
-    case serialization::PolynomialInMonomialBasis::Policy::ALWAYS_ESTRIN: {
+    case serialization::PolynomialInMonomialBasis::Policy::
+        ALWAYS_PRE_WEYL_ESTRIN: {
       auto result = static_cast<
-          PolynomialInMonomialBasis<Value, Argument, degree, Estrin>>(
+          PolynomialInMonomialBasis<Value, Argument, degree, PreWeylEstrin>>(
           std::move(polynomial));
+      return make_not_null_unique<decltype(result)>(std::move(result));
+    }
+    case serialization::PolynomialInMonomialBasis::Policy::
+        ALWAYS_PRE_WEYL_ESTRIN_WITHOUT_FMA: {
+      auto result =
+          static_cast<PolynomialInMonomialBasis<Value, Argument, degree,
+                                                PreWeylEstrinWithoutFMA>>(
+              std::move(polynomial));
       return make_not_null_unique<decltype(result)>(std::move(result));
     }
   }
@@ -164,6 +179,17 @@ constexpr Policy Policy::AlwaysEstrinWithoutFMA() {
   return Policy(
       serialization::PolynomialInMonomialBasis::Policy::
                     ALWAYS_ESTRIN_WITHOUT_FMA);
+}
+
+constexpr Policy Policy::AlwaysPreWeylEstrin() {
+  return Policy(
+      serialization::PolynomialInMonomialBasis::Policy::ALWAYS_PRE_WEYL_ESTRIN);
+}
+
+constexpr Policy Policy::AlwaysPreWeylEstrinWithoutFMA() {
+  return Policy(
+      serialization::PolynomialInMonomialBasis::Policy::
+                    ALWAYS_PRE_WEYL_ESTRIN_WITHOUT_FMA);
 }
 
 inline void Policy::WriteToMessage(

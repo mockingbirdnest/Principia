@@ -56,11 +56,16 @@ Polynomial<Value_, Argument_>::ReadFromMessage(
   switch (extension.evaluator().kind()) {
     case serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN:
       return ReadFromMessage<Estrin>(message);
-    case serialization::PolynomialInMonomialBasis::Evaluator::HORNER:
-      return ReadFromMessage<Horner>(message);
     case serialization::PolynomialInMonomialBasis::Evaluator::
         ESTRIN_WITHOUT_FMA:
       return ReadFromMessage<EstrinWithoutFMA>(message);
+    case serialization::PolynomialInMonomialBasis::Evaluator::PRE_WEYL_ESTRIN:
+      return ReadFromMessage<PreWeylEstrin>(message);
+    case serialization::PolynomialInMonomialBasis::Evaluator::
+        PRE_WEYL_ESTRIN_WITHOUT_FMA:
+      return ReadFromMessage<PreWeylEstrinWithoutFMA>(message);
+    case serialization::PolynomialInMonomialBasis::Evaluator::HORNER:
+      return ReadFromMessage<Horner>(message);
     case serialization::PolynomialInMonomialBasis::Evaluator::
         HORNER_WITHOUT_FMA:
       return ReadFromMessage<HornerWithoutFMA>(message);
