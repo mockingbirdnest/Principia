@@ -228,6 +228,13 @@ class ContinuousTrajectoryTest : public testing::Test {
     return pre_کاشانی;
   }
 
+  static serialization::ContinuousTrajectory MakePreWeyl(
+      serialization::ContinuousTrajectory const& message) {
+    serialization::ContinuousTrajectory pre_weyl = message;
+    pre_weyl.clear_is_pre_weyl();
+    return pre_weyl;
+  }
+
   Instant const t0_;
 };
 
@@ -911,10 +918,9 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   serialization::ContinuousTrajectory message1;
   trajectory1->WriteToMessage(&message1);
 
-  serialization::ContinuousTrajectory const pre_grassmann =
-      MakePreGrassmann(
-          MakePreGröbner(MakePreΚαραθεοδωρή(MakePreکاشانی(message1))),
-          checkpoint_time);
+  serialization::ContinuousTrajectory const pre_grassmann = MakePreGrassmann(
+      MakePreGröbner(MakePreΚαραθεοδωρή(MakePreکاشانی(MakePreWeyl(message1)))),
+      checkpoint_time);
 
   // Read from the pre-Grassmann message, write to a second message, and check
   // that we get the same result.
@@ -924,9 +930,9 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   serialization::ContinuousTrajectory message2;
   trajectory2->WriteToMessage(&message2);
 
-  // Pre-Grassmann messages use Estrin without FMA.  Recent messages use
-  // whatever they like.  Check and clear the evaluator kind and policy before
-  // comparing the messages.
+  // Pre-Grassmann messages use pre-Weyl Estrin without FMA.  Recent messages
+  // use whatever they like.  Check and clear the evaluator kind and policy
+  // before comparing the messages.
   for (auto& pair : *message1.mutable_instant_polynomial_pair()) {
     auto* const extension = pair.mutable_polynomial()->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);
@@ -936,13 +942,13 @@ TEST_F(ContinuousTrajectoryTest, PreGrassmannCompatibility) {
   for (auto& pair : *message2.mutable_instant_polynomial_pair()) {
     auto* const extension = pair.mutable_polynomial()->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);
-    EXPECT_EQ(
-        serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN_WITHOUT_FMA,
-        extension->evaluator().kind());
+    EXPECT_EQ(serialization::PolynomialInMonomialBasis::Evaluator::
+                  PRE_WEYL_ESTRIN_WITHOUT_FMA,
+              extension->evaluator().kind());
     extension->mutable_evaluator()->clear_kind();
   }
   EXPECT_EQ(serialization::PolynomialInMonomialBasis::Policy::
-                ALWAYS_ESTRIN_WITHOUT_FMA,
+                ALWAYS_PRE_WEYL_ESTRIN_WITHOUT_FMA,
             message2.policy().kind());
   message2.clear_policy();
   EXPECT_THAT(message2, EqualsProto(message1));
@@ -983,7 +989,7 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
   trajectory1->WriteToMessage(&message1);
 
   serialization::ContinuousTrajectory const pre_gröbner =
-      MakePreGröbner(MakePreΚαραθεοδωρή(MakePreکاشانی(message1)));
+      MakePreGröbner(MakePreΚαραθεοδωρή(MakePreکاشانی(MakePreWeyl(message1))));
 
   // Read from the pre-Gröbner message, write to a second message, and check
   // that we get the same result.
@@ -1005,13 +1011,13 @@ TEST_F(ContinuousTrajectoryTest, PreGröbnerCompatibility) {
   for (auto& pair : *message2.mutable_instant_polynomial_pair()) {
     auto* const extension = pair.mutable_polynomial()->MutableExtension(
         serialization::PolynomialInMonomialBasis::extension);
-    EXPECT_EQ(
-        serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN_WITHOUT_FMA,
-        extension->evaluator().kind());
+    EXPECT_EQ(serialization::PolynomialInMonomialBasis::Evaluator::
+                  PRE_WEYL_ESTRIN_WITHOUT_FMA,
+              extension->evaluator().kind());
     extension->mutable_evaluator()->clear_kind();
   }
   EXPECT_EQ(serialization::PolynomialInMonomialBasis::Policy::
-                ALWAYS_ESTRIN_WITHOUT_FMA,
+                ALWAYS_PRE_WEYL_ESTRIN_WITHOUT_FMA,
             message2.policy().kind());
   message2.clear_policy();
   EXPECT_THAT(message2, EqualsProto(message1));
