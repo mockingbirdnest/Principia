@@ -113,8 +113,8 @@ message PolynomialInMonomialBasis {
   message Evaluator {
     enum Kind {
       // Note that the values now called `PRE_WEYL_` used to be called just
-      // `ESTRIN` and `ESTRIN_WITHOUT_FMA`, so when reading old saves
-      // we correctly recognize them as pre-Weyl.
+      // `ESTRIN` and `ESTRIN_WITHOUT_FMA`, so when reading old saves we
+      // correctly recognize them as pre-Weyl.
       ESTRIN = 4;
       ESTRIN_WITHOUT_FMA = 5;
       PRE_WEYL_ESTRIN = 0;

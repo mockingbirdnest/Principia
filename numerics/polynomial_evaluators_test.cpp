@@ -83,6 +83,69 @@ TEST_F(PolynomialEvaluatorTest, Estrin) {
   Test<Estrin, 17, 0, 4>();
 }
 
+TEST_F(PolynomialEvaluatorTest, EstrinWithoutFMA) {
+  Test<EstrinWithoutFMA, 0, 0, 0>();
+  Test<EstrinWithoutFMA, 1, 0, 0>();
+  Test<EstrinWithoutFMA, 2, 0, 0>();
+  Test<EstrinWithoutFMA, 3, 0, 0>();
+  Test<EstrinWithoutFMA, 4, 0, 0>();
+  Test<EstrinWithoutFMA, 5, 0, 0>();
+  Test<EstrinWithoutFMA, 6, 0, 0>();
+  Test<EstrinWithoutFMA, 7, 0, 0>();
+  Test<EstrinWithoutFMA, 8, 0, 0>();
+  Test<EstrinWithoutFMA, 9, 0, 0>();
+  Test<EstrinWithoutFMA, 10, 0, 0>();
+  Test<EstrinWithoutFMA, 11, 0, 0>();
+  Test<EstrinWithoutFMA, 12, 0, 0>();
+  Test<EstrinWithoutFMA, 13, 0, 0>();
+  Test<EstrinWithoutFMA, 14, 0, 0>();
+  Test<EstrinWithoutFMA, 15, 0, 0>();
+  Test<EstrinWithoutFMA, 16, 0, 0>();
+  Test<EstrinWithoutFMA, 17, 0, 4>();
+}
+
+TEST_F(PolynomialEvaluatorTest, PreWeylEstrin) {
+  Test<PreWeylEstrin, 0, 0, 0>();
+  Test<PreWeylEstrin, 1, 0, 0>();
+  Test<PreWeylEstrin, 2, 0, 0>();
+  Test<PreWeylEstrin, 3, 0, 0>();
+  Test<PreWeylEstrin, 4, 0, 0>();
+  Test<PreWeylEstrin, 5, 0, 0>();
+  Test<PreWeylEstrin, 6, 0, 0>();
+  Test<PreWeylEstrin, 7, 0, 0>();
+  Test<PreWeylEstrin, 8, 0, 0>();
+  Test<PreWeylEstrin, 9, 0, 0>();
+  Test<PreWeylEstrin, 10, 0, 0>();
+  Test<PreWeylEstrin, 11, 0, 0>();
+  Test<PreWeylEstrin, 12, 0, 0>();
+  Test<PreWeylEstrin, 13, 0, 0>();
+  Test<PreWeylEstrin, 14, 0, 0>();
+  Test<PreWeylEstrin, 15, 0, 0>();
+  Test<PreWeylEstrin, 16, 0, 2>();
+  Test<PreWeylEstrin, 17, 0, 4>();
+}
+
+TEST_F(PolynomialEvaluatorTest, PreWeylEstrinWithoutFMA) {
+  Test<PreWeylEstrinWithoutFMA, 0, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 1, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 2, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 3, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 4, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 5, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 6, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 7, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 8, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 9, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 10, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 11, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 12, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 13, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 14, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 15, 0, 0>();
+  Test<PreWeylEstrinWithoutFMA, 16, 0, 2>();
+  Test<PreWeylEstrinWithoutFMA, 17, 0, 4>();
+}
+
 TEST_F(PolynomialEvaluatorTest, Horner) {
   Test<Horner, 0, 0, 0>();
   Test<Horner, 1, 0, 0>();
@@ -102,6 +165,27 @@ TEST_F(PolynomialEvaluatorTest, Horner) {
   Test<Horner, 15, 0, 1>();
   Test<Horner, 16, 0, 3>();
   Test<Horner, 17, 0, 1>();
+}
+
+TEST_F(PolynomialEvaluatorTest, HornerWithoutFMA) {
+  Test<HornerWithoutFMA, 0, 0, 0>();
+  Test<HornerWithoutFMA, 1, 0, 0>();
+  Test<HornerWithoutFMA, 2, 0, 0>();
+  Test<HornerWithoutFMA, 3, 0, 0>();
+  Test<HornerWithoutFMA, 4, 0, 0>();
+  Test<HornerWithoutFMA, 5, 0, 0>();
+  Test<HornerWithoutFMA, 6, 0, 0>();
+  Test<HornerWithoutFMA, 7, 0, 0>();
+  Test<HornerWithoutFMA, 8, 0, 0>();
+  Test<HornerWithoutFMA, 9, 0, 0>();
+  Test<HornerWithoutFMA, 10, 0, 0>();
+  Test<HornerWithoutFMA, 11, 0, 0>();
+  Test<HornerWithoutFMA, 12, 0, 0>();
+  Test<HornerWithoutFMA, 13, 0, 0>();
+  Test<HornerWithoutFMA, 14, 0, 0>();
+  Test<HornerWithoutFMA, 15, 0, 1>();
+  Test<HornerWithoutFMA, 16, 0, 3>();
+  Test<HornerWithoutFMA, 17, 0, 1>();
 }
 
 }  // namespace numerics
