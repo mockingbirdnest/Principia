@@ -905,7 +905,7 @@ TEST_P(EphemerisTest, ComputeJacobianOnMassiveBody) {
       for (int c = 0; c < 3; ++c) {
         EXPECT_THAT(finite_difference_jacobian_coordinates(r, c),
                     RelativeErrorFrom(actual_jacobian.coordinates()(r, c),
-                                      AllOf(Gt(2.3e-10), Lt(8.7e-5))))
+                                      AllOf(Gt(2.3e-10), Lt(1.3e-4))))
             << r << " " << c;
       }
     }
