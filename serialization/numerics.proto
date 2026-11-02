@@ -99,17 +99,27 @@ message PolynomialInMonomialBasis {
   // code that constructs them.
   message Policy {
     enum Kind {
-      ALWAYS_ESTRIN_WITHOUT_FMA = 0;
-      ALWAYS_ESTRIN = 1;
+      // Note that the values now called `ALWAYS_PRE_WEYL_` used to be called
+      // just `ALWAYS_ESTRIN` and `ALWAYS_ESTRIN_WITHOUT_FMA`, so when reading
+      // old saves we correctly recognize them as pre-Weyl.
+      ALWAYS_ESTRIN = 2;
+      ALWAYS_ESTRIN_WITHOUT_FMA = 3;
+      ALWAYS_PRE_WEYL_ESTRIN = 1;
+      ALWAYS_PRE_WEYL_ESTRIN_WITHOUT_FMA = 0;
     }
     required Kind kind = 1;
   }
 
   message Evaluator {
     enum Kind {
-      ESTRIN = 0;
+      // Note that the values now called `PRE_WEYL_` used to be called just
+      // `ESTRIN` and `ESTRIN_WITHOUT_FMA`, so when reading old saves we
+      // correctly recognize them as pre-Weyl.
+      ESTRIN = 4;
+      ESTRIN_WITHOUT_FMA = 5;
+      PRE_WEYL_ESTRIN = 0;
+      PRE_WEYL_ESTRIN_WITHOUT_FMA = 2;
       HORNER = 1;
-      ESTRIN_WITHOUT_FMA = 2;
       HORNER_WITHOUT_FMA = 3;
     }
     required Kind kind = 1;

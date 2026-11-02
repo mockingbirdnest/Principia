@@ -82,11 +82,22 @@ class HornerEvaluator {
 
 template<typename Value, typename Argument, int degree>
 using Estrin = internal::EstrinEvaluator<Value, Argument, degree,
-                                         /*is_pre_weyl=*/true,
+                                         /*is_pre_weyl=*/false,
                                          internal::FMAPolicy::Auto,
                                          internal::FMAPresence::Unknown>;
 template<typename Value, typename Argument, int degree>
 using EstrinWithoutFMA =
+    internal::EstrinEvaluator<Value, Argument, degree,
+                              /*is_pre_weyl=*/false,
+                              internal::FMAPolicy::Disallow,
+                              internal::FMAPresence::Unknown>;
+template<typename Value, typename Argument, int degree>
+using PreWeylEstrin = internal::EstrinEvaluator<Value, Argument, degree,
+                                                /*is_pre_weyl=*/true,
+                                                internal::FMAPolicy::Auto,
+                                                internal::FMAPresence::Unknown>;
+template<typename Value, typename Argument, int degree>
+using PreWeylEstrinWithoutFMA =
     internal::EstrinEvaluator<Value, Argument, degree,
                               /*is_pre_weyl=*/true,
                               internal::FMAPolicy::Disallow,

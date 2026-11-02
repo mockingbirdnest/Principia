@@ -356,6 +356,7 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   if (first_time_) {
     first_time_->WriteToMessage(message->mutable_first_time());
   }
+  message->set_is_pre_weyl(false);
 }
 
 template<typename Frame>
@@ -377,13 +378,15 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
            .GetExtension(serialization::PolynomialInMonomialBasis::extension)
            .coefficient(0).has_multivector());
   bool const is_pre_کاشانی = !message.has_policy();
-  LOG_IF(WARNING, is_pre_کاشانی)
+  bool const is_pre_weyl = message.is_pre_weyl();
+  LOG_IF(WARNING, is_pre_weyl)
       << "Reading pre-"
       << (is_pre_cohen       ? "Cohen"
           : is_pre_fatou     ? "Fatou"
           : is_pre_grassmann ? "Grassmann"
           : is_pre_gröbner   ? "Gröbner"
-                             : "کاشانی") << " ContinuousTrajectory";
+          : is_pre_کاشانی   ? "کاشانی"
+                             : "Weyl") << " ContinuousTrajectory";
 
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(
@@ -432,17 +435,17 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
             mutable_coefficient(0)->mutable_point();
         *coefficient0_point->mutable_multivector() = coefficient0_multivector;
 
-        // Note the use of `EstrinWithoutFMA` below.  FMA was introduced in
-        // Grossmann, but unfortunately we didn't notice that it was affecting
-        // existing flight plans, and we have no way to tell that a save is
-        // exactly pre-Grossmann.  On the other hand, we are sure that pre-
-        // Gröbner saves didn't have FMA.  So deserialization is technically
+        // Note the use of `PreWeylEstrinWithoutFMA` below.  FMA was introduced
+        // in Grossmann, but unfortunately we didn't notice that it was
+        // affecting existing flight plans, and we have no way to tell that a
+        // save is exactly pre-Grossmann.  On the other hand, we are sure that
+        // pre-Gröbner saves didn't have FMA.  So deserialization is technically
         // incorrect for Gröbner saves, as we will use FMA when reading, even
         // though we didn't have FMA when the save was created.
         continuous_trajectory->polynomials_.emplace_back(
             Instant::ReadFromMessage(pair.t_max()),
             Polynomial<Position<Frame>, Instant>::template ReadFromMessage<
-                EstrinWithoutFMA>(polynomial));
+                PreWeylEstrinWithoutFMA>(polynomial));
       } else {
         serialization::Polynomial const& polynomial = pair.polynomial();
         bool const is_pre_καραθεοδωρή =
@@ -459,7 +462,8 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
                   ? Polynomial<Position<Frame>, Instant>::
                         template ReadFromMessage<Estrin>(polynomial)
                   : Polynomial<Position<Frame>, Instant>::
-                        template ReadFromMessage<EstrinWithoutFMA>(polynomial));
+                        template ReadFromMessage<PreWeylEstrinWithoutFMA>(
+                            polynomial));
         } else {
           auto rewritten_polynomial = polynomial;
           if (!CanUseHardwareFMA) {
@@ -491,11 +495,16 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
               case Evaluator::ESTRIN:
                 rewritten_evaluator.set_kind(Evaluator::ESTRIN_WITHOUT_FMA);
                 break;
+              case Evaluator::PRE_WEYL_ESTRIN:
+                rewritten_evaluator.set_kind(
+                    Evaluator::PRE_WEYL_ESTRIN_WITHOUT_FMA);
+                break;
               case Evaluator::HORNER:
                 rewritten_evaluator.set_kind(Evaluator::HORNER_WITHOUT_FMA);
                 break;
-              case Evaluator::HORNER_WITHOUT_FMA:
               case Evaluator::ESTRIN_WITHOUT_FMA:
+              case Evaluator::PRE_WEYL_ESTRIN_WITHOUT_FMA:
+              case Evaluator::HORNER_WITHOUT_FMA:
                 break;
             }
           }
@@ -511,11 +520,15 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     // See the comment above for the defaults here.
     if (is_pre_gröbner || !CanUseHardwareFMA) {
       continuous_trajectory->polynomial_evaluator_policy_ =
-          Policy::AlwaysEstrinWithoutFMA();
+          Policy::AlwaysPreWeylEstrinWithoutFMA();
     } else {
       continuous_trajectory->polynomial_evaluator_policy_ =
-          Policy::AlwaysEstrin();
+          Policy::AlwaysPreWeylEstrin();
     }
+  } else if (is_pre_weyl) {
+    continuous_trajectory->polynomial_evaluator_policy_ =
+        CanUseHardwareFMA ? Policy::ReadFromMessage(message.policy())
+                          : Policy::AlwaysPreWeylEstrinWithoutFMA();
   } else {
     continuous_trajectory->polynomial_evaluator_policy_ =
         CanUseHardwareFMA ? Policy::ReadFromMessage(message.policy())

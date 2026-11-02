@@ -826,15 +826,24 @@ void EstrinEvaluator<Value, Argument,
                      degree, is_pre_weyl, fma_policy, fma_presence>::
 WriteToMessage(
     not_null<serialization::PolynomialInMonomialBasis::Evaluator*> message) {
-  // TODO(phl): Serialization of post-Weyl evaluators.
   switch (fma_policy) {
     case FMAPolicy::Auto:
-      message->set_kind(
-          serialization::PolynomialInMonomialBasis::Evaluator::ESTRIN);
+      if constexpr (is_pre_weyl) {
+        message->set_kind(serialization::PolynomialInMonomialBasis::Evaluator::
+                              PRE_WEYL_ESTRIN);
+      } else {
+        message->set_kind(serialization::PolynomialInMonomialBasis::Evaluator::
+                              ESTRIN);
+      }
       break;
     case FMAPolicy::Disallow:
-      message->set_kind(serialization::PolynomialInMonomialBasis::Evaluator::
-                            ESTRIN_WITHOUT_FMA);
+      if constexpr (is_pre_weyl) {
+        message->set_kind(serialization::PolynomialInMonomialBasis::Evaluator::
+                              PRE_WEYL_ESTRIN_WITHOUT_FMA);
+      } else {
+        message->set_kind(serialization::PolynomialInMonomialBasis::Evaluator::
+                              ESTRIN_WITHOUT_FMA);
+      }
       break;
   }
 }
