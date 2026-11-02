@@ -193,7 +193,7 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, GeometricAcceleration) {
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
                   -9.54502614154907991e5 * Metre / Pow<2>(Second),
                   -1.90900949256416829e6 * Metre / Pow<2>(Second),
-                  -2.86351378905829089e6 * Metre / Pow<2>(Second)}), 0));
+                  -2.86351378905829089e6 * Metre / Pow<2>(Second)}), 0, 4));
 }
 
 TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Serialization) {
@@ -202,7 +202,7 @@ TEST_F(BodyCentredBodyDirectionReferenceFrameTest, Serialization) {
 
   EXPECT_TRUE(message.HasExtension(
       serialization::BodyCentredBodyDirectionReferenceFrame::extension));
-  auto const extension = message.GetExtension(
+  auto const& extension = message.GetExtension(
       serialization::BodyCentredBodyDirectionReferenceFrame::extension);
   EXPECT_TRUE(extension.has_primary());
   EXPECT_TRUE(extension.has_secondary());
