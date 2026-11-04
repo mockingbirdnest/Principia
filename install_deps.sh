@@ -22,7 +22,7 @@ for repo in abseil-cpp benchmark config core-math gipfeli googletest lodepng mul
   popd
 done
 
-for repo in googletest abseil-cpp benchmark config gipfeli multiprecision protobuf re2 zfp core-math; do
+for repo in googletest abseil-cpp benchmark config gipfeli lodepng multiprecision protobuf re2 zfp core-math; do
   pushd "$repo"
   # Azure pipelines define this variable for us.
   AGENT_OS=$(uname -s)
