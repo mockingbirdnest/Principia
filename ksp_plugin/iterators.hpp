@@ -1,5 +1,7 @@
 #pragma once
 
+#include <version>
+
 #include "base/not_null.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
@@ -50,10 +52,11 @@ class TypedIterator : public Iterator {
 
  private:
   Container container_;
-#if PRINCIPIA_COMPILER_CLANG && CLANG_VERSION_LE(23, 1, 3)
-  typename Container::iterator iterator_;
-#else
+  // libc++ does not implement P2278, so `std::span` has no `const_iterator`.
+#if __cpp_lib_ranges_as_const >= 202207L
   typename Container::const_iterator iterator_;
+#else
+  typename Container::iterator iterator_;
 #endif
   Plugin const* plugin_;
 };
