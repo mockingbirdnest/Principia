@@ -33,7 +33,7 @@ template<typename Scalar, typename Argument, int dimensions>
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
   if constexpr (dimensions == 1) {
-    return 2 * vertices[0].Norm();
+    return 2 * Abs(vertices[0]);
   } else if constexpr (dimensions == 2) {
     return 4 * Wedge(vertices[0], vertices[1]).Norm();
   } else if constexpr (dimensions == 3) {

@@ -16,6 +16,7 @@
 #include "geometry/space.hpp"
 #include "numerics/approximation.hpp"
 #include "numerics/elementary_functions.hpp"
+#include "numerics/global_optimization.hpp"
 #include "numerics/hermite3.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/named_quantities.hpp"
@@ -34,6 +35,7 @@ using namespace principia::geometry::_sign;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_approximation;
 using namespace principia::numerics::_elementary_functions;
+using namespace principia::numerics::_global_optimization;
 using namespace principia::numerics::_hermite3;
 using namespace principia::numerics::_root_finders;
 using namespace principia::quantities::_named_quantities;
@@ -458,6 +460,42 @@ ComputeFirstCollision(
     // No collision.
     return std::nullopt;
   }
+}
+
+template<typename Frame>
+void FastComputeApsides(Trajectory<Frame> const& reference,
+                        DiscreteTrajectoryView<Frame> const& trajectory,
+                        int const max_points,
+                        DistinguishedPoints<Frame>& apoapsides,
+                        DistinguishedPoints<Frame>& periapsides) {
+  auto const f = [&reference, &trajectory](Instant const& t) {
+    Position<Frame> const reference_position = reference.EvaluatePosition(t);
+    Position<Frame> const trajectory_position = trajectory.EvaluatePosition(t);
+    Displacement<Frame> const displacement =
+        trajectory_position - reference_position;
+    return displacement.Norm²();
+  };
+
+  auto const grad_f = [&reference, &trajectory](Instant const& t) {
+    DegreesOfFreedom<Frame> const reference_dof =
+        reference.EvaluateDegreesOfFreedom(t);
+    DegreesOfFreedom<Frame> const trajectory_dof =
+        trajectory.EvaluateDegreesOfFreedom(t);
+    Displacement<Frame> const displacement =
+        trajectory_dof.position() - reference_dof.position();
+    return 2 *
+           InnerProduct(displacement,
+                        trajectory_dof.velocity() - reference_dof.velocity());
+  };
+
+  using MLSL =
+      MultiLevelSingleLinkage<Square<Length>, Instant, /*dimensions=*/1>;
+  Instant const centre =
+      Barycentre({trajectory.t_min(), trajectory.t_max()}, {1, 1});
+  Time const vertex = trajectory.t_max() - centre;
+  MLSL::Box const box{centre, {vertex}};
+  MLSL const multi_level_single_linkage(box, f, grad_f);
+
 }
 
 template<typename Frame, typename Predicate>

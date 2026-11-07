@@ -141,7 +141,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
 
   DistinguishedPoints<World> apoapsides;
   DistinguishedPoints<World> periapsides;
-  ComputeApsides(*ephemeris.trajectory(b),
+  FastComputeApsides(*ephemeris.trajectory(b),
                  DiscreteTrajectoryView(&trajectory),
                  /*max_points=*/std::numeric_limits<int>::max(),
                  apoapsides,
