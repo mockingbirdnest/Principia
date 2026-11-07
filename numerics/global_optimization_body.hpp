@@ -33,7 +33,7 @@ template<typename Scalar, typename Argument, int dimensions>
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
   if constexpr (dimensions == 1) {
-    return 2 * Abs(vertices[0]);
+    return 2 * vertices[0].Norm();
   } else if constexpr (dimensions == 2) {
     return 4 * Wedge(vertices[0], vertices[1]).Norm();
   } else if constexpr (dimensions == 3) {
@@ -47,11 +47,7 @@ typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::NormType
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::diametre() const {
   NormType diameter;
   for (auto const& vertex : vertices) {
-    if constexpr (dimensions == 1) {
-      diameter = std::max(diameter, 2 * Abs(vertex));
-    } else {
-      diameter = std::max(diameter, 2 * vertex.Norm());
-    }
+    diameter = std::max(diameter, 2 * vertex.Norm());
   }
   return diameter;
 }
@@ -218,11 +214,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
           xᵢ, [f_xᵢ = f(xᵢ), rₖ², f, xᵢ](Argument const* const xⱼ) {
-            if constexpr (dimensions == 1) {
-              return Pow<2>(xᵢ - *xⱼ) <= rₖ² && f(*xⱼ) < f_xᵢ;
-            } else {
-              return (xᵢ - *xⱼ).Norm²() <= rₖ² && f(*xⱼ) < f_xᵢ;
-            }
+            return (xᵢ - *xⱼ).Norm²() <= rₖ² && f(*xⱼ) < f_xᵢ;
           });
 
       if (xⱼ == nullptr) {

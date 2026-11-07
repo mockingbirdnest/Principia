@@ -154,7 +154,14 @@ void FastComputeApsides(Trajectory<Frame> const& reference,
                         int const max_points,
                         DistinguishedPoints<Frame>& apoapsides,
                         DistinguishedPoints<Frame>& periapsides) {
-  auto const f = [&reference, &trajectory](Instant const& t) {
+  using Argument = Vector<Time, Frame>;
+  Instant const t0;
+  Instant const t_min = std::max(reference.t_min(), trajectory.t_min());
+  Instant const t_max = std::min(reference.t_max(), trajectory.t_max());
+
+  auto const f = [&](Argument const& argument) {
+    Instant const t =
+        std::min(std::max(t0 + argument.coordinates()[0], t_min), t_max);
     Position<Frame> const reference_position = reference.EvaluatePosition(t);
     Position<Frame> const trajectory_position = trajectory.EvaluatePosition(t);
     Displacement<Frame> const displacement =
@@ -162,43 +169,55 @@ void FastComputeApsides(Trajectory<Frame> const& reference,
     return displacement.Norm²();
   };
 
-  auto const grad_f = [&reference, &trajectory](Instant const& t) {
+  auto const grad_f = [&](Argument const& argument) {
+    Instant const t = t0 + argument.coordinates()[0];
+    if (t < t_min || t > t_max) {
+      return Vector<Variation<Square<Length>>, Frame>();
+    }
     DegreesOfFreedom<Frame> const reference_dof =
         reference.EvaluateDegreesOfFreedom(t);
     DegreesOfFreedom<Frame> const trajectory_dof =
         trajectory.EvaluateDegreesOfFreedom(t);
     Displacement<Frame> const displacement =
         trajectory_dof.position() - reference_dof.position();
-    return 2 *
-           InnerProduct(displacement,
-                        trajectory_dof.velocity() - reference_dof.velocity());
+    return Vector<Variation<Square<Length>>, Frame>(
+        {2 * InnerProduct(displacement,
+                          trajectory_dof.velocity() - reference_dof.velocity()),
+         0 * Pow<2>(Metre) / Second,
+         0 * Pow<2>(Metre) / Second});
   };
 
   using MLSL =
-      MultiLevelSingleLinkage<Square<Length>, Instant, /*dimensions=*/1>;
-  Instant const centre =
-      Barycentre({trajectory.t_min(), trajectory.t_max()}, {1, 1});
-  Time const vertex = trajectory.t_max() - centre;
-  MLSL::Box const box{centre, {vertex}};
+      MultiLevelSingleLinkage<Square<Length>, Argument, /*dimensions=*/1>;
+  Instant const centre = Barycentre({t_min, t_max}, {1, 1});
+  Time const radius = t_max - centre;
+  typename MLSL::Box const box{Argument({centre - t0, 0 * Second, 0 * Second}),
+                               Argument({radius, 0 * Second, 0 * Second})};
   MLSL multi_level_single_linkage(box, f, grad_f);
 
   auto const minima = multi_level_single_linkage.FindGlobalMinima(
-      /*points_per_round=*/10,
+      /*points_per_round=*/20,
       /*number_of_rounds=*/std::nullopt,
-      /*local_search_tolerance=*/1 * Second);
+      /*local_search_tolerance=*/1 * Milli(Second));
   auto const maxima = multi_level_single_linkage.FindGlobalMaxima(
-      /*points_per_round=*/10,
+      /*points_per_round=*/20,
       /*number_of_rounds=*/std::nullopt,
-      /*local_search_tolerance=*/1 * Second);
+      /*local_search_tolerance=*/1 * Milli(Second));
   for (auto const& minimum : minima) {
-    DegreesOfFreedom<Frame> const dof =
-        trajectory.EvaluateDegreesOfFreedom(minimum);
-    periapsides.emplace(minimum, dof);
+    Instant const t = minimum.coordinates()[0] + t0;
+    if (t < t_min || t > t_max) {
+      continue;
+    }
+    DegreesOfFreedom<Frame> const dof = trajectory.EvaluateDegreesOfFreedom(t);
+    periapsides.emplace(t, dof);
   }
   for (auto const& maximum : maxima) {
-    DegreesOfFreedom<Frame> const dof =
-        trajectory.EvaluateDegreesOfFreedom(maximum);
-    apoapsides.emplace(maximum, dof);
+    Instant const t = maximum.coordinates()[0] + t0;
+    if (t < t_min || t > t_max) {
+      continue;
+    }
+    DegreesOfFreedom<Frame> const dof = trajectory.EvaluateDegreesOfFreedom(t);
+    apoapsides.emplace(t, dof);
   }
 }
 
