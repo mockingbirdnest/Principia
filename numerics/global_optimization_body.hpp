@@ -47,7 +47,11 @@ typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::NormType
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::diametre() const {
   NormType diameter;
   for (auto const& vertex : vertices) {
-    diameter = std::max(diameter, 2 * vertex.Norm());
+    if constexpr (dimensions == 1) {
+      diameter = std::max(diameter, 2 * Abs(vertex));
+    } else {
+      diameter = std::max(diameter, 2 * vertex.Norm());
+    }
   }
   return diameter;
 }
@@ -214,7 +218,11 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
           xᵢ, [f_xᵢ = f(xᵢ), rₖ², f, xᵢ](Argument const* const xⱼ) {
-            return (xᵢ - *xⱼ).Norm²() <= rₖ² && f(*xⱼ) < f_xᵢ;
+            if constexpr (dimensions == 1) {
+              return Pow<2>(xᵢ - *xⱼ) <= rₖ² && f(*xⱼ) < f_xᵢ;
+            } else {
+              return (xᵢ - *xⱼ).Norm²() <= rₖ² && f(*xⱼ) < f_xᵢ;
+            }
           });
 
       if (xⱼ == nullptr) {

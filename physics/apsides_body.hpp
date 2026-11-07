@@ -149,6 +149,60 @@ void ComputeApsides(Trajectory<Frame> const& reference,
 }
 
 template<typename Frame>
+void FastComputeApsides(Trajectory<Frame> const& reference,
+                        DiscreteTrajectoryView<Frame> const& trajectory,
+                        int const max_points,
+                        DistinguishedPoints<Frame>& apoapsides,
+                        DistinguishedPoints<Frame>& periapsides) {
+  auto const f = [&reference, &trajectory](Instant const& t) {
+    Position<Frame> const reference_position = reference.EvaluatePosition(t);
+    Position<Frame> const trajectory_position = trajectory.EvaluatePosition(t);
+    Displacement<Frame> const displacement =
+        trajectory_position - reference_position;
+    return displacement.Norm²();
+  };
+
+  auto const grad_f = [&reference, &trajectory](Instant const& t) {
+    DegreesOfFreedom<Frame> const reference_dof =
+        reference.EvaluateDegreesOfFreedom(t);
+    DegreesOfFreedom<Frame> const trajectory_dof =
+        trajectory.EvaluateDegreesOfFreedom(t);
+    Displacement<Frame> const displacement =
+        trajectory_dof.position() - reference_dof.position();
+    return 2 *
+           InnerProduct(displacement,
+                        trajectory_dof.velocity() - reference_dof.velocity());
+  };
+
+  using MLSL =
+      MultiLevelSingleLinkage<Square<Length>, Instant, /*dimensions=*/1>;
+  Instant const centre =
+      Barycentre({trajectory.t_min(), trajectory.t_max()}, {1, 1});
+  Time const vertex = trajectory.t_max() - centre;
+  MLSL::Box const box{centre, {vertex}};
+  MLSL multi_level_single_linkage(box, f, grad_f);
+
+  auto const minima = multi_level_single_linkage.FindGlobalMinima(
+      /*points_per_round=*/10,
+      /*number_of_rounds=*/std::nullopt,
+      /*local_search_tolerance=*/1 * Second);
+  auto const maxima = multi_level_single_linkage.FindGlobalMaxima(
+      /*points_per_round=*/10,
+      /*number_of_rounds=*/std::nullopt,
+      /*local_search_tolerance=*/1 * Second);
+  for (auto const& minimum : minima) {
+    DegreesOfFreedom<Frame> const dof =
+        trajectory.EvaluateDegreesOfFreedom(minimum);
+    periapsides.emplace(minimum, dof);
+  }
+  for (auto const& maximum : maxima) {
+    DegreesOfFreedom<Frame> const dof =
+        trajectory.EvaluateDegreesOfFreedom(maximum);
+    apoapsides.emplace(maximum, dof);
+  }
+}
+
+template<typename Frame>
 std::vector<Interval<Instant>> ComputeCollisionIntervals(
     RotatingBody<Frame> const& reference_body,
     Trajectory<Frame> const& reference,
@@ -460,42 +514,6 @@ ComputeFirstCollision(
     // No collision.
     return std::nullopt;
   }
-}
-
-template<typename Frame>
-void FastComputeApsides(Trajectory<Frame> const& reference,
-                        DiscreteTrajectoryView<Frame> const& trajectory,
-                        int const max_points,
-                        DistinguishedPoints<Frame>& apoapsides,
-                        DistinguishedPoints<Frame>& periapsides) {
-  auto const f = [&reference, &trajectory](Instant const& t) {
-    Position<Frame> const reference_position = reference.EvaluatePosition(t);
-    Position<Frame> const trajectory_position = trajectory.EvaluatePosition(t);
-    Displacement<Frame> const displacement =
-        trajectory_position - reference_position;
-    return displacement.Norm²();
-  };
-
-  auto const grad_f = [&reference, &trajectory](Instant const& t) {
-    DegreesOfFreedom<Frame> const reference_dof =
-        reference.EvaluateDegreesOfFreedom(t);
-    DegreesOfFreedom<Frame> const trajectory_dof =
-        trajectory.EvaluateDegreesOfFreedom(t);
-    Displacement<Frame> const displacement =
-        trajectory_dof.position() - reference_dof.position();
-    return 2 *
-           InnerProduct(displacement,
-                        trajectory_dof.velocity() - reference_dof.velocity());
-  };
-
-  using MLSL =
-      MultiLevelSingleLinkage<Square<Length>, Instant, /*dimensions=*/1>;
-  Instant const centre =
-      Barycentre({trajectory.t_min(), trajectory.t_max()}, {1, 1});
-  Time const vertex = trajectory.t_max() - centre;
-  MLSL::Box const box{centre, {vertex}};
-  MLSL const multi_level_single_linkage(box, f, grad_f);
-
 }
 
 template<typename Frame, typename Predicate>
