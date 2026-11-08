@@ -202,11 +202,11 @@ void FastComputeApsides(Trajectory<Frame> const& reference,
   auto const minima = multi_level_single_linkage.FindGlobalMinima(
       /*points_per_round=*/20,
       /*number_of_rounds=*/std::nullopt,
-      /*local_search_tolerance=*/1 * Milli(Second));
+      /*local_search_tolerance=*/10 * Second);
   auto const maxima = multi_level_single_linkage.FindGlobalMaxima(
       /*points_per_round=*/20,
       /*number_of_rounds=*/std::nullopt,
-      /*local_search_tolerance=*/1 * Milli(Second));
+      /*local_search_tolerance=*/10 * Second);
   for (auto const& minimum : minima) {
     Instant const t = minimum.coordinates()[0] + t0;
     if (t < t_min || t > t_max) {
@@ -223,8 +223,6 @@ void FastComputeApsides(Trajectory<Frame> const& reference,
     DegreesOfFreedom<Frame> const dof = trajectory.EvaluateDegreesOfFreedom(t);
     apoapsides.emplace(t, dof);
   }
-  LOG(ERROR) << "FastComputeApsides: f_evaluations = " << f_evaluations
-             << ", grad_f_evaluations = " << grad_f_evaluations;
 }
 
 template<typename Frame>
