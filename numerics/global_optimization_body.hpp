@@ -176,6 +176,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       if (kN > w + 2 &&
           static_cast<double>(w * (kN - 1)) / static_cast<double>(kN - w - 2) <=
           w + 0.5) {
+        LOG(ERROR) << "Round #" << k << " with " << w << " stationary points";
         break;
       } else {
         // [RT87b] equation 4.
@@ -184,7 +185,11 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         DCHECK_LT(0, N);
         kN = M;
       }
-      DLOG(ERROR) << "Round #" << k << " with " << N << " points";
+      LOG(ERROR) << "Round #" << k << " with " << N << " points, " << w
+                 << " stationary points so far";
+      for (auto const& stationary_point : stationary_points) {
+        LOG(ERROR) << "  " << *stationary_point;
+      }
     }
 
     // Generate N new random points and add them to the PCP tree and to the
@@ -207,17 +212,40 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     // Compute the radius below which we won't do a local search in this
     // iteration.
     Norm²Type const rₖ² = CriticalRadius²(/*σ=*/4, kN);
+    LOG(ERROR) << "Round #" << k << ": rₖ = " << Sqrt(rₖ²);
 
     // Process the points whose nearest neighbour is "sufficiently far" (or
     // unknown).
+    absl::flat_hash_map<Argument const*, bool> filtered;
+    int number_of_cache_hits = 0;
+    int number_of_cache_misses = 0;
     for (auto it = schedule.upper_bound(rₖ²); it != schedule.end();) {
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, [f_xᵢ = f(xᵢ), rₖ², f, xᵢ](Argument const* const xⱼ) {
-            return (xᵢ - *xⱼ).Norm²() <= rₖ² && f(*xⱼ) < f_xᵢ;
+          xᵢ,
+          [f_xᵢ = f(xᵢ), rₖ², f, xᵢ,
+           &filtered, &number_of_cache_hits, &number_of_cache_misses](
+            Argument const* const xⱼ) {
+            if ((xᵢ - *xⱼ).Norm²() > rₖ²) {
+              return false;
+            } else if (auto const it = filtered.find(xⱼ);
+                       it != filtered.end()) {
+              ++number_of_cache_hits;
+              return it->second;
+            } else {
+              ++number_of_cache_misses;
+              auto const f_xⱼ = f(*xⱼ);
+              filtered.emplace(xⱼ, f_xⱼ < f_xᵢ);
+              return f_xⱼ < f_xᵢ;
+            }
           });
 
+      LOG(ERROR) << "Cache hit ratio: "
+                 << static_cast<double>(number_of_cache_hits) /
+                        (number_of_cache_hits + number_of_cache_misses);
+
       if (xⱼ == nullptr) {
+        LOG(ERROR) << "Round #" << k << ", local search from " << xᵢ;
         // We must do a local search as xᵢ couldn't be added to an existing
         // cluster.  Note that the radius of the search has to be the diametre
         // of the box: it's possible that xᵢ would be near one vertex of the box
@@ -250,6 +278,9 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         // to its nearest neighbour.
         auto const distance²_to_xⱼ = (xᵢ - *xⱼ).Norm²();
         DCHECK_LE(distance²_to_xⱼ, rₖ²);
+        LOG(ERROR) << "Round #" << k << ": point " << xᵢ
+                   << " has distance " << Sqrt(distance²_to_xⱼ)
+                   << " to its nearest neighbour " << *xⱼ;
         it = schedule.erase(it);
         // This insertion take places below `schedule.upper_bound(rₖ²)`, so it
         // doesn't affect the current iteration.
@@ -296,6 +327,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
     for (const auto& vertex : box_.vertices) {
       *argument += distribution_(random_) * vertex;
     }
+    LOG(ERROR) << i << "/" << values_per_round << ": " << *argument;
     arguments.push_back(std::move(argument));
   }
   return arguments;
