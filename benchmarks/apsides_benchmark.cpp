@@ -144,7 +144,7 @@ BENCHMARK_F(ApsidesBenchmark, ComputeApsides)(benchmark::State& state) {
   for (auto _ : state) {
     DistinguishedPoints<ICRS> apoapsides;
     DistinguishedPoints<ICRS> periapsides;
-    ComputeApsides(*earth_trajectory_,
+    FastComputeApsides(*earth_trajectory_,
                    DiscreteTrajectoryView(ilrsa_lageos2_trajectory_icrs_),
                    /*max_points=*/std::numeric_limits<int>::max(),
                    apoapsides,
