@@ -220,10 +220,14 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
     // Process the points whose nearest neighbour is "sufficiently far" (or
     // unknown).
+    int filter_count = 0;
+    int nn_count = 0;
     for (auto it = schedule.upper_bound(rₖ²); it != schedule.end();) {
       Argument const& xᵢ = *it->second;
+      ++nn_count;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, [f_xᵢ = f(xᵢ), rₖ², f, xᵢ](Argument const* const xⱼ) {
+          xᵢ, [f_xᵢ = f(xᵢ), rₖ², f, xᵢ, &filter_count](Argument const* const xⱼ) {
+            ++filter_count;
             return (xᵢ - *xⱼ).Norm²() <= rₖ² && f(*xⱼ) < f_xᵢ;
           });
 
@@ -270,6 +274,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         schedule.emplace(distance²_to_xⱼ, &xᵢ);
       }
     }
+    VLOG(1) << "Round #" << k << ", number of nearest neighbours: " << nn_count
+            << ", number of filter calls: " << filter_count;
   }
 
   VLOG(1) << "Number of local searches: " << number_of_local_searches;
