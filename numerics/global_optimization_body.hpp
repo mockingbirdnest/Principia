@@ -140,7 +140,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   // half of the map (distance greater than rₖ) are considered, and they are
   // moved down if a "too close" neighbour is found.
   // We modify this map while iterating so we need iterator stability.
-  std::multimap<Norm²Type, Argument const*> schedule;
+  std::multimap<Norm²Type, std::pair<Argument const*, Scalar>> schedule;
 
   // There are two ways to iterate through this loop, corresponding to different
   // termination conditions.  We can either do a fixed number of rounds with a
@@ -208,9 +208,11 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     for (auto& pointₖ : pointsₖ) {
       points.push_back(std::move(pointₖ));
       Argument const* const pointₖ_pointer = points.back().get();
-      point_neighbourhoods.Add(pointₖ_pointer, f(*pointₖ_pointer));
-      schedule.emplace_hint(
-          schedule.end(), Infinity<Norm²Type>, pointₖ_pointer);
+      Scalar const fₖ = f(*pointₖ_pointer);
+      point_neighbourhoods.Add(pointₖ_pointer, fₖ);
+      schedule.emplace_hint(schedule.end(),
+                            Infinity<Norm²Type>,
+                            std::make_pair(pointₖ_pointer, fₖ));
     }
 
     // Compute the radius below which we won't do a local search in this
@@ -222,25 +224,25 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     // Process the points whose nearest neighbour is "sufficiently far" (or
     // unknown).
     for (auto it = schedule.upper_bound(rₖ²); it != schedule.end();) {
-      Argument const& xᵢ = *it->second;
+      auto const& [xᵢ, f_xᵢ] = it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, rₖ,
-          [f_xᵢ = f(xᵢ), f](Argument const* const xⱼ,
-                            std::optional<Scalar> const& payload) {
-            CHECK(payload.has_value());
+          *xᵢ, rₖ,
+          [f_xᵢ, f](Argument const* const xⱼ,
+                    std::optional<Scalar> const& payload) {
+            DCHECK(payload.has_value());
             auto const& f_xⱼ = payload.value();
             return f_xⱼ < f_xᵢ;
           });
 
       if (xⱼ == nullptr) {
-        VLOG(2) << "Round #" << k << ", local search from " << xᵢ;
+        VLOG(2) << "Round #" << k << ", local search from " << *xᵢ;
         // We must do a local search as xᵢ couldn't be added to an existing
         // cluster.  Note that the radius of the search has to be the diametre
         // of the box: it's possible that xᵢ would be near one vertex of the box
         // and the stationary point near the opposite vertex.
         ++number_of_local_searches;
         auto const status_or_stationary_point =
-            BroydenFletcherGoldfarbShanno(xᵢ,
+            BroydenFletcherGoldfarbShanno(*xᵢ,
                                           f,
                                           grad_f,
                                           local_search_tolerance,
@@ -264,15 +266,15 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       } else {
         // Move the point xᵢ "down" in the `schedule` map, based on the distance
         // to its nearest neighbour.
-        auto const distance²_to_xⱼ = (xᵢ - *xⱼ).Norm²();
+        auto const distance²_to_xⱼ = (*xᵢ - *xⱼ).Norm²();
         DCHECK_LE(distance²_to_xⱼ, rₖ²);
-        VLOG(3) << "Round #" << k << ", no local search from point " << xᵢ
+        VLOG(3) << "Round #" << k << ", no local search from point " << *xᵢ
                 << " which has distance " << Sqrt(distance²_to_xⱼ)
                 << " to its nearest neighbour " << *xⱼ;
         it = schedule.erase(it);
         // This insertion take places below `schedule.upper_bound(rₖ²)`, so it
         // doesn't affect the current iteration.
-        schedule.emplace(distance²_to_xⱼ, &xᵢ);
+        schedule.emplace(distance²_to_xⱼ, std::make_pair(xᵢ, f_xᵢ));
       }
     }
   }
