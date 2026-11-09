@@ -110,8 +110,7 @@ class MultiLevelSingleLinkage {
   // Returns a vector of size `values_per_round`.  The points are in `box_`.
   Arguments RandomArguments(std::int64_t values_per_round);
 
-  // Returns the square of the radius rₖ from [RT87a], eqn. 35, specialized for
-  // `dimensions`.
+  // Returns the radius rₖ from [RT87a], eqn. 35, specialized for `dimensions`.
   NormType CriticalRadius(double σ, std::int64_t kN);
 
   Box const box_;
