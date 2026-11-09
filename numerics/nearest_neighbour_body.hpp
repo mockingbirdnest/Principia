@@ -62,15 +62,18 @@ static int leaves_size;
 template<typename Value_>
 Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
     Value const& value,
+    NormType const& radius,
     Filter const& filter) const {
   if (displacements_.empty()) {
     return nullptr;
   }
+  Norm²Type const radius² = Pow<2>(radius);
   Norm²Type min_distance²;
   std::int32_t min_index;
   leaves = 0;
   leaves_size = 0;
   Find(value - centroid_,
+       radius²,
        filter,
        /*parent=*/nullptr,
        *root_,
@@ -78,6 +81,7 @@ Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
        /*must_check_other_side=*/nullptr);
   if (leaves > 3000) {
     Find(value - centroid_,
+         radius²,
          filter,
          /*parent=*/nullptr,
          *root_,
@@ -85,9 +89,9 @@ Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
          min_index,
          /*must_check_other_side=*/nullptr);
   }
-  LOG(ERROR) << "Number of leaves visited: " << leaves
-                << ", average size: " << (leaves_size / leaves)
-                << ", tree size: " << values_.size();
+  //LOG(ERROR) << "Number of leaves visited: " << leaves
+  //              << ", average size: " << (leaves_size / leaves)
+  //              << ", tree size: " << values_.size();
 
   // In the end, this is why we retain the values: we want to return a pointer
   // that the client gave us.
@@ -244,6 +248,7 @@ void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
 template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
+    Norm²Type const& radius²,
     Filter const& filter,
     Internal const* const parent,
     Node const& node,
@@ -252,6 +257,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     bool* const must_check_other_side) const {
   if (std::holds_alternative<Internal>(node)) {
     Find(displacement,
+         radius²,
          filter,
          parent,
          std::get<Internal>(node),
@@ -259,6 +265,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
          must_check_other_side);
   } else if (std::holds_alternative<Leaf>(node)) {
     Find(displacement,
+         radius²,
          filter,
          parent,
          std::get<Leaf>(node),
@@ -272,6 +279,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
 template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
+    Norm²Type const& radius²,
     Filter const& filter,
     Internal const* parent,
     Internal const& internal,
@@ -295,6 +303,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
   Norm²Type preferred_min_distance²;
   bool preferred_must_check_other_side;
   Find(displacement,
+       radius²,
        filter,
        &internal,
        *preferred_side,
@@ -316,6 +325,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     std::int32_t other_min_index;
     Norm²Type other_min_distance²;
     Find(displacement,
+         radius²,
          filter,
          parent,
          *other_side,
@@ -339,13 +349,15 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
   if (parent != nullptr && must_check_other_side != nullptr) {
     Norm²Type const projection² = Pow<2>(
         InnerProduct(parent->principal_axis, displacement - parent->anchor));
-    *must_check_other_side = projection² < min_distance²;
+    *must_check_other_side =
+        projection² <= radius² && projection² < min_distance²;
   }
 }
 
 template<typename Value_>
 void PrincipalComponentPartitioningTree<Value_>::Find(
     Displacement const& displacement,
+    Norm²Type const& radius²,
     Filter const& filter,
     Internal const* const parent,
     Leaf const& leaf,
@@ -363,7 +375,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     auto const distance² = (displacements_[index] - displacement).Norm²();
     // Skip the values that are filtered out.  Note that *all* the values may be
     // filtered out.
-    if (distance² < min_distance² &&
+    if (distance² <= radius² && distance² < min_distance² &&
         (filter == nullptr || filter(values_[index]))) {
       min_distance² = distance²;
       min_index = index;
@@ -375,7 +387,8 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
   if (parent != nullptr && must_check_other_side != nullptr) {
     Norm²Type const projection² = Pow<2>(
         InnerProduct(parent->principal_axis, displacement - parent->anchor));
-    *must_check_other_side = projection² < min_distance²;
+    *must_check_other_side =
+        projection² <= radius² && projection² < min_distance²;
   }
 }
 

@@ -215,8 +215,9 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
     // Compute the radius below which we won't do a local search in this
     // iteration.
-    Norm²Type const rₖ² = CriticalRadius²(/*σ=*/4, kN);
-    VLOG(1) << "Round #" << k << ", critical radius is " << Sqrt(rₖ²);
+    NormType const rₖ = CriticalRadius(/*σ=*/4, kN);
+    Norm²Type const rₖ² = Pow<2>(rₖ);
+    VLOG(1) << "Round #" << k << ", critical radius is " << rₖ;
 
     // Process the points whose nearest neighbour is "sufficiently far" (or
     // unknown).
@@ -226,9 +227,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       Argument const& xᵢ = *it->second;
       ++nn_count;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, [f_xᵢ = f(xᵢ), rₖ², f, xᵢ, &filter_count](Argument const* const xⱼ) {
+          xᵢ, rₖ,
+          [f_xᵢ = f(xᵢ), rₖ², f, xᵢ, &filter_count](Argument const* const xⱼ) {
             ++filter_count;
-            return (xᵢ - *xⱼ).Norm²() <= rₖ² && f(*xⱼ) < f_xᵢ;
+            return f(*xⱼ) < f_xᵢ;
           });
 
       if (xⱼ == nullptr) {
@@ -296,7 +298,9 @@ IsNewStationaryPoint(Argument const& stationary_point,
                           stationary_point_neighbourhoods,
                       NormType const local_search_tolerance) {
   auto* const stationary_point_nearest_neighbour =
-      stationary_point_neighbourhoods.FindNearestNeighbour(stationary_point);
+      stationary_point_neighbourhoods.FindNearestNeighbour(
+          stationary_point,
+          /*radius=*/Infinity<NormType>);
 
   // The factor 2 below is because we are looking at the distance between two
   // approximate stationary points, not between an approximate stationary point
@@ -324,17 +328,17 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
 }
 
 template<typename Scalar, typename Argument, int dimensions>
-typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Norm²Type
-MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius²(
+typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::NormType
+MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius(
     double const σ,
     std::int64_t const kN) {
   using numerics::_elementary_functions::Cbrt;
   if constexpr (dimensions == 1) {
-    return Pow<2>(box_measure_ * σ * std::log(kN) / (2.0 * kN));
+    return box_measure_ * σ * std::log(kN) / (2.0 * kN);
   } else if constexpr (dimensions == 2) {
-    return box_measure_ * σ * std::log(kN) / (π * kN);
+    return Sqrt(box_measure_ * σ * std::log(kN) / (π * kN));
   } else if constexpr (dimensions == 3) {
-    return Cbrt(Pow<2>(3.0 * box_measure_ * σ * std::log(kN) / (4.0 * π * kN)));
+    return Cbrt(3.0 * box_measure_ * σ * std::log(kN) / (4.0 * π * kN));
   }
   std::abort();
 }

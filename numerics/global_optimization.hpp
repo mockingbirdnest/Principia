@@ -112,7 +112,7 @@ class MultiLevelSingleLinkage {
 
   // Returns the square of the radius rₖ from [RT87a], eqn. 35, specialized for
   // `dimensions`.
-  Norm²Type CriticalRadius²(double σ, std::int64_t kN);
+  NormType CriticalRadius(double σ, std::int64_t kN);
 
   Box const box_;
   NormType const box_diametre_;
