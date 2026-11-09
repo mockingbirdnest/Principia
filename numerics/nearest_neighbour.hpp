@@ -29,10 +29,11 @@ using namespace principia::geometry::_symmetric_bilinear_form;
 // in the context of quantization.  Their use for nearest neighbour search was
 // proposed by [ZJL02].  We choose to use this algorithm not because it is easy
 // but because it is coordinate-free.
-template<typename Value_>
+template<typename Value_, typename Payload_ = int>
 class PrincipalComponentPartitioningTree {
  public:
   using Value = Value_;
+  using Payload = Payload_;
 
   // A displacement from the centroid.
   using Displacement = Difference<Value>;
@@ -41,7 +42,8 @@ class PrincipalComponentPartitioningTree {
   using NormType = NormType<Displacement>;
   using Norm²Type = Norm²Type<Displacement>;
 
-  using Filter = std::function<bool(Value const*)>;
+  using Filter =
+      std::function<bool(Value const*, std::optional<Payload> const&)>;
 
   // We stop subdividing a cell when it contains `max_values_per_cell` or fewer
   // values.  This API takes (non-owning) pointers so that the client can relate
@@ -53,7 +55,9 @@ class PrincipalComponentPartitioningTree {
       std::int64_t max_values_per_cell);
 
   // Adds a new value to the tree, restructuring it as needed.
+  //TODO(phl)comment
   void Add(not_null<Value const*> value);
+  void Add(not_null<Value const*> value, Payload const& payload);
 
   // Finds the nearest neighbour of the given `value` at a distance less than or
   // equal to `radius`.  Returns nullptr if the tree is empty.  Only the values
@@ -132,6 +136,9 @@ class PrincipalComponentPartitioningTree {
       typename Indices::iterator begin,
       typename Indices::iterator end) const;
 
+  //TODO(phl)comment
+  void Add(not_null<Value const*> value, std::optional<Payload> const& payload);
+
   // Adds the value at the given `index` by first finding the location in the
   // subtree rooted at `node` where it would be located, and then adding it to
   // the leaf (if there is room) or splitting the leaf (if not).
@@ -175,6 +182,7 @@ class PrincipalComponentPartitioningTree {
 
   // Construction parameters.
   std::vector<not_null<Value const*>> values_;
+  std::vector<std::optional<Payload>> payloads_;
   std::int64_t const max_values_per_cell_;
 
   // The centroid of the values passed at construction, or the first value

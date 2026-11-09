@@ -126,7 +126,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
   // The PCP tree used for detecting proximity of the sample points .  It gets
   // updated as new points are generated.
-  PrincipalComponentPartitioningTree<Argument> point_neighbourhoods(
+  PrincipalComponentPartitioningTree<Argument, Scalar> point_neighbourhoods(
       /*values=*/{},
       pcp_tree_max_values_per_cell);
 
@@ -208,7 +208,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     for (auto& pointₖ : pointsₖ) {
       points.push_back(std::move(pointₖ));
       Argument const* const pointₖ_pointer = points.back().get();
-      point_neighbourhoods.Add(pointₖ_pointer);
+      point_neighbourhoods.Add(pointₖ_pointer, f(*pointₖ_pointer));
       schedule.emplace_hint(
           schedule.end(), Infinity<Norm²Type>, pointₖ_pointer);
     }
@@ -225,8 +225,11 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
           xᵢ, rₖ,
-          [f_xᵢ = f(xᵢ), f](Argument const* const xⱼ) {
-            return f(*xⱼ) < f_xᵢ;
+          [f_xᵢ = f(xᵢ), f](Argument const* const xⱼ,
+                            std::optional<Scalar> const& payload) {
+            CHECK(payload.has_value());
+            auto const& f_xⱼ = payload.value();
+            return f_xⱼ < f_xᵢ;
           });
 
       if (xⱼ == nullptr) {
