@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "absl/log/globals.h"
 #include "absl/strings/str_cat.h"
 #include "base/algebra.hpp"
 #include "benchmark/benchmark.h"
@@ -29,6 +30,7 @@ using namespace principia::testing_utilities::_optimization_test_functions;
 using World = Frame<struct WorldTag>;
 
 void BM_MLSLBranin(benchmark::State& state) {
+  absl::SetMinLogLevel(absl::LogSeverityAtLeast::kError);
   std::int64_t const points_per_round = state.range(0);
   std::int64_t const number_of_rounds = state.range(1);
 
@@ -73,6 +75,7 @@ void BM_MLSLBranin(benchmark::State& state) {
 }
 
 void BM_MLSLGoldsteinPrice(benchmark::State& state) {
+  absl::SetMinLogLevel(absl::LogSeverityAtLeast::kError);
   std::int64_t const points_per_round = state.range(0);
   std::int64_t const number_of_rounds = state.range(1);
 
@@ -117,6 +120,7 @@ void BM_MLSLGoldsteinPrice(benchmark::State& state) {
 }
 
 void BM_MLSLHartmann3(benchmark::State& state) {
+  absl::SetMinLogLevel(absl::LogSeverityAtLeast::kError);
   std::int64_t const points_per_round = state.range(0);
   std::int64_t const number_of_rounds = state.range(1);
 

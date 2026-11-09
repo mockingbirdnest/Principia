@@ -176,6 +176,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       if (kN > w + 2 &&
           static_cast<double>(w * (kN - 1)) / static_cast<double>(kN - w - 2) <=
           w + 0.5) {
+        VLOG(1) << "Exit round #" << k << " with " << kN
+                << " points examined and " << w << " stationary points found";
         break;
       } else {
         // [RT87b] equation 4.
@@ -184,7 +186,14 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         DCHECK_LT(0, N);
         kN = M;
       }
-      DLOG(ERROR) << "Round #" << k << " with " << N << " points";
+      VLOG(1) << "Round #" << k << " with " << N << " points this round, " << kN
+              << " points examined and " << w
+              << " stationary points found so far";
+      if (ABSL_VLOG_IS_ON(2)) {
+        for (auto const& stationary_point : stationary_points) {
+          VLOG(2) << "  " << *stationary_point;
+        }
+      }
     }
 
     // Generate N new random points and add them to the PCP tree and to the
@@ -206,18 +215,22 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
     // Compute the radius below which we won't do a local search in this
     // iteration.
-    Norm²Type const rₖ² = CriticalRadius²(/*σ=*/4, kN);
+    NormType const rₖ = CriticalRadius(/*σ=*/4, kN);
+    Norm²Type const rₖ² = Pow<2>(rₖ);
+    VLOG(1) << "Round #" << k << ", critical radius is " << rₖ;
 
     // Process the points whose nearest neighbour is "sufficiently far" (or
     // unknown).
     for (auto it = schedule.upper_bound(rₖ²); it != schedule.end();) {
       Argument const& xᵢ = *it->second;
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, [f_xᵢ = f(xᵢ), rₖ², f, xᵢ](Argument const* const xⱼ) {
-            return (xᵢ - *xⱼ).Norm²() <= rₖ² && f(*xⱼ) < f_xᵢ;
+          xᵢ, rₖ,
+          [f_xᵢ = f(xᵢ), f](Argument const* const xⱼ) {
+            return f(*xⱼ) < f_xᵢ;
           });
 
       if (xⱼ == nullptr) {
+        VLOG(2) << "Round #" << k << ", local search from " << xᵢ;
         // We must do a local search as xᵢ couldn't be added to an existing
         // cluster.  Note that the radius of the search has to be the diametre
         // of the box: it's possible that xᵢ would be near one vertex of the box
@@ -250,6 +263,9 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         // to its nearest neighbour.
         auto const distance²_to_xⱼ = (xᵢ - *xⱼ).Norm²();
         DCHECK_LE(distance²_to_xⱼ, rₖ²);
+        VLOG(3) << "Round #" << k << ", no local search from point " << xᵢ
+                << " which has distance " << Sqrt(distance²_to_xⱼ)
+                << " to its nearest neighbour " << *xⱼ;
         it = schedule.erase(it);
         // This insertion take places below `schedule.upper_bound(rₖ²)`, so it
         // doesn't affect the current iteration.
@@ -258,7 +274,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     }
   }
 
-  DLOG(ERROR) << "Number of local searches: " << number_of_local_searches;
+  VLOG(1) << "Number of local searches: " << number_of_local_searches;
 
   std::vector<Argument> result;
   result.reserve(stationary_points.size());
@@ -276,7 +292,9 @@ IsNewStationaryPoint(Argument const& stationary_point,
                           stationary_point_neighbourhoods,
                       NormType const local_search_tolerance) {
   auto* const stationary_point_nearest_neighbour =
-      stationary_point_neighbourhoods.FindNearestNeighbour(stationary_point);
+      stationary_point_neighbourhoods.FindNearestNeighbour(
+          stationary_point,
+          /*radius=*/Infinity<NormType>);
 
   // The factor 2 below is because we are looking at the distance between two
   // approximate stationary points, not between an approximate stationary point
@@ -296,23 +314,25 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
     for (const auto& vertex : box_.vertices) {
       *argument += distribution_(random_) * vertex;
     }
+    VLOG(3) << "Generating point " << i << "/" << values_per_round << ": "
+            << *argument;
     arguments.push_back(std::move(argument));
   }
   return arguments;
 }
 
 template<typename Scalar, typename Argument, int dimensions>
-typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Norm²Type
-MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius²(
+typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::NormType
+MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius(
     double const σ,
     std::int64_t const kN) {
   using numerics::_elementary_functions::Cbrt;
   if constexpr (dimensions == 1) {
-    return Pow<2>(box_measure_ * σ * std::log(kN) / (2.0 * kN));
+    return box_measure_ * σ * std::log(kN) / (2.0 * kN);
   } else if constexpr (dimensions == 2) {
-    return box_measure_ * σ * std::log(kN) / (π * kN);
+    return Sqrt(box_measure_ * σ * std::log(kN) / (π * kN));
   } else if constexpr (dimensions == 3) {
-    return Cbrt(Pow<2>(3.0 * box_measure_ * σ * std::log(kN) / (4.0 * π * kN)));
+    return Cbrt(3.0 * box_measure_ * σ * std::log(kN) / (4.0 * π * kN));
   }
   std::abort();
 }

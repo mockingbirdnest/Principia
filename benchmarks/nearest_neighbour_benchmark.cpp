@@ -9,6 +9,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "numerics/nearest_neighbour.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -18,6 +19,7 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_nearest_neighbour;
+using namespace principia::quantities::_quantities;
 
 using World = Frame<struct WorldTag>;
 using V = Vector<double, World>;
@@ -83,6 +85,7 @@ void BM_PCPBuildTreeUsingConstructor(benchmark::State& state) {
 }
 
 void BM_PCPFindNearestNeighbour(benchmark::State& state) {
+  double const radius = Infinity<double>;
   std::int64_t const points_in_tree = state.range(0);
   std::int64_t const max_values_per_cell = state.range(1);
   std::vector<V> values;
@@ -95,7 +98,8 @@ void BM_PCPFindNearestNeighbour(benchmark::State& state) {
     benchmark::DoNotOptimize(
         tree.FindNearestNeighbour(V({coordinate_distribution(random),
                                      coordinate_distribution(random),
-                                     coordinate_distribution(random)})));
+                                     coordinate_distribution(random)}),
+                                  radius));
   }
 }
 

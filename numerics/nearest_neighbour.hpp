@@ -34,6 +34,13 @@ class PrincipalComponentPartitioningTree {
  public:
   using Value = Value_;
 
+  // A displacement from the centroid.
+  using Displacement = Difference<Value>;
+
+  // The type of the norm (and its square) of `Displacement`.
+  using NormType = NormType<Displacement>;
+  using Norm²Type = Norm²Type<Displacement>;
+
   using Filter = std::function<bool(Value const*)>;
 
   // We stop subdividing a cell when it contains `max_values_per_cell` or fewer
@@ -48,23 +55,19 @@ class PrincipalComponentPartitioningTree {
   // Adds a new value to the tree, restructuring it as needed.
   void Add(not_null<Value const*> value);
 
-  // Finds the nearest neighbour of the given `value`.  Returns nullptr if the
-  // tree is empty.  Only the values for which `filter` returns true are
-  // considered.
+  // Finds the nearest neighbour of the given `value` at a distance less than or
+  // equal to `radius`.  Returns nullptr if the tree is empty.  Only the values
+  // for which `filter` returns true are considered.
+  // Beware! if `filter` rejects many values and `radius` is large, the search
+  // may end up looking at the entire tree.
   Value const* FindNearestNeighbour(Value const& value,
+                                    NormType const& radius,
                                     Filter const& filter = nullptr) const;
 
  private:
   // A frame used to compute the principal components.
   using PrincipalComponentsFrame =
       Frame<struct PrincipalComponentsFrameTag>;
-
-  // A displacement from the centroid.
-  using Displacement = Difference<Value>;
-
-  // The type of the norm (and its square) of `Displacement`.
-  using NormType = NormType<Displacement>;
-  using Norm²Type = Norm²Type<Displacement>;
 
   // A unit vector corresponding to `Displacement`.
   using Axis = NormalizedType<Displacement>;
@@ -144,6 +147,7 @@ class PrincipalComponentPartitioningTree {
   // true.  That pointer may be null if the client doesn't want to check this
   // condition.  `parent` should be null for the root of the tree.
   void Find(Displacement const& displacement,
+            Norm²Type const& radius²,
             Filter const& filter,
             Internal const* parent,
             Node const& node,
@@ -153,6 +157,7 @@ class PrincipalComponentPartitioningTree {
 
   // Specializations for internal nodes and leaves, respectively.
   void Find(Displacement const& displacement,
+            Norm²Type const& radius²,
             Filter const& filter,
             Internal const* parent,
             Internal const& internal,
@@ -160,6 +165,7 @@ class PrincipalComponentPartitioningTree {
             std::int32_t& min_index,
             bool* must_check_other_side) const;
   void Find(Displacement const& displacement,
+            Norm²Type const& radius²,
             Filter const& filter,
             Internal const* parent,
             Leaf const& leaf,
