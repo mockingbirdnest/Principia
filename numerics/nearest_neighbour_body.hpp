@@ -56,9 +56,6 @@ void PrincipalComponentPartitioningTree<Value_>::Add(
   }
 }
 
-static int leaves;
-static int leaves_size;
-
 template<typename Value_>
 Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
     Value const& value,
@@ -70,8 +67,6 @@ Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
   Norm²Type const radius² = Pow<2>(radius);
   Norm²Type min_distance²;
   std::int32_t min_index;
-  leaves = 0;
-  leaves_size = 0;
   Find(value - centroid_,
        radius²,
        filter,
@@ -79,19 +74,6 @@ Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
        *root_,
        min_distance², min_index,
        /*must_check_other_side=*/nullptr);
-  if (leaves > 3000) {
-    Find(value - centroid_,
-         radius²,
-         filter,
-         /*parent=*/nullptr,
-         *root_,
-         min_distance²,
-         min_index,
-         /*must_check_other_side=*/nullptr);
-  }
-  //LOG(ERROR) << "Number of leaves visited: " << leaves
-  //              << ", average size: " << (leaves_size / leaves)
-  //              << ", tree size: " << values_.size();
 
   // In the end, this is why we retain the values: we want to return a pointer
   // that the client gave us.
@@ -364,8 +346,6 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     Norm²Type& min_distance²,
     std::int32_t& min_index,
     bool* const must_check_other_side) const {
-  ++leaves;
-  leaves_size += leaf.size();
   CHECK(!leaf.empty());
 
   // Find the point in this leaf which is the closest to `displacement`.
