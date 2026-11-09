@@ -30,12 +30,13 @@ class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
   static V const* BruteForceNearestNeighbour(
       V const& query_value,
       std::vector<V> const& values,
+      double const radius = Infinity<double>,
       PrincipalComponentPartitioningTree<V>::Filter const& filter = nullptr) {
     V const* nearest = nullptr;
     double nearest_distance = Infinity<double>;
     for (auto const& value : values) {
       double const distance = (value - query_value).Norm();
-      if (distance < nearest_distance &&
+      if (distance <= radius && distance < nearest_distance &&
           (filter == nullptr || filter(&value))) {
         nearest_distance = distance;
         nearest = &value;
@@ -65,6 +66,7 @@ class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
 
 // Points in the x-y plane.
 TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneConstructor) {
+  double const radius = Infinity<double>;
   V const v1({-1, -1, 0});
   V const v2({-1, 1, 0});
   V const v3({1, -1, -0});
@@ -78,21 +80,24 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneConstructor) {
   PrincipalComponentPartitioningTree<V> const tree({&v1, &v2, &v3, &v4},
                                                    /*max_values_per_cell=*/1);
 
-  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0})), Pointee(v1));
-  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0})), Pointee(v2));
-  EXPECT_THAT(tree.FindNearestNeighbour(V({1, 1, 0})), Pointee(v4));
-  EXPECT_THAT(tree.FindNearestNeighbour(V({3, 3, 0})), Pointee(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0}), radius),
+              Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0}), radius),
+              Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({1, 1, 0}), radius), Pointee(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({3, 3, 0}), radius), Pointee(v4));
 
   // Check that the points of the tree can be retrieved.
-  EXPECT_THAT(tree.FindNearestNeighbour(v1), Pointee(v1));
-  EXPECT_THAT(tree.FindNearestNeighbour(v2), Pointee(v2));
-  EXPECT_THAT(tree.FindNearestNeighbour(v3), Pointee(v3));
-  EXPECT_THAT(tree.FindNearestNeighbour(v4), Pointee(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(v1, radius), Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(v2, radius), Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(v3, radius), Pointee(v3));
+  EXPECT_THAT(tree.FindNearestNeighbour(v4, radius), Pointee(v4));
 }
 
 // Same as the previous test, but the tree is initially empty and points are
 // added using `Add`.
 TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneAdd) {
+  double const radius = Infinity<double>;
   V const v1({-1, -1, 0});
   V const v2({-1, 1, 0});
   V const v3({1, -1, -0});
@@ -105,20 +110,23 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneAdd) {
   tree.Add(&v3);
   tree.Add(&v4);
 
-  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0})), Pointee(v1));
-  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0})), Pointee(v2));
-  EXPECT_THAT(tree.FindNearestNeighbour(V({1, 1, 0})), Pointee(v4));
-  EXPECT_THAT(tree.FindNearestNeighbour(V({3, 3, 0})), Pointee(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, -0.5, 0}), radius),
+              Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({-0.5, 0.5, 0}), radius),
+              Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({1, 1, 0}), radius), Pointee(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(V({3, 3, 0}), radius), Pointee(v4));
 
   // Check that the points of the tree can be retrieved.
-  EXPECT_THAT(tree.FindNearestNeighbour(v1), Pointee(v1));
-  EXPECT_THAT(tree.FindNearestNeighbour(v2), Pointee(v2));
-  EXPECT_THAT(tree.FindNearestNeighbour(v3), Pointee(v3));
-  EXPECT_THAT(tree.FindNearestNeighbour(v4), Pointee(v4));
+  EXPECT_THAT(tree.FindNearestNeighbour(v1, radius), Pointee(v1));
+  EXPECT_THAT(tree.FindNearestNeighbour(v2, radius), Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(v3, radius), Pointee(v3));
+  EXPECT_THAT(tree.FindNearestNeighbour(v4, radius), Pointee(v4));
 }
 
 // Random points, validated against the brute force algorithm.
 TEST_F(PrincipalComponentPartitioningTreeTest, RandomConstructor) {
+  double const radius = Infinity<double>;
   static constexpr int points_in_tree = 100;
   static constexpr int points_to_test = 100;
   std::mt19937_64 random(42);
@@ -144,8 +152,10 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomConstructor) {
 
     auto const* const nearest =
         BruteForceNearestNeighbour(query_point, tree_points);
-    auto const* const nearest1 = tree1.FindNearestNeighbour(query_point);
-    auto const* const nearest3 = tree3.FindNearestNeighbour(query_point);
+    auto const* const nearest1 =
+        tree1.FindNearestNeighbour(query_point, radius);
+    auto const* const nearest3 =
+        tree3.FindNearestNeighbour(query_point, radius);
 
     EXPECT_THAT(nearest1, Eq(nearest)) << *nearest1 << " " << *nearest;
     EXPECT_THAT(nearest3, Eq(nearest)) << *nearest3 << " " << *nearest;
@@ -155,6 +165,7 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomConstructor) {
 // Same as the previous test, but the trees are initially empty and points are
 // added using `Add`.
 TEST_F(PrincipalComponentPartitioningTreeTest, RandomAdd) {
+  double const radius = Infinity<double>;
   static constexpr int points_in_tree = 100;
   static constexpr int points_to_test = 100;
   std::mt19937_64 random(42);
@@ -184,8 +195,10 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomAdd) {
 
     auto const* const nearest =
         BruteForceNearestNeighbour(query_point, tree_points);
-    auto const* const nearest1 = tree1.FindNearestNeighbour(query_point);
-    auto const* const nearest3 = tree3.FindNearestNeighbour(query_point);
+    auto const* const nearest1 =
+        tree1.FindNearestNeighbour(query_point, radius);
+    auto const* const nearest3 =
+        tree3.FindNearestNeighbour(query_point, radius);
 
     EXPECT_THAT(nearest1, Eq(nearest)) << *nearest1 << " " << *nearest;
     EXPECT_THAT(nearest3, Eq(nearest)) << *nearest3 << " " << *nearest;
@@ -194,6 +207,7 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomAdd) {
 
 // Random points with a filter, validated against the brute force algorithm.
 TEST_F(PrincipalComponentPartitioningTreeTest, RandomFilter) {
+  double const radius = Infinity<double>;
   static constexpr int points_in_tree = 100;
   static constexpr int points_to_test = 10;
   std::mt19937_64 random(42);
@@ -224,11 +238,11 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomFilter) {
                                 coordinate_distribution(random)});
 
     auto const* const nearest =
-        BruteForceNearestNeighbour(query_point, tree_points, filter);
+        BruteForceNearestNeighbour(query_point, tree_points, radius, filter);
     auto const* const nearest1 =
-        tree1.FindNearestNeighbour(query_point, filter);
+        tree1.FindNearestNeighbour(query_point, radius, filter);
     auto const* const nearest3 =
-        tree3.FindNearestNeighbour(query_point, filter);
+        tree3.FindNearestNeighbour(query_point, radius, filter);
 
     EXPECT_THAT(nearest1, Eq(nearest)) << *nearest1 << " " << *nearest;
     EXPECT_THAT(nearest3, Eq(nearest)) << *nearest3 << " " << *nearest;
@@ -237,6 +251,53 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomFilter) {
         nearest != BruteForceNearestNeighbour(query_point, tree_points);
   }
   EXPECT_TRUE(filtering_was_effective) << "Filtering did nothing";
+}
+
+// Random points with a search radius, validated against the brute force
+// algorithm.
+TEST_F(PrincipalComponentPartitioningTreeTest, RandomRadius) {
+  double const radius = 2;
+  static constexpr int points_in_tree = 100;
+  static constexpr int points_to_test = 10;
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<double> coordinate_distribution(-10, 10);
+
+  // Build two trees with the same points but different leaf sizes.
+  std::vector<V> tree_points;
+  std::vector<not_null<V const*>> tree_pointers;
+  MakeValues(points_in_tree,
+             tree_points,
+             tree_pointers,
+             random,
+             coordinate_distribution);
+  PrincipalComponentPartitioningTree<V> const tree1(tree_pointers,
+                                                    /*max_values_per_cell=*/1);
+  PrincipalComponentPartitioningTree<V> const tree3(tree_pointers,
+                                                    /*max_values_per_cell=*/3);
+
+  bool radius_was_effective = false;
+  bool found_something_within_radius = false;
+  for (int i = 0; i < points_to_test; ++i) {
+    auto const query_point = V({coordinate_distribution(random),
+                                coordinate_distribution(random),
+                                coordinate_distribution(random)});
+
+    auto const* const nearest =
+        BruteForceNearestNeighbour(query_point, tree_points, radius);
+    auto const* const nearest1 =
+        tree1.FindNearestNeighbour(query_point, radius);
+    auto const* const nearest3 =
+        tree3.FindNearestNeighbour(query_point, radius);
+    found_something_within_radius |= nearest != nullptr;
+
+    EXPECT_THAT(nearest1, Eq(nearest)) << *nearest1 << " " << *nearest;
+    EXPECT_THAT(nearest3, Eq(nearest)) << *nearest3 << " " << *nearest;
+
+    radius_was_effective |=
+        nearest != BruteForceNearestNeighbour(query_point, tree_points);
+  }
+  EXPECT_TRUE(radius_was_effective) << "Radius did nothing";
+  EXPECT_TRUE(found_something_within_radius) << "No points were found";
 }
 
 }  // namespace numerics
