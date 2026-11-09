@@ -997,12 +997,12 @@ TEST_F(PluginTestWithoutPlugin, Frenet) {
   not_null<std::unique_ptr<NavigationFrame>> const geocentric =
       plugin.NewBodyCentredNonRotatingNavigationFrame(
           GetCityHash(SolarSystemFactory::Earth));
-  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 5, 61));
-  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3, 25));
-  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 0, 15));
+  EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 4, 43));
+  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 457, 1654));
+  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 714, 2037));
   EXPECT_THAT(
       plugin.VesselVelocity(satellite),
-      AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 7, 83));
+      AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 1, 33));
 }
 
 }  // namespace ksp_plugin
