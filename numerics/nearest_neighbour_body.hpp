@@ -250,13 +250,18 @@ template<affine Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Node& node) {
-  if (std::holds_alternative<Internal>(node)) {
-    Add(index, std::get<Internal>(node));
-  } else if (std::holds_alternative<Leaf>(node)) {
-    Add(index, std::get<Leaf>(node), node);
-  } else {
-    LOG(FATAL) << "Unexpected node";
-  }
+  std::visit(
+      [this, index, &node](auto&& v) {
+        using V = std::decay_t<decltype(v)>;
+        if constexpr (std::is_same_v<V, Internal>) {
+          Add(index, v);
+        } else if constexpr (std::is_same_v<V, Leaf>) {
+          Add(index, v, node);
+        } else {
+          static_assert(false, "Unexpected node type");
+        }
+      },
+      node);
 }
 
 template<affine Point_, typename Payload_>
@@ -303,25 +308,32 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     Norm²Type& min_distance²,
     std::int32_t& min_index,
     bool* const must_check_other_side) const {
-  if (std::holds_alternative<Internal>(node)) {
-    Find(displacement,
-         radius²,
-         filter,
-         parent,
-         std::get<Internal>(node),
-         min_distance², min_index,
-         must_check_other_side);
-  } else if (std::holds_alternative<Leaf>(node)) {
-    Find(displacement,
-         radius²,
-         filter,
-         parent,
-         std::get<Leaf>(node),
-         min_distance², min_index,
-         must_check_other_side);
-  } else {
-    LOG(FATAL) << "Unexpected node";
-  }
+  std::visit(
+      [&](auto&& v) {
+        using V = std::decay_t<decltype(v)>;
+        if constexpr (std::is_same_v<V, Internal>) {
+          Find(displacement,
+               radius²,
+               filter,
+               parent,
+               v,
+               min_distance²,
+               min_index,
+               must_check_other_side);
+        } else if constexpr (std::is_same_v<V, Leaf>) {
+          Find(displacement,
+               radius²,
+               filter,
+               parent,
+               v,
+               min_distance²,
+               min_index,
+               must_check_other_side);
+        } else {
+          static_assert(false, "Unexpected node type");
+        }
+      },
+      node);
 }
 
 template<affine Point_, typename Payload_>
