@@ -26,34 +26,41 @@ using namespace principia::quantities::_quantities;
 
 constexpr std::int32_t no_min_index = -1;
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 PrincipalComponentPartitioningTree<Value_, Payload_>::
 PrincipalComponentPartitioningTree(
     std::vector<not_null<Value const*>> const& values,
     std::int64_t const max_values_per_cell)
     : values_(values),
-      payloads_(values.size()),
       max_values_per_cell_(max_values_per_cell) {
   CHECK_LE(values_.size(), std::numeric_limits<std::int32_t>::max());
+  if constexpr (has_payload) {
+    payloads_.resize(values_.size());
+  }
   if (!values_.empty()) {
     Initialize();
   }
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
     not_null<Value const*> const value) {
-  Add(value, std::nullopt);
+  if constexpr (has_payload) {
+    payloads_.push_back(std::nullopt);
+  }
+  AddValue(value);
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
     not_null<Value const*> const value,
-    Payload const& payload) {
-  Add(value, std::make_optional(payload));
+    Payload const& payload)
+  requires has_payload {
+  payloads_.push_back(payload);
+  AddValue(value);
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 Value_ const*
 PrincipalComponentPartitioningTree<Value_, Payload_>::FindNearestNeighbour(
     Value const& value,
@@ -80,7 +87,7 @@ PrincipalComponentPartitioningTree<Value_, Payload_>::FindNearestNeighbour(
              : static_cast<Value const*>(values_[min_index]);
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 void PrincipalComponentPartitioningTree<Value_, Payload_>::Initialize() {
   // Compute the centroid of the values.
   BarycentreCalculator<Value, double> centroid;
@@ -106,7 +113,7 @@ void PrincipalComponentPartitioningTree<Value_, Payload_>::Initialize() {
   root_ = BuildTree(indices.begin(), indices.end(), indices.size());
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 not_null<std::unique_ptr<
 typename PrincipalComponentPartitioningTree<Value_, Payload_>::Node>>
 PrincipalComponentPartitioningTree<Value_, Payload_>::BuildTree(
@@ -168,12 +175,10 @@ PrincipalComponentPartitioningTree<Value_, Payload_>::BuildTree(
                .children = {std::move(first_child), std::move(second_child)}});
 }
 
-template<typename Value_, typename Payload_>
-void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
-    not_null<Value const*> const value,
-    std::optional<Payload> const& payload) {
+template<affine Value_, typename Payload_>
+void PrincipalComponentPartitioningTree<Value_, Payload_>::AddValue(
+    not_null<Value const*> const value) {
   values_.push_back(value);
-  payloads_.push_back(payload);
   if (values_.size() == 1) {
     Initialize();
   } else {
@@ -188,7 +193,7 @@ void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
   }
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 typename PrincipalComponentPartitioningTree<Value_, Payload_>::
 DisplacementSymmetricBilinearForm
 PrincipalComponentPartitioningTree<Value_, Payload_>::
@@ -202,7 +207,7 @@ ComputePrincipalComponentForm(
   return result;
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
     std::int32_t const index,
     Node& node) {
@@ -215,7 +220,7 @@ void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
   }
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
     std::int32_t const index,
     Internal const& internal) {
@@ -228,7 +233,7 @@ void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
   }
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
     std::int32_t const index,
     Leaf& leaf,
@@ -249,7 +254,7 @@ void PrincipalComponentPartitioningTree<Value_, Payload_>::Add(
   }
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 void PrincipalComponentPartitioningTree<Value_, Payload_>::Find(
     Displacement const& displacement,
     Norm²Type const& radius²,
@@ -280,7 +285,7 @@ void PrincipalComponentPartitioningTree<Value_, Payload_>::Find(
   }
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 void PrincipalComponentPartitioningTree<Value_, Payload_>::Find(
     Displacement const& displacement,
     Norm²Type const& radius²,
@@ -358,7 +363,7 @@ void PrincipalComponentPartitioningTree<Value_, Payload_>::Find(
   }
 }
 
-template<typename Value_, typename Payload_>
+template<affine Value_, typename Payload_>
 void PrincipalComponentPartitioningTree<Value_, Payload_>::Find(
     Displacement const& displacement,
     Norm²Type const& radius²,
@@ -378,10 +383,19 @@ void PrincipalComponentPartitioningTree<Value_, Payload_>::Find(
     // Skip the values that are filtered out.  Note that *all* the values may be
     // filtered out.  The order of comparisons matter because `min_distance²` is
     // typically small.
-    if (distance² < min_distance² && distance² <= radius² &&
-        (filter == nullptr || filter(values_[index], payloads_[index]))) {
-      min_distance² = distance²;
-      min_index = index;
+    if (distance² < min_distance² && distance² <= radius²) {
+      bool must_update;
+      if (filter == nullptr) {
+        must_update = true;
+      } else if constexpr (has_payload) {
+        must_update = filter(values_[index], payloads_[index]);
+      } else {
+        must_update = filter(values_[index]);
+      }
+      if (must_update) {
+        min_distance² = distance²;
+        min_index = index;
+      }
     }
   }
 

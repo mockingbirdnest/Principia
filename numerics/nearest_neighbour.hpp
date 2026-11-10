@@ -29,8 +29,11 @@ using namespace principia::geometry::_symmetric_bilinear_form;
 // in the context of quantization.  Their use for nearest neighbour search was
 // proposed by [ZJL02].  We choose to use this algorithm not because it is easy
 // but because it is coordinate-free.
-template<typename Value_, typename Payload_ = int>
+// The `Payload` may be used to store client-specific data that is useful for
+// filtering.
+template<affine Value_, typename Payload_ = std::nullopt_t>
 class PrincipalComponentPartitioningTree {
+  static constexpr bool has_payload = !std::is_same_v<Payload_, std::nullopt_t>;
  public:
   using Value = Value_;
   using Payload = Payload_;
@@ -42,8 +45,10 @@ class PrincipalComponentPartitioningTree {
   using NormType = NormType<Displacement>;
   using Norm²Type = Norm²Type<Displacement>;
 
-  using Filter =
-      std::function<bool(Value const*, std::optional<Payload> const&)>;
+  using Filter = std::conditional_t<
+      has_payload,
+      std::function<bool(Value const*, std::optional<Payload> const&)>,
+      std::function<bool(Value const*)>>;
 
   // We stop subdividing a cell when it contains `max_values_per_cell` or fewer
   // values.  This API takes (non-owning) pointers so that the client can relate
@@ -54,10 +59,12 @@ class PrincipalComponentPartitioningTree {
       std::vector<not_null<Value const*>> const& values,
       std::int64_t max_values_per_cell);
 
-  // Adds a new value to the tree, restructuring it as needed.
-  //TODO(phl)comment
+  // Adds a new value to the tree, restructuring it as needed.  Optionally
+  // supports adding a payload, if the tree has one.  This is the only way to
+  // add payloads.
   void Add(not_null<Value const*> value);
-  void Add(not_null<Value const*> value, Payload const& payload);
+  void Add(not_null<Value const*> value, Payload const& payload)
+    requires has_payload;
 
   // Finds the nearest neighbour of the given `value` at a distance less than or
   // equal to `radius`.  Returns nullptr if the tree is empty.  Only the values
@@ -136,8 +143,9 @@ class PrincipalComponentPartitioningTree {
       typename Indices::iterator begin,
       typename Indices::iterator end) const;
 
-  //TODO(phl)comment
-  void Add(not_null<Value const*> value, std::optional<Payload> const& payload);
+  // Adds `value` to the tree, initializing it if needed.  The caller must take
+  // care of managing `payloads_` if needed.
+  void AddValue(not_null<Value const*> value);
 
   // Adds the value at the given `index` by first finding the location in the
   // subtree rooted at `node` where it would be located, and then adding it to
@@ -182,7 +190,6 @@ class PrincipalComponentPartitioningTree {
 
   // Construction parameters.
   std::vector<not_null<Value const*>> values_;
-  std::vector<std::optional<Payload>> payloads_;
   std::int64_t const max_values_per_cell_;
 
   // The centroid of the values passed at construction, or the first value
@@ -192,6 +199,13 @@ class PrincipalComponentPartitioningTree {
   // The displacements from the centroid.  The indices are the same as for
   // `values_`.
   std::vector<Displacement> displacements_;
+
+  // Payloads.  Note that the not-a-payload type, `std::nullopt_t` cannot be
+  // stored in an `optional`, so it helps detect mistakes.
+  std::conditional_t<has_payload,
+                     std::vector<std::optional<Payload>>,
+                     std::monostate>
+      payloads_;
 
   std::unique_ptr<Node> root_;
 };
