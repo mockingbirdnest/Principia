@@ -99,6 +99,13 @@ class MultiLevelSingleLinkage {
       Field<Scalar, Argument> const& f,
       Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
 
+  // Return true iff `x` is sufficiently close to a known stationary point.
+  static bool IsCloseToKnownStationaryPoint(
+      Argument const& x,
+      PrincipalComponentPartitioningTree<Argument> const&
+          stationary_point_neighbourhoods,
+      NormType const local_search_tolerance);
+
   // Returns true iff the given `stationary_point` is sufficiently far from the
   // ones already in `stationary_point_neighbourhoods`.
   static bool IsNewStationaryPoint(

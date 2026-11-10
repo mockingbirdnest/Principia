@@ -177,7 +177,9 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
           static_cast<double>(w * (kN - 1)) / static_cast<double>(kN - w - 2) <=
           w + 0.5) {
         VLOG(1) << "Exit round #" << k << " with " << kN
-                << " points examined and " << w << " stationary points found";
+                << " points examined and " << w
+                << " stationary points found using " << number_of_local_searches
+                << " local searches";
         break;
       } else {
         // [RT87b] equation 4.
@@ -188,7 +190,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       }
       VLOG(1) << "Round #" << k << " with " << N << " points this round, " << kN
               << " points examined and " << w
-              << " stationary points found so far";
+              << " stationary points found so far using "
+              << number_of_local_searches << " local searches";
       if (ABSL_VLOG_IS_ON(2)) {
         for (auto const& stationary_point : stationary_points) {
           VLOG(2) << "  " << *stationary_point;
@@ -225,6 +228,16 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     // unknown).
     for (auto it = schedule.upper_bound(rₖ²); it != schedule.end();) {
       auto const& [xᵢ, f_xᵢ] = it->second;
+
+      // This is the test xᵢ ∈ X*υ from [RT87b].
+      if (IsCloseToKnownStationaryPoint(
+              *xᵢ, stationary_point_neighbourhoods, local_search_tolerance)) {
+        VLOG(2) << "Round #" << k << ", skipping point " << *xᵢ
+                << " which is close to a known stationary point";
+        it = schedule.erase(it);
+        continue;
+      }
+
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
           *xᵢ, rₖ,
           [f_xᵢ, f](Argument const* const xⱼ,
@@ -279,8 +292,6 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     }
   }
 
-  VLOG(1) << "Number of local searches: " << number_of_local_searches;
-
   std::vector<Argument> result;
   result.reserve(stationary_points.size());
   for (const auto& stationary_point : stationary_points) {
@@ -292,10 +303,27 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
 template<typename Scalar, typename Argument, int dimensions>
 bool MultiLevelSingleLinkage<Scalar, Argument, dimensions>::
+IsCloseToKnownStationaryPoint(
+    Argument const& x,
+    PrincipalComponentPartitioningTree<Argument> const&
+        stationary_point_neighbourhoods,
+    NormType const local_search_tolerance) {
+  auto* const stationary_point_nearest_neighbour =
+      stationary_point_neighbourhoods.FindNearestNeighbour(
+          x,
+          /*radius=*/Infinity<NormType>);
+
+  return stationary_point_nearest_neighbour != nullptr &&
+         (x - *stationary_point_nearest_neighbour).Norm() <
+             local_search_tolerance;
+}
+
+template<typename Scalar, typename Argument, int dimensions>
+bool MultiLevelSingleLinkage<Scalar, Argument, dimensions>::
 IsNewStationaryPoint(Argument const& stationary_point,
-                      PrincipalComponentPartitioningTree<Argument> const&
-                          stationary_point_neighbourhoods,
-                      NormType const local_search_tolerance) {
+                     PrincipalComponentPartitioningTree<Argument> const&
+                         stationary_point_neighbourhoods,
+                     NormType const local_search_tolerance) {
   auto* const stationary_point_nearest_neighbour =
       stationary_point_neighbourhoods.FindNearestNeighbour(
           stationary_point,
