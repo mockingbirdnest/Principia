@@ -142,8 +142,9 @@ TEST_F(PrincipalComponentPartitioningTreeTest, RandomConstructor) {
              coordinate_distribution);
   PrincipalComponentPartitioningTree<V> const tree1(tree_pointers,
                                                     /*max_values_per_cell=*/1);
-  PrincipalComponentPartitioningTree<V> const tree3(tree_pointers,
-                                                    /*max_values_per_cell=*/3);
+  PrincipalComponentPartitioningTree<V> tree3(tree_pointers,
+                                              /*max_values_per_cell=*/3);
+  tree3.Optimize();
 
   for (int i = 0; i < points_to_test; ++i) {
     auto const query_point = V({coordinate_distribution(random),

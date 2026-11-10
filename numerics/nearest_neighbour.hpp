@@ -67,6 +67,12 @@ class PrincipalComponentPartitioningTree {
   void Add(not_null<Point const*> point, Payload const& payload)
     requires has_payload;
 
+  // May be called after all points have been added to the tree to optimize the
+  // ordering of internal data structures.  This may result in better cache
+  // locality during calls to `FindNearestNeighbour` for large trees.  Linear in
+  // the size of the tree.
+  void Optimize();
+
   // Finds the nearest neighbour of the given `point` at a distance less than or
   // equal to `radius`.  Returns nullptr if the tree is empty.  Only the points
   // for which `filter` returns true are considered.
@@ -136,7 +142,7 @@ class PrincipalComponentPartitioningTree {
   // passed by the caller for efficiency.
   not_null<std::unique_ptr<Node>> BuildTree(typename Indices::iterator begin,
                                             typename Indices::iterator end,
-                                            std::int64_t size) const;
+                                            std::int64_t size);
 
   // Returns the symmetric bilinear form that represents the "inertia" of the
   // displacements given by the index range [begin, end[.
@@ -200,6 +206,11 @@ class PrincipalComponentPartitioningTree {
   // The displacements from the centroid.  The indices are the same as for
   // `points_`.
   std::vector<Displacement> displacements_;
+
+  // All the leaves constructed for the tree are recorded in this vector.
+  // Beware!  A leaf is transformed into an internal node when it is split, so
+  // any code that scan this vector must check the type of the nodes.
+  std::vector<not_null<Node*>> leaves_;
 
   // Payloads.  Note that the not-a-payload type, `std::nullopt_t` cannot be
   // stored in an `optional`, so it helps detect mistakes.

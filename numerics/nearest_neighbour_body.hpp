@@ -61,6 +61,43 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
 }
 
 template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
+  // Build a permutation of the points in the order they appear in the leaves,
+  // and update the leaf indices accordingly.
+  std::vector<std::int32_t> permutation;
+  permutation.resize(points_.size());
+  std::int32_t new_index = 0;
+  for (auto const& leaf : leaves_) {
+    // We only ever added leaves to this list, but leaves can turn into internal
+    // nodes when they get split.
+    if (std::holds_alternative<Leaf>(*leaf)) {
+      auto& old_indices = std::get<Leaf>(*leaf);
+      for (auto& old_index : old_indices) {
+        permutation[new_index] = old_index;
+        old_index = new_index;
+        ++new_index;
+      }
+    }
+  }
+
+  // Apply the permutation to our vectors.  I stole this code from
+  // https://devblogs.microsoft.com/oldnewthing/20170102-00/?p=95095/
+  for (std::int32_t i = 0; i < permutation.size(); ++i) {
+    auto current = i;
+    while (i != permutation[current]) {
+      auto const next = permutation[current];
+      std::swap(points_[current], points_[next]);
+      std::swap(displacements_[current], displacements_[next]);
+      if constexpr (has_payload) {
+        std::swap(payloads_[current], payloads_[next]);
+      }
+      permutation[current] = current;
+      current = next;
+    }
+    permutation[current] = current;
+  }
+}
+template<affine Point_, typename Payload_>
 Point_ const*
 PrincipalComponentPartitioningTree<Point_, Payload_>::FindNearestNeighbour(
     Point const& point,
@@ -119,7 +156,7 @@ typename PrincipalComponentPartitioningTree<Point_, Payload_>::Node>>
 PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     typename Indices::iterator const begin,
     typename Indices::iterator const end,
-    std::int64_t const size) const {
+    std::int64_t const size) {
   if (size <= max_points_per_cell_) {
     // We are done subdividing, return a leaf.
     Leaf leaf;
@@ -127,7 +164,9 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     for (auto it = begin; it != end; ++it) {
       leaf.push_back(it->index);
     }
-    return make_not_null_unique<Node>(leaf);
+    auto node = make_not_null_unique<Node>(std::move(leaf));
+    leaves_.push_back(node.get());
+    return node;
   }
 
   // Compute the "inertia" of the selected displacements and diagonalize it.
