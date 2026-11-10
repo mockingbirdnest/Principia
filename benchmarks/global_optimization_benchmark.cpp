@@ -1,7 +1,10 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=MLSL --benchmark_repetitions=1  // NOLINT(whitespace/line_length)
 
+#include <algorithm>
 #include <cstdint>
+#include <limits>
 #include <memory>
+#include <vector>
 
 #include "absl/log/globals.h"
 #include "absl/log/initialize.h"
