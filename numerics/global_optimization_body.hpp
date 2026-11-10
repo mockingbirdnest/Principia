@@ -3,6 +3,7 @@
 #include "numerics/global_optimization.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <type_traits>
@@ -27,7 +28,7 @@ using namespace principia::numerics::_gradient_descent;
 // Values that are too small cause extra activity in `Add` and deeper recursion
 // in `FindNearestNeighbour`.  Values that are too large cause extra function
 // evaluations in the leaf search.
-constexpr int64_t pcp_tree_max_values_per_cell = 20;
+constexpr std::int64_t pcp_tree_max_values_per_cell = 20;
 
 template<typename Scalar, typename Argument, int dimensions>
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
@@ -243,7 +244,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     for (auto it = partition_it; it != schedule.end(); ++it) {
       auto const& [_, xᵢ, f_xᵢ] = *it;
 
-      // This is the test xᵢ ∈ X*υ from [RT87b].
+      // This is the test xᵢ ∈ X*υ from [RT87b], p. 60.  Note that for some of
+      // the points that short-circuit here, f_xᵢ won't ever be used.
+      // Experimentally it's a small proportion, though (about 1%) so it's not
+      // worth optimizing.
       if (IsCloseToKnownStationaryPoint(
               *xᵢ, stationary_point_neighbourhoods, local_search_tolerance)) {
         VLOG(2) << "Round #" << k << ", skipping point " << *xᵢ
@@ -256,8 +260,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
           *xᵢ, rₖ,
-          [f_xᵢ, f](Argument const* const xⱼ,
-                    std::optional<Scalar> const& payload) {
+          [f_xᵢ](Argument const* const xⱼ,
+                 std::optional<Scalar> const& payload) {
             DCHECK(payload.has_value());
             auto const& f_xⱼ = payload.value();
             return f_xⱼ < f_xᵢ;
