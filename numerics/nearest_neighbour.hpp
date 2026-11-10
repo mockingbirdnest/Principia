@@ -203,10 +203,10 @@ class PrincipalComponentPartitioningTree {
 
   // Payloads.  Note that the not-a-payload type, `std::nullopt_t` cannot be
   // stored in an `optional`, so it helps detect mistakes.
-  std::conditional_t<has_payload,
-                     std::vector<std::optional<Payload>>,
-                     std::monostate>
-      payloads_;
+  using Payloads = std::conditional_t<has_payload,
+                                      std::vector<std::optional<Payload>>,
+                                      std::monostate>;
+  Payloads payloads_;
 
   std::unique_ptr<Node> root_;
 };
