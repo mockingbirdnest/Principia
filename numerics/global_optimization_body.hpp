@@ -308,14 +308,11 @@ IsCloseToKnownStationaryPoint(
     PrincipalComponentPartitioningTree<Argument> const&
         stationary_point_neighbourhoods,
     NormType const local_search_tolerance) {
-  auto* const stationary_point_nearest_neighbour =
+  auto* const x_nearest_neighbour =
       stationary_point_neighbourhoods.FindNearestNeighbour(
           x,
-          /*radius=*/Infinity<NormType>);
-
-  return stationary_point_nearest_neighbour != nullptr &&
-         (x - *stationary_point_nearest_neighbour).Norm() <
-             local_search_tolerance;
+          /*radius=*/local_search_tolerance);
+  return x_nearest_neighbour != nullptr;
 }
 
 template<typename Scalar, typename Argument, int dimensions>
