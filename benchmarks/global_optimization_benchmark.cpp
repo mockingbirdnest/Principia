@@ -1,7 +1,10 @@
 // .\Release\x64\benchmarks.exe --benchmark_filter=MLSL --benchmark_repetitions=1  // NOLINT(whitespace/line_length)
 
+#include <algorithm>
 #include <cstdint>
+#include <limits>
 #include <memory>
+#include <vector>
 
 #include "absl/log/globals.h"
 #include "absl/log/initialize.h"
@@ -149,11 +152,8 @@ class GlobalOptimizationBenchmark : public benchmark::Fixture {
     static Instant const t0;
     Instant const t_min = std::max(reference.t_min(), trajectory.t_min());
     Instant const t_max = std::min(reference.t_max(), trajectory.t_max());
-    int f_evaluations = 0;
-    int grad_f_evaluations = 0;
 
     auto const f = [&](Argument<Frame> const& argument) {
-      ++f_evaluations;
       Instant const t =
           std::min(std::max(t0 + argument.coordinates()[0], t_min), t_max);
       Position<Frame> const reference_position = reference.EvaluatePosition(t);
@@ -165,7 +165,6 @@ class GlobalOptimizationBenchmark : public benchmark::Fixture {
     };
 
     auto const grad_f = [&](Argument<Frame> const& argument) {
-      ++grad_f_evaluations;
       Instant const t = t0 + argument.coordinates()[0];
       if (t < t_min || t > t_max) {
         return Vector<Variation<Square<Length>>, Frame>();
