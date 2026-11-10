@@ -146,6 +146,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     Scalar value;
   };
   std::vector<ScheduleEntry> schedule;
+  Norm²Type const never_scheduled = -Infinity<Norm²Type>;
 
   // There are two ways to iterate through this loop, corresponding to different
   // termination conditions.  We can either do a fixed number of rounds with a
@@ -247,8 +248,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         VLOG(2) << "Round #" << k << ", skipping point " << *xᵢ
                 << " which is close to a known stationary point";
         // We never remove points from `schedule`, we just set their distance to
-        // zero so that they won't ever be considered again.
-        it->distance_to_lower_nearest_neighbour² = Norm²Type();
+        // `never_scheduled` so that they won't ever be considered again.
+        it->distance_to_lower_nearest_neighbour² = never_scheduled;
         continue;
       }
 
@@ -289,7 +290,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         }
         // A local search has been started from xᵢ, so no point in considering
         // it again.
-        it->distance_to_lower_nearest_neighbour² = Norm²Type();
+        it->distance_to_lower_nearest_neighbour² = never_scheduled;
       } else {
         // Move the point xᵢ "down" in the `schedule`, based on the distance to
         // its nearest neighbour.
