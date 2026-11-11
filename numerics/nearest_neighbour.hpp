@@ -29,38 +29,50 @@ using namespace principia::geometry::_symmetric_bilinear_form;
 // in the context of quantization.  Their use for nearest neighbour search was
 // proposed by [ZJL02].  We choose to use this algorithm not because it is easy
 // but because it is coordinate-free.
-template<typename Value_>
+// The `Payload` may be used to store client-specific data that is useful for
+// filtering.
+template<affine Point_, typename Payload_ = std::nullopt_t>
 class PrincipalComponentPartitioningTree {
+  static constexpr bool has_payload = !std::is_same_v<Payload_, std::nullopt_t>;
+
  public:
-  using Value = Value_;
+  using Point = Point_;
+  using Payload = Payload_;
 
   // A displacement from the centroid.
-  using Displacement = Difference<Value>;
+  using Displacement = Difference<Point>;
 
   // The type of the norm (and its square) of `Displacement`.
   using NormType = NormType<Displacement>;
   using Norm²Type = Norm²Type<Displacement>;
 
-  using Filter = std::function<bool(Value const*)>;
+  using Filter = std::conditional_t<
+      has_payload,
+      std::function<bool(Point const*, std::optional<Payload> const&)>,
+      std::function<bool(Point const*)>>;
 
-  // We stop subdividing a cell when it contains `max_values_per_cell` or fewer
-  // values.  This API takes (non-owning) pointers so that the client can relate
-  // the values given here to the ones it gets from `FindNearestNeighbour`.  The
-  // vector `values` may be empty, in which case the object is not usable until
-  // the first value has been `Add`ed.
+  // We stop subdividing a cell when it contains `max_points_per_cell` or fewer
+  // points.  This API takes (non-owning) pointers so that the client can relate
+  // the points given here to the ones it gets from `FindNearestNeighbour`.  The
+  // vector `points` may be empty, in which case the object is not usable until
+  // the first point has been `Add`ed.
   PrincipalComponentPartitioningTree(
-      std::vector<not_null<Value const*>> const& values,
-      std::int64_t max_values_per_cell);
+      std::vector<not_null<Point const*>> const& points,
+      std::int64_t max_points_per_cell);
 
-  // Adds a new value to the tree, restructuring it as needed.
-  void Add(not_null<Value const*> value);
+  // Adds a new point to the tree, restructuring it as needed.  Optionally
+  // supports adding a payload, if the tree has one.  This is the only way to
+  // add payloads.
+  void Add(not_null<Point const*> point);
+  void Add(not_null<Point const*> point, Payload const& payload)
+    requires has_payload;
 
-  // Finds the nearest neighbour of the given `value` at a distance less than or
-  // equal to `radius`.  Returns nullptr if the tree is empty.  Only the values
+  // Finds the nearest neighbour of the given `point` at a distance less than or
+  // equal to `radius`.  Returns nullptr if the tree is empty.  Only the points
   // for which `filter` returns true are considered.
-  // Beware! if `filter` rejects many values and `radius` is large, the search
+  // Beware! if `filter` rejects many points and `radius` is large, the search
   // may end up looking at the entire tree.
-  Value const* FindNearestNeighbour(Value const& value,
+  Point const* FindNearestNeighbour(Point const& point,
                                     NormType const& radius,
                                     Filter const& filter = nullptr) const;
 
@@ -132,7 +144,11 @@ class PrincipalComponentPartitioningTree {
       typename Indices::iterator begin,
       typename Indices::iterator end) const;
 
-  // Adds the value at the given `index` by first finding the location in the
+  // Adds `point` to the tree, initializing it if needed.  The caller must take
+  // care of managing `payloads_` if needed.
+  void AddPoint(not_null<Point const*> point);
+
+  // Adds the point at the given `index` by first finding the location in the
   // subtree rooted at `node` where it would be located, and then adding it to
   // the leaf (if there is room) or splitting the leaf (if not).
   void Add(std::int32_t index, Node& node);
@@ -174,16 +190,23 @@ class PrincipalComponentPartitioningTree {
             bool* must_check_other_side) const;
 
   // Construction parameters.
-  std::vector<not_null<Value const*>> values_;
-  std::int64_t const max_values_per_cell_;
+  std::vector<not_null<Point const*>> points_;
+  std::int64_t const max_points_per_cell_;
 
-  // The centroid of the values passed at construction, or the first value
-  // passed to `Add` if no value is passed at construction.
-  Value centroid_;
+  // The centroid of the points passed at construction, or the first point
+  // passed to `Add` if no point is passed at construction.
+  Point centroid_;
 
   // The displacements from the centroid.  The indices are the same as for
-  // `values_`.
+  // `points_`.
   std::vector<Displacement> displacements_;
+
+  // Payloads.  Note that the not-a-payload type, `std::nullopt_t` cannot be
+  // stored in an `optional`, so it helps detect mistakes.
+  std::conditional_t<has_payload,
+                     std::vector<std::optional<Payload>>,
+                     std::monostate>
+      payloads_;
 
   std::unique_ptr<Node> root_;
 };

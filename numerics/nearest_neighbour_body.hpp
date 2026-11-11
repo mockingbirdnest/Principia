@@ -26,39 +26,44 @@ using namespace principia::quantities::_quantities;
 
 constexpr std::int32_t no_min_index = -1;
 
-template<typename Value_>
-PrincipalComponentPartitioningTree<Value_>::PrincipalComponentPartitioningTree(
-    std::vector<not_null<Value const*>> const& values,
-    std::int64_t const max_values_per_cell)
-    : values_(values),
-      max_values_per_cell_(max_values_per_cell) {
-  CHECK_LE(values_.size(), std::numeric_limits<std::int32_t>::max());
-  if (!values_.empty()) {
+template<affine Point_, typename Payload_>
+PrincipalComponentPartitioningTree<Point_, Payload_>::
+PrincipalComponentPartitioningTree(
+    std::vector<not_null<Point const*>> const& points,
+    std::int64_t const max_points_per_cell)
+    : points_(points),
+      max_points_per_cell_(max_points_per_cell) {
+  CHECK_LE(points_.size(), std::numeric_limits<std::int32_t>::max());
+  if constexpr (has_payload) {
+    payloads_.resize(points_.size());
+  }
+  if (!points_.empty()) {
     Initialize();
   }
 }
 
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(
-    not_null<Value const*> const value) {
-  values_.push_back(value);
-  if (values_.size() == 1) {
-    Initialize();
-  } else {
-    // There is no good way to rebalance a PCP tree (or a kd tree for that
-    // matter).  Bkd trees provide some kind of solution, but their lookup is
-    // expensive.  We are assuming that the tree won't get so unbalanced that
-    // lookups get costly.
-    auto const displacement = *value - centroid_;
-    std::int32_t const index = displacements_.size();
-    displacements_.push_back(displacement);
-    Add(index, *root_);
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
+    not_null<Point const*> const point) {
+  if constexpr (has_payload) {
+    payloads_.push_back(std::nullopt);
   }
+  AddPoint(point);
 }
 
-template<typename Value_>
-Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
-    Value const& value,
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
+    not_null<Point const*> const point,
+    Payload const& payload)
+  requires has_payload {
+  payloads_.push_back(payload);
+  AddPoint(point);
+}
+
+template<affine Point_, typename Payload_>
+Point_ const*
+PrincipalComponentPartitioningTree<Point_, Payload_>::FindNearestNeighbour(
+    Point const& point,
     NormType const& radius,
     Filter const& filter) const {
   if (displacements_.empty()) {
@@ -67,7 +72,7 @@ Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
   Norm²Type const radius² = Pow<2>(radius);
   Norm²Type min_distance²;
   std::int32_t min_index;
-  Find(value - centroid_,
+  Find(point - centroid_,
        radius²,
        filter,
        /*parent=*/nullptr,
@@ -75,26 +80,26 @@ Value_ const* PrincipalComponentPartitioningTree<Value_>::FindNearestNeighbour(
        min_distance², min_index,
        /*must_check_other_side=*/nullptr);
 
-  // In the end, this is why we retain the values: we want to return a pointer
+  // In the end, this is why we retain the points: we want to return a pointer
   // that the client gave us.
   return min_index == no_min_index
              ? nullptr
-             : static_cast<Value const*>(values_[min_index]);
+             : static_cast<Point const*>(points_[min_index]);
 }
 
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Initialize() {
-  // Compute the centroid of the values.
-  BarycentreCalculator<Value, double> centroid;
-  for (auto const value : values_) {
-    centroid.Add(*value, 1);
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Initialize() {
+  // Compute the centroid of the points.
+  BarycentreCalculator<Point, double> centroid;
+  for (auto const point : points_) {
+    centroid.Add(*point, 1);
   }
   centroid_ = centroid.Get();
 
   // Compute the displacements from the centroid.
-  displacements_.reserve(values_.size());
-  for (auto const value : values_) {
-    displacements_.push_back(*value - centroid_);
+  displacements_.reserve(points_.size());
+  for (auto const point : points_) {
+    displacements_.push_back(*point - centroid_);
   }
 
   // Fill indices to denote the displacements.
@@ -108,14 +113,14 @@ void PrincipalComponentPartitioningTree<Value_>::Initialize() {
   root_ = BuildTree(indices.begin(), indices.end(), indices.size());
 }
 
-template<typename Value_>
+template<affine Point_, typename Payload_>
 not_null<std::unique_ptr<
-typename PrincipalComponentPartitioningTree<Value_>::Node>>
-PrincipalComponentPartitioningTree<Value_>::BuildTree(
+typename PrincipalComponentPartitioningTree<Point_, Payload_>::Node>>
+PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     typename Indices::iterator const begin,
     typename Indices::iterator const end,
     std::int64_t const size) const {
-  if (size <= max_values_per_cell_) {
+  if (size <= max_points_per_cell_) {
     // We are done subdividing, return a leaf.
     Leaf leaf;
     leaf.reserve(size);
@@ -126,12 +131,12 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
   }
 
   // Compute the "inertia" of the selected displacements and diagonalize it.
-  // This gives us the direction of the largest eigenvalue, which defines the
+  // This gives us the direction of the largest eigenpoint, which defines the
   // separator plane.
   auto const form = ComputePrincipalComponentForm(begin, end);
   auto const eigensystem =
       form.template Diagonalize<PrincipalComponentsFrame>();
-  // The last eigenvalue is the largest one.
+  // The last eigenpoint is the largest one.
   auto const principal_axis =
       eigensystem.rotation(PrincipalComponentsAxis({0, 0, 1}));
 
@@ -170,10 +175,29 @@ PrincipalComponentPartitioningTree<Value_>::BuildTree(
                .children = {std::move(first_child), std::move(second_child)}});
 }
 
-template<typename Value_>
-typename PrincipalComponentPartitioningTree<Value_>::
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::AddPoint(
+    not_null<Point const*> const point) {
+  points_.push_back(point);
+  if (points_.size() == 1) {
+    Initialize();
+  } else {
+    // There is no good way to rebalance a PCP tree (or a kd tree for that
+    // matter).  Bkd trees provide some kind of solution, but their lookup is
+    // expensive.  We are assuming that the tree won't get so unbalanced that
+    // lookups get costly.
+    auto const displacement = *point - centroid_;
+    std::int32_t const index = displacements_.size();
+    displacements_.push_back(displacement);
+    Add(index, *root_);
+  }
+}
+
+template<affine Point_, typename Payload_>
+typename PrincipalComponentPartitioningTree<Point_, Payload_>::
 DisplacementSymmetricBilinearForm
-PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
+PrincipalComponentPartitioningTree<Point_, Payload_>::
+ComputePrincipalComponentForm(
     typename Indices::iterator const begin,
     typename Indices::iterator const end) const {
   DisplacementSymmetricBilinearForm result;
@@ -183,9 +207,10 @@ PrincipalComponentPartitioningTree<Value_>::ComputePrincipalComponentForm(
   return result;
 }
 
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
-                                                     Node& node) {
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
+    std::int32_t const index,
+    Node& node) {
   if (std::holds_alternative<Internal>(node)) {
     Add(index, std::get<Internal>(node));
   } else if (std::holds_alternative<Leaf>(node)) {
@@ -195,9 +220,10 @@ void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
   }
 }
 
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
-                                                     Internal const& internal) {
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
+    std::int32_t const index,
+    Internal const& internal) {
   NormType const projection = InnerProduct(
       internal.principal_axis, displacements_[index] - internal.anchor);
   if (projection < NormType{}) {
@@ -207,12 +233,13 @@ void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
   }
 }
 
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
-                                                     Leaf& leaf,
-                                                     Node& node) {
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
+    std::int32_t const index,
+    Leaf& leaf,
+    Node& node) {
   leaf.push_back(index);
-  if (leaf.size() > max_values_per_cell_) {
+  if (leaf.size() > max_points_per_cell_) {
     // The leaf is full, we need to split it by building a (sub)tree based on
     // it.
     Indices indices;
@@ -227,8 +254,8 @@ void PrincipalComponentPartitioningTree<Value_>::Add(std::int32_t const index,
   }
 }
 
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Find(
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     Displacement const& displacement,
     Norm²Type const& radius²,
     Filter const& filter,
@@ -258,8 +285,8 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
   }
 }
 
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Find(
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     Displacement const& displacement,
     Norm²Type const& radius²,
     Filter const& filter,
@@ -332,12 +359,12 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     Norm²Type const projection² = Pow<2>(
         InnerProduct(parent->principal_axis, displacement - parent->anchor));
     *must_check_other_side =
-        projection² <= radius² && projection² < min_distance²;
+        projection² < min_distance² && projection² <= radius²;
   }
 }
 
-template<typename Value_>
-void PrincipalComponentPartitioningTree<Value_>::Find(
+template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     Displacement const& displacement,
     Norm²Type const& radius²,
     Filter const& filter,
@@ -353,12 +380,22 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
   min_index = no_min_index;
   for (auto const index : leaf) {
     auto const distance² = (displacements_[index] - displacement).Norm²();
-    // Skip the values that are filtered out.  Note that *all* the values may be
-    // filtered out.
-    if (distance² <= radius² && distance² < min_distance² &&
-        (filter == nullptr || filter(values_[index]))) {
-      min_distance² = distance²;
-      min_index = index;
+    // Skip the points that are filtered out.  Note that *all* the points may be
+    // filtered out.  The order of comparisons matters because `min_distance²`
+    // is typically small.
+    if (distance² < min_distance² && distance² <= radius²) {
+      bool must_update;
+      if (filter == nullptr) {
+        must_update = true;
+      } else if constexpr (has_payload) {
+        must_update = filter(points_[index], payloads_[index]);
+      } else {
+        must_update = filter(points_[index]);
+      }
+      if (must_update) {
+        min_distance² = distance²;
+        min_index = index;
+      }
     }
   }
 
@@ -368,7 +405,7 @@ void PrincipalComponentPartitioningTree<Value_>::Find(
     Norm²Type const projection² = Pow<2>(
         InnerProduct(parent->principal_axis, displacement - parent->anchor));
     *must_check_other_side =
-        projection² <= radius² && projection² < min_distance²;
+        projection² < min_distance² && projection² <= radius²;
   }
 }
 
