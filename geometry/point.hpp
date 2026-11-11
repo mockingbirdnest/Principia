@@ -43,7 +43,7 @@ class Point final {
   constexpr friend bool operator!=(Point const& left,
                                    Point const& right) = default;
   // Do not default this operator as it causes VS 2026 to generate an
-  // out-of-line call for comparisons
+  // out-of-line call for comparisons.
   template<typename V>
   constexpr friend auto operator<=>(Point<V> const& left, Point<V> const& right)
     requires convertible_to_quantity<V>;
