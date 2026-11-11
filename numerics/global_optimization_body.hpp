@@ -227,6 +227,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
           .value = fₖ});
     }
     point_neighbourhoods.Optimize();
+    stationary_point_neighbourhoods.Optimize();
 
     // Compute the radius below which we won't do a local search in this
     // iteration.
