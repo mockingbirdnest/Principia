@@ -72,8 +72,12 @@ concept hilbert = requires(V u, V v) {
   requires homogeneous_vector_space<V, NormType<V>>;
 };
 
+template<typename A>
+concept euclidean = affine<A> && hilbert<Difference<A>>;
+
 }  // namespace internal
 
+using internal::euclidean;
 using internal::hilbert;
 using internal::InnerProduct;
 using internal::InnerProductType;
