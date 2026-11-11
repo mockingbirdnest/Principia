@@ -61,6 +61,43 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
 }
 
 template<affine Point_, typename Payload_>
+void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
+  // Build a permutation of the points in the order they appear in the leaves,
+  // and update the leaf indices accordingly.
+  std::vector<std::int32_t> permutation;
+  permutation.resize(points_.size());
+  std::int32_t new_index = 0;
+  for (auto& node : nodes_) {
+    // We only ever added leaves to this list, but leaves can turn into internal
+    // nodes when they get split.
+    if (auto* const old_indices = std::get_if<Leaf>(&node);
+        old_indices != nullptr) {
+      for (auto& old_index : *old_indices) {
+        permutation[new_index] = old_index;
+        old_index = new_index;
+        ++new_index;
+      }
+    }
+  }
+
+  // Apply the permutation to our vectors.  I stole this code from
+  // https://devblogs.microsoft.com/oldnewthing/20170102-00/?p=95095/
+  for (std::int32_t i = 0; i < permutation.size(); ++i) {
+    auto current = i;
+    while (i != permutation[current]) {
+      auto const next = permutation[current];
+      std::swap(points_[current], points_[next]);
+      std::swap(displacements_[current], displacements_[next]);
+      if constexpr (has_payload) {
+        std::swap(payloads_[current], payloads_[next]);
+      }
+      permutation[current] = current;
+      current = next;
+    }
+    permutation[current] = current;
+  }
+}
+template<affine Point_, typename Payload_>
 Point_ const*
 PrincipalComponentPartitioningTree<Point_, Payload_>::FindNearestNeighbour(
     Point const& point,
@@ -110,24 +147,29 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Initialize() {
   }
 
   // Finally, build the tree.
-  root_ = BuildTree(indices.begin(), indices.end(), indices.size());
+  root_ = BuildTree(indices.begin(),
+                    indices.end(),
+                    indices.size());
 }
 
 template<affine Point_, typename Payload_>
-not_null<std::unique_ptr<
-typename PrincipalComponentPartitioningTree<Point_, Payload_>::Node>>
+not_null<typename PrincipalComponentPartitioningTree<Point_, Payload_>::Node*>
 PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     typename Indices::iterator const begin,
     typename Indices::iterator const end,
-    std::int64_t const size) const {
+    std::int64_t const size,
+    Node* const node) {
   if (size <= max_points_per_cell_) {
-    // We are done subdividing, return a leaf.
+    // We are done subdividing, return a leaf.  About half the leaves end up
+    // being split, with the unsplit leaves being 50% full, so this wastes about
+    // 25% of the space to save allocations.
     Leaf leaf;
-    leaf.reserve(size);
+    leaf.reserve(max_points_per_cell_);
     for (auto it = begin; it != end; ++it) {
       leaf.push_back(it->index);
     }
-    return make_not_null_unique<Node>(leaf);
+    nodes_.push_back(std::move(leaf));
+    return &nodes_.back();
   }
 
   // Compute the "inertia" of the selected displacements and diagonalize it.
@@ -166,13 +208,19 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
   auto const anchor = Barycentre(
       {displacements_[mid_lower->index], displacements_[mid_upper->index]});
 
-  auto first_child = BuildTree(begin, mid_upper, size / 2);
-  auto second_child = BuildTree(mid_upper, end, size - size / 2);
+  auto const first_child = BuildTree(begin, mid_upper, size / 2);
+  auto const second_child = BuildTree(mid_upper, end, size - size / 2);
 
-  return make_not_null_unique<Node>(
-      Internal{.principal_axis = principal_axis,
-               .anchor = anchor,
-               .children = {std::move(first_child), std::move(second_child)}});
+  Internal internal{.principal_axis = principal_axis,
+                    .anchor = anchor,
+                    .children = {first_child, second_child}};
+  if (node == nullptr) {
+    nodes_.push_back(std::move(internal));
+    return &nodes_.back();
+  } else {
+    *node = std::move(internal);
+    return node;
+  }
 }
 
 template<affine Point_, typename Payload_>
@@ -211,13 +259,18 @@ template<affine Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Node& node) {
-  if (std::holds_alternative<Internal>(node)) {
-    Add(index, std::get<Internal>(node));
-  } else if (std::holds_alternative<Leaf>(node)) {
-    Add(index, std::get<Leaf>(node), node);
-  } else {
-    LOG(FATAL) << "Unexpected node";
-  }
+  std::visit(
+      [this, index, &node](auto&& v) {
+        using V = std::decay_t<decltype(v)>;
+        if constexpr (std::is_same_v<V, Internal>) {
+          Add(index, v);
+        } else if constexpr (std::is_same_v<V, Leaf>) {
+          Add(index, v, &node);
+        } else {
+          static_assert(false, "Unexpected node type");
+        }
+      },
+      node);
 }
 
 template<affine Point_, typename Payload_>
@@ -237,20 +290,24 @@ template<affine Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Leaf& leaf,
-    Node& node) {
-  leaf.push_back(index);
-  if (leaf.size() > max_points_per_cell_) {
+    not_null<Node*> const node) {
+  if (leaf.size() < max_points_per_cell_) {
+    leaf.push_back(index);
+  } else {
     // The leaf is full, we need to split it by building a (sub)tree based on
-    // it.
+    // it.  This code is written is such a way that the `leaf` never has more
+    // than `max_points_per_cell_` elements, the number that we preallocated.
     Indices indices;
-    indices.reserve(leaf.size());
+    indices.reserve(max_points_per_cell_ + 1);
+    indices.push_back({.index = index, .projection = NormType{}});
     for (const std::int32_t index : leaf) {
       indices.push_back({.index = index, .projection = NormType{}});
     }
-    auto const subtree =
-        BuildTree(indices.begin(), indices.end(), indices.size());
+    auto const subtree = BuildTree(indices.begin(),
+                                   indices.end(),
+                                   indices.size(),
+                                   /*node=*/node);
     CHECK(std::holds_alternative<Internal>(*subtree));
-    node = std::move(*subtree);
   }
 }
 
@@ -264,25 +321,32 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     Norm²Type& min_distance²,
     std::int32_t& min_index,
     bool* const must_check_other_side) const {
-  if (std::holds_alternative<Internal>(node)) {
-    Find(displacement,
-         radius²,
-         filter,
-         parent,
-         std::get<Internal>(node),
-         min_distance², min_index,
-         must_check_other_side);
-  } else if (std::holds_alternative<Leaf>(node)) {
-    Find(displacement,
-         radius²,
-         filter,
-         parent,
-         std::get<Leaf>(node),
-         min_distance², min_index,
-         must_check_other_side);
-  } else {
-    LOG(FATAL) << "Unexpected node";
-  }
+  std::visit(
+      [&](auto&& v) {
+        using V = std::decay_t<decltype(v)>;
+        if constexpr (std::is_same_v<V, Internal>) {
+          Find(displacement,
+               radius²,
+               filter,
+               parent,
+               v,
+               min_distance²,
+               min_index,
+               must_check_other_side);
+        } else if constexpr (std::is_same_v<V, Leaf>) {
+          Find(displacement,
+               radius²,
+               filter,
+               parent,
+               v,
+               min_distance²,
+               min_index,
+               must_check_other_side);
+        } else {
+          static_assert(false, "Unexpected node type");
+        }
+      },
+      node);
 }
 
 template<affine Point_, typename Payload_>
@@ -301,12 +365,9 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   // We first search on the "preferred" side of the separator plane, i.e., the
   // one where `displacement` is located.  We may have to look at the "other"
   // side, if `displacement` is too close to that plane.
-  Node const* preferred_side;
-  if (projection < NormType{}) {
-    preferred_side = internal.children.first.get();
-  } else {
-    preferred_side = internal.children.second.get();
-  }
+  not_null<Node const*> const preferred_side = projection < NormType{}
+                                                   ? internal.children.first
+                                                   : internal.children.second;
 
   std::int32_t preferred_min_index;
   Norm²Type preferred_min_distance²;
@@ -320,12 +381,9 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
        &preferred_must_check_other_side);
 
   if (preferred_must_check_other_side) {
-    Node const* other_side;
-    if (projection < NormType{}) {
-      other_side = internal.children.second.get();
-    } else {
-      other_side = internal.children.first.get();
-    }
+    not_null<Node const*> const other_side = projection < NormType{}
+                                                 ? internal.children.second
+                                                 : internal.children.first;
 
     // We omit `must_check_other_side` because there is no point in checking the
     // other side again.
@@ -378,6 +436,8 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   // Find the point in this leaf which is the closest to `displacement`.
   min_distance² = Infinity<Norm²Type>;
   min_index = no_min_index;
+  // If `Optimize()` was called, this loop accesses sequential data in
+  // `displacements_` and should be cache-friendly.
   for (auto const index : leaf) {
     auto const distance² = (displacements_[index] - displacement).Norm²();
     // Skip the points that are filtered out.  Note that *all* the points may be

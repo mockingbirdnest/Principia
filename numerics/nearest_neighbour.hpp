@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -67,9 +68,15 @@ class PrincipalComponentPartitioningTree {
   void Add(not_null<Point const*> point, Payload const& payload)
     requires has_payload;
 
+  // May be called after all points have been added to the tree to optimize the
+  // ordering of internal data structures.  This may result in better cache
+  // locality during calls to `FindNearestNeighbour` for large trees.  Linear in
+  // the size of the tree.
+  void Optimize();
+
   // Finds the nearest neighbour of the given `point` at a distance less than or
-  // equal to `radius`.  Returns nullptr if the tree is empty.  Only the points
-  // for which `filter` returns true are considered.
+  // equal to `radius`, and for which `filter` returns true.  Returns nullptr if
+  // no such point is found.
   // Beware! if `filter` rejects many points and `radius` is large, the search
   // may end up looking at the entire tree.
   Point const* FindNearestNeighbour(Point const& point,
@@ -107,8 +114,7 @@ class PrincipalComponentPartitioningTree {
 
   using Node = std::variant<Internal, Leaf>;
 
-  using Children = std::pair<not_null<std::unique_ptr<Node>>,
-                             not_null<std::unique_ptr<Node>>>;
+  using Children = std::pair<not_null<Node*>, not_null<Node*>>;
 
   struct Internal {
     Axis principal_axis;
@@ -133,10 +139,14 @@ class PrincipalComponentPartitioningTree {
 
   // Constructs a tree for the displacements given by the index range
   // [begin, end[.  `size` must be equal to `std::distance(begin, end)`, but is
-  // passed by the caller for efficiency.
-  not_null<std::unique_ptr<Node>> BuildTree(typename Indices::iterator begin,
-                                            typename Indices::iterator end,
-                                            std::int64_t size) const;
+  // passed by the caller for efficiency.  If `node` is not null, the root of
+  // the newly constructed tree is stored in `node` and `node` is returned. This
+  // is useful when splitting leaves.  Otherwise, a new node is allocated and
+  // returned.
+  not_null<Node*> BuildTree(typename Indices::iterator begin,
+                            typename Indices::iterator end,
+                            std::int64_t size,
+                            Node* node = nullptr);
 
   // Returns the symmetric bilinear form that represents the "inertia" of the
   // displacements given by the index range [begin, end[.
@@ -155,7 +165,7 @@ class PrincipalComponentPartitioningTree {
 
   // Specializations for internal nodes and leaves, respectively.
   void Add(std::int32_t index, Internal const& internal);
-  void Add(std::int32_t index, Leaf& leaf, Node& node);
+  void Add(std::int32_t index, Leaf& leaf, not_null<Node*> node);
 
   // Finds the point closest to `displacement` in the `node` and its children,
   // and returns its index and its (squared) distance.  If `displacement` is
@@ -201,14 +211,20 @@ class PrincipalComponentPartitioningTree {
   // `points_`.
   std::vector<Displacement> displacements_;
 
+  // All the nodes in the tree are allocated in this `deque`.  This gives us a
+  // bit of locality (because `deque` has internal arrays) without expensive
+  // reallocations or pointer invalidations.  It also makes it possible to
+  // iterate over all the nodes in `Optimize`.
+  std::deque<Node> nodes_;
+
   // Payloads.  Note that the not-a-payload type, `std::nullopt_t` cannot be
   // stored in an `optional`, so it helps detect mistakes.
-  std::conditional_t<has_payload,
-                     std::vector<std::optional<Payload>>,
-                     std::monostate>
-      payloads_;
+  using Payloads = std::conditional_t<has_payload,
+                                      std::vector<std::optional<Payload>>,
+                                      std::monostate>;
+  Payloads payloads_;
 
-  std::unique_ptr<Node> root_;
+  Node* root_ = nullptr;
 };
 
 }  // namespace internal
