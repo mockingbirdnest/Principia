@@ -165,16 +165,39 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   std::int64_t round = 1;
   auto& kN = number_of_points_all_rounds;
   auto& N = number_of_points_this_round;
-  for (auto& k = round;; ++k) {
+  auto& k = round;
+
+  auto vlog_exit = [&]() {
+    VLOG(1) << "Exit round #" << k << " with " << kN
+            << " points examined and " << stationary_points.size()
+            << " stationary points found using " << number_of_local_searches
+            << " local searches";
+  };
+
+  auto vlog_progress = [&]() {
+    VLOG(1) << "Round #" << k << " with " << N << " points this round, "
+            << kN << " points examined and " << stationary_points.size()
+            << " stationary points found so far using "
+            << number_of_local_searches << " local searches";
+    if (ABSL_VLOG_IS_ON(2)) {
+      for (auto const& stationary_point : stationary_points) {
+        VLOG(2) << "  " << *stationary_point;
+      }
+    }
+  };
+
+  for (;; ++k) {
     if (k == 1) {
       N = points_per_round;
       kN = N;
     } else if (number_of_rounds.has_value()) {
       if (k > number_of_rounds.value()) {
+        vlog_exit();
         break;
       } else {
         N = points_per_round;
         kN += N;
+        vlog_progress();
       }
     } else {
       std::int64_t const w = stationary_points.size();
@@ -185,10 +208,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       if (kN > w + 2 &&
           static_cast<double>(w * (kN - 1)) / static_cast<double>(kN - w - 2) <=
           w + 0.5) {
-        VLOG(1) << "Exit round #" << k << " with " << kN
-                << " points examined and " << w
-                << " stationary points found using " << number_of_local_searches
-                << " local searches";
+        vlog_exit();
         break;
       } else {
         // [RT87b] equation 4.
@@ -196,15 +216,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         N = M - kN;
         DCHECK_LT(0, N);
         kN = M;
-      }
-      VLOG(1) << "Round #" << k << " with " << N << " points this round, " << kN
-              << " points examined and " << w
-              << " stationary points found so far using "
-              << number_of_local_searches << " local searches";
-      if (ABSL_VLOG_IS_ON(2)) {
-        for (auto const& stationary_point : stationary_points) {
-          VLOG(2) << "  " << *stationary_point;
-        }
+        vlog_progress();
       }
     }
 
