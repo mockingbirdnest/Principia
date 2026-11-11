@@ -429,6 +429,8 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   // Find the point in this leaf which is the closest to `displacement`.
   min_distance² = Infinity<Norm²Type>;
   min_index = no_min_index;
+  // If `Optimize()` was called, this loop accesses sequential data in
+  // `displacements_` and should be cache-friendly.
   for (auto const index : leaf) {
     auto const distance² = (displacements_[index] - displacement).Norm²();
     // Skip the points that are filtered out.  Note that *all* the points may be
