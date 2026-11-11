@@ -42,8 +42,11 @@ class Point final {
                                    Point const& right) = default;
   constexpr friend bool operator!=(Point const& left,
                                    Point const& right) = default;
-  constexpr friend auto operator<=>(Point const& left, Point const& right)
-    requires convertible_to_quantity<Vector> = default;
+  // Do not default this operator as it causes VS 2026 to generate an
+  // out-of-line call for comparisons
+  template<typename V>
+  constexpr friend auto operator<=>(Point<V> const& left, Point<V> const& right)
+    requires convertible_to_quantity<V>;
 
   constexpr Vector operator-(Point const& from) const;
 
@@ -85,6 +88,11 @@ class Point final {
   template<typename V>
   friend std::string DebugString(Point<V> const& point);
 };
+
+template<typename Vector>
+constexpr auto operator<=>(Point<Vector> const& left,
+                           Point<Vector> const& right)
+  requires convertible_to_quantity<Vector>;
 
 template<typename Vector>
 constexpr Point<Vector> operator+(Vector const& translation,

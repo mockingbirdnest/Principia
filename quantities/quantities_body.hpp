@@ -97,6 +97,12 @@ constexpr Quantity<D> Quantity<D>::operator*(double const right) const {
   return Quantity(magnitude_ * right);
 }
 
+template<typename Dimension>
+constexpr auto operator<=>(Quantity<Dimension> const& left,
+                           Quantity<Dimension> const& right) {
+  return left.magnitude_ <=> right.magnitude_;
+}
+
 template<typename LDimensions, typename RDimensions>
 FORCE_INLINE constexpr Product<Quantity<LDimensions>, Quantity<RDimensions>>
 operator*(Quantity<LDimensions> const& left,
