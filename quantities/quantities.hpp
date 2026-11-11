@@ -59,8 +59,13 @@ class Quantity final {
   constexpr Quantity() = default;
   explicit constexpr Quantity(uninitialized_t);
 
-  constexpr friend auto operator<=>(Quantity const& left,
-                                    Quantity const& right) = default;
+  constexpr friend bool operator==(Quantity const& left,
+                                   Quantity const& right) = default;
+  // Do not default this operator as it causes VS 2026 to generate an
+  // out-of-line call for comparisons.
+  template<typename Dimension>
+  constexpr friend auto operator<=>(Quantity<Dimension> const& left,
+                                    Quantity<Dimension> const& right);
 
   constexpr Quantity operator+() const;
   constexpr Quantity operator-() const;
@@ -117,6 +122,9 @@ class Quantity final {
   friend Q FromM256D(__m256d x);
 };
 
+template<typename Dimension>
+constexpr auto operator<=>(Quantity<Dimension> const& left,
+                           Quantity<Dimension> const& right);
 template<typename LDimensions, typename RDimensions>
 constexpr Product<Quantity<LDimensions>, Quantity<RDimensions>>
 operator*(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
