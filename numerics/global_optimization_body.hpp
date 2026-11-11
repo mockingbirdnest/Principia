@@ -26,9 +26,11 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_gradient_descent;
 
 // Values that are too small cause extra activity in `Add` and deeper recursion
-// in `FindNearestNeighbour`.  Values that are too large cause extra function
-// evaluations in the leaf search.
-constexpr std::int64_t pcp_tree_max_values_per_cell = 20;
+// in `FindNearestNeighbour`.  Values that are too large cause extra work in the
+// leaf search.  This value was tuned with the benchmark
+// `GlobalOptimizationBenchmark.ComputeApsidesUsingMLSL`.  Its effect is minor
+// anyway (around 5%).
+constexpr std::int64_t pcp_tree_max_values_per_cell = 80;
 
 template<typename Scalar, typename Argument, int dimensions>
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
