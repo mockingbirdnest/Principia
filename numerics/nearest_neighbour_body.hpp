@@ -381,8 +381,8 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   for (auto const index : leaf) {
     auto const distance² = (displacements_[index] - displacement).Norm²();
     // Skip the points that are filtered out.  Note that *all* the points may be
-    // filtered out.  The order of comparisons matters because `min_distance²` is
-    // typically small.
+    // filtered out.  The order of comparisons matters because `min_distance²`
+    // is typically small.
     if (distance² < min_distance² && distance² <= radius²) {
       bool must_update;
       if (filter == nullptr) {
