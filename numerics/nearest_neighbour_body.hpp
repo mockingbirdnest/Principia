@@ -68,8 +68,6 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
   permutation.resize(points_.size());
   std::int32_t new_index = 0;
   for (auto& node : nodes_) {
-    // We only ever added leaves to this list, but leaves can turn into internal
-    // nodes when they get split.
     if (auto* const old_indices = std::get_if<Leaf>(&node);
         old_indices != nullptr) {
       for (auto& old_index : *old_indices) {
@@ -81,7 +79,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
   }
 
   // Apply the permutation to our vectors.  I stole this code from
-  // https://devblogs.microsoft.com/oldnewthing/20170102-00/?p=95095/
+  // https://devblogs.microsoft.com/oldnewthing/20170102-00/?p=95095/.
   for (std::int32_t i = 0; i < permutation.size(); ++i) {
     auto current = i;
     while (i != permutation[current]) {
@@ -147,9 +145,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Initialize() {
   }
 
   // Finally, build the tree.
-  root_ = BuildTree(indices.begin(),
-                    indices.end(),
-                    indices.size());
+  root_ = BuildTree(indices.begin(), indices.end(), indices.size());
 }
 
 template<affine Point_, typename Payload_>
@@ -161,8 +157,8 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     Node* const node) {
   if (size <= max_points_per_cell_) {
     // We are done subdividing, return a leaf.  About half the leaves end up
-    // being split, with the unsplit leaves being 50% full, so this wastes about
-    // 25% of the space to save allocations.
+    // being split, with the unsplit leaves being about 50% full, so this wastes
+    // about 25% of the space to save allocations.
     Leaf leaf;
     leaf.reserve(max_points_per_cell_);
     for (auto it = begin; it != end; ++it) {
