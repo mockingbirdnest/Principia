@@ -23,13 +23,10 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_nearest_neighbour;
 using namespace principia::quantities::_quantities;
 
-// In this file `Argument` must be such that its difference belongs to a Hilbert
-// space.
-
-template<typename Scalar, typename Argument>
+template<typename Scalar, euclidean Argument>
 using Field = std::function<Scalar(Argument const&)>;
 
-template<typename Scalar, typename Argument>
+template<typename Scalar, euclidean Argument>
 using Gradient =
     Product<Scalar,
             Quotient<Difference<Argument>, Norm²Type<Difference<Argument>>>>;
@@ -41,7 +38,7 @@ using Gradient =
 // problem.  It it is 1 or 2, the box is 1- or 2-dimensional and the computation
 // of rₖ is adjusted accordingly.  In all cases, the dimensions of the box must
 // be nonzero.
-template<typename Scalar, typename Argument, int dimensions = 3>
+template<typename Scalar, euclidean Argument, int dimensions = 3>
 class MultiLevelSingleLinkage {
  public:
   using NormType = NormType<Difference<Argument>>;

@@ -29,11 +29,11 @@ using namespace principia::numerics::_gradient_descent;
 // evaluations in the leaf search.
 constexpr int64_t pcp_tree_max_values_per_cell = 20;
 
-template<typename Scalar, typename Argument, int dimensions>
+template<typename Scalar, euclidean Argument, int dimensions>
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
   if constexpr (dimensions == 1) {
-    return 2 * vertices[0].Norm();
+    return 2 * Norm(vertices[0]);
   } else if constexpr (dimensions == 2) {
     return 4 * Wedge(vertices[0], vertices[1]).Norm();
   } else if constexpr (dimensions == 3) {
@@ -42,17 +42,17 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
   std::abort();
 }
 
-template<typename Scalar, typename Argument, int dimensions>
+template<typename Scalar, euclidean Argument, int dimensions>
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::NormType
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::diametre() const {
   NormType diameter;
   for (auto const& vertex : vertices) {
-    diameter = std::max(diameter, 2 * vertex.Norm());
+    diameter = std::max(diameter, 2 * Norm(vertex));
   }
   return diameter;
 }
 
-template<typename Scalar, typename Argument, int dimensions>
+template<typename Scalar, euclidean Argument, int dimensions>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::MultiLevelSingleLinkage(
     Box const& box,
     Field<Scalar, Argument> f,
@@ -69,7 +69,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::MultiLevelSingleLinkage(
   }
 }
 
-template<typename Scalar, typename Argument, int dimensions>
+template<typename Scalar, euclidean Argument, int dimensions>
 std::vector<Argument>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMaxima(
     std::int64_t const points_per_round,
@@ -90,7 +90,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMaxima(
                           minus_grad_f);
 }
 
-template<typename Scalar, typename Argument, int dimensions>
+template<typename Scalar, euclidean Argument, int dimensions>
 std::vector<Argument>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     std::int64_t const points_per_round,
@@ -103,7 +103,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
                           grad_f_);
 }
 
-template<typename Scalar, typename Argument, int dimensions>
+template<typename Scalar, euclidean Argument, int dimensions>
 std::vector<Argument>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     std::int64_t const points_per_round,
@@ -285,7 +285,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   return result;
 }
 
-template<typename Scalar, typename Argument, int dimensions>
+template<typename Scalar, euclidean Argument, int dimensions>
 bool MultiLevelSingleLinkage<Scalar, Argument, dimensions>::
 IsNewStationaryPoint(Argument const& stationary_point,
                       PrincipalComponentPartitioningTree<Argument> const&
@@ -304,7 +304,7 @@ IsNewStationaryPoint(Argument const& stationary_point,
              2 * local_search_tolerance;
 }
 
-template<typename Scalar, typename Argument, int dimensions>
+template<typename Scalar, euclidean Argument, int dimensions>
 std::vector<not_null<std::unique_ptr<Argument>>>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
     std::int64_t const values_per_round) {
@@ -321,7 +321,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
   return arguments;
 }
 
-template<typename Scalar, typename Argument, int dimensions>
+template<typename Scalar, euclidean Argument, int dimensions>
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::NormType
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius(
     double const σ,
