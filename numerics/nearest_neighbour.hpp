@@ -31,7 +31,7 @@ using namespace principia::geometry::_symmetric_bilinear_form;
 // but because it is coordinate-free.
 // The `Payload` may be used to store client-specific data that is useful for
 // filtering.
-template<affine Point_, typename Payload_ = std::nullopt_t>
+template<euclidean Point_, typename Payload_ = std::nullopt_t>
 class PrincipalComponentPartitioningTree {
   static constexpr bool has_payload = !std::is_same_v<Payload_, std::nullopt_t>;
 
