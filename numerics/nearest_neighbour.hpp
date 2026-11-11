@@ -12,6 +12,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
+#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace numerics {
@@ -23,6 +24,50 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_symmetric_bilinear_form;
+using namespace principia::quantities::_concepts;
+
+// NOTE(phl): This could be specialized for `FixedVector` if need be.
+template<hilbert Vector>
+struct Generator;
+
+template<typename Scalar, typename Frame>
+struct Generator<Vector<Scalar, Frame>> {
+  // A unit vector corresponding to `Vector<Scalar, Frame>` (aka
+  // `Displacement`).
+  using Axis = NormalizedType<Vector<Scalar, Frame>>;
+
+  // A form that operates on the `Vector<Scalar, Frame>`s.
+  using SymmetricBilinearForm = geometry::_symmetric_bilinear_form::
+      SymmetricBilinearForm<Square<Scalar>, Frame, Vector>;
+
+  // A frame used to compute the principal components.
+  using PrincipalComponentsFrame =
+      geometry::_frame::Frame<struct PrincipalComponentsFrameTag>;
+
+  // The principal components (a.k.a. eigensystem) of the above form.
+  using PrincipalComponentsSystem =
+      typename SymmetricBilinearForm::template Eigensystem<
+          PrincipalComponentsFrame>;
+
+  // A unit vector in the principal components frame.
+  using PrincipalComponentsAxis = decltype(
+      std::declval<PrincipalComponentsSystem>().rotation.Inverse()(
+          std::declval<Axis>()));
+
+  static PrincipalComponentsSystem Diagonalize(
+      SymmetricBilinearForm const& form);
+};
+
+template<quantity Scalar>
+struct Generator<Scalar> {
+  using Axis = NormalizedType<Scalar>;
+
+  using SymmetricBilinearForm = Square<Scalar>;
+
+  struct PrincipalComponentsSystem {};
+
+  using PrincipalComponentsAxis = Axis;
+};
 
 // Principal component partitioning trees (PCP trees) are introduced by [WZ91]
 // in the context of quantization.  Their use for nearest neighbour search was
@@ -82,16 +127,13 @@ class PrincipalComponentPartitioningTree {
                                     Filter const& filter = nullptr) const;
 
  private:
-  // A unit vector corresponding to `Displacement`.
-  using Axis = NormalizedType<Displacement>;
-
-  // A form that operates on `Displacement`s.
-  // NOTE(phl): We don't have SymmetricSquare for Bivector, so this effectively
-  // means that Displacement is a Vector.
+  using Axis = typename Generator<Displacement>::Axis;
   using DisplacementSymmetricBilinearForm =
-      decltype(SymmetricSquare(std::declval<Displacement>()));
-
-  // The declarations of the tree structure.
+      typename Generator<Displacement>::SymmetricBilinearForm;
+  using DisplacementPrincipalComponentsSystem =
+      typename Generator<Displacement>::PrincipalComponentsSystem;
+  using PrincipalComponentsAxis =
+      typename Generator<Displacement>::PrincipalComponentsAxis;
   struct Internal;
 
   using Leaf = std::vector<std::int32_t>;  // Indices in `displacements_`.
