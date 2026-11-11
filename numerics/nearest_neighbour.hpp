@@ -1,5 +1,6 @@
 #pragma once
 
+#include <deque>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -113,8 +114,7 @@ class PrincipalComponentPartitioningTree {
 
   using Node = std::variant<Internal, Leaf>;
 
-  using Children = std::pair<not_null<std::unique_ptr<Node>>,
-                             not_null<std::unique_ptr<Node>>>;
+  using Children = std::pair<not_null<Node*>, not_null<Node*>>;
 
   struct Internal {
     Axis principal_axis;
@@ -139,10 +139,14 @@ class PrincipalComponentPartitioningTree {
 
   // Constructs a tree for the displacements given by the index range
   // [begin, end[.  `size` must be equal to `std::distance(begin, end)`, but is
-  // passed by the caller for efficiency.
-  not_null<std::unique_ptr<Node>> BuildTree(typename Indices::iterator begin,
-                                            typename Indices::iterator end,
-                                            std::int64_t size);
+  // passed by the caller for efficiency.  If `node` is not null, the root of
+  // the newly constructed tree is stored in `node` and `node` is returned. This
+  // is useful when splitting leaves.  Otherwise, a new node is allocated and
+  // returned.
+  not_null<Node*> BuildTree(typename Indices::iterator begin,
+                            typename Indices::iterator end,
+                            std::int64_t size,
+                            Node* node = nullptr);
 
   // Returns the symmetric bilinear form that represents the "inertia" of the
   // displacements given by the index range [begin, end[.
@@ -161,7 +165,7 @@ class PrincipalComponentPartitioningTree {
 
   // Specializations for internal nodes and leaves, respectively.
   void Add(std::int32_t index, Internal const& internal);
-  void Add(std::int32_t index, Leaf& leaf, Node& node);
+  void Add(std::int32_t index, Leaf& leaf, not_null<Node*> node);
 
   // Finds the point closest to `displacement` in the `node` and its children,
   // and returns its index and its (squared) distance.  If `displacement` is
@@ -207,9 +211,11 @@ class PrincipalComponentPartitioningTree {
   // `points_`.
   std::vector<Displacement> displacements_;
 
-  // All the nodes constructed for the tree are recorded in this vector.  Note
-  // that every node starts its life as a `Leaf`.
-  std::vector<not_null<Node*>> nodes_;
+  // All the nodes in the tree are allocated in this `deque`.  This gives us a
+  // bit of locality (because `deque` has internal arrays) without expensive
+  // reallocations or pointer invalidations.  It also makes it possible to
+  // iterate over all the nodes in `Optimize`.
+  std::deque<Node> nodes_;
 
   // Payloads.  Note that the not-a-payload type, `std::nullopt_t` cannot be
   // stored in an `optional`, so it helps detect mistakes.
@@ -218,7 +224,7 @@ class PrincipalComponentPartitioningTree {
                                       std::monostate>;
   Payloads payloads_;
 
-  std::unique_ptr<Node> root_;
+  Node* root_ = nullptr;
 };
 
 }  // namespace internal

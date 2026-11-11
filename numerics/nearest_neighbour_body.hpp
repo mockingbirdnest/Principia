@@ -67,10 +67,10 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
   std::vector<std::int32_t> permutation;
   permutation.resize(points_.size());
   std::int32_t new_index = 0;
-  for (auto const& node : nodes_) {
+  for (auto& node : nodes_) {
     // We only ever added leaves to this list, but leaves can turn into internal
     // nodes when they get split.
-    if (auto* const old_indices = std::get_if<Leaf>(&*node);
+    if (auto* const old_indices = std::get_if<Leaf>(&node);
         old_indices != nullptr) {
       for (auto& old_index : *old_indices) {
         permutation[new_index] = old_index;
@@ -147,16 +147,18 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Initialize() {
   }
 
   // Finally, build the tree.
-  root_ = BuildTree(indices.begin(), indices.end(), indices.size());
+  root_ = BuildTree(indices.begin(),
+                    indices.end(),
+                    indices.size());
 }
 
 template<affine Point_, typename Payload_>
-not_null<std::unique_ptr<
-typename PrincipalComponentPartitioningTree<Point_, Payload_>::Node>>
+not_null<typename PrincipalComponentPartitioningTree<Point_, Payload_>::Node*>
 PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     typename Indices::iterator const begin,
     typename Indices::iterator const end,
-    std::int64_t const size) {
+    std::int64_t const size,
+    Node* const node) {
   if (size <= max_points_per_cell_) {
     // We are done subdividing, return a leaf.  About half the leaves end up
     // being split, with the unsplit leaves being 50% full, so this wastes about
@@ -166,9 +168,8 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     for (auto it = begin; it != end; ++it) {
       leaf.push_back(it->index);
     }
-    auto node = make_not_null_unique<Node>(std::move(leaf));
-    nodes_.push_back(node.get());
-    return node;
+    nodes_.push_back(std::move(leaf));
+    return &nodes_.back();
   }
 
   // Compute the "inertia" of the selected displacements and diagonalize it.
@@ -207,13 +208,19 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
   auto const anchor = Barycentre(
       {displacements_[mid_lower->index], displacements_[mid_upper->index]});
 
-  auto first_child = BuildTree(begin, mid_upper, size / 2);
-  auto second_child = BuildTree(mid_upper, end, size - size / 2);
+  auto const first_child = BuildTree(begin, mid_upper, size / 2);
+  auto const second_child = BuildTree(mid_upper, end, size - size / 2);
 
-  return make_not_null_unique<Node>(
-      Internal{.principal_axis = principal_axis,
-               .anchor = anchor,
-               .children = {std::move(first_child), std::move(second_child)}});
+  Internal internal{.principal_axis = principal_axis,
+                    .anchor = anchor,
+                    .children = {first_child, second_child}};
+  if (node == nullptr) {
+    nodes_.push_back(std::move(internal));
+    return &nodes_.back();
+  } else {
+    *node = std::move(internal);
+    return node;
+  }
 }
 
 template<affine Point_, typename Payload_>
@@ -258,7 +265,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
         if constexpr (std::is_same_v<V, Internal>) {
           Add(index, v);
         } else if constexpr (std::is_same_v<V, Leaf>) {
-          Add(index, v, node);
+          Add(index, v, &node);
         } else {
           static_assert(false, "Unexpected node type");
         }
@@ -283,7 +290,7 @@ template<affine Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Leaf& leaf,
-    Node& node) {
+    not_null<Node*> const node) {
   if (leaf.size() < max_points_per_cell_) {
     leaf.push_back(index);
   } else {
@@ -296,10 +303,11 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     for (const std::int32_t index : leaf) {
       indices.push_back({.index = index, .projection = NormType{}});
     }
-    auto const subtree =
-        BuildTree(indices.begin(), indices.end(), indices.size());
+    auto const subtree = BuildTree(indices.begin(),
+                                   indices.end(),
+                                   indices.size(),
+                                   /*node=*/node);
     CHECK(std::holds_alternative<Internal>(*subtree));
-    node = std::move(*subtree);
   }
 }
 
@@ -357,12 +365,9 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   // We first search on the "preferred" side of the separator plane, i.e., the
   // one where `displacement` is located.  We may have to look at the "other"
   // side, if `displacement` is too close to that plane.
-  Node const* preferred_side;
-  if (projection < NormType{}) {
-    preferred_side = internal.children.first.get();
-  } else {
-    preferred_side = internal.children.second.get();
-  }
+  not_null<Node const*> const preferred_side = projection < NormType{}
+                                                   ? internal.children.first
+                                                   : internal.children.second;
 
   std::int32_t preferred_min_index;
   Norm²Type preferred_min_distance²;
@@ -376,12 +381,9 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
        &preferred_must_check_other_side);
 
   if (preferred_must_check_other_side) {
-    Node const* other_side;
-    if (projection < NormType{}) {
-      other_side = internal.children.second.get();
-    } else {
-      other_side = internal.children.first.get();
-    }
+    not_null<Node const*> const other_side = projection < NormType{}
+                                                 ? internal.children.second
+                                                 : internal.children.first;
 
     // We omit `must_check_other_side` because there is no point in checking the
     // other side again.
