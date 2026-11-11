@@ -138,24 +138,16 @@ class GlobalOptimizationBenchmark : public benchmark::Fixture {
     }();
   }
 
-  // TODO(phl): This code is wrapping an `Instant` into a `Vector` of `Time`,
-  // which is ugly as hell, but it will do for now.
-  template<typename Frame>
-  using Argument = Vector<Time, Frame>;
-
   template<typename Frame>
   void ComputeApsidesUsingMLSL(Trajectory<Frame> const& reference,
                                DiscreteTrajectoryView<Frame> const& trajectory,
                                int const max_points,
-                               std::vector<Argument<Frame>>& apoapsides,
-                               std::vector<Argument<Frame>>& periapsides) {
-    static Instant const t0;
+                               std::vector<Instant>& apoapsides,
+                               std::vector<Instant>& periapsides) {
     Instant const t_min = std::max(reference.t_min(), trajectory.t_min());
     Instant const t_max = std::min(reference.t_max(), trajectory.t_max());
 
-    auto const f = [&](Argument<Frame> const& argument) {
-      Instant const t =
-          std::min(std::max(t0 + argument.coordinates()[0], t_min), t_max);
+    auto const f = [&](Instant const& t) {
       Position<Frame> const reference_position = reference.EvaluatePosition(t);
       Position<Frame> const trajectory_position =
           trajectory.EvaluatePosition(t);
@@ -164,10 +156,9 @@ class GlobalOptimizationBenchmark : public benchmark::Fixture {
       return displacement.Norm²();
     };
 
-    auto const grad_f = [&](Argument<Frame> const& argument) {
-      Instant const t = t0 + argument.coordinates()[0];
+    auto const grad_f = [&](Instant const& t) {
       if (t < t_min || t > t_max) {
-        return Vector<Variation<Square<Length>>, Frame>();
+        return Variation<Square<Length>>();
       }
       DegreesOfFreedom<Frame> const reference_dof =
           reference.EvaluateDegreesOfFreedom(t);
@@ -175,22 +166,17 @@ class GlobalOptimizationBenchmark : public benchmark::Fixture {
           trajectory.EvaluateDegreesOfFreedom(t);
       Displacement<Frame> const displacement =
           trajectory_dof.position() - reference_dof.position();
-      return Vector<Variation<Square<Length>>, Frame>(
-          {2 * InnerProduct(
-                   displacement,
-                   trajectory_dof.velocity() - reference_dof.velocity()),
-           0 * Pow<2>(Metre) / Second,
-           0 * Pow<2>(Metre) / Second});
+      return 2 *
+             InnerProduct(displacement,
+                          trajectory_dof.velocity() - reference_dof.velocity());
     };
 
     using MLSL = MultiLevelSingleLinkage<Square<Length>,
-                                         Argument<Frame>,
+                                         Instant,
                                          /*dimensions=*/1>;
     Instant const centre = Barycentre({t_min, t_max}, {1, 1});
     Time const radius = t_max - centre;
-    typename MLSL::Box const box{
-        Argument<Frame>({centre - t0, 0 * Second, 0 * Second}),
-        Argument<Frame>({radius, 0 * Second, 0 * Second})};
+    typename MLSL::Box const box{centre, radius};
     MLSL multi_level_single_linkage(box, f, grad_f);
 
     periapsides = multi_level_single_linkage.FindGlobalMinima(
@@ -222,8 +208,8 @@ DiscreteTrajectory<ICRS>*
 BENCHMARK_F(GlobalOptimizationBenchmark,
             ComputeApsidesUsingMLSL)(benchmark::State& state) {
   for (auto _ : state) {
-    std::vector<Argument<ICRS>> apoapsides;
-    std::vector<Argument<ICRS>> periapsides;
+    std::vector<Instant> apoapsides;
+    std::vector<Instant> periapsides;
     ComputeApsidesUsingMLSL(
         *earth_trajectory_,
         DiscreteTrajectoryView(ilrsa_lageos2_trajectory_icrs_),
