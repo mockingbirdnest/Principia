@@ -62,7 +62,7 @@ class Quantity final {
   constexpr friend bool operator==(Quantity const& left,
                                    Quantity const& right) = default;
   // Do not default this operator as it causes VS 2026 to generate an
-  // out-of-line call for comparisons
+  // out-of-line call for comparisons.
   template<typename Dimension>
   constexpr friend auto operator<=>(Quantity<Dimension> const& left,
                                     Quantity<Dimension> const& right);
