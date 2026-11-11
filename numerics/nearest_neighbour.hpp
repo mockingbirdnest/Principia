@@ -207,10 +207,9 @@ class PrincipalComponentPartitioningTree {
   // `points_`.
   std::vector<Displacement> displacements_;
 
-  // All the leaves constructed for the tree are recorded in this vector.
-  // Beware!  A leaf is transformed into an internal node when it is split, so
-  // any code that scan this vector must check the type of the nodes.
-  std::vector<not_null<Node*>> leaves_;
+  // All the nodes constructed for the tree are recorded in this vector.  Note
+  // that every node starts its life as a `Leaf`.
+  std::vector<not_null<Node*>> nodes_;
 
   // Payloads.  Note that the not-a-payload type, `std::nullopt_t` cannot be
   // stored in an `optional`, so it helps detect mistakes.

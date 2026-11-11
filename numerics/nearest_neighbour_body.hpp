@@ -67,12 +67,12 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
   std::vector<std::int32_t> permutation;
   permutation.resize(points_.size());
   std::int32_t new_index = 0;
-  for (auto const& leaf : leaves_) {
+  for (auto const& node : nodes_) {
     // We only ever added leaves to this list, but leaves can turn into internal
     // nodes when they get split.
-    if (std::holds_alternative<Leaf>(*leaf)) {
-      auto& old_indices = std::get<Leaf>(*leaf);
-      for (auto& old_index : old_indices) {
+    if (auto* const old_indices = std::get_if<Leaf>(&*node);
+        old_indices != nullptr) {
+      for (auto& old_index : *old_indices) {
         permutation[new_index] = old_index;
         old_index = new_index;
         ++new_index;
@@ -158,14 +158,16 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     typename Indices::iterator const end,
     std::int64_t const size) {
   if (size <= max_points_per_cell_) {
-    // We are done subdividing, return a leaf.
+    // We are done subdividing, return a leaf.  About half the leaves end up
+    // being split, with the unsplit leaves being 50% full, so this wastes about
+    // 25% of the space to save allocations.
     Leaf leaf;
-    leaf.reserve(size);
+    leaf.reserve(max_points_per_cell_);
     for (auto it = begin; it != end; ++it) {
       leaf.push_back(it->index);
     }
     auto node = make_not_null_unique<Node>(std::move(leaf));
-    leaves_.push_back(node.get());
+    nodes_.push_back(node.get());
     return node;
   }
 
@@ -282,12 +284,15 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Leaf& leaf,
     Node& node) {
-  leaf.push_back(index);
-  if (leaf.size() > max_points_per_cell_) {
+  if (leaf.size() < max_points_per_cell_) {
+    leaf.push_back(index);
+  } else {
     // The leaf is full, we need to split it by building a (sub)tree based on
-    // it.
+    // it.  This code is written is such a way that the `leaf` never has more
+    // than `max_points_per_cell_` elements, the number that we preallocated.
     Indices indices;
-    indices.reserve(leaf.size());
+    indices.reserve(max_points_per_cell_ + 1);
+    indices.push_back({.index = index, .projection = NormType{}});
     for (const std::int32_t index : leaf) {
       indices.push_back({.index = index, .projection = NormType{}});
     }
