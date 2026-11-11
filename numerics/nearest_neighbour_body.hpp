@@ -299,6 +299,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     for (const std::int32_t index : leaf) {
       indices.push_back({.index = index, .projection = NormType{}});
     }
+    // Reuse the `node` and turn it into an `Internal` node.
     auto const subtree = BuildTree(indices.begin(),
                                    indices.end(),
                                    indices.size(),
