@@ -75,8 +75,8 @@ class PrincipalComponentPartitioningTree {
   void Optimize();
 
   // Finds the nearest neighbour of the given `point` at a distance less than or
-  // equal to `radius`.  Returns nullptr if the tree is empty.  Only the points
-  // for which `filter` returns true are considered.
+  // equal to `radius`, and for which `filter` returns true.  Returns nullptr if
+  // no such point is found.
   // Beware! if `filter` rejects many points and `radius` is large, the search
   // may end up looking at the entire tree.
   Point const* FindNearestNeighbour(Point const& point,
