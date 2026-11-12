@@ -89,7 +89,6 @@ concept homogeneous_euclidean_space =
 }  // namespace internal
 
 using internal::euclidean;
-using internal::euclidean;
 using internal::euclidean_space;
 using internal::hilbert;
 using internal::homogeneous_euclidean_space;
