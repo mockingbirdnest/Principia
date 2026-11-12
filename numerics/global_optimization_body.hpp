@@ -29,7 +29,10 @@ using namespace principia::numerics::_gradient_descent;
 // evaluations in the leaf search.
 constexpr int64_t pcp_tree_max_values_per_cell = 20;
 
-template<typename Scalar, euclidean Argument, int dimensions>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::Measure
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
   if constexpr (dimensions == 1) {
@@ -42,7 +45,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
   std::abort();
 }
 
-template<typename Scalar, euclidean Argument, int dimensions>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::NormType
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::diametre() const {
   NormType diameter;
@@ -52,7 +58,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::diametre() const {
   return diameter;
 }
 
-template<typename Scalar, euclidean Argument, int dimensions>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::MultiLevelSingleLinkage(
     Box const& box,
     Field<Scalar, Argument> f,
@@ -69,7 +78,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::MultiLevelSingleLinkage(
   }
 }
 
-template<typename Scalar, euclidean Argument, int dimensions>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
 std::vector<Argument>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMaxima(
     std::int64_t const points_per_round,
@@ -90,7 +102,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMaxima(
                           minus_grad_f);
 }
 
-template<typename Scalar, euclidean Argument, int dimensions>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
 std::vector<Argument>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     std::int64_t const points_per_round,
@@ -103,7 +118,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
                           grad_f_);
 }
 
-template<typename Scalar, euclidean Argument, int dimensions>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
 std::vector<Argument>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     std::int64_t const points_per_round,
@@ -285,7 +303,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   return result;
 }
 
-template<typename Scalar, euclidean Argument, int dimensions>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
 bool MultiLevelSingleLinkage<Scalar, Argument, dimensions>::
 IsNewStationaryPoint(Argument const& stationary_point,
                       PrincipalComponentPartitioningTree<Argument> const&
@@ -304,7 +325,10 @@ IsNewStationaryPoint(Argument const& stationary_point,
              2 * local_search_tolerance;
 }
 
-template<typename Scalar, euclidean Argument, int dimensions>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
 std::vector<not_null<std::unique_ptr<Argument>>>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
     std::int64_t const values_per_round) {
@@ -321,7 +345,10 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
   return arguments;
 }
 
-template<typename Scalar, euclidean Argument, int dimensions>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
 typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::NormType
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::CriticalRadius(
     double const σ,

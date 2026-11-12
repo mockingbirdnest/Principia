@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -23,10 +24,10 @@ using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_nearest_neighbour;
 using namespace principia::quantities::_quantities;
 
-template<typename Scalar, euclidean Argument>
-using Field = std::function<Scalar(Argument const&)>;
+template<typename Value, euclidean Argument>
+using Field = std::function<Value(Argument const&)>;
 
-template<typename Scalar, euclidean Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
 using Gradient =
     Product<Scalar,
             Quotient<Difference<Argument>, Norm²Type<Difference<Argument>>>>;
@@ -38,7 +39,10 @@ using Gradient =
 // problem.  It it is 1 or 2, the box is 1- or 2-dimensional and the computation
 // of rₖ is adjusted accordingly.  In all cases, the dimensions of the box must
 // be nonzero.
-template<typename Scalar, euclidean Argument, int dimensions = 3>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions = 3>
+  requires(std::totally_ordered<Scalar>)
 class MultiLevelSingleLinkage {
  public:
   using NormType = NormType<Difference<Argument>>;

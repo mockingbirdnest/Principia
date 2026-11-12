@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <functional>
 
 #include "absl/status/statusor.h"
@@ -21,17 +22,17 @@ using namespace principia::quantities::_quantities;
 // product form thus:
 //   using Gradient = ...;
 //   static ... InnerProductForm();
-template<typename Scalar, euclidean Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
 struct Generator;
 
 template<typename Value, euclidean Argument>
 using Field = std::function<Value(Argument const&)>;
 
-template<typename Scalar, euclidean Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
 using Gradient = typename Generator<Scalar, Argument>::Gradient;
 
 // Must return InnerProduct(grad_f(argument), direction);
-template<typename Scalar, euclidean Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
 using GateauxDerivative =
     std::function<Scalar(Argument const& argument,
                          Difference<Argument> const& direction)>;
@@ -48,7 +49,8 @@ constexpr absl::StatusCode NoMinimum = absl::StatusCode::kNotFound;
 // assumption is that, if the caller provides a reasonable value then (1) we
 // won't miss "interesting features" of f; (2) the finite differences won't
 // underflow or have other unpleasant properties.
-template<typename Scalar, euclidean Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
+  requires(std::totally_ordered<Scalar>)
 absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
@@ -62,7 +64,8 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
 // Same as above, but the Gateaux derivative of f is passed in addition to its
 // gradient.  Useful when the Gateaux derivative is significantly less expensive
 // to compute than the full gradient.
-template<typename Scalar, euclidean Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
+  requires(std::totally_ordered<Scalar>)
 absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
