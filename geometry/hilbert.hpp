@@ -60,7 +60,7 @@ template<typename T>
 using NormalizedType = Quotient<T, NormType<T>>;
 
 template<typename T>
-  requires(requires(T x) { x.Norm(); })
+  requires(requires(T x) { Norm(x); })
 constexpr NormalizedType<T> Normalize(T const& x);
 
 template<typename V>
@@ -79,13 +79,23 @@ concept hilbert = requires(V u, V v) {
 template<typename A>
 concept euclidean = affine<A> && hilbert<Difference<A>>;
 
+template<typename A, typename K>
+concept euclidean_space = affine_space<A, K> && hilbert<Difference<A>>;
+
+template<typename A, typename K>
+concept homogeneous_euclidean_space =
+    homogeneous_affine_space<A, K> && hilbert<Difference<A>>;
+
 }  // namespace internal
 
 using internal::euclidean;
+using internal::euclidean_space;
 using internal::hilbert;
+using internal::homogeneous_euclidean_space;
 using internal::InnerProduct;
 using internal::InnerProductType;
 using internal::Norm;
+using internal::Normalize;
 using internal::NormalizedType;
 using internal::NormType;
 using internal::Norm²;
