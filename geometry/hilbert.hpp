@@ -59,6 +59,10 @@ using NormType = decltype(Norm(std::declval<T>()));
 template<typename T>
 using NormalizedType = Quotient<T, NormType<T>>;
 
+template<typename T>
+  requires(requires(T x) { x.Norm(); })
+constexpr NormalizedType<T> Normalize(T const& x);
+
 template<typename V>
 concept hilbert = requires(V u, V v) {
   { InnerProduct(u, v) } -> homogeneous_field;

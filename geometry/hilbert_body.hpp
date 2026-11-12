@@ -40,6 +40,12 @@ constexpr T Norm(T const& x) {
   return Abs(x);
 }
 
+template<typename T>
+  requires(requires(T x) { x.Norm(); })
+constexpr NormalizedType<T> Normalize(T const& x) {
+  return x / x.Norm();
+}
+
 }  // namespace internal
 }  // namespace _hilbert
 }  // namespace geometry
