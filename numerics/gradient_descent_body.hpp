@@ -90,7 +90,7 @@ constexpr double c₂ = 0.9;
 constexpr double α_multiplier = 2;
 constexpr double hermite2_tolerance = 0.01;
 
-template<typename Scalar, typename Argument>
+template<typename Scalar, euclidean Argument>
 double Zoom(double α_lo,
             double α_hi,
             Scalar ϕ_α_lo,
@@ -184,7 +184,7 @@ double Zoom(double α_lo,
   }
 }
 
-template<typename Scalar, typename Argument>
+template<typename Scalar, euclidean Argument>
 double LineSearch(
     Argument const& x,
     Difference<Argument> const& p,
@@ -231,7 +231,7 @@ double LineSearch(
   return αᵢ;
 }
 
-template<typename Scalar, typename Argument>
+template<typename Scalar, euclidean Argument>
 absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
@@ -255,7 +255,7 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
 }
 
 // The implementation of BFGS follows [NW06], algorithm 6.18.
-template<typename Scalar, typename Argument>
+template<typename Scalar, euclidean Argument>
 absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
     Field<Scalar, Argument> const& f,
