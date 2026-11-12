@@ -154,7 +154,7 @@ class PrincipiaTimeSpan {
       return true;
     }
     // The creation of this `PrincipiaTimeSpan` ensures that `regex_` is not
-    //null at the next line.
+    // null at the next line.
     time_span = new PrincipiaTimeSpan(double.NaN);
     var match = regex_.Match(text);
     if (!match.Success) {
