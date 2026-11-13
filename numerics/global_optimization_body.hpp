@@ -38,9 +38,9 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Box::measure() const {
   if constexpr (dimensions == 1) {
     return 2 * Norm(vertices[0]);
   } else if constexpr (dimensions == 2) {
-    return 4 * Wedge(vertices[0], vertices[1]).Norm();
+    return 4 * Norm(Wedge(vertices[0], vertices[1]));
   } else if constexpr (dimensions == 3) {
-    return 8 * Wedge(vertices[0], Wedge(vertices[1], vertices[2])).Norm();
+    return 8 * Norm(Wedge(vertices[0], Wedge(vertices[1], vertices[2])));
   }
   std::abort();
 }
@@ -279,7 +279,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       } else {
         // Move the point xᵢ "down" in the `schedule` map, based on the distance
         // to its nearest neighbour.
-        auto const distance²_to_xⱼ = (xᵢ - *xⱼ).Norm²();
+        auto const distance²_to_xⱼ = Norm²(xᵢ - *xⱼ);
         DCHECK_LE(distance²_to_xⱼ, rₖ²);
         VLOG(3) << "Round #" << k << ", no local search from point " << xᵢ
                 << " which has distance " << Sqrt(distance²_to_xⱼ)
@@ -321,7 +321,7 @@ IsNewStationaryPoint(Argument const& stationary_point,
   // approximate stationary points, not between an approximate stationary point
   // and the real one.
   return stationary_point_nearest_neighbour == nullptr ||
-         (stationary_point - *stationary_point_nearest_neighbour).Norm() >
+         Norm(stationary_point - *stationary_point_nearest_neighbour) >
              2 * local_search_tolerance;
 }
 
