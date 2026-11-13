@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -8,6 +9,7 @@
 
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
+#include "geometry/differential_geometry.hpp"
 #include "geometry/hilbert.hpp"
 #include "numerics/nearest_neighbour.hpp"
 #include "quantities/quantities.hpp"
@@ -19,20 +21,10 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_differential_geometry;
 using namespace principia::geometry::_hilbert;
 using namespace principia::numerics::_nearest_neighbour;
 using namespace principia::quantities::_quantities;
-
-// In this file `Argument` must be such that its difference belongs to a Hilbert
-// space.
-
-template<typename Scalar, typename Argument>
-using Field = std::function<Scalar(Argument const&)>;
-
-template<typename Scalar, typename Argument>
-using Gradient =
-    Product<Scalar,
-            Quotient<Difference<Argument>, Norm²Type<Difference<Argument>>>>;
 
 // NOTE(phl): This could nearly be a self-standing function (it doesn't have
 // much state) but having the type `Box` floating around would be unpleasant.
@@ -41,7 +33,10 @@ using Gradient =
 // problem.  It it is 1 or 2, the box is 1- or 2-dimensional and the computation
 // of rₖ is adjusted accordingly.  In all cases, the dimensions of the box must
 // be nonzero.
-template<typename Scalar, typename Argument, int dimensions = 3>
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions = 3>
+  requires(std::totally_ordered<Scalar>)
 class MultiLevelSingleLinkage {
  public:
   using NormType = NormType<Difference<Argument>>;
@@ -58,10 +53,9 @@ class MultiLevelSingleLinkage {
     Measure measure() const;
   };
 
-  MultiLevelSingleLinkage(
-      Box const& box,
-      Field<Scalar, Argument> f,
-      Field<Gradient<Scalar, Argument>, Argument> grad_f);
+  MultiLevelSingleLinkage(Box const& box,
+                          VectorField<Scalar, Argument> f,
+                          GradientField<Scalar, Argument> grad_f);
 
   // If `number_of_rounds` is given, the algorithm does `number_of_rounds`
   // iterations, each time adding `points_per_round` to the sample.
@@ -96,8 +90,8 @@ class MultiLevelSingleLinkage {
       std::int64_t points_per_round,
       std::optional<std::int64_t> number_of_rounds,
       NormType local_search_tolerance,
-      Field<Scalar, Argument> const& f,
-      Field<Gradient<Scalar, Argument>, Argument> const& grad_f);
+      VectorField<Scalar, Argument> const& f,
+      GradientField<Scalar, Argument> const& grad_f);
 
   // Returns true iff the given `stationary_point` is sufficiently far from the
   // ones already in `stationary_point_neighbourhoods`.
@@ -117,8 +111,8 @@ class MultiLevelSingleLinkage {
   Box const box_;
   NormType const box_diametre_;
   typename Box::Measure const box_measure_;
-  Field<Scalar, Argument> const f_;
-  Field<Gradient<Scalar, Argument>, Argument> const grad_f_;
+  VectorField<Scalar, Argument> const f_;
+  GradientField<Scalar, Argument> const grad_f_;
 
   std::mt19937_64 random_;
   std::uniform_real_distribution<> distribution_;
