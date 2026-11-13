@@ -10,7 +10,6 @@
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/elementary_functions.hpp"
 #include "numerics/hermite2.hpp"
-#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace numerics {
@@ -20,13 +19,6 @@ namespace internal {
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_hermite2;
-using namespace principia::quantities::_concepts;
-
-template<typename Scalar, quantity Q>
-struct Generator<Scalar, Q> {
-  using Gradient = Quotient<Scalar, Q>;
-  static double InnerProductForm();
-};
 
 // The line search follows [NW06], algorithms 3.5 and 3.6, which guarantee that
 // the chosen step obeys the strong Wolfe conditions.
