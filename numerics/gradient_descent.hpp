@@ -7,6 +7,7 @@
 #include "base/algebra.hpp"
 #include "geometry/differential_geometry.hpp"
 #include "geometry/hilbert.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace numerics {
@@ -16,6 +17,7 @@ namespace internal {
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_differential_geometry;
 using namespace principia::geometry::_hilbert;
+using namespace principia::quantities::_quantities;
 
 // Statuses returned by the gradient descent.
 namespace termination_condition {
