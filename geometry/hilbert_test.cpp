@@ -6,6 +6,7 @@
 #include "geometry/complexification.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
@@ -23,6 +24,7 @@ using namespace principia::geometry::_complexification;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
@@ -75,6 +77,14 @@ TEST_F(HilbertTest, Space) {
   static_assert(!homogeneous_field<Trivector<double, World>>);
   static_assert(real_dimension<Trivector<double, World>> == 1);
   static_assert(hilbert<Trivector<double, World>>);
+}
+
+TEST_F(HilbertTest, Euclidean) {
+  static_assert(euclidean<Displacement<World>>);
+  static_assert(euclidean<Position<World>>);
+  static_assert(euclidean<Instant>);
+  static_assert(euclidean<Length>);
+  static_assert(euclidean<double>);
 }
 
 }  // namespace geometry
