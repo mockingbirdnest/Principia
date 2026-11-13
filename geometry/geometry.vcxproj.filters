@@ -188,6 +188,9 @@
     <ClInclude Include="space_body.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="differential_geometry.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -264,6 +267,9 @@
     </ClCompile>
     <ClCompile Include="direct_sum_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="differential_geometry_body.hpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

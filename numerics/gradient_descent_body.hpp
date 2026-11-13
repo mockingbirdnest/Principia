@@ -7,11 +7,8 @@
 
 #include "absl/status/status.h"
 #include "base/stoppable_thread.hpp"  // 🧙 For RETURN_IF_STOPPED.
-#include "geometry/grassmann.hpp"
-#include "geometry/point.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/elementary_functions.hpp"
-#include "numerics/fixed_arrays.hpp"
 #include "numerics/hermite2.hpp"
 
 namespace principia {
@@ -19,68 +16,9 @@ namespace numerics {
 namespace _gradient_descent {
 namespace internal {
 
-using namespace principia::geometry::_grassmann;
-using namespace principia::geometry::_point;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_hermite2;
-
-template<typename Scalar, typename S, int s, bool uh>
-struct Generator<Scalar, FixedVector<S, s, uh>> {
-  using Gradient = FixedVector<Quotient<Scalar, S>, s, uh>;
-  static FixedMatrix<double, s, s, uh> InnerProductForm();
-};
-
-template<typename Scalar, typename S, typename F>
-struct Generator<Scalar, Vector<S, F>> {
-  using Gradient = Vector<Quotient<Scalar, S>, F>;
-  static SymmetricBilinearForm<double, F, Vector> InnerProductForm();
-};
-
-template<typename Scalar, typename V>
-struct Generator<Scalar, Point<V>> {
-  using Gradient = typename Generator<Scalar, V>::Gradient;
-#if _MSC_FULL_VER == 193'632'532 || \
-    _MSC_FULL_VER == 193'632'535 || \
-    _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
-  using InnerProductFormResult =
-      decltype(Generator<Scalar, V>::InnerProductForm());
-  static InnerProductFormResult InnerProductForm();
-#else
-  static decltype(Generator<Scalar, V>::InnerProductForm()) InnerProductForm();
-#endif
-};
-
-template<typename Scalar, typename S, int s, bool uh>
-FixedMatrix<double, s, s, uh>
-Generator<Scalar, FixedVector<S, s, uh>>::InnerProductForm() {
-  FixedMatrix<double, s, s> result{};
-  for (int i = 0; i < s; ++i) {
-    result(i, i) = 1;
-  }
-  return result;
-}
-
-template<typename Scalar, typename S, typename F>
-SymmetricBilinearForm<double, F, Vector>
-Generator<Scalar, Vector<S, F>>::InnerProductForm() {
-  return geometry::_symmetric_bilinear_form::InnerProductForm<F, Vector>();
-}
-
-template<typename Scalar, typename V>
-#if _MSC_FULL_VER == 193'632'532 || \
-    _MSC_FULL_VER == 193'632'535 || \
-    _MSC_FULL_VER == 193'732'822 || \
-    _MSC_FULL_VER == 193'833'135
-typename Generator<Scalar, Point<V>>::InnerProductFormResult
-#else
-decltype(Generator<Scalar, V>::InnerProductForm())
-#endif
-Generator<Scalar, Point<V>>::InnerProductForm() {
-  return Generator<Scalar, V>::InnerProductForm();
-}
 
 // The line search follows [NW06], algorithms 3.5 and 3.6, which guarantee that
 // the chosen step obeys the strong Wolfe conditions.
@@ -90,7 +28,8 @@ constexpr double c₂ = 0.9;
 constexpr double α_multiplier = 2;
 constexpr double hermite2_tolerance = 0.01;
 
-template<typename Scalar, typename Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
+  requires(std::totally_ordered<Scalar>)
 double Zoom(double α_lo,
             double α_hi,
             Scalar ϕ_α_lo,
@@ -100,7 +39,7 @@ double Zoom(double α_lo,
             Scalar const& ϕʹ_0,
             Argument const& x,
             Difference<Argument> const& p,
-            Field<Scalar, Argument> const& f,
+            VectorField<Scalar, Argument> const& f,
             GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
             bool& satisfies_strong_wolfe_condition) {
   std::optional<Scalar> previous_ϕ_αⱼ;
@@ -184,12 +123,13 @@ double Zoom(double α_lo,
   }
 }
 
-template<typename Scalar, typename Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
+  requires(std::totally_ordered<Scalar>)
 double LineSearch(
     Argument const& x,
     Difference<Argument> const& p,
     Gradient<Scalar, Argument> const& grad_f_x,
-    Field<Scalar, Argument> const& f,
+    VectorField<Scalar, Argument> const& f,
     GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
     bool& satisfies_strong_wolfe_condition) {
   auto const ϕ_0 = f(x);
@@ -231,11 +171,12 @@ double LineSearch(
   return αᵢ;
 }
 
-template<typename Scalar, typename Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
+  requires(std::totally_ordered<Scalar>)
 absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
-    Field<Scalar, Argument> const& f,
-    Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
+    VectorField<Scalar, Argument> const& f,
+    GradientField<Scalar, Argument> const& grad_f,
     NormType<Difference<Argument>> const& tolerance,
     NormType<Difference<Argument>> const& radius,
     std::optional<NormType<Difference<Argument>>> const&
@@ -255,11 +196,12 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
 }
 
 // The implementation of BFGS follows [NW06], algorithm 6.18.
-template<typename Scalar, typename Argument>
+template<homogeneous_field Scalar, homogeneous_euclidean_space<Scalar> Argument>
+  requires(std::totally_ordered<Scalar>)
 absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
     Argument const& start_argument,
-    Field<Scalar, Argument> const& f,
-    Field<Gradient<Scalar, Argument>, Argument> const& grad_f,
+    VectorField<Scalar, Argument> const& f,
+    GradientField<Scalar, Argument> const& grad_f,
     GateauxDerivative<Scalar, Argument> const& gateaux_derivative_f,
     NormType<Difference<Argument>> const& tolerance,
     NormType<Difference<Argument>> const& radius,
@@ -292,8 +234,10 @@ absl::StatusOr<Argument> BroydenFletcherGoldfarbShanno(
   auto const grad_f_x₁ = grad_f(x₁);
   Difference<Argument> const s₀ = x₁ - x₀;
   auto const y₀ = grad_f_x₁ - grad_f_x₀;
+  // TODO(phl): Remove the `internal` use here.
   auto const H₀ = InnerProduct(s₀, y₀) *
-                  Generator<Scalar, Argument>::InnerProductForm() /
+                  geometry::_differential_geometry::internal::
+                      Generator<Scalar, Argument>::InnerProductForm() /
                   y₀.Norm²();
 
   auto xₖ = x₁;

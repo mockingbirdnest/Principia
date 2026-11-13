@@ -12,6 +12,29 @@ class PrincipiaTimeSpan {
 
   public PrincipiaTimeSpan(double seconds) {
     seconds_ = seconds;
+    // Using a technology that is customarily used to parse HTML.
+    // Wrapping the literal in a Regex constructor and then substituting the day
+    // symbols in order to get VS to syntax highlight the regex_.
+    // This object is static and created on first use to avoid GC activity (see
+    // #4740).
+    if (regex_ == null) {
+      regex_ =
+          new Regex(@"
+        ^[+]?\s*
+        (?:(?<days>\d+)[\s|{zwsp}]*(?:{day_symbol}|{short_day_symbol})\s*)?
+        (?:(?<hours>\d+)[\s|{zwsp}]*[hʰ]\s*)?
+        (?:(?<minutes>\d+)[\s|{zwsp}]*(?:[mᵐ]|min)\s*)?
+        (?:(?<seconds>[0-9.,']+)[\s|{zwsp}]*[sˢ]\s*|
+           (?<integer_seconds>[0-9']+)[\s|{zwsp}]*[sˢ][.,]
+                (?<fractional_seconds>[0-9']+))?$",
+                    RegexOptions.IgnorePatternWhitespace);
+      regex_ =
+          new Regex(
+              regex_.ToString().Replace("{day_symbol}", day_symbol).
+                  Replace("{short_day_symbol}", short_day_symbol).
+                  Replace("{zwsp}", zwsp),
+              RegexOptions.IgnorePatternWhitespace);
+    }
   }
 
   public static bool Split(double total_seconds,
@@ -130,25 +153,10 @@ class PrincipiaTimeSpan {
       time_span = new PrincipiaTimeSpan(max_seconds);
       return true;
     }
+    // The creation of this `PrincipiaTimeSpan` ensures that `regex_` is not
+    // null at the next line.
     time_span = new PrincipiaTimeSpan(double.NaN);
-    // Using a technology that is customarily used to parse HTML.
-    // Wrapping the literal in a Regex constructor and then substituting the day
-    // symbols in order to get VS to syntax highlight the regex.
-    var regex = new Regex(@"
-        ^[+]?\s*
-        (?:(?<days>\d+)[\s|{zwsp}]*(?:{day_symbol}|{short_day_symbol})\s*)?
-        (?:(?<hours>\d+)[\s|{zwsp}]*[hʰ]\s*)?
-        (?:(?<minutes>\d+)[\s|{zwsp}]*(?:[mᵐ]|min)\s*)?
-        (?:(?<seconds>[0-9.,']+)[\s|{zwsp}]*[sˢ]\s*|
-           (?<integer_seconds>[0-9']+)[\s|{zwsp}]*[sˢ][.,]
-                (?<fractional_seconds>[0-9']+))?$",
-                          RegexOptions.IgnorePatternWhitespace);
-    regex = new Regex(
-        regex.ToString().Replace("{day_symbol}", day_symbol).
-            Replace("{short_day_symbol}", short_day_symbol).
-            Replace("{zwsp}", zwsp),
-        RegexOptions.IgnorePatternWhitespace);
-    var match = regex.Match(text);
+    var match = regex_.Match(text);
     if (!match.Success) {
       return false;
     }
@@ -212,6 +220,8 @@ class PrincipiaTimeSpan {
 
   private static IDateTimeFormatter date_time_formatter =>
       KSPUtil.dateTimeFormatter;
+
+  private static Regex regex_ = null;
 
   private readonly double seconds_;
   private const string nbsp = "\xA0";

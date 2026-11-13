@@ -8,6 +8,7 @@
 #include "absl/status/status.h"
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
+#include "geometry/differential_geometry.hpp"
 #include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "ksp_plugin/celestial.hpp"
@@ -28,6 +29,7 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
+using namespace principia::geometry::_differential_geometry;
 using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::ksp_plugin::_celestial;

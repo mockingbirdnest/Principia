@@ -16,6 +16,7 @@
     <ClInclude Include="complexification_body.hpp" />
     <ClInclude Include="conformal_map.hpp" />
     <ClInclude Include="conformal_map_body.hpp" />
+    <ClInclude Include="differential_geometry.hpp" />
     <ClInclude Include="direct_sum.hpp" />
     <ClInclude Include="direct_sum_body.hpp" />
     <ClInclude Include="frame.hpp" />
@@ -71,6 +72,7 @@
     <ClCompile Include="barycentre_calculator_test.cpp" />
     <ClCompile Include="complexification_test.cpp" />
     <ClCompile Include="conformal_map_test.cpp" />
+    <ClCompile Include="differential_geometry_body.hpp" />
     <ClCompile Include="direct_sum_test.cpp" />
     <ClCompile Include="frame_test.cpp" />
     <ClCompile Include="grassmann_test.cpp" />

@@ -26,7 +26,7 @@ using namespace principia::quantities::_quantities;
 
 constexpr std::int32_t no_min_index = -1;
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 PrincipalComponentPartitioningTree<Point_, Payload_>::
 PrincipalComponentPartitioningTree(
     std::vector<not_null<Point const*>> const& points,
@@ -42,7 +42,7 @@ PrincipalComponentPartitioningTree(
   }
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     not_null<Point const*> const point) {
   if constexpr (has_payload) {
@@ -51,7 +51,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
   AddPoint(point);
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     not_null<Point const*> const point,
     Payload const& payload)
@@ -60,7 +60,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
   AddPoint(point);
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
   // Build a permutation of the points in the order they appear in the leaves,
   // and update the leaf indices accordingly.
@@ -97,7 +97,8 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
     permutation[current] = current;
   }
 }
-template<affine Point_, typename Payload_>
+
+template<euclidean Point_, typename Payload_>
 Point_ const*
 PrincipalComponentPartitioningTree<Point_, Payload_>::FindNearestNeighbour(
     Point const& point,
@@ -124,7 +125,7 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::FindNearestNeighbour(
              : static_cast<Point const*>(points_[min_index]);
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Initialize() {
   // Compute the centroid of the points.
   BarycentreCalculator<Point, double> centroid;
@@ -152,7 +153,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Initialize() {
                     indices.size());
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 not_null<typename PrincipalComponentPartitioningTree<Point_, Payload_>::Node*>
 PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     typename Indices::iterator const begin,
@@ -223,7 +224,7 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
   }
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::AddPoint(
     not_null<Point const*> const point) {
   points_.push_back(point);
@@ -241,7 +242,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::AddPoint(
   }
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 typename PrincipalComponentPartitioningTree<Point_, Payload_>::
 DisplacementSymmetricBilinearForm
 PrincipalComponentPartitioningTree<Point_, Payload_>::
@@ -255,7 +256,7 @@ ComputePrincipalComponentForm(
   return result;
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Node& node) {
@@ -273,7 +274,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
       node);
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Internal const& internal) {
@@ -286,7 +287,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
   }
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Leaf& leaf,
@@ -311,7 +312,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
   }
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     Displacement const& displacement,
     Norm²Type const& radius²,
@@ -349,7 +350,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
       node);
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     Displacement const& displacement,
     Norm²Type const& radius²,
@@ -421,7 +422,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   }
 }
 
-template<affine Point_, typename Payload_>
+template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
     Displacement const& displacement,
     Norm²Type const& radius²,
