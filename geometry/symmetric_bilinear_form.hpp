@@ -24,7 +24,46 @@ using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
-using namespace principia::quantities::_concepts;
+using namespace principia::quantities::_dimensions;
+
+template<Dimensions d, typename Frame>
+class VectorHomogeneousSubspace {
+  using gradation = Quantity<d>;
+  using type = Vector<gradation, Frame>;
+};
+
+template<Dimensions d, typename Frame>
+class BivectorHomogeneousSubspace {
+  using gradation = Quantity<d>;
+  using type = Bivector<gradation, Frame>;
+};
+
+template<Dimensions d, typename Frame>
+class QuantityHomogeneousSubspace {
+  using gradation = Quantity<d>;
+  using type = gradation;
+};
+
+template<
+    homogeneous_field K,
+    typename IndexSet,
+    template<IndexSet index_set, typename... T> typename HomogeneousSubspace>
+class SymmetricBilinearForm {
+ public:
+  template<IndexSet index_set1, IndexSet index_set2>
+  Product<K, Product<K1, K2>> operator()(
+      HomogeneousSubspace<index_set1, T...> const& left,
+      HomogeneousSubspace<index_set2, T...> const& right) const;
+};
+
+template<typename Scalar>
+class SymmetricBilinearForm {
+ public:
+  template<typename LScalar, typename RScalar>
+  Product<Scalar, Product<LScalar, RScalar>> operator()(
+      LScalar const& left,
+      RScalar const& right) const;
+};
 
 // A symmetric bilinear form with dimensionality `Scalar`, on the given kind of
 // `Multivector`, expressed in the coordinates of `Frame`.
