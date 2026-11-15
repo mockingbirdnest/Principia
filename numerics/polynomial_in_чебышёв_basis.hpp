@@ -56,7 +56,8 @@ using namespace principia::quantities::_concepts;
 
 #if PRINCIPIA_COMPILER_MSVC && \
     (_MSC_FULL_VER == 195'236'725 || \
-     _MSC_FULL_VER == 195'236'815)
+     _MSC_FULL_VER == 195'236'815 || \
+     _MSC_FULL_VER == 195'336'930)
 constexpr auto degree_agnostic = -1;
 #else
 constexpr auto degree_agnostic = std::nullopt;
