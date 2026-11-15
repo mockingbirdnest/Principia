@@ -45,14 +45,6 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     DistinguishedPoints<Frame>& apoapsides,
                     DistinguishedPoints<Frame>& periapsides);
 
-//TODO(phl)comment
-template<typename Frame>
-void FastComputeApsides(Trajectory<Frame> const& reference,
-                        DiscreteTrajectoryView<Frame> const& trajectory,
-                        int max_points,
-                        DistinguishedPoints<Frame>& apoapsides,
-                        DistinguishedPoints<Frame>& periapsides);
-
 // Returns the ordered time intervals where there can be a collision with the
 // `reference_body` because the `trajectory` is below its `max_radius`.
 template<typename Frame>
@@ -100,7 +92,6 @@ using internal::ComputeCollisionIntervals;
 using internal::ComputeFirstCollision;
 using internal::ComputeNodes;
 using internal::DistinguishedPoints;
-using internal::FastComputeApsides;
 
 }  // namespace _apsides
 }  // namespace physics

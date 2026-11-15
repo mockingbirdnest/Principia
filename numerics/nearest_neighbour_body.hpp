@@ -146,9 +146,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Initialize() {
   }
 
   // Finally, build the tree.
-  root_ = BuildTree(indices.begin(),
-                    indices.end(),
-                    indices.size());
+  root_ = BuildTree(indices.begin(), indices.end(), indices.size());
 }
 
 template<euclidean Point_, typename Payload_>
