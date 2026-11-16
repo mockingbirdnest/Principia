@@ -83,7 +83,8 @@ class MultiLevelSingleLinkage {
   // We need pointer stability for the arguments as we store pointers, e.g., in
   // PCP trees.  We generally cannot `reserve` because we don't know the final
   // size of the vector, hence the `unique_ptr`s.
-  using Arguments = std::vector<not_null<std::unique_ptr<Argument>>>;
+  //TODO(phl)comment
+  using Arguments = std::vector<Argument>;
 
   // Implementation method for `FindGlobalMaxima` and `FindGlobalMinima`.
   std::vector<Argument> FindGlobalMinima(

@@ -29,7 +29,7 @@ constexpr std::int32_t no_min_index = -1;
 template<euclidean Point_, typename Payload_>
 PrincipalComponentPartitioningTree<Point_, Payload_>::
 PrincipalComponentPartitioningTree(
-    std::vector<not_null<Point const*>> const& points,
+    std::vector<Point> const& points,
     std::int64_t const max_points_per_cell)
     : points_(points),
       max_points_per_cell_(max_points_per_cell) {
@@ -44,7 +44,7 @@ PrincipalComponentPartitioningTree(
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
-    not_null<Point const*> const point) {
+    Point const& point) {
   if constexpr (has_payload) {
     payloads_.push_back(std::nullopt);
   }
@@ -53,7 +53,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
-    not_null<Point const*> const point,
+    Point const& point,
     Payload const& payload)
   requires has_payload {
   payloads_.push_back(payload);
@@ -96,13 +96,13 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Optimize() {
 }
 
 template<euclidean Point_, typename Payload_>
-Point_ const*
+std::optional<Point_>
 PrincipalComponentPartitioningTree<Point_, Payload_>::FindNearestNeighbour(
     Point const& point,
     NormType const& radius,
     Filter const& filter) const {
   if (points_.empty()) {
-    return nullptr;
+    return std::nullopt;
   }
   Norm²Type const radius² = Pow<2>(radius);
   Norm²Type min_distance²;
@@ -117,9 +117,8 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::FindNearestNeighbour(
 
   // In the end, this is why we retain the points: we want to return a pointer
   // that the client gave us.
-  return min_index == no_min_index
-             ? nullptr
-             : static_cast<Point const*>(points_[min_index]);
+  return min_index == no_min_index ? std::nullopt
+                                   : std::make_optional(points_[min_index]);
 }
 
 template<euclidean Point_, typename Payload_>
@@ -167,7 +166,7 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
 
   // Project the `vectors` on the principal axis.
   for (auto it = begin; it != end; ++it) {
-    auto const& point = *points_[it->index];
+    auto const& point = points_[it->index];
     it->projection = InnerProduct(principal_axis, point - origin_);
   }
 
@@ -189,7 +188,7 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
   auto const mid_lower = std::max_element(begin, mid_upper, projection_less);
 
   auto const anchor =
-      Barycentre({*points_[mid_lower->index], *points_[mid_upper->index]});
+      Barycentre({points_[mid_lower->index], points_[mid_upper->index]});
 
   auto const first_child = BuildTree(begin, mid_upper, size / 2);
   auto const second_child = BuildTree(mid_upper, end, size - size / 2);
@@ -208,7 +207,7 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
 
 template<euclidean Point_, typename Payload_>
 void PrincipalComponentPartitioningTree<Point_, Payload_>::AddPoint(
-    not_null<Point const*> const point) {
+    Point const& point) {
   points_.push_back(point);
   if (points_.size() == 1) {
     Initialize();
@@ -231,7 +230,7 @@ ComputePrincipalComponentForm(
     typename Indices::iterator const end) const {
   DisplacementSymmetricBilinearForm result;
   for (auto it = begin; it != end; ++it) {
-    result += SymmetricSquare(*points_[it->index] - origin_);
+    result += SymmetricSquare(points_[it->index] - origin_);
   }
   return result;
 }
@@ -259,7 +258,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     std::int32_t const index,
     Internal const& internal) {
   NormType const projection = InnerProduct(
-      internal.principal_axis, *points_[index] - internal.anchor);
+      internal.principal_axis, points_[index] - internal.anchor);
   if (projection < NormType{}) {
     Add(index, *internal.children.first);
   } else {
@@ -421,7 +420,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   // If `Optimize()` was called, this loop accesses sequential data in
   // `displacements_` and should be cache-friendly.
   for (auto const index : leaf) {
-    auto const distance² = (*points_[index] - point).Norm²();
+    auto const distance² = (points_[index] - point).Norm²();
     // Skip the points that are filtered out.  Note that *all* the points may be
     // filtered out.  The order of comparisons matters because `min_distance²`
     // is typically small.

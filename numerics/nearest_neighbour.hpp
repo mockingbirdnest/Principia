@@ -49,8 +49,8 @@ class PrincipalComponentPartitioningTree {
 
   using Filter = std::conditional_t<
       has_payload,
-      std::function<bool(Point const*, std::optional<Payload> const&)>,
-      std::function<bool(Point const*)>>;
+      std::function<bool(Point const&, std::optional<Payload> const&)>,
+      std::function<bool(Point const&)>>;
 
   // We stop subdividing a cell when it contains `max_points_per_cell` or fewer
   // points.  This API takes (non-owning) pointers so that the client can relate
@@ -58,14 +58,14 @@ class PrincipalComponentPartitioningTree {
   // vector `points` may be empty, in which case the object is not usable until
   // the first point has been `Add`ed.
   PrincipalComponentPartitioningTree(
-      std::vector<not_null<Point const*>> const& points,
+      std::vector<Point> const& points,
       std::int64_t max_points_per_cell);
 
   // Adds a new point to the tree, restructuring it as needed.  Optionally
   // supports adding a payload, if the tree has one.  This is the only way to
   // add payloads.
-  void Add(not_null<Point const*> point);
-  void Add(not_null<Point const*> point, Payload const& payload)
+  void Add(Point const& point);
+  void Add(Point const& point, Payload const& payload)
     requires has_payload;
 
   // May be called after all points have been added to the tree to optimize the
@@ -79,9 +79,10 @@ class PrincipalComponentPartitioningTree {
   // no such point is found.
   // Beware! if `filter` rejects many points and `radius` is large, the search
   // may end up looking at the entire tree.
-  Point const* FindNearestNeighbour(Point const& point,
-                                    NormType const& radius,
-                                    Filter const& filter = nullptr) const;
+  std::optional<Point> FindNearestNeighbour(
+      Point const& point,
+      NormType const& radius,
+      Filter const& filter = nullptr) const;
 
  private:
   // A frame used to compute the principal components.
@@ -154,7 +155,7 @@ class PrincipalComponentPartitioningTree {
 
   // Adds `point` to the tree, initializing it if needed.  The caller must take
   // care of managing `payloads_` if needed.
-  void AddPoint(not_null<Point const*> point);
+  void AddPoint(Point const& point);
 
   // Adds the point at the given `index` by first finding the location in the
   // subtree rooted at `node` where it would be located, and then adding it to
@@ -198,7 +199,7 @@ class PrincipalComponentPartitioningTree {
             bool* must_check_other_side) const;
 
   // Construction parameters.
-  std::vector<not_null<Point const*>> points_;
+  std::vector<Point> points_;
   std::int64_t const max_points_per_cell_;
 
   // All the nodes in the tree are allocated in this `deque`.  This gives us a
