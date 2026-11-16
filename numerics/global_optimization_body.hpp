@@ -163,7 +163,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   // neighbour is found.
   struct ScheduleEntry {
     Norm²Type distance_to_lower_nearest_neighbour²;
-    Argument point;
+    std::int64_t index;
     Scalar value;
   };
   std::vector<ScheduleEntry> schedule;
@@ -254,7 +254,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       point_neighbourhoods.Add(pointₖ, fₖ);
       schedule.push_back(ScheduleEntry{
           .distance_to_lower_nearest_neighbour² = Infinity<Norm²Type>,
-          .point = pointₖ,
+          .index = static_cast<std::int64_t>(points.size()),
           .value = fₖ});
       points.push_back(std::move(pointₖ));
     }
@@ -275,7 +275,8 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
           return entry.distance_to_lower_nearest_neighbour² <= rₖ²;
         });
     for (auto it = partition_it; it != schedule.end(); ++it) {
-      auto const& [_, xᵢ, f_xᵢ] = *it;
+      auto const& [_, i, f_xᵢ] = *it;
+      auto const& xᵢ = points[i];
 
       // This is the test xᵢ ∈ X*υ from [RT87b], p. 60.  Note that for some of
       // the points that short-circuit here, f_xᵢ won't ever be used.
