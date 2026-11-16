@@ -40,7 +40,7 @@ class PrincipalComponentPartitioningTree {
   using Point = Point_;
   using Payload = Payload_;
 
-  // A displacement from the centroid.
+  // A displacement between two points.
   using Displacement = Difference<Point>;
 
   // The type of the norm (and its square) of `Displacement`.
@@ -110,7 +110,7 @@ class PrincipalComponentPartitioningTree {
   // The declarations of the tree structure.
   struct Internal;
 
-  using Leaf = std::vector<std::int32_t>;  // Indices in `displacements_`.
+  using Leaf = std::vector<std::int32_t>;  // Indices in `points_`.
 
   using Node = std::variant<Internal, Leaf>;
 
@@ -118,23 +118,21 @@ class PrincipalComponentPartitioningTree {
 
   struct Internal {
     Axis principal_axis;
-    Displacement anchor;
+    Point anchor;
     Children children;
   };
 
   // The construction of the tree uses this type, which contains an index in the
-  // `displacements_` array and storage for the projection of the corresponding
-  // `Displacement` on the current principal axis.  We use 32-bit integers
-  // because these objects will be swapped a lot, so the less memory we touch
-  // the better.
+  // `points_` array and storage for the projection of the corresponding `Point`
+  // on the current principal axis.  We use 32-bit integers because these
+  // objects will be swapped a lot, so the less memory we touch the better.
   struct Index {
     std::int32_t index;
     NormType projection;
   };
   using Indices = std::vector<Index>;
 
-  // Called when the first point is added to the tree to initialize the
-  // `centroid_` and the `root_`.
+  // Called when the first point is added to the tree to initialize the `root_`.
   void Initialize();
 
   // Constructs a tree for the displacements given by the index range
@@ -149,7 +147,7 @@ class PrincipalComponentPartitioningTree {
                             Node* node = nullptr);
 
   // Returns the symmetric bilinear form that represents the "inertia" of the
-  // displacements given by the index range [begin, end[.
+  // points given by the index range [begin, end[.
   DisplacementSymmetricBilinearForm ComputePrincipalComponentForm(
       typename Indices::iterator begin,
       typename Indices::iterator end) const;
@@ -167,12 +165,12 @@ class PrincipalComponentPartitioningTree {
   void Add(std::int32_t index, Internal const& internal);
   void Add(std::int32_t index, Leaf& leaf, not_null<Node*> node);
 
-  // Finds the point closest to `displacement` in the `node` and its children,
-  // and returns its index and its (squared) distance.  If `displacement` is
-  // close to the separator plane of `parent`, sets `must_check_other_side` to
-  // true.  That pointer may be null if the client doesn't want to check this
-  // condition.  `parent` should be null for the root of the tree.
-  void Find(Displacement const& displacement,
+  // Finds the point closest to `point` in the `node` and its children, and
+  // returns its index and its (squared) distance.  If `point` is close to the
+  // separator plane of `parent`, sets `must_check_other_side` to true.  That
+  // pointer may be null if the client doesn't want to check this condition.
+  // `parent` should be null for the root of the tree.
+  void Find(Point const& point,
             Norm²Type const& radius²,
             Filter const& filter,
             Internal const* parent,
@@ -182,7 +180,7 @@ class PrincipalComponentPartitioningTree {
             bool* must_check_other_side) const;
 
   // Specializations for internal nodes and leaves, respectively.
-  void Find(Displacement const& displacement,
+  void Find(Point const& point,
             Norm²Type const& radius²,
             Filter const& filter,
             Internal const* parent,
@@ -190,7 +188,7 @@ class PrincipalComponentPartitioningTree {
             Norm²Type& min_distance²,
             std::int32_t& min_index,
             bool* must_check_other_side) const;
-  void Find(Displacement const& displacement,
+  void Find(Point const& point,
             Norm²Type const& radius²,
             Filter const& filter,
             Internal const* parent,
@@ -202,14 +200,6 @@ class PrincipalComponentPartitioningTree {
   // Construction parameters.
   std::vector<not_null<Point const*>> points_;
   std::int64_t const max_points_per_cell_;
-
-  // The centroid of the points passed at construction, or the first point
-  // passed to `Add` if no point is passed at construction.
-  Point centroid_;
-
-  // The displacements from the centroid.  The indices are the same as for
-  // `points_`.
-  std::vector<Displacement> displacements_;
 
   // All the nodes in the tree are allocated in this `deque`.  This gives us a
   // bit of locality (because `deque` has internal arrays) without expensive
@@ -225,6 +215,8 @@ class PrincipalComponentPartitioningTree {
   Payloads payloads_;
 
   Node* root_ = nullptr;
+
+  static Point const origin_;
 };
 
 }  // namespace internal
