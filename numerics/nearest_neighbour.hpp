@@ -36,16 +36,16 @@ template<euclidean Point_, typename Payload_ = std::nullopt_t>
 class PrincipalComponentPartitioningTree {
   static constexpr bool has_payload = !std::is_same_v<Payload_, std::nullopt_t>;
 
+  // A displacement between two points.
+  using Displacement = Difference<Point_>;
+
  public:
   using Point = Point_;
   using Payload = Payload_;
 
-  // A displacement between two points.
-  using Displacement = Difference<Point>;
 
   // The type of the norm (and its square) of `Displacement`.
   using NormType = NormType<Displacement>;
-  using Norm²Type = Norm²Type<Displacement>;
 
   using Filter = std::conditional_t<
       has_payload,
@@ -53,10 +53,7 @@ class PrincipalComponentPartitioningTree {
       std::function<bool(Point const&)>>;
 
   // We stop subdividing a cell when it contains `max_points_per_cell` or fewer
-  // points.  This API takes (non-owning) pointers so that the client can relate
-  // the points given here to the ones it gets from `FindNearestNeighbour`.  The
-  // vector `points` may be empty, in which case the object is not usable until
-  // the first point has been `Add`ed.
+  // points.
   PrincipalComponentPartitioningTree(
       std::vector<Point> const& points,
       std::int64_t max_points_per_cell);
@@ -75,8 +72,8 @@ class PrincipalComponentPartitioningTree {
   void Optimize();
 
   // Finds the nearest neighbour of the given `point` at a distance less than or
-  // equal to `radius`, and for which `filter` returns true.  Returns nullptr if
-  // no such point is found.
+  // equal to `radius`, and for which `filter` returns true.  Returns
+  // `std::nullopt` if no such point is found.
   // Beware! if `filter` rejects many points and `radius` is large, the search
   // may end up looking at the entire tree.
   std::optional<Point> FindNearestNeighbour(
@@ -85,6 +82,8 @@ class PrincipalComponentPartitioningTree {
       Filter const& filter = nullptr) const;
 
  private:
+  using Norm²Type = Norm²Type<Displacement>;
+
   // A frame used to compute the principal components.
   using PrincipalComponentsFrame =
       Frame<struct PrincipalComponentsFrameTag>;

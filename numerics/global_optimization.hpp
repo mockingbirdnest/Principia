@@ -39,6 +39,7 @@ template<homogeneous_field Scalar,
   requires(std::totally_ordered<Scalar>)
 class MultiLevelSingleLinkage {
  public:
+  using Arguments = std::vector<Argument>;
   using NormType = NormType<Difference<Argument>>;
 
   // A parallelepiped defined by its centre and the displacements of three
@@ -66,28 +67,20 @@ class MultiLevelSingleLinkage {
   // Beware!  The Bayesian stopping rule is typically more efficient, but it is
   // only technically correct (the best kind of correct) if the relative sizes
   // of the regions of attraction follow a uniform distribution.
-  std::vector<Argument> FindGlobalMaxima(
-      std::int64_t points_per_round,
-      std::optional<std::int64_t> number_of_rounds,
-      NormType local_search_tolerance);
+  Arguments FindGlobalMaxima(std::int64_t points_per_round,
+                             std::optional<std::int64_t> number_of_rounds,
+                             NormType local_search_tolerance);
 
   // Same as above, but minimization instead of maximization.
-  std::vector<Argument> FindGlobalMinima(
-      std::int64_t points_per_round,
-      std::optional<std::int64_t> number_of_rounds,
-      NormType local_search_tolerance);
+  Arguments FindGlobalMinima(std::int64_t points_per_round,
+                             std::optional<std::int64_t> number_of_rounds,
+                             NormType local_search_tolerance);
 
  private:
   using Norm²Type = Norm²Type<Difference<Argument>>;
 
-  // We need pointer stability for the arguments as we store pointers, e.g., in
-  // PCP trees.  We generally cannot `reserve` because we don't know the final
-  // size of the vector, hence the `unique_ptr`s.
-  //TODO(phl)comment
-  using Arguments = std::vector<Argument>;
-
   // Implementation method for `FindGlobalMaxima` and `FindGlobalMinima`.
-  std::vector<Argument> FindGlobalMinima(
+  Arguments FindGlobalMinima(
       std::int64_t points_per_round,
       std::optional<std::int64_t> number_of_rounds,
       NormType local_search_tolerance,
