@@ -296,10 +296,10 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Add(
     // than `max_points_per_cell_` elements, the number that we preallocated.
     Indices indices;
     indices.reserve(max_points_per_cell_ + 1);
-    indices.push_back({.index = index, .projection = NormType{}});
     for (const std::int32_t index : leaf) {
       indices.push_back({.index = index, .projection = NormType{}});
     }
+    indices.push_back({.index = index, .projection = NormType{}});
     // Reuse the `node` and turn it into an `Internal` node.
     auto const subtree = BuildTree(indices.begin(),
                                    indices.end(),
