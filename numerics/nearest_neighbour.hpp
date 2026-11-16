@@ -43,8 +43,7 @@ class PrincipalComponentPartitioningTree {
   using Point = Point_;
   using Payload = Payload_;
 
-
-  // The type of the norm (and its square) of `Displacement`.
+  // The type of the norm of `Displacement`.
   using NormType = NormType<Displacement>;
 
   using Filter = std::conditional_t<

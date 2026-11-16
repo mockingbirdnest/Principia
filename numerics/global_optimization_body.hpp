@@ -388,7 +388,7 @@ template<homogeneous_field Scalar,
          homogeneous_euclidean_space<Scalar> Argument,
          int dimensions>
   requires(std::totally_ordered<Scalar>)
-std::vector<Argument>
+typename MultiLevelSingleLinkage<Scalar, Argument, dimensions>::Arguments
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
     std::int64_t const values_per_round) {
   Arguments arguments;

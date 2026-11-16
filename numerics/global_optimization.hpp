@@ -80,12 +80,11 @@ class MultiLevelSingleLinkage {
   using Norm²Type = Norm²Type<Difference<Argument>>;
 
   // Implementation method for `FindGlobalMaxima` and `FindGlobalMinima`.
-  Arguments FindGlobalMinima(
-      std::int64_t points_per_round,
-      std::optional<std::int64_t> number_of_rounds,
-      NormType local_search_tolerance,
-      VectorField<Scalar, Argument> const& f,
-      GradientField<Scalar, Argument> const& grad_f);
+  Arguments FindGlobalMinima(std::int64_t points_per_round,
+                             std::optional<std::int64_t> number_of_rounds,
+                             NormType local_search_tolerance,
+                             VectorField<Scalar, Argument> const& f,
+                             GradientField<Scalar, Argument> const& grad_f);
 
   // Return true iff `x` is sufficiently close to a known stationary point.
   static bool IsCloseToKnownStationaryPoint(
