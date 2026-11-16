@@ -86,6 +86,9 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
+    // In this file the difference between MSVC and Clang comes from the fact
+    // that the behaviour of `std::uniform_real_distribution<>` is
+    // implementation-defined.
     EXPECT_THAT(function_invocations,
                 AnyOf(Eq(1264),    // MSVC.
                       Eq(1243)));  // Clang.
