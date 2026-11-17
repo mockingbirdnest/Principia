@@ -351,7 +351,7 @@ Rotation<FromFrame, ToFrame> Rotation<FromFrame, ToFrame>::ReadFromMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> Rotation<FromFrame, ToFrame>::operator()(
     R3Element<Scalar> const& r3_element) const {
   double const real_part = quaternion_.real_part();

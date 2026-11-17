@@ -297,8 +297,7 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& left,
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
     R3Element<RScalar> const& right) {
@@ -317,8 +316,7 @@ R3Element<Product<LScalar, RScalar>> operator*(
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> operator*(R3Element<LScalar> const& left,
                                                RScalar const& right) {
 #if PRINCIPIA_USE_AVX()
@@ -336,8 +334,7 @@ R3Element<Product<LScalar, RScalar>> operator*(R3Element<LScalar> const& left,
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Quotient<LScalar, RScalar>> operator/(R3Element<LScalar> const& left,
                                                 RScalar const& right) {
 #if PRINCIPIA_USE_AVX()
@@ -355,8 +352,7 @@ R3Element<Quotient<LScalar, RScalar>> operator/(R3Element<LScalar> const& left,
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
@@ -376,8 +372,7 @@ R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
@@ -397,8 +392,7 @@ R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
@@ -418,8 +412,7 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
@@ -439,8 +432,7 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
@@ -460,8 +452,7 @@ R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,
@@ -481,8 +472,7 @@ R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
@@ -502,8 +492,7 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
 #endif
 }
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,
@@ -582,7 +571,7 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> Cross(
     R3Element<LScalar> const& left,
     R3Element<RScalar> const& right) {
@@ -592,14 +581,14 @@ R3Element<Product<LScalar, RScalar>> Cross(
       left.x * right.y - left.y * right.x);
 }
 
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
                               R3Element<RScalar> const& right) {
   return left.x * right.x + left.y * right.y + left.z * right.z;
 }
 
 // Implementation from [Kah06], §12 "Mangled Angles", p. 47.
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 Angle AngleBetween(R3Element<LScalar> const& left,
                    R3Element<RScalar> const& right) {
   auto const left_norm_right = left * right.Norm();

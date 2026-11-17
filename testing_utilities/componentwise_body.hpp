@@ -190,7 +190,7 @@ DescribeNegationTo(std::ostream* out) const {
   y_matcher_.DescribeNegationTo(out);
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 ComponentwiseMatcher3Impl<R3Element<Scalar> const&>::
 ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
@@ -200,7 +200,7 @@ ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
       y_matcher_(SafeMatcherCast<Scalar>(y_matcher)),
       z_matcher_(SafeMatcherCast<Scalar>(z_matcher)) {}
 
-template<typename Scalar>
+template<quantity Scalar>
 bool ComponentwiseMatcher3Impl<R3Element<Scalar> const&>::
 MatchAndExplain(R3Element<Scalar> const& actual,
                 MatchResultListener* listener) const {
@@ -219,7 +219,7 @@ MatchAndExplain(R3Element<Scalar> const& actual,
   return x_matches && y_matches && z_matches;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 void ComponentwiseMatcher3Impl<R3Element<Scalar> const&>::
 DescribeTo(std::ostream* out) const {
   *out << "x ";
@@ -230,7 +230,7 @@ DescribeTo(std::ostream* out) const {
   z_matcher_.DescribeTo(out);
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 void ComponentwiseMatcher3Impl<R3Element<Scalar> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "x ";

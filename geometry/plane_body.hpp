@@ -31,7 +31,7 @@ std::array<Vector<double, Frame>, 2> Plane<Frame>::UnitNormals() const {
 }
 
 template<typename Frame>
-template<typename Scalar>
+template<quantity Scalar>
 Plane<Frame>::Plane(R3Element<Scalar> const& r3_element)
     : unit_(Normalize(r3_element)) {}
 
