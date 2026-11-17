@@ -6,6 +6,7 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/sign.hpp"
 #include "quantities/concepts.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {

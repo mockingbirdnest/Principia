@@ -10,7 +10,6 @@
 #include "base/not_constructible.hpp"
 #include "geometry/grassmann.hpp"
 #include "numerics/elementary_functions.hpp"
-#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -21,7 +20,6 @@ namespace internal {
 using namespace principia::base::_not_constructible;
 using namespace principia::geometry::_grassmann;
 using namespace principia::numerics::_elementary_functions;
-using namespace principia::base::_concepts;
 using namespace principia::quantities::_quantities;
 
 template<typename Vector>
