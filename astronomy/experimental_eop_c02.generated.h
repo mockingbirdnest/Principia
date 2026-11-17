@@ -1,17 +1,4 @@
-constexpr std::array<ExperimentalEOPC02Entry, 730> experimental_eop_c02 = {{
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
-  ExperimentalEOPC02Entry(     0.000,   0.0000000 * Second),
+constexpr std::array experimental_eop_c02{
   ExperimentalEOPC02Entry(-10447.000,  25.8318430 * Second),
   ExperimentalEOPC02Entry(-10347.000,  25.9013740 * Second),
   ExperimentalEOPC02Entry(-10247.000,  25.9708540 * Second),
@@ -729,4 +716,4 @@ constexpr std::array<ExperimentalEOPC02Entry, 730> experimental_eop_c02 = {{
   ExperimentalEOPC02Entry( 60953.000, -36.9281890 * Second),
   ExperimentalEOPC02Entry( 61053.000, -36.9329190 * Second),
   ExperimentalEOPC02Entry( 61153.000, -36.9592800 * Second),
-}};
+};

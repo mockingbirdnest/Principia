@@ -1,4 +1,4 @@
-constexpr std::array<EOPC04Entry, 23666> eop_c04 = {{
+constexpr std::array eop_c04{
   EOPC04Entry(1962'01'01,  0.0326338 * Second),
   EOPC04Entry(1962'01'02,  0.0320547 * Second),
   EOPC04Entry(1962'01'03,  0.0315526 * Second),
@@ -23665,4 +23665,5 @@ constexpr std::array<EOPC04Entry, 23666> eop_c04 = {{
   EOPC04Entry(2026'10'15, -0.0366648 * Second),
   EOPC04Entry(2026'10'16, -0.0371760 * Second),
   EOPC04Entry(2026'10'17, -0.0377365 * Second),
-}};
+  EOPC04Entry(2026'10'18, -0.0383755 * Second),
+};
