@@ -9,7 +9,6 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/matrix_computations.hpp"
-#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -22,7 +21,6 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
-using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 
 template<typename FromFrame, typename ToFrame, quantity Weight>
