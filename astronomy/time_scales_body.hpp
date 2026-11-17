@@ -68,7 +68,7 @@ constexpr Instant From北斗Time(Time const& 北斗) {
 
 // Utilities for modern UTC (since 1972).
 
-constexpr std::array<int, (2023 - 1972) * 2> leap_seconds = {{
+constexpr std::array leap_seconds{
     +1, +1,  // 1972
     +0, +1,  // 1973
     +0, +1,  // 1974
@@ -114,23 +114,18 @@ constexpr std::array<int, (2023 - 1972) * 2> leap_seconds = {{
     +0, +0,  // 2014
     +1, +0,  // 2015
     +0, +1,  // 2016
-    +0, +0,  // 2017
-    +0, +0,  // 2018
-    +0, +0,  // 2019
-    +0, +0,  // 2020
-    +0, +0,  // 2021
-    +0, +0,  // 2022
-}};
+};
 
 // Returns +1 if a positive leap second was inserted at the end of the given
 // `month` of the given `year`, 0 otherwise.
 constexpr int LeapSecond(int const year, int const month) {
+  if (year > 2016) {
+    return 0;
+  }
   if (month == 6) {
-    CONSTEXPR_CHECK((year - 1972) * 2 < leap_seconds.size());
     return leap_seconds[(year - 1972) * 2];
   } else {
     CONSTEXPR_CHECK(month == 12);
-    CONSTEXPR_CHECK((year - 1972) * 2 + 1 < leap_seconds.size());
     return leap_seconds[(year - 1972) * 2 + 1];
   }
 }

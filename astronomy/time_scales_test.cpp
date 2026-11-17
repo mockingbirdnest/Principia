@@ -67,15 +67,8 @@ TEST_F(TimeScalesDeathTest, BeforeRange) {
 }
 
 TEST_F(TimeScalesDeathTest, WarWasBeginning) {
-  EXPECT_DEATH("2101-01-01T00:00:00"_UTC, "leap_seconds.size");
   EXPECT_DEATH("2101-01-01T00:00:00"_UT1,
                "TimeSince20000101T120000Z.ut1. < eop_c04.back...ut1..");
-}
-
-TEST_F(TimeScalesDeathTest, FirstUnknownUTC) {
-  EXPECT_DEATH("2023-06-30T23:59:60"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2023-06-30T24:00:00"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2023-07-01T00:00:00"_UTC, "leap_seconds.size");
 }
 
 TEST_F(TimeScalesDeathTest, StretchyLeaps) {
@@ -160,6 +153,11 @@ TEST_F(TimeScalesTest, LeapSecond) {
   EXPECT_THAT("2016-12-31T23:59:59"_UTC - "2016-12-31T23:59:59"_TAI,
               Eq(36 * Second));
   EXPECT_THAT("2017-01-01T00:00:00"_UTC - "2017-01-01T00:00:00"_TAI,
+              Eq(37 * Second));
+}
+
+TEST_F(TimeScalesTest, NoMoreLeapSeconds) {
+  EXPECT_THAT("2101-01-01T00:00:00"_UTC - "2101-01-01T00:00:00"_TAI,
               Eq(37 * Second));
 }
 
