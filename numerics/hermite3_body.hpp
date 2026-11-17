@@ -37,7 +37,7 @@ struct Splitter<Q> {
   }
 };
 
-template<typename Scalar>
+template<quantity Scalar>
 struct Splitter<R3Element<Scalar>> {
   static constexpr std::int64_t dimension = 3;
   using Value = Scalar;

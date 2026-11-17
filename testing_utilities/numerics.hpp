@@ -5,6 +5,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -15,6 +16,7 @@ namespace internal {
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_r3_element;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 
 template<typename Scalar>
@@ -37,7 +39,7 @@ Quantity<Dimensions> AbsoluteError(Quantity<Dimensions> const& expected,
                                    Quantity<Dimensions> const& actual);
 
 // Uses `R3Element::Norm`.
-template<typename Scalar>
+template<quantity Scalar>
 Scalar AbsoluteError(R3Element<Scalar> const& expected,
                      R3Element<Scalar> const& actual);
 

@@ -27,7 +27,7 @@ using namespace principia::quantities::_concepts;
 // An `R3x3Matrix` is an element of the associative algebra of 3-by-3 matrices
 // over `Scalar`.  `Scalar` should be a vector space over ℝ, represented by
 // `double`.
-template<typename Scalar>
+template<quantity Scalar>
 class R3x3Matrix final {
  public:
   R3x3Matrix() = default;
@@ -62,7 +62,7 @@ class R3x3Matrix final {
 
   void QRDecomposition(R3x3Matrix<double>& Q, R3x3Matrix& R) const;
 
-  template<typename RScalar>
+  template<quantity RScalar>
   R3Element<Quotient<RScalar, Scalar>> Solve(
       R3Element<RScalar> const& rhs) const;
 
@@ -131,66 +131,66 @@ class R3x3Matrix final {
 #endif
 };
 
-template<typename Scalar>
+template<quantity Scalar>
 R3x3Matrix<Scalar> operator+(R3x3Matrix<Scalar> const& right);
-template<typename Scalar>
+template<quantity Scalar>
 R3x3Matrix<Scalar> operator-(R3x3Matrix<Scalar> const& right);
 
-template<typename Scalar>
+template<quantity Scalar>
 R3x3Matrix<Scalar> operator+(R3x3Matrix<Scalar> const& left,
                              R3x3Matrix<Scalar> const& right);
-template<typename Scalar>
+template<quantity Scalar>
 R3x3Matrix<Scalar> operator-(R3x3Matrix<Scalar> const& left,
                              R3x3Matrix<Scalar> const& right);
 
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<LScalar> const& left,
     R3x3Matrix<RScalar> const& right);
 
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<LScalar> const& left,
     R3Element<RScalar> const& right);
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> operator*(
     R3Element<LScalar> const& left,
     R3x3Matrix<RScalar> const& right);
 
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
   requires convertible_to_quantity<LScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
     R3x3Matrix<RScalar> const& right);
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
   requires convertible_to_quantity<RScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(R3x3Matrix<LScalar> const& left,
                                                 RScalar const& right);
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
   requires convertible_to_quantity<RScalar>
 R3x3Matrix<Quotient<LScalar, RScalar>> operator/(
     R3x3Matrix<LScalar> const& left,
     RScalar const& right);
 
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 R3x3Matrix<Product<LScalar, RScalar>> KroneckerProduct(
     R3Element<LScalar> const& left,
     R3Element<RScalar> const& right);
 
-template<typename Scalar>
+template<quantity Scalar>
 bool operator==(R3x3Matrix<Scalar> const& left,
                 R3x3Matrix<Scalar> const& right);
-template<typename Scalar>
+template<quantity Scalar>
 bool operator!=(R3x3Matrix<Scalar> const& left,
                 R3x3Matrix<Scalar> const& right);
 
-template<typename Scalar>
+template<quantity Scalar>
 bool IsFinite(R3x3Matrix<Scalar> const& r3x3_matrix);
 
-template<typename Scalar>
+template<quantity Scalar>
 std::string DebugString(R3x3Matrix<Scalar> const& r3x3_matrix);
 
-template<typename Scalar>
+template<quantity Scalar>
 std::ostream& operator<<(std::ostream& out,
                          R3x3Matrix<Scalar> const& r3x3_matrix);
 

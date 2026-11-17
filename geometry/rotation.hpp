@@ -10,6 +10,7 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -39,6 +40,7 @@ using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 
 // `EulerAngles` and `CardanoAngles` have values in binary-coded ternary
@@ -264,7 +266,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
     requires serializable<FromFrame> && serializable<ToFrame>;
 
  private:
-  template<typename Scalar>
+  template<quantity Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 
   Quaternion quaternion_;

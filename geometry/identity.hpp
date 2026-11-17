@@ -7,6 +7,7 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/concepts.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -30,6 +31,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_concepts;
 
 // The identity map.
 template<typename FromFrame, typename ToFrame>
@@ -79,7 +81,7 @@ class Identity : public LinearMap<Identity<FromFrame, ToFrame>,
     requires serializable<FromFrame> && serializable<ToFrame>;
 
  private:
-  template<typename Scalar>
+  template<quantity Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 };
 

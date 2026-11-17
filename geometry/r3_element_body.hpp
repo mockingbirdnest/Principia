@@ -26,19 +26,19 @@ using namespace principia::quantities::_serialization;
 using namespace principia::quantities::_si;
 
 // We want zero initialization here, so the default constructor won't do.
-template<typename Scalar>
+template<quantity Scalar>
 constexpr R3Element<Scalar>::R3Element() : x(), y(), z() {
   static_assert(std::is_standard_layout_v<R3Element>,
                 "R3Element has a nonstandard layout");
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 constexpr R3Element<Scalar>::R3Element(uninitialized_t) {
   static_assert(std::is_standard_layout_v<R3Element>,
                 "R3Element has a nonstandard layout");
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar>::R3Element(Scalar const& x, Scalar const& y, Scalar const& z)
 #if PRINCIPIA_USE_AVX()
     : xyzt(_mm256_set_pd(0.0,
@@ -54,10 +54,10 @@ R3Element<Scalar>::R3Element(Scalar const& x, Scalar const& y, Scalar const& z)
 }
 
 #if PRINCIPIA_USE_AVX()
-template<typename Scalar>
+template<quantity Scalar>
 inline R3Element<Scalar>::R3Element(__m256d xyzt) : xyzt(xyzt) {}
 #else
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar>::R3Element(__m128d const xy, __m128d const zt)
     : xy(xy), zt(zt) {
   static_assert(std::is_standard_layout_v<R3Element>,
@@ -65,7 +65,7 @@ R3Element<Scalar>::R3Element(__m128d const xy, __m128d const zt)
 }
 #endif
 
-template<typename Scalar>
+template<quantity Scalar>
 Scalar& R3Element<Scalar>::operator[](int const index) {
   switch (index) {
     case 0:
@@ -80,7 +80,7 @@ Scalar& R3Element<Scalar>::operator[](int const index) {
   }
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 Scalar const& R3Element<Scalar>::operator[](
     int const index) const {
   switch (index) {
@@ -96,7 +96,7 @@ Scalar const& R3Element<Scalar>::operator[](
   }
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator+=(
     R3Element<Scalar> const& right) {
 #if PRINCIPIA_USE_AVX()
@@ -112,7 +112,7 @@ R3Element<Scalar>& R3Element<Scalar>::operator+=(
   return *this;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator-=(
     R3Element<Scalar> const& right) {
 #if PRINCIPIA_USE_AVX()
@@ -128,7 +128,7 @@ R3Element<Scalar>& R3Element<Scalar>::operator-=(
   return *this;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
 #if PRINCIPIA_USE_AVX()
   __m256d const right_256d = ToM256D(right);
@@ -145,7 +145,7 @@ R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
   return *this;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
 #if PRINCIPIA_USE_AVX()
   __m256d const right_256d = ToM256D(right);
@@ -162,17 +162,17 @@ R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
   return *this;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 Scalar R3Element<Scalar>::Norm() const {
   return Sqrt(Norm²());
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 Square<Scalar> R3Element<Scalar>::Norm²() const {
   return x * x + y * y + z * z;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 SphericalCoordinates<Scalar> R3Element<Scalar>::ToSpherical() const {
   SphericalCoordinates<Scalar> result;
   result.radius = Norm();
@@ -181,7 +181,7 @@ SphericalCoordinates<Scalar> R3Element<Scalar>::ToSpherical() const {
   return result;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 template<typename S>
 R3Element<Scalar> R3Element<Scalar>::OrthogonalizationAgainst(
     R3Element<S> const& r3_element) const {
@@ -189,7 +189,7 @@ R3Element<Scalar> R3Element<Scalar>::OrthogonalizationAgainst(
   return *this - Dot(*this, r3_element_normalized) * r3_element_normalized;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 void R3Element<Scalar>::WriteToMessage(
     not_null<serialization::R3Element*> const message) const {
   using Serializer =
@@ -199,7 +199,7 @@ void R3Element<Scalar>::WriteToMessage(
   Serializer::WriteToMessage(z, message->mutable_z());
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
     serialization::R3Element const& message) {
   using Serializer =
@@ -209,7 +209,7 @@ R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
           Serializer::ReadFromMessage(message.z())};
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() const {
   auto const [sin_latitude, cos_latitude] = SinCos(latitude);
   auto const [sin_longitude, cos_longitude] = SinCos(longitude);
@@ -218,7 +218,7 @@ R3Element<Scalar> SphericalCoordinates<Scalar>::ToCartesian() const {
           radius * sin_latitude};
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 void SphericalCoordinates<Scalar>::WriteToMessage(
     not_null<serialization::SphericalCoordinates*> const message) const {
   radius.WriteToMessage(message->mutable_radius());
@@ -226,7 +226,7 @@ void SphericalCoordinates<Scalar>::WriteToMessage(
   longitude.WriteToMessage(message->mutable_longitude());
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 SphericalCoordinates<Scalar> SphericalCoordinates<Scalar>::ReadFromMessage(
     serialization::SphericalCoordinates const& message) {
   SphericalCoordinates<Scalar> result;
@@ -236,7 +236,7 @@ SphericalCoordinates<Scalar> SphericalCoordinates<Scalar>::ReadFromMessage(
   return result;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
                                                      Angle const& latitude,
                                                      Angle const& longitude) {
@@ -247,7 +247,7 @@ SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
   return result;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 std::ostream& operator<<(
     std::ostream& out,
     SphericalCoordinates<Scalar> const& spherical_coordinates) {
@@ -257,17 +257,17 @@ std::ostream& operator<<(
   return out;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
   return R3Element<Scalar>(+right.x, +right.y, +right.z);
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> operator-(R3Element<Scalar> const& right) {
   return R3Element<Scalar>(-right.x, -right.y, -right.z);
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right) {
 #if PRINCIPIA_USE_AVX()
@@ -282,7 +282,7 @@ R3Element<Scalar> operator+(R3Element<Scalar> const& left,
 #endif
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> operator-(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right) {
 #if PRINCIPIA_USE_AVX()
@@ -523,19 +523,19 @@ R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
 #endif
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 constexpr bool operator==(R3Element<Scalar> const& left,
                           R3Element<Scalar> const& right) {
   return left.x == right.x && left.y == right.y && left.z == right.z;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 constexpr bool operator!=(R3Element<Scalar> const& left,
                           R3Element<Scalar> const& right) {
   return left.x != right.x || left.y != right.y || left.z != right.z;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
   Scalar const norm = r3_element.Norm();
 #ifdef _DEBUG
@@ -544,7 +544,7 @@ R3Element<double> Normalize(R3Element<Scalar> const& r3_element) {
   return r3_element / norm;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element) {
   Scalar const norm = r3_element.Norm();
   if (norm == Scalar()) {
@@ -555,14 +555,14 @@ R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element) {
   }
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 bool IsFinite(R3Element<Scalar> const& r3_element) {
   return quantities::_quantities::IsFinite(r3_element.x) &&
          quantities::_quantities::IsFinite(r3_element.y) &&
          quantities::_quantities::IsFinite(r3_element.z);
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element) {
   using quantities::_quantities::DebugString;
   std::string result = "{";
@@ -575,7 +575,7 @@ std::string DebugString(R3Element<Scalar> const& r3_element) {
   return result;
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 std::ostream& operator<<(std::ostream& out,
                          R3Element<Scalar> const& r3_element) {
   out << DebugString(r3_element);

@@ -11,6 +11,7 @@
 #include "geometry/space.hpp"
 #include "gmock/gmock.h"
 #include "physics/degrees_of_freedom.hpp"
+#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace testing_utilities {
@@ -25,6 +26,7 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_rp2_point;
 using namespace principia::geometry::_space;
 using namespace principia::physics::_degrees_of_freedom;
+using namespace principia::quantities::_concepts;
 
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;
@@ -137,7 +139,7 @@ class ComponentwiseMatcher2Impl<RP2Point<Scalar, Frame> const&> final
 template<typename TripleType>
 class ComponentwiseMatcher3Impl;
 
-template<typename Scalar>
+template<quantity Scalar>
 class ComponentwiseMatcher3Impl<R3Element<Scalar> const&> final
     : public MatcherInterface<R3Element<Scalar> const&> {
  public:

@@ -17,6 +17,7 @@
 #include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/unbounded_arrays.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -34,6 +35,7 @@ using namespace principia::geometry::_rotation;
 using namespace principia::numerics::_double_precision;
 using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_unbounded_arrays;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 
 template<typename T>
@@ -70,10 +72,10 @@ class AlmostEqualsMatcher final {
                        testing::MatchResultListener* listener) const;
   bool MatchAndExplain(Complexification<double> actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar>
+  template<quantity Scalar>
   bool MatchAndExplain(R3Element<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar>
+  template<quantity Scalar>
   bool MatchAndExplain(R3x3Matrix<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
   bool MatchAndExplain(Quaternion const& actual,
