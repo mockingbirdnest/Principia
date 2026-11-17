@@ -8,12 +8,13 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/concepts.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE(TEMPLATE(typename Scalar,
+FORWARD_DECLARE(TEMPLATE(quantities::_concepts::convertible_to_quantity Scalar,
                          typename FromFrame,
                          typename ToFrame) class,
                 ConformalMap,
@@ -35,7 +36,7 @@ FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 FROM(signature),
                 INTO(orthogonal_map));
 FORWARD_DECLARE(
-    TEMPLATE(typename Scalar,
+    TEMPLATE(quantities::_concepts::quantity Scalar,
              typename Frame,
              template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm,
@@ -56,6 +57,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_concepts;
 
 // An orthogonal map between the inner product spaces `FromFrame` and
 // `ToFrame`, as well as the induced maps on the exterior algebra.
@@ -71,19 +73,19 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
 
   OrthogonalMap<ToFrame, FromFrame> Inverse() const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Bivector<Scalar, ToFrame> operator()(
       Bivector<Scalar, FromFrame> const& bivector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<typename Scalar,
+  template<quantity Scalar,
            template<typename, typename> typename Multivector>
   SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
@@ -126,7 +128,7 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
 
   template<typename From, typename To>
   friend class OrthogonalMap;
-  template<typename Scalar, typename From, typename To>
+  template<convertible_to_quantity Scalar, typename From, typename To>
   friend class _conformal_map::ConformalMap;
   template<typename From, typename To>
   friend class _identity::Identity;

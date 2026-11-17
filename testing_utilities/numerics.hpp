@@ -44,13 +44,13 @@ Scalar AbsoluteError(R3Element<Scalar> const& expected,
                      R3Element<Scalar> const& actual);
 
 // Uses Multivector.Norm().
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 Scalar AbsoluteError(
     Multivector<Scalar, Frame, rank> const& expected,
     Multivector<Scalar, Frame, rank> const& actual);
 
 // Uses the underlying multivector.
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Scalar AbsoluteError(
     Point<Multivector<Scalar, Frame, 1>> const& expected,
     Point<Multivector<Scalar, Frame, 1>> const& actual);
@@ -77,12 +77,12 @@ double RelativeError(Quantity<Dimensions> const& expected,
                      Quantity<Dimensions> const& actual);
 
 // Uses `R3Element::Norm`.
-template<typename Scalar>
+template<quantity Scalar>
 double RelativeError(R3Element<Scalar> const& expected,
                      R3Element<Scalar> const& actual);
 
 // Uses Multivector.Norm().
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 double RelativeError(Multivector<Scalar, Frame, rank> const& expected,
                      Multivector<Scalar, Frame, rank> const& actual);
 

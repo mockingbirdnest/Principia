@@ -8,14 +8,14 @@ namespace _plane {
 namespace internal {
 
 template<typename Frame>
-template<typename Scalar>
+template<quantity Scalar>
 Plane<Frame> Plane<Frame>::OrthogonalTo(
     Bivector<Scalar, Frame> const& binormal) {
   return Plane(binormal.coordinates());
 }
 
 template<typename Frame>
-template<typename Scalar>
+template<quantity Scalar>
 Plane<Frame> Plane<Frame>::OrthogonalTo(Vector<Scalar, Frame> const& normal) {
   return Plane(normal.coordinates());
 }
@@ -35,7 +35,7 @@ template<quantity Scalar>
 Plane<Frame>::Plane(R3Element<Scalar> const& r3_element)
     : unit_(Normalize(r3_element)) {}
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Vector<Scalar, Frame> Projection(Bivector<Scalar, Frame> const& bivector,
                                  Plane<Frame> const& plane) {
   auto const some_normal = plane.UnitNormals()[0];
@@ -44,7 +44,7 @@ Vector<Scalar, Frame> Projection(Bivector<Scalar, Frame> const& bivector,
   return bivector - some_normal * projection_on_plane;
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Vector<Scalar, Frame> Projection(Vector<Scalar, Frame> const& vector,
                                  Plane<Frame> const& plane) {
   auto const some_binormal = plane.UnitBinormals()[1];

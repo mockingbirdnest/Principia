@@ -56,14 +56,14 @@ Permutation<FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Vector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
   return Vector<Scalar, ToFrame>((*this)(vector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Bivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return Bivector<Scalar, ToFrame>(
@@ -71,7 +71,7 @@ Bivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Trivector<Scalar, ToFrame> Permutation<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return Trivector<Scalar, ToFrame>(Determinant() * trivector.coordinates());
@@ -154,7 +154,7 @@ Permutation<FromFrame, ToFrame>::ReadFromMessage(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> Permutation<FromFrame, ToFrame>::operator()(
     R3Element<Scalar> const& r3_element) const {
   R3Element<Scalar> result;

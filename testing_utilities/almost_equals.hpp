@@ -83,13 +83,13 @@ class AlmostEqualsMatcher final {
   template<typename FromFrame, typename ToFrame>
   bool MatchAndExplain(Rotation<FromFrame, ToFrame> const& actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar, typename Frame>
+  template<quantity Scalar, typename Frame>
   bool MatchAndExplain(Vector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar, typename Frame>
+  template<quantity Scalar, typename Frame>
   bool MatchAndExplain(Bivector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar, typename Frame>
+  template<quantity Scalar, typename Frame>
   bool MatchAndExplain(Trivector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Vector>

@@ -83,7 +83,7 @@ Rotation<FromFrame, ToFrame>::Rotation(Quaternion const& quaternion)
     : quaternion_(quaternion) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, typename F, typename T>
+template<quantity Scalar, typename F, typename T>
   requires(std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, FromFrame> const& axis)
@@ -122,7 +122,7 @@ Rotation<FromFrame, ToFrame>::Rotation(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, typename F, typename T>
+template<quantity Scalar, typename F, typename T>
   requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, FromFrame> const& axis,
@@ -130,7 +130,7 @@ Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
     : Rotation(AngleAxis(-angle, Normalize(axis).coordinates())) {}
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, typename F, typename T, typename>
+template<quantity Scalar, typename F, typename T, typename>
   requires(!std::is_same_v<F, T>)
 Rotation<FromFrame, ToFrame>::Rotation(Angle const& angle,
                                        Bivector<Scalar, ToFrame> const& axis,
@@ -218,28 +218,28 @@ Angle Rotation<FromFrame, ToFrame>::RotationAngle() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Vector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
   return Vector<Scalar, ToFrame>((*this)(vector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Bivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return Bivector<Scalar, ToFrame>((*this)(bivector.coordinates()));
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Trivector<Scalar, ToFrame> Rotation<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return Trivector<Scalar, ToFrame>(trivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar,
+template<quantity Scalar,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, ToFrame, Multivector>
 Rotation<FromFrame, ToFrame>::operator()(

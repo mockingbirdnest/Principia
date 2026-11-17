@@ -22,28 +22,28 @@ Identity<ToFrame, FromFrame> Identity<FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Vector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
   return Vector<Scalar, ToFrame>(vector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Bivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return Bivector<Scalar, ToFrame>(bivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Trivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return Trivector<Scalar, ToFrame>(trivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, template<typename, typename> typename Multivector>
+template<quantity Scalar, template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, ToFrame, Multivector>
 Identity<FromFrame, ToFrame>::operator()(
     SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {

@@ -47,13 +47,13 @@ Quantity<Dimensions> AbsoluteError(
       expected, actual, &Abs<Quantity<Dimensions>>);
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 Scalar AbsoluteError(R3Element<Scalar> const& expected,
                      R3Element<Scalar> const& actual) {
   return AbsoluteError(expected, actual, &R3Element<Scalar>::Norm);
 }
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 Scalar AbsoluteError(
     Multivector<Scalar, Frame, rank> const& expected,
     Multivector<Scalar, Frame, rank> const& actual) {
@@ -64,7 +64,7 @@ Scalar AbsoluteError(
           &Multivector<Scalar, Frame, rank>::Norm);
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 Scalar AbsoluteError(
     Point<Multivector<Scalar, Frame, 1>> const& expected,
     Point<Multivector<Scalar, Frame, 1>> const& actual) {
@@ -110,13 +110,13 @@ double RelativeError(Quantity<Dimensions> const& expected,
       expected, actual, &Abs<Quantity<Dimensions>>);
 }
 
-template<typename Scalar>
+template<quantity Scalar>
 double RelativeError(R3Element<Scalar> const& expected,
                      R3Element<Scalar> const& actual) {
   return RelativeError(expected, actual, &R3Element<Scalar>::Norm);
 }
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 double RelativeError(Multivector<Scalar, Frame, rank> const& expected,
                      Multivector<Scalar, Frame, rank> const& actual) {
   return RelativeError(expected, actual,

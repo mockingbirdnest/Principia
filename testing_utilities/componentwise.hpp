@@ -160,7 +160,7 @@ class ComponentwiseMatcher3Impl<R3Element<Scalar> const&> final
   Matcher<Scalar> const z_matcher_;
 };
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 class ComponentwiseMatcher3Impl<Vector<Scalar, Frame> const&> final
     : public MatcherInterface<Vector<Scalar, Frame> const&> {
  public:
@@ -181,7 +181,7 @@ class ComponentwiseMatcher3Impl<Vector<Scalar, Frame> const&> final
   Matcher<Scalar> const z_matcher_;
 };
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 class ComponentwiseMatcher3Impl<Bivector<Scalar, Frame> const&> final
     : public MatcherInterface<Bivector<Scalar, Frame> const&> {
  public:

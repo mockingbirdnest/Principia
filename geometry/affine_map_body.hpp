@@ -12,7 +12,7 @@ namespace internal {
 // The map is represented as x ↦ linear_map(x - from_origin) + to_origin.  This
 // numerically better behaved than x ↦ linear_map(x) + translation with
 // translation = to_origin - linear_map(from_origin).
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap_>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::AffineMap(
     Point<FromVector> const& from_origin,
@@ -22,7 +22,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::AffineMap(
       to_origin_(to_origin),
       linear_map_(std::move(linear_map)) {}
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap_>
 AffineMap<ToFrame, FromFrame, Scalar, LinearMap_>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::Inverse() const {
@@ -32,7 +32,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::Inverse() const {
       /*linear_map=*/linear_map_.Inverse());
 }
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap_>
 Point<typename AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::ToVector>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::operator()(
@@ -42,7 +42,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::operator()(
           linear_map_(point - from_origin_) + to_origin_);
 }
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap_>
 template<template<typename, typename> typename OtherAffineMap>
 OtherAffineMap<FromFrame, ToFrame>
@@ -54,7 +54,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::Forget() const {
           OtherAffineMap<FromFrame, ToFrame>::template LinearMap>());
 }
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap_>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::Identity()
@@ -64,14 +64,14 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::Identity()
                    LinearMap<FromFrame, ToFrame>::Identity());
 }
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap_>
 LinearMap_<FromFrame, ToFrame> const&
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::linear_map() const {
   return linear_map_;
 }
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap_>
 void AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::WriteToMessage(
     not_null<serialization::AffineMap*> const message) const {
@@ -82,7 +82,7 @@ void AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::WriteToMessage(
   linear_map_.WriteToMessage(message->mutable_linear_map());
 }
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap_>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::ReadFromMessage(
@@ -97,7 +97,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap_>::ReadFromMessage(
 }
 
 template<typename FromFrame, typename ThroughFrame, typename ToFrame,
-         typename Scalar, template<typename, typename> class LinearMap>
+         quantity Scalar, template<typename, typename> class LinearMap>
 AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
     AffineMap<ThroughFrame, ToFrame, Scalar, LinearMap> const& left,
     AffineMap<FromFrame, ThroughFrame, Scalar, LinearMap> const& right) {
@@ -108,7 +108,7 @@ AffineMap<FromFrame, ToFrame, Scalar, LinearMap> operator*(
       /*linear_map=*/left.linear_map_ * right.linear_map_);
 }
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap>
 bool IsFinite(
     AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& affine_map) {
@@ -117,7 +117,7 @@ bool IsFinite(
          IsFinite(affine_map.linear_map_);
 }
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
+template<typename FromFrame, typename ToFrame, quantity Scalar,
          template<typename, typename> class LinearMap>
 std::ostream& operator<<(
     std::ostream& out,

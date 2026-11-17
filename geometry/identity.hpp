@@ -14,7 +14,7 @@ namespace principia {
 namespace geometry {
 
 FORWARD_DECLARE(
-    TEMPLATE(typename Scalar,
+    TEMPLATE(quantities::_concepts::quantity Scalar,
              typename Frame,
              template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm,
@@ -47,19 +47,19 @@ class Identity : public LinearMap<Identity<FromFrame, ToFrame>,
 
   Identity<ToFrame, FromFrame> Inverse() const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Bivector<Scalar, ToFrame> operator()(
       Bivector<Scalar, FromFrame> const& bivector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<typename Scalar,
+  template<quantity Scalar,
            template<typename, typename> typename Multivector>
   SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;

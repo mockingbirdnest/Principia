@@ -7,6 +7,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/space.hpp"
+#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace geometry {
@@ -20,8 +21,9 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_space;
+using namespace principia::quantities::_concepts;
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
                                    FromFrame, ToFrame> {
   static_assert(FromFrame::handedness == ToFrame::handedness,
@@ -35,7 +37,7 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
 
   Homothecy<Inverse<Scalar>, ToFrame, FromFrame> Inverse() const;
 
-  template<typename VScalar>
+  template<quantity VScalar>
   Vector<Product<VScalar, Scalar>, ToFrame> operator()(
       Vector<VScalar, FromFrame> const& vector) const;
 
@@ -62,27 +64,27 @@ class Homothecy : public LinearMap<Homothecy<Scalar, FromFrame, ToFrame>,
  private:
   Scalar const scale_;
 
-  template<typename S, typename From, typename To>
+  template<convertible_to_quantity S, typename From, typename To>
   friend class Homothecy;
 
-  template<typename L, typename R,
+  template<convertible_to_quantity L, convertible_to_quantity R,
            typename From, typename Through, typename To>
   friend Homothecy<Product<L, R>, From, To> operator*(
       Homothecy<L, Through, To> const& left,
       Homothecy<R, From, Through> const& right);
 
-  template<typename S, typename From, typename To>
+  template<convertible_to_quantity S, typename From, typename To>
   friend std::ostream& operator<<(std::ostream& out,
                                   Homothecy<S, From, To> const& homothecy);
 };
 
-template<typename LScalar, typename RScalar,
+template<convertible_to_quantity LScalar, convertible_to_quantity RScalar,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
     Homothecy<LScalar, ThroughFrame, ToFrame> const& left,
     Homothecy<RScalar, FromFrame, ThroughFrame> const& right);
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 std::ostream& operator<<(
     std::ostream& out,
     Homothecy<Scalar, FromFrame, ToFrame> const& homothecy);

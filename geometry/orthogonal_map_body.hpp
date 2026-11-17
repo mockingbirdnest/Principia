@@ -33,28 +33,28 @@ OrthogonalMap<FromFrame, ToFrame>::Inverse() const {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Vector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
   return MakeRotation()(MakeSignature()(vector));
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Bivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return MakeRotation()(MakeSignature()(bivector));
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Trivector<Scalar, ToFrame> OrthogonalMap<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return MakeRotation()(MakeSignature()(trivector));
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, template<typename, typename> typename Multivector>
+template<quantity Scalar, template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, ToFrame, Multivector>
 OrthogonalMap<FromFrame, ToFrame>::operator()(
     SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {
