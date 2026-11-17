@@ -24,53 +24,36 @@ using namespace principia::base::_traits;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_dimensions;
 
-template<Dimensions d, typename Frame>
-class VectorHomogeneousSubspace {
-  using gradation = Quantity<d>;
-  using type = Vector<gradation, Frame>;
+template<homogeneous_field K>
+class ScalarHomogeneousSubspace {
+  using field = K;
+  using type = field;
 };
 
-template<Dimensions d, typename Frame>
-class BivectorHomogeneousSubspace {
-  using gradation = Quantity<d>;
-  using type = Bivector<gradation, Frame>;
+template<homogeneous_field K, typename Frame, int rank>
+class MultivectorHomogeneousSubspace {
+  using field = K;
+  using type = Multivector<field, Frame, rank>;
 };
 
-template<Dimensions d, typename Frame>
-class QuantityHomogeneousSubspace {
-  using gradation = Quantity<d>;
-  using type = gradation;
-};
-
-template<
-    homogeneous_field K,
-    typename IndexSet,
-    template<IndexSet index_set, typename... T> typename HomogeneousSubspace>
-class SymmetricBilinearForm {
- public:
-  template<IndexSet index_set1, IndexSet index_set2>
-  Product<K, Product<K1, K2>> operator()(
-      HomogeneousSubspace<index_set1, T...> const& left,
-      HomogeneousSubspace<index_set2, T...> const& right) const;
-};
-
-template<typename Scalar>
-class SymmetricBilinearForm {
- public:
-  template<typename LScalar, typename RScalar>
-  Product<Scalar, Product<LScalar, RScalar>> operator()(
-      LScalar const& left,
-      RScalar const& right) const;
-};
+template<homogeneous_field K,
+         template<homogeneous_field,
+                  typename...,
+                  int...> typename HomogeneousSubspace,
+         typename... T,
+         int... i>
+class SymmetricBilinearForm;
 
 // A symmetric bilinear form with dimensionality `Scalar`, on the given kind of
 // `Multivector`, expressed in the coordinates of `Frame`.
-template<quantity Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-class SymmetricBilinearForm {
+template<homogeneous_field Scalar, typename Frame, int rank>
+class SymmetricBilinearForm<Scalar,
+                            MultivectorHomogeneousSubspace,
+                            Frame,
+                            rank> {
  public:
   SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
@@ -90,8 +73,8 @@ class SymmetricBilinearForm {
 
   template<quantity LScalar, quantity RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
-      Multivector<LScalar, Frame> const& left,
-      Multivector<RScalar, Frame> const& right) const;
+      MultivectorHomogeneousSubspace<LScalar, Frame, rank> const& left,
+      MultivectorHomogeneousSubspace<RScalar, Frame, rank> const& right) const;
 
   // For a form on vectors, `Anticommutator` returns the form on bivectors
   // resulting from the commutator, i.e., up to roundoff,
@@ -101,15 +84,13 @@ class SymmetricBilinearForm {
   //   F.Anticommutator() * Wedge(v, w) = Wedge(F * v, w) + Wedge(v, F * w),
   // which is the generalization to nonsymmetric F.
   // This operation is linear in `*this`.
-  template<template<typename, typename> typename M = Multivector>
-    requires(is_same_template_v<M, Vector>)
-  SymmetricBilinearForm<Scalar, Frame, Bivector> Anticommutator() const;
+  SymmetricBilinearForm<Scalar, Frame, 2> Anticommutator() const
+    requires(rank == 1);
 
   // This function is the inverse of `Anticommutator()`.  It is well-defined
   // only in dimension 3, where dim ⋀²V = dim V.
-  template<template<typename, typename> typename M = Multivector>
-    requires(is_same_template_v<M, Bivector>)
-  SymmetricBilinearForm<Scalar, Frame, Vector> AnticommutatorInverse() const;
+  SymmetricBilinearForm<Scalar, Frame, 1> AnticommutatorInverse() const
+    requires(rank == 2);
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
   // which gives the eigenvalues; and (2) a rotation from the current basis to
@@ -117,7 +98,7 @@ class SymmetricBilinearForm {
   // increasing order.
   template<typename Eigenframe>
   struct Eigensystem {
-    SymmetricBilinearForm<Scalar, Eigenframe, Multivector> form;
+    SymmetricBilinearForm<Scalar, Eigenframe, rank> form;
     Rotation<Eigenframe, Frame> rotation;
   };
 
@@ -363,11 +344,13 @@ std::ostream& operator<<(
 
 }  // namespace internal
 
+#if 0
 using internal::Anticommutator;
 using internal::InnerProductForm;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;
+#endif
 
 }  // namespace _symmetric_bilinear_form
 }  // namespace geometry
