@@ -160,7 +160,7 @@ Square<Scalar> Multivector<Scalar, Frame, 3>::Norm²() const {
 }
 
 template<quantity Scalar, typename Frame>
-template<typename S>
+template<quantity S>
 Multivector<Scalar, Frame, 1>
 Multivector<Scalar, Frame, 1>::OrthogonalizationAgainst(
     Multivector<S, Frame, 1> const& multivector) const {
@@ -169,7 +169,7 @@ Multivector<Scalar, Frame, 1>::OrthogonalizationAgainst(
 }
 
 template<quantity Scalar, typename Frame>
-template<typename S>
+template<quantity S>
 Multivector<Scalar, Frame, 2>
 Multivector<Scalar, Frame, 2>::OrthogonalizationAgainst(
     Multivector<S, Frame, 2> const& multivector) const {

@@ -35,11 +35,11 @@ class Plane {
 
   R3Element<double> unit_;
 
-  template<typename S, typename F>
+  template<quantity S, typename F>
   friend Vector<S, F> Projection(Bivector<S, F> const& bivector,
                                  Plane<F> const& plane);
 
-  template<typename S, typename F>
+  template<quantity S, typename F>
   friend Vector<S, F> Projection(Vector<S, F> const& vector,
                                  Plane<F> const& plane);
 };

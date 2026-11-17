@@ -54,7 +54,7 @@ class Multivector<Scalar, Frame, 1> final {
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
-  template<typename S>
+  template<quantity S>
   Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 1> const& multivector) const;
 
@@ -92,7 +92,7 @@ class Multivector<Scalar, Frame, 2> final {
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
-  template<typename S>
+  template<quantity S>
   Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 2> const& multivector) const;
 

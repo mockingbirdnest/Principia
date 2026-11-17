@@ -304,7 +304,7 @@ SymmetricSquare(Vector<Scalar, Frame> const& vector);
 // Symmetric bilinear forms on vectors act on bivectors through this function.
 // `Anticommutator(F, B)` is (tr(F)𝟙 - F)B in ℝ³ representation.  In matrix
 // representation it is FB + BF = {F, B}.
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
     SymmetricBilinearForm<LScalar, Frame, Vector> const& form,
     Bivector<RScalar, Frame> const& bivector);

@@ -49,7 +49,7 @@ struct Splitter<R3Element<Scalar>> {
   }
 };
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
   requires(rank == 1 || rank == 2)
 struct Splitter<Multivector<Scalar, Frame, rank>> {
   static constexpr std::int64_t dimension = 3;

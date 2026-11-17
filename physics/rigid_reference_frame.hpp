@@ -21,6 +21,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "physics/similar_motion.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
@@ -43,6 +44,7 @@ using namespace principia::physics::_ephemeris;
 using namespace principia::physics::_reference_frame;
 using namespace principia::physics::_rigid_motion;
 using namespace principia::physics::_similar_motion;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
@@ -116,7 +118,7 @@ class RigidReferenceFrame : public ReferenceFrame<InertialFrame, ThisFrame> {
 
   // The component names are somewhat notional.  This is not a Frenet frame and
   // anyway, the derivative trihedra are not even orthogonal.
-  template<typename ScalarF, typename ScalarB, int order = 0>
+  template<quantity ScalarF, quantity ScalarB, int order = 0>
   struct Trihedron {
     Vector<Derivative<ScalarF, Time, order>, InertialFrame> fore;
     Vector<Derivative<Product<ScalarF, ScalarB>, Time, order>,

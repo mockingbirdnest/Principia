@@ -66,7 +66,7 @@ struct alignas(R3ElementAlignment) R3Element final {
   // Returns a vector coplanar to `*this` and `r3_element`, orthogonal to
   // `r3_element`, and on the same side of `r3_element` as `*this`.
   // Uses the modified Gram-Schmidt algorithm.  Fails if `r3_element` is zero.
-  template<typename S>
+  template<quantity S>
   R3Element OrthogonalizationAgainst(R3Element<S> const& r3_element) const;
 
   void WriteToMessage(not_null<serialization::R3Element*> message) const;
