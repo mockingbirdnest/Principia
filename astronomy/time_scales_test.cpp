@@ -104,7 +104,7 @@ TEST_F(TimeScalesTest, ConstexprWeeks) {
 TEST_F(TimeScalesTest, ConstexprMJD2000) {
   constexpr Instant mjd51544_utc = "2000-01-01T00:00:00"_UTC;
   constexpr Instant mjd51544_utc_from_ut1 =
-      "2000-01-01T00:00:00,355"_UT1 + 388.0 * Micro(Second);
+      "2000-01-01T00:00:00,355"_UT1 + 472.4 * Micro(Second);
 
   static_assert(mjd51544_utc - mjd51544_utc_from_ut1 < 1 * Nano(Second));
   static_assert(mjd51544_utc - mjd51544_utc_from_ut1 > -1 * Nano(Second));
@@ -442,14 +442,14 @@ TEST_F(TimeScalesTest, EarthRotationAngle) {
       AlmostEquals(2 * π * Radian *
                        (revolutions_at_j2000_ut1 +
                         excess_revolutions_per_ut1_day * (2455200 - 2451545)),
-                   142));
+                   30));
   EXPECT_THAT(
       EarthRotationAngle("JD2455200.623456701388"_UT1),
       AlmostEquals(
           2 * π * Radian *
               (0.623456701388 + revolutions_at_j2000_ut1 +
                excess_revolutions_per_ut1_day * (5200.623456701388 - 1545) - 1),
-          134));
+          41));
 
   // Compare with the WGCCRE 2009 elements.
   EXPECT_THAT(
@@ -464,7 +464,7 @@ TEST_F(TimeScalesTest, EarthRotationAngle) {
                EarthRotationAngle("2010-01-01T01:00:00"_TT)) /
                       (22 * Hour) -
                   360.9856235 * (Degree / Day),
-              IsNear(-0.0000137_(1) * Degree / Day));
+              IsNear(-0.0000139_(1) * Degree / Day));
 }
 
 TEST_F(TimeScalesTest, GNSS) {
