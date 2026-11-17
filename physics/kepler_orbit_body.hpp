@@ -234,21 +234,21 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   }
   CompleteAnomalies(elements);
   Angle const& ν = *elements.true_anomaly;
-  using OrbitPlane = geometry::_frame::Frame<struct OrbitPlaneTag>;
-  Rotation<OrbitPlane, Frame> const from_orbit_plane(
+  using Perifocal = geometry::_frame::Frame<struct PerifocalTag>;
+  Rotation<Perifocal, Frame> const from_perifocal(
       Ω, i, ω,
       EulerAngles::ZXZ,
-      DefinesFrame<OrbitPlane>{});
+      DefinesFrame<Perifocal>{});
   auto const [sin_ν, cos_ν] = SinCos(ν);
   Length const r = ℓ / (1 + e * cos_ν);
   Displacement<Frame> const displacement =
-      r * from_orbit_plane(Vector<double, OrbitPlane>({cos_ν, sin_ν, 0}));
+      r * from_perifocal(Vector<double, Perifocal>({cos_ν, sin_ν, 0}));
   // Flight path angle.
   Angle const φ = ArcTan(e * sin_ν, 1 + e * cos_ν);
   // The norm comes from the vis-viva equation.
   Velocity<Frame> const velocity =
       Sqrt(2 * (ε + μ / r)) *
-      from_orbit_plane(Vector<double, OrbitPlane>(
+      from_perifocal(Vector<double, Perifocal>(
           {-Sin(ν - φ), Cos(ν - φ), 0}));
   return {displacement, velocity};
 }
