@@ -27,33 +27,35 @@ using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_dimensions;
 
-template<homogeneous_field K>
+template<quantity Q>
 class ScalarHomogeneousSubspace {
-  using field = K;
+  using field = Q;
   using type = field;
 };
 
-template<homogeneous_field K, typename Frame, int rank>
-class MultivectorHomogeneousSubspace {
-  using field = K;
-  using type = Multivector<field, Frame, rank>;
+template<typename Frame_, int rank_>
+struct MultivectorParameters {
+  using Frame = Frame_;
+  static constexpr int rank = rank_;
 };
 
-template<homogeneous_field K,
-         template<homogeneous_field,
-                  typename...,
-                  int...> typename HomogeneousSubspace,
-         typename... T,
-         int... i>
+template<quantity Q, typename Parameters>
+class MultivectorHomogeneousSubspace {
+  using field = Q;
+  using type = Multivector<field, typename Parameters::Frame, Parameters::rank>;
+};
+
+template<quantity Q,
+         typename Parameters,
+         template<quantity, typename> typename HomogeneousSubspace>
 class SymmetricBilinearForm;
 
 // A symmetric bilinear form with dimensionality `Scalar`, on the given kind of
 // `Multivector`, expressed in the coordinates of `Frame`.
-template<homogeneous_field Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 class SymmetricBilinearForm<Scalar,
-                            MultivectorHomogeneousSubspace,
-                            Frame,
-                            rank> {
+                            MultivectorParameters<Frame, rank>,
+                            MultivectorHomogeneousSubspace> {
  public:
   SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
@@ -73,8 +75,10 @@ class SymmetricBilinearForm<Scalar,
 
   template<quantity LScalar, quantity RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
-      MultivectorHomogeneousSubspace<LScalar, Frame, rank> const& left,
-      MultivectorHomogeneousSubspace<RScalar, Frame, rank> const& right) const;
+      MultivectorHomogeneousSubspace<
+          LScalar, MultivectorParameters<Frame, rank>> const& left,
+      MultivectorHomogeneousSubspace<
+          RScalar, MultivectorParameters<Frame, rank>> const& right) const;
 
   // For a form on vectors, `Anticommutator` returns the form on bivectors
   // resulting from the commutator, i.e., up to roundoff,
