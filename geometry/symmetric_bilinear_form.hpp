@@ -44,7 +44,7 @@ class MultivectorHomogeneousSubspace {
   using type = Multivector<field, typename Parameters::Frame, Parameters::rank>;
 };
 
-template<quantity Q,
+template<quantity Scalar,
          typename Parameters,
          template<quantity, typename> typename HomogeneousSubspace>
 class SymmetricBilinearForm;
@@ -231,28 +231,32 @@ template<typename Frame, template<typename, typename> typename Multivector>
 SymmetricBilinearForm<double, Frame, Multivector> const& InnerProductForm();
 
 template<quantity Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
+         typename Parameters,
+         template<quantity, typename> typename HomogeneousSubspace>
+SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> operator+(
+    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const&
+        right);
 template<quantity Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
+         typename Parameters,
+         template<quantity, typename> typename HomogeneousSubspace>
+SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> operator-(
+    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const&
+        right);
 
 template<quantity Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
+         typename Parameters,
+         template<quantity, typename> typename HomogeneousSubspace>
+SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> operator+(
+    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const& left,
+    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const&
+        right);
 template<quantity Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& left,
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& right);
+         typename Parameters,
+         template<quantity, typename> typename HomogeneousSubspace>
+SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> operator-(
+    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const& left,
+    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const&
+        right);
 
 template<convertible_to_quantity LScalar,
          quantity RScalar,
