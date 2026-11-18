@@ -25,7 +25,6 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_concepts;
-using namespace principia::quantities::_dimensions;
 
 template<quantity Q>
 class ScalarHomogeneousSubspace {
@@ -56,6 +55,13 @@ template<quantity Scalar, typename Frame, int rank>
 class SymmetricBilinearForm<Scalar,
                             MultivectorParameters<Frame, rank>,
                             MultivectorHomogeneousSubspace> {
+  using Frame_rank = MultivectorParameters<Frame, rank>;
+
+  template<quantity Q, typename F, int r>
+  using SBF = SymmetricBilinearForm<Q,
+                                    MultivectorParameters<F, r>,
+                                    MultivectorHomogeneousSubspace>;
+
  public:
   SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
@@ -75,10 +81,8 @@ class SymmetricBilinearForm<Scalar,
 
   template<quantity LScalar, quantity RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
-      MultivectorHomogeneousSubspace<
-          LScalar, MultivectorParameters<Frame, rank>> const& left,
-      MultivectorHomogeneousSubspace<
-          RScalar, MultivectorParameters<Frame, rank>> const& right) const;
+      MultivectorHomogeneousSubspace<LScalar, Frame_rank> const& left,
+      MultivectorHomogeneousSubspace<RScalar, Frame_rank> const& right) const;
 
   // For a form on vectors, `Anticommutator` returns the form on bivectors
   // resulting from the commutator, i.e., up to roundoff,
@@ -88,12 +92,12 @@ class SymmetricBilinearForm<Scalar,
   //   F.Anticommutator() * Wedge(v, w) = Wedge(F * v, w) + Wedge(v, F * w),
   // which is the generalization to nonsymmetric F.
   // This operation is linear in `*this`.
-  SymmetricBilinearForm<Scalar, Frame, 2> Anticommutator() const
+  SBF<Scalar, Frame, 2> Anticommutator() const
     requires(rank == 1);
 
   // This function is the inverse of `Anticommutator()`.  It is well-defined
   // only in dimension 3, where dim ⋀²V = dim V.
-  SymmetricBilinearForm<Scalar, Frame, 1> AnticommutatorInverse() const
+  SBF<Scalar, Frame, 1> AnticommutatorInverse() const
     requires(rank == 2);
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
@@ -102,7 +106,7 @@ class SymmetricBilinearForm<Scalar,
   // increasing order.
   template<typename Eigenframe>
   struct Eigensystem {
-    SymmetricBilinearForm<Scalar, Eigenframe, rank> form;
+    SBF<Scalar, Eigenframe, rank> form;
     Rotation<Eigenframe, Frame> rotation;
   };
 
