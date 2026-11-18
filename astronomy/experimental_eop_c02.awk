@@ -4,17 +4,13 @@
 # Field 1 is the MJD, field 4 is UT1 - TAI in seconds.
 BEGIN {
   out = ""; 
-  entries = 0
 }
-$1 != "!" {
-  ++entries;
+$1 != "#" {
   out = out sprintf("  ExperimentalEOPC02Entry(%10.3f, %11.7f * Second),\n",
                     $1, $4)
 }
 END {
-  printf("constexpr std::array<ExperimentalEOPC02Entry, %d> " \
-             "experimental_eop_c02 = {{\n",
-         entries);
+  printf("constexpr std::array experimental_eop_c02{\n");
   printf(out);
-  print "}};"
+  print "};"
 }
