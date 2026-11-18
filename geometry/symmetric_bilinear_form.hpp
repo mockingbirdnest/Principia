@@ -26,21 +26,28 @@ using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_concepts;
 
+// An `homogeneous_vector_space` based on the field defined by `Scalar`.  The
+// parameters `T` may be used to specify its properties for each specialization.
 template<quantity Q, typename... T>
 struct HomogeneousSubspace;
 
+// The 1-dimensional case where the vector space is the field `Q` itself.
 template<quantity Q>
 struct HomogeneousSubspace<Q> {
   using field = Q;
   using type = field;
 };
 
+// The 3-dimensional Grassmann vector spaces.
 template<quantity Q, typename Frame, int rank>
+  requires(rank == 1 || rank == 2)
 struct HomogeneousSubspace<Q, Frame, Rank<rank>> {
   using field = Q;
   using type = Multivector<Q, Frame, rank>;
 };
 
+// A symmetric bilinear form with dimensionality given by `Scalar`, acting on
+// vector spaces specified by the given parameters.
 template<quantity Scalar, typename... HomogeneousSubspaceParameters>
 class SymmetricBilinearForm;
 
@@ -116,7 +123,7 @@ class SymmetricBilinearForm<Scalar, Frame, Rank<rank>> {
   // symmetric.
   R3x3Matrix<Scalar> matrix_;
 
-  template<quantity S, typename F, template<typename, typename> typename M>
+  template<quantity S, typename... H>
   friend class SymmetricBilinearForm;
 
   template<typename F, template<typename, typename> typename M>
@@ -213,57 +220,49 @@ class SymmetricBilinearForm<Scalar, Frame, Rank<rank>> {
 
 // `InnerProductForm()` is the symmetric bilinear form such that for all v and
 // w, `InnerProductForm()(v, w) == InnerProduct(v, w)`.
-template<typename Frame, template<typename, typename> typename Multivector>
-SymmetricBilinearForm<double, Frame, Multivector> const& InnerProductForm();
+template<typename Frame, typename... HomogeneousSubspaceParameters>
+SymmetricBilinearForm<double, HomogeneousSubspaceParameters...> const&
+InnerProductForm();
 
-template<quantity Scalar,
-         typename Parameters,
-         template<quantity, typename> typename HomogeneousSubspace>
-SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> operator+(
-    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const&
+template<quantity Scalar, typename... HomogeneousSubspaceParameters>
+SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> operator+(
+    SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> const&
         right);
-template<quantity Scalar,
-         typename Parameters,
-         template<quantity, typename> typename HomogeneousSubspace>
-SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> operator-(
-    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const&
+template<quantity Scalar, typename... HomogeneousSubspaceParameters>
+SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> operator-(
+    SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> const&
         right);
 
-template<quantity Scalar,
-         typename Parameters,
-         template<quantity, typename> typename HomogeneousSubspace>
-SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> operator+(
-    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const& left,
-    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const&
+template<quantity Scalar, typename... HomogeneousSubspaceParameters>
+SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> operator+(
+    SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> const& left,
+    SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> const&
         right);
 template<quantity Scalar,
-         typename Parameters,
-         template<quantity, typename> typename HomogeneousSubspace>
-SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> operator-(
-    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const& left,
-    SymmetricBilinearForm<Scalar, Parameters, HomogeneousSubspace> const&
+         typename... HomogeneousSubspaceParameters>
+SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> operator-(
+    SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> const& left,
+    SymmetricBilinearForm<Scalar, HomogeneousSubspaceParameters...> const&
         right);
 
-template<convertible_to_quantity LScalar,
-         quantity RScalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
-    LScalar left,
-    SymmetricBilinearForm<RScalar, Frame, Multivector> const& right);
-template<quantity LScalar,
-         convertible_to_quantity RScalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
-    SymmetricBilinearForm<LScalar, Frame, Multivector> const& left,
-    RScalar right);
-template<quantity LScalar,
-         convertible_to_quantity RScalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame, Multivector> operator/(
-    SymmetricBilinearForm<LScalar, Frame, Multivector> const& left,
+template<convertible_to_quantity LScalar, quantity RScalar,
+         typename... HomogeneousSubspaceParameters>
+SymmetricBilinearForm<Product<LScalar, RScalar>,
+                      HomogeneousSubspaceParameters...>
+operator*(LScalar left,
+          SymmetricBilinearForm<RScalar,
+                                HomogeneousSubspaceParameters...> const& right);
+template<quantity LScalar, convertible_to_quantity RScalar,
+         typename... HomogeneousSubspaceParameters>
+SymmetricBilinearForm<Product<LScalar, RScalar>,
+                      HomogeneousSubspaceParameters...>
+operator*(SymmetricBilinearForm<LScalar,
+                                HomogeneousSubspaceParameters...> const& left,
+          RScalar right);
+template<quantity LScalar, convertible_to_quantity RScalar,
+         typename... HomogeneousSubspaceParameters>
+SymmetricBilinearForm<Quotient<LScalar, RScalar>, HomogeneousSubspaceParameters...> operator/(
+    SymmetricBilinearForm<LScalar, HomogeneousSubspaceParameters...> const& left,
     RScalar right);
 
 
