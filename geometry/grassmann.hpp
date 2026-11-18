@@ -24,6 +24,13 @@ using namespace principia::geometry::_r3_element;
 using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 
+// A wrapper around an integer representing the rank of a multivector.  Useful
+// for passing the rank in a template parameter pack.
+template<int rank_>
+struct Rank {
+  static constexpr int rank = rank_;
+};
+
 // A multivector of rank `rank` on a three-dimensional real inner product
 // space bearing the dimensionality of `Scalar`, i.e., an element of
 // ⋀ⁿ Scalar³. Do not use this type for `rank == 0` (scalars), use the `Scalar`
@@ -346,6 +353,7 @@ using internal::Multivector;
 using internal::Normalize;
 using internal::NormalizeOrZero;
 using internal::OrientedAngleBetween;
+using internal::Rank;
 using internal::Trivector;
 using internal::Vector;
 using internal::Wedge;

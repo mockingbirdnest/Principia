@@ -13,8 +13,7 @@ namespace geometry {
 
 FORWARD_DECLARE(
     TEMPLATE(quantities::_concepts::quantity Scalar,
-             typename Frame,
-             template<typename, typename> typename Multivector) class,
+             typename... HomogeneousSubspaceParameters) class,
     SymmetricBilinearForm,
     FROM(symmetric_bilinear_form),
     INTO(signature));

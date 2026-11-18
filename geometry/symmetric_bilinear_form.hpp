@@ -26,42 +26,28 @@ using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_concepts;
 
+template<quantity Q, typename... T>
+struct HomogeneousSubspace;
+
 template<quantity Q>
-class ScalarHomogeneousSubspace {
+struct HomogeneousSubspace<Q> {
   using field = Q;
   using type = field;
 };
 
-template<typename Frame_, int rank_>
-struct MultivectorParameters {
-  using Frame = Frame_;
-  static constexpr int rank = rank_;
-};
-
-template<quantity Q, typename Parameters>
-class MultivectorHomogeneousSubspace {
+template<quantity Q, typename Frame, int rank>
+struct HomogeneousSubspace<Q, Frame, Rank<rank>> {
   using field = Q;
-  using type = Multivector<field, typename Parameters::Frame, Parameters::rank>;
+  using type = Multivector<Q, Frame, rank>;
 };
 
-template<quantity Scalar,
-         typename Parameters,
-         template<quantity, typename> typename HomogeneousSubspace>
+template<quantity Scalar, typename... HomogeneousSubspaceParameters>
 class SymmetricBilinearForm;
 
 // A symmetric bilinear form with dimensionality `Scalar`, on the given kind of
 // `Multivector`, expressed in the coordinates of `Frame`.
 template<quantity Scalar, typename Frame, int rank>
-class SymmetricBilinearForm<Scalar,
-                            MultivectorParameters<Frame, rank>,
-                            MultivectorHomogeneousSubspace> {
-  using Frame_rank = MultivectorParameters<Frame, rank>;
-
-  template<quantity Q, typename F, int r>
-  using SBF = SymmetricBilinearForm<Q,
-                                    MultivectorParameters<F, r>,
-                                    MultivectorHomogeneousSubspace>;
-
+class SymmetricBilinearForm<Scalar, Frame, Rank<rank>> {
  public:
   SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
@@ -81,8 +67,8 @@ class SymmetricBilinearForm<Scalar,
 
   template<quantity LScalar, quantity RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
-      MultivectorHomogeneousSubspace<LScalar, Frame_rank> const& left,
-      MultivectorHomogeneousSubspace<RScalar, Frame_rank> const& right) const;
+      HomogeneousSubspace<LScalar, Frame, Rank<rank>> const& left,
+      HomogeneousSubspace<RScalar, Frame, Rank<rank>> const& right) const;
 
   // For a form on vectors, `Anticommutator` returns the form on bivectors
   // resulting from the commutator, i.e., up to roundoff,
@@ -92,12 +78,12 @@ class SymmetricBilinearForm<Scalar,
   //   F.Anticommutator() * Wedge(v, w) = Wedge(F * v, w) + Wedge(v, F * w),
   // which is the generalization to nonsymmetric F.
   // This operation is linear in `*this`.
-  SBF<Scalar, Frame, 2> Anticommutator() const
+  SymmetricBilinearForm<Scalar, Frame, Rank<2>> Anticommutator() const
     requires(rank == 1);
 
   // This function is the inverse of `Anticommutator()`.  It is well-defined
   // only in dimension 3, where dim ⋀²V = dim V.
-  SBF<Scalar, Frame, 1> AnticommutatorInverse() const
+  SymmetricBilinearForm<Scalar, Frame, Rank<1>> AnticommutatorInverse() const
     requires(rank == 2);
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
@@ -106,7 +92,7 @@ class SymmetricBilinearForm<Scalar,
   // increasing order.
   template<typename Eigenframe>
   struct Eigensystem {
-    SBF<Scalar, Eigenframe, rank> form;
+    SymmetricBilinearForm<Scalar, Eigenframe, Rank<rank>> form;
     Rotation<Eigenframe, Frame> rotation;
   };
 

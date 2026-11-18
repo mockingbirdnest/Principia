@@ -37,8 +37,7 @@ FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 INTO(orthogonal_map));
 FORWARD_DECLARE(
     TEMPLATE(quantities::_concepts::quantity Scalar,
-             typename Frame,
-             template<typename, typename> typename Multivector) class,
+             typename... HomogeneousSubspaceParameters) class,
     SymmetricBilinearForm,
     FROM(symmetric_bilinear_form),
     INTO(orthogonal_map));
@@ -85,10 +84,9 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<quantity Scalar,
-           template<typename, typename> typename Multivector>
-  SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
-      SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
+  template<quantity Scalar, int rank>
+  SymmetricBilinearForm<Scalar, ToFrame, Rank<rank>> operator()(
+      SymmetricBilinearForm<Scalar, FromFrame, Rank<rank>> const& form) const;
 
   template<typename T>
   typename Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
