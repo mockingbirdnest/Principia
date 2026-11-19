@@ -111,8 +111,7 @@ class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
            typename... P>
   friend class SymmetricBilinearForm;
 
-  template<typename F,
-           template<quantity, typename...> typename G,
+  template<template<quantity, typename...> typename G,
            typename... P>
   friend SymmetricBilinearForm<double, G, P...> const& InnerProductForm();
 
@@ -205,8 +204,7 @@ class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
 
 // `InnerProductForm()` is the symmetric bilinear form such that for all v and
 // w, `InnerProductForm()(v, w) == InnerProduct(v, w)`.
-template<quantity Scalar,
-         template<quantity, typename...> typename Generator,
+template<template<quantity, typename...> typename Generator,
          typename... Parameters>
 SymmetricBilinearForm<double, Generator, Parameters...> const&
 InnerProductForm();
@@ -268,47 +266,48 @@ operator/(SymmetricBilinearForm<LScalar, Generator, Parameters...> const& left,
 template<quantity LScalar,
          quantity RScalar,
          typename Frame,
-         template<typename, typename> typename M,
+         typename Rank,
          int rank>
-  requires(std::is_same_v<M<double, Frame>,
-                          _grassmann::Multivector<double, Frame, rank>>)
+  requires(rank == Rank::rank)
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
-    SymmetricBilinearForm<LScalar, Frame, M> const& left,
+    SymmetricBilinearForm<LScalar,
+                          MultivectorGenerator, Frame, Rank> const& left,
     Multivector<RScalar, Frame, rank> const& right);
 
 template<quantity LScalar,
          quantity RScalar,
          typename Frame,
-         template<typename, typename> typename M,
+         typename Rank,
          int rank>
-  requires(std::is_same_v<M<double, Frame>,
-                          _grassmann::Multivector<double, Frame, rank>>)
+  requires(rank == Rank::rank)
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     Multivector<LScalar, Frame, rank> const& left,
-    SymmetricBilinearForm<RScalar, Frame, M> const& right);
+    SymmetricBilinearForm<RScalar,
+                          MultivectorGenerator, Frame, Rank> const& right);
 
 // Solves the system `result * right == left`.  Note that by symmetry, this is
 // also the solution of `right * result == left`.
 template<quantity LScalar,
          quantity RScalar,
          typename Frame,
-         template<typename, typename> typename M,
+         typename Rank,
          int rank>
-  requires(std::is_same_v<M<double, Frame>,
-                          _grassmann::Multivector<double, Frame, rank>>)
+  requires(rank == Rank::rank)
 Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
     Multivector<LScalar, Frame, rank> const& left,
-    SymmetricBilinearForm<RScalar, Frame, M> const& right);
+    SymmetricBilinearForm<RScalar,
+                          MultivectorGenerator, Frame, Rank> const& right);
 
 // `SymmetricProduct(v, w)` is v ⊙ w ≔ (v ⊗ w + w ⊗ v) / 2.
 template<quantity LScalar, quantity RScalar, typename Frame>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Vector>
+SymmetricBilinearForm<Product<LScalar, RScalar>,
+                      MultivectorGenerator, Frame, Rank<1>>
 SymmetricProduct(Vector<LScalar, Frame> const& left,
                  Vector<RScalar, Frame> const& right);
 
 // `SymmetricSquare(v)` is `SymmetricProduct(v, v)`.
 template<quantity Scalar, typename Frame>
-SymmetricBilinearForm<Square<Scalar>, Frame, Vector>
+SymmetricBilinearForm<Square<Scalar>, MultivectorGenerator, Frame, Rank<1>>
 SymmetricSquare(Vector<Scalar, Frame> const& vector);
 
 // Symmetric bilinear forms on vectors act on bivectors through this function.
@@ -316,21 +315,22 @@ SymmetricSquare(Vector<Scalar, Frame> const& vector);
 // representation it is FB + BF = {F, B}.
 template<quantity LScalar, quantity RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
-    SymmetricBilinearForm<LScalar, Frame, Vector> const& form,
+    SymmetricBilinearForm<LScalar,
+                          MultivectorGenerator, Frame, Rank<1>> const& form,
     Bivector<RScalar, Frame> const& bivector);
 
 template<quantity Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
+         template<quantity, typename...> typename Generator,
+         typename... Parameters>
 std::string DebugString(
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& form);
+    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& form);
 
 template<quantity Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
+         template<quantity, typename...> typename Generator,
+         typename... Parameters>
 std::ostream& operator<<(
     std::ostream& out,
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& form);
+    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& form);
 
 }  // namespace internal
 
