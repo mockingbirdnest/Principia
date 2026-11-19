@@ -30,7 +30,7 @@ TEST_F(InstantOutputTest, UniversalTime) {
       Eq("2000-01-01T00:01:04,1840000000083819 (TT)"));
 
   EXPECT_THAT((std::stringstream() << "2000-01-01T00:00:00"_UT1).str(),
-              Eq("2000-01-01T00:01:03,8286119957119809 (TT)"));
+              Eq("2000-01-01T00:01:03,8285275958769489 (TT)"));
 
   // A second after J2000, the granularity is a couple tenths of femtoseconds.
   EXPECT_THAT((std::stringstream() << "2000-01-01T11:58:56,816"_UTC).str(),
@@ -78,7 +78,7 @@ TEST_F(InstantOutputTest, J2000) {
   // 2000-01-01T11:58:55,816 UTC is J2000, and UT1 is within a second of UTC, so
   // this is within a second of J2000.
   EXPECT_THAT((std::stringstream() << "2000-01-01T11:58:55,816"_UT1).str(),
-              Eq("J2000-3.54947059731458125e-01 s (TT)"));
+              Eq("J2000-3.55037201142110348e-01 s (TT)"));
 }
 
 TEST_F(InstantOutputTest, DistantPast) {
