@@ -507,70 +507,72 @@ constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
   return FromUT1(TimeSince20000101T120000Z(ut1));
 }
 
-// `Instant` date literals.
+// `Instant` parsing.
 
-constexpr Instant operator""_TAI(char const* str, std::size_t const size) {
-  if (IsJulian(str, size)) {
-    return FromTAI(TimeSinceJ2000(operator""_Julian(str, size)));
+constexpr Instant ParseTAI(std::string_view const s) {
+  if (IsJulian(s.data(), s.size())) {
+    return FromTAI(TimeSinceJ2000(JulianDate::Parse(s)));
   } else {
-    return DateTimeAsTAI(operator""_DateTime(str, size));
+    return DateTimeAsTAI(DateTime::Parse(s));
   }
 }
 
-constexpr Instant operator""_TT(char const* const str, std::size_t const size) {
-  if (IsJulian(str, size)) {
-    return FromTT(TimeSinceJ2000(operator""_Julian(str, size)));
+constexpr Instant ParseTT(std::string_view const s) {
+  if (IsJulian(s.data(), s.size())) {
+    return FromTT(TimeSinceJ2000(JulianDate::Parse(s)));
   } else {
-    return DateTimeAsTT(operator""_DateTime(str, size));
+    return DateTimeAsTT(DateTime::Parse(s));
   }
 }
 
-constexpr Instant operator""_UTC(char const* const str,
-                                 std::size_t const size) {
-  return DateTimeAsUTC(operator""_DateTime(str, size));
+constexpr Instant ParseUTC(std::string_view const s) {
+  return DateTimeAsUTC(DateTime::Parse(s));
 }
 
-constexpr Instant operator""_UT1(char const* const str,
-                                 std::size_t const size) {
-  if (IsJulian(str, size)) {
-    return FromUT1(TimeSinceJ2000(operator""_Julian(str, size)));
+constexpr Instant ParseUT1(std::string_view const s) {
+  if (IsJulian(s.data(), s.size())) {
+    return FromUT1(TimeSinceJ2000(JulianDate::Parse(s)));
   } else {
-    return DateTimeAsUT1(operator""_DateTime(str, size));
+    return DateTimeAsUT1(DateTime::Parse(s));
   }
 }
 
-constexpr Instant operator""_GPS(char const* const str,
-                                 std::size_t const size) {
-  return DateTimeAsGPSTime(operator""_DateTime(str, size));
+constexpr Instant ParseGPSTime(std::string_view const s) {
+  return DateTimeAsGPSTime(DateTime::Parse(s));
 }
 
-constexpr Instant operator""_北斗(char const* const str,
+constexpr Instant Parse北斗Time(std::string_view const s) {
+  return DateTimeAs北斗Time(DateTime::Parse(s));
+}
+
+// `Instant` literals.
+
+consteval Instant operator""_TAI(char const* const str, std::size_t const size) {
+  return ParseTAI({str, size});
+}
+
+consteval Instant operator""_TT(char const* const str, std::size_t const size) {
+  return ParseTT({str, size});
+}
+
+consteval Instant operator""_UTC(char const* const str,
+                                 std::size_t const size) {
+  return ParseUTC({str, size});
+}
+
+consteval Instant operator""_UT1(char const* const str,
+                                 std::size_t const size) {
+  return ParseUT1({str, size});
+}
+
+consteval Instant operator""_GPS(char const* const str,
+                                 std::size_t const size) {
+  return ParseGPSTime({str, size});
+}
+
+consteval Instant operator""_北斗(char const* const str,
                                   std::size_t const size) {
-  return DateTimeAs北斗Time(operator""_DateTime(str, size));
-}
-
-inline Instant ParseTAI(std::string const& s) {
-  return operator""_TAI(s.c_str(), s.size());
-}
-
-inline Instant ParseTT(std::string const& s) {
-  return operator""_TT(s.c_str(), s.size());
-}
-
-inline Instant ParseUTC(std::string const& s) {
-  return operator""_UTC(s.c_str(), s.size());
-}
-
-inline Instant ParseUT1(std::string const& s) {
-  return operator""_UT1(s.c_str(), s.size());
-}
-
-inline Instant ParseGPSTime(std::string const& s) {
-  return operator""_GPS(s.c_str(), s.size());
-}
-
-inline Instant Parse北斗Time(std::string const& s) {
-  return operator""_北斗(s.c_str(), s.size());
+  return Parse北斗Time({str, size});
 }
 
 constexpr Date TTDay(Instant const& t) {

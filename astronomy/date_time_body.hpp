@@ -308,6 +308,16 @@ constexpr DateTime DateTime::BeginningOfDay(Date const & date) {
   return DateTime(date, TimeOfDay::hhmmss_ms(00'00'00, 0));
 }
 
+constexpr DateTime DateTime::Parse(std::string_view s) {
+  // Given correctness of the date and time parts of the string, this check
+  // ensures that either both are in basic format or both are in extended
+  // format.
+  CONSTEXPR_CHECK(s.contains('-') == s.contains(':'));
+  const int index_of_T = s.find_first_of('T');
+  return DateTime(Date::Parse(s.substr(0, index_of_T)),
+                  TimeOfDay::Parse(s.substr(index_of_T + 1)));
+}
+
 constexpr Date const& DateTime::date() const {
   return date_;
 }
@@ -660,6 +670,10 @@ constexpr Date DateParser::ToDate(std::optional<Calendar> const calendar,
   }
 }
 
+constexpr Date Date::Parse(std::string_view const s) {
+  return DateParser::Parse(s.data(), s.size());
+}
+
 // TimeOfDay parsing.
 
 // A `TimeParser` contains information about a string necessary to interpret it
@@ -836,6 +850,10 @@ constexpr TimeOfDay TimeParser::ToTime() const {
                  3 - (digit_count_ - hhmmss)));
 }
 
+constexpr TimeOfDay TimeOfDay::Parse(std::string_view const s) {
+  return TimeParser::Parse(s.data(), s.size());
+}
+
 // Julian date parsing.
 
 // A `JulianDateParser` contains information about a string necessary to
@@ -955,6 +973,15 @@ constexpr JulianDate JulianDateParser::ToMJD() const {
       decimal_mark_index_ < 0 ? 0 : digit_count_ - decimal_mark_index_);
 }
 
+constexpr JulianDate JulianDate::Parse(std::string_view const s) {
+  if (s.starts_with("JD")) {
+    return JulianDateParser::ParseJD(s.data() + 2, s.size() - 2);
+  } else {
+    CONSTEXPR_CHECK(s.starts_with("MJD"));
+    return JulianDateParser::ParseMJD(s.data() + 3, s.size() - 3);
+  }
+}
+
 // Operators.
 
 constexpr bool operator==(Date const& left, Date const& right) {
@@ -969,8 +996,8 @@ constexpr auto operator<=>(Date const& left, Date const& right) {
   return left.jd() <=> right.jd();
 }
 
-constexpr Date operator""_Date(char const* const str, std::size_t const size) {
-  return DateParser::Parse(str, size);
+consteval Date operator""_Date(char const* const str, std::size_t const size) {
+  return Date::Parse({str, size});
 }
 
 inline std::ostream& operator<<(std::ostream& out, Date const& date) {
@@ -995,9 +1022,9 @@ constexpr bool operator!=(TimeOfDay const& left, TimeOfDay const& right) {
   return !(left == right);
 }
 
-constexpr TimeOfDay operator""_Time(char const* const str,
+consteval TimeOfDay operator""_Time(char const* const str,
                                     std::size_t const size) {
-  return TimeParser::Parse(str, size);
+  return TimeOfDay::Parse({str, size});
 }
 
 inline std::ostream& operator<<(std::ostream& out, TimeOfDay const& time) {
@@ -1021,16 +1048,9 @@ constexpr bool operator!=(DateTime const& left, DateTime const& right) {
   return !(left == right);
 }
 
-constexpr DateTime operator""_DateTime(char const* const str,
+consteval DateTime operator""_DateTime(char const* const str,
                                        std::size_t const size) {
-  // Given correctness of the date and time parts of the string, this check
-  // ensures that either both are in basic format or both are in extended
-  // format.
-  CONSTEXPR_CHECK(contains(str, size, '-') == contains(str, size, ':'));
-  const int index_of_T = index_of(str, size, 'T');
-  return DateTime(DateParser::Parse(str, index_of_T),
-                  TimeParser::Parse(str + index_of_T + 1,
-                                    size - (index_of_T + 1)));
+  return DateTime::Parse({str, size});
 }
 
 inline std::ostream& operator<<(std::ostream& out, DateTime const& date_time) {
@@ -1041,14 +1061,9 @@ constexpr bool IsJulian(char const* const str, std::size_t const size) {
   return starts_with(str, size, "JD", 2) || starts_with(str, size, "MJD", 3);
 }
 
-constexpr JulianDate operator""_Julian(char const* const str,
+consteval JulianDate operator""_Julian(char const* const str,
                                        std::size_t const size) {
-  if (starts_with(str, size, "JD", 2)) {
-    return JulianDateParser::ParseJD(str + 2, size - 2);
-  } else {
-    CONSTEXPR_CHECK(starts_with(str, size, "MJD", 3));
-    return JulianDateParser::ParseMJD(str + 3, size - 3);
-  }
+  return JulianDate::Parse({str, size});
 }
 
 }  // namespace internal
