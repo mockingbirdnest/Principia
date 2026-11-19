@@ -343,7 +343,7 @@ std::ostream& operator<<(std::ostream& out,
 // A helper for building a `Multivector` using an instance of `Rank` instead of
 // a raw integer.  Apparently MSVC does not want to match a template template
 // parameter with a parameter pack to a template that does not have a parameter
-// pack.
+// pack.  See https://godbolt.org/z/rahs9dPq9.
 #if !PRINCIPIA_COMPILER_MSVC || \
     !(_MSC_FULL_VER == 195'336'930)
 template<quantity Scalar, typename Frame, typename Rank>
