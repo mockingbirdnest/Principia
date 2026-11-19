@@ -442,13 +442,13 @@ std::string ToMathematica(DoublePrecision<T> const& double_precision,
                    ToMathematica(double_precision.error, express_in)});
 }
 
-template<quantity S, typename F, typename OptionalExpressIn>
+template<typename S, typename F, typename OptionalExpressIn>
 std::string ToMathematica(Vector<S, F> const& vector,
                           OptionalExpressIn express_in) {
   return ToMathematica(vector.coordinates(), std::move(express_in));
 }
 
-template<quantity S, typename F, typename OptionalExpressIn>
+template<typename S, typename F, typename OptionalExpressIn>
 std::string ToMathematica(Bivector<S, F> const& bivector,
                           OptionalExpressIn express_in) {
   return ToMathematica(bivector.coordinates(), std::move(express_in));
@@ -460,10 +460,11 @@ std::string ToMathematica(Point<V> const& point,
   return ToMathematica(point - Point<V>(), std::move(express_in));
 }
 
-template<quantity S, typename F,
-         template<typename, typename> typename M,
-         typename OptionalExpressIn>
-std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,
+template<typename OptionalExpressIn,
+         quantity S,
+         template<quantity, typename...> typename G,
+         typename... P>
+std::string ToMathematica(SymmetricBilinearForm<S, G, P...> const& form,
                           OptionalExpressIn express_in) {
   return ToMathematica(form.coordinates(), std::move(express_in));
 }

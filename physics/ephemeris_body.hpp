@@ -542,8 +542,9 @@ Vector<Jerk, Frame> Ephemeris<Frame>::ComputeGravitationalJerkOnMasslessBody(
     Cube<Length> const Δq_norm³ = Δq² * Δq_norm;
     auto const Δq_norm⁵ = Δq_norm³ * Δq²;
 
-    auto const form = -InnerProductForm<Frame, Vector>() / Δq_norm³ +
-                      3 * SymmetricSquare(Δq) / Δq_norm⁵;
+    auto const form =
+        -InnerProductForm<MultivectorGenerator, Frame, Rank<1>>() / Δq_norm³ +
+        3 * SymmetricSquare(Δq) / Δq_norm⁵;
     auto const vector = form * Δv;
 
     jerk_on_b1 += μ2 * vector;
@@ -1175,8 +1176,9 @@ void Ephemeris<Frame>::ComputeJacobianByMassiveBodyOnMassiveBodies(
     Cube<Length> const Δq_norm³ = Δq² * Δq_norm;
     auto const Δq_norm⁵ = Δq_norm³ * Δq²;
 
-    auto const form = -InnerProductForm<Frame, Vector>() / Δq_norm³ +
-                      3 * SymmetricSquare(Δq) / Δq_norm⁵;
+    auto const form =
+        -InnerProductForm<MultivectorGenerator, Frame, Rank<1>>() / Δq_norm³ +
+        3 * SymmetricSquare(Δq) / Δq_norm⁵;
 
     // Note that the Jacobian is independent from the sign of Δq, hence the +
     // signs.
@@ -1215,8 +1217,9 @@ void Ephemeris<Frame>::ComputeGravitationalJerkByMassiveBodyOnMassiveBodies(
     Cube<Length> const Δq_norm³ = Δq² * Δq_norm;
     auto const Δq_norm⁵ = Δq_norm³ * Δq²;
 
-    auto const form = -InnerProductForm<Frame, Vector>() / Δq_norm³ +
-                      3 * SymmetricSquare(Δq) / Δq_norm⁵;
+    auto const form =
+        -InnerProductForm<MultivectorGenerator, Frame, Rank<1>>() / Δq_norm³ +
+        3 * SymmetricSquare(Δq) / Δq_norm⁵;
     auto const vector = form * Δv;
 
     jerk_on_b2 -= μ1 * vector;

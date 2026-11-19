@@ -18,12 +18,17 @@ using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 
 template<typename Frame>
-using InertiaTensor = SymmetricBilinearForm<MomentOfInertia, Frame, Bivector>;
+using InertiaTensor = SymmetricBilinearForm<MomentOfInertia,
+                                            MultivectorGenerator,
+                                            Frame,
+                                            Rank<2>>;
 
 // The type of the Jacobian of the gravitational acceleration field.
 template<typename Frame>
-using JacobianOfAcceleration =
-    SymmetricBilinearForm<Inverse<Square<Time>>, Frame, Vector>;
+using JacobianOfAcceleration = SymmetricBilinearForm<Inverse<Square<Time>>,
+                                                     MultivectorGenerator,
+                                                     Frame,
+                                                     Rank<1>>;
 
 }  // namespace internal
 
