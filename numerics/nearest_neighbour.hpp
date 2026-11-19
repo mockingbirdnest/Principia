@@ -9,7 +9,6 @@
 
 #include "base/algebra.hpp"
 #include "base/not_null.hpp"
-#include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/hilbert.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
@@ -21,7 +20,6 @@ namespace internal {
 
 using namespace principia::base::_algebra;
 using namespace principia::base::_not_null;
-using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_hilbert;
 using namespace principia::geometry::_symmetric_bilinear_form;
@@ -84,10 +82,6 @@ class PrincipalComponentPartitioningTree {
                                     Filter const& filter = nullptr) const;
 
  private:
-  // A frame used to compute the principal components.
-  using PrincipalComponentsFrame =
-      Frame<struct PrincipalComponentsFrameTag>;
-
   // A unit vector corresponding to `Displacement`.
   using Axis = NormalizedType<Displacement>;
 
@@ -96,16 +90,6 @@ class PrincipalComponentPartitioningTree {
   // means that Displacement is a Vector.
   using DisplacementSymmetricBilinearForm =
       decltype(SymmetricSquare(std::declval<Displacement>()));
-
-  // The principal components (a.k.a. eigensystem) of the above form.
-  using DisplacementPrincipalComponentsSystem =
-      typename DisplacementSymmetricBilinearForm::template Eigensystem<
-          PrincipalComponentsFrame>;
-
-  // A unit vector in the principal components frame.
-  using PrincipalComponentsAxis = decltype(
-      std::declval<DisplacementPrincipalComponentsSystem>().rotation.Inverse()(
-          std::declval<Axis>()));
 
   // The declarations of the tree structure.
   struct Internal;
