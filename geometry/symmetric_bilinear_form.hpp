@@ -120,6 +120,14 @@ template<template<quantity, typename...> typename Generator,
 SymmetricBilinearForm<double, Generator, Parameters...> const&
 InnerProductForm();
 
+// Convenient aliases.
+template<typename Frame>
+const auto VectorInnerProductForm =
+    InnerProductForm<MultivectorGenerator, Frame, Rank<1>>;
+template<typename Frame>
+const auto BivectorInnerProductForm =
+    InnerProductForm<MultivectorGenerator, Frame, Rank<2>>;
+
 template<quantity Scalar,
          template<quantity, typename...> typename Generator,
          typename... Parameters>
@@ -225,10 +233,12 @@ std::ostream& operator<<(
 }  // namespace internal
 
 using internal::Anticommutator;
+using internal::BivectorInnerProductForm;
 using internal::InnerProductForm;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;
+using internal::VectorInnerProductForm;
 
 }  // namespace _symmetric_bilinear_form
 }  // namespace geometry
