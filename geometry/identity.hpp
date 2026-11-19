@@ -13,12 +13,13 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE(
-    TEMPLATE(quantities::_concepts::quantity Scalar,
-             typename... HomogeneousSubspaceParameters) class,
-    SymmetricBilinearForm,
-    FROM(symmetric_bilinear_form),
-    INTO(identity));
+FORWARD_DECLARE(TEMPLATE(quantities::_concepts::quantity Scalar,
+                         TEMPLATE(quantities::_concepts::quantity, typename...)
+                             typename Generator,
+                         typename... Parameters) class,
+                SymmetricBilinearForm,
+                FROM(symmetric_bilinear_form),
+                INTO(identity));
 
 namespace _identity {
 namespace internal {

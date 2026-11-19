@@ -35,12 +35,13 @@ FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 Signature,
                 FROM(signature),
                 INTO(orthogonal_map));
-FORWARD_DECLARE(
-    TEMPLATE(quantities::_concepts::quantity Scalar,
-             typename... HomogeneousSubspaceParameters) class,
-    SymmetricBilinearForm,
-    FROM(symmetric_bilinear_form),
-    INTO(orthogonal_map));
+FORWARD_DECLARE(TEMPLATE(quantities::_concepts::quantity Scalar,
+                         TEMPLATE(quantities::_concepts::quantity, typename...)
+                             typename Generator,
+                         typename... Parameters) class,
+                SymmetricBilinearForm,
+                FROM(symmetric_bilinear_form),
+                INTO(orthogonal_map));
 
 class ConformalMapTest;
 class OrthogonalMapTest;

@@ -22,7 +22,9 @@ FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 FROM(permutation),
                 INTO(rotation));
 FORWARD_DECLARE(TEMPLATE(quantities::_concepts::quantity Scalar,
-                         typename... HomogeneousSubspaceParameters) class,
+                         TEMPLATE(quantities::_concepts::quantity, typename...)
+                             typename Generator,
+                         typename... Parameters) class,
                 SymmetricBilinearForm,
                 FROM(symmetric_bilinear_form),
                 INTO(rotation));
