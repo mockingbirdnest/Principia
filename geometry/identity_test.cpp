@@ -48,7 +48,8 @@ class IdentityTest : public testing::Test {
         bivector_(Bivector<Length, World1>(
             R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre))),
         trivector_(Trivector<Length, World1>(4.0 * Metre)),
-        form_(SymmetricBilinearForm<Length, World1, Rank<1>>(
+        form_(SymmetricBilinearForm<Length,
+                                    MultivectorGenerator, World1, Rank<1>>(
             R3x3Matrix<Length>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre},
                                {2.0 * Metre, 5.0 * Metre, 6.0 * Metre},
                                {3.0 * Metre, 6.0 * Metre, 4.0 * Metre}))) {}
@@ -56,7 +57,8 @@ class IdentityTest : public testing::Test {
   Vector<Length, World1> const vector_;
   Bivector<Length, World1> const bivector_;
   Trivector<Length, World1> const trivector_;
-  SymmetricBilinearForm<Length, World1, Rank<1>> const form_;
+  SymmetricBilinearForm<
+      Length, MultivectorGenerator, World1, Rank<1>> const form_;
 };
 
 using IdentityDeathTest = IdentityTest;

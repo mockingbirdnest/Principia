@@ -113,7 +113,9 @@ Signature<FromFrame, ToFrame>::operator()(
     coordinates(2, 0) *= -1;
     coordinates(0, 2) *= -1;
   }
-  return SymmetricBilinearForm<Scalar, ToFrame, Multivector>(coordinates);
+  return SymmetricBilinearForm<Scalar,
+                               MultivectorGenerator, ToFrame, Rank<rank>>(
+      coordinates);
 }
 
 template<typename FromFrame, typename ToFrame>

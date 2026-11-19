@@ -254,7 +254,7 @@ template<template<quantity, typename...> typename Generator,
 SymmetricBilinearForm<double, Generator, Parameters...> const&
 InnerProductForm() {
   static auto const identity =
-      SymmetricBilinearForm<double, Frame, Multivector>(
+      SymmetricBilinearForm<double, Generator, Parameters...>(
           R3x3Matrix<double>::Identity());
   return identity;
 }

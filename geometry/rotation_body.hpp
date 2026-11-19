@@ -285,8 +285,9 @@ Rotation<FromFrame, ToFrame>::operator()(
   // The averaging below ensures that the result is symmetric.
   // TODO(phl): Investigate if using a Cholesky or LDL decomposition would help
   // preserve symmetry and/or definiteness.
-  return SymmetricBilinearForm<Scalar, ToFrame, Multivector>(
-          0.5 * (result_matrix + result_matrix.Transpose()));
+  return SymmetricBilinearForm<Scalar,
+                               MultivectorGenerator, ToFrame, Rank<rank>>(
+      0.5 * (result_matrix + result_matrix.Transpose()));
 }
 
 template<typename FromFrame, typename ToFrame>
