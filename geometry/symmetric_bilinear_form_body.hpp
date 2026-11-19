@@ -233,15 +233,15 @@ IsDiagonalized() const {
          matrix_(1, 1) <= matrix_(2, 2);
 }
 
-template<typename Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
-Multivector<double, Frame>
-SymmetricBilinearForm<Scalar, Frame, Multivector>::PrincipalAxis() const {
+template<quantity Scalar, typename Frame, int rank>
+MultivectorGenerator<double, Frame, Rank<rank>>
+SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>>::
+PrincipalAxis() const {
   using Eigenframe = geometry::_frame::Frame<struct EigenframeTag>;
   auto const eigensystem = this->template Diagonalize<Eigenframe>();
   // The last eigenvalue is the largest one.
-  return eigensystem.rotation(Multivector<double, Eigenframe>({0, 0, 1}));
+  return eigensystem.rotation(
+      MultivectorGenerator<double, Eigenframe, Rank<rank>>({0, 0, 1}));
 }
 
 template<quantity Scalar, typename Frame, int rank>

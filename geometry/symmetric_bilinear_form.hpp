@@ -99,7 +99,7 @@ class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
   // the form, i.e., the eigenvector with the largest eigenvalue.  If this
   // operation is executed many times, it is more efficient to call
   // `Diagonalize` and use the resulting `Eigensystem`.
-  Multivector<double, Frame> PrincipalAxis() const;
+  MultivectorGenerator<double, Frame, Rank<rank>> PrincipalAxis() const;
 
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
