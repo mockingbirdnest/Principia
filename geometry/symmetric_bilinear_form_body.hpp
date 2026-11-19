@@ -219,7 +219,8 @@ Diagonalize() const {
     v[1] *= -1;
   }
 
-  return {SymmetricBilinearForm<Scalar, Eigenframe, Multivector>(
+  return {SymmetricBilinearForm<Scalar,
+                                MultivectorGenerator, Eigenframe, Rank<rank>>(
               R3x3Matrix<Scalar>::DiagonalMatrix({A(0, 0), A(1, 1), A(2, 2)})),
           Rotation<Eigenframe, Frame>(v[0], v[1], v[2])};
 }

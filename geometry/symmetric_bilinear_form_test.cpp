@@ -66,7 +66,8 @@ class SymmetricBilinearFormTest : public ::testing::Test {
         R3Element<double>(
             untyped_matrix(2, 0), untyped_matrix(2, 1), untyped_matrix(2, 2)) *
             Metre);
-    return SymmetricBilinearForm<Length, Frame, Vector>(typed_matrix);
+    return SymmetricBilinearForm<Length, MultivectorGenerator, Frame, Rank<1>>(
+        typed_matrix);
   }
 };
 
