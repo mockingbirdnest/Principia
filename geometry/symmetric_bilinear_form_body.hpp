@@ -336,89 +336,82 @@ operator/(
                                Parameters...>(left.coordinates() / right);
 }
 
-template<quantity LScalar,
-         quantity RScalar,
-         typename Frame,
-         template<typename, typename> typename M,
-         int rank>
-  requires(std::is_same_v<M<double, Frame>,
-                          _grassmann::Multivector<double, Frame, rank>>)
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
-    SymmetricBilinearForm<LScalar, Frame, M> const& left,
+    SymmetricBilinearForm<
+        LScalar, MultivectorGenerator, Frame, Rank<rank>> const& left,
     Multivector<RScalar, Frame, rank> const& right) {
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
-      left.matrix_ * right.coordinates());
+      left.coordinates() * right.coordinates());
 }
 
-template<quantity LScalar,
-         quantity RScalar,
-         typename Frame,
-         template<typename, typename> typename M,
-         int rank>
-  requires(std::is_same_v<M<double, Frame>,
-                          _grassmann::Multivector<double, Frame, rank>>)
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     Multivector<LScalar, Frame, rank> const& left,
-    SymmetricBilinearForm<RScalar, Frame, M> const& right) {
+    SymmetricBilinearForm<
+        RScalar, MultivectorGenerator, Frame, Rank<rank>> const& right) {
   return Multivector<Product<LScalar, RScalar>, Frame, rank>(
-      left.coordinates() * right.matrix_);
+      left.coordinates() * right.coordinates());
 }
 
-template<quantity LScalar,
-         quantity RScalar,
-         typename Frame,
-         template<typename, typename> typename M,
-         int rank>
-  requires(std::is_same_v<M<double, Frame>,
-                          _grassmann::Multivector<double, Frame, rank>>)
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
     Multivector<LScalar, Frame, rank> const& left,
-    SymmetricBilinearForm<RScalar, Frame, M> const& right) {
+    SymmetricBilinearForm<
+        RScalar, MultivectorGenerator, Frame, Rank<rank>> const& right) {
   return Multivector<Quotient<LScalar, RScalar>, Frame, rank>(
-      right.matrix_.Solve(left.coordinates()));
+      right.coordinates().Solve(left.coordinates()));
 }
 
 template<quantity LScalar, quantity RScalar, typename Frame>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Vector>
+SymmetricBilinearForm<Product<LScalar, RScalar>,
+                      MultivectorGenerator, Frame, Rank<1>>
 SymmetricProduct(Vector<LScalar, Frame> const& left,
                  Vector<RScalar, Frame> const& right) {
-  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Vector>(
-      0.5 * (KroneckerProduct(left.coordinates(), right.coordinates()) +
-             KroneckerProduct(right.coordinates(), left.coordinates())));
+  auto const& left_coordinates = left.coordinates();
+  auto const& right_coordinates = right.coordinates();
+  return SymmetricBilinearForm<Product<LScalar, RScalar>,
+                               MultivectorGenerator, Frame, Rank<1>>(
+      0.5 * (KroneckerProduct(left_coordinates, right_coordinates) +
+             KroneckerProduct(right_coordinates, left_coordinates)));
 }
 
 template<quantity Scalar, typename Frame>
-SymmetricBilinearForm<Square<Scalar>, Frame, Vector>
+SymmetricBilinearForm<Square<Scalar>, MultivectorGenerator, Frame, Rank<1>>
 SymmetricSquare(Vector<Scalar, Frame> const& vector) {
   auto const& coordinates = vector.coordinates();
-  return SymmetricBilinearForm<Square<Scalar>, Frame, Vector>(
+  return SymmetricBilinearForm<Square<Scalar>,
+                               MultivectorGenerator, Frame, Rank<1>>(
       KroneckerProduct(coordinates, coordinates));
 }
 
 template<quantity LScalar, quantity RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
-    SymmetricBilinearForm<LScalar, Frame, Vector> const& form,
+    SymmetricBilinearForm<
+        LScalar, MultivectorGenerator, Frame, Rank<1>> const& form,
     Bivector<RScalar, Frame> const& bivector) {
+  auto const& form_coordinates = form.coordinates();
+  auto const& bivector_coordinates = bivector.coordinates();
   return Bivector<Product<LScalar, RScalar>, Frame>(
-      form.matrix_.Trace() * bivector.coordinates() -
-      form.matrix_ * bivector.coordinates());
+      form_coordinates.Trace() * bivector_coordinates -
+      form_coordinates * bivector_coordinates);
 }
 
 template<quantity Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
+         template<quantity, typename...> typename Generator,
+         typename... Parameters>
 std::string DebugString(
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& form) {
-  return DebugString(form.matrix_);
+    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& form) {
+  return DebugString(form.coordinates());
 }
 
 template<quantity Scalar,
-         typename Frame,
-         template<typename, typename> typename Multivector>
+         template<quantity, typename...> typename Generator,
+         typename... Parameters>
 std::ostream& operator<<(
     std::ostream& out,
-    SymmetricBilinearForm<Scalar, Frame, Multivector> const& form) {
-  out << form.matrix_;
+    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& form) {
+  out << form.coordinates();
   return out;
 }
 

@@ -257,46 +257,25 @@ operator/(SymmetricBilinearForm<LScalar, Generator, Parameters...> const& left,
           RScalar right);
 
 
-// NOTE(egg): An `operator*(SymmetricBilinearForm<L, F, M>, M<R, F>)` would fail
-// to deduce M, for reasons that I do not quite understand (they seem to have to
-// do with Vector being an alias and not being the same thing as Multivector).
-// Instead we have this `requires` mess.  Note that the use of `_grassmann` is
-// needed to match the friend declarations.
-
-template<quantity LScalar,
-         quantity RScalar,
-         typename Frame,
-         typename Rank,
-         int rank>
-  requires(rank == Rank::rank)
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
-    SymmetricBilinearForm<LScalar,
-                          MultivectorGenerator, Frame, Rank> const& left,
+    SymmetricBilinearForm<
+        LScalar, MultivectorGenerator, Frame, Rank<rank>> const& left,
     Multivector<RScalar, Frame, rank> const& right);
 
-template<quantity LScalar,
-         quantity RScalar,
-         typename Frame,
-         typename Rank,
-         int rank>
-  requires(rank == Rank::rank)
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     Multivector<LScalar, Frame, rank> const& left,
-    SymmetricBilinearForm<RScalar,
-                          MultivectorGenerator, Frame, Rank> const& right);
+    SymmetricBilinearForm<
+        RScalar, MultivectorGenerator, Frame, Rank<rank>> const& right);
 
 // Solves the system `result * right == left`.  Note that by symmetry, this is
 // also the solution of `right * result == left`.
-template<quantity LScalar,
-         quantity RScalar,
-         typename Frame,
-         typename Rank,
-         int rank>
-  requires(rank == Rank::rank)
+template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
     Multivector<LScalar, Frame, rank> const& left,
-    SymmetricBilinearForm<RScalar,
-                          MultivectorGenerator, Frame, Rank> const& right);
+    SymmetricBilinearForm<
+        RScalar, MultivectorGenerator, Frame, Rank<rank>> const& right);
 
 // `SymmetricProduct(v, w)` is v ⊙ w ≔ (v ⊗ w + w ⊗ v) / 2.
 template<quantity LScalar, quantity RScalar, typename Frame>
