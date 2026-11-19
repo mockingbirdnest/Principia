@@ -261,7 +261,7 @@ Multivector<double, Frame>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::PrincipalAxis() const {
   using Eigenframe = geometry::_frame::Frame<struct EigenframeTag>;
   auto const eigensystem = this->template Diagonalize<Eigenframe>();
-  // The last eigenpoint is the largest one.
+  // The last eigenvalue is the largest one.
   return eigensystem.rotation(Multivector<double, Eigenframe>({0, 0, 1}));
 }
 
