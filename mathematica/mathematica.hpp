@@ -227,11 +227,11 @@ template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(DoublePrecision<T> const& double_precision,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename S, typename F, typename OptionalExpressIn = std::nullopt_t>
+template<quantity S, typename F, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Vector<S, F> const& vector,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename S, typename F, typename OptionalExpressIn = std::nullopt_t>
+template<quantity S, typename F, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Bivector<S, F> const& bivector,
                           OptionalExpressIn express_in = std::nullopt);
 
