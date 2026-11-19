@@ -339,6 +339,12 @@ template<quantity Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
 
+
+// A helper for building a `Multivector` using an instance of `Rank` instead of
+// a raw integer.
+template<quantity Scalar, typename Frame, typename Rank>
+using MultivectorGenerator = Multivector<Scalar, Frame, Rank::rank>;
+
 }  // namespace internal
 
 using internal::AngleBetween;
@@ -350,6 +356,7 @@ using internal::FusedNegatedMultiplyAdd;
 using internal::FusedNegatedMultiplySubtract;
 using internal::InnerProduct;
 using internal::Multivector;
+using internal::MultivectorGenerator;
 using internal::Normalize;
 using internal::NormalizeOrZero;
 using internal::OrientedAngleBetween;

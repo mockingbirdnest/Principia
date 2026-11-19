@@ -240,10 +240,12 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<quantity Scalar,
-           template<typename S, typename F> typename Multivector>
-  SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
-      SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
+  template<quantity Scalar, int rank>
+  SymmetricBilinearForm<Scalar, MultivectorGenerator, ToFrame, Rank<rank>>
+  operator()(
+      SymmetricBilinearForm<
+          Scalar,
+          MultivectorGenerator, FromFrame, Rank<rank>> const& form) const;
 
   template<typename T>
   typename Mappable<Rotation, T>::type operator()(T const& t) const;

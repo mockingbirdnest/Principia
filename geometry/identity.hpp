@@ -60,8 +60,11 @@ class Identity : public LinearMap<Identity<FromFrame, ToFrame>,
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   template<quantity Scalar, int rank>
-  SymmetricBilinearForm<Scalar, ToFrame, Rank<rank>> operator()(
-      SymmetricBilinearForm<Scalar, FromFrame, Rank<rank>> const& form) const;
+  SymmetricBilinearForm<Scalar, MultivectorGenerator, ToFrame, Rank<rank>>
+  operator()(
+      SymmetricBilinearForm<
+          Scalar,
+          MultivectorGenerator, FromFrame, Rank<rank>> const& form) const;
 
   template<typename T>
   typename Mappable<Identity, T>::type operator()(T const& t) const;

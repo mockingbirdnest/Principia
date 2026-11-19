@@ -36,7 +36,7 @@ class SymmetricBilinearForm;
 // A symmetric bilinear form with dimensionality `Scalar`, on the given kind of
 // `Multivector`, expressed in the coordinates of `Frame`.
 template<quantity Scalar, typename Frame, int rank>
-class SymmetricBilinearForm<Scalar, Multivector, Frame, Rank<rank>> {
+class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
  public:
   SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
@@ -67,13 +67,13 @@ class SymmetricBilinearForm<Scalar, Multivector, Frame, Rank<rank>> {
   //   F.Anticommutator() * Wedge(v, w) = Wedge(F * v, w) + Wedge(v, F * w),
   // which is the generalization to nonsymmetric F.
   // This operation is linear in `*this`.
-  SymmetricBilinearForm<Scalar, Frame, Rank<2>> Anticommutator() const
-    requires(rank == 1);
+  SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<2>>
+  Anticommutator() const requires(rank == 1);
 
   // This function is the inverse of `Anticommutator()`.  It is well-defined
   // only in dimension 3, where dim ⋀²V = dim V.
-  SymmetricBilinearForm<Scalar, Frame, Rank<1>> AnticommutatorInverse() const
-    requires(rank == 2);
+  SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<1>>
+  AnticommutatorInverse() const requires(rank == 2);
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
   // which gives the eigenvalues; and (2) a rotation from the current basis to
@@ -81,7 +81,8 @@ class SymmetricBilinearForm<Scalar, Multivector, Frame, Rank<rank>> {
   // increasing order.
   template<typename Eigenframe>
   struct Eigensystem {
-    SymmetricBilinearForm<Scalar, Multivector, Eigenframe, Rank<rank>> form;
+    SymmetricBilinearForm<Scalar,
+                          MultivectorGenerator, Eigenframe, Rank<rank>> form;
     Rotation<Eigenframe, Frame> rotation;
   };
 
@@ -105,7 +106,9 @@ class SymmetricBilinearForm<Scalar, Multivector, Frame, Rank<rank>> {
   // symmetric.
   R3x3Matrix<Scalar> matrix_;
 
-  template<quantity S, typename... H>
+  template<quantity S,
+           template<quantity, typename...> typename G,
+           typename... P>
   friend class SymmetricBilinearForm;
 
   template<typename F, template<typename, typename> typename M>
@@ -331,13 +334,11 @@ std::ostream& operator<<(
 
 }  // namespace internal
 
-#if 0
 using internal::Anticommutator;
 using internal::InnerProductForm;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;
-#endif
 
 }  // namespace _symmetric_bilinear_form
 }  // namespace geometry

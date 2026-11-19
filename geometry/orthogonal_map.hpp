@@ -86,8 +86,11 @@ class OrthogonalMap : public LinearMap<OrthogonalMap<FromFrame, ToFrame>,
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   template<quantity Scalar, int rank>
-  SymmetricBilinearForm<Scalar, ToFrame, Rank<rank>> operator()(
-      SymmetricBilinearForm<Scalar, FromFrame, Rank<rank>> const& form) const;
+  SymmetricBilinearForm<Scalar, MultivectorGenerator, ToFrame, Rank<rank>>
+  operator()(
+      SymmetricBilinearForm<
+          Scalar,
+          MultivectorGenerator, FromFrame, Rank<rank>> const& form) const;
 
   template<typename T>
   typename Mappable<OrthogonalMap, T>::type operator()(T const& t) const;
