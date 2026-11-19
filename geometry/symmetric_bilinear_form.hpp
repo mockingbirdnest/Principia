@@ -111,96 +111,96 @@ class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
            typename... P>
   friend class SymmetricBilinearForm;
 
-  template<typename F, template<typename, typename> typename M>
-  friend SymmetricBilinearForm<double, F, M> const& InnerProductForm();
+  template<typename F,
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend SymmetricBilinearForm<double, G, P...> const& InnerProductForm();
 
-  template<quantity S, typename F, template<typename, typename> typename M>
-  friend SymmetricBilinearForm<S, F, M> operator+(
-      SymmetricBilinearForm<S, F, M> const& right);
-  template<quantity S, typename F, template<typename, typename> typename M>
-  friend SymmetricBilinearForm<S, F, M> operator-(
-      SymmetricBilinearForm<S, F, M> const& right);
+  template<quantity S,
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend SymmetricBilinearForm<S, G, P...> operator+(
+      SymmetricBilinearForm<S, G, P...> const& right);
+  template<quantity S,
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend SymmetricBilinearForm<S, G, P...> operator-(
+      SymmetricBilinearForm<S, G, P...> const& right);
 
-  template<quantity S, typename F, template<typename, typename> typename M>
-  friend SymmetricBilinearForm<S, F, M> operator+(
-      SymmetricBilinearForm<S, F, M> const& left,
-      SymmetricBilinearForm<S, F, M> const& right);
-  template<quantity S, typename F, template<typename, typename> typename M>
-  friend SymmetricBilinearForm<S, F, M> operator-(
-      SymmetricBilinearForm<S, F, M> const& left,
-      SymmetricBilinearForm<S, F, M> const& right);
+  template<quantity S,
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend SymmetricBilinearForm<S, G, P...> operator+(
+      SymmetricBilinearForm<S, G, P...> const& left,
+      SymmetricBilinearForm<S, G, P...> const& right);
+  template<quantity S,
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend SymmetricBilinearForm<S, G, P...> operator-(
+      SymmetricBilinearForm<S, G, P...> const& left,
+      SymmetricBilinearForm<S, G, P...> const& right);
 
   template<convertible_to_quantity L,
            quantity R,
-           typename F,
-           template<typename, typename> typename M>
-  friend SymmetricBilinearForm<Product<L, R>, F, M> operator*(
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend SymmetricBilinearForm<Product<L, R>, G, P...> operator*(
       L left,
-      SymmetricBilinearForm<R, F, M> const& right);
+      SymmetricBilinearForm<R, G, P...> const& right);
   template<quantity L,
            convertible_to_quantity R,
-           typename F,
-           template<typename, typename> typename M>
-  friend SymmetricBilinearForm<Product<L, R>, F, M> operator*(
-      SymmetricBilinearForm<L, F, M> const& left,
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend SymmetricBilinearForm<Product<L, R>, G, P...> operator*(
+      SymmetricBilinearForm<L, G, P...> const& left,
       R right);
   template<quantity L,
            convertible_to_quantity R,
-           typename F,
-           template<typename, typename> typename M>
-  friend SymmetricBilinearForm<Quotient<L, R>, F, M> operator/(
-      SymmetricBilinearForm<L, F, M> const& left,
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend SymmetricBilinearForm<Quotient<L, R>, G, P...> operator/(
+      SymmetricBilinearForm<L, G, P...> const& left,
       R right);
 
-  template<quantity L,
-           quantity R,
-           typename F,
-           template<typename, typename> typename M,
-           int r>
-    requires(std::is_same_v<M<double, F>,
-                            _grassmann::Multivector<double, F, r>>)
+  template<quantity L, quantity R, typename F, typename Rank, int r>
+    requires(r == Rank::rank)
   friend _grassmann::Multivector<Product<L, R>, F, r> operator*(
-      SymmetricBilinearForm<L, F, M> const& left,
+      SymmetricBilinearForm<L, MultivectorGenerator, F, Rank> const& left,
       _grassmann::Multivector<R, F, r> const& right);
 
-  template<quantity L,
-           quantity R,
-           typename F,
-           template<typename, typename> typename M,
-           int r>
-    requires(std::is_same_v<M<double, F>,
-                            _grassmann::Multivector<double, F, r>>)
+  template<quantity L, quantity R, typename F, typename Rank, int r>
+    requires(r == Rank::rank)
   friend _grassmann::Multivector<Product<L, R>, F, r> operator*(
       _grassmann::Multivector<L, F, r> const& left,
-      SymmetricBilinearForm<R, F, M> const& right);
+      SymmetricBilinearForm<R, MultivectorGenerator, F, Rank> const& right);
 
-  template<quantity L,
-           quantity R,
-           typename F,
-           template<typename, typename> typename M,
-           int r>
-    requires(std::is_same_v<M<double, F>,
-                            _grassmann::Multivector<double, F, r>>)
+  template<quantity L, quantity R, typename F, typename Rank, int r>
+    requires(r == Rank::rank)
   friend _grassmann::Multivector<Quotient<L, R>, F, r> operator/(
       _grassmann::Multivector<L, F, r> const& left,
-      SymmetricBilinearForm<R, F, M> const& right);
+      SymmetricBilinearForm<R, MultivectorGenerator, F, Rank> const& right);
 
   template<quantity L, quantity R, typename F>
-  friend SymmetricBilinearForm<Product<L, R>, F, Vector>
+  friend SymmetricBilinearForm<Product<L, R>, MultivectorGenerator, F, Rank<1>>
   SymmetricProduct(Vector<L, F> const& left,
                    Vector<R, F> const& right);
 
   template<quantity L, quantity R, typename F>
   friend Bivector<Product<L, R>, F> Anticommutator(
-      SymmetricBilinearForm<L, F, Vector> const& form,
+      SymmetricBilinearForm<L, MultivectorGenerator, F, Rank<1>> const& form,
       Bivector<R, F> const& bivector);
 
-  template<quantity S, typename F, template<typename, typename> typename M>
-  friend std::string DebugString(SymmetricBilinearForm<S, F, M> const& form);
+  template<quantity S,
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend std::string DebugString(SymmetricBilinearForm<S, G, P...> const& form);
 
-  template<quantity S, typename F, template<typename, typename> typename M>
-  friend std::ostream& operator<<(std::ostream& out,
-                                  SymmetricBilinearForm<S, F, M> const& form);
+  template<quantity S,
+           template<quantity, typename...> typename G,
+           typename... P>
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      SymmetricBilinearForm<S, G, P...> const& form);
 };
 
 // `InnerProductForm()` is the symmetric bilinear form such that for all v and
