@@ -86,12 +86,7 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    // In this file the difference between MSVC and Clang comes from the fact
-    // that the behaviour of `std::uniform_real_distribution<>` is
-    // implementation-defined.
-    EXPECT_THAT(function_invocations,
-                AnyOf(Eq(1264),    // MSVC.
-                      Eq(1243)));  // Clang.
+    EXPECT_EQ(function_invocations, 407);
     EXPECT_EQ(316, gradient_invocations);
 
     EXPECT_THAT(
@@ -118,9 +113,7 @@ TEST_F(GlobalOptimizationTest, Branin) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_THAT(function_invocations,
-                AnyOf(Eq(1019),   // MSVC.
-                      Eq(997)));  // Clang.
+    EXPECT_EQ(232, function_invocations);
     EXPECT_EQ(136, gradient_invocations);
 
     EXPECT_THAT(
@@ -182,9 +175,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_THAT(function_invocations,
-                AnyOf(Eq(2129),    // MSVC.
-                      Eq(2078)));  // Clang.
+    EXPECT_EQ(474, function_invocations);
     EXPECT_EQ(278, gradient_invocations);
     EXPECT_THAT(
         minima,
@@ -210,9 +201,7 @@ TEST_F(GlobalOptimizationTest, GoldsteinPrice) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_THAT(function_invocations,
-                AnyOf(Eq(5730),    // MSVC.
-                      Eq(5674)));  // Clang.
+    EXPECT_EQ(678, function_invocations);
     EXPECT_EQ(178, gradient_invocations);
     EXPECT_THAT(
         minima,
@@ -279,9 +268,7 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_THAT(function_invocations,
-                AnyOf(Eq(1319),    // MSVC.
-                      Eq(1357)));  // Clang.
+    EXPECT_EQ(526, function_invocations);
     EXPECT_EQ(429, gradient_invocations);
     EXPECT_THAT(
         minima,
@@ -310,7 +297,7 @@ TEST_F(GlobalOptimizationTest, Hartmann3) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(199, function_invocations);
+    EXPECT_EQ(142, function_invocations);
     EXPECT_EQ(126, gradient_invocations);
     EXPECT_THAT(
         minima,
@@ -364,9 +351,7 @@ TEST_F(GlobalOptimizationTest, Potential) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_THAT(function_invocations,
-                AnyOf(Eq(1452),    // MSVC.
-                      Eq(1448)));  // Clang.
+    EXPECT_EQ(586, function_invocations);
     EXPECT_EQ(503, gradient_invocations);
     EXPECT_THAT(minima, IsEmpty());
   }
@@ -378,7 +363,7 @@ TEST_F(GlobalOptimizationTest, Potential) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(127, function_invocations);
+    EXPECT_EQ(98, function_invocations);
     EXPECT_EQ(91, gradient_invocations);
     EXPECT_THAT(minima, IsEmpty());
   }
