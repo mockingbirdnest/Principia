@@ -53,7 +53,7 @@ struct ValueGenerator<Quantity<D>> {
   }
 };
 
-template<typename S>
+template<quantity S>
 struct ValueGenerator<R3Element<S>> {
   static R3Element<S> Get(std::mt19937_64& random) {
     return {ValueGenerator<S>::Get(random),
@@ -62,7 +62,7 @@ struct ValueGenerator<R3Element<S>> {
   }
 };
 
-template<typename S, typename F, int r>
+template<quantity S, typename F, int r>
 struct ValueGenerator<Multivector<S, F, r>> {
   static Multivector<S, F, r> Get(std::mt19937_64& random) {
     return Multivector<S, F, r>(ValueGenerator<R3Element<S>>::Get(random));

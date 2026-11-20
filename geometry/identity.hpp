@@ -7,13 +7,14 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/concepts.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
 
 FORWARD_DECLARE(
-    TEMPLATE(typename Scalar,
+    TEMPLATE(quantities::_concepts::quantity Scalar,
              typename Frame,
              template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm,
@@ -30,6 +31,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_concepts;
 
 // The identity map.
 template<typename FromFrame, typename ToFrame>
@@ -45,19 +47,19 @@ class Identity : public LinearMap<Identity<FromFrame, ToFrame>,
 
   Identity<ToFrame, FromFrame> Inverse() const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Bivector<Scalar, ToFrame> operator()(
       Bivector<Scalar, FromFrame> const& bivector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<typename Scalar,
+  template<quantity Scalar,
            template<typename, typename> typename Multivector>
   SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
@@ -79,7 +81,7 @@ class Identity : public LinearMap<Identity<FromFrame, ToFrame>,
     requires serializable<FromFrame> && serializable<ToFrame>;
 
  private:
-  template<typename Scalar>
+  template<quantity Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 };
 

@@ -13,7 +13,7 @@ Map LinearMap<Map, FromFrame, ToFrame>::Identity() {
 }
 
 template<typename Map, typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Vector<Scalar, ToFrame> LinearMap<Map, FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
   return static_cast<Map>(*this)(vector);

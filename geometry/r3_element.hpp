@@ -29,13 +29,13 @@ constexpr std::int64_t R3ElementAlignment = 32;
 constexpr std::int64_t R3ElementAlignment = 16;
 #endif
 
-template<typename Scalar>
+template<quantity Scalar>
 struct SphericalCoordinates;
 
 // An `R3Element<Scalar>` is an element of Scalar³. `Scalar` should be a vector
 // space over ℝ, represented by `double`. `R3Element` is the underlying data
 // type for more advanced strongly typed structures suchas `Multivector`.
-template<typename Scalar>
+template<quantity Scalar>
 struct alignas(R3ElementAlignment) R3Element final {
  public:
   constexpr R3Element();
@@ -66,7 +66,7 @@ struct alignas(R3ElementAlignment) R3Element final {
   // Returns a vector coplanar to `*this` and `r3_element`, orthogonal to
   // `r3_element`, and on the same side of `r3_element` as `*this`.
   // Uses the modified Gram-Schmidt algorithm.  Fails if `r3_element` is zero.
-  template<typename S>
+  template<quantity S>
   R3Element OrthogonalizationAgainst(R3Element<S> const& r3_element) const;
 
   void WriteToMessage(not_null<serialization::R3Element*> message) const;
@@ -91,7 +91,7 @@ struct alignas(R3ElementAlignment) R3Element final {
   };
 };
 
-template<typename Scalar>
+template<quantity Scalar>
 struct SphericalCoordinates final {
   // Default, but prevents aggregate initialization of `SphericalCoordinates` to
   // obviate confusion over the order of `latitude` and `longitude`.
@@ -111,132 +111,121 @@ struct SphericalCoordinates final {
   Angle longitude;
 };
 
-template<typename Scalar>
+template<quantity Scalar>
 SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
                                                      Angle const& latitude,
                                                      Angle const& longitude);
 
-template<typename Scalar>
+template<quantity Scalar>
 std::ostream& operator<<(
     std::ostream& out,
     SphericalCoordinates<Scalar> const& spherical_coordinates);
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& right);
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> operator-(R3Element<Scalar> const& right);
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right);
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<Scalar> operator-(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right);
 
 // Dimensionful multiplication `LScalar * R3Element<RScalar>` is the tensor
 // product LScalar ⊗ Scalar³. Since LScalar ⊗ Scalar³ ≅ (LScalar ⊗ Scalar)³,
 // the result is an R3Element<Product<LScalar, RScalar>>.
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> operator*(LScalar const& left,
                                                R3Element<RScalar> const& right);
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> operator*(R3Element<LScalar> const& left,
                                                RScalar const& right);
 
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Quotient<LScalar, RScalar>> operator/(R3Element<LScalar> const& left,
                                                 RScalar const& right);
 
 // FMA for ±vector * scalar ± vector.
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     R3Element<LScalar> const& a,
     RScalar const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 
 // FMA for ±scalar * vector ± vector.
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplyAdd(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
-template<typename LScalar, typename RScalar>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> FusedNegatedMultiplySubtract(
     LScalar const& a,
     R3Element<RScalar> const& b,
     R3Element<Product<LScalar, RScalar>> const& c);
 
-template<typename Scalar>
+template<quantity Scalar>
 constexpr bool operator==(R3Element<Scalar> const& left,
                           R3Element<Scalar> const& right);
-template<typename Scalar>
+template<quantity Scalar>
 constexpr bool operator!=(R3Element<Scalar> const& left,
                           R3Element<Scalar> const& right);
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<double> Normalize(R3Element<Scalar> const& r3_element);
 
-template<typename Scalar>
+template<quantity Scalar>
 R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element);
 
-template<typename Scalar>
+template<quantity Scalar>
 bool IsFinite(R3Element<Scalar> const& r3_element);
 
-template<typename Scalar>
+template<quantity Scalar>
 std::string DebugString(R3Element<Scalar> const& r3_element);
 
-template<typename Scalar>
+template<quantity Scalar>
 std::ostream& operator<<(std::ostream& out,
                          R3Element<Scalar> const& r3_element);
 
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 R3Element<Product<LScalar, RScalar>> Cross(
     R3Element<LScalar> const& left,
     R3Element<RScalar> const& right);
 
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
                               R3Element<RScalar> const& right);
 
 // The result is in [0, π]; the function is commutative.
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 Angle AngleBetween(R3Element<LScalar> const& left,
                    R3Element<RScalar> const& right);
 
@@ -266,7 +255,7 @@ using internal::SphericalCoordinates;
 namespace base {
 namespace _algebra {
 
-template<typename Scalar>
+template<quantities::_concepts::quantity Scalar>
 constexpr int dimension<geometry::_r3_element::R3Element<Scalar>, double> = 3;
 
 }  // namespace _algebra

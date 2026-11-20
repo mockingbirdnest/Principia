@@ -54,7 +54,7 @@ class Multivector<Scalar, Frame, 1> final {
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
-  template<typename S>
+  template<quantity S>
   Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 1> const& multivector) const;
 
@@ -92,7 +92,7 @@ class Multivector<Scalar, Frame, 2> final {
   Scalar Norm() const;
   Square<Scalar> Norm²() const;
 
-  template<typename S>
+  template<quantity S>
   Multivector OrthogonalizationAgainst(
       Multivector<S, Frame, 2> const& multivector) const;
 
@@ -144,191 +144,191 @@ using Bivector = Multivector<Scalar, Frame, 2>;
 template<quantity Scalar, typename Frame>
 using Trivector = Multivector<Scalar, Frame, 3>;
 
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Product<LScalar, RScalar> InnerProduct(Vector<LScalar, Frame> const& left,
                                        Vector<RScalar, Frame> const& right);
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Product<LScalar, RScalar> InnerProduct(Bivector<LScalar, Frame> const& left,
                                        Bivector<RScalar, Frame> const& right);
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Product<LScalar, RScalar> InnerProduct(Trivector<LScalar, Frame> const& left,
                                        Trivector<RScalar, Frame> const& right);
 
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Wedge(
     Vector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Trivector<Product<LScalar, RScalar>, Frame> Wedge(
     Bivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Trivector<Product<LScalar, RScalar>, Frame> Wedge(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
 // Lie bracket on 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉).
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Commutator(
     Bivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
 // Returns multivector / ‖multivector‖.
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 Multivector<double, Frame, rank> Normalize(
     Multivector<Scalar, Frame, rank> const& multivector);
 
 // Same as above, but returns the zero multivector if its argument is zero.
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 Multivector<double, Frame, rank> NormalizeOrZero(
     Multivector<Scalar, Frame, rank> const& multivector);
 
 // Left action of 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) on 𝑉.
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Vector<Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 
 // Right action of 𝑉 ∧ 𝑉 ≅ 𝖘𝔬(𝑉) on 𝑉* ≅ 𝑉.
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Vector<Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
 
 // The result is in [0, π]; the function is commutative.
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Angle AngleBetween(Vector<LScalar, Frame> const& v,
                    Vector<RScalar, Frame> const& w);
 
 // The result is in [0, π]; the function is commutative.
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Angle AngleBetween(Bivector<LScalar, Frame> const& v,
                    Bivector<RScalar, Frame> const& w);
 
 // The result is in [-π, π]; the function is anticommutative, the result is in
 // [0, π] if `InnerProduct(Wedge(v, w), positive) >= 0`.
-template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, quantity PScalar, typename Frame>
 Angle OrientedAngleBetween(Vector<LScalar, Frame> const& v,
                            Vector<RScalar, Frame> const& w,
                            Bivector<PScalar, Frame> const& positive);
 
 // The result is in [-π, π]; the function is anticommutative, the result is in
 // [0, π] if `InnerProduct(Commutator(v, w), positive) >= 0`.
-template<typename LScalar, typename RScalar, typename PScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, quantity PScalar, typename Frame>
 Angle OrientedAngleBetween(Bivector<LScalar, Frame> const& v,
                            Bivector<RScalar, Frame> const& w,
                            Bivector<PScalar, Frame> const& positive);
 
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Vector<Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
     Trivector<RScalar, Frame> const& right);
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Vector<Product<LScalar, RScalar>, Frame> operator*(
     Trivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right);
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     Trivector<RScalar, Frame> const& right);
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> operator*(
     Trivector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator+(
     Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator-(
     Multivector<Scalar, Frame, rank> const& right);
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator+(
     Multivector<Scalar, Frame, rank> const& left,
     Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 Multivector<Scalar, Frame, rank> operator-(
     Multivector<Scalar, Frame, rank> const& left,
     Multivector<Scalar, Frame, rank> const& right);
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     LScalar const& left,
     Multivector<RScalar, Frame, rank> const& right);
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     Multivector<LScalar, Frame, rank> const& left,
     RScalar const& right);
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar,
+         typename Frame, int rank>
 Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
     Multivector<LScalar, Frame, rank> const& left,
     RScalar const& right);
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<RScalar>
+template<quantity LScalar, convertible_to_quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 FusedNegatedMultiplySubtract(
     Multivector<LScalar, Frame, rank> const& a,
     RScalar const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
 
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplyAdd(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedMultiplySubtract(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> FusedNegatedMultiplyAdd(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
-template<typename LScalar, typename RScalar, typename Frame, int rank>
-  requires convertible_to_quantity<LScalar>
+template<convertible_to_quantity LScalar, quantity RScalar,
+         typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank>
 FusedNegatedMultiplySubtract(
     LScalar const& a,
     Multivector<RScalar, Frame, rank> const& b,
     Multivector<Product<LScalar, RScalar>, Frame, rank> const& c);
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 bool IsFinite(Multivector<Scalar, Frame, rank> const& multivector);
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 std::string DebugString(Multivector<Scalar, Frame, rank> const& multivector);
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
 
@@ -356,7 +356,7 @@ using internal::Wedge;
 namespace base {
 namespace _algebra {
 
-template<typename Scalar, typename Frame, int rank>
+template<quantities::_concepts::quantity Scalar, typename Frame, int rank>
 constexpr int
     dimension<geometry::_grassmann::Multivector<Scalar, Frame, rank>, double> =
         geometry::_grassmann::Multivector<Scalar, Frame, rank>::dimension;

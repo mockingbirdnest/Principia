@@ -7,6 +7,7 @@
 #include "geometry/linear_map.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/concepts.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -21,6 +22,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_concepts;
 
 // Declare shorter names for the protocol buffer enums.
 static constexpr int EVEN = serialization::Permutation::EVEN;
@@ -74,15 +76,15 @@ class Permutation : public LinearMap<Permutation<FromFrame, ToFrame>,
 
   Permutation<ToFrame, FromFrame> Inverse() const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Bivector<Scalar, ToFrame> operator()(
       Bivector<Scalar, FromFrame> const& bivector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
@@ -109,7 +111,7 @@ class Permutation : public LinearMap<Permutation<FromFrame, ToFrame>,
   // TODO(phl): This used to be private, but it's convenient for operating on
   // R3Elements representing the principal moments of inertia.  Revert when we
   // have proper transformations for the inertia tensor.
-  template<typename Scalar>
+  template<quantity Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 
  private:

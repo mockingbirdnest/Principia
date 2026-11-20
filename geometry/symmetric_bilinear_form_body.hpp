@@ -40,7 +40,7 @@ inline R3x3Matrix<double> JacobiRotation(int const p,
 };
 
 // See [GV13] section 8.5.2, algorithm 8.5.1.
-template<typename Scalar>
+template<quantity Scalar>
 CosSin SymmetricSchurDecomposition2By2(R3x3Matrix<Scalar> const& A,
                                        int const p,
                                        int const q) {
@@ -64,7 +64,7 @@ CosSin SymmetricSchurDecomposition2By2(R3x3Matrix<Scalar> const& A,
 };
 
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::SymmetricBilinearForm(
@@ -75,7 +75,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::SymmetricBilinearForm(
   DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::SymmetricBilinearForm(
@@ -86,7 +86,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::SymmetricBilinearForm(
   DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>&
@@ -95,7 +95,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::operator+=(
   return *this = *this + right;
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>&
@@ -104,7 +104,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::operator-=(
   return *this = *this - right;
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>&
@@ -113,7 +113,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::operator*=(
   return *this = *this * right;
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>&
@@ -122,7 +122,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::operator/=(
   return *this = *this / right;
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 R3x3Matrix<Scalar> const&
@@ -131,10 +131,10 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::coordinates()
   return matrix_;
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
-template<typename LScalar, typename RScalar>
+template<quantity LScalar, quantity RScalar>
 Product<Scalar, Product<LScalar, RScalar>>
 SymmetricBilinearForm<Scalar, Frame, Multivector>::operator()(
     Multivector<LScalar, Frame> const& left,
@@ -142,7 +142,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::operator()(
   return InnerProduct(left, *this * right);
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 template<template<typename, typename> typename M>
@@ -153,7 +153,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::Anticommutator() const {
       matrix_.Trace() * R3x3Matrix<double>::Identity() - matrix_);
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 template<template<typename, typename> typename M>
@@ -165,7 +165,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::AnticommutatorInverse()
       -matrix_ + matrix_.Trace() * R3x3Matrix<double>::Identity() / 2);
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 template<typename Eigenframe>
@@ -245,7 +245,7 @@ typename SymmetricBilinearForm<Scalar, Frame, Multivector>::
           Rotation<Eigenframe, Frame>(v[0], v[1], v[2])};
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 bool SymmetricBilinearForm<Scalar, Frame, Multivector>::IsDiagonalized() const {
@@ -254,7 +254,7 @@ bool SymmetricBilinearForm<Scalar, Frame, Multivector>::IsDiagonalized() const {
          matrix_(1, 1) <= matrix_(2, 2);
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 Multivector<double, Frame>
@@ -265,7 +265,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::PrincipalAxis() const {
   return eigensystem.rotation(Multivector<double, Eigenframe>({0, 0, 1}));
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 void SymmetricBilinearForm<Scalar, Frame, Multivector>::WriteToMessage(
@@ -274,7 +274,7 @@ void SymmetricBilinearForm<Scalar, Frame, Multivector>::WriteToMessage(
   matrix_.WriteToMessage(message->mutable_matrix());
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector>
@@ -294,7 +294,7 @@ SymmetricBilinearForm<double, Frame, Multivector> const& InnerProductForm() {
   return identity;
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
@@ -302,7 +302,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
   return SymmetricBilinearForm<Scalar, Frame, Multivector>(right.matrix_);
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
@@ -310,7 +310,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
   return SymmetricBilinearForm<Scalar, Frame, Multivector>(-right.matrix_);
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
@@ -320,7 +320,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector> operator+(
                                                            right.matrix_);
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
@@ -330,8 +330,8 @@ SymmetricBilinearForm<Scalar, Frame, Multivector> operator-(
                                                            right.matrix_);
 }
 
-template<typename LScalar,
-         typename RScalar,
+template<convertible_to_quantity LScalar,
+         quantity RScalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
@@ -341,8 +341,8 @@ SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
       left * right.matrix_);
 }
 
-template<typename LScalar,
-         typename RScalar,
+template<quantity LScalar,
+         convertible_to_quantity RScalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
@@ -352,8 +352,8 @@ SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Multivector> operator*(
       left.matrix_ * right);
 }
 
-template<typename LScalar,
-         typename RScalar,
+template<quantity LScalar,
+         convertible_to_quantity RScalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame, Multivector> operator/(
@@ -363,8 +363,8 @@ SymmetricBilinearForm<Quotient<LScalar, RScalar>, Frame, Multivector> operator/(
       left.matrix_ / right);
 }
 
-template<typename LScalar,
-         typename RScalar,
+template<quantity LScalar,
+         quantity RScalar,
          typename Frame,
          template<typename, typename> typename M,
          int rank>
@@ -377,8 +377,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
       left.matrix_ * right.coordinates());
 }
 
-template<typename LScalar,
-         typename RScalar,
+template<quantity LScalar,
+         quantity RScalar,
          typename Frame,
          template<typename, typename> typename M,
          int rank>
@@ -391,8 +391,8 @@ Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
       left.coordinates() * right.matrix_);
 }
 
-template<typename LScalar,
-         typename RScalar,
+template<quantity LScalar,
+         quantity RScalar,
          typename Frame,
          template<typename, typename> typename M,
          int rank>
@@ -405,7 +405,7 @@ Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
       right.matrix_.Solve(left.coordinates()));
 }
 
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame, Vector>
 SymmetricProduct(Vector<LScalar, Frame> const& left,
                  Vector<RScalar, Frame> const& right) {
@@ -414,7 +414,7 @@ SymmetricProduct(Vector<LScalar, Frame> const& left,
              KroneckerProduct(right.coordinates(), left.coordinates())));
 }
 
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 SymmetricBilinearForm<Square<Scalar>, Frame, Vector>
 SymmetricSquare(Vector<Scalar, Frame> const& vector) {
   auto const& coordinates = vector.coordinates();
@@ -422,7 +422,7 @@ SymmetricSquare(Vector<Scalar, Frame> const& vector) {
       KroneckerProduct(coordinates, coordinates));
 }
 
-template<typename LScalar, typename RScalar, typename Frame>
+template<quantity LScalar, quantity RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
     SymmetricBilinearForm<LScalar, Frame, Vector> const& form,
     Bivector<RScalar, Frame> const& bivector) {
@@ -431,7 +431,7 @@ Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
       form.matrix_ * bivector.coordinates());
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 std::string DebugString(
@@ -439,7 +439,7 @@ std::string DebugString(
   return DebugString(form.matrix_);
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 std::ostream& operator<<(

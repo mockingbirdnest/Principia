@@ -95,8 +95,8 @@ struct DaumasRideauThéryComparator<T, Point<U>> : not_constructible {
   }
 };
 
-template<typename T, typename TFrame, int trank,
-         typename U, typename UFrame, int urank>
+template<quantity T, typename TFrame, int trank,
+         quantity U, typename UFrame, int urank>
 struct DaumasRideauThéryComparator<Multivector<T, TFrame, trank>,
                                    Multivector<U, UFrame, urank>>
     : not_constructible {
@@ -108,7 +108,7 @@ struct DaumasRideauThéryComparator<Multivector<T, TFrame, trank>,
   }
 };
 
-template<typename T, typename U>
+template<quantity T, quantity U>
 struct DaumasRideauThéryComparator<R3Element<T>, R3Element<U>>
     : not_constructible {
   static bool ProperlyOrdered(R3Element<T> const& biggish,

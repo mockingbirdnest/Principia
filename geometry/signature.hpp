@@ -5,12 +5,14 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/concepts.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 
 FORWARD_DECLARE(
-    TEMPLATE(typename Scalar,
+    TEMPLATE(quantities::_concepts::quantity Scalar,
              typename Frame,
              template<typename, typename> typename Multivector) class,
     SymmetricBilinearForm,
@@ -25,6 +27,8 @@ using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_concepts;
+using namespace principia::quantities::_quantities;
 
 struct DeduceSignPreservingOrientation final {};
 struct DeduceSignReversingOrientation final {};
@@ -60,19 +64,19 @@ class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
 
   constexpr Signature<ToFrame, FromFrame> Inverse() const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Bivector<Scalar, ToFrame> operator()(
       Bivector<Scalar, FromFrame> const& bivector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<typename Scalar,
+  template<quantity Scalar,
            template<typename, typename> typename Multivector>
   SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;

@@ -67,7 +67,7 @@ Signature<FromFrame, ToFrame>::CentralInversion() {
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Vector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
     Vector<Scalar, FromFrame> const& vector) const {
   return Vector<Scalar, ToFrame>({x_ * vector.coordinates().x,
@@ -76,7 +76,7 @@ Vector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Bivector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
     Bivector<Scalar, FromFrame> const& bivector) const {
   return Bivector<Scalar, ToFrame>(
@@ -86,14 +86,14 @@ Bivector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar>
+template<quantity Scalar>
 Trivector<Scalar, ToFrame> Signature<FromFrame, ToFrame>::operator()(
     Trivector<Scalar, FromFrame> const& trivector) const {
   return Trivector<Scalar, ToFrame>(determinant_ * trivector.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>
-template<typename Scalar, template<typename, typename> typename Multivector>
+template<quantity Scalar, template<typename, typename> typename Multivector>
 SymmetricBilinearForm<Scalar, ToFrame, Multivector>
 Signature<FromFrame, ToFrame>::operator()(
     SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const {

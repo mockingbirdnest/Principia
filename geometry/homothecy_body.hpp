@@ -13,26 +13,26 @@ namespace internal {
 using namespace principia::geometry::_quaternion;
 using namespace principia::numerics::_elementary_functions;
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Homothecy(Scalar const& scale)
     : scale_(scale) {
   CHECK_LT(Scalar{}, scale_);
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 Cube<Scalar> Homothecy<Scalar, FromFrame, ToFrame>::Determinant() const {
   return Pow<3>(scale_);
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Inverse<Scalar>, ToFrame, FromFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Inverse() const {
   return Homothecy<base::_algebra::Inverse<Scalar>,
                    ToFrame, FromFrame>(1 / scale_);
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
-template<typename VScalar>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
+template<quantity VScalar>
 Vector<Product<VScalar, Scalar>, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::operator()(
     Vector<VScalar, FromFrame> const& vector) const {
@@ -40,34 +40,34 @@ Homothecy<Scalar, FromFrame, ToFrame>::operator()(
                                                    scale_);
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 AngularVelocity<ToFrame> Homothecy<Scalar, FromFrame, ToFrame>::operator()(
     AngularVelocity<FromFrame> const& angular_velocity) const {
   return AngularVelocity<ToFrame>(angular_velocity.coordinates());
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 template<typename T>
 typename Mappable<Homothecy<Scalar, FromFrame, ToFrame>, T>::type
 Homothecy<Scalar, FromFrame, ToFrame>::operator()(T const& t) const {
   return Mappable<Homothecy, T>::Do(*this, t);
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 template<template<typename, typename, typename> typename ConformalMap>
 ConformalMap<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Forget() const {
   return ConformalMap<Scalar, FromFrame, ToFrame>(scale_, Quaternion(1));
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::Identity()
   requires(std::is_floating_point_v<Scalar> || std::is_integral_v<Scalar>) {
   return Homothecy(1);
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 void Homothecy<Scalar, FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::LinearMap*> const message) const {
   LinearMap<Homothecy, FromFrame, ToFrame>::WriteToMessage(message);
@@ -75,7 +75,7 @@ void Homothecy<Scalar, FromFrame, ToFrame>::WriteToMessage(
       message->MutableExtension(serialization::Homothecy::extension));
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::LinearMap const& message)
@@ -86,13 +86,13 @@ Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
       message.GetExtension(serialization::Homothecy::extension));
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 void Homothecy<Scalar, FromFrame, ToFrame>::WriteToMessage(
     not_null<serialization::Homothecy*> const message) const {
   scale_.WriteToMessage(message->mutable_scale());
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>
 Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
     serialization::Homothecy const& message)
@@ -100,7 +100,7 @@ Homothecy<Scalar, FromFrame, ToFrame>::ReadFromMessage(
   return Homothecy(Scalar::ReadFromMessage(message.scale()));
 }
 
-template<typename LScalar, typename RScalar,
+template<convertible_to_quantity LScalar, convertible_to_quantity RScalar,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
     Homothecy<LScalar, ThroughFrame, ToFrame> const& left,
@@ -109,7 +109,7 @@ Homothecy<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
       left.scale_ * right.scale_);
 }
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 std::ostream& operator<<(
     std::ostream& out,
     Homothecy<Scalar, FromFrame, ToFrame> const& homothecy) {

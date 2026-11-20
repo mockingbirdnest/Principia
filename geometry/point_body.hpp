@@ -39,7 +39,7 @@ struct PointSerializer<Quantity<Dimensions>> : not_constructible {
   }
 };
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
 struct PointSerializer<Multivector<Scalar, Frame, rank>> : not_constructible {
   using Vector = Multivector<Scalar, Frame, rank>;
   static void WriteToMessage(

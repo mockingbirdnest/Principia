@@ -10,6 +10,7 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/sign.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
 
@@ -20,7 +21,7 @@ FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 Permutation,
                 FROM(permutation),
                 INTO(rotation));
-FORWARD_DECLARE(TEMPLATE(typename Scalar,
+FORWARD_DECLARE(TEMPLATE(quantities::_concepts::quantity Scalar,
                          typename Frame,
                          template<typename S, typename F>
                          typename Multivector) class,
@@ -39,6 +40,7 @@ using namespace principia::geometry::_linear_map;
 using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_r3_element;
 using namespace principia::geometry::_sign;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 
 // `EulerAngles` and `CardanoAngles` have values in binary-coded ternary
@@ -96,7 +98,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   // A rotation of `angle` around `axis`; no coordinate change is involved, this
   // is an active rotation.
-  template<typename Scalar,
+  template<quantity Scalar,
            typename F = FromFrame,
            typename T = ToFrame>
     requires(std::is_same_v<F, T>)
@@ -138,7 +140,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   // the matrix constructors above.  For each pair, one of the constructors has
   // an additional `typename = void`, see above.
 
-  template<typename Scalar,
+  template<quantity Scalar,
            typename F = FromFrame,
            typename T = ToFrame>
     requires(!std::is_same_v<F, T>)
@@ -146,7 +148,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
            Bivector<Scalar, FromFrame> const& axis,
            DefinesFrame<ToFrame> tag);
 
-  template<typename Scalar,
+  template<quantity Scalar,
            typename F = FromFrame,
            typename T = ToFrame,
            typename = void>
@@ -226,19 +228,19 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
 
   Angle RotationAngle() const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Bivector<Scalar, ToFrame> operator()(
       Bivector<Scalar, FromFrame> const& bivector) const;
 
-  template<typename Scalar>
+  template<quantity Scalar>
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<typename Scalar,
+  template<quantity Scalar,
            template<typename S, typename F> typename Multivector>
   SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
       SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
@@ -264,7 +266,7 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
     requires serializable<FromFrame> && serializable<ToFrame>;
 
  private:
-  template<typename Scalar>
+  template<quantity Scalar>
   R3Element<Scalar> operator()(R3Element<Scalar> const& r3_element) const;
 
   Quaternion quaternion_;

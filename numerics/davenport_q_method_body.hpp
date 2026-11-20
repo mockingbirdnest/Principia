@@ -23,7 +23,7 @@ using namespace principia::numerics::_fixed_arrays;
 using namespace principia::numerics::_matrix_computations;
 using namespace principia::quantities::_quantities;
 
-template<typename FromFrame, typename ToFrame, typename Weight>
+template<typename FromFrame, typename ToFrame, quantity Weight>
 Rotation<FromFrame, ToFrame> DavenportQMethod(
     std::vector<Vector<double, FromFrame>> const& a,
     std::vector<Vector<double, ToFrame>> const& b,

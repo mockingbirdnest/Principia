@@ -5,6 +5,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/serialization.hpp"
 
@@ -16,6 +17,7 @@ namespace internal {
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_serialization;
 
@@ -28,7 +30,7 @@ class DoubleOrQuantityOrPointOrMultivectorSerializer<
     Quantity<Dimensions>, Message>
     : public DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> {};
 
-template<typename Scalar, typename Frame, int rank, typename Message>
+template<quantity Scalar, typename Frame, int rank, typename Message>
 struct DoubleOrQuantityOrPointOrMultivectorSerializer<
     Multivector<Scalar, Frame, rank>, Message> : not_constructible {
   using T = Multivector<Scalar, Frame, rank>;
@@ -64,7 +66,7 @@ template<typename Dimensions, typename Message>
 class DoubleOrQuantityOrMultivectorSerializer<Quantity<Dimensions>, Message>
     : public DoubleOrQuantitySerializer<Quantity<Dimensions>, Message> {};
 
-template<typename Scalar, typename Frame, int rank, typename Message>
+template<quantity Scalar, typename Frame, int rank, typename Message>
 struct DoubleOrQuantityOrMultivectorSerializer<
     Multivector<Scalar, Frame, rank>, Message>
     : public DoubleOrQuantityOrPointOrMultivectorSerializer<
@@ -75,12 +77,12 @@ struct PointOrMultivectorSerializer<Point<Vector>, Message>
     : public DoubleOrQuantityOrPointOrMultivectorSerializer<
                  Point<Vector>, Message> {};
 
-template<typename Scalar, typename Frame, int rank, typename Message>
+template<quantity Scalar, typename Frame, int rank, typename Message>
 class PointOrMultivectorSerializer<Multivector<Scalar, Frame, rank>, Message>
     : public DoubleOrQuantityOrPointOrMultivectorSerializer<
                  Multivector<Scalar, Frame, rank>, Message> {};
 
-template<typename Scalar, typename Frame, int rank, typename Message>
+template<quantity Scalar, typename Frame, int rank, typename Message>
 class QuantityOrMultivectorSerializer<Multivector<Scalar, Frame, rank>, Message>
     : public DoubleOrQuantityOrPointOrMultivectorSerializer<
                  Multivector<Scalar, Frame, rank>, Message> {};

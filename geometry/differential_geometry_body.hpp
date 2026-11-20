@@ -6,6 +6,7 @@
 #include "geometry/point.hpp"
 #include "geometry/symmetric_bilinear_form.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace geometry {
@@ -16,6 +17,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_point;
 using namespace principia::geometry::_symmetric_bilinear_form;
 using namespace principia::numerics::_fixed_arrays;
+using namespace principia::quantities::_concepts;
 
 template<typename Scalar, typename S, int s, bool uh>
 struct Generator<Scalar, FixedVector<S, s, uh>> {
@@ -23,7 +25,7 @@ struct Generator<Scalar, FixedVector<S, s, uh>> {
   static FixedMatrix<double, s, s, uh> InnerProductForm();
 };
 
-template<typename Scalar, typename S, typename F>
+template<convertible_to_quantity Scalar, quantity S, typename F>
 struct Generator<Scalar, Vector<S, F>> {
   using Gradient = Vector<Quotient<Scalar, S>, F>;
   static SymmetricBilinearForm<double, F, Vector> InnerProductForm();
@@ -54,7 +56,7 @@ Generator<Scalar, FixedVector<S, s, uh>>::InnerProductForm() {
   return result;
 }
 
-template<typename Scalar, typename S, typename F>
+template<convertible_to_quantity Scalar, quantity S, typename F>
 SymmetricBilinearForm<double, F, Vector>
 Generator<Scalar, Vector<S, F>>::InnerProductForm() {
   return geometry::_symmetric_bilinear_form::InnerProductForm<F, Vector>();

@@ -37,25 +37,25 @@ struct Splitter<Q> {
   }
 };
 
-template<typename Scalar>
+template<quantity Scalar>
 struct Splitter<R3Element<Scalar>> {
   static constexpr std::int64_t dimension = 3;
   using Value = Scalar;
 
-  template<typename T>
+  template<quantity T>
   static std::array<T, dimension> Split(
       R3Element<T> const& r3_element) {
     return {r3_element.x, r3_element.y, r3_element.z};
   }
 };
 
-template<typename Scalar, typename Frame, int rank>
+template<quantity Scalar, typename Frame, int rank>
   requires(rank == 1 || rank == 2)
 struct Splitter<Multivector<Scalar, Frame, rank>> {
   static constexpr std::int64_t dimension = 3;
   using Value = Scalar;
 
-  template<typename T>
+  template<quantity T>
   static std::array<T, dimension> Split(
       Multivector<T, Frame, rank> const& multivector) {
     return Splitter<R3Element<T>>::Split(multivector.coordinates());
