@@ -261,6 +261,86 @@ ReadFromMessage(serialization::SymmetricBilinearForm const& message)
       R3x3Matrix<Scalar>::ReadFromMessage(message.matrix()));
 }
 
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityGenerator>::SymmetricBilinearForm(
+    Scalar const& coordinates) : coordinates_(coordinates) {}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityGenerator>&
+SymmetricBilinearForm<Scalar, QuantityGenerator>::operator+=(
+    SymmetricBilinearForm const& right) {
+  return *this = *this + right;
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityGenerator>&
+SymmetricBilinearForm<Scalar, QuantityGenerator>::operator-=(
+    SymmetricBilinearForm const& right) {
+  return *this = *this - right;
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityGenerator>&
+SymmetricBilinearForm<Scalar, QuantityGenerator>::operator*=(
+    double const right) {
+  return *this = *this * right;
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityGenerator>&
+SymmetricBilinearForm<Scalar, QuantityGenerator>::operator/=(
+    double const right) {
+  return *this = *this / right;
+}
+
+template<quantity Scalar>
+Scalar const&
+SymmetricBilinearForm<Scalar, QuantityGenerator>::coordinates() const {
+  return coordinates_;
+}
+
+template<quantity Scalar>
+template<quantity LScalar, quantity RScalar>
+Product<Scalar, Product<LScalar, RScalar>>
+SymmetricBilinearForm<Scalar, QuantityGenerator>::operator()(
+    QuantityGenerator<LScalar> const& left,
+    QuantityGenerator<RScalar> const& right) const {
+  return coordinates_ * left * right;
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityGenerator>
+SymmetricBilinearForm<Scalar, QuantityGenerator>::Diagonalize() const {
+  return *this;
+}
+
+template<quantity Scalar>
+bool SymmetricBilinearForm<Scalar, QuantityGenerator>::IsDiagonalized() const {
+  return true;
+}
+
+template<quantity Scalar>
+double SymmetricBilinearForm<Scalar, QuantityGenerator>::PrincipalAxis() const {
+  return 1.0;
+}
+
+template<quantity Scalar>
+void SymmetricBilinearForm<Scalar, QuantityGenerator>::WriteToMessage(
+    not_null<serialization::SymmetricBilinearForm*> message) const {
+  //TODO(phl)implement
+  message->set_coordinates(coordinates_);
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Scalar, QuantityGenerator>
+SymmetricBilinearForm<Scalar, QuantityGenerator>::ReadFromMessage(
+    serialization::SymmetricBilinearForm const& message) {
+  return SymmetricBilinearForm<Scalar, QuantityGenerator>(
+      message.coordinates());
+}
+
+
 template<template<quantity, typename...> typename Generator,
          typename... Parameters>
 SymmetricBilinearForm<double, Generator, Parameters...> const&

@@ -26,6 +26,11 @@ using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_concepts;
 
+// A helper for building a `SymmetricBilinearForm` using quantities.  Declared
+// here because it needs `quantity` so it cannot be in `quantities.hpp`.
+template<quantity Q>
+using QuantityGenerator = Q;
+
 // A symmetric bilinear form with dimensionality given by `Scalar`, acting on
 // vector spaces specified by the given `Generator` and `Parameters`.
 template<quantity Scalar,
@@ -112,6 +117,51 @@ class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
   // symmetric.
   R3x3Matrix<Scalar> matrix_;
 };
+
+
+// A symmetric bilinear form with dimensionality `Scalar`, on quantities.
+template<quantity Scalar>
+class SymmetricBilinearForm<Scalar, QuantityGenerator> {
+ public:
+  SymmetricBilinearForm() = default;
+  explicit SymmetricBilinearForm(Scalar const& scalar);
+
+  friend bool operator==(SymmetricBilinearForm const& left,
+                         SymmetricBilinearForm const& right) = default;
+  friend bool operator!=(SymmetricBilinearForm const& left,
+                         SymmetricBilinearForm const& right) = default;
+
+  SymmetricBilinearForm& operator+=(SymmetricBilinearForm const& right);
+  SymmetricBilinearForm& operator-=(SymmetricBilinearForm const& right);
+  SymmetricBilinearForm& operator*=(double right);
+  SymmetricBilinearForm& operator/=(double right);
+
+  Scalar const& coordinates() const;
+
+  template<quantity LScalar, quantity RScalar>
+  Product<Scalar, Product<LScalar, RScalar>> operator()(
+      QuantityGenerator<LScalar> const& left,
+      QuantityGenerator<RScalar> const& right) const;
+
+  // Returns a copy of this object.
+  SymmetricBilinearForm<Scalar, QuantityGenerator> Diagonalize() const;
+
+  // Always returns true.
+  bool IsDiagonalized() const;
+
+  // Always returns 1.
+  double PrincipalAxis() const;
+
+  void WriteToMessage(
+      not_null<serialization::SymmetricBilinearForm*> message) const;
+  static SymmetricBilinearForm ReadFromMessage(
+      serialization::SymmetricBilinearForm const& message)
+    requires serializable<Frame>;
+
+ private:
+  Scalar scalar_;
+};
+
 
 // `InnerProductForm()` is the symmetric bilinear form such that for all v and
 // w, `InnerProductForm()(v, w) == InnerProduct(v, w)`.
@@ -235,6 +285,7 @@ std::ostream& operator<<(
 using internal::Anticommutator;
 using internal::BivectorInnerProductForm;
 using internal::InnerProductForm;
+using internal::QuantityGenerator;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;
