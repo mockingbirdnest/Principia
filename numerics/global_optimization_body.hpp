@@ -3,6 +3,7 @@
 #include "numerics/global_optimization.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <type_traits>
@@ -25,9 +26,11 @@ using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_gradient_descent;
 
 // Values that are too small cause extra activity in `Add` and deeper recursion
-// in `FindNearestNeighbour`.  Values that are too large cause extra function
-// evaluations in the leaf search.
-constexpr int64_t pcp_tree_max_values_per_cell = 20;
+// in `FindNearestNeighbour`.  Values that are too large cause extra work in the
+// leaf search.  This value was tuned with the benchmark
+// `GlobalOptimizationBenchmark.ComputeApsidesUsingMLSL`.  Its effect is minor
+// anyway (around 5%).
+constexpr std::int64_t pcp_tree_max_values_per_cell = 80;
 
 template<homogeneous_field Scalar,
          homogeneous_euclidean_space<Scalar> Argument,
@@ -144,21 +147,27 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
 
   // The PCP tree used for detecting proximity of the sample points .  It gets
   // updated as new points are generated.
-  PrincipalComponentPartitioningTree<Argument> point_neighbourhoods(
+  PrincipalComponentPartitioningTree<Argument, Scalar> point_neighbourhoods(
       /*values=*/{},
       pcp_tree_max_values_per_cell);
 
   int number_of_local_searches = 0;
 
-  // This structure corresponds to the list T in [RT87b].  Points are ordered
-  // based on their distance to their nearest neighbour that has a lower value
-  // of `f`.  When new points are added to the map, they are initially given the
-  // key `Infinity`, which is then refined when the nearest neighbour search
-  // happens.  Each time through the outer loop, only the points in the upper
-  // half of the map (distance greater than rₖ) are considered, and they are
-  // moved down if a "too close" neighbour is found.
-  // We modify this map while iterating so we need iterator stability.
-  std::multimap<Norm²Type, Argument const*> schedule;
+  // This structure corresponds to the list T in [RT87b].  Points are
+  // partitioned based on their distance to their nearest neighbour within
+  // radius `rₖ`  that has a lower value of `f`.  When new points are added to
+  // the list, they are initially given the distance `Infinity`, which is then
+  // refined when the nearest neighbour search happens.  Each time through the
+  // outer loop, only the points in the upper half of the list (distance greater
+  // than `rₖ`) are considered, and they are moved down if a "too close"
+  // neighbour is found.
+  struct ScheduleEntry {
+    Norm²Type distance_to_lower_nearest_neighbour²;
+    Argument const* point;
+    Scalar value;
+  };
+  std::vector<ScheduleEntry> schedule;
+  Norm²Type const never_scheduled = -Infinity<Norm²Type>;
 
   // There are two ways to iterate through this loop, corresponding to different
   // termination conditions.  We can either do a fixed number of rounds with a
@@ -174,16 +183,39 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
   std::int64_t round = 1;
   auto& kN = number_of_points_all_rounds;
   auto& N = number_of_points_this_round;
-  for (auto& k = round;; ++k) {
+  auto& k = round;
+
+  auto vlog_exit = [&]() {
+    VLOG(1) << "Exit round #" << k << " with " << kN
+            << " points examined and " << stationary_points.size()
+            << " stationary points found using " << number_of_local_searches
+            << " local searches";
+  };
+
+  auto vlog_progress = [&]() {
+    VLOG(1) << "Round #" << k << " with " << N << " points this round, "
+            << kN << " points examined and " << stationary_points.size()
+            << " stationary points found so far using "
+            << number_of_local_searches << " local searches";
+    if (ABSL_VLOG_IS_ON(2)) {
+      for (auto const& stationary_point : stationary_points) {
+        VLOG(2) << "  " << *stationary_point;
+      }
+    }
+  };
+
+  for (;; ++k) {
     if (k == 1) {
       N = points_per_round;
       kN = N;
     } else if (number_of_rounds.has_value()) {
       if (k > number_of_rounds.value()) {
+        vlog_exit();
         break;
       } else {
         N = points_per_round;
         kN += N;
+        vlog_progress();
       }
     } else {
       std::int64_t const w = stationary_points.size();
@@ -194,8 +226,7 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
       if (kN > w + 2 &&
           static_cast<double>(w * (kN - 1)) / static_cast<double>(kN - w - 2) <=
           w + 0.5) {
-        VLOG(1) << "Exit round #" << k << " with " << kN
-                << " points examined and " << w << " stationary points found";
+        vlog_exit();
         break;
       } else {
         // [RT87b] equation 4.
@@ -203,19 +234,12 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         N = M - kN;
         DCHECK_LT(0, N);
         kN = M;
-      }
-      VLOG(1) << "Round #" << k << " with " << N << " points this round, " << kN
-              << " points examined and " << w
-              << " stationary points found so far";
-      if (ABSL_VLOG_IS_ON(2)) {
-        for (auto const& stationary_point : stationary_points) {
-          VLOG(2) << "  " << *stationary_point;
-        }
+        vlog_progress();
       }
     }
 
     // Generate N new random points and add them to the PCP tree and to the
-    // `schedule` map.  Note that while [RT87b] tells us in the description of
+    // `schedule`.  Note that while [RT87b] tells us in the description of
     // algorithm A that "it is no longer necessary to reduce the sample" they
     // also tell us in section 4 that they reduce the sample using γ = 0.1.
     // Also, [KS05] reduce the sample, but they don't seem to agree on whether
@@ -223,13 +247,19 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     // Anyway, reducing the sample would be annoying with our data structures,
     // so let's not go there, 'tis a silly place.
     Arguments pointsₖ = RandomArguments(N);
+    schedule.reserve(schedule.size() + N);
     for (auto& pointₖ : pointsₖ) {
       points.push_back(std::move(pointₖ));
       Argument const* const pointₖ_pointer = points.back().get();
-      point_neighbourhoods.Add(pointₖ_pointer);
-      schedule.emplace_hint(
-          schedule.end(), Infinity<Norm²Type>, pointₖ_pointer);
+      Scalar const fₖ = f(*pointₖ_pointer);
+      point_neighbourhoods.Add(pointₖ_pointer, fₖ);
+      schedule.push_back(ScheduleEntry{
+          .distance_to_lower_nearest_neighbour² = Infinity<Norm²Type>,
+          .point = pointₖ_pointer,
+          .value = fₖ});
     }
+    point_neighbourhoods.Optimize();
+    stationary_point_neighbourhoods.Optimize();
 
     // Compute the radius below which we won't do a local search in this
     // iteration.
@@ -238,24 +268,47 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
     VLOG(1) << "Round #" << k << ", critical radius is " << rₖ;
 
     // Process the points whose nearest neighbour is "sufficiently far" (or
-    // unknown).
-    for (auto it = schedule.upper_bound(rₖ²); it != schedule.end();) {
-      Argument const& xᵢ = *it->second;
+    // unknown).  The point denoted by `partition_it` is the first point whose
+    // lower nearest neighbour is at a distance greater than `rₖ` (or unknown).
+    auto const partition_it = std::partition(
+        schedule.begin(), schedule.end(), [rₖ²](ScheduleEntry const& entry) {
+          return entry.distance_to_lower_nearest_neighbour² <= rₖ²;
+        });
+    for (auto it = partition_it; it != schedule.end(); ++it) {
+      auto const& [_, xᵢ, f_xᵢ] = *it;
+
+      // This is the test xᵢ ∈ X*υ from [RT87b], p. 60.  Note that for some of
+      // the points that short-circuit here, f_xᵢ won't ever be used.
+      // Experimentally it's a small proportion, though (about 1%) so it's not
+      // worth optimizing.
+      if (IsCloseToKnownStationaryPoint(
+              *xᵢ, stationary_point_neighbourhoods, local_search_tolerance)) {
+        VLOG(2) << "Round #" << k << ", skipping point " << *xᵢ
+                << " which is close to a known stationary point";
+        // We never remove points from `schedule`, we just set their distance to
+        // `never_scheduled` so that they won't ever be considered again.
+        it->distance_to_lower_nearest_neighbour² = never_scheduled;
+        continue;
+      }
+
       auto* const xⱼ = point_neighbourhoods.FindNearestNeighbour(
-          xᵢ, rₖ,
-          [f_xᵢ = f(xᵢ), f](Argument const* const xⱼ) {
-            return f(*xⱼ) < f_xᵢ;
+          *xᵢ, rₖ,
+          [f_xᵢ](Argument const* const xⱼ,
+                 std::optional<Scalar> const& payload) {
+            DCHECK(payload.has_value());
+            auto const& f_xⱼ = payload.value();
+            return f_xⱼ < f_xᵢ;
           });
 
       if (xⱼ == nullptr) {
-        VLOG(2) << "Round #" << k << ", local search from " << xᵢ;
+        VLOG(2) << "Round #" << k << ", local search from " << *xᵢ;
         // We must do a local search as xᵢ couldn't be added to an existing
         // cluster.  Note that the radius of the search has to be the diametre
         // of the box: it's possible that xᵢ would be near one vertex of the box
         // and the stationary point near the opposite vertex.
         ++number_of_local_searches;
         auto const status_or_stationary_point =
-            BroydenFletcherGoldfarbShanno(xᵢ,
+            BroydenFletcherGoldfarbShanno(*xᵢ,
                                           f,
                                           grad_f,
                                           local_search_tolerance,
@@ -275,24 +328,19 @@ MultiLevelSingleLinkage<Scalar, Argument, dimensions>::FindGlobalMinima(
         }
         // A local search has been started from xᵢ, so no point in considering
         // it again.
-        it = schedule.erase(it);
+        it->distance_to_lower_nearest_neighbour² = never_scheduled;
       } else {
-        // Move the point xᵢ "down" in the `schedule` map, based on the distance
-        // to its nearest neighbour.
-        auto const distance²_to_xⱼ = Norm²(xᵢ - *xⱼ);
+        // Move the point xᵢ "down" in the `schedule`, based on the distance to
+        // its nearest neighbour.
+        auto const distance²_to_xⱼ = Norm²(*xᵢ - *xⱼ);
         DCHECK_LE(distance²_to_xⱼ, rₖ²);
-        VLOG(3) << "Round #" << k << ", no local search from point " << xᵢ
+        VLOG(3) << "Round #" << k << ", no local search from point " << *xᵢ
                 << " which has distance " << Sqrt(distance²_to_xⱼ)
                 << " to its nearest neighbour " << *xⱼ;
-        it = schedule.erase(it);
-        // This insertion take places below `schedule.upper_bound(rₖ²)`, so it
-        // doesn't affect the current iteration.
-        schedule.emplace(distance²_to_xⱼ, &xᵢ);
+        it->distance_to_lower_nearest_neighbour² = distance²_to_xⱼ;
       }
     }
   }
-
-  VLOG(1) << "Number of local searches: " << number_of_local_searches;
 
   std::vector<Argument> result;
   result.reserve(stationary_points.size());
@@ -308,10 +356,27 @@ template<homogeneous_field Scalar,
          int dimensions>
   requires(std::totally_ordered<Scalar>)
 bool MultiLevelSingleLinkage<Scalar, Argument, dimensions>::
+IsCloseToKnownStationaryPoint(
+    Argument const& x,
+    PrincipalComponentPartitioningTree<Argument> const&
+        stationary_point_neighbourhoods,
+    NormType const local_search_tolerance) {
+  auto* const x_nearest_neighbour =
+      stationary_point_neighbourhoods.FindNearestNeighbour(
+          x,
+          /*radius=*/local_search_tolerance);
+  return x_nearest_neighbour != nullptr;
+}
+
+template<homogeneous_field Scalar,
+         homogeneous_euclidean_space<Scalar> Argument,
+         int dimensions>
+  requires(std::totally_ordered<Scalar>)
+bool MultiLevelSingleLinkage<Scalar, Argument, dimensions>::
 IsNewStationaryPoint(Argument const& stationary_point,
-                      PrincipalComponentPartitioningTree<Argument> const&
-                          stationary_point_neighbourhoods,
-                      NormType const local_search_tolerance) {
+                     PrincipalComponentPartitioningTree<Argument> const&
+                         stationary_point_neighbourhoods,
+                     NormType const local_search_tolerance) {
   auto* const stationary_point_nearest_neighbour =
       stationary_point_neighbourhoods.FindNearestNeighbour(
           stationary_point,
@@ -333,6 +398,7 @@ std::vector<not_null<std::unique_ptr<Argument>>>
 MultiLevelSingleLinkage<Scalar, Argument, dimensions>::RandomArguments(
     std::int64_t const values_per_round) {
   Arguments arguments;
+  arguments.reserve(values_per_round);
   for (std::int64_t i = 0; i < values_per_round; ++i) {
     auto argument = make_not_null_unique<Argument>(box_.centre);
     for (const auto& vertex : box_.vertices) {

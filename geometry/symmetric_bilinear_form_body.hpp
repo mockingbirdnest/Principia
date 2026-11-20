@@ -257,6 +257,17 @@ bool SymmetricBilinearForm<Scalar, Frame, Multivector>::IsDiagonalized() const {
 template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
+Multivector<double, Frame>
+SymmetricBilinearForm<Scalar, Frame, Multivector>::PrincipalAxis() const {
+  using Eigenframe = geometry::_frame::Frame<struct EigenframeTag>;
+  auto const eigensystem = this->template Diagonalize<Eigenframe>();
+  // The last eigenvalue is the largest one.
+  return eigensystem.rotation(Multivector<double, Eigenframe>({0, 0, 1}));
+}
+
+template<typename Scalar,
+         typename Frame,
+         template<typename, typename> typename Multivector>
 void SymmetricBilinearForm<Scalar, Frame, Multivector>::WriteToMessage(
     not_null<serialization::SymmetricBilinearForm*> message) const {
   Frame::WriteToMessage(message->mutable_frame());
