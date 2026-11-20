@@ -7,13 +7,13 @@ namespace base {
 namespace _algebra {
 namespace internal {
 
-template<typename T, int exponent>
+template<homogeneous_ring T, int exponent>
   requires(exponent > 1)
 struct ExponentiationGenerator<T, exponent> : not_constructible {
   using type =
       Product<T, typename ExponentiationGenerator<T, exponent - 1>::type>;
 };
-template<typename T, int exponent>
+template<homogeneous_field T, int exponent>
   requires(exponent <= 0)
 struct ExponentiationGenerator<T, exponent> : not_constructible {
   using type =
