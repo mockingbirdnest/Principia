@@ -265,7 +265,7 @@ SymmetricBilinearForm<Scalar, Frame, Multivector>::PrincipalAxis() const {
   return eigensystem.rotation(Multivector<double, Eigenframe>({0, 0, 1}));
 }
 
-template<typename Scalar,
+template<quantity Scalar,
          typename Frame,
          template<typename, typename> typename Multivector>
 void SymmetricBilinearForm<Scalar, Frame, Multivector>::WriteToMessage(
