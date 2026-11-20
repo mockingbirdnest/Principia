@@ -122,10 +122,10 @@ InnerProductForm();
 
 // Convenient aliases.
 template<typename Frame>
-const auto VectorInnerProductForm =
+auto const& VectorInnerProductForm =
     InnerProductForm<MultivectorGenerator, Frame, Rank<1>>;
 template<typename Frame>
-const auto BivectorInnerProductForm =
+auto const& BivectorInnerProductForm =
     InnerProductForm<MultivectorGenerator, Frame, Rank<2>>;
 
 template<quantity Scalar,
