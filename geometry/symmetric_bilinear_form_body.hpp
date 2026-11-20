@@ -234,7 +234,7 @@ IsDiagonalized() const {
 }
 
 template<quantity Scalar, typename Frame, int rank>
-MultivectorGenerator<double, Frame, Rank<rank>>
+Multivector<double, Frame, rank>
 SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>>::
 PrincipalAxis() const {
   using Eigenframe = geometry::_frame::Frame<struct EigenframeTag>;
