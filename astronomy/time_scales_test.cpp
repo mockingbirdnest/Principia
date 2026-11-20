@@ -54,37 +54,37 @@ using TimeScalesDeathTest = TimeScalesTest;
 // error message; we try to match the relevant part.
 
 TEST_F(TimeScalesDeathTest, LeaplessScales) {
-  EXPECT_DEATH("2015-06-30T23:59:60"_TT, "!tt.time...is_leap_second..");
-  EXPECT_DEATH("2015-06-30T23:59:60"_TAI, "!tai.time...is_leap_second..");
-  EXPECT_DEATH("2015-06-30T23:59:60"_UT1, "!ut1.time...is_leap_second..");
+  EXPECT_DEATH(ParseTT("2015-06-30T23:59:60"), "!tt.time...is_leap_second..");
+  EXPECT_DEATH(ParseTAI("2015-06-30T23:59:60"), "!tai.time...is_leap_second..");
+  EXPECT_DEATH(ParseUT1("2015-06-30T23:59:60"), "!ut1.time...is_leap_second..");
 }
 
 TEST_F(TimeScalesDeathTest, BeforeRange) {
-  EXPECT_DEATH("1960-12-31T23:59:59,999"_UTC, "IsValidStretchyUTC");
-  EXPECT_DEATH("1830-04-10T23:59:59,999"_UT1,
+  EXPECT_DEATH(ParseUTC("1960-12-31T23:59:59,999"), "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUT1("1830-04-10T23:59:59,999"),
                "mjd.TimeSince20000101T120000Z.ut1.. >= "
                "experimental_eop_c02.front...ut1_mjd");
 }
 
 TEST_F(TimeScalesDeathTest, WarWasBeginning) {
-  EXPECT_DEATH("2101-01-01T00:00:00"_UT1,
+  EXPECT_DEATH(ParseUT1("2101-01-01T00:00:00"),
                "TimeSince20000101T120000Z.ut1. < eop_c04.back...ut1..");
 }
 
 TEST_F(TimeScalesDeathTest, StretchyLeaps) {
-  EXPECT_DEATH("1961-07-31T23:59:59,950"_UTC, "IsValidStretchyUTC");
-  EXPECT_DEATH("1963-10-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
-  EXPECT_DEATH("1964-03-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
-  EXPECT_DEATH("1964-08-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
-  EXPECT_DEATH("1964-12-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
-  EXPECT_DEATH("1965-02-28T23:59:60,100"_UTC, "IsValidStretchyUTC");
-  EXPECT_DEATH("1965-06-30T23:59:60,100"_UTC, "IsValidStretchyUTC");
-  EXPECT_DEATH("1965-08-31T23:59:60,100"_UTC, "IsValidStretchyUTC");
-  EXPECT_DEATH("1968-01-31T23:59:59,900"_UTC, "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUTC("1961-07-31T23:59:59,950"), "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUTC("1963-10-31T23:59:60,100"), "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUTC("1964-03-31T23:59:60,100"), "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUTC("1964-08-31T23:59:60,100"), "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUTC("1964-12-31T23:59:60,100"), "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUTC("1965-02-28T23:59:60,100"), "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUTC("1965-06-30T23:59:60,100"), "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUTC("1965-08-31T23:59:60,100"), "IsValidStretchyUTC");
+  EXPECT_DEATH(ParseUTC("1968-01-31T23:59:59,900"), "IsValidStretchyUTC");
 }
 
 TEST_F(TimeScalesDeathTest, ModernLeaps) {
-  EXPECT_DEATH("2015-12-31T23:59:60"_UTC, "IsValidModernUTC");
+  EXPECT_DEATH(ParseUTC("2015-12-31T23:59:60"), "IsValidModernUTC");
 }
 
 TEST_F(TimeScalesTest, ConstexprJ2000) {
@@ -425,8 +425,9 @@ TEST_F(TimeScalesTest, ModifiedJulianDate) {
 }
 
 TEST_F(TimeScalesDeathTest, JulianDateUTC) {
-  EXPECT_DEATH("JD2451545"_UTC, "size > 0");
-  EXPECT_DEATH("MJD55200.123"_UTC, "size > 0");
+  EXPECT_DEATH(ParseUTC("JD2451545"), "index_of_T != std::string_view::npos");
+  EXPECT_DEATH(ParseUTC("MJD55200.123"),
+               "index_of_T != std::string_view::npos");
 }
 
 TEST_F(TimeScalesTest, EarthRotationAngle) {
