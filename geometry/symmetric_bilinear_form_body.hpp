@@ -329,15 +329,14 @@ template<quantity Scalar>
 void SymmetricBilinearForm<Scalar, QuantityGenerator>::WriteToMessage(
     not_null<serialization::SymmetricBilinearForm*> message) const {
   //TODO(phl)implement
-  message->set_coordinates(coordinates_);
+  //message->set_coordinates(coordinates_);
 }
 
 template<quantity Scalar>
 SymmetricBilinearForm<Scalar, QuantityGenerator>
 SymmetricBilinearForm<Scalar, QuantityGenerator>::ReadFromMessage(
     serialization::SymmetricBilinearForm const& message) {
-  return SymmetricBilinearForm<Scalar, QuantityGenerator>(
-      message.coordinates());
+  return SymmetricBilinearForm<Scalar, QuantityGenerator>();
 }
 
 
@@ -468,6 +467,14 @@ SymmetricProduct(Vector<LScalar, Frame> const& left,
              KroneckerProduct(right_coordinates, left_coordinates)));
 }
 
+template<quantity LScalar, quantity RScalar>
+SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityGenerator>
+SymmetricProduct(QuantityGenerator<LScalar> const& left,
+                 QuantityGenerator<RScalar> const& right) {
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityGenerator>(
+      left * right);
+}
+
 template<quantity Scalar, typename Frame>
 SymmetricBilinearForm<Square<Scalar>, MultivectorGenerator, Frame, Rank<1>>
 SymmetricSquare(Vector<Scalar, Frame> const& vector) {
@@ -475,6 +482,13 @@ SymmetricSquare(Vector<Scalar, Frame> const& vector) {
   return SymmetricBilinearForm<Square<Scalar>,
                                MultivectorGenerator, Frame, Rank<1>>(
       KroneckerProduct(coordinates, coordinates));
+}
+
+template<quantity Scalar>
+SymmetricBilinearForm<Product<Scalar, Scalar>, QuantityGenerator>
+SymmetricSquare(QuantityGenerator<Scalar> const& quantity) {
+  return SymmetricBilinearForm<Product<Scalar, Scalar>, QuantityGenerator>(
+      Pow<2>(quantity));
 }
 
 template<quantity LScalar, quantity RScalar, typename Frame>

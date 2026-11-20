@@ -6,9 +6,11 @@
 #include "base/not_null.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace numerics {
@@ -18,8 +20,10 @@ using ::testing::Pointee;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
 using namespace principia::numerics::_nearest_neighbour;
 using namespace principia::quantities::_quantities;
+using namespace principia::quantities::_si;
 
 class PrincipalComponentPartitioningTreeTest : public ::testing::Test {
  protected:
@@ -122,6 +126,37 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneAdd) {
   EXPECT_THAT(tree.FindNearestNeighbour(v2, radius), Pointee(v2));
   EXPECT_THAT(tree.FindNearestNeighbour(v3, radius), Pointee(v3));
   EXPECT_THAT(tree.FindNearestNeighbour(v4, radius), Pointee(v4));
+}
+
+// A tree where the points are instants.
+TEST_F(PrincipalComponentPartitioningTreeTest, Instant) {
+  double const radius = Infinity<double>;
+  Instant const t0;
+  Instant const t1 = t0 - 1 * Second;
+  Instant const t2 = t0 - 1 * Second;
+  Instant const t3 = t0 + 1 * Second;
+  Instant const t4 = t0 + 2 * Second;
+
+  PrincipalComponentPartitioningTree<Instant> tree({},
+                                             /*max_values_per_cell=*/1);
+  tree.Add(&t1);
+  tree.Add(&t2);
+  tree.Add(&t3);
+  tree.Add(&t4);
+
+  EXPECT_THAT(tree.FindNearestNeighbour(t0 - 0.5 * Second, radius),
+              Pointee(t1));
+  EXPECT_THAT(tree.FindNearestNeighbour(t0 + 0.5 * Second, radius),
+              Pointee(v2));
+  EXPECT_THAT(tree.FindNearestNeighbour(t0 + 1.2 * Second, radius),
+              Pointee(t3));
+  EXPECT_THAT(tree.FindNearestNeighbour(t0 + 3 * Second, radius), Pointee(t4));
+
+  // Check that the points of the tree can be retrieved.
+  EXPECT_THAT(tree.FindNearestNeighbour(t1, radius), Pointee(t1));
+  EXPECT_THAT(tree.FindNearestNeighbour(t2, radius), Pointee(t2));
+  EXPECT_THAT(tree.FindNearestNeighbour(t3, radius), Pointee(t3));
+  EXPECT_THAT(tree.FindNearestNeighbour(t4, radius), Pointee(t4));
 }
 
 // Random points, validated against the brute force algorithm.

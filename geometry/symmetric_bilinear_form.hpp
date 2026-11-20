@@ -124,7 +124,7 @@ template<quantity Scalar>
 class SymmetricBilinearForm<Scalar, QuantityGenerator> {
  public:
   SymmetricBilinearForm() = default;
-  explicit SymmetricBilinearForm(Scalar const& scalar);
+  explicit SymmetricBilinearForm(Scalar const& coordinates);
 
   friend bool operator==(SymmetricBilinearForm const& left,
                          SymmetricBilinearForm const& right) = default;
@@ -155,11 +155,10 @@ class SymmetricBilinearForm<Scalar, QuantityGenerator> {
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
   static SymmetricBilinearForm ReadFromMessage(
-      serialization::SymmetricBilinearForm const& message)
-    requires serializable<Frame>;
+      serialization::SymmetricBilinearForm const& message);
 
  private:
-  Scalar scalar_;
+  Scalar coordinates_;
 };
 
 
@@ -253,10 +252,19 @@ SymmetricBilinearForm<Product<LScalar, RScalar>,
 SymmetricProduct(Vector<LScalar, Frame> const& left,
                  Vector<RScalar, Frame> const& right);
 
+template<quantity LScalar, quantity RScalar>
+SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityGenerator>
+SymmetricProduct(QuantityGenerator<LScalar> const& left,
+                 QuantityGenerator<RScalar> const& right);
+
 // `SymmetricSquare(v)` is `SymmetricProduct(v, v)`.
 template<quantity Scalar, typename Frame>
 SymmetricBilinearForm<Square<Scalar>, MultivectorGenerator, Frame, Rank<1>>
 SymmetricSquare(Vector<Scalar, Frame> const& vector);
+
+template<quantity Scalar>
+SymmetricBilinearForm<Product<Scalar, Scalar>, QuantityGenerator>
+SymmetricSquare(QuantityGenerator<Scalar> const& quantity);
 
 // Symmetric bilinear forms on vectors act on bivectors through this function.
 // `Anticommutator(F, B)` is (tr(F)𝟙 - F)B in ℝ³ representation.  In matrix
