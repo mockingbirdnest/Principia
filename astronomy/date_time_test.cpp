@@ -19,34 +19,34 @@ class CalendarTest : public testing::Test {};
 using CalendarDeathTest = CalendarTest;
 
 TEST_F(CalendarDeathTest, InvalidCalendarDate) {
-  EXPECT_DEATH("2001-04-00"_Date, "day >= 1");
-  EXPECT_DEATH("2001-02-29"_Date, "day <= month_length");
-  EXPECT_DEATH("2001-03-32"_Date, "day <= month_length");
-  EXPECT_DEATH("2001-04-31"_Date, "day <= month_length");
-  EXPECT_DEATH("2001-00-01"_Date, "month >= 1");
-  EXPECT_DEATH("2001-13-01"_Date, "month <= 12");
-  EXPECT_DEATH("2001-00-01"_Date, "month >= 1");
-  EXPECT_DEATH("1582-01-01"_Date, "year >= 1583");
+  EXPECT_DEATH(Date::Parse("2001-04-00"), "day >= 1");
+  EXPECT_DEATH(Date::Parse("2001-02-29"), "day <= month_length");
+  EXPECT_DEATH(Date::Parse("2001-03-32"), "day <= month_length");
+  EXPECT_DEATH(Date::Parse("2001-04-31"), "day <= month_length");
+  EXPECT_DEATH(Date::Parse("2001-00-01"), "month >= 1");
+  EXPECT_DEATH(Date::Parse("2001-13-01"), "month <= 12");
+  EXPECT_DEATH(Date::Parse("2001-00-01"), "month >= 1");
+  EXPECT_DEATH(Date::Parse("1582-01-01"), "year >= 1583");
 }
 
 TEST_F(CalendarDeathTest, InvalidTime) {
-  EXPECT_DEATH("25:00:00"_Time, "hour_ <= 23");
-  EXPECT_DEATH("24:01:00"_Time, "minute_ == 0");
-  EXPECT_DEATH("24:00:01"_Time, "second_ == 0");
-  EXPECT_DEATH("00:60:00"_Time, "minute_ <= 59");
-  EXPECT_DEATH("00:00:60"_Time, "second_ <= 59");
-  EXPECT_DEATH("23:59:61"_Time, "second_ == 60");
+  EXPECT_DEATH(TimeOfDay::Parse("25:00:00"), "hour_ <= 23");
+  EXPECT_DEATH(TimeOfDay::Parse("24:01:00"), "minute_ == 0");
+  EXPECT_DEATH(TimeOfDay::Parse("24:00:01"), "second_ == 0");
+  EXPECT_DEATH(TimeOfDay::Parse("00:60:00"), "minute_ <= 59");
+  EXPECT_DEATH(TimeOfDay::Parse("00:00:60"), "second_ <= 59");
+  EXPECT_DEATH(TimeOfDay::Parse("23:59:61"), "second_ == 60");
 }
 
 TEST_F(CalendarDeathTest, InvalidDateTime) {
-  EXPECT_DEATH("2001-01-01T23:59:60"_DateTime,
+  EXPECT_DEATH(DateTime::Parse("2001-01-01T23:59:60"),
                "date_.day.. == month_length.date_.year.., date_.month..");
 }
 
 TEST_F(CalendarDeathTest, InvalidJulianDate) {
-  EXPECT_DEATH("JD12.3.4"_Julian, "!has_decimal_mark");
-  EXPECT_DEATH("MJD1234S.6"_Julian, "false");
-  EXPECT_DEATH("JD2455200.6234567013888"_Julian,
+  EXPECT_DEATH(JulianDate::Parse("JD12.3.4"), "!has_decimal_mark");
+  EXPECT_DEATH(JulianDate::Parse("MJD1234S.6"), "false");
+  EXPECT_DEATH(JulianDate::Parse("JD2455200.6234567013888"),
                "digits <= std::numeric_limits");
 }
 
@@ -108,8 +108,7 @@ TEST_F(CalendarTest, RoundTrip) {
   for (Date date = Date::JD(0.5); date < "2021-06-10"_Date;
        date = date.next_day()) {
     std::string const date_string = (std::stringstream() << date).str();
-    EXPECT_THAT(operator""_Date(date_string.c_str(), date_string.size()),
-                Eq(date));
+    EXPECT_THAT(Date::Parse(date_string), Eq(date));
   }
 }
 
