@@ -547,7 +547,8 @@ constexpr Instant Parse北斗Time(std::string_view const s) {
 
 // `Instant` literals.
 
-consteval Instant operator""_TAI(char const* const str, std::size_t const size) {
+consteval Instant operator""_TAI(char const* const str,
+                                 std::size_t const size) {
   return ParseTAI({str, size});
 }
 

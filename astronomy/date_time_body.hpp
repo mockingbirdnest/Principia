@@ -974,11 +974,15 @@ constexpr JulianDate JulianDateParser::ToMJD() const {
 }
 
 constexpr JulianDate JulianDate::Parse(std::string_view const s) {
-  if (s.starts_with("JD")) {
-    return JulianDateParser::ParseJD(s.data() + 2, s.size() - 2);
+  constexpr std::string_view jd = "JD";
+  constexpr std::string_view mjd = "MJD";
+  if (s.starts_with(jd)) {
+    return JulianDateParser::ParseJD(s.data() + jd.size(),
+                                     s.size() - jd.size());
   } else {
-    CONSTEXPR_CHECK(s.starts_with("MJD"));
-    return JulianDateParser::ParseMJD(s.data() + 3, s.size() - 3);
+    CONSTEXPR_CHECK(s.starts_with(mjd));
+    return JulianDateParser::ParseMJD(s.data() + mjd.size(),
+                                      s.size() - mjd.size());
   }
 }
 

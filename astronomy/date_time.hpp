@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <ostream>
 #include <optional>
+#include <string_view>
 
 namespace principia {
 namespace astronomy {
