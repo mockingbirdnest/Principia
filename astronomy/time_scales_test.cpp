@@ -425,8 +425,8 @@ TEST_F(TimeScalesTest, ModifiedJulianDate) {
 }
 
 TEST_F(TimeScalesDeathTest, JulianDateUTC) {
-  EXPECT_DEATH(ParseUTC("JD2451545"), "size > 0");
-  EXPECT_DEATH(ParseUTC("MJD55200.123"), "size > 0");
+  EXPECT_DEATH(ParseUTC("JD2451545"), "index_of_T != std::string_view::npos");
+  EXPECT_DEATH(ParseUTC("MJD55200.123"), "index_of_T != std::string_view::npos");
 }
 
 TEST_F(TimeScalesTest, EarthRotationAngle) {

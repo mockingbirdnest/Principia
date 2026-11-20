@@ -313,7 +313,8 @@ constexpr DateTime DateTime::Parse(std::string_view s) {
   // ensures that either both are in basic format or both are in extended
   // format.
   CONSTEXPR_CHECK(s.contains('-') == s.contains(':'));
-  const int index_of_T = s.find_first_of('T');
+  int const index_of_T = s.find_first_of('T');
+  CONSTEXPR_CHECK(index_of_T != std::string_view::npos);
   return DateTime(Date::Parse(s.substr(0, index_of_T)),
                   TimeOfDay::Parse(s.substr(index_of_T + 1)));
 }
