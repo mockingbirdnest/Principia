@@ -154,15 +154,11 @@ PrincipalComponentPartitioningTree<Point_, Payload_>::BuildTree(
     return &nodes_.back();
   }
 
-  // Compute the "inertia" of the selected displacements and diagonalize it.
-  // This gives us the direction of the largest eigenpoint, which defines the
-  // separator plane.
+  // Compute the "inertia" of the selected displacements and obtain its
+  // principal axis.  The separator plane is orthogonal to this axis, located
+  // midway through the set of points.
   auto const form = ComputePrincipalComponentForm(begin, end);
-  auto const eigensystem =
-      form.template Diagonalize<PrincipalComponentsFrame>();
-  // The last eigenpoint is the largest one.
-  auto const principal_axis =
-      eigensystem.rotation(PrincipalComponentsAxis({0, 0, 1}));
+  auto const principal_axis = form.PrincipalAxis();
 
   // Project the `vectors` on the principal axis.
   for (auto it = begin; it != end; ++it) {

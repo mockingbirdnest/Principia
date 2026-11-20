@@ -251,12 +251,16 @@ TEST_F(SymmetricBilinearFormTest, AnticommutatorDiagonalization) {
               Componentwise(0, VanishesBefore(1, 1), -1));
   EXPECT_THAT(vector_eigensystem.rotation(eigenvector(2)),
               Componentwise(0, 1, VanishesBefore(1, 1)));
+  EXPECT_THAT(f.PrincipalAxis(),
+              Componentwise(0, 1, VanishesBefore(1, 1)));
 
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(0)),
               Componentwise(0, 1, 0));
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(1)),
               Componentwise(0, 0, 1));
   EXPECT_THAT(bivector_eigensystem.rotation(bieigenvector(2)),
+              Componentwise(1, 0, 0));
+  EXPECT_THAT(f.Anticommutator().PrincipalAxis(),
               Componentwise(1, 0, 0));
 }
 
@@ -371,6 +375,7 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                 Componentwise(VanishesBefore(1, 0),
                               VanishesBefore(1, 0),
                               AlmostEquals(1, 0)));
+    EXPECT_THAT(f.PrincipalAxis(), AlmostEquals(w₂, 0));
   }
 
   // A degenerate case.
@@ -479,6 +484,10 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                 Componentwise(AlmostEquals(+0.04753874357012595212, 14),
                               AlmostEquals(+0.99606742882485799451, 1),
                               AlmostEquals(+0.07476459786563599011, 4)));
+    EXPECT_THAT(f.PrincipalAxis(),
+                Componentwise(AlmostEquals(+0.04753874357012595212, 14),
+                              AlmostEquals(+0.99606742882485799451, 1),
+                              AlmostEquals(+0.07476459786563599011, 4)));
   }
 
   // A case similar to the previous one, but constructed so that the two largest
@@ -519,6 +528,16 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
             AbsoluteErrorFrom(-0.42509236497268917818, IsNear(6.2e-4_(1))),
             AbsoluteErrorFrom(+0.37170808088366222608, IsNear(2.7e-3_(1))),
             AbsoluteErrorFrom(+0.82530575173550731715, IsNear(9.1e-4_(1)))));
+    EXPECT_THAT(
+        f.PrincipalAxis(),
+        Componentwise(
+            AbsoluteErrorFrom(-0.42509236497268917818, IsNear(6.2e-4_(1))),
+            AbsoluteErrorFrom(+0.37170808088366222608, IsNear(2.7e-3_(1))),
+            AbsoluteErrorFrom(+0.82530575173550731715, IsNear(9.1e-4_(1)))));
+    EXPECT_THAT(
+        f * f.PrincipalAxis(),
+        AlmostEquals(f_eigensystem.form.coordinates()(2, 2) * f.PrincipalAxis(),
+                     4));
   }
 
   // A matrix for which two eigenvalues are computed to be identical and the
@@ -562,6 +581,16 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
             AbsoluteErrorFrom(-0.70710678118654752440, IsNear(0.88_(1))),
             AbsoluteErrorFrom(+0.58834840541455209490, IsNear(0.47_(1))),
             AbsoluteErrorFrom(-0.39223227027636806515, IsNear(1.4_(1)))));
+    EXPECT_THAT(
+        f.PrincipalAxis(),
+        Componentwise(
+            AbsoluteErrorFrom(-0.70710678118654752440, IsNear(0.88_(1))),
+            AbsoluteErrorFrom(+0.58834840541455209490, IsNear(0.47_(1))),
+            AbsoluteErrorFrom(-0.39223227027636806515, IsNear(1.4_(1)))));
+    EXPECT_THAT(
+        f * f.PrincipalAxis(),
+        AlmostEquals(f_eigensystem.form.coordinates()(2, 2) * f.PrincipalAxis(),
+                     2));
   }
 
   // A matrix found in game, see #2853.
@@ -594,6 +623,14 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                 Componentwise(AlmostEquals(0, 0),
                               AlmostEquals(+0.70710678118654752440, 0),
                               AlmostEquals(+0.70710678118654752440, 1)));
+    EXPECT_THAT(f.PrincipalAxis(),
+                Componentwise(AlmostEquals(0, 0),
+                              AlmostEquals(+0.70710678118654752440, 0),
+                              AlmostEquals(+0.70710678118654752440, 1)));
+    EXPECT_THAT(
+        f * f.PrincipalAxis(),
+        AlmostEquals(f_eigensystem.form.coordinates()(2, 2) * f.PrincipalAxis(),
+                     1));
   }
 
   // A matrix found in game, see #2866.
@@ -622,6 +659,12 @@ TEST_F(SymmetricBilinearFormTest, Diagonalize) {
                 Componentwise(0, VanishesBefore(1, 1), -1));
     EXPECT_THAT(f_eigensystem.rotation(e₂),
                 Componentwise(0, 1, VanishesBefore(1, 1)));
+    EXPECT_THAT(f.PrincipalAxis(),
+                Componentwise(0, 1, VanishesBefore(1, 1)));
+    EXPECT_THAT(
+        f * f.PrincipalAxis(),
+        AlmostEquals(f_eigensystem.form.coordinates()(2, 2) * f.PrincipalAxis(),
+                     1));
   }
 }
 

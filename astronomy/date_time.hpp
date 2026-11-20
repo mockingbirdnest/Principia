@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <ostream>
 #include <optional>
+#include <string_view>
 
 namespace principia {
 namespace astronomy {
@@ -54,6 +55,8 @@ class Date final {
   // half, corresponding to 00:00 on the resulting `Date`.
   static constexpr Date JD(double jd);
 
+  static constexpr Date Parse(std::string_view s);
+
   constexpr int year() const;
   constexpr int month() const;
   constexpr int day() const;
@@ -87,6 +90,8 @@ class TimeOfDay final {
 
   static constexpr TimeOfDay hhmmss_ms(int hhmmss, int ms);
 
+  static constexpr TimeOfDay Parse(std::string_view s);
+
   constexpr int hour() const;
   constexpr int minute() const;
   constexpr int second() const;
@@ -113,6 +118,8 @@ class DateTime final {
 
   static constexpr DateTime BeginningOfDay(Date const& date);
 
+  static constexpr DateTime Parse(std::string_view s);
+
   constexpr Date const& date() const;
   constexpr TimeOfDay const& time() const;
 
@@ -124,7 +131,7 @@ class DateTime final {
   Date const date_;
   TimeOfDay const time_;
 
-  friend constexpr DateTime operator""_DateTime(char const* str,
+  friend consteval DateTime operator""_DateTime(char const* str,
                                                 std::size_t size);
 };
 
@@ -136,6 +143,8 @@ class JulianDate final {
   static constexpr JulianDate MJD(std::int64_t digits,
                                   std::int64_t digit_count,
                                   std::int64_t fractional_digit_count);
+
+  static constexpr JulianDate Parse(std::string_view s);
 
   constexpr std::int64_t day() const;
   constexpr std::int64_t fraction_numerator() const;
@@ -158,23 +167,23 @@ class JulianDate final {
 constexpr bool operator==(Date const& left, Date const& right);
 constexpr bool operator!=(Date const& left, Date const& right);
 constexpr auto operator<=>(Date const& left, Date const& right);
-constexpr Date operator""_Date(char const* str, std::size_t size);
+consteval Date operator""_Date(char const* str, std::size_t size);
 std::ostream& operator<<(std::ostream& out, Date const& date);
 
 constexpr bool operator==(TimeOfDay const& left, TimeOfDay const& right);
 constexpr bool operator!=(TimeOfDay const& left, TimeOfDay const& right);
-constexpr TimeOfDay operator""_Time(char const* str, std::size_t size);
+consteval TimeOfDay operator""_Time(char const* str, std::size_t size);
 std::ostream& operator<<(std::ostream& out, TimeOfDay const& time);
 
 // 24:00 on one day and 00:00 on the next compare equal.
 constexpr bool operator==(DateTime const& left, DateTime const& right);
 constexpr bool operator!=(DateTime const& left, DateTime const& right);
-constexpr DateTime operator""_DateTime(char const* str, std::size_t size);
+consteval DateTime operator""_DateTime(char const* str, std::size_t size);
 std::ostream& operator<<(std::ostream& out, DateTime const& date_time);
 
 // Returns true if the string can be interpreted as a Julian date.
 constexpr bool IsJulian(char const* str, std::size_t size);
-constexpr JulianDate operator""_Julian(char const* str, std::size_t size);
+consteval JulianDate operator""_Julian(char const* str, std::size_t size);
 
 }  // namespace internal
 
