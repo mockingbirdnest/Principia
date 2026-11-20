@@ -263,7 +263,7 @@ SymmetricBilinearForm<Square<Scalar>, MultivectorGenerator, Frame, Rank<1>>
 SymmetricSquare(Vector<Scalar, Frame> const& vector);
 
 template<quantity Scalar>
-SymmetricBilinearForm<Product<Scalar, Scalar>, QuantityGenerator>
+SymmetricBilinearForm<Square<Scalar>, QuantityGenerator>
 SymmetricSquare(QuantityGenerator<Scalar> const& quantity);
 
 // Symmetric bilinear forms on vectors act on bivectors through this function.

@@ -130,7 +130,7 @@ TEST_F(PrincipalComponentPartitioningTreeTest, XYPlaneAdd) {
 
 // A tree where the points are instants.
 TEST_F(PrincipalComponentPartitioningTreeTest, Instant) {
-  double const radius = Infinity<double>;
+  Time const radius = Infinity<Time>;
   Instant const t0;
   Instant const t1 = t0 - 1 * Second;
   Instant const t2 = t0 - 1 * Second;
@@ -138,7 +138,7 @@ TEST_F(PrincipalComponentPartitioningTreeTest, Instant) {
   Instant const t4 = t0 + 2 * Second;
 
   PrincipalComponentPartitioningTree<Instant> tree({},
-                                             /*max_values_per_cell=*/1);
+                                                   /*max_values_per_cell=*/1);
   tree.Add(&t1);
   tree.Add(&t2);
   tree.Add(&t3);
@@ -147,7 +147,7 @@ TEST_F(PrincipalComponentPartitioningTreeTest, Instant) {
   EXPECT_THAT(tree.FindNearestNeighbour(t0 - 0.5 * Second, radius),
               Pointee(t1));
   EXPECT_THAT(tree.FindNearestNeighbour(t0 + 0.5 * Second, radius),
-              Pointee(v2));
+              Pointee(t3));
   EXPECT_THAT(tree.FindNearestNeighbour(t0 + 1.2 * Second, radius),
               Pointee(t3));
   EXPECT_THAT(tree.FindNearestNeighbour(t0 + 3 * Second, radius), Pointee(t4));

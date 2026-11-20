@@ -485,9 +485,9 @@ SymmetricSquare(Vector<Scalar, Frame> const& vector) {
 }
 
 template<quantity Scalar>
-SymmetricBilinearForm<Product<Scalar, Scalar>, QuantityGenerator>
+SymmetricBilinearForm<Square<Scalar>, QuantityGenerator>
 SymmetricSquare(QuantityGenerator<Scalar> const& quantity) {
-  return SymmetricBilinearForm<Product<Scalar, Scalar>, QuantityGenerator>(
+  return SymmetricBilinearForm<Square<Scalar>, QuantityGenerator>(
       Pow<2>(quantity));
 }
 

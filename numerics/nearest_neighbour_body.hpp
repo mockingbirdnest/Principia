@@ -433,7 +433,7 @@ void PrincipalComponentPartitioningTree<Point_, Payload_>::Find(
   // If `Optimize()` was called, this loop accesses sequential data in
   // `displacements_` and should be cache-friendly.
   for (auto const index : leaf) {
-    auto const distance² = (displacements_[index] - displacement).Norm²();
+    auto const distance² = Norm²(displacements_[index] - displacement);
     // Skip the points that are filtered out.  Note that *all* the points may be
     // filtered out.  The order of comparisons matters because `min_distance²`
     // is typically small.
