@@ -123,7 +123,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
-template<typename Scalar>
+template<quantity Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     R3Element<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
@@ -155,7 +155,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
-template<typename Scalar>
+template<quantity Scalar>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     R3x3Matrix<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
@@ -236,7 +236,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     Vector<Scalar, Frame> const& actual,
     testing::MatchResultListener* listener) const {
@@ -251,7 +251,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     Bivector<Scalar, Frame> const& actual,
     testing::MatchResultListener* listener) const {
@@ -266,7 +266,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
-template<typename Scalar, typename Frame>
+template<quantity Scalar, typename Frame>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
     Trivector<Scalar, Frame> const& actual,
     testing::MatchResultListener* listener) const {

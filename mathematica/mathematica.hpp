@@ -28,6 +28,7 @@
 #include "numerics/unbounded_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "quantities/concepts.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "quantities/tuples.hpp"
@@ -58,6 +59,7 @@ using namespace principia::numerics::_polynomial_in_чебышёв_basis;
 using namespace principia::numerics::_unbounded_arrays;
 using namespace principia::physics::_degrees_of_freedom;
 using namespace principia::physics::_discrete_trajectory;
+using namespace principia::quantities::_concepts;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::quantities::_tuples;
@@ -197,11 +199,11 @@ template<typename T, std::int64_t rows, std::int64_t columns,
 std::string ToMathematica(FixedMatrix<T, rows, columns> const& fixed_matrix,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename OptionalExpressIn = std::nullopt_t>
+template<quantity T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R3Element<T> const& r3_element,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename T, typename OptionalExpressIn = std::nullopt_t>
+template<quantity T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(R3x3Matrix<T> const& r3x3_matrix,
                           OptionalExpressIn express_in = std::nullopt);
 
@@ -225,11 +227,11 @@ template<typename T, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(DoublePrecision<T> const& double_precision,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename S, typename F, typename OptionalExpressIn = std::nullopt_t>
+template<quantity S, typename F, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Vector<S, F> const& vector,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename S, typename F, typename OptionalExpressIn = std::nullopt_t>
+template<quantity S, typename F, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Bivector<S, F> const& bivector,
                           OptionalExpressIn express_in = std::nullopt);
 
@@ -237,7 +239,7 @@ template<typename V, typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(Point<V> const& point,
                           OptionalExpressIn express_in = std::nullopt);
 
-template<typename S, typename F,
+template<quantity S, typename F,
          template<typename, typename> typename M,
          typename OptionalExpressIn = std::nullopt_t>
 std::string ToMathematica(SymmetricBilinearForm<S, F, M> const& form,

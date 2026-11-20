@@ -11,11 +11,12 @@
 #include "geometry/rotation.hpp"
 #include "geometry/signature.hpp"
 #include "geometry/space.hpp"
+#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE(TEMPLATE(typename Scalar,
+FORWARD_DECLARE(TEMPLATE(quantities::_concepts::convertible_to_quantity Scalar,
                          typename FromFrame,
                          typename ToFrame) class,
                 Homothecy,
@@ -40,10 +41,11 @@ using namespace principia::geometry::_quaternion;
 using namespace principia::geometry::_rotation;
 using namespace principia::geometry::_signature;
 using namespace principia::geometry::_space;
+using namespace principia::quantities::_concepts;
 
 // This is really a *linear* conformal map, but we don't call it
 // LinearConformalMap because that's a mouthful.
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
                                       FromFrame, ToFrame> {
  public:
@@ -59,7 +61,7 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
   static ConformalMap Identity()
     requires(std::is_floating_point_v<Scalar> || std::is_integral_v<Scalar>);
 
-  template<typename VScalar>
+  template<quantity VScalar>
   Vector<Product<VScalar, Scalar>, ToFrame> operator()(
       Vector<VScalar, FromFrame> const& vector) const;
 
@@ -100,32 +102,32 @@ class ConformalMap : public LinearMap<ConformalMap<Scalar, FromFrame, ToFrame>,
   Scalar scale_;
   Quaternion quaternion_;
 
-  template<typename S, typename From, typename To>
+  template<convertible_to_quantity S, typename From, typename To>
   friend class ConformalMap;
-  template<typename S, typename From, typename To>
+  template<convertible_to_quantity S, typename From, typename To>
   friend class _homothecy::Homothecy;
   template<typename From, typename To>
   friend class _orthogonal_map::OrthogonalMap;
 
-  template<typename L, typename R,
+  template<convertible_to_quantity L, convertible_to_quantity R,
            typename From, typename Through, typename To>
   friend ConformalMap<Product<L, R>, From, To> operator*(
       ConformalMap<L, Through, To> const& left,
       ConformalMap<R, From, Through> const& right);
 
-  template<typename S, typename From, typename To>
+  template<convertible_to_quantity S, typename From, typename To>
   friend std::ostream& operator<<(
       std::ostream& out,
       ConformalMap<S, From, To> const& conformal_map);
 };
 
-template<typename LScalar, typename RScalar,
+template<convertible_to_quantity LScalar, convertible_to_quantity RScalar,
          typename FromFrame, typename ThroughFrame, typename ToFrame>
 ConformalMap<Product<LScalar, RScalar>, FromFrame, ToFrame> operator*(
     ConformalMap<LScalar, ThroughFrame, ToFrame> const& left,
     ConformalMap<RScalar, FromFrame, ThroughFrame> const& right);
 
-template<typename Scalar, typename FromFrame, typename ToFrame>
+template<convertible_to_quantity Scalar, typename FromFrame, typename ToFrame>
 std::ostream& operator<<(
     std::ostream& out,
     ConformalMap<Scalar, FromFrame, ToFrame> const& conformal_map);

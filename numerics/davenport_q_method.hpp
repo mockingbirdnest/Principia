@@ -4,6 +4,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/rotation.hpp"
+#include "quantities/concepts.hpp"
 
 namespace principia {
 namespace numerics {
@@ -12,8 +13,9 @@ namespace internal {
 
 using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_rotation;
+using namespace principia::quantities::_concepts;
 
-template<typename FromFrame, typename ToFrame, typename Weight>
+template<typename FromFrame, typename ToFrame, quantity Weight>
 Rotation<FromFrame, ToFrame> DavenportQMethod(
     std::vector<Vector<double, FromFrame>> const& a,
     std::vector<Vector<double, ToFrame>> const& b,

@@ -4,6 +4,7 @@
 #include "base/mappable.hpp"
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
+#include "quantities/concepts.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -15,6 +16,7 @@ using namespace principia::base::_concepts;
 using namespace principia::base::_mappable;
 using namespace principia::base::_not_null;
 using namespace principia::geometry::_grassmann;
+using namespace principia::quantities::_concepts;
 
 template<typename Map, typename FromFrame, typename ToFrame>
 class LinearMap {
@@ -32,10 +34,10 @@ class LinearMap {
 
   static Map Identity();
 
-  // Our vector are effectively contravariant.  Note that only orthogonal maps
+  // Our vectors are effectively contravariant.  Note that only orthogonal maps
   // operate on bivectors, trivectors, and symmetric bilinear forms because we
   // do not want to distinguish their possible co/contravariance.
-  template<typename Scalar>
+  template<quantity Scalar>
   Vector<Scalar, ToFrame> operator()(
       Vector<Scalar, FromFrame> const& vector) const;
 
