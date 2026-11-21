@@ -261,86 +261,86 @@ ReadFromMessage(serialization::SymmetricBilinearForm const& message)
 
 
 template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityGenerator>::SymmetricBilinearForm(
+SymmetricBilinearForm<Scalar, QuantityTag>::SymmetricBilinearForm(
     Scalar const& coordinates) : coordinates_(coordinates) {}
 
 template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityGenerator>&
-SymmetricBilinearForm<Scalar, QuantityGenerator>::operator+=(
+SymmetricBilinearForm<Scalar, QuantityTag>&
+SymmetricBilinearForm<Scalar, QuantityTag>::operator+=(
     SymmetricBilinearForm const& right) {
   return *this = *this + right;
 }
 
 template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityGenerator>&
-SymmetricBilinearForm<Scalar, QuantityGenerator>::operator-=(
+SymmetricBilinearForm<Scalar, QuantityTag>&
+SymmetricBilinearForm<Scalar, QuantityTag>::operator-=(
     SymmetricBilinearForm const& right) {
   return *this = *this - right;
 }
 
 template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityGenerator>&
-SymmetricBilinearForm<Scalar, QuantityGenerator>::operator*=(
+SymmetricBilinearForm<Scalar, QuantityTag>&
+SymmetricBilinearForm<Scalar, QuantityTag>::operator*=(
     double const right) {
   return *this = *this * right;
 }
 
 template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityGenerator>&
-SymmetricBilinearForm<Scalar, QuantityGenerator>::operator/=(
+SymmetricBilinearForm<Scalar, QuantityTag>&
+SymmetricBilinearForm<Scalar, QuantityTag>::operator/=(
     double const right) {
   return *this = *this / right;
 }
 
 template<quantity Scalar>
 Scalar const&
-SymmetricBilinearForm<Scalar, QuantityGenerator>::coordinates() const {
+SymmetricBilinearForm<Scalar, QuantityTag>::coordinates() const {
   return coordinates_;
 }
 
 template<quantity Scalar>
 template<quantity LScalar, quantity RScalar>
 Product<Scalar, Product<LScalar, RScalar>>
-SymmetricBilinearForm<Scalar, QuantityGenerator>::operator()(
-    QuantityGenerator<LScalar> const& left,
-    QuantityGenerator<RScalar> const& right) const {
+SymmetricBilinearForm<Scalar, QuantityTag>::operator()(
+    LScalar const& left,
+    RScalar const& right) const {
   return coordinates_ * left * right;
 }
 
 template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityGenerator>
-SymmetricBilinearForm<Scalar, QuantityGenerator>::Diagonalize() const {
+SymmetricBilinearForm<Scalar, QuantityTag>
+SymmetricBilinearForm<Scalar, QuantityTag>::Diagonalize() const {
   return *this;
 }
 
 template<quantity Scalar>
-bool SymmetricBilinearForm<Scalar, QuantityGenerator>::IsDiagonalized() const {
+bool SymmetricBilinearForm<Scalar, QuantityTag>::IsDiagonalized() const {
   return true;
 }
 
 template<quantity Scalar>
-double SymmetricBilinearForm<Scalar, QuantityGenerator>::PrincipalAxis() const {
+double SymmetricBilinearForm<Scalar, QuantityTag>::PrincipalAxis() const {
   return 1.0;
 }
 
 template<quantity Scalar>
-void SymmetricBilinearForm<Scalar, QuantityGenerator>::WriteToMessage(
+void SymmetricBilinearForm<Scalar, QuantityTag>::WriteToMessage(
     not_null<serialization::SymmetricBilinearForm*> message) const {
   //TODO(phl)implement
   //message->set_coordinates(coordinates_);
 }
 
 template<quantity Scalar>
-SymmetricBilinearForm<Scalar, QuantityGenerator>
-SymmetricBilinearForm<Scalar, QuantityGenerator>::ReadFromMessage(
+SymmetricBilinearForm<Scalar, QuantityTag>
+SymmetricBilinearForm<Scalar, QuantityTag>::ReadFromMessage(
     serialization::SymmetricBilinearForm const& message) {
-  return SymmetricBilinearForm<Scalar, QuantityGenerator>();
+  //TODO(phl)implement
+  return SymmetricBilinearForm<Scalar, QuantityTag>();
 }
 
 
 template<typename Tag, typename... Parameters>
 SymmetricBilinearForm<double, Tag, Parameters...> const&
-SymmetricBilinearForm<double, Generator, Parameters...> const&
 InnerProductForm() {
   static auto const identity =
       SymmetricBilinearForm<double, Tag, Parameters...>(
@@ -452,10 +452,9 @@ SymmetricProduct(Vector<LScalar, Frame> const& left,
 }
 
 template<quantity LScalar, quantity RScalar>
-SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityGenerator>
-SymmetricProduct(QuantityGenerator<LScalar> const& left,
-                 QuantityGenerator<RScalar> const& right) {
-  return SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityGenerator>(
+SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityTag>
+SymmetricProduct(LScalar const& left, RScalar const& right) {
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityTag>(
       left * right);
 }
 
@@ -469,10 +468,9 @@ SymmetricSquare(Vector<Scalar, Frame> const& vector) {
 }
 
 template<quantity Scalar>
-SymmetricBilinearForm<Square<Scalar>, QuantityGenerator>
-SymmetricSquare(QuantityGenerator<Scalar> const& quantity) {
-  return SymmetricBilinearForm<Square<Scalar>, QuantityGenerator>(
-      Pow<2>(quantity));
+SymmetricBilinearForm<Square<Scalar>, QuantityTag>
+SymmetricSquare(Scalar const& quantity) {
+  return SymmetricBilinearForm<Square<Scalar>, QuantityTag>(Pow<2>(quantity));
 }
 
 template<quantity LScalar, quantity RScalar, typename Frame>
@@ -487,17 +485,13 @@ Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
       form_coordinates * bivector_coordinates);
 }
 
-template<quantity Scalar,
-         typename Tag,
-         typename... Parameters>
+template<quantity Scalar, typename Tag, typename... Parameters>
 std::string DebugString(
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& form) {
   return DebugString(form.coordinates());
 }
 
-template<quantity Scalar,
-         typename Tag,
-         typename... Parameters>
+template<quantity Scalar, typename Tag, typename... Parameters>
 std::ostream& operator<<(
     std::ostream& out,
     SymmetricBilinearForm<Scalar, Tag, Parameters...> const& form) {

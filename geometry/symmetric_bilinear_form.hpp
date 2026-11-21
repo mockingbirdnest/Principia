@@ -10,6 +10,7 @@
 #include "geometry/r3x3_matrix.hpp"
 #include "geometry/rotation.hpp"
 #include "quantities/concepts.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -25,11 +26,7 @@ using namespace principia::geometry::_grassmann;
 using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_concepts;
-
-// A helper for building a `SymmetricBilinearForm` using quantities.  Declared
-// here because it needs `quantity` so it cannot be in `quantities.hpp`.
-template<quantity Q>
-using QuantityGenerator = Q;
+using namespace principia::quantities::_quantities;
 
 // A symmetric bilinear form with dimensionality given by `Scalar`, acting on
 // vector spaces parameterized by `Parameters`.  The `Tag` makes it possible to
@@ -119,7 +116,7 @@ class SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>> {
 
 // A symmetric bilinear form with dimensionality `Scalar`, on quantities.
 template<quantity Scalar>
-class SymmetricBilinearForm<Scalar, QuantityGenerator> {
+class SymmetricBilinearForm<Scalar, QuantityTag> {
  public:
   SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(Scalar const& coordinates);
@@ -138,11 +135,11 @@ class SymmetricBilinearForm<Scalar, QuantityGenerator> {
 
   template<quantity LScalar, quantity RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
-      QuantityGenerator<LScalar> const& left,
-      QuantityGenerator<RScalar> const& right) const;
+      LScalar const& left,
+      RScalar const& right) const;
 
   // Returns a copy of this object.
-  SymmetricBilinearForm<Scalar, QuantityGenerator> Diagonalize() const;
+  SymmetricBilinearForm<Scalar, QuantityTag> Diagonalize() const;
 
   // Always returns true.
   bool IsDiagonalized() const;
@@ -232,9 +229,8 @@ SymmetricProduct(Vector<LScalar, Frame> const& left,
                  Vector<RScalar, Frame> const& right);
 
 template<quantity LScalar, quantity RScalar>
-SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityGenerator>
-SymmetricProduct(QuantityGenerator<LScalar> const& left,
-                 QuantityGenerator<RScalar> const& right);
+SymmetricBilinearForm<Product<LScalar, RScalar>, QuantityTag>
+SymmetricProduct(LScalar const& left, RScalar const& right);
 
 // `SymmetricSquare(v)` is `SymmetricProduct(v, v)`.
 template<quantity Scalar, typename Frame>
@@ -242,8 +238,8 @@ SymmetricBilinearForm<Square<Scalar>, MultivectorTag, Frame, Rank<1>>
 SymmetricSquare(Vector<Scalar, Frame> const& vector);
 
 template<quantity Scalar>
-SymmetricBilinearForm<Square<Scalar>, QuantityGenerator>
-SymmetricSquare(QuantityGenerator<Scalar> const& quantity);
+SymmetricBilinearForm<Square<Scalar>, QuantityTag>
+SymmetricSquare(Scalar const& quantity);
 
 // Symmetric bilinear forms on vectors act on bivectors through this function.
 // `Anticommutator(F, B)` is (tr(F)𝟙 - F)B in ℝ³ representation.  In matrix
@@ -271,6 +267,9 @@ using VectorSymmetricBilinearForm =
 template<typename Scalar, typename Frame>
 using BivectorSymmetricBilinearForm =
     SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<2>>;
+template<typename Scalar>
+using QuantitySymmetricBilinearForm =
+    SymmetricBilinearForm<Scalar, QuantityTag>;
 
 template<typename Frame>
 auto const& VectorInnerProductForm =
@@ -285,7 +284,7 @@ using internal::Anticommutator;
 using internal::BivectorInnerProductForm;
 using internal::BivectorSymmetricBilinearForm;
 using internal::InnerProductForm;
-using internal::QuantityGenerator;
+using internal::QuantitySymmetricBilinearForm;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;

@@ -191,6 +191,11 @@ std::string DebugString(
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
+// Beware!  This tag should only be used in `symmetric_bilinear_form.hpp` and
+// its body.
+// NOTE(phl): With P2989R3, we could use the template itself as a tag.
+struct QuantityTag;
+
 }  // namespace internal
 
 using internal::Amount;
@@ -207,6 +212,7 @@ using internal::LuminousIntensity;
 using internal::Mass;
 using internal::NaN;
 using internal::Quantity;
+using internal::QuantityTag;
 using internal::Temperature;
 using internal::Time;
 using internal::ToM128D;
