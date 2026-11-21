@@ -63,10 +63,10 @@ void Graph<Abscissa, Ordinate>::Plot(std::function<Ordinate(Abscissa)> const& f,
        i <= abscissa_to_pixel(range.max);
        ++i) {
     Interval const pixel_range = Intersection(pixel_to_abscissa(i), range);
-    double const f_x_min = f(pixel_range.min);
-    double const f_x_max = f(pixel_range.max);
-    double f_min;
-    double f_max;
+    Ordinate const f_x_min = f(pixel_range.min);
+    Ordinate const f_x_max = f(pixel_range.max);
+    Ordinate f_min;
+    Ordinate f_max;
     if (f_x_min <= f_x_max) {
       f_min = f_x_min;
       f_max = f_x_max;
