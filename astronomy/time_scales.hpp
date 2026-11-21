@@ -36,15 +36,15 @@ constexpr Angle EarthRotationAngle(Instant tt);
 // frequency stability and high frequency accuracy are needed, see
 // https://www.bipm.org/en/bipm-services/timescales/time-ftp/ttbipm.html.
 
-constexpr Instant operator""_TAI(char const* str, std::size_t size);
-constexpr Instant operator""_TT(char const* str, std::size_t size);
-constexpr Instant operator""_UTC(char const* str, std::size_t size);
-constexpr Instant operator""_UT1(char const* str, std::size_t size);
+constexpr Instant ParseTAI(std::string_view s);
+constexpr Instant ParseTT(std::string_view s);
+constexpr Instant ParseUTC(std::string_view s);
+constexpr Instant ParseUT1(std::string_view s);
 
-Instant ParseTAI(std::string const& s);
-Instant ParseTT(std::string const& s);
-Instant ParseUTC(std::string const& s);
-Instant ParseUT1(std::string const& s);
+consteval Instant operator""_TAI(char const* str, std::size_t size);
+consteval Instant operator""_TT(char const* str, std::size_t size);
+consteval Instant operator""_UTC(char const* str, std::size_t size);
+consteval Instant operator""_UT1(char const* str, std::size_t size);
 
 // GNSS time scales.
 // As documented, e.g., in p. 32 of the RINEX specification, v. 3.03, update 1,
@@ -69,11 +69,11 @@ Instant ParseUT1(std::string const& s);
 // UTC, and the GNSS time scales other than 北斗 and ГЛОНАСС with GPS time.
 // We do not support Julian dates in GNSS time scales.
 
-constexpr Instant operator""_GPS(char const* str, std::size_t size);
-constexpr Instant operator""_北斗(char const* str, std::size_t size);
+constexpr Instant ParseGPSTime(std::string_view s);
+constexpr Instant Parse北斗Time(std::string_view s);
 
-Instant ParseGPSTime(std::string const& s);
-Instant Parse北斗Time(std::string const& s);
+consteval Instant operator""_GPS(char const* str, std::size_t size);
+consteval Instant operator""_北斗(char const* str, std::size_t size);
 
 // The following functions effectively round their argument toward InfinitePast
 // to various granularities.

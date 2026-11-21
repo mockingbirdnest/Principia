@@ -14,8 +14,7 @@ namespace principia {
 namespace geometry {
 
 FORWARD_DECLARE(TEMPLATE(quantities::_concepts::quantity Scalar,
-                         TEMPLATE(quantities::_concepts::quantity, typename...)
-                             typename Generator,
+                         typename Tag,
                          typename... Parameters) class,
                 SymmetricBilinearForm,
                 FROM(symmetric_bilinear_form),
@@ -60,11 +59,10 @@ class Identity : public LinearMap<Identity<FromFrame, ToFrame>,
       Trivector<Scalar, FromFrame> const& trivector) const;
 
   template<quantity Scalar, int rank>
-  SymmetricBilinearForm<Scalar, MultivectorGenerator, ToFrame, Rank<rank>>
-  operator()(
-      SymmetricBilinearForm<
-          Scalar,
-          MultivectorGenerator, FromFrame, Rank<rank>> const& form) const;
+  SymmetricBilinearForm<Scalar, MultivectorTag, ToFrame, Rank<rank>>
+  operator()(SymmetricBilinearForm<
+                 Scalar,
+                 MultivectorTag, FromFrame, Rank<rank>> const& form) const;
 
   template<typename T>
   typename Mappable<Identity, T>::type operator()(T const& t) const;

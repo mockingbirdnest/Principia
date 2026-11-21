@@ -44,14 +44,12 @@ Trivector<Scalar, ToFrame> Identity<FromFrame, ToFrame>::operator()(
 
 template<typename FromFrame, typename ToFrame>
 template<quantity Scalar, int rank>
-SymmetricBilinearForm<Scalar, MultivectorGenerator, ToFrame, Rank<rank>>
+SymmetricBilinearForm<Scalar, MultivectorTag, ToFrame, Rank<rank>>
 Identity<FromFrame, ToFrame>::operator()(
     SymmetricBilinearForm<
-        Scalar,
-        MultivectorGenerator, FromFrame, Rank<rank>> const& form) const {
-  return SymmetricBilinearForm<
-             Scalar,
-             MultivectorGenerator, ToFrame, Rank<rank>>(form.coordinates());
+        Scalar, MultivectorTag, FromFrame, Rank<rank>> const& form) const {
+  return SymmetricBilinearForm<Scalar, MultivectorTag, ToFrame, Rank<rank>>(
+      form.coordinates());
 }
 
 template<typename FromFrame, typename ToFrame>

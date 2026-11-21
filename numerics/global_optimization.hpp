@@ -93,6 +93,13 @@ class MultiLevelSingleLinkage {
       VectorField<Scalar, Argument> const& f,
       GradientField<Scalar, Argument> const& grad_f);
 
+  // Return true iff `x` is sufficiently close to a known stationary point.
+  static bool IsCloseToKnownStationaryPoint(
+      Argument const& x,
+      PrincipalComponentPartitioningTree<Argument> const&
+          stationary_point_neighbourhoods,
+      NormType const local_search_tolerance);
+
   // Returns true iff the given `stationary_point` is sufficiently far from the
   // ones already in `stationary_point_neighbourhoods`.
   static bool IsNewStationaryPoint(
@@ -104,8 +111,7 @@ class MultiLevelSingleLinkage {
   // Returns a vector of size `values_per_round`.  The points are in `box_`.
   Arguments RandomArguments(std::int64_t values_per_round);
 
-  // Returns the square of the radius rₖ from [RT87a], eqn. 35, specialized for
-  // `dimensions`.
+  // Returns the radius rₖ from [RT87a], eqn. 35, specialized for `dimensions`.
   NormType CriticalRadius(double σ, std::int64_t kN);
 
   Box const box_;

@@ -97,8 +97,7 @@ class MechanicalSystem {
   // This class thus exposes the form on bivectors in its API, and uses
   // `AnticommutatorInverse()` and `Anticommutator()` to convert between it and
   // the form on vectors used internally.
-  SymmetricBilinearForm<MomentOfInertia,
-                        MultivectorGenerator, InertialFrame, Rank<1>>
+  VectorSymmetricBilinearForm<MomentOfInertia, InertialFrame>
       sum_of_inertia_tensors_;
 };
 
