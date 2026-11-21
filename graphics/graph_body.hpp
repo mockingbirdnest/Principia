@@ -2,6 +2,7 @@
 
 #include "graphics/graph.hpp"
 
+#include <algorithm>
 #include <optional>
 #include <string>
 #include <utility>
@@ -27,20 +28,22 @@ Graph<Abscissa, Ordinate>::Graph(std::int64_t const width,
 template<affine Abscissa, affine Ordinate>
 template<std::ranges::range Points>
   requires graph_point<std::ranges::range_value_t<Points>, Abscissa, Ordinate>
-void Graph<Abscissa, Ordinate>::ListPointPlot(Points const& points,
-                                              RGB24 const colour,
-                                              ListPointPlotOptions const options) {
+void Graph<Abscissa, Ordinate>::ListPointPlot(
+    Points const& points,
+    RGB24 const colour,
+    ListPointPlotOptions const options) {
   if (options.joined) {
     std::optional<Abscissa> xᵢ₋₁;
     std::optional<Ordinate> yᵢ₋₁;
     for (auto const& [xᵢ, yᵢ] : points) {
       if (xᵢ₋₁.has_value()) {
         if (*xᵢ₋₁ == xᵢ) {
-          PlotVerticalLine(xᵢ, colour, {{std::min(*yᵢ₋₁, yᵢ), std::max(*yᵢ₋₁, yᵢ)}});
+          PlotVerticalLine(
+              xᵢ, colour, {{std::min(*yᵢ₋₁, yᵢ), std::max(*yᵢ₋₁, yᵢ)}});
         } else {
           auto const slope = (yᵢ - *yᵢ₋₁) / (xᵢ - *xᵢ₋₁);
-          Plot([xᵢ₋₁=*xᵢ₋₁, yᵢ₋₁ = *yᵢ₋₁, slope](
-                   Abscissa const& x) -> Ordinate{ return yᵢ₋₁ + (x - xᵢ₋₁) * slope; },
+          Plot([xᵢ₋₁ = *xᵢ₋₁, yᵢ₋₁ = *yᵢ₋₁, slope](
+                   Abscissa const& x) { return yᵢ₋₁ + (x - xᵢ₋₁) * slope; },
                {std::min(*xᵢ₋₁, xᵢ), std::max(*xᵢ₋₁, xᵢ)},
                colour);
         }
