@@ -53,6 +53,12 @@ TEST_F(GraphTest, Sinusoid) {
         return std::pair{(x / 6) * Radian, Sin((x / 6 + 2) * Radian)};
       }),
       xkcd::green);
+  graph.ListPointPlot(
+      std::views::iota(-24, 12) | std::views::transform([](double const x) {
+        return std::pair{(x / 6) * Radian, -Sin((x / 6 + 2) * Radian)};
+      }),
+      xkcd::green,
+      {.joined = true});
   EXPECT_GOLDEN_GRAPH(graph, "sinusoids");
 }
 
