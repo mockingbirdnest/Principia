@@ -22,9 +22,8 @@ FORWARD_DECLARE(TEMPLATE(typename FromFrame, typename ToFrame) class,
                 FROM(permutation),
                 INTO(rotation));
 FORWARD_DECLARE(TEMPLATE(quantities::_concepts::quantity Scalar,
-                         typename Frame,
-                         template<typename S, typename F>
-                         typename Multivector) class,
+                         typename Tag,
+                         typename... Parameters) class,
                 SymmetricBilinearForm,
                 FROM(symmetric_bilinear_form),
                 INTO(rotation));
@@ -240,10 +239,11 @@ class Rotation : public LinearMap<Rotation<FromFrame, ToFrame>,
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<quantity Scalar,
-           template<typename S, typename F> typename Multivector>
-  SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
-      SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
+  template<quantity Scalar, int rank>
+  SymmetricBilinearForm<Scalar, MultivectorTag, ToFrame, Rank<rank>>
+  operator()(SymmetricBilinearForm<
+                 Scalar,
+                 MultivectorTag, FromFrame, Rank<rank>> const& form) const;
 
   template<typename T>
   typename Mappable<Rotation, T>::type operator()(T const& t) const;

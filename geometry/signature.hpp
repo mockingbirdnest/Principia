@@ -11,13 +11,12 @@
 namespace principia {
 namespace geometry {
 
-FORWARD_DECLARE(
-    TEMPLATE(quantities::_concepts::quantity Scalar,
-             typename Frame,
-             template<typename, typename> typename Multivector) class,
-    SymmetricBilinearForm,
-    FROM(symmetric_bilinear_form),
-    INTO(signature));
+FORWARD_DECLARE(TEMPLATE(quantities::_concepts::quantity Scalar,
+                         typename Tag,
+                         typename... Parameters) class,
+                SymmetricBilinearForm,
+                FROM(symmetric_bilinear_form),
+                INTO(signature));
 
 namespace _signature {
 namespace internal {
@@ -76,10 +75,11 @@ class Signature : public LinearMap<Signature<FromFrame, ToFrame>,
   Trivector<Scalar, ToFrame> operator()(
       Trivector<Scalar, FromFrame> const& trivector) const;
 
-  template<quantity Scalar,
-           template<typename, typename> typename Multivector>
-  SymmetricBilinearForm<Scalar, ToFrame, Multivector> operator()(
-      SymmetricBilinearForm<Scalar, FromFrame, Multivector> const& form) const;
+  template<quantity Scalar, int rank>
+  SymmetricBilinearForm<Scalar, MultivectorTag, ToFrame, Rank<rank>>
+  operator()(SymmetricBilinearForm<
+                 Scalar,
+                 MultivectorTag, FromFrame, Rank<rank>> const& form) const;
 
   template<template<typename, typename> typename LinearMap>
   LinearMap<FromFrame, ToFrame> Forget() const;
