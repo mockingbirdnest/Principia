@@ -54,7 +54,7 @@ class SymmetricBilinearFormTest : public ::testing::Test {
                            serialization::Frame::TEST1>;
 
   template<typename Frame>
-  SymmetricBilinearForm<Length, MultivectorGenerator, Frame, Rank<1>>
+  VectorSymmetricBilinearForm<Length, Frame>
   MakeSymmetricBilinearForm(R3x3Matrix<double> const& untyped_matrix) {
     R3x3Matrix<Length> const typed_matrix(
         R3Element<double>(
@@ -66,8 +66,7 @@ class SymmetricBilinearFormTest : public ::testing::Test {
         R3Element<double>(
             untyped_matrix(2, 0), untyped_matrix(2, 1), untyped_matrix(2, 2)) *
             Metre);
-    return SymmetricBilinearForm<Length, MultivectorGenerator, Frame, Rank<1>>(
-        typed_matrix);
+    return VectorSymmetricBilinearForm<Length, Frame>(typed_matrix);
   }
 };
 
@@ -291,8 +290,7 @@ TEST_F(SymmetricBilinearFormTest, Serialization) {
   EXPECT_TRUE(message1.has_frame());
   EXPECT_TRUE(message1.has_matrix());
   auto const g =
-      SymmetricBilinearForm<Length, MultivectorGenerator, World, Rank<1>>::
-          ReadFromMessage(message1);
+      VectorSymmetricBilinearForm<Length, World>::ReadFromMessage(message1);
   EXPECT_EQ(f, g);
   serialization::SymmetricBilinearForm message2;
   g.WriteToMessage(&message2);

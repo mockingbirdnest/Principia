@@ -239,8 +239,7 @@ PrincipalAxis() const {
   using Eigenframe = geometry::_frame::Frame<struct EigenframeTag>;
   auto const eigensystem = this->template Diagonalize<Eigenframe>();
   // The last eigenvalue is the largest one.
-  return eigensystem.rotation(
-      MultivectorTag<double, Eigenframe, Rank<rank>>({0, 0, 1}));
+  return eigensystem.rotation(Multivector<double, Eigenframe, rank>({0, 0, 1}));
 }
 
 template<quantity Scalar, typename Frame, int rank>

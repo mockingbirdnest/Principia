@@ -339,6 +339,14 @@ template<quantity Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
 
+// Beware!  This tag should only be used in places that can operate on symmetric
+// bilinear forms on multivectors of any rank, but not on fully general
+// symmetric bilinear forms.  Other places should use the specific names
+// declared in `symmetric_bilinear_form.hpp`, or the parameters of the
+// unspecialized template.
+// NOTE(phl): With P2989R3, we could use the template itself as a tag.
+struct MultivectorTag;
+
 }  // namespace internal
 
 using internal::AngleBetween;
@@ -350,6 +358,7 @@ using internal::FusedNegatedMultiplyAdd;
 using internal::FusedNegatedMultiplySubtract;
 using internal::InnerProduct;
 using internal::Multivector;
+using internal::MultivectorTag;
 using internal::Normalize;
 using internal::NormalizeOrZero;
 using internal::OrientedAngleBetween;

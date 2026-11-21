@@ -23,8 +23,7 @@ void MechanicalSystem<InertialFrame, SystemFrame>::AddRigidBody(
     _tensors::InertiaTensor<BodyFrame> const& tensors) {
   DegreesOfFreedom<InertialFrame> const degrees_of_freedom =
       motion({BodyFrame::origin, BodyFrame::unmoving});
-  SymmetricBilinearForm<MomentOfInertia,
-                        MultivectorGenerator, InertialFrame, Rank<1>> const
+  VectorSymmetricBilinearForm<MomentOfInertia, InertialFrame> const
       inertia_tensor_in_inertial_axes =
           motion.orthogonal_map()(tensors.AnticommutatorInverse());
   centre_of_mass_.Add(degrees_of_freedom, mass);
@@ -84,8 +83,7 @@ InertiaTensor<SystemFrame>
 MechanicalSystem<InertialFrame, SystemFrame>::InertiaTensor() const {
   RigidMotion<InertialFrame, SystemFrame> const to_system_frame =
       LinearMotion().Inverse();
-  SymmetricBilinearForm<MomentOfInertia,
-                        MultivectorGenerator, SystemFrame, Rank<1>> result =
+  VectorSymmetricBilinearForm<MomentOfInertia, SystemFrame> result =
       to_system_frame.orthogonal_map()(sum_of_inertia_tensors_);
   for (auto const& [degrees_of_freedom, m] : body_linear_motions_) {
     DegreesOfFreedom<SystemFrame> const degrees_of_freedom_in_system_frame =

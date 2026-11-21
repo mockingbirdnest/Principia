@@ -26,9 +26,6 @@ using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_concepts;
 
-// NOTE(phl): With P2989R3, we could use the template itself as a tag.
-struct MultivectorTag;
-
 // A symmetric bilinear form with dimensionality given by `Scalar`, acting on
 // vector spaces parameterized by `Parameters`.  The `Tag` makes it possible to
 // distinguish specializations that have the same `Parameters`.
@@ -230,7 +227,6 @@ using internal::Anticommutator;
 using internal::BivectorInnerProductForm;
 using internal::BivectorSymmetricBilinearForm;
 using internal::InnerProductForm;
-using internal::MultivectorTag;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;
