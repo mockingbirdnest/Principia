@@ -26,17 +26,19 @@ using namespace principia::geometry::_r3x3_matrix;
 using namespace principia::geometry::_rotation;
 using namespace principia::quantities::_concepts;
 
+// NOTE(phl): With P2989R3, we could use the template itself as a tag.
+struct MultivectorTag;
+
 // A symmetric bilinear form with dimensionality given by `Scalar`, acting on
-// vector spaces specified by the given `Generator` and `Parameters`.
-template<quantity Scalar,
-         template<quantity, typename...> typename Generator,
-         typename... Parameters>
+// vector spaces parameterized by `Parameters`.  The `Tag` makes it possible to
+// distinguish specializations that have the same `Parameters`.
+template<quantity Scalar, typename Tag, typename... Parameters>
 class SymmetricBilinearForm;
 
 // A symmetric bilinear form with dimensionality `Scalar`, on the given kind of
 // `Multivector`, expressed in the coordinates of `Frame`.
 template<quantity Scalar, typename Frame, int rank>
-class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
+class SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>> {
  public:
   SymmetricBilinearForm() = default;
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
@@ -67,12 +69,12 @@ class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
   //   F.Anticommutator() * Wedge(v, w) = Wedge(F * v, w) + Wedge(v, F * w),
   // which is the generalization to nonsymmetric F.
   // This operation is linear in `*this`.
-  SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<2>>
+  SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<2>>
   Anticommutator() const requires(rank == 1);
 
   // This function is the inverse of `Anticommutator()`.  It is well-defined
   // only in dimension 3, where dim ⋀²V = dim V.
-  SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<1>>
+  SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<1>>
   AnticommutatorInverse() const requires(rank == 2);
 
   // The eigensystem for a form is described by (1) the form in its eigenbasis,
@@ -81,8 +83,7 @@ class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
   // increasing order.
   template<typename Eigenframe>
   struct Eigensystem {
-    SymmetricBilinearForm<Scalar,
-                          MultivectorGenerator, Eigenframe, Rank<rank>> form;
+    SymmetricBilinearForm<Scalar, MultivectorTag, Eigenframe, Rank<rank>> form;
     Rotation<Eigenframe, Frame> rotation;
   };
 
@@ -115,78 +116,60 @@ class SymmetricBilinearForm<Scalar, MultivectorGenerator, Frame, Rank<rank>> {
 
 // `InnerProductForm()` is the symmetric bilinear form such that for all v and
 // w, `InnerProductForm()(v, w) == InnerProduct(v, w)`.
-template<template<quantity, typename...> typename Generator,
-         typename... Parameters>
-SymmetricBilinearForm<double, Generator, Parameters...> const&
+template<typename Tag, typename... Parameters>
+SymmetricBilinearForm<double, Tag, Parameters...> const&
 InnerProductForm();
 
-// Convenient aliases.
-template<typename Frame>
-auto const& VectorInnerProductForm =
-    InnerProductForm<MultivectorGenerator, Frame, Rank<1>>;
-template<typename Frame>
-auto const& BivectorInnerProductForm =
-    InnerProductForm<MultivectorGenerator, Frame, Rank<2>>;
+template<quantity Scalar, typename Tag, typename... Parameters>
+SymmetricBilinearForm<Scalar, Tag, Parameters...> operator+(
+    SymmetricBilinearForm<Scalar, Tag, Parameters...> const& right);
+template<quantity Scalar, typename Tag, typename... Parameters>
+SymmetricBilinearForm<Scalar, Tag, Parameters...> operator-(
+    SymmetricBilinearForm<Scalar, Tag, Parameters...> const& right);
 
-template<quantity Scalar,
-         template<quantity, typename...> typename Generator,
-         typename... Parameters>
-SymmetricBilinearForm<Scalar, Generator, Parameters...> operator+(
-    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& right);
-template<quantity Scalar,
-         template<quantity, typename...> typename Generator,
-         typename... Parameters>
-SymmetricBilinearForm<Scalar, Generator, Parameters...> operator-(
-    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& right);
-
-template<quantity Scalar,
-         template<quantity, typename...> typename Generator,
-         typename... Parameters>
-SymmetricBilinearForm<Scalar, Generator, Parameters...> operator+(
-    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& left,
-    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& right);
-template<quantity Scalar,
-         template<quantity, typename...> typename Generator,
-         typename... Parameters>
-SymmetricBilinearForm<Scalar, Generator, Parameters...> operator-(
-    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& left,
-    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& right);
+template<quantity Scalar, typename Tag, typename... Parameters>
+SymmetricBilinearForm<Scalar, Tag, Parameters...> operator+(
+    SymmetricBilinearForm<Scalar, Tag, Parameters...> const& left,
+    SymmetricBilinearForm<Scalar, Tag, Parameters...> const& right);
+template<quantity Scalar, typename Tag, typename... Parameters>
+SymmetricBilinearForm<Scalar, Tag, Parameters...> operator-(
+    SymmetricBilinearForm<Scalar, Tag, Parameters...> const& left,
+    SymmetricBilinearForm<Scalar, Tag, Parameters...> const& right);
 
 template<convertible_to_quantity LScalar,
          quantity RScalar,
-         template<quantity, typename...> typename Generator,
+         typename Tag,
          typename... Parameters>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Generator, Parameters...>
+SymmetricBilinearForm<Product<LScalar, RScalar>, Tag, Parameters...>
 operator*(LScalar left,
-          SymmetricBilinearForm<RScalar,
-                                Generator, Parameters...> const& right);
+          SymmetricBilinearForm<RScalar, Tag, Parameters...> const& right);
 template<quantity LScalar,
          convertible_to_quantity RScalar,
-         template<quantity, typename...> typename Generator,
+         typename Tag,
          typename... Parameters>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Generator, Parameters...>
-operator*(SymmetricBilinearForm<LScalar, Generator, Parameters...> const& left,
+SymmetricBilinearForm<Product<LScalar, RScalar>, Tag, Parameters...>
+operator*(SymmetricBilinearForm<LScalar, Tag, Parameters...> const& left,
           RScalar right);
 template<quantity LScalar,
          convertible_to_quantity RScalar,
-         template<quantity, typename...> typename Generator,
+         typename Tag,
          typename... Parameters>
-SymmetricBilinearForm<Quotient<LScalar, RScalar>, Generator, Parameters...>
-operator/(SymmetricBilinearForm<LScalar, Generator, Parameters...> const& left,
+SymmetricBilinearForm<Quotient<LScalar, RScalar>, Tag, Parameters...>
+operator/(SymmetricBilinearForm<LScalar, Tag, Parameters...> const& left,
           RScalar right);
 
 
 template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     SymmetricBilinearForm<
-        LScalar, MultivectorGenerator, Frame, Rank<rank>> const& left,
+        LScalar, MultivectorTag, Frame, Rank<rank>> const& left,
     Multivector<RScalar, Frame, rank> const& right);
 
 template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
     Multivector<LScalar, Frame, rank> const& left,
     SymmetricBilinearForm<
-        RScalar, MultivectorGenerator, Frame, Rank<rank>> const& right);
+        RScalar, MultivectorTag, Frame, Rank<rank>> const& right);
 
 // Solves the system `result * right == left`.  Note that by symmetry, this is
 // also the solution of `right * result == left`.
@@ -194,18 +177,17 @@ template<quantity LScalar, quantity RScalar, typename Frame, int rank>
 Multivector<Quotient<LScalar, RScalar>, Frame, rank> operator/(
     Multivector<LScalar, Frame, rank> const& left,
     SymmetricBilinearForm<
-        RScalar, MultivectorGenerator, Frame, Rank<rank>> const& right);
+        RScalar, MultivectorTag, Frame, Rank<rank>> const& right);
 
 // `SymmetricProduct(v, w)` is v ⊙ w ≔ (v ⊗ w + w ⊗ v) / 2.
 template<quantity LScalar, quantity RScalar, typename Frame>
-SymmetricBilinearForm<Product<LScalar, RScalar>,
-                      MultivectorGenerator, Frame, Rank<1>>
+SymmetricBilinearForm<Product<LScalar, RScalar>, MultivectorTag, Frame, Rank<1>>
 SymmetricProduct(Vector<LScalar, Frame> const& left,
                  Vector<RScalar, Frame> const& right);
 
 // `SymmetricSquare(v)` is `SymmetricProduct(v, v)`.
 template<quantity Scalar, typename Frame>
-SymmetricBilinearForm<Square<Scalar>, MultivectorGenerator, Frame, Rank<1>>
+SymmetricBilinearForm<Square<Scalar>, MultivectorTag, Frame, Rank<1>>
 SymmetricSquare(Vector<Scalar, Frame> const& vector);
 
 // Symmetric bilinear forms on vectors act on bivectors through this function.
@@ -214,31 +196,46 @@ SymmetricSquare(Vector<Scalar, Frame> const& vector);
 template<quantity LScalar, quantity RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
     SymmetricBilinearForm<LScalar,
-                          MultivectorGenerator, Frame, Rank<1>> const& form,
+                          MultivectorTag, Frame, Rank<1>> const& form,
     Bivector<RScalar, Frame> const& bivector);
 
-template<quantity Scalar,
-         template<quantity, typename...> typename Generator,
-         typename... Parameters>
+template<quantity Scalar, typename Tag, typename... Parameters>
 std::string DebugString(
-    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& form);
+    SymmetricBilinearForm<Scalar, Tag, Parameters...> const& form);
 
-template<quantity Scalar,
-         template<quantity, typename...> typename Generator,
-         typename... Parameters>
+template<quantity Scalar, typename Tag, typename... Parameters>
 std::ostream& operator<<(
     std::ostream& out,
-    SymmetricBilinearForm<Scalar, Generator, Parameters...> const& form);
+    SymmetricBilinearForm<Scalar, Tag, Parameters...> const& form);
+
+
+// Convenient aliases.  Prefer using these aliases instead of the tag types.
+template<typename Scalar, typename Frame>
+using VectorSymmetricBilinearForm =
+    SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<1>>;
+template<typename Scalar, typename Frame>
+using BivectorSymmetricBilinearForm =
+    SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<2>>;
+
+template<typename Frame>
+auto const& VectorInnerProductForm =
+    InnerProductForm<MultivectorTag, Frame, Rank<1>>;
+template<typename Frame>
+auto const& BivectorInnerProductForm =
+    InnerProductForm<MultivectorTag, Frame, Rank<2>>;
 
 }  // namespace internal
 
 using internal::Anticommutator;
 using internal::BivectorInnerProductForm;
+using internal::BivectorSymmetricBilinearForm;
 using internal::InnerProductForm;
+using internal::MultivectorTag;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;
 using internal::VectorInnerProductForm;
+using internal::VectorSymmetricBilinearForm;
 
 }  // namespace _symmetric_bilinear_form
 }  // namespace geometry

@@ -339,29 +339,6 @@ template<quantity Scalar, typename Frame, int rank>
 std::ostream& operator<<(std::ostream& out,
                          Multivector<Scalar, Frame, rank> const& multivector);
 
-
-// A helper for building a `Multivector` using an instance of `Rank` instead of
-// a raw integer.  Apparently MSVC does not want to match a template template
-// parameter with a parameter pack to a template that does not have a parameter
-// pack.  See https://godbolt.org/z/rahs9dPq9.
-#if !PRINCIPIA_COMPILER_MSVC || \
-    !(_MSC_FULL_VER == 195'336'930)
-template<quantity Scalar, typename Frame, typename Rank>
-using MultivectorGenerator = Multivector<Scalar, Frame, Rank::rank>;
-#else
-template<quantity Scalar, typename... P>
-struct MultivectorGeneratorWithPack {
-  template<typename F, typename R>
-  struct PackSplitter {
-    using type = Multivector<Scalar, F, R::rank>;
-  };
-  using type = typename PackSplitter<P...>::type;
-};
-
-template<quantity Scalar, typename... P>
-using MultivectorGenerator = MultivectorGeneratorWithPack<Scalar, P...>::type;
-#endif
-
 }  // namespace internal
 
 using internal::AngleBetween;
@@ -373,7 +350,6 @@ using internal::FusedNegatedMultiplyAdd;
 using internal::FusedNegatedMultiplySubtract;
 using internal::InnerProduct;
 using internal::Multivector;
-using internal::MultivectorGenerator;
 using internal::Normalize;
 using internal::NormalizeOrZero;
 using internal::OrientedAngleBetween;
