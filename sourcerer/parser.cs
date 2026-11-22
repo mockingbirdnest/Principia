@@ -57,6 +57,10 @@ public class Parser {
         var function = new Function(line,
                                     parent: current,
                                     ParseFunction(uncommented_line));
+      } else if (IsImport(uncommented_line)) {
+        var import = new Import(line,
+                                parent: current,
+                                ParseImport(uncommented_line));
       } else if (IsStruct(uncommented_line)) {
         var strukt = new Struct(line,
                                 parent: current,
@@ -216,6 +220,17 @@ public class Parser {
 
     public override void WriteNode(string indent = "") {
       Console.WriteLine(indent + "Function " + name);
+    }
+  }
+
+  public class Import : Declaration {
+    public Import(string text, Node parent, string name) : base(
+        text,
+        parent,
+        name) {}
+
+    public override void WriteNode(string indent = "") {
+      Console.WriteLine(indent + "Import " + name);
     }
   }
 
@@ -500,6 +515,10 @@ public class Parser {
             Regex.IsMatch(line, @"^[A-Z][a-z]\w+\(.*$"));
   }
 
+  private static bool IsImport(string line) {
+    return Regex.IsMatch(line, @"^ *import +\w+;$");
+  }
+
   private static bool IsInclude(string line) {
     return Regex.IsMatch(line, @"^#include [^ ]+$");
   }
@@ -559,6 +578,11 @@ public class Parser {
   private static string[] ParseIncludedPath(string line) {
     string path = line.Replace("#include \"", "").Replace(".hpp\"", "");
     return path.Split('/');
+  }
+
+  private static string ParseImport(string line) {
+    string module = Regex.Replace(line, @"^ *import +", "").Replace(@";$", "");
+    return module;
   }
 
   private static string ParseOpeningNamespace(string line) {
