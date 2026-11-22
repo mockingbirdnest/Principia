@@ -112,6 +112,30 @@ public class Parser {
       }
     }
 
+    public void InsertChild(int position, Node child) {
+      child.parent = this;
+      child.position_in_parent = position;
+      children.Insert(position, child);
+      for (int i = position + 1; i < children.Count; ++i) {
+        children[i].position_in_parent = i;
+      }
+    }
+
+    public void RemoveChild(Node child) {
+      int removed_position_in_parent = -1;
+      for (int i = 0; i < children.Count; ++i) {
+        if (children[i] == child) {
+          removed_position_in_parent = i;
+          break;
+        }
+      }
+      children.RemoveAt(removed_position_in_parent);
+      child.parent = null;
+      for (int i = removed_position_in_parent; i < children.Count; ++i) {
+        children[i].position_in_parent = i - 1;
+      }
+    }
+
     public virtual string Cxx() {
       throw new InvalidOperationException();
     }

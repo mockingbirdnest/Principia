@@ -66,6 +66,7 @@ class StdImporter {
       bool has_system_headers = FixSystemHeaders(includes);
       var consecutive_user_includes = FindConsecutiveUserIncludes(includes);
       FixImportStd(parser_file, consecutive_user_includes, has_system_headers);
+      RewriteFile(input_file, parser_file, dry_run);
     }
   }
 
@@ -99,15 +100,6 @@ class StdImporter {
   private static void FixImportStd(Parser.File file,
                                    List<Include> consecutive_user_includes,
                                    bool has_system_headers) {
-    int first_include_position =
-        consecutive_user_includes[0].position_in_parent;
-    int last_include_position =
-        consecutive_user_includes[^1].position_in_parent;
-    var preceding_nodes_in_file =
-        file.children.Take(first_include_position).ToList();
-    var following_nodes_in_file = file.children.
-        Skip(last_include_position + 1).ToList();
-
     // Find the `import std;` statements, if any.
     var import_std = new List<Import>();
     foreach (Node child in file.children) {
@@ -118,15 +110,17 @@ class StdImporter {
 
     // Remove them all.
     foreach (Import import in import_std) {
-      file.children.Remove(import);
+      file.RemoveChild(import);
     }
 
     // Insert an `import std;` if needed, at the end of the first block of
     // consecutive user includes, or at the beginning of the file if there are
     if (has_system_headers) {
+      int last_include_position =
+          consecutive_user_includes[^1].position_in_parent;
       string import_line = "import std;";
       var import = new Import(import_line, parent: file, name: "std");
-      file.children.Insert(0, import);
+      file.InsertChild(last_include_position + 1, import);
     }
   }
 }

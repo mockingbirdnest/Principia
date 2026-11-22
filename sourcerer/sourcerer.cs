@@ -24,6 +24,8 @@ internal class Sourcerer {
       MakeEditorconfig.Run(args_after_0);
     } else if (args[0] == "renamespacer") {
       Renamespacer.Run(args_after_0);
+    } else if (args[0] == "std_importer") {
+      StdImporter.Run(args_after_0);
     } else {
       throw new ArgumentException("Unknown command " + args[0]);
     }
