@@ -267,9 +267,6 @@ using VectorSymmetricBilinearForm =
 template<typename Scalar, typename Frame>
 using BivectorSymmetricBilinearForm =
     SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<2>>;
-template<typename Scalar>
-using QuantitySymmetricBilinearForm =
-    SymmetricBilinearForm<Scalar, QuantityTag>;
 
 template<typename Frame>
 auto const& VectorInnerProductForm =
@@ -284,7 +281,6 @@ using internal::Anticommutator;
 using internal::BivectorInnerProductForm;
 using internal::BivectorSymmetricBilinearForm;
 using internal::InnerProductForm;
-using internal::QuantitySymmetricBilinearForm;
 using internal::SymmetricBilinearForm;
 using internal::SymmetricProduct;
 using internal::SymmetricSquare;
