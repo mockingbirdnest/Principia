@@ -7,7 +7,6 @@ using static principia.sourcerer.Filenames;
 using static principia.sourcerer.Parser;
 using static principia.sourcerer.Rewriter;
 
-
 namespace principia {
 namespace sourcerer {
 
