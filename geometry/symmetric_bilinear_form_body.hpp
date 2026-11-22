@@ -339,11 +339,11 @@ SymmetricBilinearForm<Scalar, QuantityTag>::ReadFromMessage(
 }
 
 
-template<typename Tag, typename... Parameters>
-SymmetricBilinearForm<double, Tag, Parameters...> const&
+template<typename Frame, int rank>
+SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
 InnerProductForm() {
   static auto const identity =
-      SymmetricBilinearForm<double, Tag, Parameters...>(
+      SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>>(
           R3x3Matrix<double>::Identity());
   return identity;
 }

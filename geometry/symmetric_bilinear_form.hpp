@@ -159,8 +159,8 @@ class SymmetricBilinearForm<Scalar, QuantityTag> {
 
 // `InnerProductForm()` is the symmetric bilinear form such that for all v and
 // w, `InnerProductForm()(v, w) == InnerProduct(v, w)`.
-template<typename Tag, typename... Parameters>
-SymmetricBilinearForm<double, Tag, Parameters...> const&
+template<typename Frame, int rank>
+SymmetricBilinearForm<double, MultivectorTag, Frame, Rank<rank>> const&
 InnerProductForm();
 
 template<quantity Scalar, typename Tag, typename... Parameters>
@@ -269,11 +269,9 @@ using BivectorSymmetricBilinearForm =
     SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<2>>;
 
 template<typename Frame>
-auto const& VectorInnerProductForm =
-    InnerProductForm<MultivectorTag, Frame, Rank<1>>;
+auto const& VectorInnerProductForm = InnerProductForm<Frame, 1>;
 template<typename Frame>
-auto const& BivectorInnerProductForm =
-    InnerProductForm<MultivectorTag, Frame, Rank<2>>;
+auto const& BivectorInnerProductForm = InnerProductForm<Frame, 2>;
 
 }  // namespace internal
 
