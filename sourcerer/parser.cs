@@ -136,6 +136,12 @@ public class Parser {
       }
     }
 
+    public void RemoveChildren(List<Node> children_to_remove) {
+      foreach (Node child in children_to_remove) {
+        RemoveChild(child);
+      }
+    }
+
     public virtual string Cxx() {
       throw new InvalidOperationException();
     }

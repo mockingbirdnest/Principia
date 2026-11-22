@@ -93,8 +93,10 @@ class StdImporter {
   }
 
   private static bool FixSystemHeaders(List<Include> includes) {
-    int removed = includes.RemoveAll(inc => inc.is_system);
-    return removed > 0;
+    var system_includes = includes.FindAll(inc => inc.is_system);
+    bool has_system_headers = system_includes.Count > 0;
+    int removed = includes.RemoveChildren(system_includes);
+    return has_system_headers;
   }
 
   private static void FixImportStd(Parser.File file,
