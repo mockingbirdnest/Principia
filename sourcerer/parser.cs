@@ -132,7 +132,7 @@ public class Parser {
       children.RemoveAt(removed_position_in_parent);
       child.parent = null;
       for (int i = removed_position_in_parent; i < children.Count; ++i) {
-        children[i].position_in_parent = i - 1;
+        children[i].position_in_parent = i;
       }
     }
 
@@ -611,7 +611,8 @@ public class Parser {
   }
 
   private static string ParseImport(string line) {
-    string module = Regex.Replace(line, @"^ *import +", "").Replace(@";$", "");
+    string module = Regex.Replace(line, @"^ *import +", "");
+    module = Regex.Replace(module, @";$", "");
     return module;
   }
 

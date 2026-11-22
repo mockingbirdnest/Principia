@@ -63,66 +63,73 @@ class StdImporter {
       FileInfo input_file = kv.Key;
       Parser.File parser_file = kv.Value;
       var includes = FindIncludes(parser_file);
-      bool has_system_headers = FixSystemHeaders(includes);
-      var consecutive_user_includes = FindConsecutiveUserIncludes(includes);
-      FixImportStd(parser_file, consecutive_user_includes, has_system_headers);
+      var first_ns = FindFirstNamespace(parser_file);
+      if (first_ns == null) {
+        throw new ArgumentException("File " +
+                                    input_file.FullName +
+                                    " has no namespace");
+      }
+      bool has_system_headers = FixSystemHeaders(parser_file, includes);
+      FixImportStd(parser_file, first_ns, has_system_headers);
       RewriteFile(input_file, parser_file, dry_run);
     }
   }
 
-  // Locate the first block of consecutive user includes.  We won't touch
-  // subsequent blocks, they probably contain something odd.
-  private static List<Include> FindConsecutiveUserIncludes(
-      List<Include> includes) {
-    var consecutive_user_includes = new List<Include>();
-    int? position_in_parent = null;
-    foreach (Include inc in includes) {
-      if (position_in_parent.HasValue) {
-        position_in_parent = position_in_parent.Value + 1;
-        if (position_in_parent.Value == inc.position_in_parent) {
-          consecutive_user_includes.Add(inc);
-        } else {
-          break;
-        }
-      } else {
-        position_in_parent = inc.position_in_parent;
-        consecutive_user_includes.Add(inc);
+  private static Namespace? FindFirstNamespace(
+      Parser.File file) {
+    foreach (Node child in file.children) {
+      if (child is Namespace ns) {
+        return ns;
       }
     }
-    return consecutive_user_includes;
+    return null;
   }
 
-  private static bool FixSystemHeaders(List<Include> includes) {
+  private static bool FixSystemHeaders(Parser.File file,
+                                       List<Include> includes) {
     var system_includes = includes.FindAll(inc => inc.is_system);
     bool has_system_headers = system_includes.Count > 0;
-    int removed = includes.RemoveChildren(system_includes);
+    foreach (Include inc in system_includes) {
+      int position_in_parent = inc.position_in_parent;
+      file.RemoveChild(inc);
+      // If removing the system include leaves two consecutive empty lines,
+      // remove one of them.
+      if (file.children[position_in_parent - 1] is Text t1 &&
+          t1.text == "" &&
+          file.children[position_in_parent] is Text t2 &&
+          t2.text == "") {
+        file.RemoveChild(t1);
+      }
+    }
     return has_system_headers;
   }
 
   private static void FixImportStd(Parser.File file,
-                                   List<Include> consecutive_user_includes,
+                                   Namespace first_ns,
                                    bool has_system_headers) {
-    // Find the `import std;` statements, if any.
-    var import_std = new List<Import>();
-    foreach (Node child in file.children) {
-      if (child is Import{ name: "std" } import) {
-        import_std.Add(import);
-      }
-    }
-
-    // Remove them all.
-    foreach (Import import in import_std) {
-      file.RemoveChild(import);
-    }
-
-    // Insert an `import std;` if needed, at the end of the first block of
-    // consecutive user includes, or at the beginning of the file if there are
+    // If there are no system headers, don't touch anything.  That includes the
+    // case where the file has already been converted.
     if (has_system_headers) {
-      int last_include_position =
-          consecutive_user_includes[^1].position_in_parent;
+      // Find the `import std;` statements, if any.
+      List<Import> std_imports = new List<Import>();
+      foreach (Node child in file.children) {
+        if (child is Import{ name: "std" } std_import) {
+          std_imports.Add(std_import);
+        }
+      }
+
+      // Remove said import statements.
+      foreach (Import std_import in std_imports) {
+        file.RemoveChild(std_import);
+      }
+
+      // Insert an `import std;` if needed, just before the first namespace.
+      int first_ns_position = first_ns.position_in_parent;
       string import_line = "import std;";
-      var import = new Import(import_line, parent: file, name: "std");
-      file.InsertChild(last_include_position + 1, import);
+      var import = new Import(import_line, parent: null, name: "std");
+      file.InsertChild(first_ns_position, import);
+      var blank = new Text("", parent: null);
+      file.InsertChild(first_ns_position + 1, blank);
     }
   }
 }
