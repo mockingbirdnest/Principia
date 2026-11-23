@@ -486,7 +486,7 @@ class DateParser final {
   // Fails unless `str` is a date representation of one of the following forms:
   // [YYYY-MM-DD], [YYYYMMDD], [YYYY-Www-D], [YYYYWwwD], [YYYY-DDD], [YYYYDDD],
   // with an optional prefix [J] or [G] and an optional sign.
-  static constexpr Date Parse(char const* str, std::size_t size);
+  static constexpr Date Parse(std::string_view s);
 
  private:
   constexpr DateParser(std::int64_t digits,
@@ -502,8 +502,7 @@ class DateParser final {
   //   - any number of decimal digits;
   //   - at most two hyphens;
   //   - at most one 'W'.
-  static constexpr DateParser ReadToEnd(char const* str,
-                                        std::size_t size);
+  static constexpr DateParser ReadToEnd(std::string_view s);
   static constexpr DateParser ReadToEnd(CStringIterator str,
                                         std::int64_t digits,
                                         int digit_count,
@@ -533,21 +532,20 @@ class DateParser final {
   int const w_index_;
 };
 
-constexpr Date DateParser::Parse(char const* str,
-                                 std::size_t size) {
+constexpr Date DateParser::Parse(std::string_view const s) {
   std::optional<Calendar> calendar;
-  if (str[0] == 'J' || str[0] == 'G') {
-    calendar = static_cast<Calendar>(str[0]);
-    ++str;
-    --size;
+  std::string_view tail = s;
+
+  if (tail[0] == 'J' || tail[0] == 'G') {
+    calendar = static_cast<Calendar>(tail[0]);
+    tail.remove_prefix(1);
   }
   bool negative = false;
-  if (str[0] == '+' || str[0] == '-') {
-    negative = str[0] == '-';
-    ++str;
-    --size;
+  if (tail[0] == '+' || tail[0] == '-') {
+    negative = tail[0] == '-';
+    tail.remove_prefix(1);
   }
-  return ReadToEnd(str, size).ToDate(calendar, negative);
+  return ReadToEnd(tail).ToDate(calendar, negative);
 }
 
 constexpr DateParser::DateParser(std::int64_t const digits,
@@ -565,9 +563,8 @@ constexpr DateParser::DateParser(std::int64_t const digits,
       has_w_(has_w),
       w_index_(w_index) {}
 
-constexpr DateParser DateParser::ReadToEnd(char const* const str,
-                                           std::size_t const size) {
-  return ReadToEnd(CStringIterator(str, size),
+constexpr DateParser DateParser::ReadToEnd(std::string_view s) {
+  return ReadToEnd(CStringIterator(s.data(), s.size()),
                    /*digits=*/0,
                    /*digit_count=*/0,
                    /*hyphens=*/0,
