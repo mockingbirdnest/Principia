@@ -125,7 +125,16 @@ Product<Scalar, Product<LScalar, RScalar>>
 SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::
 operator()(Multivector<LScalar, Frame, rank> const& left,
            Multivector<RScalar, Frame, rank> const& right) const {
-  return InnerProduct(left, *this * right);
+  return InnerProduct(left, (*this)(right));
+}
+
+template<quantity Scalar, typename Frame, int rank>
+template<quantity RScalar>
+Multivector<Product<Scalar, RScalar>, Frame, rank>
+SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>>::operator()(
+    Multivector<RScalar, Frame, rank> const& right) const {
+  return Multivector<Product<Scalar, RScalar>, Frame, rank>(
+      matrix_ * right.coordinates());
 }
 
 template<quantity Scalar, typename Frame, int rank>
@@ -409,24 +418,6 @@ operator/(SymmetricBilinearForm<LScalar, Tag, Parameters...> const& left,
   return SymmetricBilinearForm<Quotient<LScalar, RScalar>,
                                Tag,
                                Parameters...>(left.coordinates() / right);
-}
-
-template<quantity LScalar, quantity RScalar, typename Frame, int rank>
-Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
-    SymmetricBilinearForm<
-        LScalar, MultivectorTag, Frame, Rank<rank>> const& left,
-    Multivector<RScalar, Frame, rank> const& right) {
-  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
-      left.coordinates() * right.coordinates());
-}
-
-template<quantity LScalar, quantity RScalar, typename Frame, int rank>
-Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
-    Multivector<LScalar, Frame, rank> const& left,
-    SymmetricBilinearForm<
-        RScalar, MultivectorTag, Frame, Rank<rank>> const& right) {
-  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
-      left.coordinates() * right.coordinates());
 }
 
 template<quantity LScalar, quantity RScalar, typename Frame, int rank>

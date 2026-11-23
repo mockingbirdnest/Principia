@@ -55,9 +55,16 @@ class SymmetricBilinearForm<Scalar, MultivectorTag, Frame, Rank<rank>> {
 
   R3x3Matrix<Scalar> const& coordinates() const;
 
+  // Application of the form to a pair of multivectors.
   template<quantity LScalar, quantity RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
       Multivector<LScalar, Frame, rank> const& left,
+      Multivector<RScalar, Frame, rank> const& right) const;
+
+  // The form may be applied to a single multivector, yielding a linear form
+  // which we identify with a multivector of the same rank.
+  template<quantity RScalar>
+  Multivector<Product<Scalar, RScalar>, Frame, rank> operator()(
       Multivector<RScalar, Frame, rank> const& right) const;
 
   // For a form on vectors, `Anticommutator` returns the form on bivectors
@@ -200,19 +207,6 @@ template<quantity LScalar,
 SymmetricBilinearForm<Quotient<LScalar, RScalar>, Tag, Parameters...>
 operator/(SymmetricBilinearForm<LScalar, Tag, Parameters...> const& left,
           RScalar right);
-
-
-template<quantity LScalar, quantity RScalar, typename Frame, int rank>
-Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
-    SymmetricBilinearForm<
-        LScalar, MultivectorTag, Frame, Rank<rank>> const& left,
-    Multivector<RScalar, Frame, rank> const& right);
-
-template<quantity LScalar, quantity RScalar, typename Frame, int rank>
-Multivector<Product<LScalar, RScalar>, Frame, rank> operator*(
-    Multivector<LScalar, Frame, rank> const& left,
-    SymmetricBilinearForm<
-        RScalar, MultivectorTag, Frame, Rank<rank>> const& right);
 
 // Solves the system `result * right == left`.  Note that by symmetry, this is
 // also the solution of `right * result == left`.
