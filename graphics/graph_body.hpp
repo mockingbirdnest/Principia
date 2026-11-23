@@ -8,10 +8,14 @@
 #include <utility>
 #include <vector>
 
+#include "numerics/elementary_functions.hpp"
+
 namespace principia {
 namespace graphics {
 namespace _graph {
 namespace internal {
+
+using namespace principia::numerics::_elementary_functions;
 
 template<affine Abscissa, affine Ordinate>
 Graph<Abscissa, Ordinate>::Graph(std::int64_t const width,
@@ -56,7 +60,7 @@ void Graph<Abscissa, Ordinate>::ListPointPlot(
     }
   } else {
     for (auto const& [x, y] : points) {
-      DrawRectangle(x, y, pixel_width_, pixel_height_, colour);
+      DrawDisk(x, y, anti_aliasing_.supersampling, colour);
     }
   }
 }
@@ -82,7 +86,7 @@ void Graph<Abscissa, Ordinate>::Plot(std::function<Ordinate(Abscissa)> const& f,
       f_max = f_x_min;
     }
     for (auto y = f_min; y <= f_max; y += sample_height_) {
-      DrawRectangle(sample_range.midpoint(), y, pixel_width_, pixel_height_, colour);
+      DrawDisk(sample_range.midpoint(), y, 0.5 * anti_aliasing_.supersampling, colour);
     }
   }
 }
@@ -132,8 +136,7 @@ inline void Graph<Abscissa, Ordinate>::AntiAlias() {
     return;
   }
   pixels_.emplace(width_ * height_);
-  std::int64_t const sample_count =
-      anti_aliasing_.supersampling * anti_aliasing_.supersampling;
+  std::int64_t const sample_count = Pow<2>(anti_aliasing_.supersampling);
   for (std::int64_t row = 0; row < height_; ++row) {
     for (std::int64_t column = 0; column < width_; ++column) {
       // TODO(egg): This is bad colour theory.
@@ -197,10 +200,15 @@ std::int64_t Graph<Abscissa, Ordinate>::abscissa_to_sample(
 
 template<affine Abscissa, affine Ordinate>
 Interval<Abscissa> Graph<Abscissa, Ordinate>::sample_to_abscissa_range(
-    std::int64_t i) const {
+    std::int64_t const i) const {
   return {
       (i - 0.5 * anti_aliasing_.supersampling) * sample_width_ + x_range_.min,
       (i + 0.5 * anti_aliasing_.supersampling) * sample_width_ + x_range_.min};
+}
+
+template<affine Abscissa, affine Ordinate>
+Abscissa Graph<Abscissa, Ordinate>::sample_to_abscissa(std::int64_t const i) const {
+  return i * sample_width_ + x_range_.min;
 }
 
 template<affine Abscissa, affine Ordinate>
@@ -211,11 +219,17 @@ std::int64_t Graph<Abscissa, Ordinate>::ordinate_to_sample(
 }
 
 template<affine Abscissa, affine Ordinate>
+Ordinate Graph<Abscissa, Ordinate>::sample_to_ordinate(
+    std::int64_t const i) const {
+  return y_range_.max - i * sample_height_;
+}
+
+template<affine Abscissa, affine Ordinate>
 void Graph<Abscissa, Ordinate>::DrawRectangle(Abscissa const x,
-                                          Ordinate const y,
-                     Difference<Abscissa> width,
-                     Difference<Ordinate> height,
-                     RGB24 colour) {
+                                              Ordinate const y,
+                                              Difference<Abscissa> const width,
+                                              Difference<Ordinate> const height,
+                                              RGB24 const colour) {
   std::int64_t const first_row =
       abscissa_to_sample(x - (width - sample_width_) * 0.5);
   std::int64_t const last_row =
@@ -233,10 +247,29 @@ void Graph<Abscissa, Ordinate>::DrawRectangle(Abscissa const x,
 }
 
 template<affine Abscissa, affine Ordinate>
-void Graph<Abscissa, Ordinate>::DrawDisk(Abscissa x,
-                                         Ordinate y,
+void Graph<Abscissa, Ordinate>::DrawDisk(Abscissa const x,
+                                         Ordinate const y,
                                          double r,
-                                         RGB24 colour) {}
+                                         RGB24 const colour) {
+  r *= 1;
+  double const r² = Pow<2>(r);
+  std::int64_t const first_row = abscissa_to_sample(x - r * sample_width_);
+  std::int64_t const last_row = abscissa_to_sample(x + r * sample_width_);
+  // Note the signs: `ordinate_to_sample` is decreasing.
+  std::int64_t const first_column = ordinate_to_sample(y + r * sample_height_);
+  std::int64_t const last_column = ordinate_to_sample(y - r * sample_height_);
+  for (std::int64_t row = first_row; row <= last_row; ++row) {
+    auto const x_sample = sample_to_abscissa(row);
+    for (std::int64_t column = first_column; column <= last_column; ++column) {
+      auto const y_sample = sample_to_ordinate(column);
+      if (Pow<2>((x_sample - x) * inverse_sample_width_) +
+              Pow<2>((y_sample - y) * inverse_sample_height_) <
+          r²) {
+        SetSample(row, column, Opaque(colour));
+      }
+    }
+  }
+}
 
 template<affine Abscissa, affine Ordinate>
 void Graph<Abscissa, Ordinate>::SetSample(std::int64_t const column,

@@ -120,8 +120,10 @@ class Graph {
  private:
   std::int64_t abscissa_to_sample(Abscissa x) const;
   Interval<Abscissa> sample_to_abscissa_range(std::int64_t i) const;
+  Abscissa sample_to_abscissa(std::int64_t i) const;
   // This function is decreasing: `y_range_.max` maps to 0.
   std::int64_t ordinate_to_sample(Ordinate y) const;
+  Ordinate sample_to_ordinate(std::int64_t i) const;
   
   // Draws a rectangle with the given dimensions centred at (x, y).
   void DrawRectangle(Abscissa x,
@@ -129,7 +131,7 @@ class Graph {
                      Difference<Abscissa> width,
                      Difference<Ordinate> height,
                      RGB24 colour);
-  // Draws a disk with a radius of `r` pixels centred at (x, y).
+  // Draws a disk with a radius of `r` samples centred at (x, y).
   void DrawDisk(Abscissa x, Ordinate y, double r, RGB24 colour);
 
   void SetSample(std::int64_t column, std::int64_t row, RGBA32 pixel);
