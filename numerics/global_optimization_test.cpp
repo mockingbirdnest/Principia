@@ -72,6 +72,9 @@ TEST_F(GlobalOptimizationTest, Cos) {
       .vertices = {100 * Second},
   };
 
+  // In this test we do not have nearly enough samples to find all the minima,
+  // so we tune the expectations to the ones that are actually found.
+
   auto const tolerance = 1e-6 * Second;
   Optimizer optimizer(box, cos, grad_cos);
   {
@@ -79,10 +82,26 @@ TEST_F(GlobalOptimizationTest, Cos) {
                                                    /*number_of_rounds=*/10,
                                                    tolerance);
 
-    EXPECT_EQ(function_invocations, 407);
-    EXPECT_EQ(316, gradient_invocations);
+    EXPECT_EQ(function_invocations, 324);
+    EXPECT_EQ(234, gradient_invocations);
 
-    EXPECT_THAT(minima, ElementsAre(t0));
+    EXPECT_THAT(minima,
+                ElementsAre(AbsoluteErrorFrom(t0 + 9 * π * Second,
+                                              IsNear(2.2e-11_(1) * Second)),
+                            AbsoluteErrorFrom(t0 - 13 * π * Second,
+                                              IsNear(7.4e-12_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 25 * π * Second,
+                                              IsNear(8.2e-11_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 43 * π * Second,
+                                              IsNear(8.5e-14_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 3 * π * Second,
+                                              IsNear(3.2e-7_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 21 * π * Second,
+                                              IsNear(9.4e-13_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 31 * π * Second,
+                                              IsNear(5.5e-11_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 23 * π * Second,
+                                              IsNear(1.2e-9_(1) * Second))));
   }
   function_invocations = 0;
   gradient_invocations = 0;
@@ -92,10 +111,24 @@ TEST_F(GlobalOptimizationTest, Cos) {
                                    /*number_of_rounds=*/std::nullopt,
                                    tolerance);
 
-    EXPECT_EQ(232, function_invocations);
-    EXPECT_EQ(136, gradient_invocations);
+    EXPECT_EQ(271, function_invocations);
+    EXPECT_EQ(157, gradient_invocations);
 
-    EXPECT_THAT(minima, ElementsAre(t0));
+    EXPECT_THAT(minima,
+                ElementsAre(AbsoluteErrorFrom(t0 - π * Second,
+                                              IsNear(1.7e-7_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 33 * π * Second,
+                                              IsNear(6.7e-7_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 9 * π * Second,
+                                              IsNear(5.5e-13_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 15 * π * Second,
+                                              IsNear(7.8e-9_(1) * Second)),
+                            AbsoluteErrorFrom(t0 - 11 * π * Second,
+                                              IsNear(6.6e-7_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 47 * π * Second,
+                                              IsNear(2.2e-7_(1) * Second)),
+                            AbsoluteErrorFrom(t0 + 27 * π * Second,
+                                              IsNear(4.0e-7_(1) * Second))));
   }
 }
 

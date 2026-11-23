@@ -81,6 +81,11 @@ Generator<Scalar, Point<V>>::InnerProductForm() {
   return Generator<Scalar, V>::InnerProductForm();
 }
 
+template<typename Scalar, quantity Q>
+QuantitySymmetricBilinearForm<double> Generator<Scalar, Q>::InnerProductForm() {
+  return QuantitySymmetricBilinearForm<double>(1);
+}
+
 }  // namespace internal
 }  // namespace _differential_geometry
 }  // namespace geometry
