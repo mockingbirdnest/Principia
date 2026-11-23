@@ -5,9 +5,11 @@
 #include "base/algebra.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/instant.hpp"
 #include "geometry/space.hpp"
 #include "gtest/gtest.h"
 #include "numerics/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"  // 🧙 For π.
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -28,9 +30,11 @@ using ::testing::_;
 using namespace principia::base::_algebra;
 using namespace principia::geometry::_frame;
 using namespace principia::geometry::_grassmann;
+using namespace principia::geometry::_instant;
 using namespace principia::geometry::_space;
 using namespace principia::numerics::_elementary_functions;
 using namespace principia::numerics::_global_optimization;
+using namespace principia::quantities::_named_quantities;
 using namespace principia::quantities::_quantities;
 using namespace principia::quantities::_si;
 using namespace principia::testing_utilities::_approximate_quantity;
@@ -45,6 +49,55 @@ class GlobalOptimizationTest : public ::testing::Test {
  protected:
   using World = Frame<struct WorldTag>;
 };
+
+TEST_F(GlobalOptimizationTest, Cos) {
+  using Optimizer = MultiLevelSingleLinkage<double, Instant, /*dimensions=*/1>;
+  Instant const t0;
+  AngularFrequency const ω = 1 * Radian / Second;
+  int function_invocations = 0;
+  int gradient_invocations = 0;
+
+  auto cos = [&function_invocations, t0, ω](Instant const& t) {
+    ++function_invocations;
+    return Cos(ω * (t - t0));
+  };
+
+  auto grad_cos = [&gradient_invocations, t0, ω](Instant const& t) {
+    ++gradient_invocations;
+    return -ω * Sin(ω * (t - t0)) / Radian;
+  };
+
+  Optimizer::Box const box = {
+      .centre = t0 + 50 * Second,
+      .vertices = {100 * Second},
+  };
+
+  auto const tolerance = 1e-6 * Second;
+  Optimizer optimizer(box, cos, grad_cos);
+  {
+    auto const minima = optimizer.FindGlobalMinima(/*points_per_round=*/10,
+                                                   /*number_of_rounds=*/10,
+                                                   tolerance);
+
+    EXPECT_EQ(function_invocations, 407);
+    EXPECT_EQ(316, gradient_invocations);
+
+    EXPECT_THAT(minima, ElementsAre(t0));
+  }
+  function_invocations = 0;
+  gradient_invocations = 0;
+  {
+    auto const minima =
+        optimizer.FindGlobalMinima(/*points_per_round=*/100,
+                                   /*number_of_rounds=*/std::nullopt,
+                                   tolerance);
+
+    EXPECT_EQ(232, function_invocations);
+    EXPECT_EQ(136, gradient_invocations);
+
+    EXPECT_THAT(minima, ElementsAre(t0));
+  }
+}
 
 TEST_F(GlobalOptimizationTest, Branin) {
   using Optimizer =
